@@ -46,7 +46,7 @@ def get_env(project, build):
   return env
 
 
-def get_build_fuzzers_step(fuzzing_engine, project, env, build):
+def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
   """Returns the build_fuzzers step to build |project| with |fuzzing_engine|,
   for fuzzbench/oss-fuzz-on-demand."""
   steps = []
@@ -91,6 +91,81 @@ def get_build_fuzzers_step(fuzzing_engine, project, env, build):
       ],
   }
   steps.append(compile_project_step)
+
+  copy_run_fuzzer_to_volume_step = {
+      'name':
+          get_engine_project_image(fuzzing_engine, project),
+      'env':
+          env,
+      'volumes': [{
+          'name': 'fuzzbench_path',
+          'path': FUZZBENCH_PATH,
+      }],
+      'args': [
+          'bash', '-c', 'cp /usr/local/bin/fuzzbench_run_fuzzer '
+          '/fuzzbench/fuzzbench_run_fuzzer.sh'
+      ],
+  }
+  steps.append(copy_run_fuzzer_to_volume_step)
+
+  return steps
+
+
+def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
+  steps = []
+
+  runtime_dockerfile_path = os.path.join(FUZZBENCH_PATH, 'fuzzers',
+                                         fuzzing_engine, 'runner.Dockerfile')
+  build_runtime_args = [
+      'build', '--tag',
+      f'gcr.io/oss-fuzz/unsafe/{fuzzing_engine}/{project.name}', '--file',
+      runtime_dockerfile_path,
+      os.path.join(FUZZBENCH_PATH, 'fuzzers')
+  ]
+  build_runtime_step = {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': build_runtime_args,
+      'volumes': [{
+          'name': 'fuzzbench_path',
+          'path': FUZZBENCH_PATH,
+      }],
+  },
+  steps.append(build_runtime_step)
+
+  copy_run_fuzzer_from_volume_step = {
+      'name':
+          f'gcr.io/oss-fuzz/unsafe/{fuzzing_engine}/{project.name}',
+      'env':
+          env,
+      'volumes': [{
+          'name': 'fuzzbench_path',
+          'path': FUZZBENCH_PATH,
+      }],
+      'args': [
+          'bash', '-c', 'cp /fuzzbench/fuzzbench_run_fuzzer.sh '
+          f'{build.out}/fuzzbench_run_fuzzer.sh'
+      ],
+  }
+  steps.append(copy_run_fuzzer_from_volume_step)
+
+  run_fuzzer_step = {
+      'name':
+          f'gcr.io/oss-fuzz/unsafe/{fuzzing_engine}/{project.name}',
+      'env':
+          env,
+      'volumes': [{
+          'name': 'fuzzbench_path',
+          'path': FUZZBENCH_PATH,
+      }],
+      'args': [
+          'bash',
+          '-c',
+          (f'ls /fuzzbench && cd {build.out} && ls {build.out} && '
+           f'{build.out}/fuzzbench_run_fuzzer.sh'),
+      ],
+  }
+  steps.append(run_fuzzer_step)
+
   return steps
 
 
@@ -143,25 +218,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   build = build_project.Build(config.fuzzing_engine, 'address', 'x86_64')
   env = get_env(project, build)
 
-  steps += get_build_fuzzers_step(config.fuzzing_engine, project, env, build)
+  steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env, build)
 
-  run_fuzzer_step = {
-      'name':
-          get_engine_project_image(config.fuzzing_engine, project),
-      'env':
-          env,
-      'volumes': [{
-          'name': 'fuzzbench_path',
-          'path': FUZZBENCH_PATH,
-      }],
-      'args': [
-          'bash',
-          '-c',
-          (f'ls /fuzzbench && cd {build.out} && ls {build.out} && '
-           'fuzzbench_run_fuzzer'),
-      ],
-  }
-  steps.append(run_fuzzer_step)
+  steps += get_fuzzers_runtime_steps(config.fuzzing_engine, project, env, build)
+
   return steps
 
 
