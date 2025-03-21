@@ -26,6 +26,8 @@ else
   rustup target add $RUST_TARGET
 fi
 
+export RUSTC="rustc --target=$RUST_TARGET"
+
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
 FILES_TO_AVOID
@@ -95,7 +97,7 @@ meson setup build -Dbackend_max_links=4 -Ddefault_library=static -Dprefer_static
                   -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled \
                   -Dlibass:fontconfig=enabled -Dlibass:asm=disabled \
                   -Dc_link_args="$CXXFLAGS -lc++" -Dcpp_link_args="$CXXFLAGS" \
-                  --libdir $LIBDIR -Drust_args="--target=$RUST_TARGET"
+                  --libdir $LIBDIR
 meson compile -C build fuzzers
 
 find ./build/fuzzers -maxdepth 1 -type f -name 'fuzzer_*' -exec mv {} "$OUT" \; -exec echo "{} -> $OUT" \;
