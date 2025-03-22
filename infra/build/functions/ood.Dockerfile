@@ -18,7 +18,7 @@
 ARG fuzzbench_run_fuzzer_path
 
 ARG build_image
-FROM build_image AS project_fuzzer_build
+FROM $build_image AS project_fuzzer_build
 
 ARG runtime_image
 FROM $runtime_image
