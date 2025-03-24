@@ -19,26 +19,28 @@ ARG build_image
 ARG project_workdir
 ARG runtime_image
 ARG OUT
-ARG ENV
+ARG ENV_STR
 ARG FUZZING_LANGUAGE
+ARG FUZZBENCH_PATH
 
 FROM $build_image AS project_fuzzer_build
 ARG OUT
 ARG project_workdir
-ARG ENV
+ARG ENV_STR
 ARG FUZZING_LANGUAGE
+ARG FUZZBENCH_PATH
 
 RUN echo "1"
 RUN echo "$OUT"
 RUN echo "$project_workdir"
-RUN echo "$ENV"
+RUN echo "$ENV_STR"
 RUN echo "$FUZZING_LANGUAGE"
 RUN ls -al /
 RUN ls -al /src
 RUN ls -al /work
 
 RUN python3 -c "import json, os; \
-    env_string_list = json.loads(os.environ['ENV']); \
+    env_string_list = json.loads(os.environ['ENV_STR']); \
     env_dict = dict(item.split('=') for item in env_string_list); \
     [os.environ.setdefault(k, v) for k, v in env_dict.items()]"
 
