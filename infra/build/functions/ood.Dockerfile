@@ -23,6 +23,8 @@ FROM $build_image AS project_fuzzer_build
 RUN echo "2"
 RUN echo $OUT
 RUN ls -al /
+RUN ls -al /src
+RUN ls -al /work
 
 FROM $runtime_image
 ARG OUT
