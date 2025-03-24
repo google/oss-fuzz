@@ -19,12 +19,12 @@ ARG build_image
 ARG project_workdir
 ARG runtime_image
 ARG OUT
-ARG ENV_STRING
+ARG ENV
 
 FROM $build_image AS project_fuzzer_build
 ARG OUT
 ARG project_workdir
-ARG ENV_STRING
+ARG ENV
 RUN echo "2"
 RUN echo $OUT
 RUN echo $project_workdir
@@ -32,7 +32,10 @@ RUN ls -al /
 RUN ls -al /src
 RUN ls -al /work
 
-RUN python3 -c "import base64, ast, os; env_dict = ast.literal_eval(base64.b64decode(os.environ['ENV_STRING']).decode('utf-8')); [os.environ.setdefault(k, v) for k, v in env_dict.items()]"
+RUN python3 -c "import json, os; \
+    env_string_list = json.loads(os.environ['ENV']); \
+    env_dict = dict(item.split('=') for item in env_string_list); \
+    [os.environ.setdefault(k, v) for k, v in env_dict.items()]"
 
 RUN rm -rf /out && cd /src && cd $project_workdir && \
     mkdir -p $OUT && compile && \
