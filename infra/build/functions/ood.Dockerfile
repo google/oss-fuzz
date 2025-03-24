@@ -20,12 +20,30 @@ ARG runtime_image
 ARG OUT
 ARG fuzzbench_run_fuzzer_path
 
+RUN echo "1"
+RUN echo $OUT
+
 FROM $build_image AS project_fuzzer_build
+RUN echo "2"
+RUN echo $OUT
+RUN ls -al /
 
 FROM $runtime_image
+RUN echo "3"
+RUN echo $OUT
+RUN ls -al /
 
 COPY --from=project_fuzzer_build $OUT $OUT/
 COPY --from=project_fuzzer_build $fuzzbench_run_fuzzer_path /usr/local/bin/fuzzbench_run_fuzzer.sh
 
+RUN echo "4"
+RUN echo $OUT
+RUN ls -al $OUT
+
 WORKDIR $OUT
+RUN echo "4"
+RUN echo $OUT
+RUN ls -al $OUT
+RUN ls -al ./
+RUN ls -al /
 CMD ["bash", "-c", "ls /fuzzbench && cd $OUT && ls $OUT && fuzzbench_run_fuzzer"]
