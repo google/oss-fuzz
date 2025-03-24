@@ -18,7 +18,6 @@
 ARG build_image
 ARG runtime_image
 ARG OUT
-ARG fuzzbench_run_fuzzer_path
 
 FROM $build_image AS project_fuzzer_build
 RUN echo "2"
@@ -26,6 +25,9 @@ RUN echo $OUT
 RUN ls -al /
 
 FROM $runtime_image
+ARG OUT
+ARG fuzzbench_run_fuzzer_path
+
 RUN echo "3"
 RUN echo $OUT
 RUN ls -al /
