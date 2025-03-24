@@ -16,7 +16,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y nasm pkgconf gperf zip rsync && \
-    apt-get clean -y && rm -rf /var/lib/apt/lists/*
+    apt-get clean -y
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV VIRTUAL_ENV=$SRC/venv
