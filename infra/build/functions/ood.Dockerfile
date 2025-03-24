@@ -26,8 +26,9 @@ ARG OUT
 ARG project_workdir
 ARG ENV
 RUN echo "2"
-RUN echo $OUT
-RUN echo $project_workdir
+RUN echo "$OUT"
+RUN echo "$project_workdir"
+RUN echo "$ENV"
 RUN ls -al /
 RUN ls -al /src
 RUN ls -al /work
