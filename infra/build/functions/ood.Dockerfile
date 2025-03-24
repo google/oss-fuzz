@@ -20,15 +20,19 @@ ARG project_workdir
 ARG runtime_image
 ARG OUT
 ARG ENV
+ARG FUZZING_LANGUAGE
 
 FROM $build_image AS project_fuzzer_build
 ARG OUT
 ARG project_workdir
 ARG ENV
-RUN echo "2"
+ARG FUZZING_LANGUAGE
+
+RUN echo "1"
 RUN echo "$OUT"
 RUN echo "$project_workdir"
 RUN echo "$ENV"
+RUN echo "$FUZZING_LANGUAGE"
 RUN ls -al /
 RUN ls -al /src
 RUN ls -al /work
@@ -38,11 +42,16 @@ RUN python3 -c "import json, os; \
     env_dict = dict(item.split('=') for item in env_string_list); \
     [os.environ.setdefault(k, v) for k, v in env_dict.items()]"
 
+RUN echo "2"
+RUN echo "$OUT"
+RUN echo "$project_workdir"
+
 RUN rm -rf /out && cd /src && cd $project_workdir && \
     mkdir -p $OUT && compile && \
     echo "\n\n" && ls / && echo "\n\n" && ls /workspace
 
 FROM $runtime_image
+
 ARG OUT
 ARG fuzzbench_run_fuzzer_path
 
@@ -60,6 +69,7 @@ RUN echo $OUT
 RUN ls -al $OUT
 
 WORKDIR $OUT
+
 RUN echo "4"
 RUN echo $OUT
 RUN ls -al $OUT
