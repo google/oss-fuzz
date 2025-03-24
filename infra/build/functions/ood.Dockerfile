@@ -15,16 +15,17 @@
 # limitations under the License.
 #
 ################################################################################
-ARG fuzzbench_run_fuzzer_path
 ARG build_image
 ARG runtime_image
+ARG OUT
+ARG fuzzbench_run_fuzzer_path
 
 FROM $build_image AS project_fuzzer_build
 
 FROM $runtime_image
 
 COPY --from=project_fuzzer_build $OUT $OUT/
-COPY --from=project_fuzzer_build $fuzzbench_run_fuzzer_path /usr/local/bin//fuzzbench_run_fuzzer.sh
+COPY --from=project_fuzzer_build $fuzzbench_run_fuzzer_path /usr/local/bin/fuzzbench_run_fuzzer.sh
 
 WORKDIR $OUT
 CMD ["bash", "-c", "ls /fuzzbench && cd $OUT && ls $OUT && fuzzbench_run_fuzzer"]
