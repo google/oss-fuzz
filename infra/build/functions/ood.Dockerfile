@@ -48,10 +48,6 @@ RUN echo "2"
 RUN echo "$OUT"
 RUN echo "$project_workdir"
 
-RUN rm -rf /out && cd /src && cd $project_workdir && \
-    mkdir -p $OUT && compile && \
-    echo "\n\n" && ls / && echo "\n\n" && ls /workspace
-
 FROM $runtime_image
 
 ARG OUT
@@ -63,7 +59,7 @@ RUN ls -al /
 RUN ls -al /home
 RUN ls -al /fuzzbench
 
-COPY --from=project_fuzzer_build $OUT $OUT/
+COPY --from=project_fuzzer_build /src/$project_workdir/$OUT /src/$project_workdir/$OUT/
 COPY --from=project_fuzzer_build $fuzzbench_run_fuzzer_path /usr/local/bin/fuzzbench_run_fuzzer.sh
 
 RUN echo "4"
