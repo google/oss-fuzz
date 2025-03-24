@@ -14,23 +14,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-RUN <<EOT
-    set -ex
-
-    apt-get update
-    apt-get install --no-install-recommends -y nasm pkgconf gperf zip rsync
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y nasm pkgconf gperf zip rsync && \
     apt-get clean -y && rm -rf /var/lib/apt/lists/*
-EOT
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV VIRTUAL_ENV=$SRC/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-RUN <<EOT
-    set -ex
 
-    python -m venv $VIRTUAL_ENV
+RUN python -m venv $VIRTUAL_ENV && \
     python -m pip --no-cache-dir install meson ninja
-EOT
 
 RUN git clone --depth 1 https://github.com/mpv-player/mpv mpv
 RUN git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
