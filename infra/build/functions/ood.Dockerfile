@@ -16,15 +16,22 @@
 #
 ################################################################################
 ARG build_image
+ARG project_workdir
 ARG runtime_image
 ARG OUT
 
 FROM $build_image AS project_fuzzer_build
+ARG OUT
 RUN echo "2"
 RUN echo $OUT
+RUN echo $project_workdir
 RUN ls -al /
 RUN ls -al /src
 RUN ls -al /work
+
+RUN rm -rf /out && cd /src && cd $project_workdir && \
+    mkdir -p $OUT && compile && \
+    echo "\n\n" && ls / && echo "\n\n" && ls /workspace
 
 FROM $runtime_image
 ARG OUT
@@ -36,7 +43,7 @@ RUN ls -al /
 RUN ls -al /home
 RUN ls -al /fuzzbench
 
-COPY $OUT $OUT/
+COPY --from=project_fuzzer_build $OUT $OUT/
 COPY --from=project_fuzzer_build $fuzzbench_run_fuzzer_path /usr/local/bin/fuzzbench_run_fuzzer.sh
 
 RUN echo "4"
