@@ -32,7 +32,7 @@ RUN echo "3"
 RUN echo $OUT
 RUN ls -al /
 
-COPY --from=project_fuzzer_build $OUT $OUT/
+COPY $OUT $OUT/
 COPY --from=project_fuzzer_build $fuzzbench_run_fuzzer_path /usr/local/bin/fuzzbench_run_fuzzer.sh
 
 RUN echo "4"
