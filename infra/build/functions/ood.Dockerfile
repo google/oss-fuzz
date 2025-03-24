@@ -20,9 +20,6 @@ ARG runtime_image
 ARG OUT
 ARG fuzzbench_run_fuzzer_path
 
-RUN echo "1"
-RUN echo $OUT
-
 FROM $build_image AS project_fuzzer_build
 RUN echo "2"
 RUN echo $OUT
