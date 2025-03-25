@@ -37,6 +37,7 @@ RUN echo "$project_workdir"
 RUN echo "$ENV_STR"
 RUN echo "$FUZZING_LANGUAGE"
 RUN ls -al /
+RUN ls -al ./
 RUN ls -al /src
 RUN ls -al /src/skcms
 RUN ls -al /work
