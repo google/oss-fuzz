@@ -81,7 +81,7 @@ public class LoadFlowFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     // 14 Doubles + 11 Integers + 15 Booleans + 7 pick values + bytes for network
     Integer requiredBytes = (14 * 8) + (11 * 4) + (15 * 1) + (7 * 4) + 1;
-    if (data.remainingBytes < requiredBytes) {
+    if (data.remainingBytes() < requiredBytes) {
       return;
     }
 
