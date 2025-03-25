@@ -22,9 +22,8 @@ FROM $runtime_image
 ARG OUT
 
 RUN echo "1"
+RUN ls -al "/"
 RUN echo $OUT
 RUN ls -al $OUT
-RUN echo "2"
-RUN ls -al "/"
 
 CMD ["bash", "-c", "$OUT/fuzzbench_run_fuzzer.sh"]
