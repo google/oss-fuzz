@@ -25,6 +25,31 @@ pushd powsybl-diagram
 $MVN clean package -DskipTests=true -Dmaven.javadoc.skip=true
 popd
 
+# Build powsybl-metrix
+pushd powsybl-metrix
+$MVN clean package -DskipTests=true -Dmaven.javadoc.skip=true
+popd
+
+# Build powsybl-open-rao
+pushd powsybl-open-rao
+$MVN clean package -DskipTests=true -Dmaven.javadoc.skip=true
+popd
+
+# Build powsybl-dynawo
+pushd powsybl-dynawo
+$MVN clean package -DskipTests=true -Dmaven.javadoc.skip=true
+popd
+
+# Build powsybl-open-loadflow
+pushd powsybl-open-loadflow
+$MVN clean package -DskipTests=true -Dmaven.javadoc.skip=true
+popd
+
+# Build powsybl-entsoe
+pushd powsybl-entsoe
+$MVN clean package -DskipTests=true -Dmaven.javadoc.skip=true
+popd
+
 # Disable logging
 echo "<configuration><root level=\"OFF\" /></configuration>" > $OUT/logback.xml
 
@@ -35,7 +60,11 @@ for jar in $(find ./powsybl* -type f -name "*.jar")
 do
   if [[ "$jar" != *"target/powsybl/share"* ]]
   then
-    if [[ "$jar" != *"test"* ]]
+    if [[ "$jar" != *"powsybl"* ]]
+    then
+      ALL_DEP_JARS=$ALL_DEP_JARS"$(basename $jar) "
+      cp "$jar" $OUT/dependencies
+    elif [[ "$jar" != *"test"* ]]
     then
       ALL_JARS=$ALL_JARS"$(basename $jar) "
       cp "$jar" $OUT

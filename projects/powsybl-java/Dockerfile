@@ -23,6 +23,11 @@ ENV MVN $SRC/maven/apache-maven-3.9.9/bin/mvn
 
 RUN git clone --depth 1 https://github.com/powsybl/powsybl-core 
 RUN git clone --depth 1 https://github.com/powsybl/powsybl-diagram
+RUN git clone --depth 1 https://github.com/powsybl/powsybl-metrix
+RUN git clone --depth 1 https://github.com/powsybl/powsybl-open-rao
+RUN git clone --depth 1 https://github.com/powsybl/powsybl-dynawo
+RUN git clone --depth 1 https://github.com/powsybl/powsybl-entsoe
+RUN git clone --depth 1 https://github.com/powsybl/powsybl-open-loadflow
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
