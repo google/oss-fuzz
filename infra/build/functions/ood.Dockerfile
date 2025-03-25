@@ -37,6 +37,7 @@ RUN echo "$ENV_STR"
 RUN echo "$FUZZING_LANGUAGE"
 RUN ls -al /
 RUN ls -al /src
+RUN ls -al /src/skcms
 RUN ls -al /work
 
 RUN python3 -c "import json, os; \
@@ -49,8 +50,6 @@ RUN echo "$OUT"
 RUN echo "$project_workdir"
 
 FROM $runtime_image
-
-ARG project_workdir
 ARG OUT
 ARG fuzzbench_run_fuzzer_path
 
@@ -59,7 +58,7 @@ RUN echo $OUT
 RUN ls -al /
 RUN ls -al /home
 
-COPY --from=project_fuzzer_build /src/$project_workdir/$OUT /src/$project_workdir/$OUT/
+COPY --from=project_fuzzer_build /src/skcms/$OUT /src/skcms/$OUT/
 COPY --from=project_fuzzer_build $fuzzbench_run_fuzzer_path /usr/local/bin/fuzzbench_run_fuzzer.sh
 
 RUN echo "4"
