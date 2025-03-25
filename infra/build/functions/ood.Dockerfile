@@ -57,7 +57,6 @@ RUN echo "3"
 RUN echo $OUT
 RUN ls -al /
 RUN ls -al /home
-RUN ls -al /fuzzbench
 
 COPY --from=project_fuzzer_build /src/$project_workdir/$OUT /src/$project_workdir/$OUT/
 COPY --from=project_fuzzer_build $fuzzbench_run_fuzzer_path /usr/local/bin/fuzzbench_run_fuzzer.sh
