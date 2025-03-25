@@ -20,7 +20,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # * https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#dependency-build-instructions
 # * https://github.com/bitcoin/bitcoin/blob/master/depends/README.md#for-linux-including-i386-arm-cross-compilation
 RUN apt-get update && apt-get install -y \
-  automake autotools-dev bsdmainutils build-essential cmake curl g++-multilib libtool make \
+  automake autotools-dev bsdmainutils build-essential curl g++-multilib libtool make \
   patch pkg-config python3 wget zip
 
 RUN git clone --depth=1 https://github.com/bitcoin/bitcoin.git bitcoin-core
