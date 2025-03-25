@@ -15,58 +15,16 @@
 # limitations under the License.
 #
 ################################################################################
-ARG build_image
-ARG project_workdir
 ARG runtime_image
 ARG OUT
-ARG ENV_STR
-ARG FUZZING_LANGUAGE
-ARG FUZZBENCH_PATH
-
-FROM $build_image AS project_fuzzer_build
-ARG OUT
-ARG project_workdir
-ARG ENV_STR
-ARG FUZZING_LANGUAGE
-ARG FUZZBENCH_PATH
-
-RUN echo "1"
-RUN pwd
-RUN echo "$OUT"
-RUN echo "$project_workdir"
-RUN echo "$ENV_STR"
-RUN echo "$FUZZING_LANGUAGE"
-RUN ls -al /
-RUN ls -al ./
-RUN ls -al /src
-RUN ls -al /src/skcms
-RUN ls -al /work
-
-RUN echo "2"
-RUN echo "$OUT"
-RUN echo "$project_workdir"
 
 FROM $runtime_image
 ARG OUT
-ARG fuzzbench_run_fuzzer_path
 
-RUN echo "3"
-RUN echo $OUT
-RUN ls -al /
-RUN ls -al /home
-
-COPY --from=project_fuzzer_build /src/skcms/$OUT /src/skcms/$OUT/
-COPY --from=project_fuzzer_build $fuzzbench_run_fuzzer_path /usr/local/bin/fuzzbench_run_fuzzer.sh
-
-RUN echo "4"
+RUN echo "1"
 RUN echo $OUT
 RUN ls -al $OUT
+RUN echo "2"
+RUN ls -al "/"
 
-WORKDIR $OUT
-
-RUN echo "4"
-RUN echo $OUT
-RUN ls -al $OUT
-RUN ls -al ./
-RUN ls -al /
-CMD ["bash", "-c", "ls /fuzzbench && cd $OUT && ls $OUT && fuzzbench_run_fuzzer"]
+CMD ["bash", "-c", "$OUT/fuzzbench_run_fuzzer.sh"]
