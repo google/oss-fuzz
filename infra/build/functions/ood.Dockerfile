@@ -50,6 +50,7 @@ RUN echo "$project_workdir"
 
 FROM $runtime_image
 
+ARG project_workdir
 ARG OUT
 ARG fuzzbench_run_fuzzer_path
 
