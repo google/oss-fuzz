@@ -33,4 +33,6 @@ ENV FUZZING_ENGINE=$FUZZING_ENGINE
 RUN ls -al .
 RUN ls -al /ood
 
+WORKDIR /ood
+
 CMD ["bash", "-c", "/ood/fuzzbench_run_fuzzer.sh"]
