@@ -39,40 +39,95 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeParseException;
 
 public class ParseFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
       byte[] bytes = data.consumeRemainingAsBytes();
-      String str = new String(bytes, StandardCharsets.UTF_8);
-      ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-      InputStreamReader reader = new InputStreamReader(bais);
-      JsonParser parser = new JsonFactory().createParser(bytes);
+      JsonParser parser;
+      String str;
+      ByteArrayInputStream bais;
+      InputStreamReader reader;
+      switch (data.consumeInt(1, 16)) {
+        case 1:
+          bais = new ByteArrayInputStream(bytes);
+          reader = new InputStreamReader(bais);
+      	  FullModel.parse(reader);
+          break;
+        case 2:
+          str = new String(bytes, StandardCharsets.UTF_8);
+          Partition.parse(str);
+          break;
+        case 3:
+          bais = new ByteArrayInputStream(bytes);
+          new BoundaryPointXlsParser().parse(bais);
+          break;
+        case 4:
+          str = new String(bytes, StandardCharsets.UTF_8);
+          EntsoeFileName.parse(str);
+          break;
+        case 5:
+          parser = new JsonFactory().createParser(bytes);
+          SensitivityFactor.parseJson(parser);
+          break;
+        case 6:
+          parser = new JsonFactory().createParser(bytes);
+          SensitivityValue.parseJson(parser);
+          break;
+        case 7:
+          parser = new JsonFactory().createParser(bytes);
+          SensitivityVariableSet.parseJson(parser);
+          break;
+        case 8:
+          parser = new JsonFactory().createParser(bytes);
+          WeightedSensitivityVariable.parseJson(parser);
+          break;
+        case 9:
+          parser = new JsonFactory().createParser(bytes);
+          SensitivityContingencyStatus.parseJson(parser);
+          break;
+        case 10:
+          parser = new JsonFactory().createParser(bytes);
+          InfiniteTimeSeriesIndex.parseJson(parser);
+          break;
+        case 11:
+          parser = new JsonFactory().createParser(bytes);
+          IrregularTimeSeriesIndex.parseJson(parser);
+          break;
+        case 12:
+          parser = new JsonFactory().createParser(bytes);
+          RegularTimeSeriesIndex.parseJson(parser);
+          break;
+        case 13:
+          bais = new ByteArrayInputStream(bytes);
+          reader = new InputStreamReader(bais);
+          Project.parseJson(reader);
+          break;
+        case 14:
+          bais = new ByteArrayInputStream(bytes);
+          reader = new InputStreamReader(bais);
+          StudyCase.parseJson(reader);
+          break;
+        case 15:
+          parser = new JsonFactory().createParser(bytes);
+          NodeCalc.parseJson(parser);
+          break;
+        case 16:
+          str = new String(bytes, StandardCharsets.UTF_8);
+          TimeSeries.parseCsv(str);
+          break;
+      }
 
       // Fuzz parse methods
-      FullModel.parse(reader);
-      Partition.parse(str);
-      new BoundaryPointXlsParser().parse(bais);
-      EntsoeFileName.parse(str);
 
       // Fuzz other parse methods
-      SensitivityFactor.parseJson(parser);
-      SensitivityValue.parseJson(parser);
-      SensitivityVariableSet.parseJson(parser);
-      WeightedSensitivityVariable.parseJson(parser);
-      SensitivityContingencyStatus.parseJson(parser);
-      InfiniteTimeSeriesIndex.parseJson(parser);
-      IrregularTimeSeriesIndex.parseJson(parser);
-      RegularTimeSeriesIndex.parseJson(parser);
-      Project.parseJson(reader);
-      StudyCase.parseJson(reader);
-      NodeCalc.parseJson(parser);
-      TimeSeries.parseCsv(str);
     } catch (PowsyblException
         | IOException
         | UncheckedIOException
         | UncheckedXmlStreamException
-        | IllegalArgumentException e) {
+        | IllegalArgumentException
+        | DateTimeParseException e) {
       // Fuzzer: silently ignore
     }
   }
