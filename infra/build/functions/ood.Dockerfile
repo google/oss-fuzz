@@ -15,9 +15,9 @@
 # limitations under the License.
 #
 ################################################################################
+ARG runtime_image
 FROM $runtime_image
 
-ARG runtime_image
 ARG BUILD_OUT
 ARG FUZZING_ENGINE
 ARG FUZZBENCH_PATH
