@@ -46,6 +46,43 @@ def get_env(project, build):
   return env
 
 
+def get_env_dict(env):
+  env_dict = {}
+  for item in env:
+    item_list = item.split("=")
+    env_dict[item_list[0]] = item_list[1]
+  return env_dict
+
+
+def get_fuzzbench_setup_steps():
+  fuzzbench_setup_steps = [
+      {
+          'args': [
+              'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
+              FUZZBENCH_PATH
+          ],
+          'name': 'gcr.io/cloud-builders/git',
+          'volumes': [{
+              'name': 'fuzzbench_path',
+              'path': FUZZBENCH_PATH,
+          }],
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': ['pull', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench']
+      },
+      {  # TODO(metzman): Don't overwrite base-builder
+          'name':
+              'gcr.io/cloud-builders/docker',
+          'args': [
+              'tag', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench',
+              'gcr.io/oss-fuzz-base/base-builder'
+          ]
+      },
+  ]
+  return fuzzbench_setup_steps
+
+
 def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
   """Returns the build_fuzzers step to build |project| with |fuzzing_engine|,
   for fuzzbench/oss-fuzz-on-demand."""
@@ -87,9 +124,8 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
           # `cd /src && cd {workdir}` (where {workdir} is parsed from the
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
-          (f'ls /fuzzbench && cp -r {FUZZBENCH_PATH} /workspace '
-           f'&& rm -r /out && cd /src && cd {project.workdir} && '
-           f'mkdir -p {build.out} && compile && ls /workspace'),
+          (f'rm -r /out && cd /src && cd {project.workdir} && '
+           f'mkdir -p {build.out} && compile'),
       ],
   }
   steps.append(compile_project_step)
@@ -97,18 +133,10 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
   return steps
 
 
-def get_env_dict(env):
-    env_dict = {}
-    for item in env:
-        item_list = item.split("=")
-        env_dict[item_list[0]] = item_list[1]
-    return env_dict
-
-
-def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
+def get_build_and_push_ood_image_steps(fuzzing_engine, project, env, build):
   steps = []
 
-  copy_run_fuzzer_to_volume_step = {
+  copy_runtime_essential_files_step = {
       'name':
           get_engine_project_image(fuzzing_engine, project),
       'env':
@@ -119,23 +147,23 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
       }],
       'args': [
           'bash', '-c', 'cp /usr/local/bin/fuzzbench_run_fuzzer '
-          '/workspace/fuzzbench_run_fuzzer.sh && ls . && echo "\n" && ls /workspace'
+          '/workspace/fuzzbench_run_fuzzer.sh  && '
+          f'cp -r {FUZZBENCH_PATH} /workspace && ls /workspace'
       ],
   }
-  steps.append(copy_run_fuzzer_to_volume_step)
+  steps.append(copy_runtime_essential_files_step)
 
   runtime_image_tag = f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/ood/{fuzzing_engine}/{project.name}'
-
-  runtime_dockerfile_path = os.path.join(FUZZBENCH_PATH, 'fuzzers',
-                                         fuzzing_engine, 'runner.Dockerfile')
+  fuzzer_runtime_dockerfile_path = os.path.join(FUZZBENCH_PATH, 'fuzzers',
+                                                fuzzing_engine,
+                                                'runner.Dockerfile')
   build_runtime_step = {
       'name': 'gcr.io/cloud-builders/docker',
       'args': [
-            'build', '--tag',
-            runtime_image_tag, '--file',
-            runtime_dockerfile_path,
-            os.path.join(FUZZBENCH_PATH, 'fuzzers')
-        ],
+          'build', '--tag', runtime_image_tag, '--file',
+          fuzzer_runtime_dockerfile_path,
+          os.path.join(FUZZBENCH_PATH, 'fuzzers')
+      ],
       'volumes': [{
           'name': 'fuzzbench_path',
           'path': FUZZBENCH_PATH,
@@ -144,27 +172,25 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
   steps.append(build_runtime_step)
 
   env_dict = get_env_dict(env)
-
   oss_fuzz_on_demand_dockerfile_path = "./oss-fuzz/infra/build/functions/ood.Dockerfile"
-  test_step = {
+  build_out_path_without_workspace = build.out[10:]
+  build_ood_image_step = {
       'name': 'gcr.io/cloud-builders/docker',
       'args': [
-            'build', '--tag',
-            runtime_image_tag, '--file',
-            oss_fuzz_on_demand_dockerfile_path,
-            '--build-arg', f'runtime_image={runtime_image_tag}',
-            '--build-arg', f'BUILD_OUT_PATH={build.out[10:]}',
-            '--build-arg', f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}',
-            '--build-arg', f'FUZZBENCH_PATH={FUZZBENCH_PATH}',
-            '--build-arg', f'BENCHMARK={env_dict["BENCHMARK"]}',
-            '/workspace'
-        ],
+          'build', '--tag', runtime_image_tag, '--file',
+          oss_fuzz_on_demand_dockerfile_path, '--build-arg',
+          f'runtime_image={runtime_image_tag}', '--build-arg',
+          f'BUILD_OUT_PATH={build_out_path_without_workspace}', '--build-arg',
+          f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}', '--build-arg',
+          f'FUZZBENCH_PATH={FUZZBENCH_PATH}', '--build-arg',
+          f'BENCHMARK={env_dict["BENCHMARK"]}', '/workspace'
+      ],
       'volumes': [{
           'name': 'fuzzbench_path',
           'path': FUZZBENCH_PATH,
       }],
   }
-  steps.append(test_step)
+  steps.append(build_ood_image_step)
 
   copy_run_fuzzer_from_volume_step = {
       'name':
@@ -182,15 +208,15 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
   }
   steps.append(copy_run_fuzzer_from_volume_step)
 
-#   push_step = {
-#     'name': 'gcr.io/cloud-builders/docker',
-#     'args': ['push', runtime_image_tag]
-#   }
-#   steps.append(push_step)
+  push_ood_image_step = {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': ['push', runtime_image_tag]
+  }
+  steps.append(push_ood_image_step)
 
   run_fuzzer_step = {
       'name': 'gcr.io/cloud-builders/docker',
-      'args': ['run', runtime_image_tag] 
+      'args': ['run', runtime_image_tag]
   }
   steps.append(run_fuzzer_step)
 
@@ -230,31 +256,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                 upload=config.upload,
                                 fuzzing_engine=config.fuzzing_engine)
 
-  steps = [
-      {
-          'args': [
-              'clone', 'https://github.com/google/fuzzbench', '--depth', '1',
-              FUZZBENCH_PATH
-          ],
-          'name': 'gcr.io/cloud-builders/git',
-          'volumes': [{
-              'name': 'fuzzbench_path',
-              'path': FUZZBENCH_PATH,
-          }],
-      },
-      {
-          'name': 'gcr.io/cloud-builders/docker',
-          'args': ['pull', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench']
-      },
-      {  # TODO(metzman): Don't overwrite base-builder
-          'name':
-              'gcr.io/cloud-builders/docker',
-          'args': [
-              'tag', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench',
-              'gcr.io/oss-fuzz-base/base-builder'
-          ]
-      },
-  ]
+  steps = get_fuzzbench_setup_steps()
 
   steps += build_lib.get_project_image_steps(project.name,
                                              project.image,
@@ -266,7 +268,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env, build)
 
-  steps += get_fuzzers_runtime_steps(config.fuzzing_engine, project, env, build)
+  steps += get_build_and_push_ood_image_steps(config.fuzzing_engine, project,
+                                              env, build)
 
   return steps
 
