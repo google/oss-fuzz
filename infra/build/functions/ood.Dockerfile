@@ -26,9 +26,11 @@ RUN mkdir -p /ood
 COPY ./fuzzbench_run_fuzzer.sh /ood
 COPY ./$OUT /ood
 
+ENV OUT=$OUT
+
 RUN ls -al .
 RUN ls -al /ood
 
-WORKDIR /ood
+WORKDIR /oo
 
 CMD ["bash", "-c", "/ood/fuzzbench_run_fuzzer.sh"]
