@@ -35,6 +35,7 @@ import com.powsybl.sensitivity.*;
 import com.powsybl.shortcircuit.*;
 import com.powsybl.sld.*;
 import com.powsybl.ucte.converter.*;
+import com.univocity.parsers.common.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -81,7 +82,7 @@ public class LoadFlowFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     // 14 Doubles + 11 Integers + 15 Booleans + 7 pick values + bytes for network
     Integer requiredBytes = (14 * 8) + (11 * 4) + (15 * 1) + (7 * 4) + 1;
-    if (data.remainingBytes() < requiredBytes) {
+    if ((data.remainingBytes() < requiredBytes) || (tempFile == null)) {
       return;
     }
 
@@ -101,7 +102,7 @@ public class LoadFlowFuzzer {
       loadFlowParameters.setConnectedComponentMode(
           data.pickValue(EnumSet.allOf(ConnectedComponentMode.class)));
       loadFlowParameters.setDc(data.consumeBoolean());
-      loadFlowParameters.setDcPowerFactor(data.consumeDouble());
+      loadFlowParameters.setDcPowerFactor(data.consumeProbabilityDouble());
       loadFlowParameters.setDcUseTransformerRatio(data.consumeBoolean());
       loadFlowParameters.setDistributedSlack(data.consumeBoolean());
       loadFlowParameters.setHvdcAcEmulation(data.consumeBoolean());
@@ -129,26 +130,31 @@ public class LoadFlowFuzzer {
       properties.setProperty("solver", data.pickValue(new String[] {"DEFAULT", "NEWTON", "GAUSS"}));
       properties.setProperty("convergence", String.valueOf(data.consumeDouble()));
 
-      ReadOnlyMemDataSource ds = new ReadOnlyMemDataSource("fuzz");
-      ds.putData("fuzz", data.consumeRemainingAsBytes());
-
+      ReadOnlyMemDataSource ds = new ReadOnlyMemDataSource();
       switch (choice) {
         case 1:
+          ds.putData("fuzz", data.consumeRemainingAsBytes());
           importer = new CgmesImport();
           break;
         case 2:
+          ds.putData(".txt", data.consumeRemainingAsBytes());
           importer = new IeeeCdfImporter();
           break;
         case 3:
+          ds.putData("fuzz.mat", data.consumeRemainingAsBytes());
           importer = new MatpowerImporter();
           break;
         case 4:
+          ds.putData(".dgs", data.consumeRemainingAsBytes());
+          ds.putData(".json", data.consumeRemainingAsBytes());
           importer = new PowerFactoryImporter();
           break;
         case 5:
+          ds.putData("fuzz.raw", data.consumeRemainingAsBytes());
           importer = new PsseImporter();
           break;
         case 6:
+          ds.putData(".uct", data.consumeRemainingAsBytes());
           importer = new UcteImporter();
           break;
         default:
@@ -156,7 +162,17 @@ public class LoadFlowFuzzer {
       }
 
       if (importer != null) {
-        Network network = importer.importData(ds, NetworkFactory.findDefault(), properties);
+        Network network = null;
+        try {
+          network = importer.importData(ds, NetworkFactory.findDefault(), properties);
+        } catch (NullPointerException e) {
+          if (importer instanceof PowerFactoryImporter) {
+            // Wrong format handling
+            return;
+          } else {
+            throw e;
+          }
+        }
         if (network.getBusView().getBuses().spliterator().getExactSizeIfKnown() > 0
             && network.getGeneratorCount() > 0) {
 
@@ -212,7 +228,8 @@ public class LoadFlowFuzzer {
     } catch (PowsyblException
         | UncheckedIOException
         | PowerFactoryException
-        | IllegalArgumentException e) {
+        | IllegalArgumentException
+        | TextParsingException e) {
       // Fuzzer: silently ignore
     }
   }
