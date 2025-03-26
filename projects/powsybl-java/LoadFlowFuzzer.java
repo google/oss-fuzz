@@ -86,6 +86,10 @@ public class LoadFlowFuzzer {
       return;
     }
 
+    // Make the fuzzer consume this first. Do not call
+    // any data.consume*() methods before this
+    byte[] loadBytes = data.consumeBytes(10000);
+
     try {
       Importer importer = null;
       int choice = data.consumeInt(1, 6);
@@ -133,28 +137,28 @@ public class LoadFlowFuzzer {
       ReadOnlyMemDataSource ds = new ReadOnlyMemDataSource();
       switch (choice) {
         case 1:
-          ds.putData("fuzz", data.consumeRemainingAsBytes());
+          ds.putData("fuzz", loadBytes);
           importer = new CgmesImport();
           break;
         case 2:
-          ds.putData(".txt", data.consumeRemainingAsBytes());
+          ds.putData(".txt", loadBytes);
           importer = new IeeeCdfImporter();
           break;
         case 3:
-          ds.putData("fuzz.mat", data.consumeRemainingAsBytes());
+          ds.putData("fuzz.mat", loadBytes);
           importer = new MatpowerImporter();
           break;
         case 4:
-          ds.putData(".dgs", data.consumeRemainingAsBytes());
-          ds.putData(".json", data.consumeRemainingAsBytes());
+          ds.putData(".dgs", loadBytes);
+          ds.putData(".json", loadBytes);
           importer = new PowerFactoryImporter();
           break;
         case 5:
-          ds.putData("fuzz.raw", data.consumeRemainingAsBytes());
+          ds.putData("fuzz.raw", loadBytes);
           importer = new PsseImporter();
           break;
         case 6:
-          ds.putData(".uct", data.consumeRemainingAsBytes());
+          ds.putData(".uct", loadBytes);
           importer = new UcteImporter();
           break;
         default:
