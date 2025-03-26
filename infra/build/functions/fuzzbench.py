@@ -70,7 +70,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
       },
   ]
   steps.append(engine_step)
-  
+
   compile_project_step = {
       'name':
           get_engine_project_image(fuzzing_engine, project),
@@ -93,6 +93,12 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
   }
   steps.append(compile_project_step)
 
+  return steps
+
+
+def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
+  steps = []
+
   copy_run_fuzzer_to_volume_step = {
       'name':
           get_engine_project_image(fuzzing_engine, project),
@@ -109,11 +115,6 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
   }
   steps.append(copy_run_fuzzer_to_volume_step)
 
-  return steps
-
-
-def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
-  steps = []
   runtime_image_tag = f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/ood/{fuzzing_engine}/{project.name}'
 
   runtime_dockerfile_path = os.path.join(FUZZBENCH_PATH, 'fuzzers',
@@ -141,14 +142,14 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
             runtime_image_tag, '--file',
             oss_fuzz_on_demand_dockerfile_path,
             '--build-arg', f'runtime_image={runtime_image_tag}',
-            '--build-arg', f'OUT={build.out}',
+            '--build-arg', f'OUT={build.out[11:]}',
             '/workspace'
         ],
       'volumes': [{
           'name': 'fuzzbench_path',
           'path': FUZZBENCH_PATH,
       }],
-  },
+  }
   steps.append(test_step)
 
   copy_run_fuzzer_from_volume_step = {
@@ -161,7 +162,7 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
           'path': FUZZBENCH_PATH,
       }],
       'args': [
-          'bash', '-c', 'cp /fuzzbench/fuzzbench_run_fuzzer.sh '
+          'bash', '-c', 'cp /workspace/fuzzbench_run_fuzzer.sh '
           f'{build.out}/fuzzbench_run_fuzzer.sh'
       ],
   }
@@ -172,6 +173,12 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
 #     'args': ['push', runtime_image_tag]
 #   }
 #   steps.append(push_step)
+
+  run_fuzzer_step = {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': ['run', runtime_image_tag] 
+  }
+  steps.append(run_fuzzer_step)
 
   run_fuzzer_step = {
       'name':

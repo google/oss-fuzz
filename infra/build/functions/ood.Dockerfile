@@ -31,4 +31,4 @@ RUN ls -al /ood
 
 WORKDIR /ood
 
-CMD ["bash", "-c", "ood/fuzzbench_run_fuzzer.sh"]
+CMD ["bash", "-c", "/ood/fuzzbench_run_fuzzer.sh"]
