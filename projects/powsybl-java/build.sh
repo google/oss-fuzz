@@ -109,3 +109,13 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
+
+
+mkdir $SRC/LoadFlowFuzzer-seeds
+find $SRC -name '*.uct' -exec cp "{}" $SRC/LoadFlowFuzzer-seeds/  \;
+find $SRC -name '*.dgs' -exec cp "{}" $SRC/LoadFlowFuzzer-seeds/  \;
+find $SRC -name '*.json' -exec cp "{}" $SRC/LoadFlowFuzzer-seeds/  \;
+
+pushd $SRC/LoadFlowFuzzer-seeds
+zip $OUT/LoadFlowFuzzer_seed_corpus.zip ./*
+popd
