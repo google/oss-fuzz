@@ -271,7 +271,7 @@ public class MetrixFuzzer {
               analysisResult);
       MetrixRunParameters runParams =
           new MetrixRunParameters(
-              firstVariant, variantCount, versions, chunkSize, true, true, false);
+              computationRange, chunkSize, true, true, false, false, false);
       metrix.run(runParams, listener, "Fuzz");
     } catch (PowsyblException | IllegalArgumentException | IOException e) {
       // Ignore known exceptions

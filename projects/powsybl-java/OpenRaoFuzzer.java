@@ -15,10 +15,13 @@
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.datasource.ReadOnlyMemDataSource;
 import com.powsybl.contingency.ContingencyElementType;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.NetworkFactory;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.matpower.converter.MatpowerImporter;
 import com.powsybl.openrao.commons.Unit;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.CracFactory;
@@ -32,27 +35,22 @@ import com.powsybl.openrao.raoapi.RaoInput;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
 import com.powsybl.sensitivity.SensitivityAnalysisParameters;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumSet;
+import java.util.Properties;
 
 public class OpenRaoFuzzer {
-  private static Path networkFilePath;
-
-  public static void fuzzerInitialize() {
-    try {
-      networkFilePath = Files.createTempFile("fuzz-", "-fuzz");
-      networkFilePath.toFile().deleteOnExit();
-    } catch (Throwable ignored) {
-      networkFilePath = null;
-    }
-  }
-
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+    // String length + 3 Doubles + 2 Integers + 1 Booleans + 8 pick values + bytes for network
+    Integer requiredBytes = 10 + (3 * 8) + (2 * 4) + (1 * 1) + (8 * 4) + 1;
+    if (data.remainingBytes() < requiredBytes) {
+      return;
+    }
+
     try {
       // Randomise variables
-      String newString = data.consumeString(1024);
+      String newString = data.consumeString(10);
       ContingencyElementType newType = data.pickValue(EnumSet.allOf(ContingencyElementType.class));
       InstantKind newInstant = data.pickValue(EnumSet.allOf(InstantKind.class));
       Unit newUnit = data.pickValue(EnumSet.allOf(Unit.class));
@@ -66,13 +64,25 @@ public class OpenRaoFuzzer {
       int maxTap = data.consumeInt();
       boolean isDc = data.consumeBoolean();
 
-      // Randomise file content
-      FileWriter fw = new FileWriter(networkFilePath.toFile());
-      fw.write(data.consumeRemainingAsString());
-      fw.close();
+      // Initialise properties
+      Properties properties = new Properties();
+      properties.setProperty("solver", data.pickValue(new String[] {"DEFAULT", "NEWTON", "GAUSS"}));
+      properties.setProperty("convergence", String.valueOf(data.consumeDouble()));
+
+      // Prepare ReadOnlyMemDataSource
+      ReadOnlyMemDataSource ds = new ReadOnlyMemDataSource();
+      ds.putData("fuzz.mat", data.consumeRemainingAsBytes());
 
       // Initialise objects
-      Network network = Network.read(networkFilePath);
+      Network network = null;
+      try {
+        MatpowerImporter importer = new MatpowerImporter();
+        network = importer.importData(ds, NetworkFactory.findDefault(), properties);
+      } catch (Exception e) {
+        // Skip this iteration if network creation is failed.
+        return;
+      }
+
       Crac crac = CracFactory.findDefault().create("Fuz-Crac");
       IidmPstHelper iidmPstHelper = new IidmPstHelper(newString, network);
 
@@ -127,7 +137,7 @@ public class OpenRaoFuzzer {
 
       RaoInput.RaoInputBuilder raoInputBuilder = RaoInput.build(network, crac);
       Rao.find().run(raoInputBuilder.build(), raoParameters);
-    } catch (PowsyblException | IllegalArgumentException | IOException e) {
+    } catch (PowsyblException | IllegalArgumentException e) {
       // Ignore known exceptions
     }
   }
