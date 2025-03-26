@@ -31,6 +31,6 @@ ENV OUT=$OUT
 RUN ls -al .
 RUN ls -al /ood
 
-WORKDIR /oo
+WORKDIR /ood
 
 CMD ["bash", "-c", "/ood/fuzzbench_run_fuzzer.sh"]
