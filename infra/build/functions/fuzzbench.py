@@ -70,6 +70,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
       },
   ]
   steps.append(engine_step)
+  
   compile_project_step = {
       'name':
           get_engine_project_image(fuzzing_engine, project),
@@ -87,7 +88,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
           (f'ls /fuzzbench && rm -r /out && cd /src && cd {project.workdir} && '
-           f'mkdir -p {build.out} && compile'),
+           f'mkdir -p {build.out} && compile && ls /workspace'),
       ],
   }
   steps.append(compile_project_step)
@@ -103,7 +104,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
       }],
       'args': [
           'bash', '-c', 'cp /usr/local/bin/fuzzbench_run_fuzzer '
-          '/fuzzbench/fuzzbench_run_fuzzer.sh'
+          '/workspace/fuzzbench_run_fuzzer.sh && ls . && echo "\n" && ls /workspace'
       ],
   }
   steps.append(copy_run_fuzzer_to_volume_step)
@@ -113,18 +114,18 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
 
 def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
   steps = []
+  runtime_image_tag = f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/ood/{fuzzing_engine}/{project.name}'
 
   runtime_dockerfile_path = os.path.join(FUZZBENCH_PATH, 'fuzzers',
                                          fuzzing_engine, 'runner.Dockerfile')
-  build_runtime_args = [
-      'build', '--tag',
-      f'gcr.io/oss-fuzz/unsafe/{fuzzing_engine}/{project.name}', '--file',
-      runtime_dockerfile_path,
-      os.path.join(FUZZBENCH_PATH, 'fuzzers')
-  ]
   build_runtime_step = {
       'name': 'gcr.io/cloud-builders/docker',
-      'args': build_runtime_args,
+      'args': [
+            'build', '--tag',
+            runtime_image_tag, '--file',
+            runtime_dockerfile_path,
+            os.path.join(FUZZBENCH_PATH, 'fuzzers')
+        ],
       'volumes': [{
           'name': 'fuzzbench_path',
           'path': FUZZBENCH_PATH,
@@ -132,9 +133,27 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
   },
   steps.append(build_runtime_step)
 
+  oss_fuzz_on_demand_dockerfile_path = "./oss-fuzz/infra/build/functions/ood.Dockerfile"
+  test_step = {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': [
+            'build', '--tag',
+            runtime_image_tag, '--file',
+            oss_fuzz_on_demand_dockerfile_path,
+            '--build-arg', f'runtime_image={runtime_image_tag}',
+            '--build-arg', f'OUT={build.out}',
+            '/workspace'
+        ],
+      'volumes': [{
+          'name': 'fuzzbench_path',
+          'path': FUZZBENCH_PATH,
+      }],
+  },
+  steps.append(test_step)
+
   copy_run_fuzzer_from_volume_step = {
       'name':
-          f'gcr.io/oss-fuzz/unsafe/{fuzzing_engine}/{project.name}',
+          runtime_image_tag,
       'env':
           env,
       'volumes': [{
@@ -148,9 +167,15 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
   }
   steps.append(copy_run_fuzzer_from_volume_step)
 
+#   push_step = {
+#     'name': 'gcr.io/cloud-builders/docker',
+#     'args': ['push', runtime_image_tag]
+#   }
+#   steps.append(push_step)
+
   run_fuzzer_step = {
       'name':
-          f'gcr.io/oss-fuzz/unsafe/{fuzzing_engine}/{project.name}',
+          runtime_image_tag,
       'env':
           env,
       'volumes': [{
