@@ -21,13 +21,13 @@ ARG OUT
 FROM $runtime_image
 ARG OUT
 
-# RUN echo "1"
-# RUN ls -al "/"
-# RUN echo $OUT
-# RUN ls -al $OUT
+RUN ls -al "/"
+RUN echo $OUT
+RUN echo $runtime_image
+RUN ls -al .
 
 
-COPY /workspace/fuzzbench_run_fuzzer.sh /tmp/
+COPY ./fuzzbench_run_fuzzer.sh /tmp/
 
 
 CMD ["bash", "-c", "$OUT/fuzzbench_run_fuzzer.sh"]
