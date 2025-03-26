@@ -18,9 +18,11 @@
 ARG runtime_image
 ARG BUILD_OUT
 ARG FUZZING_ENGINE
+ARG FUZZBENCH_PATH
 
 FROM $runtime_image
-ARG BUILD_OUT
+
+RUN echo "$BUILD_OUT"
 
 RUN mkdir -p /ood
 
@@ -29,6 +31,7 @@ COPY ./$BUILD_OUT /ood
 
 ENV OUT=/ood
 ENV FUZZING_ENGINE=$FUZZING_ENGINE
+ENV FUZZBENCH_PATH=$FUZZBENCH_PATH
 
 RUN ls -al .
 RUN ls -al /ood
