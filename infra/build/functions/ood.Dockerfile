@@ -16,23 +16,21 @@
 #
 ################################################################################
 ARG runtime_image
-ARG OUT
+ARG BUILD_OUT
 ARG FUZZING_ENGINE
 
 FROM $runtime_image
-ARG OUT
+ARG BUILD_OUT
 
 RUN mkdir -p /ood
 
 COPY ./fuzzbench_run_fuzzer.sh /ood
-COPY ./$OUT /ood
+COPY ./$BUILD_OUT /ood
 
-ENV OUT=$OUT
+ENV OUT=/ood
 ENV FUZZING_ENGINE=$FUZZING_ENGINE
 
 RUN ls -al .
 RUN ls -al /ood
-
-WORKDIR /ood
 
 CMD ["bash", "-c", "/ood/fuzzbench_run_fuzzer.sh"]
