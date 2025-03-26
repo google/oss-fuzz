@@ -15,12 +15,12 @@
 # limitations under the License.
 #
 ################################################################################
+FROM $runtime_image
+
 ARG runtime_image
 ARG BUILD_OUT
 ARG FUZZING_ENGINE
 ARG FUZZBENCH_PATH
-
-FROM $runtime_image
 
 RUN echo "$BUILD_OUT"
 
@@ -36,5 +36,6 @@ ENV FUZZBENCH_PATH=$FUZZBENCH_PATH
 
 RUN ls -al .
 RUN ls -al /ood
+RUN ls -al /ood/fuzzbench
 
 CMD ["bash", "-c", "/ood/fuzzbench_run_fuzzer.sh"]
