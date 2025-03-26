@@ -23,8 +23,12 @@ RUN ls -al "/"
 RUN ls -al .
 
 COPY ./fuzzbench_run_fuzzer.sh /ood
-COPY ./oss-fuzz /ood
-COPY ./out /ood
+
+RUN ls -al .
+RUN ls -al /ood
+
+COPY ./oss-fuzz /ood/
+COPY ./out /ood/
 
 RUN ls -al .
 RUN ls -al /ood
