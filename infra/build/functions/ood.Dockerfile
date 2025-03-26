@@ -28,6 +28,7 @@ RUN mkdir -p /ood
 
 COPY ./fuzzbench_run_fuzzer.sh /ood
 COPY ./$BUILD_OUT /ood
+COPY ./$FUZZBENCH_PATH /ood
 
 ENV OUT=/ood
 ENV FUZZING_ENGINE=$FUZZING_ENGINE
