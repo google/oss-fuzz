@@ -22,13 +22,15 @@ FROM $runtime_image
 RUN ls -al "/"
 RUN ls -al .
 
+RUN mkdir /ood
+
 COPY ./fuzzbench_run_fuzzer.sh /ood
 
 RUN ls -al .
 RUN ls -al /ood
 
-COPY ./oss-fuzz /ood/
-COPY ./out /ood/
+COPY ./oss-fuzz /ood
+COPY ./out /ood
 
 RUN ls -al .
 RUN ls -al /ood
