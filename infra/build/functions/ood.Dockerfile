@@ -16,23 +16,19 @@
 #
 ################################################################################
 ARG runtime_image
+ARG OUT
 
 FROM $runtime_image
+ARG OUT
 
-RUN ls -al "/"
-RUN ls -al .
-
-RUN mkdir /ood
+RUN mkdir -p /ood
 
 COPY ./fuzzbench_run_fuzzer.sh /ood
+COPY ./$OUT /ood
 
 RUN ls -al .
 RUN ls -al /ood
 
-COPY ./oss-fuzz /ood
-COPY ./out /ood
-
-RUN ls -al .
-RUN ls -al /ood
+WORKDIR /ood
 
 CMD ["bash", "-c", "ood/fuzzbench_run_fuzzer.sh"]
