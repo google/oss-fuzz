@@ -87,13 +87,22 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
           # `cd /src && cd {workdir}` (where {workdir} is parsed from the
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
-          (f'ls /fuzzbench && rm -r /out && cd /src && cd {project.workdir} && '
+          (f'ls /fuzzbench && cp -r {FUZZBENCH_PATH} /workspace '
+           f'&& rm -r /out && cd /src && cd {project.workdir} && '
            f'mkdir -p {build.out} && compile && ls /workspace'),
       ],
   }
   steps.append(compile_project_step)
 
   return steps
+
+
+def get_env_dict(env):
+    env_dict = {}
+    for item in env:
+        item_list = item.split("=")
+        env_dict[item_list[0]] = item_list[1]
+    return env_dict
 
 
 def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
@@ -134,6 +143,8 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
   },
   steps.append(build_runtime_step)
 
+  env_dict = get_env_dict(env)
+
   oss_fuzz_on_demand_dockerfile_path = "./oss-fuzz/infra/build/functions/ood.Dockerfile"
   test_step = {
       'name': 'gcr.io/cloud-builders/docker',
@@ -142,7 +153,10 @@ def get_fuzzers_runtime_steps(fuzzing_engine, project, env, build):
             runtime_image_tag, '--file',
             oss_fuzz_on_demand_dockerfile_path,
             '--build-arg', f'runtime_image={runtime_image_tag}',
-            '--build-arg', f'OUT={build.out[11:]}',
+            '--build-arg', f'BUILD_OUT_PATH={build.out[10:]}',
+            '--build-arg', f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}',
+            '--build-arg', f'FUZZBENCH_PATH={FUZZBENCH_PATH}',
+            '--build-arg', f'BENCHMARK={env_dict["BENCHMARK"]}',
             '/workspace'
         ],
       'volumes': [{
