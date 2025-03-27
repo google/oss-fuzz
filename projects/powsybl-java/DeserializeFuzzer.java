@@ -86,8 +86,8 @@ public class DeserializeFuzzer {
     try {
       StdDeserializer<? extends Object> deserializer = null;
 
+      byte[] bytes = data.consumeBytes(50000);
       Integer choice = data.consumeInt(1, 56);
-      byte[] bytes = data.consumeRemainingAsBytes();
 
       switch (choice) {
         case 1:
