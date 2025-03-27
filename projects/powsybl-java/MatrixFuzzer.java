@@ -15,12 +15,14 @@
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.powsybl.commons.exceptions.UncheckedClassNotFoundException;
+import com.powsybl.math.matrix.DenseMatrix;
+import com.powsybl.math.matrix.Matrix;
 import com.powsybl.math.matrix.MatrixException;
 import com.powsybl.math.matrix.SparseMatrix;
 import java.io.ByteArrayInputStream;
 import java.io.UncheckedIOException;
 
-public class SparseMatrixFuzzer {
+public class MatrixFuzzer {
 
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
@@ -28,8 +30,18 @@ public class SparseMatrixFuzzer {
       int col = data.consumeInt(1, 10);
 
       // Prepare matrix with constructor
-      SparseMatrix matrix =
-          new SparseMatrix(row, col, new int[col + 1], new int[row + 1], new double[row + 1]);
+      Matrix matrix = null;
+      if (data.consumeBoolean()) {
+        matrix =
+            new SparseMatrix(row, col, new int[col + 1], new int[row + 1], new double[row + 1]);
+      } else {
+        matrix = new DenseMatrix(row, col, new double[row * col]);
+      }
+
+      if (matrix == null) {
+        return;
+      }
+
       for (int j = 0; j < col; j++) {
         for (int i = 0; i < row; i++) {
           double value = data.consumeDouble();
@@ -39,13 +51,14 @@ public class SparseMatrixFuzzer {
       matrix.reset();
 
       // Fuzz operational methods
-      matrix.setRgrowthThreshold(data.consumeDouble());
       matrix.decomposeLU();
       matrix.transpose().decomposeLU();
+      matrix.toDense();
+      matrix.toSparse();
 
       // Fuzz deserailisation
       ByteArrayInputStream input = new ByteArrayInputStream(data.consumeRemainingAsBytes());
-      SparseMatrix other = SparseMatrix.read(input);
+      Matrix other = SparseMatrix.read(input);
       matrix.times(other);
       matrix.add(other, 1, 1);
       matrix.equals(other);
