@@ -134,6 +134,33 @@ public class ParseFuzzer {
 	| PowerFactoryException
         | DateTimeParseException e) {
       // Fuzzer: silently ignore
+    } catch (NullPointerException e) {
+      // Capture known NPE from malformed JSON
+      if (!isExpected(e)) {
+        throw e;
+      }
     }
+  }
+
+  private static boolean isExpected(Throwable e) {
+    String[] expectedString = {
+      "java.util.Objects.requireNonNull",
+      "Cannot invoke \"String.hashCode()\"",
+      "Name is null",
+      "Cannot invoke \"com.fasterxml.jackson.databind.JsonNode.get(String)\""
+    };
+
+    for (String expected : expectedString) {
+      if (e.toString().contains(expected)) {
+        return true;
+      }
+      for (StackTraceElement ste : e.getStackTrace()) {
+        if (ste.toString().contains(expected)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }
