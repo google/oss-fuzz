@@ -111,11 +111,19 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 done
 
 
-mkdir $SRC/LoadFlowFuzzer-seeds
+mkdir -p $SRC/LoadFlowFuzzer-seeds
 find $SRC -name '*.uct' -exec cp "{}" $SRC/LoadFlowFuzzer-seeds/  \;
 find $SRC -name '*.dgs' -exec cp "{}" $SRC/LoadFlowFuzzer-seeds/  \;
 find $SRC -name '*.json' -exec cp "{}" $SRC/LoadFlowFuzzer-seeds/  \;
+find $SRC -name '*.raw' -exec cp "{}" $SRC/LoadFlowFuzzer-seeds/  \;
+
+mkdir -p $SRC/DeserializeFuzzer-seeds
+find $SRC -name '*.json' -exec cp "{}" $SRC/DeserializeFuzzer-seeds/  \;
 
 pushd $SRC/LoadFlowFuzzer-seeds
 zip $OUT/LoadFlowFuzzer_seed_corpus.zip ./*
+popd
+
+pushd $SRC/DeserializeFuzzer-seeds
+zip $OUT/DeserializeFuzzer_seed_corpus.zip ./*
 popd
