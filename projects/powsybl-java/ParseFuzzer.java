@@ -44,12 +44,14 @@ import java.time.format.DateTimeParseException;
 public class ParseFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      byte[] bytes = data.consumeRemainingAsBytes();
       JsonParser parser;
       String str;
       ByteArrayInputStream bais;
       InputStreamReader reader;
-      switch (data.consumeInt(1, 16)) {
+
+      Integer choice = data.consumeInt(1, 16);
+      byte[] bytes = data.consumeRemainingAsBytes();
+      switch (choice) {
         case 1:
           bais = new ByteArrayInputStream(bytes);
           reader = new InputStreamReader(bais);
@@ -127,6 +129,7 @@ public class ParseFuzzer {
         | UncheckedIOException
         | UncheckedXmlStreamException
         | IllegalArgumentException
+        | IllegalStateException
         | DateTimeParseException e) {
       // Fuzzer: silently ignore
     }
