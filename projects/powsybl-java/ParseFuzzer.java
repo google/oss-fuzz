@@ -35,6 +35,7 @@ import com.powsybl.timeseries.IrregularTimeSeriesIndex;
 import com.powsybl.timeseries.RegularTimeSeriesIndex;
 import com.powsybl.timeseries.TimeSeries;
 import com.powsybl.timeseries.ast.NodeCalc;
+import com.univocity.parsers.common.TextParsingException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -131,7 +132,8 @@ public class ParseFuzzer {
         | UncheckedXmlStreamException
         | IllegalArgumentException
         | IllegalStateException
-	| PowerFactoryException
+        | PowerFactoryException
+        | TextParsingException
         | DateTimeParseException e) {
       // Fuzzer: silently ignore
     } catch (NullPointerException e) {
