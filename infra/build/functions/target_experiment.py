@@ -32,7 +32,6 @@ def run_experiment(project_name,
                    target_name,
                    args,
                    output_path,
-                   errlog_path,
                    build_output_path,
                    upload_corpus_path,
                    upload_coverage_path,
@@ -74,16 +73,11 @@ def run_experiment(project_name,
     # OSS-Fuzz-Gen generated benchmark), record the real one here.
     project.real_name = real_project_name
 
-  jcc_env = [
-      f'CC=clang-jcc',
-      f'CXX=clang++-jcc',
-  ]
   steps = build_project.get_build_steps_for_project(
-      project, config, additional_env=jcc_env, use_caching=use_cached_image)
+      project, config, use_caching=use_cached_image)
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
-  local_jcc_err_path = '/workspace/err.log'  # From jcc.go:360.
   local_corpus_path_base = '/workspace/corpus'
   local_corpus_path = os.path.join(local_corpus_path_base, target_name)
   default_target_path = os.path.join(build.out, target_name)
@@ -92,33 +86,6 @@ def run_experiment(project_name,
   local_artifact_path = os.path.join(build.out, 'artifacts/')
   local_stacktrace_path = os.path.join(build.out, 'stacktrace/')
   fuzzer_args = ' '.join(args + [f'-artifact_prefix={local_artifact_path}'])
-
-  # Upload JCC's err.log.
-  if errlog_path:
-    compile_step_index = -1
-    for i, step in enumerate(steps):
-      step_args = step.get('args', [])
-      if '&& compile' in ' '.join(step_args):
-        compile_step_index = i
-        break
-    if compile_step_index == -1:
-      print('Cannot find compile step.')
-    else:
-      # Insert the upload step right after compile step.
-      upload_jcc_err_step = {
-          'name':
-              'gcr.io/cloud-builders/gsutil',
-          'entrypoint':
-              '/bin/bash',
-          'args': [
-              '-c',
-              (f'test -f {local_jcc_err_path} || '
-               f'echo "Failed to generate JCC error log." | '
-               f'tee -a {local_jcc_err_path} && '
-               f'gsutil cp {local_jcc_err_path} {errlog_path}'),
-          ]
-      }
-      steps.insert(compile_step_index + 1, upload_jcc_err_step)
 
   env = build_project.get_env(project_yaml['language'], build)
   env.append('RUN_FUZZER_MODE=batch')
@@ -218,7 +185,6 @@ def run_experiment(project_name,
   # Build for coverage.
   build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
   env = build_project.get_env(project_yaml['language'], build)
-  env.extend(jcc_env)
 
   if use_cached_image:
     project.cached_sanitizer = 'coverage'
@@ -327,10 +293,6 @@ def main():
   parser.add_argument('--upload_build_log',
                       required=True,
                       help='GCS build log location.')
-  parser.add_argument('--upload_err_log',
-                      required=False,
-                      default='',
-                      help='GCS JCC error log location.')
   parser.add_argument('--upload_output_log',
                       required=True,
                       help='GCS log location.')
@@ -363,7 +325,7 @@ def main():
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
-                 args.upload_err_log, args.upload_build_log, args.upload_corpus,
+                 args.upload_build_log, args.upload_corpus,
                  args.upload_coverage, args.experiment_name,
                  args.upload_reproducer, args.tags, args.use_cached_image,
                  args.real_project)
