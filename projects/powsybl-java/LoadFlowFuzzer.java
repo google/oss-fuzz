@@ -150,7 +150,8 @@ public class LoadFlowFuzzer {
           break;
         case 4:
           ds.putData(".dgs", loadBytes);
-          ds.putData(".json", loadBytes);
+          byte[] loadBytes2 = data.consumeBytes(10000);
+          ds.putData(".json", loadBytes2);
           importer = new PowerFactoryImporter();
           break;
         case 5:
