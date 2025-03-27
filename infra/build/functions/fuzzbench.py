@@ -192,51 +192,11 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env, build):
   }
   steps.append(build_ood_image_step)
 
-  copy_run_fuzzer_from_volume_step = {
-      'name':
-          runtime_image_tag,
-      'env':
-          env,
-      'volumes': [{
-          'name': 'fuzzbench_path',
-          'path': FUZZBENCH_PATH,
-      }],
-      'args': [
-          'bash', '-c', 'cp /workspace/fuzzbench_run_fuzzer.sh '
-          f'{build.out}/fuzzbench_run_fuzzer.sh'
-      ],
-  }
-  steps.append(copy_run_fuzzer_from_volume_step)
-
   push_ood_image_step = {
       'name': 'gcr.io/cloud-builders/docker',
       'args': ['push', runtime_image_tag]
   }
   steps.append(push_ood_image_step)
-
-  run_fuzzer_step = {
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': ['run', runtime_image_tag]
-  }
-  steps.append(run_fuzzer_step)
-
-  run_fuzzer_step = {
-      'name':
-          runtime_image_tag,
-      'env':
-          env,
-      'volumes': [{
-          'name': 'fuzzbench_path',
-          'path': FUZZBENCH_PATH,
-      }],
-      'args': [
-          'bash',
-          '-c',
-          (f'ls /fuzzbench && cd {build.out} && ls {build.out} && '
-           f'{build.out}/fuzzbench_run_fuzzer.sh'),
-      ],
-  }
-  steps.append(run_fuzzer_step)
 
   return steps
 
