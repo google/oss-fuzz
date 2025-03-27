@@ -22,6 +22,7 @@ import com.powsybl.commons.exceptions.UncheckedXmlStreamException;
 import com.powsybl.computation.Partition;
 import com.powsybl.entsoe.util.BoundaryPointXlsParser;
 import com.powsybl.entsoe.util.EntsoeFileName;
+import com.powsybl.powerfactory.model.PowerFactoryException;
 import com.powsybl.powerfactory.model.Project;
 import com.powsybl.powerfactory.model.StudyCase;
 import com.powsybl.sensitivity.SensitivityAnalysisResult.SensitivityContingencyStatus;
@@ -49,8 +50,8 @@ public class ParseFuzzer {
       ByteArrayInputStream bais;
       InputStreamReader reader;
 
+      byte[] bytes = data.consumeBytes(50000);
       Integer choice = data.consumeInt(1, 16);
-      byte[] bytes = data.consumeRemainingAsBytes();
       switch (choice) {
         case 1:
           bais = new ByteArrayInputStream(bytes);
@@ -130,6 +131,7 @@ public class ParseFuzzer {
         | UncheckedXmlStreamException
         | IllegalArgumentException
         | IllegalStateException
+	| PowerFactoryException
         | DateTimeParseException e) {
       // Fuzzer: silently ignore
     }

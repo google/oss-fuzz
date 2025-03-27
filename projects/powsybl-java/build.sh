@@ -120,6 +120,9 @@ find $SRC -name '*.raw' -exec cp "{}" $SRC/LoadFlowFuzzer-seeds/  \;
 mkdir -p $SRC/DeserializeFuzzer-seeds
 find $SRC -name '*.json' -exec cp "{}" $SRC/DeserializeFuzzer-seeds/  \;
 
+mkdir -p $SRC/ParseFuzzer-seeds
+find $SRC -name '*.json' -exec cp "{}" $SRC/ParseFuzzer-seeds/  \;
+
 pushd $SRC/LoadFlowFuzzer-seeds
 zip $OUT/LoadFlowFuzzer_seed_corpus.zip ./*
 popd
@@ -127,3 +130,12 @@ popd
 pushd $SRC/DeserializeFuzzer-seeds
 zip $OUT/DeserializeFuzzer_seed_corpus.zip ./*
 popd
+
+pushd $SRC/ParseFuzzer-seeds
+zip $OUT/ParseFuzzer_seed_corpus.zip ./*
+popd
+
+wget -O $SRC/json.dict https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/json.dict
+cp $SRC/json.dict $OUT/LoadFlowFuzzer.dict
+cp $SRC/json.dict $OUT/DeserializeFuzzer.dict
+cp $SRC/json.dict $OUT/ParseFuzzer.dict
