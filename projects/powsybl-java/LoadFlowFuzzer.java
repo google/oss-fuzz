@@ -145,7 +145,7 @@ public class LoadFlowFuzzer {
           importer = new IeeeCdfImporter();
           break;
         case 3:
-          ds.putData("fuzz.mat", loadBytes);
+          ds.putData(".mat", loadBytes);
           importer = new MatpowerImporter();
           break;
         case 4:
@@ -154,7 +154,7 @@ public class LoadFlowFuzzer {
           importer = new PowerFactoryImporter();
           break;
         case 5:
-          ds.putData("fuzz.raw", loadBytes);
+          ds.putData(".raw", loadBytes);
           importer = new PsseImporter();
           break;
         case 6:
