@@ -25,6 +25,8 @@ import google.auth
 import build_lib
 import build_project
 
+# 12 hours, allowing more than enough waiting time before cloud build starts.
+build_lib.BUILD_TIMEOUT = 12 * 60 * 60
 
 def run_experiment(project_name,
                    target_name,
@@ -298,8 +300,6 @@ def run_experiment(project_name,
   })
 
   credentials, _ = google.auth.default()
-  # Empirically, 3 hours is more than enough for 30-minute fuzzing cloud builds.
-  build_lib.BUILD_TIMEOUT = 3 * 60 * 60
   build_id = build_project.run_build(
       project_name,
       steps,
