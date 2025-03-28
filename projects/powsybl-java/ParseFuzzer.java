@@ -57,7 +57,7 @@ public class ParseFuzzer {
         case 1:
           bais = new ByteArrayInputStream(bytes);
           reader = new InputStreamReader(bais);
-      	  FullModel.parse(reader);
+          FullModel.parse(reader);
           break;
         case 2:
           str = new String(bytes, StandardCharsets.UTF_8);

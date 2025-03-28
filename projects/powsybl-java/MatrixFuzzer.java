@@ -26,29 +26,24 @@ public class MatrixFuzzer {
 
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      int row = data.consumeInt(1, 10);
-      int col = data.consumeInt(1, 10);
-
       // Prepare matrix with constructor
       Matrix matrix = null;
       if (data.consumeBoolean()) {
-        matrix =
-            new SparseMatrix(row, col, new int[col + 1], new int[row + 1], new double[row + 1]);
+        matrix = new SparseMatrix(10, 10, new int[11], new int[11], new double[11]);
       } else {
-        matrix = new DenseMatrix(row, col, new double[row * col]);
+        matrix = new DenseMatrix(10, 10, new double[100]);
       }
+      matrix.reset();
 
       if (matrix == null) {
         return;
       }
 
-      for (int j = 0; j < col; j++) {
-        for (int i = 0; i < row; i++) {
-          double value = data.consumeDouble();
+      for (int j = 0; j < 10; j++) {
+        for (int i = 0; i < 10; i++) {
           matrix.set(i, j, data.consumeDouble());
         }
       }
-      matrix.reset();
 
       // Fuzz operational methods
       matrix.decomposeLU();
@@ -57,7 +52,12 @@ public class MatrixFuzzer {
       matrix.toSparse();
 
       // Fuzz deserailisation
-      ByteArrayInputStream input = new ByteArrayInputStream(data.consumeRemainingAsBytes());
+      Integer remaining = data.remainingBytes();
+      byte[] eof = new byte[] {(byte) 0x04};
+      byte[] random = new byte[remaining + eof.length];
+      System.arraycopy(data.consumeRemainingAsBytes(), 0, random, 0, remaining);
+      System.arraycopy(eof, 0, random, remaining, eof.length);
+      ByteArrayInputStream input = new ByteArrayInputStream(random);
       Matrix other = SparseMatrix.read(input);
       matrix.times(other);
       matrix.add(other, 1, 1);
