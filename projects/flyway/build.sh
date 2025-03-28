@@ -14,6 +14,18 @@
 # limitations under the License.
 #
 ##########################################################################
+
+# Install mongo-jdbc-dependency required byu flyway
+cd mongo-jdbc-driver/
+git checkout v1.19
+./gradlew clean shadowJar
+$MVN install:install-file \
+  -Dfile=../mongo-jdbc-driver/build/libs/mongo-jdbc-standalone-1.19.jar \
+  -DgroupId=com.github.kornilova203 -DartifactId=mongo-jdbc-driver \
+  -Dversion=1.19 -Dpackaging=jar -DgeneratePom=true
+
+# Buuild flyway
+cd ../flyway
 $MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
     -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
     -DperformRelease=True dependency:copy-dependencies
@@ -44,7 +56,7 @@ cd $curr_dir
 BUILD_CLASSPATH=$JAZZER_API_PATH:$OUT/jar_temp
 RUNTIME_CLASSPATH=\$this_dir/jar_temp:\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer

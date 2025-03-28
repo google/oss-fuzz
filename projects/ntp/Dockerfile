@@ -24,3 +24,4 @@ RUN bk clone http://bk.ntp.org/ntp-dev
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY patch.diff $SRC/
+RUN cd ntp-dev && git apply ../patch.diff

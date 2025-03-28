@@ -71,12 +71,12 @@ cmake -B build_fuzz \
   -DCMAKE_C_FLAGS_RELWITHDEBINFO="" \
   -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="" \
   -DBUILD_FOR_FUZZING=ON \
-  -DSANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE" \
+  -DFUZZ_LIBS="$LIB_FUZZING_ENGINE" \
   $EXTRA_BUILD_OPTIONS
 
 cmake --build build_fuzz -j$(nproc)
 
-WRITE_ALL_FUZZ_TARGETS_AND_ABORT="/tmp/a" "./build_fuzz/src/test/fuzz/fuzz" || true
+WRITE_ALL_FUZZ_TARGETS_AND_ABORT="/tmp/a" "./build_fuzz/bin/fuzz" || true
 readarray FUZZ_TARGETS < "/tmp/a"
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   # When running in CI, check the first targets only to save time and disk space
@@ -97,7 +97,7 @@ cmake --build build_fuzz -j$(nproc)
 # Replace the magic string with the actual name of each fuzz target
 for fuzz_target in ${FUZZ_TARGETS[@]}; do
   df --human-readable ./src
-  python3 -c "c_str_target=b\"${fuzz_target}\x00\";c_str_magic=b\"$MAGIC_STR\";dat=open('./build_fuzz/src/test/fuzz/fuzz','rb').read();dat=dat.replace(c_str_magic, c_str_target+c_str_magic[len(c_str_target):]);open(\"$OUT/$fuzz_target\",'wb').write(dat)"
+  python3 -c "c_str_target=b\"${fuzz_target}\x00\";c_str_magic=b\"$MAGIC_STR\";dat=open('./build_fuzz/bin/fuzz','rb').read();dat=dat.replace(c_str_magic, c_str_target+c_str_magic[len(c_str_target):]);open(\"$OUT/$fuzz_target\",'wb').write(dat)"
 
   chmod +x "$OUT/$fuzz_target"
   (
