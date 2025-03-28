@@ -135,6 +135,10 @@ pushd $SRC/ParseFuzzer-seeds
 zip $OUT/ParseFuzzer_seed_corpus.zip ./*
 popd
 
+pushd $SRC/MatrixFuzzer_seed_corpus
+zip $OUT/MatrixFuzzer_seed_corpus.zip ./*
+popd
+
 wget -O $SRC/json.dict https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/json.dict
 cp $SRC/json.dict $OUT/LoadFlowFuzzer.dict
 cp $SRC/json.dict $OUT/DeserializeFuzzer.dict

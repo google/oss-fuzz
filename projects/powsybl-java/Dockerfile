@@ -31,4 +31,5 @@ RUN git clone --depth 1 https://github.com/powsybl/powsybl-open-loadflow
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
+COPY MatrixFuzzer_seed_corpus $SRC/MatrixFuzzer_seed_corpus/
 WORKDIR $SRC/

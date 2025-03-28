@@ -34,9 +34,6 @@ import com.powsybl.openrao.raoapi.Rao;
 import com.powsybl.openrao.raoapi.RaoInput;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
 import com.powsybl.sensitivity.SensitivityAnalysisParameters;
-import java.io.FileWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Properties;
 
