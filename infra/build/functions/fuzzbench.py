@@ -47,6 +47,7 @@ def get_env(project, build):
 
 
 def get_env_dict(env):
+  """Converts a list of environment strings to a dictionary."""
   env_dict = {}
   for item in env:
     item_list = item.split("=")
@@ -55,6 +56,8 @@ def get_env_dict(env):
 
 
 def get_fuzzbench_setup_steps():
+  """Returns the build steps required to set up fuzzbench on oss-fuzz-on-demand
+  build."""
   fuzzbench_setup_steps = [
       {
           'args': [
@@ -134,6 +137,8 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
 
 
 def get_build_and_push_ood_image_steps(fuzzing_engine, project, env, build):
+  """Returns the build steps to create and push the oss-fuzz-on-demand
+  self-contained image."""
   steps = []
 
   copy_runtime_essential_files_step = {
