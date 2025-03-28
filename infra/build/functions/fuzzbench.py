@@ -41,11 +41,8 @@ def get_env(project, build):
   env.append('FORCE_LOCAL=1')
   env.append(f'PROJECT={project.name}')
   env.append('OSS_FUZZ_ON_DEMAND=1')
-  env.append('OUT=/workspace/out')
-  env.extend([
-      'FUZZ_TARGET=vulnerable', f'BENCHMARK={project.name}',
-      'EXPERIMENT_TYPE=bug'
-  ])
+  env.extend(
+      ['FUZZ_TARGET=', f'BENCHMARK={project.name}', 'EXPERIMENT_TYPE=bug'])
   return env
 
 
@@ -98,21 +95,19 @@ def get_build_fuzzers_step(fuzzing_engine, project, env, build):
 
 
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
-    project_name, project_yaml, dockerfile_lines, image_project,
-    base_images_project, config):
+    project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps for project."""
-  del base_images_project
-  project = build_project.Project(project_name, project_yaml, dockerfile_lines,
-                                  image_project)
+  project = build_project.Project(project_name, project_yaml, dockerfile_lines)
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
-  config = build_project.Config(config.testing, None, config.repo,
-                                config.branch, config.parallel, config.upload)
-
-  # TODO(metzman): Make this a command line argument
-  fuzzing_engine = 'libfuzzer'
+  config = build_project.Config(testing=config.testing,
+                                repo=config.repo,
+                                branch=config.branch,
+                                parallel=config.parallel,
+                                upload=config.upload,
+                                fuzzing_engine=config.fuzzing_engine)
 
   steps = [
       {
@@ -145,13 +140,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                              project.fuzzing_language,
                                              config=config)
 
-  build = build_project.Build(fuzzing_engine, 'address', 'x86_64')
+  build = build_project.Build(config.fuzzing_engine, 'address', 'x86_64')
   env = get_env(project, build)
 
-  steps += get_build_fuzzers_step(fuzzing_engine, project, env, build)
+  steps += get_build_fuzzers_step(config.fuzzing_engine, project, env, build)
+
   run_fuzzer_step = {
       'name':
-          get_engine_project_image(fuzzing_engine, project),
+          get_engine_project_image(config.fuzzing_engine, project),
       'env':
           env,
       'volumes': [{
@@ -166,20 +162,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       ],
   }
   steps.append(run_fuzzer_step)
-
-  build = build_project.Build('coverage', 'address', 'x86_64')
-  env = get_env(project, build)
-  env.append(f'FUZZER={fuzzing_engine}')
-  steps += get_build_fuzzers_step('coverage', project, env, build)
-  steps += [{
-      'args': ['fuzzbench_measure'],
-      'env': env,
-      'name': get_engine_project_image('coverage', project),
-      'volumes': [{
-          'name': 'fuzzbench_path',
-          'path': FUZZBENCH_PATH,
-      }],
-  }]
   return steps
 
 

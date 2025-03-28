@@ -85,7 +85,7 @@ def exec_command_from_github(pull_request_number, repo, branch):
   logging.info('Command: %s.', command)
 
   if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
-    return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command)
+    return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command) == 0
   return trial_build.trial_build_main(command, local_base_build=False)
 
 
