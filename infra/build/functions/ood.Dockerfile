@@ -23,8 +23,6 @@ ARG FUZZING_ENGINE
 ARG FUZZBENCH_PATH
 ARG BENCHMARK
 
-RUN echo "$BUILD_OUT_PATH"
-
 RUN mkdir -p /ood
 RUN mkdir -p /ood$FUZZBENCH_PATH
 
@@ -36,9 +34,5 @@ ENV OUT=/ood
 ENV FUZZING_ENGINE=$FUZZING_ENGINE
 ENV FUZZBENCH_PATH=/ood$FUZZBENCH_PATH
 ENV BENCHMARK=$BENCHMARK
-
-RUN ls -al .
-RUN ls -al /ood
-RUN ls -al /ood/fuzzbench
 
 CMD ["bash", "-c", "/ood/fuzzbench_run_fuzzer.sh"]
