@@ -12,9 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y nasm pkg-config gperf zip rsync && pip3 install meson ninja
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y nasm pkgconf gperf zip rsync && \
+    apt-get clean -y
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV VIRTUAL_ENV=$SRC/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+RUN python -m venv $VIRTUAL_ENV && \
+    python -m pip --no-cache-dir install meson ninja
+
 RUN git clone --depth 1 https://github.com/mpv-player/mpv mpv
 RUN git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
-WORKDIR mpv
+
+WORKDIR $SRC/mpv
 COPY build.sh $SRC/
