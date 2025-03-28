@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +13,21 @@
 # limitations under the License.
 #
 ################################################################################
+"""OSS-Fuzz on demand."""
 
-FROM gcr.io/cloud-builders/gcloud
+import sys
+import logging
 
-RUN apt-get update && apt-get install python3-pip -y
-COPY . /opt/oss-fuzz
-RUN pip install -r /opt/oss-fuzz/infra/build/functions/requirements.txt
 
-WORKDIR /opt/oss-fuzz/infra/build/functions/
-ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/build/functions/gcb.py"]
+def oss_fuzz_on_demand_main(args=None):
+  """Main function for OSS-Fuzz on demand."""
+
+
+def main():
+  """Build OSS-Fuzz projects with FuzzBench fuzzing engines."""
+  logging.basicConfig(level=logging.INFO)
+  return 0 if oss_fuzz_on_demand_main() else 1
+
+
+if __name__ == '__main__':
+  sys.exit(main())
