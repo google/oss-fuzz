@@ -159,28 +159,26 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env, build):
   steps.append(copy_runtime_essential_files_step)
 
   runtime_image_tag = f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/ood/{fuzzing_engine}/{project.name}'
-  fuzzer_runtime_dockerfile_path = os.path.join(FUZZBENCH_PATH, 'fuzzers',
-                                                fuzzing_engine,
+  fuzzer_runtime_dockerfile_path = os.path.join('/workspace' + FUZZBENCH_PATH,
+                                                'fuzzers', fuzzing_engine,
                                                 'runner.Dockerfile')
   build_runtime_step = {
-      'name': 'gcr.io/cloud-builders/docker',
+      'name':
+          'gcr.io/cloud-builders/docker',
       'args': [
           'build', '--tag', runtime_image_tag, '--file',
           fuzzer_runtime_dockerfile_path,
-          os.path.join(FUZZBENCH_PATH, 'fuzzers')
-      ],
-      'volumes': [{
-          'name': 'fuzzbench_path',
-          'path': FUZZBENCH_PATH,
-      }],
+          os.path.join('/workspace' + FUZZBENCH_PATH, 'fuzzers')
+      ]
   },
   steps.append(build_runtime_step)
 
   env_dict = get_env_dict(env)
-  oss_fuzz_on_demand_dockerfile_path = "./oss-fuzz/infra/build/functions/ood.Dockerfile"
+  oss_fuzz_on_demand_dockerfile_path = "/workspace/oss-fuzz/infra/build/functions/ood.Dockerfile"
   build_out_path_without_workspace = build.out[10:]
   build_ood_image_step = {
-      'name': 'gcr.io/cloud-builders/docker',
+      'name':
+          'gcr.io/cloud-builders/docker',
       'args': [
           'build', '--tag', runtime_image_tag, '--file',
           oss_fuzz_on_demand_dockerfile_path, '--build-arg',
@@ -189,11 +187,7 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env, build):
           f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}', '--build-arg',
           f'FUZZBENCH_PATH={FUZZBENCH_PATH}', '--build-arg',
           f'BENCHMARK={env_dict["BENCHMARK"]}', '/workspace'
-      ],
-      'volumes': [{
-          'name': 'fuzzbench_path',
-          'path': FUZZBENCH_PATH,
-      }],
+      ]
   }
   steps.append(build_ood_image_step)
 
