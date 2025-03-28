@@ -135,7 +135,7 @@ pushd $SRC/ParseFuzzer-seeds
 zip $OUT/ParseFuzzer_seed_corpus.zip ./*
 popd
 
-pushd $SRC/MatrixFuzzer_seed_corpus
+pushd $SRC/powsybl-seed-corpus/MatrixFuzzer_seed_corpus
 zip $OUT/MatrixFuzzer_seed_corpus.zip ./*
 popd
 
