@@ -18,7 +18,8 @@
 import sys
 import logging
 
-import fuzzbench, build_project
+import fuzzbench
+import build_project
 
 
 def oss_fuzz_on_demand_main(args=None):
