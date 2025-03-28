@@ -631,7 +631,7 @@ def get_args(description, args):
                       help='Configuration for experiments.')
   parser.add_argument('--fuzzing-engine',
                       required=False,
-                      default='libafl',
+                      default='libfuzzer',
                       help='Fuzzing engine name.')
   return parser.parse_args(args)
 
