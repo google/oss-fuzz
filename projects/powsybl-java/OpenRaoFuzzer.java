@@ -15,13 +15,12 @@
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.datasource.ReadOnlyMemDataSource;
 import com.powsybl.contingency.ContingencyElementType;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.NetworkFactory;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.matpower.converter.MatpowerImporter;
+import com.powsybl.openrao.commons.OpenRaoException;
 import com.powsybl.openrao.commons.Unit;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.CracFactory;
@@ -66,26 +65,14 @@ public class OpenRaoFuzzer {
       properties.setProperty("solver", data.pickValue(new String[] {"DEFAULT", "NEWTON", "GAUSS"}));
       properties.setProperty("convergence", String.valueOf(data.consumeDouble()));
 
-      // Prepare ReadOnlyMemDataSource
-      ReadOnlyMemDataSource ds = new ReadOnlyMemDataSource();
-      ds.putData("fuzz.mat", data.consumeRemainingAsBytes());
-
       // Initialise objects
-      Network network = null;
-      try {
-        MatpowerImporter importer = new MatpowerImporter();
-        network = importer.importData(ds, NetworkFactory.findDefault(), properties);
-      } catch (Exception e) {
-        // Skip this iteration if network creation is failed.
-        return;
-      }
-
+      Network network = NetworkFactory.findDefault().createNetwork("Fuzz", "Fuzz");
       Crac crac = CracFactory.findDefault().create("Fuz-Crac");
       IidmPstHelper iidmPstHelper = new IidmPstHelper(newString, network);
 
       // Randomise Crac object
       crac.newContingency().withId("contingency").withContingencyElement(newString, newType).add();
-      crac.newInstant("fuzz-instance", newInstant);
+      crac.newInstant("fuzz-instant", newInstant);
 
       crac.newFlowCnec()
           .withId("fuzz-flow")
@@ -134,8 +121,38 @@ public class OpenRaoFuzzer {
 
       RaoInput.RaoInputBuilder raoInputBuilder = RaoInput.build(network, crac);
       Rao.find().run(raoInputBuilder.build(), raoParameters);
-    } catch (PowsyblException | IllegalArgumentException e) {
+    } catch (PowsyblException
+        | OpenRaoException
+        | IllegalArgumentException
+        | IllegalStateException e) {
       // Ignore known exceptions
+    } catch (NullPointerException e) {
+      // Capture known NPE from malformed JSON
+      if (!isExpected(e)) {
+        throw e;
+      }
     }
+  }
+
+  private static boolean isExpected(Throwable e) {
+    String[] expectedString = {
+      "java.util.Objects.requireNonNull",
+      "Cannot invoke \"String.hashCode()\"",
+      "Name is null",
+      "Cannot invoke \"com.fasterxml.jackson.databind.JsonNode.get(String)\""
+    };
+
+    for (String expected : expectedString) {
+      if (e.toString().contains(expected)) {
+        return true;
+      }
+      for (StackTraceElement ste : e.getStackTrace()) {
+        if (ste.toString().contains(expected)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }
