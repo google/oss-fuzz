@@ -371,6 +371,39 @@ function check_mixed_sanitizers {
   return $result
 }
 
+function check_reproduce_empty_file {
+  local FUZZER=$1
+  local FUZZER_NAME="$(basename $FUZZER)"
+  local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
+  local EMPTY_FILE="/tmp/$FUZZER_NAME.empty"
+
+  if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
+    return 0
+  fi
+
+  if [ "${FUZZING_LANGUAGE:-}" = "c++" ]; then
+    # C/C++ fuzz targets don't use a wrapper around libFuzzer that could be
+    # broken in a way that causes reproduction to fail.
+    return 0;
+  fi
+
+  touch "$EMPTY_FILE"
+  # Run the fuzzer directly instead of through run_fuzzer to additionally catch
+  # issues with the fuzzing engine's own command-line parsing - FUZZING_ENGINE
+  # has the value "libfuzzer" also for derivates such as Jazzer and Atheris,
+  # which inspect the arguments passed to libFuzzer.
+  bash -c "$FUZZER $EMPTY_FILE" &> $FUZZER_OUTPUT
+
+  # Don't output anything if fuzz target hasn't crashed.
+  if [ $? -ne 0 ]; then
+    echo "BAD BUILD: $FUZZER failed when run on an empty file."
+    cat $FUZZER_OUTPUT
+    return 1
+  fi
+
+  return 0
+}
+
 # Verify that the given fuzz target doesn't crash on the seed corpus.
 function check_seed_corpus {
   local FUZZER=$1
@@ -474,6 +507,13 @@ function main {
   check_startup_crash $FUZZER
   result=$?
   checks_failed=$(( $checks_failed + $result ))
+
+  if [ -n "${MORE_BAD_BUILD_CHECKS:-}" ]
+  then
+    check_reproduce_empty_file $FUZZER
+    result=$?
+    checks_failed=$(( $checks_failed + $result ))
+  fi
 
   # TODO: re-enable after introducing bug auto-filing for bad builds.
   # check_seed_corpus $FUZZER
