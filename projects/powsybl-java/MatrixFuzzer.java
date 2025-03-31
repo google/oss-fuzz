@@ -68,6 +68,31 @@ public class MatrixFuzzer {
         | UncheckedClassNotFoundException
         | ClassCastException e) {
       // Known exceptions
+    } catch (NullPointerException e) {
+      // Capture known NPE from malformed JSON
+      if (!isExpected(e)) {
+        throw e;
+      }
     }
+  }
+
+  private static boolean isExpected(Throwable e) {
+    String[] expectedString = {
+      "java.util.Objects.requireNonNull",
+      "Cannot invoke \"String.hashCode()\""
+    };
+
+    for (String expected : expectedString) {
+      if (e.toString().contains(expected)) {
+        return true;
+      }
+      for (StackTraceElement ste : e.getStackTrace()) {
+        if (ste.toString().contains(expected)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }
