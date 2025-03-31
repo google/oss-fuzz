@@ -35,6 +35,5 @@ RUN git clone --depth=1 --branch v0.11.x --recursive --shallow-submodules https:
 RUN git clone --depth 1 https://github.com/LibRaw/LibRaw
 RUN git clone --depth 1 https://github.com/mircomir/jxrlib.git
 RUN git clone --depth 1 -b v2.6.0 https://github.com/cisco/openh264.git
-COPY build.sh $SRC
-COPY kimgio_fuzzer.cc $SRC
-WORKDIR kimageformats
+COPY build.sh kimgio_fuzzer.cc $SRC/
+WORKDIR $SRC/kimageformats
