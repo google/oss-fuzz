@@ -27,7 +27,6 @@
 #include <QBuffer>
 #include <QCoreApplication>
 #include <QVector>
-#include <iostream>
 
 #include <KF6/KArchive/k7zip.h>
 #include <KF6/KArchive/ktar.h>
@@ -83,7 +82,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     };
 
     for (KArchive *h : handlers) {
-        b.reset();
+        if (b.isOpen()) {
+            b.reset();
+        }
         if (h->open(QIODevice::ReadOnly)) {
             const KArchiveDirectory *rootDir = h->directory();
             traverseArchive(rootDir); 
