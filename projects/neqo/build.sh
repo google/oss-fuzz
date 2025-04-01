@@ -16,7 +16,9 @@
 ################################################################################
 
 cd "$SRC/neqo"
-cargo +nightly fuzz build -O --debug-assertions
+# FIXME: https://github.com/rust-fuzz/cargo-fuzz/issues/404
+# Remove -s none when the issue is fixed.
+cargo +nightly fuzz build -O --debug-assertions -s none
 
 FUZZ_TARGET_OUTPUT_DIR=target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs; do
