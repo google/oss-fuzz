@@ -21,6 +21,5 @@ RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/extra-cmake-modules.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kcodecs.git
 RUN git clone --depth 1 https://gitlab.freedesktop.org/uchardet/uchardet.git
-COPY build.sh $SRC
-COPY kcodecs_fuzzer.cc $SRC
-WORKDIR kcodecs
+COPY build.sh kcodecs_fuzzer.cc $SRC/
+WORKDIR $SRC/kcodecs

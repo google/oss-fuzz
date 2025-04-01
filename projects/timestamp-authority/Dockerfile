@@ -1,5 +1,4 @@
-#!/bin/bash
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +14,18 @@
 #
 ################################################################################
 
-set -euxo pipefail
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/sigstore/timestamp-authority
+# For json corpus
+RUN git clone --depth=1 https://github.com/dvyukov/go-fuzz-corpus
+# For json dictionary
+RUN git clone --depth=1 https://github.com/rc0r/afl-fuzz
 
-target_out_dir=target/x86_64-unknown-linux-gnu/release
-cargo fuzz build --release
-cargo fuzz list | while read i; do
-    zip --recurse-paths --junk-paths --quiet "${OUT}/${i}_seed_corpus.zip" "./fuzz/corpus/${i}/"
-    mv -t "${OUT}/" "$target_out_dir/${i}"
-done
+RUN wget https://go.dev/dl/go1.24.0.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.24.0.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/
+
+COPY build.sh $SRC/
+WORKDIR $SRC/timestamp-authority
