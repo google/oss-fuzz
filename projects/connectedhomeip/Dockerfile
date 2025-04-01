@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # Install prerequisite packages
 # See connectedhomeip/docs/guides/BUILDING.md#prerequisites
 RUN apt-get update && \
-    apt-get install -y pkg-config libssl-dev libdbus-1-dev libglib2.0-dev \
+    apt-get install -y --no-install-recommends pkg-config libssl-dev libdbus-1-dev libglib2.0-dev \
         libavahi-client-dev ninja-build \
         unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
