@@ -131,3 +131,4 @@ class ExecCommandFromGithubTest(unittest.TestCase):
               mock_trial_build_trial_build_main.assert_not_called()
               mock_oss_fuzz_on_demand.assert_called_once_with(
                   test_case["expected_command"])
+                  
