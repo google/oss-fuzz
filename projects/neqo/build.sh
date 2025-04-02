@@ -16,9 +16,12 @@
 ################################################################################
 
 cd "$SRC/neqo"
-# FIXME: https://github.com/rust-fuzz/cargo-fuzz/issues/404
-# Remove -s none when the issue is fixed.
-cargo +nightly fuzz build -O --debug-assertions -s none
+# FIXME: https://github.com/rust-fuzz/cargo-fuzz/issues/384 for why no LTO.
+CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz build --release --debug-assertions
+
+cp -av "$LD_LIBRARY_PATH"/* /lib/
+cp -av test-fixture/db "$OUT/"
+export NSS_DB_PATH="$OUT/db"
 
 FUZZ_TARGET_OUTPUT_DIR=target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs; do

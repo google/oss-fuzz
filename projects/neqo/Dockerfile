@@ -32,7 +32,7 @@ ENV NSS_DIR=/nss NSS_PREBUILT=1 LD_LIBRARY_PATH=/dist/Debug/lib
 # FIXME: Optimized NSS build fails with assembler errors.
 # Maybe not critical since the fuzzer uses AeadNull.
 # If this gets fixed, change "Debug" to "Release" in the ENV statement above.
-RUN CXX="$CXX -stdlib=libc++" /nss/build.sh --static -Ddisable_tests=1
+RUN CXX="$CXX -stdlib=libc++" /nss/build.sh --static --disable-tests
 
 RUN rustup default nightly
 RUN rustup component add --toolchain nightly rust-src
