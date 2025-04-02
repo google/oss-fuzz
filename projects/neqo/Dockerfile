@@ -27,11 +27,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # We unfortunately need to build NSS from source, because the Debian package
 # in the base distribution is too old.
-ENV NSS_DIR=/nss NSS_PREBUILT=1 LD_LIBRARY_PATH=/dist/Debug/lib
+ENV NSS_DIR=/nss NSS_PREBUILT=1
 
 # FIXME: Optimized NSS build fails with assembler errors.
 # Maybe not critical since the fuzzer uses AeadNull.
-# If this gets fixed, change "Debug" to "Release" in the ENV statement above.
 RUN CXX="$CXX -stdlib=libc++" /nss/build.sh --static --disable-tests
 
 RUN rustup default nightly
