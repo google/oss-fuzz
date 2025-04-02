@@ -157,4 +157,3 @@ class ExecCommandFromGithubTest(unittest.TestCase):
     ]
     mock_build_script_main.assert_called_once_with(mock.ANY, mock.ANY, mock.ANY,
                                                    build_script_main_args)
-
