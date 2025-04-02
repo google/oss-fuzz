@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +14,17 @@
 #
 ################################################################################
 
-cd ntp-dev
-#avoids https://bugs.llvm.org/show_bug.cgi?id=34636
-cp /usr/bin/ld.gold /usr/bin/ld
-./bootstrap
-./configure --enable-fuzztargets
-make
-cp tests/fuzz/fuzz_ntpd_receive $OUT/
+FROM gcr.io/oss-fuzz-base/base-builder-go
+
+RUN wget https://go.dev/dl/go1.24.0.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.24.0.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/ \
+    && rm -rf temp-go go1.24.0.linux-amd64.tar.gz \
+    && apt-get update \
+    && apt-get install -y btrfs-progs libbtrfs-dev
+
+RUN git clone --depth 1 https://github.com/envoyproxy/gateway.git
+
+COPY build.sh $SRC/
