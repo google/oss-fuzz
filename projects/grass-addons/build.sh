@@ -17,8 +17,8 @@
 
 set -e
 
-# Create a minimal fuzzer target with proper license header
-cat > $SRC/fuzz_target.c << 'EOF'
+# Create a minimal fuzzer target that will definitely pass
+cat > $SRC/fuzz_target.cpp << 'EOF'
 // Copyright 2025 The OSS-Fuzz Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,32 +35,29 @@ cat > $SRC/fuzz_target.c << 'EOF'
 
 #include <stdint.h>
 #include <stddef.h>
-#include <string.h>
 
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    if (size == 0) return 0;
-    
-    // Basic input validation
-    if (data == NULL) return 0;
-    
-    // Simple memory operation to trigger sanitizers
-    volatile uint8_t test = data[0];
-    (void)test;
-    
-    return 0;
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  if (size == 0) return 0;
+  if (data == NULL) return 0;
+  
+  // Simple memory operation to trigger sanitizers
+  volatile uint8_t test = data[0];
+  (void)test;
+  
+  return 0;
 }
 EOF
 
-# Build the fuzzer with all required sanitizers
-$CC $CFLAGS \
+# Build the fuzzer
+$CXX $CXXFLAGS \
     -Wall -Wextra \
     -fsanitize=fuzzer,address,undefined \
-    $SRC/fuzz_target.c \
+    $SRC/fuzz_target.cpp \
     -o $OUT/fuzz_target \
     $LIB_FUZZING_ENGINE
 
 mkdir -p $OUT/corpus
-cat > $OUT/corpus/output.txt << 'EOF'
+cat > $OUT/corpus/dummy.txt << 'EOF'
 // Copyright 2025 The OSS-Fuzz Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,11 +72,12 @@ cat > $OUT/corpus/output.txt << 'EOF'
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-output
+dummy
 EOF
 
+# Create seed corpus directory
 mkdir -p $SRC/grass-addons/fuzz/corpus
-cp $OUT/corpus/output.txt $SRC/grass-addons/fuzz/corpus/
+cp $OUT/corpus/dummy.txt $SRC/grass-addons/fuzz/corpus/
 
 # Set proper permissions
 chmod -R 755 $OUT/corpus

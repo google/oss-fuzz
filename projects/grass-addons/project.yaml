@@ -1,4 +1,23 @@
-homepage: "https://grass.osgeo.org/grass-stable/manuals/addons/"
-language: c++
+name: grass-addons
+language: cpp
 primary_contact: "neteler@gmail.com"
-main_repo: 'https://github.com/OSGeo/grass-addons'
+
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - centipede
+architectures:
+  - x86_64
+homepage: "https://grass.osgeo.org/"
+license: "GPL-2.0"
+issue_tracker: "https://github.com/OSGeo/grass-addons/issues"
+repository: "https://github.com/OSGeo/grass-addons"
+description: |
+  GRASS-addons is a collection of add-on modules for GRASS GIS, extending its
+  functionality for geospatial analysis and processing. These modules are
+  contributed by the community and provide additional tools for working with
+  geospatial data.
