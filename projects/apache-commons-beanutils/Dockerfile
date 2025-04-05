@@ -27,9 +27,6 @@ WORKDIR ${SRC}
 # clone repository
 #
 RUN git clone https://github.com/apache/commons-beanutils.git
-COPY *.diff $SRC/
-RUN cd commons-beanutils && tr -d '\015' < $SRC/remove-rat.diff | git apply
-
 
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/

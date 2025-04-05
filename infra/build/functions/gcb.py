@@ -13,10 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
-"""Entrypoint for CI into trial_build. This script will get the command from the
-last PR comment containing "/gcbrun" and pass it to trial_build.py which will
-build test versions of base-imags, push them and then do test builds using those
-images."""
+"""Entrypoint for CI into trial_build or oss_fuzz_on_demand. This script will
+get the command from the last PR comment containing "/gcbrun" and pass it to
+trial_build.py or oss_fuzz_on_demand. On trial_build.py it will build test
+versions of base-images, push them and then do test builds using those images.
+"""
 
 import logging
 import os
@@ -25,9 +26,11 @@ import sys
 import github
 
 import trial_build
+import oss_fuzz_on_demand
 
 TRIGGER_COMMAND = '/gcbrun'
 TRIAL_BUILD_COMMAND_STR = f'{TRIGGER_COMMAND} trial_build.py '
+OSS_FUZZ_ON_DEMAND_COMMAND_STR = f'{TRIGGER_COMMAND} oss_fuzz_on_demand.py '
 SKIP_COMMAND_STR = f'{TRIGGER_COMMAND} skip'
 
 
@@ -52,22 +55,27 @@ def get_latest_gcbrun_command(comments):
     body = comment.body
     if body.startswith(SKIP_COMMAND_STR):
       return None
-    if not body.startswith(TRIAL_BUILD_COMMAND_STR):
+    if not body.startswith(TRIAL_BUILD_COMMAND_STR) and (
+        not body.startswith(OSS_FUZZ_ON_DEMAND_COMMAND_STR)):
       continue
-    if len(body) == len(TRIAL_BUILD_COMMAND_STR):
+    if len(body) == len(TRIAL_BUILD_COMMAND_STR) or (
+        len(body) == len(OSS_FUZZ_ON_DEMAND_COMMAND_STR)):
       return None
-    return body[len(TRIAL_BUILD_COMMAND_STR):].strip().split(' ')
+    return body[len(TRIGGER_COMMAND):].strip().split(' ')
   return None
 
 
 def exec_command_from_github(pull_request_number, repo, branch):
-  """Executes the gcbrun command for trial_build.py in the most recent command
-  on |pull_request_number|."""
+  """Executes the gcbrun command for trial_build.py or oss_fuzz_on_demand.py in
+  the most recent command on |pull_request_number|."""
   comments = get_comments(pull_request_number)
-  command = get_latest_gcbrun_command(comments)
-  if command is None:
+  full_command = get_latest_gcbrun_command(comments)
+
+  if full_command is None:
     logging.info('Trial build not requested.')
     return None
+  command_file = full_command[0]
+  command = full_command[1:]
 
   command.extend(['--repo', repo])
 
@@ -75,6 +83,9 @@ def exec_command_from_github(pull_request_number, repo, branch):
   # branch.
   command.extend(['--branch', branch])
   logging.info('Command: %s.', command)
+
+  if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
+    return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command)
   return trial_build.trial_build_main(command, local_base_build=False)
 
 

@@ -78,7 +78,18 @@ class Config:
   build_type: str = None
 
 
-WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+# Allow the WORKDIR to be commented out for OSS-Fuzz-Gen, which creates new
+# Dockerfiles that inherit from cached verisons of the project images.
+# e.g.
+#   FROM us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/proj-ofg-cached-address
+#   # WORKDIR foo
+#   COPY new_target.c /src/proj/
+#
+# Because the WORKDIR is already set in the parent image and can be a relative
+# path, we can't set it again in the new Dockerfile.
+# However, we still need to know what the value is (for GCB), so we leave it
+# commented.
+WORKDIR_REGEX = re.compile(r'\s*#?\s*WORKDIR\s*([^\s]+)')
 
 
 class Build:  # pylint: disable=too-few-public-methods

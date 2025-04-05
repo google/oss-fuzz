@@ -42,7 +42,6 @@ B_START=$SECONDS
 docker container rm -f ${_PROJECT}-origin-${_SANITIZER}
 
 docker run \
-  --entrypoint=/bin/bash \
   --env=SANITIZER=${_SANITIZER} \
   --env=CCACHE_DIR=/workspace/ccache \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
@@ -51,12 +50,12 @@ docker run \
   -v=$PWD/ccaches/${_PROJECT}/ccache:/workspace/ccache \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
   gcr.io/oss-fuzz/${_PROJECT} \
-  -c \
+  /bin/bash -c \
   "export PATH=/ccache/bin:\$PATH && compile"
 B_TIME=$(($SECONDS - $B_START))
 
 # Step 3: save (commit, locally) the cached container as an image
-docker container commit -c "ENV ENTRYPOINT=/bin/sh" -c "ENV REPLAY_ENABLED=1" ${_PROJECT}-origin-${_SANITIZER} $FINAL_IMAGE_NAME
+docker container commit -c "ENV REPLAY_ENABLED=1" -c "ENV CAPTURE_REPLAY_SCRIPT=" ${_PROJECT}-origin-${_SANITIZER} $FINAL_IMAGE_NAME
 
 # Step 4: save the list of executables created from a vanilla build. This is
 #         needed for validating if replay and ccaching works.
@@ -77,7 +76,7 @@ docker run \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
   --name=${_PROJECT}-origin-${_SANITIZER}-replay-recached \
   $FINAL_IMAGE_NAME \
-  -c \
+  /bin/bash -c \
   "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && compile"
 R_TIME=$(($SECONDS - $R_START))
 
@@ -97,17 +96,16 @@ REPLAY_WORKED=
 #         If this step is successful, then the process can exit as it's ready.
 if [[ "$executables_replay" == "$executables_vanilla" ]]
 then
-  echo "Replay worked"
-  echo "Vanilla compile time: ${B_TIME}"
-  echo "Replay compile time: ${R_TIME}"
-
   REPLAY_WORKED=1
 
   if [ -z "${RUN_ALL+1}" ]; then
+    echo "${_PROJECT}: Replay worked."
+    echo "${_PROJECT}: Compile times: Vanilla=${B_TIME}; Replay=${R_TIME};"
     exit 0
   fi
 else
-  echo "Replay did not work"
+  echo "${_PROJECT}: Replay did not work"
+  R_TIME="N/A"
 fi
 
 # Step 8: prepare Dockerfile for ccache
@@ -128,13 +126,12 @@ cd ${BASE}
 A_START=$SECONDS
 docker run \
   --rm \
-  --entrypoint=/bin/bash \
   --env=SANITIZER=${_SANITIZER} \
   --env=FUZZING_LANGUAGE=${_FUZZING_LANGUAGE} \
   --name=${_PROJECT}-origin-${_SANITIZER}-recached \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
   $CCACHE_IMAGE_NAME \
-  -c \
+  /bin/bash -c \
   "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && compile"
 A_TIME=$(($SECONDS - $A_START))
 
@@ -145,17 +142,14 @@ executables_ccache="$(find ./build/out/${_PROJECT}/ -executable -type f | sort)"
 # Step 12: validate the ccache builds are successful
 if [[ "$executables_ccache" == "$executables_vanilla" ]]
 then
-  echo "Vanilla compile time: ${B_TIME}"
-  if [[ "$executables_replay" == "$executables_vanilla" ]]
-  then
-    echo "Replay worked"
-    echo "Replay compile time: ${R_TIME}"
-  fi
+  echo "${_PROJECT}: Compile times: Vanilla=${B_TIME}; Replay=${R_TIME}; CCache=${A_TIME};"
 
-  echo "Ccache compile time: ${A_TIME}"
+  if [[ -z "${REPLAY_WORKED}" || ${R_TIME} -gt ${A_TIME} ]]; then
+    if [ ${R_TIME} -gt ${A_TIME} ]; then
+      echo "Replay was slower than ccache."
+    fi
 
-  if [ -z "${REPLAY_WORKED}" ]; then
-    # Replay didn't work, so make the default "cached" image use the ccache one.
+    # Replay didn't work or was slower, so make the default "cached" image use the ccache one.
     docker image tag \
       $CCACHE_IMAGE_NAME \
       $FINAL_IMAGE_NAME
@@ -163,7 +157,7 @@ then
 
   exit 0
 else
-  echo "Replay and ccaching did not work."
+  echo "${_PROJECT}: Replay and ccaching did not work."
   exit 1
 fi
 
