@@ -464,6 +464,8 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
       help='if specified, will use private corpora',
       default=False,
       action='store_true')
+  _add_engine_args(introspector_parser)
+  _add_environment_args(introspector_parser)
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -1080,6 +1082,8 @@ def _get_fuzz_targets(project):
       continue
     if name == 'llvm-symbolizer':
       continue
+    if name.endswith('.so'):
+      continue
 
     path = os.path.join(project.out, name)
     # Python and JVM fuzz targets are only executable for the root user, so
@@ -1324,13 +1328,18 @@ def _introspector_prepare_corpus(args):
         os.makedirs(fuzzer_corpus_dir)
       run_fuzzer_command = [
           'run_fuzzer', '--sanitizer', 'address', '--corpus-dir',
-          fuzzer_corpus_dir, args.project.name, fuzzer_name
+          fuzzer_corpus_dir, '--engine', args.engine, args.project.name,
+          fuzzer_name
       ]
 
       parsed_args = parse_args(parser, run_fuzzer_command)
-      parsed_args.fuzzer_args = [
-          f'-max_total_time={args.seconds}', '-detect_leaks=0'
-      ]
+      parsed_args.fuzzer_args = {
+          'afl': [f'-V {args.seconds}'],
+          'centipede': [f'--stop_after={args.seconds}s'],
+          'honggfuzz': [f'--run_time={args.seconds}'],
+          'libfuzzer': [f'-max_total_time={args.seconds}', '-detect_leaks=0'],
+      }[args.engine]
+
       # Continue even if run command fails, because we do not have 100%
       # accuracy in fuzz target detection, i.e. we might try to run something
       # that is not a target.
@@ -1347,8 +1356,9 @@ def introspector(args):
     args_to_append.append(_get_absolute_path(args.source_path))
 
   # Build fuzzers with ASAN.
-  build_fuzzers_command = [
-      'build_fuzzers', '--sanitizer=address', args.project.name
+  build_fuzzers_command = _env_to_docker_args(args.e or []) + [
+      'build_fuzzers', '--sanitizer=address', '--engine', args.engine,
+      args.project.name
   ] + args_to_append
   if not build_fuzzers(parse_args(parser, build_fuzzers_command)):
     logger.error('Failed to build project with ASAN')
