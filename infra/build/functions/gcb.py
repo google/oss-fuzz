@@ -67,7 +67,8 @@ def get_latest_gcbrun_command(comments):
 
 def exec_command_from_github(pull_request_number, repo, branch):
   """Executes the gcbrun command for trial_build.py or oss_fuzz_on_demand.py in
-  the most recent command on |pull_request_number|."""
+  the most recent command on |pull_request_number|. Returns True on success,
+  False on failure."""
   comments = get_comments(pull_request_number)
   full_command = get_latest_gcbrun_command(comments)
 
