@@ -85,6 +85,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         if (b.isOpen()) {
             b.reset();
         }
+
+        if (auto k7zip = dynamic_cast<K7Zip *>(h)) {
+            // Set a dummy password to trigger decryption code
+            k7zip->setPassword("youshallnotpass");
+        }
+
         if (h->open(QIODevice::ReadOnly)) {
             const KArchiveDirectory *rootDir = h->directory();
             traverseArchive(rootDir); 
