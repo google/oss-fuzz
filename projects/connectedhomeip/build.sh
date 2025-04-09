@@ -16,12 +16,6 @@
 ################################################################################
 
 
-# workaround to get Fuzz Introspector to build; making it link with lld instead of the environment's gold linker which gives an error
-if [ "$SANITIZER" == "introspector" ]; then
-  export CFLAGS=$(echo "$CFLAGS" | sed 's/gold/lld/g')
-  export CXXFLAGS=$(echo "$CXXFLAGS" | sed 's/gold/lld/g')
-fi
-
 cd $SRC/connectedhomeip
 
 # Activate Pigweed environment
@@ -42,15 +36,13 @@ export PATH="/src/connectedhomeip/.environment/cipd/packages/zap/:$PATH"
 #   error on GenericConnectivityManagerImpl_Thread.ipp and current fuzzing
 #   does not differentiate between thread/Wifi/TCP/UDP/BLE connectivity
 #   implementations.
-# - `target_ldflags` forces compiler to use LLVM's linker
 gn gen out/fuzz_targets \
   --args="
     oss_fuzz=true \
     is_clang=true \
     enable_rtti=true \
     chip_enable_thread_safety_checks=false \
-    chip_enable_openthread=false \
-    target_ldflags=[\"-fuse-ld=lld\"]"
+    chip_enable_openthread=false
 
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains
 deactivate

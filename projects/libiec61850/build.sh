@@ -25,7 +25,7 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE ../fuzz/fuzz_mms_decode.c -c \
 	-I../hal/inc -I../src/logging
 
 
-$CXX $CXXFLAGS -fuse-ld=lld $LIB_FUZZING_ENGINE fuzz_mms_decode.o -o $OUT/fuzz_mms_decode ./src/libiec61850.a ./hal/libhal.a
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_mms_decode.o -o $OUT/fuzz_mms_decode ./src/libiec61850.a ./hal/libhal.a
 
 # Copy over the options file
 cp $SRC/fuzz_decode.options $OUT/fuzz_decode.options

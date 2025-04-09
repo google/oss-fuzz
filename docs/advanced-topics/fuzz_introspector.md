@@ -101,7 +101,7 @@ There are some differences in build environment for Fuzz Introspector builds
 in comparison to e.g. ASAN or code coverage builds. The reason is that
 Fuzz Introspector relies on certain compile-time tools to do its analysis.
 This compile time tooling differs between languages, namely:
-- For C/C++, Fuzz Introspector relies on [LLVM LTO](https://llvm.org/docs/LinkTimeOptimization.html) and [LLVM Gold](https://llvm.org/docs/GoldPlugin.html)
+- For C/C++, Fuzz Introspector relies on [LLVM LTO](https://llvm.org/docs/LinkTimeOptimization.html)
 - For Python, Fuzz Introspector relies on a modified [PyCG](https://github.com/vitsalis/PyCG)
 - For Java, Fuzz Introspector relies on [Soot](https://soot-oss.github.io/soot/)
 
@@ -109,8 +109,8 @@ The consequence of this is your project must be compatible with these projects.
 PyCG and Soot have not shown to be a blocker for many projects, however, experience
 has shown that sometimes a project's build needs modification in order to compile
 with LLVM LTO. The easiest way to test if your project works with LLVM is checking
-whether your project can compile with the flags `-flto -fuse-ld=gold` and using
-the gold linker. OSS-Fuzz automatically sets these flags and linker options when
+whether your project can compile with the flags `-flto -fuse-ld=lld` and using
+the LLD linker. OSS-Fuzz automatically sets these flags and linker options when
 using `infra/helper.py` to build your project with `--sanitizer=introspector`, e.g.
 
 ```bash

@@ -22,4 +22,4 @@ npm ci
 yes | make build/libllhttp.a
 
 $CC $CFLAGS -c ./test/fuzzers/fuzz_parser.c -I./build/ ./build/libllhttp.a -o $WORK/fuzz_parser.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -fuse-ld=lld -I./build/ ./build/libllhttp.a $WORK/fuzz_parser.o -o $OUT/fuzz_parser
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./build/ ./build/libllhttp.a $WORK/fuzz_parser.o -o $OUT/fuzz_parser
