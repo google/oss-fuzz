@@ -12,19 +12,20 @@ import json
 import os
 import subprocess
 import sys
+import random
 from typing import Any
 
-_LLVM_READELF_PATH = "/toolchain/bin/llvm-readelf"
+_LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
 
 
 def execute(argv: Sequence[str]) -> None:
-  argv[0] = os.path.join("/usr/local/bin", os.path.basename(argv[0]))
+  argv[0] = os.path.join("/usr/local/bin/", os.path.basename(argv[0]))
   print("About to execute...", argv)
   os.execv(argv[0], argv)
 
 
 def run(argv: Sequence[str]) -> None:
-  argv[0] = os.path.join("/usr/local/bin", os.path.basename(argv[0]))
+  argv[0] = os.path.join("/usr/local/bin/", os.path.basename(argv[0]))
   print("About to run...", argv)
   ret = subprocess.run(argv, check=False)
   if ret.returncode != 0:
@@ -53,22 +54,18 @@ def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
   Returns:
     The build id, or None if it could not be found.
   """
-  # TODO(mvanotti): Move this function to a common library.
 
-  elf_notes = json.loads(contents)
-  assert elf_notes
-  build_id = None
-  for notes in elf_notes:
-    for note in notes["NoteSections"]:
-      if note["NoteSection"]["Name"] == ".note.gnu.build-id":
-        candidates = [
-            note
-            for note in note["NoteSection"]["Notes"]
-            if "Build ID" in note
-        ]
-        assert len(candidates) == 1
-        return candidates[0]["Build ID"]
-  return build_id
+  elf_data = json.loads(contents)
+  assert elf_data
+
+  for file_info in elf_data:
+    for note_entry in file_info["Notes"]:
+      note_section = note_entry["NoteSection"]
+      if note_section["Name"] == ".note.gnu.build-id":
+        note_details = note_section["Note"]
+        if "Build ID" in note_details:
+          return note_details["Build ID"]
+  return None
 
 
 def get_build_id(elf_file: str) -> str:
@@ -78,28 +75,44 @@ def get_build_id(elf_file: str) -> str:
   # [
   #   {
   #     "FileSummary": {
-  #       "File": "/bin/ls",
+  #       "File": "/out/iccprofile_info",
   #       "Format": "elf64-x86-64",
   #       "Arch": "x86_64",
   #       "AddressSize": "64bit",
-  #       "LoadName": "<Not found>"
+  #       "LoadName": "<Not found>",
   #     },
-  #     "NoteSections": [
+  #     "Notes": [
+  #       {
+  #         "NoteSection": {
+  #           "Name": ".note.ABI-tag",
+  #           "Offset": 764,
+  #           "Size": 32,
+  #           "Note": {
+  #             "Owner": "GNU",
+  #             "Data size": 16,
+  #             "Type": "NT_GNU_ABI_TAG (ABI version tag)",
+  #             "OS": "Linux",
+  #             "ABI": "3.2.0",
+  #           },
+  #         }
+  #       },
   #       {
   #         "NoteSection": {
   #           "Name": ".note.gnu.build-id",
-  #           "Offset": 856,
-  #           "Size": 36,
-  #           "Notes": [
-  #             {
-  #               "Owner": "GNU",
-  #               "Data size": 20,
-  #               "Type": "NT_GNU_BUILD_ID (unique build ID bitstring)",
-  #               "Build ID": "fba55d9e8f2974c0f0ccd65238301a095b0b8f41"
-  #             }
-  #           ]
+  #           "Offset": 796,
+  #           "Size": 24,
+  #           "Note": {
+  #             "Owner": "GNU",
+  #             "Data size": 8,
+  #             "Type": "NT_GNU_BUILD_ID (unique build ID bitstring)",
+  #             "Build ID": "a03df61c5b0c26f3",
+  #           },
   #         }
-  #       }, (...)
+  #       },
+  #     ],
+  #   }
+  # ]
+
   ret = subprocess.run(
       [
           _LLVM_READELF_PATH,
@@ -112,6 +125,7 @@ def get_build_id(elf_file: str) -> str:
   )
   if ret.returncode != 0:
     sys.exit(ret.returncode)
+
   return _get_build_id_from_elf_notes(ret.stdout)
 
 
@@ -149,7 +163,7 @@ def parse_dependency_file(
   ), f"{lines[0]} is not a suffix of {output_file_line}"
 
   deps = []
-  ignored_dep_paths = ["/usr", "/sysroot", "/clang", "/lib", "/toolchain"]
+  ignored_dep_paths = ["/usr", "/clang", "/lib"]
   for line in lines[1:]:
     if not line:
       break
@@ -242,7 +256,9 @@ def main(argv: Sequence[str]) -> None:
   for archive in ar_deps:
     res = subprocess.run(["ar", "-t", archive], capture_output=True, check=True)
     archive_deps += [dep.decode() for dep in res.stdout.splitlines()]
-
+    if any('eep_fuzzing_engine.o' in archive_dep for archive_dep in archive_deps):
+      print('DEBUG:', archive)
+      print(obj_deps, ar_deps)
   cdb = read_cdb_fragments(cdb_path)
   commands = {}
   for dep in obj_deps:
@@ -260,6 +276,7 @@ def main(argv: Sequence[str]) -> None:
     if dep not in commands:
       print(f"{dep} NOT FOUND")
 
+  # breakpoint()
   for archive_dep in archive_deps:
     # We don't have the full path of the archive dep, so we will only look at
     # the basename.

@@ -18,8 +18,9 @@ def main():
                   "/src/untitled_fuzzing_engine.cc")
 
   # Compile and link the fuzzing engine.
+  print('NILVO ESTEVE AQUI')
   subprocess.run([
-      "/untitled/clang++",
+      "/clang++",
       "-c",
       "-Wall",
       "-Wextra",
@@ -31,10 +32,10 @@ def main():
       "-o",
       "/out/untitled_fuzzing_engine.o",
       "-gen-cdb-fragment-path", "/out/cdb", "-Qunused-arguments",
-      "--sysroot=/sysroot",
+      # "--sysroot=/sysroot",
       "-I/usr/grte/v5/include/",
-      "-I/toolchain/lib/clang/google3-trunk/include",
-      "-I/toolchain/include/c++/v1/",
+      # "-I/toolchain/lib/clang/google3-trunk/include",
+      # "-I/toolchain/include/c++/v1/",
   ], capture_output=False, check=True)
 
   subprocess.run([

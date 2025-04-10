@@ -1,6 +1,5 @@
-// Note: This is not a source file that is built and run on google3/prod. It is
-// copied into the OSS-Fuzz container image and compiled there as part of the
-// instrumentation process.
+// This file is copied into the OSS-Fuzz container image and compiled there as
+// part of the instrumentation process.
 
 #include <assert.h>
 #include <fcntl.h>
