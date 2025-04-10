@@ -11,12 +11,13 @@ export CXX="/clang++"
 export CC="/clang"
 /clang++ -c -Wall -Wextra -pedantic -std=c++20 -glldb -O0 /untitled/fuzzing_engine.cc -o /out/untitled_fuzzing_engine.o -gen-cdb-fragment-path /out/cdb -Qunused-arguments
 ar rcs /untitled/fuzzing_engine.a /out/untitled_fuzzing_engine.o
-rm -f /usr/lib/libFuzzingEngine.a
 ln -s /untitled/fuzzing_engine.a /usr/lib/libFuzzingEngine.a
 /usr/local/bin/compile
 
 # docker pull gcr.io/oss-fuzz-base/base-builder
 # infra/helper.py build_image skcms
 # # docker pull gcr.io/oss-fuzz/skcms
-# docker run -it -v path/to/oss-fuzz/untitled:/untitled:rw  gcr.io/oss-fuzz/skcms /bin/bash
+
+# Running the actual build:
+# rm -f /usr/lib/libFuzzingEngine.a && docker run -it -v path/to/oss-fuzz/untitled:/untitled:rw  gcr.io/oss-fuzz/skcms /bin/bash
 # bash /untitled/untitled_script.sh 

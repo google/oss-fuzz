@@ -256,9 +256,7 @@ def main(argv: Sequence[str]) -> None:
   for archive in ar_deps:
     res = subprocess.run(["ar", "-t", archive], capture_output=True, check=True)
     archive_deps += [dep.decode() for dep in res.stdout.splitlines()]
-    if any('eep_fuzzing_engine.o' in archive_dep for archive_dep in archive_deps):
-      print('DEBUG:', archive)
-      print(obj_deps, ar_deps)
+
   cdb = read_cdb_fragments(cdb_path)
   commands = {}
   for dep in obj_deps:
@@ -276,7 +274,6 @@ def main(argv: Sequence[str]) -> None:
     if dep not in commands:
       print(f"{dep} NOT FOUND")
 
-  # breakpoint()
   for archive_dep in archive_deps:
     # We don't have the full path of the archive dep, so we will only look at
     # the basename.
