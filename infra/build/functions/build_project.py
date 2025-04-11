@@ -347,6 +347,17 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
   """Returns build steps for project."""
 
   project = Project(project_name, project_yaml, dockerfile)
+  return get_build_steps_for_project(project,
+                                     config,
+                                     additional_env=additional_env,
+                                     use_caching=use_caching)
+
+
+def get_build_steps_for_project(project,
+                                config,
+                                additional_env=None,
+                                use_caching=False):
+  """Returns build steps for project."""
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
