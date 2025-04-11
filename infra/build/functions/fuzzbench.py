@@ -144,8 +144,6 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env, build):
   copy_runtime_essential_files_step = {
       'name':
           get_engine_project_image(fuzzing_engine, project),
-      'env':
-          env,
       'volumes': [{
           'name': 'fuzzbench_path',
           'path': FUZZBENCH_PATH,
