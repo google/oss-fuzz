@@ -79,7 +79,18 @@ class Config:
   fuzzing_engine: str = None
 
 
-WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+# Allow the WORKDIR to be commented out for OSS-Fuzz-Gen, which creates new
+# Dockerfiles that inherit from cached verisons of the project images.
+# e.g.
+#   FROM us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/proj-ofg-cached-address
+#   # WORKDIR foo
+#   COPY new_target.c /src/proj/
+#
+# Because the WORKDIR is already set in the parent image and can be a relative
+# path, we can't set it again in the new Dockerfile.
+# However, we still need to know what the value is (for GCB), so we leave it
+# commented.
+WORKDIR_REGEX = re.compile(r'\s*#?\s*WORKDIR\s*([^\s]+)')
 
 
 class Build:  # pylint: disable=too-few-public-methods
@@ -597,9 +608,9 @@ def run_build(oss_fuzz_project,
                              experiment=experiment)
 
 
-def get_args(description, args):
-  """Parses command line arguments and returns them. Suitable for a build
-  script."""
+def parse_args(description, args):
+  """Parses command line arguments (or args if it is not None) and returns them.
+  Suitable for a build script."""
   parser = argparse.ArgumentParser(sys.argv[0], description=description)
   parser.add_argument('projects', help='Projects.', nargs='+')
   parser.add_argument('--testing',
@@ -631,7 +642,7 @@ def get_args(description, args):
                       help='Configuration for experiments.')
   parser.add_argument('--fuzzing-engine',
                       required=False,
-                      default='libafl',
+                      default='libfuzzer',
                       help='Fuzzing engine name.')
   return parser.parse_args(args)
 
@@ -654,10 +665,10 @@ def build_script_main(script_description,
                       build_type,
                       args=None):
   """Gets arguments from command line using |script_description| as helpstring
-  description. Gets build_steps using |get_build_steps_func| and then runs those
-  steps on GCB, tagging the builds with |build_type|. Returns 0 on success, 1 on
-  failure."""
-  args = get_args(script_description, args)
+  description or from args. Gets build_steps using |get_build_steps_func| and
+  then runs those steps on GCB, tagging the builds with |build_type|. Returns 0
+  on success, 1 on failure."""
+  args = parse_args(script_description, args)
   logging.basicConfig(level=logging.INFO)
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()

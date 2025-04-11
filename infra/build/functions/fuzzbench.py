@@ -229,7 +229,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   steps += get_build_and_push_ood_image_steps(config.fuzzing_engine, project,
                                               env, build)
-
+  
   return steps
 
 

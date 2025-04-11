@@ -149,6 +149,8 @@ function free_disk_space {
       /usr/local/bin/llvm-ranlib \
       /usr/local/bin/llvm-symbolizer \
       /usr/local/bin/llvm-undname \
+      /usr/local/bin/llvm-readelf \
+      /usr/local/bin/llvm-readobj \
       $LLVM_TOOLS_TMPDIR
 
     # Delete remaining llvm- binaries.
