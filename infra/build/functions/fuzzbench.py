@@ -46,15 +46,6 @@ def get_env(project, build):
   return env
 
 
-def get_env_dict(env):
-  """Converts a list of environment strings to a dictionary."""
-  env_dict = {}
-  for item in env:
-    item_list = item.split("=")
-    env_dict[item_list[0]] = item_list[1]
-  return env_dict
-
-
 def get_fuzzbench_setup_steps():
   """Returns the build steps required to set up fuzzbench on oss-fuzz-on-demand
   build."""
@@ -136,7 +127,8 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
   return steps
 
 
-def get_build_and_push_ood_image_steps(fuzzing_engine, project, env, build):
+def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict,
+                                       build):
   """Returns the build steps to create and push the oss-fuzz-on-demand
   self-contained image."""
   steps = []
@@ -171,7 +163,6 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env, build):
   },
   steps.append(build_runtime_step)
 
-  env_dict = get_env_dict(env)
   oss_fuzz_on_demand_dockerfile_path = "/workspace/oss-fuzz/infra/build/functions/ood.Dockerfile"
   build_out_path_without_workspace = build.out[10:]
   build_ood_image_step = {
@@ -225,8 +216,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env, build)
 
+  env_dict = {string.split("=")[0]: string.split("=")[1] for string in env}
   steps += get_build_and_push_ood_image_steps(config.fuzzing_engine, project,
-                                              env, build)
+                                              env_dict, build)
 
   return steps
 
