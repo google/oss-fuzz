@@ -33,8 +33,11 @@ $CXX $CXXFLAGS -DCX_PLATFORM_LINUX -DQUIC_TEST_APIS \
     -isystem /src/msquic/submodules/googletest/googletest \
     -c fuzz.cc -o fuzz.o
 
+CMAKECACHE=$(find ./build -name 'CmakeCache.txt'
+LIBMSQUICDIR=$(cmake -LAH $CMAKECACHE | grep QUIC_OUTPUT_DIR | cut -d'=' -f 2)
+
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz.o -o $OUT/fuzz \
-    /src/msquic/artifacts/bin/linux/x64_Debug_openssl/libmsquic.a
+    $LIBMSQUICDIR/libmsquic.a
 
 cd $SRC
 
