@@ -394,7 +394,8 @@ def get_docker_build_step(image_names,
                           use_buildkit_cache=False,
                           src_root='oss-fuzz',
                           architecture='x86_64',
-                          cache_image=''):
+                          cache_image='',
+                          build_args={}):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -413,6 +414,8 @@ def get_docker_build_step(image_names,
     ]
   if cache_image:
     args.extend(['--build-arg', f'CACHE_IMAGE={cache_image}'])
+  for arg_name, arg_val in build_args.items():
+    args.extend(['--build-arg', f'{arg_name}={arg_val}'])
 
   for image_name in sorted(image_names):
     args.extend(['--tag', image_name])
