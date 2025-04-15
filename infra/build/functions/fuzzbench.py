@@ -200,14 +200,6 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
-  config = build_project.Config(testing=config.testing,
-                                repo=config.repo,
-                                branch=config.branch,
-                                parallel=config.parallel,
-                                upload=config.upload,
-                                fuzzing_engine=config.fuzzing_engine,
-                                fuzz_target=config.fuzz_target)
-
   steps = get_fuzzbench_setup_steps()
 
   steps += build_lib.get_project_image_steps(project.name,
