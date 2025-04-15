@@ -66,18 +66,18 @@ def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
   # here, because they need special handling due to their use of build args.
   clang_image_name = f'{tag_prefix}base-clang-full'
   steps.append(
-    build_lib.get_docker_build_step([clang_image_name],
-                                    get_base_image_path('base-clang'),
-                                    build_args={'FULL_LLVM_BUILD': '1'}))
+      build_lib.get_docker_build_step([clang_image_name],
+                                      get_base_image_path('base-clang'),
+                                      build_args={'FULL_LLVM_BUILD': '1'}))
   builder_full_image = f'{tag_prefix}base-builder-clang-full'
   steps.append(
-    build_lib.get_docker_build_step(
-      [builder_full_image],
-      get_base_image_path('base-builder'),
-      build_args={'PARENT_IMAGE': clang_image_name}))
+      build_lib.get_docker_build_step(
+          [builder_full_image],
+          get_base_image_path('base-builder'),
+          build_args={'PARENT_IMAGE': clang_image_name}))
   steps.append({
-    'name': 'gcr.io/cloud-builders/docker',
-    'args': ['push', builder_full_image],
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': ['push', builder_full_image],
   })
 
   return steps
