@@ -61,23 +61,24 @@ def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
     image_path = get_base_image_path(base_image)
     steps.append(
         build_lib.get_docker_build_step([image, tagged_image], image_path))
-    if base_image == 'base-clang':
-      breakpoint()
-      # Build base-clang-full and base-builder-clang-full, push the latter.
-      # Do this here, because they need special handling due to their
-      # use of build args.
-      clang_image_name = tag_prefix + base_image + '-full'
-      steps.append(
-          build_lib.get_docker_build_step([clang_image_name],
-                                          image_path,
-                                          build_args={'FULL_LLVM_BUILD': '1'}))
-      builder_full_image = f'{tag_prefix}{base-builder}-clang-full'
-      steps.append(
-          build_lib.get_docker_build_step(
-              [builder_full_image],
-              image_path,
-              build_args={'PARENT_IMAGE': clang_image_name}))
-      steps.append(['docker', 'push', builder_full_image])
+
+  # Build base-clang-full and base-builder-clang-full, push the latter. Do this
+  # here, because they need special handling due to their use of build args.
+  clang_image_name = f'{tag_prefix}base-clang-full'
+  steps.append(
+    build_lib.get_docker_build_step([clang_image_name],
+                                    get_base_image_path('base-clang'),
+                                    build_args={'FULL_LLVM_BUILD': '1'}))
+  builder_full_image = f'{tag_prefix}base-builder-clang-full'
+  steps.append(
+    build_lib.get_docker_build_step(
+      [builder_full_image],
+      get_base_image_path('base-builder'),
+      build_args={'PARENT_IMAGE': clang_image_name}))
+  steps.append({
+    'name': 'gcr.io/cloud-builders/docker',
+    'args': ['push', builder_full_image],
+  })
 
   return steps
 
@@ -162,7 +163,20 @@ def base_builder(event, context):
   del event, context
   logging.basicConfig(level=logging.INFO)
 
+  base_images_main()
+
+
+def base_images_main():
+  """Builds base images on GCB."""
   steps = get_base_image_steps(BASE_IMAGES)
   steps.extend(get_images_architecture_manifest_steps())
   images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
   run_build(steps, images)
+
+
+def main():
+  base_images_main()
+
+
+if __name__ == '__main__':
+  main()
