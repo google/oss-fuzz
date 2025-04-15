@@ -34,15 +34,17 @@ def get_engine_project_image(fuzzing_engine, project):
   return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.name}'
 
 
-def get_env(project, build):
+def get_env(project, build, config):
   """Gets the environment for fuzzbench/oss-fuzz-on-demand."""
   env = build_project.get_env(project.fuzzing_language, build)
   env.append(f'FUZZBENCH_PATH={FUZZBENCH_PATH}')
   env.append('FORCE_LOCAL=1')
   env.append(f'PROJECT={project.name}')
   env.append('OSS_FUZZ_ON_DEMAND=1')
-  env.extend(
-      ['FUZZ_TARGET=', f'BENCHMARK={project.name}', 'EXPERIMENT_TYPE=bug'])
+  env.extend([
+      f'FUZZ_TARGET={config.fuzz_target}', f'BENCHMARK={project.name}',
+      'EXPERIMENT_TYPE=bug'
+  ])
   return env
 
 
@@ -174,6 +176,7 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict,
           f'runtime_image={runtime_image_tag}', '--build-arg',
           f'BUILD_OUT_PATH={build_out_path_without_workspace}', '--build-arg',
           f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}', '--build-arg',
+          f'FUZZ_TARGET={env_dict["FUZZ_TARGET"]}', '--build-arg',
           f'FUZZBENCH_PATH={FUZZBENCH_PATH}', '--build-arg',
           f'BENCHMARK={env_dict["BENCHMARK"]}', '/workspace'
       ]
@@ -202,7 +205,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                 branch=config.branch,
                                 parallel=config.parallel,
                                 upload=config.upload,
-                                fuzzing_engine=config.fuzzing_engine)
+                                fuzzing_engine=config.fuzzing_engine,
+                                fuzz_target=config.fuzz_target)
 
   steps = get_fuzzbench_setup_steps()
 
@@ -212,7 +216,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                              config=config)
 
   build = build_project.Build(config.fuzzing_engine, 'address', 'x86_64')
-  env = get_env(project, build)
+  env = get_env(project, build, config)
 
   steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env, build)
 
