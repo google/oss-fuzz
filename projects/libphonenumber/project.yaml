@@ -3,6 +3,7 @@ primary_contact: "penmetsaa@google.com"
 language: c++
 auto_ccs:
   - "david@adalogics.com"
+  - "pacbypass@gmail.com"
 sanitizers:
   - address
 main_repo: 'https://github.com/google/libphonenumber'
