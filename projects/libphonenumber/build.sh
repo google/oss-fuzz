@@ -89,7 +89,7 @@ make -j$(nproc)
 
 # list of fuzz targets
 FUZZ_TARGETS=(
-    "fuzz_util" 
+    "fuzz_phone" 
     "fuzz_shortnumberinfo"
     "fuzz_asyoutypeformatter"
     "fuzz_matcher"
