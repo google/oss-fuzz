@@ -34,6 +34,14 @@ def get_engine_project_image(fuzzing_engine, project):
   return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.name}'
 
 
+def get_gcs_public_corpus_url(project, fuzz_target_name):
+  """Returns the url of a public gcs seed corpus."""
+  return (
+      f'https://storage.googleapis.com/{project.name}-backup.clusterfuzz-'
+      f'external.appspot.com/corpus/libFuzzer/{project.name}_{fuzz_target_name}'
+      f'/public.zip')
+
+
 def get_env(project, build, config):
   """Gets the environment for fuzzbench/oss-fuzz-on-demand."""
   env = build_project.get_env(project.fuzzing_language, build)
@@ -129,6 +137,48 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
   return steps
 
 
+def get_gcs_corpus_steps(fuzzing_engine, project, build, env_dict):
+  """Returns the build steps to download corpus from GCS (if it exists) and
+  use it on OSS-fuzz on Demand."""
+  steps = []
+
+  corpus_path = '/workspace/gcs_corpus'
+  corpus_filename = 'public.zip'
+  fuzz_target_name = env_dict["FUZZ_TARGET"]
+  corpus_url = get_gcs_public_corpus_url(project, fuzz_target_name)
+  download_and_use_corpus_step = {
+      'name':
+          get_engine_project_image(fuzzing_engine, project),
+      'args': [
+          'bash', '-c', f'if wget --spider --quiet {corpus_url}; then '
+          f'  echo "URL exists. Downloading..." && mkdir -p {corpus_path} && '
+          f'  cd {corpus_path} && wget -O {corpus_filename} {corpus_url};'
+          f'else '
+          f'  echo "URL does not exist. Skipping download."; '
+          f'fi'
+      ],
+  }
+  steps.append(download_and_use_corpus_step)
+
+  seed_corpus_path = f'{build.out}/{fuzz_target_name}_seed_corpus.zip'
+  gcs_corpus_path = f'{corpus_path}/{corpus_filename}'
+  update_corpus_step = {
+      'name':
+          get_engine_project_image(fuzzing_engine, project),
+      'args': [
+          'bash', '-c', f'if test -f "{gcs_corpus_path}"; then '
+          f'  mv {gcs_corpus_path} {seed_corpus_path} && '
+          f'  rm -r {corpus_path};'
+          f'else '
+          f'  echo "There is no corpus to update."; '
+          f'fi'
+      ],
+  }
+  steps.append(update_corpus_step)
+
+  return steps
+
+
 def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict,
                                        build):
   """Returns the build steps to create and push the oss-fuzz-on-demand
@@ -213,6 +263,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env, build)
 
   env_dict = {string.split("=")[0]: string.split("=")[1] for string in env}
+
+  steps += get_gcs_corpus_steps(config.fuzzing_engine, project, build, env_dict)
+
   steps += get_build_and_push_ood_image_steps(config.fuzzing_engine, project,
                                               env_dict, build)
 
