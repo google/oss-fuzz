@@ -28,7 +28,7 @@ FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
 
 
-def get_engine_project_image(fuzzing_engine, project):
+def get_engine_project_image_name(fuzzing_engine, project):
   """Returns the name of an image used to build |project| with
   |fuzzing_engine|."""
   return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.name}'
@@ -96,8 +96,8 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
   build_args = [
       'build', '--build-arg', f'parent_image=gcr.io/oss-fuzz/{project.name}',
       '--tag',
-      get_engine_project_image(fuzzing_engine,
-                               project), '--file', engine_dockerfile_path,
+      get_engine_project_image_name(fuzzing_engine,
+                                    project), '--file', engine_dockerfile_path,
       os.path.join(FUZZBENCH_PATH, 'fuzzers')
   ]
   engine_step = [
@@ -114,7 +114,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
 
   compile_project_step = {
       'name':
-          get_engine_project_image(fuzzing_engine, project),
+          get_engine_project_image_name(fuzzing_engine, project),
       'env':
           env,
       'volumes': [{
@@ -148,7 +148,7 @@ def get_gcs_corpus_steps(fuzzing_engine, project, env_dict):
   corpus_url = get_gcs_public_corpus_url(project, fuzz_target_name)
   download_and_use_corpus_step = {
       'name':
-          get_engine_project_image(fuzzing_engine, project),
+          get_engine_project_image_name(fuzzing_engine, project),
       'args': [
           'bash', '-c', f'if wget --spider --quiet {corpus_url}; then '
           f'  echo "URL exists. Downloading..." && mkdir -p {corpus_path} && '
@@ -164,7 +164,7 @@ def get_gcs_corpus_steps(fuzzing_engine, project, env_dict):
   gcs_corpus_path = f'{corpus_path}/{corpus_filename}'
   update_corpus_step = {
       'name':
-          get_engine_project_image(fuzzing_engine, project),
+          get_engine_project_image_name(fuzzing_engine, project),
       'args': [
           'bash', '-c', f'if test -f "{gcs_corpus_path}"; then '
           f'  mv {gcs_corpus_path} {seed_corpus_path} && '
@@ -186,7 +186,7 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict):
 
   copy_runtime_essential_files_step = {
       'name':
-          get_engine_project_image(fuzzing_engine, project),
+          get_engine_project_image_name(fuzzing_engine, project),
       'volumes': [{
           'name': 'fuzzbench_path',
           'path': FUZZBENCH_PATH,
