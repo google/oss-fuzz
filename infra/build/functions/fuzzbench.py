@@ -87,7 +87,7 @@ def get_fuzzbench_setup_steps():
   return fuzzbench_setup_steps
 
 
-def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
+def get_build_fuzzers_steps(fuzzing_engine, project, env):
   """Returns the build_fuzzers step to build |project| with |fuzzing_engine|,
   for fuzzbench/oss-fuzz-on-demand."""
   steps = []
@@ -129,7 +129,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
-           f'mkdir -p {build.out} && compile'),
+           'mkdir -p $${OUT} && compile'),
       ],
   }
   steps.append(compile_project_step)
@@ -137,7 +137,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env, build):
   return steps
 
 
-def get_gcs_corpus_steps(fuzzing_engine, project, build, env_dict):
+def get_gcs_corpus_steps(fuzzing_engine, project, env_dict):
   """Returns the build steps to download corpus from GCS (if it exists) and
   use it on OSS-fuzz on Demand."""
   steps = []
@@ -160,7 +160,7 @@ def get_gcs_corpus_steps(fuzzing_engine, project, build, env_dict):
   }
   steps.append(download_and_use_corpus_step)
 
-  seed_corpus_path = f'{build.out}/{fuzz_target_name}_seed_corpus.zip'
+  seed_corpus_path = f'{env_dict["OUT"]}/{fuzz_target_name}_seed_corpus.zip'
   gcs_corpus_path = f'{corpus_path}/{corpus_filename}'
   update_corpus_step = {
       'name':
@@ -179,8 +179,7 @@ def get_gcs_corpus_steps(fuzzing_engine, project, build, env_dict):
   return steps
 
 
-def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict,
-                                       build):
+def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict):
   """Returns the build steps to create and push the oss-fuzz-on-demand
   self-contained image."""
   steps = []
@@ -216,7 +215,7 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict,
   steps.append(build_runtime_step)
 
   oss_fuzz_on_demand_dockerfile_path = "/workspace/oss-fuzz/infra/build/functions/ood.Dockerfile"
-  build_out_path_without_workspace = build.out[10:]
+  build_out_path_without_workspace = env_dict["OUT"][10:]
   build_ood_image_step = {
       'name':
           'gcr.io/cloud-builders/docker',
@@ -260,14 +259,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   build = build_project.Build(config.fuzzing_engine, 'address', 'x86_64')
   env = get_env(project, build, config)
 
-  steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env, build)
+  steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env)
 
   env_dict = {string.split("=")[0]: string.split("=")[1] for string in env}
 
-  steps += get_gcs_corpus_steps(config.fuzzing_engine, project, build, env_dict)
+  steps += get_gcs_corpus_steps(config.fuzzing_engine, project, env_dict)
 
   steps += get_build_and_push_ood_image_steps(config.fuzzing_engine, project,
-                                              env_dict, build)
+                                              env_dict)
 
   return steps
 
