@@ -45,7 +45,8 @@ RUN apt-get update && apt-get install -y git && \
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.
-RUN /root/checkout_build_install_llvm.sh
+ARG FULL_LLVM_BUILD
+RUN FULL_LLVM_BUILD=$FULL_LLVM_BUILD /root/checkout_build_install_llvm.sh
 RUN rm /root/checkout_build_install_llvm.sh
 
 # Setup the environment.

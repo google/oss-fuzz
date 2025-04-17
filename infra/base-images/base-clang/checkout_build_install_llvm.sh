@@ -17,6 +17,12 @@
 
 NPROC=$(nproc)
 
+# Set this to get a full build with all binaries and libraries, as well as
+# everything built with libcxx.
+if [ -z "${FULL_LLVM_BUILD-}" ]; then
+  FULL_LLVM_BUILD=
+fi
+
 TARGET_TO_BUILD=
 case $(uname -m) in
     x86_64)
@@ -107,10 +113,35 @@ mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
 python3 $SRC/chromium_tools/clang/scripts/update.py --output-dir $WORK/llvm-stage1
 
 cd $WORK/llvm-stage2
+
+if [[ -n "$FULL_LLVM_BUILD" ]]; then
+  # Bootstrap libc++ so we can build llvm with it.
+  cmake -G "Ninja" \
+    -DLIBCXX_ENABLE_SHARED=OFF \
+    -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+    -DLIBCXXABI_ENABLE_SHARED=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+    -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+    -DLLVM_BINUTILS_INCDIR="/usr/include/" \
+    -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
+    $LLVM_SRC/llvm
+
+  ninja runtimes -j $NPROC
+  ninja install-runtimes
+
+  # Make libc++ discoverable by the linker.
+  export LIBRARY_PATH=/usr/local/lib/x86_64-unknown-linux-gnu/
+fi
+
+# Note: LLVM_ENABLE_LIBCXX=ON doesn't break the build even if libcxx doesn't
+# exist.
 cmake -G "Ninja" \
   -DLIBCXX_ENABLE_SHARED=OFF \
   -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
   -DLIBCXXABI_ENABLE_SHARED=OFF \
+  -DLLVM_ENABLE_LIBCXX=ON \
+  -DLLVM_ENABLE_WARNINGS=OFF \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi" \
   -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
@@ -133,6 +164,11 @@ export CXX=clang++
 function free_disk_space {
     rm -rf $LLVM_SRC $SRC/chromium_tools
     apt-get autoremove --purge -y $LLVM_DEP_PACKAGES
+
+    if [[ -n "$FULL_LLVM_BUILD" ]]; then
+      return 0
+    fi
+
     # Delete unneeded parts of LLVM to reduce image size.
     # See https://github.com/google/oss-fuzz/issues/5170
     LLVM_TOOLS_TMPDIR=/tmp/llvm-tools
