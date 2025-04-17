@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-"""Note: This is not a source file that is built and run as part of the build.
-
-It is copied into the OSS-Fuzz container image and run there as part of the
+"""
+This is copied into the OSS-Fuzz container image and run there as part of the
 instrumentation process.
 """
 
@@ -10,9 +9,9 @@ from collections.abc import MutableSequence, Sequence
 import hashlib
 import json
 import os
+import random
 import subprocess
 import sys
-import random
 from typing import Any
 
 _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
@@ -246,7 +245,7 @@ def main(argv: Sequence[str]) -> None:
 
   output_hash = sha256(output_file)
 
-  with open("/untitled/ignored_deps.json") as f:
+  with open("/opt/indexer/ignored_deps.json") as f:
     ignored_deps = frozenset(json.load(f)["deps"])
 
   deps = parse_dependency_file(dependency_file, output_file, ignored_deps)

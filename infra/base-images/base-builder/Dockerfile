@@ -209,4 +209,8 @@ ENV CCACHE_DIR /ccache/cache
 ENV CCACHE_COMPILERCHECK none
 ENV CCACHE_COMPILERTYPE clang
 
+COPY indexer /opt/indexer
+RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang
+RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang++
+
 CMD ["compile"]
