@@ -33,9 +33,11 @@ def get_engine_project_image_name(fuzzing_engine, project):
   |fuzzing_engine|."""
   return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.name}'
 
+
 def get_ood_image_name(fuzzing_engine, project):
   """Returns the name of an OSS-Fuzz on Demand image."""
   return f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/ood/{fuzzing_engine}/{project.name}'
+
 
 def get_gcs_public_corpus_url(project, fuzz_target_name):
   """Returns the url of a public gcs seed corpus."""
@@ -210,8 +212,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
       'name':
           'gcr.io/cloud-builders/docker',
       'args': [
-          'build', '--tag', ood_image, '--file',
-          fuzzer_runtime_dockerfile_path,
+          'build', '--tag', ood_image, '--file', fuzzer_runtime_dockerfile_path,
           os.path.join('/workspace' + FUZZBENCH_PATH, 'fuzzers')
       ]
   },
@@ -236,6 +237,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
   steps.append(build_ood_image_step)
 
   return steps
+
 
 def get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict):
   """Returns the build steps to push and run the oss-fuzz-on-demand
