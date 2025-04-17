@@ -1,9 +1,0 @@
-homepage: "https://github.com/pborman/uuid"
-language: go
-main_repo: "https://github.com/pborman/uuid"
-auto_ccs:
-  - "adam@adalogics.com"
-fuzzing_engines:
-  - libfuzzer
-sanitizers:
-  - address

@@ -1,9 +1,0 @@
-homepage: "http://www.libpng.org/pub/png/libpng.html"
-main_repo: "https://git.code.sf.net/p/libpng/code libpng-code"
-language: c++
-primary_contact: "kcc@google.com"
-sanitizers:
-  - undefined
-  - address
-fuzzing_engines:
-  - libfuzzer

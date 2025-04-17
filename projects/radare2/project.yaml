@@ -1,9 +1,0 @@
-homepage: "https://github.com/radareorg/radare2"
-language: c++
-primary_contact: "pancake@nopcode.org"
-auto_ccs:
-  - "zlowram@gmail.com"
-sanitizers:
-  - address
-run_tests: False
-main_repo: 'https://github.com/radareorg/radare2'

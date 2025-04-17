@@ -1,6 +1,0 @@
-homepage: "https://llhttp.org/"
-main_repo: "https://github.com/nodejs/llhttp"
-language: c
-primary_contact: "fedor@indutny.com"
-auto_ccs:
- - "david@adalogics.com"

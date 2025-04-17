@@ -1,3 +1,0 @@
-[libfuzzer]
-dict = ass.dict
-max_len = 8192

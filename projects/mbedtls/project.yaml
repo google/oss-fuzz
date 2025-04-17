@@ -1,6 +1,0 @@
-homepage: "https://developer.trustedfirmware.org/w/mbed-tls/"
-language: c++
-primary_contact: "mbed-tls-security@lists.trustedfirmware.org"
-auto_ccs :
-  - "p.antoine@catenacyber.fr"
-main_repo: 'https://github.com/Mbed-TLS/mbedtls.git'

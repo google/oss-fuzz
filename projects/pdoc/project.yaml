@@ -1,9 +1,0 @@
-homepage: https://github.com/pdoc3/pdoc
-main_repo: https://github.com/pdoc3/pdoc
-language: python
-fuzzing_engines:
-- libfuzzer
-sanitizers:
-- address
-vendor_ccs:
-- david@adalogics.com

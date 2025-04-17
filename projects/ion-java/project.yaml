@@ -1,9 +1,0 @@
-homepage: "https://github.com/amazon-ion/ion-java/"
-language: jvm
-fuzzing_engines:
-  - libfuzzer
-main_repo: "https://github.com/amazon-ion/ion-java/"
-sanitizers:
-  - address
-auto_ccs:
-  - "ion-team@amazon.com"

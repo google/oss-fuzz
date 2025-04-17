@@ -1,7 +1,0 @@
-homepage: "https://github.com/briansmith/ring"
-primary_contact: "brian@briansmith.org"
-main_repo: "https://github.com/briansmith/ring"
-sanitizers:
-- address
-- memory
-- undefined

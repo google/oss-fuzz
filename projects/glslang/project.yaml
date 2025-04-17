@@ -1,8 +1,0 @@
-homepage: "https://github.com/khronosgroup/glslang"
-main_repo: "https://github.com/khronosgroup/glslang"
-language: c++
-sanitizers:
-- address
-vendor_ccs:
-- david@adalogics.com
-- arthur.chan@adalogics.com
