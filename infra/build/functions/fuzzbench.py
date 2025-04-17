@@ -33,6 +33,9 @@ def get_engine_project_image_name(fuzzing_engine, project):
   |fuzzing_engine|."""
   return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.name}'
 
+def get_ood_image_name(fuzzing_engine, project):
+  """Returns the name of an OSS-Fuzz on Demand image."""
+  return f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/ood/{fuzzing_engine}/{project.name}'
 
 def get_gcs_public_corpus_url(project, fuzz_target_name):
   """Returns the url of a public gcs seed corpus."""
@@ -139,7 +142,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
 
 def get_gcs_corpus_steps(fuzzing_engine, project, env_dict):
   """Returns the build steps to download corpus from GCS (if it exists) and
-  use it on OSS-fuzz on Demand."""
+  use it on oss-fuzz-on-demand."""
   steps = []
 
   corpus_path = '/workspace/gcs_corpus'
@@ -179,9 +182,9 @@ def get_gcs_corpus_steps(fuzzing_engine, project, env_dict):
   return steps
 
 
-def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict):
-  """Returns the build steps to create and push the oss-fuzz-on-demand
-  self-contained image."""
+def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
+  """Returns the build steps to create the oss-fuzz-on-demand self-contained
+  image. Executing docker run on this image starts the fuzzing process."""
   steps = []
 
   copy_runtime_essential_files_step = {
@@ -199,7 +202,7 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict):
   }
   steps.append(copy_runtime_essential_files_step)
 
-  runtime_image_tag = f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/ood/{fuzzing_engine}/{project.name}'
+  ood_image = get_ood_image_name(fuzzing_engine, project)
   fuzzer_runtime_dockerfile_path = os.path.join('/workspace' + FUZZBENCH_PATH,
                                                 'fuzzers', fuzzing_engine,
                                                 'runner.Dockerfile')
@@ -207,7 +210,7 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict):
       'name':
           'gcr.io/cloud-builders/docker',
       'args': [
-          'build', '--tag', runtime_image_tag, '--file',
+          'build', '--tag', ood_image, '--file',
           fuzzer_runtime_dockerfile_path,
           os.path.join('/workspace' + FUZZBENCH_PATH, 'fuzzers')
       ]
@@ -220,9 +223,9 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict):
       'name':
           'gcr.io/cloud-builders/docker',
       'args': [
-          'build', '--tag', runtime_image_tag, '--file',
+          'build', '--tag', ood_image, '--file',
           oss_fuzz_on_demand_dockerfile_path, '--build-arg',
-          f'runtime_image={runtime_image_tag}', '--build-arg',
+          f'runtime_image={ood_image}', '--build-arg',
           f'BUILD_OUT_PATH={build_out_path_without_workspace}', '--build-arg',
           f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}', '--build-arg',
           f'FUZZ_TARGET={env_dict["FUZZ_TARGET"]}', '--build-arg',
@@ -232,11 +235,26 @@ def get_build_and_push_ood_image_steps(fuzzing_engine, project, env_dict):
   }
   steps.append(build_ood_image_step)
 
+  return steps
+
+def get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict):
+  """Returns the build steps to push and run the oss-fuzz-on-demand
+  self-contained image."""
+  steps = []
+
+  ood_image = get_ood_image_name(fuzzing_engine, project)
+
   push_ood_image_step = {
       'name': 'gcr.io/cloud-builders/docker',
-      'args': ['push', runtime_image_tag]
+      'args': ['push', ood_image]
   }
   steps.append(push_ood_image_step)
+
+  run_ood_image_step = {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': ['run', ood_image]
+  }
+  steps.append(run_ood_image_step)
 
   return steps
 
@@ -265,8 +283,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   steps += get_gcs_corpus_steps(config.fuzzing_engine, project, env_dict)
 
-  steps += get_build_and_push_ood_image_steps(config.fuzzing_engine, project,
-                                              env_dict)
+  steps += get_build_ood_image_steps(config.fuzzing_engine, project, env_dict)
+
+  steps += get_push_and_run_ood_image_steps(config.fuzzing_engine, project,
+                                            env_dict)
 
   return steps
 
