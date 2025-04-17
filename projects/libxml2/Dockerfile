@@ -29,6 +29,6 @@ RUN apt-get update && \
 # Build requires automake 1.16.3
 RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
     apt install ./automake_1.16.5-1.3_all.deb
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
-WORKDIR libxml2
+COPY libxml2 $SRC/
+WORKDIR $SRC
 COPY build.sh $SRC/
