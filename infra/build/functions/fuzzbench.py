@@ -216,7 +216,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env, build)
 
-  env_dict = {string.split("=")[0]: string.split("=")[1] for string in env}
+  env_dict = {string.split('=')[0]: string.split('=')[1] for string in env}
   steps += get_build_and_push_ood_image_steps(config.fuzzing_engine, project,
                                               env_dict, build)
 
