@@ -21,6 +21,11 @@ export CXXFLAGS="$CXXFLAGS -Wno-error=invalid-unevaluated-string"
 
 pwsh ./scripts/build.ps1 -Static -DisableTest -DisablePerf -DisableLogs -Parallel 1
 
+BUILDFILENAME=$(find . -name 'msquic-config.cmake')
+BUILDDIR=$(dirname $BUILDFILENAME)
+LIBMSQUICDIR=$(cmake -LAH $BUILDDIR/CMakeCache.txt | grep QUIC_OUTPUT_DIR | cut -d'=' -f 2)
+QUICTLSLIB=$(cmake -LAH $BUILDDIR/CMakeCache.txt | grep  QUIC_TLS_LIB | cut -d'=' -f 2)
+
 cd $SRC/msquic/src/fuzzing
 
 $CXX $CXXFLAGS -DCX_PLATFORM_LINUX -DQUIC_TEST_APIS \
@@ -28,13 +33,11 @@ $CXX $CXXFLAGS -DCX_PLATFORM_LINUX -DQUIC_TEST_APIS \
     -I/src/msquic/src/inc \
     -I/src/msquic/src/generated/common \
     -I/src/msquic/src/generated/linux \
-    -I/src/msquic/build/linux/x64_openssl/_deps/opensslquic-build/openssl/include \
+    -I/src/msquic/build/linux/x64_$QUICTLSLIB/_deps/opensslquic-build/$QUICTLSBUILD/include \
     -isystem /src/msquic/submodules/googletest/googletest/include \
     -isystem /src/msquic/submodules/googletest/googletest \
     -c fuzz.cc -o fuzz.o
 
-CMAKECACHE=$(find ./build -name 'CmakeCache.txt'
-LIBMSQUICDIR=$(cmake -LAH $CMAKECACHE | grep QUIC_OUTPUT_DIR | cut -d'=' -f 2)
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz.o -o $OUT/fuzz \
     $LIBMSQUICDIR/libmsquic.a
@@ -46,10 +49,10 @@ $CXX $CXXFLAGS -DCX_PLATFORM_LINUX -DQUIC_TEST_APIS -DFUZZING -DQUIC_BUILD_STATI
     -I/src/msquic/src/inc \
     -I/src/msquic/src/generated/common \
     -I/src/msquic/src/generated/linux \
-    -I/src/msquic/build/linux/x64_openssl/_deps/opensslquic-build/openssl/include \
+    -I/src/msquic/build/linux/x64_$QUICTLSLIB/_deps/opensslquic-build/$QUICTLSLIB/include \
     -isystem /src/msquic/submodules/googletest/googletest/include \
     -isystem /src/msquic/submodules/googletest/googletest \
     -c ./msquic/src/tools/spin/spinquic.cpp -o spinquic.o
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE spinquic.o -o $OUT/spinquic \
-    /src/msquic/artifacts/bin/linux/x64_Debug_openssl/libmsquic.a
+    /src/msquic/artifacts/bin/linux/x64_Debug_$QUICTLSLIB/libmsquic.a

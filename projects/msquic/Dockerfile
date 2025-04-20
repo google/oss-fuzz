@@ -27,9 +27,6 @@ RUN apt-get update && \
 
 RUN git clone https://github.com/microsoft/msquic && \
     cd msquic && \
-    git submodule init submodules/clog && \
-    git submodule init submodules/openssl && \
-    git submodule init submodules/googletest && \
-    git submodule update
+    git submodule update --init && \
 COPY build.sh $SRC/
 WORKDIR $SRC/msquic
