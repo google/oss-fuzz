@@ -61,6 +61,11 @@ def get_project_data(project_name):
   return project_yaml, project.dockerfile_contents
 
 
+def get_empty_config():
+  """Returns an empty build config."""
+  return build_project.Config()
+
+
 def get_build_steps(project_name):
   """Retrieve build steps."""
   project_yaml, dockerfile_lines = get_project_data(project_name)
