@@ -27,6 +27,7 @@ RUN apt-get update && \
 
 RUN git clone https://github.com/microsoft/msquic && \
     cd msquic && \
-    git submodule update --init && \
+    git submodule update --init
+
 COPY build.sh $SRC/
 WORKDIR $SRC/msquic
