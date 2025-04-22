@@ -34,6 +34,8 @@ ARCHIVE_VERSION = 1
 
 INDEX_DB_NAME = "db.sqlite"
 
+PROJECT = os.environ['PROJECT_NAME']
+
 
 def set_env_vars():
   os.environ['SANITIZER'] = os.environ['FUZZING_ENGINE'] = 'none'
@@ -202,7 +204,7 @@ def build_project():
     '-resource-dir /usr/local/lib/clang/18 '
   )
   os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
-  shutil.copy('/opt/indexer/fuzzing_engine.cc', os.path.join(os.getenv('SRC'), os.getenv('PROJECT', 'skcms'), 'fuzzing_engine.cc'))
+  shutil.copy('/opt/indexer/fuzzing_engine.cc', os.path.join(os.getenv('SRC'), PROJECT, 'fuzzing_engine.cc'))
   build_fuzzing_engine_command = [
     '/opt/indexer/clang++',
     '-c',
@@ -212,7 +214,7 @@ def build_project():
     '-std=c++20',
     '-glldb',
     '-O0',
-    '/src/skcms/fuzzing_engine.cc',
+    f'/src/{PROJECT}/fuzzing_engine.cc',
     '-o',
     '/out/fuzzing_engine.o',
     '-gen-cdb-fragment-path',
@@ -276,12 +278,8 @@ def archive_target(
   # for the project, or something like that, but this will do for now.
   target_hash = short_file_hash((build_dir / target.name))
 
-  # name = f"{self._project_name}.{target.name}"
-  # uuid = f"{self._project_name}.{target.name}.{target_hash}"
-
-  # !!!
-  name = f"skcms.{target.name}"
-  uuid = f"skcms.{target.name}.{target_hash}"
+  name = f"{PROJECT}.{target.name}"
+  uuid = f"{PROJECT}.{target.name}.{target_hash}"
 
 
   with tempfile.TemporaryDirectory(prefix="index_") as index_tmp_dir:
