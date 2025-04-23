@@ -34,6 +34,10 @@ ARCHIVE_VERSION = 1
 
 INDEX_DB_NAME = "db.sqlite"
 
+PROJECT = Path(os.environ['PROJECT_NAME'])
+SNAPSHOT_DIR = Path('/snapshot')
+SRC = Path(os.getenv('SRC'))
+
 
 def set_env_vars():
   os.environ['SANITIZER'] = os.environ['FUZZING_ENGINE'] = 'none'
@@ -104,7 +108,7 @@ def save_build(
       _save_dir(index_dir, "idx/")
     # Warning, we overwrite here when default behavior used to be false.
     shutil.copyfile(tmp.name, archive_path)
-  
+
 
 def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
   data = io.BytesIO(data.encode("utf-8"))
@@ -138,7 +142,7 @@ def enumerate_build_targets(
 
       if binary_path.is_relative_to('/out/'):
         binary_path = Path('./build', binary_path.relative_to('/out/'))
-        
+
       targets.append(
         BinaryMetadata(
           name=name,
@@ -185,6 +189,17 @@ def sha256(files: Union[Path, Sequence[Path]]) -> str:
   return hash_value.hexdigest()
 
 
+def copy_fuzzing_engine():
+  # Not every project saves source to $SRC/$PROJECT_NAME
+  fuzzing_engine_dir = SRC / PROJECT
+  if not fuzzing_engine_dir.exists():
+    fuzzing_engine_dir = SRC / 'fuzzing_engine'
+    fuzzing_engine_dir.mkdir()
+
+  shutil.copy('/opt/indexer/fuzzing_engine.cc', fuzzing_engine_dir)
+  return fuzzing_engine_dir
+
+
 def build_project():
   set_env_vars()
   existing_cflags = os.environ.get('CFLAGS', '')
@@ -202,7 +217,9 @@ def build_project():
     '-resource-dir /usr/local/lib/clang/18 '
   )
   os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
-  shutil.copy('/opt/indexer/fuzzing_engine.cc', os.path.join(os.getenv('SRC'), os.getenv('PROJECT', 'skcms'), 'fuzzing_engine.cc'))
+
+  fuzzing_engine_path = copy_fuzzing_engine()
+
   build_fuzzing_engine_command = [
     '/opt/indexer/clang++',
     '-c',
@@ -212,7 +229,7 @@ def build_project():
     '-std=c++20',
     '-glldb',
     '-O0',
-    '/src/skcms/fuzzing_engine.cc',
+    fuzzing_engine_path / 'fuzzing_engine.cc',
     '-o',
     '/out/fuzzing_engine.o',
     '-gen-cdb-fragment-path',
@@ -237,11 +254,12 @@ def build_project():
   ]
   subprocess.run(ar_cmd, check=True)
   lib_fuzzing_engine = '/usr/lib/libFuzzingEngine.a'
-  os.remove(lib_fuzzing_engine)
+  if os.path.exists(lib_fuzzing_engine):
+    os.remove(lib_fuzzing_engine)
   os.symlink('/opt/indexer/fuzzing_engine.a', lib_fuzzing_engine)
   subprocess.run(['/usr/local/bin/compile'], check=True)
 
-  
+
 def test_target(
     target: BinaryMetadata,
     root_dir: Path,
@@ -276,12 +294,8 @@ def archive_target(
   # for the project, or something like that, but this will do for now.
   target_hash = short_file_hash((build_dir / target.name))
 
-  # name = f"{self._project_name}.{target.name}"
-  # uuid = f"{self._project_name}.{target.name}.{target_hash}"
-
-  # !!!
-  name = f"skcms.{target.name}"
-  uuid = f"skcms.{target.name}.{target_hash}"
+  name = f"{PROJECT}.{target.name}"
+  uuid = f"{PROJECT}.{target.name}.{target_hash}"
 
 
   with tempfile.TemporaryDirectory(prefix="index_") as index_tmp_dir:
@@ -289,7 +303,8 @@ def archive_target(
     build_dir = root_dir / "out"
 
     index_db_path = os.path.join(index_tmp_dir, INDEX_DB_NAME)
-    cmd = ['/opt/indexer/indexer', '--build_dir', build_dir, '--index_path', index_db_path, '--source_dir', os.environ['SRC']]
+    cmd = ['/opt/indexer/indexer', '--build_dir', build_dir, '--index_path',
+           index_db_path, '--source_dir', os.environ['SRC']]
     result = subprocess.run(cmd, check=True)
     if result.returncode != 0:
       raise Exception(
@@ -329,7 +344,7 @@ def archive_target(
         index_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(file_path, index_path)
 
-    archive_path = Path(f"/out/{uuid}.tar")
+    archive_path = SNAPSHOT_DIR / f"{uuid}.tar"
 
     save_build(
       Manifest(
@@ -355,7 +370,13 @@ def index():
   root = Path('/')
   targets = enumerate_build_targets(root)
   for target in targets:
-    if not test_target(target, root):
+    try:
+      # TODO(metzman): Figure out if this is a good idea, it makes some things
+      # pass that should but causes some things to pass that shouldn't.
+      if not test_target(target, root):
+        continue
+    except Exception as e:
+      print(f'Error: {e}')
       continue
     archive_target(target, root)
 
@@ -374,14 +395,20 @@ def get_index_files(index_db_path) -> Iterator[str]:
         yield os.path.join(dirname, basename)
 
     conn.close()
-  
+
 
 def main():
   for directory in ['aflplusplus', 'fuzztest', 'honggfuzz', 'libfuzzer']:
     path = os.path.join(os.environ['SRC'], directory)
     shutil.rmtree(path, ignore_errors=True)
+  # Initially, we put snapshots directly in /out. This caused a bug where each
+  # snapshot was added to the next because they contain the contents of /out.
+  SNAPSHOT_DIR.mkdir(exist_ok=True)
   build_project()
   index()
+  for snapshot in SNAPSHOT_DIR.iterdir():
+    shutil.move(str(snapshot), '/out')
+
 
 if __name__ == '__main__':
   main()
