@@ -494,6 +494,7 @@ def get_build_steps_for_project(project,
     zip_filename = f"{project.name}-{timestamp}.zip"
     zip_cmd = f"cd {build.out} && zip -r {zip_filename} *.tar"
     env = get_env(project.fuzzing_language, build)
+    env['PROJECT_NAME'] = project.name
     upload_url = build_lib.get_signed_url(
         f'/clusterfuzz-builds/indexer_indexes/{project.name}/{zip_filename}')
     index_steps = [
