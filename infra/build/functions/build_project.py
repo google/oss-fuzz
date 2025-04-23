@@ -487,6 +487,35 @@ def get_build_steps_for_project(project,
           upload_steps = get_upload_steps(project, build, timestamp,
                                           config.testing)
           build_steps.extend(upload_steps)
+  if (config.build_type == 'fuzzing' and
+      project.fuzzing_language in {'c', 'c++'}):
+    build = Build('none', 'address', 'x86_64')
+    zip_filename = f"{project.name}-{timestamp}.zip"
+    zip_cmd = f"cd {build.out} && zip -r {zip_filename} *.tar"
+    env = get_env(project.fuzzing_language, build)
+    upload_url = build_lib.get_signed_url(
+        f'/clusterfuzz-builds/indexer_indexes/{project.name}/{zip_filename}')
+    index_steps = [
+        {
+            'name': project.image,
+            'args': ['/opt/indexer/indexer', '-v', '/workspace:/workspace'],
+            'env': env,
+            'allowFailure': True,
+        },
+        {
+            # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
+            'name': project.image,
+            'args': ['bash', '-c', zip_cmd],
+            'allowFailure': True,
+        },
+        {
+            'name': get_uploader_image(),
+            'args': [
+                os.path.join(build.out, zip_filename), upload_url],
+            'allowFailure': True,
+        }
+    ]
+    build_steps.extend(index_steps)
   return build_steps
 
 
