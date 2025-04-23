@@ -15,6 +15,7 @@ limitations under the License.
  * We do this for several of the binutils applications when creating
  * the binutils fuzzers.
  */
+#define is_strip 0
 #include "fuzz_objcopy.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);

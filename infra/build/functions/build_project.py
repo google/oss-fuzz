@@ -76,9 +76,21 @@ class Config:
   # TODO(ochang): This should be different per engine+sanitizer combination.
   upload_build_logs: str = None
   build_type: str = None
+  fuzzing_engine: str = None
 
 
-WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+# Allow the WORKDIR to be commented out for OSS-Fuzz-Gen, which creates new
+# Dockerfiles that inherit from cached verisons of the project images.
+# e.g.
+#   FROM us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/proj-ofg-cached-address
+#   # WORKDIR foo
+#   COPY new_target.c /src/proj/
+#
+# Because the WORKDIR is already set in the parent image and can be a relative
+# path, we can't set it again in the new Dockerfile.
+# However, we still need to know what the value is (for GCB), so we leave it
+# commented.
+WORKDIR_REGEX = re.compile(r'\s*#?\s*WORKDIR\s*([^\s]+)')
 
 
 class Build:  # pylint: disable=too-few-public-methods
@@ -596,9 +608,9 @@ def run_build(oss_fuzz_project,
                              experiment=experiment)
 
 
-def get_args(description):
-  """Parses command line arguments and returns them. Suitable for a build
-  script."""
+def parse_args(description, args):
+  """Parses command line arguments (or args if it is not None) and returns them.
+  Suitable for a build script."""
   parser = argparse.ArgumentParser(sys.argv[0], description=description)
   parser.add_argument('projects', help='Projects.', nargs='+')
   parser.add_argument('--testing',
@@ -610,6 +622,10 @@ def get_args(description):
                       required=False,
                       default=None,
                       help='Use testing base-images.')
+  parser.add_argument('--repo',
+                      required=False,
+                      default=DEFAULT_OSS_FUZZ_REPO,
+                      help='Use specified OSS-Fuzz repo.')
   parser.add_argument('--branch',
                       required=False,
                       default=None,
@@ -624,7 +640,11 @@ def get_args(description):
                       required=False,
                       default=False,
                       help='Configuration for experiments.')
-  return parser.parse_args()
+  parser.add_argument('--fuzzing-engine',
+                      required=False,
+                      default='libfuzzer',
+                      help='Fuzzing engine name.')
+  return parser.parse_args(args)
 
 
 def create_config(args, build_type):
@@ -636,15 +656,19 @@ def create_config(args, build_type):
                 parallel=args.parallel,
                 upload=upload,
                 experiment=args.experiment,
-                build_type=build_type)
+                build_type=build_type,
+                fuzzing_engine=args.fuzzing_engine)
 
 
-def build_script_main(script_description, get_build_steps_func, build_type):
+def build_script_main(script_description,
+                      get_build_steps_func,
+                      build_type,
+                      args=None):
   """Gets arguments from command line using |script_description| as helpstring
-  description. Gets build_steps using |get_build_steps_func| and then runs those
-  steps on GCB, tagging the builds with |build_type|. Returns 0 on success, 1 on
-  failure."""
-  args = get_args(script_description)
+  description or from args. Gets build_steps using |get_build_steps_func| and
+  then runs those steps on GCB, tagging the builds with |build_type|. Returns 0
+  on success, 1 on failure."""
+  args = parse_args(script_description, args)
   logging.basicConfig(level=logging.INFO)
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()

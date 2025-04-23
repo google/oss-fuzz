@@ -17,10 +17,16 @@ if [[ "$ARCHITECTURE" == i386 ]]; then
   export PKG_CONFIG_PATH=/usr/local/lib/i386-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
   LIBDIR='lib/i386-linux-gnu'
   FFMPEG_BUILD_ARGS='--arch="i386" --cpu="i386" --disable-inline-asm'
+  RUST_TARGET='i686-unknown-linux-gnu'
+  rustup target add $RUST_TARGET
 else
   LIBDIR='lib/x86_64-linux-gnu'
   FFMPEG_BUILD_ARGS=''
+  RUST_TARGET='x86_64-unknown-linux-gnu'
+  rustup target add $RUST_TARGET
 fi
+
+export RUSTC="rustc --target=$RUST_TARGET"
 
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
@@ -58,7 +64,7 @@ pushd $SRC/mpv
 sed -i -e "/^\s*flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]/d; \
           s|^\s*link_flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]| \
           link_flags += \['$LIB_FUZZING_ENGINE'\]|" meson.build
-mkdir subprojects
+mkdir subprojects -p
 meson wrap install expat
 meson wrap install fontconfig
 meson wrap install freetype2
@@ -96,5 +102,5 @@ meson compile -C build fuzzers
 
 find ./build/fuzzers -maxdepth 1 -type f -name 'fuzzer_*' -exec mv {} "$OUT" \; -exec echo "{} -> $OUT" \;
 
-rsync -av rsync://samples.ffmpeg.org/samples/Matroska $SRC/matroska
-zip -r $OUT/fuzzer_loadfile_mkv_seed_corpus.zip $SRC/matroska -i '*.mkv' '*.mka'
+rsync --no-compress -av rsync://samples.ffmpeg.org/samples/Matroska $SRC/matroska
+zip -0 -r $OUT/fuzzer_loadfile_mkv_seed_corpus.zip $SRC/matroska -i '*.mkv' '*.mka'

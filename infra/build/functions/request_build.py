@@ -69,7 +69,8 @@ def get_empty_config():
 def get_build_steps(project_name):
   """Retrieve build steps."""
   project_yaml, dockerfile_lines = get_project_data(project_name)
-  build_config = get_empty_config()
+  build_config = build_project.Config(
+      build_type=build_project.FUZZING_BUILD_TYPE)
   return build_project.get_build_steps(project_name, project_yaml,
                                        dockerfile_lines, build_config)
 

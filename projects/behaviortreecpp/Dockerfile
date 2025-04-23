@@ -1,5 +1,4 @@
-#!/bin/bash
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +14,8 @@
 #
 ################################################################################
 
-set -euxo pipefail
-
-target_out_dir=target/x86_64-unknown-linux-gnu/release
-cargo fuzz build --release
-cargo fuzz list | while read i; do
-    zip --recurse-paths --junk-paths --quiet "${OUT}/${i}_seed_corpus.zip" "./fuzz/corpus/${i}/"
-    mv -t "${OUT}/" "$target_out_dir/${i}"
-done
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool cmake pkg-config wget libsodium-dev
+RUN git clone --depth 1 https://github.com/BehaviorTree/BehaviorTree.CPP.git behaviortreecpp
+WORKDIR behaviortreecpp
+COPY build.sh $SRC/

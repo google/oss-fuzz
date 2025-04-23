@@ -1,4 +1,5 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/rinja-rs/rinja.git rinja
-WORKDIR rinja/fuzzing
-COPY build.sh $SRC/
+cd "$SRC/neqo"
+
+cp -av test-fixture/db/* "$OUT"
+export NSS_DB_PATH='$ARGV0'
+
+# FIXME: https://github.com/rust-fuzz/cargo-fuzz/issues/384 for why no LTO.
+CARGO_PROFILE_RELEASE_LTO=false cargo +nightly fuzz build --release --debug-assertions
+
+FUZZ_TARGET_OUTPUT_DIR=target/x86_64-unknown-linux-gnu/release
+for f in fuzz/fuzz_targets/*.rs; do
+        FUZZ_TARGET_NAME=$(basename "${f%.*}")
+        cp "$FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME" "$OUT/"
+done
