@@ -16,7 +16,7 @@
 ################################################################################
 
 cd lib
-cargo fuzz build --features=data-encoding/v3-preview
+cargo fuzz build
 
 find $SRC/data-encoding/target/x86_64-unknown-linux-gnu/release -maxdepth 1 \
     -type f -perm -u=x -exec cp {} $OUT \;

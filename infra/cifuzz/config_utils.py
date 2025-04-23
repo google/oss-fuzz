@@ -129,7 +129,7 @@ class BaseConfig:
     self.build_integration_path = (
         constants.DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH)
 
-    self.parallel_fuzzing = environment.get_bool('PARALLEL_FUZZING', False)
+    self.parallel_fuzzing = environment.get('PARALLEL_FUZZING', False)
     self.extra_environment_variables = _get_extra_environment_variables()
     self.output_sarif = environment.get_bool('OUTPUT_SARIF', False)
 

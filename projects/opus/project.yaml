@@ -3,9 +3,11 @@ language: c++
 primary_contact: "jmvalin@jmvalin.ca"
 auto_ccs:
   - "flim@google.com"
-  - "tomdenton@google.com"
+  - "jeanmarcv@google.com"
+  - "yunho@google.com"
   - "le.businessman@gmail.com"
 vendor_ccs:
+  - "media-alerts@mozilla.com"
   - "twsmith@mozilla.com"
 fuzzing_engines:
   - libfuzzer

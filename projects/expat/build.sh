@@ -1,5 +1,6 @@
 #!/bin/bash -eu
 # Copyright 2016 Google Inc.
+# Copyright 2025 Sebastian Pipping <sebastian@pipping.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +16,32 @@
 #
 ################################################################################
 
+# NOTE: We need to drop -stdlib=libc++ to not get (pages of) link errors when
+#       linking against system Protobuf that is linked against GCC's libstdc++
+#       rather than Clang's own libstdc++
+CXXFLAGS="${CXXFLAGS/-stdlib=libc++/ }"
+
+# NOTE: Without -static-libstdc++, the bad build checker in base-runner
+#       will fail with output:
+#       > error while loading shared libraries: libstdc++.so.6:
+#       > cannot open shared object file: No such file or directory
+#       The addition of -Wno-unused-command-line-argument silences Clang's
+#       misleading output on argument -static-libstdc++ appearing as unused.
+CXXFLAGS="${CXXFLAGS} -static-libstdc++ -Wno-unused-command-line-argument"
+
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
 cmake_args=(
     # Specific to Expat
+    -DEXPAT_BUILD_DOCS=OFF
+    -DEXPAT_BUILD_EXAMPLES=OFF
     -DEXPAT_BUILD_FUZZERS=ON
+    -DEXPAT_BUILD_TESTS=OFF
+    -DEXPAT_BUILD_TOOLS=OFF
     -DEXPAT_OSSFUZZ_BUILD=ON
     -DEXPAT_SHARED_LIBS=OFF
+    -DProtobuf_USE_STATIC_LIBS=ON
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
@@ -48,14 +67,11 @@ for fuzzer in fuzz/*;
 do
   cp $fuzzer $OUT
   fuzzer_name=$(basename $fuzzer)
-  if [[ ${fuzzer_name} =~ ^.*UTF-16$ ]];
-  then
+  if [[ ${fuzzer_name} =~ ^.*UTF-16$ ]]; then
     cp $SRC/xml_UTF_16.dict $OUT/${fuzzer_name}.dict
-  elif [[ ${fuzzer_name} =~ ^.*UTF-16LE$ ]];
-  then
+  elif [[ ${fuzzer_name} =~ ^.*UTF-16LE$ ]]; then
     cp $SRC/xml_UTF_16LE.dict $OUT/${fuzzer_name}.dict
-  elif [[ ${fuzzer_name} =~ ^.*UTF-16BE$ ]];
-  then
+  elif [[ ${fuzzer_name} =~ ^.*UTF-16BE$ ]]; then
     cp $SRC/xml_UTF_16BE.dict $OUT/${fuzzer_name}.dict
   else
     cp $SRC/xml.dict $OUT/${fuzzer_name}.dict

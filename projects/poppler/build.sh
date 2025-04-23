@@ -29,14 +29,15 @@ mkdir -p $BUILD
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_83_0.tar.bz2
-cd boost_1_83_0/
+tar jxf boost_1_87_0.tar.bz2
+cd boost_1_87_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 ./b2 --with-math install
 
 pushd $SRC/zlib
-CFLAGS=-fPIC ./configure --static --prefix=$PREFIX
+mkdir build && cd build
+CFLAGS=-fPIC ../configure --static --prefix=$PREFIX
 make install -j$(nproc)
 
 pushd $SRC

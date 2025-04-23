@@ -45,7 +45,7 @@ inputs:
     required: false
     default: False
   parallel-fuzzing:
-    description: "Whether to use all available cores for fuzzing."
+    description: "How many cores to use cores for fuzzing. A specific number, True - all available cores or False to run single threaded on a single core."
     required: false
     default: false
   output-sarif:

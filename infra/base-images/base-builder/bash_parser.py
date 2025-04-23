@@ -47,6 +47,10 @@ def should_discard_command(ast_tree) -> bool:
   except:  # pylint: disable=bare-except
     return False
 
+  if ('cmake' in first_word and
+      any('--build' in part.word for part in ast_tree.parts)):
+    return False
+
   cmds_to_avoid_replaying = {
       'configure', 'autoheader', 'autoconf', 'autoreconf', 'cmake', 'autogen.sh'
   }
@@ -196,7 +200,7 @@ def parse_script(bash_script, all_scripts) -> str:
     build_script = f.read()
   try:
     parts = bashlex.parse(build_script)
-  except bashlex.error.ParsingError:
+  except bashlex.errors.ParsingError:
     return ''
   for part in parts:
     new_script += handle_node(part, all_scripts, build_script)
@@ -217,7 +221,9 @@ def main():
   print("#" * 60)
   print(replay_bash_script)
   print("#" * 60)
-  with open('/out/replay-build-script.sh', 'w', encoding='utf-8') as f:
+
+  out_dir = os.getenv('OUT', '/out')
+  with open(f'{out_dir}/replay-build-script.sh', 'w', encoding='utf-8') as f:
     f.write(replay_bash_script)
 
   src_dir = os.getenv('SRC', '/src')

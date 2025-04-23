@@ -1,0 +1,13 @@
+homepage: "https://github.com/mozilla/neqo"
+language: rust
+primary_contact: "necko@mozilla.com"
+auto_ccs:
+  - "leggert@mozilla.com"
+  - "minden@mozilla.com"
+  - "kershaw@mozilla.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/mozilla/neqo.git'
+file_github_issue: true
