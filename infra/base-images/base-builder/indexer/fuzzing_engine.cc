@@ -27,6 +27,16 @@
 
 extern "C" int LLVMFuzzerTestOneInput(uint8_t data[], size_t n);
 
+
+extern "C" size_t LLVMFuzzerMutate(char *data, size_t size, size_t maxSize);
+
+__attribute__((weak)) extern "C" size_t LLVMFuzzerMutate(char *data, size_t size, size_t maxSize) {
+  (void) data;
+  (void) size;
+  (void) maxSize;
+  abort();
+}
+
 __attribute__((weak)) int LLVMFuzzerInitialize(
     __attribute__((unused)) int* argc, __attribute__((unused)) char*** argv) {
   return 0;
