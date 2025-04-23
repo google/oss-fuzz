@@ -36,6 +36,8 @@ def get_engine_project_image_name(fuzzing_engine, project):
 
 def get_ood_image_name(fuzzing_engine, project):
   """Returns the name of an OSS-Fuzz on Demand image."""
+  # TODO(andrenribeiro): Abstract the OOD image name generation to a separate
+  # location.
   return f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/ood/{fuzzing_engine}/{project.name}'
 
 
