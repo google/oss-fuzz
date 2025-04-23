@@ -30,17 +30,15 @@ from pathlib import Path
 from typing import Any, Sequence, Union, Iterator
 
 ARCHIVE_VERSION = 1
-
-
 INDEX_DB_NAME = "db.sqlite"
-
 PROJECT = Path(os.environ['PROJECT_NAME'])
 SNAPSHOT_DIR = Path('/snapshot')
 SRC = Path(os.getenv('SRC'))
 
 
 def set_env_vars():
-  os.environ['SANITIZER'] = os.environ['FUZZING_ENGINE'] = 'none'
+  os.environ['SANITIZER'] = 'address'
+  os.environ['FUZZING_ENGINE'] = 'none'
   os.environ['LIB_FUZZING_ENGINE'] = '/usr/lib/libFuzzingEngine.a'
   os.environ['FUZZING_LANGUAGE'] = 'c++'
   os.environ['CXX'] = '/opt/indexer/clang++'
