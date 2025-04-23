@@ -254,7 +254,7 @@ def get_datetime_now():
   return datetime.datetime.now()
 
 
-def get_env(fuzzing_language, build):
+def get_env(fuzzing_language, build, project_name=None):
   """Returns an environment for building. The environment is returned as a list
   and is suitable for use as the "env" parameter in a GCB build step. The
   environment variables are based on the values of |fuzzing_language| and
@@ -269,6 +269,8 @@ def get_env(fuzzing_language, build):
       'HOME': '/root',
       'OUT': build.out,
   }
+  if project_name is not None:
+    env_dict['PROJECT_NAME'] = project_name
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
@@ -382,6 +384,7 @@ def get_build_steps_for_project(project,
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
   for fuzzing_engine in sorted(project.fuzzing_engines):
+    break # !!!
     # Sort sanitizers and architectures so order is determinisitic (good for
     # tests).
     for sanitizer in sorted(project.sanitizers):
@@ -493,17 +496,20 @@ def get_build_steps_for_project(project,
     build = Build('none', 'address', 'x86_64')
     zip_filename = f"{project.name}-{timestamp}.zip"
     zip_cmd = f"cd {build.out} && zip -r {zip_filename} *.tar"
-    env = get_env(project.fuzzing_language, build)
-    env['PROJECT_NAME'] = project.name
+    env = get_env(project.fuzzing_language, build, project.name)
     upload_url = build_lib.get_signed_url(
         f'/clusterfuzz-builds/indexer_indexes/{project.name}/{zip_filename}')
+    index_step = {
+        'name': project.image,
+        'args': ['bash', '-c', f'echo $(pwd) && ls . && mkdir -p {project.workdir} && cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py && echo hi'],
+        'env': env,
+        'allowFailure': True,
+    }
+    build_lib.dockerify_run_step(index_step,
+                                 build,
+                                 use_architecture_image_name=build.is_arm)
     index_steps = [
-        {
-            'name': project.image,
-            'args': ['/opt/indexer/index_build.py', '-v', '/workspace:/workspace'],
-            'env': env,
-            'allowFailure': True,
-        },
+        index_step,
         {
             # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
             'name': project.image,

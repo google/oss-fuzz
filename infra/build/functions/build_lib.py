@@ -511,7 +511,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     steps.append(docker_build_arm_step)
 
   logging.info(f'Considering pushing {config.build_type} {language}.')
-  if (config.build_type == 'fuzzing' and language in ('c', 'c++')):
+  if (config.build_type == 'fuzzing' and language in ('c', 'c++') and not not config.testing and not config.experiment and config.upload):
     logging.info('Pushing.')
     # Push so that historical bugs are reproducible.
     push_step = {

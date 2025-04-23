@@ -34,6 +34,8 @@ INDEX_DB_NAME = "db.sqlite"
 PROJECT = Path(os.environ['PROJECT_NAME'])
 SNAPSHOT_DIR = Path('/snapshot')
 SRC = Path(os.getenv('SRC'))
+# On OSS-Fuzz build infra, $OUT is not /out.
+OUT = Path(os.getenv('OUT', '/out'))
 
 
 def set_env_vars():
@@ -123,7 +125,7 @@ def enumerate_build_targets(
   """Enumerates the build targets in the project."""
   logging.info("enumerate_build_targets")
   linker_json_paths = list(
-    (root_path / 'out' / 'cdb').glob('*_linker_commands.json'))
+    (OUT / 'cdb').glob('*_linker_commands.json'))
 
   targets = []
   logging.info('Found %i linker JSON files.', len(linker_json_paths))
@@ -138,8 +140,8 @@ def enumerate_build_targets(
       binary_args = '<input_file>'
       compile_commands = data['compile_commands']
 
-      if binary_path.is_relative_to('/out/'):
-        binary_path = Path('./build', binary_path.relative_to('/out/'))
+      if binary_path.is_relative_to(f'{OUT}/'):
+        binary_path = Path('./build', binary_path.relative_to(f'{OUT}/'))
 
       targets.append(
         BinaryMetadata(
@@ -208,7 +210,7 @@ def build_project():
     '-fsanitize=address '
     '-Wno-invalid-offsetof '
     '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
-    '-gen-cdb-fragment-path /out/cdb '
+    f'-gen-cdb-fragment-path {OUT}/cdb '
     '-Qunused-arguments '
     '-lc++abi '
     '-isystem /usr/local/lib/clang/18 '
@@ -229,9 +231,9 @@ def build_project():
     '-O0',
     fuzzing_engine_path / 'fuzzing_engine.cc',
     '-o',
-    '/out/fuzzing_engine.o',
+    f'{OUT}/fuzzing_engine.o',
     '-gen-cdb-fragment-path',
-    '/out/cdb',
+    f'{OUT}/cdb',
     '-Qunused-arguments',
     '-isystem',
     '/usr/local/lib/clang/18',
@@ -248,7 +250,7 @@ def build_project():
       'ar',
       'rcs',
       '/opt/indexer/fuzzing_engine.a',
-      '/out/fuzzing_engine.o'
+      f'{OUT}/fuzzing_engine.o'
   ]
   subprocess.run(ar_cmd, check=True)
   lib_fuzzing_engine = '/usr/lib/libFuzzingEngine.a'
@@ -263,7 +265,7 @@ def test_target(
     root_dir: Path,
 ) -> bool:
   """Tests a single target."""
-  target_path = root_dir / "out" / target.name
+  target_path = OUT / target.name
   result = subprocess.run([str(target_path)], stderr=subprocess.PIPE)
   expected_error = f"Usage: {target_path} <input_file>\n"
   if result.stderr.decode() != expected_error or result.returncode != 1:
@@ -282,15 +284,12 @@ def archive_target(
   """Archives a single target in the project using the exported rootfs."""
   logging.info("archive_target %s", target.name)
 
-  build_dir = root_dir / "out"
-  source_dir = root_dir / "src"
-
-  with (build_dir / "compile_commands.json").open("wt") as f:
+  with (OUT / "compile_commands.json").open("wt") as f:
     json.dump(target.compile_commands, f, indent=2)
 
   # TODO(unassigned): This is a hack. Ideally we need to get the commit hash
   # for the project, or something like that, but this will do for now.
-  target_hash = short_file_hash((build_dir / target.name))
+  target_hash = short_file_hash((OUT / target.name))
 
   name = f"{PROJECT}.{target.name}"
   uuid = f"{PROJECT}.{target.name}.{target_hash}"
@@ -298,11 +297,10 @@ def archive_target(
 
   with tempfile.TemporaryDirectory(prefix="index_") as index_tmp_dir:
     index_dir = Path(index_tmp_dir)
-    build_dir = root_dir / "out"
 
     index_db_path = os.path.join(index_tmp_dir, INDEX_DB_NAME)
-    cmd = ['/opt/indexer/indexer', '--build_dir', build_dir, '--index_path',
-           index_db_path, '--source_dir', os.environ['SRC']]
+    cmd = ['/opt/indexer/indexer', '--build_dir', str(OUT), '--index_path',
+           index_db_path, '--source_dir', str(SRC)]
     result = subprocess.run(cmd, check=True)
     if result.returncode != 0:
       raise Exception(
@@ -335,8 +333,8 @@ def archive_target(
             " include directory."
           )
       else:
-        file_path = source_dir / file_path
-        index_path = relative_root / file_path.relative_to(source_dir)
+        file_path = SRC / file_path
+        index_path = relative_root / file_path.relative_to(str(SRC))
 
       if not file_path.is_dir():
         index_path.parent.mkdir(parents=True, exist_ok=True)
@@ -353,8 +351,8 @@ def archive_target(
         version=ARCHIVE_VERSION,
         is_oss_fuzz=False,
       ),
-      source_dir=source_dir,
-      build_dir=build_dir,
+      source_dir=str(SRC),
+      build_dir=str(OUT),
       index_dir=index_dir,
       archive_path=archive_path,
     )
@@ -367,6 +365,7 @@ def archive_target(
 def index():
   root = Path('/')
   targets = enumerate_build_targets(root)
+  print('targets', targets)
   for target in targets:
     try:
       # TODO(metzman): Figure out if this is a good idea, it makes some things
@@ -402,10 +401,12 @@ def main():
   # Initially, we put snapshots directly in /out. This caused a bug where each
   # snapshot was added to the next because they contain the contents of /out.
   SNAPSHOT_DIR.mkdir(exist_ok=True)
+  # We don't have an existing /out dir on oss-fuzz's build infra.
+  OUT.mkdir(parents=True, exist_ok=True)
   build_project()
   index()
   for snapshot in SNAPSHOT_DIR.iterdir():
-    shutil.move(str(snapshot), '/out')
+    shutil.move(str(snapshot), OUT)
 
 
 if __name__ == '__main__':
