@@ -12,6 +12,6 @@ sanitizers:
  # - undefined
 architectures:
 #  - aarch64  # Experimental, not generally available.
-  # - x86_64
-  - i386
+  - x86_64
+# - i386
 main_repo: 'https://skia.googlesource.com/skcms.git'

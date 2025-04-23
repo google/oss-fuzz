@@ -488,6 +488,7 @@ def get_build_steps_for_project(project,
                                           config.testing)
           build_steps.extend(upload_steps)
   if (config.build_type == 'fuzzing' and
+      not config.testing and config.upload and not config.experiment and
       project.fuzzing_language in {'c', 'c++'}):
     build = Build('none', 'address', 'x86_64')
     zip_filename = f"{project.name}-{timestamp}.zip"
@@ -498,7 +499,7 @@ def get_build_steps_for_project(project,
     index_steps = [
         {
             'name': project.image,
-            'args': ['/opt/indexer/indexer', '-v', '/workspace:/workspace'],
+            'args': ['/opt/indexer/index_build.py', '-v', '/workspace:/workspace'],
             'env': env,
             'allowFailure': True,
         },
