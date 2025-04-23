@@ -270,23 +270,16 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     return []
 
   steps = get_fuzzbench_setup_steps()
-
   steps += build_lib.get_project_image_steps(project.name,
                                              project.image,
                                              project.fuzzing_language,
                                              config=config)
-
   build = build_project.Build(config.fuzzing_engine, 'address', 'x86_64')
   env = get_env(project, build, config)
-
   steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env)
-
   env_dict = {string.split('=')[0]: string.split('=')[1] for string in env}
-
   steps += get_gcs_corpus_steps(config.fuzzing_engine, project, env_dict)
-
   steps += get_build_ood_image_steps(config.fuzzing_engine, project, env_dict)
-
   steps += get_push_and_run_ood_image_steps(config.fuzzing_engine, project,
                                             env_dict)
 
