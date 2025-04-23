@@ -490,9 +490,10 @@ def get_build_steps_for_project(project,
           upload_steps = get_upload_steps(project, build, timestamp,
                                           config.testing)
           build_steps.extend(upload_steps)
-  if (config.build_type == 'fuzzing' and
-      not config.testing and config.upload and not config.experiment and
-      project.fuzzing_language in {'c', 'c++'}):
+  # if (config.build_type == 'fuzzing' and
+  #     not config.testing and config.upload and not config.experiment and
+  #     project.fuzzing_language in {'c', 'c++'}):
+  if True:
     build = Build('none', 'address', 'x86_64')
     zip_filename = f"{project.name}-{timestamp}.zip"
     zip_cmd = f'cd {build.out} && zip -r {zip_filename} *.tar'
