@@ -190,6 +190,7 @@ def sha256(files: Union[Path, Sequence[Path]]) -> str:
 
 
 def copy_fuzzing_engine():
+  # Not every project saves source to $SRC/$PROJECT_NAME
   fuzzing_engine_dir = SRC / PROJECT
   if not fuzzing_engine_dir.exists():
     fuzzing_engine_dir = SRC / 'fuzzing_engine'
