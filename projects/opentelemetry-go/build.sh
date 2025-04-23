@@ -1,4 +1,5 @@
-# Copyright 2022 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,20 +15,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+cd $SRC/go-118-fuzz-build
+go build .
+mv go-118-fuzz-build /root/go/bin/
 
-ADD https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb packages-microsoft-prod.deb
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    dpkg -i packages-microsoft-prod.deb && \
-    add-apt-repository universe && \
-    apt-get update -y && \
-    apt-get install -y powershell && \
-    rm -rf /var/lib/apt/lists/*
+cd $SRC/opentelemetry-go
 
-RUN git clone https://github.com/microsoft/msquic && \
-    cd msquic && \
-    git submodule update --init
-
-COPY build.sh $SRC/
-WORKDIR $SRC/msquic
+pushd sdk/metric/internal/aggregate
+printf "package aggregate \nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./fuzz-register.go
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
+go mod tidy
+compile_native_go_fuzzer $(go list) FuzzGetBin FuzzGetBin
+popd

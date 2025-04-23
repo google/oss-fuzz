@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-# enable source repos
-RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
-#build requirements
-RUN apt-get update && apt-get build-dep -y libreoffice && \
-    apt-get install -y lockfile-progs wget yasm locales && \
-    locale-gen en_US.UTF-8
-#until base image contains a sufficiently new meson > = 0.55.0
-RUN apt-get update && apt-get install -y python3-pip && \
-    pip3 install meson ninja
-#clone source
-RUN git clone --depth 1 https://git.libreoffice.org/core libreoffice
-WORKDIR libreoffice
-RUN ./bin/oss-fuzz-setup.sh
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth=1 https://github.com/open-telemetry/opentelemetry-go
+RUN git clone --depth=1 --branch=november-backup https://github.com/AdamKorcz/go-118-fuzz-build
 COPY build.sh $SRC/
