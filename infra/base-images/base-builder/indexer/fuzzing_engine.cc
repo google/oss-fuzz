@@ -37,10 +37,11 @@ __attribute__((weak)) extern "C" size_t LLVMFuzzerMutate(char *data, size_t size
   abort();
 }
 
-__attribute__((weak)) int LLVMFuzzerInitialize(
+extern "C" __attribute__((weak)) int LLVMFuzzerInitialize(
     __attribute__((unused)) int* argc, __attribute__((unused)) char*** argv) {
   return 0;
 }
+
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
