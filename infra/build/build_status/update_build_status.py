@@ -346,32 +346,43 @@ def upload_index(json_index, html_string):
 
 
 def generate_introspector_index():
-  """Generate index.html for successful Fuzz Introspector projects"""
-  status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
-  status = json.loads(
-      status_bucket.blob(INTROSPECTOR_STATUS_FILENAME).download_as_string())
+    """Generate index.html for successful Fuzz Introspector projects."""
+    storage_client = get_storage_client()
 
-  introspector_bucket = get_storage_client().get_bucket(INTROSPECTOR_BUCKET)
-  index_blob = introspector_bucket.blob(INTROSPECTOR_INDEX_JSON)
-  if index_blob.exists():
-    introspector_index = json.loads(index_blob.download_as_string())
-  else:
+    # Fetch project status
+    status_bucket = storage_client.get_bucket(STATUS_BUCKET)
+    status_blob = status_bucket.blob(INTROSPECTOR_STATUS_FILENAME)
+    status = json.loads(status_blob.download_as_string())
+
+    # Fetch existing introspector index if available
+    introspector_bucket = storage_client.get_bucket(INTROSPECTOR_BUCKET)
+    index_blob = introspector_bucket.blob(INTROSPECTOR_INDEX_JSON)
     introspector_index = {}
 
-  for project in status['projects']:
-    if project['history'] and project['history'][0]['success']:
-      project_name = project['name']
-      build_date = project['history'][0]['finish_time'].split('T')[0].replace(
-          '-', '')
-      introspector_index[project_name] = os.path.join(INTROSPECTOR_BUCKET_URL,
-                                                      project_name,
-                                                      'inspector-report',
-                                                      build_date,
-                                                      'fuzz_report.html')
+    if index_blob.exists():
+        introspector_index = json.loads(index_blob.download_as_string())
 
-  html_string = fuzz_introspector_page_gen.get_fuzz_introspector_html_page(
-      introspector_index)
-  upload_index(introspector_index, html_string)
+    # Update index for projects with successful recent builds
+    for project in status.get('projects', []):
+        history = project.get('history', [])
+        if history and history[0].get('success', False):
+            project_name = project.get('name')
+            finish_time = history[0].get('finish_time', '')
+            if finish_time:
+                build_date = finish_time.split('T')[0].replace('-', '')
+                introspector_index[project_name] = os.path.join(
+                    INTROSPECTOR_BUCKET_URL,
+                    project_name,
+                    'inspector-report',
+                    build_date,
+                    'fuzz_report.html'
+                )
+
+    # Generate HTML page and upload index
+    html_string = fuzz_introspector_page_gen.get_fuzz_introspector_html_page(
+        introspector_index
+    )
+    upload_index(introspector_index, html_string)
 
 
 def main():
