@@ -37,6 +37,8 @@ SRC = Path(os.getenv('SRC'))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv('OUT', '/out'))
 
+_LD_PATH = Path('/lib64/ld-linux-x86-64.so.2')
+
 
 def set_env_vars():
   os.environ['SANITIZER'] = 'address'
@@ -260,6 +262,30 @@ def build_project():
   subprocess.run(['/usr/local/bin/compile'], check=True)
 
 
+
+def patch_shared_object_paths(target_path: Path):
+  subprocess.run(
+      [
+          'patchelf',
+          '--set-rpath',
+          '/ossfuzzlib',
+          '--force-rpath',
+          target_path,
+      ],
+      check=True,
+  )
+
+  subprocess.run(
+      [
+          'patchelf',
+          '--set-interpreter',
+          '/ossfuzzlib/ld-linux-x86-64.so.2',
+          target_path,
+      ],
+      check=True,
+  )
+
+
 def test_target(
     target: BinaryMetadata,
     root_dir: Path,
@@ -276,6 +302,57 @@ def test_target(
     )
     return False
   return True
+
+
+def copy_shared_libraries(
+    fuzz_target_path: Path, libs_path: Path
+) -> None:
+  """Copies the shared libraries to the shared directory."""
+  env = os.environ.copy()
+  env['LD_TRACE_LOADED_OBJECTS'] = '1'
+  env['LD_BIND_NOW'] = '1'
+  # TODO(unassigned): Should we take ld.so from interp?
+
+  res = subprocess.run(
+      [str(_LD_PATH), str(fuzz_target_path)],
+      capture_output=True,
+      env=env,
+      check=True,
+  )
+
+  output = res.stdout.decode()
+  if 'statically linked' in output:
+    return
+
+  # Example output:
+  #       linux-vdso.so.1 =>  (0x00007f40afc0f000)
+  #       linux-vdso.so.1 (0x00007f76b9377000)
+  #       lib foo.so => /tmp/sharedlib/lib foo.so (0x00007f76b9367000)
+  #       libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f76b9157000)
+  #       /lib64/ld-linux-x86-64.so.2 (0x00007f76b9379000)
+  #
+  # The lines that do not have a => should be skipped.
+  # The dynamic linker should always be copied.
+  # The lines that have a => could contain a space, but we copy whatever on the
+  # right side of the =>, removing the load address.
+  shutil.copy(_LD_PATH, libs_path / _LD_PATH.name)
+
+  lines = output.splitlines()
+  for line in lines:
+    if '=>' not in line:
+      continue
+    parts = line.split('=>')
+    lib_name = parts[0].strip()
+    right_side = parts[1].strip().rsplit(' ', maxsplit=1)[0].strip()
+    if not right_side:
+      continue
+    lib_path = Path(right_side)
+    logging.info('Copying %s => %s', lib_name, lib_path)
+    try:
+      shutil.copy(lib_path, libs_path / lib_path.name)
+    except FileNotFoundError as e:
+      logging.exception('Could not copy %s', lib_path)
+      raise e
 
 def archive_target(
     target: BinaryMetadata,
@@ -340,6 +417,13 @@ def archive_target(
         index_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(file_path, index_path)
 
+
+
+    libs_path = OUT / 'lib'
+    libs_path.mkdir(parents=False, exist_ok=False)
+    target_path = OUT / target.name
+    copy_shared_libraries(target_path, libs_path)
+    patch_shared_object_paths(target_path)
     archive_path = SNAPSHOT_DIR / f"{uuid}.tar"
 
     save_build(
@@ -358,6 +442,7 @@ def archive_target(
     )
 
     logging.info("Wrote archive to: %s", archive_path)
+  shutil.rmtree(libs_path)
 
   return archive_path
 

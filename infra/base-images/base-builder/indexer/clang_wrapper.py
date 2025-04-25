@@ -26,6 +26,7 @@ import os
 import random
 import subprocess
 import sys
+import time
 from typing import Any
 
 _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
@@ -173,7 +174,7 @@ def parse_dependency_file(
     lines = [line.strip() for line in f]
   assert output_file_line.endswith(
       lines[0]
-  ), f"{lines[0]} is not a suffix of {output_file_line}"
+  ), f"{lines[0]} is not a suffix of {output_file_line} {sys.argv} {os.getcwd()}"
 
   deps = []
   ignored_dep_paths = ["/usr", "/clang", "/lib"]
@@ -212,12 +213,19 @@ def read_cdb_fragments(cdb_path: str) -> Any:
       continue
     if not file.endswith(".json"):
       continue
-    with open(file, "rt") as f:
-      data = f.read()
-      assert data.endswith(
-          ",\n"
-      ), f"Invalid compile commands file {file}: {data}"
-      contents.append(data[:-2])
+    for _ in range(3):
+      with open(file, "rt") as f:
+        data = f.read()
+        if data.endswith(
+            ",\n"
+        ):
+          contents.append(data[:-2])
+          break
+      print(f"Invalid compile commands file {file}: {data}\nDONEMARKER")
+      time.sleep(10)
+    else:
+      assert False, f"Invalid compile commands file {file}: {data}\nDONEMARKER"
+
   contents = ",\n".join(contents)
   contents = "[" + contents + "]"
   return json.loads(contents)
