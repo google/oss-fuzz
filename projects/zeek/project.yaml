@@ -12,6 +12,7 @@ auto_ccs:
   - "christian@corelight.com"
   - "arne.welzel@corelight.com"
   - "benjamin.bannier@corelight.com"
+  - "evan.typanski@corelight.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
