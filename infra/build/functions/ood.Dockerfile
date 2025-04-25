@@ -37,4 +37,4 @@ ENV FUZZ_TARGET=$FUZZ_TARGET
 ENV FUZZBENCH_PATH=/ood$FUZZBENCH_PATH
 ENV BENCHMARK=$BENCHMARK
 
-CMD ["bash", "-c", "/ood/fuzzbench_run_fuzzer.sh && cp -r $OUTPUT_CORPUS_DIR /workspace$OUTPUT_CORPUS_DIR"]
+CMD ["bash", "-c", "source /ood/fuzzbench_run_fuzzer.sh && cp -r $OUTPUT_CORPUS_DIR /workspace$OUTPUT_CORPUS_DIR"]
