@@ -1,65 +1,86 @@
 # action.yml
 name: 'run-fuzzers'
 description: 'Runs fuzz target binaries for a specified length of time.'
+
+branding:
+  icon: 'shield'
+  color: 'blue'
+
 inputs:
   oss-fuzz-project-name:
     description: 'The OSS-Fuzz project name.'
     required: true
+
   language:
-    description: 'Programming language project is written in.'
+    description: 'Programming language the project is written in.'
     required: false
     default: 'c++'
+
   fuzz-seconds:
     description: 'The total time allotted for fuzzing in seconds.'
     required: true
-    default: 600
+    default: '600'
+
   dry-run:
-    description: 'If set, run the action without actually reporting a failure.'
-    default: false
+    description: 'If set to true, runs without reporting failures.'
+    required: false
+    default: 'false'
+
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
+    required: false
     default: 'address'
+
   mode:
     description: |
-      The mode to run the fuzzers with ("code-change", "batch", "coverage", or "prune").
-      "code-change" is for fuzzing a pull request or commit.
-      "batch" is for non-interactive fuzzing of an entire project.
-      "coverage" is for coverage generation.
-      "prune" is for corpus pruning.
+      The mode to run fuzzers in. Options:
+        - code-change: for fuzzing PRs or commits
+        - batch: for full project fuzzing
+        - coverage: for coverage generation
+        - prune: for corpus pruning
     required: false
     default: 'code-change'
+
   github-token:
     description: |
-      Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
-      You should use "secrets.GITHUB_TOKEN" in your workflow file, do not
-      hardcode the token.
-      TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
-      Document locking this down.
+      GitHub API token. Use "secrets.GITHUB_TOKEN" in workflows.
+      DO NOT hardcode the token.
     required: false
+
   report-unreproducible-crashes:
-    description: 'If True, then unreproducible crashes will be reported.'
+    description: 'Whether to report unreproducible crashes.'
     required: false
-    default: False
+    default: 'false'
+
   minimize-crashes:
-    description: 'If True, reportable crashes will be minimized.'
+    description: 'Whether to minimize reportable crashes.'
     required: false
-    default: False
+    default: 'false'
+
   parallel-fuzzing:
-    description: "How many cores to use cores for fuzzing. A specific number, True - all available cores or False to run single threaded on a single core."
+    description: |
+      Cores to use for fuzzing:
+        - true: all available cores
+        - false: single core
+        - or a specific number
     required: false
-    default: false
+    default: 'false'
+
   output-sarif:
-    description: "Whether to output fuzzing results to SARIF."
+    description: 'Whether to output fuzzing results in SARIF format.'
     required: false
-    default: false
+    default: 'false'
+
   report-timeouts:
-    description: "Whether to report fails due to timeout."
+    description: 'Whether to report failures caused by timeouts.'
     required: false
-    default: true
+    default: 'true'
+
   report-ooms:
-    description: "Whether to report fails due to OOM."
+    description: 'Whether to report failures caused by OOM (Out of Memory).'
     required: false
-    default: true
+    default: 'true'
+
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -67,7 +88,7 @@ runs:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
     LANGUAGE: ${{ inputs.language }}
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
-    DRY_RUN: ${{ inputs.dry-run}}
+    DRY_RUN: ${{ inputs.dry-run }}
     SANITIZER: ${{ inputs.sanitizer }}
     MODE: ${{ inputs.mode }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
@@ -79,4 +100,5 @@ runs:
     PARALLEL_FUZZING: ${{ inputs.parallel-fuzzing }}
     OUTPUT_SARIF: ${{ inputs.output-sarif }}
     REPORT_TIMEOUTS: ${{ inputs.report-timeouts }}
-    REPORT_OOMS: ${{ inputs.report-ooms}}
+    REPORT_OOMS: ${{ inputs.report-ooms }}
+
