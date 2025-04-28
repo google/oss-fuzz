@@ -17,7 +17,7 @@
 
 cd $SRC/opentelemetry-go-contrib
 
-pushd config/v0.3.0
+pushd otelconf/v0.3.0
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer $(go list) FuzzJSON FuzzJSON
 compile_native_go_fuzzer $(go list) FuzzYAML FuzzYAML
