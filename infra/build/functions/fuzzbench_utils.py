@@ -26,8 +26,9 @@ import clusterfuzz_deployment
 import config_utils
 
 
-def get_latest_libfuzzer_build_url(project_name):
-  # Needed environment variables
+def get_latest_libfuzzer_build_uri(project_name):
+  """Returns the latest LibFuzzer build gsutil URI."""
+  # Mandatory environment variables required to obtain the latest build name
   os.environ['CIFUZZ_TEST'] = 'non_falsy_str'
   os.environ['OSS_FUZZ_PROJECT_NAME'] = project_name
   config = config_utils.RunFuzzersConfig()
