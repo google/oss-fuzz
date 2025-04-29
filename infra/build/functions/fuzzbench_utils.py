@@ -26,13 +26,15 @@ import clusterfuzz_deployment
 import config_utils
 
 
-def get_latest_libfuzzer_build_uri(project_name):
-  """Returns the latest LibFuzzer build gsutil URI."""
+def get_latest_libfuzzer_build(project_name):
+  """Returns the latest LibFuzzer build gsutil URI and the build file name."""
   # Mandatory environment variables required to obtain the latest build name
   os.environ['CIFUZZ_TEST'] = 'non_falsy_str'
   os.environ['OSS_FUZZ_PROJECT_NAME'] = project_name
+
   config = config_utils.RunFuzzersConfig()
   deployment = clusterfuzz_deployment.OSSFuzz(config, None)
   latest_build_filename = deployment.get_latest_build_name()
-
-  return f'gs://clusterfuzz-builds/{project_name}/' + latest_build_filename
+  build_uri = f'gs://clusterfuzz-builds/{project_name}/' + latest_build_filename
+  
+  return build_uri, latest_build_filename
