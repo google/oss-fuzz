@@ -214,6 +214,6 @@ ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer
 RUN chmod a+x /opt/indexer/indexer
 RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang
 RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang++
-RUN apt-get update && apt-get install bear
+RUN apt-get update && apt-get install bear -y
 
 CMD ["compile"]
