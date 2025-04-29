@@ -77,7 +77,7 @@ class Config:
   upload_build_logs: str = None
   build_type: str = None
   fuzzing_engine: str = None
-  fuzz_target: str = ''
+  fuzz_target: str = None
 
 
 # Allow the WORKDIR to be commented out for OSS-Fuzz-Gen, which creates new
