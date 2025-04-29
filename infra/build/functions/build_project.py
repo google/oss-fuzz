@@ -504,7 +504,7 @@ def get_build_steps_for_project(project,
         'name': project.image,
         'args': ['bash', '-c', f'echo $(pwd) && ls . && mkdir -p {project.workdir} && cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py && echo hi'],
         'env': env,
-        'allowFailure': True,
+        'allowFailure': False, # !!! CHANGE ME.
     }
     build_lib.dockerify_run_step(index_step,
                                  build,
@@ -515,13 +515,13 @@ def get_build_steps_for_project(project,
             # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
             'name': project.image,
             'args': ['bash', '-c', zip_cmd],
-            'allowFailure': True,
+            'allowFailure': False,
         },
         {
             'name': get_uploader_image(),
             'args': [
                 os.path.join(build.out, zip_filename), upload_url],
-            'allowFailure': True,
+            'allowFailure': False,
         }
     ]
     build_steps.extend(index_steps)
