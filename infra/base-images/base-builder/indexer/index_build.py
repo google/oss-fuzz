@@ -412,7 +412,7 @@ def archive_target(
         file_path = SRC / file_path
         index_path = relative_root / file_path.relative_to(str(SRC))
 
-      if not file_path.is_dir():
+      if not file_path.is_dir() and file_path.exists():
         index_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(file_path, index_path)
 
