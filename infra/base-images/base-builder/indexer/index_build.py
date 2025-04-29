@@ -214,7 +214,6 @@ def build_project():
     '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
     f'-gen-cdb-fragment-path {OUT}/cdb '
     '-Qunused-arguments '
-    '-lc++abi '
     '-isystem /usr/local/lib/clang/18 '
     '-resource-dir /usr/local/lib/clang/18 '
   )
