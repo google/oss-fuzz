@@ -20,9 +20,10 @@ ls .
 ls -l /usr/lib/libFuzzing*
 echo "<| ------  --------  ------ |>"
 
-
-: ${LD:="${CXX}"}
-: ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
+# avoid `-stdlib=libc++` by not using ${CXX} and ${CXXFLAGS}
+# to make sure we link with sanitizer runtime
+: ${LD:="${CC}"}
+: ${LDFLAGS:="${CFLAGS}"}
 
 cmake_args=(
   # C compiler
@@ -30,8 +31,9 @@ cmake_args=(
   -DCMAKE_C_FLAGS="${CFLAGS}"
 
   # C++ compiler
-  -DCMAKE_CXX_COMPILER="${CXX}"
-  -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
+  # avoid `-stdlib=libc++` by not using ${CXX} and ${CXXFLAGS}
+  -DCMAKE_CXX_COMPILER="${CC}"
+  -DCMAKE_CXX_FLAGS="${CFLAGS}"
 
   # Linker
   -DCMAKE_LINKER="${LD}"
@@ -42,18 +44,78 @@ cmake_args=(
 
 # CORPUS
 (
+  echo "Building seed corpus...\n"
   cd tests/fuzz/wasm-mutator-fuzz/
   ./smith_wasm.sh 10
+
+  zip -j ./build/seed_corpus.zip ./build/CORPUS_DIR/test_*.wasm
 )
 
-# loader
+# fuzzing target
+
+# classic-interp
 (
+  echo "Building classic interp...\n"
   cd tests/fuzz/wasm-mutator-fuzz/
 
-  cmake -S . -B build_loader \
+  cmake -S . -B build-classic-interp \
+      -DCMAKE_TOOLCHAIN_FILE=./clang_toolchain.cmake \
+      -DLLVM_DIR=/opt/llvm-15.0.6/lib/cmake/llvm \
+      -G Ninja \
+      -DWAMR_BUILD_FAST_INTERP=0 \
       "${cmake_args[@]}" \
-    && cmake --build build_loader
+    && cmake --build build-classic-interp
 
-  cp ./build_loader/wasm_mutator_fuzz $OUT/wasm_mutator_fuzz_loader
-  zip -j $OUT/wasm_mutator_fuzz_loader_seed_corpus.zip ./build/CORPUS_DIR/test_*.wasm
+  cp ./build-classic-interp/wasm-mutator/wasm_mutator_fuzz $OUT/wamr_fuzz_classic_interp
+  cp ./build/seed_corpus.zip $OUT/wamr_fuzz_classic_interp_seed_corpus.zip
+)
+
+## fast-interp (by default)
+(
+  echo "Building fast interp...\n"
+  cd tests/fuzz/wasm-mutator-fuzz/
+
+  cmake -S . -B build-fast-interp \
+      -DCMAKE_TOOLCHAIN_FILE=./clang_toolchain.cmake \
+      -DLLVM_DIR=/opt/llvm-15.0.6/lib/cmake/llvm \
+      -G Ninja \
+      "${cmake_args[@]}" \
+    && cmake --build build-fast-interp
+
+  cp ./build-fast-interp/wasm-mutator/wasm_mutator_fuzz $OUT/wamr_fuzz_fast_interp
+  cp ./build/seed_corpus.zip $OUT/wamr_fuzz_fast_interp_seed_corpus.zip
+)
+
+## llvm-jit
+(
+  echo "Building llvm jit...\n"
+  cd tests/fuzz/wasm-mutator-fuzz/
+
+  cmake -S . -B build-llvm-jit \
+      -DCMAKE_TOOLCHAIN_FILE=./clang_toolchain.cmake \
+      -DLLVM_DIR=/opt/llvm-15.0.6/lib/cmake/llvm \
+      -G Ninja \
+      -DWAMR_BUILD_FAST_INTERP=0 \
+      -DWAMR_BUILD_JIT=1 \
+      "${cmake_args[@]}" \
+    && cmake --build build-llvm-jit --target wasm_mutator_fuzz
+
+  cp ./build-llvm-jit/wasm-mutator/wasm_mutator_fuzz $OUT/wamr_fuzz_llvm_jit
+  cp ./build/seed_corpus.zip $OUT/wamr_fuzz_llvm_jit_seed_corpus.zip
+)
+
+# aot-compiler
+(
+  echo "Building aot compiler...\n"
+  cd tests/fuzz/wasm-mutator-fuzz/
+
+  cmake -S . -B build-aot-compiler \
+      -DCMAKE_TOOLCHAIN_FILE=./clang_toolchain.cmake \
+      -DLLVM_DIR=/opt/llvm-15.0.6/lib/cmake/llvm \
+      -G Ninja \
+      "${cmake_args[@]}" \
+    && cmake --build build-aot-compiler --target aot_compiler_fuzz
+
+  cp ./build-aot-compiler/aot-compiler/aot_compiler_fuzz $OUT/wamr_fuzz_aot_compiler
+  cp ./build/seed_corpus.zip $OUT/wamr_fuzz_aot_compiler_seed_corpus.zip
 )
