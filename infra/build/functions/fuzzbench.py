@@ -27,7 +27,8 @@ import fuzzbench_utils
 
 FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
-OOD_OUTPUT_CORPUS_DIR = f'/workspace/ood_output_corpus'
+GCB_WORKSPACE_DIR = '/workspace'
+OOD_OUTPUT_CORPUS_DIR = f'{GCB_WORKSPACE_DIR}/ood_output_corpus'
 
 
 def get_engine_project_image_name(fuzzing_engine, project):
@@ -151,7 +152,7 @@ def get_gcs_corpus_steps(fuzzing_engine, project, env_dict):
   use it on oss-fuzz-on-demand."""
   steps = []
 
-  corpus_path = '/workspace/gcs_corpus'
+  corpus_path = f'{GCB_WORKSPACE_DIR}/gcs_corpus'
   corpus_filename = 'public.zip'
   fuzz_target_name = env_dict["FUZZ_TARGET"]
   corpus_url = get_gcs_public_corpus_url(project, fuzz_target_name)
@@ -202,27 +203,28 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
       }],
       'args': [
           'bash', '-c', 'cp /usr/local/bin/fuzzbench_run_fuzzer '
-          '/workspace/fuzzbench_run_fuzzer.sh  && '
-          f'cp -r {FUZZBENCH_PATH} /workspace && ls /workspace'
+          f'{GCB_WORKSPACE_DIR}/fuzzbench_run_fuzzer.sh  && '
+          f'cp -r {FUZZBENCH_PATH} {GCB_WORKSPACE_DIR} && '
+          f'ls {GCB_WORKSPACE_DIR}'
       ],
   }
   steps.append(copy_runtime_essential_files_step)
 
   ood_image = get_ood_image_name(fuzzing_engine, project)
-  fuzzer_runtime_dockerfile_path = os.path.join('/workspace' + FUZZBENCH_PATH,
-                                                'fuzzers', fuzzing_engine,
-                                                'runner.Dockerfile')
+  fuzzer_runtime_dockerfile_path = os.path.join(
+      GCB_WORKSPACE_DIR + FUZZBENCH_PATH, 'fuzzers', fuzzing_engine,
+      'runner.Dockerfile')
   build_runtime_step = {
       'name':
           'gcr.io/cloud-builders/docker',
       'args': [
           'build', '--tag', ood_image, '--file', fuzzer_runtime_dockerfile_path,
-          os.path.join('/workspace' + FUZZBENCH_PATH, 'fuzzers')
+          os.path.join(GCB_WORKSPACE_DIR + FUZZBENCH_PATH, 'fuzzers')
       ]
   },
   steps.append(build_runtime_step)
 
-  oss_fuzz_on_demand_dockerfile_path = "/workspace/oss-fuzz/infra/build/functions/ood.Dockerfile"
+  oss_fuzz_on_demand_dockerfile_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood.Dockerfile'
   build_out_path_without_workspace = env_dict["OUT"][10:]
   build_ood_image_step = {
       'name':
@@ -236,7 +238,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
           f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}', '--build-arg',
           f'FUZZ_TARGET={env_dict["FUZZ_TARGET"]}', '--build-arg',
           f'OOD_OUTPUT_CORPUS_DIR={OOD_OUTPUT_CORPUS_DIR}', '--build-arg',
-          f'runtime_image={ood_image}', '/workspace'
+          f'runtime_image={ood_image}', GCB_WORKSPACE_DIR
       ]
   }
   steps.append(build_ood_image_step)
@@ -259,8 +261,11 @@ def get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict):
 
   # This step also copies fuzzing output corpus to $OOD_OUTPUT_CORPUS_DIR
   run_ood_image_step = {
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': ['run', '-v', '/workspace:/workspace', ood_image]
+      'name':
+          'gcr.io/cloud-builders/docker',
+      'args': [
+          'run', '-v', f'{GCB_WORKSPACE_DIR}:{GCB_WORKSPACE_DIR}', ood_image
+      ]
   }
   steps.append(run_ood_image_step)
 
@@ -272,7 +277,7 @@ def get_extract_crashes_steps(fuzzing_engine, project, env_dict):
   crashes from the fuzzing output."""
   steps = []
 
-  libfuzzer_build_dir = f'/workspace/libfuzzer_build/'
+  libfuzzer_build_dir = f'{GCB_WORKSPACE_DIR}/libfuzzer_build/'
   create_libfuzzer_build_dir_step = {
       'name': get_engine_project_image_name(fuzzing_engine, project),
       'args': ['bash', '-c', f'mkdir -p {libfuzzer_build_dir}']
@@ -287,7 +292,7 @@ def get_extract_crashes_steps(fuzzing_engine, project, env_dict):
   }
   steps.append(download_libfuzzer_build_step)
 
-  crashes_dir = f'/workspace/crashes/'
+  crashes_dir = f'{GCB_WORKSPACE_DIR}/crashes/'
   extract_crashes_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
