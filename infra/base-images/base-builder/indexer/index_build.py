@@ -590,6 +590,7 @@ def get_index_files(index_db_path) -> Iterator[str]:
 
 
 def main():
+  logging.basicConfig(level=logging.INFO)
   for directory in ['aflplusplus', 'fuzztest', 'honggfuzz', 'libfuzzer']:
     path = os.path.join(os.environ['SRC'], directory)
     shutil.rmtree(path, ignore_errors=True)
