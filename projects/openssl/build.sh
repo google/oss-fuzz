@@ -72,7 +72,7 @@ function build_fuzzers() {
       find $SOURCES -type f -a \( -name '*.[ch]' -o -name '*.inc' \) -exec cp --parents '{}' $DESTDIR/ \;
     fi
 
-    if [[ -z "${PRESERVE_SRC:-}" ]]; then
+    if [[ -n "${CIFUZZ:-}" ]]; then
       df
       rm -rf * .git*
       df
