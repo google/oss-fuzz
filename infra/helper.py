@@ -1731,7 +1731,7 @@ def shell(args):
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
       'HELPER=True',
-      f'PROJECT_NAME={args.project}'
+      f'PROJECT_NAME={args.project.name}'
   ]
 
   if args.project.name != 'base-runner-debug':
