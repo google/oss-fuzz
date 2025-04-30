@@ -247,8 +247,6 @@ def main(argv: Sequence[str]) -> None:
   cdb_path = get_flag_value(argv, "-gen-cdb-fragment-path")
   assert cdb_path, f"Missing Compile Directory Path: {argv}"
 
-  # argv = remove_flag_and_value(argv, "-gen-cdb-fragment-path")
-
   # We can now run the linker and look at the output of some files.
   dependency_file = os.path.join(
       cdb_path, os.path.basename(output_file) + ".deps"

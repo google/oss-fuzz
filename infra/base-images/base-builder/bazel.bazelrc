@@ -18,4 +18,3 @@
 # Pass variables from environment.
 build --action_env=FUZZ_INTROSPECTOR
 build --action_env=FUZZINTRO_OUTDIR
-build --sandbox_writable_path=/usr/local/lib/clang/18/include
