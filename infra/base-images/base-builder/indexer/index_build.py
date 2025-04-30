@@ -455,7 +455,7 @@ def copy_shared_libraries(
     logging.info('Copying %s => %s', lib_name, lib_path)
     try:
       shutil.copy(lib_path, libs_path / lib_path.name)
-    except FileNotFoundError as e:
+    except (FileNotFoundError, shutil.SameFileError) as e:
       logging.exception('Could not copy %s', lib_path)
       raise e
 
