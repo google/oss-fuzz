@@ -90,7 +90,7 @@ ENGINE_INFO = {
 
 OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
-    'workerPools/buildpool')
+    'workerPools/indexer-buildpool')
 
 OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
