@@ -241,6 +241,7 @@ def enumerate_build_targets(
 
       if not (OUT / name).exists():
         build_id = linker_json_path.name.split('_')[0]
+        logging.info("trying to find %s", build_id)
         binary_path = find_fuzzer_binary(OUT, build_id)
         name = binary_path.name
 
@@ -371,7 +372,7 @@ def patch_shared_object_paths(target_path: Path):
   subprocess.run(
       [
           'patchelf',
-          '--add-rpath',
+          '--set-rpath',
           '/ossfuzzlib',
           '--force-rpath',
           target_path,
