@@ -440,7 +440,7 @@ def copy_shared_libraries(
   # The dynamic linker should always be copied.
   # The lines that have a => could contain a space, but we copy whatever on the
   # right side of the =>, removing the load address.
-  shutil.copy(_LD_PATH, libs_path / _LD_PATH.name)
+  shutil.copy2(_LD_PATH, libs_path / _LD_PATH.name)
 
   lines = output.splitlines()
   for line in lines:
@@ -459,7 +459,7 @@ def copy_shared_libraries(
       continue
 
     try:
-      shutil.copy(lib_path, libs_path / lib_path.name)
+      shutil.copy2(lib_path, libs_path / lib_path.name)
     except (FileNotFoundError) as e:
       logging.exception('Could not copy %s', lib_path)
       raise e
