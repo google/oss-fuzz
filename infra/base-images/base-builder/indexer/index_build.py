@@ -215,13 +215,13 @@ def get_build_id(elf_file: str) -> str | None:
 
 
 def find_fuzzer_binary(
-    out_dir: Path, build_id: str) -> Path:
+    out_dir: Path, build_id: str) -> Path | None:
   for root, dirs, files in os.walk(out_dir):
     for file in files:
       if get_build_id(os.path.join(root, file)) == build_id:
         return Path(root, file)
 
-  assert False, "failed to find fuzzer binary"
+  return None
 
 
 def enumerate_build_targets(
@@ -245,8 +245,12 @@ def enumerate_build_targets(
 
       if not (OUT / name).exists():
         build_id = linker_json_path.name.split('_')[0]
-        logging.info("trying to find %s", build_id)
+        logging.info("trying to find %s with build id %s", name, build_id)
         binary_path = find_fuzzer_binary(OUT, build_id)
+        if not binary_path:
+          logging.error("could not find %s with build id %s", name, build_id)
+          continue
+
         name = binary_path.name
 
       binary_args = '<input_file>'
