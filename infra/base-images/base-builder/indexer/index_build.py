@@ -23,6 +23,7 @@ import logging
 import shutil
 import subprocess
 import sqlite3
+import sys
 import tarfile
 import tempfile
 
@@ -121,6 +122,104 @@ def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
   tar.addfile(tarinfo=tar_info, fileobj=data)
 
 
+def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
+  """Extracts the build id from the ELF notes of a binary.
+
+  The ELF notes are obtained with
+    `llvm-readelf --notes --elf-output-style=JSON`.
+
+  Args:
+    contents: The contents of the ELF notes, as a JSON string.
+
+  Returns:
+    The build id, or None if it could not be found.
+  """
+
+  elf_data = json.loads(contents)
+  assert elf_data
+
+  for file_info in elf_data:
+    for note_entry in file_info["Notes"]:
+      note_section = note_entry["NoteSection"]
+      if note_section["Name"] == ".note.gnu.build-id":
+        note_details = note_section["Note"]
+        if "Build ID" in note_details:
+          return note_details["Build ID"]
+  return None
+
+
+def get_build_id(elf_file: str) -> str | None:
+  """This invokes llvm-readelf to get the build ID of the given ELF file."""
+
+  # Example output of llvm-readelf JSON output:
+  # [
+  #   {
+  #     "FileSummary": {
+  #       "File": "/out/iccprofile_info",
+  #       "Format": "elf64-x86-64",
+  #       "Arch": "x86_64",
+  #       "AddressSize": "64bit",
+  #       "LoadName": "<Not found>",
+  #     },
+  #     "Notes": [
+  #       {
+  #         "NoteSection": {
+  #           "Name": ".note.ABI-tag",
+  #           "Offset": 764,
+  #           "Size": 32,
+  #           "Note": {
+  #             "Owner": "GNU",
+  #             "Data size": 16,
+  #             "Type": "NT_GNU_ABI_TAG (ABI version tag)",
+  #             "OS": "Linux",
+  #             "ABI": "3.2.0",
+  #           },
+  #         }
+  #       },
+  #       {
+  #         "NoteSection": {
+  #           "Name": ".note.gnu.build-id",
+  #           "Offset": 796,
+  #           "Size": 24,
+  #           "Note": {
+  #             "Owner": "GNU",
+  #             "Data size": 8,
+  #             "Type": "NT_GNU_BUILD_ID (unique build ID bitstring)",
+  #             "Build ID": "a03df61c5b0c26f3",
+  #           },
+  #         }
+  #       },
+  #     ],
+  #   }
+  # ]
+
+  _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
+  ret = subprocess.run(
+      [
+          _LLVM_READELF_PATH,
+          "--notes",
+          "--elf-output-style=JSON",
+          elf_file,
+      ],
+      capture_output=True,
+      check=False,
+  )
+  if ret.returncode != 0:
+    return None
+
+  return _get_build_id_from_elf_notes(ret.stdout)
+
+
+def find_fuzzer_binary(
+    out_dir: Path, build_id: str) -> Path:
+  for root, dirs, files in os.walk(out_dir):
+    for file in files:
+      if get_build_id(os.path.join(root, file)) == build_id:
+        return Path(root, file)
+
+  assert False, "failed to find fuzzer binary"
+
+
 def enumerate_build_targets(
     root_path: Path,
 ) -> Sequence[BinaryMetadata]:
@@ -139,6 +238,13 @@ def enumerate_build_targets(
       # improve the success rate.
       binary_path = Path(data['output'])
       name = binary_path.name
+
+      if not (OUT / name).exists():
+        build_id = linker_json_path.name.split('_')[0]
+        logging.info("trying to find %s", build_id)
+        binary_path = find_fuzzer_binary(OUT, build_id)
+        name = binary_path.name
+
       binary_args = '<input_file>'
       compile_commands = data['compile_commands']
 
@@ -214,7 +320,6 @@ def build_project():
     '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
     f'-gen-cdb-fragment-path {OUT}/cdb '
     '-Qunused-arguments '
-    '-lc++abi '
     '-isystem /usr/local/lib/clang/18 '
     '-resource-dir /usr/local/lib/clang/18 '
   )
@@ -348,9 +453,14 @@ def copy_shared_libraries(
       continue
     lib_path = Path(right_side)
     logging.info('Copying %s => %s', lib_name, lib_path)
+    if lib_path.relative_to(libs_path):
+      # This can happen if the project build is doing the same thing as us and
+      # already copied the library to the lib_path.
+      continue
+
     try:
       shutil.copy(lib_path, libs_path / lib_path.name)
-    except FileNotFoundError as e:
+    except (FileNotFoundError) as e:
       logging.exception('Could not copy %s', lib_path)
       raise e
 
@@ -413,14 +523,14 @@ def archive_target(
         file_path = SRC / file_path
         index_path = relative_root / file_path.relative_to(str(SRC))
 
-      if not file_path.is_dir():
+      if not file_path.is_dir() and file_path.exists():
         index_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(file_path, index_path)
 
 
 
     libs_path = OUT / 'lib'
-    libs_path.mkdir(parents=False, exist_ok=False)
+    libs_path.mkdir(parents=False, exist_ok=True)
     target_path = OUT / target.name
     copy_shared_libraries(target_path, libs_path)
     patch_shared_object_paths(target_path)
@@ -480,6 +590,7 @@ def get_index_files(index_db_path) -> Iterator[str]:
 
 
 def main():
+  logging.basicConfig(level=logging.INFO)
   for directory in ['aflplusplus', 'fuzztest', 'honggfuzz', 'libfuzzer']:
     path = os.path.join(os.environ['SRC'], directory)
     shutil.rmtree(path, ignore_errors=True)

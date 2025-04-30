@@ -496,13 +496,13 @@ def get_build_steps_for_project(project,
   if True:
     build = Build('none', 'address', 'x86_64')
     zip_filename = f"{project.name}-{timestamp}.zip"
-    zip_cmd = f'cd {build.out} && zip -r {zip_filename} *.tar'
+    zip_cmd = f'cd {build.out} && zip -r {zip_filename} *.tar && ls -la {zip_filename}'
     env = get_env(project.fuzzing_language, build, project.name)
     upload_url = build_lib.get_signed_url(
         f'/clusterfuzz-builds/indexer_indexes/{project.name}/{zip_filename}')
     index_step = {
         'name': project.image,
-        'args': ['bash', '-c', f'echo $(pwd) && ls . && mkdir -p {project.workdir} && cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py && echo hi'],
+        'args': ['bash', '-c', f'echo $(pwd) && ls . && cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py && echo hi'],
         'env': env,
         'allowFailure': False, # !!! CHANGE ME.
     }
