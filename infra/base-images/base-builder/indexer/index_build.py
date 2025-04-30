@@ -85,6 +85,10 @@ def save_build(
         assert prefix.endswith("/")
         for root, _, files in os.walk(path):
           for file in files:
+            if file.endswith("_seed_corpus.zip"):
+              # Don't copy over the seed corpus -- it's not necessary.
+              continue
+
             file = Path(root, file)
             if (
                 os.path.islink(str(file))
