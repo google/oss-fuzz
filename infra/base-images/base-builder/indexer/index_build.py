@@ -457,7 +457,7 @@ def copy_shared_libraries(
       continue
     lib_path = Path(right_side)
     logging.info('Copying %s => %s', lib_name, lib_path)
-    if lib_path.relative_to(libs_path):
+    if lib_path.is_relative_to(libs_path):
       # This can happen if the project build is doing the same thing as us and
       # already copied the library to the lib_path.
       continue
