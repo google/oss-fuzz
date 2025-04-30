@@ -82,7 +82,7 @@ def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
   return None
 
 
-def get_build_id(elf_file: str) -> str:
+def get_build_id(elf_file: str) -> str | None:
   """This invokes llvm-readelf to get the build ID of the given ELF file."""
 
   # Example output of llvm-readelf JSON output:
