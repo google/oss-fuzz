@@ -26,6 +26,27 @@ import clusterfuzz_deployment
 import config_utils
 
 
+def get_engine_project_image_name(fuzzing_engine, project):
+  """Returns the name of an image used to build |project| with
+  |fuzzing_engine|."""
+  return f'gcr.io/oss-fuzz-base/{fuzzing_engine}/{project.name}'
+
+
+def get_ood_image_name(fuzzing_engine, project):
+  """Returns the name of an OSS-Fuzz on Demand image."""
+  # TODO(andrenribeiro): Abstract the OOD image name generation to a separate
+  # location.
+  return f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/ood/{fuzzing_engine}/{project.name}'
+
+
+def get_gcs_public_corpus_url(project, fuzz_target_name):
+  """Returns the url of a public gcs seed corpus."""
+  return (
+      f'https://storage.googleapis.com/{project.name}-backup.clusterfuzz-'
+      f'external.appspot.com/corpus/libFuzzer/{project.name}_{fuzz_target_name}'
+      f'/public.zip')
+
+
 def get_latest_libfuzzer_build(project_name):
   """Returns the latest LibFuzzer build gsutil URI and the build file name."""
   # Mandatory environment variables required to obtain the latest build name
@@ -36,5 +57,5 @@ def get_latest_libfuzzer_build(project_name):
   deployment = clusterfuzz_deployment.OSSFuzz(config, None)
   latest_build_filename = deployment.get_latest_build_name()
   build_uri = f'gs://clusterfuzz-builds/{project_name}/' + latest_build_filename
-  
+
   return build_uri, latest_build_filename
