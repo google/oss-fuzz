@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// This it is copied into the OSS-Fuzz container image and compiled
+// This is copied into the OSS-Fuzz container image and compiled
 // there as part of the instrumentation process.
 
 #include <assert.h>
