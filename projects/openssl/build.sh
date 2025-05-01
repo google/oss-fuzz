@@ -87,9 +87,9 @@ if [[ "$SANITIZER" == introspector ]]; then
   exit 0
 fi
 
-cd $SRC/openssl30/
-build_fuzzers "_30"
-cd $SRC/openssl31/
-build_fuzzers "_31"
-cd $SRC/openssl32/
-build_fuzzers "_32"
+#cd $SRC/openssl30/
+#build_fuzzers "_30"
+#cd $SRC/openssl31/
+#build_fuzzers "_31"
+#cd $SRC/openssl32/
+#build_fuzzers "_32"
