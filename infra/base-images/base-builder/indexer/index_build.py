@@ -375,30 +375,6 @@ def build_project():
   subprocess.run(['/usr/local/bin/compile'], check=True)
 
 
-
-def patch_shared_object_paths(target_path: Path):
-  subprocess.run(
-      [
-          'patchelf',
-          '--set-rpath',
-          '/ossfuzzlib',
-          '--force-rpath',
-          target_path,
-      ],
-      check=True,
-  )
-
-  subprocess.run(
-      [
-          'patchelf',
-          '--set-interpreter',
-          '/ossfuzzlib/ld-linux-x86-64.so.2',
-          target_path,
-      ],
-      check=True,
-  )
-
-
 def test_target(
     target: BinaryMetadata,
     root_dir: Path,
@@ -415,6 +391,30 @@ def test_target(
     )
     return False
   return True
+
+
+def set_interpreter(target_path: Path):
+  subprocess.run(
+      [
+        'patchelf',
+        '--set-interpreter',
+        '/ossfuzzlib/ld-linux-x86-64.so.2',
+        str(target_path),
+      ],
+      check=True,
+  )
+
+
+def set_rpath_to_ossfuzzlib(binary_artifact):
+  subprocess.run(
+    [
+      'patchelf',
+      '--set-rpath',
+      '/ossfuzzlib',
+      str(binary_artifact),
+    ],
+    check=True,
+  )
 
 
 def copy_shared_libraries(
@@ -448,7 +448,7 @@ def copy_shared_libraries(
   # The dynamic linker should always be copied.
   # The lines that have a => could contain a space, but we copy whatever on the
   # right side of the =>, removing the load address.
-  shutil.copy(_LD_PATH, libs_path / _LD_PATH.name)
+  shutil.copy2(_LD_PATH, libs_path / _LD_PATH.name)
 
   lines = output.splitlines()
   for line in lines:
@@ -459,18 +459,28 @@ def copy_shared_libraries(
     right_side = parts[1].strip().rsplit(' ', maxsplit=1)[0].strip()
     if not right_side:
       continue
-    lib_path = Path(right_side)
-    logging.info('Copying %s => %s', lib_name, lib_path)
-    if lib_path.is_relative_to(libs_path):
+    library_path = Path(right_side)
+    logging.info('Copying %s => %s', lib_name, library_path)
+    if library_path.is_relative_to(libs_path):
       # This can happen if the project build is doing the same thing as us and
-      # already copied the library to the lib_path.
+      # already copied the library to the library_path.
       continue
 
     try:
-      shutil.copy(lib_path, libs_path / lib_path.name)
+      shutil.copy2(library_path, libs_path / library_path.name)
+      dst = libs_path / library_path.name
+      # Need to preserve world writeable permissions.
+      shutil.copy2(library_path, dst)
+      # If we don't do this, our shared objects load the system's shared
+      # objects. What about their shared objects you may ask? Well they
+      # will all be from this directory where every so has the directory
+      # as its rpath.
+      set_rpath_to_ossfuzzlib(dst)
+
     except (FileNotFoundError) as e:
-      logging.exception('Could not copy %s', lib_path)
+      logging.exception('Could not copy %s', library_path)
       raise e
+
 
 def archive_target(
     target: BinaryMetadata,
@@ -541,7 +551,8 @@ def archive_target(
     libs_path.mkdir(parents=False, exist_ok=True)
     target_path = OUT / target.name
     copy_shared_libraries(target_path, libs_path)
-    patch_shared_object_paths(target_path)
+    set_interpreter(target_path)
+    set_path_to_ossfuzzlib(target_path)
     archive_path = SNAPSHOT_DIR / f"{uuid}.tar"
 
     save_build(
