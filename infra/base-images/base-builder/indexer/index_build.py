@@ -552,7 +552,7 @@ def archive_target(
     target_path = OUT / target.name
     copy_shared_libraries(target_path, libs_path)
     set_interpreter(target_path)
-    set_path_to_ossfuzzlib(target_path)
+    set_rpath_to_ossfuzzlib(target_path)
     archive_path = SNAPSHOT_DIR / f"{uuid}.tar"
 
     save_build(
