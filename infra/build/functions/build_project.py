@@ -77,6 +77,7 @@ class Config:
   upload_build_logs: str = None
   build_type: str = None
   fuzzing_engine: str = None
+  fuzz_target: str = ''
 
 
 # Allow the WORKDIR to be commented out for OSS-Fuzz-Gen, which creates new
@@ -682,6 +683,10 @@ def parse_args(description, args):
                       required=False,
                       default='libfuzzer',
                       help='Fuzzing engine name.')
+  parser.add_argument('--fuzz-target',
+                      required=False,
+                      default='',
+                      help='Fuzz target name.')
   return parser.parse_args(args)
 
 
@@ -695,7 +700,8 @@ def create_config(args, build_type):
                 upload=upload,
                 experiment=args.experiment,
                 build_type=build_type,
-                fuzzing_engine=args.fuzzing_engine)
+                fuzzing_engine=args.fuzzing_engine,
+                fuzz_target=args.fuzz_target)
 
 
 def build_script_main(script_description,

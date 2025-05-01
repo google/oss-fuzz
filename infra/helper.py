@@ -366,10 +366,8 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
                                   help='name of the fuzzer',
                                   nargs='?')
   _add_external_project_args(check_build_parser)
-  index_parser = subparsers.add_parser(
-      'index', help='Index project.')
-  index_parser.add_argument('project',
-                            help='Project')
+  index_parser = subparsers.add_parser('index', help='Index project.')
+  index_parser.add_argument('project', help='Project')
   _add_architecture_args(index_parser)
   _add_environment_args(index_parser)
 
@@ -1689,7 +1687,8 @@ def index(args):
     return False
 
   image_name = f'gcr.io/oss-fuzz/{args.project.name}'
-  if not build_image_impl(args.project, cache=True, pull=False, architecture=args.architecture):
+  if not build_image_impl(
+      args.project, cache=True, pull=False, architecture=args.architecture):
     logger.error('Failed to build project image for indexer.')
     return False
   env = [
@@ -1702,13 +1701,8 @@ def index(args):
 
   run_args = _env_to_docker_args(env)
   run_args.extend([
-      '-v',
-      f'{args.project.out}:/out',
-      '-v',
-      f'{args.project.work}:/work',
-      '-t',
-      image_name,
-      '/opt/indexer/index_build.py'
+      '-v', f'{args.project.out}:/out', '-v', f'{args.project.work}:/work',
+      '-t', image_name, '/opt/indexer/index_build.py'
   ])
 
   logger.info(f'Running indexer for project: {args.project.name}')

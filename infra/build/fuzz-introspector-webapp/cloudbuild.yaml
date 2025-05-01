@@ -28,9 +28,9 @@ steps:
     - '--max-instances'
     - '100'
     - '--cpu'
-    - '4'
+    - '6'
     - '--memory'
-    - '16Gi'
+    - '24Gi'
 options:
   machineType: 'E2_HIGHCPU_32'
 timeout: 21600s  # 6 hours

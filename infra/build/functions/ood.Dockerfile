@@ -1,5 +1,6 @@
-#!/bin/bash -eu
-# Copyright 2020 Google Inc.
+#!/usr/bin/env python3
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +15,26 @@
 # limitations under the License.
 #
 ################################################################################
+ARG runtime_image
+FROM $runtime_image
 
-# build project
-mkdir build
-cd build
-cmake -DSPM_ENABLE_SHARED=ON ..
-make -j $(nproc)
-make install
+ARG BUILD_OUT_PATH
+ARG FUZZING_ENGINE
+ARG FUZZ_TARGET
+ARG FUZZBENCH_PATH
+ARG BENCHMARK
 
-# build fuzzers
-for fuzzer in $(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party'); do
-  fuzz_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -std=c++17 -I. -I$SRC/sentencepiece \
-      -I$SRC/sentencepiece/src \
-      -I$SRC/sentencepiece/src/builtin_pb/ \
-      -I$SRC/sentencepiece/third_party/protobuf-lite/ \
-        $fuzzer $LIB_FUZZING_ENGINE ./src/libsentencepiece.a \
-        -o $OUT/$fuzz_basename
-done
+RUN mkdir -p /ood
+RUN mkdir -p /ood$FUZZBENCH_PATH
+
+COPY ./fuzzbench_run_fuzzer.sh /ood
+COPY .$BUILD_OUT_PATH /ood
+COPY .$FUZZBENCH_PATH /ood$FUZZBENCH_PATH
+
+ENV OUT=/ood
+ENV FUZZING_ENGINE=$FUZZING_ENGINE
+ENV FUZZ_TARGET=$FUZZ_TARGET
+ENV FUZZBENCH_PATH=/ood$FUZZBENCH_PATH
+ENV BENCHMARK=$BENCHMARK
+
+CMD ["bash", "-c", "/ood/fuzzbench_run_fuzzer.sh"]
