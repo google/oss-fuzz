@@ -26,7 +26,7 @@ import tarfile
 import tempfile
 
 from pathlib import Path
-from typing import Any, Sequence, Union, Iterator
+from typing import Any, Sequence, Union
 
 ARCHIVE_VERSION = 1
 PROJECT = Path(os.environ['PROJECT_NAME'])

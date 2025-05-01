@@ -29,7 +29,7 @@ import shutil
 import sqlite3
 import sys
 import time
-from typing import Any, Sequence, Union, Iterator
+from typing import Any, Sequence, Iterator
 
 INDEX_DB_NAME = "db.sqlite"
 _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
@@ -261,10 +261,14 @@ def run_indexer(build_id: str, linker_commands: dict):
   index_dir.mkdir(exist_ok=False)
   index_db_path = str(index_dir / INDEX_DB_NAME)
 
-  with (OUT / "compile_commands.json").open("wt") as f:
+  # Use a build-specific compile commands directory, since there could be
+  # parallel linking happening at the same time.
+  compile_commands_dir = INDEXES_PATH / f"compile_commands_{build_id}"
+  compile_commands_dir.mkdir(exist_ok=False)
+  with (compile_commands_dir / "compile_commands.json").open("wt") as f:
     json.dump(linker_commands["compile_commands"], f, indent=2)
 
-  cmd = ['/opt/indexer/indexer', '--build_dir', str(OUT), '--index_path',
+  cmd = ['/opt/indexer/indexer', '--build_dir', compile_commands_dir, '--index_path',
           index_db_path, '--source_dir', str(SRC)]
   result = subprocess.run(cmd, check=True)
   if result.returncode != 0:
