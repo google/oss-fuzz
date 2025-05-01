@@ -23,13 +23,22 @@ from collections.abc import MutableSequence, Sequence
 import hashlib
 import json
 import os
-import random
+from pathlib import Path
 import subprocess
+import shutil
+import sqlite3
 import sys
 import time
-from typing import Any
+from typing import Any, Sequence, Union, Iterator
 
+INDEX_DB_NAME = "db.sqlite"
 _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
+
+PROJECT = Path(os.environ['PROJECT_NAME'])
+SRC = Path(os.getenv('SRC', '/src'))
+# On OSS-Fuzz build infra, $OUT is not /out.
+OUT = Path(os.getenv('OUT', '/out'))
+INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 
 
 def execute(argv: Sequence[str]) -> None:
@@ -231,6 +240,68 @@ def read_cdb_fragments(cdb_path: str) -> Any:
   return json.loads(contents)
 
 
+def get_index_files(index_db_path) -> Iterator[str]:
+    conn = sqlite3.connect(index_db_path)
+    cursor = conn.cursor()
+
+    query = f"""
+        SELECT DISTINCT dirname, basename
+        FROM location
+    """
+    cursor.execute(query)
+    for dirname, basename in cursor.fetchall():
+        yield os.path.join(dirname, basename)
+
+    conn.close()
+
+
+def run_indexer(build_id: str, linker_commands: dict):
+  """Run the indexer."""
+  index_dir = INDEXES_PATH / build_id
+  index_dir.mkdir(exist_ok=False)
+  index_db_path = str(index_dir / INDEX_DB_NAME)
+
+  with (OUT / "compile_commands.json").open("wt") as f:
+    json.dump(linker_commands["compile_commands"], f, indent=2)
+
+  cmd = ['/opt/indexer/indexer', '--build_dir', str(OUT), '--index_path',
+          index_db_path, '--source_dir', str(SRC)]
+  result = subprocess.run(cmd, check=True)
+  if result.returncode != 0:
+    raise Exception(
+      "Running indexer failed\n"
+      f"stdout:\n```\n{result.stdout.decode()}\n```\n"
+      f"stderr:\n```\n{result.stderr.decode()}\n```\n"
+    )
+
+  relative_root = index_dir / "relative"
+  absolute_root = index_dir / "absolute"
+  for file in get_index_files(index_db_path):
+    if not file:
+      continue
+
+    if file.startswith("<"):
+      # builtins, we can't collect source for these.
+      continue
+
+    file_path = Path(file)
+    if file_path.is_absolute():
+      if file_path.is_relative_to("/"):
+        index_path = absolute_root / file_path.relative_to("/")
+      else:
+        raise FileNotFoundError(
+          f"Absolute file path {file_path} is not in the sysroot or clang "
+          " include directory."
+        )
+    else:
+      file_path = SRC / file_path
+      index_path = relative_root / file_path.relative_to(str(SRC))
+
+    if not file_path.is_dir() and file_path.exists():
+      index_path.parent.mkdir(parents=True, exist_ok=True)
+      shutil.copyfile(file_path, index_path)
+
+
 def main(argv: Sequence[str]) -> None:
   fuzzer_engine = os.getenv("LIB_FUZZING_ENGINE")
 
@@ -313,6 +384,7 @@ def main(argv: Sequence[str]) -> None:
       "gnu_build_id": build_id,
       "compile_commands": list(commands.values()),
   }
+  run_indexer(build_id, linker_commands)
   linker_commands = json.dumps(linker_commands)
   commands_path = os.path.join(cdb_path, build_id + "_linker_commands.json")
   with open(commands_path, "w") as f:

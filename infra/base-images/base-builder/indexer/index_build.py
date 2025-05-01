@@ -22,8 +22,6 @@ import json
 import logging
 import shutil
 import subprocess
-import sqlite3
-import sys
 import tarfile
 import tempfile
 
@@ -31,12 +29,12 @@ from pathlib import Path
 from typing import Any, Sequence, Union, Iterator
 
 ARCHIVE_VERSION = 1
-INDEX_DB_NAME = "db.sqlite"
 PROJECT = Path(os.environ['PROJECT_NAME'])
 SNAPSHOT_DIR = Path('/snapshot')
-SRC = Path(os.getenv('SRC'))
+SRC = Path(os.getenv('SRC', '/src'))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv('OUT', '/out'))
+INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 
 _LD_PATH = Path('/lib64/ld-linux-x86-64.so.2')
 
@@ -55,6 +53,7 @@ class BinaryMetadata:
   name: str
   binary_path: Path
   binary_args: str
+  build_id: str
   compile_commands: list[dict[str, Any]]
 
 
@@ -235,6 +234,7 @@ def enumerate_build_targets(
   targets = []
   logging.info('Found %i linker JSON files.', len(linker_json_paths))
   for linker_json_path in linker_json_paths:
+    build_id = linker_json_path.name.split('_')[0]
     with linker_json_path.open('rt') as f:
       data = json.load(f)
       # TODO(unassigned): Some projects may move build files around, so being
@@ -244,7 +244,6 @@ def enumerate_build_targets(
       name = binary_path.name
 
       if not (OUT / name).exists():
-        build_id = linker_json_path.name.split('_')[0]
         logging.info("trying to find %s with build id %s", name, build_id)
         binary_path = find_fuzzer_binary(OUT, build_id)
         if not binary_path:
@@ -265,10 +264,12 @@ def enumerate_build_targets(
           binary_path=binary_path,
           binary_args=binary_args,
           compile_commands=compile_commands,
+          build_id=build_id,
         )
       )
 
   return targets
+
 
 def short_file_hash(files: Path | Sequence[Path]) -> str:
   return sha256(files)[:16]
@@ -485,12 +486,13 @@ def copy_shared_libraries(
 def archive_target(
     target: BinaryMetadata,
     root_dir: Path,
-) -> Path:
+) -> Path | None:
   """Archives a single target in the project using the exported rootfs."""
   logging.info("archive_target %s", target.name)
-
-  with (OUT / "compile_commands.json").open("wt") as f:
-    json.dump(target.compile_commands, f, indent=2)
+  index_dir = INDEXES_PATH / target.build_id
+  if not index_dir.exists():
+    logging.error("didn't find index dir %s", index_dir)
+    return None
 
   # TODO(unassigned): This is a hack. Ideally we need to get the commit hash
   # for the project, or something like that, but this will do for now.
@@ -499,78 +501,31 @@ def archive_target(
   name = f"{PROJECT}.{target.name}"
   uuid = f"{PROJECT}.{target.name}.{target_hash}"
 
+  libs_path = OUT / 'lib'
+  libs_path.mkdir(parents=False, exist_ok=True)
+  target_path = OUT / target.name
+  copy_shared_libraries(target_path, libs_path)
+  set_interpreter(target_path)
+  set_rpath_to_ossfuzzlib(target_path)
+  archive_path = SNAPSHOT_DIR / f"{uuid}.tar"
 
-  with tempfile.TemporaryDirectory(prefix="index_") as index_tmp_dir:
-    index_dir = Path(index_tmp_dir)
+  save_build(
+    Manifest(
+      name=name,
+      uuid=uuid,
+      binary_name=target.name,
+      binary_args=target.binary_args,
+      version=ARCHIVE_VERSION,
+      is_oss_fuzz=False,
+    ),
+    source_dir=str(SRC),
+    build_dir=str(OUT),
+    index_dir=str(index_dir),
+    archive_path=archive_path,
+  )
 
-    index_db_path = os.path.join(index_tmp_dir, INDEX_DB_NAME)
-    cmd = ['/opt/indexer/indexer', '--build_dir', str(OUT), '--index_path',
-           index_db_path, '--source_dir', str(SRC)]
-    result = subprocess.run(cmd, check=True)
-    if result.returncode != 0:
-      raise Exception(
-        "Running indexer failed\n"
-        f"stdout:\n```\n{result.stdout.decode()}\n```\n"
-        f"stderr:\n```\n{result.stderr.decode()}\n```\n"
-      )
-
-
-    index_dir = Path(index_tmp_dir)
-    relative_root = index_dir / "relative"
-    absolute_root = index_dir / "absolute"
-    for file in get_index_files(index_db_path):
-      if not file:
-        continue
-
-      if file.startswith("<"):
-        # builtins, we can't collect source for these.
-        continue
-
-      file_path = Path(file)
-      if file_path.is_absolute():
-        if file_path.is_relative_to("/"):
-          index_path = absolute_root / file_path.relative_to("/")
-        elif clang_include_root and file_path.is_relative_to(clang_include_root):
-          index_path = absolute_root / file_path.relative_to(clang_include_root)
-        else:
-          raise FileNotFoundError(
-            f"Absolute file path {file_path} is not in the sysroot or clang "
-            " include directory."
-          )
-      else:
-        file_path = SRC / file_path
-        index_path = relative_root / file_path.relative_to(str(SRC))
-
-      if not file_path.is_dir() and file_path.exists():
-        index_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(file_path, index_path)
-
-
-
-    libs_path = OUT / 'lib'
-    libs_path.mkdir(parents=False, exist_ok=True)
-    target_path = OUT / target.name
-    copy_shared_libraries(target_path, libs_path)
-    set_interpreter(target_path)
-    set_path_to_ossfuzzlib(target_path)
-    archive_path = SNAPSHOT_DIR / f"{uuid}.tar"
-
-    save_build(
-      Manifest(
-        name=name,
-        uuid=uuid,
-        binary_name=target.name,
-        binary_args=target.binary_args,
-        version=ARCHIVE_VERSION,
-        is_oss_fuzz=False,
-      ),
-      source_dir=str(SRC),
-      build_dir=str(OUT),
-      index_dir=index_dir,
-      archive_path=archive_path,
-    )
-
-    logging.info("Wrote archive to: %s", archive_path)
+  logging.info("Wrote archive to: %s", archive_path)
+  # TODO: this will break projects that re-use libs and have multiple targets.
   shutil.rmtree(libs_path)
 
   return archive_path
@@ -593,23 +548,10 @@ def index():
 
 
 
-def get_index_files(index_db_path) -> Iterator[str]:
-    conn = sqlite3.connect(index_db_path)
-    cursor = conn.cursor()
-
-    query = f"""
-        SELECT DISTINCT dirname, basename
-        FROM location
-    """
-    cursor.execute(query)
-    for dirname, basename in cursor.fetchall():
-        yield os.path.join(dirname, basename)
-
-    conn.close()
-
-
 def main():
   logging.basicConfig(level=logging.INFO)
+  INDEXES_PATH.mkdir(exist_ok=True)
+
   for directory in ['aflplusplus', 'fuzztest', 'honggfuzz', 'libfuzzer']:
     path = os.path.join(os.environ['SRC'], directory)
     shutil.rmtree(path, ignore_errors=True)
