@@ -322,7 +322,8 @@ def main(argv: Sequence[str]) -> None:
     if arg == "-fsanitize=fuzzer-no-link":
       argv.remove("-fsanitize=fuzzer-no-link")
       os.system(f"Removed -fsanitizefuzzer-no-link >> {wrapper_log}")
-    if 'libFuzzingEngine.a' in arg:
+
+    if 'libFuzzingEngine.a' in arg or '-lFuzzingEngine' in arg:
       fuzzing_engine_in_argv = True
 
   # If we are not linking the fuzzing engine, execute normally.
