@@ -395,6 +395,7 @@ def build_project():
   if os.path.exists(lib_fuzzing_engine):
     os.remove(lib_fuzzing_engine)
   os.symlink('/opt/indexer/fuzzing_engine.a', lib_fuzzing_engine)
+  set_up_wrapper_dir()
   subprocess.run(['/usr/local/bin/compile'], check=True)
 
 
