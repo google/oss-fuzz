@@ -44,8 +44,25 @@ def set_env_vars():
   os.environ['FUZZING_ENGINE'] = 'none'
   os.environ['LIB_FUZZING_ENGINE'] = '/usr/lib/libFuzzingEngine.a'
   os.environ['FUZZING_LANGUAGE'] = 'c++'
-  os.environ['CXX'] = '/opt/indexer/clang++'
-  os.environ['CC'] = '/opt/indexer/clang'
+  os.environ['CXX'] = 'clang++'
+  os.environ['CC'] = 'clang'
+  os.environ['COMPILING_PROJECT'] = 'True'
+  # Force users of clang to use our wrapper. This fixes e.g. libcups.
+  os.environ['PATH'] = f"/opt/indexer:{os.environ.get('PATH')}"
+
+
+
+def set_up_wrapper_dir():
+  """Set up symlinks to everything in /usr/local/bin/.
+  Do this so build systems that snoop around clang's directory don't explode."""
+  real_dir = '/usr/local/bin'
+  indexer_dir = '/opt/indexer'
+  for name in os.listdir():
+    src = os.path.join(real_dir, name)
+    dst = os.path.join(indexer_dir, name)
+    if name not in {'clang', 'clang++'}:
+      continue
+    os.symlink(src, dst)
 
 
 @dataclasses.dataclass(slots=True)
@@ -345,7 +362,7 @@ def build_project():
     '-std=c++20',
     '-glldb',
     '-O0',
-    fuzzing_engine_path / 'fuzzing_engine.cc',
+    str(fuzzing_engine_path / 'fuzzing_engine.cc'),
     '-o',
     f'{OUT}/fuzzing_engine.o',
     '-gen-cdb-fragment-path',
