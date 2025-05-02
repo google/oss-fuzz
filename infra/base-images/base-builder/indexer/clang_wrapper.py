@@ -257,6 +257,7 @@ def get_index_files(index_db_path) -> Iterator[str]:
 
 def run_indexer(build_id: str, linker_commands: dict):
   """Run the indexer."""
+  os.system('echo INDEXED > /out/yonilog')
   index_dir = INDEXES_PATH / build_id
   # TODO: check if this is correct.
   index_dir.mkdir(exist_ok=True)
@@ -310,11 +311,24 @@ def run_indexer(build_id: str, linker_commands: dict):
 def main(argv: Sequence[str]) -> None:
   fuzzer_engine = os.getenv("LIB_FUZZING_ENGINE")
 
+  # Projects like cups might assume these arguments.
+  wrapper_log = OUT / 'wrapper-log'
+  fuzzing_engine_in_argv = False
+  for idx, arg in enumerate(argv[:]):
+    if arg == "-fsanitize=fuzzer":
+      argv[idx] = "-lFuzzingEngine"
+      os.system(f"echo replaced -fsanitizefuzzer >> {wrapper_log}")
+      fuzzing_engine_in_argv = True
+    if arg == "-fsanitize=fuzzer-no-link":
+      argv.remove("-fsanitize=fuzzer-no-link")
+      os.system(f"Removed -fsanitizefuzzer-no-link >> {wrapper_log}")
+    if 'libFuzzingEngine.a' in arg:
+      fuzzing_engine_in_argv = True
+
   # If we are not linking the fuzzing engine, execute normally.
-  if not fuzzer_engine or (
-      fuzzer_engine not in argv and "-lFuzzingEngine" not in argv
-  ):
+  if not os.environ['COMPILING_PROJECT'] or not fuzzing_engine_in_argv:
     execute(argv)
+  print(f'Linking {argv}')
 
   # We are linking, collect the relevant flags and dependencies.
   output_file = get_flag_value(argv, "-o")
