@@ -442,6 +442,22 @@ def has_arm_build(architectures):
   return 'aarch64' in architectures
 
 
+def get_srcmap_steps(language, directory='/workspace'):
+  srcmap_step_id = get_srcmap_step_id()
+  return [{
+        'name': image,
+        'args': [
+            'bash', '-c',
+            f'srcmap > {directory}/srcmap.json && cat {directory}/srcmap.json'
+        ],
+        'env': [
+            'OSSFUZZ_REVISION=$REVISION_ID',
+            f'FUZZING_LANGUAGE={language}',
+        ],
+        'id': srcmap_step_id
+    }]
+
+
 def get_project_image_steps(  # pylint: disable=too-many-arguments
     name,
     image,
@@ -474,19 +490,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
       cache_image=cache_image)
   steps.append(docker_build_step)
   if srcmap:
-    srcmap_step_id = get_srcmap_step_id()
-    steps.extend([{
-        'name': image,
-        'args': [
-            'bash', '-c',
-            'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-        ],
-        'env': [
-            'OSSFUZZ_REVISION=$REVISION_ID',
-            f'FUZZING_LANGUAGE={language}',
-        ],
-        'id': srcmap_step_id
-    }])
+    steps.extend(get_srcmap_steps(language))
 
   if has_arm_build(architectures):
     builder_name = 'buildxbuilder'

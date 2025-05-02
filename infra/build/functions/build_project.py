@@ -503,13 +503,16 @@ def get_build_steps_for_project(project,
         f'/clusterfuzz-builds/indexer_indexes/{project.name}/{zip_filename}')
     index_step = {
         'name': project.image,
-        'args': ['bash', '-c', f'echo $(pwd) && ls . && cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py && echo hi'],
+        'args': ['bash', '-c', f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'],
         'env': env,
         'allowFailure': False, # !!! CHANGE ME.
     }
     build_lib.dockerify_run_step(index_step,
                                  build,
                                  use_architecture_image_name=build.is_arm)
+
+    # We want this to get tarred up into objs by being in the out directory.
+    build_steps.extend(get_srcmap_steps(project.fuzzing_language, build.out))
     index_steps = [
         index_step,
         {
