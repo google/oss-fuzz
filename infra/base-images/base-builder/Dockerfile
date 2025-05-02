@@ -211,6 +211,8 @@ ENV CCACHE_COMPILERTYPE clang
 
 COPY indexer /opt/indexer
 ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer /opt/indexer/indexer
+# TODO: build this from source. We need a newer patchelf.
+ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/patchelf /usr/bin/patchelf
 RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang
 RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang++
