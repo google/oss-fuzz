@@ -258,7 +258,8 @@ def get_index_files(index_db_path) -> Iterator[str]:
 def run_indexer(build_id: str, linker_commands: dict):
   """Run the indexer."""
   index_dir = INDEXES_PATH / build_id
-  index_dir.mkdir(exist_ok=False)
+  # TODO: check if this is correct.
+  index_dir.mkdir(exist_ok=True)
   index_db_path = str(index_dir / INDEX_DB_NAME)
 
   # Use a build-specific compile commands directory, since there could be

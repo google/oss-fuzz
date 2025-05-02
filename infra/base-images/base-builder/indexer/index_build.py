@@ -412,6 +412,7 @@ def set_rpath_to_ossfuzzlib(binary_artifact):
       'patchelf',
       '--set-rpath',
       '/ossfuzzlib',
+      '--force-rpath',
       str(binary_artifact),
     ],
     check=True,
