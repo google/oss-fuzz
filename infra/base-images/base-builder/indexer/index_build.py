@@ -97,7 +97,7 @@ def save_build(
   with tempfile.NamedTemporaryFile() as tmp:
     mode = "w:gz" if archive_path.suffix.endswith("gz") else "w"
     with tarfile.open(tmp.name, mode) as tar:
-      def _save_dir(path: Path, prefix: str):
+      def _save_dir(path: Path, prefix: str, exclude_build_artifacts: bool = False):
         assert prefix.endswith("/")
         for root, _, files in os.walk(path):
           for file in files:
@@ -106,6 +106,11 @@ def save_build(
               continue
 
             file = Path(root, file)
+            if exclude_build_artifacts:
+              with file.open('rb') as f:
+                if f.read(4) == b'\x7fELF':
+                  continue
+
             if (
                 os.path.islink(str(file))
                 and Path(os.readlink(str(file))).is_absolute()
@@ -126,7 +131,7 @@ def save_build(
         ),
       )
 
-      _save_dir(source_dir, "src/")
+      _save_dir(source_dir, "src/", exclude_build_artifacts=True)
       _save_dir(build_dir, "obj/")
       _save_dir(index_dir, "idx/")
     # Warning, we overwrite here when default behavior used to be false.
