@@ -326,7 +326,7 @@ def main(argv: Sequence[str]) -> None:
       fuzzing_engine_in_argv = True
 
   # If we are not linking the fuzzing engine, execute normally.
-  if not os.environ['COMPILING_PROJECT'] or not fuzzing_engine_in_argv:
+  if not fuzzer_engine or not fuzzing_engine_in_argv:
     execute(argv)
   print(f'Linking {argv}')
 
