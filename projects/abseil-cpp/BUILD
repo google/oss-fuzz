@@ -39,3 +39,92 @@ cc_fuzz_test(
         "@com_google_absl//absl/base:base",
     ],
 )
+
+cc_fuzz_test(
+    name = "format_arg_fuzzer",
+    srcs = ["format_arg_fuzzer.cc"],
+    deps = ["@com_google_absl//absl/strings:str_format"],
+)
+
+cc_fuzz_test(
+    name = "safe_strto128_fuzzer",
+    srcs = ["safe_strto128_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/numeric:int128",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_fuzz_test(
+    name = "format_parser_fuzzer",
+    srcs = ["format_parser_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/strings:string_view",
+    ],
+)
+
+cc_fuzz_test(
+
+    name = "format_summarize_fuzzer",
+    srcs = ["format_summarize_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_fuzz_test(
+    name = "format_arg_dispatch_fuzzer",
+    srcs = ["format_arg_dispatch_fuzzer.cc"],
+    deps = ["@com_google_absl//absl/strings:str_format"],
+)
+
+cc_fuzz_test(
+    name = "invoke_object_fuzzer",
+    srcs = ["invoke_object_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/functional:function_ref",
+    ],
+)
+
+cc_fuzz_test(
+    name = "strcontains_ignorecase_fuzzer",
+    srcs = ["strcontains_ignorecase_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_fuzz_test(
+    name = "bigunsigned_constructor_fuzzer", 
+    srcs = ["bigunsigned_constructor_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_fuzz_test(
+    name = "int128_ostream_fuzzer",
+    srcs = ["int128_ostream_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/numeric:int128",
+    ],
+)
+
+cc_fuzz_test(
+    name = "parsed_format_base_fuzzer",
+    srcs = ["parsed_format_base_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/strings:string_view",
+    ],
+)
+
+cc_fuzz_test(
+    name = "format_wchar_fuzzer",
+    srcs = ["format_wchar_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/strings:string_view",
+    ],
+)
