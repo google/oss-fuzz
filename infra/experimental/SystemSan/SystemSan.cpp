@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 /* Linux */
+#include <linux/elf.h>
 #include <sys/ptrace.h>
 #include <syscall.h>
 #include <fcntl.h>
@@ -40,6 +41,7 @@
 #include <string>
 #include <vector>
 
+#include "arch.h"
 #include "inspect_utils.h"
 #include "inspect_dns.h"
 
@@ -169,7 +171,7 @@ std::string read_string(pid_t pid, unsigned long reg, unsigned long length) {
 
 void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for the sign of shell injection.
-  std::string path = read_string(pid, regs.rdi, kTripWire.length());
+  std::string path = read_string(pid, REGS_ARG1, kTripWire.length());
   if (!path.length()) {
     return;
   }
@@ -181,7 +183,7 @@ void inspect_for_injection(pid_t pid, const user_regs_struct &regs) {
 
 std::string get_pathname(pid_t pid, const user_regs_struct &regs) {
   // Parse the pathname from the memory specified in the RDI register.
-  std::string pathname = read_string(pid, regs.rdi, kShellPathnameLength);
+  std::string pathname = read_string(pid, REGS_ARG1, kShellPathnameLength);
   debug_log("Pathname is %s (len %lu)\n", pathname.c_str(), pathname.length());
   return pathname;
 }
@@ -262,7 +264,7 @@ void match_error_pattern(std::string buffer, std::string shell, pid_t pid) {
 
 void inspect_for_corruption(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's registers for shell corruption.
-  std::string buffer = read_string(pid, regs.rsi, regs.rdx);
+  std::string buffer = read_string(pid, REGS_ARG2, REGS_ARG3);
   debug_log("Write buffer: %s\n", buffer.c_str());
   match_error_pattern(buffer, g_shell_pids[pid], pid);
 }
@@ -297,12 +299,12 @@ bool has_unprintable(const std::string &value) {
 
 void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
   // Inspect a PID's register for the sign of arbitrary file open.
-  std::string path = read_string(pid, regs.rsi, kRootDirMaxLength);
+  std::string path = read_string(pid, REGS_ARG2, kRootDirMaxLength);
   if (!path.length()) {
     return;
   }
   if (path.substr(0, kFzAbsoluteDirectory.length()) == kFzAbsoluteDirectory) {
-    log_file_open(path, regs.rdx, pid);
+    log_file_open(path, REGS_ARG3, pid);
     return;
   }
   if (path[0] == '/' && path.length() > 1) {
@@ -314,7 +316,7 @@ void inspect_for_arbitrary_file_open(pid_t pid, const user_regs_struct &regs) {
     if (has_unprintable(path_absolute_topdir)) {
       struct stat dirstat;
       if (stat(path_absolute_topdir.c_str(), &dirstat) != 0) {
-        log_file_open(path, regs.rdx, pid);
+        log_file_open(path, REGS_ARG3, pid);
       }
     }
   }
@@ -399,13 +401,17 @@ int trace(std::map<pid_t, Tracee> pids) {
 
       if (is_syscall) {
         user_regs_struct regs;
-        if (ptrace(PTRACE_GETREGS, pid, 0, &regs) == -1) {
-          debug_log("ptrace(PTRACE_GETREGS, %d): %s", pid, strerror(errno));
+        struct iovec iov {
+          .iov_base = &regs,
+          .iov_len = sizeof(struct user_regs_struct),
+        };
+        if (ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &iov) == -1) {
+          debug_log("ptrace(PTRACE_GETREGSET, %d): %s", pid, strerror(errno));
           continue;
         }
 
         if (tracee.syscall_enter) {
-          if (regs.orig_rax == __NR_execve) {
+          if (REGS_SYSCALL == __NR_execve) {
             // This is a new process.
             auto parent = root_pids[pid];
             parent.ran_exec = true;
@@ -420,12 +426,12 @@ int trace(std::map<pid_t, Tracee> pids) {
 
           inspect_dns_syscalls(pid, regs);
 
-          if (regs.orig_rax == __NR_openat) {
+          if (REGS_SYSCALL == __NR_openat) {
             // TODO(metzman): Re-enable this once we have config/flag support.
             // inspect_for_arbitrary_file_open(pid, regs);
           }
 
-          if (regs.orig_rax == __NR_write &&
+          if (REGS_SYSCALL == __NR_write &&
               g_shell_pids.find(pid) != g_shell_pids.end()) {
             debug_log("Inspecting the `write` buffer of shell process %d.",
                       pid);
