@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+# Temporarily disable -fsanitize=object-size, until https://github.com/arximboldi/immer/issues/274 is fixed
+if [ "$SANITIZER" = undefined ]; then
+    export CFLAGS="$CFLAGS     -fno-sanitize=object-size"
+    export CXXFLAGS="$CXXFLAGS -fno-sanitize=object-size"
+fi
 
 mkdir build
 cd build
