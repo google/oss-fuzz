@@ -105,6 +105,11 @@ if [ -f $OPTIONS_FILE ]; then
     export ASAN_OPTIONS="$ASAN_OPTIONS:$custom_asan_options"
   fi
 
+  custom_lsan_options=$(parse_options.py $OPTIONS_FILE lsan)
+  if [ ! -z $custom_lsan_options ]; then
+    export LSAN_OPTIONS="$LSAN_OPTIONS:$custom_lsan_options"
+  fi
+
   custom_msan_options=$(parse_options.py $OPTIONS_FILE msan)
   if [ ! -z $custom_msan_options ]; then
     export MSAN_OPTIONS="$MSAN_OPTIONS:$custom_msan_options"
