@@ -51,7 +51,6 @@ def set_env_vars():
   os.environ['PATH'] = f"/opt/indexer:{os.environ.get('PATH')}"
 
 
-
 def set_up_wrapper_dir():
   """Set up symlinks to everything in /usr/local/bin/.
   Do this so build systems that snoop around clang's directory don't explode."""
@@ -85,19 +84,22 @@ class Manifest:
 
 
 def save_build(
-  manifest: Manifest,
-  *,
-  source_dir: Path,
-  build_dir: Path,
-  index_dir: Path,
-  archive_path: Path,
-  overwrite: bool = False,
+    manifest: Manifest,
+    *,
+    source_dir: Path,
+    build_dir: Path,
+    index_dir: Path,
+    archive_path: Path,
+    overwrite: bool = False,
 ) -> None:
   """Saves a build archive."""
   with tempfile.NamedTemporaryFile() as tmp:
     mode = "w:gz" if archive_path.suffix.endswith("gz") else "w"
     with tarfile.open(tmp.name, mode) as tar:
-      def _save_dir(path: Path, prefix: str, exclude_build_artifacts: bool = False):
+
+      def _save_dir(path: Path,
+                    prefix: str,
+                    exclude_build_artifacts: bool = False):
         assert prefix.endswith("/")
         for root, _, files in os.walk(path):
           for file in files:
@@ -111,10 +113,8 @@ def save_build(
                 if f.read(4) == b'\x7fELF':
                   continue
 
-            if (
-                os.path.islink(str(file))
-                and Path(os.readlink(str(file))).is_absolute()
-            ):
+            if (os.path.islink(str(file)) and
+                Path(os.readlink(str(file))).is_absolute()):
               logging.warning("Adding absolute path to the tarball: %s", file)
 
             tar.add(
@@ -123,12 +123,12 @@ def save_build(
             )
 
       _add_string_to_tar(
-        tar,
-        "manifest.json",
-        json.dumps(
-          dataclasses.asdict(manifest),
-          indent=2,
-        ),
+          tar,
+          "manifest.json",
+          json.dumps(
+              dataclasses.asdict(manifest),
+              indent=2,
+          ),
       )
 
       _save_dir(source_dir, "src/", exclude_build_artifacts=True)
@@ -235,8 +235,7 @@ def get_build_id(elf_file: str) -> str | None:
   return _get_build_id_from_elf_notes(ret.stdout)
 
 
-def find_fuzzer_binary(
-    out_dir: Path, build_id: str) -> Path | None:
+def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
   for root, dirs, files in os.walk(out_dir):
     for file in files:
       if get_build_id(os.path.join(root, file)) == build_id:
@@ -245,13 +244,10 @@ def find_fuzzer_binary(
   return None
 
 
-def enumerate_build_targets(
-    root_path: Path,
-) -> Sequence[BinaryMetadata]:
+def enumerate_build_targets(root_path: Path,) -> Sequence[BinaryMetadata]:
   """Enumerates the build targets in the project."""
   logging.info("enumerate_build_targets")
-  linker_json_paths = list(
-    (OUT / 'cdb').glob('*_linker_commands.json'))
+  linker_json_paths = list((OUT / 'cdb').glob('*_linker_commands.json'))
 
   targets = []
   logging.info('Found %i linker JSON files.', len(linker_json_paths))
@@ -281,14 +277,13 @@ def enumerate_build_targets(
         binary_path = Path('./build', binary_path.relative_to(f'{OUT}/'))
 
       targets.append(
-        BinaryMetadata(
-          name=name,
-          binary_path=binary_path,
-          binary_args=binary_args,
-          compile_commands=compile_commands,
-          build_id=build_id,
-        )
-      )
+          BinaryMetadata(
+              name=name,
+              binary_path=binary_path,
+              binary_args=binary_args,
+              compile_commands=compile_commands,
+              build_id=build_id,
+          ))
 
   return targets
 
@@ -342,53 +337,55 @@ def copy_fuzzing_engine():
 def build_project():
   set_env_vars()
   existing_cflags = os.environ.get('CFLAGS', '')
-  extra_flags = (
-    '-fno-omit-frame-pointer '
-    '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
-    '-O0 -glldb '
-    '-fsanitize=address '
-    '-Wno-invalid-offsetof '
-    '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
-    f'-gen-cdb-fragment-path {OUT}/cdb '
-    '-Qunused-arguments '
-    '-isystem /usr/local/lib/clang/18 '
-    '-resource-dir /usr/local/lib/clang/18 '
-  )
+  extra_flags = ('-fno-omit-frame-pointer '
+                 '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
+                 '-O0 -glldb '
+                 '-fsanitize=address '
+                 '-Wno-invalid-offsetof '
+                 '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
+                 f'-gen-cdb-fragment-path {OUT}/cdb '
+                 '-Qunused-arguments '
+                 '-isystem /usr/local/lib/clang/18 '
+                 '-resource-dir /usr/local/lib/clang/18 ')
   os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
 
   fuzzing_engine_path = copy_fuzzing_engine()
 
   build_fuzzing_engine_command = [
-    '/opt/indexer/clang++',
-    '-c',
-    '-Wall',
-    '-Wextra',
-    '-pedantic',
-    '-std=c++20',
-    '-glldb',
-    '-O0',
-    str(fuzzing_engine_path / 'fuzzing_engine.cc'),
-    '-o',
-    f'{OUT}/fuzzing_engine.o',
-    '-gen-cdb-fragment-path',
-    f'{OUT}/cdb',
-    '-Qunused-arguments',
-    '-isystem',
-    '/usr/local/lib/clang/18',
-    '-I', '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9',
-    '-I', '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9',
-    '-I', '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward',
-    '-I', '/usr/local/lib/clang/18/include',
-    '-I', '/usr/local/include',
-    '-I', '/usr/include/x86_64-linux-gnu',
-    '-I', '/usr/include',
+      '/opt/indexer/clang++',
+      '-c',
+      '-Wall',
+      '-Wextra',
+      '-pedantic',
+      '-std=c++20',
+      '-glldb',
+      '-O0',
+      str(fuzzing_engine_path / 'fuzzing_engine.cc'),
+      '-o',
+      f'{OUT}/fuzzing_engine.o',
+      '-gen-cdb-fragment-path',
+      f'{OUT}/cdb',
+      '-Qunused-arguments',
+      '-isystem',
+      '/usr/local/lib/clang/18',
+      '-I',
+      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9',
+      '-I',
+      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9',
+      '-I',
+      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward',
+      '-I',
+      '/usr/local/lib/clang/18/include',
+      '-I',
+      '/usr/local/include',
+      '-I',
+      '/usr/include/x86_64-linux-gnu',
+      '-I',
+      '/usr/include',
   ]
   subprocess.run(build_fuzzing_engine_command, check=True, cwd='/opt/indexer')
   ar_cmd = [
-      'ar',
-      'rcs',
-      '/opt/indexer/fuzzing_engine.a',
-      f'{OUT}/fuzzing_engine.o'
+      'ar', 'rcs', '/opt/indexer/fuzzing_engine.a', f'{OUT}/fuzzing_engine.o'
   ]
   subprocess.run(ar_cmd, check=True)
   lib_fuzzing_engine = '/usr/lib/libFuzzingEngine.a'
@@ -409,9 +406,9 @@ def test_target(
   expected_error = f"Usage: {target_path} <input_file>\n"
   if result.stderr.decode() != expected_error or result.returncode != 1:
     logging.error(
-      "Target %s failed to run: %s",
-      target_path,
-      result.stderr.decode(),
+        "Target %s failed to run: %s",
+        target_path,
+        result.stderr.decode(),
     )
     return False
   return True
@@ -420,10 +417,10 @@ def test_target(
 def set_interpreter(target_path: Path):
   subprocess.run(
       [
-        'patchelf',
-        '--set-interpreter',
-        '/ossfuzzlib/ld-linux-x86-64.so.2',
-        str(target_path),
+          'patchelf',
+          '--set-interpreter',
+          '/ossfuzzlib/ld-linux-x86-64.so.2',
+          str(target_path),
       ],
       check=True,
   )
@@ -431,20 +428,18 @@ def set_interpreter(target_path: Path):
 
 def set_rpath_to_ossfuzzlib(binary_artifact):
   subprocess.run(
-    [
-      'patchelf',
-      '--set-rpath',
-      '/ossfuzzlib',
-      '--force-rpath',
-      str(binary_artifact),
-    ],
-    check=True,
+      [
+          'patchelf',
+          '--set-rpath',
+          '/ossfuzzlib',
+          '--force-rpath',
+          str(binary_artifact),
+      ],
+      check=True,
   )
 
 
-def copy_shared_libraries(
-    fuzz_target_path: Path, libs_path: Path
-) -> None:
+def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
   """Copies the shared libraries to the shared directory."""
   env = os.environ.copy()
   env['LD_TRACE_LOADED_OBJECTS'] = '1'
@@ -534,18 +529,18 @@ def archive_target(
   archive_path = SNAPSHOT_DIR / f"{uuid}.tar"
 
   save_build(
-    Manifest(
-      name=name,
-      uuid=uuid,
-      binary_name=target.name,
-      binary_args=target.binary_args,
-      version=ARCHIVE_VERSION,
-      is_oss_fuzz=False,
-    ),
-    source_dir=str(SRC),
-    build_dir=str(OUT),
-    index_dir=str(index_dir),
-    archive_path=archive_path,
+      Manifest(
+          name=name,
+          uuid=uuid,
+          binary_name=target.name,
+          binary_args=target.binary_args,
+          version=ARCHIVE_VERSION,
+          is_oss_fuzz=False,
+      ),
+      source_dir=str(SRC),
+      build_dir=str(OUT),
+      index_dir=str(index_dir),
+      archive_path=archive_path,
   )
 
   logging.info("Wrote archive to: %s", archive_path)
@@ -569,7 +564,6 @@ def index():
       print(f'Error: {e}')
       continue
     archive_target(target, root)
-
 
 
 def main():
