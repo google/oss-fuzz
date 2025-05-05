@@ -26,6 +26,10 @@ ln -s clang_wrapper.py clang
 ln -s clang_wrapper.py clang++
 export PROJECT_NAME=<project>
 export OSS_FUZZ_CHECKOUT=<path to your oss-fuzz checkout>
+
+cd $OSS_FUZZ_CHECKOUT
+python infra/helper.py build_image $PROJECT_NAME
+
 docker run --rm -ti -e PROJECT_NAME=$PROJECT_NAME \
     -v $OSS_FUZZ_CHECKOUT/infra/base-images/base-builder/indexer:/opt/indexer \
     -v $OSS_FUZZ_CHECKOUT/build/out/$PROJECT_NAME:/out \
