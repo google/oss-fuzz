@@ -80,12 +80,8 @@ int main(int argc, char* argv[]) {
   }
   close(fd);
 
-  int res = LLVMFuzzerInitialize(&argc, &argv);
-  if (res != 0) {
-    return res;
-  }
-
-  res = LLVMFuzzerTestOneInput(static_cast<uint8_t*>(mapping), size);
+  LLVMFuzzerInitialize(&argc, &argv);
+  int res = LLVMFuzzerTestOneInput(static_cast<uint8_t*>(mapping), size);
 
   munmap(mapping, size);
   return res;
