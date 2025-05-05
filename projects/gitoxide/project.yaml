@@ -3,7 +3,7 @@ language: rust
 primary_contact: "byronimo@gmail.com"
 auto_ccs:
   - "nathaniel.brough@gmail.com"
-main_repo: "https://github.com/Byron/gitoxide"
+main_repo: "https://github.com/GitoxideLabs/gitoxide"
 file_github_issue: true
 sanitizers:
   - address
