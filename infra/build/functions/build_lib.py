@@ -442,7 +442,7 @@ def has_arm_build(architectures):
   return 'aarch64' in architectures
 
 
-def get_srcmap_steps(language, directory='/workspace'):
+def get_srcmap_steps(image, language, directory='/workspace'):
   srcmap_step_id = get_srcmap_step_id()
   return [{
         'name': image,
@@ -490,7 +490,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
       cache_image=cache_image)
   steps.append(docker_build_step)
   if srcmap:
-    steps.extend(get_srcmap_steps(language))
+    steps.extend(get_srcmap_steps(image, language))
 
   if has_arm_build(architectures):
     builder_name = 'buildxbuilder'
