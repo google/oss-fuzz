@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y ninja-build lsb-core software-properties-common zlib1g-dev
 RUN pip3 install -U cmake
 
-RUN git clone --depth 1 --branch llvmorg-15.0.0 https://github.com/llvm/llvm-project.git $SRC/llvm-project
+RUN git clone --depth 1 --branch llvmorg-18.1.8 https://github.com/llvm/llvm-project.git $SRC/llvm-project
 RUN git clone --depth 1 https://github.com/halide/Halide.git halide
 
 WORKDIR halide
