@@ -512,8 +512,12 @@ def get_build_steps_for_project(project,
                                  use_architecture_image_name=build.is_arm)
 
     # We want this to get tarred up into objs by being in the out directory.
-    build_steps.extend(
-        build_lib.get_srcmap_steps(project.image, project.fuzzing_language, build.out))
+    build_steps.append({
+      'name': project.image,
+      'args': ['bash', '-c', 'cp /workspace/srcmap.json {build.out}'],
+      'allowFailure': True,  # TODO: remove this.
+    })
+
     index_steps = [
         index_step,
         {
