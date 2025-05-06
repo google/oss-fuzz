@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// This file is copied into the OSS-Fuzz container image and compiled there as
-// part of the instrumentation process.
+// This is copied into the OSS-Fuzz container image and compiled
+// there as part of the instrumentation process.
 
 #include <assert.h>
 #include <fcntl.h>
@@ -25,23 +25,20 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-extern "C" int LLVMFuzzerTestOneInput(uint8_t data[], size_t n);
-
-
-extern "C" size_t LLVMFuzzerMutate(char *data, size_t size, size_t maxSize);
-
-__attribute__((weak)) extern "C" size_t LLVMFuzzerMutate(char *data, size_t size, size_t maxSize) {
-  (void) data;
-  (void) size;
-  (void) maxSize;
-  abort();
-}
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t n);
 
 extern "C" __attribute__((weak)) int LLVMFuzzerInitialize(
     __attribute__((unused)) int* argc, __attribute__((unused)) char*** argv) {
   return 0;
 }
 
+// Projects can call LLVMFuzzerMutate, but should only do it from
+// LLVMFuzzerCustomMutator, which should be called from the fuzzing engine (we
+// don't need to).
+extern "C" size_t LLVMFuzzerMutate(uint8_t* Data, size_t Size, size_t MaxSize) {
+  fprintf(stderr, "LLVMFuzzerMutate was called. This should never happen.\n");
+  __builtin_trap();
+}
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -83,12 +80,8 @@ int main(int argc, char* argv[]) {
   }
   close(fd);
 
-  int res = LLVMFuzzerInitialize(&argc, &argv);
-  if (res != 0) {
-    return res;
-  }
-
-  res = LLVMFuzzerTestOneInput(static_cast<uint8_t*>(mapping), size);
+  LLVMFuzzerInitialize(&argc, &argv);
+  int res = LLVMFuzzerTestOneInput(static_cast<uint8_t*>(mapping), size);
 
   munmap(mapping, size);
   return res;

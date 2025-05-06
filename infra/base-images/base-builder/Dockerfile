@@ -209,9 +209,18 @@ ENV CCACHE_DIR /ccache/cache
 ENV CCACHE_COMPILERCHECK none
 ENV CCACHE_COMPILERTYPE clang
 
+# Build newer patchelf than the one available from Ubuntu.
+RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
+    apt-get install -y autoconf && \
+    cd patchelf && git checkout 523f401584d9584e76c9c77004e7abeb9e6c4551 && \
+    unset CFLAGS && export CXXFLAGS='-stdlib=libc++' && export LDFLAGS='-lpthread' && \
+    ./bootstrap.sh && ./configure && make && \
+    cp /tmp/patchelf/src/patchelf /usr/local/bin && \
+    rm -rf /tmp/patchelf && apt-get remove -y autoconf
+
 COPY indexer /opt/indexer
 ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer /opt/indexer/indexer
-RUN chmod a+x /opt/indexer/indexer
+RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang
 RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang++
 
