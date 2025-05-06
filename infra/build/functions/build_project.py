@@ -513,7 +513,7 @@ def get_build_steps_for_project(project,
 
     # We want this to get tarred up into objs by being in the out directory.
     build_steps.extend(
-        get_srcmap_steps(project.image, project.fuzzing_language, build.out))
+        build_lib.get_srcmap_steps(project.image, project.fuzzing_language, build.out))
     index_steps = [
         index_step,
         {
