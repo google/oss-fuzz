@@ -220,7 +220,7 @@ RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
 
 COPY indexer /opt/indexer
 ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer /opt/indexer/indexer
-RUN chmod a+x /opt/indexer/indexer
+RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang
 RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang++
 
