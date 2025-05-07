@@ -94,11 +94,16 @@ def main():
   if not testcase_path:
     logging.info('OSS-Fuzz on Demand did not find any crashes.')
   else:
-    resp = requests.post(GET_URL, headers=get_headers(access_token_path)).text
-    logging.info(resp)
-    result = json.loads(resp)
-    upload_url = result['uploadUrl']
-    logging.info('upload url is', upload_url)
+    # resp = requests.post(GET_URL, headers=get_headers(access_token_path)).text
+    resp = requests.post(GET_URL, headers=get_headers(access_token_path))
+    logging.info(resp.text)
+    print(resp.text)
+    print(resp.json)
+    print(resp.json())
+
+    # result = json.loads(resp)
+    # upload_url = result['uploadUrl']
+    # logging.info('upload url is', upload_url)
   
     # upload(upload_url, testcase_path, job, target)
   
