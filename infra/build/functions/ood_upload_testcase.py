@@ -42,9 +42,9 @@ def get_access_token(access_token_path):
   """Returns the ACCESS_TOKEN for upload testcase requests"""
   with open(access_token_path, 'r') as f:
       line = f.readline()
-      logging.info('line: ', line)
-      logging.info('line -1: ', line[-1])
-      logging.info('line strip: ', line.strip())
+      print('line: ', line)
+      print('line -1: ', line[-1])
+      print('line strip: ', line.strip())
       return line.strip()
 
 def get_headers(access_token_path):
@@ -98,7 +98,6 @@ def main():
     resp = requests.post(GET_URL, headers=get_headers(access_token_path))
     logging.info(resp.text)
     print(resp.text)
-    print(resp.json)
     print(resp.json())
 
     # result = json.loads(resp)
