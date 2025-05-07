@@ -514,7 +514,7 @@ def get_build_steps_for_project(project,
     # We want this to get tarred up into objs by being in the out directory.
     build_steps.append({
       'name': project.image,
-      'args': ['bash', '-c', 'cp /workspace/srcmap.json {build.out}'],
+      'args': ['bash', '-c', f'cp /workspace/srcmap.json {build.out}'],
       'allowFailure': True,  # TODO: remove this.
     })
 
