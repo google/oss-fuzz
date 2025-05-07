@@ -511,15 +511,14 @@ def get_build_steps_for_project(project,
                                  build,
                                  use_architecture_image_name=build.is_arm)
 
-    # We want this to get tarred up into objs by being in the out directory.
-    build_steps.append({
-      'name': project.image,
-      'args': ['bash', '-c', f'cp /workspace/srcmap.json {build.out}'],
-      'allowFailure': True,  # TODO: remove this.
-    })
-
     index_steps = [
         index_step,
+        # We want srcmaps to get tarred up into objs by being in the out directory.
+        {
+          'name': project.image,
+          'args': ['bash', '-c', f'cp /workspace/srcmap.json {build.out}'],
+          'allowFailure': True,  # TODO: remove this.
+        },
         {
             # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
             'name': project.image,
