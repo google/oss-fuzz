@@ -38,30 +38,18 @@ GET_URL = 'https://oss-fuzz.com/upload-testcase/get-url-oauth'
 # GET_URL = 'https://staging3-dot-cluster-fuzz.appspot.com/upload-testcase/get-url-oauth'
 # ACCESS_TOKEN: gcloud auth print-access-token
 
-def get_access_token():
+def get_access_token(access_token_path):
   """Returns the ACCESS_TOKEN for upload testcase requests"""
-  try:
-      import google.auth
-  except ImportError:
-      logging.info("google-auth library not found. Installing...")
-      subprocess.check_call([sys.executable, "-m", "pip", "install", "google-auth"])
-      import google.auth
+  with open(access_token_path, 'r') as f:
+      line = f.readline()
+      logging.info('line: ', line)
+      logging.info('line -1: ', line[-1])
+      logging.info('line strip: ', line.strip())
+      return line.strip()
 
-  # credentials, project = google.auth.default() #acho que não precisa disso
-  command = ['gcloud auth print-access-token']
-  result = subprocess.run(
-              command,
-              capture_output=True,
-              text=True,
-              check=True,
-              shell=True
-          )
-  # Remove the las character "\n"
-  return result.stdout[:-1]
-
-def get_headers():
+def get_headers(access_token_path):
   """Returns the headers required to upload testcase requests"""
-  access_token = get_access_token()
+  access_token = get_access_token(access_token_path)
   return {
       'Authorization': 'Bearer ' + access_token,
   }
@@ -100,12 +88,13 @@ def main():
   testcase_dir_path = sys.argv[1]
   job = sys.argv[2]
   target = sys.argv[3]
+  access_token_path = sys.argv[4]
   testcase_path = get_file_path(testcase_dir_path)
 
   if not testcase_path:
     logging.info('OSS-Fuzz on Demand did not find any crashes.')
   else:
-    resp = requests.post(GET_URL, headers=get_headers()).text
+    resp = requests.post(GET_URL, headers=get_headers(access_token_path)).text
     logging.info(resp)
     result = json.loads(resp)
     upload_url = result['uploadUrl']
