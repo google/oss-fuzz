@@ -24,9 +24,9 @@ import sys
 import build_lib
 import build_project
 
-infra_dir = os.path.dirname(
+INFRA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(infra_dir, 'cifuzz'))
+sys.path.append(os.path.join(INFRA_DIR, 'cifuzz'))
 import clusterfuzz_deployment
 import config_utils
 
