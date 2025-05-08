@@ -81,7 +81,7 @@ def get_file_path(dir_path):
   files = []
   for entry in os.scandir(dir_path):
     if entry.is_file():
-      return entry.name
+      return f'{dir_path}/{entry.name}'
   return None
 
 
