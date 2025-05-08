@@ -105,7 +105,7 @@ def main():
     # upload_url = result['uploadUrl']
     # logging.info('upload url is', upload_url)
   
-    upload(POST, testcase_path, job, target, access_token_path)
+    upload(POST_URL, testcase_path, job, target, access_token_path)
   
   return 0
 
