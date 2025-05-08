@@ -34,7 +34,8 @@ except ImportError:
 # https://team.git.corp.google.com/gosst/clusterfuzz-config/+/refs/heads/master/configs/internal/gae/auth.yaml#25
 # under "whitelisted_oauth_emails".
 
-GET_URL = 'https://oss-fuzz.com/upload-testcase/get-url-oauth'
+POST_URL = 'https://oss-fuzz.com/upload-testcase/upload-oauth'
+# GET_URL = 'https://oss-fuzz.com/upload-testcase/get-url-oauth'
 # GET_URL = 'https://staging3-dot-cluster-fuzz.appspot.com/upload-testcase/get-url-oauth'
 # ACCESS_TOKEN: gcloud auth print-access-token
 
@@ -55,23 +56,23 @@ def get_headers(access_token_path):
   }
 
 
-# def upload(upload_url, testcase_path, job, target):
-#   files = {
-#       'file': open(testcase_path),
-#   }
+def upload(upload_url, testcase_path, job, target, access_token_path):
+  files = {
+      'file': open(testcase_path),
+  }
 
-#   data = {
-#       'job': job,
-#       'target': target,
-#   }
-#   resp = requests.post(upload_url, files=files, data=data,
-#                        headers=get_headers())
-#   if resp.status_code == 200:
-#     result = json.loads(resp.text)
-#     print('Upload succeeded. Testcase ID is', result['id'])
-#   else:
-#     print('Failed to upload with status', resp.status_code)
-#     print(resp.text)
+  data = {
+      'job': job,
+      'target': target,
+  }
+  resp = requests.post(upload_url, files=files, data=data,
+                       headers=get_headers(access_token_path))
+  if resp.status_code == 200:
+    result = json.loads(resp.text)
+    print('Upload succeeded. Testcase ID is', result['id'])
+  else:
+    print('Failed to upload with status', resp.status_code)
+    print(resp.text)
 
 
 def get_file_path(dir_path):
@@ -95,16 +96,16 @@ def main():
     logging.info('OSS-Fuzz on Demand did not find any crashes.')
   else:
     # resp = requests.post(GET_URL, headers=get_headers(access_token_path)).text
-    resp = requests.post(GET_URL, headers=get_headers(access_token_path))
-    logging.info(resp.text)
-    print(resp.text)
-    print(resp.json())
+    # resp = requests.post(GET_URL, headers=get_headers(access_token_path))
+    # logging.info(resp.text)
+    # print(resp.text)
+    # print(resp.json())
 
     # result = json.loads(resp)
     # upload_url = result['uploadUrl']
     # logging.info('upload url is', upload_url)
   
-    # upload(upload_url, testcase_path, job, target)
+    upload(POST, testcase_path, job, target, access_token_path)
   
   return 0
 
