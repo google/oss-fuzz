@@ -66,7 +66,7 @@ def get_latest_libfuzzer_build(project_name):
   config = config_utils.RunFuzzersConfig()
   deployment = clusterfuzz_deployment.OSSFuzz(config, None)
   latest_build_filename = deployment.get_latest_build_name()
-  build_uri = f'gs://clusterfuzz-builds/{project_name}/' + latest_build_filename
+  build_uri = f'gs://clusterfuzz-builds/{project_name}/{latest_build_filename}'
 
   return build_uri, latest_build_filename
 
