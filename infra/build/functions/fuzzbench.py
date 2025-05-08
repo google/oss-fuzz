@@ -60,7 +60,7 @@ def get_gcs_public_corpus_url(project, fuzz_target_name):
 def get_latest_libfuzzer_build(project_name):
   """Returns the latest LibFuzzer build gsutil URI and the build file name."""
   # Mandatory environment variables required to obtain the latest build name
-  os.environ['CIFUZZ_TEST'] = 'non_falsy_str'
+  os.environ['CIFUZZ_TEST'] = 'True'
   os.environ['OSS_FUZZ_PROJECT_NAME'] = project_name
 
   config = config_utils.RunFuzzersConfig()
