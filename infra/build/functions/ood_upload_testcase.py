@@ -43,9 +43,6 @@ def get_access_token(access_token_path):
   """Returns the ACCESS_TOKEN for upload testcase requests"""
   with open(access_token_path, 'r') as f:
       line = f.readline()
-      print('line: ', line)
-      print('line -1: ', line[-1])
-      print('line strip: ', line.strip())
       return line.strip()
 
 def get_headers(access_token_path):
@@ -60,7 +57,6 @@ def upload(upload_url, testcase_path, job, target, access_token_path):
   files = {
       'file': open(testcase_path),
   }
-
   data = {
       'job': job,
       'target': target,
@@ -81,6 +77,8 @@ def get_file_path(dir_path):
   files = []
   for entry in os.scandir(dir_path):
     if entry.is_file():
+      print(f'{dir_path}/{entry.name}')
+      print(get_access_token(f'{dir_path}/{entry.name}'))
       return f'{dir_path}/{entry.name}'
   return None
 
