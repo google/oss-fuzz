@@ -42,7 +42,7 @@ export CPPFLAGS="-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG -DBOOST_M
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
-  make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_USDT=1 \
+  make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_ZMQ=1 NO_USDT=1 \
        AR=llvm-ar NM=llvm-nm RANLIB=llvm-ranlib STRIP=llvm-strip \
        -j$(nproc)
 )
