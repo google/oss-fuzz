@@ -30,12 +30,7 @@ except ImportError:
   subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
   import requests
 
-# Note: your @google.com account needs to be added to
-# https://team.git.corp.google.com/gosst/clusterfuzz-config/+/refs/heads/master/configs/internal/gae/auth.yaml#25
-# under "whitelisted_oauth_emails".
-
 POST_URL = 'https://oss-fuzz.com/upload-testcase/upload-oauth'
-# ACCESS_TOKEN: gcloud auth print-access-token
 
 
 def get_access_token(access_token_path):
