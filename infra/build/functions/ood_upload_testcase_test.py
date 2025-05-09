@@ -31,16 +31,13 @@ class GetFilePath(unittest.TestCase):
     """Set tem_dir attribute"""
     self.temp_dir = tempfile.mkdtemp()
 
-
   def tearDown(self):
     """Remove temp_dir after tests"""
     shutil.rmtree(self.temp_dir)
 
-
   def test_no_files(self):
     """Test for empty directory"""
     self.assertIsNone(ood_upload_testcase.get_file_path(self.temp_dir))
-
 
   def test_single_file(self):
     """Test for single file"""
@@ -48,8 +45,7 @@ class GetFilePath(unittest.TestCase):
     file_path = os.path.join(self.temp_dir, file_name)
     open(file_path, 'w').close()
     self.assertEqual(ood_upload_testcase.get_file_path(self.temp_dir),
-                    file_path)
-
+                     file_path)
 
   def test_multiple_files(self):
     """Test for multiple files"""
@@ -59,9 +55,7 @@ class GetFilePath(unittest.TestCase):
       file_path = os.path.join(self.temp_dir, name)
       file_paths.append(file_path)
       open(file_path, 'w').close()
-    self.assertIn(ood_upload_testcase.get_file_path(self.temp_dir),
-                file_paths)
-
+    self.assertIn(ood_upload_testcase.get_file_path(self.temp_dir), file_paths)
 
   def test_with_subdirectory(self):
     """Test for directory with subdirectory"""
@@ -72,4 +66,4 @@ class GetFilePath(unittest.TestCase):
     file_path = os.path.join(self.temp_dir, file_name)
     open(file_path, 'w').close()
     self.assertEqual(ood_upload_testcase.get_file_path(self.temp_dir),
-                    file_path)
+                     file_path)

@@ -331,7 +331,7 @@ def get_upload_testcase_steps(project, env_dict):
   steps = []
 
   access_token_file_path = f'{GCB_WORKSPACE_DIR}/at.txt'
-  upload_testcase_step = {
+  get_access_token_step = {
       'name':
           'google/cloud-sdk',
       'args': [
@@ -339,7 +339,7 @@ def get_upload_testcase_steps(project, env_dict):
           f'gcloud auth print-access-token > {access_token_file_path}'
       ]
   }
-  steps.append(upload_testcase_step)
+  steps.append(get_access_token_step)
 
   upload_testcase_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_testcase.py'
   job_name = f'libfuzzer_asan_{project.name}'
