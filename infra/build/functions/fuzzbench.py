@@ -34,6 +34,7 @@ FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
 GCB_WORKSPACE_DIR = '/workspace'
 OOD_OUTPUT_CORPUS_DIR = f'{GCB_WORKSPACE_DIR}/ood_output_corpus'
+OOD_CRASHES_DIR = f'{GCB_WORKSPACE_DIR}/crashes'
 
 
 def get_engine_project_image_name(fuzzing_engine, project):
@@ -308,19 +309,50 @@ def get_extract_crashes_steps(fuzzing_engine, project, env_dict):
   }
   steps.append(download_libfuzzer_build_step)
 
-  crashes_dir = f'{GCB_WORKSPACE_DIR}/crashes/'
   extract_crashes_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
       'args': [
           'bash', '-c', f'unzip {libfuzzer_build_dir}{build_filename} '
-          f'-d {libfuzzer_build_dir} && mkdir -p {crashes_dir} && '
+          f'-d {libfuzzer_build_dir} && mkdir -p {OOD_CRASHES_DIR} && '
           f'{libfuzzer_build_dir}{env_dict["FUZZ_TARGET"]} {OOD_OUTPUT_CORPUS_DIR} '
-          f'-runs=0 -artifact_prefix={crashes_dir}; '
-          f'echo "\nCrashes found by OOD:" && ls {crashes_dir} '
+          f'-runs=0 -artifact_prefix={OOD_CRASHES_DIR}/; '
+          f'echo "\nCrashes found by OOD:" && ls {OOD_CRASHES_DIR} '
       ],
   }
   steps.append(extract_crashes_step)
+
+  return steps
+
+
+def get_upload_testcase_steps(project, env_dict):
+  """Returns the build steps to upload a testcase in the ClusterFuzz External
+  upload testcase endpoint."""
+  steps = []
+
+  access_token_file_path = f'{GCB_WORKSPACE_DIR}/at.txt'
+  upload_testcase_step = {
+      'name':
+          'google/cloud-sdk',
+      'args': [
+          'bash', '-c',
+          f'gcloud auth print-access-token > {access_token_file_path}'
+      ]
+  }
+  steps.append(upload_testcase_step)
+
+  upload_testcase_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_testcase.py'
+  job_name = f'libfuzzer_asan_{project.name}'
+  target_name = f'{project.name}_{env_dict["FUZZ_TARGET"]}'
+  upload_testcase_step = {
+      'name':
+          'python:3.8',
+      'args': [
+          'python3', upload_testcase_script_path, OOD_CRASHES_DIR, job_name,
+          target_name, access_token_file_path
+      ]
+  }
+  steps.append(upload_testcase_step)
 
   return steps
 
@@ -347,6 +379,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   steps += get_push_and_run_ood_image_steps(config.fuzzing_engine, project,
                                             env_dict)
   steps += get_extract_crashes_steps(config.fuzzing_engine, project, env_dict)
+  steps += get_upload_testcase_steps(project, env_dict)
 
   return steps
 
