@@ -308,7 +308,7 @@ def get_extract_crashes_steps(fuzzing_engine, project, env_dict):
   }
   steps.append(download_libfuzzer_build_step)
 
-  crashes_dir = f'{GCB_WORKSPACE_DIR}/crashes/'
+  crashes_dir = f'{GCB_WORKSPACE_DIR}/crashes'
   extract_crashes_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
@@ -316,7 +316,7 @@ def get_extract_crashes_steps(fuzzing_engine, project, env_dict):
           'bash', '-c', f'unzip {libfuzzer_build_dir}{build_filename} '
           f'-d {libfuzzer_build_dir} && mkdir -p {crashes_dir} && '
           f'{libfuzzer_build_dir}{env_dict["FUZZ_TARGET"]} {OOD_OUTPUT_CORPUS_DIR} '
-          f'-runs=0 -artifact_prefix={crashes_dir}; '
+          f'-runs=0 -artifact_prefix={crashes_dir}/; '
           f'echo "\nCrashes found by OOD:" && ls {crashes_dir} '
       ],
   }
@@ -342,7 +342,7 @@ def get_upload_testcase_steps(fuzzing_engine, project, env_dict):
     }
   steps.append(upload_testcase_step)
 
-  crashes_dir = f'{GCB_WORKSPACE_DIR}/crashes/'
+  crashes_dir = f'{GCB_WORKSPACE_DIR}/crashes'
   upload_testcase_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_testcase.py'
   job_name = f'libfuzzer_asan_{project.name}'
   target_name = f'{project.name}_{env_dict["FUZZ_TARGET"]}'
