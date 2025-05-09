@@ -24,8 +24,16 @@ import sys
 import build_lib
 import build_project
 
+INFRA_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.join(INFRA_DIR, 'cifuzz'))
+import clusterfuzz_deployment
+import config_utils
+
 FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
+GCB_WORKSPACE_DIR = '/workspace'
+OOD_OUTPUT_CORPUS_DIR = f'{GCB_WORKSPACE_DIR}/ood_output_corpus'
 
 
 def get_engine_project_image_name(fuzzing_engine, project):
@@ -47,6 +55,20 @@ def get_gcs_public_corpus_url(project, fuzz_target_name):
       f'https://storage.googleapis.com/{project.name}-backup.clusterfuzz-'
       f'external.appspot.com/corpus/libFuzzer/{project.name}_{fuzz_target_name}'
       f'/public.zip')
+
+
+def get_latest_libfuzzer_build(project_name):
+  """Returns the latest LibFuzzer build gsutil URI and the build file name."""
+  # Mandatory environment variables required to obtain the latest build name
+  os.environ['CIFUZZ_TEST'] = 'True'
+  os.environ['OSS_FUZZ_PROJECT_NAME'] = project_name
+
+  config = config_utils.RunFuzzersConfig()
+  deployment = clusterfuzz_deployment.OSSFuzz(config, None)
+  latest_build_filename = deployment.get_latest_build_name()
+  build_uri = f'gs://clusterfuzz-builds/{project_name}/{latest_build_filename}'
+
+  return build_uri, latest_build_filename
 
 
 def get_env(project, build, config):
@@ -149,7 +171,7 @@ def get_gcs_corpus_steps(fuzzing_engine, project, env_dict):
   use it on oss-fuzz-on-demand."""
   steps = []
 
-  corpus_path = '/workspace/gcs_corpus'
+  corpus_path = f'{GCB_WORKSPACE_DIR}/gcs_corpus'
   corpus_filename = 'public.zip'
   fuzz_target_name = env_dict["FUZZ_TARGET"]
   corpus_url = get_gcs_public_corpus_url(project, fuzz_target_name)
@@ -200,27 +222,28 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
       }],
       'args': [
           'bash', '-c', 'cp /usr/local/bin/fuzzbench_run_fuzzer '
-          '/workspace/fuzzbench_run_fuzzer.sh  && '
-          f'cp -r {FUZZBENCH_PATH} /workspace && ls /workspace'
+          f'{GCB_WORKSPACE_DIR}/fuzzbench_run_fuzzer.sh  && '
+          f'cp -r {FUZZBENCH_PATH} {GCB_WORKSPACE_DIR} && '
+          f'ls {GCB_WORKSPACE_DIR}'
       ],
   }
   steps.append(copy_runtime_essential_files_step)
 
   ood_image = get_ood_image_name(fuzzing_engine, project)
-  fuzzer_runtime_dockerfile_path = os.path.join('/workspace' + FUZZBENCH_PATH,
-                                                'fuzzers', fuzzing_engine,
-                                                'runner.Dockerfile')
+  fuzzer_runtime_dockerfile_path = os.path.join(
+      GCB_WORKSPACE_DIR + FUZZBENCH_PATH, 'fuzzers', fuzzing_engine,
+      'runner.Dockerfile')
   build_runtime_step = {
       'name':
           'gcr.io/cloud-builders/docker',
       'args': [
           'build', '--tag', ood_image, '--file', fuzzer_runtime_dockerfile_path,
-          os.path.join('/workspace' + FUZZBENCH_PATH, 'fuzzers')
+          os.path.join(GCB_WORKSPACE_DIR + FUZZBENCH_PATH, 'fuzzers')
       ]
   },
   steps.append(build_runtime_step)
 
-  oss_fuzz_on_demand_dockerfile_path = "/workspace/oss-fuzz/infra/build/functions/ood.Dockerfile"
+  oss_fuzz_on_demand_dockerfile_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood.Dockerfile'
   build_out_path_without_workspace = env_dict["OUT"][10:]
   build_ood_image_step = {
       'name':
@@ -228,12 +251,13 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
       'args': [
           'build', '--tag', ood_image, '--file',
           oss_fuzz_on_demand_dockerfile_path, '--build-arg',
-          f'runtime_image={ood_image}', '--build-arg',
+          f'BENCHMARK={env_dict["BENCHMARK"]}', '--build-arg',
           f'BUILD_OUT_PATH={build_out_path_without_workspace}', '--build-arg',
+          f'FUZZBENCH_PATH={FUZZBENCH_PATH}', '--build-arg',
           f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}', '--build-arg',
           f'FUZZ_TARGET={env_dict["FUZZ_TARGET"]}', '--build-arg',
-          f'FUZZBENCH_PATH={FUZZBENCH_PATH}', '--build-arg',
-          f'BENCHMARK={env_dict["BENCHMARK"]}', '/workspace'
+          f'OOD_OUTPUT_CORPUS_DIR={OOD_OUTPUT_CORPUS_DIR}', '--build-arg',
+          f'runtime_image={ood_image}', GCB_WORKSPACE_DIR
       ]
   }
   steps.append(build_ood_image_step)
@@ -254,11 +278,51 @@ def get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict):
   }
   steps.append(push_ood_image_step)
 
+  # This step also copies fuzzing output corpus to $OOD_OUTPUT_CORPUS_DIR
   run_ood_image_step = {
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': ['run', ood_image]
+      'name':
+          'gcr.io/cloud-builders/docker',
+      'args': [
+          'run', '-v', f'{GCB_WORKSPACE_DIR}:{GCB_WORKSPACE_DIR}', ood_image
+      ]
   }
   steps.append(run_ood_image_step)
+
+  return steps
+
+
+def get_extract_crashes_steps(fuzzing_engine, project, env_dict):
+  """Returns the build steps to download a LibFuzzer build and use it to extract
+  crashes from the fuzzing output."""
+  steps = []
+
+  libfuzzer_build_dir = f'{GCB_WORKSPACE_DIR}/libfuzzer_build/'
+  create_libfuzzer_build_dir_step = {
+      'name': get_engine_project_image_name(fuzzing_engine, project),
+      'args': ['bash', '-c', f'mkdir -p {libfuzzer_build_dir}']
+  }
+  steps.append(create_libfuzzer_build_dir_step)
+
+  build_uri, build_filename = get_latest_libfuzzer_build(project.name)
+  download_libfuzzer_build_step = {
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': ['-m', 'cp', '-r', build_uri, libfuzzer_build_dir]
+  }
+  steps.append(download_libfuzzer_build_step)
+
+  crashes_dir = f'{GCB_WORKSPACE_DIR}/crashes/'
+  extract_crashes_step = {
+      'name':
+          get_engine_project_image_name(fuzzing_engine, project),
+      'args': [
+          'bash', '-c', f'unzip {libfuzzer_build_dir}{build_filename} '
+          f'-d {libfuzzer_build_dir} && mkdir -p {crashes_dir} && '
+          f'{libfuzzer_build_dir}{env_dict["FUZZ_TARGET"]} {OOD_OUTPUT_CORPUS_DIR} '
+          f'-runs=0 -artifact_prefix={crashes_dir}; '
+          f'echo "\nCrashes found by OOD:" && ls {crashes_dir} '
+      ],
+  }
+  steps.append(extract_crashes_step)
 
   return steps
 
@@ -284,6 +348,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   steps += get_build_ood_image_steps(config.fuzzing_engine, project, env_dict)
   steps += get_push_and_run_ood_image_steps(config.fuzzing_engine, project,
                                             env_dict)
+  steps += get_extract_crashes_steps(config.fuzzing_engine, project, env_dict)
 
   return steps
 
