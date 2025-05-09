@@ -41,7 +41,7 @@ class GetFilePath(unittest.TestCase):
 
   def test_single_file(self):
     """Test for single file"""
-    file_name = "test_file.txt"
+    file_name = 'test_file.txt'
     file_path = os.path.join(self.temp_dir, file_name)
     open(file_path, 'w').close()
     self.assertEqual(ood_upload_testcase.get_file_path(self.temp_dir),
@@ -49,7 +49,7 @@ class GetFilePath(unittest.TestCase):
 
   def test_multiple_files(self):
     """Test for multiple files"""
-    file_names = ["file1.txt", "file2.csv", "data.json"]
+    file_names = ['file1.txt', 'file2.csv', 'data.json']
     file_paths = []
     for name in file_names:
       file_path = os.path.join(self.temp_dir, name)
@@ -59,10 +59,10 @@ class GetFilePath(unittest.TestCase):
 
   def test_with_subdirectory(self):
     """Test for directory with subdirectory"""
-    os.makedirs(os.path.join(self.temp_dir, "subdir"))
+    os.makedirs(os.path.join(self.temp_dir, 'subdir'))
     self.assertIsNone(ood_upload_testcase.get_file_path(self.temp_dir))
 
-    file_name = "test_file.txt"
+    file_name = 'test_file.txt'
     file_path = os.path.join(self.temp_dir, file_name)
     open(file_path, 'w').close()
     self.assertEqual(ood_upload_testcase.get_file_path(self.temp_dir),
