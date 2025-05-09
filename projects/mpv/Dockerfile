@@ -22,8 +22,9 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV VIRTUAL_ENV=$SRC/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# Meson is pinned to get around https://github.com/mesonbuild/meson/issues/14524
 RUN python -m venv $VIRTUAL_ENV && \
-    python -m pip --no-cache-dir install meson ninja
+    python -m pip --no-cache-dir install meson==1.7.2 ninja
 
 RUN git clone --depth 1 https://github.com/mpv-player/mpv mpv
 RUN git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
