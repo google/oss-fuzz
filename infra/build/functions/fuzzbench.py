@@ -129,16 +129,14 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
                                     project), '--file', engine_dockerfile_path,
       os.path.join(FUZZBENCH_PATH, 'fuzzers')
   ]
-  engine_step = [
-      {
-          'name': 'gcr.io/cloud-builders/docker',
-          'args': build_args,
-          'volumes': [{
-              'name': 'fuzzbench_path',
-              'path': FUZZBENCH_PATH,
-          }],
-      },
-  ]
+  engine_step = {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': build_args,
+      'volumes': [{
+          'name': 'fuzzbench_path',
+          'path': FUZZBENCH_PATH,
+      }],
+  }
   steps.append(engine_step)
 
   compile_project_step = {
@@ -240,7 +238,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
           'build', '--tag', ood_image, '--file', fuzzer_runtime_dockerfile_path,
           os.path.join(GCB_WORKSPACE_DIR + FUZZBENCH_PATH, 'fuzzers')
       ]
-  },
+  }
   steps.append(build_runtime_step)
 
   oss_fuzz_on_demand_dockerfile_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood.Dockerfile'
