@@ -51,7 +51,7 @@ def get_headers(access_token_path):
 def upload_testcase(upload_url, testcase_path, job, target, access_token_path):
   """Make an upload testcase request."""
   files = {
-      'file': open(testcase_path),
+      'file': open(testcase_path, 'rb'),
   }
   data = {
       'job': job,
