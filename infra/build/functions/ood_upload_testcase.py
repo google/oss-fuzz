@@ -24,11 +24,11 @@ import sys
 import subprocess
 
 try:
-    import requests
+  import requests
 except ImportError:
-    logging.info("requests library not found. Installing...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
-    import requests
+  print("requests library not found. Installing...")
+  subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
+  import requests
 
 # Note: your @google.com account needs to be added to
 # https://team.git.corp.google.com/gosst/clusterfuzz-config/+/refs/heads/master/configs/internal/gae/auth.yaml#25
@@ -37,11 +37,12 @@ except ImportError:
 POST_URL = 'https://oss-fuzz.com/upload-testcase/upload-oauth'
 # ACCESS_TOKEN: gcloud auth print-access-token
 
+
 def get_access_token(access_token_path):
   """Returns the ACCESS_TOKEN for upload testcase requests"""
   with open(access_token_path, 'r') as f:
-      line = f.readline()
-      return line.strip()
+    line = f.readline()
+    return line.strip()
 
 
 def get_headers(access_token_path):
@@ -61,7 +62,9 @@ def upload_testcase(upload_url, testcase_path, job, target, access_token_path):
       'job': job,
       'target': target,
   }
-  resp = requests.post(upload_url, files=files, data=data,
+  resp = requests.post(upload_url,
+                       files=files,
+                       data=data,
                        headers=get_headers(access_token_path))
   if resp.status_code == 200:
     result = json.loads(resp.text)
