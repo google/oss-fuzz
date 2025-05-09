@@ -270,11 +270,11 @@ def get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict):
 
   ood_image = get_ood_image_name(fuzzing_engine, project)
 
-  push_ood_image_step = {
-      'name': 'gcr.io/cloud-builders/docker',
-      'args': ['push', ood_image]
-  }
-  steps.append(push_ood_image_step)
+#   push_ood_image_step = {
+#       'name': 'gcr.io/cloud-builders/docker',
+#       'args': ['push', ood_image]
+#   }
+#   steps.append(push_ood_image_step)
 
   # This step also copies fuzzing output corpus to $OOD_OUTPUT_CORPUS_DIR
   run_ood_image_step = {
@@ -325,6 +325,40 @@ def get_extract_crashes_steps(fuzzing_engine, project, env_dict):
   return steps
 
 
+def get_upload_testcase_steps(fuzzing_engine, project, env_dict):
+  """Returns the build steps to upload a testcase in the ClusterFuzz upload
+  testcase endpoint."""
+  steps = []
+
+  upload_testcase_step = {
+    'name':
+        'google/cloud-sdk',
+    'args': [
+        'bash',
+        '-c',
+        'gcloud auth print-access-token > /workspace/at.txt'
+    ]
+
+    }
+  steps.append(upload_testcase_step)
+
+  crashes_dir = f'{GCB_WORKSPACE_DIR}/crashes/'
+  upload_testcase_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_testcase.py'
+  job_name = f'libfuzzer_asan_{project.name}'
+  target_name = f'{project.name}_{env_dict["FUZZ_TARGET"]}'
+  upload_testcase_step = {
+      'name':
+          'python:3.8',
+      'args': [
+          'python3',
+          upload_testcase_script_path, crashes_dir, job_name, target_name, '/workspace/at.txt'
+      ]
+  }
+  steps.append(upload_testcase_step)
+
+  return steps
+
+
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps for project."""
@@ -347,6 +381,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   steps += get_push_and_run_ood_image_steps(config.fuzzing_engine, project,
                                             env_dict)
   steps += get_extract_crashes_steps(config.fuzzing_engine, project, env_dict)
+  steps += get_upload_testcase_steps(config.fuzzing_engine, project, env_dict)
 
   return steps
 
