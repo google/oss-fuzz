@@ -59,9 +59,9 @@ def upload_testcase(upload_url, testcase_path, job, target, access_token_path):
   }
   try:
     resp = requests.post(upload_url,
-                       files=files,
-                       data=data,
-                       headers=get_headers(access_token_path))
+                         files=files,
+                         data=data,
+                         headers=get_headers(access_token_path))
     resp.raise_for_status()
     result = json.loads(resp.text)
     print('Upload succeeded. Testcase ID is', result['id'])
