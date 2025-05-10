@@ -71,9 +71,12 @@ function build_fuzzers() {
       fi
       find $SOURCES -type f -a \( -name '*.[ch]' -o -name '*.inc' \) -exec cp --parents '{}' $DESTDIR/ \;
     fi
-    df
-    rm -rf * .git*
-    df
+
+    if [[ -n "${CIFUZZ:-}" ]]; then
+      df
+      rm -rf * .git*
+      df
+    fi
 }
 
 cd $SRC/openssl/
