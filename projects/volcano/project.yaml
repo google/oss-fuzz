@@ -1,0 +1,10 @@
+homepage: "https://volcano.sh/"
+language: go
+primary_contact: ""
+main_repo: "https://github.com/volcano-sh/volcano"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
