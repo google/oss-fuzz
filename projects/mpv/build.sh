@@ -47,17 +47,17 @@ make -j`nproc`
 make install
 popd
 
-# The option `-fuse-ld=gold` can't be passed via `CFLAGS` or `CXXFLAGS` because
+# The option `-fuse-ld=` can't be passed via `CFLAGS` or `CXXFLAGS` because
 # Meson injects `-Werror=ignored-optimization-argument` during compile tests.
 # Remove the `-fuse-ld=` and let Meson handle it.
 # https://github.com/mesonbuild/meson/issues/6377#issuecomment-575977919
-if [[ "$CFLAGS" == *"-fuse-ld=gold"* ]]; then
-    export CFLAGS="${CFLAGS//-fuse-ld=gold/}"
-    export CC_LD=gold
+if [[ "$CFLAGS" == *"-fuse-ld=lld"* ]]; then
+    export CFLAGS="${CFLAGS//-fuse-ld=lld/}"
+    export CC_LD=lld
 fi
-if [[ "$CXXFLAGS" == *"-fuse-ld=gold"* ]]; then
-    export CXXFLAGS="${CXXFLAGS//-fuse-ld=gold/}"
-    export CXX_LD=gold
+if [[ "$CXXFLAGS" == *"-fuse-ld=lld"* ]]; then
+    export CXXFLAGS="${CXXFLAGS//-fuse-ld=lld/}"
+    export CXX_LD=lld
 fi
 
 pushd $SRC/mpv
