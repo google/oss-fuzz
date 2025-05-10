@@ -64,7 +64,7 @@ meson_install() {
   cd $SRC/$1
   CFLAGS="$MESON_CFLAGS" CXXFLAGS="$MESON_CXXFLAGS" \
   meson setup build -Dprefix="$FFMPEG_DEPS_PATH" -Ddefault_library=static -Dprefer_static=true \
-                    --libdir "$LIBDIR" ${2:-}
+                    --wrap-mode=nofallback --libdir "$LIBDIR" ${2:-}
   meson compile -C build
   meson install -C build
 }
