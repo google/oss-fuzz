@@ -85,10 +85,10 @@ make clean
 make -j$(nproc)
 make install
 
-meson_install freetype
+meson_install freetype "-Dharfbuzz=disabled"
 meson_install fribidi "-Ddocs=false -Dtests=false"
 meson_install harfbuzz "-Ddocs=disabled -Dtests=disabled"
-meson_install fontconfig
+meson_install fontconfig "-Dtests=disabled -Dtools=disabled"
 
 cd $SRC/libass
 ./autogen.sh
