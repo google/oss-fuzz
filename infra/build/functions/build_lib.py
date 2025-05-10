@@ -90,7 +90,7 @@ ENGINE_INFO = {
 
 OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
-    'workerPools/buildpool')
+    'workerPools/indexer-buildpool')
 
 OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
@@ -442,6 +442,22 @@ def has_arm_build(architectures):
   return 'aarch64' in architectures
 
 
+def get_srcmap_steps(image, language, directory='/workspace'):
+  srcmap_step_id = get_srcmap_step_id()
+  return [{
+        'name': image,
+        'args': [
+            'bash', '-c',
+            f'srcmap > {directory}/srcmap.json && cat {directory}/srcmap.json'
+        ],
+        'env': [
+            'OSSFUZZ_REVISION=$REVISION_ID',
+            f'FUZZING_LANGUAGE={language}',
+        ],
+        'id': srcmap_step_id
+    }]
+
+
 def get_project_image_steps(  # pylint: disable=too-many-arguments
     name,
     image,
@@ -474,19 +490,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
       cache_image=cache_image)
   steps.append(docker_build_step)
   if srcmap:
-    srcmap_step_id = get_srcmap_step_id()
-    steps.extend([{
-        'name': image,
-        'args': [
-            'bash', '-c',
-            'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-        ],
-        'env': [
-            'OSSFUZZ_REVISION=$REVISION_ID',
-            f'FUZZING_LANGUAGE={language}',
-        ],
-        'id': srcmap_step_id
-    }])
+    steps.extend(get_srcmap_steps(image, language))
 
   if has_arm_build(architectures):
     builder_name = 'buildxbuilder'
@@ -511,7 +515,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     steps.append(docker_build_arm_step)
 
   logging.info(f'Considering pushing {config.build_type} {language}.')
-  if (config.build_type == 'fuzzing' and language in ('c', 'c++')):
+  if (config.build_type == 'fuzzing' and language in ('c', 'c++') and not not config.testing and not config.experiment and config.upload):
     logging.info('Pushing.')
     # Push so that historical bugs are reproducible.
     push_step = {

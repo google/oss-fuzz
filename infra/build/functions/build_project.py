@@ -256,7 +256,7 @@ def get_datetime_now():
   return datetime.datetime.now()
 
 
-def get_env(fuzzing_language, build):
+def get_env(fuzzing_language, build, project_name=None):
   """Returns an environment for building. The environment is returned as a list
   and is suitable for use as the "env" parameter in a GCB build step. The
   environment variables are based on the values of |fuzzing_language| and
@@ -271,6 +271,8 @@ def get_env(fuzzing_language, build):
       'HOME': '/root',
       'OUT': build.out,
   }
+  if project_name is not None:
+    env_dict['PROJECT_NAME'] = project_name
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
@@ -384,6 +386,7 @@ def get_build_steps_for_project(project,
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
   for fuzzing_engine in sorted(project.fuzzing_engines):
+    break # !!!
     # Sort sanitizers and architectures so order is determinisitic (good for
     # tests).
     for sanitizer in sorted(project.sanitizers):
@@ -489,6 +492,48 @@ def get_build_steps_for_project(project,
           upload_steps = get_upload_steps(project, build, timestamp,
                                           config.testing)
           build_steps.extend(upload_steps)
+  # if (config.build_type == 'fuzzing' and
+  #     not config.testing and config.upload and not config.experiment and
+  #     project.fuzzing_language in {'c', 'c++'}):
+  if True:
+    build = Build('none', 'address', 'x86_64')
+    zip_filename = f"{project.name}-{timestamp}.zip"
+    zip_cmd = f'cd {build.out} && zip -r {zip_filename} *.tar && ls -la {zip_filename}'
+    env = get_env(project.fuzzing_language, build, project.name)
+    upload_url = build_lib.get_signed_url(
+        f'/clusterfuzz-builds/indexer_indexes/{project.name}/{zip_filename}')
+    index_step = {
+        'name': project.image,
+        'args': ['bash', '-c', f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'],
+        'env': env,
+        'allowFailure': False, # !!! CHANGE ME.
+    }
+    build_lib.dockerify_run_step(index_step,
+                                 build,
+                                 use_architecture_image_name=build.is_arm)
+
+    index_steps = [
+        index_step,
+        # We want srcmaps to get tarred up into objs by being in the out directory.
+        {
+          'name': project.image,
+          'args': ['bash', '-c', f'cp /workspace/srcmap.json {build.out}'],
+          'allowFailure': True,  # TODO: remove this.
+        },
+        {
+            # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
+            'name': project.image,
+            'args': ['bash', '-c', zip_cmd],
+            'allowFailure': False,
+        },
+        {
+            'name': get_uploader_image(),
+            'args': [
+                os.path.join(build.out, zip_filename), upload_url],
+            'allowFailure': False,
+        }
+    ]
+    build_steps.extend(index_steps)
   return build_steps
 
 
