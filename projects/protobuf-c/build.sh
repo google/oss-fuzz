@@ -47,8 +47,8 @@ make install
 cd $SRC/fuzzing-headers/
 ./install.sh
 
-cd $SRC/protobuf-c-fuzzers/
-cp $SRC/protobuf-c/t/test-full.proto $SRC/protobuf-c-fuzzers/
+cd $SRC
+cp $SRC/protobuf-c/t/test-full.proto $SRC/
 export PATH=$PATH:$SRC/protobuf-c/protoc-c
 protoc --c_out=. -I. -I/usr/local/include test-full.proto
 
