@@ -39,7 +39,7 @@ EOF
 pushd $SRC/ffmpeg
 ./configure --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS" \
             --enable-{gpl,nonfree} \
-            --disable-{asm,bsfs,doc,encoders,filters,muxers,network,postproc,programs,shared} \
+            --disable-{asm,bsfs,doc,encoders,filters,muxers,network,programs,shared} \
             --enable-filter={sine,yuvtestsrc} \
             --pkg-config-flags="--static" \
             --disable-{debug,optimizations} \
