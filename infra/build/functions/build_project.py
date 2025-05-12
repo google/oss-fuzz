@@ -27,6 +27,7 @@ import logging
 import os
 import posixpath
 import re
+import shlex
 import sys
 
 import oauth2client.client
@@ -495,45 +496,51 @@ def get_build_steps_for_project(project,
   #     not config.testing and config.upload and not config.experiment and
   #     project.fuzzing_language in {'c', 'c++'}):
   if True:
-    build = Build('none', 'address', 'x86_64')
-    zip_filename = f"{project.name}-{timestamp}.zip"
-    zip_cmd = f'cd {build.out} && zip -r {zip_filename} *.tar && ls -la {zip_filename}'
-    env = get_env(project.fuzzing_language, build, project.name)
-    upload_url = build_lib.get_signed_url(
-        f'/clusterfuzz-builds/indexer_indexes/{project.name}/{zip_filename}')
-    index_step = {
-        'name': project.image,
-        'args': ['bash', '-c', f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'],
-        'env': env,
-        'allowFailure': False, # !!! CHANGE ME.
-    }
-    build_lib.dockerify_run_step(index_step,
-                                 build,
-                                 use_architecture_image_name=build.is_arm)
+    add_indexer_steps(build_steps, project, timestamp)
 
-    index_steps = [
-        index_step,
-        # We want srcmaps to get tarred up into objs by being in the out directory.
-        {
-          'name': project.image,
-          'args': ['bash', '-c', f'cp /workspace/srcmap.json {build.out}'],
-          'allowFailure': True,  # TODO: remove this.
-        },
-        {
-            # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
-            'name': project.image,
-            'args': ['bash', '-c', zip_cmd],
-            'allowFailure': False,
-        },
-        {
-            'name': get_uploader_image(),
-            'args': [
-                os.path.join(build.out, zip_filename), upload_url],
-            'allowFailure': False,
-        }
-    ]
-    build_steps.extend(index_steps)
   return build_steps
+
+
+def add_indexer_steps(build_steps, project, timestamp):
+  """Add indexer build steps."""
+  build = Build('none', 'address', 'x86_64')
+  env = get_env(project.fuzzing_language, build, project.name)
+
+  prefix = f'indexer_indexes/{project.name}/{timestamp}/'
+  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
+    'clusterfuzz-builds', prefix)
+  curl_signed_args = shlex.join(build_lib.signed_policy_document_curl_args(
+    signed_policy_document))
+
+  index_step = {
+      'name': project.image,
+      'args': ['bash', '-c', f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'],
+      'env': env,
+      'allowFailure': False, # !!! CHANGE ME.
+  }
+  build_lib.dockerify_run_step(index_step,
+                                build,
+                                use_architecture_image_name=build.is_arm)
+
+  index_steps = [
+      index_step,
+      build_lib.upload_using_signed_policy_document(
+          '/workspace/srcmap.json', f'{prefix}/srcmap.json',
+          signed_policy_document),
+      {
+          # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
+          'name': project.image,
+          'args': [
+              'bash', '-c',
+              f'for tar in {build.out}/*.tar; '
+              f'do curl {curl_signed_args} -F key="{prefix}/$(basename $tar)" '
+              f'-F file="@$tar" '
+              f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
+              ' done'],
+          'allowFailure': False,
+      },
+  ]
+  build_steps.extend(index_steps)
 
 
 def get_targets_list_upload_step(bucket, project, build, uploader_image):
