@@ -506,7 +506,7 @@ def add_indexer_steps(build_steps, project, timestamp):
   build = Build('none', 'address', 'x86_64')
   env = get_env(project.fuzzing_language, build, project.name)
 
-  prefix = f'indexer_indexes/{project.name}/{timestamp}/'
+  prefix = f'indexer_indexes/{timestamp}/{project.name}/'
   signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
       'clusterfuzz-builds', prefix)
   curl_signed_args = shlex.join(
