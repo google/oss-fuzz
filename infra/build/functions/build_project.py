@@ -528,14 +528,14 @@ def add_indexer_steps(build_steps, project, timestamp):
   index_steps = [
       index_step,
       build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
-                                                    f'{prefix}/srcmap.json',
+                                                    f'{prefix}srcmap.json',
                                                     signed_policy_document),
       {
           # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
-          'name': project.image,
+          'name': get_uploader_image(),
           'args': [
               'bash', '-c', f'for tar in {build.out}/*.tar; '
-              f'do curl {curl_signed_args} -F key="{prefix}/$(basename $tar)" '
+              f'do curl {curl_signed_args} -F key="{prefix}$(basename $tar)" '
               f'-F file="@$tar" '
               f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
               ' done'
