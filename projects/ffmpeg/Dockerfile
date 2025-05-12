@@ -20,7 +20,8 @@ RUN curl -LO https://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automak
     apt install ./automake_1.16.5-1.3_all.deb
 RUN curl -LO https://mirrors.kernel.org/ubuntu/pool/main/a/autoconf/autoconf_2.72-3_all.deb && \
     apt install ./autoconf_2.72-3_all.deb
-RUN python3 -m pip install --upgrade pip && python3 -m pip install -U meson ninja
+# Meson is pinned to get around https://github.com/mesonbuild/meson/issues/14533
+RUN python3 -m pip install --upgrade pip && python3 -m pip install -U meson==1.7.2 ninja
 
 RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
