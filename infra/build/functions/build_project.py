@@ -386,7 +386,7 @@ def get_build_steps_for_project(project,
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
   for fuzzing_engine in sorted(project.fuzzing_engines):
-    break # !!!
+    break  # !!!
     # Sort sanitizers and architectures so order is determinisitic (good for
     # tests).
     for sanitizer in sorted(project.sanitizers):
@@ -508,35 +508,38 @@ def add_indexer_steps(build_steps, project, timestamp):
 
   prefix = f'indexer_indexes/{project.name}/{timestamp}/'
   signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
-    'clusterfuzz-builds', prefix)
-  curl_signed_args = shlex.join(build_lib.signed_policy_document_curl_args(
-    signed_policy_document))
+      'clusterfuzz-builds', prefix)
+  curl_signed_args = shlex.join(
+      build_lib.signed_policy_document_curl_args(signed_policy_document))
 
   index_step = {
       'name': project.image,
-      'args': ['bash', '-c', f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'],
+      'args': [
+          'bash', '-c',
+          f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'
+      ],
       'env': env,
-      'allowFailure': False, # !!! CHANGE ME.
+      'allowFailure': False,  # !!! CHANGE ME.
   }
   build_lib.dockerify_run_step(index_step,
-                                build,
-                                use_architecture_image_name=build.is_arm)
+                               build,
+                               use_architecture_image_name=build.is_arm)
 
   index_steps = [
       index_step,
-      build_lib.upload_using_signed_policy_document(
-          '/workspace/srcmap.json', f'{prefix}/srcmap.json',
-          signed_policy_document),
+      build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
+                                                    f'{prefix}/srcmap.json',
+                                                    signed_policy_document),
       {
           # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
           'name': project.image,
           'args': [
-              'bash', '-c',
-              f'for tar in {build.out}/*.tar; '
+              'bash', '-c', f'for tar in {build.out}/*.tar; '
               f'do curl {curl_signed_args} -F key="{prefix}/$(basename $tar)" '
               f'-F file="@$tar" '
               f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
-              ' done'],
+              ' done'
+          ],
           'allowFailure': False,
       },
   ]

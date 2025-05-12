@@ -65,6 +65,7 @@ EngineInfo = collections.namedtuple(
     'EngineInfo',
     ['upload_bucket', 'supported_sanitizers', 'supported_architectures'])
 
+
 @dataclasses.dataclass
 class SignedPolicyDocument:
   """Signed policy document"""
@@ -238,30 +239,33 @@ def get_signed_policy_document_upload_prefix(bucket, path_prefix):
   x_goog_credential = f'{client_id}/{datestamp}/auto/storage/goog4_request'
 
   doc = {
-    'expiration': expiry.isoformat() + 'Z',
-    'conditions': [
-      [
-        'starts-with', '$key', path_prefix,
-      ],
-      {
-        'bucket': bucket,
-      },
-      {'x-goog-algorithm': 'GOOG4-RSA-SHA256'},
-      {'x-goog-credential': x_goog_credential},
-      {'x-goog-date': timestamp}
-    ]
+      'expiration':
+          expiry.isoformat() + 'Z',
+      'conditions': [[
+          'starts-with',
+          '$key',
+          path_prefix,
+      ], {
+          'bucket': bucket,
+      }, {
+          'x-goog-algorithm': 'GOOG4-RSA-SHA256'
+      }, {
+          'x-goog-credential': x_goog_credential
+      }, {
+          'x-goog-date': timestamp
+      }]
   }
 
   encoded = base64.b64encode(json.dumps(doc).encode()).decode()
   client_id, signature = _sign_blob(encoded)
 
   return SignedPolicyDocument(
-    bucket=bucket,
-    policy=encoded,
-    x_goog_algorithm='GOOG4-RSA-SHA256',
-    x_goog_credential=x_goog_credential,
-    x_goog_date=timestamp,
-    x_goog_signature=binascii.hexlify(base64.b64decode(signature)).decode(),
+      bucket=bucket,
+      policy=encoded,
+      x_goog_algorithm='GOOG4-RSA-SHA256',
+      x_goog_credential=x_goog_credential,
+      x_goog_date=timestamp,
+      x_goog_signature=binascii.hexlify(base64.b64decode(signature)).decode(),
   )
 
 
@@ -378,24 +382,33 @@ def http_upload_step(data, signed_url, content_type):
 def signed_policy_document_curl_args(doc: SignedPolicyDocument):
   """Signed policy document curl args."""
   return [
-      '-F', 'policy=' + doc.policy,
-      '-F', 'x-goog-algorithm=' + doc.x_goog_algorithm,
-      '-F', 'x-goog-date=' + doc.x_goog_date,
-      '-F', 'x-goog-credential=' + doc.x_goog_credential,
-      '-F', 'x-goog-signature=' + doc.x_goog_signature,
+      '-F',
+      'policy=' + doc.policy,
+      '-F',
+      'x-goog-algorithm=' + doc.x_goog_algorithm,
+      '-F',
+      'x-goog-date=' + doc.x_goog_date,
+      '-F',
+      'x-goog-credential=' + doc.x_goog_credential,
+      '-F',
+      'x-goog-signature=' + doc.x_goog_signature,
   ]
 
 
-def upload_using_signed_policy_document(file_path, upload_path, doc: SignedPolicyDocument):
+def upload_using_signed_policy_document(file_path, upload_path,
+                                        doc: SignedPolicyDocument):
   """Upload using signed policy document."""
   step = {
       'name':
           'gcr.io/cloud-builders/curl',
-      'args': signed_policy_document_curl_args(doc) + [
-        '-F', f'key={upload_path}',
-        '-F', f'file=@{file_path}',
-        f'https://{doc.bucket}.storage.googleapis.com',
-      ]
+      'args':
+          signed_policy_document_curl_args(doc) + [
+              '-F',
+              f'key={upload_path}',
+              '-F',
+              f'file=@{file_path}',
+              f'https://{doc.bucket}.storage.googleapis.com',
+          ]
   }
   return step
 
@@ -540,17 +553,17 @@ def has_arm_build(architectures):
 def get_srcmap_steps(image, language, directory='/workspace'):
   srcmap_step_id = get_srcmap_step_id()
   return [{
-        'name': image,
-        'args': [
-            'bash', '-c',
-            f'srcmap > {directory}/srcmap.json && cat {directory}/srcmap.json'
-        ],
-        'env': [
-            'OSSFUZZ_REVISION=$REVISION_ID',
-            f'FUZZING_LANGUAGE={language}',
-        ],
-        'id': srcmap_step_id
-    }]
+      'name': image,
+      'args': [
+          'bash', '-c',
+          f'srcmap > {directory}/srcmap.json && cat {directory}/srcmap.json'
+      ],
+      'env': [
+          'OSSFUZZ_REVISION=$REVISION_ID',
+          f'FUZZING_LANGUAGE={language}',
+      ],
+      'id': srcmap_step_id
+  }]
 
 
 def get_project_image_steps(  # pylint: disable=too-many-arguments
@@ -610,7 +623,8 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     steps.append(docker_build_arm_step)
 
   logging.info(f'Considering pushing {config.build_type} {language}.')
-  if (config.build_type == 'fuzzing' and language in ('c', 'c++') and not not config.testing and not config.experiment and config.upload):
+  if (config.build_type == 'fuzzing' and language in ('c', 'c++') and
+      not not config.testing and not config.experiment and config.upload):
     logging.info('Pushing.')
     # Push so that historical bugs are reproducible.
     push_step = {
