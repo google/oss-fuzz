@@ -28,6 +28,7 @@ import os
 import posixpath
 import re
 import sys
+from typing import Optional
 
 import oauth2client.client
 import six
@@ -67,17 +68,17 @@ _CACHED_SANITIZERS = ('address', 'coverage')
 @dataclass
 class Config:
   testing: bool = False
-  test_image_suffix: str = None
-  repo: str = DEFAULT_OSS_FUZZ_REPO
-  branch: str = None
+  test_image_suffix: Optional[str] = None
+  repo: Optional[str] = DEFAULT_OSS_FUZZ_REPO
+  branch: Optional[str] = None
   parallel: bool = False
   upload: bool = True
   experiment: bool = False
   # TODO(ochang): This should be different per engine+sanitizer combination.
-  upload_build_logs: str = None
-  build_type: str = None
-  fuzzing_engine: str = None
-  fuzz_target: str = ''
+  upload_build_logs: Optional[str] = None
+  build_type: Optional[str] = None
+  fuzzing_engine: Optional[str] = None
+  fuzz_target: Optional[str] = None
 
 
 # Allow the WORKDIR to be commented out for OSS-Fuzz-Gen, which creates new
