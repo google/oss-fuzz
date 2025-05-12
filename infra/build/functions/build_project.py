@@ -534,13 +534,14 @@ def add_indexer_steps(build_steps, project, timestamp):
           # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
           'name': get_uploader_image(),
           'args': [
-              'bash', '-c', f'for tar in {build.out}/*.tar; '
+              '-c', f'for tar in {build.out}/*.tar; '
               f'do curl {curl_signed_args} -F key="{prefix}$(basename $tar)" '
               f'-F file="@$tar" '
               f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
               ' done'
           ],
           'allowFailure': False,
+          'entrypoint': 'bash'
       },
   ]
   build_steps.extend(index_steps)
