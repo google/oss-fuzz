@@ -1721,10 +1721,8 @@ def shell(args):
     return False
 
   env = [
-      'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer,
-      'ARCHITECTURE=' + args.architecture,
-      'HELPER=True',
+      'FUZZING_ENGINE=' + args.engine, 'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture, 'HELPER=True',
       f'PROJECT_NAME={args.project.name}'
   ]
 
