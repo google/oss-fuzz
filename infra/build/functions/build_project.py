@@ -386,7 +386,6 @@ def get_build_steps_for_project(project,
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
   for fuzzing_engine in sorted(project.fuzzing_engines):
-    break  # !!!
     # Sort sanitizers and architectures so order is determinisitic (good for
     # tests).
     for sanitizer in sorted(project.sanitizers):
@@ -492,10 +491,10 @@ def get_build_steps_for_project(project,
           upload_steps = get_upload_steps(project, build, timestamp,
                                           config.testing)
           build_steps.extend(upload_steps)
-  # if (config.build_type == 'fuzzing' and
-  #     not config.testing and config.upload and not config.experiment and
-  #     project.fuzzing_language in {'c', 'c++'}):
-  if True:
+
+  if (config.build_type == 'fuzzing' and not config.testing and
+      config.upload and not config.experiment and
+      project.fuzzing_language in {'c', 'c++'}):
     add_indexer_steps(build_steps, project, timestamp)
 
   return build_steps
@@ -519,7 +518,7 @@ def add_indexer_steps(build_steps, project, timestamp):
           f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'
       ],
       'env': env,
-      'allowFailure': False,  # !!! CHANGE ME.
+      'allowFailure': True,
   }
   build_lib.dockerify_run_step(index_step,
                                build,
@@ -529,7 +528,8 @@ def add_indexer_steps(build_steps, project, timestamp):
       index_step,
       build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
                                                     f'{prefix}srcmap.json',
-                                                    signed_policy_document),
+                                                    signed_policy_document,
+                                                    allow_failure=True),
       {
           # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
           'name': get_uploader_image(),
@@ -540,7 +540,7 @@ def add_indexer_steps(build_steps, project, timestamp):
               f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
               ' done'
           ],
-          'allowFailure': False,
+          'allowFailure': True,
           'entrypoint': 'bash'
       },
   ]
