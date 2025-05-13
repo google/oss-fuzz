@@ -4,14 +4,12 @@ primary_contact: "kjlubick@chromium.org"
 auto_ccs:
   - "brianosman@google.com"
   - "johnstiles@google.com"
-fuzzing_engines:
-  - libfuzzer
 sanitizers:
  - address
- # - memory
- # - undefined
+ - memory
+ - undefined
 architectures:
 #  - aarch64  # Experimental, not generally available.
   - x86_64
-# - i386
+  - i386
 main_repo: 'https://skia.googlesource.com/skcms.git'

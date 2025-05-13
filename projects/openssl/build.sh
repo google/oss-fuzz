@@ -72,7 +72,7 @@ function build_fuzzers() {
       find $SOURCES -type f -a \( -name '*.[ch]' -o -name '*.inc' \) -exec cp --parents '{}' $DESTDIR/ \;
     fi
 
-    if [[ -n "${CIFUZZ:-}" ]]; then
+    if [[ -z "${INDEXER_BUILD:-}" ]]; then
       df
       rm -rf * .git*
       df
@@ -82,8 +82,8 @@ function build_fuzzers() {
 cd $SRC/openssl/
 build_fuzzers ""
 
-# In introspector only build the master branch
-if [[ "$SANITIZER" == introspector ]]; then
+# In introspector and indexer builds, only build the master branch
+if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" ]]; then
   exit 0
 fi
 
