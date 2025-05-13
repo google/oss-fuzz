@@ -37,6 +37,7 @@ import yaml
 import build_lib
 
 FUZZING_BUILD_TYPE = 'fuzzing'
+INDEXER_BUILD_TYPE = 'indexer'
 
 GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 GCB_EXPERIMENT_LOGS_BUCKET = 'oss-fuzz-gcb-experiment-logs'
@@ -347,27 +348,33 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     dockerfile,
     config,
     additional_env=None,
-    use_caching=False):
+    use_caching=False,
+    timestamp=None):
   """Returns build steps for project."""
 
   project = Project(project_name, project_yaml, dockerfile)
   return get_build_steps_for_project(project,
                                      config,
                                      additional_env=additional_env,
-                                     use_caching=use_caching)
+                                     use_caching=use_caching,
+                                     timestamp=timestamp)
 
 
 def get_build_steps_for_project(project,
                                 config,
                                 additional_env=None,
-                                use_caching=False):
+                                use_caching=False,
+                                timestamp=None):
   """Returns build steps for project."""
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
-  timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
+  if not timestamp:
+    timestamp = get_datetime_now()
+
+  timestamp = timestamp.strftime('%Y%m%d%H%M')
 
   if use_caching:
     # For cached builds: the cache images are sanitizer-specific, so we need to
@@ -386,7 +393,6 @@ def get_build_steps_for_project(project,
   # Sort engines to make AFL first to test if libFuzzer has an advantage in
   # finding bugs first since it is generally built first.
   for fuzzing_engine in sorted(project.fuzzing_engines):
-    break  # !!!
     # Sort sanitizers and architectures so order is determinisitic (good for
     # tests).
     for sanitizer in sorted(project.sanitizers):
@@ -492,17 +498,34 @@ def get_build_steps_for_project(project,
           upload_steps = get_upload_steps(project, build, timestamp,
                                           config.testing)
           build_steps.extend(upload_steps)
-  # if (config.build_type == 'fuzzing' and
-  #     not config.testing and config.upload and not config.experiment and
-  #     project.fuzzing_language in {'c', 'c++'}):
-  if True:
-    add_indexer_steps(build_steps, project, timestamp)
 
   return build_steps
 
 
-def add_indexer_steps(build_steps, project, timestamp):
-  """Add indexer build steps."""
+def get_indexer_build_steps(project_name,
+                            project_yaml,
+                            dockerfile,
+                            config,
+                            additional_env=None,
+                            use_caching=False,
+                            timestamp=None):
+  """Get indexer build steps."""
+  project = Project(project_name, project_yaml, dockerfile)
+  if project.disabled:
+    logging.info('Project "%s" is disabled.', project.name)
+    return []
+
+  if not timestamp:
+    timestamp = get_datetime_now()
+  timestamp = timestamp.strftime('%Y%m%d%H%M')
+
+  build_steps = build_lib.get_project_image_steps(
+      project.name,
+      project.image,
+      project.fuzzing_language,
+      config=config,
+      architectures=project.architectures,
+      experiment=config.experiment)
   build = Build('none', 'address', 'x86_64')
   env = get_env(project.fuzzing_language, build, project.name)
 
@@ -519,13 +542,12 @@ def add_indexer_steps(build_steps, project, timestamp):
           f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'
       ],
       'env': env,
-      'allowFailure': False,  # !!! CHANGE ME.
   }
   build_lib.dockerify_run_step(index_step,
                                build,
                                use_architecture_image_name=build.is_arm)
 
-  index_steps = [
+  build_steps.extend([
       index_step,
       build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
                                                     f'{prefix}srcmap.json',
@@ -540,11 +562,10 @@ def add_indexer_steps(build_steps, project, timestamp):
               f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
               ' done'
           ],
-          'allowFailure': False,
           'entrypoint': 'bash'
       },
-  ]
-  build_steps.extend(index_steps)
+  ])
+  return build_steps
 
 
 def get_targets_list_upload_step(bucket, project, build, uploader_image):

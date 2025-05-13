@@ -57,6 +57,9 @@ BUILD_TYPES = {
                   'status-introspector.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
+    'indexer':
+        BuildType('indexer', build_project.get_indexer_build_steps,
+                  'status.json'),
 }
 
 
@@ -344,6 +347,9 @@ def _do_test_builds(args, test_image_suffix, end_time):
   if 'introspector' in sanitizers:
     sanitizers.pop(sanitizers.index('introspector'))
     build_types.append(BUILD_TYPES['introspector'])
+  if 'indexer' in sanitizers:
+    sanitizers.pop(sanitizers.index('indexer'))
+    build_types.append(BUILD_TYPES['indexer'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
   build_ids = collections.defaultdict(list)
