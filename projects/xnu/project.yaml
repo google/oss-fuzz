@@ -6,7 +6,6 @@ auto_ccs:
   - "ddkilzer@apple.com"
   - "dkishore@apple.com"
   - "phan@apple.com"
-  - "lglovin@apple.com"
   - "Product-Security@apple.com"
   - "vlubet@apple.com"
   - "ebanniettis@apple.com"
@@ -14,6 +13,10 @@ auto_ccs:
   - "james_e_kim@apple.com"
   - "rding23@apple.com"
   - "albassam@apple.com"
+  - "zakr@apple.com"
+  - "roberto_rodriguez2@apple.com"
+  - "k_monsen@apple.com"
+  - "nnothstine@apple.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
