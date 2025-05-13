@@ -42,7 +42,7 @@ def get_signed_upload_corpus_urls(project_name, fuzz_target_name, num_uploads):
     signed_url = build_lib.get_signed_url(path)
     signed_urls.append(signed_url)
 
-  logging.info(signed_url)
+  logging.info(signed_urls)
   return signed_urls
 
 
