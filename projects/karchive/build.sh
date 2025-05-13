@@ -76,6 +76,11 @@ cd $SRC/qtbase
 cmake --build . --parallel $(nproc)
 cmake --install .
 
+# Build qttools
+cd $SRC/qttools
+cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build . --parallel $(nproc)
+cmake --install .
 
 # Build karchive
 cd $SRC/karchive

@@ -16,20 +16,17 @@
 ################################################################################
 
 # build zstd
-cd $SRC
-cd zstd
+cd $SRC/zstd
 cmake -S build/cmake -DBUILD_SHARED_LIBS=OFF
 make install -j$(nproc)
 
 # Build zlib
-cd $SRC
-cd zlib
+cd $SRC/zlib
 ./configure --static
 make install -j$(nproc)
 
 # Build libzip
-cd $SRC
-cd libzip
+cd $SRC/libzip
 cmake . -DBUILD_SHARED_LIBS=OFF
 make install -j$(nproc)
 
@@ -54,40 +51,41 @@ export ORIG_CFLAGS="${CFLAGS}"
 export ORIG_CXXFLAGS="${CXXFLAGS}"
 unset CFLAGS
 unset CXXFLAGS
-cd $SRC
-cd xz
+cd $SRC/xz
 ./autogen.sh --no-po4a --no-doxygen
 ./configure --enable-static --disable-debug --disable-shared --disable-xz --disable-xzdec --disable-lzmainfo
 make install -j$(nproc)
 export CFLAGS="${ORIG_CFLAGS}"
 export CXXFLAGS="${ORIG_CXXFLAGS}"
 
-cd $SRC
-cd qtbase
+# Build qt
+cd $SRC/qtbase
 ./configure -no-glib -qt-libpng -qt-pcre -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -debug -prefix /usr -no-feature-widgets -no-feature-sql -no-feature-network  -no-feature-xml -no-feature-dbus -no-feature-printsupport
 cmake --build . --parallel $(nproc)
 cmake --install .
 
+# Build qttools
+cd $SRC/qttools
+cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build . --parallel $(nproc)
+cmake --install .
+
 # Build extra-cmake-modules
-cd $SRC
-cd extra-cmake-modules
+cd $SRC/extra-cmake-modules
 cmake . -DBUILD_TESTING=OFF
 make install -j$(nproc)
 
-cd $SRC
-cd karchive
+cd $SRC/karchive
 rm -rf poqm
 cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=/usr/local
 make install -j$(nproc)
 
 # Build JXRlib
-cd $SRC
-cd jxrlib
+cd $SRC/jxrlib
 make -j$(nproc)
 
 # Build LibRaw
-cd $SRC
-cd LibRaw
+cd $SRC/LibRaw
 TMP_CFLAGS=$CFLAGS
 TMP_CXXFLAGS=$CXXFLAGS
 CFLAGS="$CFLAGS -fno-sanitize=function,vptr"
@@ -101,8 +99,7 @@ CXXFLAGS=$TMP_CXXFLAGS
 
 
 # Build aom
-cd $SRC
-cd aom
+cd $SRC/aom
 mkdir build.libavif
 cd build.libavif
 extra_libaom_flags='-DAOM_MAX_ALLOCABLE_MEMORY=536870912 -DDO_RANGE_CHECK_CLAMP=1'
@@ -111,24 +108,21 @@ make -j$(nproc)
 make install -j$(nproc)
 
 # Build libavif
-cd $SRC
+cd $SRC/libavif
 ln -s "$SRC/aom" "$SRC/libavif/ext/"
-cd libavif
 mkdir build
 cd build
 CFLAGS="$CFLAGS -fPIC" cmake -DBUILD_SHARED_LIBS=OFF -DAVIF_ENABLE_WERROR=OFF -DAVIF_CODEC_AOM=LOCAL -DAVIF_LIBYUV=OFF ..
 make -j$(nproc)
 
 # Build libde265
-cd $SRC
-cd libde265
+cd $SRC/libde265
 cmake -DBUILD_SHARED_LIBS=OFF -DDISABLE_SSE=ON .
 make -j$(nproc)
 make install -j$(nproc)
 
 # Build openjpeg
-cd $SRC
-cd openjpeg
+cd $SRC/openjpeg
 mkdir build
 cd build
 cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DBUILD_CODEC=OFF ..
@@ -136,13 +130,11 @@ make -j$(nproc)
 make install -j$(nproc)
 
 # build openh264
-cd $SRC
-cd openh264
+cd $SRC/openh264
 make USE_ASM=No BUILDTYPE=Debug install-static -j$(nproc)
 
 # Build openexr
-cd $SRC
-cd openexr
+cd $SRC/openexr
 mkdir _build
 cd _build
 cmake  -DBUILD_SHARED_LIBS=OFF ..
@@ -150,8 +142,7 @@ make -j$(nproc)
 make install -j$(nproc)
 
 # Build libheif
-cd $SRC
-cd libheif
+cd $SRC/libheif
 #Reduce max width and height to avoid allocating too much memory
 sed -i "s/static const int MAX_IMAGE_WIDTH = 32768;/static const int MAX_IMAGE_WIDTH = 8192;/g" libheif/security_limits.h
 sed -i "s/static const int MAX_IMAGE_HEIGHT = 32768;/static const int MAX_IMAGE_HEIGHT = 8192;/g" libheif/security_limits.h
@@ -162,15 +153,13 @@ make -j$(nproc)
 make install -j$(nproc)
 
 # Build libjxl
-cd $SRC
-cd libjxl
+cd $SRC/libjxl
 mkdir build
 cd build
 CXXFLAGS="$CXXFLAGS -DHWY_COMPILE_ONLY_SCALAR" cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_DOXYGEN=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_ENABLE_JPEGLI=OFF -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=OFF -DJPEGXL_ENABLE_MANPAGES=OFF -DJPEGXL_ENABLE_OPENEXR=OFF -DJPEGXL_ENABLE_PLUGINS=OFF -DJPEGXL_ENABLE_SJPEG=OFF -DJPEGXL_ENABLE_SKCMS=ON -DJPEGXL_ENABLE_TCMALLOC=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_FUZZERS=OFF ..
 make -j$(nproc) jxl jxl_cms jxl_threads
 
-cd $SRC
-cd kimageformats
+cd $SRC/kimageformats
 HANDLER_TYPES="ANIHandler ani
         QAVIFHandler avif
         QDDSHandler dds

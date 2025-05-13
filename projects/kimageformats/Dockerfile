@@ -24,6 +24,7 @@ RUN git clone https://github.com/tukaani-project/xz.git
 RUN git clone --depth 1 --branch=RB-3.3 https://github.com/AcademySoftwareFoundation/openexr.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/extra-cmake-modules.git
 RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
+RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qttools.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/karchive.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kimageformats.git
 RUN git clone --depth 1 -b v3.12.0 https://aomedia.googlesource.com/aom
