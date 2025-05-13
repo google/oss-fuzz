@@ -74,7 +74,7 @@ class TrialBuildMainTest(unittest.TestCase):
     branch_name = 'mybranch'
     project = 'skcms'
     args = [
-        '--sanitizers', 'address', 'undefined', '--fuzzing-engines', 'afl',
+        '--sanitizers', 'address', 'undefined', '--fuzzing-engines',
         'libfuzzer', '--branch', branch_name, '--force-build', project
     ]
     self.assertTrue(trial_build.trial_build_main(args))
