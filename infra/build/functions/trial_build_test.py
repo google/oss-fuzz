@@ -64,7 +64,8 @@ class TrialBuildMainTest(unittest.TestCase):
   @mock.patch('build_and_push_test_images.build_and_push_images')
   def test_build_steps_correct(self, mock_gcb_build_and_push_images,
                                mock_run_build, mock_get_application_default,
-                               mock_wait_on_builds, mock_get_unique_build_step_image_id):
+                               mock_wait_on_builds,
+                               mock_get_unique_build_step_image_id):
     """Tests that the correct build steps for building a project are passed to
     GCB."""
     del mock_gcb_build_and_push_images
