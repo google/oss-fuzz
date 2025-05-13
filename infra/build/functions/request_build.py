@@ -66,7 +66,7 @@ def get_empty_config():
   return build_project.Config()
 
 
-def get_build_steps(project_name, timestamp):
+def get_build_steps(project_name, timestamp=None):
   """Retrieve build steps."""
   project_yaml, dockerfile_lines = get_project_data(project_name)
   build_config = build_project.Config(
@@ -78,7 +78,7 @@ def get_build_steps(project_name, timestamp):
                                        timestamp=timestamp)
 
 
-def get_indexer_build_steps(project_name, timestamp):
+def get_indexer_build_steps(project_name, timestamp=None):
   """Retrieve build steps."""
   project_yaml, dockerfile_lines = get_project_data(project_name)
   build_config = build_project.Config(
