@@ -55,6 +55,8 @@ class GetProjectsToBuild(unittest.TestCase):
 class TrialBuildMainTest(unittest.TestCase):
   """Tests for trial_build_main."""
 
+  @mock.patch('build_lib.get_unique_build_step_image_id',
+              return_value='UNIQUE_ID')
   @mock.patch('trial_build.wait_on_builds', return_value=True)
   @mock.patch('oauth2client.client.GoogleCredentials.get_application_default',
               return_value=None)
@@ -62,7 +64,7 @@ class TrialBuildMainTest(unittest.TestCase):
   @mock.patch('build_and_push_test_images.build_and_push_images')
   def test_build_steps_correct(self, mock_gcb_build_and_push_images,
                                mock_run_build, mock_get_application_default,
-                               mock_wait_on_builds):
+                               mock_wait_on_builds, mock_get_unique_build_step_image_id):
     """Tests that the correct build steps for building a project are passed to
     GCB."""
     del mock_gcb_build_and_push_images
@@ -74,7 +76,7 @@ class TrialBuildMainTest(unittest.TestCase):
     branch_name = 'mybranch'
     project = 'skcms'
     args = [
-        '--sanitizers', 'address', 'undefined', '--fuzzing-engines',
+        '--sanitizers', 'address', 'undefined', '--fuzzing-engines', 'afl',
         'libfuzzer', '--branch', branch_name, '--force-build', project
     ]
     self.assertTrue(trial_build.trial_build_main(args))
