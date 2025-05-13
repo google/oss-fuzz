@@ -24,6 +24,7 @@ import sys
 
 import build_lib
 import build_project
+import ood_upload_corpus
 
 INFRA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -385,8 +386,14 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
+
   if not config.fuzz_target:
     config.fuzz_target = get_fuzz_target_name(project.name)
+  signed_urls = ood_upload_corpus.get_signed_upload_corpus_urls(project.name,
+                                                                config.fuzz_target,
+                                                                3)
+
+
   steps = get_fuzzbench_setup_steps()
   steps += build_lib.get_project_image_steps(project.name,
                                              project.image,
