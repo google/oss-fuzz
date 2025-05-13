@@ -19,6 +19,7 @@
 
 import logging
 import os
+import requests
 import sys
 
 import build_lib
@@ -70,6 +71,22 @@ def get_latest_libfuzzer_build(project_name):
   build_uri = f'gs://clusterfuzz-builds/{project_name}/{latest_build_filename}'
 
   return build_uri, latest_build_filename
+
+
+def get_fuzz_target_name(project_name):
+  """Use Fuzz Introspector Web API to choose a fuzz target for |project_name|"""
+  header = {'accept': 'application/json'}
+  url = f'https://introspector.oss-fuzz.com/api/harness-source-and-executable?project={project_name}'
+  resp = requests.get(url, headers=header)
+  resp.raise_for_status()
+  resp_json = resp.json()
+
+  if len(resp_json) < 1:
+    raise Exception(f'There are no fuzz targets available for {project_name}.')
+
+  fuzz_target_name = resp_json['pairs'][0]['executable']
+  logging.info(f'Using fuzz target: {fuzz_target_name}')
+  return fuzz_target_name
 
 
 def get_env(project, build, config):
@@ -365,6 +382,8 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
+  if not config.fuzz_target:
+    config.fuzz_target = get_fuzz_target_name(project.name)
   steps = get_fuzzbench_setup_steps()
   steps += build_lib.get_project_image_steps(project.name,
                                              project.image,
