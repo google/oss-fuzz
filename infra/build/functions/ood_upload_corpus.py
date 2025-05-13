@@ -28,9 +28,11 @@ def get_upload_corpus_bucket(project_name, fuzz_target_name):
   return (f'{project_name}-corpus.clusterfuzz-external.appspot.com/'
           f'libFuzzer/{fuzz_target_name}/')
 
+
 def get_signed_upload_corpus_urls(project_name, fuzz_target_name, num_uploads):
   """ ."""
-  upload_corpus_bucket = get_upload_corpus_bucket(project_name, fuzz_target_name)
+  upload_corpus_bucket = get_upload_corpus_bucket(project_name,
+                                                  fuzz_target_name)
   base_path = f'{upload_corpus_bucket}{uuid.uuid4().hex}'
 
   signed_urls = []
@@ -39,7 +41,7 @@ def get_signed_upload_corpus_urls(project_name, fuzz_target_name, num_uploads):
     path = f'{base_path}-{idx}'
     signed_url = build_lib.get_signed_url(path)
     signed_urls.append(signed_url)
-  
+
   logging.info(signed_url)
   return signed_urls
 
