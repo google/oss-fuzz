@@ -395,10 +395,8 @@ def signed_policy_document_curl_args(doc: SignedPolicyDocument):
   ]
 
 
-def upload_using_signed_policy_document(file_path: str,
-                                        upload_path: str,
-                                        doc: SignedPolicyDocument,
-                                        allow_failure: bool = False):
+def upload_using_signed_policy_document(file_path, upload_path,
+                                        doc: SignedPolicyDocument):
   """Upload using signed policy document."""
   step = {
       'name':
@@ -410,10 +408,8 @@ def upload_using_signed_policy_document(file_path: str,
               '-F',
               f'file=@{file_path}',
               f'https://{doc.bucket}.storage.googleapis.com',
-          ],
+          ]
   }
-  if allow_failure:
-    step['allowFailure'] = True
   return step
 
 
