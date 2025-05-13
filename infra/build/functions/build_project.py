@@ -516,6 +516,9 @@ def get_indexer_build_steps(project_name,
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
+  if project.fuzzing_language not in {'c', 'c++'}:
+    return []
+
   if not timestamp:
     timestamp = get_datetime_now()
   timestamp = timestamp.strftime('%Y%m%d%H%M')
