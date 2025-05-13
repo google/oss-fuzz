@@ -81,9 +81,9 @@ def get_fuzz_target_name(project_name):
   resp = requests.get(url, headers=header)
   resp.raise_for_status()
   resp_json = resp.json()
-
-  if len(resp_json) < 1:
-    raise Exception(f'There are no fuzz targets available for {project_name}.')
+  if resp_json['result'] == 'error' or len(resp_json['pairs']) < 1:
+    logging.info(f'There are no fuzz targets available for {project.name}')
+    return None
 
   fuzz_target_name = resp_json['pairs'][0]['executable']
   logging.info(f'Using fuzz target: {fuzz_target_name}')
@@ -389,7 +389,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   if not fuzz_target_name:
     fuzz_target_name = get_fuzz_target_name(project.name)
     if not fuzz_target_name:
-        return None
+      return None
 
   steps = get_fuzzbench_setup_steps()
   steps += build_lib.get_project_image_steps(project.name,
