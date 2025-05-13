@@ -685,6 +685,7 @@ def get_build_body(  # pylint: disable=too-many-arguments
   if use_build_pool:
     if experiment:
       options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
+    # TODO: refactor all of this to make this less ugly.
     elif 'indexer' in build_tags:
       options['pool'] = {'name': OSS_FUZZ_INDEXER_BUILDPOOL_NAME}
     else:
