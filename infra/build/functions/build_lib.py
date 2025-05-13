@@ -15,7 +15,11 @@
 ################################################################################
 """Utility module for Google Cloud Build scripts."""
 import base64
+import binascii
 import collections
+import dataclasses
+import datetime
+import json
 import logging
 import os
 import re
@@ -61,6 +65,18 @@ EngineInfo = collections.namedtuple(
     'EngineInfo',
     ['upload_bucket', 'supported_sanitizers', 'supported_architectures'])
 
+
+@dataclasses.dataclass
+class SignedPolicyDocument:
+  """Signed policy document"""
+  bucket: str
+  policy: str
+  x_goog_algorithm: str
+  x_goog_date: str
+  x_goog_credential: str
+  x_goog_signature: str
+
+
 ENGINE_INFO = {
     'libfuzzer':
         EngineInfo(upload_bucket='clusterfuzz-builds',
@@ -91,6 +107,10 @@ ENGINE_INFO = {
 OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
+
+OSS_FUZZ_INDEXER_BUILDPOOL_NAME = os.getenv(
+    'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/indexer-buildpool')
 
 OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
@@ -173,12 +193,19 @@ def _get_targets_list(project_name):
   return response.text.split()
 
 
-# pylint: disable=no-member
-def get_signed_url(path, method='PUT', content_type=''):
-  """Returns signed url."""
-  timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = f'{method}\n\n{content_type}\n{timestamp}\n{path}'
+def _sign_client_id():
+  service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+  if service_account_path:
+    creds = (
+        service_account_lib.ServiceAccountCredentials.from_json_keyfile_name(
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS']))
+    return creds.service_account_email
+  else:
+    _, project = google.auth.default()
+    return project + '@appspot.gserviceaccount.com'
 
+
+def _sign_blob(blob):
   service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
   if service_account_path:
     creds = (
@@ -202,6 +229,57 @@ def get_signed_url(path, method='PUT', content_type=''):
         }).execute()
     signature = response['signedBlob']
 
+  return client_id, signature
+
+
+# TODO(ochang): Migrate older signed URLs to V4 signatures.
+def get_signed_policy_document_upload_prefix(bucket, path_prefix):
+  now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+  timestamp = now.strftime('%Y%m%dT%H%M%SZ')
+  datestamp = now.date().strftime('%Y%m%d')
+  expiry = now + datetime.timedelta(hours=24)
+
+  client_id = _sign_client_id()
+  x_goog_credential = f'{client_id}/{datestamp}/auto/storage/goog4_request'
+
+  doc = {
+      'expiration':
+          expiry.isoformat() + 'Z',
+      'conditions': [[
+          'starts-with',
+          '$key',
+          path_prefix,
+      ], {
+          'bucket': bucket,
+      }, {
+          'x-goog-algorithm': 'GOOG4-RSA-SHA256'
+      }, {
+          'x-goog-credential': x_goog_credential
+      }, {
+          'x-goog-date': timestamp
+      }]
+  }
+
+  encoded = base64.b64encode(json.dumps(doc).encode()).decode()
+  client_id, signature = _sign_blob(encoded)
+
+  return SignedPolicyDocument(
+      bucket=bucket,
+      policy=encoded,
+      x_goog_algorithm='GOOG4-RSA-SHA256',
+      x_goog_credential=x_goog_credential,
+      x_goog_date=timestamp,
+      x_goog_signature=binascii.hexlify(base64.b64decode(signature)).decode(),
+  )
+
+
+# pylint: disable=no-member
+def get_signed_url(path, method='PUT', content_type=''):
+  """Returns signed url."""
+  timestamp = int(time.time() + BUILD_TIMEOUT)
+  blob = f'{method}\n\n{content_type}\n{timestamp}\n{path}'
+
+  client_id, signature = _sign_blob(blob)
   values = {
       'GoogleAccessId': client_id,
       'Expires': timestamp,
@@ -301,6 +379,40 @@ def http_upload_step(data, signed_url, content_type):
           data,
           signed_url,
       ],
+  }
+  return step
+
+
+def signed_policy_document_curl_args(doc: SignedPolicyDocument):
+  """Signed policy document curl args."""
+  return [
+      '-F',
+      'policy=' + doc.policy,
+      '-F',
+      'x-goog-algorithm=' + doc.x_goog_algorithm,
+      '-F',
+      'x-goog-date=' + doc.x_goog_date,
+      '-F',
+      'x-goog-credential=' + doc.x_goog_credential,
+      '-F',
+      'x-goog-signature=' + doc.x_goog_signature,
+  ]
+
+
+def upload_using_signed_policy_document(file_path, upload_path,
+                                        doc: SignedPolicyDocument):
+  """Upload using signed policy document."""
+  step = {
+      'name':
+          'gcr.io/cloud-builders/curl',
+      'args':
+          signed_policy_document_curl_args(doc) + [
+              '-F',
+              f'key={upload_path}',
+              '-F',
+              f'file=@{file_path}',
+              f'https://{doc.bucket}.storage.googleapis.com',
+          ]
   }
   return step
 
@@ -442,6 +554,22 @@ def has_arm_build(architectures):
   return 'aarch64' in architectures
 
 
+def get_srcmap_steps(image, language, directory='/workspace'):
+  srcmap_step_id = get_srcmap_step_id()
+  return [{
+      'name': image,
+      'args': [
+          'bash', '-c',
+          f'srcmap > {directory}/srcmap.json && cat {directory}/srcmap.json'
+      ],
+      'env': [
+          'OSSFUZZ_REVISION=$REVISION_ID',
+          f'FUZZING_LANGUAGE={language}',
+      ],
+      'id': srcmap_step_id
+  }]
+
+
 def get_project_image_steps(  # pylint: disable=too-many-arguments
     name,
     image,
@@ -474,19 +602,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
       cache_image=cache_image)
   steps.append(docker_build_step)
   if srcmap:
-    srcmap_step_id = get_srcmap_step_id()
-    steps.extend([{
-        'name': image,
-        'args': [
-            'bash', '-c',
-            'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-        ],
-        'env': [
-            'OSSFUZZ_REVISION=$REVISION_ID',
-            f'FUZZING_LANGUAGE={language}',
-        ],
-        'id': srcmap_step_id
-    }])
+    steps.extend(get_srcmap_steps(image, language))
 
   if has_arm_build(architectures):
     builder_name = 'buildxbuilder'
@@ -511,7 +627,8 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     steps.append(docker_build_arm_step)
 
   logging.info(f'Considering pushing {config.build_type} {language}.')
-  if (config.build_type == 'fuzzing' and language in ('c', 'c++')):
+  if (config.build_type == 'fuzzing' and language in ('c', 'c++') and
+      not not config.testing and not config.experiment and config.upload):
     logging.info('Pushing.')
     # Push so that historical bugs are reproducible.
     push_step = {
@@ -568,6 +685,9 @@ def get_build_body(  # pylint: disable=too-many-arguments
   if use_build_pool:
     if experiment:
       options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
+    # TODO: refactor all of this to make this less ugly.
+    elif 'indexer' in build_tags:
+      options['pool'] = {'name': OSS_FUZZ_INDEXER_BUILDPOOL_NAME}
     else:
       options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
 

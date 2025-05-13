@@ -27,6 +27,7 @@ import logging
 import os
 import posixpath
 import re
+import shlex
 import sys
 from typing import Optional
 
@@ -37,6 +38,7 @@ import yaml
 import build_lib
 
 FUZZING_BUILD_TYPE = 'fuzzing'
+INDEXER_BUILD_TYPE = 'indexer'
 
 GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 GCB_EXPERIMENT_LOGS_BUCKET = 'oss-fuzz-gcb-experiment-logs'
@@ -256,7 +258,7 @@ def get_datetime_now():
   return datetime.datetime.now()
 
 
-def get_env(fuzzing_language, build):
+def get_env(fuzzing_language, build, project_name=None):
   """Returns an environment for building. The environment is returned as a list
   and is suitable for use as the "env" parameter in a GCB build step. The
   environment variables are based on the values of |fuzzing_language| and
@@ -271,6 +273,8 @@ def get_env(fuzzing_language, build):
       'HOME': '/root',
       'OUT': build.out,
   }
+  if project_name is not None:
+    env_dict['PROJECT_NAME'] = project_name
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
@@ -345,27 +349,33 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     dockerfile,
     config,
     additional_env=None,
-    use_caching=False):
+    use_caching=False,
+    timestamp=None):
   """Returns build steps for project."""
 
   project = Project(project_name, project_yaml, dockerfile)
   return get_build_steps_for_project(project,
                                      config,
                                      additional_env=additional_env,
-                                     use_caching=use_caching)
+                                     use_caching=use_caching,
+                                     timestamp=timestamp)
 
 
 def get_build_steps_for_project(project,
                                 config,
                                 additional_env=None,
-                                use_caching=False):
+                                use_caching=False,
+                                timestamp=None):
   """Returns build steps for project."""
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
-  timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
+  if not timestamp:
+    timestamp = get_datetime_now()
+
+  timestamp = timestamp.strftime('%Y%m%d%H%M')
 
   if use_caching:
     # For cached builds: the cache images are sanitizer-specific, so we need to
@@ -489,6 +499,78 @@ def get_build_steps_for_project(project,
           upload_steps = get_upload_steps(project, build, timestamp,
                                           config.testing)
           build_steps.extend(upload_steps)
+
+  return build_steps
+
+
+def get_indexer_build_steps(project_name,
+                            project_yaml,
+                            dockerfile,
+                            config,
+                            additional_env=None,
+                            use_caching=False,
+                            timestamp=None):
+  """Get indexer build steps."""
+  project = Project(project_name, project_yaml, dockerfile)
+  if project.disabled:
+    logging.info('Project "%s" is disabled.', project.name)
+    return []
+
+  if project.fuzzing_language not in {'c', 'c++'}:
+    return []
+
+  if not timestamp:
+    timestamp = get_datetime_now()
+  timestamp = timestamp.strftime('%Y%m%d%H%M')
+
+  build_steps = build_lib.get_project_image_steps(
+      project.name,
+      project.image,
+      project.fuzzing_language,
+      config=config,
+      architectures=project.architectures,
+      experiment=config.experiment)
+  build = Build('none', 'address', 'x86_64')
+  env = get_env(project.fuzzing_language, build, project.name)
+  env.append('INDEXER_BUILD=1')
+
+  prefix = f'indexer_indexes/{project.name}/{timestamp}/'
+  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
+      'clusterfuzz-builds', prefix)
+  curl_signed_args = shlex.join(
+      build_lib.signed_policy_document_curl_args(signed_policy_document))
+
+  index_step = {
+      'name': project.image,
+      'args': [
+          'bash', '-c',
+          f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'
+      ],
+      'env': env,
+  }
+  build_lib.dockerify_run_step(index_step,
+                               build,
+                               use_architecture_image_name=build.is_arm)
+
+  # TODO: Don't upload anything if we're in trial build.
+  build_steps.extend([
+      index_step,
+      build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
+                                                    f'{prefix}srcmap.json',
+                                                    signed_policy_document),
+      {
+          # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
+          'name': get_uploader_image(),
+          'args': [
+              '-c', f'for tar in {build.out}/*.tar; '
+              f'do curl {curl_signed_args} -F key="{prefix}$(basename $tar)" '
+              f'-F file="@$tar" '
+              f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
+              ' done'
+          ],
+          'entrypoint': 'bash'
+      },
+  ])
   return build_steps
 
 
