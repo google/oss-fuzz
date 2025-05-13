@@ -19,6 +19,12 @@ RUN apt-get update && \
     apt-get install -y make autoconf automake libtool zlib1g-dev
 
 RUN git clone --depth 1 https://github.com/madler/zlib.git
-RUN git clone --depth 1 https://github.com/pnggroup/libpng.git
+# RUN git clone --depth 50 https://github.com/pnggroup/libpng.git
+RUN git clone --depth 1 https://github.com/VladimirHaninEPFL/libpng
+# RUN git clone --depth 1 https://github.com/cristiano-masutti/libpng
+
 RUN cp libpng/contrib/oss-fuzz/build.sh $SRC
 WORKDIR libpng
+
+# REMOVE TIHS FOR OTHER REPOS
+# RUN git checkout 98448e372d717206c9f5a2a39d42e7417e6889cb

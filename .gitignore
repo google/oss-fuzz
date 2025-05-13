@@ -10,3 +10,5 @@
 # IntelliJ IDEA
 /.idea
 **/*.iml
+
+corpus*
