@@ -1,4 +1,5 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,4 @@
 #
 ################################################################################
 
-# Note: This project creates Rust fuzz targets exclusively
-cd $SRC/chrono
-cargo fuzz build -O
-cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_format $OUT/
+./hack/oss-fuzz-build.sh
