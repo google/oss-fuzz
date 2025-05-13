@@ -25,8 +25,6 @@ mkdir $SEED_CORPUS_DIR
 rm -rf $OUTPUT_CORPUS_DIR
 mkdir $OUTPUT_CORPUS_DIR
 export FUZZER=$FUZZING_ENGINE
-# TODO(metzman): Make this configurable.
-export MAX_TOTAL_TIME=120
 export SNAPSHOT_PERIOD=30
 export TRIAL_ID=1
 export FORCE_LOCAL=1
