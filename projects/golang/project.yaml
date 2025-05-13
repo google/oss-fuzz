@@ -4,6 +4,7 @@ primary_contact: "security@golang.org"
 auto_ccs:
  - "bracewell@google.com"
  - "dneil@google.com"
+ - "nealpatel@google.com"
  - "rsc@google.com"
  - "Adam@adalogics.com"
 language: go
