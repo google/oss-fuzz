@@ -25,7 +25,7 @@ import build_lib
 
 def get_upload_corpus_bucket(project_name, fuzz_target_name):
   """ ."""
-  return (f'{project_name}-corpus.clusterfuzz-external.appspot.com/'
+  return (f'/{project_name}-corpus.clusterfuzz-external.appspot.com/'
           f'libFuzzer/{fuzz_target_name}/')
 
 
