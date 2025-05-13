@@ -34,6 +34,7 @@ import config_utils
 FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
 GCB_WORKSPACE_DIR = '/workspace'
+MAX_FUZZING_DURATION = 1800
 OOD_OUTPUT_CORPUS_DIR = f'{GCB_WORKSPACE_DIR}/ood_output_corpus'
 OOD_CRASHES_DIR = f'{GCB_WORKSPACE_DIR}/crashes'
 
@@ -229,6 +230,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
   image. Executing docker run on this image starts the fuzzing process."""
   steps = []
 
+  fuzzbench_run_fuzzer_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/base-images/base-builder-fuzzbench/fuzzbench_run_fuzzer'
   copy_runtime_essential_files_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
@@ -237,7 +239,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
           'path': FUZZBENCH_PATH,
       }],
       'args': [
-          'bash', '-c', 'cp /usr/local/bin/fuzzbench_run_fuzzer '
+          'bash', '-c', f'cp {fuzzbench_run_fuzzer_path} '
           f'{GCB_WORKSPACE_DIR}/fuzzbench_run_fuzzer.sh  && '
           f'cp -r {FUZZBENCH_PATH} {GCB_WORKSPACE_DIR} && '
           f'ls {GCB_WORKSPACE_DIR}'
@@ -272,6 +274,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
           f'FUZZBENCH_PATH={FUZZBENCH_PATH}', '--build-arg',
           f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}', '--build-arg',
           f'FUZZ_TARGET={env_dict["FUZZ_TARGET"]}', '--build-arg',
+          f'MAX_TOTAL_TIME={MAX_FUZZING_DURATION}', '--build-arg',
           f'OOD_OUTPUT_CORPUS_DIR={OOD_OUTPUT_CORPUS_DIR}', '--build-arg',
           f'runtime_image={ood_image}', GCB_WORKSPACE_DIR
       ]
