@@ -548,6 +548,7 @@ def get_indexer_build_steps(project_name,
                                build,
                                use_architecture_image_name=build.is_arm)
 
+  # TODO: Don't upload anything if we're in trial build.
   build_steps.extend([
       index_step,
       build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
