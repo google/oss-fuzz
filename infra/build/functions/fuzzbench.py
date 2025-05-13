@@ -90,7 +90,7 @@ def get_fuzz_target_name(project_name):
   return fuzz_target_name
 
 
-def get_env(project, build, config):
+def get_env(project, build, fuzz_target_name):
   """Gets the environment for fuzzbench/oss-fuzz-on-demand."""
   env = build_project.get_env(project.fuzzing_language, build)
   env.append(f'FUZZBENCH_PATH={FUZZBENCH_PATH}')
@@ -98,7 +98,7 @@ def get_env(project, build, config):
   env.append(f'PROJECT={project.name}')
   env.append('OSS_FUZZ_ON_DEMAND=1')
   env.extend([
-      f'FUZZ_TARGET={config.fuzz_target}', f'BENCHMARK={project.name}',
+      f'FUZZ_TARGET={fuzz_target_name}', f'BENCHMARK={project.name}',
       'EXPERIMENT_TYPE=bug'
   ])
   return env
@@ -385,15 +385,19 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
-  if not config.fuzz_target:
-    config.fuzz_target = get_fuzz_target_name(project.name)
+  fuzz_target_name = config.fuzz_target
+  if not fuzz_target_name:
+    fuzz_target_name = get_fuzz_target_name(project.name)
+    if not fuzz_target_name:
+        return None
+
   steps = get_fuzzbench_setup_steps()
   steps += build_lib.get_project_image_steps(project.name,
                                              project.image,
                                              project.fuzzing_language,
                                              config=config)
   build = build_project.Build(config.fuzzing_engine, 'address', 'x86_64')
-  env = get_env(project, build, config)
+  env = get_env(project, build, fuzz_target_name)
   steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env)
   env_dict = {string.split('=')[0]: string.split('=')[1] for string in env}
   steps += get_gcs_corpus_steps(config.fuzzing_engine, project, env_dict)
