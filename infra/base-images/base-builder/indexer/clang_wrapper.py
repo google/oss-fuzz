@@ -321,7 +321,6 @@ def main(argv: list[str]) -> None:
   idx = 0
   for arg in argv[:]:
     if arg == "-fsanitize=fuzzer":
-      # This could be -fsanitize=address,fuzzer.
       argv[idx] = "-lFuzzingEngine"
       os.system(f"echo replaced -fsanitizefuzzer >> {wrapper_log}")
       fuzzing_engine_in_argv = True
@@ -330,6 +329,7 @@ def main(argv: list[str]) -> None:
       idx -= 1
       os.system(f"echo Removed -fsanitizefuzzer-no-link >> {wrapper_log}")
     elif "-fsanitize=" in arg and "fuzzer" in arg:
+      # This could be -fsanitize=address,fuzzer.
       os.system(f"echo replaced {arg} >> {wrapper_log}")
       sanitize_vals = arg.split('=')[1].split(",")
       sanitize_vals.remove("fuzzer")
