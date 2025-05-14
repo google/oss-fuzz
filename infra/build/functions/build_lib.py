@@ -220,6 +220,7 @@ def _sign_blob(blob):
                                           credentials=credentials,
                                           cache_discovery=False)
     client_id = project + '@appspot.gserviceaccount.com'
+    client_id = '1053000335369@cloudbuild.gserviceaccount.com'
     service_account = f'projects/-/serviceAccounts/{client_id}'
     response = iam.projects().serviceAccounts().signBlob(
         name=service_account,
