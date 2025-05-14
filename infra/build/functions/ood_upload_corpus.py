@@ -65,6 +65,7 @@ def install_requirements():
 def upload_corpus_file(file_path, upload_path, doc):
   """."""
   url = f'https://{doc.bucket}.storage.googleapis.com'
+  print(f'Upload url: {url}')
   files = {
       'key': (None, upload_path),
       'file': (file_path.split('/')[-1], open(file_path, 'rb')),
@@ -74,8 +75,7 @@ def upload_corpus_file(file_path, upload_path, doc):
       'x-goog-credential': (None, doc.x_goog_credential),
       'x-goog-signature': (None, doc.x_goog_signature),
   }
-  logging.info(f'Corpus request files:\n{files}')
-  print(f'Corpus request files:\n{files}')
+  print(f'Request files:\n{files}\n')
   # try:
   #   response = requests.post(url, files=files)
   #   response.raise_for_status()
@@ -104,7 +104,6 @@ def upload_corpus(output_corpus_directory, serialized_doc_str, path_prefix, num_
   retrieved_bytes = base64.b64decode(serialized_doc_str.encode('utf-8'))
   doc = pickle.loads(retrieved_bytes)
   file_paths = get_files_path(output_corpus_directory, num_uploads)
-  print(f'Files paths:\n{file_paths}')
   for file_path in file_paths:
     suffix = uuid.uuid4().hex
     upload_path = path_prefix + suffix
