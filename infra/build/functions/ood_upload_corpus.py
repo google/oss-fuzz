@@ -43,7 +43,6 @@ def execute_shell_command(command_args, check_return_code=True):
 
 def install_requirements():
   cmd1 = [
-      'sudo',
       'env',
       'python',
       '-m',
@@ -54,7 +53,6 @@ def install_requirements():
   ]
   requirements_file = '/workspace/oss-fuzz/infra/build/functions/requirements.txt'
   cmd2 = [
-      'sudo',
       'env',
       'pip',
       'install',
