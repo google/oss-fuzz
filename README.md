@@ -1,4 +1,4 @@
-# OSS-Fuzz: Continuous Fuzzing for Open Source Software
+# OSS-Fuzz: Continuous Fuzzing for Open Source Software 
 
 [Fuzz testing] is a well-known technique for uncovering programming errors in
 software. Many of these detectable errors, like [buffer overflow], can have
