@@ -68,21 +68,25 @@ ENV BAZELISK_VERSION 1.9.0
 RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel && \
     chmod +x /usr/local/bin/bazel
 
+# Use '-Wno-unused-command-line-argument' to suppress "argument unused during compilation"
+# warnings which are treated as errors by some projects.
+ARG COMMON_SANITIZER_FLAGS="-fuse-ld=lld -Wno-unused-command-line-argument"
+
 # Default build flags for various sanitizers.
-ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
-ENV SANITIZER_FLAGS_hwaddress "-fsanitize=hwaddress -fuse-ld=lld -Wno-unused-command-line-argument"
+ENV SANITIZER_FLAGS_address "${COMMON_SANITIZER_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope"
+ENV SANITIZER_FLAGS_hwaddress "${COMMON_SANITIZER_FLAGS} -fsanitize=hwaddress"
 
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
-ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
+ENV SANITIZER_FLAGS_undefined "${COMMON_SANITIZER_FLAGS} -fsanitize=array-bounds,bool,builtin,enum,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
 
 # Don't include "function" since it is unsupported on aarch64.
-ENV SANITIZER_FLAGS_undefined_aarch64 "-fsanitize=array-bounds,bool,builtin,enum,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
+ENV SANITIZER_FLAGS_undefined_aarch64 "${COMMON_SANITIZER_FLAGS} -fsanitize=array-bounds,bool,builtin,enum,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
 
-ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
+ENV SANITIZER_FLAGS_memory "${COMMON_SANITIZER_FLAGS} -fsanitize=memory -fsanitize-memory-track-origins"
 
-ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
+ENV SANITIZER_FLAGS_thread "${COMMON_SANITIZER_FLAGS} -fsanitize=thread"
 
-ENV SANITIZER_FLAGS_introspector "-O0 -flto -fno-inline-functions -fuse-ld=gold -Wno-unused-command-line-argument"
+ENV SANITIZER_FLAGS_introspector "${COMMON_SANITIZER_FLAGS} -O0 -flto -fno-inline-functions"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -95,11 +99,8 @@ ENV UBSAN_OPTIONS="silence_unsigned_overflow=1"
 ENV DFSAN_OPTIONS='warn_unimplemented=0'
 
 # Default build flags for coverage feedback.
-ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
-
-# Use '-Wno-unused-command-line-argument' to suppress "warning: -ldl: 'linker' input unused"
-# messages which are treated as errors by some projects.
-ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,--no-as-needed -Wl,-ldl -Wl,-lm -Wno-unused-command-line-argument"
+ENV COVERAGE_FLAGS="${COMMON_SANITIZER_FLAGS} -fsanitize=fuzzer-no-link"
+ENV COVERAGE_FLAGS_coverage "${COMMON_SANITIZER_FLAGS} -fprofile-instr-generate -fcoverage-mapping -pthread -Wl,--no-as-needed -Wl,-ldl -Wl,-lm"
 
 # Default sanitizer, fuzzing engine and architecture to use.
 ENV SANITIZER="address"
