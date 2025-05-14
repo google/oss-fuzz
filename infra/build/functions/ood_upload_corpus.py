@@ -62,10 +62,9 @@ def install_requirements():
   execute_shell_command(cmd2)
 
 
-def upload_corpus_file(file_path, suffix, doc):
+def upload_corpus_file(file_path, upload_path, doc):
   """."""
   url = f'https://{doc.bucket}.storage.googleapis.com'
-  upload_path = doc.path_prefix + suffix
   files = {
       'key': (None, upload_path),
       'file': (file_path.split('/')[-1], open(file_path, 'rb')),
@@ -100,15 +99,16 @@ def get_files_path(directory_path, num_files):
   return file_paths
 
 
-def upload_corpus(output_corpus_directory, serialized_doc_str, num_uploads):
+def upload_corpus(output_corpus_directory, serialized_doc_str, path_prefix, num_uploads):
   """."""
   retrieved_bytes = base64.b64decode(serialized_doc_str.encode('utf-8'))
   doc = pickle.loads(retrieved_bytes)
   file_paths = get_files_path(output_corpus_directory, num_uploads)
-  logging.info(f'Files paths:\n{file_paths}')
+  print(f'Files paths:\n{file_paths}')
   for file_path in file_paths:
     suffix = uuid.uuid4().hex
-    upload_corpus_file(file_path, suffix, doc)
+    upload_path = doc.path_prefix + suffix
+    upload_corpus_file(file_path, upload_path, doc)
 
 
 def main():
@@ -116,8 +116,9 @@ def main():
   install_requirements()
   output_corpus_directory = sys.argv[1]
   serialized_doc_str = sys.argv[2]
-  num_uploads = int(sys.argv[3])
-  upload_corpus(output_corpus_directory, serialized_doc_str, num_uploads)
+  path_prefix = sys.argv[3]
+  num_uploads = int(sys.argv[4])
+  upload_corpus(output_corpus_directory, serialized_doc_str, path_prefix, num_uploads)
 
 
 if __name__ == '__main__':
