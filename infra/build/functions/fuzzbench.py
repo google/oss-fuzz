@@ -24,6 +24,7 @@ import sys
 
 import build_lib
 import build_project
+import ood_upload_corpus
 
 INFRA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,7 +35,7 @@ import config_utils
 FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
 GCB_WORKSPACE_DIR = '/workspace'
-MAX_FUZZING_DURATION = 1800
+MAX_FUZZING_DURATION = 10
 OOD_OUTPUT_CORPUS_DIR = f'{GCB_WORKSPACE_DIR}/ood_output_corpus'
 OOD_CRASHES_DIR = f'{GCB_WORKSPACE_DIR}/crashes'
 
@@ -377,6 +378,43 @@ def get_upload_testcase_steps(project, env_dict):
   return steps
 
 
+def get_upload_corpus_steps(project, env_dict):
+  """ ."""
+  steps = []
+
+  ls_step = {
+      'name':
+          'google/cloud-sdk',
+      'args': [
+          'bash', '-c',
+          f'ls {OOD_OUTPUT_CORPUS_DIR}'
+      ]
+  }
+  steps.append(ls_step)
+
+  doc = ood_upload_corpus.get_corpus_signed_policy_document(project.name,
+                                                            env_dict['FUZZ_TARGET'])
+  upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
+  num_uploads = 3
+  
+  import base64
+  import pickle
+  serialized_bytes = pickle.dumps(doc)
+  serialized_doc_str = base64.b64encode(serialized_bytes).decode('utf-8')
+
+  upload_corpus_step = {
+      'name':
+          'python:3.8',
+      'args': [
+          'python3', upload_corpus_script_path, OOD_OUTPUT_CORPUS_DIR,
+          serialized_doc_str, num_uploads
+      ]
+  }
+  steps.append(upload_corpus_step)
+
+  return steps
+
+
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps for project."""
@@ -406,6 +444,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                             env_dict)
   steps += get_extract_crashes_steps(config.fuzzing_engine, project, env_dict)
   steps += get_upload_testcase_steps(project, env_dict)
+  steps += get_upload_corpus_steps(project, env_dict)
 
   return steps
 
