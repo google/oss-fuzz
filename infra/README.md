@@ -1,4 +1,4 @@
-# infra
+ # infra
 > OSS-Fuzz project infrastructure
 
 Core infrastructure:
