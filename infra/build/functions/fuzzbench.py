@@ -395,7 +395,7 @@ def get_upload_corpus_steps(project, env_dict):
           'google/cloud-sdk',
       'args': [
           'bash', '-c',
-          f'ls {OOD_OUTPUT_CORPUS_DIR}'
+          f'ls {OOD_OUTPUT_CORPUS_DIR}/output-corpus'
       ]
   }
   steps.append(ls_step)

@@ -23,6 +23,47 @@ import sys
 import uuid
 # import requests
 
+def execute_shell_command(command_args, check_return_code=True):
+  """ """
+  result = subprocess.run(
+      command_args,
+      check=check_return_code,
+      capture_output=True,
+      text=True
+  )
+
+  if result.stdout:
+      print("   STDOUT:")
+      print(result.stdout.strip())
+  if result.stderr:
+      print("   STDERR:")
+      print(result.stderr.strip())
+
+
+def install_requirements():
+  cmd1 = [
+      'sudo',
+      'env',
+      'python',
+      '-m',
+      'pip',
+      'install',
+      '--upgrade',
+      'pip'
+  ]
+  requirements_file = '/workspace/oss-fuzz/infra/build/functions/requirements.txt'
+  cmd2 = [
+      'sudo',
+      'env',
+      'pip',
+      'install',
+      '-r',
+      requirements_file
+  ]
+
+  execute_shell_command(cmd1)
+  execute_shell_command(cmd2)
+
 
 def upload_corpus_file(file_path, suffix, doc):
   """."""
@@ -53,12 +94,12 @@ def upload_corpus_file(file_path, suffix, doc):
 def get_files_path(directory_path, num_files):
   """."""
   file_paths = []
-  for entry in os.scandir(directory_path):
-    if entry.isfile(full_path):
-      file_paths.append(os.path.join(directory_path, entry))
+  for root, _, files in os.walk(directory_path):
+    for name in files:
+      file_path = os.path.join(root, name)
+      file_paths.append(file_path)
       if len(file_paths) >= num_files:
-        break
-
+        return file_paths
   return file_paths
 
 
@@ -67,6 +108,7 @@ def upload_corpus(output_corpus_directory, serialized_doc_str, num_uploads):
   retrieved_bytes = base64.b64decode(serialized_doc_str.encode('utf-8'))
   doc = pickle.loads(retrieved_bytes)
   file_paths = get_files_path(output_corpus_directory, num_uploads)
+  logging.info(f'Files paths:\n{file_paths}')
   for file_path in file_paths:
     suffix = uuid.uuid4().hex
     upload_corpus_file(file_path, suffix, doc)
