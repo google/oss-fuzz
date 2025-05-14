@@ -57,9 +57,11 @@ def install_requirements():
       '-r',
       requirements_file
   ]
+  cmd3 = ["pip", "install", "requests"]
 
   execute_shell_command(cmd1)
   execute_shell_command(cmd2)
+  execute_shell_command(cmd3)
 
 
 def upload_corpus_file(file_path, upload_path, doc):
