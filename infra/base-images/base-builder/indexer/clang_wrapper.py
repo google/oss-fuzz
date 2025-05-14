@@ -183,7 +183,7 @@ def parse_dependency_file(file_path: str, output_file: str,
   with open(file_path, "r") as f:
     lines = [line.strip() for line in f]
   assert output_file_line.endswith(
-      lines[0]
+      lines[0].lstrip(".").lstrip("/")  # Account for relative paths.
   ), f"{lines[0]} is not a suffix of {output_file_line} {sys.argv} {os.getcwd()}"
 
   deps = []
