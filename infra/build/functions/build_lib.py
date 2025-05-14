@@ -241,7 +241,7 @@ def get_signed_policy_document_upload_prefix(bucket, path_prefix):
 
   client_id = _sign_client_id()
   print(f'Client id: {client_id}')
-  client_id = 'oss-fuzz@appspot.gserviceaccount.com'
+  client_id = '608308004811@cloudbuild.gserviceaccount.com'
   print(f'Client id: {client_id}')
   x_goog_credential = f'{client_id}/{datestamp}/auto/storage/goog4_request'
 
