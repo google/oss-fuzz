@@ -21,16 +21,6 @@ import os
 import pickle
 # import requests
 
-import build_lib
-
-
-def get_corpus_signed_policy_document(project_name, fuzz_target_name):
-  """ ."""
-  bucket = f'{project_name}-corpus.clusterfuzz-external.appspot.com'
-  path_prefix = f'libFuzzer/{fuzz_target_name}/'
-  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(bucket, path_prefix)
-  return signed_policy_document
-
 
 def upload_corpus_file(file_path, suffix, doc):
   """."""

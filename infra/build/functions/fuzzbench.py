@@ -91,6 +91,14 @@ def get_fuzz_target_name(project_name):
   return fuzz_target_name
 
 
+def get_corpus_signed_policy_document(project_name, fuzz_target_name):
+  """ ."""
+  bucket = f'{project_name}-corpus.clusterfuzz-external.appspot.com'
+  path_prefix = f'libFuzzer/{fuzz_target_name}/'
+  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(bucket, path_prefix)
+  return signed_policy_document
+
+
 def get_env(project, build, fuzz_target_name):
   """Gets the environment for fuzzbench/oss-fuzz-on-demand."""
   env = build_project.get_env(project.fuzzing_language, build)
@@ -392,8 +400,7 @@ def get_upload_corpus_steps(project, env_dict):
   }
   steps.append(ls_step)
 
-  doc = ood_upload_corpus.get_corpus_signed_policy_document(project.name,
-                                                            env_dict['FUZZ_TARGET'])
+  doc = get_corpus_signed_policy_document(project.name, env_dict['FUZZ_TARGET'])
   upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
   num_uploads = '3'
   
