@@ -555,9 +555,6 @@ def get_indexer_build_steps(project_name,
   # TODO: Don't upload anything if we're in trial build.
   build_steps.extend([
       index_step,
-      build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
-                                                    f'{prefix}srcmap.json',
-                                                    signed_policy_document),
       {
           # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
           'name': get_uploader_image(),
@@ -570,6 +567,9 @@ def get_indexer_build_steps(project_name,
           ],
           'entrypoint': 'bash'
       },
+      build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
+                                                    f'{prefix}srcmap.json',
+                                                    signed_policy_document),
   ])
   return build_steps
 

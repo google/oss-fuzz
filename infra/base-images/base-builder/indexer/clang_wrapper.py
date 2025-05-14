@@ -183,7 +183,7 @@ def parse_dependency_file(file_path: str, output_file: str,
   with open(file_path, "r") as f:
     lines = [line.strip() for line in f]
   assert output_file_line.endswith(
-      lines[0]
+      lines[0].lstrip(".").lstrip("/")  # Account for relative paths.
   ), f"{lines[0]} is not a suffix of {output_file_line} {sys.argv} {os.getcwd()}"
 
   deps = []
@@ -256,7 +256,6 @@ def get_index_files(index_db_path) -> Iterator[str]:
 
 def run_indexer(build_id: str, linker_commands: dict):
   """Run the indexer."""
-  os.system('echo INDEXED > /out/yonilog')
   index_dir = INDEXES_PATH / build_id
   # TODO: check if this is correct.
   index_dir.mkdir(exist_ok=True)
@@ -265,7 +264,13 @@ def run_indexer(build_id: str, linker_commands: dict):
   # Use a build-specific compile commands directory, since there could be
   # parallel linking happening at the same time.
   compile_commands_dir = INDEXES_PATH / f"compile_commands_{build_id}"
-  compile_commands_dir.mkdir(exist_ok=False)
+  try:
+    compile_commands_dir.mkdir(exist_ok=False)
+  except FileExistsError:
+    # Somehow we've already seen this link command, don't try to redo the indexing.
+    # TODO: check if this is the safest behaviour.
+    return
+
   with (compile_commands_dir / "compile_commands.json").open("wt") as f:
     json.dump(linker_commands["compile_commands"], f, indent=2)
 
@@ -308,31 +313,51 @@ def run_indexer(build_id: str, linker_commands: dict):
 
 
 def main(argv: list[str]) -> None:
-  fuzzer_engine = os.getenv("LIB_FUZZING_ENGINE")
+  fuzzer_engine = os.getenv("LIB_FUZZING_ENGINE", "/usr/lib/libFuzzingEngine.a")
 
   # Projects like cups might assume these arguments.
   wrapper_log = OUT / 'wrapper-log'
   fuzzing_engine_in_argv = False
-  for idx, arg in enumerate(argv[:]):
+  idx = 0
+  for arg in argv[:]:
     if arg == "-fsanitize=fuzzer":
       argv[idx] = "-lFuzzingEngine"
       os.system(f"echo replaced -fsanitizefuzzer >> {wrapper_log}")
       fuzzing_engine_in_argv = True
-    if arg == "-fsanitize=fuzzer-no-link":
+    elif arg == "-fsanitize=fuzzer-no-link":
       argv.remove("-fsanitize=fuzzer-no-link")
-      os.system(f"Removed -fsanitizefuzzer-no-link >> {wrapper_log}")
+      idx -= 1
+      os.system(f"echo Removed -fsanitizefuzzer-no-link >> {wrapper_log}")
+    elif "-fsanitize=" in arg and "fuzzer" in arg:
+      # This could be -fsanitize=address,fuzzer.
+      os.system(f"echo replaced {arg} >> {wrapper_log}")
+      sanitize_vals = arg.split('=')[1].split(",")
+      sanitize_vals.remove("fuzzer")
+      arg = "-fsanitize=" + ",".join(sanitize_vals)
+
+      argv[idx] = arg
+      idx += 1
+      argv.insert(idx, "-lFuzzingEngine")
+      fuzzing_engine_in_argv = True
+
+    idx += 1
 
     if 'libFuzzingEngine.a' in arg or '-lFuzzingEngine' in arg:
       fuzzing_engine_in_argv = True
 
   # If we are not linking the fuzzing engine, execute normally.
-  if not fuzzer_engine or not fuzzing_engine_in_argv:
+  if not fuzzing_engine_in_argv:
     execute(argv)
+
   print(f'Linking {argv}')
 
   # We are linking, collect the relevant flags and dependencies.
   output_file = get_flag_value(argv, "-o")
   assert output_file, f"Missing output file: {argv}"
+
+  if output_file.endswith(".o"):
+    print("not a real linker command.")
+    execute(argv)
 
   cdb_path = get_flag_value(argv, "-gen-cdb-fragment-path")
   assert cdb_path, f"Missing Compile Directory Path: {argv}"
