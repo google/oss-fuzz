@@ -294,7 +294,7 @@ func FuzzProbes(f *testing.F) {
 	f.Fuzz(func(t *testing.T, callType int, data []byte) {
 		fdp := gfh.NewConsumer(data)
 
-		switch callType % 10 {
+		switch callType % 16 {
 		case 0:
 			fuzzers := make([]checker.Tool, 0)
 			fdp.GenerateStruct(&fuzzers)
@@ -419,6 +419,114 @@ func FuzzProbes(f *testing.F) {
 				},
 			}
 			_, _, _ = hasBinaryArtifacts.Run(r)
+		case 10:
+			files := make([]checker.File, 0)
+			fdp.GenerateStruct(&files)
+			if len(files) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				BinaryArtifactResults: checker.BinaryArtifactData{
+					Files: files,
+				},
+			}
+			_, _, _ = hasUnverifiedBinaryArtifacts.Run(r)
+		case 11:
+			workflows := make([]checker.DangerousWorkflow, 0)
+			fdp.GenerateStruct(&workflows)
+			if len(workflows) == 0 {
+				return
+			}
+			// Create temp file
+			fileContents, err := fdp.GetBytes()
+			if err != nil {
+				return
+			}
+			tmpDir := t.TempDir()
+			err = os.WriteFile(filepath.Join(tmpDir, "workflowPath.yml"), fileContents, 0755)
+			if err != nil {
+				// Panic as this should not happen and it may block the fuzzer
+				// if it fails here.
+				panic(err)
+			}
+			r := &checker.RawResults{
+				DangerousWorkflowResults: checker.DangerousWorkflowData{
+					NumWorkflows: len(workflows),
+					Workflows:    workflows,
+				},
+				Metadata: checker.MetadataData{
+					Metadata: map[string]string{
+						"localPath": filepath.Join(tmpDir, "workflowPath.yml"),
+					},
+				},
+			}
+			_, _, _ = hasDangerousWorkflowScriptInjection.Run(r)
+		case 12:
+			workflows := make([]checker.DangerousWorkflow, 0)
+			fdp.GenerateStruct(&workflows)
+			if len(workflows) == 0 {
+				return
+			}
+			// Create temp file
+			fileContents, err := fdp.GetBytes()
+			if err != nil {
+				return
+			}
+			tmpDir := t.TempDir()
+			err = os.WriteFile(filepath.Join(tmpDir, "workflowPath.yml"), fileContents, 0755)
+			if err != nil {
+				// Panic as this should not happen and it may block the fuzzer
+				// if it fails here.
+				panic(err)
+			}
+			r := &checker.RawResults{
+				DangerousWorkflowResults: checker.DangerousWorkflowData{
+					NumWorkflows: len(workflows),
+					Workflows:    workflows,
+				},
+				Metadata: checker.MetadataData{
+					Metadata: map[string]string{
+						"localPath": filepath.Join(tmpDir, "workflowPath.yml"),
+					},
+				},
+			}
+			_, _, _ = hasDangerousWorkflowUntrustedCheckout.Run(r)
+		case 13:
+			licenseFiles := make([]checker.LicenseFile, 0)
+			fdp.GenerateStruct(&licenseFiles)
+			if len(licenseFiles) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				LicenseResults: checker.LicenseData{
+					LicenseFiles: licenseFiles,
+				},
+			}
+			_, _, _ = hasPermissiveLicense.Run(r)
+		case 14:
+			sbomFiles := make([]checker.SBOM, 0)
+			fdp.GenerateStruct(&sbomFiles)
+			if len(sbomFiles) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				SBOMResults: checker.SBOMData{
+					SBOMFiles: sbomFiles,
+				},
+			}
+			hasReleaseSBOM.Run(r)
+		case 15:
+			sbomFiles := make([]checker.SBOM, 0)
+			fdp.GenerateStruct(&sbomFiles)
+			if len(sbomFiles) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				SBOMResults: checker.SBOMData{
+					SBOMFiles: sbomFiles,
+				},
+			}
+			hasSBOM.Run(r)
 		}
 	})
 }
