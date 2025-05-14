@@ -70,6 +70,7 @@ def install_requirements():
 def upload_corpus_file(file_path, upload_path, doc):
   """."""
   url = f'https://{doc.bucket}.storage.googleapis.com'
+  url = f'https://storage.googleapis.com/{doc.bucket}'
   print(f'Upload url: {url}')
   files = {
       'key': upload_path,
