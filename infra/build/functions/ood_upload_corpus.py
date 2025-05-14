@@ -83,7 +83,7 @@ def upload_corpus_file(file_path, upload_path, doc):
   }
   print('Request files:')
   for key in files:
-    if key != 'policy':
+    if key != 'policy' and key != 'x-goog-signature':
       print(f'{key}: {files[key]}')
   try:
     response = requests.post(url, files=files)

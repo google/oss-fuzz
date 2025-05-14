@@ -240,6 +240,7 @@ def get_signed_policy_document_upload_prefix(bucket, path_prefix):
   expiry = now + datetime.timedelta(hours=24)
 
   client_id = _sign_client_id()
+  client_id = '1053000335369@cloudbuild.gserviceaccount.com'
   x_goog_credential = f'{client_id}/{datestamp}/auto/storage/goog4_request'
 
   doc = {
