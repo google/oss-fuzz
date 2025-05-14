@@ -390,16 +390,6 @@ def get_upload_corpus_steps(project, env_dict):
   """ ."""
   steps = []
 
-  ls_step = {
-      'name':
-          'google/cloud-sdk',
-      'args': [
-          'bash', '-c',
-          f'ls {OOD_OUTPUT_CORPUS_DIR}/output-corpus'
-      ]
-  }
-  steps.append(ls_step)
-
   doc = get_corpus_signed_policy_document(project.name, env_dict['FUZZ_TARGET'])
   upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
   num_uploads = '1'

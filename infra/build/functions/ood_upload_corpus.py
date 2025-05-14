@@ -81,7 +81,10 @@ def upload_corpus_file(file_path, upload_path, doc):
       'x-goog-credential': doc.x_goog_credential,
       'x-goog-signature': doc.x_goog_signature,
   }
-  print(f'Request files:\n{files}\n')
+  print('Request files:')
+  for key in files:
+    if key != 'policy':
+      print(f'{key}: {files[key]}')
   try:
     response = requests.post(url, files=files)
     response.raise_for_status()
