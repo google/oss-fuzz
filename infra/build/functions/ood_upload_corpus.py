@@ -107,7 +107,7 @@ def upload_corpus(output_corpus_directory, serialized_doc_str, path_prefix, num_
   print(f'Files paths:\n{file_paths}')
   for file_path in file_paths:
     suffix = uuid.uuid4().hex
-    upload_path = doc.path_prefix + suffix
+    upload_path = path_prefix + suffix
     upload_corpus_file(file_path, upload_path, doc)
 
 
