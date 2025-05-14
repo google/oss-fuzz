@@ -72,21 +72,23 @@ def upload_corpus_file(file_path, upload_path, doc):
   url = f'https://{doc.bucket}.storage.googleapis.com'
   url = f'https://storage.googleapis.com/{doc.bucket}'
   print(f'Upload url: {url}')
-  files = {
+  data = {
       'key': upload_path,
-      'file': open(file_path, 'rb'),
       'policy': doc.policy,
       'x-goog-algorithm': doc.x_goog_algorithm,
       'x-goog-date': doc.x_goog_date,
       'x-goog-credential': doc.x_goog_credential,
       'x-goog-signature': doc.x_goog_signature,
   }
+  files = {
+      'file': open(file_path, 'rb'),
+  }
   print('Request files:')
   for key in files:
     if key != 'policy' and key != 'x-goog-signature':
       print(f'{key}: {files[key]}')
   try:
-    response = requests.post(url, files=files)
+    response = requests.post(url, data=data, files=files)
     response.raise_for_status()
     print(f"File uploaded successfully to {url}/{upload_path}")
   except requests.exceptions.RequestException as e:
