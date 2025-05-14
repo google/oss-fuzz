@@ -19,6 +19,7 @@ import base64
 import logging
 import os
 import pickle
+import subprocess
 import sys
 import uuid
 # import requests
@@ -116,6 +117,7 @@ def upload_corpus(output_corpus_directory, serialized_doc_str, num_uploads):
 
 def main():
   """ ."""
+  install_requirements()
   output_corpus_directory = sys.argv[1]
   serialized_doc_str = sys.argv[2]
   num_uploads = int(sys.argv[3])
