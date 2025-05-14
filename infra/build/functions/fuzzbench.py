@@ -35,7 +35,7 @@ import config_utils
 FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
 GCB_WORKSPACE_DIR = '/workspace'
-MAX_FUZZING_DURATION = 10
+MAX_FUZZING_DURATION = 30
 OOD_OUTPUT_CORPUS_DIR = f'{GCB_WORKSPACE_DIR}/ood_output_corpus'
 OOD_CRASHES_DIR = f'{GCB_WORKSPACE_DIR}/crashes'
 
