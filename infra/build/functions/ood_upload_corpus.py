@@ -67,13 +67,13 @@ def upload_corpus_file(file_path, upload_path, doc):
   url = f'https://{doc.bucket}.storage.googleapis.com'
   print(f'Upload url: {url}')
   files = {
-      'key': (None, upload_path),
-      'file': (file_path.split('/')[-1], open(file_path, 'rb')),
-      'policy': (None, doc.policy),
-      'x-goog-algorithm': (None, doc.x_goog_algorithm),
-      'x-goog-date': (None, doc.x_goog_date),
-      'x-goog-credential': (None, doc.x_goog_credential),
-      'x-goog-signature': (None, doc.x_goog_signature),
+      'key': upload_path,
+      'file': open(file_path, 'rb'),
+      'policy': doc.policy,
+      'x-goog-algorithm': doc.x_goog_algorithm,
+      'x-goog-date': doc.x_goog_date,
+      'x-goog-credential': doc.x_goog_credential,
+      'x-goog-signature': doc.x_goog_signature,
   }
   print(f'Request files:\n{files}\n')
   # try:
