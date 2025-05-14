@@ -84,7 +84,7 @@ def main():
   """ ."""
   output_corpus_directory = sys.argv[1]
   serialized_doc_str = sys.argv[2]
-  num_uploads = sys.argv[3]
+  num_uploads = int(sys.argv[3])
   upload_corpus(output_corpus_directory, serialized_doc_str, num_uploads)
 
 
