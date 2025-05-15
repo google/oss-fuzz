@@ -19,6 +19,7 @@
 
 import logging
 import os
+import random
 import requests
 import sys
 
@@ -75,7 +76,8 @@ def get_latest_libfuzzer_build(project_name):
 
 
 def get_fuzz_target_name(project_name):
-  """Use Fuzz Introspector Web API to choose a fuzz target for |project_name|"""
+  """Use Fuzz Introspector Web API to choose a random fuzz target for
+  |project_name|"""
   header = {'accept': 'application/json'}
   url = f'https://introspector.oss-fuzz.com/api/harness-source-and-executable?project={project_name}'
   resp = requests.get(url, headers=header)
@@ -85,7 +87,8 @@ def get_fuzz_target_name(project_name):
     logging.info(f'There are no fuzz targets available for {project.name}')
     return None
 
-  fuzz_target_name = resp_json['pairs'][0]['executable']
+  idx = random.randint(0, len(resp_json['pairs']) - 1)
+  fuzz_target_name = resp_json['pairs'][idx]['executable']
   logging.info(f'Using fuzz target: {fuzz_target_name}')
   return fuzz_target_name
 
