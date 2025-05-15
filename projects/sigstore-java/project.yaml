@@ -5,8 +5,9 @@ language: jvm
 main_repo: https://github.com/sigstore/sigstore-java.git
 sanitizers:
   - address
-primary_contact: "appu@google.com"
+primary_contact: "security@sigstore.dev"
 auto_ccs:
   - "adam@adalogics.com"
   - "arthur.chan@adalogics.com"
   - "david@adalogics.com"
+  - "appu@google.com"
