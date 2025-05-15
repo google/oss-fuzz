@@ -84,7 +84,7 @@ def get_fuzz_target_name(project_name):
   resp.raise_for_status()
   resp_json = resp.json()
   if resp_json['result'] == 'error' or len(resp_json['pairs']) < 1:
-    logging.info(f'There are no fuzz targets available for {project.name}')
+    logging.info(f'There are no fuzz targets available for {project_name}')
     return None
 
   idx = random.randint(0, len(resp_json['pairs']) - 1)
