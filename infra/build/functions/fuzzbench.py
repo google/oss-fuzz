@@ -24,7 +24,6 @@ import sys
 
 import build_lib
 import build_project
-import ood_upload_corpus
 
 INFRA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
