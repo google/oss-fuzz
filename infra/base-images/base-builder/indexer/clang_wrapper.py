@@ -232,7 +232,12 @@ def read_cdb_fragments(cdb_path: str) -> Any:
       print(f"Invalid compile commands file {file}: {data}\nDONEMARKER")
       time.sleep(10)
     else:
-      assert False, f"Invalid compile commands file {file}: {data}\nDONEMARKER"
+      # Some build systems seem to have a weird issue where the autotools
+      # generated `test.c` for testing compilers doesn't result in valid cdb
+      # fragments.
+      if 'test.c' not in file:
+        raise RuntimeError(
+            f"Invalid compile commands file {file}: {data}\nDONEMARKER")
 
   contents = ",\n".join(contents)
   contents = "[" + contents + "]"
