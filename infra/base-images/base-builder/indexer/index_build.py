@@ -562,7 +562,7 @@ def archive_target(target: BinaryMetadata,) -> Path | None:
 def test_and_archive():
   """Test target and archive."""
   targets = enumerate_build_targets()
-  logging.info('targets', targets)
+  logging.info('targets %s', targets)
   for target in targets:
     try:
       # TODO(metzman): Figure out if this is a good idea, it makes some things
@@ -570,7 +570,7 @@ def test_and_archive():
       if not test_target(target):
         continue
     except Exception as e:  # pylint: disable=broad-exception-caught
-      logging.error(f'Error: {e}')
+      logging.error('Error: %s', e)
       continue
     archive_target(target)
 
