@@ -86,7 +86,7 @@ def main():
   job = sys.argv[2]
   target = sys.argv[3]
   access_token_path = sys.argv[4]
-  testcase_path = get_file_path(testcase_dir_path)
+  testcase_path = get_crash_file_path(testcase_dir_path)
 
   if not testcase_path:
     print('OSS-Fuzz on Demand did not find any crashes.')
