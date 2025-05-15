@@ -528,20 +528,23 @@ def archive_target(
   set_rpath_to_ossfuzzlib(target_path)
   archive_path = SNAPSHOT_DIR / f"{uuid}.tar"
 
-  save_build(
-      Manifest(
-          name=name,
-          uuid=uuid,
-          binary_name=target.name,
-          binary_args=target.binary_args,
-          version=ARCHIVE_VERSION,
-          is_oss_fuzz=False,
-      ),
-      source_dir=str(SRC),
-      build_dir=str(OUT),
-      index_dir=str(index_dir),
-      archive_path=archive_path,
-  )
+  # TODO: re-enable SRC copying (with some filtering to only include source
+  # files.)
+  with tempfile.TemporaryDirectory() as empty_src_dir:
+    save_build(
+        Manifest(
+            name=name,
+            uuid=uuid,
+            binary_name=target.name,
+            binary_args=target.binary_args,
+            version=ARCHIVE_VERSION,
+            is_oss_fuzz=False,
+        ),
+        source_dir=Path(empty_src_dir),
+        build_dir=OUT,
+        index_dir=index_dir,
+        archive_path=archive_path,
+    )
 
   logging.info("Wrote archive to: %s", archive_path)
   # TODO: this will break projects that re-use libs and have multiple targets.
