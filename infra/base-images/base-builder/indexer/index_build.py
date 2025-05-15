@@ -14,18 +14,19 @@
 # limitations under the License.
 #
 ################################################################################
-import os
+"""This runs the actual build process to generate a snapshot."""
+
 import dataclasses
 import hashlib
 import io
 import json
 import logging
+import os
+from pathlib import Path  # pylint: disable=g-importing-member
 import shutil
 import subprocess
 import tarfile
 import tempfile
-
-from pathlib import Path
 from typing import Any, Sequence, Union
 
 ARCHIVE_VERSION = 1
@@ -37,6 +38,7 @@ OUT = Path(os.getenv('OUT', '/out'))
 INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 
 _LD_PATH = Path('/lib64/ld-linux-x86-64.so.2')
+_LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 
 
 def set_env_vars():
@@ -53,7 +55,9 @@ def set_env_vars():
 
 def set_up_wrapper_dir():
   """Set up symlinks to everything in /usr/local/bin/.
-  Do this so build systems that snoop around clang's directory don't explode."""
+
+  Do this so build systems that snoop around clang's directory don't explode.
+  """
   real_dir = '/usr/local/bin'
   indexer_dir = '/opt/indexer'
   for name in os.listdir():
@@ -90,20 +94,19 @@ def save_build(
     build_dir: Path,
     index_dir: Path,
     archive_path: Path,
-    overwrite: bool = False,
 ) -> None:
   """Saves a build archive."""
   with tempfile.NamedTemporaryFile() as tmp:
-    mode = "w:gz" if archive_path.suffix.endswith("gz") else "w"
+    mode = 'w:gz' if archive_path.suffix.endswith('gz') else 'w'
     with tarfile.open(tmp.name, mode) as tar:
 
       def _save_dir(path: Path,
                     prefix: str,
                     exclude_build_artifacts: bool = False):
-        assert prefix.endswith("/")
+        assert prefix.endswith('/')
         for root, _, files in os.walk(path):
           for file in files:
-            if file.endswith("_seed_corpus.zip"):
+            if file.endswith('_seed_corpus.zip'):
               # Don't copy over the seed corpus -- it's not necessary.
               continue
 
@@ -115,7 +118,7 @@ def save_build(
 
             if (os.path.islink(str(file)) and
                 Path(os.readlink(str(file))).is_absolute()):
-              logging.warning("Adding absolute path to the tarball: %s", file)
+              logging.warning('Adding absolute path to the tarball: %s', file)
 
             tar.add(
                 str(file),
@@ -124,22 +127,22 @@ def save_build(
 
       _add_string_to_tar(
           tar,
-          "manifest.json",
+          'manifest.json',
           json.dumps(
               dataclasses.asdict(manifest),
               indent=2,
           ),
       )
 
-      _save_dir(source_dir, "src/", exclude_build_artifacts=True)
-      _save_dir(build_dir, "obj/")
-      _save_dir(index_dir, "idx/")
-    # Warning, we overwrite here when default behavior used to be false.
+      _save_dir(source_dir, 'src/', exclude_build_artifacts=True)
+      _save_dir(build_dir, 'obj/')
+      _save_dir(index_dir, 'idx/')
+
     shutil.copyfile(tmp.name, archive_path)
 
 
 def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
-  data = io.BytesIO(data.encode("utf-8"))
+  data = io.BytesIO(data.encode('utf-8'))
 
   tar_info = tarfile.TarInfo(name)
   tar_info.size = len(data.getvalue())
@@ -164,12 +167,12 @@ def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
   assert elf_data
 
   for file_info in elf_data:
-    for note_entry in file_info["Notes"]:
-      note_section = note_entry["NoteSection"]
-      if note_section["Name"] == ".note.gnu.build-id":
-        note_details = note_section["Note"]
-        if "Build ID" in note_details:
-          return note_details["Build ID"]
+    for note_entry in file_info['Notes']:
+      note_section = note_entry['NoteSection']
+      if note_section['Name'] == '.note.gnu.build-id':
+        note_details = note_section['Note']
+        if 'Build ID' in note_details:
+          return note_details['Build ID']
   return None
 
 
@@ -218,12 +221,11 @@ def get_build_id(elf_file: str) -> str | None:
   #   }
   # ]
 
-  _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
   ret = subprocess.run(
       [
           _LLVM_READELF_PATH,
-          "--notes",
-          "--elf-output-style=JSON",
+          '--notes',
+          '--elf-output-style=JSON',
           elf_file,
       ],
       capture_output=True,
@@ -236,7 +238,8 @@ def get_build_id(elf_file: str) -> str | None:
 
 
 def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
-  for root, dirs, files in os.walk(out_dir):
+  """Find fuzzer binary with a given build ID."""
+  for root, _, files in os.walk(out_dir):
     for file in files:
       if get_build_id(os.path.join(root, file)) == build_id:
         return Path(root, file)
@@ -244,9 +247,10 @@ def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
   return None
 
 
-def enumerate_build_targets(root_path: Path,) -> Sequence[BinaryMetadata]:
+def enumerate_build_targets() -> Sequence[BinaryMetadata]:
   """Enumerates the build targets in the project."""
-  logging.info("enumerate_build_targets")
+
+  logging.info('enumerate_build_targets')
   linker_json_paths = list((OUT / 'cdb').glob('*_linker_commands.json'))
 
   targets = []
@@ -262,10 +266,10 @@ def enumerate_build_targets(root_path: Path,) -> Sequence[BinaryMetadata]:
       name = binary_path.name
 
       if not (OUT / name).exists():
-        logging.info("trying to find %s with build id %s", name, build_id)
+        logging.info('trying to find %s with build id %s', name, build_id)
         binary_path = find_fuzzer_binary(OUT, build_id)
         if not binary_path:
-          logging.error("could not find %s with build id %s", name, build_id)
+          logging.error('could not find %s with build id %s', name, build_id)
           continue
 
         name = binary_path.name
@@ -324,6 +328,7 @@ def sha256(files: Union[Path, Sequence[Path]]) -> str:
 
 
 def copy_fuzzing_engine():
+  """Copy fuzzing engine."""
   # Not every project saves source to $SRC/$PROJECT_NAME
   fuzzing_engine_dir = SRC / PROJECT
   if not fuzzing_engine_dir.exists():
@@ -335,6 +340,7 @@ def copy_fuzzing_engine():
 
 
 def build_project():
+  """Build the actual project."""
   set_env_vars()
   existing_cflags = os.environ.get('CFLAGS', '')
   extra_flags = ('-fno-omit-frame-pointer '
@@ -385,7 +391,10 @@ def build_project():
   ]
   subprocess.run(build_fuzzing_engine_command, check=True, cwd='/opt/indexer')
   ar_cmd = [
-      'ar', 'rcs', '/opt/indexer/fuzzing_engine.a', f'{OUT}/fuzzing_engine.o'
+      'ar',
+      'rcs',
+      '/opt/indexer/fuzzing_engine.a',
+      f'{OUT}/fuzzing_engine.o',
   ]
   subprocess.run(ar_cmd, check=True)
   lib_fuzzing_engine = '/usr/lib/libFuzzingEngine.a'
@@ -396,17 +405,16 @@ def build_project():
   subprocess.run(['/usr/local/bin/compile'], check=True)
 
 
-def test_target(
-    target: BinaryMetadata,
-    root_dir: Path,
-) -> bool:
+def test_target(target: BinaryMetadata,) -> bool:
   """Tests a single target."""
   target_path = OUT / target.name
-  result = subprocess.run([str(target_path)], stderr=subprocess.PIPE)
-  expected_error = f"Usage: {target_path} <input_file>\n"
+  result = subprocess.run([str(target_path)],
+                          stderr=subprocess.PIPE,
+                          check=False)
+  expected_error = f'Usage: {target_path} <input_file>\n'
   if result.stderr.decode() != expected_error or result.returncode != 1:
     logging.error(
-        "Target %s failed to run: %s",
+        'Target %s failed to run: %s',
         target_path,
         result.stderr.decode(),
     )
@@ -497,17 +505,14 @@ def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
       # as its rpath.
       set_rpath_to_ossfuzzlib(dst)
 
-    except (FileNotFoundError) as e:
+    except FileNotFoundError as e:
       logging.exception('Could not copy %s', library_path)
       raise e
 
 
-def archive_target(
-    target: BinaryMetadata,
-    root_dir: Path,
-) -> Path | None:
+def archive_target(target: BinaryMetadata,) -> Path | None:
   """Archives a single target in the project using the exported rootfs."""
-  logging.info("archive_target %s", target.name)
+  logging.info('archive_target %s', target.name)
   index_dir = INDEXES_PATH / target.build_id
   if not index_dir.exists():
     logging.error("didn't find index dir %s", index_dir)
@@ -517,8 +522,8 @@ def archive_target(
   # for the project, or something like that, but this will do for now.
   target_hash = short_file_hash((OUT / target.name))
 
-  name = f"{PROJECT}.{target.name}"
-  uuid = f"{PROJECT}.{target.name}.{target_hash}"
+  name = f'{PROJECT}.{target.name}'
+  uuid = f'{PROJECT}.{target.name}.{target_hash}'
 
   libs_path = OUT / 'lib'
   libs_path.mkdir(parents=False, exist_ok=True)
@@ -526,10 +531,10 @@ def archive_target(
   copy_shared_libraries(target_path, libs_path)
   set_interpreter(target_path)
   set_rpath_to_ossfuzzlib(target_path)
-  archive_path = SNAPSHOT_DIR / f"{uuid}.tar"
+  archive_path = SNAPSHOT_DIR / f'{uuid}.tar'
 
-  # TODO: re-enable SRC copying (with some filtering to only include source
-  # files.)
+  # We may want to eventually re-enable SRC copying (with some filtering to only
+  # include source files).
   with tempfile.TemporaryDirectory() as empty_src_dir:
     save_build(
         Manifest(
@@ -546,27 +551,28 @@ def archive_target(
         archive_path=archive_path,
     )
 
-  logging.info("Wrote archive to: %s", archive_path)
-  # TODO: this will break projects that re-use libs and have multiple targets.
+  logging.info('Wrote archive to: %s', archive_path)
+  # TODO(ochang): this will break projects that also create a `libs` folder and
+  # have multiple targets.
   shutil.rmtree(libs_path)
 
   return archive_path
 
 
-def index():
-  root = Path('/')
-  targets = enumerate_build_targets(root)
-  print('targets', targets)
+def test_and_archive():
+  """Test target and archive."""
+  targets = enumerate_build_targets()
+  logging.info('targets', targets)
   for target in targets:
     try:
       # TODO(metzman): Figure out if this is a good idea, it makes some things
       # pass that should but causes some things to pass that shouldn't.
-      if not test_target(target, root):
+      if not test_target(target):
         continue
-    except Exception as e:
-      print(f'Error: {e}')
+    except Exception as e:  # pylint: disable=broad-exception-caught
+      logging.error(f'Error: {e}')
       continue
-    archive_target(target, root)
+    archive_target(target)
 
 
 def main():
@@ -582,7 +588,7 @@ def main():
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
   build_project()
-  index()
+  test_and_archive()
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
 
