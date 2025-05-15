@@ -569,7 +569,7 @@ def test_and_archive():
       # pass that should but causes some things to pass that shouldn't.
       if not test_target(target):
         continue
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception:  # pylint: disable=broad-exception-caught
       logging.exception('Error testing target.')
       continue
     archive_target(target)
