@@ -570,7 +570,7 @@ def test_and_archive():
       if not test_target(target):
         continue
     except Exception as e:  # pylint: disable=broad-exception-caught
-      logging.error('Error: %s', e)
+      logging.exception('Error testing target.')
       continue
     archive_target(target)
 
