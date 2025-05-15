@@ -27,10 +27,10 @@ export PKG_CONFIG="`which pkg-config` --static"
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 export PATH=$PREFIX/bin:$PATH
 pushd $SRC/freetype
-./autogen.sh
-./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --with-png=no --with-zlib=no 
-make -j$(nproc)
-make install
+CFLAGS="$CFLAGS -D_GNU_SOURCE" ./autogen.sh
+CFLAGS="$CFLAGS -D_GNU_SOURCE" ./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --with-png=no --with-zlib=no
+CFLAGS="$CFLAGS -D_GNU_SOURCE" make -j$(nproc)
+CFLAGS="$CFLAGS -D_GNU_SOURCE" make install
 popd
 
 # Make minor change in the CMakeFiles file.
