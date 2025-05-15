@@ -19,6 +19,8 @@
 
 import logging
 import os
+import random
+import requests
 import sys
 
 import build_lib
@@ -33,6 +35,7 @@ import config_utils
 FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
 GCB_WORKSPACE_DIR = '/workspace'
+MAX_FUZZING_DURATION = 1800
 OOD_OUTPUT_CORPUS_DIR = f'{GCB_WORKSPACE_DIR}/ood_output_corpus'
 OOD_CRASHES_DIR = f'{GCB_WORKSPACE_DIR}/crashes'
 
@@ -72,7 +75,25 @@ def get_latest_libfuzzer_build(project_name):
   return build_uri, latest_build_filename
 
 
-def get_env(project, build, config):
+def get_fuzz_target_name(project_name):
+  """Use Fuzz Introspector Web API to choose a random fuzz target for
+  |project_name|"""
+  header = {'accept': 'application/json'}
+  url = f'https://introspector.oss-fuzz.com/api/harness-source-and-executable?project={project_name}'
+  resp = requests.get(url, headers=header)
+  resp.raise_for_status()
+  resp_json = resp.json()
+  if resp_json['result'] == 'error' or len(resp_json['pairs']) < 1:
+    logging.info(f'There are no fuzz targets available for {project_name}')
+    return None
+
+  idx = random.randint(0, len(resp_json['pairs']) - 1)
+  fuzz_target_name = resp_json['pairs'][idx]['executable']
+  logging.info(f'Using fuzz target: {fuzz_target_name}')
+  return fuzz_target_name
+
+
+def get_env(project, build, fuzz_target_name):
   """Gets the environment for fuzzbench/oss-fuzz-on-demand."""
   env = build_project.get_env(project.fuzzing_language, build)
   env.append(f'FUZZBENCH_PATH={FUZZBENCH_PATH}')
@@ -80,7 +101,7 @@ def get_env(project, build, config):
   env.append(f'PROJECT={project.name}')
   env.append('OSS_FUZZ_ON_DEMAND=1')
   env.extend([
-      f'FUZZ_TARGET={config.fuzz_target}', f'BENCHMARK={project.name}',
+      f'FUZZ_TARGET={fuzz_target_name}', f'BENCHMARK={project.name}',
       'EXPERIMENT_TYPE=bug'
   ])
   return env
@@ -212,6 +233,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
   image. Executing docker run on this image starts the fuzzing process."""
   steps = []
 
+  fuzzbench_run_fuzzer_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/base-images/base-builder-fuzzbench/fuzzbench_run_fuzzer'
   copy_runtime_essential_files_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
@@ -220,7 +242,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
           'path': FUZZBENCH_PATH,
       }],
       'args': [
-          'bash', '-c', 'cp /usr/local/bin/fuzzbench_run_fuzzer '
+          'bash', '-c', f'cp {fuzzbench_run_fuzzer_path} '
           f'{GCB_WORKSPACE_DIR}/fuzzbench_run_fuzzer.sh  && '
           f'cp -r {FUZZBENCH_PATH} {GCB_WORKSPACE_DIR} && '
           f'ls {GCB_WORKSPACE_DIR}'
@@ -255,6 +277,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
           f'FUZZBENCH_PATH={FUZZBENCH_PATH}', '--build-arg',
           f'FUZZING_ENGINE={env_dict["FUZZING_ENGINE"]}', '--build-arg',
           f'FUZZ_TARGET={env_dict["FUZZ_TARGET"]}', '--build-arg',
+          f'MAX_TOTAL_TIME={MAX_FUZZING_DURATION}', '--build-arg',
           f'OOD_OUTPUT_CORPUS_DIR={OOD_OUTPUT_CORPUS_DIR}', '--build-arg',
           f'runtime_image={ood_image}', GCB_WORKSPACE_DIR
       ]
@@ -365,13 +388,19 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
+  fuzz_target_name = config.fuzz_target
+  if not fuzz_target_name:
+    fuzz_target_name = get_fuzz_target_name(project.name)
+    if not fuzz_target_name:
+      return None
+
   steps = get_fuzzbench_setup_steps()
   steps += build_lib.get_project_image_steps(project.name,
                                              project.image,
                                              project.fuzzing_language,
                                              config=config)
   build = build_project.Build(config.fuzzing_engine, 'address', 'x86_64')
-  env = get_env(project, build, config)
+  env = get_env(project, build, fuzz_target_name)
   steps += get_build_fuzzers_steps(config.fuzzing_engine, project, env)
   env_dict = {string.split('=')[0]: string.split('=')[1] for string in env}
   steps += get_gcs_corpus_steps(config.fuzzing_engine, project, env_dict)
