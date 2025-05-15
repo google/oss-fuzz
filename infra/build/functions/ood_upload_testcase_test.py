@@ -25,7 +25,7 @@ import ood_upload_testcase
 
 
 class GetFilePath(unittest.TestCase):
-  """Tests for get_file_path."""
+  """Tests for get_crash_file_path."""
 
   def setUp(self):
     """Set tem_dir attribute"""
@@ -37,14 +37,14 @@ class GetFilePath(unittest.TestCase):
 
   def test_no_files(self):
     """Test for empty directory"""
-    self.assertIsNone(ood_upload_testcase.get_file_path(self.temp_dir))
+    self.assertIsNone(ood_upload_testcase.get_crash_file_path(self.temp_dir))
 
   def test_single_file(self):
     """Test for single file"""
     file_name = 'test_file.txt'
     file_path = os.path.join(self.temp_dir, file_name)
     open(file_path, 'w').close()
-    self.assertEqual(ood_upload_testcase.get_file_path(self.temp_dir),
+    self.assertEqual(ood_upload_testcase.get_crash_file_path(self.temp_dir),
                      file_path)
 
   def test_multiple_files(self):
@@ -55,15 +55,23 @@ class GetFilePath(unittest.TestCase):
       file_path = os.path.join(self.temp_dir, name)
       file_paths.append(file_path)
       open(file_path, 'w').close()
-    self.assertIn(ood_upload_testcase.get_file_path(self.temp_dir), file_paths)
+    self.assertIn(ood_upload_testcase.get_crash_file_path(self.temp_dir),
+                  file_paths)
 
   def test_with_subdirectory(self):
     """Test for directory with subdirectory"""
     os.makedirs(os.path.join(self.temp_dir, 'subdir'))
-    self.assertIsNone(ood_upload_testcase.get_file_path(self.temp_dir))
+    self.assertIsNone(ood_upload_testcase.get_crash_file_path(self.temp_dir))
 
     file_name = 'test_file.txt'
     file_path = os.path.join(self.temp_dir, file_name)
     open(file_path, 'w').close()
-    self.assertEqual(ood_upload_testcase.get_file_path(self.temp_dir),
+    self.assertEqual(ood_upload_testcase.get_crash_file_path(self.temp_dir),
                      file_path)
+
+  def test_oom_file(self):
+    """Test for crash file starting with 'oom'"""
+    file_name = 'oom-test_file.txt'
+    file_path = os.path.join(self.temp_dir, file_name)
+    open(file_path, 'w').close()
+    self.assertIsNone(ood_upload_testcase.get_crash_file_path(self.temp_dir))

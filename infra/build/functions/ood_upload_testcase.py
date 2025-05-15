@@ -70,12 +70,12 @@ def upload_testcase(upload_url, testcase_path, job, target, access_token_path):
     print(resp.text)
 
 
-def get_file_path(dir_path):
-  """Returns the path of a file inside 'dir_path'. Returns None if there are no
-  files inside the the given directory."""
+def get_crash_file_path(dir_path):
+  """Returns the path of a crash file (except from out of memory crashes) inside
+  'dir_path'. Returns None if there are no files inside the the given directory."""
   files = []
   for entry in os.scandir(dir_path):
-    if entry.is_file():
+    if entry.is_file() and not entry.name.startswith('oom'):
       return f'{dir_path}/{entry.name}'
   return None
 
@@ -86,7 +86,7 @@ def main():
   job = sys.argv[2]
   target = sys.argv[3]
   access_token_path = sys.argv[4]
-  testcase_path = get_file_path(testcase_dir_path)
+  testcase_path = get_crash_file_path(testcase_dir_path)
 
   if not testcase_path:
     print('OSS-Fuzz on Demand did not find any crashes.')

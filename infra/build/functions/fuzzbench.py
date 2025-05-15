@@ -35,7 +35,7 @@ import config_utils
 FUZZBENCH_BUILD_TYPE = 'coverage'
 FUZZBENCH_PATH = '/fuzzbench'
 GCB_WORKSPACE_DIR = '/workspace'
-MAX_FUZZING_DURATION = 1800
+MAX_FUZZING_DURATION = 10
 OOD_OUTPUT_CORPUS_DIR = f'{GCB_WORKSPACE_DIR}/ood_output_corpus'
 OOD_CRASHES_DIR = f'{GCB_WORKSPACE_DIR}/crashes'
 
@@ -91,6 +91,14 @@ def get_fuzz_target_name(project_name):
   fuzz_target_name = resp_json['pairs'][idx]['executable']
   logging.info(f'Using fuzz target: {fuzz_target_name}')
   return fuzz_target_name
+
+
+def get_corpus_signed_policy_document(project_name, fuzz_target_name):
+  """ ."""
+  bucket = f'{project_name}-corpus.clusterfuzz-external.appspot.com'
+  path_prefix = f'libFuzzer/{fuzz_target_name}/'
+  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(bucket, path_prefix)
+  return signed_policy_document
 
 
 def get_env(project, build, fuzz_target_name):
@@ -380,6 +388,33 @@ def get_upload_testcase_steps(project, env_dict):
   return steps
 
 
+def get_upload_corpus_steps(project, env_dict):
+  """ ."""
+  steps = []
+
+  doc = get_corpus_signed_policy_document(project.name, env_dict['FUZZ_TARGET'])
+  upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
+  num_uploads = '10'
+  
+  import base64
+  import pickle
+  serialized_bytes = pickle.dumps(doc)
+  serialized_doc_str = base64.b64encode(serialized_bytes).decode('utf-8')
+  path_prefix = f'libFuzzer/{env_dict["FUZZ_TARGET"]}/'
+
+  upload_corpus_step = {
+      'name':
+          'python:3.8',
+      'args': [
+          'python3', upload_corpus_script_path, OOD_OUTPUT_CORPUS_DIR,
+          serialized_doc_str, path_prefix, num_uploads
+      ]
+  }
+  steps.append(upload_corpus_step)
+
+  return steps
+
+
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps for project."""
@@ -409,6 +444,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                             env_dict)
   steps += get_extract_crashes_steps(config.fuzzing_engine, project, env_dict)
   steps += get_upload_testcase_steps(project, env_dict)
+  steps += get_upload_corpus_steps(project, env_dict)
 
   return steps
 
