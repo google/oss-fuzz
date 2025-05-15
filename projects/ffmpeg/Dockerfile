@@ -23,7 +23,7 @@ RUN curl -LO https://mirrors.kernel.org/ubuntu/pool/main/a/autoconf/autoconf_2.7
 # Meson is pinned to get around https://github.com/mesonbuild/meson/issues/14533
 RUN python3 -m pip install --upgrade pip && python3 -m pip install -U meson==1.7.2 ninja
 
-RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+RUN git clone --depth 1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
 RUN curl -O https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.12.tar.bz2
 RUN git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git
