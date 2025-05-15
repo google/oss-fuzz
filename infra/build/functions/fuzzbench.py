@@ -391,7 +391,7 @@ def get_upload_corpus_steps(project, env_dict):
 
   doc = get_corpus_signed_policy_document(project.name, env_dict['FUZZ_TARGET'])
   upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
-  num_uploads = '1'
+  num_uploads = '10'
   
   import base64
   import pickle
