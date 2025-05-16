@@ -90,6 +90,10 @@ class TestUploadCorpus(unittest.TestCase):
                                          x_goog_date='00000000',
                                          x_goog_signature='x')
     doc_string = json.dumps(doc.__dict__)
+    temp_dir = tempfile.mkdtemp()
+    file_path = os.path.join(temp_dir, 'doc.txt')
+    with open(file_path, 'w') as f:
+      f.write(doc_string)
     mock_get_files_path.return_value = [
         os.path.join(output_dir, 'file_0.txt'),
         os.path.join(output_dir, 'file_1.txt'),
@@ -101,7 +105,7 @@ class TestUploadCorpus(unittest.TestCase):
         MagicMock(hex='suffix3')
     ]
 
-    ood_upload_corpus.upload_corpus(output_dir, doc_string, path_prefix,
+    ood_upload_corpus.upload_corpus(output_dir, file_path, path_prefix,
                                     num_uploads)
 
     mock_get_files_path.assert_called_once_with(output_dir, num_uploads)
@@ -114,6 +118,7 @@ class TestUploadCorpus(unittest.TestCase):
              'gs://test_bucket/corpus/suffix3', doc),
     ])
     self.assertEqual(mock_uuid.call_count, num_uploads)
+    shutil.rmtree(temp_dir)
 
 
 if __name__ == '__main__':
