@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 ################################################################################
+"""."""
 import base64
 import logging
 import os
@@ -22,6 +23,9 @@ import pickle
 import subprocess
 import sys
 import uuid
+
+import build_lib
+
 try:
   import requests
 except ImportError:
@@ -110,10 +114,10 @@ def get_files_path(directory_path, num_files):
   return file_paths
 
 
-def upload_corpus(output_corpus_directory, serialized_doc_str, path_prefix, num_uploads):
+def upload_corpus(output_corpus_directory, doc_str, path_prefix, num_uploads):
   """."""
-  retrieved_bytes = base64.b64decode(serialized_doc_str.encode('utf-8'))
-  doc = pickle.loads(retrieved_bytes)
+  doc_data = json.loads(doc_str)
+  doc = build_lib.SignedPolicyDocument(**doc_data)
   file_paths = get_files_path(output_corpus_directory, num_uploads)
   for file_path in file_paths:
     suffix = uuid.uuid4().hex
@@ -125,10 +129,10 @@ def main():
   """ ."""
   install_requirements()
   output_corpus_directory = sys.argv[1]
-  serialized_doc_str = sys.argv[2]
+  doc_str = sys.argv[2]
   path_prefix = sys.argv[3]
   num_uploads = int(sys.argv[4])
-  upload_corpus(output_corpus_directory, serialized_doc_str, path_prefix, num_uploads)
+  upload_corpus(output_corpus_directory, doc_str, path_prefix, num_uploads)
 
 
 if __name__ == '__main__':

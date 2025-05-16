@@ -17,6 +17,7 @@
 ################################################################################
 """Does fuzzbench runs on Google Cloud Build."""
 
+import json
 import logging
 import os
 import requests
@@ -391,20 +392,15 @@ def get_upload_corpus_steps(project, env_dict):
 
   doc = get_corpus_signed_policy_document(project.name, env_dict['FUZZ_TARGET'])
   upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
-  num_uploads = '3000'
-  
-  import base64
-  import pickle
-  serialized_bytes = pickle.dumps(doc)
-  serialized_doc_str = base64.b64encode(serialized_bytes).decode('utf-8')
+  num_uploads = '2'
+  doc_str = json.dumps(doc.__dict__)
   path_prefix = f'libFuzzer/{env_dict["FUZZ_TARGET"]}/'
-
   upload_corpus_step = {
       'name':
           'python:3.8',
       'args': [
           'python3', upload_corpus_script_path, OOD_OUTPUT_CORPUS_DIR,
-          serialized_doc_str, path_prefix, num_uploads
+          doc_str, path_prefix, num_uploads
       ]
   }
   steps.append(upload_corpus_step)
