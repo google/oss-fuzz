@@ -231,7 +231,7 @@ def read_cdb_fragments(cdb_path: str) -> Any:
         if data.endswith(",\n"):
           contents.append(data[:-2])
           break
-      print(f"Invalid compile commands file {file}: {data}\nDONEMARKER")
+      print(f"Invalid compile commands file {file}: {data}")
       time.sleep(10)
     else:
       # Some build systems seem to have a weird issue where the autotools
@@ -239,7 +239,7 @@ def read_cdb_fragments(cdb_path: str) -> Any:
       # fragments.
       if "/test.c" not in file:
         raise RuntimeError(
-            f"Invalid compile commands file {file}: {data}\nDONEMARKER")
+            f"Invalid compile commands file {file}: {data}")
 
   contents = ",\n".join(contents)
   contents = "[" + contents + "]"
