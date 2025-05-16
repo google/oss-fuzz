@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-"""
+"""Compiler Wrapper.
+
 This is copied into the OSS-Fuzz container image and run there as part of the
 instrumentation process.
 """
@@ -23,13 +24,13 @@ from collections.abc import MutableSequence, Sequence
 import hashlib
 import json
 import os
-from pathlib import Path
-import subprocess
+from pathlib import Path  # pylint: disable=g-importing-member
 import shutil
 import sqlite3
+import subprocess
 import sys
 import time
-from typing import Any, Sequence, Iterator
+from typing import Any, Iterator
 
 INDEX_DB_NAME = "db.sqlite"
 _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
@@ -37,11 +38,11 @@ _INDEXER_PATH = "/opt/indexer/indexer"
 _IGNORED_DEPS_PATH = os.path.join(os.path.dirname(_INDEXER_PATH),
                                   "ignored_deps.json")
 
-PROJECT = Path(os.environ['PROJECT_NAME'])
-SRC = Path(os.getenv('SRC', '/src'))
+PROJECT = Path(os.environ["PROJECT_NAME"])
+SRC = Path(os.getenv("SRC", "/src"))
 # On OSS-Fuzz build infra, $OUT is not /out.
-OUT = Path(os.getenv('OUT', '/out'))
-INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
+OUT = Path(os.getenv("OUT", "/out"))
+INDEXES_PATH = Path(os.getenv("INDEXES_PATH", "/indexes"))
 
 
 def execute(argv: list[str]) -> None:
@@ -184,7 +185,8 @@ def parse_dependency_file(file_path: str, output_file: str,
     lines = [line.strip() for line in f]
   assert output_file_line.endswith(
       lines[0].lstrip(".").lstrip("/")  # Account for relative paths.
-  ), f"{lines[0]} is not a suffix of {output_file_line} {sys.argv} {os.getcwd()}"
+  ), (f"{lines[0]} is not a suffix of"
+      f" {output_file_line} {sys.argv} {os.getcwd()}")
 
   deps = []
   ignored_dep_paths = ["/usr", "/clang", "/lib"]
@@ -235,7 +237,7 @@ def read_cdb_fragments(cdb_path: str) -> Any:
       # Some build systems seem to have a weird issue where the autotools
       # generated `test.c` for testing compilers doesn't result in valid cdb
       # fragments.
-      if '/test.c' not in file:
+      if "/test.c" not in file:
         raise RuntimeError(
             f"Invalid compile commands file {file}: {data}\nDONEMARKER")
 
@@ -245,10 +247,11 @@ def read_cdb_fragments(cdb_path: str) -> Any:
 
 
 def get_index_files(index_db_path) -> Iterator[str]:
+  """Get files referenced in the index."""
   conn = sqlite3.connect(index_db_path)
   cursor = conn.cursor()
 
-  query = f"""
+  query = """
         SELECT DISTINCT dirname, basename
         FROM location
     """
@@ -259,10 +262,10 @@ def get_index_files(index_db_path) -> Iterator[str]:
   conn.close()
 
 
-def run_indexer(build_id: str, linker_commands: dict):
+def run_indexer(build_id: str, linker_commands: dict[str, Any]):
   """Run the indexer."""
   index_dir = INDEXES_PATH / build_id
-  # TODO: check if this is correct.
+  # TODO(ochang): check if this is correct.
   index_dir.mkdir(exist_ok=True)
   index_db_path = str(index_dir / INDEX_DB_NAME)
 
@@ -272,23 +275,28 @@ def run_indexer(build_id: str, linker_commands: dict):
   try:
     compile_commands_dir.mkdir(exist_ok=False)
   except FileExistsError:
-    # Somehow we've already seen this link command, don't try to redo the indexing.
-    # TODO: check if this is the safest behaviour.
+    # Somehow we've already seen this link command, don't try to redo the
+    # indexing.
+    # TODO(ochang): check if this is the safest behaviour.
     return
 
   with (compile_commands_dir / "compile_commands.json").open("wt") as f:
     json.dump(linker_commands["compile_commands"], f, indent=2)
 
   cmd = [
-      _INDEXER_PATH, '--build_dir', compile_commands_dir, '--index_path',
-      index_db_path, '--source_dir',
-      str(SRC)
+      _INDEXER_PATH,
+      "--build_dir",
+      compile_commands_dir,
+      "--index_path",
+      index_db_path,
+      "--source_dir",
+      str(SRC),
   ]
   result = subprocess.run(cmd, check=True)
   if result.returncode != 0:
-    raise Exception("Running indexer failed\n"
-                    f"stdout:\n```\n{result.stdout.decode()}\n```\n"
-                    f"stderr:\n```\n{result.stderr.decode()}\n```\n")
+    raise RuntimeError("Running indexer failed\n"
+                       f"stdout:\n```\n{result.stdout.decode()}\n```\n"
+                       f"stderr:\n```\n{result.stderr.decode()}\n```\n")
 
   relative_root = index_dir / "relative"
   absolute_root = index_dir / "absolute"
@@ -320,23 +328,18 @@ def run_indexer(build_id: str, linker_commands: dict):
 def main(argv: list[str]) -> None:
   fuzzer_engine = os.getenv("LIB_FUZZING_ENGINE", "/usr/lib/libFuzzingEngine.a")
 
-  # Projects like cups might assume these arguments.
-  wrapper_log = OUT / 'wrapper-log'
   fuzzing_engine_in_argv = False
   idx = 0
   for arg in argv[:]:
     if arg == "-fsanitize=fuzzer":
       argv[idx] = "-lFuzzingEngine"
-      os.system(f"echo replaced -fsanitizefuzzer >> {wrapper_log}")
       fuzzing_engine_in_argv = True
     elif arg == "-fsanitize=fuzzer-no-link":
       argv.remove("-fsanitize=fuzzer-no-link")
       idx -= 1
-      os.system(f"echo Removed -fsanitizefuzzer-no-link >> {wrapper_log}")
     elif "-fsanitize=" in arg and "fuzzer" in arg:
       # This could be -fsanitize=address,fuzzer.
-      os.system(f"echo replaced {arg} >> {wrapper_log}")
-      sanitize_vals = arg.split('=')[1].split(",")
+      sanitize_vals = arg.split("=")[1].split(",")
       sanitize_vals.remove("fuzzer")
       arg = "-fsanitize=" + ",".join(sanitize_vals)
 
@@ -347,14 +350,14 @@ def main(argv: list[str]) -> None:
 
     idx += 1
 
-    if 'libFuzzingEngine.a' in arg or '-lFuzzingEngine' in arg:
+    if "libFuzzingEngine.a" in arg or "-lFuzzingEngine" in arg:
       fuzzing_engine_in_argv = True
 
   # If we are not linking the fuzzing engine, execute normally.
   if not fuzzing_engine_in_argv:
     execute(argv)
 
-  print(f'Linking {argv}')
+  print(f"Linking {argv}")
 
   # We are linking, collect the relevant flags and dependencies.
   output_file = get_flag_value(argv, "-o")
@@ -377,7 +380,7 @@ def main(argv: list[str]) -> None:
   argv.append(f"-Wl,--dependency-file={dependency_file}")
   argv.append(f"-Wl,--why-extract={why_extract_file}")
   argv.append("-Wl,--build-id")
-  argv.append('-Qunused-arguments')
+  argv.append("-Qunused-arguments")
   run(argv)
 
   build_id = get_build_id(output_file)
