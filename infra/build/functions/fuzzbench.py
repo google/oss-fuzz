@@ -82,7 +82,7 @@ def get_fuzz_target_name(project_name):
   resp.raise_for_status()
   resp_json = resp.json()
   if resp_json['result'] == 'error' or len(resp_json['pairs']) < 1:
-    logging.info(f'There are no fuzz targets available for {project.name}')
+    logging.info(f'There are no fuzz targets available for {project_name}')
     return None
 
   fuzz_target_name = resp_json['pairs'][0]['executable']
@@ -391,7 +391,7 @@ def get_upload_corpus_steps(project, env_dict):
 
   doc = get_corpus_signed_policy_document(project.name, env_dict['FUZZ_TARGET'])
   upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
-  num_uploads = '10'
+  num_uploads = '3000'
   
   import base64
   import pickle
@@ -441,7 +441,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                             env_dict)
   steps += get_extract_crashes_steps(config.fuzzing_engine, project, env_dict)
   steps += get_upload_testcase_steps(project, env_dict)
-  steps += get_upload_corpus_steps(project, env_dict)
+#   steps += get_upload_corpus_steps(project, env_dict)
 
   return steps
 
