@@ -386,7 +386,7 @@ def get_upload_testcase_steps(project, env_dict):
   return steps
 
 
-def get_upload_corpus_steps(project, env_dict):
+def get_upload_corpus_steps(fuzzing_engine, project, env_dict):
   """ ."""
   steps = []
 
@@ -397,7 +397,7 @@ def get_upload_corpus_steps(project, env_dict):
   path_prefix = f'libFuzzer/{env_dict["FUZZ_TARGET"]}/'
   upload_corpus_step = {
       'name':
-          'python:3.8',
+          get_engine_project_image_name(fuzzing_engine, project),
       'args': [
           'python3', upload_corpus_script_path, OOD_OUTPUT_CORPUS_DIR,
           doc_str, path_prefix, num_uploads
@@ -437,7 +437,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                             env_dict)
   steps += get_extract_crashes_steps(config.fuzzing_engine, project, env_dict)
   steps += get_upload_testcase_steps(project, env_dict)
-  steps += get_upload_corpus_steps(project, env_dict)
+  steps += get_upload_corpus_steps(config.fuzzing_engine, project, env_dict)
 
   return steps
 

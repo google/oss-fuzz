@@ -26,51 +26,6 @@ import uuid
 
 import build_lib
 
-try:
-  import requests
-except ImportError:
-  print("requests library not found. Installing...")
-  subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
-  import requests
-
-def execute_shell_command(command_args, check_return_code=True):
-  """ """
-  result = subprocess.run(
-      command_args,
-      check=check_return_code,
-      capture_output=True,
-      text=True
-  )
-
-  if result.stdout:
-      print("   STDOUT:")
-      print(result.stdout.strip())
-  if result.stderr:
-      print("   STDERR:")
-      print(result.stderr.strip())
-
-
-def install_requirements():
-  cmd1 = [
-      'python',
-      '-m',
-      'pip',
-      'install',
-      '--upgrade',
-      'pip'
-  ]
-  requirements_file = '/workspace/oss-fuzz/infra/build/functions/requirements.txt'
-  cmd2 = [
-      'pip',
-      'install',
-      '-r',
-      requirements_file
-  ]
-
-  execute_shell_command(cmd1)
-  execute_shell_command(cmd2)
-
-
 def upload_corpus_file(file_path, upload_path, doc):
   """."""
   url = f'https://{doc.bucket}.storage.googleapis.com'
@@ -127,7 +82,6 @@ def upload_corpus(output_corpus_directory, doc_str, path_prefix, num_uploads):
 
 def main():
   """ ."""
-  install_requirements()
   output_corpus_directory = sys.argv[1]
   doc_str = sys.argv[2]
   path_prefix = sys.argv[3]
