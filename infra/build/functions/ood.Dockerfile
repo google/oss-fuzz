@@ -31,7 +31,7 @@ RUN apt-get update && \
 
 COPY ./oss-fuzz/infra/build/functions/requirements.txt /tmp/requirements.txt
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
-COPY ./oss-fuzz/infra/build/ci/requirements.txt /tmp/requirements.txt
+COPY ./oss-fuzz/infra/ci/requirements.txt /tmp/requirements.txt
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 RUN mkdir -p /ood
