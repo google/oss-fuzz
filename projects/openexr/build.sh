@@ -48,3 +48,28 @@ for fuzzer in $SRC/openexr/src/test/OpenEXRFuzzTest/oss-fuzz/*_fuzzer.cc; do
   $CXX $CXXFLAGS -std=c++11 -pthread ${INCLUDES[@]} $fuzzer $LIB_FUZZING_ENGINE ${LIBS[@]} -lz \
     -o $OUT/$fuzzer_basename
 done
+
+
+# ProtobufMutator does not currently support MSan
+if [[ $CFLAGS = *sanitize=memory* ]]; then
+    exit 0
+fi
+
+# For fuzz-introspector, exclude files we don't want
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+LPM
+genfiles
+EOF
+
+# Compile json proto.
+rm -rf genfiles && mkdir genfiles && $SRC/LPM/external.protobuf/bin/protoc exr.proto --cpp_out=genfiles --proto_path=$SRC
+
+# Compile LPM fuzzer.
+$CXX $CXXFLAGS -std=c++14 -pthread ${INCLUDES[@]} -I genfiles -I $SRC/libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $LIB_FUZZING_ENGINE \
+  $SRC/exr_proto_fuzzer.cc genfiles/exr.pb.cc $SRC/exr_proto_converter.cc \
+  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
+  $SRC/LPM/src/libprotobuf-mutator.a \
+  -Wl,--start-group $SRC/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
+  ${LIBS[@]} -lz -o $OUT/exr_proto_fuzzer
