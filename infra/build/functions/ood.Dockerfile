@@ -27,7 +27,7 @@ ARG MAX_TOTAL_TIME
 ARG OOD_OUTPUT_CORPUS_DIR
 
 RUN apt-get update && \
-    apt-get install -y python3.8 python3.8-pip
+    apt-get install -y python3 python3-pip
 
 COPY ./oss-fuzz/infra/build/functions/requirements.txt /tmp/requirements.txt
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
