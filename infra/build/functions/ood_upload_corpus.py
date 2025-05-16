@@ -28,6 +28,7 @@ import uuid
 
 import build_lib
 
+
 def upload_corpus_file(file_path, upload_path, doc):
   """Make a request to upload a corpus file to GCS."""
   url = f'https://storage.googleapis.com/{doc.bucket}'

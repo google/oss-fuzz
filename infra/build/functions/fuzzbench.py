@@ -92,10 +92,11 @@ def get_fuzz_target_name(project_name):
 
 
 def get_corpus_signed_policy_document(project_name, fuzz_target_name):
-  """ ."""
+  """Returns a signed policy document to upload corpus to GCS."""
   bucket = f'{project_name}-corpus.clusterfuzz-external.appspot.com'
   path_prefix = f'libFuzzer/{fuzz_target_name}/'
-  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(bucket, path_prefix)
+  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
+      bucket, path_prefix)
   return signed_policy_document
 
 
@@ -399,8 +400,8 @@ def get_upload_corpus_steps(fuzzing_engine, project, env_dict):
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
       'args': [
-          'python3', upload_corpus_script_path, OOD_OUTPUT_CORPUS_DIR,
-          doc_str, path_prefix, num_uploads
+          'python3', upload_corpus_script_path, OOD_OUTPUT_CORPUS_DIR, doc_str,
+          path_prefix, num_uploads
       ]
   }
   steps.append(upload_corpus_step)

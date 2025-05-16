@@ -55,9 +55,9 @@ class GetFilePath(unittest.TestCase):
     for name in file_names:
       file_path = os.path.join(self.temp_dir, name)
       open(file_path, 'w').close()
-    self.assertEqual(ood_upload_corpus.get_files_path(self.temp_dir, 2),
-                     [f'{self.temp_dir}/data.json',
-                     f'{self.temp_dir}/file2.csv'])
+    self.assertEqual(
+        ood_upload_corpus.get_files_path(self.temp_dir, 2),
+        [f'{self.temp_dir}/data.json', f'{self.temp_dir}/file2.csv'])
 
   def test_with_subdirectory(self):
     """Test for directory with subdirectory"""
@@ -70,39 +70,51 @@ class GetFilePath(unittest.TestCase):
     self.assertEqual(ood_upload_corpus.get_files_path(self.temp_dir, 10),
                      [file_path])
 
+
 class TestUploadCorpus(unittest.TestCase):
-    """Tests for the upload_corpus function."""
+  """Tests for the upload_corpus function."""
 
-    @patch('uuid.uuid4')
-    @patch('ood_upload_corpus.upload_corpus_file')
-    @patch('ood_upload_corpus.get_files_path')
-    def test_upload_multiple_files(self, mock_get_files_path, 
-    mock_upload_corpus_file, mock_uuid):
-        """Tests uploading multiple corpus files with the given document policy."""
-        output_dir = 'test_corpus_dir'
-        path_prefix = 'gs://test_bucket/corpus/'
-        num_uploads = 3
-        doc = build_lib.SignedPolicyDocument(bucket='bucket',
-           policy='test_policy', x_goog_algorithm='x', x_goog_credential='x',
-           x_goog_date='00000000',x_goog_signature='x')
-        doc_string = json.dumps(doc.__dict__)
-        mock_get_files_path.return_value = [
-            os.path.join(output_dir, 'file_0.txt'),
-            os.path.join(output_dir, 'file_1.txt'),
-            os.path.join(output_dir, 'file_2.txt'),
-        ]
-        mock_uuid.side_effect = [MagicMock(hex='suffix1'), MagicMock(hex='suffix2'), MagicMock(hex='suffix3')]
+  @patch('uuid.uuid4')
+  @patch('ood_upload_corpus.upload_corpus_file')
+  @patch('ood_upload_corpus.get_files_path')
+  def test_upload_multiple_files(self, mock_get_files_path,
+                                 mock_upload_corpus_file, mock_uuid):
+    """Tests uploading multiple corpus files with the given document policy."""
+    output_dir = 'test_corpus_dir'
+    path_prefix = 'gs://test_bucket/corpus/'
+    num_uploads = 3
+    doc = build_lib.SignedPolicyDocument(bucket='bucket',
+                                         policy='test_policy',
+                                         x_goog_algorithm='x',
+                                         x_goog_credential='x',
+                                         x_goog_date='00000000',
+                                         x_goog_signature='x')
+    doc_string = json.dumps(doc.__dict__)
+    mock_get_files_path.return_value = [
+        os.path.join(output_dir, 'file_0.txt'),
+        os.path.join(output_dir, 'file_1.txt'),
+        os.path.join(output_dir, 'file_2.txt'),
+    ]
+    mock_uuid.side_effect = [
+        MagicMock(hex='suffix1'),
+        MagicMock(hex='suffix2'),
+        MagicMock(hex='suffix3')
+    ]
 
-        ood_upload_corpus.upload_corpus(output_dir, doc_string, path_prefix, num_uploads)
+    ood_upload_corpus.upload_corpus(output_dir, doc_string, path_prefix,
+                                    num_uploads)
 
-        mock_get_files_path.assert_called_once_with(output_dir, num_uploads)
-        mock_upload_corpus_file.assert_has_calls([
-            call(os.path.join(output_dir, 'file_0.txt'), 'gs://test_bucket/corpus/suffix1', doc),
-            call(os.path.join(output_dir, 'file_1.txt'), 'gs://test_bucket/corpus/suffix2', doc),
-            call(os.path.join(output_dir, 'file_2.txt'), 'gs://test_bucket/corpus/suffix3', doc),
-        ])
-        self.assertEqual(mock_uuid.call_count, num_uploads)
+    mock_get_files_path.assert_called_once_with(output_dir, num_uploads)
+    mock_upload_corpus_file.assert_has_calls([
+        call(os.path.join(output_dir, 'file_0.txt'),
+             'gs://test_bucket/corpus/suffix1', doc),
+        call(os.path.join(output_dir, 'file_1.txt'),
+             'gs://test_bucket/corpus/suffix2', doc),
+        call(os.path.join(output_dir, 'file_2.txt'),
+             'gs://test_bucket/corpus/suffix3', doc),
+    ])
+    self.assertEqual(mock_uuid.call_count, num_uploads)
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
