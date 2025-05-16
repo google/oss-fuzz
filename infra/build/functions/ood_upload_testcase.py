@@ -71,12 +71,12 @@ def upload_testcase(upload_url, testcase_path, job, target, access_token_path):
 
 
 def get_crash_file_path(dir_path):
-  """Returns the path of a crash file (except from out of memory crashes) inside
-  'dir_path'. Returns None if there are no files inside the the given directory."""
-  files = []
+  """Returns the path of a crash file (except from out of memory, timeout and
+  slow units crashes) inside 'dir_path'. Returns None if there are no files
+  inside the the given directory."""
+  excluded_prefixes = ('oom', 'timeout', 'slow-unit')
   for entry in os.scandir(dir_path):
-    if entry.is_file() and not entry.name.startswith('oom'):
-      print(f'File name:{entry} -- {entry.name}')
+    if entry.is_file() and not entry.name.startswith(excluded_prefixes):
       return f'{dir_path}/{entry.name}'
   return None
 
@@ -90,7 +90,7 @@ def main():
   testcase_path = get_crash_file_path(testcase_dir_path)
 
   if not testcase_path:
-    print('OSS-Fuzz on Demand did not find any crashes.')
+    print('OSS-Fuzz on Demand did not find any relevant crashes.')
   else:
     upload_testcase(POST_URL, testcase_path, job, target, access_token_path)
 
