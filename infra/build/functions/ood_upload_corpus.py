@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""."""
+"""Upload OSS-Fuzz on Demand output corpus to GCS."""
 import base64
 import logging
 import os
@@ -27,8 +27,7 @@ import uuid
 import build_lib
 
 def upload_corpus_file(file_path, upload_path, doc):
-  """."""
-  url = f'https://{doc.bucket}.storage.googleapis.com'
+  """Make a request to upload a corpus file to GCS."""
   url = f'https://storage.googleapis.com/{doc.bucket}'
   print(f'Upload url: {url}')
   data = {
@@ -58,7 +57,7 @@ def upload_corpus_file(file_path, upload_path, doc):
 
 
 def get_files_path(directory_path, num_files):
-  """."""
+  """Returns the path for |num_files| corpus files."""
   file_paths = []
   for root, _, files in os.walk(directory_path):
     for name in files:
@@ -70,7 +69,8 @@ def get_files_path(directory_path, num_files):
 
 
 def upload_corpus(output_corpus_directory, doc_str, path_prefix, num_uploads):
-  """."""
+  """Upload |num_uploads| corpus files using |doc_str| signed document policy.
+  It uses |path_prefix| to get the upload path."""
   doc_data = json.loads(doc_str)
   doc = build_lib.SignedPolicyDocument(**doc_data)
   file_paths = get_files_path(output_corpus_directory, num_uploads)
@@ -81,7 +81,7 @@ def upload_corpus(output_corpus_directory, doc_str, path_prefix, num_uploads):
 
 
 def main():
-  """ ."""
+  """Upload OSS-Fuzz on Demand output corpus to GCS."""
   output_corpus_directory = sys.argv[1]
   doc_str = sys.argv[2]
   path_prefix = sys.argv[3]
