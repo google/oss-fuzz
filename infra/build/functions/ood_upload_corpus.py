@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import pickle
+import requests
 import subprocess
 import sys
 import uuid
