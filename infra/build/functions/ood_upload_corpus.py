@@ -71,7 +71,8 @@ def get_files_path(directory_path, num_files):
   return file_paths
 
 
-def upload_corpus(output_corpus_directory, doc_file_path, path_prefix, num_uploads):
+def upload_corpus(output_corpus_directory, doc_file_path, path_prefix,
+                  num_uploads):
   """Upload |num_uploads| corpus files using |doc_file_path| signed document policy.
   It uses |path_prefix| to get the upload path."""
   with open(doc_file_path, 'r') as f:
@@ -92,7 +93,8 @@ def main():
   doc_file_path = sys.argv[2]
   path_prefix = sys.argv[3]
   num_uploads = int(sys.argv[4])
-  upload_corpus(output_corpus_directory, doc_file_path, path_prefix, num_uploads)
+  upload_corpus(output_corpus_directory, doc_file_path, path_prefix,
+                num_uploads)
 
 
 if __name__ == '__main__':

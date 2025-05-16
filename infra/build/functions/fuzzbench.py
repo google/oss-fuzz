@@ -396,18 +396,14 @@ def get_upload_corpus_steps(fuzzing_engine, project, env_dict):
   upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
   num_uploads = '2'
   doc_str = json.dumps(doc.__dict__)
-  
   doc_file_path = f'{GCB_WORKSPACE_DIR}/doc.txt'
   store_doc_str_step = {
-      'name':
-          'google/cloud-sdk',
+      'name': 'google/cloud-sdk',
       'args': [
-          'bash', '-c',
-          f'echo "{shlex.quote(doc_str)}" > {doc_file_path}'
+          'bash', '-c', f'echo "{shlex.quote(doc_str)}" > {doc_file_path}'
       ]
   }
   steps.append(store_doc_str_step)
-
 
   path_prefix = f'libFuzzer/{env_dict["FUZZ_TARGET"]}/'
   upload_corpus_step = {
