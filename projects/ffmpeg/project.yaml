@@ -7,7 +7,6 @@ architectures:
 auto_ccs:
  - "michaelni@gmx.at"
  - "michael@niedermayer.cc"
- - "jrummell@google.com"
  - "tfoucu@google.com"
  - "twsmith@mozilla.com"
  - "kempfjb@gmail.com"
