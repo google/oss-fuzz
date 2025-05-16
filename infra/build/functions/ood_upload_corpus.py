@@ -77,7 +77,9 @@ def upload_corpus(output_corpus_directory, doc_file_path, path_prefix,
   It uses |path_prefix| to get the upload path."""
   with open(doc_file_path, 'r') as f:
     line = f.readline()
+    print(line)
     doc_str = line.strip()
+    print(line)
   doc_data = json.loads(doc_str)
   doc = build_lib.SignedPolicyDocument(**doc_data)
   file_paths = get_files_path(output_corpus_directory, num_uploads)
