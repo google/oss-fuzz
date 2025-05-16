@@ -19,10 +19,10 @@ RUN apt-get update && apt-get install --yes cmake make autoconf automake autopoi
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/facebook/zstd.git
 RUN git clone --depth 1 https://github.com/openssl/openssl.git
-RUN git clone --depth 1 https://github.com/nih-at/libzip.git
 RUN wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
 RUN git clone https://github.com/tukaani-project/xz.git
 RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
+RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qttools.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/extra-cmake-modules.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/karchive.git
 COPY build.sh karchive_fuzzer.cc $SRC/
