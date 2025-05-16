@@ -380,6 +380,7 @@ def main(argv: list[str]) -> None:
   argv.append(f"-Wl,--dependency-file={dependency_file}")
   argv.append(f"-Wl,--why-extract={why_extract_file}")
   argv.append("-Wl,--build-id")
+  argv.append("-L/usr/local/lib")
   argv.append("-Qunused-arguments")
   run(argv)
 
