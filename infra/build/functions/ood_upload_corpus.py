@@ -29,6 +29,15 @@ import uuid
 import build_lib
 
 
+def get_corpus_signed_policy_document(project_name, fuzz_target_name):
+  """Returns a signed policy document to upload corpus to GCS."""
+  bucket = f'{project_name}-corpus.clusterfuzz-external.appspot.com'
+  path_prefix = f'libFuzzer/{fuzz_target_name}/'
+  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
+      bucket, path_prefix)
+  return signed_policy_document, path_prefix
+
+
 def upload_corpus_file(file_path, upload_path, doc):
   """Make a request to upload a corpus file to GCS."""
   url = f'https://storage.googleapis.com/{doc.bucket}'
@@ -91,12 +100,14 @@ def upload_corpus(output_corpus_directory, doc_file_path, path_prefix,
 
 def main():
   """Upload OSS-Fuzz on Demand output corpus to GCS."""
-  output_corpus_directory = sys.argv[1]
-  doc_file_path = sys.argv[2]
-  path_prefix = sys.argv[3]
+  project_name = sys.argv[1]
+  fuzz_target_name = sys.argv[2]
+  output_corpus_directory = sys.argv[3]
   num_uploads = int(sys.argv[4])
-  upload_corpus(output_corpus_directory, doc_file_path, path_prefix,
-                num_uploads)
+
+  doc, path_prefix = get_corpus_signed_policy_document(project_name,
+                                                       fuzz_target_name)
+  upload_corpus(output_corpus_directory, doc, path_prefix, num_uploads)
 
 
 if __name__ == '__main__':

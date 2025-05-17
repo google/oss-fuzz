@@ -26,6 +26,7 @@ import sys
 
 import build_lib
 import build_project
+from ood_upload_corpus import get_corpus_signed_policy_document, store_doc
 
 INFRA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -90,15 +91,6 @@ def get_fuzz_target_name(project_name):
   fuzz_target_name = resp_json['pairs'][0]['executable']
   logging.info(f'Using fuzz target: {fuzz_target_name}')
   return fuzz_target_name
-
-
-def get_corpus_signed_policy_document(project_name, fuzz_target_name):
-  """Returns a signed policy document to upload corpus to GCS."""
-  bucket = f'{project_name}-corpus.clusterfuzz-external.appspot.com'
-  path_prefix = f'libFuzzer/{fuzz_target_name}/'
-  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
-      bucket, path_prefix)
-  return signed_policy_document
 
 
 def get_env(project, build, fuzz_target_name):
@@ -392,26 +384,15 @@ def get_upload_corpus_steps(fuzzing_engine, project, env_dict):
   """ ."""
   steps = []
 
-  doc = get_corpus_signed_policy_document(project.name, env_dict['FUZZ_TARGET'])
   upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
+  fuzz_target_name = env_dict['FUZZ_TARGET']
   num_uploads = '2'
-  doc_str = json.dumps(doc.__dict__)
-  doc_file_path = f'{GCB_WORKSPACE_DIR}/doc.txt'
-  store_doc_str_step = {
-      'name': 'google/cloud-sdk',
-      'args': [
-          'bash', '-c', f'echo "{shlex.quote(doc_str)}" > {doc_file_path}'
-      ]
-  }
-  steps.append(store_doc_str_step)
-
-  path_prefix = f'libFuzzer/{env_dict["FUZZ_TARGET"]}/'
   upload_corpus_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
       'args': [
-          'python3', upload_corpus_script_path, OOD_OUTPUT_CORPUS_DIR,
-          doc_file_path, path_prefix, num_uploads
+          'python3', upload_corpus_script_path, project.name, fuzz_target_name,
+          OOD_OUTPUT_CORPUS_DIR, num_uploads
       ]
   }
   steps.append(upload_corpus_step)
