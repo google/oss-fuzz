@@ -26,7 +26,6 @@ import sys
 
 import build_lib
 import build_project
-from ood_upload_corpus import get_corpus_signed_policy_document, store_doc
 
 INFRA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
