@@ -39,6 +39,7 @@ INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 
 _LD_PATH = Path('/lib64/ld-linux-x86-64.so.2')
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
+_CLANG_VERSION = '18'
 
 
 def set_env_vars():
@@ -296,15 +297,6 @@ def short_file_hash(files: Path | Sequence[Path]) -> str:
   return sha256(files)[:16]
 
 
-def file_digest(file_handle, hash_obj):
-  block_sz = 65536
-  while True:
-    chunk = file_handle.read(block_sz)
-    if not chunk:
-      break
-    hash_obj.update(chunk)
-
-
 def sha256(files: Union[Path, Sequence[Path]]) -> str:
   """Compute the sha256 of a file or sequence of files.
 
@@ -319,6 +311,8 @@ def sha256(files: Union[Path, Sequence[Path]]) -> str:
   hash_value = hashlib.sha256()
   for file in sorted(files):
     with file.open('rb') as f:
+      # We can't use hashlib.file_digest here because OSS-Fuzz is still on
+      # Python 3.10.
       while True:
         chunk = f.read(8192)  # Reading in 8KB chunks.
         if not chunk:
@@ -327,7 +321,7 @@ def sha256(files: Union[Path, Sequence[Path]]) -> str:
   return hash_value.hexdigest()
 
 
-def copy_fuzzing_engine():
+def copy_fuzzing_engine() -> Path:
   """Copy fuzzing engine."""
   # Not every project saves source to $SRC/$PROJECT_NAME
   fuzzing_engine_dir = SRC / PROJECT
@@ -351,8 +345,8 @@ def build_project():
                  '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
                  f'-gen-cdb-fragment-path {OUT}/cdb '
                  '-Qunused-arguments '
-                 '-isystem /usr/local/lib/clang/18 '
-                 '-resource-dir /usr/local/lib/clang/18 ')
+                 f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
+                 f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} ')
   os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
 
   fuzzing_engine_path = copy_fuzzing_engine()
@@ -372,16 +366,14 @@ def build_project():
       '-gen-cdb-fragment-path',
       f'{OUT}/cdb',
       '-Qunused-arguments',
-      '-isystem',
-      '/usr/local/lib/clang/18',
-      '-I',
+      f'-isystem /usr/local/lib/clang/{_CLANG_VERSION}',
       '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9',
       '-I',
       '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9',
       '-I',
       '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward',
       '-I',
-      '/usr/local/lib/clang/18/include',
+      f'/usr/local/lib/clang/{_CLANG_VERSION}/include',
       '-I',
       '/usr/local/include',
       '-I',
@@ -428,20 +420,20 @@ def set_interpreter(target_path: Path):
           'patchelf',
           '--set-interpreter',
           '/ossfuzzlib/ld-linux-x86-64.so.2',
-          str(target_path),
+          target_path.as_posix(),
       ],
       check=True,
   )
 
 
-def set_rpath_to_ossfuzzlib(binary_artifact):
+def set_rpath_to_ossfuzzlib(binary_artifact: Path):
   subprocess.run(
       [
           'patchelf',
           '--set-rpath',
           '/ossfuzzlib',
           '--force-rpath',
-          str(binary_artifact),
+          binary_artifact.as_posix(),
       ],
       check=True,
   )
