@@ -62,8 +62,8 @@ def run(argv: list[str]) -> None:
 def sha256(file: str) -> str:
   hash_value = hashlib.sha256()
   with open(file, "rb") as f:
-    # python 3.11 is too new, this doesn't work on the oss-fuzz image.
-    # hashlib.file_digest(f, lambda: hash_value)
+    # We can't use hashlib.file_digest here because OSS-Fuzz is still on
+    # Python 3.10.
     for chunk in iter(lambda: f.read(4096), b""):
       hash_value.update(chunk)
   return hash_value.hexdigest()
@@ -231,22 +231,23 @@ def read_cdb_fragments(cdb_path: str) -> Any:
         if data.endswith(",\n"):
           contents.append(data[:-2])
           break
-      print(f"Invalid compile commands file {file}: {data}\nDONEMARKER")
+      print(f"Invalid compile commands file {file}: {data}")
       time.sleep(10)
     else:
-      # Some build systems seem to have a weird issue where the autotools
-      # generated `test.c` for testing compilers doesn't result in valid cdb
-      # fragments.
-      if "/test.c" not in file:
-        raise RuntimeError(
-            f"Invalid compile commands file {file}: {data}\nDONEMARKER")
+      if "/test.c" in file or "/conftest.c" in file:
+        # Some build systems seem to have a weird issue where the autotools
+        # generated `test.c` or `conftest.c` for testing compilers doesn't
+        # result in valid cdb fragments.
+        print("WARNING: invalid compile commands file {file}")
+      else:
+        raise RuntimeError(f"Invalid compile commands file {file}: {data}")
 
   contents = ",\n".join(contents)
   contents = "[" + contents + "]"
   return json.loads(contents)
 
 
-def get_index_files(index_db_path) -> Iterator[str]:
+def get_index_files(index_db_path: str) -> Iterator[str]:
   """Get files referenced in the index."""
   conn = sqlite3.connect(index_db_path)
   cursor = conn.cursor()
