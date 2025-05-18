@@ -391,10 +391,10 @@ def get_upload_corpus_steps(fuzzing_engine, project, env_dict):
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
       'args': [
-          'python3', upload_corpus_script_path, doc_str, path_prefix,
-          OOD_OUTPUT_CORPUS_DIR, num_uploads
-      ],
-      'stdin': doc_str
+          'bash', '-c', 
+          f'echo "{doc_str}" | python3 {upload_corpus_script_path} {doc_str} {path_prefix} '
+          f'{OOD_OUTPUT_CORPUS_DIR} {num_uploads}'
+      ]
   }
   steps.append(upload_corpus_step)
 
