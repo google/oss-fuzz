@@ -394,7 +394,7 @@ def get_upload_corpus_steps(fuzzing_engine, project, env_dict):
           'python3', upload_corpus_script_path, doc_str, path_prefix,
           OOD_OUTPUT_CORPUS_DIR, num_uploads
       ],
-      'secretEnv': f'_DOC_STR={doc_str}'
+      'stdin': doc_str
   }
   steps.append(upload_corpus_step)
 

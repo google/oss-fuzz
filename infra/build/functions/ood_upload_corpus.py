@@ -94,6 +94,8 @@ def upload_corpus(doc_str, path_prefix, output_corpus_directory, num_uploads):
 
 def main():
   """Upload OSS-Fuzz on Demand output corpus to GCS."""
+  doc_str = sys.stdin.read()
+
   doc_str = sys.argv[1]
   path_prefix = sys.argv[2]
   output_corpus_directory = sys.argv[3]
