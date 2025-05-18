@@ -21,11 +21,11 @@ import json
 import logging
 import os
 import requests
-import shlex
 import sys
 
 import build_lib
 import build_project
+import ood_upload_corpus
 
 INFRA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -382,15 +382,16 @@ def get_upload_testcase_steps(project, env_dict):
 def get_upload_corpus_steps(fuzzing_engine, project, env_dict):
   """ ."""
   steps = []
-
+  
   upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
-  fuzz_target_name = env_dict['FUZZ_TARGET']
+  doc, path_prefix = ood_upload_corpus.get_corpus_signed_policy_document(project.name, env_dict['FUZZ_TARGET'])
+  doc_str = json.dumps(doc)
   num_uploads = '2'
   upload_corpus_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
       'args': [
-          'python3', upload_corpus_script_path, project.name, fuzz_target_name,
+          'python3', upload_corpus_script_path, doc_str, path_prefix,
           OOD_OUTPUT_CORPUS_DIR, num_uploads
       ]
   }

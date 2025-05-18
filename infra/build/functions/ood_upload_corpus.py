@@ -80,15 +80,9 @@ def get_files_path(directory_path, num_files):
   return file_paths
 
 
-def upload_corpus(output_corpus_directory, doc_file_path, path_prefix,
-                  num_uploads):
-  """Upload |num_uploads| corpus files using |doc_file_path| signed document policy.
+def upload_corpus(doc_str, path_prefix, output_corpus_directory, num_uploads):
+  """Upload |num_uploads| corpus files using |doc_str| signed document policy.
   It uses |path_prefix| to get the upload path."""
-  with open(doc_file_path, 'r') as f:
-    line = f.readline()
-    print(line)
-    doc_str = line.strip()
-    print(line)
   doc_data = json.loads(doc_str)
   doc = build_lib.SignedPolicyDocument(**doc_data)
   file_paths = get_files_path(output_corpus_directory, num_uploads)
@@ -100,14 +94,12 @@ def upload_corpus(output_corpus_directory, doc_file_path, path_prefix,
 
 def main():
   """Upload OSS-Fuzz on Demand output corpus to GCS."""
-  project_name = sys.argv[1]
-  fuzz_target_name = sys.argv[2]
+  doc_str = sys.argv[1]
+  path_prefix = sys.argv[2]
   output_corpus_directory = sys.argv[3]
   num_uploads = int(sys.argv[4])
 
-  doc, path_prefix = get_corpus_signed_policy_document(project_name,
-                                                       fuzz_target_name)
-  upload_corpus(output_corpus_directory, doc, path_prefix, num_uploads)
+  upload_corpus(doc_str, path_prefix, output_corpus_directory, num_uploads)
 
 
 if __name__ == '__main__':
