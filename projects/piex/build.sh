@@ -50,5 +50,4 @@ ar rcs libpiex.a piex.o piex_cr3.o tiff_parser.o
 
 $CXX $CXXFLAGS $CFLAGS -I. $SRC/piex/src/piex_fuzzer.cc libpiex.a libtiff_directory.a \
     libimage_type_recognition.a libbinary_parse.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer-piex
-cp fuzzer-piex $OUT/
 cp $SRC/old-build/fuzzer-piex_seed_corpus.zip $OUT
