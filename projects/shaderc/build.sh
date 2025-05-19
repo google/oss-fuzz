@@ -32,12 +32,10 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
 ninja -v
 popd
 
-for fuzzer in $(find $SRC -maxdepth 1 -name '*_fuzzer.cc'); do
-  fuzz_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -I$SRC/shaderc/libshaderc/include \
-      -I$SRC/shaderc/libshaderc_util/include \
-      -I$SRC/shaderc/glslc/src -I$SRC/shaderc/third_party/glslang \
-      -c ${fuzzer} -o ${fuzz_basename}.o
+$CXX $CXXFLAGS -I$SRC/shaderc/libshaderc/include \
+  -I$SRC/shaderc/libshaderc_util/include \
+  -I$SRC/shaderc/glslc/src -I$SRC/shaderc/third_party/glslang \
+  -c ${fuzzer} -o ${fuzz_basename}.o
 
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
       ${fuzz_basename}.o -o $OUT/${fuzz_basename} \
