@@ -25,6 +25,7 @@ RUN wget https://go.dev/dl/go1.24.0.linux-amd64.tar.gz \
     && apt-get update \
     && apt-get install -y btrfs-progs libbtrfs-dev
 
+RUN git clone --depth=1 --branch=november-backup https://github.com/AdamKorcz/go-118-fuzz-build
 RUN git clone --depth 1 https://github.com/envoyproxy/gateway.git
 
 COPY build.sh $SRC/
