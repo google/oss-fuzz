@@ -22,8 +22,11 @@ function build_native_go_fuzzer() {
 	tags="-tags gofuzz"
 
 	if [[ $SANITIZER == *coverage* ]]; then
-		fuzzed_repo=$(go list $tags -f {{.Module}} "$path")
-		go-118-fuzz-build $tags -o $fuzzer -sanitizer=coverage -coverpkg=$fuzzed_repo/... -func $function $abs_file_dir
+                 fuzzed_repo=$(go list $tags -f {{.Module}} "$path")
+                 go-118-fuzz-build $tags -o $fuzzer -sanitizer=coverage -coverpkg=$fuzzed_repo/... -func $function $abs_file_dir
+                 abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
+                 # give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
+                 echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
 	else
 		go-118-fuzz-build $tags -o $fuzzer.a -func $function $abs_file_dir
 		$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
