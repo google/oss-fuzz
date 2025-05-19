@@ -88,6 +88,12 @@ class Manifest:
   is_oss_fuzz: bool = False
 
 
+def _is_elf(file: Path) -> bool:
+  """Returns whether a file is an ELF file."""
+  with file.open('rb') as f:
+    return f.read(4) == b'\x7fELF'
+
+
 def save_build(
     manifest: Manifest,
     *,
@@ -103,7 +109,8 @@ def save_build(
 
       def _save_dir(path: Path,
                     prefix: str,
-                    exclude_build_artifacts: bool = False):
+                    exclude_build_artifacts: bool = False,
+                    only_include_target: str | None = None):
         assert prefix.endswith('/')
         for root, _, files in os.walk(path):
           for file in files:
@@ -112,10 +119,14 @@ def save_build(
               continue
 
             file = Path(root, file)
-            if exclude_build_artifacts:
-              with file.open('rb') as f:
-                if f.read(4) == b'\x7fELF':
-                  continue
+            if exclude_build_artifacts and _is_elf(file):
+              continue
+
+            if only_include_target and _is_elf(file):
+              # Skip ELF files that aren't the relevant target (unless it's a
+              # shared library).
+              if file.name != only_include_target and file.suffix != '.so':
+                continue
 
             if (os.path.islink(str(file)) and
                 Path(os.readlink(str(file))).is_absolute()):
@@ -136,7 +147,9 @@ def save_build(
       )
 
       _save_dir(source_dir, 'src/', exclude_build_artifacts=True)
-      _save_dir(build_dir, 'obj/')
+      # Only include the relevant target for the snapshot, to save on disk
+      # space.
+      _save_dir(build_dir, 'obj/', only_include_target=manifest.binary_name)
       _save_dir(index_dir, 'idx/')
 
     shutil.copyfile(tmp.name, archive_path)
