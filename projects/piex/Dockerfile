@@ -17,6 +17,11 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://android.googlesource.com/platform/external/piex
+ADD https://storage.googleapis.com/clusterfuzz-builds/piex/piex-address-202411210638.zip /tmp/piex.zip
+RUN mkdir $SRC/old-build \
+ && unzip /tmp/piex.zip -d $SRC/old-build \
+ && rm /tmp/piex.zip
+
 WORKDIR piex
 COPY build.sh $SRC/
 COPY piex_fuzzer.cc $SRC/piex/src
