@@ -675,7 +675,8 @@ def get_build_body(  # pylint: disable=too-many-arguments
     body_overrides,
     build_tags,
     use_build_pool=True,
-    experiment=False):
+    experiment=False,
+    substitutions=None):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -698,6 +699,8 @@ def get_build_body(  # pylint: disable=too-many-arguments
   }
   if build_tags:
     build_body['tags'] = build_tags
+  if substitutions:
+    build_body['substitutions'] = substitutions
 
   if body_overrides is None:
     body_overrides = {}
@@ -725,7 +728,8 @@ def run_build(  # pylint: disable=too-many-arguments, too-many-locals
     body_overrides=None,
     tags=None,
     use_build_pool=True,
-    experiment=False):
+    experiment=False,
+    substitutions=None):
   """Runs the build."""
 
   build_body = get_build_body(steps,
@@ -733,7 +737,8 @@ def run_build(  # pylint: disable=too-many-arguments, too-many-locals
                               body_overrides,
                               tags,
                               use_build_pool=use_build_pool,
-                              experiment=experiment)
+                              experiment=experiment,
+                              substitutions=substitutions)
   if experiment:
     with tempfile.NamedTemporaryFile(suffix='source.tgz') as tgz_file:
       # Archive the necessary files for the build.
