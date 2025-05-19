@@ -385,6 +385,13 @@ def main(argv: list[str]) -> None:
   argv.append("-Qunused-arguments")
   run(argv)
 
+  # Check if explicit list of allowlisted targets were provided for indexing.
+  targets_to_index = os.getenv('INDEXER_TARGETS')
+  if targets_to_index:
+    if os.path.basename(output_file) not in targets_to_index.split(','):
+      print(f"not indexing as {output_file} is not in the allowlist")
+      return
+
   build_id = get_build_id(output_file)
   assert build_id is not None
 
@@ -436,6 +443,7 @@ def main(argv: list[str]) -> None:
       "gnu_build_id": build_id,
       "compile_commands": list(commands.values()),
   }
+
   run_indexer(build_id, linker_commands)
   linker_commands = json.dumps(linker_commands)
   commands_path = os.path.join(cdb_path, build_id + "_linker_commands.json")

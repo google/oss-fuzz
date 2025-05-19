@@ -16,6 +16,7 @@
 ################################################################################
 """This runs the actual build process to generate a snapshot."""
 
+import argparse
 import dataclasses
 import hashlib
 import io
@@ -346,7 +347,7 @@ def copy_fuzzing_engine() -> Path:
   return fuzzing_engine_dir
 
 
-def build_project():
+def build_project(targets_to_index: Sequence[str] | None = None):
   """Build the actual project."""
   set_env_vars()
   existing_cflags = os.environ.get('CFLAGS', '')
@@ -361,6 +362,8 @@ def build_project():
                  f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
                  f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} ')
   os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
+  if targets_to_index:
+    os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
 
   fuzzing_engine_path = copy_fuzzing_engine()
 
@@ -515,7 +518,7 @@ def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
       raise e
 
 
-def archive_target(target: BinaryMetadata,) -> Path | None:
+def archive_target(target: BinaryMetadata) -> Path | None:
   """Archives a single target in the project using the exported rootfs."""
   logging.info('archive_target %s', target.name)
   index_dir = INDEXES_PATH / target.build_id
@@ -564,9 +567,12 @@ def archive_target(target: BinaryMetadata,) -> Path | None:
   return archive_path
 
 
-def test_and_archive():
+def test_and_archive(targets_to_index: Sequence[str] | None):
   """Test target and archive."""
   targets = enumerate_build_targets()
+  if targets_to_index:
+    targets = [t for t in targets if t.name in targets_to_index]
+
   logging.info('targets %s', targets)
   for target in targets:
     try:
@@ -581,19 +587,32 @@ def test_and_archive():
 
 
 def main():
-  logging.basicConfig(level=logging.INFO)
   INDEXES_PATH.mkdir(exist_ok=True)
+
+  parser = argparse.ArgumentParser(description='Index builder.')
+  parser.add_argument(
+      '-t',
+      '--targets',
+      help=('Comma separated list of targets to build for. '
+            'If this is omitted, all target snapshots are built.'))
+  args = parser.parse_args()
+
+  targets_to_index = None
+  if args.targets:
+    targets_to_index = args.targets.split(',')
 
   for directory in ['aflplusplus', 'fuzztest', 'honggfuzz', 'libfuzzer']:
     path = os.path.join(os.environ['SRC'], directory)
     shutil.rmtree(path, ignore_errors=True)
+
   # Initially, we put snapshots directly in /out. This caused a bug where each
   # snapshot was added to the next because they contain the contents of /out.
   SNAPSHOT_DIR.mkdir(exist_ok=True)
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
-  build_project()
-  test_and_archive()
+  build_project(targets_to_index)
+  test_and_archive(targets_to_index)
+
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
 

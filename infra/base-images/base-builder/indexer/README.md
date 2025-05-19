@@ -12,6 +12,8 @@ Snapshots are also built by our infrastructure and available at
 ```bash
 python infra/helper.py build_image <project>
 python infra/helper.py index <project>
+# Only build snapshots for `target1` and `target2`.
+python infra/helper.py index --targets 'target1,target2' <project>
 ```
 
 The resulting snapshots will be found in `<oss-fuzz checkout>/build/out/<project>`.
@@ -36,6 +38,8 @@ docker run --rm -ti -e PROJECT_NAME=$PROJECT_NAME \
     gcr.io/oss-fuzz/$PROJECT_NAME /bin/bash
 
 python /opt/indexer/index_build.py
+# To only build snapshots for `target1` and `target2`:
+# python /opt/indexer/index_build.py --targets target1,target2
 ```
 
 The resulting snapshots will be found in `<oss-fuzz checkout>/build/out/<project>`.
