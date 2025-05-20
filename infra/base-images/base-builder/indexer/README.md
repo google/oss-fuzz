@@ -32,6 +32,7 @@ cd $OSS_FUZZ_CHECKOUT/infra/base-images/base-builder/indexer
 ln -s clang_wrapper.py clang
 ln -s clang_wrapper.py clang++
 curl -O https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer
+chmod +x indexer
 
 cd $OSS_FUZZ_CHECKOUT
 python infra/helper.py build_image $PROJECT_NAME
