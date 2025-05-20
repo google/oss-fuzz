@@ -86,8 +86,35 @@ class FuzzbenchTest(unittest.TestCase):
       
     with open(LOG_FILE_PATH, 'r', encoding='utf-8') as log_file:
       log_content = log_file.read()
-      expected_string = 'Cloning'
+      expected_string = 'Successfully built'
       # self.assertIn(expected_string, log_content)
+  
+  def _run_ood_image_step_test(self, fuzzing_engine, project, env_dict):
+    steps = fuzzbench.get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict)
+    test_steps = []
+    for step in steps:
+      if step['args'][0] != 'push':
+        test_steps.append(step)
+    ood_run_local.run_steps_locally(test_steps, self.temp_dir, LOG_FILE_PATH, testing=True)
+      
+    with open(LOG_FILE_PATH, 'r', encoding='utf-8') as log_file:
+      log_content = log_file.read()
+      expected_string = 'Running target'
+      self.assertIn(expected_string, log_content)
+  
+  def _extract_crashes_steps_test(self, fuzzing_engine, project, env_dict):
+    steps = fuzzbench.get_extract_crashes_steps(fuzzing_engine, project, env_dict)
+  
+    for step in steps:
+      if '-runs=0 -artifact_prefix=' in step['args'][-1]:
+        step['args'] = ['timeout', '10'] + step['args']
+    ood_run_local.run_steps_locally(steps, self.temp_dir, LOG_FILE_PATH, testing=True)
+      
+    with open(LOG_FILE_PATH, 'r', encoding='utf-8') as log_file:
+      log_content = log_file.read()
+      expected_string = 'Running target'
+      # self.assertIn(expected_string, log_content)
+
 
   def test_fuzzbench(self):
     fuzzing_engine, project, env = ood_test_setup()
@@ -98,20 +125,9 @@ class FuzzbenchTest(unittest.TestCase):
     instance._build_fuzzers_steps_test(fuzzing_engine, project, env)
     instance._corpus_steps_test(fuzzing_engine, project, env_dict)
     instance._build_ood_image_steps_test(fuzzing_engine, project, env_dict)
+    instance._run_ood_image_step_test(fuzzing_engine, project, env_dict)
+    instance._extract_crashes_steps_test(fuzzing_engine, project, env_dict)
     self.remove_temp_dir()
-
-
-
-  # def test_run_ood_image_step(self):
-  #   fuzzing_engine, project, env = ood_test_setup()
-  #   steps = fuzzbench.get_push_and_run_ood_image_steps()
-  #   ood_run_local.run_steps_locally(steps, self.temp_dir, LOG_FILE_PATH, testing=True)
-      
-  #   with open(LOG_FILE_PATH, 'r', encoding='utf-8') as log_file:
-  #     log_content = log_file.read()
-  #     expected_string = 'Cloning'
-  #     self.assertIn(expected_string, log_content)
-
 
 
 def ood_test_setup():

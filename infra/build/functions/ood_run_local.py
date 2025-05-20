@@ -85,8 +85,8 @@ def run_step_locally(temp_dir, local_workspace_path, local_fuzzbench_path, step,
         docker_command.extend(['-e', env_var])
 
     docker_command.append(image_name)
-    if '-runs=0 -artifact_prefix=' in args[-1]:
-        docker_command += ['timeout', '10']
+    # if '-runs=0 -artifact_prefix=' in args[-1]:
+    #     docker_command += ['timeout', '10']
     docker_command.extend(args)
 
     if 'https://github.com/google/oss-fuzz.git' in docker_command:
