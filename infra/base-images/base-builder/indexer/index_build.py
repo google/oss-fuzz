@@ -92,8 +92,8 @@ class Manifest:
 def _is_excludable_elf(file: Path) -> bool:
   """Returns whether a file is an ELF file."""
   with file.open('rb') as f:
-    return (f.read(4) == b'\x7fELF' and not
-            str(file.absolute()).startswith('/out/lib/'))
+    return (f.read(4) == b'\x7fELF' and
+            not str(file.absolute()).startswith('/out/lib/'))
 
 
 def save_build(
