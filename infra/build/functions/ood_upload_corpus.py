@@ -16,6 +16,8 @@
 #
 ################################################################################
 """Upload OSS-Fuzz on Demand output corpus to GCS."""
+
+import argparse
 import base64
 import json
 import logging
@@ -87,15 +89,40 @@ def upload_corpus(doc_str, path_prefix, output_corpus_directory, num_uploads):
     upload_path = path_prefix + suffix
     upload_corpus_file(file_path, upload_path, doc)
 
+def get_args():
+  """Parses command line arguments and returns them."""
+  parser = argparse.ArgumentParser(
+        description="Script to upload corpus elements to GCS."
+  )
+  parser.add_argument(
+      "doc_str",
+      type=str,
+      help="The signed document policy string."
+  )
+  parser.add_argument(
+      "path_prefix",
+      type=str,
+      help="The prefix to get the corpus upload path."
+  )
+  parser.add_argument(
+      "output_corpus_directory",
+      type=str,
+      help="The directory where the fuzzing output corpus is stored."
+  )
+  parser.add_argument(
+      "num_uploads",
+      type=int,
+      help="The number of elements which will be uploaded."
+  )
+  args = parser.parse_args()
+  return args
+
 
 def main():
   """Upload OSS-Fuzz on Demand output corpus to GCS."""
-  doc_str = sys.argv[1]
-  path_prefix = sys.argv[2]
-  output_corpus_directory = sys.argv[3]
-  num_uploads = int(sys.argv[4])
-
-  upload_corpus(doc_str, path_prefix, output_corpus_directory, num_uploads)
+  args = get_args()
+  upload_corpus(args.doc_str, args.path_prefix, args.output_corpus_directory,
+                args.num_uploads)
 
 
 if __name__ == '__main__':
