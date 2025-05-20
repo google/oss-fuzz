@@ -429,7 +429,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                             env_dict)
   steps += get_extract_crashes_steps(config.fuzzing_engine, project, env_dict)
   steps += get_upload_testcase_steps(project, env_dict)
-#   steps += get_upload_corpus_steps(config.fuzzing_engine, project, env_dict)
+  steps += get_upload_corpus_steps(config.fuzzing_engine, project, env_dict)
 
   return steps
 
