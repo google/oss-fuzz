@@ -1,0 +1,7 @@
+# 项目元数据：名称、源代码仓库、语言、模糊测试引擎和 AddressSanitizer
+name: example-buggy
+repo: https://github.com/yourname/example-buggy
+language: cpp
+fuzzing_engine: libfuzzer
+sanitizer: address
+
