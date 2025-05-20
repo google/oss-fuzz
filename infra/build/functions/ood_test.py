@@ -34,7 +34,7 @@ class FuzzbenchTest(unittest.TestCase):
 
   def remove_temp_dir(self):
     """"""
-    ood_run_local.remove_temp_dir_content(self.temp_dir, self.temp_dir, -1)
+    ood_run_local.remove_temp_dir_content(self.temp_dir, -1)
     shutil.rmtree(self.temp_dir)
 
   def _fuzzbench_setup_steps_test(self, fuzzing_engine, project, env):
