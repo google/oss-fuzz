@@ -57,12 +57,12 @@ def upload_corpus_file(file_path, upload_path, doc):
   try:
     response = requests.post(url, data=data, files=files)
     response.raise_for_status()
-    print(f"File uploaded successfully to {url}/{upload_path}")
+    print(f'File uploaded successfully to {url}/{upload_path}')
   except requests.exceptions.RequestException as e:
-    print(f"Error uploading file: {e}")
+    print(f'Error uploading file: {e}')
     if response is not None:
-      print(f"Response status code: {response.status_code}")
-      print(f"Response text: {response.text}")
+      print(f'Response status code: {response.status_code}')
+      print(f'Response text: {response.text}')
 
 
 def get_files_path(directory_path, num_files):
