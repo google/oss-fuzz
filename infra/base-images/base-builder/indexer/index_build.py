@@ -93,7 +93,7 @@ def _is_excludable_elf(file: Path) -> bool:
   """Returns whether a file is an ELF file."""
   with file.open('rb') as f:
     return (f.read(4) == b'\x7fELF' and
-            not str(file.absolute()).startswith('/out/lib/'))
+            not file.absolute().as_posix().startswith('/out/lib/'))
 
 
 def save_build(
@@ -127,7 +127,7 @@ def save_build(
             if only_include_target and _is_excludable_elf(file):
               # Skip ELF files that aren't the relevant target (unless it's a
               # shared library).
-              if file.name != only_include_target and file.suffix != '.so':
+              if file.name != only_include_target and '.so' not in file.suffix:
                 continue
 
             tar.add(

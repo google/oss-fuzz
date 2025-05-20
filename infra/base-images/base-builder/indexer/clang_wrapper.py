@@ -191,7 +191,6 @@ def parse_dependency_file(file_path: str, output_file: str,
   output_file_line = f"{output_file}: \\"
   with open(file_path, "r") as f:
     lines = [line.strip() for line in f]
-  # lines = [line if not line.endswith(" \\") else line[:-2] for line in lines ]
 
   assert is_suffix_match(
       lines[0],
