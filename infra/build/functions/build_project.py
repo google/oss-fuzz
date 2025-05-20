@@ -36,7 +36,6 @@ import six
 import yaml
 
 import build_lib
-import ood_upload_corpus
 
 FUZZING_BUILD_TYPE = 'fuzzing'
 INDEXER_BUILD_TYPE = 'indexer'
@@ -668,8 +667,7 @@ def run_build(oss_fuzz_project,
               build_type,
               cloud_project='oss-fuzz',
               extra_tags=None,
-              experiment=False,
-              substitutions=None):
+              experiment=False):
   """Run the build for given steps on cloud build. |build_steps| are the steps
   to run. |credentials| are are used to authenticate to GCB and build in
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
@@ -691,8 +689,7 @@ def run_build(oss_fuzz_project,
                              timeout,
                              body_overrides=body_overrides,
                              tags=tags,
-                             experiment=experiment,
-                             substitutions=substitutions)
+                             experiment=experiment)
 
 
 def parse_args(description, args):
@@ -751,23 +748,6 @@ def create_config(args, build_type):
                 fuzzing_engine=args.fuzzing_engine,
                 fuzz_target=args.fuzz_target)
 
-def get_ood_substitutions(project_name, steps):
-  ""
-  fuzz_target_name = None
-  for step in steps:
-    if 'env' in step:
-      env_dict = {string.split('=')[0]: string.split('=')[1] for string in step['env']}
-      if 'FUZZ_TARGET' in env_dict:
-        fuzz_target_name = env_dict['FUZZ_TARGET']
-      for value in env_dict.values():
-        if value.startswith('$_'):
-          substitution_key = value[1:]
-  if not fuzz_target_name:
-    return None
-  doc, path_prefix = ood_upload_corpus.get_corpus_signed_policy_document(project_name, fuzz_target_name)
-  substitution_value = json.dumps(doc.__dict__)
-  substitutions = {substitution_key: substitution_value}
-  return substitutions
 
 def build_script_main(script_description,
                       get_build_steps_func,
@@ -799,14 +779,11 @@ def build_script_main(script_description,
       error = True
       continue
 
-    substitutions = get_ood_substitutions(project_name, steps)
-
     run_build(project_name,
               steps,
               credentials,
               build_type,
-              experiment=args.experiment,
-              substitutions=substitutions)
+              experiment=args.experiment)
   return 0 if not error else 1
 
 
