@@ -1,0 +1,35 @@
+name: CIFuzz
+
+on:
+  pull_request:
+
+jobs:
+  fuzzing:
+    runs-on: ubuntu-latest
+    permissions: security-events: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Fuzzers
+        id: build
+        uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+        with:
+          oss-fuzz-project-name: 'example-buggy'
+          language: c++
+
+      - name: Run Fuzzers
+        uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+        with:
+          oss-fuzz-project-name: 'example-buggy'
+          language: c++
+          fuzz-seconds: 300
+          output-sarif: true
+
+      - name: Upload Crash Artifacts
+        if: failure() && steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: crash-artifacts
+          path: ./out/artifacts
+
