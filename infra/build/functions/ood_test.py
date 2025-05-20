@@ -87,7 +87,7 @@ class FuzzbenchTest(unittest.TestCase):
     with open(LOG_FILE_PATH, 'r', encoding='utf-8') as log_file:
       log_content = log_file.read()
       expected_string = 'Successfully built'
-      # self.assertIn(expected_string, log_content)
+      self.assertIn(expected_string, log_content)
   
   def _run_ood_image_step_test(self, fuzzing_engine, project, env_dict):
     steps = fuzzbench.get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict)
@@ -112,8 +112,8 @@ class FuzzbenchTest(unittest.TestCase):
       
     with open(LOG_FILE_PATH, 'r', encoding='utf-8') as log_file:
       log_content = log_file.read()
-      expected_string = 'Running target'
-      # self.assertIn(expected_string, log_content)
+      expected_string = 'inflating'
+      self.assertIn(expected_string, log_content)
 
 
   def test_fuzzbench(self):
