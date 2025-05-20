@@ -30,7 +30,7 @@ import build_lib
 
 
 def get_corpus_signed_policy_document(project_name, fuzz_target_name):
-  """Returns a signed policy document to upload corpus to GCS."""
+  """Returns a signed policy document and a path prefix to upload corpus to GCS."""
   bucket = f'{project_name}-corpus.clusterfuzz-external.appspot.com'
   path_prefix = f'libFuzzer/{fuzz_target_name}/'
   signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
@@ -53,10 +53,6 @@ def upload_corpus_file(file_path, upload_path, doc):
   files = {
       'file': open(file_path, 'rb'),
   }
-  print('Request files:')
-  for key in files:
-    if key != 'policy' and key != 'x-goog-signature':
-      print(f'{key}: {files[key]}')
   try:
     response = requests.post(url, data=data, files=files)
     response.raise_for_status()

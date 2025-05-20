@@ -386,7 +386,7 @@ def get_upload_corpus_steps(fuzzing_engine, project, env_dict):
   upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
   doc, path_prefix = ood_upload_corpus.get_corpus_signed_policy_document(project.name, env_dict['FUZZ_TARGET'])
   doc_str = json.dumps(doc.__dict__)
-  num_uploads = '2'
+  num_uploads = '100'
   upload_corpus_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
