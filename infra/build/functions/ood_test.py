@@ -131,8 +131,8 @@ class FuzzbenchTest(unittest.TestCase):
 
 
 def ood_test_setup():
-  project_name = 'libucl'
-  fuzz_target_name = 'ucl_add_string_fuzzer'
+  project_name = 'example'
+  fuzz_target_name = 'do_stuff_fuzzer'
   project_yaml, dockerfile_lines = build_project.get_project_data(project_name)
   project = build_project.Project(project_name, project_yaml, dockerfile_lines)
   fuzzing_engine = 'mopt'
