@@ -89,10 +89,11 @@ class Manifest:
   is_oss_fuzz: bool = False
 
 
-def _is_elf(file: Path) -> bool:
+def _is_excludable_elf(file: Path) -> bool:
   """Returns whether a file is an ELF file."""
   with file.open('rb') as f:
-    return f.read(4) == b'\x7fELF'
+    return (f.read(4) == b'\x7fELF' and not
+            str(file.absolute()).startswith('/out/lib/'))
 
 
 def save_build(
@@ -120,10 +121,10 @@ def save_build(
               continue
 
             file = Path(root, file)
-            if exclude_build_artifacts and _is_elf(file):
+            if exclude_build_artifacts and _is_excludable_elf(file):
               continue
 
-            if only_include_target and _is_elf(file):
+            if only_include_target and _is_excludable_elf(file):
               # Skip ELF files that aren't the relevant target (unless it's a
               # shared library).
               if file.name != only_include_target and file.suffix != '.so':
