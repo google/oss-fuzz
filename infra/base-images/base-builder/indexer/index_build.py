@@ -129,12 +129,10 @@ def save_build(
               if file.name != only_include_target and file.suffix != '.so':
                 continue
 
-            if (os.path.islink(str(file)) and
-                Path(os.readlink(str(file))).is_absolute()):
-              logging.warning('Adding absolute path to the tarball: %s', file)
-
             tar.add(
-                str(file),
+                # Don't try to replicate symlinks in the tarfile, because they
+                # can lead to various issues (e.g. absolute symlinks).
+                file.resolve().as_posix(),
                 arcname=prefix + str(file.relative_to(path)),
             )
 
