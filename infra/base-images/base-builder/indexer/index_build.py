@@ -126,7 +126,9 @@ def save_build(
             if only_include_target and _is_elf(file):
               # Skip ELF files that aren't the relevant target (unless it's a
               # shared library).
-              if file.name != only_include_target and file.suffix != '.so':
+              if (file.name != only_include_target and
+                  '.so' not in file.name and
+                  not file.absolute().is_relative_to(Path(OUT) / 'lib')):
                 continue
 
             tar.add(
