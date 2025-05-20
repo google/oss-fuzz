@@ -24,7 +24,7 @@ from unittest import mock
 import ood_upload_testcase
 
 
-class GetCrashFilePath(unittest.TestCase):
+class GetCrashFilePathTest(unittest.TestCase):
   """Tests for get_crash_file_path."""
 
   def setUp(self):

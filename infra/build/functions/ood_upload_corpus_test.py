@@ -26,7 +26,7 @@ import build_lib
 import ood_upload_corpus
 
 
-class GetFilePath(unittest.TestCase):
+class GetFilePathTest(unittest.TestCase):
   """Tests for get_files_path function."""
 
   def setUp(self):
