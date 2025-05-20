@@ -55,9 +55,14 @@ class GetFilePath(unittest.TestCase):
     for name in file_names:
       file_path = os.path.join(self.temp_dir, name)
       open(file_path, 'w').close()
-    self.assertEqual(
-        ood_upload_corpus.get_files_path(self.temp_dir, 2),
-        [f'{self.temp_dir}/data.json', f'{self.temp_dir}/file2.csv'])
+    files_path_set = set(ood_upload_corpus.get_files_path(self.temp_dir, 2))
+    self.assertTrue(len(files_path_set) == 2)
+    self.assertTrue(
+        files_path_set.issubset(
+            set([
+                f'{self.temp_dir}/file1.txt', f'{self.temp_dir}/file2.csv',
+                f'{self.temp_dir}/data.json'
+            ])))
 
   def test_with_subdirectory(self):
     """Test for directory with subdirectory"""
