@@ -38,7 +38,7 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
         with:
-          version: '298.0.0'
+          version: '523.0.0'
       - run: |
           sudo env "PATH=$PATH" gcloud components install beta cloud-datastore-emulator
 
