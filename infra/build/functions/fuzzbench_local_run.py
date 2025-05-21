@@ -14,7 +14,7 @@
 #
 ################################################################################
 """Does fuzzbench runs locally."""
- 
+
 import os
 import re
 import shutil
