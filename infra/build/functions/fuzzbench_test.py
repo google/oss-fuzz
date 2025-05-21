@@ -245,6 +245,9 @@ class FuzzbenchRunsTest(unittest.TestCase):
     """Test for extract crashes steps."""
     steps = fuzzbench.get_extract_crashes_steps(fuzzing_engine, project,
                                                 env_dict)
+    for step in steps:
+      if '-runs=0 -artifact_prefix=' in step['args'][-1]:
+        step['args'] = ['timeout', '10'] + step['args']
     fuzzbench_local_run.run_steps_locally(steps,
                                           self.temp_dir,
                                           LOG_FILE_PATH,
