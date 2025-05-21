@@ -14,10 +14,8 @@
 #
 ################################################################################
 """Does fuzzbench runs locally."""
-
-import logging
+ 
 import os
-import pprint
 import re
 import shutil
 import subprocess
@@ -176,7 +174,7 @@ def run_steps_locally(steps,
 def main():
   """Local fuzzbench build and run for OSS-Fuzz projects. Excludes steps on
   which non local storage is written."""
-  args = build_project.parse_args('local_fuzzbench_run', args)
+  args = build_project.parse_args('local_fuzzbench_run', None)
   project_name = args.projects[0]
   project_yaml, dockerfile_lines = build_project.get_project_data(project_name)
   config = build_project.create_config(args, fuzzbench.FUZZBENCH_BUILD_TYPE)
