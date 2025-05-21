@@ -16,11 +16,11 @@
 ################################################################################
 """index_build tests."""
 
-from collections.abc import Sequence
 from pathlib import Path
 import json
 import subprocess
 import tarfile
+from typing import Sequence
 import unittest
 
 THIS_DIR = Path(__file__).parent
