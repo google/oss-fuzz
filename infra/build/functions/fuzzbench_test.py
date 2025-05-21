@@ -14,11 +14,23 @@
 #
 ################################################################################
 """Tests for fuzzbench.py."""
+
+import logging
+import os
 import requests
+import sys
+import shutil
+import tempfile
 import unittest
 from unittest import mock
 
+import build_lib
+import build_project
 import fuzzbench
+import fuzzbench_local_run
+
+LOG_FILE_PATH = os.path.join(os.path.dirname(__file__),
+                             'fuzzbench_test_log.txt')
 
 
 class GetFuzzTargetName(unittest.TestCase):
@@ -111,6 +123,135 @@ class GetFuzzTargetName(unittest.TestCase):
         headers={'accept': 'application/json'})
     mock_logging_info.assert_called_once_with(
         f'There are no fuzz targets available for {project_name}')
+
+
+class FuzzbenchRunsTest(unittest.TestCase):
+  """Tests for fuzzbench runs."""
+  temp_dir = tempfile.mkdtemp()
+
+  def _remove_temp_dir(self):
+    """Removes temporary directory."""
+    with open(LOG_FILE_PATH, 'w', encoding='utf-8') as log_file:
+      fuzzbench_local_run.remove_temp_dir_content(self.temp_dir, -1, log_file)
+      shutil.rmtree(self.temp_dir)
+    os.remove(LOG_FILE_PATH)
+
+  def _fuzzbench_test_setup(self):
+    """Returns necessary variables for fuzzbench runs setup."""
+    project_name = 'example'
+    fuzz_target_name = 'do_stuff_fuzzer'
+    project_yaml, dockerfile_lines = build_project.get_project_data(
+        project_name)
+    project = build_project.Project(project_name, project_yaml,
+                                    dockerfile_lines)
+    fuzzing_engine = 'mopt'
+    build = build_project.Build(fuzzing_engine, 'address', 'x86_64')
+    env = fuzzbench.get_env(project, build, fuzz_target_name)
+
+    return fuzzing_engine, project, env
+
+  def _assert_log_content(self, strings_frequency_list):
+    """Asserts the frequency of string in log content."""
+    with open(LOG_FILE_PATH, 'r', encoding='utf-8') as log_file:
+      log_content = log_file.read()
+      for string_frequency in strings_frequency_list:
+        string = string_frequency[0]
+        frequency = string_frequency[1]
+        count = log_content.count(string)
+        self.assertEqual(count, frequency)
+
+  def _fuzzbench_setup_steps_test(self, fuzzing_engine, project, env):
+    """Test for fuzzbench setup steps."""
+    steps = fuzzbench.get_fuzzbench_setup_steps()
+    fuzzbench_local_run.run_steps_locally(steps,
+                                          self.temp_dir,
+                                          LOG_FILE_PATH,
+                                          testing=True)
+    strings_frequency_list = [('Cloning', 1), ('Pulling', 1),
+                              ('successfully', 3)]
+    self._assert_log_content(strings_frequency_list)
+
+  def _get_project_image_steps_test(self, fuzzing_engine, project, env_dict):
+    """Test for project image steps."""
+    config = build_project.Config(build_type=fuzzbench.FUZZBENCH_BUILD_TYPE,
+                                  fuzzing_engine=fuzzing_engine,
+                                  fuzz_target=env_dict['FUZZ_TARGET'])
+    steps = build_lib.get_project_image_steps(project.name,
+                                              project.image,
+                                              project.fuzzing_language,
+                                              config=config)
+    fuzzbench_local_run.run_steps_locally(steps,
+                                          self.temp_dir,
+                                          LOG_FILE_PATH,
+                                          testing=True)
+    strings_frequency_list = [('cp -r', 1), ('built', 1), ('successfully', 3)]
+    self._assert_log_content(strings_frequency_list)
+
+  def _build_fuzzers_steps_test(self, fuzzing_engine, project, env):
+    """Test for build fuzzers steps."""
+    steps = fuzzbench.get_build_fuzzers_steps(fuzzing_engine, project, env)
+    fuzzbench_local_run.run_steps_locally(steps,
+                                          self.temp_dir,
+                                          LOG_FILE_PATH,
+                                          testing=True)
+    strings_frequency_list = [('Building benchmark', 1), ('built', 2),
+                              ('successfully', 2)]
+    self._assert_log_content(strings_frequency_list)
+
+  def _corpus_steps_test(self, fuzzing_engine, project, env_dict):
+    """Test for corpus steps."""
+    steps = fuzzbench.get_gcs_corpus_steps(fuzzing_engine, project, env_dict)
+    fuzzbench_local_run.run_steps_locally(steps, self.temp_dir, LOG_FILE_PATH, testing=True)
+    strings_frequency_list = [('URL', 5), ('corpus', 19), ('successfully', 2)]
+    self._assert_log_content(strings_frequency_list)
+
+  def _build_ood_image_steps_test(self, fuzzing_engine, project, env_dict):
+    """Test for build ood image steps."""
+    steps = fuzzbench.get_build_ood_image_steps(fuzzing_engine, project, env_dict)
+    # Limit fuzzing time for testing
+    build_ood_image_args = steps[2]['args']
+    for i in range(len(build_ood_image_args)):
+      if 'MAX_TOTAL_TIME' in build_ood_image_args[i]:
+        build_ood_image_args[i] = 'MAX_TOTAL_TIME=5'
+    fuzzbench_local_run.run_steps_locally(steps, self.temp_dir, LOG_FILE_PATH, testing=True)
+    strings_frequency_list = [('fuzzbench_run_fuzzer.sh', 5), ('built', 2), ('successfully', 3)]
+    self._assert_log_content(strings_frequency_list)
+
+  def _run_ood_image_step_test(self, fuzzing_engine, project, env_dict):
+    """Test for run ood image step."""
+    steps = fuzzbench.get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict)
+    test_steps = []
+    for step in steps:
+      if step['args'][0] != 'push':
+        test_steps.append(step)
+    fuzzbench_local_run.run_steps_locally(test_steps, self.temp_dir,
+                                          LOG_FILE_PATH, testing=True)
+    strings_frequency_list = [('Running target with afl-fuzz', 1),
+                              ('successfully', 1)]
+    self._assert_log_content(strings_frequency_list)
+
+  def _extract_crashes_steps_test(self, fuzzing_engine, project, env_dict):
+    """Test for extract crashes steps."""
+    steps = fuzzbench.get_extract_crashes_steps(fuzzing_engine, project,
+                                                env_dict)
+    fuzzbench_local_run.run_steps_locally(steps, self.temp_dir, LOG_FILE_PATH,
+                                          testing=True)
+    strings_frequency_list = [('Copying', 1), ('extracting', 1),
+                              ('inflating', 2), ('successfully', 3)]
+    self._assert_log_content(strings_frequency_list)
+
+  def test_fuzzbench_runs(self):
+    """Test for fuzzbench runs."""
+    fuzzing_engine, project, env = self._fuzzbench_test_setup()
+    env_dict = {string.split('=')[0]: string.split('=')[1] for string in env}
+    self._fuzzbench_setup_steps_test(fuzzing_engine, project, env)
+    self._get_project_image_steps_test(fuzzing_engine, project, env_dict)
+    self._build_fuzzers_steps_test(fuzzing_engine, project, env)
+    self._corpus_steps_test(fuzzing_engine, project, env_dict)
+    self._build_ood_image_steps_test(fuzzing_engine, project, env_dict)
+    self._run_ood_image_step_test(fuzzing_engine, project, env_dict)
+    self._extract_crashes_steps_test(fuzzing_engine, project, env_dict)
+    self._remove_temp_dir()
 
 
 if __name__ == '__main__':
