@@ -201,31 +201,42 @@ class FuzzbenchRunsTest(unittest.TestCase):
   def _corpus_steps_test(self, fuzzing_engine, project, env_dict):
     """Test for corpus steps."""
     steps = fuzzbench.get_gcs_corpus_steps(fuzzing_engine, project, env_dict)
-    fuzzbench_local_run.run_steps_locally(steps, self.temp_dir, LOG_FILE_PATH, testing=True)
+    fuzzbench_local_run.run_steps_locally(steps,
+                                          self.temp_dir,
+                                          LOG_FILE_PATH,
+                                          testing=True)
     strings_frequency_list = [('URL', 5), ('corpus', 19), ('successfully', 2)]
     self._assert_log_content(strings_frequency_list)
 
   def _build_ood_image_steps_test(self, fuzzing_engine, project, env_dict):
     """Test for build ood image steps."""
-    steps = fuzzbench.get_build_ood_image_steps(fuzzing_engine, project, env_dict)
+    steps = fuzzbench.get_build_ood_image_steps(fuzzing_engine, project,
+                                                env_dict)
     # Limit fuzzing time for testing
     build_ood_image_args = steps[2]['args']
     for i in range(len(build_ood_image_args)):
       if 'MAX_TOTAL_TIME' in build_ood_image_args[i]:
         build_ood_image_args[i] = 'MAX_TOTAL_TIME=5'
-    fuzzbench_local_run.run_steps_locally(steps, self.temp_dir, LOG_FILE_PATH, testing=True)
-    strings_frequency_list = [('fuzzbench_run_fuzzer.sh', 5), ('built', 2), ('successfully', 3)]
+    fuzzbench_local_run.run_steps_locally(steps,
+                                          self.temp_dir,
+                                          LOG_FILE_PATH,
+                                          testing=True)
+    strings_frequency_list = [('fuzzbench_run_fuzzer.sh', 5), ('built', 2),
+                              ('successfully', 3)]
     self._assert_log_content(strings_frequency_list)
 
   def _run_ood_image_step_test(self, fuzzing_engine, project, env_dict):
     """Test for run ood image step."""
-    steps = fuzzbench.get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict)
+    steps = fuzzbench.get_push_and_run_ood_image_steps(fuzzing_engine, project,
+                                                       env_dict)
     test_steps = []
     for step in steps:
       if step['args'][0] != 'push':
         test_steps.append(step)
-    fuzzbench_local_run.run_steps_locally(test_steps, self.temp_dir,
-                                          LOG_FILE_PATH, testing=True)
+    fuzzbench_local_run.run_steps_locally(test_steps,
+                                          self.temp_dir,
+                                          LOG_FILE_PATH,
+                                          testing=True)
     strings_frequency_list = [('Running target with afl-fuzz', 1),
                               ('successfully', 1)]
     self._assert_log_content(strings_frequency_list)
@@ -234,7 +245,9 @@ class FuzzbenchRunsTest(unittest.TestCase):
     """Test for extract crashes steps."""
     steps = fuzzbench.get_extract_crashes_steps(fuzzing_engine, project,
                                                 env_dict)
-    fuzzbench_local_run.run_steps_locally(steps, self.temp_dir, LOG_FILE_PATH,
+    fuzzbench_local_run.run_steps_locally(steps,
+                                          self.temp_dir,
+                                          LOG_FILE_PATH,
                                           testing=True)
     strings_frequency_list = [('Copying', 1), ('extracting', 1),
                               ('inflating', 2), ('successfully', 3)]
