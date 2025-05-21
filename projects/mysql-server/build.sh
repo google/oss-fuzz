@@ -19,8 +19,14 @@
 cd mysql-server
 mkdir build
 cd build
-cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_LD=lld
-make -j$(nproc) -C router
+# maybe we need to add WITH_LSAN
+export MY_SANITIZER="-DWITH_ASAN=ON"
+if [[ $SANITIZER = *undefined* ]]; then
+    export MY_SANITIZER="-DWITH_UBSAN=ON"
+fi
+# not handling yet WITH_MSAN nor WITH_TSAN
+cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_LD=lld $MY_SANITIZER
+make -j$(nproc)
 mkdir -p $OUT/lib/
 cp library_output_directory/libmysql*.so.* $OUT/lib/
 (
