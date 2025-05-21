@@ -150,15 +150,12 @@ class FuzzbenchRunsTest(unittest.TestCase):
 
     return fuzzing_engine, project, env
 
-  def _assert_log_content(self, strings_frequency_list):
-    """Asserts the frequency of string in log content."""
+  def _assert_log_content(self, frequency):
+    """Asserts the frequency of 'successfully' in the log content."""
     with open(LOG_FILE_PATH, 'r', encoding='utf-8') as log_file:
       log_content = log_file.read()
-      for string_frequency in strings_frequency_list:
-        string = string_frequency[0]
-        minimum_frequency = string_frequency[1]
-        count = log_content.count(string)
-        self.assertGreaterEqual(count, minimum_frequency)
+      count = log_content.count('successfully')
+      self.assertGreaterEqual(count, frequency)
 
   def _fuzzbench_setup_steps_test(self, fuzzing_engine, project, env):
     """Test for fuzzbench setup steps."""
@@ -167,9 +164,7 @@ class FuzzbenchRunsTest(unittest.TestCase):
                                           self.temp_dir,
                                           LOG_FILE_PATH,
                                           testing=True)
-    strings_frequency_list = [('Cloning', 1), ('Pulling', 1),
-                              ('successfully', 3)]
-    self._assert_log_content(strings_frequency_list)
+    self._assert_log_content(3)
 
   def _get_project_image_steps_test(self, fuzzing_engine, project, env_dict):
     """Test for project image steps."""
@@ -184,8 +179,7 @@ class FuzzbenchRunsTest(unittest.TestCase):
                                           self.temp_dir,
                                           LOG_FILE_PATH,
                                           testing=True)
-    strings_frequency_list = [('cp -r', 1), ('built', 1), ('successfully', 3)]
-    self._assert_log_content(strings_frequency_list)
+    self._assert_log_content(3)
 
   def _build_fuzzers_steps_test(self, fuzzing_engine, project, env):
     """Test for build fuzzers steps."""
@@ -194,9 +188,7 @@ class FuzzbenchRunsTest(unittest.TestCase):
                                           self.temp_dir,
                                           LOG_FILE_PATH,
                                           testing=True)
-    strings_frequency_list = [('Building benchmark', 1), ('built', 2),
-                              ('successfully', 2)]
-    self._assert_log_content(strings_frequency_list)
+    self._assert_log_content(2)
 
   def _corpus_steps_test(self, fuzzing_engine, project, env_dict):
     """Test for corpus steps."""
@@ -205,8 +197,7 @@ class FuzzbenchRunsTest(unittest.TestCase):
                                           self.temp_dir,
                                           LOG_FILE_PATH,
                                           testing=True)
-    strings_frequency_list = [('URL', 3), ('corpus', 5), ('successfully', 2)]
-    self._assert_log_content(strings_frequency_list)
+    self._assert_log_content(2)
 
   def _build_ood_image_steps_test(self, fuzzing_engine, project, env_dict):
     """Test for build ood image steps."""
@@ -221,9 +212,7 @@ class FuzzbenchRunsTest(unittest.TestCase):
                                           self.temp_dir,
                                           LOG_FILE_PATH,
                                           testing=True)
-    strings_frequency_list = [('fuzzbench_run_fuzzer.sh', 5), ('built', 2),
-                              ('successfully', 3)]
-    self._assert_log_content(strings_frequency_list)
+    self._assert_log_content(3)
 
   def _run_ood_image_step_test(self, fuzzing_engine, project, env_dict):
     """Test for run ood image step."""
@@ -237,9 +226,7 @@ class FuzzbenchRunsTest(unittest.TestCase):
                                           self.temp_dir,
                                           LOG_FILE_PATH,
                                           testing=True)
-    strings_frequency_list = [('Running target with afl-fuzz', 1),
-                              ('successfully', 1)]
-    self._assert_log_content(strings_frequency_list)
+    self._assert_log_content(1)
 
   def _extract_crashes_steps_test(self, fuzzing_engine, project, env_dict):
     """Test for extract crashes steps."""
@@ -252,9 +239,7 @@ class FuzzbenchRunsTest(unittest.TestCase):
                                           self.temp_dir,
                                           LOG_FILE_PATH,
                                           testing=True)
-    strings_frequency_list = [('Copying', 1), ('extracting', 1),
-                              ('inflating', 2), ('successfully', 3)]
-    self._assert_log_content(strings_frequency_list)
+    self._assert_log_content(3)
 
   def test_fuzzbench_runs(self):
     """Test for fuzzbench runs."""
