@@ -47,8 +47,8 @@ FUZZER_ENGINE = os.getenv("LIB_FUZZING_ENGINE", "/usr/lib/libFuzzingEngine.a")
 
 
 def rewrite_argv0(argv: Sequence[str]) -> Sequence[str]:
-  """Rewrite argv[0] to point to /usr/local/bin (the real clang location),
-  because we've set PATH to our wrapper."""
+  """Rewrite argv[0] to point to the real clang location."""
+  # We do this because we've set PATH to our wrapper.
   rewritten = [os.path.join("/usr/local/bin/", os.path.basename(argv[0]))]
   rewritten.extend(argv[1:])
   return rewritten
@@ -290,7 +290,8 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
     # indexing.
     # TODO(ochang): check if this is the safest behaviour.
     print(
-        f"WARNING: Compile commands directory {compile_commands_dir} already created.",
+        f"WARNING: Compile commands directory {compile_commands_dir} "
+        "already created.",
         file=sys.stderr)
     return
 
@@ -334,8 +335,9 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
 
 
 def check_fuzzing_engine_and_fix_argv(argv: list[str]) -> bool:
-  """Check if this command is linking in a fuzzing engine. Also fix up
-  incorrect link flags so we link in the correct fuzzing engine."""
+  """Check if this command is linking in a fuzzing engine."""
+  # Also fix up incorrect link flags so we link in the correct fuzzing
+  # engine.
   fuzzing_engine_in_argv = False
   idx = 0
   for arg in argv[:]:
