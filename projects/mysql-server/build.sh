@@ -19,14 +19,8 @@
 cd mysql-server
 mkdir build
 cd build
-export CFLAGS="-fuse-ld=lld $CFLAGS"
-export CXXFLAGS="-fuse-ld=lld $CXXFLAGS"
-if [[ $SANITIZER = *undefined* ]]; then
-    cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_UBSAN=1
-else
-    cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql
-fi
-make -j$(nproc) -C router
+cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_LD=lld
+make -j$(nproc)
 mkdir -p $OUT/lib/
 cp library_output_directory/libmysql*.so.* $OUT/lib/
 (
