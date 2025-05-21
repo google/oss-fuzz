@@ -157,12 +157,12 @@ def save_build(
 
 
 def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
-  data = io.BytesIO(data.encode('utf-8'))
+  bytesio = io.BytesIO(data.encode('utf-8'))
 
   tar_info = tarfile.TarInfo(name)
-  tar_info.size = len(data.getvalue())
+  tar_info.size = len(bytesio.getvalue())
 
-  tar.addfile(tarinfo=tar_info, fileobj=data)
+  tar.addfile(tarinfo=tar_info, fileobj=bytesio)
 
 
 def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
@@ -274,12 +274,12 @@ def enumerate_build_targets() -> Sequence[BinaryMetadata]:
     build_id = linker_json_path.name.split('_')[0]
     with linker_json_path.open('rt') as f:
       data = json.load(f)
-      # TODO(unassigned): Some projects may move build files around, so being
-      # more careful about the binary path and checking the build id should
-      # improve the success rate.
       binary_path = Path(data['output'])
       name = binary_path.name
 
+      # Some projects may move build files around, so being more careful about
+      # the binary path and checking the build id should improve the success
+      # rate.
       if not (OUT / name).exists():
         logging.info('trying to find %s with build id %s', name, build_id)
         binary_path = find_fuzzer_binary(OUT, build_id)
@@ -463,7 +463,7 @@ def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
   # TODO(unassigned): Should we take ld.so from interp?
 
   res = subprocess.run(
-      [str(_LD_PATH), str(fuzz_target_path)],
+      [_LD_PATH.as_posix(), str(fuzz_target_path)],
       capture_output=True,
       env=env,
       check=True,
@@ -586,8 +586,21 @@ def test_and_archive(targets_to_index: Sequence[str] | None):
     archive_target(target)
 
 
+def clear_out():
+  """Clean up the OUT directory."""
+  for i in OUT.iterdir():
+    if i.is_dir():
+      shutil.rmtree(i)
+    else:
+      i.unlink()
+
+
 def main():
+  logging.basicConfig(level=logging.INFO)
   INDEXES_PATH.mkdir(exist_ok=True)
+
+  # Clean up the existing OUT, otherwise we may run into various build errors.
+  clear_out()
 
   parser = argparse.ArgumentParser(description='Index builder.')
   parser.add_argument(
