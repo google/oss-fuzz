@@ -20,7 +20,7 @@ cd mysql-server
 mkdir build
 cd build
 cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_LD=lld
-make -j$(nproc)
+make -j$(nproc) -C router
 mkdir -p $OUT/lib/
 cp library_output_directory/libmysql*.so.* $OUT/lib/
 (
