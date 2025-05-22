@@ -24,6 +24,7 @@ import json
 import logging
 import os
 from pathlib import Path  # pylint: disable=g-importing-member
+import re
 import shutil
 import subprocess
 import tarfile
@@ -347,7 +348,8 @@ def copy_fuzzing_engine() -> Path:
   return fuzzing_engine_dir
 
 
-def build_project(targets_to_index: Sequence[str] | None = None):
+def build_project(target_type: str,
+                  targets_to_index: Sequence[str] | None = None):
   """Build the actual project."""
   set_env_vars()
   existing_cflags = os.environ.get('CFLAGS', '')
@@ -362,6 +364,7 @@ def build_project(targets_to_index: Sequence[str] | None = None):
                  f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
                  f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} ')
   os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
+  os.environ['INDEXER_TARGET_TYPE'] = target_type
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
 
@@ -413,8 +416,11 @@ def build_project(targets_to_index: Sequence[str] | None = None):
   subprocess.run(['/usr/local/bin/compile'], check=True)
 
 
-def test_target(target: BinaryMetadata,) -> bool:
+def test_target(target: BinaryMetadata, target_type: str) -> bool:
   """Tests a single target."""
+  if target_type != "fuzzing":
+    return True
+
   target_path = OUT / target.name
   result = subprocess.run([str(target_path)],
                           stderr=subprocess.PIPE,
@@ -567,7 +573,7 @@ def archive_target(target: BinaryMetadata) -> Path | None:
   return archive_path
 
 
-def test_and_archive(targets_to_index: Sequence[str] | None):
+def test_and_archive(target_type: str, targets_to_index: Sequence[str] | None):
   """Test target and archive."""
   targets = enumerate_build_targets()
   if targets_to_index:
@@ -578,7 +584,7 @@ def test_and_archive(targets_to_index: Sequence[str] | None):
     try:
       # TODO(metzman): Figure out if this is a good idea, it makes some things
       # pass that should but causes some things to pass that shouldn't.
-      if not test_target(target):
+      if not test_target(target, target_type):
         continue
     except Exception:  # pylint: disable=broad-exception-caught
       logging.exception('Error testing target.')
@@ -608,6 +614,12 @@ def main():
       '--targets',
       help=('Comma separated list of targets to build for. '
             'If this is omitted, all target snapshots are built.'))
+  parser.add_argument(
+      '--target-type',
+      choices=['fuzzing', 'all'],
+      default='fuzzing',
+      help=('Restrict indexing to the indicated target type. '
+            'If "all", non-fuzzing targets will be indexed as well.'))
   args = parser.parse_args()
 
   targets_to_index = None
@@ -623,8 +635,8 @@ def main():
   SNAPSHOT_DIR.mkdir(exist_ok=True)
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
-  build_project(targets_to_index)
-  test_and_archive(targets_to_index)
+  build_project(args.target_type, targets_to_index)
+  test_and_archive(args.target_type, targets_to_index)
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
