@@ -11,6 +11,7 @@ auto_ccs:
  - "twsmith@mozilla.com"
  - "kempfjb@gmail.com"
  - "jordyzomer@google.com"
+ - "epirat07@gmail.com"
 fuzzing_engines:
  - afl
  - honggfuzz
