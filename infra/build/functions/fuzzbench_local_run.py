@@ -14,6 +14,8 @@
 #
 ################################################################################
 """Does fuzzbench runs locally."""
+# TODO It is worth checking https://github.com/google/oss-fuzz/pull/12833 for
+# insights on making this code less specific for OSS-Fuzz on Demand.
 
 import os
 import re
