@@ -57,7 +57,10 @@ def run_step_locally(temp_dir, local_fuzzbench_path, step, i, log_file):
 
   step_container_work_dir = os.path.join(GCB_WORKSPACE_DIR, step.get('dir', ''))
 
-  if args[0] == 'run' and args[1] == '-v':
+  # This is needed because when running a container inside of a container, the
+  # mount point of the second container is also in the host machine and not in
+  # the first container
+  if args[0] == 'run' and args[1] == '-v' and GCB_WORKSPACE_DIR in args[2]:
     args[2] = args[2].replace(GCB_WORKSPACE_DIR, temp_dir, 1)
 
   docker_command = ['docker', 'run', '--rm', '--cpus=0.5']
