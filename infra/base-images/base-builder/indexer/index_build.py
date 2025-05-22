@@ -463,7 +463,7 @@ def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
   # TODO(unassigned): Should we take ld.so from interp?
 
   res = subprocess.run(
-      [_LD_PATH.as_posix(), str(fuzz_target_path)],
+      [_LD_PATH.as_posix(), fuzz_target_path.as_posix()],
       capture_output=True,
       env=env,
       check=True,

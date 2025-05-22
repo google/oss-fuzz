@@ -57,7 +57,7 @@ def rewrite_argv0(argv: Sequence[str]) -> Sequence[str]:
 def execute(argv: Sequence[str]) -> None:
   argv = rewrite_argv0(argv)
   print("About to execute...", argv)
-  os.execv(argv[0], list(argv))
+  os.execv(argv[0], tuple(argv))
 
 
 def run(argv: Sequence[str]) -> None:
@@ -390,8 +390,8 @@ def main(argv: list[str]) -> None:
   cdb_path = Path(cdb_path)
 
   # We can now run the linker and look at the output of some files.
-  dependency_file = cdb_path / (output_file.name + ".deps")
-  why_extract_file = cdb_path / (output_file.name + ".why_extract")
+  dependency_file = (cdb_path / output_file.name).with_suffix(".deps")
+  why_extract_file = (cdb_path / output_file.name).with_suffix(".why_extract")
   argv.append("-fuse-ld=lld")
   argv.append(f"-Wl,--dependency-file={dependency_file}")
   argv.append(f"-Wl,--why-extract={why_extract_file}")

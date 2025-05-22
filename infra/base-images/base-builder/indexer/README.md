@@ -54,5 +54,5 @@ The resulting snapshots will be found in `<oss-fuzz checkout>/build/out/<project
 We have some basic tests to make sure the snapshots we're generating have the correct format.
 
 ```
-sudo python3 -m unittest index_build_test
+sudo INDEX_BUILD_TESTS=1 python3 -m unittest index_build_test
 ```
