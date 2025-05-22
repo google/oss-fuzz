@@ -33,6 +33,9 @@ limitations under the License.
 #include "ap_provider.h"
 #include "ap_regex.h"
 
+#include <string.h>
+#include <unistd.h>
+
 #include "ada_fuzz_header.h"
 
 
@@ -47,25 +50,53 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char *new_str = af_gb_get_null_terminated(&data2, &size2);
   char *new_dst = af_gb_get_null_terminated(&data2, &size2);
   if (new_str != NULL && new_dst != NULL) {
+    size_t new_str_len = strlen(new_str);
 
     // Targets that do not require a pool
-    ap_cstr_casecmp(new_str, new_str);
-    ap_getparents(new_str);
-    ap_unescape_url(new_str);
-    ap_unescape_urlencoded(new_str);
+
+    ap_cstr_casecmp(new_str, new_dst);
+    if (new_str_len > 2) {
+      ap_cstr_casecmpn(new_str, new_str + 2, new_str_len - 2);
+    }
     ap_strcmp_match(new_str, new_dst);
+    ap_strcasecmp_match(new_str, new_dst);
+    ap_strcasestr(new_str, new_dst);
 
-    char *ns3 = af_gb_get_null_terminated(&data2, &size2);
-    if (ns3 != NULL) {
-      ap_no2slash(ns3);
+    apr_interval_time_t timeout;
+    ap_timeout_parameter_parse(new_str, &timeout, "ms");
+
+    new_dst = af_gb_get_null_terminated(&data2, &size2);
+    if (new_dst != NULL) {
+      ap_getparents(new_dst);
     }
 
-    char *ns11 = af_gb_get_null_terminated(&data2, &size2);
-    if (ns11) {
-      char *ns10 = malloc(strlen(ns11)*3+1); // big enough for worst-case URL-escaped input.
-      ap_escape_path_segment_buffer(ns10, ns11);
-      free(ns10);
+    new_dst = af_gb_get_null_terminated(&data2, &size2);
+    if (new_dst != NULL) {
+      ap_no2slash(new_dst);
     }
+
+    new_dst = af_gb_get_null_terminated(&data2, &size2);
+    if (new_dst != NULL) {
+      ap_unescape_url(new_dst);
+    }
+
+    new_dst = af_gb_get_null_terminated(&data2, &size2);
+    if (new_dst != NULL) {
+      ap_unescape_urlencoded(new_dst);
+    }
+
+    new_dst = af_gb_get_null_terminated(&data2, &size2);
+    if (new_dst != NULL) {
+      ap_content_type_tolower(new_dst);
+    }
+
+    new_dst = malloc(new_str_len*3+1); // big enough for worst-case URL-escaped (%nn)
+    ap_escape_path_segment_buffer(new_dst, new_str);
+    free(new_dst);
+
+    new_dst = malloc(new_str_len*4+1); // big enough for worst-case log-escaped (\xnn)
+    ap_escape_errorlog_item(new_dst, new_str, new_str_len*4+1);
+    free(new_dst);
 
     // Pool initialisation
     if (apr_pool_initialize() == APR_SUCCESS) {
@@ -73,9 +104,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       apr_pool_create(&pool, NULL);
 
       // Targets that require a pool
-      ns3 = af_gb_get_null_terminated(&data2, &size2);
-      if (ns3 != NULL) {
-        ap_make_dirstr_parent(pool, ns3);
+
+      new_dst = af_gb_get_null_terminated(&data2, &size2);
+      if (new_dst != NULL) {
+        ap_make_dirstr_parent(pool, new_dst);
       }
 
       ap_field_noparam(pool, new_str);
@@ -88,66 +120,45 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       // This line causes some issues if something bad is allocated
       ap_escape_quotes(pool, new_str);
 
-      if (size > 2) {
-        ap_cstr_casecmpn(new_str, new_str + 2, size - 2);
-      }
-
-      char *d = malloc(size * 2);
-      ap_escape_errorlog_item(d, new_str, size * 2);
-      free(d);
-
       // base64
-      char *decoded = NULL;
-      decoded = ap_pbase64decode(pool, new_str);
+      ap_pbase64decode(pool, new_str);
       ap_pbase64encode(pool, new_str);
-
-      char *ns12 = af_gb_get_null_terminated(&data2, &size2);
-      if (ns12 != NULL) {
+      new_dst = af_gb_get_null_terminated(&data2, &size2);
+      if (new_dst != NULL) {
         char *d;
         apr_size_t dlen;
-        ap_pbase64decode_strict(pool, ns12, &d, &dlen);
+        ap_pbase64decode_strict(pool, new_dst, &d, &dlen);
       }
 
-      char *tmp_s = new_str;
-      ap_getword_conf2(pool, &tmp_s);
-
-      // str functions
-      ap_strcasecmp_match(tmp_s, new_dst);
-      ap_strcasestr(tmp_s, new_dst);
-
       // List functions
-      tmp_s = new_str;
+      const char *tmp_s = new_str;
       ap_get_list_item(pool, &tmp_s);
-      tmp_s = new_str;
-      ap_find_list_item(pool, &tmp_s, "kjahsdfkj");
-      ap_find_token(pool, tmp_s, "klsjdfk");
-      ap_find_last_token(pool, tmp_s, "sdadf");
-      ap_is_chunked(pool, tmp_s);
-
+      ap_find_list_item(pool, new_str, "kjahsdfkj");
+      ap_find_token(pool, new_str, "klsjdfk");
+      ap_find_last_token(pool, new_str, "sdadf");
       apr_array_header_t *offers = NULL;
       ap_parse_token_list_strict(pool, new_str, &offers, 0);
-
-      char *tmp_null = NULL;
-      ap_pstr2_alnum(pool, new_str, &tmp_null);
-
-      // Word functions
-      tmp_s = new_str;
-      ap_getword(pool, &tmp_s, 0);
-
-      tmp_s = new_str;
-      ap_getword_white_nc(pool, &tmp_s);
 
       tmp_s = new_str;
       ap_get_token(pool, &tmp_s, 1);
 
-      tmp_s = new_str;
-      ap_escape_urlencoded(pool, tmp_s);
+      tmp_s = NULL;
+      ap_pstr2_alnum(pool, new_str, &tmp_s);
 
-      apr_interval_time_t timeout;
-      ap_timeout_parameter_parse(new_str, &timeout, "ms");
+      ap_is_chunked(pool, new_str);
 
+      // Word functions
       tmp_s = new_str;
-      ap_content_type_tolower(tmp_s);
+      ap_getword(pool, &tmp_s, 0);
+      tmp_s = new_str;
+      ap_getword_conf2(pool, &tmp_s);
+      new_dst = af_gb_get_null_terminated(&data2, &size2);
+      if (new_dst != NULL) {
+        char *d = new_dst;
+        ap_getword_white_nc(pool, &d);
+      }
+
+      ap_escape_urlencoded(pool, new_str);
 
 
 			char filename[256];

@@ -43,12 +43,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   uint16_t vid;
-  struct mroute_addr a1, a2, a3, a4;
+  struct mroute_addr a1, a2;
   mroute_addr_init(&a1);
   mroute_addr_init(&a2);
-  mroute_addr_init(&a3);
-  mroute_addr_init(&a4);
-  mroute_extract_addr_ether(&a1, &a2, &a3, &a3, vid, &buf);
+  mroute_extract_addr_ether(&a1, &a2, vid, &buf);
 
   if (size > sizeof(struct openvpn_sockaddr)) {
     struct openvpn_sockaddr local_sock;

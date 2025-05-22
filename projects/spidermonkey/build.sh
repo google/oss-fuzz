@@ -15,27 +15,34 @@
 #
 ################################################################################
 
+# Ensure rust nightly is used
+source $HOME/.cargo/env
+rustup default nightly
+
+# Write mozconfig file.
+echo '
+ac_add_options --enable-application=js
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-shell
+
+ac_add_options --enable-debug
+ac_add_options --enable-optimize="-O2 -gline-tables-only"
+
+ac_add_options --disable-jemalloc
+ac_add_options --disable-tests
+ac_add_options --enable-address-sanitizer
+
+CFLAGS="-fsanitize=address"
+CXXFLAGS="-fsanitize=address"
+LDFLAGS="-fsanitize=address"
+' > ./mozconfig
+export MOZCONFIG=./mozconfig
+
 # Install dependencies.
-export SHELL=/bin/bash
-../../mach --no-interactive bootstrap --application-choice browser
+./mach --no-interactive bootstrap --application-choice js
 
-autoconf2.13
+./mach build "-j$(nproc)"
 
-mkdir build_DBG.OBJ
-cd build_DBG.OBJ
-
-# Temporarily disable cranelift (see bug 1497570)
-../configure \
-    --enable-debug \
-    --enable-optimize="-O2 -gline-tables-only" \
-    --disable-jemalloc \
-    --disable-tests \
-    --enable-address-sanitizer \
-    --disable-cranelift
-
-make "-j$(nproc)"
-
-cp dist/bin/js $OUT
+cp obj-shell/dist/bin/js $OUT
 
 # Copy libraries.
 mkdir -p $OUT/lib

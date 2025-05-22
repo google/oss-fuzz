@@ -1,11 +1,10 @@
 homepage: "https://www.libreoffice.org/"
 language: c++
-primary_contact: "caolanm@redhat.com"
+primary_contact: "caolanm@gmail.com"
 sanitizers:
   - address
-  # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-  # - memory
-  #    experimental: True
+  - memory:
+     experimental: True
   - undefined
 fuzzing_engines:
   # see https://github.com/google/oss-fuzz/issues/6233 for missing afl
@@ -13,7 +12,6 @@ fuzzing_engines:
   - honggfuzz
 builds_per_day: 2
 auto_ccs:
-  - "officesecurity@lists.freedesktop.org"
   - "damjan.jov@gmail.com"
   - "noelgrandin@gmail.com"
   - "sbergman@redhat.com"

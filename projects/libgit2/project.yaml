@@ -4,3 +4,9 @@ primary_contact: "ps@pks.im"
 auto_ccs:
   - "nelhage@nelhage.com"
 main_repo: 'https://github.com/libgit2/libgit2'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

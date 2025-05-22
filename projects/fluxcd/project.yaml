@@ -1,0 +1,16 @@
+homepage: "https://fluxcd.io/"
+main_repo: "https://github.com/fluxcd/flux2"
+primary_contact: "cncf-flux-security@lists.cncf.io"
+auto_ccs :
+  - "hidde@weave.works"
+  - "scott@r6by.com"
+  - "paulo.gomes.uk@gmail.com"
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
+  - "max@e13.dev"
+  - "matheuscscp@gmail.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

@@ -18,6 +18,7 @@
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import unittest
@@ -26,6 +27,8 @@ import yaml
 import constants
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VALID_PROJECT_REGEX_STR = '^[a-z0-9_-]+$'
+VALID_PROJECT_REGEX = re.compile(VALID_PROJECT_REGEX_STR)
 
 
 def _is_project_file(actual_path, expected_filename):
@@ -56,9 +59,8 @@ def _check_one_lib_fuzzing_engine(build_sh_file):
   for line_num, line in enumerate(build_sh_lines):
     uncommented_code = line.split('#')[0]
     if '-lFuzzingEngine' in uncommented_code:
-      print(
-          'Error: build.sh contains deprecated "-lFuzzingEngine" on line: {0}. '
-          'Please use "$LIB_FUZZING_ENGINE" instead.'.format(line_num))
+      print('Error: build.sh contains deprecated "-lFuzzingEngine" on line: '
+            f'{line_num}. Please use "$LIB_FUZZING_ENGINE" instead.')
       return False
   return True
 
@@ -66,7 +68,7 @@ def _check_one_lib_fuzzing_engine(build_sh_file):
 def check_lib_fuzzing_engine(paths):
   """Calls _check_one_lib_fuzzing_engine on each path in |paths|. Returns True
   if the result of every call is True."""
-  return all([_check_one_lib_fuzzing_engine(path) for path in paths])
+  return all(_check_one_lib_fuzzing_engine(path) for path in paths)
 
 
 class ProjectYamlChecker:
@@ -100,11 +102,10 @@ class ProjectYamlChecker:
       'selective_unpack',
       'vendor_ccs',
       'view_restrictions',
+      'file_github_issue',
   ]
 
-  # Note that some projects like boost only have auto-ccs. However, forgetting
-  # primary contact is probably a mistake.
-  REQUIRED_SECTIONS = ['primary_contact', 'main_repo']
+  REQUIRED_SECTIONS = ['main_repo']
 
   def __init__(self, filename):
     self.filename = filename
@@ -124,7 +125,7 @@ class ProjectYamlChecker:
         self.check_valid_section_names,
         self.check_valid_emails,
         self.check_valid_language,
-        self.check_dataflow,
+        self.check_valid_project_name,
     ]
     for check_function in checks:
       check_function()
@@ -137,27 +138,17 @@ class ProjectYamlChecker:
   def error(self, message):
     """Prints an error message and sets self.success to False."""
     self.success = False
-    print('Error in {filename}: {message}'.format(filename=self.filename,
-                                                  message=message))
+    print(f'Error in {self.filename}: {message}')
 
-  def check_dataflow(self):
-    """Checks that if "dataflow" is specified in "fuzzing_engines", it is also
-    specified in "sanitizers", and that if specified in "sanitizers", it is also
-    specified in "fuzzing_engines". Returns True if this condition is met."""
-    engines = self.data.get('fuzzing_engines', [])
-    dfsan_engines = 'dataflow' in engines
-    sanitizers = self.data.get('sanitizers', [])
-    dfsan_sanitizers = 'dataflow' in sanitizers
-
-    if dfsan_engines and not dfsan_sanitizers:
-      self.error('"dataflow" only specified in "fuzzing_engines" must also be '
-                 'specified in "sanitizers" or in neither.')
-      return
-
-    if dfsan_sanitizers and not dfsan_engines:
-      self.error('"dataflow" only specified in "sanitizers" must also be '
-                 'specified in "fuzzing_engines" or in neither.')
-      return
+  def check_valid_project_name(self):
+    """Checks that the project has a valid name."""
+    banned_names = ['google', 'g00gle']
+    project_name = os.path.basename(os.path.dirname(self.filename))
+    for banned_name in banned_names:
+      if banned_name in project_name:
+        self.error('Projects can\'t have \'google\' in the name.')
+    if not VALID_PROJECT_REGEX.match(project_name):
+      self.error(f'Projects must conform to regex {VALID_PROJECT_REGEX_STR}')
 
   def check_project_yaml_constants(self):
     """Returns True if certain sections only have certain constant values."""
@@ -165,37 +156,34 @@ class ProjectYamlChecker:
       if section not in self.data:
         continue
       actual_constants = self.data[section]
+      allowed_constants_str = ', '.join(allowed_constants)
       for constant in actual_constants:
         if isinstance(constant, str):
           if constant not in allowed_constants:
-            self.error(('{constant} (in {section} section) is not a valid '
-                        'constant ({allowed_constants}).').format(
-                            constant=constant,
-                            section=section,
-                            allowed_constants=', '.join(allowed_constants)))
+            self.error(f'{constant} (in {section} section) is not a valid '
+                       f'constant ({allowed_constants_str}).')
         elif isinstance(constant, dict):
           # The only alternative value allowed is the experimental flag, i.e.
           # `constant == {'memory': {'experimental': True}}`. Do not check the
           # experimental flag, but assert that the sanitizer is a valid one.
           if (len(constant.keys()) > 1 or
               list(constant.keys())[0] not in allowed_constants):
-            self.error('Not allowed value in the project.yaml: ' +
-                       str(constant))
+            self.error(f'Not allowed value in the project.yaml: {constant}')
         else:
-          self.error('Not allowed value in the project.yaml: ' + str(constant))
+          self.error(f'Not allowed value in the project.yaml: {constant}')
 
   def check_valid_section_names(self):
     """Returns True if all section names are valid."""
     for name in self.data:
       if name not in self.VALID_SECTION_NAMES:
-        self.error('{name} is not a valid section name ({valid_names})'.format(
-            name=name, valid_names=self.VALID_SECTION_NAMES))
+        self.error(
+            f'{name} is not a valid section name ({self.VALID_SECTION_NAMES})')
 
   def check_required_sections(self):
     """Returns True if all required sections are in |self.data|."""
     for section in self.REQUIRED_SECTIONS:
       if section not in self.data:
-        self.error(section + ' section is missing.')
+        self.error(f'{section} section is missing.')
 
   def check_valid_emails(self):
     """Returns True if emails are valid looking.."""
@@ -211,7 +199,7 @@ class ProjectYamlChecker:
     # Check that email addresses seem normal.
     for email_address in email_addresses:
       if '@' not in email_address or '.' not in email_address:
-        self.error(email_address + ' is an invalid email address.')
+        self.error(f'{email_address} is an invalid email address.')
 
   def check_valid_language(self):
     """Returns True if the language is specified and valid."""
@@ -220,12 +208,15 @@ class ProjectYamlChecker:
       self.error('Missing "language" attribute in project.yaml.')
     elif language not in constants.LANGUAGES:
       self.error(
-          '"language: {language}" is not supported ({supported}).'.format(
-              language=language, supported=constants.LANGUAGES))
+          f'"language: {language}" is not supported ({constants.LANGUAGES}).')
 
 
 def _check_one_project_yaml(project_yaml_filename):
   """Does checks on the project.yaml file. Returns True on success."""
+  if _is_project_file(project_yaml_filename, 'project.yml'):
+    print(project_yaml_filename, 'must be named project.yaml.')
+    return False
+
   if not _is_project_file(project_yaml_filename, 'project.yaml'):
     return True
 
@@ -239,10 +230,58 @@ def check_project_yaml(paths):
   return all([_check_one_project_yaml(path) for path in paths])
 
 
+def _check_one_seed_corpus(path):
+  """Returns False and prints error if |path| is a seed corpus."""
+  if os.path.basename(os.path.dirname(os.path.dirname(path))) != 'projects':
+    return True
+
+  if os.path.splitext(path)[1] == '.zip':
+    print('Don\'t commit seed corpora into the ClusterFuzz repo,'
+          'they bloat it forever.')
+    return False
+
+  return True
+
+
+def check_seed_corpus(paths):
+  """Calls _check_one_seed_corpus on each path in |paths|. Returns True if the
+  result of every call is True."""
+  return all([_check_one_seed_corpus(path) for path in paths])
+
+
+def _check_one_apt_update(path):
+  """Checks that a Dockerfile uses apt-update before apt-install"""
+  if os.path.basename(os.path.dirname(os.path.dirname(path))) != 'projects':
+    return True
+
+  if os.path.basename(path) != 'Dockerfile':
+    return True
+
+  with open(path, 'r') as file:
+    dockerfile = file.read()
+    if 'RUN apt install' in dockerfile or 'RUN apt-get install' in dockerfile:
+      print('Please add an "apt-get update" before "apt-get install". '
+            'Otherwise, a cached and outdated RUN layer may lead to install '
+            'failures in file %s.' % str(path))
+      return False
+
+  return True
+
+
+def check_apt_update(paths):
+  """Checks that all Dockerfile use apt-update before apt-install"""
+  return all([_check_one_apt_update(path) for path in paths])
+
+
 def do_checks(changed_files):
   """Runs all presubmit checks. Returns False if any fails."""
   checks = [
-      check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine
+      check_license,
+      yapf,
+      check_project_yaml,
+      check_lib_fuzzing_engine,
+      check_seed_corpus,
+      check_apt_update,
   ]
   # Use a list comprehension here and in other cases where we use all() so that
   # we don't quit early on failure. This is more user-friendly since the more
@@ -259,13 +298,17 @@ _CHECK_LICENSE_EXTENSIONS = [
     '.cpp',
     '.css',
     '.Dockerfile',
+    '.go',
     '.h',
     '.htm',
     '.html',
+    '.java',
     '.js',
     '.proto',
     '.py',
+    '.rs',
     '.sh',
+    '.ts',
 ]
 THIRD_PARTY_DIR_NAME = 'third_party'
 
@@ -314,7 +357,8 @@ def is_nonfuzzer_python(path):
 def lint(_=None):
   """Runs python's linter on infra. Returns False if it fails linting."""
 
-  command = ['python3', '-m', 'pylint', '-j', '0', 'infra']
+  # Use --score no to make linting quieter.
+  command = ['python3', '-m', 'pylint', '--score', 'no', '-j', '0', 'infra']
   returncode = subprocess.run(command, check=False).returncode
   return returncode == 0
 
@@ -354,8 +398,7 @@ def get_changed_files():
       if not os.path.isfile(file_path):
         continue
       changed_files.add(file_path)
-  print('Changed files: {changed_files}'.format(
-      changed_files=' '.join(changed_files)))
+  print(f'Changed files: {" ".join(changed_files)}')
   return [os.path.abspath(f) for f in changed_files]
 
 
@@ -387,9 +430,8 @@ def run_nonbuild_tests(parallel):
   # pass directories to pytest.
   command = [
       'pytest',
-      # Test errors with error: "ModuleNotFoundError: No module named 'apt'.
-      '--ignore-glob=infra/base-images/base-sanitizer-libs-builder/*',
       '--ignore-glob=infra/build/*',
+      '--ignore-glob=projects/*',
   ]
   if parallel:
     command.extend(['-n', 'auto'])
@@ -420,6 +462,14 @@ def run_tests(_=None, parallel=False, build_tests=True, nonbuild_tests=True):
   return nonbuild_success and build_success
 
 
+def run_systemsan_tests(_=None):
+  """Runs SystemSan unit tests."""
+  command = ['make', 'test']
+  return subprocess.run(command,
+                        cwd='infra/experimental/SystemSan',
+                        check=False).returncode == 0
+
+
 def get_all_files():
   """Returns a list of absolute paths of files in this repo."""
   get_all_files_command = ['git', 'ls-files']
@@ -431,9 +481,10 @@ def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
-  parser.add_argument('command',
-                      choices=['format', 'lint', 'license', 'infra-tests'],
-                      nargs='?')
+  parser.add_argument(
+      'command',
+      choices=['format', 'lint', 'license', 'infra-tests', 'systemsan-tests'],
+      nargs='?')
   parser.add_argument('-a',
                       '--all-files',
                       action='store_true',
@@ -482,6 +533,10 @@ def main():
                         parallel=args.parallel,
                         build_tests=(not args.skip_build_tests),
                         nonbuild_tests=(not args.skip_nonbuild_tests))
+    return bool_to_returncode(success)
+
+  if args.command == 'systemsan-tests':
+    success = run_systemsan_tests(relevant_files)
     return bool_to_returncode(success)
 
   # Do all the checks (but no tests).

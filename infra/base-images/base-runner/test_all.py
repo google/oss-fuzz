@@ -20,12 +20,12 @@ import contextlib
 import multiprocessing
 import os
 import re
-import shutil
 import subprocess
 import stat
 import sys
+import tempfile
 
-TMP_FUZZER_DIR = '/tmp/not-out'
+BASE_TMP_FUZZER_DIR = '/tmp/not-out'
 
 EXECUTABLE = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
 
@@ -35,14 +35,6 @@ IGNORED_TARGETS = [
 ]
 
 IGNORED_TARGETS_RE = re.compile('^' + r'$|^'.join(IGNORED_TARGETS) + '$')
-
-
-def recreate_directory(directory):
-  """Creates |directory|. If it already exists than deletes it first before
-  creating."""
-  if os.path.exists(directory):
-    shutil.rmtree(directory)
-  os.mkdir(directory)
 
 
 def move_directory_contents(src_directory, dst_directory):
@@ -97,7 +89,7 @@ def find_fuzz_targets(directory):
     # trees).
     if not is_elf(path) and not is_shell_script(path):
       continue
-    if os.getenv('FUZZING_ENGINE') != 'none':
+    if os.getenv('FUZZING_ENGINE') not in {'none', 'wycheproof'}:
       with open(path, 'rb') as file_handle:
         binary_contents = file_handle.read()
         if b'LLVMFuzzerTestOneInput' not in binary_contents:
@@ -110,11 +102,24 @@ def do_bad_build_check(fuzz_target):
   """Runs bad_build_check on |fuzz_target|. Returns a
   Subprocess.ProcessResult."""
   print('INFO: performing bad build checks for', fuzz_target)
-  command = ['bad_build_check', fuzz_target]
-  return subprocess.run(command,
-                        stderr=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        check=False)
+  if centipede_needs_auxiliaries():
+    print('INFO: Finding Centipede\'s auxiliary for target', fuzz_target)
+    auxiliary_path = find_centipede_auxiliary(fuzz_target)
+    print('INFO: Using auxiliary binary:', auxiliary_path)
+    auxiliary = [auxiliary_path]
+  else:
+    auxiliary = []
+
+  command = ['bad_build_check', fuzz_target] + auxiliary
+  with tempfile.TemporaryDirectory() as temp_centipede_workdir:
+    # Do this so that centipede doesn't fill up the disk during bad build check
+    env = os.environ.copy()
+    env['CENTIPEDE_WORKDIR'] = temp_centipede_workdir
+    return subprocess.run(command,
+                          stderr=subprocess.PIPE,
+                          stdout=subprocess.PIPE,
+                          env=env,
+                          check=False)
 
 
 def get_broken_fuzz_targets(bad_build_results, fuzz_targets):
@@ -140,28 +145,28 @@ def has_ignored_targets(out_dir):
 
 @contextlib.contextmanager
 def use_different_out_dir():
-  """Context manager that moves OUT to TMP_FUZZER_DIR. This is useful for
-  catching hardcoding. Note that this sets the environment variable OUT and
-  therefore must be run before multiprocessing.Pool is created. Resets OUT at
-  the end."""
+  """Context manager that moves OUT to subdirectory of BASE_TMP_FUZZER_DIR. This
+  is useful for catching hardcoding. Note that this sets the environment
+  variable OUT and therefore must be run before multiprocessing.Pool is created.
+  Resets OUT at the end."""
   # Use a fake OUT directory to catch path hardcoding that breaks on
   # ClusterFuzz.
-  out = os.getenv('OUT')
-  initial_out = out
-  recreate_directory(TMP_FUZZER_DIR)
-  out = TMP_FUZZER_DIR
-  # Set this so that run_fuzzer which is called by bad_build_check works
-  # properly.
-  os.environ['OUT'] = out
-  # We move the contents of the directory because we can't move the
-  # directory itself because it is a mount.
-  move_directory_contents(initial_out, out)
-  try:
-    yield out
-  finally:
-    move_directory_contents(out, initial_out)
-    shutil.rmtree(out)
-    os.environ['OUT'] = initial_out
+  initial_out = os.getenv('OUT')
+  os.makedirs(BASE_TMP_FUZZER_DIR, exist_ok=True)
+  # Use a random subdirectory of BASE_TMP_FUZZER_DIR to allow running multiple
+  # instances of test_all in parallel (useful for integration testing).
+  with tempfile.TemporaryDirectory(dir=BASE_TMP_FUZZER_DIR) as out:
+    # Set this so that run_fuzzer which is called by bad_build_check works
+    # properly.
+    os.environ['OUT'] = out
+    # We move the contents of the directory because we can't move the
+    # directory itself because it is a mount.
+    move_directory_contents(initial_out, out)
+    try:
+      yield out
+    finally:
+      move_directory_contents(out, initial_out)
+      os.environ['OUT'] = initial_out
 
 
 def test_all_outside_out(allowed_broken_targets_percentage):
@@ -170,13 +175,59 @@ def test_all_outside_out(allowed_broken_targets_percentage):
     return test_all(out, allowed_broken_targets_percentage)
 
 
-def test_all(out, allowed_broken_targets_percentage):
+def centipede_needs_auxiliaries():
+  """Checks if auxiliaries are needed for Centipede."""
+  # Centipede always requires unsanitized binaries as the main fuzz targets,
+  # and separate sanitized binaries as auxiliaries.
+  # 1. Building sanitized binaries with helper.py (i.e., local or GitHub CI):
+  # Unsanitized ones will be built automatically into the same docker container.
+  # Script bad_build_check tests both
+  # a) If main fuzz targets can run with the auxiliaries, and
+  # b) If the auxiliaries are built with the correct sanitizers.
+  # 2. In Trial build and production build:
+  # Two kinds of binaries will be in separated buckets / docker containers.
+  # Script bad_build_check tests either
+  # a) If the unsanitized binaries can run without the sanitized ones, or
+  # b) If the sanitized binaries are built with the correct sanitizers.
+  return (os.getenv('FUZZING_ENGINE') == 'centipede' and
+          os.getenv('SANITIZER') != 'none' and os.getenv('HELPER') == 'True')
+
+
+def find_centipede_auxiliary(main_fuzz_target_path):
+  """Finds the sanitized binary path that corresponds to |main_fuzz_target| for
+  bad_build_check."""
+  target_dir, target_name = os.path.split(main_fuzz_target_path)
+  sanitized_binary_dir = os.path.join(target_dir,
+                                      f'__centipede_{os.getenv("SANITIZER")}')
+  sanitized_binary_path = os.path.join(sanitized_binary_dir, target_name)
+
+  if os.path.isfile(sanitized_binary_path):
+    return sanitized_binary_path
+
+  # Neither of the following two should ever happen, returns None to indicate
+  # an error.
+  if os.path.isdir(sanitized_binary_dir):
+    print('ERROR: Unable to identify Centipede\'s sanitized target'
+          f'{sanitized_binary_path} in {os.listdir(sanitized_binary_dir)}')
+  else:
+    print('ERROR: Unable to identify Centipede\'s sanitized target directory'
+          f'{sanitized_binary_dir} in {os.listdir(target_dir)}')
+  return None
+
+
+def test_all(out, allowed_broken_targets_percentage):  # pylint: disable=too-many-return-statements
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
   fuzz_targets = find_fuzz_targets(out)
   if not fuzz_targets:
     print('ERROR: No fuzz targets found.')
     return False
+
+  if centipede_needs_auxiliaries():
+    for fuzz_target in fuzz_targets:
+      if not find_centipede_auxiliary(fuzz_target):
+        print(f'ERROR: Couldn\'t find auxiliary for {fuzz_target}.')
+        return False
 
   pool = multiprocessing.Pool()
   bad_build_results = pool.map(do_bad_build_check, fuzz_targets)

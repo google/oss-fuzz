@@ -15,23 +15,13 @@
 #
 ################################################################################
 
-sed -i 's/#define NETSNMP_SELECT_TIMEVAL ${arg_type}/#define NETSNMP_SELECT_TIMEVAL struct timeval/g' ./configure
-rm testing/fuzzing/build.sh && echo "echo 0" >> testing/fuzzing/build.sh && chmod +x ./testing/fuzzing/build.sh
+# Globally disable leaks to let fuzzers continue.
+export ASAN_OPTIONS="detect_leaks=0"
 
-./configure --with-openssl=/usr --with-defaults --with-logfile="/dev/null" --with-persistent-directory="/dev/null"
+# Configure and build Net-SNMP and the fuzzers.
+export CC CXX CFLAGS CXXFLAGS SRC WORK OUT LIB_FUZZING_ENGINE
+ci/build.sh
 
-# net-snmp build is not parallel-make safe; do not add -j
-make
-
-# build fuzzers and link statically
-fuzzers=$(find ./testing/fuzzing -name "*_fuzzer.c")
-suffix="_fuzzer\.c"
-for fuzzer in ${fuzzers}; do
-  fuzzname=$(basename -- ${fuzzer%$suffix})
-  $CC $CFLAGS -c -Iinclude -Iagent/mibgroup/agentx ./testing/fuzzing/${fuzzname}_fuzzer.c -o $WORK/${fuzzname}_fuzzer.o
-  $CXX $CXXFLAGS $WORK/${fuzzname}_fuzzer.o \
-        $LIB_FUZZING_ENGINE snmplib/.libs/libnetsnmp.a \
-        agent/.libs/libnetsnmpagent.a \
-        -Wl,-Bstatic -lcrypto -Wl,-Bdynamic -lm \
-        -o $OUT/${fuzzname}_fuzzer
-done
+# Create dictionary and seeds
+cp $SRC/mib.dict $OUT/snmp_mib_fuzzer.dict
+zip $OUT/snmp_mib_fuzzer_seed_corpus.zip $SRC/net-snmp/mibs/*.txt

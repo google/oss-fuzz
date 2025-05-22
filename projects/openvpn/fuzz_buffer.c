@@ -214,7 +214,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
 
     if (buflistp == NULL) {
-      buflistp = buffer_list_new(fuzz_randomizer_get_int(0, 200));
+      buflistp = buffer_list_new();
     } else {
 #define NUM_LIST_TARGETS 6
       generic_ssizet = fuzz_randomizer_get_int(0, NUM_LIST_TARGETS);

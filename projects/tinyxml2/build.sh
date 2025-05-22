@@ -14,10 +14,17 @@
 # limitations under the License.
 #
 ################################################################################
+
+# Make sure OSS-Fuzz's CXXFLAGS are propagated into the build
+sed -i 's/CXXFLAGS =/#CXXFLAGS/g' Makefile
+
 make -j$(nproc) clean
 make -j$(nproc) all
 
-$CXX $CXXFLAGS -std=c++11 -Iinclude/ $SRC/xmltest.cpp -o $OUT/xmltest \
-    $LIB_FUZZING_ENGINE $SRC/tinyxml2/libtinyxml2.a
+fuzz_harness=$(ls -d "$SRC"/*.cpp)
+for h in $fuzz_harness; do
+  $CXX $CXXFLAGS -std=c++11 -Iinclude/ "$h" \
+    -o "$OUT/$(basename "$h" .cpp)" $LIB_FUZZING_ENGINE $SRC/tinyxml2/libtinyxml2.a
+done
 
 cp $SRC/*.dict $SRC/*.options $OUT/

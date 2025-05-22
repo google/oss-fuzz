@@ -1,0 +1,15 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://www.powsybl.org/
+language: jvm
+main_repo: https://github.com/powsybl/powsybl-core
+sanitizers:
+  - address
+auto_ccs:
+  - "sophie.frasnedo@rte-france.com"
+  - "olivier.perrin@rte-france.com"
+  - "nicolas.rol@rte-france.com"
+vendor_ccs:
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
+  - "arthur.chan@adalogics.com"

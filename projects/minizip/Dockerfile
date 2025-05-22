@@ -15,8 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake pkg-config
+RUN apt-get update && apt-get install -y make cmake pkg-config libssl-dev:i386 \
+    zlib1g-dev:i386 libbz2-dev:i386 liblzma-dev:i386 libzstd-dev:i386
 
-RUN git clone -b dev https://github.com/nmoinvaz/minizip
-WORKDIR minizip
+RUN git clone -b develop https://github.com/zlib-ng/minizip-ng
+WORKDIR minizip-ng
 COPY build.sh $SRC/

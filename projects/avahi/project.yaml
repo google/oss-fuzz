@@ -3,6 +3,9 @@ language: c++
 primary_contact: trent@lloyd.id.au
 auto_ccs:
   - alex.gaynor@gmail.com
+  - evverx@gmail.com
+  - msekleta@redhat.com
+  - pemensik@redhat.com
 sanitizers:
   - address
   - memory
@@ -10,4 +13,10 @@ sanitizers:
 architectures:
   - x86_64
   - i386
-main_repo: 'https://github.com/lathiat/avahi'
+main_repo: 'https://github.com/avahi/avahi'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+file_github_issue: True
+builds_per_day: 4

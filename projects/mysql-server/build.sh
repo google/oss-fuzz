@@ -17,19 +17,30 @@
 ################################################################################
 
 cd mysql-server
-git apply ../fix.diff
 mkdir build
 cd build
+# maybe we need to add WITH_LSAN
+export MY_SANITIZER="-DWITH_ASAN=ON"
 if [[ $SANITIZER = *undefined* ]]; then
-    cmake .. -Dprotobuf_BUILD_SHARED_LIBS=OFF -DDOWNLOAD_BOOST=1 -DWITH_BOOST=. -DWITH_SSL=system -DFUZZING=1 -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_UBSAN=1
-else
-    cmake .. -Dprotobuf_BUILD_SHARED_LIBS=OFF -DDOWNLOAD_BOOST=1 -DWITH_BOOST=. -DWITH_SSL=system -DFUZZING=1 -DCMAKE_INSTALL_PREFIX=$OUT/mysql
+    export MY_SANITIZER="-DWITH_UBSAN=ON"
 fi
-make install
-mv $OUT/mysql/bin/fuzz* $OUT/
-cp ../fuzz/fuzz*.options $OUT/
-cp ../fuzz/fuzz*.dict $OUT/
-cp ../fuzz/init*.sql $OUT/
+# not handling yet WITH_MSAN nor WITH_TSAN
+cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_LD=lld $MY_SANITIZER
+make -j$(nproc)
+mkdir -p $OUT/lib/
+cp library_output_directory/libmysql*.so.* $OUT/lib/
+(
+cd runtime_output_directory/
+ls *fuzz* | while read i; do
+    cp $i $OUT/
+    chrpath -r '$ORIGIN/lib' $OUT/$i
+done
+)
 
-rm -Rf $OUT/mysql/data
-$OUT/mysql/bin/mysqld --user=root --initialize-insecure --log-error-verbosity=5 --skip-ssl --datadir=$OUT/mysql/data --basedir=$OUT/mysql/
+#TODO merge custom targets upstream
+#cp ../fuzz/fuzz*.options $OUT/
+#cp ../fuzz/fuzz*.dict $OUT/
+#cp ../fuzz/init*.sql $OUT/
+
+#rm -Rf $OUT/mysql/data
+#$OUT/mysql/bin/mysqld --user=root --initialize-insecure --log-error-verbosity=5 --skip-ssl --datadir=$OUT/mysql/data --basedir=$OUT/mysql/

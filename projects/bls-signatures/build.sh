@@ -25,8 +25,8 @@ export LINK_FLAGS=""
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_74_0.tar.bz2
-cd boost_1_74_0/
+tar jxf boost_1_84_0.tar.bz2
+cd boost_1_84_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
@@ -39,6 +39,10 @@ echo -n '"' >>extra_options.h
 echo -n "--force-module=blst " >>extra_options.h
 echo -n "--operations=" >>extra_options.h
 echo -n "BignumCalc," >>extra_options.h
+echo -n "BignumCalc_Fp2," >>extra_options.h
+echo -n "BignumCalc_Fp12," >>extra_options.h
+echo -n "BLS_BatchVerify," >>extra_options.h
+echo -n "BLS_FinalExp," >>extra_options.h
 echo -n "BLS_GenerateKeyPair," >>extra_options.h
 echo -n "BLS_HashToG1," >>extra_options.h
 echo -n "BLS_HashToG2," >>extra_options.h
@@ -63,13 +67,54 @@ echo -n "BLS_G2_IsEq," >>extra_options.h
 echo -n "BLS_G2_Neg," >>extra_options.h
 echo -n "BLS_Aggregate_G1", >>extra_options.h
 echo -n "BLS_Aggregate_G2", >>extra_options.h
+echo -n "BLS_MapToG1", >>extra_options.h
+echo -n "BLS_MapToG2", >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_P," >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_R," >>extra_options.h
 echo -n "KDF_HKDF," >>extra_options.h
 echo -n "Misc " >>extra_options.h
 echo -n "--digests=SHA256 " >>extra_options.h
+echo -n "--curves=BLS12_381 " >>extra_options.h
 echo -n '"' >>extra_options.h
 
+# Build arkworks-algebra
+if [[ "$SANITIZER" != "memory" ]]
+then
+    cd $SRC/cryptofuzz/modules/arkworks-algebra/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        make
+    else
+        rustup target add i686-unknown-linux-gnu
+        make -f Makefile-i386
+    fi
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_ARKWORKS_ALGEBRA"
+fi
+
+# Build Constantine
+if [[ "$SANITIZER" != "memory" ]]
+then
+    cd $SRC/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        tar Jxf nim-2.0.8-linux_x64.tar.xz
+    else
+        tar Jxf nim-2.0.8-linux_x32.tar.xz
+    fi
+    export NIM_PATH=$(realpath nim-2.0.8)
+
+    export CONSTANTINE_PATH=$SRC/constantine/
+
+    cd $SRC/cryptofuzz/modules/constantine/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        make
+    else
+        make -f Makefile-i386
+    fi
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CONSTANTINE"
+fi
 
 if [[ $CFLAGS = *-m32* ]]
 then
@@ -90,63 +135,26 @@ then
     export CXXFLAGS="$CXXFLAGS -I $SRC/libgmp-install/include/"
 fi
 
-# Build blst
-cd $SRC/blst/
-if [[ "$SANITIZER" == "memory" ]]
-then
-    # Patch to disable assembly
-    touch new_no_asm.h
-    echo "#if LIMB_T_BITS==32" >>new_no_asm.h
-    echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
-    echo "#else" >>new_no_asm.h
-    echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
-    echo "#endif" >>new_no_asm.h
-    cat src/no_asm.h >>new_no_asm.h
-    mv new_no_asm.h src/no_asm.h
-
-    CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
-else
-    ./build.sh
-fi
-export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
-export BLST_INCLUDE_PATH=$(realpath bindings/)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
-
-# Build Chia
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
-then
-    # Build and install libsodium
-    cd $SRC/
-    mkdir $SRC/libsodium-install
-    tar zxf libsodium-1.0.18-stable.tar.gz
-    cd $SRC/libsodium-stable/
-    autoreconf -ivf
-    ./configure --prefix="$SRC/libsodium-install/"
-    make -j$(nproc)
-    make install
-    export CXXFLAGS="$CXXFLAGS -I $SRC/libsodium-install/include/"
-    export LINK_FLAGS="$LINK_FLAGS $SRC/libsodium-install/lib/libsodium.a"
-
-    cd $SRC/bls-signatures/
-    mkdir build/
-    cd build/
-    if [[ $CFLAGS = *-m32* ]]
+function build_blst() {
+    if [[ "$SANITIZER" == "memory" ]]
     then
-        export CHIA_ARCH="X86"
+        CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__ -Dllimb_t=__uint128_t -D__builtin_assume(x)=(void)(x)" ./build.sh
     else
-        export CHIA_ARCH="X64"
+        ./build.sh
     fi
-    cmake .. -DBUILD_BLS_PYTHON_BINDINGS=0 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0 -DARCH=$CHIA_ARCH
-    make -j$(nproc)
-    export CHIA_BLS_LIBBLS_A_PATH=$(realpath libbls.a)
-    export CHIA_BLS_INCLUDE_PATH=$(realpath ../src/)
-    export CHIA_BLS_RELIC_INCLUDE_PATH_1=$(realpath _deps/relic-build/include/)
-    export CHIA_BLS_RELIC_INCLUDE_PATH_2=$(realpath _deps/relic-src/include/)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CHIA_BLS"
-fi
+
+    export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
+    export BLST_INCLUDE_PATH=$(realpath bindings/)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
+}
+
+# Build blst (normal)
+cp -R $SRC/blst/ $SRC/blst_normal/
+cd $SRC/blst_normal/
+build_blst
 
 # Build mcl
-if [[ "$SANITIZER" != "memory" ]]
+if [[ "$SANITIZER" != "memory" && $CFLAGS != *-m32* ]]
 then
     cd $SRC/mcl/
     mkdir build/
@@ -178,7 +186,7 @@ then
     ./configure.py --cc-bin=$CXX \
     --cc-abi-flags="$CXXFLAGS" \
     --disable-shared \
-    --disable-modules=locking_allocator,x509,tls \
+    --disable-modules=locking_allocator,x509 \
     --build-targets=static \
     --without-documentation
 else
@@ -186,7 +194,7 @@ else
     --cc-bin=$CXX \
     --cc-abi-flags="$CXXFLAGS" \
     --disable-shared \
-    --disable-modules=locking_allocator,x509,tls \
+    --disable-modules=locking_allocator,x509 \
     --build-targets=static \
     --without-documentation
 fi
@@ -205,12 +213,6 @@ make -B
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
-    cd $SRC/cryptofuzz/modules/chia_bls/
-    make -B
-fi
-
-if [[ "$SANITIZER" != "memory" ]]
-then
     cd $SRC/cryptofuzz/modules/mcl/
     make -B
 fi
@@ -220,3 +222,18 @@ cd $SRC/cryptofuzz/
 make -B -j
 
 cp cryptofuzz $OUT/cryptofuzz-bls-signatures
+
+# Build blst (optimized for size)
+cp -R $SRC/blst/ $SRC/blst_optimize_size/
+cd $SRC/blst_optimize_size/
+export CFLAGS="$CFLAGS -D__OPTIMIZE_SIZE__"
+build_blst
+
+cd $SRC/cryptofuzz/modules/blst/
+make -B
+
+# Build Cryptofuzz
+cd $SRC/cryptofuzz/
+rm entry.o; make
+
+cp cryptofuzz $OUT/cryptofuzz-bls-signatures_optimize_size

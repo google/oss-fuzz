@@ -2,3 +2,4 @@
 allow_user_segv_handler=1
 handle_sigill=0
 handle_segv=1
+handle_sigfpe=1

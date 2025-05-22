@@ -1,0 +1,17 @@
+homepage: "https://github.com/cloud-hypervisor/cloud-hypervisor"
+language: rust
+primary_contact: "bo.arvin.chen@gmail.com"
+auto_ccs:
+  - "michael2012zhao@hotmail.com"
+  - "Henry.Wang@arm.com"
+  - "rbradford@rivosinc.com"
+  - "samuel.e.ortiz@protonmail.com"
+  - "liuwe@microsoft.com"
+  - "seb@rivosinc.com"
+  - "nistephe@microsoft.com"
+  - "fabduchene@microsoft.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/cloud-hypervisor/cloud-hypervisor'

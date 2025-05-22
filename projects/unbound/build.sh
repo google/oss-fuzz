@@ -42,7 +42,8 @@ OBJECTS_TO_LINK="dns.o infra.o rrset.o dname.o \
   val_secalgo.o val_sigcrypt.o val_utils.o dns64.o authzone.o \
   respip.o netevent.o listen_dnsport.o outside_network.o ub_event.o keyraw.o \
   sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o libunbound.o \
-  libworker.o context.o rpz.o"
+  libworker.o context.o rpz.o proxy_protocol.o timeval_func.o rfc_1982.o \
+  siphash.o"
 
 $CXX $CXXFLAGS -std=c++11 \
   $LIB_FUZZING_ENGINE \
@@ -85,7 +86,3 @@ $CXX $CXXFLAGS -std=c++11 \
   $LIBOBJS
 
 wget --directory-prefix $OUT https://github.com/jsha/unbound/raw/fuzzing-corpora/testdata/parse_packet_fuzzer_seed_corpus.zip
-wget --directory-prefix $OUT https://github.com/luisx41/fuzzing-corpus/raw/master/projects/unbound/fuzz_1_fuzzer_seed_corpus.zip
-wget --directory-prefix $OUT https://github.com/luisx41/fuzzing-corpus/raw/master/projects/unbound/fuzz_2_fuzzer_seed_corpus.zip
-wget --directory-prefix $OUT https://github.com/luisx41/fuzzing-corpus/raw/master/projects/unbound/fuzz_3_fuzzer_seed_corpus.zip
-wget --directory-prefix $OUT https://github.com/luisx41/fuzzing-corpus/raw/master/projects/unbound/fuzz_4_fuzzer_seed_corpus.zip

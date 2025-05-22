@@ -4,3 +4,9 @@ language: c
 auto_ccs :
   - "david@adalogics.com"
 main_repo: 'https://github.com/tats/w3m'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

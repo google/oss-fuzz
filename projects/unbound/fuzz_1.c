@@ -1,3 +1,15 @@
+/* Copyright 2021 Google LLC
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 /*
  * unbound-fuzzme.c - parse a packet provided on stdin (for fuzzing).
  *
@@ -29,7 +41,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
   if (parse_packet(pkt, &msg, reg) != LDNS_RCODE_NOERROR) {    
     goto out;
   }
-  if (parse_extract_edns(&msg, &edns, reg) != LDNS_RCODE_NOERROR) {
+  if (parse_extract_edns_from_response_msg(&msg, &edns, reg) != LDNS_RCODE_NOERROR) {
     goto out;
   }
 
@@ -51,7 +63,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
   struct iter_priv priv;
   memset(&priv, 0, sizeof(struct iter_priv));
   ie.priv = &priv;
-  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &ie);   
+
+  struct module_qstate qstate;
+  memset(&qstate, 0, sizeof(struct module_qstate));
+  qstate.env = &env;
+  qstate.region = reg;
+
+  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &qstate, &ie);
 out:
   regional_destroy(reg);
   sldns_buffer_free(pkt);

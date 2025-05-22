@@ -33,19 +33,24 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac --enable-preview --release 15 -cp $BUILD_CLASSPATH $fuzzer
+  javac --enable-preview --release 17 -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
   cp $SRC/${fuzzer_basename}\$SomeClass.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m;--enable-preview\" \
+--jvm_args=\"\$mem_settings:--enable-preview\" \
 \$@" > $OUT/$fuzzer_basename
   chmod +x $OUT/$fuzzer_basename
 done

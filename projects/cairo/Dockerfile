@@ -14,16 +14,18 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip gtk-doc-tools libffi-dev autotools-dev libtool
-RUN pip3 install -U meson==0.55.3 ninja
+RUN apt-get update && \
+    apt-get install -y python3-pip gtk-doc-tools libffi-dev autotools-dev libtool gperf
+RUN pip3 install -U meson==1.4.0 ninja packaging
 
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
-ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
-RUN tar xvJf $SRC/glib-2.64.2.tar.xz
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib
 RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git && \
-    zip -q $SRC/cairo_seed_corpus.zip $SRC/cairo/test/reference/*
+    zip -q $SRC/cairo_seed_corpus.zip $SRC/cairo/test/reference/* && \
+    zip -q $SRC/svg-render-fuzzer_seed_corpus.zip $SRC/cairo/test/svg/*.svg
 
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $SRC/cairo.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/svg.dict $SRC/svg-render-fuzzer.dict
 
 WORKDIR $SRC/cairo
 COPY targets $SRC/fuzz

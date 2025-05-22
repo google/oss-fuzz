@@ -1,4 +1,5 @@
 homepage: "https://github.com/bazelbuild/rules_fuzzing"
+main_repo: "https://github.com/bazelbuild/rules_fuzzing"
 language: jvm
 primary_contact: "test@example.com"
 

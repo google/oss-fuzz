@@ -55,6 +55,21 @@ class CloneTest(unittest.TestCase):
         repo_manager._clone('https://github.com/oss-fuzz-not-real.git', tmp_dir,
                             'oss-fuzz')
 
+  @mock.patch('utils.execute')
+  def test_clone_with_username(self, mock_execute):  # pylint: disable=no-self-use
+    """Test clone with username."""
+    repo_manager._clone('https://github.com/fake/repo.git',
+                        '/',
+                        'name',
+                        username='user',
+                        password='password')
+    mock_execute.assert_called_once_with([
+        'git', 'clone', 'https://user:password@github.com/fake/repo.git', 'name'
+    ],
+                                         location='/',
+                                         check_result=True,
+                                         log_command=False)
+
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')

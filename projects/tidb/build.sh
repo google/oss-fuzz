@@ -15,7 +15,10 @@
 #
 ################################################################################
 
+mv $SRC/fuzzMarshalJSON.go $SRC/tidb/pkg/types/
+mv $SRC/fuzzNewBitLiteral.go $SRC/tidb/pkg/types/
+mv $SRC/fuzzNewHexLiteral.go $SRC/tidb/pkg/types/
 
-compile_go_fuzzer github.com/pingcap/tidb/types FuzzMarshalJSON fuzzMarshalJSON
-compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewBitLiteral fuzzNewBitLiteral
-compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewHexLiteral fuzzNewHexLiteral
+compile_go_fuzzer github.com/pingcap/tidb/pkg/types FuzzUnmarshalJSON fuzzUnmarshalJSON
+compile_go_fuzzer github.com/pingcap/tidb/pkg/types FuzzNewBitLiteral fuzzNewBitLiteral
+compile_go_fuzzer github.com/pingcap/tidb/pkg/types FuzzNewHexLiteral fuzzNewHexLiteral

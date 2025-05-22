@@ -11,3 +11,8 @@ auto_ccs:
   - poettering@gmail.com
   - fsumsal@redhat.com
 main_repo: 'https://github.com/systemd/casync'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

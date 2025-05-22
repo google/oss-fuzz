@@ -5,3 +5,9 @@ main_repo: "https://github.com/oatpp/oatpp"
 auto_ccs: 
   - "leonid@oatpp.io"
   - "david@adalogics.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

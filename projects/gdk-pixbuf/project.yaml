@@ -5,3 +5,9 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://gitlab.gnome.org/GNOME/gdk-pixbuf.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

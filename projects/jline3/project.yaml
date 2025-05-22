@@ -1,0 +1,9 @@
+homepage: "https://github.com/jline/jline3"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/jline/jline3"
+sanitizers:
+  - address
+vendor_ccs:
+  - "bug-disclosure@code-intelligence.com"

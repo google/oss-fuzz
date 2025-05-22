@@ -1,0 +1,11 @@
+homepage: https://github.com/executablebooks/markdown-it-py
+main_repo: https://github.com/executablebooks/markdown-it-py
+primary_contact: "sewelljohnchris@gmail.com"
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+auto_ccs:
+- david@adalogics.com

@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make
 RUN apt-get install -y flex bison build-essential
-RUN git clone --recursive --depth 1 https://github.com/nodejs/node
+RUN git clone --recursive --depth 1 https://github.com/AdamKorcz/node --branch=all-new-fuzzers
 WORKDIR $SRC
 COPY build.sh $SRC/

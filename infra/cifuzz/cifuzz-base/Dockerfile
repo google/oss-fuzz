@@ -17,19 +17,26 @@
 FROM gcr.io/oss-fuzz-base/base-runner
 
 RUN apt-get update && \
-    apt-get install systemd -y && \
-    wget https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_20.10.5~3-0~ubuntu-xenial_amd64.deb -O /tmp/docker-ce.deb && \
-    dpkg -i /tmp/docker-ce.deb && rm /tmp/docker-ce.deb
+    apt-get install -y systemd && \
+    wget https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_20.10.8~3-0~ubuntu-focal_amd64.deb -O /tmp/docker-ce.deb && \
+    dpkg -i /tmp/docker-ce.deb && \
+    rm /tmp/docker-ce.deb
 
-# Install newer Python from base-builder.
-COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/bin/python3 /usr/local/bin/python3
-COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/libpython3* /usr/local/lib/
-COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/python3.8 /usr/local/lib/python3.8
-RUN ldconfig
-
+ENV PATH=/opt/gcloud/google-cloud-sdk/bin/:$PATH
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
+
+# Do this step before copying to make rebuilding faster when developing.
+COPY ./infra/cifuzz/requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
+
 ADD . ${OSS_FUZZ_ROOT}
-RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
+# Don't use the default npm location since jazzer.js can break us.
+# This means javascript needed by cifuzz/clusterfuzzlite must be executed in
+# OSS_FUZZ_ROOT.
+RUN cd ${OSS_FUZZ_ROOT} && npm install ${OSS_FUZZ_ROOT}/infra/cifuzz
+
+
+ENV PYTHONUNBUFFERED=1
 
 # Python file to execute when the docker container starts up.
 # We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,

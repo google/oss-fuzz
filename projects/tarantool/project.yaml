@@ -1,13 +1,13 @@
 homepage: "https://www.tarantool.io/en/"
 language: c
 builds_per_day: 4
-primary_contact: "kirill.yukhin@gmail.com"
+primary_contact: "estetus@gmail.com"
 auto_ccs:
   - "estetus@gmail.com"
   - "totktonada.ru@gmail.com"
-fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
+  - "sergeykaplun1998@gmail.com"
+  - "imeevma@gmail.com"
+  - "boris.stepanenko@gmail.com"
 sanitizers:
   - address
   - undefined

@@ -17,8 +17,8 @@
 
 # Build CMake.
 mkdir build-dir && cd build-dir
-../bootstrap && make -j$(nproc)
-
+../bootstrap
+make -j$(nproc) CMakeLib
 
 # Build fuzzers.
 cd ../Tests/Fuzzing

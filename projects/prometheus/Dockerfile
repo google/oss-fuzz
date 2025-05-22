@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 ENV GO111MODULE=on
 RUN git clone https://github.com/prometheus/prometheus $GOPATH/src/github.com/prometheus/prometheus
 COPY build.sh $SRC/

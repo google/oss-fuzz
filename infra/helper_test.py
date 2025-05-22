@@ -59,9 +59,9 @@ class BuildImageImplTest(unittest.TestCase):
   def test_pull(self, mock_pull_images, _):
     """Tests that pull=True is handled properly."""
     image_name = 'base-image'
-    self.assertTrue(
-        helper.build_image_impl(helper.Project(image_name), pull=True))
-    mock_pull_images.assert_called_with()
+    project = helper.Project(image_name, is_external=True)
+    self.assertTrue(helper.build_image_impl(project, pull=True))
+    mock_pull_images.assert_called_with('c++')
 
   @mock.patch('helper.docker_build')
   def test_base_image(self, mock_docker_build):
@@ -112,6 +112,7 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
   PROJECT_LANGUAGE = 'python'
 
   def setUp(self):
+    self.maxDiff = None  # pylint: disable=invalid-name
     self.setUpPyfakefs()
     self.fs.add_real_directory(helper.OSS_FUZZ_DIR)
 
@@ -150,7 +151,9 @@ class GenerateImplTest(fake_filesystem_unittest.TestCase):
     self._verify_templated_files(templates.EXTERNAL_TEMPLATES,
                                  build_integration_path, self.PROJECT_LANGUAGE)
 
-  def test_generate_swift_project(self):
+  @mock.patch('helper._get_current_datetime',
+              return_value=datetime.datetime(year=2021, month=1, day=1))
+  def test_generate_swift_project(self, _):
     """Tests that the swift project uses the correct base image."""
     helper._generate_impl(helper.Project(self.PROJECT_NAME), 'swift')
     self._verify_templated_files(
@@ -165,7 +168,7 @@ class ProjectTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.project_name = 'project'
     self.internal_project = helper.Project(self.project_name)
-    self.external_project_path = os.path.join('path', 'to', self.project_name)
+    self.external_project_path = os.path.join('/path', 'to', self.project_name)
     self.external_project = helper.Project(self.external_project_path,
                                            is_external=True)
     self.setUpPyfakefs()

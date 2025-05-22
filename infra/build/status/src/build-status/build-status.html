@@ -131,6 +131,7 @@ limitations under the License. -->
           <paper-tabs selected="fuzzing" id="build_type" attr-for-selected="type" on-click="onChanged">
             <paper-tab type="fuzzing">Fuzzing Builds</paper-tab>
             <paper-tab type="coverage">Coverage Builds</paper-tab>
+            <paper-tab type="introspector">Introspector Builds</paper-tab>
           </paper-tabs>
         </div>
         <div class="card-content">
@@ -212,6 +213,7 @@ limitations under the License. -->
     </div>
       <iron-ajax id="status_fuzzing" auto handle-as="json" url="/status.json" on-response="onResponseForFuzzing"></iron-ajax>
       <iron-ajax id="status_coverage" auto handle-as="json" url="/status-coverage.json" on-response="onResponseForCoverage"></iron-ajax>
+      <iron-ajax id="status_introspector" auto handle-as="json" url="/status-introspector.json" on-response="onResponseForIntrospector"></iron-ajax>
     <iron-ajax id="logxhr" handle-as="text" on-response="onLogResponse"></iron-ajax>
   </template>
 
@@ -281,6 +283,10 @@ limitations under the License. -->
         this.status_coverage = e.detail.response;
       }
 
+      onResponseForIntrospector(e) {
+        this.status_introspector = e.detail.response;
+      }
+
       onLogResponse(e) {
         this.log = e.detail.response;
         this.loading_log = false;
@@ -295,6 +301,8 @@ limitations under the License. -->
       onChanged(e) {
         if (this.$.build_type.selected == "coverage") {
           this.status = this.status_coverage;
+        } else if (this.$.build_type.selected == "introspector") {
+          this.status = this.status_introspector;
         } else {
           this.status = this.status_fuzzing;
         }

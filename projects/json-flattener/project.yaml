@@ -1,0 +1,15 @@
+homepage: "https://github.com/wnameless/json-flattener/"
+language: jvm
+primary_contact: "wnameless@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/wnameless/json-flattener/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

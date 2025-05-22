@@ -56,6 +56,18 @@ EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 # pylint: disable=no-self-use,protected-access,too-few-public-methods,unused-argument
 
 
+def docker_command_has_env_var_arg(command, env_var_arg):
+  """Returns True if a docker command has a specific env var argument."""
+  for idx, element in enumerate(command):
+    if idx == 0:
+      # We're looking for the variable which can't be the first argument.
+      continue
+
+    if element == env_var_arg and command[idx - 1] == '-e':
+      return True
+  return False
+
+
 class BuildFuzzersTest(unittest.TestCase):
   """Unit tests for build_fuzzers."""
 
@@ -77,23 +89,37 @@ class BuildFuzzersTest(unittest.TestCase):
 
       docker_run_command = mock_docker_run.call_args_list[0][0][0]
 
-    def command_has_env_var_arg(command, env_var_arg):
-      for idx, element in enumerate(command):
-        if idx == 0:
-          continue
+    self.assertTrue(
+        docker_command_has_env_var_arg(docker_run_command, 'CIFUZZ=True'))
 
-        if element == env_var_arg and command[idx - 1] == '-e':
-          return True
-      return False
+  @mock.patch('build_specified_commit.detect_main_repo',
+              return_value=('example.com', '/path'))
+  @mock.patch('repo_manager._clone', return_value=None)
+  @mock.patch('continuous_integration.checkout_specified_commit')
+  @mock.patch('helper.docker_run', return_value=False)  # We want to quit early.
+  def test_extra_env_var(self, mock_docker_run, _, __, ___):
+    """Tests that the CIFUZZ env var is set."""
 
-    self.assertTrue(command_has_env_var_arg(docker_run_command, 'CIFUZZ=True'))
+    extra_env_var = 'CFL_EXTRA_TOKEN'
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      with mock.patch.dict(os.environ, {extra_env_var: 'BLAH'}):
+        build_fuzzers.build_fuzzers(
+            test_helpers.create_build_config(
+                oss_fuzz_project_name=EXAMPLE_PROJECT,
+                project_repo_name=EXAMPLE_PROJECT,
+                workspace=tmp_dir,
+                pr_ref='refs/pull/1757/merge'))
+
+    docker_run_command = mock_docker_run.call_args_list[0][0][0]
+    self.assertTrue(
+        docker_command_has_env_var_arg(docker_run_command, extra_env_var))
 
 
 class InternalGithubBuildTest(unittest.TestCase):
   """Tests for building OSS-Fuzz projects on GitHub actions."""
   PROJECT_REPO_NAME = 'myproject'
   SANITIZER = 'address'
-  COMMIT_SHA = 'fake'
+  GIT_SHA = 'fake'
   PR_REF = 'fake'
 
   def _create_builder(self, tmp_dir, oss_fuzz_project_name='myproject'):
@@ -103,15 +129,15 @@ class InternalGithubBuildTest(unittest.TestCase):
         project_repo_name=self.PROJECT_REPO_NAME,
         workspace=tmp_dir,
         sanitizer=self.SANITIZER,
-        commit_sha=self.COMMIT_SHA,
+        git_sha=self.GIT_SHA,
         pr_ref=self.PR_REF,
-        is_github=True)
-    ci_system = continuous_integration.get_ci(config)
-    builder = build_fuzzers.Builder(config, ci_system)
+        cfl_platform='github')
+    cfl_platform = continuous_integration.get_ci(config)
+    builder = build_fuzzers.Builder(config, cfl_platform)
     builder.repo_manager = repo_manager.RepoManager('/fake')
     return builder
 
-  @mock.patch('repo_manager._clone', side_effect=None)
+  @mock.patch('helper.docker_run', return_value=True)
   @mock.patch('continuous_integration.checkout_specified_commit',
               side_effect=None)
   def test_correct_host_repo_path(self, _, __):
@@ -159,13 +185,16 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
 
   def setUp(self):
-    self.temp_dir_obj = tempfile.TemporaryDirectory()
-    self.workspace = self.temp_dir_obj.name
+    self.temp_dir_ctx_manager = test_helpers.docker_temp_dir()
+    self.workspace = self.temp_dir_ctx_manager.__enter__()
     self.out_dir = os.path.join(self.workspace, 'build-out')
     test_helpers.patch_environ(self)
 
+    base_runner_path = os.path.join(INFRA_DIR, 'base-images', 'base-runner')
+    os.environ['PATH'] = os.environ['PATH'] + os.pathsep + base_runner_path
+
   def tearDown(self):
-    self.temp_dir_obj.cleanup()
+    self.temp_dir_ctx_manager.__exit__(None, None, None)
 
   def test_external_github_project(self):
     """Tests building fuzzers from an external project on Github."""
@@ -177,8 +206,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         project_repo_name=project_repo_name,
         workspace=self.workspace,
         git_url=git_url,
-        commit_sha='HEAD',
-        is_github=True,
+        git_sha='HEAD',
+        cfl_platform='github',
         base_commit='HEAD^1')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
@@ -192,13 +221,14 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     # github.com/jonathanmetzman/cifuzz-external-example.
     manager = repo_manager.clone_repo_and_get_manager(
         'https://github.com/jonathanmetzman/cifuzz-external-example',
-        self.temp_dir_obj.name)
+        self.workspace)
     project_src_path = manager.repo_dir
     config = test_helpers.create_build_config(
         project_repo_name=project_repo_name,
         workspace=self.workspace,
         git_url=git_url,
-        commit_sha='HEAD',
+        filestore='no_filestore',
+        git_sha='HEAD',
         project_src_path=project_src_path,
         base_commit='HEAD^1')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
@@ -211,9 +241,9 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
-        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
+        git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
         base_commit='da0746452433dc18bae699e355a9821285d863c8',
-        is_github=True)
+        cfl_platform='github')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
         os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
@@ -226,7 +256,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         workspace=self.workspace,
         pr_ref='refs/pull/1757/merge',
         base_ref='master',
-        is_github=True)
+        cfl_platform='github')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
         os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
@@ -239,7 +269,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         workspace=self.workspace,
         pr_ref='ref-1/merge',
         base_ref='master',
-        is_github=True)
+        cfl_platform='github')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_oss_fuzz_project_name(self):
@@ -248,7 +278,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         oss_fuzz_project_name='not_a_valid_project',
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
-        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+        git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
     self.assertFalse(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_repo_name(self):
@@ -257,17 +287,17 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='not-real-repo',
         workspace=self.workspace,
-        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+        git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
     self.assertFalse(build_fuzzers.build_fuzzers(config))
 
-  def test_invalid_commit_sha(self):
+  def test_invalid_git_sha(self):
     """Tests building fuzzers with invalid commit SHA."""
     config = test_helpers.create_build_config(
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
-        commit_sha='',
-        is_github=True)
+        git_sha='',
+        cfl_platform='github')
     with self.assertRaises(AssertionError):
       build_fuzzers.build_fuzzers(config)
 
@@ -277,7 +307,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=os.path.join(self.workspace, 'not', 'a', 'dir'),
-        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+        git_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
     self.assertFalse(build_fuzzers.build_fuzzers(config))
 
 

@@ -1,0 +1,14 @@
+homepage: "https://rtpproxy.org/"
+main_repo: "https://github.com/sippy/rtpproxy"
+primary_contact: "sobomax@sippysoft.com"
+language: c
+auto_ccs:
+  - "sobomax@gmail.com"
+vendor_ccs:
+  - "razvan@opensips.org"
+  - "liviu@opensips.org"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+file_github_issue: True

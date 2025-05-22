@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Commands migrated from Dockerfile to make CIFuzz work
+# REF: https://github.com/google/oss-fuzz/issues/6755
+git submodule update --init --recursive
+
 # Note: This project creates Rust fuzz targets exclusively
 
 build() {
@@ -23,6 +27,8 @@ build() {
   fuzzer_prefix=$1
   shift
   fuzz_targets=$1
+  shift
+  fuzz_target_path=$1
   shift
   PROJECT_DIR=$SRC/$project
 
@@ -33,9 +39,9 @@ build() {
     export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
   done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
 
-  cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions "$@"
+  cd $PROJECT_DIR/fuzz && cargo fuzz build --sanitizer none --strip-dead-code -O --debug-assertions "$@"
 
-  FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
+  FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/$fuzz_target_path/x86_64-unknown-linux-gnu/release
 
   if [ "x$fuzz_targets" = "x" ]; then
       fuzz_targets=$PROJECT_DIR/fuzz/fuzz_targets/*.rs
@@ -46,21 +52,24 @@ build() {
       dst_name=$fuzzer_prefix$src_name
       cp $FUZZ_TARGET_OUTPUT_DIR/$src_name $OUT/$dst_name
 
-      if [[ -d $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/ ]]; then
-          zip -jr \
-              $OUT/${dst_name}_seed_corpus.zip \
-              $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/
+      if [[ -f $SRC/$dst_name.options ]]; then
+        cp $SRC/$dst_name.options $OUT/$dst_name.options
+      else
+        cp $SRC/default.options $OUT/$dst_name.options
       fi
-
-      cp $SRC/default.options $OUT/$dst_name.options
   done
 }
 
 # Ensure OCaml environment is set up prior to Wasmtime build.
 eval $(opam env)
 
-# Build with peepmatic in order to enable the related fuzz targets.
-build wasmtime "" "" --features "peepmatic-fuzzing experimental_x64"
+build wasmtime "" "" target
+build wasm-tools wasm-tools- "" target --features wasmtime
+build regalloc2 regalloc2- ion_checker fuzz/target
 
-build wasm-tools wasm-tools- ""
-build regalloc.rs regalloc- bt bt
+# In coverage builds copy the opam header files into the output so coverage can
+# find the source files.
+if [ "$SANITIZER" = "coverage" ]; then
+  cp --recursive --dereference --no-preserve mode,ownership --parents \
+    $HOME/.opam/4.11.2/lib/ocaml $OUT
+fi

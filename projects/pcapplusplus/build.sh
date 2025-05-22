@@ -16,25 +16,4 @@
 #
 ################################################################################
 
-TARGETS_DIR=Tests/Fuzzers/Bin
-
-# Build libpcap
-cd $SRC/libpcap/
-./configure
-make -j$(nproc)
-
-# Build PcapPlusPlus linking statically against the built libpcap
-cd $SRC/PcapPlusPlus
-./configure-fuzzing.sh --libpcap-static-lib-dir $SRC/libpcap/
-make clean
-make -j$(nproc) fuzzers
-
-# Copy target and options
-cp $TARGETS_DIR/FuzzTarget $OUT
-cp $(ldd $OUT/FuzzTarget | cut -d" " -f3) $OUT
-cp $SRC/default.options $OUT/FuzzTarget.options
-
-# Copy corpora
-cd $SRC/tcpdump
-zip -jr FuzzTarget_seed_corpus.zip tests/*.pcap
-cp FuzzTarget_seed_corpus.zip $OUT/
+$SRC/PcapPlusPlus/Tests/Fuzzers/ossfuzz.sh

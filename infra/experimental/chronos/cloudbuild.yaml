@@ -1,0 +1,58 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+# CloudBuild for generating Chronos-cached images.
+# Supports building by way of ccache now.
+# High-level steps:
+# 1) Build image for project
+# 2) Run an ASAN build and store ccache
+# 3) Copy ccache cache to host and copy into project's OSS-Fuzz folder
+# 4) Build image for project and copy ccache in, storing image as *-ofg-cache-address
+# 5) Run an coverage build and store ccache
+# 6) Copy ccache cache to host and copy into project's OSS-Fuzz folder
+# 7) Build image for project and copy ccache in, storing image as *-ofg-cache-coverage
+# TODO (David): add support for use of dedicated replay_build.sh
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: /bin/bash
+  args:
+  - /workspace/infra/experimental/chronos/build_cache_local.sh
+  - ${_PROJECT}
+  - ${_FUZZING_LANGUAGE}
+  - address
+  env:
+  - RUN_ALL=1
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: /bin/bash
+  args:
+  - /workspace/infra/experimental/chronos/build_cache_local.sh
+  - ${_PROJECT}
+  - ${_FUZZING_LANGUAGE}
+  - coverage
+  env:
+  - RUN_ALL=1
+images:
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-address
+- us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-coverage
+timeout: 72000s  # 20 hours, same as build_lib.py
+logsBucket: oss-fuzz-gcb-logs
+tags:
+- ${_PROJECT}
+- chronos
+options:
+  pool:
+    name: projects/oss-fuzz/locations/us-central1/workerPools/buildpool-chronos

@@ -15,22 +15,4 @@
 #
 ################################################################################
 
-
-sed -i 's/check_inconsistencies=yes/check_inconsistencies=no/' common/acx_pthread.m4
-sed -i 's/avahiinclude_HEADERS =/avahiinclude_HEADERS = dns.h hashmap.h/' avahi-core/Makefile.am
-
-./autogen.sh --disable-stack-protector --disable-qt3 --disable-qt4 --disable-qt5 --disable-gtk --disable-gtk3 --disable-dbus --disable-gdbm --disable-libdaemon --disable-python --disable-manpages --disable-mono --disable-monodoc --disable-glib --disable-gobject --disable-libevent --prefix="$WORK"
-make -j "$(nproc)"
-make install
-
-$CXX $CXXFLAGS -std=c++11 "-I$WORK/include/" \
-    "$SRC/avahi_packet_consume_record_fuzzer.cc" \
-    -o "$OUT/avahi_packet_consume_record_fuzzer" \
-    $LIB_FUZZING_ENGINE \
-    "$WORK/lib/libavahi-core.a" "$WORK/lib/libavahi-common.a"
-
-$CXX $CXXFLAGS -std=c++11 "-I$WORK/include/" \
-    "$SRC/avahi_packet_consume_key_fuzzer.cc" \
-    -o "$OUT/avahi_packet_consume_key_fuzzer" \
-    $LIB_FUZZING_ENGINE \
-    "$WORK/lib/libavahi-core.a" "$WORK/lib/libavahi-common.a"
+fuzz/oss-fuzz.sh

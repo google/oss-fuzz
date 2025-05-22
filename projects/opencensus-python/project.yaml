@@ -1,0 +1,13 @@
+homepage: "https://opencensus.io/"
+main_repo: "https://github.com/census-instrumentation/opencensus-python.git"
+language: python
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+- david@adalogics.com
+- arthur.chan@adalogics.com
+
+# opencensus is being archived cf https://opentelemetry.io/blog/2023/sunsetting-opencensus/
+disabled: true

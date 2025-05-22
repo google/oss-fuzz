@@ -16,21 +16,49 @@
 ################################################################################
 
 # Build and install project (using current CFLAGS, CXXFLAGS).
-pip3 install .
+python3 -m pip install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  fuzzer_basename=$(basename -s .py $fuzzer)
-  fuzzer_package=${fuzzer_basename}.pkg
-  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
-
-  # Create execution wrapper.
-  echo "#!/bin/sh
-# LLVMFuzzerTestOneInput for fuzzer detection.
-this_dir=\$(dirname \"\$0\")
-ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
-\$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
-  chmod +x $OUT/$fuzzer_basename
+  compile_python_fuzzer $fuzzer
 done
 
-zip -j $OUT/files_fuzzer_seed_corpus.zip tests/examplefiles/*
+# Create shared seed corpus
+find tests/examplefiles/ -type f | zip -@ -q $OUT/fuzz_lexers_seed_corpus.zip
+cp $OUT/fuzz_lexers_seed_corpus.zip $OUT/fuzz_guesser_seed_corpus.zip
+
+# Create shared dictionary
+cat fuzzing/dictionaries/aff.dict \
+    fuzzing/dictionaries/bash.dict \
+    fuzzing/dictionaries/creole.dict \
+    fuzzing/dictionaries/css.dict \
+    fuzzing/dictionaries/graphviz.dict \
+    fuzzing/dictionaries/fbs.dict \
+    fuzzing/dictionaries/html.dict \
+    fuzzing/dictionaries/jinja2.dict \
+    fuzzing/dictionaries/js.dict \
+    fuzzing/dictionaries/json.dict \
+    fuzzing/dictionaries/lua.dict \
+    fuzzing/dictionaries/markdown.dict \
+    fuzzing/dictionaries/mathml.dict \
+    fuzzing/dictionaries/pdf.dict \
+    fuzzing/dictionaries/protobuf.dict \
+    fuzzing/dictionaries/ps.dict \
+    fuzzing/dictionaries/regexp.dict \
+    fuzzing/dictionaries/rst.dict \
+    fuzzing/dictionaries/sql.dict \
+    fuzzing/dictionaries/svg.dict \
+    fuzzing/dictionaries/tex.dict \
+    fuzzing/dictionaries/toml.dict \
+    fuzzing/dictionaries/utf8.dict \
+    fuzzing/dictionaries/vcf.dict \
+    fuzzing/dictionaries/wkt.dict \
+    fuzzing/dictionaries/x86.dict \
+    fuzzing/dictionaries/xml.dict \
+    fuzzing/dictionaries/xpath.dict \
+    fuzzing/dictionaries/xslt.dict \
+    fuzzing/dictionaries/yaml.dict \
+    fuzzing/dictionaries/yara.dict \
+> "$OUT/fuzz_lexers.dict"
+
+cp "$OUT/fuzz_lexers.dict" "$OUT/fuzz_guesser.dict"

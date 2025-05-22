@@ -1,0 +1,12 @@
+homepage: https://github.com/flyway/flyway
+main_repo: https://github.com/flyway/flyway
+language: jvm
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- arthur.chan@adalogics.com
+

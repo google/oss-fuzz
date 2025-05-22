@@ -15,12 +15,15 @@
 #
 ################################################################################
 
+# Ensure libevent can be found
+export PKG_CONFIG_PATH="/usr/local/lib/"
+
 ./autogen.sh
 ./configure \
     --enable-fuzzing \
     FUZZING_LIBS="${LIB_FUZZING_ENGINE} -lc++" \
     LIBEVENT_LIBS="-Wl,-Bstatic -levent -Wl,-Bdynamic" \
-    LIBTINFO_LIBS="-Wl,-Bstatic -ltinfo -Wl,-Bdynamic"
+    LIBTINFO_LIBS=" -l:libtinfo.a "
 
 make -j"$(nproc)" check
 find "${SRC}/tmux/fuzz/" -name '*-fuzzer' -exec cp -v '{}' "${OUT}"/ \;
@@ -28,24 +31,22 @@ find "${SRC}/tmux/fuzz/" -name '*-fuzzer.options' -exec cp -v '{}' "${OUT}"/ \;
 find "${SRC}/tmux/fuzz/" -name '*-fuzzer.dict' -exec cp -v '{}' "${OUT}"/ \;
 
 MAXLEN=$(grep -Po 'max_len\s+=\s+\K\d+' "${OUT}/input-fuzzer.options")
-mkdir "${WORK}/fuzzing_corpus"
-cd "${WORK}/fuzzing_corpus"
-bash "${SRC}/tmux/tools/24-bit-color.sh" | \
-    split -a4 -db$MAXLEN - 24-bit-color.out.
-perl "${SRC}/tmux/tools/256colors.pl" | \
-    split -a4 -db$MAXLEN - 256colors.out.
-cat "${SRC}/tmux/tools/UTF-8-demo.txt" | \
-    split -a4 -db$MAXLEN - UTF-8-demo.txt.
-cat "${SRC}/tmux-fuzzing-corpus/alacritty"/* | \
-    split -a4 -db$MAXLEN - alacritty.
-cat "${SRC}/tmux-fuzzing-corpus/esctest"/* | \
-    split -a4 -db$MAXLEN - esctest.
-cat "${SRC}/tmux-fuzzing-corpus/iterm2"/* | \
-    split -a5 -db$MAXLEN - iterm2.
-zip -q -j -r "${OUT}/input-fuzzer_seed_corpus.zip" \
-    "${WORK}/fuzzing_corpus/"
 
-# Handle libevent not existing on runner.
-mkdir $OUT/lib
-cp /lib/x86_64-linux-gnu/libevent_core* $OUT/lib
-patchelf --set-rpath '$ORIGIN/lib' $OUT/input-fuzzer
+if [ ! -d "${WORK}/fuzzing_corpus" ]; then
+    mkdir "${WORK}/fuzzing_corpus"
+    cd "${WORK}/fuzzing_corpus"
+    bash "${SRC}/tmux/tools/24-bit-color.sh" | \
+        split -a4 -db$MAXLEN - 24-bit-color.out.
+    perl "${SRC}/tmux/tools/256colors.pl" | \
+        split -a4 -db$MAXLEN - 256colors.out.
+    cat "${SRC}/tmux/tools/UTF-8-demo.txt" | \
+        split -a4 -db$MAXLEN - UTF-8-demo.txt.
+    cat "${SRC}/tmux-fuzzing-corpus/alacritty"/* | \
+        split -a4 -db$MAXLEN - alacritty.
+    cat "${SRC}/tmux-fuzzing-corpus/esctest"/* | \
+        split -a4 -db$MAXLEN - esctest.
+    cat "${SRC}/tmux-fuzzing-corpus/iterm2"/* | \
+        split -a5 -db$MAXLEN - iterm2.
+    zip -q -j -r "${OUT}/input-fuzzer_seed_corpus.zip" \
+        "${WORK}/fuzzing_corpus/"
+fi

@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     make \
     autoconf \
     automake \
@@ -30,6 +29,6 @@ RUN apt-get install -y \
     python \
     wget
 
-RUN git clone --depth 1 https://github.com/rnpgp/rnp.git rnp
+RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/rnpgp/rnp.git rnp
 WORKDIR $SRC
 COPY build.sh $SRC/

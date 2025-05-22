@@ -8,3 +8,9 @@ auto_ccs:
     - "boschstephan@gmail.com"
     - "timo.sirainen@gmail.com"
 main_repo: 'https://github.com/dovecot/core'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

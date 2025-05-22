@@ -15,25 +15,16 @@
 #
 ################################################################################
 
+. precompile_swift
 # build project
 cd FuzzTesting
-# Maybe we should have a helper script to set $SWIFT_FLAGS
-# for instance about -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION in -Xcc
-swift build -c debug -Xswiftc -sanitize=fuzzer,address \
-    -Xswiftc -parse-as-library -Xswiftc -static-stdlib \
-    -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib \
-    --sanitize=address -Xcc="-fsanitize=fuzzer-no-link,address" \
-    -Xcxx="-fsanitize=fuzzer-no-link,address"
+swift build -c debug $SWIFTFLAGS
 
 (
 cd .build/debug/
 find . -maxdepth 1 -type f -name "*Fuzzer" -executable | while read i; do cp $i $OUT/"$i"-debug; done
 )
-swift build -c release -Xswiftc -sanitize=fuzzer,address \
-    -Xswiftc -parse-as-library -Xswiftc -static-stdlib \
-    -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib \
-    --sanitize=address -Xcc="-fsanitize=fuzzer-no-link,address" \
-    -Xcxx="-fsanitize=fuzzer-no-link,address"
+swift build -c release $SWIFTFLAGS
 (
 cd .build/release/
 find . -maxdepth 1 -type f -name "*Fuzzer" -executable | while read i; do cp $i $OUT/"$i"-release; done

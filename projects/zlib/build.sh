@@ -18,9 +18,7 @@
 ./configure
 make -j$(nproc) clean
 make -j$(nproc) all
-
-# Do not make check as there are tests that fail when compiled with MSAN.
-# make -j$(nproc) check
+make -j$(nproc) check
 
 for f in $(find $SRC -name '*_fuzzer.cc'); do
     b=$(basename -s .cc $f)

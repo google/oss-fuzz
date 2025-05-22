@@ -1,0 +1,15 @@
+homepage: "http://crosvm.dev"
+language: rust
+primary_contact: "denniskempin@google.com"
+auto_ccs:
+  - "crosvm-core@google.com"
+  - "dverkamp@google.com"
+  - "fmayle@google.com"
+  - "keiichiw@google.com"
+  - "takayas@google.com"
+  - "zihanchen@google.com"
+main_repo: "https://chromium.googlesource.com/crosvm/crosvm"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

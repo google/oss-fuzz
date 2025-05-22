@@ -5,13 +5,11 @@ main_repo: "https://github.com/supranational/blst.git"
 sanitizers:
  - address
  - undefined
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
+ - memory
 architectures:
  - x86_64
  - i386
 auto_ccs:
- - "justin@ethereum.org"
  - "kelly@supranational.net"
  - "diederik.loerakker@ethereum.org"
  - "hoffmang@chia.net"
@@ -19,3 +17,10 @@ auto_ccs:
  - "mariano@chia.net"
  - "arvid@chia.net"
  - "bill@chia.net"
+ - "pratyush795@gmail.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

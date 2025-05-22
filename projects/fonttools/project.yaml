@@ -1,0 +1,12 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/behdad/fonttools
+language: python
+main_repo: https://github.com/behdad/fonttools
+primary_contact: 'cosimo@anthrotype.com'
+sanitizers:
+- address
+- undefined
+auto_ccs:
+- behdad.esfahbod@gmail.com
+- david@adalogics.com

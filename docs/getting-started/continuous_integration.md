@@ -11,7 +11,9 @@ permalink: /getting-started/continuous-integration/
 OSS-Fuzz offers **CIFuzz**, a GitHub action/CI job that runs your fuzz targets
 on pull requests. This works similarly to running unit tests in CI. CIFuzz helps
 you find and fix bugs before they make it into your codebase.
-Currently, CIFuzz only supports projects hosted on GitHub.
+Currently, CIFuzz primarily supports projects hosted on GitHub.
+Non-OSS-Fuzz users can use CIFuzz with additional features through
+[ClusterFuzzLite](https://google.github.io/clusterfuzzlite/).
 
 ## How it works
 
@@ -21,7 +23,8 @@ If CIFuzz finds a crash, CIFuzz reports the stacktrace, makes the crashing
 input available for download and the CI test fails (red X).
 
 If CIFuzz doesn't find a crash during the allotted time, the CI test passes
-(green check). If CIFuzz finds a crash, it reports the crash only if both of following are true:
+(green check). If CIFuzz finds a crash, it reports the crash only if both of
+following are true:
 * The crash is reproducible (on the PR/commit build).
 * The crash does not occur on older OSS-Fuzz builds. (If the crash does occur
   on older builds, then it was not introduced by the PR/commit
@@ -46,9 +49,9 @@ fuzzing more effective and gives you regression testing for free.
 You can integrate CIFuzz into your project using the following steps:
 1. Create a `.github` directory in the root of your project.
 1. Create a `workflows` directory inside of your `.github` directory.
-1. Copy the example [`main.yml`](https://github.com/google/oss-fuzz/blob/master/infra/cifuzz/example_main.yml)
+1. Copy the example [`cifuzz.yml`](https://github.com/google/oss-fuzz/blob/master/infra/cifuzz/example_cifuzz.yml)
 file over from the OSS-Fuzz repository to the `workflows` directory.
-1. Change the `oss-fuzz-project-name` value in `main.yml` from `example` to the name of your OSS-Fuzz project. It is **very important** that you use your OSS-Fuzz project name which is case sensitive. This name
+1. Change the `oss-fuzz-project-name` value in `cifuzz.yml` from `example` to the name of your OSS-Fuzz project. It is **very important** that you use your OSS-Fuzz project name which is case sensitive. This name
 is the name of your project's subdirectory in the [`projects`](https://github.com/google/oss-fuzz/tree/master/projects) directory of OSS-Fuzz.
 1. Set the value of `fuzz-seconds`. The longest time that the project maintainers are acceptable with should be used. This value should be at minimum 600 seconds and scale with project size.
 
@@ -57,18 +60,21 @@ Your directory structure should look like the following:
 project
 |___ .github
 |    |____ workflows
-|          |____ main.yml
+|          |____ cifuzz.yml
 |___ other-files
 ```
 
-main.yml for an example project:
+cifuzz.yml for an example project:
 
 ```yaml
 name: CIFuzz
 on: [pull_request]
+permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
+   permissions:
+     security-events: write
    steps:
    - name: Build Fuzzers
      id: build
@@ -82,12 +88,20 @@ jobs:
        oss-fuzz-project-name: 'example'
        language: c++
        fuzz-seconds: 600
+       output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v1
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
        path: ./out/artifacts
+   - name: Upload Sarif
+     if: always() && steps.build.outcome == 'success'
+     uses: github/codeql-action/upload-sarif@v2
+     with:
+      # Path to SARIF file relative to the root of the repository
+      sarif_file: cifuzz-sarif/results.sarif
+      checkout_path: cifuzz-sarif
 ```
 
 
@@ -100,7 +114,7 @@ to `c++`. This should be the same as the value you set in `project.yaml`. See
 [this explanation]({{ site.baseurl }}//getting-started/new-project-guide/#language)
 for more details.
 
-`fuzz-time`: Determines how long CIFuzz spends fuzzing your project in seconds.
+`fuzz-seconds`: Determines how long CIFuzz spends fuzzing your project in seconds.
 The default is 600 seconds. The GitHub Actions max run time is 21600 seconds (6
 hours). This variable is only meaningful when supplied to the `run_fuzzers`
 action, not the `build_fuzzers` action.
@@ -121,13 +135,20 @@ and the `Run Fuzzers` sanitizer field needs to be the same. To specify a list of
 a [matrix](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix)
 can be used. To use a sanitizer add it to the list of sanitizers in the matrix field below:
 
+`report-timeouts`: Determines whether to report fails due to timeouts.
+
+`report-ooms`: Determines whether to report fails due to OOM.
+
 ```yaml
 {% raw %}
 name: CIFuzz
 on: [pull_request]
+permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
+   permissions:
+     security-events: write
    strategy:
      fail-fast: false
      matrix:
@@ -147,12 +168,20 @@ jobs:
        language: c++
        fuzz-seconds: 600
        sanitizer: ${{ matrix.sanitizer }}
+       output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v1
-     if: failure() && steps.build.outcome == 'success'
+     uses: actions/upload-artifact@v4
+     if: steps.build.outcome == 'success'
      with:
        name: ${{ matrix.sanitizer }}-artifacts
        path: ./out/artifacts
+   - name: Upload Sarif
+    if: always() && steps.build.outcome == 'success'
+    uses: github/codeql-action/upload-sarif@v2
+    with:
+      # Path to SARIF file relative to the root of the repository
+      sarif_file: cifuzz-sarif/results.sarif
+      checkout_path: cifuzz-sarif
 {% endraw %}
 ```
 
@@ -176,6 +205,7 @@ on:
       - '**.cpp'
       - '**.cxx'
       - '**.h'
+permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
@@ -193,7 +223,7 @@ jobs:
        language: c++
        fuzz-seconds: 600
    - name: Upload Crash
-     uses: actions/upload-artifact@v1
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
@@ -201,7 +231,7 @@ jobs:
 ```
 
 You can checkout CIFuzz configs for OSS-Fuzz projects. Example -
-[systemd](https://github.com/systemd/systemd/blob/master/.github/workflows/cifuzz.yml),
+[systemd](https://github.com/systemd/systemd/blob/main/.github/workflows/cifuzz.yml),
 [curl](https://github.com/curl/curl/blob/master/.github/workflows/fuzz.yml).
 
 ## Understanding results
@@ -219,16 +249,22 @@ The results of CIFuzz can be found in two different places.
 ![Finding fuzzer output](../images/run_fuzzers.png)
 
 
+
 *  Artifacts:
-    1. When a crash is found by CIFuzz the Upload Artifact event is triggered.
-    1. This will cause a pop up in the right hand corner, allowing
-    you to download a zip file called `artifacts`.
-    1. `artifacts` contains two files for each crash:
-        * A test case that can be used to reproduce the crash.
-        * The sanitizer stack trace of the crash.
+When the fuzzer crashes the input file that causes the crash is uploaded as an
+artifact.
+To download the artifact, do the following steps:
+1. Click on the summary from the run, as illustrated in the screenshot below:
 
-![Finding uploaded artifacts](../images/artifacts.png)
+![github-actions-summary]
 
+2. Click on the artifact you wish to download from the summary page, as
+   illustrated in the screenshot below:
+
+![github-actions-download-crash]
+
+[github-actions-summary]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-summary.png)
+[github-actions-download-crash]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-download-crash.png)
 
 ## Feedback/Questions/Issues
 

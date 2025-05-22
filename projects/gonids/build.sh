@@ -27,3 +27,4 @@ set +x
 cat *.rules | while read l; do echo $l > corpus/$i.rule; i=$((i+1)); done
 set -x
 zip -q -r $OUT/fuzz_parserule_seed_corpus.zip corpus
+

@@ -22,7 +22,7 @@ objs/src/fuzz/wrappers.o:
 	\$(CC) $ngx_compile_opt \$(CFLAGS) -o objs/src/fuzz/wrappers.o src/fuzz/wrappers.c
 
 objs/http_request_fuzzer: $ngx_deps_fuzz
-	 \$(CXX) \$(CXXFLAGS) src/fuzz/http_request_fuzzer.cc \
+	 \$(CXX) \$(CXXFLAGS) -DNDEBUG src/fuzz/http_request_fuzzer.cc \
 	 src/fuzz/genfiles/http_request_proto.pb.cc \
 	 -o objs/http_request_fuzzer \
 	 \$(CORE_INCS) \$(HTTP_INCS) \
@@ -31,7 +31,7 @@ objs/http_request_fuzzer: $ngx_deps_fuzz
 	 -I \$(SRC)/LPM/external.protobuf/include \
 	 \$(SRC)/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
   	 \$(SRC)/LPM/src/libprotobuf-mutator.a \
-  	 \$(SRC)/LPM/external.protobuf/lib/libprotobuf.a \
+  	 -Wl,--start-group \$(SRC)/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
 	 $ngx_binexit$ngx_long_cont$ngx_objs \
    	 \$(LIB_FUZZING_ENGINE) $ngx_libs$ngx_link$ngx_main_link -lcrypt
 $ngx_long_end					    

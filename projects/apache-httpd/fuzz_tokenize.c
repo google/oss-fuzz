@@ -28,7 +28,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   free(arg_str);
   apr_pool_destroy(pool);
-  apr_terminate();
+  apr_pool_terminate();
 
   return 0;
 }

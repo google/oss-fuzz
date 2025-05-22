@@ -15,26 +15,35 @@
 # limitations under the License.
 
 import atheris
-with atheris.instrument_imports():
-  import sys
-  import pygments
-  import pygments.formatters.html
-  import pygments.lexers
 
-formatter = pygments.formatters.html.HtmlFormatter()
+import sys
+import pygments
+from pygments.formatters import *
+import pygments.lexers
+import pygments.filters
+
 # pygments.LEXERS.values() is a list of tuples like this, with some of then empty:
 # (textual class name, longname, tuple of aliases, tuple of filename patterns, tuple of mimetypes)
 LEXERS = [l[2][0] for l in pygments.lexers.LEXERS.values() if l[2]]
-
+FORMATTERS = [BBCodeFormatter(), GroffFormatter(), HtmlFormatter(),
+              IRCFormatter(), LatexFormatter(), NullFormatter(),
+              PangoMarkupFormatter(), RawTokenFormatter(), RtfFormatter(),
+              SvgFormatter(), Terminal256Formatter(), TerminalFormatter(),
+              TerminalTrueColorFormatter()]
 
 def TestOneInput(data: bytes) -> int:
+  if len(data) > (2 << 18):
+    return
   fdp = atheris.FuzzedDataProvider(data)
   random_lexer = pygments.lexers.get_lexer_by_name(fdp.PickValueInList(LEXERS))
+  random_lexer.add_filter(fdp.PickValueInList(list(pygments.filters.FILTERS.keys())))
+  formatter = fdp.PickValueInList(FORMATTERS)
   str_data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)
 
   pygments.highlight(str_data, random_lexer, formatter)
   return 0
 
 
+atheris.instrument_all()
 atheris.Setup(sys.argv, TestOneInput)
 atheris.Fuzz()

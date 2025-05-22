@@ -1,0 +1,15 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://sigstore.dev
+language: python
+main_repo: https://github.com/sigstore/sigstore-python
+sanitizers:
+- address
+- undefined
+primary_contact: "security@sigstore.dev"
+auto_ccs:
+  - lhinds@sigstore.dev
+  - hblauzvern@sigstore.dev
+  - bcallaway@sigstore.dev
+  - adam@adalogics.com
+  - david@adalogics.com

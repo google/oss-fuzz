@@ -1,0 +1,9 @@
+homepage: https://github.com/html5lib/html5lib-python
+main_repo: https://github.com/html5lib/html5lib-python
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

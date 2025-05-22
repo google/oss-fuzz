@@ -1,0 +1,11 @@
+homepage: "https://github.com/gitpython-developers/gitpython"
+language: python
+primary_contact: "byronimo@gmail.com"
+auto_ccs:
+  - "david.js.lakin@gmail.com"
+  - "eliahkagan@gmail.com"
+main_repo: "https://github.com/gitpython-developers/gitpython"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

@@ -4,8 +4,15 @@ primary_contact: tsdgeos@gmail.com
 auto_ccs:
   - allen.d.winter@gmail.com
   - kent.sutherland@gmail.com
+  - ksmurchison@gmail.com
 sanitizers:
   - address
   - memory
   - undefined
 main_repo: 'https://github.com/libical/libical.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

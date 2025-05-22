@@ -15,7 +15,18 @@
 #
 ################################################################################
 
-# First, build RE2.
+CXXFLAGS="$CXXFLAGS -O2"
+
+# First, build and install Abseil.
+# https://github.com/abseil/abseil-cpp/issues/1524#issuecomment-1739364093
+# explains why Abseil must be built for fuzzing, not depended on normally.
+# N.B., this is pasted almost verbatim from what libphonenumber does here.
+cd $SRC/abseil-cpp
+mkdir build && cd build
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. && make -j$(nproc) && make install
+ldconfig
+
+# Second, build and install RE2.
 # N.B., we don't follow the standard incantation for building RE2
 # (i.e., `make && make test && make install && make testinstall`),
 # because some of the targets doesn't use $CXXFLAGS properly, which
@@ -23,11 +34,15 @@
 # really need for our fuzzer, so that's all we build. Hopefully
 # this won't cause the fuzzer to fail erroneously due to not running
 # upstream's tests first to be sure things compiled correctly.
-CXXFLAGS="$CXXFLAGS -O2"
-make clean
-make -j$(nproc) obj/libre2.a
+# However, we do want the "common" files installed so that we can
+# interrogate pkg-config about the Abseil dependencies instead of
+# maintaining yet another enumeration of them here.
+cd $SRC/re2
+make -j$(nproc) obj/libre2.a && make common-install
 
-# Second, build the fuzzer (distributed with RE2).
-$CXX $CXXFLAGS -std=c++11 -I. \
+# Third, build the fuzzer (distributed with RE2).
+$CXX $CXXFLAGS -I. \
 	re2/fuzzing/re2_fuzzer.cc -o $OUT/re2_fuzzer \
-	$LIB_FUZZING_ENGINE obj/libre2.a
+	$LIB_FUZZING_ENGINE obj/libre2.a \
+	$(pkg-config re2 --libs | sed -e 's/-lre2//')
+

@@ -23,7 +23,7 @@ reproduce it.
 Every issue has a [reproducer file]({{ site.baseurl
 }}/reference/glossary/#reproducer) (also know as a "testcase" file) attached.
 Download it. This file contains the bytes that were fed to the [fuzz
-target](http://libfuzzer.info/#fuzz-target).
+target](https://llvm.org/docs/LibFuzzer.html#fuzz-target).
 
 **Note:** If the issue is not public, you will need to login using a
 [Google account](https://support.google.com/accounts/answer/176347?hl=en)
@@ -55,6 +55,15 @@ site.baseurl }}/faq/#why-do-you-use-docker)).
 
 ## Building using Docker
 
+### Cloning OSS-Fuzz
+
+To use the following `infra/helper.py` commands, you need a checkout of OSS-Fuzz:
+
+```bash
+$ git clone --depth=1 https://github.com/google/oss-fuzz.git
+$ cd oss-fuzz
+```
+
 ### Pull the latest Docker images
 
 Docker images get regularly updated with a newer version of build tools, build
@@ -82,8 +91,11 @@ The `sanitizer` used in the report is the value in the
   * **memory** for MemorySanitizer.
   * **undefined** for UndefinedBehaviorSanitizer.
 
-**Note**: The `architecture` argument is only necessary if you want to specify
+**Notes**:
+   * The `architecture` argument is only necessary if you want to specify
 `i386` configuration.
+   * Some bugs (specially ones related to pointer and integer overflows) are reproducible only in 32 bit mode or only in 64 bit mode.
+If you can't reproduce a particular bug building for x86_64, try building for i386.
 
 ## Reproducing bugs
 
@@ -92,9 +104,6 @@ After you build an image and a fuzzer, you can reproduce a bug by running the fo
 ```bash
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
-
-**Note**: The reproduce command only supports `libfuzzer` fuzzing engine. Crashes
-found with other fuzzing engines should be reproducible with `libfuzzer` too.
 
 For example, to build the [libxml2](https://github.com/google/oss-fuzz/tree/master/projects/libxml2)
 project with UndefinedBehaviorSanitizer (`undefined`) instrumentation and
@@ -137,9 +146,9 @@ correctly configured, even if it succeeded. To reproduce these locally, run thes
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
-    --engine <libfuzzer/afl/honggfuzz> --architecture <x86_64/i386> $PROJECT_NAME
+    --engine <libfuzzer/afl/honggfuzz/centipede> --architecture <x86_64/i386> $PROJECT_NAME
 $ python infra/helper.py check_build  --sanitizer <address/memory/undefined> \
-    --engine <libfuzzer/afl/honggfuzz> --architecture <x86_64/i386> $PROJECT_NAME \
+    --engine <libfuzzer/afl/honggfuzz/centipede> --architecture <x86_64/i386> $PROJECT_NAME \
     <fuzz_target_name>
 ```
 

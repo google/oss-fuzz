@@ -25,7 +25,7 @@ covers most of the items.
 
 ## Summary
 
-Every [fuzz target](http://libfuzzer.info/#fuzz-target):
+Every [fuzz target](https://llvm.org/docs/LibFuzzer.html#fuzz-target):
 * Is [maintained by code owners](#fuzz-target) in their RCS (Git, SVN, etc).
 * Is [built with the rest of the tests](#build-support) - no bit rot! 
 * Has a [seed corpus](#seed-corpus) with good [code coverage](#coverage).
@@ -36,7 +36,7 @@ Every [fuzz target](http://libfuzzer.info/#fuzz-target):
 
 ## Fuzz Target
 
-The code of the [fuzz target(s)](http://libfuzzer.info/#fuzz-target) should be
+The code of the [fuzz target(s)](https://llvm.org/docs/LibFuzzer.html#fuzz-target) should be
 part of the project's source code repository.  All fuzz targets should be easily
 discoverable (reside in the same directory, follow the same naming pattern,
 etc.). 
@@ -45,13 +45,13 @@ This makes it easy to maintain the fuzzers and minimizes breakages that can
 arise as source code changes over time.
 
 Make sure to fuzz the target locally for a small period of time to ensure that 
-it does not crash, hang, or run out of memory instantly. If you're having
-trouble, read about [what makes a good fuzz
+it does not crash, hang, or run out of memory instantly. Also make sure that the fuzzer can
+make at least some progress. If you're having trouble, read about [what makes a good fuzz
 target](https://github.com/google/fuzzing/blob/master/docs/good-fuzz-target.md).
 
-The interface between the [fuzz target]((http://libfuzzer.info/#fuzz-target))
+The interface between the [fuzz target](https://llvm.org/docs/LibFuzzer.html#fuzz-target)
 and the fuzzing engines is C, so you can use either C or C++ to implement the
-fuzz target.
+fuzz target. Make sure to not return values other than **zero** [^1].
 
 Examples: 
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
@@ -63,6 +63,10 @@ Examples:
 [harfbuzz](https://github.com/behdad/harfbuzz/tree/master/test/fuzzing),
 [pcre2](https://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
 [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/tools/target_dec_fuzzer.c).
+
+[^1]: While LibFuzzer uses a non-zero value as a signal to discard inputs other fuzzers in
+use by OSS-Fuzz do not necessarily support this behavior. (Discarding inputs can be used
+to stop a fuzzer from exploring further, which should only be used with good reason.)
 
 ## Build support
 
@@ -116,7 +120,7 @@ XML parser, a dictionary of XML tokens is helpful. AFL++ has a
 [collection](https://github.com/AFLplusplus/AFLplusplus/tree/master/dictionaries)
 of dictionaries for popular data formats. Ideally, a dictionary should be
 maintained alongside the fuzz target, and it must use [correct
-syntax](http://libfuzzer.info/#dictionaries).
+syntax](https://llvm.org/docs/LibFuzzer.html#dictionaries).
 
 ## Coverage
 

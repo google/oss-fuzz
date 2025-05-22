@@ -1,7 +1,6 @@
 ---
 layout: default
 title: FAQ
-has_children: true
 nav_order: 7
 permalink: /faq/
 ---
@@ -65,9 +64,12 @@ OSS-Fuzz is a production instance of ClusterFuzz, plus the code living in
 
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
 
-Security access control is important for the kind of issues that OSS-Fuzz detects.
-We will reconsider the GitHub issue tracker once the
-[access control feature](https://github.com/isaacs/github/issues/37) is available.
+Security access control is important for the kind of issues that OSS-Fuzz detects,
+hence why by default issues are only opened on the OSS-Fuzz tracker.
+You can opt-in to have them on Github as well by adding the `file_github_issue`
+attribute to your `project.yaml` file. Note that this is only for visibility's
+purpose, and that the actual details can be found by following the link to the
+OSS-Fuzz tracker.
 
 ## Why do you require a Google account for authentication?
 
@@ -82,7 +84,7 @@ limitations.
 Building fuzzers requires building your project with a fresh Clang compiler and
 special compiler flags.  An easy-to-use Docker image is provided to simplify
 toolchain distribution. This also simplifies our support for a variety of Linux
-distributions and provides a reproducible and secure environment for fuzzer
+distributions and provides a reproducible environment for fuzzer
 building and execution.
 
 ## How do you handle timeouts and OOMs?
@@ -109,7 +111,7 @@ Currently we do not offer ways to change the memory and time limits.
 
 No. In order to get all the benefits of in-process, coverage-guided fuzz testing,
 it is required to run everything inside a single process. Any child processes
-created outside the main process introduces heavy launch overhead and is not 
+created outside the main process introduces heavy launch overhead and is not
 monitored for code coverage.
 
 Another rule of thumb is: "the smaller fuzz target is, the better it is". It is
@@ -123,7 +125,7 @@ helps to test millions of data permutations rather than just one.
 Every bug report has a crash stack-trace that shows where the crash happened.
 Using that, you can debug the root cause and see which category the bug falls in:
 
-- If this is a bug is due to an incorrect usage of the dependent project's API 
+- If this is a bug is due to an incorrect usage of the dependent project's API
 in your project, then you need to fix your usage to call the API correctly.
 - If this is a real bug in the dependent project, then you should CC the
 maintainers of that project on the bug. Once CCed, they will get automatic
@@ -131,18 +133,18 @@ access to all the information necessary to reproduce the issue. If this project
 is maintained in OSS-Fuzz, you can search for contacts in the respective
 project.yaml file.
 
-## What if my fuzzer does not find anything? 
+## What if my fuzzer does not find anything?
 
 If your fuzz target is running for many days and does not find bugs or new
-coverage, it may mean several things: 
+coverage, it may mean several things:
 - We've covered all reachable code. In order to cover more code we need more
   fuzz targets.
 - The [seed corpus]({{ site.baseurl }}/getting-started/new-project-guide#seed-corpus) is not good enough and the
   fuzzing engine(s) are not able to go deeper based on the existing seeds.
-  Need to add more seeds. 
+  Need to add more seeds.
 - There is some crypto/crc stuff in the code that will prevent any fuzzing
   engine from going deeper, in which case the crypto should be disabled in
-  [fuzzing mode](http://libfuzzer.info#fuzzer-friendly-build-mode).
+  [fuzzing mode](https://llvm.org/docs/LibFuzzer.html#fuzzer-friendly-build-mode).
   Examples: [openssl](https://github.com/openssl/openssl/tree/master/fuzz#reproducing-issues),
   [boringssl](https://boringssl.googlesource.com/boringssl/+/HEAD/FUZZING.md#Fuzzer-mode)
 - It is also possible that the fuzzer is running too slow
@@ -150,7 +152,26 @@ coverage, it may mean several things:
 
 In either case, look at the
 [coverage reports]({{ site.baseurl }}/further-reading/clusterfuzz#coverage-reports)
-for your target(s) and figure out why some parts of the code are not covered. 
+for your target(s) and figure out why some parts of the code are not covered.
+
+## What if my fuzzer does not find new coverage or bugs after a while?
+
+It is common for fuzzers to plateau and stop finding new coverage or bugs.
+[Fuzz Introspector](https://github.com/ossf/fuzz-introspector) helps you
+evaluate your fuzzers' performance.
+It can help you identify bottlenecks causing your fuzzers to plateau.
+It provides aggregated and individual fuzzer reachability and coverage reports.
+Developers can either introduce a new fuzz target or modify an existing one to
+reach previously unreachable code.
+Here are
+[case studies](https://github.com/ossf/fuzz-introspector/blob/main/doc/CaseStudies.md)
+where Fuzz Introspector helped developers improve fuzzing of a project.
+Fuzz Introspector reports are available on the [OSS-Fuzz homepage](https://oss-fuzz.com/)
+or through this [index](http://oss-fuzz-introspector.storage.googleapis.com/index.html).
+
+Developers can also use Fuzz Introspector on their local machines.
+Detailed instructions are available
+[here](https://github.com/ossf/fuzz-introspector/tree/main/oss_fuzz_integration#build-fuzz-introspector-with-oss-fuzz).
 
 ## Why are code coverage reports public?
 
@@ -183,7 +204,7 @@ target (instructions to download
 restore it to the new GCS location later (instruction to find the
 new location [here]({{ site.baseurl }}/advanced-topics/corpora/#viewing-the-corpus-for-a-fuzz-target)).
 
-## Does OSS-Fuzz support AFL or honggfuzz?
+## Does OSS-Fuzz support AFL or honggfuzz or Centipede?
 
 OSS-Fuzz *uses* the following
 [fuzzing engines]({{ site.baseurl }}/reference/glossary/#fuzzing-engine):
@@ -192,6 +213,7 @@ OSS-Fuzz *uses* the following
 1. [AFL++](https://github.com/AFLplusplus/AFLplusplus), an improved and
    well-maintained version of [AFL](https://lcamtuf.coredump.cx/afl/).
 1. [Honggfuzz](https://github.com/google/honggfuzz).
+1. [Centipede (Experimental)](https://github.com/google/centipede).
 
 Follow the [new project guide] and OSS-Fuzz will use all its fuzzing engines
 on your code.

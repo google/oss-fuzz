@@ -19,7 +19,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y git autoconf automake libtool make \
    libreadline-dev texinfo libjson-c-dev pkg-config bison flex python3-pip \
    libc-ares-dev python3-dev python3-sphinx build-essential libsystemd-dev \
-   libsnmp-dev libcap-dev libelf-dev libpcre3-dev libpcre2-dev
+   libsnmp-dev libcap-dev libelf-dev libpcre3-dev libpcre2-dev \
+   protobuf-c-compiler libprotobuf-c-dev
 RUN pip3 install pytest
 RUN git clone https://github.com/CESNET/libyang.git
 

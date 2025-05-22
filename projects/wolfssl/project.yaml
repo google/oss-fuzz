@@ -4,24 +4,24 @@ primary_contact: "jacob@wolfssl.com"
 auto_ccs:
   - "david@wolfssl.com"
   - "john@wolfssl.com"
-  - "john.safranek@gmail.com"
   - "kaleb@wolfssl.com"
   - "kaleb.himes@gmail.com"
-  - "levi@wolfssl.com"
   - "testing@wolfssl.com"
   - "dgarske80@gmail.com"
-  - "jeffelms.wolfssl@gmail.com"
   - "douzzer@mega.nu"
   - "guidovranken@gmail.com"
+  - "jordan@wolfssl.com"
+  - "jordanjphillips1@gmail.com"
+  - "anthony@wolfssl.com"
+  - "anthony.hu.76@gmail.com"
+  - "kareem@wolfssl.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
-  - dataflow
 architectures:
   - x86_64
   - i386

@@ -4,10 +4,15 @@ primary_contact: "daniel@haxx.se"
 auto_ccs:
   - "daniel.haxx@gmail.com"
   - "cmeister2@gmail.com"
+  - "stefan.eissing@gmail.com"
 sanitizers:
   - address
   - undefined
   - memory
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
 architectures:
   - x86_64
   - i386

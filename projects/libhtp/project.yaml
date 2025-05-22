@@ -1,13 +1,15 @@
 homepage: "https://github.com/OISF/libhtp"
-language: c++
+language: rust
 primary_contact: "vjulien@openinfosecfoundation.org"
 auto_ccs :
 - "p.antoine@catenacyber.fr"
 - "jish@openinfosecfoundation.org "
+- "todd.mortimer@gmail.com"
 
 sanitizers:
 - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
 #  - memory
-- undefined
+fuzzing_engines:
+  - libfuzzer
 main_repo: 'https://github.com/OISF/libhtp.git'

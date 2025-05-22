@@ -1,10 +1,12 @@
-homepage: "https://python.org/"
-language: c++
-primary_contact: "guidovranken@gmail.com"
+homepage: "https://www.python.org/"
+main_repo: "https://github.com/python/cpython"
+language: c
+primary_contact: "seth@python.org"
 auto_ccs:
- - "gps@google.com"
+ - "greg@krypto.org"
  - "alex.gaynor@gmail.com"
  - "ammar@ammaraskar.com"
+ - "pablogsal@python.org"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

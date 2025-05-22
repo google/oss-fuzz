@@ -23,8 +23,8 @@ RUN apt-get update && apt-get install -y \
   libtool \
   pkg-config \
   libxml2-utils \
+  libxml2-dev \
   xsltproc \
-  libqb-dev \
   libprotobuf-dev \
   protobuf-compiler \
   libdbus-1-dev \
@@ -34,6 +34,9 @@ RUN apt-get update && apt-get install -y \
   libpolkit-gobject-1-dev \
   libseccomp-dev \
   libcap-ng-dev
+
+RUN git clone https://github.com/ClusterLabs/libqb && cd libqb && \
+    ./autogen.sh && ./configure && make && make install
 
 RUN git clone --recurse-submodules --depth 1 \
   https://github.com/USBGuard/usbguard usbguard

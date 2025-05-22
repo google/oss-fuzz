@@ -1,0 +1,175 @@
+{
+  "name": "OSS-Fuzz",
+  "displayName": "OSS-Fuzz",
+  "description": "",
+  "version": "0.0.5",
+  "publisher": "OSS-FuzzMaintainers",
+  "icon": "images/thumbnail.png",
+  "engines": {
+    "vscode": "^1.76.0"
+  },
+  "repository": "https://github.com/google/oss-fuzz",
+  "categories": [
+    "Other"
+  ],
+  "extensionDependencies": [
+    "mindaro-dev.file-downloader"
+  ],
+  "activationEvents": [],
+  "main": "./build/src/extension.js",
+  "contributes": {
+    "configurations": [
+      {
+        "id": "OSS-Fuzz-Base",
+        "title": "Base path to OSS-Fuzz",
+        "properties": {
+          "oss-fuzz.OSS.Path": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "workbench.explorer.emptyView",
+        "contents": "You can have paragraphs of text here. You can have [links](https://code.visualstudio.com) to external sources or [internal commands](command:welcome-view-content-sample.hello).\nUse new lines to have new paragraphs.\nPlace a link alone in a paragraph to make it a button\n[Hello](command:welcome-view-content-sample.hello)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "oss-fuzz.SetUp",
+        "title": "OSS-Fuzz: Set Up OSS-Fuzz",
+        "description": "Downloads the OSS-Fuzz repository and places it under /tmp/oss-fuzz. This will then be the OSS-Fuzz repository used by vscode."
+      },
+      {
+        "command": "oss-fuzz.RunFuzzer",
+        "title": "OSS-Fuzz: Run Fuzzer",
+        "description": "Runs a single fuzzer from a given project. The fuzzer must already be build, meaning the project should be build first."
+      },
+      {
+        "command": "oss-fuzz.ListFuzzers",
+        "title": "OSS-Fuzz: List Fuzzers",
+        "description": "Lists the fuzzers built for a given project. The project must be build first."
+      },
+      {
+        "command": "oss-fuzz.GetCodeCoverage",
+        "title": "OSS-Fuzz: Display Code Coverage (Python only)",
+        "description": "Downloads the latest code coverage from OSS-Fuzz's cloud data (can find at https://introspector.oss-fuzz.com)."
+      },
+      {
+        "command": "oss-fuzz.ClearCodeCoverage",
+        "title": "OSS-Fuzz: Clear Code Coverage",
+        "description": "Clears code coverage visualization in the editor."
+      },
+      {
+        "command": "oss-fuzz.CreateOSSFuzzSetup",
+        "title": "OSS-Fuzz: Initialize OSS-Fuzz Set Up",
+        "description": "Creates the relevant files using templates to set up an OSS-Fuzz project. Uses minor heuristics e.g. detection of language."
+      },
+      {
+        "command": "oss-fuzz.WSBuildFuzzers",
+        "title": "OSS-Fuzz: Build Fuzzers In Workspace",
+        "description": "Builds the fuzzers from the project in the current VSCode workspace."
+      },
+      {
+        "command": "oss-fuzz.SetupCIFuzz",
+        "title": "OSS-Fuzz: Set up CIFuzz",
+        "description": "Creates the files necessary for a CIFuzz set up."
+      },
+      {
+        "command": "oss-fuzz.testFuzzer",
+        "title": "OSS-Fuzz: Test Specific Fuzzer",
+        "description": "Tests if a given fuzzer works by running it for 10 seconds."
+      },
+      {
+        "command": "oss-fuzz.testCodeCoverage",
+        "title": "OSS-Fuzz: End-To-End Code Coverage Generation",
+        "description": "Builds the fuzzers in a ASAN mode for a project, collects corpus using the ASAN fuzzers and then generates an HTLM code coverage report using the generated corpus."
+      },
+      {
+        "command": "oss-fuzz.Redo",
+        "title": "OSS-Fuzz: Redo Previous Command",
+        "description": "Performs the exact same command as the most recent one. Will provide the same input to the command as the previous one. This is efficient when e.g. continuously generating code coverage reports while working on improving a fuzzing set up."
+      },
+      {
+        "command": "oss-fuzz.Template",
+        "title": "OSS-Fuzz: Fuzzer Creation Using Templates",
+        "description": "Creates a template fuzzer file using a catalogue of templates available."
+      },
+      {
+        "command": "oss-fuzz.GenerateClusterfuzzLite",
+        "title": "OSS-Fuzz: [CFLite] Generate ClusterfuzzLite setup",
+        "description": "Creates the files needed for ClusterfuzzLite integration."
+      },
+      {
+        "command": "oss-fuzz.WSBuildFuzzersCFLite",
+        "title": "OSS-Fuzz: [CFLite] Build Fuzzers In Workspace",
+        "description": "Builds the ClusterfuzzLite fuzzers from the project in the current VSCode workspace."
+      },
+      {
+        "command": "oss-fuzz.testFuzzerCFLite",
+        "title": "OSS-Fuzz: [CFLite] Test running a specific fuzzer.",
+        "description": "Builds the CFLite setup and runs a fuzzer for a short period of time."
+      },
+      {
+        "command": "oss-fuzz.setupFuzzIntrospector",
+        "title": "OSS-Fuzz: Set up Fuzz Introspector",
+        "description": "Install fuzz introspector on the system"
+      },
+      {
+        "command": "oss-fuzz.runFuzzIntrospector",
+        "title": "OSS-Fuzz: Run Full Fuzz Introspector",
+        "description": "Runs a full Fuzz Introspector"
+      },
+      {
+        "command": "oss-fuzz.GetOptimalTargets",
+        "title": "OSS-Fuzz: Get optimal targets",
+        "description": "Gets the optimal targets of this project"
+      }
+    ],
+    "walkthroughs":[
+      {
+        "id": "BuildAndRunExisting Project",
+        "title": "Set up OSS-Fuzz",
+        "description": "This walkthrough takes you through how to set up OSS-Fuzz in the VSCode extension and proceeding to build the fuzzers of an existing project as well as running a fuzzer from the project.",
+        "steps": [
+          {
+            "id": "s1",
+            "title": "Set up OSS-Fuzz",
+            "description": "This step sets up OSS-Fuzz in the folder /tmp/oss-fuzz",
+            "completionEvents": ["onCommand:oss-fuzz.SetUp"],
+            "media": {"altText": ".", "image": "images/workflow-1-s-1"}
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "posttest": "npm run lint"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^14.11.2",
+    "@types/vscode": "^1.76.0",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
+    "@vscode/test-electron": "^2.2.3",
+    "eslint": "^8.34.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.8.2",
+    "typescript": "~4.7.0",
+    "gts": "^3.1.1"
+  },
+  "dependencies": {
+    "@microsoft/vscode-file-downloader-api": "^1.0.1"
+  }
+}

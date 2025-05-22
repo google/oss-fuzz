@@ -16,11 +16,17 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
-	build-essential cmake make coreutils sed \
+	build-essential cmake make coreutils sed lld \
 	autoconf automake libtool zlib1g-dev \
 	libreadline-dev libncurses5-dev libssl-dev \
-	libunwind-dev libicu-dev luajit
-RUN git clone https://github.com/tarantool/tarantool
-WORKDIR tarantool
-RUN git submodule update --init --recursive
+	libunwind-dev luajit wget ninja-build \
+	libzstd-dev libyaml-dev libcurl4-openssl-dev
+
+RUN git clone --jobs $(nproc) --recursive https://github.com/tarantool/tarantool
+WORKDIR $SRC/tarantool
+
+# Download a seed corpus.
+RUN rm -rf test/static
+RUN git clone https://github.com/ligurio/tarantool-corpus test/static
+
 COPY build.sh $SRC/

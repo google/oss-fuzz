@@ -16,26 +16,46 @@
 ################################################################################
 
 # Unpack the file and cd into it
-tar -zxvf xpdf-latest.tar.gz
+tar -zxf xpdf-latest.tar.gz
 dir_name=`tar -tzf xpdf-latest.tar.gz | head -1 | cut -f1 -d"/"`
 cd $dir_name
 
+PREFIX=$WORK/prefix
+mkdir -p $PREFIX
+
+export PKG_CONFIG="`which pkg-config` --static"
+export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
+export PATH=$PREFIX/bin:$PATH
+pushd $SRC/freetype
+# Temporarily Add -D_GNU_SOURCE to CFLAGS to fix freetype's dependence on GNU
+# extensions for dlsym to dynamically load harfbuzz. This feature
+# should potentially be disabled instead of fixing the compilation.
+# See https://github.com/google/oss-fuzz/pull/13325 for more details.
+CFLAGS="$CFLAGS -D_GNU_SOURCE" ./autogen.sh
+CFLAGS="$CFLAGS -D_GNU_SOURCE" ./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --with-png=no --with-zlib=no
+CFLAGS="$CFLAGS -D_GNU_SOURCE" make -j$(nproc)
+CFLAGS="$CFLAGS -D_GNU_SOURCE" make install
+popd
+
 # Make minor change in the CMakeFiles file.
 sed -i 's/#--- object files needed by XpdfWidget/add_library(testXpdfStatic STATIC $<TARGET_OBJECTS:xpdf_objs>)\n#--- object files needed by XpdfWidget/' ./xpdf/CMakeLists.txt
+sed -i 's/#--- pdftops/add_library(testXpdfWidgetStatic STATIC $<TARGET_OBJECTS:xpdf_widget_objs>\n $<TARGET_OBJECTS:splash_objs>\n $<TARGET_OBJECTS:xpdf_objs>\n ${FREETYPE_LIBRARY}\n ${FREETYPE_OTHER_LIBS})\n#--- pdftops/' ./xpdf/CMakeLists.txt
 
 # Build the project
 mkdir build && cd build
 export LD=$CXX
-cmake ../ -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS"
-make -i || true
+cmake ../ -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DOPI_SUPPORT=ON -DSPLASH_CMYK=ON -DMULTITHREADED=ON \
+  -DUSE_EXCEPTIONS=ON -DXPDFWIDGET_PRINTING=ON -DFREETYPE_DIR="$PREFIX"
+make
 
 # Build fuzzers
-for fuzzer in zxdoc pdfload; do
+for fuzzer in zxdoc pdfload JBIG2; do
     cp ../../fuzz_$fuzzer.cc .
     $CXX fuzz_$fuzzer.cc -o $OUT/fuzz_$fuzzer $CXXFLAGS $LIB_FUZZING_ENGINE \
-      ./xpdf/libtestXpdfStatic.a ./fofi/libfofi.a ./goo/libgoo.a \
-      -I../ -I../goo -I../fofi -I. -I../xpdf
+      ./xpdf/libtestXpdfStatic.a ./fofi/libfofi.a ./goo/libgoo.a ./splash/libsplash.a ./xpdf/libtestXpdfWidgetStatic.a /work/prefix/lib/libfreetype.a \
+      -I../ -I../goo -I../fofi -I. -I../xpdf -I../splash
 done
 
 # Copy over options files
-cp $SRC/fuzz_pdfload.options $OUT/
+cp $SRC/fuzz_*.options $OUT/

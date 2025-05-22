@@ -14,18 +14,29 @@
 #
 ################################################################################
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 
-# Installing optional libraries can utilize more code path and/or improve
-# performance (avoid calling external programs).
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config \
+RUN apt-get update && apt-get install -y make autoconf libtool pkg-config \
         libbz2-dev liblzo2-dev liblzma-dev liblz4-dev libz-dev \
-        libxml2-dev libssl-dev libacl1-dev libattr1-dev lrzip \
-	liblz4-tool lzop zstd lcab genisoimage jlha-utils rar default-jdk
+        libssl-dev libacl1-dev libattr1-dev lrzip liblzo2-dev \
+	      liblz4-tool lzop zstd lcab genisoimage jlha-utils rar default-jdk sharutils
+RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+    apt install ./automake_1.16.5-1.3_all.deb
 RUN git clone --depth 1 https://github.com/libarchive/libarchive.git
-WORKDIR libarchive
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
+# compile libxml2 from source so we can statically link
+RUN mkdir /deps && \
+  cd $SRC/libxml2 && \
+  ./autogen.sh \
+      --without-debug \
+      --without-ftp \
+      --without-http \
+      --without-legacy \
+      --without-python \
+      --enable-static && \
+  make -j$(nproc) && \
+  make install && \
+  cp .libs/libxml2.a /deps/
+
 COPY build.sh libarchive_fuzzer.cc $SRC/
+WORKDIR $SRC

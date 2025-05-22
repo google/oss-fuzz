@@ -16,3 +16,4 @@
 ################################################################################
 
 $SRC/runc/tests/fuzzing/oss_fuzz_build.sh
+$SRC/cncf-fuzzing/projects/runc/build.sh

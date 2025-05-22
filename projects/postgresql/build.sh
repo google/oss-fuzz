@@ -15,7 +15,7 @@
 #
 ################################################################################
 cp -r $SRC/fuzzer src/backend/
-git apply ../add_fuzzers.diff
+git apply --ignore-space-change --ignore-whitespace  ../add_fuzzers.diff
 
 useradd fuzzuser
 chown -R fuzzuser .
@@ -35,9 +35,12 @@ make clean
 make
 cd src/backend/fuzzer
 make fuzzer
-if [ "$FUZZING_ENGINE" = "afl" ]
-then
-    rm protocol_fuzzer
-fi
+#if [ "$FUZZING_ENGINE" = "afl" ]
+#then
+rm protocol_fuzzer
+#fi
 cp *_fuzzer $OUT/
 cp $SRC/postgresql_fuzzer_seed_corpus.zip $OUT/
+
+# Temporary fix. Todo: David fix this.
+#rm $OUT/protocol_fuzzer

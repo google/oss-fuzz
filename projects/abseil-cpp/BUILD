@@ -14,17 +14,28 @@
 #
 ################################################################################
 
-cc_binary(
-	name = "string_escape_fuzzer",
-	deps = ["@com_google_absl//absl/strings"],
-	srcs = ["string_escape_fuzzer.cc"],
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+
+cc_fuzz_test(
+    name = "string_escape_fuzzer",
+    srcs = ["string_escape_fuzzer.cc"],
+    deps = ["@com_google_absl//absl/strings"],
 )
 
-cc_binary(
-	name = "string_utilities_fuzzer",
-	deps = [
-		"@com_google_absl//absl/strings",
-		"@com_google_absl//absl/strings:cord"
-		],
-	srcs = ["string_utilities_fuzzer.cc"],
+cc_fuzz_test(
+    name = "string_utilities_fuzzer",
+    srcs = ["string_utilities_fuzzer.cc"],
+    deps = [
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_absl//absl/strings:str_format",
+        # The below are added for OSS-Fuzz-gen purposes. The goal is to make
+        # a general build rule from which we can build harnesses targeting
+        # most of the abseil-cpp codebase.
+        "@com_google_absl//absl/algorithm:algorithm",
+        "@com_google_absl//absl/hash:hash",
+        "@com_google_absl//absl/crc:crc32c",
+        "@com_google_absl//absl/time:time",
+        "@com_google_absl//absl/base:base",
+    ],
 )

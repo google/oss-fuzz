@@ -1,4 +1,8 @@
 name: Infra tests
+
+permissions:
+  contents: read
+
 on:
   pull_request:
     paths:
@@ -8,21 +12,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    permissions:
+      actions: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
-      - name: Cancel previous
-        uses: styfle/cancel-workflow-action@0.8.0
-        with:
-          access_token: ${{ github.token }}
-
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:  # Needed for git diff to work. (get_changed_files)
           fetch-depth: 0
       - run: |
           git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 
       - name: Setup python environment
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
 
@@ -31,8 +34,9 @@ jobs:
           sudo env "PATH=$PATH" python -m pip install --upgrade pip
           sudo env "PATH=$PATH" pip install -r infra/ci/requirements.txt
           sudo env "PATH=$PATH" pip install -r infra/build/functions/requirements.txt
+          sudo env "PATH=$PATH" pip install -r infra/cifuzz/requirements.txt
 
-      - uses: google-github-actions/setup-gcloud@master
+      - uses: google-github-actions/setup-gcloud@v0
         with:
           version: '298.0.0'
       - run: |

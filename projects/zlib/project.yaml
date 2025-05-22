@@ -1,4 +1,4 @@
-homepage: "http://www.zlib.net/"
+homepage: "https://www.zlib.net/"
 language: c++
 primary_contact: "glennrp@gmail.com"
 auto_ccs:
@@ -8,10 +8,8 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
-  - dataflow
   - memory
   - undefined
 architectures:

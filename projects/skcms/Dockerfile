@@ -16,15 +16,19 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install -y wget
-
 # checkout all sources needed to build your project
-RUN git clone https://skia.googlesource.com/skcms.git
+RUN git clone --depth 1 https://skia.googlesource.com/skcms.git
 
 RUN wget -O $SRC/skcms/iccprofile_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/iccprofile_seed_corpus.zip
 
 # current directory for build script
 WORKDIR skcms
+
+RUN apt-get update && \
+    apt-get install -y systemd && \
+    wget https://download.docker.com/linux/ubuntu/dists/focal/pool/stable/amd64/docker-ce-cli_20.10.8~3-0~ubuntu-focal_amd64.deb -O /tmp/docker-ce.deb && \
+    dpkg -i /tmp/docker-ce.deb && \
+    rm /tmp/docker-ce.deb
 
 COPY build.sh $SRC/
 

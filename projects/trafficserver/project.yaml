@@ -1,0 +1,21 @@
+homepage: "https://trafficserver.apache.org"
+language: c++
+primary_contact: "security@apache.org"
+vendor_ccs:
+  - "security@trafficserver.apache.org"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+  - "kichan@apache.org"
+  - "bcall@apache.org"
+  - "lhedstrom@gmail.com"
+  - "brian.neradt@gmail.com"
+  - "masaori@apache.org"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/apache/trafficserver'

@@ -7,3 +7,9 @@ auto_ccs:
   - "mateusz@loskot.net"
   - "komzpa@gmail.com"
 main_repo: 'https://git.osgeo.org/gitea/postgis/postgis.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

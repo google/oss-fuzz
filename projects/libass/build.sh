@@ -15,10 +15,6 @@
 #
 ################################################################################
 
-cd $SRC/fribidi
-./autogen.sh --disable-docs --enable-static=yes --enable-shared=no --with-pic=yes --prefix=/work/
-make install
-
 cd $SRC/harfbuzz
 
 # setup
@@ -33,6 +29,7 @@ CFLAGS="$CFLAGS -fno-sanitize=vptr" \
 CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
 meson --default-library=static --wrap-mode=nodownload \
       -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
+      -Dtests=disabled \
       --prefix=/work/ --libdir=lib $build \
   || (cat build/meson-logs/meson-log.txt && false)
 meson install -C $build
@@ -41,13 +38,11 @@ cd $SRC/libass
 
 export PKG_CONFIG_PATH=/work/lib/pkgconfig
 ./autogen.sh
-./configure --disable-asm
-make -j$(nproc)
+./configure \
+  FUZZ_CPPFLAGS="-DASS_FUZZMODE=2 -DASSFUZZ_MAX_LEN=8192" \
+  --disable-asm --disable-shared --enable-fuzz
+make -j "$(nproc)" fuzz/fuzz_ossfuzz
+cp fuzz/fuzz_ossfuzz $OUT/libass_fuzzer
+cp fuzz/ass.dict $OUT/ass.dict
 
-$CXX $CXXFLAGS -std=c++11 -I$SRC/libass -L/work/lib \
-    $SRC/libass_fuzzer.cc -o $OUT/libass_fuzzer \
-    $LIB_FUZZING_ENGINE libass/.libs/libass.a \
-    -Wl,-Bstatic -lfontconfig  -lfribidi -lfreetype -lharfbuzz -lz -lpng12 \
-    -lexpat -Wl,-Bdynamic
-
-cp $SRC/*.dict $SRC/*.options $OUT/
+cp $SRC/*.options $OUT/

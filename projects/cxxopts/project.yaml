@@ -1,0 +1,12 @@
+homepage: "https://github.com/jarro2783/cxxopts"
+language: c++
+primary_contact: "jarro.2783@gmail.com"
+main_repo: "https://github.com/jarro2783/cxxopts"
+auto_ccs:
+  - nathaniel@rough.run
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

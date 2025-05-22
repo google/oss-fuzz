@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/duckdb/duckdb duckdb
+RUN git clone --depth=1 https://github.com/duckdb/duckdb duckdb
 WORKDIR duckdb
 COPY build.sh $SRC/
-COPY parse_fuzz_test.cpp $SRC/duckdb/parse_fuzz_test.cpp

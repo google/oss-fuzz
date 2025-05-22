@@ -15,15 +15,14 @@
 import enum
 import logging
 import os
-import shutil
 import sys
 import time
 
 import clusterfuzz_deployment
 import fuzz_target
 import generate_coverage_report
-import stack_parser
 import workspace_utils
+import sarif_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -58,7 +57,7 @@ class BaseFuzzTargetRunner:
   def initialize(self):
     """Initialization method. Must be called before calling run_fuzz_targets.
     Returns True on success."""
-    # Use a seperate initialization function so we can return False on failure
+    # Use a separate initialization function so we can return False on failure
     # instead of exceptioning like we need to do if this were done in the
     # __init__ method.
 
@@ -106,13 +105,6 @@ class BaseFuzzTargetRunner:
     bug is found."""
     raise NotImplementedError('Child class must implement method.')
 
-  def get_fuzz_target_artifact(self, target, artifact_name):
-    """Returns the path of a fuzzing artifact named |artifact_name| for
-    |fuzz_target|."""
-    artifact_name = (f'{target.target_name}-{self.config.sanitizer}-'
-                     f'{artifact_name}')
-    return os.path.join(self.workspace.artifacts, artifact_name)
-
   def create_fuzz_target_obj(self, target_path, run_seconds):
     """Returns a fuzz target object."""
     return fuzz_target.FuzzTarget(target_path, run_seconds, self.workspace,
@@ -145,25 +137,30 @@ class BaseFuzzTargetRunner:
 
       fuzzers_left_to_run -= 1
       if not result.testcase or not result.stacktrace:
-        logging.info('Fuzzer %s finished running without crashes.',
+        logging.info('Fuzzer %s finished running without reportable crashes.',
                      target.target_name)
         continue
-
-      # TODO(metzman): Do this with filestore.
-      testcase_artifact_path = self.get_fuzz_target_artifact(
-          target, os.path.basename(result.testcase))
-      shutil.move(result.testcase, testcase_artifact_path)
-      bug_summary_artifact_path = self.get_fuzz_target_artifact(
-          target, 'bug-summary.txt')
-      stack_parser.parse_fuzzer_output(result.stacktrace,
-                                       bug_summary_artifact_path)
 
       bug_found = True
       if self.quit_on_bug_found:
         logging.info('Bug found. Stopping fuzzing.')
-        return bug_found
+        break
 
+    # pylint: disable=undefined-loop-variable
+    if not target_path:
+      logging.error('Ran no fuzz targets.')
+    elif self.config.output_sarif:
+      # TODO(metzman): Handle multiple crashes.
+      write_fuzz_result_to_sarif(result, target_path, self.workspace)
+    self.clusterfuzz_deployment.upload_crashes()
     return bug_found
+
+
+def write_fuzz_result_to_sarif(fuzz_result, target_path, workspace):
+  """Write results of fuzzing to SARIF."""
+  logging.info('Writing sarif results.')
+  sarif_utils.write_stacktrace_to_sarif(fuzz_result.stacktrace, target_path,
+                                        workspace)
 
 
 class PruneTargetRunner(BaseFuzzTargetRunner):
@@ -178,12 +175,45 @@ class PruneTargetRunner(BaseFuzzTargetRunner):
     result = fuzz_target_obj.prune()
     logging.debug('Corpus path contents: %s.', os.listdir(result.corpus_path))
     self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
-                                              result.corpus_path)
+                                              result.corpus_path,
+                                              replace=True)
     return result
 
   def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
     """Cleans up after pruning with |fuzz_target_obj|."""
     fuzz_target_obj.free_disk_if_needed()
+
+
+NON_FUZZ_TARGETS_FOR_COVERAGE = {
+    'llvm-symbolizer',
+    'jazzer_agent_deploy.jar',
+    'jazzer_driver',
+    'jazzer_driver_with_sanitizer',
+}
+
+
+def is_coverage_fuzz_target(file_path):
+  """Returns whether |file_path| is a fuzz target binary for the purposes of a
+  coverage report. Inspired by infra/base-images/base-runner/coverage."""
+  if not os.path.isfile(file_path):
+    return False
+  if not utils.is_executable(file_path):
+    return False
+  filename = os.path.basename(file_path)
+  return filename not in NON_FUZZ_TARGETS_FOR_COVERAGE
+
+
+def get_coverage_fuzz_targets(out):
+  """Returns a list of fuzz targets in |out| for coverage."""
+  # We only want fuzz targets from the root because during the coverage build,
+  # a lot of the image's filesystem is copied into /out for the purpose of
+  # generating coverage reports.
+  fuzz_targets = []
+  for filename in os.listdir(out):
+    file_path = os.path.join(out, filename)
+    if is_coverage_fuzz_target(file_path):
+      fuzz_targets.append(file_path)
+  return fuzz_targets
 
 
 class CoverageTargetRunner(BaseFuzzTargetRunner):
@@ -195,12 +225,7 @@ class CoverageTargetRunner(BaseFuzzTargetRunner):
 
   def get_fuzz_targets(self):
     """Returns fuzz targets in out directory."""
-    # We only want fuzz targets from the root because during the coverage build,
-    # a lot of the image's filesystem is copied into /out for the purpose of
-    # generating coverage reports.
-    # TOOD(metzman): Figure out if top_level_only should be the only behavior
-    # for this function.
-    return utils.get_fuzz_targets(self.workspace.out, top_level_only=True)
+    return get_coverage_fuzz_targets(self.workspace.out)
 
   def run_fuzz_targets(self):
     """Generates a coverage report. Always returns False since it never finds
@@ -243,7 +268,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
 
   def run_fuzz_target(self, fuzz_target_obj):
     """Fuzzes with |fuzz_target_obj| and returns the result."""
-    result = fuzz_target_obj.fuzz()
+    result = fuzz_target_obj.fuzz(batch=True)
     logging.debug('Corpus path contents: %s.', os.listdir(result.corpus_path))
     self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
                                               result.corpus_path)
@@ -256,26 +281,20 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     # because it is needed when we upload the build.
     fuzz_target_obj.free_disk_if_needed(delete_fuzz_target=False)
 
-  def run_fuzz_targets(self):
-    result = super().run_fuzz_targets()
-    self.clusterfuzz_deployment.upload_crashes()
-    return result
 
-
-_RUN_FUZZERS_MODE_RUNNER_MAPPING = {
+_MODE_RUNNER_MAPPING = {
     'batch': BatchFuzzTargetRunner,
     'coverage': CoverageTargetRunner,
     'prune': PruneTargetRunner,
-    'ci': CiFuzzTargetRunner,
+    'code-change': CiFuzzTargetRunner,
 }
 
 
 def get_fuzz_target_runner(config):
-  """Returns a fuzz target runner object based on the run_fuzzers_mode of
+  """Returns a fuzz target runner object based on the mode of
   |config|."""
-  runner = _RUN_FUZZERS_MODE_RUNNER_MAPPING[config.run_fuzzers_mode](config)
-  logging.info('RUN_FUZZERS_MODE is: %s. Runner: %s.', config.run_fuzzers_mode,
-               runner)
+  runner = _MODE_RUNNER_MAPPING[config.mode](config)
+  logging.info('run fuzzers MODE is: %s. Runner: %s.', config.mode, runner)
   return runner
 
 

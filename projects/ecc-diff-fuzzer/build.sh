@@ -15,12 +15,15 @@
 #
 ################################################################################
 
+# use a linker that supports Dwarf v5
+export LDFLAGS="-fuse-ld=lld"
+
 # build projects
 #nettle
 (
 cd nettle
-tar -xvf ../gmp-6.1.2.tar.bz2
-cd gmp-6.1.2
+tar -xvf ../gmp-6.2.1.tar.bz2
+cd gmp-6.2.1
 #do not use assembly instructions as we do not know if they will be available on the machine who will run the fuzzer
 #we could do instead --enable-fat
 ./configure --disable-shared --disable-assembly
@@ -43,6 +46,9 @@ make install
 #gcrypt
 (
 cd libgpg-error
+# fix for following error
+# error: gettext infrastructure mismatch: using a Makefile.in.in from gettext version 0.19 but the autoconf macros are from gettext version 0.20
+timeout 3 gettextize -f || true
 ./autogen.sh
 if [ "$ARCHITECTURE" = 'i386' ]; then
     ./configure -host=i386 --disable-doc --enable-static --disable-shared
@@ -60,11 +66,16 @@ else
 fi
 make -j$(nproc)
 make install
+# defined at aria.o:(aria_encrypt) in archive /lib/x86_64-linux-gnu/libcrypto.a
+sed -i -e s/aria_encrypt/ariagencrypt/ /usr/local/lib/libgcrypt.a
 )
 
 #mbedtls
 (
 cd mbedtls
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    export CFLAGS="$CFLAGS -maes -mpclmul"
+fi
 cmake . -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc) all
 make install
@@ -87,7 +98,7 @@ make install
 (
 cd libecc
 #required by libecc
-(export CFLAGS="$CFLAGS -fPIC"; make; cp build/*.a /usr/local/lib; cp -r src/* /usr/local/include/)
+(export CFLAGS="$CFLAGS -fPIC"; make; cp build/*.a /usr/local/lib; cp -r include/* /usr/local/include/)
 )
 
 #botan
@@ -102,7 +113,7 @@ else
                --disable-shared --disable-modules=locking_allocator --disable-shared-library \
                --without-os-features=getrandom,getentropy
 fi
-make -j$(nproc)
+make -j$(nproc) libs
 make install
 )
 

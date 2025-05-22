@@ -16,3 +16,9 @@ architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/libexpat/libexpat'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

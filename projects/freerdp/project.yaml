@@ -1,0 +1,18 @@
+homepage: "https://www.freerdp.com/"
+main_repo: "https://github.com/FreeRDP/FreeRDP"
+language: c
+primary_contact: "team@freerdp.com"
+auto_ccs:
+  - "freerdpproject@gmail.com"
+  - "estetus@gmail.com"
+builds_per_day: 4
+fuzzing_engines:
+  - afl
+  - centipede
+  - honggfuzz
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64

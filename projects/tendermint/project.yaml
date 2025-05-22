@@ -1,15 +1,15 @@
-homepage: "https://github.com/tendermint/tendermint"
+homepage: "https://github.com/cometbft/cometbft"
 primary_contact: "security@interchain.io"
 auto_ccs:
   - fuzzing@orijtech.com
   - emmanuel@orijtech.com
-  - cuong@orijtech.com
-  - tess@interchain.io
-  - tychoish@interchain.io
-  - william@interchain.io
+  - elias@orijtech.com
+  - thane@informal.systems
+  - sergio@informal.systems
+  - adi@informal.systems
 language: go
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-main_repo: "https://github.com/tendermint/tendermint"
+main_repo: "https://github.com/cometbft/cometbft"

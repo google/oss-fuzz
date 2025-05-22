@@ -14,13 +14,19 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 
-RUN go get github.com/ianlancetaylor/demangle
 RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git
 RUN git clone --depth 1 https://github.com/google/AFL
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
 RUN git clone --depth 1 https://github.com/kubernetes/kops
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+RUN git clone --depth 1 https://github.com/AdamKorcz/instrumentation
+RUN git clone --depth 1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=november-backup
+RUN wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.23.4.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/
 WORKDIR $SRC/
-
 COPY build.sh $SRC/

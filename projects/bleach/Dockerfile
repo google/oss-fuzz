@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-python
 
 RUN git clone \
 	--depth 1 \
@@ -24,7 +24,5 @@ RUN git clone \
 WORKDIR bleach
 
 RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN cat fuzzing/dictionaries/html.dict > $OUT/linkify_fuzzer.dict
-RUN cat fuzzing/dictionaries/html.dict > $OUT/sanitize_fuzzer.dict
 
 COPY build.sh sanitize_fuzzer.py linkify_fuzzer.py $SRC/

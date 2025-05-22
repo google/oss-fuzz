@@ -16,11 +16,27 @@
 ################################################################################
 
 # build the target.
-./configure
+./configure --enable-shared=no
 make -j$(nproc) all
 
 # build your fuzzer(s)
-FUZZERS="cmsIT8_load_fuzzer cms_transform_fuzzer cms_overwrite_transform_fuzzer"
+FUZZERS="cmsIT8_load_fuzzer            \
+        cms_transform_fuzzer           \
+        cms_overwrite_transform_fuzzer \
+        cms_transform_all_fuzzer       \
+        cms_profile_fuzzer             \
+        cms_universal_transform_fuzzer \
+        cms_transform_extended_fuzzer  \
+        cms_md5_fuzzer                 \
+        cms_dict_fuzzer                \
+        cms_postscript_fuzzer          \
+        cms_cie_cam02_fuzzer           \
+        cms_gdb_fuzzer                 \
+        cms_cgats_fuzzer               \
+        cms_virtual_profile_fuzzer     \
+        cms_devicelink_fuzzer" 
+
+
 for F in $FUZZERS; do
     $CC $CFLAGS -c -Iinclude \
         $SRC/$F.c -o $SRC/$F.o
@@ -29,4 +45,21 @@ for F in $FUZZERS; do
         $LIB_FUZZING_ENGINE src/.libs/liblcms2.a
 done
 
-cp $SRC/icc.dict $SRC/*.options $OUT/
+cp $SRC/*.dict $SRC/*.options $OUT/
+cp $SRC/icc.dict $OUT/cms_transform_all_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_transform_extended_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_universal_transform_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_profile_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_postscript_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_virtual_profile_fuzzer.dict
+cp $SRC/icc.dict $OUT/cms_md5_fuzzer.dict
+cp $SRC/seed_corpus.zip $OUT/cms_postscript_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_profile_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_universal_transform_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_transform_all_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_transform_extended_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_transform_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_virtual_profile_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cmsIT8_load_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_md5_fuzzer_seed_corpus.zip
+cp $SRC/seed_corpus.zip $OUT/cms_overwrite_transform_fuzzer_seed_corpus.zip

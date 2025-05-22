@@ -18,15 +18,14 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y -q && \
-    apt-get update -y -q && \
     apt-get install -y -q --no-install-recommends \
         bison \
         build-essential \
         cmake \
         flex \
-        libboost-all-dev \
         ninja-build \
         python3
+RUN wget https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.bz2  # Temporarily use manual installation over the outdated libboost-dev package
 
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow

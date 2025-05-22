@@ -15,5 +15,12 @@
 #
 ################################################################################
 
-$SRC/istio/tests/fuzz/oss_fuzz_build.sh
+# Build fuzzers
+if [ -n "${OSS_FUZZ_CI-}" ]
+then
+	echo "Skipping most fuzzers since the OSS-fuzz CI may fail from running out of disk space."
+	compile_go_fuzzer istio.io/istio/tests/fuzz FuzzCRDRoundtrip fuzz_crd_roundtrip
+else
+	$SRC/istio/tests/fuzz/oss_fuzz_build.sh
+fi
 

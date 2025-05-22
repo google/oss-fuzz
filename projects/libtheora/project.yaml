@@ -1,6 +1,9 @@
 homepage: "https://www.theora.org/"
 language: c++
 primary_contact: "guidovranken@gmail.com"
+main_repo: "https://git.xiph.org/theora.git"
+auto_ccs:
+  - "le.businessman@gmail.com"
 vendor_ccs:
  - "daede003@umn.edu"
  - "twsmith@mozilla.com"
@@ -11,3 +14,9 @@ sanitizers:
 architectures:
  - x86_64
  - i386
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

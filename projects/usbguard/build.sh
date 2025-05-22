@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 ################################################################################
+# Ensure libqb can be found by pkgconfig
+export PKG_CONFIG_PATH=/usr/lib64/pkgconfig/
 
 autoreconf -fi
 
-libqb=`find /usr/lib/ -name libqb.a -print -quit`
+libqb=`find /usr/lib64/ -name libqb.a -print -quit`
 protobuf=`find /usr/lib/ -name libprotobuf.a -print -quit`
 
 qb_LIBS="${libqb}" \
@@ -81,10 +83,3 @@ if [[ ! -d "$SRC/usbguard/src/Tests/Fuzzers/$corpus_dir" ]] ; then
   cp -R "$SRC/usbguard/src/Tests/USB/data" "${corpus_dir}"
   zip -r "${zip_name}" "${corpus_dir}"
 fi
-
-# Ubuntu 20.04 doesn't have a static libqb.
-mkdir -p $OUT/lib
-cp /lib/x86_64-linux-gnu/libqb* $OUT/lib
-patchelf --set-rpath '$ORIGIN/lib' $OUT/fuzzer-uevent
-patchelf --set-rpath '$ORIGIN/lib' $OUT/fuzzer-usb-descriptor
-patchelf --set-rpath '$ORIGIN/lib' $OUT/fuzzer-rules

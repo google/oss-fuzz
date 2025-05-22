@@ -1,0 +1,30 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://developers.google.com/protocol-buffers/
+language: python
+main_repo: https://github.com/protocolbuffers/protobuf
+sanitizers:
+- address
+auto_ccs:
+- protobuf-oss-fuzz@google.com
+- gberg@google.com
+- acozzette@google.com
+- deannagarcia@google.com
+- esrauch@google.com
+- haberman@google.com
+- hongshin@google.com
+- jatl@google.com
+- jieluo@google.com
+- mkruskal@google.com
+- salo@google.com
+- sandyzhang@google.com
+- sbenza@google.com
+- shaod@google.com
+- copybara-watcher-pod-watcher-git@system.gserviceaccount.com
+- copybara-worker@system.gserviceaccount.com
+primary_contact: gberg@google.com
+vendor_ccs:
+- david@adalogics.com
+labels:
+  "*":
+    - protobuf-ossfuzz-bugz-1260285

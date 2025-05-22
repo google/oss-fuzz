@@ -1,0 +1,15 @@
+homepage: "https://github.com/googlefonts/fontations"
+language: rust
+primary_contact: "rsheeter@google.com"
+auto_ccs:
+  - "drott@google.com"
+  - "grieger@google.com"
+  - "colin.rofls@gmail.com"
+  - "cbrokaw@google.com"
+  - "clupo@google.com"
+  - "behdad.esfahbod@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/googlefonts/fontations'

@@ -37,6 +37,8 @@ make install
 
 # build project
 export ASAN_OPTIONS=detect_leaks=0
+export CFLAGS="${CFLAGS} -DFUZZING_OVERRIDE_LLVMFuzzerTestOneInput"
+export CXXFLAGS="${CXXFLAGS} -DFUZZING_OVERRIDE_LLVMFuzzerTestOneInput"
 ./bootstrap.sh
 ./configure --enable-libfuzzer --enable-static --enable-static-bin --sbindir=$SRC/bin
 make -j$(nproc)
@@ -58,6 +60,7 @@ find $OUT -maxdepth 1 -type f -executable | while read i; do
     copy_lib ${i} libyang
     copy_lib ${i} libelf
     copy_lib ${i} libjson-c
+    copy_lib ${i} libprotobuf-c
 done
 
 patchelf --remove-needed libpcre2-8.so.0 $OUT/lib/libyang.so.2

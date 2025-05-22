@@ -1,0 +1,9 @@
+homepage: https://github.com/hhatto/autopep8
+main_repo: https://github.com/hhatto/autopep8
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

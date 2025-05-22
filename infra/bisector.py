@@ -115,7 +115,10 @@ def main():
         'Bisection Error: Both the first and the last commits in'
         'the given range have the same behavior, bisection is not possible. ')
     return 1
-  print('Error was introduced at commit %s' % result.commit)
+  if args.type == 'regressed':
+    print('Error was introduced at commit %s' % result.commit)
+  elif args.type == 'fixed':
+    print('Error was fixed at commit %s' % result.commit)
   return 0
 
 
@@ -134,7 +137,8 @@ def _get_dedup_token(output):
 def _check_for_crash(project_name, fuzz_target, testcase_path):
   """Check for crash."""
 
-  def docker_run(args):
+  def docker_run(args, **kwargs):
+    del kwargs
     command = ['docker', 'run', '--rm', '--privileged']
     if sys.stdin.isatty():
       command.append('-i')

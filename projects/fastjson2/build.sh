@@ -21,9 +21,9 @@ mv $SRC/{*.zip,*.dict} $OUT
 mvn package -Dmaven.test.skip=true -Djdk.version=15
 CURRENT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
-cp "target/fastjson-$CURRENT_VERSION.jar" $OUT/fastjson.jar
+cp "core/target/fastjson2-$CURRENT_VERSION.jar" $OUT/fastjson2.jar
 
-PROJECT_JARS="fastjson.jar"
+PROJECT_JARS="fastjson2.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -38,14 +38,19 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   cp $SRC/$fuzzer_basename.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/sh
+  echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+  mem_settings='-Xmx1900m:-Xss900k'
+else
+  mem_settings='-Xmx2048m:-Xss1024k'
+fi
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"-Xmx2048m\" \
+--jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod +x $OUT/$fuzzer_basename
 done

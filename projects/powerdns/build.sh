@@ -24,6 +24,16 @@ sed -i 's/AC_MSG_ERROR(\[Boost Program Options library not found\])/AC_MSG_NOTIC
 # does not appear to be compiled as PIC
 sed -i 's/AC_CC_PIE//' configure.ac
 
+# Install Boost headers
+(
+ cd $SRC/
+ tar jxf boost_1_84_0.tar.bz2
+ cd boost_1_84_0/
+ CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+ CFLAGS="" CXXFLAGS="" ./b2 headers
+ cp -R boost/ /usr/include/
+)
+
 # build fuzzing targets
 autoreconf -vi
 ./configure \
@@ -34,31 +44,63 @@ autoreconf -vi
     --enable-fuzz-targets \
     --disable-dependency-tracking \
     --disable-silent-rules || /bin/bash
+
+if [ -d ext/arc4random/ ]; then
+    make -j$(nproc) -C ext/arc4random/
+fi
+make -j$(nproc) -C ext/yahttp/
 cd pdns
 make -j$(nproc) fuzz_targets
 
 # copy the fuzzing target binaries
 cp fuzz_target_* "${OUT}/"
 
+# build the dnsdist fuzzing target, if any
+if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
+    cd dnsdistdist
+    sed -i 's/AC_CC_PIE//' configure.ac
+    autoreconf -vi
+    ./configure \
+        --enable-fuzz-targets \
+        --disable-dependency-tracking \
+        --disable-silent-rules || /bin/bash
+    if [ -d ext/arc4random/ ]; then
+        make -j$(nproc) -C ext/arc4random/
+    fi
+    make -j$(nproc) fuzz_targets
+
+    # copy the fuzzing target binaries
+    cp fuzz_target_* "${OUT}/"
+
+    # back to the pdns/ directory
+    cd ..
+fi
+
+# back to the checkout directory
+cd ..
+
 # copy the zones used in the regression tests to the "zones" corpus
-cp ../regression-tests/zones/* ../fuzzing/corpus/zones/
+cp regression-tests/zones/* fuzzing/corpus/zones/
 
 # generate the corpus files
-if [ -d ../fuzzing/corpus/raw-dns-packets/ ]; then
-    zip -j "${OUT}/fuzz_target_dnsdistcache_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
+if [ -d fuzzing/corpus/raw-dns-packets/ ]; then
+    zip -j "${OUT}/fuzz_target_dnsdistcache_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
 fi
-if [ -d ../fuzzing/corpus/txt-records/ ]; then
-    zip -j "${OUT}/fuzz_target_dnslabeltext_parseRFC1035CharString_seed_corpus.zip" ../fuzzing/corpus/txt-records/*
+if [ -d fuzzing/corpus/txt-records/ ]; then
+    zip -j "${OUT}/fuzz_target_dnslabeltext_parseRFC1035CharString_seed_corpus.zip" fuzzing/corpus/txt-records/*
 fi
-if [ -d ../fuzzing/corpus/raw-dns-packets/ ]; then
-    zip -j "${OUT}/fuzz_target_moadnsparser_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
+if [ -d fuzzing/corpus/raw-dns-packets/ ]; then
+    zip -j "${OUT}/fuzz_target_moadnsparser_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
 fi
-if [ -d ../fuzzing/corpus/raw-dns-packets/ ]; then
-    zip -j "${OUT}/fuzz_target_packetcache_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
+if [ -d fuzzing/corpus/raw-dns-packets/ ]; then
+    zip -j "${OUT}/fuzz_target_packetcache_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
 fi
-if [ -d ../fuzzing/corpus/proxy-protocol-raw-packets/ ]; then
-    zip -j "${OUT}/fuzz_target_proxyprotocol_seed_corpus.zip" ../fuzzing/corpus/proxy-protocol-raw-packets/*
+if [ -d fuzzing/corpus/proxy-protocol-raw-packets/ ]; then
+    zip -j "${OUT}/fuzz_target_proxyprotocol_seed_corpus.zip" fuzzing/corpus/proxy-protocol-raw-packets/*
 fi
-if [ -d ../fuzzing/corpus/zones/ ]; then
-    zip -j "${OUT}/fuzz_target_zoneparsertng_seed_corpus.zip" ../fuzzing/corpus/zones/*
+if [ -d fuzzing/corpus/zones/ ]; then
+    zip -j "${OUT}/fuzz_target_zoneparsertng_seed_corpus.zip" fuzzing/corpus/zones/*
+fi
+if [ -d fuzzing/corpus/http-raw-payloads/ ]; then
+    zip -j "${OUT}/fuzz_target_yahttp_seed_corpus.zip" fuzzing/corpus/http-raw-payloads/*
 fi

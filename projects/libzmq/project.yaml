@@ -9,3 +9,9 @@ architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/zeromq/libzmq.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

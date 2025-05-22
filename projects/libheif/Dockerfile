@@ -22,11 +22,13 @@ RUN apt-get update && apt-get install -y \
     automake \
     build-essential \
     cmake \
+    libbrotli-dev \
     libtool \
     make \
     mercurial \
     pkg-config \
-    yasm
+    yasm \
+    zlib1g-dev
 
 RUN git clone \
     --depth 1 \
@@ -34,9 +36,8 @@ RUN git clone \
     https://github.com/strukturag/libde265.git \
     libde265
 
-RUN hg clone \
-    --branch stable \
-    http://hg.videolan.org/x265 \
+RUN git clone \
+    https://bitbucket.org/multicoreware/x265_git/src/stable/ \
     x265
 
 RUN git clone \

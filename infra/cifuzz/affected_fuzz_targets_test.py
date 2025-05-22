@@ -22,6 +22,7 @@ import parameterized
 
 import affected_fuzz_targets
 import clusterfuzz_deployment
+import get_coverage
 import test_helpers
 import workspace_utils
 
@@ -37,7 +38,7 @@ TEST_DATA_OUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   'test_data', 'build-out')
 
 
-class RemoveUnaffectedFuzzTargets(unittest.TestCase):
+class RemoveUnaffectedFuzzTargetsTest(unittest.TestCase):
   """Tests remove_unaffected_fuzzers."""
 
   TEST_FUZZER_1 = os.path.join(TEST_DATA_OUT_PATH, 'example_crash_fuzzer')
@@ -45,7 +46,7 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
 
   # yapf: disable
   @parameterized.parameterized.expand([
-      # Tests a specific affected fuzzers is kept.
+      # Tests specific affected fuzzers are kept.
       ([[EXAMPLE_FILE_CHANGED], None], 2,),
 
       # Tests specific affected fuzzer is kept.
@@ -61,7 +62,7 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
   def test_remove_unaffected_fuzz_targets(self, side_effect, expected_dir_len):
     """Tests that remove_unaffected_fuzzers has the intended effect."""
     config = test_helpers.create_run_config(
-        is_github=True,
+        cfl_platform='github',
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         workspace='/workspace')
     workspace = workspace_utils.Workspace(config)
@@ -82,6 +83,30 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
         affected_fuzz_targets.remove_unaffected_fuzz_targets(
             deployment, tmp_dir, [EXAMPLE_FILE_CHANGED], '')
         self.assertEqual(expected_dir_len, len(os.listdir(tmp_dir)))
+
+
+class IsFuzzTargetAffectedTest(unittest.TestCase):
+  """Tests for is_fuzz_target_affected."""
+
+  def setUp(self):
+    self.fuzz_target_path = '/fuzz_target'
+
+  def test_relative_paths(self):
+    """Tests that is_fuzz_target_affected works as intended when the covered
+    files are relative paths."""
+    with mock.patch.object(
+        get_coverage.FilesystemCoverage,
+        'get_files_covered_by_target',
+    ) as get_files_covered_by_target:
+      get_files_covered_by_target.return_value = [
+          '/work/build/../../src/systemd/src/basic/alloc-util.c'
+      ]
+      coverage = get_coverage.FilesystemCoverage('/', '/')
+
+      self.assertTrue(
+          affected_fuzz_targets.is_fuzz_target_affected(
+              coverage, self.fuzz_target_path,
+              ['/src/systemd/src/basic/alloc-util.c']))
 
 
 if __name__ == '__main__':

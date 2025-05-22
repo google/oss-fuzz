@@ -14,11 +14,8 @@
 #
 ################################################################################
 
-# Using Ubuntu 16.04 because of breakage on Ubuntu 20.04.
-# See https://github.com/google/oss-fuzz/issues/6291 for more details.
-FROM gcr.io/oss-fuzz-base/base-builder:xenial
-# Delete line above and uncomment line below to upgrade to 20.04.
-# FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
+# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
 RUN apt-get update && apt-get install -y make cmake autoconf \
     automake libtool gettext pkg-config build-essential \
     mercurial wget libeigen3-dev libflann-dev python python-dev 
@@ -35,14 +32,14 @@ RUN apt-get update && apt-get install -y \
     qtbase5-dev qttools5-dev zlib1g-dev
 
 # Install and build boost from source so we can have it use libc++
-RUN wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz && \
-    tar xzf boost_1_70_0.tar.gz && \
-    cd boost_1_70_0 && \
+RUN wget https://sourceforge.net/projects/boost/files/boost/1.85.0/boost_1_85_0.tar.gz && \
+    tar xzf boost_1_85_0.tar.gz && \
+    cd boost_1_85_0 && \
     ./bootstrap.sh --with-toolset=clang && \
     ./b2 clean && \
     ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" -j$(nproc) install && \
     cd .. && \
-    rm -rf boost_1_70_0]
+    rm -rf boost_1_85_0
 
 RUN git clone --depth 1 https://github.com/PointCloudLibrary/pcl
 COPY build.sh $SRC/

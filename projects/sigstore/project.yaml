@@ -1,0 +1,12 @@
+homepage: "https://sigstore.dev"
+main_repo: "https://github.com/sigstore/sigstore"
+primary_contact: "security@sigstore.dev"
+auto_ccs:
+  - lhinds@sigstore.dev
+  - hblauzvern@sigstore.dev
+  - bcallaway@sigstore.dev
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

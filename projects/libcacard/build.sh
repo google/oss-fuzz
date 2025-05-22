@@ -15,10 +15,6 @@
 #
 ################################################################################
 
-# Workaround for fixing AFL++ build, discarded for others.
-# See https://github.com/google/oss-fuzz/issues/4280#issuecomment-773977943
-export AFL_LLVM_INSTRUMENT=CLASSIC,NGRAM-4
-
 # Compile NSS
 mkdir $SRC/nss-nspr
 mv $SRC/nss $SRC/nss-nspr/

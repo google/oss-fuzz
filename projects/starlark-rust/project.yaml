@@ -1,0 +1,16 @@
+homepage: "https://github.com/facebookexperimental/starlark-rust/"
+language: rust
+
+primary_contact: "ndmitchell@gmail.com"
+main_repo: "https://github.com/facebookexperimental/starlark-rust.git"
+file_github_issue: false
+auto_ccs:
+  - "nathaniel.brough@gmail.com"
+vendor_ccs:
+  - "oss-fuzz@fb.com"
+
+# Rust only supports libfuzzer+address sanitizer
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  -  address

@@ -23,13 +23,20 @@ def TestOneInput(data):
     original = fdp.ConsumeUnicode(sys.maxsize)
 
     try:
-        urllib3.util.parse_url(original)
+        # We have to call this via .url because of limitations
+        # in PyCG analysis
+        response = urllib3.util.url.parse_url(original)
+        response.hostname
+        response.request_uri
+        response.authority
+        response.netloc
+        response.url
     except urllib3.exceptions.LocationParseError:
         None
     return
 
 def main():
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()
 
 if __name__ == "__main__":

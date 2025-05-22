@@ -14,9 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get install -y build-essential libncursesw5-dev libreadline-dev libssl-dev libgdbm-dev libc6-dev libsqlite3-dev tk-dev libbz2-dev zlib1g-dev libffi-dev wget
-RUN wget -q https://github.com/python/cpython/archive/v3.8.7.tar.gz
-RUN git clone --depth 1 https://github.com/django/django-fuzzers.git
+FROM gcr.io/oss-fuzz-base/base-builder-python
+
+RUN python3 -m pip install cython
 RUN git clone --depth 1 https://github.com/django/django.git
+RUN git clone --depth 1 https://github.com/django/django-fuzzers.git
+
 COPY build.sh $SRC/
+
+WORKDIR $SRC/django

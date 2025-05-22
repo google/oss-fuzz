@@ -1,0 +1,11 @@
+homepage: "https://github.com/WasmEdge/WasmEdge"
+language: c++
+primary_contact: "beststeve@secondstate.io"
+auto_ccs:
+  - "hydai@secondstate.io"
+  - "yiying@secondstate.io"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+main_repo: 'https://github.com/WasmEdge/WasmEdge.git'

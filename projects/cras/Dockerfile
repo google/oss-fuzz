@@ -19,7 +19,7 @@
 ################################################################################
 # Defines a docker image that can build cras fuzzers.
 #
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN apt-get -y update && \
       apt-get install -y \
@@ -28,29 +28,19 @@ RUN apt-get -y update && \
       cmake \
       g++ \
       git \
-      ladspa-sdk \
       libasound-dev \
       libdbus-1-dev \
       libgtest-dev \
       libncurses5-dev \
       libsbc-dev \
-      libsndfile-dev \
       libspeexdsp-dev \
       libsystemd-dev \
+      libclang1 \
       libtool \
       libudev-dev \
       wget \
-      vim \
       zip
 RUN apt-get clean
-RUN cd /tmp && git clone https://github.com/ndevilla/iniparser.git && \
-      cd iniparser && \
-      make && \
-      cp libiniparser.* /usr/local/lib && \
-      cp src/dictionary.h src/iniparser.h /usr/local/include && \
-      chmod 644 /usr/local/include/dictionary.h /usr/local/include/iniparser.h && \
-      chmod 644 /usr/local/lib/libiniparser.a && \
-      chmod 755 /usr/local/lib/libiniparser.so.*
 
 RUN cd /tmp && git clone https://github.com/google/googletest.git -b v1.8.x && \
       cd googletest && \
@@ -62,16 +52,15 @@ RUN cd /tmp && git clone https://github.com/google/googletest.git -b v1.8.x && \
 
 # Need to build and install alsa so there is a static lib.
 RUN mkdir -p /tmp/alsa-build && cd /tmp/alsa-build && \
-      wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.1.4.1.tar.bz2 && \
-      bzip2 -f -d alsa-lib-* && \
-      tar xf alsa-lib-* && \
+      wget https://alsa-project.org/files/pub/lib/alsa-lib-1.1.4.1.tar.bz2 && \
+      echo 91bb870c14d1c7c269213285eeed874fa3d28112077db061a3af8010d0885b76 alsa-lib-1.1.4.1.tar.bz2 | sha256sum -c && \
+      tar xjf alsa-lib-* && \
       cd alsa-lib-* && \
       ./configure --enable-static --disable-shared && \
       make clean && \
       make -j$(nproc) all && \
       make install
 
-
 RUN cd $SRC && git clone https://chromium.googlesource.com/chromiumos/third_party/adhd
-WORKDIR adhd/cras
+WORKDIR adhd
 COPY build.sh $SRC/

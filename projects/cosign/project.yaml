@@ -1,7 +1,14 @@
-homepage: https://sigstore.dev/
-language: go 
-primary_contact: "priyawadhwa@google.com"
+homepage: "https://sigstore.dev"
 main_repo: "https://github.com/sigstore/cosign"
+primary_contact: "security@sigstore.dev"
+auto_ccs:
+  - lhinds@sigstore.dev
+  - hblauzvern@sigstore.dev
+  - codysoyland@sigstore.dev
+  - bcallaway@sigstore.dev
+vendor_ccs:
+  - adam@adalogics.com
+language: go
 fuzzing_engines:
   - libfuzzer
 sanitizers:

@@ -9,3 +9,7 @@ sanitizers:
 - address
 - undefined
 main_repo: 'https://github.com/Unidata/netcdf-c'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

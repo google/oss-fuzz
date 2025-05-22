@@ -15,15 +15,27 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" = "coverage" ]
+then
+  export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
+  export CFLAGS=""
+fi
+
 cd $SRC/rustls
 cargo fuzz build -O
-cp fuzz/target/x86_64-unknown-linux-gnu/release/client $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/deframer $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/fragment $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/hsjoiner $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/
-if [ "$SANITIZER" != "coverage" ]
+for f in $SRC/rustls/fuzz/fuzzers/*.rs
+do
+  FUZZ_TARGET=$(basename ${f%.*})
+  cp fuzz/target/x86_64-unknown-linux-gnu/release/${FUZZ_TARGET} $OUT/
+  if [[ -d $SRC/rustls-fuzzing-corpora/$FUZZ_TARGET/ ]]; then
+      zip -jr \
+          $OUT/${FUZZ_TARGET}_seed_corpus.zip \
+          $SRC/rustls-fuzzing-corpora/$FUZZ_TARGET/
+  fi
+done
+
+if [ "$SANITIZER" == "coverage" ]
 then
-    cp fuzz/target/x86_64-unknown-linux-gnu/release/server $OUT/
-    cp fuzz/target/x86_64-unknown-linux-gnu/release/persist $OUT/
+    rm $OUT/server
+    rm $OUT/persist
 fi

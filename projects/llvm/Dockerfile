@@ -15,12 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update -y
-RUN apt-get install -y autoconf automake libtool curl make g++ unzip wget git \
+RUN apt-get update -y && \
+    apt-get install -y autoconf automake libtool curl make g++ unzip wget git \
     binutils liblzma-dev libz-dev python-all cmake ninja-build subversion \
     pkg-config
 
-# Get LLVM
 RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
 
-COPY build.sh $SRC/
+RUN git clone --depth 1 https://github.com/AdaLogics/ada-fuzzers && \
+    $SRC/ada-fuzzers/projects/llvm/copy-over.sh
+
+COPY build.sh *.py $SRC/

@@ -15,13 +15,23 @@
 import logging
 import os
 import shutil
+import sys
 import tarfile
 import tempfile
 
+# pylint: disable=wrong-import-position,import-error
+INFRA_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir,
+                 os.path.pardir))
+sys.path.append(INFRA_DIR)
+OSS_FUZZ_ROOT_DIR = os.path.dirname(INFRA_DIR)
+
+import utils
 import http_utils
 import filestore
 from filestore.github_actions import github_api
-from third_party.github_actions_toolkit.artifact import artifact_client
+
+UPLOAD_JS = os.path.join(os.path.dirname(__file__), 'upload.js')
 
 
 def tar_directory(directory, archive_path):
@@ -75,8 +85,11 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     """Uploads the crashes at |directory| to |name|."""
     return _raw_upload_directory(self.CRASHES_PREFIX + name, directory)
 
-  def upload_corpus(self, name, directory):
+  def upload_corpus(self, name, directory, replace=False):
     """Uploads the corpus at |directory| to |name|."""
+    # Not applicable as the the entire corpus is uploaded under a single
+    # artifact name.
+    del replace
     return self._upload_directory(self.CORPUS_PREFIX + name, directory)
 
   def upload_build(self, name, directory):
@@ -146,6 +159,14 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     return self._download_artifact(self.COVERAGE_PREFIX + name, dst_directory)
 
 
+def _upload_artifact_with_upload_js(name, artifact_paths, directory):
+  """Uploads the artifacts in |artifact_paths| that are located in |directory|
+  to |name|, using the upload.js script."""
+  command = [UPLOAD_JS, name, directory] + artifact_paths
+  _, _, retcode = utils.execute(command, location=OSS_FUZZ_ROOT_DIR)
+  return retcode == 0
+
+
 def _raw_upload_directory(name, directory):
   """Uploads the artifacts located in |directory| to |name|. Does not do any
   tarring or adding prefixes to |name|."""
@@ -155,4 +176,4 @@ def _raw_upload_directory(name, directory):
     for file_path in curr_file_paths:
       artifact_paths.append(os.path.join(root, file_path))
   logging.debug('Artifact paths: %s.', artifact_paths)
-  return artifact_client.upload_artifact(name, artifact_paths, directory)
+  return _upload_artifact_with_upload_js(name, artifact_paths, directory)

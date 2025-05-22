@@ -6,11 +6,14 @@ auto_ccs:
     - "marissa.nishimoto@yubico.com"
     - "pedro.ossfuzz@gmail.com"
     - "ludvig.michaelsson@yubico.com"
+    - "alex.geana@yubico.com"
 sanitizers:
     - address
     - undefined
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
+    - memory
 fuzzing_engines:
     - libfuzzer
+    - honggfuzz
+    - afl
+    # - centipede disabled due to https://github.com/google/oss-fuzz/pull/10248#issuecomment-1579657163
 main_repo: 'https://github.com/Yubico/libfido2'

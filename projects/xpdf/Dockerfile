@@ -15,10 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install software-properties-common -y && apt-get update && apt-add-repository ppa:rock-core/qt4 && apt-get install -y make wget cmake libqt4-dev
-RUN wget --no-check-certificate https://dl.xpdfreader.com/xpdf-latest.tar.gz
+RUN git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype
+RUN apt-get update
+RUN apt-get install --no-install-recommends -y make wget cmake qtbase5-dev libcups2-dev autoconf automake autotools-dev libtool
+RUN wget https://dl.xpdfreader.com/xpdf-latest.tar.gz
 
 WORKDIR $SRC
 COPY fuzz_*.cc $SRC/
 COPY build.sh $SRC/
-COPY fuzz_pdfload.options $SRC/fuzz_pdfload.options
+COPY fuzz_*.options $SRC/

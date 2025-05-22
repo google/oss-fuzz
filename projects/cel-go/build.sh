@@ -18,8 +18,8 @@
 mkdir fuzzlpm
 $SRC/LPM/external.protobuf/bin/protoc --cpp_out=fuzzlpm/ -I$SRC/ $SRC/cel-go-lpm.proto
 
-$CXX $CXXFLAGS -c -I fuzzlpm/ -I $SRC/LPM/external.protobuf/include fuzzlpm/cel-go-lpm.pb.cc
-$CXX $CXXFLAGS -c -I. -I ../libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $SRC/go-lpm.cc
+$CXX $CXXFLAGS -DNDEBUG -c -I fuzzlpm/ -I $SRC/LPM/external.protobuf/include fuzzlpm/cel-go-lpm.pb.cc
+$CXX $CXXFLAGS -DNDEBUG -c -I. -I ../libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $SRC/go-lpm.cc
 
 (
 cd $SRC/go114-fuzz-build
@@ -31,6 +31,11 @@ $SRC/LPM/external.protobuf/bin/protoc --go_out=fuzzlpm/ -I$SRC/ $SRC/cel-go-lpm.
 cp fuzzlpm/github.com/google/cel-go/cel/*.pb.go cel/
 
 $SRC/go114-fuzz-build/go114-fuzz-build -func FuzzEval -o fuzz_lpm.a github.com/google/cel-go/cel
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE cel-go-lpm.pb.o go-lpm.o fuzz_lpm.a  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a $SRC/LPM/src/libprotobuf-mutator.a $SRC/LPM/external.protobuf/lib/libprotobuf.a -o $OUT/fuzz_lpm
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE cel-go-lpm.pb.o go-lpm.o \
+  fuzz_lpm.a \
+  $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
+  $SRC/LPM/src/libprotobuf-mutator.a \
+  -Wl,--start-group $SRC/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
+  -o $OUT/fuzz_lpm
 
 compile_go_fuzzer github.com/google/cel-go/cel FuzzCompile fuzz_compile

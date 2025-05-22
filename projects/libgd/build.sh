@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+sed -i 's/-Werror//g' ./configure.ac
 ./bootstrap.sh
 
 # Limit the size of buffer allocations to avoid bogus OOM issues

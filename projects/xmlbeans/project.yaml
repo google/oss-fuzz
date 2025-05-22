@@ -1,0 +1,17 @@
+homepage: "https://xmlbeans.apache.org/"
+language: jvm
+main_repo: "https://github.com/apache/xmlbeans"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "schaich@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"
+run_tests: False

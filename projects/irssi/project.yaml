@@ -10,3 +10,9 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/irssi/irssi'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

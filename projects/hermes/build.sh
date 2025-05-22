@@ -15,17 +15,39 @@
 #
 ################################################################################
 
+# Copy seed corpora
+mv $SRC/hermes_seed_corpus.zip $OUT
+
+# Copy dictionary file
+mv $SRC/hermes.dict $OUT
+
+# build ICU for linking statically.
+cd $SRC/icu/source
+./configure --disable-shared --enable-static --disable-layoutex \
+  --disable-tests --disable-samples --with-data-packaging=static
+make install -j$(nproc)
+
+# Ugly ugly hack to get static linking to work for icu.
+cd lib
+ls *.a | xargs -n1 ar x
+rm *.a
+ar r libicu.a *.{ao,o}
+ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicudata.a
+ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicuuc.a
+ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicui18n.a
+
 if [ "${SANITIZER}" = address ]
 then
-    CONFIGURE_FLAGS="--enable-asan"
+    CONFIGURE_FLAGS="-DHERMES_ENABLE_ADDRESS_SANITIZER=ON"
 elif [ "${SANITIZER}" = undefined ]
 then
-    CONFIGURE_FLAGS="--enable-ubsan"
+    CONFIGURE_FLAGS="-DHERMES_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER=ON"
 else
     CONFIGURE_FLAGS=""
 fi
 
-./utils/build/configure.py "${OUT}/build" --build-system "Ninja" ${CONFIGURE_FLAGS} \
-                           --cmake-flags="-DHERMES_USE_STATIC_ICU=ON -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON"
-cmake --build "$OUT/build"  --parallel --target fuzzer-jsi-entry
+cmake -S "${SRC}/hermes" -B "${OUT}/build" ${CONFIGURE_FLAGS} -DHERMES_USE_STATIC_ICU=ON \
+                 -DBUILD_SHARED_LIBS=OFF -DHERMES_BUILD_SHARED_JSI=OFF \
+                 -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON
+cmake --build "$OUT/build" --target fuzzer-jsi-entry -j 4
 cp "${OUT}/build/bin/fuzzer-jsi-entry" "${OUT}"

@@ -1,6 +1,6 @@
 homepage: "https://libigl.github.io"
 language: c++
-primary_contact: "github@jdumas.org"
+primary_contact: "alecjacobson@gmail.com"
 auto_ccs:
   - "Adam@adalogics.com"
 sanitizers:
@@ -8,3 +8,9 @@ sanitizers:
   - undefined
   - memory
 main_repo: "https://github.com/libigl/libigl"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

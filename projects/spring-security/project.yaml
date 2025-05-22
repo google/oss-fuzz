@@ -1,0 +1,20 @@
+homepage: "https://github.com/spring-projects/spring-security"
+language: jvm
+main_repo: "https://github.com/spring-projects/spring-security.git"
+primary_contact: "rwinch@vmware.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+auto_ccs:
+  - "pwebb@vmware.com"
+  - "wilkinsona@vmware.com"
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "glendowne@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"
+  - "peter.samarin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

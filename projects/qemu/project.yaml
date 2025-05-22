@@ -3,6 +3,7 @@ language: c
 primary_contact: "alxndr@bu.edu"
 auto_ccs:
   - "bsd@redhat.com"
+  - "mcascell@redhat.com"
   - "pbonzini@redhat.com"
   - "stefanha@redhat.com"
   - "darren.kenny@oracle.com"
@@ -14,4 +15,5 @@ fuzzing_engines:
   - libfuzzer
 architectures:
   - x86_64
+selective_unpack: true
 main_repo: 'https://git.qemu.org/git/qemu.git'

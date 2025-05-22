@@ -10,3 +10,8 @@ sanitizers:
 #  - memory
   - undefined
 main_repo: 'https://github.com/keystone-engine/keystone.git'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

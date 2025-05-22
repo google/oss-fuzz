@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 import atheris
 
 with atheris.instrument_imports():
@@ -25,7 +27,21 @@ def TestOneInput(input_bytes):
   try:
     context = yaml.load(input_bytes, Loader=yaml.FullLoader)
   except yaml.YAMLError:
-    pass
+    return
+  except RecursionError:
+    return
+  # Anything that is loadable should be emitable.
+  try:
+    listed_context = list(context)
+  except:
+    return
+
+  try:
+    yaml.emit(listed_context)
+  except yaml.emitter.EmitterError:
+    return
+  except RecursionError:
+    return
 
 def main():
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)

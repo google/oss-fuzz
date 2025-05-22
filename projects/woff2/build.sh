@@ -15,15 +15,26 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" == "introspector" ]; then
+  cd $SRC/
+  python3 -m pip install Brotli
+  cd $SRC/woff2
+fi
+
 # Build the library. Actually there is no 'library' target, so we use .o files.
 # '-no-canonical-prefixes' flag makes clang crazy. Need to avoid it.
 cat brotli/shared.mk | sed -e "s/-no-canonical-prefixes//" \
 > brotli/shared.mk.temp
 mv brotli/shared.mk.temp brotli/shared.mk
 
+if [ "$SANITIZER" == "introspector" ]; then
+  # Modify AR flags as "f" is not a valid option to llvm-ar.
+  sed -i 's/crf/cr/g' Makefile
+fi
+
 # woff2 uses LFLAGS instead of LDFLAGS.
 make clean
-make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" CANONICAL_PREFIXES= all \
+make CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" CANONICAL_PREFIXES= all \
   NOISY_LOGGING=
 
 # Build fuzzers

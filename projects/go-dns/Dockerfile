@@ -14,8 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get -t github.com/miekg/dns
+#FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone https://github.com/miekg/dns.git
 
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/dns

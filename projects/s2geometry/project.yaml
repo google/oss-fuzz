@@ -8,3 +8,10 @@ sanitizers:
   - undefined
   - memory
 main_repo: "https://github.com/google/s2geometry"
+file_github_issue: True
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -16,16 +16,23 @@
 
 # Base image for all other images.
 
-FROM ubuntu:20.04
+ARG parent_image=ubuntu:20.04@sha256:4a45212e9518f35983a976eead0de5eecc555a2f047134e9dd2cfc589076a00d
+
+FROM $parent_image
+
 ENV DEBIAN_FRONTEND noninteractive
+# Install tzadata to match ClusterFuzz
+# (https://github.com/google/oss-fuzz/issues/9280).
+
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-9-dev && \
+    apt-get install -y libc6-dev binutils libgcc-9-dev tzdata && \
     apt-get autoremove -y
 
 ENV OUT=/out
 ENV SRC=/src
 ENV WORK=/work
 ENV PATH="$PATH:/out"
+ENV HWASAN_OPTIONS=random_tags=0
 
 RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK

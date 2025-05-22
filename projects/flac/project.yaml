@@ -1,9 +1,10 @@
 homepage: "https://xiph.org/flac/"
 language: c++
-primary_contact: "guidovranken@gmail.com"
+primary_contact: "mvanb1@gmail.com"
 auto_ccs:
  - "erik.de.castro.lopo@gmail.com"
 vendor_ccs:
+ - "media-alerts@mozilla.com"
  - "twsmith@mozilla.com"
 sanitizers:
  - address

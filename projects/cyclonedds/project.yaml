@@ -1,0 +1,13 @@
+homepage: "https://projects.eclipse.org/projects/iot.cyclonedds"
+language: c
+auto_ccs:
+  - "federico.maggi@gmail.com"
+primary_contact: "eb@ilities.com"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+sanitizers:
+- address
+- undefined
+main_repo: 'https://github.com/eclipse-cyclonedds/cyclonedds.git'

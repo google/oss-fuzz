@@ -15,21 +15,26 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y wget autoconf automake libtool pkg-config gperf
-RUN pip3 install meson ninja
+RUN apt-get update && apt-get install -y wget autoconf automake libtool pkg-config gperf python
+RUN pip3 install meson ninja gyp-next packaging
 
 RUN git clone --depth 1 https://github.com/madler/zlib.git
-RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
+RUN git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype.git
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git
 RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
-RUN git clone --depth 1 https://github.com/glennrp/libpng.git
+# Pin libpng to avoid a build failure:
+# configure: pkgconfig directory is ${libdir}/pkgconfig
+# ./configure: line 10024: syntax error near unexpected token `)'
+# ./configure: line 10024: `            riscv*)'
+RUN git clone https://github.com/glennrp/libpng.git && cd libpng && git checkout b4800bae3379f1abf82359703c28e727b5df4135
 RUN git clone --depth 1 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
 RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/pango.git
-ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
-RUN tar xvJf $SRC/glib-2.64.2.tar.xz
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2
+ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.80/glib-2.80.0.tar.xz $SRC
+RUN tar xvJf $SRC/glib-2.80.0.tar.xz
+RUN wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2
+RUN wget https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_99_RTM/src/nss-3.99-with-nspr-4.35.tar.gz
 RUN git clone --depth 1 --single-branch https://gitlab.freedesktop.org/poppler/poppler.git
 
 RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \

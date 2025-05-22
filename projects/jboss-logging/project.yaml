@@ -1,0 +1,13 @@
+homepage: "https://github.com/jboss-logging/jboss-logging"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/jboss-logging/jboss-logging"
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

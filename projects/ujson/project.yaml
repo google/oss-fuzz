@@ -1,4 +1,5 @@
 homepage: "https://github.com/ultrajson/ultrajson"
+main_repo: "https://github.com/ultrajson/ultrajson"
 language: python
 # TODO(mbarbella): Reach out to project maintainers for a better primary contact.
 primary_contact: "mbarbella@google.com"

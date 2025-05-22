@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install python -y
+RUN apt-get update && apt-get install python3 openjdk-11-jdk -y
 RUN git clone --depth 1 https://github.com/google/cel-cpp/
 COPY build.sh $SRC/
 RUN mkdir $SRC/cel-cpp/fuzz/
@@ -26,3 +26,6 @@ RUN cat WORKSPACE >> $SRC/cel-cpp/WORKSPACE
 RUN cat .bazelrc >> $SRC/cel-cpp/.bazelrc
 RUN echo "4.1.0" > $SRC/cel-cpp/.bazelversion
 WORKDIR $SRC/cel-cpp
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

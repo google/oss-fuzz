@@ -39,9 +39,10 @@ find . -name "*.a"
 for F in $fuzzerFiles; do
   fuzzerName=$(basename $F .cc)
   echo "Building fuzzer $fuzzerName"
-  $CXX $CXXFLAGS -std=c++11 \
+  $CXX $CXXFLAGS \
+      -D_BORINGSSL_LIBPKI_ -std=c++1z \
       -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
-      -I $SRC/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
+      -I $SRC/boringssl/include ./libpki.a ./libssl.a  ./libcrypto.a
 
   if [ -d "$SRC/boringssl/fuzz/${fuzzerName}_corpus" ]; then
     zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/boringssl/fuzz/${fuzzerName}_corpus/*
@@ -61,12 +62,13 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
     fuzzerName=$(basename $fuzzerName .cc)
     echo "Building fuzzer $fuzzerName"
     $CXX $CXXFLAGS -I genfiles -I . -I $SRC/libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include -I include $LIB_FUZZING_ENGINE \
+        -DNDEBUG \
         -I $SRC/boringssl/include \
         $F genfiles/asn1_pdu.pb.cc $SRC/asn1_pdu_to_der.cc $SRC/common.cc \
-        ./ssl/libssl.a ./crypto/libcrypto.a \
+        ./libssl.a ./libcrypto.a \
         $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
         $SRC/LPM/src/libprotobuf-mutator.a \
-        $SRC/LPM/external.protobuf/lib/libprotobuf.a \
+        -Wl,--start-group $SRC/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
         -o $OUT/"${fuzzerName}_lpm"
   done
 fi

@@ -3,14 +3,26 @@ language: c++
 primary_contact: "ddkilzer@apple.com"
 auto_ccs:
   - "mark.lam@apple.com"
-  - "akilsrin@apple.com"
   - "ddkilzer@apple.com"
   - "jfb@chromium.org"
+  - "product-security@apple.com"
   - "sbarati@apple.com"
+  - "simon.lewis@apple.com"
   - "ysuzuki@apple.com"
+  - "dkishore@apple.com"
+  - "phan@apple.com"
+  - "ebanniettis@apple.com"
+  - "jm.park@apple.com"
+  - "james_e_kim@apple.com"
+  - "rding23@apple.com"
+  - "albassam@apple.com"
+  - "zakr@apple.com"
+  - "roberto_rodriguez2@apple.com"
+  - "k_monsen@apple.com"
+  - "nnothstine@apple.com"
 fuzzing_engines:
   - none
 sanitizers:
   - address
 blackbox: true
-main_repo: 'git://git.webkit.org/WebKit.git'
+main_repo: 'https://github.com/WebKit/WebKit.git'

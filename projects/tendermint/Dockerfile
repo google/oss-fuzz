@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/tendermint/tendermint
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone https://github.com/cometbft/cometbft
 
 COPY build.sh $SRC
-WORKDIR $SRC/tendermint
+WORKDIR $SRC/cometbft

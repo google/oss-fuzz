@@ -1,0 +1,12 @@
+homepage: "https://github.com/bytecodealliance/wasm-micro-runtime"
+language: c
+primary_contact: "liang.he@intel.com"
+auto_ccs:
+  - "tianlong.liang@intel.com"
+main_repo: "https://github.com/bytecodealliance/wasm-micro-runtime.git"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+file_github_issue: false

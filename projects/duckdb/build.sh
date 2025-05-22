@@ -15,9 +15,10 @@
 #
 ################################################################################
 
-make
-THIRD_PARTY_LIBS=$(find ./build/release/third_party/ -name "*.a")
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./parse_fuzz_test.cpp \
+make relassert CRASH_ON_ASSERT=1 DISABLE_SANITIZER=1
+EXTENSION_LIBS=$(find ./build/relassert/extension/ -name "*.a")
+THIRD_PARTY_LIBS=$(find ./build/relassert/third_party/ -name "*.a")
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./test/ossfuzz/parse_fuzz_test.cpp \
     -o $OUT/parse_fuzz_test -I./ -I./src/include \
-    ./build/release/src/libduckdb_static.a \
-    ${THIRD_PARTY_LIBS}
+    ./build/relassert/src/libduckdb_static.a \
+    ${EXTENSION_LIBS} ${THIRD_PARTY_LIBS}

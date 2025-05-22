@@ -15,7 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake pkg-config
+RUN apt-get update && apt-get install -y cmake make
 RUN git clone --depth 1 https://github.com/libevent/libevent.git libevent
+RUN git clone --depth 1 https://github.com/google/fuzzing fuzzing
 WORKDIR libevent
-COPY build.sh *.cc $SRC/
+COPY build.sh *.cc *.c $SRC/

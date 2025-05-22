@@ -1,0 +1,179 @@
+diff --git a/Makefile b/Makefile
+index e298c8b55e..d813aac130 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1075,6 +1075,7 @@ LIB_OBJS += oid-array.o
+ LIB_OBJS += oidmap.o
+ LIB_OBJS += oidset.o
+ LIB_OBJS += oidtree.o
++LIB_OBJS += oss-fuzz/fuzz-cmd-base.o
+ LIB_OBJS += pack-bitmap-write.o
+ LIB_OBJS += pack-bitmap.o
+ LIB_OBJS += pack-check.o
+@@ -2381,6 +2382,19 @@ FUZZ_OBJS += oss-fuzz/fuzz-config.o
+ FUZZ_OBJS += oss-fuzz/fuzz-date.o
+ FUZZ_OBJS += oss-fuzz/fuzz-pack-headers.o
+ FUZZ_OBJS += oss-fuzz/fuzz-pack-idx.o
++FUZZ_OBJS += oss-fuzz/fuzz-command.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-status.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-version.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-diff.o
++FUZZ_OBJS += oss-fuzz/fuzz-credential-from-url-gently.o
++FUZZ_OBJS += oss-fuzz/fuzz-url-decode-mem.o
++FUZZ_OBJS += oss-fuzz/fuzz-url-end-with-slash.o
++FUZZ_OBJS += oss-fuzz/fuzz-parse-attr-line.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-bundle-verify.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-unpack-objects.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-apply-check.o
++FUZZ_OBJS += oss-fuzz/fuzz-cmd-tag-create.o
++
+ .PHONY: fuzz-objs
+ fuzz-objs: $(FUZZ_OBJS)
+ 
+@@ -3847,10 +3861,10 @@ FUZZ_CXXFLAGS ?= $(ALL_CFLAGS)
+ .PHONY: fuzz-all
+ fuzz-all: $(FUZZ_PROGRAMS)
+ 
+-$(FUZZ_PROGRAMS): %: %.o oss-fuzz/dummy-cmd-main.o $(GITLIBS) GIT-LDFLAGS
+-	$(QUIET_LINK)$(FUZZ_CXX) $(FUZZ_CXXFLAGS) -o $@ $(ALL_LDFLAGS) \
++$(FUZZ_PROGRAMS): all
++	$(QUIET_LINK)$(FUZZ_CXX) $(FUZZ_CXXFLAGS) -o $@ $(ALL_LDFLAGS) $(BUILTIN_OBJS) \
+ 		-Wl,--allow-multiple-definition \
+-		$(filter %.o,$^) $(filter %.a,$^) $(LIBS) $(LIB_FUZZING_ENGINE)
++		$(filter %.o,$^) $(filter %.a,$^) git.o $@.o $(LIBS) $(LIB_FUZZING_ENGINE)
+ 
+ $(UNIT_TEST_PROGS): $(UNIT_TEST_BIN)/%$X: $(UNIT_TEST_DIR)/%.o \
+ 	$(UNIT_TEST_DIR)/test-lib.o \
+diff --git a/attr.c b/attr.c
+index 679e42258c..20e426726a 100644
+--- a/attr.c
++++ b/attr.c
+@@ -351,7 +351,7 @@ static const char *parse_attr(const char *src, int lineno, const char *cp,
+ 	return ep + strspn(ep, blank);
+ }
+ 
+-static struct match_attr *parse_attr_line(const char *line, const char *src,
++struct match_attr *parse_attr_line(const char *line, const char *src,
+ 					  int lineno, unsigned flags)
+ {
+ 	size_t namelen, num_attr, i;
+diff --git a/builtin/bundle.c b/builtin/bundle.c
+index 3ad11dc5d0..2443906572 100644
+--- a/builtin/bundle.c
++++ b/builtin/bundle.c
+@@ -123,7 +123,7 @@ static int open_bundle(const char *path, struct bundle_header *header,
+ 	return read_bundle_header(path, header);
+ }
+ 
+-static int cmd_bundle_verify(int argc, const char **argv, const char *prefix) {
++int cmd_bundle_verify(int argc, const char **argv, const char *prefix) {
+ 	struct bundle_header header = BUNDLE_HEADER_INIT;
+ 	int bundle_fd = -1;
+ 	int quiet = 0;
+diff --git a/builtin/tag.c b/builtin/tag.c
+index a1fb218512..2b90e31ced 100644
+--- a/builtin/tag.c
++++ b/builtin/tag.c
+@@ -646,8 +646,11 @@ int cmd_tag(int argc, const char **argv, const char *prefix)
+ 	if (repo_get_oid(the_repository, object_ref, &object))
+ 		die(_("Failed to resolve '%s' as a valid ref."), object_ref);
+ 
+-	if (strbuf_check_tag_ref(&ref, tag))
+-		die(_("'%s' is not a valid tag name."), tag);
++	if (strbuf_check_tag_ref(&ref, tag)) {
++		//die(_("'%s' is not a valid tag name."), tag);
++		ret = 1;
++		goto cleanup;
++	}
+ 
+ 	if (refs_read_ref(get_main_ref_store(the_repository), ref.buf, &prev))
+ 		oidclr(&prev, the_repository->hash_algo);
+diff --git a/diff.c b/diff.c
+index ccfa1fca0d..97f895a122 100644
+--- a/diff.c
++++ b/diff.c
+@@ -3654,7 +3654,7 @@ static void builtin_diff(const char *name_a,
+ 		}
+ 		if (fill_mmfile(o->repo, &mf1, one) < 0 ||
+ 		    fill_mmfile(o->repo, &mf2, two) < 0)
+-			die("unable to read files to diff");
++			return; //die("unable to read files to diff");
+ 		/* Quite common confusing case */
+ 		if (mf1.size == mf2.size &&
+ 		    !memcmp(mf1.ptr, mf2.ptr, mf1.size)) {
+@@ -3837,7 +3837,7 @@ static void builtin_diffstat(const char *name_a, const char *name_b,
+ 
+ 		if (fill_mmfile(o->repo, &mf1, one) < 0 ||
+ 		    fill_mmfile(o->repo, &mf2, two) < 0)
+-			die("unable to read files to diff");
++			return;//die("unable to read files to diff");
+ 
+ 		memset(&xpp, 0, sizeof(xpp));
+ 		memset(&xecfg, 0, sizeof(xecfg));
+@@ -3900,7 +3900,7 @@ static void builtin_checkdiff(const char *name_a, const char *name_b,
+ 
+ 	if (fill_mmfile(o->repo, &mf1, one) < 0 ||
+ 	    fill_mmfile(o->repo, &mf2, two) < 0)
+-		die("unable to read files to diff");
++		return;//die("unable to read files to diff");
+ 
+ 	/*
+ 	 * All the other codepaths check both sides, but not checking
+@@ -4106,7 +4106,7 @@ int diff_populate_filespec(struct repository *r,
+ 		conv_flags = CONV_EOL_RNDTRP_WARN;
+ 
+ 	if (!DIFF_FILE_VALID(s))
+-		die("internal error: asking to populate invalid file.");
++		return -1;//die("internal error: asking to populate invalid file.");
+ 	if (S_ISDIR(s->mode))
+ 		return -1;
+ 
+@@ -4210,7 +4210,7 @@ int diff_populate_filespec(struct repository *r,
+ 		}
+ 		if (oid_object_info_extended(r, &s->oid, &info,
+ 					     OBJECT_INFO_LOOKUP_REPLACE))
+-			die("unable to read %s", oid_to_hex(&s->oid));
++			return -1;//die("unable to read %s", oid_to_hex(&s->oid));
+ 
+ object_read:
+ 		if (size_only || check_binary) {
+@@ -4225,7 +4225,7 @@ int diff_populate_filespec(struct repository *r,
+ 			info.contentp = &s->data;
+ 			if (oid_object_info_extended(r, &s->oid, &info,
+ 						     OBJECT_INFO_LOOKUP_REPLACE))
+-				die("unable to read %s", oid_to_hex(&s->oid));
++				return -1;//die("unable to read %s", oid_to_hex(&s->oid));
+ 		}
+ 		s->should_free = 1;
+ 	}
+@@ -7226,7 +7226,7 @@ size_t fill_textconv(struct repository *r,
+ 			return 0;
+ 		}
+ 		if (diff_populate_filespec(r, df, NULL))
+-			die("unable to read files to diff");
++			return 0;//die("unable to read files to diff");
+ 		*outbuf = df->data;
+ 		return df->size;
+ 	}
+@@ -7244,7 +7244,7 @@ size_t fill_textconv(struct repository *r,
+ 
+ 	*outbuf = run_textconv(r, driver->textconv, df, &size);
+ 	if (!*outbuf)
+-		die("unable to read files to diff");
++		return 0;//die("unable to read files to diff");
+ 
+ 	if (driver->textconv_cache && df->oid_valid) {
+ 		/* ignore errors, as we might be in a readonly repository */
+diff --git a/environment.c b/environment.c
+index 90632a39bc..29e7c0479f 100644
+--- a/environment.c
++++ b/environment.c
+@@ -271,7 +271,7 @@ void set_git_work_tree(const char *new_work_tree)
+ 		strbuf_release(&realpath);
+ 		return;
+ 	}
+-	git_work_tree_initialized = 1;
++	git_work_tree_initialized = 0;
+ 	repo_set_worktree(the_repository, new_work_tree);
+ }
+ 

@@ -19,12 +19,23 @@
 #
 ################################################################################
 
-cd $SRC/sof/tools/oss-fuzz
-cp corpus/* $OUT/
-rm -rf build_oss_fuzz
-mkdir -p build_oss_fuzz
-cd build_oss_fuzz
+# Environment: Zephyr has its own toolchain selection mechanism, and
+# the oss-fuzz environment generates warnings and confuses things when
+# building some of the (un-fuzzed) build-time tools that aren't quite
+# clang-compatible.
+export ZEPHYR_TOOLCHAIN_VARIANT=llvm
+unset CC
+unset CCC
+unset CXX
+unset CFLAGS
+unset CXXFLAGS
 
-export VERBOSE=1
-cmake -DCMAKE_INSTALL_PREFIX=install -DCMAKE_LINKER=$CXX -DCMAKE_C_LINK_EXECUTABLE="<CMAKE_LINKER> <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" ..
-make install -j $(nproc)
+cd $SRC/sof_workspace
+
+sof/scripts/fuzz.sh -b -s $SANITIZER -a $ARCHITECTURE -- -DEXTRA_CONF_FILE=stub_build_all_ipc3.conf -DEXTRA_CFLAGS="-fno-sanitize-recover=all"
+cp build-fuzz/zephyr/zephyr.exe $OUT/sof-ipc3
+zip $OUT/sof-ipc3.zip sof/tools/corpus/sof-ipc3/*
+
+sof/scripts/fuzz.sh -b -s $SANITIZER -a $ARCHITECTURE -- -DEXTRA_CONF_FILE=stub_build_all_ipc4.conf -DEXTRA_CFLAGS="-fno-sanitize-recover=all"
+cp build-fuzz/zephyr/zephyr.exe $OUT/sof-ipc4
+zip $OUT/sof-ipc4.zip sof/tools/corpus/sof-ipc4/*

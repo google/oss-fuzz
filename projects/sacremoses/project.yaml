@@ -1,0 +1,9 @@
+homepage: https://github.com/alvations/sacremoses
+main_repo: https://github.com/alvations/sacremoses
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

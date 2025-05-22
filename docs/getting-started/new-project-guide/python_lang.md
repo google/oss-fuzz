@@ -57,6 +57,8 @@ sanitizers:
 
 ### Dockerfile
 
+The Dockerfile should start by `FROM gcr.io/oss-fuzz-base/base-builder-python`
+
 Because most dependencies are already pre-installed on the images, no
 significant changes are needed in the Dockerfile for Python fuzzing projects.
 You should simply clone the project, set a `WORKDIR`, and copy any necessary

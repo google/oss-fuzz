@@ -14,6 +14,7 @@
 """Module for representing the workspace directory which CIFuzz uses."""
 
 import os
+import shutil
 
 
 class Workspace:
@@ -73,3 +74,12 @@ class Workspace:
   def pruned_corpora(self):
     """The directory where pruned corpora are stored."""
     return os.path.join(self.workspace, 'cifuzz-pruned-corpus')
+
+  @property
+  def sarif(self):
+    """The directory where sarif files are stored."""
+    return os.path.join(self.workspace, 'cifuzz-sarif')
+
+  def make_repo_for_sarif(self, repo_manager):
+    """Copies the repo over for the sarif upload GitHub action."""
+    return shutil.copytree(repo_manager.repo_dir, self.sarif, symlinks=True)

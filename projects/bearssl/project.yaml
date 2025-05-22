@@ -1,13 +1,13 @@
 homepage: "https://bearssl.org/"
 language: c++
 primary_contact: "guidovranken@gmail.com"
+main_repo: "https://www.bearssl.org/git/BearSSL"
 auto_ccs:
     - "pornin@gmail.com"
 sanitizers:
  - address
  - undefined
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
+ - memory
 architectures:
  - x86_64
  - i386

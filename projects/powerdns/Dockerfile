@@ -17,10 +17,9 @@
 # base image with clang toolchain
 FROM gcr.io/oss-fuzz-base/base-builder
 
-# maintainer for this file
-
 # install required packages to build your project
-RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex boost1.71-all-dev libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel
+RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel
+RUN wget https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2  # Temporarily use manual installation over the outdated libboost-dev package
 
 # checkout all sources needed to build your project
 RUN git clone https://github.com/PowerDNS/pdns.git pdns

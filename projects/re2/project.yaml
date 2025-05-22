@@ -1,12 +1,15 @@
-homepage: "https://code.googlesource.com/re2"
-language: c++
+homepage: "https://github.com/google/re2"
+main_repo: "https://github.com/google/re2"
 primary_contact: "junyer@google.com"
+language: c++
 sanitizers:
   - address
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
+  - memory
   - undefined
 architectures:
   - x86_64
   - i386
-main_repo: 'https://code.googlesource.com/re2'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

@@ -85,6 +85,7 @@ This configuration file stores project metadata. The following attributes are su
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
 - [builds_per_day](#build_frequency) (optional)
+- [file_github_issue](#file_github_issue) (optional)
 
 ### homepage
 You project's homepage.
@@ -99,6 +100,8 @@ Programming language the project is written in. Values you can specify include:
 * [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
 * [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
+* [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift-lang/)
+* [`javascript`]({{ site.baseurl }}//getting-started/new-project-guide/javascript-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -116,7 +119,8 @@ Any changes to this list must follow these rules:
 - An organization email address is used.
 
 ### sanitizers (optional) {#sanitizers}
-The list of sanitizers to use. If you don't specify a list, `sanitizers` uses a default list of supported
+The list of sanitizers to use. Possible values are: `address`, `memory` and `undefined`.
+If you don't specify a list, `sanitizers` uses a default list of supported
 sanitizers (currently ["address"](https://clang.llvm.org/docs/AddressSanitizer.html) and
 ["undefined"](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)).
 
@@ -172,9 +176,15 @@ On the testcase page of each oss-fuzz issue is a list of other jobs where the cr
 Fuzzing on i386 is not enabled by default because many projects won't build for i386 without some modification to their OSS-Fuzz build process.
 For example, you will need to link against `$LIB_FUZZING_ENGINE` and possibly install i386 dependencies within the x86_64 docker image ([for example](https://github.com/google/oss-fuzz/blob/5b8dcb5d942b3b8bc173b823fb9ddbdca7ec6c99/projects/gdal/build.sh#L18)) to get things working.
 
+There are [known bugs](https://github.com/google/oss-fuzz/issues/2746) in ASAN
+on i386 that cause ClusterFuzz to report unreproducible crashes for 0 length
+testcases. There are no plans to fix these bugs so be ready for slightly more
+false positives if you use i386. These false positives should be somewhat easy
+to identify since they will manifest as crashes in ASAN rather than your code.
+
 ### fuzzing_engines (optional) {#fuzzing_engines}
 The list of fuzzing engines to use.
-By default, `libfuzzer`, `afl`, and `honggfuzz` are used. It is recommended to
+By default, `libfuzzer`, `afl`, `honggfuzz`, and `centipede` are used. It is recommended to
 use all of them if possible. `libfuzzer` is required by OSS-Fuzz.
 
 ### help_url (optional) {#help_url}
@@ -195,6 +205,10 @@ builds_per_day: 2
 
 Will build the project twice per day.
 
+### file_github_issue (optional) {#file_github_issue}
+Whether to mirror issues on github instead of having them only in the OSS-Fuzz
+tracker.
+
 ## Dockerfile {#dockerfile}
 
 This configuration file defines the Docker image for your project. Your [build.sh](#buildsh) script will be executed in inside the container you define.
@@ -208,10 +222,20 @@ COPY build.sh fuzzer.cc $SRC/                # copy build script and other fuzze
 ```
 In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`.
 
+Depending on your project's language, you will use a different base image,
+for instance `FROM gcr.io/oss-fuzz-base/base-builder-go` for golang.
+
 For an example, see
 [expat/Dockerfile](https://github.com/google/oss-fuzz/tree/master/projects/expat/Dockerfile)
 or
 [syzkaller/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/syzkaller/Dockerfile).
+
+In the case of a project with multiple languages/toolchains needed,
+you can run installation scripts `install_lang.sh` where lang is the language needed.
+You also need to setup environment variables needed by this toolchain, for example `GOPATH` is needed by golang.
+For an example, see
+[ecc-diff-fuzzer/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/ecc-diff-fuzzer/Dockerfile).
+where we use `base-builder-rust`and install golang
 
 ## build.sh {#buildsh}
 
@@ -249,7 +273,7 @@ If your project is written in Go, check out the [Integrating a Go project]({{ si
 
 **Note:**
 
-1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for libFuzzer, AFL++ and Honggfuzz fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
+1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for libFuzzer, AFL++, Honggfuzz, and Centipede fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
 2. Make sure that the binary names for your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 3. Don't remove source code files. They are needed for code coverage.
@@ -313,6 +337,14 @@ pass them manually to the build tool.
 
 See the [Provided Environment Variables](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/README.md#provided-environment-variables) section in
 `base-builder` image documentation for more details.
+
+### Static and dynamic linking of libraries
+The `build.sh` should produce fuzzers that are statically linked. This is because the
+fuzzer build environment is different to the fuzzer runtime environment and if your
+project depends on third party libraries then it is likely they will not be present
+in the execution environment. Thus, any shared libraries you may install or compile in
+`build.sh` or `Dockerfile` will not be present in the fuzzer runtime environment. There
+are exceptions to this rule, and for further information on this please see the [fuzzer environment]({{ site.baseurl }}/further-reading/fuzzer-environment/) page.
 
 ## Disk space restrictions
 
@@ -397,7 +429,7 @@ target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s coverage.
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
 to the [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s binary in `$OUT` during the build. Individual files in this
-archive will be used as starting inputs for mutations. The name of each file in the corpus is the sha1 checksum (which you can get using the `sha1sum` or `shasum` command) of its contents. You can store the corpus
+archive will be used as starting inputs for mutations. You can store the corpus
 next to source files, generate during build or fetch it using curl or any other
 tool of your choice.
 (example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L41)).
@@ -411,7 +443,7 @@ OSS-Fuzz only: See also [Accessing Corpora]({{ site.baseurl }}/advanced-topics/c
 ### Dictionaries
 
 Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
-sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
+sequences of bytes. [libFuzzer documentation](https://llvm.org/docs/LibFuzzer.html#dictionaries)
 
 Put your dict file in `$OUT`. If the dict filename is the same as your target
 binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the
@@ -425,7 +457,7 @@ dict = dictionary_name.dict
 
 It is common for several [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
 to reuse the same dictionary if they are fuzzing very similar inputs.
-(example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
+(example: [expat](https://github.com/google/oss-fuzz/blob/ad88a2e5295d91251d15f8a612758cd9e5ad92db/projects/expat/parse_fuzzer.options)).
 
 ### Input Size
 
@@ -499,3 +531,23 @@ Adding it is super easy, just follow this template:
 ```markdown
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/<project>.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:<project>)
 ```
+
+## Monitoring performance via Fuzz Introspector
+
+As soon as your project is run with ClusterFuzz (< 1 day), you can view the Fuzz
+Introspector report for your project.
+[Fuzz Introspector](https://github.com/ossf/fuzz-introspector) helps you
+understand your fuzzers' performance and identify any potential blockers.
+It provides individual and aggregated fuzzer reachability and coverage reports.
+You can monitor each fuzzer's static reachability potential and compare it
+against dynamic coverage and identify any potential bottlenecks.
+Fuzz Introspector can offer suggestions on increasing coverage by adding new
+fuzz targets or modify existing ones.
+Fuzz Introspector reports can be viewed from the [OSS-Fuzz
+homepage](https://oss-fuzz.com/) or through this
+[index](http://oss-fuzz-introspector.storage.googleapis.com/index.html).
+Fuzz Introspector support C and C++ projects.
+Support for Java and Python projects is in the progress.
+
+You can view the [Fuzz Introspector report for bzip2](https://storage.googleapis.com/oss-fuzz-introspector/bzip2/inspector-report/20221017/fuzz_report.html)
+as an example.

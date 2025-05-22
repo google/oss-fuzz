@@ -1,0 +1,17 @@
+homepage: "https://gcc.gnu.org/"
+language: c++
+primary_contact: "pauldreikossfuzz@gmail.com"
+auto_ccs:
+ - "jwakely.gcc@gmail.com"
+main_repo: "git://gcc.gnu.org/git/gcc.git"
+file_github_issue: false
+architectures:
+ - x86_64
+sanitizers:
+ - address
+ - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+# - centipede

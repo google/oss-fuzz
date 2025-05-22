@@ -23,6 +23,7 @@ import base_runner_utils
 import clusterfuzz_deployment
 import continuous_integration
 import docker
+import logs
 import workspace_utils
 
 # pylint: disable=wrong-import-position,import-error
@@ -30,9 +31,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
 import utils
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
+logs.init()
 
 
 def check_project_src_path(project_src_path):
@@ -72,6 +71,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       return False
     self.image_repo_path = result.image_repo_path
     self.repo_manager = result.repo_manager
+    if self.config.output_sarif:
+      self.workspace.make_repo_for_sarif(self.repo_manager)
     logging.info('repo_dir: %s.', self.repo_manager.repo_dir)
     self.host_repo_path = self.repo_manager.repo_dir
     return True
@@ -80,19 +81,26 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
     docker_args, docker_container = docker.get_base_docker_run_args(
-        self.workspace, self.config.sanitizer, self.config.language)
+        self.workspace, self.config.sanitizer, self.config.language,
+        self.config.architecture, self.config.docker_in_docker)
     if not docker_container:
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
+
+    build_command = self.ci_system.get_build_command(self.host_repo_path,
+                                                     self.image_repo_path)
+
+    # Set extra environment variables so that they are visible to the build.
+    for key in self.config.extra_environment_variables:
+      # Don't specify their value in case they get echoed.
+      docker_args.extend(['-e', key])
 
     docker_args.extend([
         docker.get_project_image_name(self.config.oss_fuzz_project_name),
         '/bin/bash',
         '-c',
+        build_command,
     ])
-    build_command = self.ci_system.get_build_command(self.host_repo_path,
-                                                     self.image_repo_path)
-    docker_args.append(build_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
 
     # TODO(metzman): Stop using helper.docker_run so we can get rid of
@@ -112,12 +120,23 @@ class Builder:  # pylint: disable=too-many-instance-attributes
 
     return True
 
+  def check_fuzzer_build(self):
+    """Checks the fuzzer build. Returns True on success or if config specifies
+    to skip check."""
+    if not self.config.bad_build_check:
+      return True
+
+    return check_fuzzer_build(self.config)
+
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
     and then removes the unaffectted fuzzers. Returns True on success."""
     methods = [
-        self.build_image_and_checkout_src, self.build_fuzzers,
-        self.upload_build, self.remove_unaffected_fuzz_targets
+        self.build_image_and_checkout_src,
+        self.build_fuzzers,
+        self.remove_unaffected_fuzz_targets,
+        self.upload_build,
+        self.check_fuzzer_build,
     ]
     for method in methods:
       if not method():
@@ -143,16 +162,10 @@ def build_fuzzers(config):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
-    project_name: The name of the OSS-Fuzz project being built.
-    project_repo_name: The name of the project's repo.
-    workspace: The location in a shared volume to store a git repo and build
-      artifacts.
-    pr_ref: The pull request reference to be built.
-    commit_sha: The commit sha for the project to be built at.
-    sanitizer: The sanitizer the fuzzers should be built with.
+    config: The configuration object for building fuzzers.
 
   Returns:
-    True if build succeeded or False on failure.
+    True if build succeeded.
   """
   # Do some quick validation.
   if config.project_src_path and not check_project_src_path(

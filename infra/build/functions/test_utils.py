@@ -30,8 +30,6 @@ OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.dirname(FUNCTIONS_DIR)))
 PROJECTS_DIR = os.path.join(OSS_FUZZ_DIR, 'projects')
 
 FAKE_DATETIME = datetime.datetime(2020, 1, 1, 0, 0, 0)
-IMAGE_PROJECT = 'oss-fuzz'
-BASE_IMAGES_PROJECT = 'oss-fuzz-base'
 PROJECT = 'test-project'
 PROJECT_DIR = os.path.join(PROJECTS_DIR, PROJECT)
 

@@ -23,6 +23,15 @@ RUN apt-get update && \
         perl-modules libyaml-perl libz-dev python subversion tcl unzip \
         asciidoc docbook-xsl xmlto libssl-dev zip
 RUN git clone https://github.com/git/git git
+RUN git clone --depth 1 https://github.com/madler/zlib
 WORKDIR git
 RUN git checkout origin/next
+RUN git pull origin next
+RUN mkdir -p oss-fuzz
+COPY fuzz-* ./oss-fuzz/
+COPY Makefile.diff ./
+RUN git apply Makefile.diff
 COPY build.sh $SRC/
+# This is to fix Fuzz Introspector build by using LLVM old pass manager
+# re https://github.com/ossf/fuzz-introspector/issues/305
+ENV OLD_LLVMPASS 1

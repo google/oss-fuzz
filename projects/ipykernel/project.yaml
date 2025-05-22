@@ -1,0 +1,10 @@
+homepage: https://github.com/ipython/ipykernel
+main_repo: https://github.com/ipython/ipykernel
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

@@ -14,13 +14,29 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y software-properties-common curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake wget
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
+# ! Project pinned after a clang update and an afl link error. Log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-6083635a-3f72-444d-80ef-3a0a26670cf7.txt
+RUN apt-get update && apt-get install -y software-properties-common curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake wget lzip
+RUN wget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz && rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.5.linux-amd64.tar.gz && ldconfig
+ENV PATH=$PATH:/usr/local/go/bin
 
-RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
+RUN apt-get update && apt-get install -y \
+    python-all-dev \
+    python3-all-dev \
+    python3-pip
+# mbedtls needs jsonschema which needs rpds-py which needs pip>=20
+# or a Rust toolchain.
+RUN pip3 install 'pip>=20'
+
+RUN git clone --depth 1 --recurse-submodules -b mbedtls-3.6 https://github.com/Mbed-TLS/mbedtls
+# Install Python packages from PyPI
+RUN pip3 install -r $SRC/mbedtls/scripts/basic.requirements.txt
+
+RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-4.0.0.tar.gz
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
-RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
 RUN git clone https://boringssl.googlesource.com/boringssl
-RUN git clone --depth 1 -b development_2.x https://github.com/ARMmbed/mbedtls
+RUN hg clone https://gmplib.org/repo/gmp/ libgmp/ || \
+    (wget 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1/ $SRC/libgmp/)
+
 COPY build.sh $SRC/

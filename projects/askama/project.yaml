@@ -1,0 +1,13 @@
+homepage: "https://askama.readthedocs.io/"
+main_repo: "https://github.com/askama-rs/askama"
+language: rust
+primary_contact: "rene.kijewski@fu-berlin.de"
+auto_ccs:
+  - "guillaume1.gomez@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+coverage_extra_args: >
+  -ignore-filename-regex=.*/rustc/.*
+  -ignore-filename-regex=.*/rust/.*

@@ -1,0 +1,14 @@
+homepage: "https://bitbucket.org/b_c/jose4j/wiki/Home"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://bitbucket.org/b_c/jose4j/src/master/"
+sanitizers:
+  - address
+primary_contact: "brian.d.campbell@gmail.com"
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

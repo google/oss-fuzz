@@ -29,8 +29,6 @@ make -j$(nproc)
 make install
 
 cd lib/go/test/fuzz
-thrift -r --gen go ../../../../tutorial/tutorial.thrift
-(cd ./gen-go/shared && go mod init shared)
-(cd ./gen-go/tutorial && go mod init tutorial)
+thrift -r --gen go:package_prefix=github.com/apache/thrift/lib/go/test/fuzz/gen-go/ ../../../../tutorial/tutorial.thrift
 go mod tidy || true
 compile_go_fuzzer . Fuzz fuzz_go_tutorial

@@ -17,5 +17,12 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/openssl/openssl.git
+RUN cd $SRC/openssl/ && git submodule update --init fuzz/corpora
+RUN git clone --depth 1 --branch openssl-3.0 https://github.com/openssl/openssl.git openssl30
+RUN git clone --depth 1 --branch openssl-3.1 https://github.com/openssl/openssl.git openssl31
+RUN git clone --depth 1 --branch openssl-3.2 https://github.com/openssl/openssl.git openssl32
+RUN cd $SRC/openssl32/ && git submodule update --init fuzz/corpora
 WORKDIR openssl
 COPY build.sh *.options $SRC/
+ENV AFL_SKIP_OSSFUZZ=1
+ENV AFL_LLVM_MODE_WORKAROUND=0

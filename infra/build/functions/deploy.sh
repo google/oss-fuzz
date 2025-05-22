@@ -23,16 +23,12 @@ BASE_IMAGE_MESSAGE="Start base image build"
 BUILD_JOB_TOPIC=request-build
 
 COVERAGE_BUILD_JOB_TOPIC=request-coverage-build
+INTROSPECTOR_BUILD_JOB_TOPIC=request-introspector-build
 
 SYNC_JOB_TOPIC=schedule-project-sync
 SYNC_SCHEDULER_JOB=sync-scheduler
 SYNC_JOB_SCHEDULE="*/30 * * * *"
 SYNC_MESSAGE="Start Sync"
-
-UPDATE_BUILD_JOB_TOPIC=builds-status
-UPDATE_BUILD_SCHEDULER_JOB=builds-status-scheduler
-UPDATE_BUILD_JOB_SCHEDULE="*/30 * * * *"
-
 
 function deploy_pubsub_topic {
 	topic=$1
@@ -83,7 +79,7 @@ function deploy_cloud_function {
 	--region us-central1 \
 	--set-env-vars GCP_PROJECT=$project,FUNCTION_REGION=us-central1 \
 	--max-instances 1 \
-	--memory 2048MB
+	--memory 4096MB
 }
 
 if [ $# == 1 ]; then
@@ -96,7 +92,7 @@ deploy_pubsub_topic $BUILD_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $SYNC_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $COVERAGE_BUILD_JOB_TOPIC $PROJECT_ID
-deploy_pubsub_topic $UPDATE_BUILD_JOB_TOPIC $PROJECT_ID
+deploy_pubsub_topic $INTROSPECTOR_BUILD_JOB_TOPIC $PROJECT_ID
 
 deploy_scheduler $SYNC_SCHEDULER_JOB \
 				 "$SYNC_JOB_SCHEDULE" \
@@ -109,22 +105,6 @@ deploy_scheduler $BASE_IMAGE_SCHEDULER_JOB \
 				  $BASE_IMAGE_JOB_TOPIC \
 				  "$BASE_IMAGE_MESSAGE" \
 				  $PROJECT_ID
-
-deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-fuzzing \
-				 "$UPDATE_BUILD_JOB_SCHEDULE" \
-				 $UPDATE_BUILD_JOB_TOPIC \
-				 "fuzzing" \
-				 $PROJECT_ID
-deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-coverage \
-				 "$UPDATE_BUILD_JOB_SCHEDULE" \
-				 $UPDATE_BUILD_JOB_TOPIC \
-				 "coverage" \
-				 $PROJECT_ID
-deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-badges \
-				 "$UPDATE_BUILD_JOB_SCHEDULE" \
-				 $UPDATE_BUILD_JOB_TOPIC \
-				 "badges" \
-				 $PROJECT_ID
 
 deploy_cloud_function sync \
 					  sync \
@@ -146,9 +126,9 @@ deploy_cloud_function request-coverage-build \
 					  $COVERAGE_BUILD_JOB_TOPIC \
 					  $PROJECT_ID
 
-deploy_cloud_function update-builds \
-					  builds_status \
-					  $UPDATE_BUILD_JOB_TOPIC \
+deploy_cloud_function request-introspector-build \
+					  introspector_build \
+					  $INTROSPECTOR_BUILD_JOB_TOPIC \
 					  $PROJECT_ID
 
 gcloud datastore indexes create index.yaml --project $PROJECT_ID

@@ -1,0 +1,12 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/checkstyle/checkstyle
+language: jvm
+main_repo: https://github.com/checkstyle/checkstyle
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- arthur.chan@adalogics.com
+- david@adalogics.com
+- adam@adalogics.com

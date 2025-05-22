@@ -10,3 +10,9 @@ auto_ccs:
  - "ystreet00@gmail.com"
  - "thaytan@noraisin.net"
 main_repo: 'https://gitlab.freedesktop.org/gstreamer/gstreamer.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

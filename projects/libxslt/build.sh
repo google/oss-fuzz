@@ -17,8 +17,8 @@
 ################################################################################
 
 if [ "$SANITIZER" = undefined ]; then
-    export CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
-    export CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+    export CFLAGS="$CFLAGS -fsanitize=integer -fno-sanitize-recover=integer"
+    export CXXFLAGS="$CXXFLAGS -fsanitize=integer -fno-sanitize-recover=integer"
 fi
 
 if [ "$SANITIZER" = memory ]; then
@@ -34,7 +34,6 @@ cd ../libxml2
 ./autogen.sh \
     --disable-shared \
     --without-c14n \
-    --without-legacy \
     --without-push \
     --without-python \
     --without-reader \
@@ -59,25 +58,23 @@ cd ../libxslt
     --without-profiler
 make -j$(nproc) V=1
 
-for file in xpath xslt fuzz; do
-    # Compile as C
-    $CC $CFLAGS \
-        -I. -I../libxml2/include \
-        -c tests/fuzz/$file.c \
-        -o tests/fuzz/$file.o
-done
+cd tests/fuzz
+rm -rf seed
+make fuzz.o
 
 for fuzzer in xpath xslt; do
+    make $fuzzer.o
     # Link with $CXX
     $CXX $CXXFLAGS \
-        tests/fuzz/$fuzzer.o tests/fuzz/fuzz.o \
+        $fuzzer.o fuzz.o \
         -o $OUT/$fuzzer \
         $LIB_FUZZING_ENGINE \
-        libexslt/.libs/libexslt.a libxslt/.libs/libxslt.a \
-        ../libxml2/.libs/libxml2.a \
+        ../../libexslt/.libs/libexslt.a ../../libxslt/.libs/libxslt.a \
+        ../../../libxml2/.libs/libxml2.a \
         $CRYPTO_LIBS
 
-    zip -j $OUT/${fuzzer}_seed_corpus.zip tests/fuzz/seed/$fuzzer/*
+    [ -e seed/$fuzzer ] || make seed/$fuzzer.stamp
+    zip -j $OUT/${fuzzer}_seed_corpus.zip seed/$fuzzer/*
 done
 
-cp tests/fuzz/*.dict tests/fuzz/*.xml $OUT/
+cp *.dict $OUT/

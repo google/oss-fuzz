@@ -24,25 +24,33 @@ RUN git clone --depth 1 https://github.com/google/wuffs.git
 # Get third-party test corpora.
 
 RUN git clone --depth 1 https://github.com/nst/JSONTestSuite.git
+RUN rm -rf JSONTestSuite/.git
 
 RUN wget -O bmpsuite.zip https://entropymine.com/jason/bmpsuite/releases/bmpsuite-2.6.zip
 RUN mkdir bmpsuite_corpus
 RUN unzip -j bmpsuite.zip -d bmpsuite_corpus
 RUN rm bmpsuite.zip
 
-RUN wget -O pngsuite.tgz http://www.schaik.com/pngsuite/PngSuite-2017jul19.tgz
-RUN mkdir pngsuite_corpus
-RUN tar xf pngsuite.tgz --one-top-level=pngsuite_corpus
-RUN rm pngsuite.tgz
+RUN mkdir libjpeg_turbo_corpus && \
+    git clone --depth=1 https://github.com/libjpeg-turbo/seed-corpora && \
+    mv ./seed-corpora/afl-testcases/jpeg_turbo/full/images/*.jpg ./libjpeg_turbo_corpus && \
+    rm -rf seed-corpora
 
-RUN wget -O rapidjson.zip "https://github.com/guidovranken/rapidjson-fuzzers/blob/master/fuzzer_seed_corpus.zip?raw=true"
-RUN mkdir rapidjson_corpus
-RUN unzip -j rapidjson.zip -d rapidjson_corpus
-RUN rm rapidjson.zip
+RUN mkdir pngsuite_corpus && \
+    git clone --depth=1 https://github.com/nigeltao/mozsec-fuzzdata && \
+    mv ./mozsec-fuzzdata/samples/png/common/*.png ./pngsuite_corpus && \
+    rm -rf mozsec-fuzzdata
 
 RUN git clone --depth 1 https://github.com/minio/simdjson-fuzz
 RUN mv simdjson-fuzz/corpus/corpus simdjson_corpus
 RUN rm -rf simdjson-fuzz
+
+RUN git clone --depth 1 https://github.com/webmproject/libwebp-test-data.git webp_corpus
+RUN rm -rf webp_corpus/.git
+
+RUN git clone --depth 1 https://github.com/nigeltao/xz-tests-files
+RUN rm -rf xz-tests-files/.git
+RUN mv xz-tests-files xz_corpus
 
 # Finish.
 

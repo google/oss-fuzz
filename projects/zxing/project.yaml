@@ -1,0 +1,13 @@
+homepage: "https://github.com/zxing/zxing"
+language: jvm
+primary_contact: "srowen@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/zxing/zxing.git"
+sanitizers:
+  - address
+vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "norbert.schneider@code-intelligence.com"
+  - "hlin@code-intelligence.com"
+  - "bug-disclosure@code-intelligence.com"

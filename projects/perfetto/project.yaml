@@ -10,20 +10,22 @@ auto_ccs:
   - "rsavitski@google.com"
   - "eseckler@google.com"
   - "altimin@google.com"
+  - "ddiproietto@google.com"
 vendor_ccs:
-  - bcreasey@google.com
-  - hamzeh@google.com
-  - geuteneier@google.com
-  - maverickm@google.com
-  - warrenwright@google.com
+  - adambacchus@google.com
   - ailport@google.com
-  - kimtony@google.com
+  - bcreasey@google.com
+  - cunefare@google.com
+  - ejorgensen@google.com
   - faerber@google.com
   - greendonald@google.com
-fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
-  - afl
+  - hamzeh@google.com
+  - jaredkidd@google.com
+  - kimtony@google.com
+  - lindsaywells@google.com
+  - maverickm@google.com
+  - swansonr@google.com
+  - warrenwright@google.com
 sanitizers:
   - address
   - undefined

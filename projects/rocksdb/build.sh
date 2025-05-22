@@ -14,6 +14,9 @@
 #
 ################################################################################
 
+export CFLAGS="${CFLAGS} -DNDEBUG"
+export CXXFLAGS="${CXXFLAGS} -DNDEBUG -std=c++17"
+
 cd $SRC/LPM
 export PKG_CONFIG_PATH=$PWD:$PWD/external.protobuf/lib/pkgconfig/
 export PATH=$PWD/external.protobuf/bin:$PATH
@@ -21,6 +24,7 @@ export PATH=$PWD/external.protobuf/bin:$PATH
 cd $SRC/rocksdb
 export FUZZ_ENV=ossfuzz
 export CC=$CXX
+export DISABLE_WARNING_AS_ERROR=1
 make static_lib
 
 cd fuzz

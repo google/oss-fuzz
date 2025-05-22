@@ -1,0 +1,10 @@
+homepage: https://github.com/joblib/joblib
+main_repo: https://github.com/joblib/joblib
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

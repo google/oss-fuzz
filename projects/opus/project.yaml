@@ -3,16 +3,18 @@ language: c++
 primary_contact: "jmvalin@jmvalin.ca"
 auto_ccs:
   - "flim@google.com"
+  - "jeanmarcv@google.com"
+  - "yunho@google.com"
+  - "le.businessman@gmail.com"
 vendor_ccs:
+  - "media-alerts@mozilla.com"
   - "twsmith@mozilla.com"
 fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
-  - dataflow
 sanitizers:
   - address
   - undefined
   - memory
-  - dataflow
 main_repo: 'https://gitlab.xiph.org/xiph/opus.git'

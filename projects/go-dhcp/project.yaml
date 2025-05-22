@@ -1,0 +1,10 @@
+homepage: "https://github.com/insomniacslk/dhcp"
+language: go
+primary_contact: "insomniac@slackware.it"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/insomniacslk/dhcp.git"

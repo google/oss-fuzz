@@ -15,4 +15,7 @@
 #
 ################################################################################
 
+# TODO(David) This should applied in the general script once confirmed it works
+sed -i 's/standalone/sandboxed/g' /usr/local/bin/bazel_build_fuzz_tests
+
 bazel_build_fuzz_tests

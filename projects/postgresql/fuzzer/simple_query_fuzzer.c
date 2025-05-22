@@ -79,7 +79,7 @@ exec_simple_query(const char *query_string)
       else
 	oldcontext = MemoryContextSwitchTo(MessageContext);
 
-      querytree_list = pg_analyze_and_rewrite(parsetree, query_string,
+      querytree_list = pg_analyze_and_rewrite_fixedparams(parsetree, query_string,
 					      NULL, 0, NULL);
  
       plantree_list = pg_plan_queries(querytree_list, query_string,
@@ -124,7 +124,6 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       AbortCurrentTransaction();
  
       PortalErrorCleanup();
-      SPICleanup();
 
       jit_reset_after_error();
 

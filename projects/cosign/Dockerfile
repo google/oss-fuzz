@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y pkg-config libpcsclite-dev
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/sigstore/cosign
+# For json corpus
+RUN git clone --depth=1 https://github.com/dvyukov/go-fuzz-corpus
+# For json dictionary
+RUN git clone --depth=1 https://github.com/rc0r/afl-fuzz
 
 COPY build.sh $SRC/
 WORKDIR $SRC/cosign

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-python
 
 # library build dependencies
 RUN apt-get update && \
@@ -24,26 +24,25 @@ RUN apt-get update && \
       rsync
 
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow
-RUN git clone --depth 1 https://github.com/python-pillow/pillow-wheels
 
 RUN $SRC/Pillow/Tests/oss-fuzz/build_dictionaries.sh
 
 COPY build_depends.sh $SRC
 
-RUN ln -s /usr/local/bin/python3 /usr/local/bin/python \
-    && ln -s /bin/true /usr/local/bin/yum_install \
-    && ln -s /bin/true /usr/local/bin/yum \
-    && cd $SRC/pillow-wheels \
-    && git submodule update --init multibuild \
+RUN cd $SRC/Pillow \
+    && git submodule update --init wheels/multibuild \
     && bash $SRC/build_depends.sh
 
 # install extra test images for a better starting corpus
-RUN cd Pillow && depends/install_extra_test_images.sh
+RUN cd Pillow/depends && ./install_extra_test_images.sh
+
+RUN python3 -m pip install --upgrade pip
 
 COPY build.sh $SRC/
 
 # pillow optional runtime dependencies
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
      python3-tk \
      tcl8.6-dev \
      tk8.6-dev

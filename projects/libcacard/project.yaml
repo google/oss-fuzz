@@ -7,3 +7,9 @@ sanitizers:
  - address
  - undefined
 main_repo: 'https://gitlab.freedesktop.org/spice/libcacard.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

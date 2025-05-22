@@ -33,12 +33,6 @@ export FUZZ_FLAGS=
 for target in fuzzing/*; do
   [[ -d "$target" ]] || continue
 
-  if [[ "$SANITIZER" == "dataflow" ]]; then
-	  # libcrypto seems to cause problems with 'dataflow' sanitizer.
-	  [[ "$target" == "fuzzing/dpp-uri" ]] && continue || :
-	  [[ "$target" == "fuzzing/sae" ]] && continue || :
-  fi
-
   (
     cd "$target"
     make clean

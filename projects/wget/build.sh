@@ -18,41 +18,35 @@
 export WGET_DEPS_PATH=$SRC/wget_deps
 export PKG_CONFIG_PATH=$WGET_DEPS_PATH/lib64/pkgconfig:$WGET_DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$WGET_DEPS_PATH/include"
+export CFLAGS="$CFLAGS -I$WGET_DEPS_PATH/include -L$WGET_DEPS_PATH/lib"
 export LDFLAGS="-L$WGET_DEPS_PATH/lib"
 export GNULIB_SRCDIR=$SRC/gnulib
 export LLVM_PROFILE_FILE=/tmp/prof.test
 
 cd $SRC/libunistring
-./autogen.sh
-./configure --enable-static --disable-shared --prefix=$WGET_DEPS_PATH --cache-file ../config.cache
+./configure --enable-static --disable-shared --prefix=$WGET_DEPS_PATH
 make -j$(nproc)
 make install
 
 cd $SRC/libidn2
-./bootstrap
-./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$WGET_DEPS_PATH --cache-file ../config.cache
+./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$WGET_DEPS_PATH
 make -j$(nproc)
 make install
 
 cd $SRC/libpsl
 ./autogen.sh
-./configure --enable-static --disable-shared --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2 --prefix=$WGET_DEPS_PATH --cache-file ../config.cache
+./configure --enable-static --disable-shared --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2 --prefix=$WGET_DEPS_PATH
 make -j$(nproc)
 make install
 
-GNUTLS_CONFIGURE_FLAGS=""
-NETTLE_CONFIGURE_FLAGS=""
-if [[ $CFLAGS = *sanitize=memory* ]]; then
-  GNUTLS_CONFIGURE_FLAGS="--disable-hardware-acceleration"
-  NETTLE_CONFIGURE_FLAGS="--disable-assembler --disable-fat"
-fi
+cd $SRC/gmp
+./configure --enable-static --disable-shared --prefix=$WGET_DEPS_PATH
+make -j$(nproc)
+make install
 
-# We could use GMP from git repository to avoid false positives in
-# sanitizers, but GMP doesn't compile with clang. We use gmp-mini
-# instead.
 cd $SRC/nettle
 bash .bootstrap
-./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --prefix=$WGET_DEPS_PATH $NETTLE_CONFIGURE_FLAGS --cache-file ../config.cache
+./configure --enable-static --disable-shared --disable-documentation --disable-openssl --disable-assembler --disable-fat --prefix=$WGET_DEPS_PATH
 ( make -j$(nproc) || make -j$(nproc) ) && make install
 if test $? != 0;then
         echo "Failed to compile nettle"
@@ -65,10 +59,10 @@ touch .submodule.stamp
 GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
 LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
-./configure --with-nettle-mini --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
+./configure --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
-    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite \
-    --prefix=$WGET_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
+    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite --disable-guile \
+    --prefix=$WGET_DEPS_PATH
 make -j$(nproc)
 make install
 
@@ -76,20 +70,25 @@ make install
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
+# Ensure our libraries can be found
+ln -sf $WGET_DEPS_PATH/lib64/libhogweed.a $WGET_DEPS_PATH/lib/libhogweed.a
+ln -sf $WGET_DEPS_PATH/lib64/libnettle.a  $WGET_DEPS_PATH/lib/libnettle.a
+
 cd $SRC/wget
-./bootstrap
-autoreconf -fi
+sed -i '/GETTEXT_REQUIRE_VERSION/d' configure.ac
+./bootstrap --skip-po
 
 # build and run non-networking tests
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
-  ./configure -C
+LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
+./configure -C
 make clean
-make -j$(nproc)
+make -j$(nproc) -C lib
+make -j$(nproc) -C src
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
-  ./configure --enable-fuzzing -C
+LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
+./configure --enable-fuzzing -C
 make clean
 make -j$(nproc) -C lib
 make -j$(nproc) -C src
@@ -97,7 +96,7 @@ make -j$(nproc) -C src
 # build fuzzers
 cd fuzz
 make -j$(nproc) ../src/libunittest.a
-CXXFLAGS="$CXXFLAGS -L$WGET_DEPS_PATH/lib/" make oss-fuzz
+make oss-fuzz
 
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'

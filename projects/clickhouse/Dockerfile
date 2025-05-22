@@ -23,23 +23,24 @@ RUN apt-get update -y \
             wget \
             curl \
             ccache \
-	        expect \
+            expect \
             ninja-build \
             perl \
             pkg-config \
-            python \
-            python-lxml \
-            python-requests \
-            python-termcolor \
+            python3 \
+            python3-lxml \
+            python3-requests \
+            python3-termcolor \
+            protobuf-compiler \
+            libprotoc-dev \
+            libgrpc++-dev \
+            protobuf-compiler-grpc \
+            libprotobuf-dev \
             sudo \
-            tzdata
+            tzdata \
+            nasm
 
-
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.21.1/cmake-3.21.1-Linux-x86_64.sh; \
-    chmod +x cmake-3.21.1-Linux-x86_64.sh; \
-    ./cmake-3.21.1-Linux-x86_64.sh --skip-license --prefix="/usr"
-
-RUN git clone --recursive https://github.com/ClickHouse/ClickHouse $SRC/ClickHouse
+RUN git clone -j 8 --recursive https://github.com/ClickHouse/ClickHouse $SRC/ClickHouse
 WORKDIR $SRC/ClickHouse
 
 COPY build.sh $SRC/

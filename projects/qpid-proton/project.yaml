@@ -10,3 +10,9 @@ sanitizers:
  - memory
  - undefined
 main_repo: 'https://github.com/apache/qpid-proton.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

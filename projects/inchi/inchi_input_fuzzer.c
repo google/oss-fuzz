@@ -40,6 +40,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   inchi_InputINCHI inpInChI;
   inpInChI.szInChI = szINCHISource;
+  inpInChI.szOptions = NULL;
 
   inchi_Output out;
   GetINCHIfromINCHI(&inpInChI, &out);

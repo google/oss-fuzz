@@ -14,14 +14,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python lzip libgmp-dev
-RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
 RUN git clone --depth 1 https://github.com/supranational/blst
-RUN git clone --depth 1 https://github.com/Chia-Network/bls-signatures.git
 RUN git clone --depth 1 https://github.com/herumi/mcl.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
-RUN wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
-RUN wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz
+RUN git clone --depth 1 https://github.com/mratsim/constantine
+RUN wget -q https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
+RUN wget -q https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz
+RUN wget -q https://nim-lang.org/download/nim-2.0.8-linux_x64.tar.xz
+RUN wget -q https://nim-lang.org/download/nim-2.0.8-linux_x32.tar.xz
 COPY build.sh $SRC/

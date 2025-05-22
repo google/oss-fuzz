@@ -13,7 +13,6 @@
 # limitations under the License.
 """Module for a git based filestore."""
 
-from distutils import dir_util
 import logging
 import os
 import shutil
@@ -33,6 +32,8 @@ import retry
 
 _PUSH_RETRIES = 3
 _PUSH_BACKOFF = 1
+_CLONE_RETRIES = 5
+_CLONE_DELAY = 1
 _GIT_EMAIL = 'cifuzz@clusterfuzz.com'
 _GIT_NAME = 'CIFuzz'
 _CORPUS_DIR = 'corpus'
@@ -65,6 +66,7 @@ class GitFilestore(filestore.BaseFilestore):
   def __del__(self):
     shutil.rmtree(self.repo_path)
 
+  @retry.wrap(_CLONE_RETRIES, _CLONE_DELAY)
   def _clone(self, repo_url):
     """Clones repo URL."""
     self._git('clone', repo_url, '.')
@@ -98,7 +100,7 @@ class GitFilestore(filestore.BaseFilestore):
     if replace and os.path.exists(full_repo_path):
       shutil.rmtree(full_repo_path)
 
-    dir_util.copy_tree(local_path, full_repo_path)
+    shutil.copytree(local_path, full_repo_path, dirs_exist_ok=True)
     self._git('add', '.')
     try:
       self._git('commit', '-m', message)
@@ -112,10 +114,13 @@ class GitFilestore(filestore.BaseFilestore):
     """Uploads the crashes at |directory| to |name|."""
     return self._ci_filestore.upload_crashes(name, directory)
 
-  def upload_corpus(self, name, directory):
+  def upload_corpus(self, name, directory, replace=False):
     """Uploads the corpus at |directory| to |name|."""
-    self._upload_to_git('Corpus upload', self.config.git_store_branch,
-                        os.path.join(_CORPUS_DIR, name), directory)
+    self._upload_to_git('Corpus upload',
+                        self.config.git_store_branch,
+                        os.path.join(_CORPUS_DIR, name),
+                        directory,
+                        replace=replace)
 
   def upload_build(self, name, directory):
     """Uploads the build at |directory| to |name|."""
@@ -137,7 +142,7 @@ class GitFilestore(filestore.BaseFilestore):
       logging.debug('Corpus does not exist at %s.', path)
       return False
 
-    dir_util.copy_tree(path, dst_directory)
+    shutil.copytree(path, dst_directory, dirs_exist_ok=True)
     return True
 
   def download_build(self, name, dst_directory):
@@ -152,5 +157,5 @@ class GitFilestore(filestore.BaseFilestore):
       logging.debug('Coverage does not exist at %s.', path)
       return False
 
-    dir_util.copy_tree(path, dst_directory)
+    shutil.copytree(path, dst_directory, dirs_exist_ok=True)
     return True

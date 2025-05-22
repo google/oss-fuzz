@@ -1,4 +1,5 @@
 homepage: "https://chromium.googlesource.com/libyuv/libyuv/"
+main_repo: "https://chromium.googlesource.com/libyuv/libyuv"
 language: c++
 primary_contact: "mikhal@webrtc.org"
 auto_ccs:

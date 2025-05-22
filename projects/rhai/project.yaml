@@ -1,0 +1,10 @@
+homepage: "rhai.rs"
+language: rust
+primary_contact: "rhaiscript@gmail.com"
+main_repo: "https://github.com/rhaiscript/rhai.git"
+auto_ccs:
+  - nathaniel.brough@gmail.com
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

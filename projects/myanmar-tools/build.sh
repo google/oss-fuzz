@@ -25,15 +25,8 @@ make all
 
 # Note: don't use the myanmartools_fuzz CMake target directly because we want
 # to link with LIB_FUZZING_ENGINE instead of the default fuzzer.
-# Copy the .so file to $OUT as well as the executable.
-mkdir -p $OUT/lib
-cp libmyanmartools.so $OUT/lib
-# TODO(https://github.com/google/oss-fuzz/issues/2947): Link in libunwind
-# statically or stop copying if ClusterFuzz bot images get libunwind.
-# Copy libunwind since it isn't on the ClusterFuzz bot images.
-cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 $OUT/lib/
-$CXX $CXXFLAGS -std=c++11 -I../public -L$OUT/lib \
-    -Wl,-rpath,'$ORIGIN/lib' -lmyanmartools -lunwind \
-    -o $OUT/zawgyi_detector_fuzz_target \
+$CXX $CXXFLAGS -std=c++11 -I../public -L. \
     ../zawgyi_detector_fuzz_target.cpp \
+    -Wl,-Bstatic -lmyanmartools_static -lglog -lunwind -llzma -Wl,-Bdynamic \
+    -o $OUT/zawgyi_detector_fuzz_target \
     $LIB_FUZZING_ENGINE

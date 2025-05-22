@@ -24,10 +24,17 @@ sed -i 's|\(usleep.*\)|// \1|' ssh-agent.c
 # Build project
 autoreconf
 env
-env CFLAGS="" ./configure \
-	--with-cflags="-DWITH_XMSS=1" \
-	--with-cflags-after="$CFLAGS" \
-	--with-ldflags-after="-g $CFLAGS"
+if ! env CFLAGS="" ./configure \
+    --without-hardening \
+    --without-zlib-version-check \
+    --with-cflags="-DWITH_XMSS=1" \
+    --with-cflags-after="$CFLAGS" \
+    --with-ldflags-after="-g $CFLAGS" ; then
+	echo "------ config.log:" 1>&2
+	cat config.log 1>&2
+	echo "ERROR: configure failed" 1>&2
+	exit 1
+fi
 make -j$(nproc) all
 
 # Build fuzzers

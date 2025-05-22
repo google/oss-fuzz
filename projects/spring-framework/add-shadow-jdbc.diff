@@ -1,0 +1,11 @@
+diff --git a/spring-jdbc/spring-jdbc.gradle b/spring-jdbc/spring-jdbc.gradle
+index 389462f3bb..98a4e93d92 100644
+--- a/spring-jdbc/spring-jdbc.gradle
++++ b/spring-jdbc/spring-jdbc.gradle
+@@ -1,5 +1,6 @@
+ description = "Spring JDBC"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
+ apply plugin: "kotlin"
+ 
+ dependencies {

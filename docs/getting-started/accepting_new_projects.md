@@ -19,8 +19,10 @@ with a new `projects/<project_name>/project.yaml` file
     **Note:** `project_name` can only contain alphanumeric characters,
     underscores(_) or dashes(-).
 2. In the file, provide the following information:
-  * Your project's homepage.
-  * An email address for the engineering contact to be CCed on new issues, satisfying the following:
+  * Your project's homepage. ([`homepage`]({{ site.baseurl }}/getting-started/new-project-guide/#homepage))
+  * Your project's main repository URL. ([`main_repo`]({{ site.baseurl }}/getting-started/new-project-guide/#main_repo))
+  * Your project's primary language. ([`language`]({{ site.baseurl }}/getting-started/new-project-guide/#language))
+  * An email address for the engineering contact to be CCed on new issues ([`primary_contact`]({{ site.baseurl }}/getting-started/new-project-guide/#primary)), satisfying the following:
        * The address belongs to an established project committer (according to VCS logs).
         If the address isn't you, or if the address differs from VCS, we'll require an informal
         email verification.

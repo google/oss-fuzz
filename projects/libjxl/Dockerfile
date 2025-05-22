@@ -15,11 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake ninja-build pkg-config
+RUN apt-get update && apt-get install -y cmake ninja-build pkg-config \
+  libjpeg-dev
 RUN git clone --depth 1 https://github.com/libjxl/libjxl.git
 # We only need these sub-projects for the fuzzers.
 RUN git -C libjxl submodule update --init --recommend-shallow \
-  third_party/highway third_party/lodepng third_party/skcms third_party/brotli
+  third_party/brotli \
+  third_party/highway \
+  third_party/libjpeg-turbo \
+  third_party/skcms
+RUN git clone --depth 1 https://github.com/libjpeg-turbo/seed-corpora
 
 WORKDIR libjxl
 COPY build.sh $SRC/

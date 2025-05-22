@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-$SRC/gst-ci/fuzzing/build-oss-fuzz.sh
+$SRC/gstreamer/ci/fuzzing/build-oss-fuzz.sh

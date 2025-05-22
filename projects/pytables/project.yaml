@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/pytables/pytables
+language: python
+main_repo: https://github.com/pytables/pytables
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

@@ -1,9 +1,20 @@
 homepage: "https://thesofproject.github.io"
-primary_contact: "cujomalainey@chromium.org"
+primary_contact: "johnylin@google.com"
 language: c
 auto_ccs:
+  - "andyross@google.com"
   - "ranjani.sridharan@intel.corp-partner.google.com"
   - "lgirdwood@gmail.com"
-  - "harsha.p.n@intel.corp-partner.google.com"
   - "sathyanarayana.nujella@intel.corp-partner.google.com"
+  - "adrian.bonislawski@intel.com"
+  - "jyri.sarha@intel.com"
+  - "rander.wang@intel.com"
+  - "flavio.ceolin@intel.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - i386
 main_repo: "https://github.com/thesofproject/sof"

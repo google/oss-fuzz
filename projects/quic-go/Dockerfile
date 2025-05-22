@@ -14,14 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-go
 
-RUN git clone --depth 1 https://github.com/marten-seemann/qpack/ && \
-  cd qpack && \
-  go build
+RUN git clone --depth 1 https://github.com/quic-go/qpack/ $GOPATH/src/github.com/quic-go/qpack
+RUN git clone --depth 1 https://github.com/quic-go/quic-go/ $GOPATH/src/github.com/quic-go/quic-go
 
-RUN git clone --depth 1 https://github.com/lucas-clemente/quic-go/ && \
-  cd quic-go && \
-  go build
+RUN cp $GOPATH/src/github.com/quic-go/quic-go/oss-fuzz.sh $SRC/build.sh
+# Local testing:
+# 1. copy oss-fuzz.sh from quic-go repo to projects/quic-go
+# 2. uncomment this line
+# 3. run infra/helper.py build_image quic-go
+# COPY oss-fuzz.sh $SRC/build.sh
 
-COPY build.sh .
+RUN chmod +x $SRC/build.sh

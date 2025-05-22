@@ -1,0 +1,15 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fac68f6..d799614 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -200,7 +200,10 @@ if (GOOGLETEST_ROOT)
+               src/s2/thread_testing.cc)
+ endif()
+ 
++add_executable(s2fuzzer src/s2_fuzzer.cc)
++set_target_properties(s2fuzzer PROPERTIES LINK_FLAGS $ENV{LIB_FUZZING_ENGINE})
+ target_link_libraries(
++    s2fuzzer
+     s2
+     ${OPENSSL_LIBRARIES}
+     absl::base

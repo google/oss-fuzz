@@ -1,0 +1,21 @@
+homepage: "https://buildwithmatter.com/"
+language: c++
+primary_contact: "andreilitvin@google.com"
+auto_ccs:
+  - "asad_haque@comcast.com"
+  - "lalabdulkarim@csa-iot.org"
+  - "mboyington@google.com"
+  - "szewczyk@google.com"
+  - "tennessee@google.com"
+  - "aalami@csa-iot.org"
+sanitizers:
+  - address
+  - undefined
+# MemorySanitizer is deactivated due to false positives related to Glib
+# For MSan; Glib and all others libs should be compiled with MSan
+#  - memory
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - centipede
+main_repo: 'https://github.com/project-chip/connectedhomeip.git'

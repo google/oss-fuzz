@@ -9,6 +9,5 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
-  - afl
 sanitizers:
   - address

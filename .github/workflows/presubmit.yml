@@ -1,5 +1,8 @@
 name: Presubmit checks
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches:
@@ -8,23 +11,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    permissions:
+      actions: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
-      - name: Cancel previous
-        uses: styfle/cancel-workflow-action@0.8.0
-        with:
-          access_token: ${{ github.token }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:  # Needed for git diff to work. (get_changed_files)
           fetch-depth: 0
       - run: |
           git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 
       - name: Setup python environment
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
+          cache: pip
+          cache-dependency-path: |
+            infra/ci/requirements.txt
+            infra/build/functions/requirements.txt
 
       - name: Install dependencies
         run: |

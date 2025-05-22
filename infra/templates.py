@@ -17,9 +17,10 @@
 
 PROJECT_YAML_TEMPLATE = """\
 homepage: "<your_project_homepage>"
-language: %(language)s"
+language: %(language)s
 primary_contact: "<primary_contact_email>"
 main_repo: "https://path/to/main/repo.git"
+file_github_issue: true
 """
 
 DOCKER_TEMPLATE = """\
@@ -47,9 +48,9 @@ COPY build.sh $SRC/
 """
 
 EXTERNAL_DOCKER_TEMPLATE = """\
-FROM gcr.io/oss-fuzz-base/%(base_builder)s
+FROM gcr.io/oss-fuzz-base/%(base_builder)s:v1
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN COPY . $SRC/%(project_name)s
+COPY . $SRC/%(project_name)s
 WORKDIR %(project_name)s
 COPY .clusterfuzzlite/build.sh $SRC/
 """
@@ -86,6 +87,8 @@ BUILD_TEMPLATE = """\
 """
 
 EXTERNAL_BUILD_TEMPLATE = """\
+#!/bin/bash -eu
+
 # build project
 # e.g.
 # ./autogen.sh
@@ -99,6 +102,10 @@ EXTERNAL_BUILD_TEMPLATE = """\
 #     $LIB_FUZZING_ENGINE /path/to/library.a
 """
 
+EXTERNAL_PROJECT_YAML_TEMPLATE = """\
+language: %(language)s
+"""
+
 TEMPLATES = {
     'build.sh': BUILD_TEMPLATE,
     'Dockerfile': DOCKER_TEMPLATE,
@@ -107,5 +114,6 @@ TEMPLATES = {
 
 EXTERNAL_TEMPLATES = {
     'build.sh': EXTERNAL_BUILD_TEMPLATE,
-    'Dockerfile': EXTERNAL_DOCKER_TEMPLATE
+    'Dockerfile': EXTERNAL_DOCKER_TEMPLATE,
+    'project.yaml': EXTERNAL_PROJECT_YAML_TEMPLATE
 }

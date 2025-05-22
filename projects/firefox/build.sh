@@ -15,16 +15,21 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" = "coverage" ]
+then
+  touch $OUT/exit
+  exit 0
+fi
+
+source $HOME/.cargo/env
+
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
+  ContentSecurityPolicyParser
+  FeaturePolicyParser
   # WebRTC
   SdpParser
   StunParser
-  # IPC
-  ContentParentIPC
-  CompositorManagerParentIPC
-  ContentSecurityPolicyParser
-  FeaturePolicyParser
   # Image
   ImageGIF
   ImageICO
@@ -48,14 +53,7 @@ export ASAN_OPTIONS="detect_leaks=0"
 # Install remaining dependencies.
 export SHELL=/bin/bash
 
-# Firefox might not be buildable on the latest Rust Nightly, so we should try
-# to use the same version that we use in our CI.
-RUST_NIGHTLY_VERSION=$(sed -n 's/^.*--channel.*\(nightly-[0-9-]*\).*$/\1/p' \
-  $SRC/mozilla-central/taskcluster/ci/toolchain/rust.yml
-)
-
-rustup toolchain install ${RUST_NIGHTLY_VERSION}
-rustup default ${RUST_NIGHTLY_VERSION}-x86_64-unknown-linux-gnu
+rustup default nightly
 
 ./mach --no-interactive bootstrap --application-choice browser
 
@@ -106,9 +104,6 @@ cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
 find media/webrtc -iname "*.stun" \
   -type f -exec zip -qu $OUT/StunParser_seed_corpus.zip "{}" \;
 cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
-
-# ContentParentIPC
-cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
 
 # ImageGIF
 zip -rj $OUT/ImageGIF_seed_corpus.zip $SRC/fuzzdata/samples/gif

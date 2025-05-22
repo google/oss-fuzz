@@ -1,0 +1,7 @@
+homepage: "https://rauc.io/"
+language: c
+primary_contact: "jlu@pengutronix.de"
+auto_ccs:
+- jluebbe@lasnet.de
+- ejoerns89@gmail.com
+main_repo: "https://github.com/rauc/rauc.git"

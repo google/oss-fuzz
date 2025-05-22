@@ -12,3 +12,8 @@ architectures:
   - x86_64
   - i386
 main_repo: 'https://gitlab.com/libtiff/libtiff'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/hukkinj1/tomli
+language: python
+main_repo: https://github.com/hukkinj1/tomli
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

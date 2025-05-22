@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+sed -i 's/set(CMAKE_CXX_STANDARD 11)/set(CMAKE_CXX_STANDARD 17)/' CMakeLists.txt
+
 mkdir -p build
 cd build
 cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
@@ -34,11 +36,11 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
 rm -rf genfiles && mkdir genfiles && ../LPM/external.protobuf/bin/protoc json.proto --cpp_out=genfiles --proto_path=$SRC
 
 # Compile LPM fuzzer.
-$CXX $CXXFLAGS -I genfiles -I .. -I ../libprotobuf-mutator/ -I ../LPM/external.protobuf/include -I ../include $LIB_FUZZING_ENGINE \
+$CXX $CXXFLAGS -DNDEBUG -I genfiles -I .. -I ../libprotobuf-mutator/ -I ../LPM/external.protobuf/include -I ../include $LIB_FUZZING_ENGINE \
     $SRC/jsoncpp_fuzz_proto.cc genfiles/json.pb.cc $SRC/json_proto_converter.cc \
     ../LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
     ../LPM/src/libprotobuf-mutator.a \
-    ../LPM/external.protobuf/lib/libprotobuf.a \
+    -Wl,--start-group ../LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
     -o  $OUT/jsoncpp_proto_fuzzer \
     lib/libjsoncpp.a
 fi

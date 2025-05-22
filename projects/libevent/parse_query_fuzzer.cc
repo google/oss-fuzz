@@ -26,5 +26,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (evhttp_parse_query(fuzz_string.c_str(), &headers) == 0) {
     evhttp_clear_headers(&headers);
   }
+
+  if (size > 4) {
+    uint32_t flags = *(uint32_t *)data;
+    data += 4;
+    size -= 4;
+    std::string fuzz_string2(reinterpret_cast<const char *>(data), size);
+
+    if (evhttp_parse_query_str_flags(fuzz_string2.c_str(), &headers, flags) == 0) {
+      evhttp_clear_headers(&headers);
+    }
+  }
+
   return 0;
 }
