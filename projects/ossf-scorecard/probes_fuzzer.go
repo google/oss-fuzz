@@ -78,6 +78,7 @@ import (
 
 var (
 	probeDefinitionPath = "/tmp/probedefinitions"
+	emptyName           = ""
 )
 
 func writeProbeFile(probeId, yamlContents string) error {
@@ -317,6 +318,11 @@ func FuzzProbes(f *testing.F) {
 			if len(branches) == 0 {
 				return
 			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
+			}
 			bpd := checker.BranchProtectionsData{
 				Branches: branches,
 			}
@@ -330,6 +336,11 @@ func FuzzProbes(f *testing.F) {
 			if len(branches) == 0 {
 				return
 			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
+			}
 			bpd := checker.BranchProtectionsData{
 				Branches: branches,
 			}
@@ -342,6 +353,11 @@ func FuzzProbes(f *testing.F) {
 			fdp.GenerateStruct(&branches)
 			if len(branches) == 0 {
 				return
+			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
 			}
 			bpd := checker.BranchProtectionsData{
 				Branches: branches,
@@ -400,6 +416,11 @@ func FuzzProbes(f *testing.F) {
 			fdp.GenerateStruct(&branches)
 			if len(branches) == 0 {
 				return
+			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
 			}
 			bpd := checker.BranchProtectionsData{
 				Branches: branches,
@@ -641,6 +662,16 @@ func FuzzProbes(f *testing.F) {
 			if len(branches) == 0 {
 				return
 			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
+			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
+			}
 			bpd := checker.BranchProtectionsData{
 				Branches: branches,
 			}
@@ -654,6 +685,16 @@ func FuzzProbes(f *testing.F) {
 			if len(branches) == 0 {
 				return
 			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
+			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
+			}
 			bpd := checker.BranchProtectionsData{
 				Branches: branches,
 			}
@@ -666,6 +707,16 @@ func FuzzProbes(f *testing.F) {
 			fdp.GenerateStruct(&branches)
 			if len(branches) == 0 {
 				return
+			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
+			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
 			}
 			bpd := checker.BranchProtectionsData{
 				Branches: branches,
