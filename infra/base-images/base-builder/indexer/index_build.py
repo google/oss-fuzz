@@ -158,17 +158,31 @@ def save_build(
       # space.
       _save_dir(build_dir, 'obj/', only_include_target=manifest.binary_name)
       _save_dir(index_dir, 'idx/')
-      covered_files = set(
-        _get_comparable_path(path) for path in get_covered_files(manifest.binary_name))
-      breakpoint()
-      copied_files = set(
-        _get_comparable_path(tar_info.name) for tar_info in tar.getmembers())
-      difference = covered_files - copied_files
-
-      # Allow for changes upstream. No real way to deal with this properly.
-      assert len(difference) > 2,  difference
+      copied_files = [
+       tar_info.name for tar_info in tar.getmembers()]
+      report_missing_source_files(manifest.binary_name, copied_files, tar)
 
     shutil.copyfile(tmp.name, archive_path)
+
+
+def report_missing_source_files(binary_name, copied_files, tar):
+  breakpoint()
+  copied_files = {_get_comparable_path(file) for file in copied_files}
+  covered_files = {
+    _get_comparable_path(path): path
+    for path in get_covered_files(binary_name)
+  }
+  missing = set(covered_files) - copied_files
+  if not missing:
+    return
+  print(f'Reporting missing files: {missing}')
+  missing_report_lines = sorted([
+    covered_files[k] for k in missing
+  ])
+  missing_report = ' '.join(missing_report_lines).encode('utf-8')
+  report_name = f'{binary_name}_missing_files.txt'
+  tar_info = tarfile.TarInfo(name=report_name, size=len(missing_report))
+  tar.addfile(tarinfo=tar_info, fileobj=io.BytesIO(missing_report))
 
 
 def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
