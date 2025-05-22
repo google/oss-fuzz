@@ -166,7 +166,6 @@ def save_build(
 
 
 def report_missing_source_files(binary_name, copied_files, tar):
-  breakpoint()
   copied_files = {_get_comparable_path(file) for file in copied_files}
   covered_files = {
     _get_comparable_path(path): path
