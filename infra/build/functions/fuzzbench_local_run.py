@@ -53,7 +53,7 @@ def run_step_locally(temp_dir, local_fuzzbench_path, step, i, log_file):
     log_file.write(f'Skipping step {i} because it is a push step.\n')
     return
 
-  step_container_work_dir = GCB_WORKSPACE_DIR + '/' + step.get('dir', '')
+  step_container_work_dir = os.path.join(GCB_WORKSPACE_DIR, step.get('dir', ''))
 
   if args[0] == 'run' and args[1] == '-v':
     args[2] = args[2].replace(GCB_WORKSPACE_DIR, temp_dir, 1)
