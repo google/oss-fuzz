@@ -27,8 +27,8 @@ import build_lib
 import build_project
 import fuzzbench
 
-GCB_WORKSPACE_DIR = '/workspace'
-FUZZBENCH_PATH = '/fuzzbench'
+GCB_WORKSPACE_DIR = fuzzbench.GCB_WORKSPACE_DIR
+FUZZBENCH_PATH = fuzzbench.FUZZBENCH_PATH
 DOCKER_BUILDER_IMAGE = 'gcr.io/cloud-builders/docker'
 LOG_FILE_PATH = os.path.join(os.path.dirname(__file__),
                              'fuzzbench_local_run_log.txt')
