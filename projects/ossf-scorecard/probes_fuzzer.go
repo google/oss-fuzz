@@ -296,7 +296,7 @@ func FuzzProbes(f *testing.F) {
 	f.Fuzz(func(t *testing.T, callType int, data []byte) {
 		fdp := gfh.NewConsumer(data)
 
-		switch callType % 26 {
+		switch callType % 31 {
 		case 0:
 			fuzzers := make([]checker.Tool, 0)
 			fdp.GenerateStruct(&fuzzers)
@@ -667,11 +667,6 @@ func FuzzProbes(f *testing.F) {
 					return
 				}
 			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
 			bpd := checker.BranchProtectionsData{
 				Branches: branches,
 			}
@@ -684,11 +679,6 @@ func FuzzProbes(f *testing.F) {
 			fdp.GenerateStruct(&branches)
 			if len(branches) == 0 {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
 			}
 			for _, branch := range branches {
 				if branch.Name == nil {
@@ -713,6 +703,19 @@ func FuzzProbes(f *testing.F) {
 					return
 				}
 			}
+			bpd := checker.BranchProtectionsData{
+				Branches: branches,
+			}
+			r := &checker.RawResults{
+				BranchProtectionResults: bpd,
+			}
+			_, _, _ = requiresLastPushApproval.Run(r)
+		case 26:
+			branches := make([]clients.BranchRef, 0)
+			fdp.GenerateStruct(&branches)
+			if len(branches) == 0 {
+				return
+			}
 			for _, branch := range branches {
 				if branch.Name == nil {
 					return
@@ -724,7 +727,75 @@ func FuzzProbes(f *testing.F) {
 			r := &checker.RawResults{
 				BranchProtectionResults: bpd,
 			}
-			_, _, _ = requiresLastPushApproval.Run(r)
+			_, _, _ = requiresPRsToChangeCode.Run(r)
+		case 27:
+			branches := make([]clients.BranchRef, 0)
+			fdp.GenerateStruct(&branches)
+			if len(branches) == 0 {
+				return
+			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
+			}
+			bpd := checker.BranchProtectionsData{
+				Branches: branches,
+			}
+			r := &checker.RawResults{
+				BranchProtectionResults: bpd,
+			}
+			_, _, _ = requiresUpToDateBranches.Run(r)
+		case 28:
+			branches := make([]clients.BranchRef, 0)
+			fdp.GenerateStruct(&branches)
+			if len(branches) == 0 {
+				return
+			}
+			for _, branch := range branches {
+				if branch.Name == nil {
+					return
+				}
+			}
+			bpd := checker.BranchProtectionsData{
+				Branches: branches,
+			}
+			r := &checker.RawResults{
+				BranchProtectionResults: bpd,
+			}
+			_, _, _ = runsStatusChecksBeforeMerging.Run(r)
+		case 29:
+			workflows := make([]checker.SASTWorkflow, 0)
+			fdp.GenerateStruct(&workflows)
+			if len(workflows) == 0 {
+				return
+			}
+			commits := make([]checker.SASTCommit, 0)
+			fdp.GenerateStruct(&commits)
+			if len(commits) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				SASTResults: checker.SASTData{
+					Workflows:    workflows,
+					Commits:      commits,
+					NumWorkflows: len(workflows),
+				},
+			}
+			_, _, _ = sastToolConfigured.Run(r)
+			_, _, _ = sastToolRunsOnAllCommits.Run(r)
+		case 30:
+			ciInfo := make([]checker.RevisionCIInfo, 0)
+			fdp.GenerateStruct(&ciInfo)
+			if len(ciInfo) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				CITestResults: checker.CITestData{
+					CIInfo: ciInfo,
+				},
+			}
+			_, _, _ = testsRunInCI.Run(r)
 		}
 	})
 }
