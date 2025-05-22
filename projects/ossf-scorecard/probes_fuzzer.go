@@ -16,6 +16,7 @@
 package probes
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -313,57 +314,21 @@ func FuzzProbes(f *testing.F) {
 				panic(err)
 			}
 		case 1:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = blocksDeleteOnBranches.Run(r)
 		case 2:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = branchProtectionAppliesToAdmins.Run(r)
 		case 3:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = branchesAreProtected.Run(r)
 		case 4:
@@ -412,21 +377,9 @@ func FuzzProbes(f *testing.F) {
 			}
 			_, _, _ = dependencyUpdateToolConfigured.Run(r)
 		case 8:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = dismissesStaleReviews.Run(r)
 		case 9:
@@ -657,111 +610,39 @@ func FuzzProbes(f *testing.F) {
 			}
 			releasesHaveVerifiedProvenance.Run(r)
 		case 23:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = requiresApproversForPullRequests.Run(r)
 		case 24:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = requiresCodeOwnersReview.Run(r)
 		case 25:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = requiresLastPushApproval.Run(r)
 		case 26:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = requiresPRsToChangeCode.Run(r)
 		case 27:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = requiresUpToDateBranches.Run(r)
 		case 28:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			for _, branch := range branches {
-				if branch.Name == nil {
-					return
-				}
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = runsStatusChecksBeforeMerging.Run(r)
 		case 29:
@@ -798,4 +679,24 @@ func FuzzProbes(f *testing.F) {
 			_, _, _ = testsRunInCI.Run(r)
 		}
 	})
+}
+
+func createRawBranchProtectionsData(fdp *gfh.ConsumeFuzzer) (*checker.RawResults, error) {
+	branches := make([]clients.BranchRef, 0)
+	fdp.GenerateStruct(&branches)
+	if len(branches) == 0 {
+		return nil, fmt.Errorf("created no branches")
+	}
+	for _, branch := range branches {
+		if branch.Name == nil {
+			return nil, fmt.Errorf("created branch with nil name")
+		}
+	}
+	bpd := checker.BranchProtectionsData{
+		Branches: branches,
+	}
+	r := &checker.RawResults{
+		BranchProtectionResults: bpd,
+	}
+	return r, nil
 }
