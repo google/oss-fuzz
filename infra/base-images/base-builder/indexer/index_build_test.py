@@ -16,17 +16,20 @@
 ################################################################################
 """index_build tests."""
 
-from collections.abc import Sequence
 from pathlib import Path
 import json
+import os
 import subprocess
 import tarfile
+from typing import Sequence
 import unittest
 
 THIS_DIR = Path(__file__).parent
 OSS_FUZZ_DIR = THIS_DIR.parent.parent.parent.parent
 
 
+@unittest.skipUnless(
+    os.getenv('INDEX_BUILD_TESTS'), 'Tests do not run on infra')
 class IndexBuildTest(unittest.TestCase):
 
   def _build_project(self, project: str, *additional_args) -> Sequence[Path]:

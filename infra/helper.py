@@ -34,7 +34,7 @@ import tempfile
 import constants
 import templates
 
-OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+OSS_FUZZ_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
 BASE_RUNNER_IMAGE = 'gcr.io/oss-fuzz-base/base-runner'
