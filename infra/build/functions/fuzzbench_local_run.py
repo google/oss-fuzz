@@ -99,36 +99,42 @@ def run_step_locally(temp_dir, local_fuzzbench_path, step, i, log_file):
                             capture_output=True,
                             text=True)
     end_time = time.time()
-    log_file.write('--- Container STDOUT ---\n')
-    log_file.write(result.stdout)
-    log_file.write('--- Container STDERR ---\n')
-    log_file.write(result.stderr)
     log_file.write(
+        f'--- Container STDOUT ---\n'
+        f'{result.stdout}'
+        f'--- Container STDERR ---\n'
+        f'{result.stderr}'
         f'--- Step {i} completed successfully --- Took {end_time - start_time}s\n\n'
     )
   except subprocess.CalledProcessError as e:
     if e.returncode == 124:
       end_time = time.time()
-      log_file.write(f'Caught timeout: {e}\n')
       log_file.write(
+          f'Caught timeout: {e}\n'
           f'--- Step {i} completed with a timeout --- Took {end_time - start_time}s\n\n'
       )
     else:
-      log_file.write('--- DOCKER RUN ERROR ---\n')
-      log_file.write(f'Docker command failed with exit code {e.returncode}\n')
-      log_file.write('--- Container STDOUT ---\n')
-      log_file.write(e.stdout)
-      log_file.write('--- Container STDERR ---\n')
-      log_file.write(e.stderr)
-      log_file.write(f'Failed Step Details: {step}\n')
-      log_file.write(f'Failed Docker Command: {" ".join(docker_command)}\n')
-      sys.exit(f'Execution failed at step {i}\n')
+      log_file.write(
+          '--- DOCKER RUN ERROR ---\n'
+          f'Docker command failed with exit code {e.returncode}\n'
+          '--- Container STDOUT ---\n'
+          f'{e.stdout}'
+          '--- Container STDERR ---\n'
+          f'{e.stderr}'
+          f'Failed Step Details: {step}\n'
+          f'Failed Docker Command: {" ".join(docker_command)}\n'
+          f'Execution failed at step {i}\n'
+      )
+      sys.exit()
   except Exception as e:
-    log_file.write('--- UNEXPECTED ERROR ---\n')
-    log_file.write(f'An unexpected error occurred during step {i}: {e}\n')
-    log_file.write(f'Failed Step Details: {step}\n')
-    log_file.write(f'Failed Docker Command: {" ".join(docker_command)}\n')
-    sys.exit(f'Execution failed at step {i}\n')
+    log_file.write(
+      '--- UNEXPECTED ERROR ---\n'
+      f'An unexpected error occurred during step {i}: {e}\n'
+      f'Failed Step Details: {step}\n'
+      f'Failed Docker Command: {" ".join(docker_command)}\n'
+      f'Execution failed at step {i}\n'
+    )
+    sys.exit()
 
 
 def remove_temp_dir_content(temp_dir, i, log_file):
