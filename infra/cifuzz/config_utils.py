@@ -29,7 +29,7 @@ import constants
 
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage', 'introspector']
 
-FUZZING_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'none']
+FUZZING_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede', 'none']
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
 DEFAULT_FUZZING_ENGINE = 'libfuzzer'
