@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/ossf/scorecard/v5/checker"
 	"github.com/ossf/scorecard/v5/clients"
@@ -294,7 +295,7 @@ func FuzzProbes(f *testing.F) {
 	f.Fuzz(func(t *testing.T, callType int, data []byte) {
 		fdp := gfh.NewConsumer(data)
 
-		switch callType % 16 {
+		switch callType % 26 {
 		case 0:
 			fuzzers := make([]checker.Tool, 0)
 			fdp.GenerateStruct(&fuzzers)
@@ -527,6 +528,152 @@ func FuzzProbes(f *testing.F) {
 				},
 			}
 			hasSBOM.Run(r)
+		case 16:
+			issues := make([]clients.Issue, 0)
+			fdp.GenerateStruct(&issues)
+			if len(issues) == 0 {
+				return
+			}
+			commits := make([]clients.Commit, 0)
+			fdp.GenerateStruct(&commits)
+			if len(commits) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				MaintainedResults: checker.MaintainedData{
+					CreatedAt:            time.Now(),
+					Issues:               issues,
+					DefaultBranchCommits: commits,
+					ArchivedStatus: checker.ArchivedStatus{
+						Status: false,
+					},
+				},
+			}
+			issueActivityByProjectMember.Run(r)
+		case 17:
+			permissions := make([]checker.TokenPermission, 0)
+			fdp.GenerateStruct(&permissions)
+			if len(permissions) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				TokenPermissionsResults: checker.TokenPermissionsData{
+					TokenPermissions: permissions,
+					NumTokens:        len(permissions),
+				},
+			}
+			jobLevelPermissions.Run(r)
+		case 18:
+			packages := make([]checker.Package, 0)
+			fdp.GenerateStruct(&packages)
+			if len(packages) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				PackagingResults: checker.PackagingData{
+					Packages: packages,
+				},
+			}
+			packagedWithAutomatedWorkflow.Run(r)
+		case 19:
+			dependencies := make([]checker.Dependency, 0)
+			fdp.GenerateStruct(&dependencies)
+			if len(dependencies) == 0 {
+				return
+			}
+			processingErrors := make([]checker.ElementError, 0)
+			fdp.GenerateStruct(&processingErrors)
+			if len(processingErrors) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				PinningDependenciesResults: checker.PinningDependenciesData{
+					Dependencies:     dependencies,
+					ProcessingErrors: processingErrors,
+				},
+			}
+			pinsDependencies.Run(r)
+		case 20:
+			releases := make([]clients.Release, 0)
+			fdp.GenerateStruct(&releases)
+			if len(releases) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				SignedReleasesResults: checker.SignedReleasesData{
+					Releases: releases,
+				},
+			}
+			releasesAreSigned.Run(r)
+		case 21:
+			releases := make([]clients.Release, 0)
+			fdp.GenerateStruct(&releases)
+			if len(releases) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				SignedReleasesResults: checker.SignedReleasesData{
+					Releases: releases,
+				},
+			}
+			releasesHaveProvenance.Run(r)
+		case 22:
+			packages := make([]checker.ProjectPackage, 0)
+			fdp.GenerateStruct(&packages)
+			if len(packages) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				SignedReleasesResults: checker.SignedReleasesData{
+					Packages: packages,
+				},
+			}
+			releasesHaveVerifiedProvenance.Run(r)
+		case 23:
+			branches := make([]clients.BranchRef, 0)
+			fdp.GenerateStruct(&branches)
+			if len(branches) == 0 {
+				return
+			}
+			bpd := checker.BranchProtectionsData{
+				Branches: branches,
+			}
+			r := &checker.RawResults{
+				BranchProtectionResults: bpd,
+			}
+			_, _, _ = requiresApproversForPullRequests.Run(r)
+		case 24:
+			branches := make([]clients.BranchRef, 0)
+			fdp.GenerateStruct(&branches)
+			if len(branches) == 0 {
+				return
+			}
+			bpd := checker.BranchProtectionsData{
+				Branches: branches,
+			}
+			r := &checker.RawResults{
+				BranchProtectionResults: bpd,
+			}
+			_, _, _ = requiresCodeOwnersReview.Run(r)
+		case 25:
+			branches := make([]clients.BranchRef, 0)
+			fdp.GenerateStruct(&branches)
+			if len(branches) == 0 {
+				return
+			}
+			bpd := checker.BranchProtectionsData{
+				Branches: branches,
+			}
+			r := &checker.RawResults{
+				BranchProtectionResults: bpd,
+			}
+			_, _, _ = requiresLastPushApproval.Run(r)
 		}
 	})
 }
