@@ -368,21 +368,22 @@ def check_fuzzing_engine_and_fix_argv(argv: list[str]) -> bool:
 
 
 def main(argv: list[str]) -> None:
-  fuzzing_engine_in_argv = check_fuzzing_engine_and_fix_argv(argv)
-  # If we are not linking the fuzzing engine, execute normally.
-  if not fuzzing_engine_in_argv:
-    execute(argv)
+  if os.environ["INDEXER_TARGET_TYPE"] == "fuzzing":
+    fuzzing_engine_in_argv = check_fuzzing_engine_and_fix_argv(argv)
+    # If we are not linking the fuzzing engine, execute normally.
+    if not fuzzing_engine_in_argv:
+      execute(argv)
 
   print(f"Linking {argv}")
 
-  # We are linking, collect the relevant flags and dependencies.
+  # If we are linking, collect the relevant flags and dependencies.
   output_file = get_flag_value(argv, "-o")
-  assert output_file, f"Missing output file: {argv}"
+  if not output_file:
+    execute(argv)  # Missing output file
 
   output_file = Path(output_file)
   if output_file.name.endswith(".o"):
-    print("not a real linker command.")
-    execute(argv)
+    execute(argv)  # Not a real linker command
 
   cdb_path = get_flag_value(argv, "-gen-cdb-fragment-path")
   assert cdb_path, f"Missing Compile Directory Path: {argv}"
