@@ -127,9 +127,12 @@ class GetFuzzTargetName(unittest.TestCase):
 
 class FuzzbenchRunsTest(unittest.TestCase):
   """Tests for fuzzbench runs."""
-  temp_dir = tempfile.mkdtemp()
 
-  def _remove_temp_dir(self):
+  def setUp(self):
+    """Creates a temporary directory for fuzzbench runs tests."""
+    self.temp_dir = tempfile.mkdtemp()
+
+  def tearDown(self):
     """Removes temporary directory."""
     with open(LOG_FILE_PATH, 'w', encoding='utf-8') as log_file:
       fuzzbench_local_run.remove_temp_dir_content(self.temp_dir, -1, log_file)
@@ -252,7 +255,6 @@ class FuzzbenchRunsTest(unittest.TestCase):
     self._build_ood_image_steps_test(fuzzing_engine, project, env_dict)
     self._run_ood_image_step_test(fuzzing_engine, project, env_dict)
     self._extract_crashes_steps_test(fuzzing_engine, project, env_dict)
-    self._remove_temp_dir()
 
 
 if __name__ == '__main__':
