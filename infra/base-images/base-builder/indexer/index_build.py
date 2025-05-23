@@ -108,10 +108,12 @@ def save_build(
     mode = 'w:gz' if archive_path.suffix.endswith('gz') else 'w'
     with tarfile.open(tmp.name, mode) as tar:
 
-      def _save_dir(path: Path,
-                    prefix: str,
-                    exclude_build_artifacts: bool = False,
-                    only_include_target: str | None = None):
+      def _save_dir(
+          path: Path,
+          prefix: str,
+          exclude_build_artifacts: bool = False,
+          only_include_target: str | None = None,
+      ):
         assert prefix.endswith('/')
         for root, _, files in os.walk(path):
           for file in files:
@@ -194,6 +196,7 @@ def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
 def get_build_id(elf_file: str) -> str | None:
   """This invokes llvm-readelf to get the build ID of the given ELF file."""
 
+  # Note: this format changed in llvm-readelf19.
   # Example output of llvm-readelf JSON output:
   # [
   #   {
@@ -607,7 +610,8 @@ def main():
       '-t',
       '--targets',
       help=('Comma separated list of targets to build for. '
-            'If this is omitted, all target snapshots are built.'))
+            'If this is omitted, all target snapshots are built.'),
+  )
   args = parser.parse_args()
 
   targets_to_index = None

@@ -194,7 +194,7 @@ def parse_dependency_file(file_path: Path, output_file: Path,
 
   # The first line should have the format "/path/to/file: \"
   # Make sure the binary name matches.
-  if output_file.name != Path(lines[0].split(':')[0].strip()).name:
+  if output_file.name != Path(lines[0].split(":")[0].strip()).name:
     raise RuntimeError(f"dependency file has invalid first line: {lines[0]}. "
                        f"Expected to see {output_file.name}.")
 
@@ -232,19 +232,21 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
     if not file.name.endswith(".json"):
       continue
 
-    data = ''
-    for i in range(3):
+    data = ""
+    num_retries = 3
+    for i in range(num_retries):
       with file.open("rt") as f:
         data = f.read()
         if data.endswith(",\n"):
           contents.append(data[:-2])
           break
 
-      if i < 2:
+      if i < num_retries - 1:
         print(
             f"WARNING: CDB fragment {file} appears to be invalid: {data}, "
             f"sleeping for 2^{i+1} seconds before retrying.",
-            file=sys.stderr)
+            file=sys.stderr,
+        )
         time.sleep(2**(i + 1))
     else:
       error = "CDB fragment {file} is invalid even after retries: {data}"
@@ -293,7 +295,8 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
     print(
         f"WARNING: Compile commands directory {compile_commands_dir} "
         "already created.",
-        file=sys.stderr)
+        file=sys.stderr,
+    )
     return
 
   with (compile_commands_dir / "compile_commands.json").open("wt") as f:
@@ -348,16 +351,22 @@ def check_fuzzing_engine_and_fix_argv(argv: list[str]) -> bool:
     elif arg == "-fsanitize=fuzzer-no-link":
       argv.remove("-fsanitize=fuzzer-no-link")
       idx -= 1
-    elif "-fsanitize=" in arg and "fuzzer" in arg:
+    elif arg.startswith("-fsanitize="):
       # This could be -fsanitize=address,fuzzer.
       sanitize_vals = arg.split("=")[1].split(",")
-      sanitize_vals.remove("fuzzer")
-      arg = "-fsanitize=" + ",".join(sanitize_vals)
+      if "fuzzer" in sanitize_vals:
+        sanitize_vals.remove("fuzzer")
+        arg = "-fsanitize=" + ",".join(sanitize_vals)
+        fuzzing_engine_in_argv = True
+      elif "fuzzer-no-link" in sanitize_vals:
+        sanitize_vals.remove("fuzzer-no-link")
+        arg = "-fsanitize=" + ",".join(sanitize_vals)
 
       argv[idx] = arg
-      idx += 1
-      argv.insert(idx, "-lFuzzingEngine")
-      fuzzing_engine_in_argv = True
+
+      if fuzzing_engine_in_argv:
+        idx += 1
+        argv.insert(idx, "-lFuzzingEngine")
 
     idx += 1
 
@@ -396,14 +405,16 @@ def main(argv: list[str]) -> None:
   argv.append(f"-Wl,--dependency-file={dependency_file}")
   argv.append(f"-Wl,--why-extract={why_extract_file}")
   argv.append("-Wl,--build-id")
+  # We force lld, but it doesn't include this dir by default.
   argv.append("-L/usr/local/lib")
   argv.append("-Qunused-arguments")
   run(argv)
 
   # Check if explicit list of allowlisted targets were provided for indexing.
-  targets_to_index = os.getenv('INDEXER_TARGETS')
+  targets_to_index = os.getenv("INDEXER_TARGETS")
   if targets_to_index:
-    if output_file.name not in targets_to_index.split(','):
+    # TODO(ochang): Figure out how to handle when the final binary gets renamed.
+    if output_file.name not in targets_to_index.split(","):
       print(f"not indexing as {output_file} is not in the allowlist")
       return
 
