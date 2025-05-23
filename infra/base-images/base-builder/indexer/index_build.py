@@ -29,6 +29,7 @@ import subprocess
 import tarfile
 import tempfile
 from typing import Any, Sequence, Union
+import urllib.request
 
 ARCHIVE_VERSION = 1
 PROJECT = Path(os.environ['PROJECT_NAME'])
@@ -41,6 +42,8 @@ INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 _LD_PATH = Path('/lib64/ld-linux-x86-64.so.2')
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 _CLANG_VERSION = '18'
+
+_INFO_URL = f"https://storage.googleapis.com/oss-fuzz-coverage/latest_report_info/{os.environ['PROJECT_NAME']}.json"
 
 
 def set_env_vars():
@@ -94,6 +97,9 @@ def _is_elf(file: Path) -> bool:
   with file.open('rb') as f:
     return f.read(4) == b'\x7fELF'
 
+
+def _get_comparable_path(path: str) -> tuple[str, str]:
+    return os.path.basename(os.path.dirname(path)), os.path.basename(path)
 
 def save_build(
     manifest: Manifest,
@@ -154,8 +160,30 @@ def save_build(
       # space.
       _save_dir(build_dir, 'obj/', only_include_target=manifest.binary_name)
       _save_dir(index_dir, 'idx/')
+      copied_files = [
+       tar_info.name for tar_info in tar.getmembers()]
+      report_missing_source_files(manifest.binary_name, copied_files, tar)
 
     shutil.copyfile(tmp.name, archive_path)
+
+
+def report_missing_source_files(binary_name, copied_files, tar):
+  copied_files = {_get_comparable_path(file) for file in copied_files}
+  covered_files = {
+    _get_comparable_path(path): path
+    for path in get_covered_files(binary_name)
+  }
+  missing = set(covered_files) - copied_files
+  if not missing:
+    return
+  print(f'Reporting missing files: {missing}')
+  missing_report_lines = sorted([
+    covered_files[k] for k in missing
+  ])
+  missing_report = ' '.join(missing_report_lines).encode('utf-8')
+  report_name = f'{binary_name}_missing_files.txt'
+  tar_info = tarfile.TarInfo(name=report_name, size=len(missing_report))
+  tar.addfile(tarinfo=tar_info, fileobj=io.BytesIO(missing_report))
 
 
 def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
@@ -632,6 +660,21 @@ def main():
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
+
+
+def get_covered_files(target: str) -> Sequence[str]:
+  with urllib.request.urlopen(_INFO_URL) as resp:
+    latest_info = json.load(resp)
+
+  stats_url = latest_info.get('fuzzer_stats_dir').replace(
+    "gs://", "https://storage.googleapis.com/")
+
+  target_url = f"{stats_url}/{target}.json"
+  with urllib.request.urlopen(target_url) as resp:
+    target_cov = json.load(resp)
+
+  files = target_cov["data"][0]["files"]
+  return [file['filename'] for file in files if file['summary']['regions']['covered']]
 
 
 if __name__ == '__main__':
