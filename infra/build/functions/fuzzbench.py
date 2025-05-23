@@ -163,6 +163,8 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
   }
   steps.append(engine_step)
 
+  project_yaml_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/projects/{project.name}/project.yaml'
+  benchmark_yaml_path = '/benchmark.yaml'
   compile_project_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
@@ -179,7 +181,8 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
           # `cd /src && cd {workdir}` (where {workdir} is parsed from the
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
-          (f'rm -r /out && cd /src && cd {project.workdir} && '
+          (f'cp {project_yaml_path} {benchmark_yaml_path} && '
+           f'rm -r /out && cd /src && cd {project.workdir} && '
            'mkdir -p $$OUT && compile'),
       ],
   }
