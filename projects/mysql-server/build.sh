@@ -25,7 +25,7 @@ if [[ $SANITIZER = *undefined* ]]; then
     export MY_SANITIZER="-DWITH_UBSAN=ON"
 fi
 # not handling yet WITH_MSAN nor WITH_TSAN
-cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_LD=lld $MY_SANITIZER
+cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_LD=lld $MY_SANITIZER -DCMAKE_VERBOSE_MAKEFILE=ON
 make -j$(nproc)
 mkdir -p $OUT/lib/
 cp library_output_directory/libmysql*.so.* $OUT/lib/
