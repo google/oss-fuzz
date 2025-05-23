@@ -623,7 +623,7 @@ def _add_engine_args(parser, choices=None):
   if choices is None:
     choices = constants.ENGINES
   parser.add_argument('--engine',
-                      default=constants.DEFAULT_ENGINE,
+                      default=constants.DEFAULT_FUZZING_ENGINE,
                       choices=choices)
 
 

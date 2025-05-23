@@ -44,7 +44,7 @@ GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 GCB_EXPERIMENT_LOGS_BUCKET = 'oss-fuzz-gcb-experiment-logs'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
-DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede']
+DEFAULT_FUZZING_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 LATEST_VERSION_FILENAME = 'latest.version'
@@ -218,7 +218,7 @@ def set_yaml_defaults(project_yaml):
   project_yaml.setdefault('disabled', False)
   project_yaml.setdefault('architectures', DEFAULT_ARCHITECTURES)
   project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
-  project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
+  project_yaml.setdefault('fuzzing_engines', DEFAULT_FUZZING_ENGINES)
   project_yaml.setdefault('run_tests', True)
   project_yaml.setdefault('coverage_extra_args', '')
   project_yaml.setdefault('labels', {})
