@@ -180,7 +180,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
           (f'rm -r /out && cd /src && cd {project.workdir} && '
-           'mkdir -p $${OUT} && compile'),
+           'mkdir -p $$OUT && compile'),
       ],
   }
   steps.append(compile_project_step)
