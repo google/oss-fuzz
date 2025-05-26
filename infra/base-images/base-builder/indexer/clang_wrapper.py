@@ -25,14 +25,11 @@ import hashlib
 import json
 import os
 from pathlib import Path  # pylint: disable=g-importing-member
-import shutil
-import sqlite3
 import subprocess
 import sys
 import time
-from typing import Any, Iterator
+from typing import Any
 
-INDEX_DB_NAME = "db.sqlite"
 _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
 _INDEXER_PATH = "/opt/indexer/indexer"
 _IGNORED_DEPS_PATH = os.path.join(os.path.dirname(_INDEXER_PATH),
@@ -174,6 +171,10 @@ def get_flag_value(argv: Sequence[str], flag: str) -> str | None:
   return None
 
 
+def remove_flag_if_present(argv: list[str], flag: str) -> MutableSequence[str]:
+  return [arg for arg in argv if arg != flag]
+
+
 def remove_flag_and_value(argv: list[str],
                           flag: str) -> MutableSequence[str] | None:
   for i in range(len(argv) - 1):
@@ -263,25 +264,11 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
   return json.loads(contents)
 
 
-def get_index_files(index_db_path: Path) -> Iterator[Path]:
-  """Get files referenced in the index."""
-  with sqlite3.connect(index_db_path) as conn:
-    cursor = conn.cursor()
-
-    query = """
-          SELECT DISTINCT dirname, basename
-          FROM location
-      """
-    for dirname, basename in cursor.execute(query):
-      yield Path(os.path.join(dirname, basename))
-
-
 def run_indexer(build_id: str, linker_commands: dict[str, Any]):
   """Run the indexer."""
   index_dir = INDEXES_PATH / build_id
   # TODO(ochang): check if this is correct.
   index_dir.mkdir(exist_ok=True)
-  index_db_path = index_dir / INDEX_DB_NAME
 
   # Use a build-specific compile commands directory, since there could be
   # parallel linking happening at the same time.
@@ -306,8 +293,8 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
       _INDEXER_PATH,
       "--build_dir",
       compile_commands_dir,
-      "--index_path",
-      index_db_path.as_posix(),
+      "--index_dir",
+      index_dir.as_posix(),
       "--source_dir",
       SRC.as_posix(),
   ]
@@ -316,26 +303,6 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
     raise RuntimeError("Running indexer failed\n"
                        f"stdout:\n```\n{result.stdout.decode()}\n```\n"
                        f"stderr:\n```\n{result.stderr.decode()}\n```\n")
-
-  relative_root = index_dir / "relative"
-  absolute_root = index_dir / "absolute"
-  for file_path in get_index_files(index_db_path):
-    if not file_path.name:
-      print(f"WARNING: Invalid index file path: {file_path}", file=sys.stderr)
-
-    if file_path.as_posix().startswith("<"):
-      # builtins, we can't collect source for these.
-      continue
-
-    if file_path.is_absolute():
-      index_path = absolute_root / file_path.relative_to("/")
-    else:
-      file_path = SRC / file_path
-      index_path = relative_root / file_path.relative_to(SRC)
-
-    if not file_path.is_dir() and file_path.exists():
-      index_path.parent.mkdir(parents=True, exist_ok=True)
-      shutil.copyfile(file_path, index_path)
 
 
 def check_fuzzing_engine_and_fix_argv(argv: list[str]) -> bool:
@@ -377,6 +344,8 @@ def check_fuzzing_engine_and_fix_argv(argv: list[str]) -> bool:
 
 
 def main(argv: list[str]) -> None:
+  argv = remove_flag_if_present(argv, "-gline-tables-only")
+
   fuzzing_engine_in_argv = check_fuzzing_engine_and_fix_argv(argv)
   # If we are not linking the fuzzing engine, execute normally.
   if not fuzzing_engine_in_argv:
@@ -434,7 +403,9 @@ def main(argv: list[str]) -> None:
     res = subprocess.run(["ar", "-t", archive], capture_output=True, check=True)
     archive_deps += [dep.decode() for dep in res.stdout.splitlines()]
 
-  cdb = read_cdb_fragments(cdb_path)
+  # We only care about the compile commands that emitted an output file.
+  cdb = [cmd for cmd in read_cdb_fragments(cdb_path) if "output" in cmd]
+
   commands = {}
   for dep in obj_deps:
     print(f"Looking for dep {dep}")

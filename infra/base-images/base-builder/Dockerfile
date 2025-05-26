@@ -219,9 +219,7 @@ RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
     rm -rf /tmp/patchelf && apt-get remove -y autoconf
 
 COPY indexer /opt/indexer
-ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer /opt/indexer/indexer
+ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer-59fad4ca5b1047c6afa2f60d754bd6ae1fa08c34 /opt/indexer/indexer
 RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
-RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang
-RUN cp /opt/indexer/clang_wrapper.py /opt/indexer/clang++
 
 CMD ["compile"]
