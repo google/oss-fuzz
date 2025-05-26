@@ -29,9 +29,7 @@ export OSS_FUZZ_CHECKOUT=<path to your oss-fuzz checkout>
 cd $OSS_FUZZ_CHECKOUT/infra/base-images/base-builder/indexer
 
 # One time setup steps
-ln -s clang_wrapper.py clang
-ln -s clang_wrapper.py clang++
-curl -O https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer
+curl -o indexer https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer-59fad4ca5b1047c6afa2f60d754bd6ae1fa08c34
 chmod +x indexer
 
 cd $OSS_FUZZ_CHECKOUT
