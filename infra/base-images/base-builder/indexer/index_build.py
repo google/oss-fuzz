@@ -579,9 +579,11 @@ def test_and_archive(targets_to_index: Sequence[str] | None):
   logging.info('targets %s', targets)
   for target in targets:
     try:
-      # TODO(metzman): Figure out if this is a good idea, it makes some things
-      # pass that should but causes some things to pass that shouldn't.
-      if not test_target(target):
+      # Check that the target binary behaves like a fuzz target,
+      # unless the caller specifically asked for a list of targets.
+      if not targets_to_index and not test_target(target):
+        # TODO(metzman): Figure out if this is a good idea, it makes some things
+        # pass that should but causes some things to pass that shouldn't.
         continue
     except Exception:  # pylint: disable=broad-exception-caught
       logging.exception('Error testing target.')
@@ -609,8 +611,12 @@ def main():
   parser.add_argument(
       '-t',
       '--targets',
-      help=('Comma separated list of targets to build for. '
-            'If this is omitted, all target snapshots are built.'),
+      help=(
+          'Comma separated list of targets to build for. '
+          'If this is omitted, snapshots are built for all fuzz targets. '
+          'If specified, this can include binaries which are not fuzz targets '
+          '(e.g., CLI targets which are built as part of the build '
+          'integration).'),
   )
   args = parser.parse_args()
 

@@ -347,20 +347,30 @@ def main(argv: list[str]) -> None:
   argv = remove_flag_if_present(argv, "-gline-tables-only")
 
   fuzzing_engine_in_argv = check_fuzzing_engine_and_fix_argv(argv)
-  # If we are not linking the fuzzing engine, execute normally.
-  if not fuzzing_engine_in_argv:
-    execute(argv)
+  indexer_targets: list[str] = [
+      t for t in os.getenv("INDEXER_TARGETS", "").split(",") if t
+  ]
 
-  print(f"Linking {argv}")
-
-  # We are linking, collect the relevant flags and dependencies.
+  # If we are linking, collect the relevant flags and dependencies.
   output_file = get_flag_value(argv, "-o")
-  assert output_file, f"Missing output file: {argv}"
+  if not output_file:
+    execute(argv)  # Missing output file
 
   output_file = Path(output_file)
-  if output_file.name.endswith(".o"):
-    print("not a real linker command.")
+
+  if indexer_targets:
+    if output_file.name not in indexer_targets:
+      # Not a relevant linker command
+      print(f"Not indexing as {output_file} is not in the allowlist")
+      execute(argv)
+  elif not fuzzing_engine_in_argv:
+    # Not a fuzz target.
     execute(argv)
+
+  if output_file.name.endswith(".o"):
+    execute(argv)  # Not a real linker command
+
+  print(f"Linking {argv}")
 
   cdb_path = get_flag_value(argv, "-gen-cdb-fragment-path")
   assert cdb_path, f"Missing Compile Directory Path: {argv}"
@@ -378,14 +388,6 @@ def main(argv: list[str]) -> None:
   argv.append("-L/usr/local/lib")
   argv.append("-Qunused-arguments")
   run(argv)
-
-  # Check if explicit list of allowlisted targets were provided for indexing.
-  targets_to_index = os.getenv("INDEXER_TARGETS")
-  if targets_to_index:
-    # TODO(ochang): Figure out how to handle when the final binary gets renamed.
-    if output_file.name not in targets_to_index.split(","):
-      print(f"not indexing as {output_file} is not in the allowlist")
-      return
 
   build_id = get_build_id(output_file)
   assert build_id is not None
