@@ -265,8 +265,15 @@ def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
   return None
 
 
-def enumerate_build_targets() -> Sequence[BinaryMetadata]:
-  """Enumerates the build targets in the project."""
+def enumerate_build_targets(binary_args: str) -> Sequence[BinaryMetadata]:
+  """Enumerates the build targets in the project.
+
+  Args:
+    binary_args: Shell-escaped argument list, applied to all targets
+
+  Returns:
+    A sequence of target descriptions, in BinaryMetadata form.
+  """
 
   logging.info('enumerate_build_targets')
   linker_json_paths = list((OUT / 'cdb').glob('*_linker_commands.json'))
@@ -292,7 +299,6 @@ def enumerate_build_targets() -> Sequence[BinaryMetadata]:
 
         name = binary_path.name
 
-      binary_args = '<input_file>'
       compile_commands = data['compile_commands']
 
       if binary_path.is_relative_to(f'{OUT}/'):
@@ -570,9 +576,9 @@ def archive_target(target: BinaryMetadata) -> Path | None:
   return archive_path
 
 
-def test_and_archive(targets_to_index: Sequence[str] | None):
+def test_and_archive(target_args: str, targets_to_index: Sequence[str] | None):
   """Test target and archive."""
-  targets = enumerate_build_targets()
+  targets = enumerate_build_targets(target_args)
   if targets_to_index:
     targets = [t for t in targets if t.name in targets_to_index]
 
@@ -618,6 +624,13 @@ def main():
           '(e.g., CLI targets which are built as part of the build '
           'integration).'),
   )
+  parser.add_argument(
+      '--target-args',
+      default='<input_file>',
+      help=('Arguments to pass to the target when executing it. '
+            'This string is shell-escaped (interpreted with `shlex.split`). '
+            'The substring <input_file> will be replaced with the input path.'),
+  )
   args = parser.parse_args()
 
   targets_to_index = None
@@ -634,7 +647,7 @@ def main():
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
   build_project(targets_to_index)
-  test_and_archive(targets_to_index)
+  test_and_archive(args.target_args, targets_to_index)
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
