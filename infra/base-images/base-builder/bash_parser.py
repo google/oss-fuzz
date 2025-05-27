@@ -221,7 +221,9 @@ def main():
   print("#" * 60)
   print(replay_bash_script)
   print("#" * 60)
-  with open('/out/replay-build-script.sh', 'w', encoding='utf-8') as f:
+
+  out_dir = os.getenv('OUT', '/out')
+  with open(f'{out_dir}/replay-build-script.sh', 'w', encoding='utf-8') as f:
     f.write(replay_bash_script)
 
   src_dir = os.getenv('SRC', '/src')

@@ -17,10 +17,16 @@ if [[ "$ARCHITECTURE" == i386 ]]; then
   export PKG_CONFIG_PATH=/usr/local/lib/i386-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
   LIBDIR='lib/i386-linux-gnu'
   FFMPEG_BUILD_ARGS='--arch="i386" --cpu="i386" --disable-inline-asm'
+  RUST_TARGET='i686-unknown-linux-gnu'
+  rustup target add $RUST_TARGET
 else
   LIBDIR='lib/x86_64-linux-gnu'
   FFMPEG_BUILD_ARGS=''
+  RUST_TARGET='x86_64-unknown-linux-gnu'
+  rustup target add $RUST_TARGET
 fi
+
+export RUSTC="rustc --target=$RUST_TARGET"
 
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
@@ -33,9 +39,11 @@ EOF
 pushd $SRC/ffmpeg
 ./configure --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS" \
             --enable-{gpl,nonfree} \
-            --disable-{asm,bsfs,doc,encoders,filters,muxers,network,postproc,programs,shared} \
+            --disable-{asm,bsfs,doc,encoders,filters,muxers,network,programs,shared} \
             --enable-filter={sine,yuvtestsrc} \
             --pkg-config-flags="--static" \
+            --disable-{debug,optimizations} \
+            --optflags=-O1 \
             $FFMPEG_BUILD_ARGS
 make -j`nproc`
 make install
@@ -58,43 +66,24 @@ pushd $SRC/mpv
 sed -i -e "/^\s*flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]/d; \
           s|^\s*link_flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]| \
           link_flags += \['$LIB_FUZZING_ENGINE'\]|" meson.build
-mkdir subprojects
-meson wrap install expat
-meson wrap install fontconfig
-meson wrap install freetype2
-meson wrap install fribidi
-meson wrap install harfbuzz
-meson wrap install lcms2
-meson wrap install uchardet
-cat <<EOF > subprojects/libplacebo.wrap
-[wrap-git]
-url = https://github.com/haasn/libplacebo
-revision = master
-depth = 1
-clone-recursive = true
-EOF
-cat <<EOF > subprojects/libass.wrap
-[wrap-git]
-url = https://github.com/libass/libass
-revision = master
-depth = 1
-EOF
-meson setup build -Dbackend_max_links=4 -Ddefault_library=static -Dprefer_static=true \
+
+meson setup build --wrap-mode=nodownload -Dbuildtype=plain -Dbackend_max_links=4 -Ddefault_library=static -Dprefer_static=true \
                   -Dfuzzers=true -Dlibmpv=true -Dcplayer=false -Dgpl=true \
                   -Duchardet=enabled -Dlcms2=enabled -Dtests=false \
                   -Dfreetype2:harfbuzz=disabled -Dfreetype2:zlib=disabled -Dfreetype2:png=disabled \
                   -Dharfbuzz:tests=disabled -Dharfbuzz:introspection=disabled -Dharfbuzz:docs=disabled \
-                  -Dharfbuzz:utilities=disabled -Dfontconfig:doc=disabled -Dfontconfig:nls=disabled \
+                  -Dharfbuzz:utilities=disabled -Dfontconfig:doc=disabled -Dfontconfig:nls=disabled -Dfontconfig:xml-backend=expat \
                   -Dfontconfig:tests=disabled -Dfontconfig:tools=disabled -Dfontconfig:cache-build=disabled \
                   -Dfribidi:deprecated=false -Dfribidi:docs=false -Dfribidi:bin=false -Dfribidi:tests=false \
-                  -Dlibplacebo:lcms=enabled -Dlibplacebo:demos=false \
+                  -Dlibplacebo:lcms=enabled -Dlibplacebo:xxhash=enabled -Dlibplacebo:demos=false \
                   -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled \
                   -Dlibass:fontconfig=enabled -Dlibass:asm=disabled \
-                  -Dc_link_args="$CXXFLAGS -lc++" -Dcpp_link_args="$CXXFLAGS" \
+                  -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS" \
+                  -Dc_link_args="$CFLAGS" -Dcpp_link_args="$CXXFLAGS" \
                   --libdir $LIBDIR
 meson compile -C build fuzzers
 
 find ./build/fuzzers -maxdepth 1 -type f -name 'fuzzer_*' -exec mv {} "$OUT" \; -exec echo "{} -> $OUT" \;
 
-rsync -av rsync://samples.ffmpeg.org/samples/Matroska $SRC/matroska
-zip -r $OUT/fuzzer_loadfile_mkv_seed_corpus.zip $SRC/matroska -i '*.mkv' '*.mka'
+rsync --no-compress -av rsync://samples.ffmpeg.org/samples/Matroska $SRC/matroska
+zip -0 -r $OUT/fuzzer_loadfile_mkv_seed_corpus.zip $SRC/matroska -i '*.mkv' '*.mka'

@@ -3,7 +3,6 @@ language: c
 primary_contact: "liang.he@intel.com"
 auto_ccs:
   - "tianlong.liang@intel.com"
-  - "wenyong.huang@intel.com"
 main_repo: "https://github.com/bytecodealliance/wasm-micro-runtime.git"
 sanitizers:
   - address
@@ -11,4 +10,3 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 file_github_issue: false
-

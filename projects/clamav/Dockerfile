@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     pkg-config
 
+RUN rustup update
+
 #
 # Build static libs for dependencies
 #

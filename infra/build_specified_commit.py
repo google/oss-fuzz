@@ -20,7 +20,6 @@ like continuious integration fuzzing and bisection to find errors
 import argparse
 import bisect
 import datetime
-from distutils import spawn
 import os
 import collections
 import json
@@ -336,7 +335,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
 
 def load_base_builder_repo():
   """Get base-image digests."""
-  gcloud_path = spawn.find_executable('gcloud')
+  gcloud_path = shutil.which('gcloud')
   if not gcloud_path:
     logging.warning('gcloud not found in PATH.')
     return None

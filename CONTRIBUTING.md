@@ -24,3 +24,8 @@ use GitHub pull requests for this purpose.
 Contributions made by corporations are covered by a different agreement than
 the one above, the
 [Software Grant and Corporate Contributor License Agreement](https://cla.developers.google.com/about/google-corporate).
+
+### Requesting a review
+PRs should be reviewed within a few days by the OSS-Fuzz oncall. There is no need to add anyone to review your code.
+If for some reason this does not happen for a few days, feel free to add @jonathanmetzman or email oss-fuzz-team@google.com
+about your PR.

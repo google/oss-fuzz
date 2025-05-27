@@ -3,6 +3,7 @@ language: c++
 primary_contact: "antoine@python.org"
 auto_ccs:
   - "bengilgit@gmail.com"
+  - "dewey.dunnington@gmail.com"
   - "emkornfield@gmail.com"
   - "felipekde@gmail.com"
   - "fsaintjacques@gmail.com"
@@ -14,6 +15,7 @@ auto_ccs:
   - "szucs.krisztian@gmail.com"
   - "wesmckinn@gmail.com"
   - "xhochy@gmail.com"
+  - "ustcwg@gmail.com"
   - "will.jones127@gmail.com"
   - "zotthewizard@gmail.com"
 main_repo: 'https://github.com/apache/arrow.git'

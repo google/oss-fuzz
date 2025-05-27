@@ -22,3 +22,4 @@ RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
 WORKDIR opus
 COPY build.sh $SRC/
 COPY *.cc tests/
+COPY *.h tests/

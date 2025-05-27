@@ -10,6 +10,7 @@ auto_ccs:
   - "vern@corelight.com"
   - "benjamin.bannier@corelight.com"
   - "christian@corelight.com"
+  - "evan.typanski@corelight.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

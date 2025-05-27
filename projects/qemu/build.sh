@@ -14,12 +14,5 @@
 #
 ################################################################################
 
-pip3 install meson tomli
-
-cd $SRC/glib
-CC="" CFLAGS="" CXX="" CXXFLAGS="" meson setup --buildtype=plain --default-library=shared builddir -Dtests=false
-CC="" CFLAGS="" CXX="" CXXFLAGS="" ninja -C builddir
-ninja -C builddir install
-
 cd $SRC/qemu/
 $SRC/qemu/scripts/oss-fuzz/build.sh

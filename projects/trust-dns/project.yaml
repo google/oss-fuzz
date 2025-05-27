@@ -4,6 +4,7 @@ main_repo: "https://github.com/hickory-dns/hickory-dns"
 primary_contact: "bluejekyll@gmail.com"
 auto_ccs:
   - djc.ochtman@gmail.com
+  - divergentdave@gmail.com
 sanitizers:
   - address
 fuzzing_engines:

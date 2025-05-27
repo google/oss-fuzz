@@ -55,7 +55,7 @@ docker run \
 B_TIME=$(($SECONDS - $B_START))
 
 # Step 3: save (commit, locally) the cached container as an image
-docker container commit -c "ENV REPLAY_ENABLED=1" ${_PROJECT}-origin-${_SANITIZER} $FINAL_IMAGE_NAME
+docker container commit -c "ENV REPLAY_ENABLED=1" -c "ENV CAPTURE_REPLAY_SCRIPT=" ${_PROJECT}-origin-${_SANITIZER} $FINAL_IMAGE_NAME
 
 # Step 4: save the list of executables created from a vanilla build. This is
 #         needed for validating if replay and ccaching works.

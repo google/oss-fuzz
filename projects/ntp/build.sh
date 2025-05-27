@@ -16,7 +16,6 @@
 ################################################################################
 
 cd ntp-dev
-git apply ../patch.diff
 #avoids https://bugs.llvm.org/show_bug.cgi?id=34636
 cp /usr/bin/ld.gold /usr/bin/ld
 ./bootstrap

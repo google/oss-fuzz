@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/djc/askama askama
-WORKDIR askama
+RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/askama-rs/askama.git askama
+WORKDIR askama/fuzzing
+
+# The current default toolchain used by OSS-Fuzz (1.81) is too old for askama v0.14,
+# which needs at least 1.83.
+ENV RUSTUP_TOOLCHAIN nightly-2025-01-10
+
 COPY build.sh $SRC/

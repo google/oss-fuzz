@@ -4,3 +4,7 @@ primary_contact: "tjko@iki.com"
 auto_ccs:
   - "capuanobailey@gmail.com"
 main_repo: "https://github.com/tjko/jpegoptim.git"
+fuzzing_engines:
+    - libfuzzer
+    - afl
+    - honggfuzz

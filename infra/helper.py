@@ -34,7 +34,7 @@ import tempfile
 import constants
 import templates
 
-OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+OSS_FUZZ_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
 BASE_RUNNER_IMAGE = 'gcr.io/oss-fuzz-base/base-runner'
@@ -246,6 +246,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     result = shell(args)
   elif args.command == 'pull_images':
     result = pull_images()
+  elif args.command == 'index':
+    result = index(args)
   elif args.command == 'run_clusterfuzzlite':
     result = run_clusterfuzzlite(args)
   else:
@@ -364,6 +366,12 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
                                   help='name of the fuzzer',
                                   nargs='?')
   _add_external_project_args(check_build_parser)
+  index_parser = subparsers.add_parser('index', help='Index project.')
+  index_parser.add_argument(
+      '--targets', help='Allowlist of targets to index (comma-separated).')
+  index_parser.add_argument('project', help='Project')
+  _add_architecture_args(index_parser)
+  _add_environment_args(index_parser)
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
@@ -1675,16 +1683,52 @@ def _generate_impl(project, language):
   return True
 
 
+def index(args):
+  """Runs the indexer on the project."""
+  if not args.project.is_external and not check_project_exists(args.project):
+    return False
+
+  image_name = f'gcr.io/oss-fuzz/{args.project.name}'
+  if not build_image_impl(
+      args.project, cache=True, pull=False, architecture=args.architecture):
+    logger.error('Failed to build project image for indexer.')
+    return False
+  env = [
+      f'ARCHITECTURE={args.architecture}',
+      'HELPER=True',
+      f'PROJECT_NAME={args.project.name}',
+  ]
+  if args.e:
+    env.extend(args.e)
+
+  run_args = _env_to_docker_args(env)
+  run_args.extend([
+      '-v', f'{args.project.out}:/out', '-v', f'{args.project.work}:/work',
+      '-t', image_name, '/opt/indexer/index_build.py'
+  ])
+
+  if args.targets:
+    run_args.extend(['--targets', args.targets])
+
+  logger.info(f'Running indexer for project: {args.project.name}')
+  result = docker_run(run_args, architecture=args.architecture)
+  if result:
+    logger.info('Indexer completed successfully.')
+  else:
+    logger.error('Indexer failed.')
+
+  return result
+
+
 def shell(args):
   """Runs a shell within a docker image."""
   if not build_image_impl(args.project):
     return False
 
   env = [
-      'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer,
-      'ARCHITECTURE=' + args.architecture,
-      'HELPER=True',
+      'FUZZING_ENGINE=' + args.engine, 'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture, 'HELPER=True',
+      f'PROJECT_NAME={args.project.name}'
   ]
 
   if args.project.name != 'base-runner-debug':

@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y wget sudo && \
 RUN apt-get update && apt-get install -y git && \
     git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
     cd fuzz-introspector && \
-    git checkout b8f0ed351df53afea795a14a8cf9098da0aeddee && \
+    git checkout 8944d0b001754f60a602c95a816880f885f1e38d && \
     git submodule init && \
     git submodule update && \
     apt-get autoremove --purge -y git && \
@@ -45,7 +45,8 @@ RUN apt-get update && apt-get install -y git && \
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.
-RUN /root/checkout_build_install_llvm.sh
+ARG FULL_LLVM_BUILD
+RUN FULL_LLVM_BUILD=$FULL_LLVM_BUILD /root/checkout_build_install_llvm.sh
 RUN rm /root/checkout_build_install_llvm.sh
 
 # Setup the environment.

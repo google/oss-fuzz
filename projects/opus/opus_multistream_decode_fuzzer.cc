@@ -27,12 +27,15 @@
 #include "opus_projection.h"
 #include "opus_types.h"
 
+#include "opus_ossfuzz_utils.h"
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzedDataProvider fdp(data, size);
 
   const int frame_size_ms_x2 =
       fdp.PickValueInArray({5, 10, 20, 40, 80, 120, 160, 200, 240});
-  const opus_int32 frequency = fdp.PickValueInArray({8, 12, 16, 24, 48}) * 1000;
+  const opus_int32 frequency = fdp.PickValueInArray({8, 12, 16, 24, 48
+                                                     ARG_QEXT(96)}) * 1000;
   const int frame_size = frame_size_ms_x2 * frequency / 2000;
   const opus_int32 nb_channels = fdp.ConsumeIntegralInRange(0, 255);
   const int streams = fdp.ConsumeIntegralInRange(0, 255);
