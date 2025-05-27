@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # Install prerequisite packages
 # See connectedhomeip/docs/guides/BUILDING.md#prerequisites
 RUN apt-get update && \
-    apt-get install -y pkg-config libssl-dev libdbus-1-dev libglib2.0-dev \
+    apt-get install -y --no-install-recommends pkg-config libssl-dev libdbus-1-dev libglib2.0-dev \
         libavahi-client-dev ninja-build \
         unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
@@ -48,6 +48,8 @@ RUN rustup default nightly
 
 RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
 
+# PW_PROJECT_ROOT is used in requirements.build.txt
+ENV PW_PROJECT_ROOT=$SRC/connectedhomeip
 
 # Ensure global python has access to build requirements
 RUN pip3 install -r connectedhomeip/scripts/setup/requirements.build.txt

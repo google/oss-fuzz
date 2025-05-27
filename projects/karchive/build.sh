@@ -16,21 +16,13 @@
 ################################################################################
 
 # build zstd
-cd $SRC
-cd zstd
+cd $SRC/zstd
 cmake -S build/cmake -DBUILD_SHARED_LIBS=OFF
 make install -j$(nproc)
 
 # Build zlib
-cd $SRC
-cd zlib
+cd $SRC/zlib
 ./configure --static
-make install -j$(nproc)
-
-# Build libzip
-cd $SRC
-cd libzip
-cmake . -DBUILD_SHARED_LIBS=OFF
 make install -j$(nproc)
 
 # Build bzip2
@@ -54,37 +46,50 @@ export ORIG_CFLAGS="${CFLAGS}"
 export ORIG_CXXFLAGS="${CXXFLAGS}"
 unset CFLAGS
 unset CXXFLAGS
-cd $SRC
-cd xz
+cd $SRC/xz
 ./autogen.sh --no-po4a --no-doxygen
 ./configure --enable-static --disable-debug --disable-shared --disable-xz --disable-xzdec --disable-lzmainfo
 make install -j$(nproc)
 export CFLAGS="${ORIG_CFLAGS}"
 export CXXFLAGS="${ORIG_CXXFLAGS}"
 
+# Build openssl
+cd $SRC/openssl
+CONFIG_FLAGS="no-shared no-tests"
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+    # Disable assembly for proper instrumentation
+    CONFIG_FLAGS+=" no-asm"
+fi
+./config $CONFIG_FLAGS
+make -j$(nproc)
+make install_sw
+
 # Build extra-cmake-modules
-cd $SRC
-cd extra-cmake-modules
+cd $SRC/extra-cmake-modules
 cmake .
 make install -j$(nproc)
 
 # Build qtbase
-cd $SRC
-cd qtbase
+cd $SRC/qtbase
 ./configure -no-glib -qt-libpng -qt-pcre -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -debug -prefix /usr -no-feature-gui -no-feature-sql -no-feature-network  -no-feature-xml -no-feature-dbus -no-feature-printsupport
 cmake --build . --parallel $(nproc)
 cmake --install .
 
+# Build qttools
+cd $SRC/qttools
+cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build . --parallel $(nproc)
+cmake --install .
 
 # Build karchive
-cd $SRC
-cd karchive
+cd $SRC/karchive
 rm -rf poqm
 cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
 make install -j$(nproc)
 
 # Build karchive_fuzzer
-$CXX $CXXFLAGS -fPIC -std=c++17 $SRC/karchive_fuzzer.cc -o $OUT/karchive_fuzzer -I /usr/include/QtCore/ -I /usr/local/include/KF6/KArchive -lQt6Core -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libbz2.a -llzma /usr/local/lib/libzstd.a
+$CXX $CXXFLAGS -fPIC -std=c++17 $SRC/karchive_fuzzer.cc -o $OUT/karchive_fuzzer -I /usr/include/QtCore/ -I /usr/local/include/KF6/KArchive -lQt6Core -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libbz2.a -llzma /usr/local/lib/libzstd.a /usr/local/lib64/libcrypto.a
 
 cd $SRC
-find . -name "*.gz" -o -name "*.zip" -o -name "*.xz" -o -name "*.tar" | zip -q $OUT/karchive_fuzzer_seed_corpus.zip -@
+find . -name "*.gz" -o -name "*.zip" -o -name "*.xz" -o -name "*.tar" -o -name "*.7z" | zip -q $OUT/karchive_fuzzer_seed_corpus.zip -@
