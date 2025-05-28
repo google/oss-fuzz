@@ -370,6 +370,10 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   index_parser.add_argument(
       '--targets', help='Allowlist of targets to index (comma-separated).')
   index_parser.add_argument('project', help='Project')
+  index_parser.add_argument(
+      '--index-build-flag',
+      nargs='*',
+      help='Flags to pass to the index_build.py script in the container.')
   _add_architecture_args(index_parser)
   _add_environment_args(index_parser)
 
@@ -1706,6 +1710,9 @@ def index(args):
       '-v', f'{args.project.out}:/out', '-v', f'{args.project.work}:/work',
       '-t', image_name, '/opt/indexer/index_build.py'
   ])
+
+  for arg in args.index_build_flag:
+    run_args.append(arg)
 
   if args.targets:
     run_args.extend(['--targets', args.targets])
