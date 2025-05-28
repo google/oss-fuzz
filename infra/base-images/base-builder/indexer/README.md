@@ -12,8 +12,18 @@ Snapshots are also built by our infrastructure and available at
 ```bash
 python infra/helper.py build_image <project>
 python infra/helper.py index <project>
+
 # Only build snapshots for `target1` and `target2`.
 python infra/helper.py index --targets 'target1,target2' <project>
+
+# Drop into /bin/bash instead of automatically running /opt/indexer/index_build.py.
+python infra/helper.py index --shell <project>
+
+# Add additional docker args.
+python infra/helper.py index --docker_args="-e FOO=123 -e BAR=456" <project>
+
+# Pass through flags to the entrypoint.
+python infra/helper.py index <project> -- --target-args '123'
 ```
 
 The resulting snapshots will be found in `<oss-fuzz checkout>/build/out/<project>`.
