@@ -15,6 +15,16 @@
 #
 ################################################################################
 
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
+cd "$SRC"/go-118-fuzz-build
+go build
+rm "$GOPATH"/bin/go-118-fuzz-build
+mv go-118-fuzz-build "$GOPATH"/bin/
+
+cd "$SRC"/gitea
+
+printf "package routers\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./routers/register.go
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
+go mod tidy
+
 compile_native_go_fuzzer code.gitea.io/gitea/tests/fuzz FuzzMarkdownRenderRaw fuzz_markdown_render_raw gofuzz
 compile_native_go_fuzzer code.gitea.io/gitea/tests/fuzz FuzzMarkupPostProcess fuzz_markup_post_process gofuzz
