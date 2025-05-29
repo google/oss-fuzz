@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-# Copyright 2025 Google LLC
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+
+#!/usr/bin/env python3
 """This runs the actual build process to generate a snapshot."""
 
 import argparse
@@ -28,10 +28,10 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
-from typing import Any, Sequence, Union
+from typing import Any, Sequence
 
 ARCHIVE_VERSION = 1
-PROJECT = Path(os.environ['PROJECT_NAME'])
+PROJECT = Path(os.environ['PROJECT_NAME']).name
 SNAPSHOT_DIR = Path('/snapshot')
 SRC = Path(os.getenv('SRC', '/src'))
 # On OSS-Fuzz build infra, $OUT is not /out.
@@ -44,7 +44,11 @@ _CLANG_VERSION = '18'
 
 
 def set_env_vars():
+  """Set up build environment variables."""
   os.environ['SANITIZER'] = 'address'
+  # Prevent ASan leak checker from running on `configure` script targets.
+  # At the time of writing, this helps prevent a slowdown in `hunspell` build.
+  os.environ['ASAN_OPTIONS'] = 'detect_leaks=0'
   os.environ['FUZZING_ENGINE'] = 'none'
   os.environ['LIB_FUZZING_ENGINE'] = '/usr/lib/libFuzzingEngine.a'
   os.environ['FUZZING_LANGUAGE'] = 'c++'
@@ -81,11 +85,21 @@ class BinaryMetadata:
 
 @dataclasses.dataclass(frozen=True)
 class Manifest:
+  """Contains general meta-information about the snapshot."""
   name: str
   uuid: str
   binary_name: str
   binary_args: str
   version: int
+  # Example source map:
+  # {
+  #   "/src/hunspell": {
+  #     "type": "git",
+  #     "url": "https://github.com/hunspell/hunspell.git",
+  #     "rev": "a9b7270c1c2832312cfb20c3d1cf5c5080bf221b"
+  #   }
+  # }
+  source_map: dict[str, dict[str, str]]
   is_oss_fuzz: bool = False
 
 
@@ -316,34 +330,6 @@ def enumerate_build_targets(binary_args: str) -> Sequence[BinaryMetadata]:
   return targets
 
 
-def short_file_hash(files: Path | Sequence[Path]) -> str:
-  return sha256(files)[:16]
-
-
-def sha256(files: Union[Path, Sequence[Path]]) -> str:
-  """Compute the sha256 of a file or sequence of files.
-
-  Args:
-    files: The file or files to hash.
-
-  Returns:
-    Hex digest.
-  """
-  if isinstance(files, Path):
-    files = [files]
-  hash_value = hashlib.sha256()
-  for file in sorted(files):
-    with file.open('rb') as f:
-      # We can't use hashlib.file_digest here because OSS-Fuzz is still on
-      # Python 3.10.
-      while True:
-        chunk = f.read(8192)  # Reading in 8KB chunks.
-        if not chunk:
-          break
-        hash_value.update(chunk)
-  return hash_value.hexdigest()
-
-
 def copy_fuzzing_engine() -> Path:
   """Copy fuzzing engine."""
   # Not every project saves source to $SRC/$PROJECT_NAME
@@ -535,9 +521,10 @@ def archive_target(target: BinaryMetadata) -> Path | None:
     logging.error("didn't find index dir %s", index_dir)
     return None
 
-  # TODO(unassigned): This is a hack. Ideally we need to get the commit hash
-  # for the project, or something like that, but this will do for now.
-  target_hash = short_file_hash((OUT / target.name))
+  source_map = subprocess.run(['srcmap'], capture_output=True,
+                              check=True).stdout
+
+  target_hash = hashlib.sha256(source_map).hexdigest()[:16]
 
   name = f'{PROJECT}.{target.name}'
   uuid = f'{PROJECT}.{target.name}.{target_hash}'
@@ -561,6 +548,7 @@ def archive_target(target: BinaryMetadata) -> Path | None:
             binary_args=target.binary_args,
             version=ARCHIVE_VERSION,
             is_oss_fuzz=False,
+            source_map=json.loads(source_map),
         ),
         source_dir=Path(empty_src_dir),
         build_dir=OUT,

@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-# Copyright 2025 Google LLC
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 """Compiler Wrapper.
 
 This is copied into the OSS-Fuzz container image and run there as part of the
@@ -21,6 +19,7 @@ instrumentation process.
 """
 
 from collections.abc import MutableSequence, Sequence
+import dataclasses
 import hashlib
 import json
 import os
@@ -28,12 +27,25 @@ from pathlib import Path  # pylint: disable=g-importing-member
 import subprocess
 import sys
 import time
-from typing import Any
+from typing import Any, Set
+
+import dwarf_info
 
 _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
 _INDEXER_PATH = "/opt/indexer/indexer"
 _IGNORED_DEPS_PATH = os.path.join(os.path.dirname(_INDEXER_PATH),
                                   "ignored_deps.json")
+
+_INTERNAL_PATHS = ("/src/llvm-project/",)
+
+# When we notice a project using these flags,
+# we should figure out how to handle them.
+_DISALLOWED_CLANG_FLAGS = (
+    "-fdebug-compilation-dir=",
+    "-fdebug-prefix-map=",
+    "-ffile-compilation-dir=",
+    "-ffile-prefix-map=",
+)
 
 PROJECT = Path(os.environ["PROJECT_NAME"])
 SRC = Path(os.getenv("SRC", "/src"))
@@ -289,6 +301,9 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
   with (compile_commands_dir / "compile_commands.json").open("wt") as f:
     json.dump(linker_commands["compile_commands"], f, indent=2)
 
+  with (compile_commands_dir / "full_compile_commands.json").open("wt") as f:
+    json.dump(linker_commands["full_compile_commands"], f, indent=2)
+
   cmd = [
       _INDEXER_PATH,
       "--build_dir",
@@ -298,14 +313,14 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
       "--source_dir",
       SRC.as_posix(),
   ]
-  result = subprocess.run(cmd, check=False)
+  result = subprocess.run(cmd, check=False, capture_output=True)
   if result.returncode != 0:
     raise RuntimeError("Running indexer failed\n"
                        f"stdout:\n```\n{result.stdout.decode()}\n```\n"
                        f"stderr:\n```\n{result.stderr.decode()}\n```\n")
 
 
-def check_fuzzing_engine_and_fix_argv(argv: list[str]) -> bool:
+def check_fuzzing_engine_and_fix_argv(argv: MutableSequence[str]) -> bool:
   """Check if this command is linking in a fuzzing engine."""
   # Also fix up incorrect link flags so we link in the correct fuzzing
   # engine.
@@ -343,8 +358,76 @@ def check_fuzzing_engine_and_fix_argv(argv: list[str]) -> bool:
   return fuzzing_engine_in_argv
 
 
+def _has_disallowed_clang_flags(argv: Sequence[str]) -> bool:
+  """Checks if the command line arguments contain disallowed flags."""
+  return any(arg.startswith(_DISALLOWED_CLANG_FLAGS) for arg in argv)
+
+
+@dataclasses.dataclass(frozen=True)
+class FilteredCompileCommands:
+  filtered_compile_commands: Sequence[dict[str, str]]
+  unused_cu_paths: Set[Path]
+  unused_cc_paths: Set[Path]
+
+
+def _filter_compile_commands(
+    elf_path: Path,
+    compile_commands: Sequence[dict[str, str]]) -> FilteredCompileCommands:
+  """Extracts compile commands from the DWARF information of an ELF file.
+
+  Args:
+    elf_path: The path to the ELF file.
+    compile_commands: The compile commands to filter.
+
+  Returns:
+    The filtered compile commands.
+  """
+  compilation_units = dwarf_info.get_all_compilation_units(elf_path)
+  cu_paths = set([Path(cu.compdir) / cu.name for cu in compilation_units])
+  used_cu_paths = set()
+  filtered_compile_commands = []
+  unused_cc_paths = set()
+
+  for compile_command in compile_commands:
+    cc_path = Path(compile_command["directory"]) / compile_command["file"]
+    if cc_path in cu_paths:
+      filtered_compile_commands.append(compile_command)
+      used_cu_paths.add(cc_path)
+    else:
+      unused_cc_paths.add(cc_path)
+
+  unused_cu_paths = cu_paths - used_cu_paths
+
+  return FilteredCompileCommands(
+      filtered_compile_commands=filtered_compile_commands,
+      unused_cu_paths=unused_cu_paths,
+      unused_cc_paths=unused_cc_paths,
+  )
+
+
+def _write_filter_log(
+    filter_log_file: Path,
+    filtered_compile_commands: FilteredCompileCommands,
+) -> None:
+  """Writes the filter log file."""
+  with open(filter_log_file, "wt") as f:
+    f.write("The following files were not used in the final binary:\n")
+    for cc_path in sorted(filtered_compile_commands.unused_cc_paths):
+      f.write(f"\t{cc_path}\n")
+
+    f.write("The following compilation units were not matched with any compile"
+            " commands:\n")
+    for cu_path in sorted(filtered_compile_commands.unused_cu_paths):
+      if cu_path.as_posix().startswith(_INTERNAL_PATHS):
+        continue
+      f.write(f"\t{cu_path}\n")
+
+
 def main(argv: list[str]) -> None:
   argv = remove_flag_if_present(argv, "-gline-tables-only")
+
+  if _has_disallowed_clang_flags(argv):
+    raise ValueError("Disallowed clang flags found, aborting.")
 
   fuzzing_engine_in_argv = check_fuzzing_engine_and_fix_argv(argv)
   indexer_targets: list[str] = [
@@ -406,32 +489,13 @@ def main(argv: list[str]) -> None:
     archive_deps += [dep.decode() for dep in res.stdout.splitlines()]
 
   # We only care about the compile commands that emitted an output file.
-  cdb = [cmd for cmd in read_cdb_fragments(cdb_path) if "output" in cmd]
+  full_compile_commands = [
+      cc for cc in read_cdb_fragments(cdb_path) if "output" in cc
+  ]
 
-  commands = {}
-  for dep in obj_deps:
-    print(f"Looking for dep {dep}")
-    if dep == FUZZER_ENGINE:
-      continue
-    dep = os.path.realpath(dep)
-    for command in cdb:
-      command_path = os.path.realpath(
-          os.path.join(command["directory"], command["output"]))
-      if command_path == dep:
-        commands[dep] = command
-
-    if dep not in commands:
-      print(f"{dep} NOT FOUND")
-
-  for archive_dep in archive_deps:
-    # We don't have the full path of the archive dep, so we will only look at
-    # the basename.
-    for command in cdb:
-      if os.path.basename(command["output"]) == archive_dep:
-        commands[archive_dep] = command
-
-    if archive_dep not in commands:
-      print(f"{archive_dep} NOT FOUND")
+  # Discard compile commands that didn't end up in the final binary.
+  filtered_compile_commands = _filter_compile_commands(output_file,
+                                                       full_compile_commands)
 
   linker_commands = {
       "output": output_file.as_posix(),
@@ -440,14 +504,17 @@ def main(argv: list[str]) -> None:
       "args": argv,
       "sha256": output_hash,
       "gnu_build_id": build_id,
-      "compile_commands": list(commands.values()),
+      "compile_commands": filtered_compile_commands.filtered_compile_commands,
+      "full_compile_commands": full_compile_commands,
   }
+
+  filter_log_file = Path(cdb_path) / f"{build_id}_filter_log.txt"
+  _write_filter_log(filter_log_file, filtered_compile_commands)
 
   run_indexer(build_id, linker_commands)
   linker_commands = json.dumps(linker_commands)
-  commands_path = os.path.join(cdb_path, build_id + "_linker_commands.json")
-  with open(commands_path, "w") as f:
-    f.write(linker_commands)
+  commands_path = Path(cdb_path) / f"{build_id}_linker_commands.json"
+  commands_path.write_text(linker_commands)
 
 
 if __name__ == "__main__":
