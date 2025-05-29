@@ -211,7 +211,7 @@ ENV CCACHE_COMPILERTYPE clang
 
 # Build newer patchelf than the one available from Ubuntu.
 RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
-    apt-get install -y autoconf && \
+    apt-get update && apt-get install -y autoconf && \
     cd patchelf && git checkout 523f401584d9584e76c9c77004e7abeb9e6c4551 && \
     unset CFLAGS && export CXXFLAGS='-stdlib=libc++' && export LDFLAGS='-lpthread' && \
     ./bootstrap.sh && ./configure && make && \
