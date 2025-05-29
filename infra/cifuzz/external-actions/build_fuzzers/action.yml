@@ -15,6 +15,9 @@ inputs:
   sanitizer:
     description: 'The sanitizer to build the fuzzers with.'
     default: 'address'
+  fuzzing_engine:
+    description: 'The fuzzing engine to build the fuzzers with.'
+    default: 'libfuzzer'
   project-src-path:
     description: "The path to the project's source code checkout."
     required: false
@@ -64,6 +67,7 @@ runs:
     DRY_RUN: ${{ inputs.dry-run}}
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
     SANITIZER: ${{ inputs.sanitizer }}
+    FUZZING_ENGINE: ${{ inputs.fuzzing_engine }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'

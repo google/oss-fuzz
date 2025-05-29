@@ -19,8 +19,8 @@ DEFAULT_EXTERNAL_BUILD_INTEGRATION_PATH = '.clusterfuzzlite'
 
 DEFAULT_LANGUAGE = 'c++'
 DEFAULT_SANITIZER = 'address'
+DEFAULT_FUZZING_ENGINE = 'libfuzzer'
 DEFAULT_ARCHITECTURE = 'x86_64'
-DEFAULT_ENGINE = 'libfuzzer'
 LANGUAGES = [
     'c',
     'c++',
