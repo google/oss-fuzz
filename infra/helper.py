@@ -372,8 +372,11 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   index_parser.add_argument('--shell',
                             action='store_true',
                             help='Run /bin/bash instead of the indexer.')
-  index_parser.add_argument('--docker_args',
-                            help='Additional docker arguments.')
+  index_parser.add_argument('--docker_arg',
+                            help='Additional docker argument to pass through '
+                            '(can be specified multiple times).',
+                            nargs='*',
+                            action='extend')
   index_parser.add_argument('project', help='Project')
   index_parser.add_argument(
       'extra_args',
@@ -1719,8 +1722,8 @@ def index(args):
       '-t',
   ])
 
-  if args.docker_args:
-    run_args.extend(shlex.split(args.docker_args))
+  if args.docker_arg:
+    run_args.extend(args.docker_arg)
 
   run_args.append(image_name)
   if args.shell:
@@ -1731,8 +1734,7 @@ def index(args):
   if args.targets:
     run_args.extend(['--targets', args.targets])
 
-  if args.extra_args:
-    run_args.extend(args.extra_args)
+  run_args.extend(args.extra_args)
 
   logger.info(f'Running indexer for project: {args.project.name}')
   result = docker_run(run_args, architecture=args.architecture)

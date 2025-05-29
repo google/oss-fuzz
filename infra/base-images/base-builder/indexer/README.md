@@ -20,7 +20,7 @@ python infra/helper.py index --targets 'target1,target2' <project>
 python infra/helper.py index --shell <project>
 
 # Add additional docker args.
-python infra/helper.py index --docker_args="-e FOO=123 -e BAR=456" <project>
+python infra/helper.py index --docker_arg="-eFOO=123" --docker_arg="-eBAR=456" <project>
 
 # Pass through flags to the entrypoint.
 python infra/helper.py index <project> -- --target-args '123'
