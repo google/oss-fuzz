@@ -61,7 +61,7 @@ RUN cd /tmp && curl -OL https://github.com/ccache/ccache/releases/download/v$CCA
 
 # Install six for Bazel rules.
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
-    six==1.15.0 && rm -rf /tmp/*
+    six==1.15.0 absl-py==2.3.0 pyelftools==0.32 && rm -rf /tmp/*
 
 # Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
 ENV BAZELISK_VERSION 1.9.0
