@@ -369,7 +369,19 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   index_parser = subparsers.add_parser('index', help='Index project.')
   index_parser.add_argument(
       '--targets', help='Allowlist of targets to index (comma-separated).')
+  index_parser.add_argument('--shell',
+                            action='store_true',
+                            help='Run /bin/bash instead of the indexer.')
+  index_parser.add_argument('--docker_arg',
+                            help='Additional docker argument to pass through '
+                            '(can be specified multiple times).',
+                            nargs='*',
+                            action='extend')
   index_parser.add_argument('project', help='Project')
+  index_parser.add_argument(
+      'extra_args',
+      nargs='*',
+      help='Additional args to pass through to the Docker entrypoint.')
   _add_architecture_args(index_parser)
   _add_environment_args(index_parser)
 
@@ -1703,12 +1715,26 @@ def index(args):
 
   run_args = _env_to_docker_args(env)
   run_args.extend([
-      '-v', f'{args.project.out}:/out', '-v', f'{args.project.work}:/work',
-      '-t', image_name, '/opt/indexer/index_build.py'
+      '-v',
+      f'{args.project.out}:/out',
+      '-v',
+      f'{args.project.work}:/work',
+      '-t',
   ])
+
+  if args.docker_arg:
+    run_args.extend(args.docker_arg)
+
+  run_args.append(image_name)
+  if args.shell:
+    run_args.append('/bin/bash')
+  else:
+    run_args.append('/opt/indexer/index_build.py')
 
   if args.targets:
     run_args.extend(['--targets', args.targets])
+
+  run_args.extend(args.extra_args)
 
   logger.info(f'Running indexer for project: {args.project.name}')
   result = docker_run(run_args, architecture=args.architecture)
