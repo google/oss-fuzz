@@ -26,8 +26,8 @@ RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qttools.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/karchive.git
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kimageformats.git
-RUN git clone --depth 1 -b v3.12.0 https://aomedia.googlesource.com/aom
-RUN git clone --depth 1 -b v1.2.1 https://github.com/AOMediaCodec/libavif.git
+RUN git clone --depth 1 -b v3.12.1 https://aomedia.googlesource.com/aom
+RUN git clone --depth 1 -b v1.3.0 https://github.com/AOMediaCodec/libavif.git
 RUN git clone --depth 1 https://github.com/strukturag/libde265.git
 RUN git clone --depth 1 -b v2.5.3 https://github.com/uclouvain/openjpeg.git
 RUN git clone --depth 1 https://github.com/strukturag/libheif.git
