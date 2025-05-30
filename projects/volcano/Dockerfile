@@ -16,5 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/volcano-sh/volcano
+RUN git clone --depth=1 --branch=november-backup https://github.com/AdamKorcz/go-118-fuzz-build
 WORKDIR volcano
 COPY build.sh $SRC/

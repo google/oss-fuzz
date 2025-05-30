@@ -16,5 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/go-yaml/yaml
+RUN git clone --depth=1 --branch=november-backup https://github.com/AdamKorcz/go-118-fuzz-build
 WORKDIR yaml
 COPY build.sh fuzz_test.go $SRC/
