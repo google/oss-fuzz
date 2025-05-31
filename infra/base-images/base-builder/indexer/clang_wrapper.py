@@ -27,7 +27,7 @@ from pathlib import Path  # pylint: disable=g-importing-member
 import subprocess
 import sys
 import time
-from typing import Any, Set
+from typing import Any, Iterable, Set
 
 import dwarf_info
 
@@ -55,7 +55,7 @@ INDEXES_PATH = Path(os.getenv("INDEXES_PATH", "/indexes"))
 FUZZER_ENGINE = os.getenv("LIB_FUZZING_ENGINE", "/usr/lib/libFuzzingEngine.a")
 
 
-def rewrite_argv0(argv: Sequence[str]) -> Sequence[str]:
+def rewrite_argv0(argv: Sequence[str]) -> list[str]:
   """Rewrite argv[0] to point to the real clang location."""
   # We do this because we've set PATH to our wrapper.
   rewritten = [os.path.join("/usr/local/bin/", os.path.basename(argv[0]))]
@@ -183,19 +183,16 @@ def get_flag_value(argv: Sequence[str], flag: str) -> str | None:
   return None
 
 
-def remove_flag_if_present(argv: list[str], flag: str) -> MutableSequence[str]:
+def remove_flag_if_present(argv: Iterable[str], flag: str) -> list[str]:
   return [arg for arg in argv if arg != flag]
 
 
-def remove_flag_and_value(argv: list[str],
-                          flag: str) -> MutableSequence[str] | None:
+def remove_flag_and_value(argv: list[str], flag: str) -> list[str] | None:
+  """Removes a flag and its value (as a separate token, --a=b not supported.)"""
   for i in range(len(argv) - 1):
     if argv[i] == flag:
       return argv[:i] + argv[i + 2:]
-    elif flag == "-o" and argv[i].startswith(flag):
-      return argv[:i] + argv[i + 2:]
-
-  return None
+  return argv
 
 
 def parse_dependency_file(file_path: Path, output_file: Path,
@@ -428,6 +425,11 @@ def main(argv: list[str]) -> None:
 
   if _has_disallowed_clang_flags(argv):
     raise ValueError("Disallowed clang flags found, aborting.")
+
+  if "-E" in argv:
+    # Preprocessor-only invocation.
+    modified_argv = remove_flag_and_value(argv, "-gen-cdb-fragment-path")
+    execute(modified_argv)
 
   fuzzing_engine_in_argv = check_fuzzing_engine_and_fix_argv(argv)
   indexer_targets: list[str] = [
