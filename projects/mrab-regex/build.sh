@@ -16,7 +16,7 @@
 ################################################################################
 
 # Compile native lib with sanitizers
-python3 setup.py install
+python3 -m pip install .
 
 if [ "$SANITIZER" = "address" ]
 then

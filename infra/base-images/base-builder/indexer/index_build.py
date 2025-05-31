@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-# Copyright 2025 Google LLC
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
+
+#!/usr/bin/env python3
 """This runs the actual build process to generate a snapshot."""
 
 import argparse
@@ -28,10 +28,10 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
-from typing import Any, Sequence, Union
+from typing import Any, Sequence
 
 ARCHIVE_VERSION = 1
-PROJECT = Path(os.environ['PROJECT_NAME'])
+PROJECT = Path(os.environ['PROJECT_NAME']).name
 SNAPSHOT_DIR = Path('/snapshot')
 SRC = Path(os.getenv('SRC', '/src'))
 # On OSS-Fuzz build infra, $OUT is not /out.
@@ -44,7 +44,11 @@ _CLANG_VERSION = '18'
 
 
 def set_env_vars():
+  """Set up build environment variables."""
   os.environ['SANITIZER'] = 'address'
+  # Prevent ASan leak checker from running on `configure` script targets.
+  # At the time of writing, this helps prevent a slowdown in `hunspell` build.
+  os.environ['ASAN_OPTIONS'] = 'detect_leaks=0'
   os.environ['FUZZING_ENGINE'] = 'none'
   os.environ['LIB_FUZZING_ENGINE'] = '/usr/lib/libFuzzingEngine.a'
   os.environ['FUZZING_LANGUAGE'] = 'c++'
@@ -81,11 +85,21 @@ class BinaryMetadata:
 
 @dataclasses.dataclass(frozen=True)
 class Manifest:
+  """Contains general meta-information about the snapshot."""
   name: str
   uuid: str
   binary_name: str
   binary_args: str
   version: int
+  # Example source map:
+  # {
+  #   "/src/hunspell": {
+  #     "type": "git",
+  #     "url": "https://github.com/hunspell/hunspell.git",
+  #     "rev": "a9b7270c1c2832312cfb20c3d1cf5c5080bf221b"
+  #   }
+  # }
+  source_map: dict[str, dict[str, str]]
   is_oss_fuzz: bool = False
 
 
@@ -108,10 +122,12 @@ def save_build(
     mode = 'w:gz' if archive_path.suffix.endswith('gz') else 'w'
     with tarfile.open(tmp.name, mode) as tar:
 
-      def _save_dir(path: Path,
-                    prefix: str,
-                    exclude_build_artifacts: bool = False,
-                    only_include_target: str | None = None):
+      def _save_dir(
+          path: Path,
+          prefix: str,
+          exclude_build_artifacts: bool = False,
+          only_include_target: str | None = None,
+      ):
         assert prefix.endswith('/')
         for root, _, files in os.walk(path):
           for file in files:
@@ -126,7 +142,9 @@ def save_build(
             if only_include_target and _is_elf(file):
               # Skip ELF files that aren't the relevant target (unless it's a
               # shared library).
-              if file.name != only_include_target and file.suffix != '.so':
+              if (file.name != only_include_target and
+                  '.so' not in file.name and
+                  not file.absolute().is_relative_to(Path(OUT) / 'lib')):
                 continue
 
             tar.add(
@@ -155,12 +173,12 @@ def save_build(
 
 
 def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
-  data = io.BytesIO(data.encode('utf-8'))
+  bytesio = io.BytesIO(data.encode('utf-8'))
 
   tar_info = tarfile.TarInfo(name)
-  tar_info.size = len(data.getvalue())
+  tar_info.size = len(bytesio.getvalue())
 
-  tar.addfile(tarinfo=tar_info, fileobj=data)
+  tar.addfile(tarinfo=tar_info, fileobj=bytesio)
 
 
 def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
@@ -192,6 +210,7 @@ def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
 def get_build_id(elf_file: str) -> str | None:
   """This invokes llvm-readelf to get the build ID of the given ELF file."""
 
+  # Note: this format changed in llvm-readelf19.
   # Example output of llvm-readelf JSON output:
   # [
   #   {
@@ -260,8 +279,15 @@ def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
   return None
 
 
-def enumerate_build_targets() -> Sequence[BinaryMetadata]:
-  """Enumerates the build targets in the project."""
+def enumerate_build_targets(binary_args: str) -> Sequence[BinaryMetadata]:
+  """Enumerates the build targets in the project.
+
+  Args:
+    binary_args: Shell-escaped argument list, applied to all targets
+
+  Returns:
+    A sequence of target descriptions, in BinaryMetadata form.
+  """
 
   logging.info('enumerate_build_targets')
   linker_json_paths = list((OUT / 'cdb').glob('*_linker_commands.json'))
@@ -272,12 +298,12 @@ def enumerate_build_targets() -> Sequence[BinaryMetadata]:
     build_id = linker_json_path.name.split('_')[0]
     with linker_json_path.open('rt') as f:
       data = json.load(f)
-      # TODO(unassigned): Some projects may move build files around, so being
-      # more careful about the binary path and checking the build id should
-      # improve the success rate.
       binary_path = Path(data['output'])
       name = binary_path.name
 
+      # Some projects may move build files around, so being more careful about
+      # the binary path and checking the build id should improve the success
+      # rate.
       if not (OUT / name).exists():
         logging.info('trying to find %s with build id %s', name, build_id)
         binary_path = find_fuzzer_binary(OUT, build_id)
@@ -287,7 +313,6 @@ def enumerate_build_targets() -> Sequence[BinaryMetadata]:
 
         name = binary_path.name
 
-      binary_args = '<input_file>'
       compile_commands = data['compile_commands']
 
       if binary_path.is_relative_to(f'{OUT}/'):
@@ -303,34 +328,6 @@ def enumerate_build_targets() -> Sequence[BinaryMetadata]:
           ))
 
   return targets
-
-
-def short_file_hash(files: Path | Sequence[Path]) -> str:
-  return sha256(files)[:16]
-
-
-def sha256(files: Union[Path, Sequence[Path]]) -> str:
-  """Compute the sha256 of a file or sequence of files.
-
-  Args:
-    files: The file or files to hash.
-
-  Returns:
-    Hex digest.
-  """
-  if isinstance(files, Path):
-    files = [files]
-  hash_value = hashlib.sha256()
-  for file in sorted(files):
-    with file.open('rb') as f:
-      # We can't use hashlib.file_digest here because OSS-Fuzz is still on
-      # Python 3.10.
-      while True:
-        chunk = f.read(8192)  # Reading in 8KB chunks.
-        if not chunk:
-          break
-        hash_value.update(chunk)
-  return hash_value.hexdigest()
 
 
 def copy_fuzzing_engine() -> Path:
@@ -461,7 +458,7 @@ def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
   # TODO(unassigned): Should we take ld.so from interp?
 
   res = subprocess.run(
-      [str(_LD_PATH), str(fuzz_target_path)],
+      [_LD_PATH.as_posix(), fuzz_target_path.as_posix()],
       capture_output=True,
       env=env,
       check=True,
@@ -524,9 +521,10 @@ def archive_target(target: BinaryMetadata) -> Path | None:
     logging.error("didn't find index dir %s", index_dir)
     return None
 
-  # TODO(unassigned): This is a hack. Ideally we need to get the commit hash
-  # for the project, or something like that, but this will do for now.
-  target_hash = short_file_hash((OUT / target.name))
+  source_map = subprocess.run(['srcmap'], capture_output=True,
+                              check=True).stdout
+
+  target_hash = hashlib.sha256(source_map).hexdigest()[:16]
 
   name = f'{PROJECT}.{target.name}'
   uuid = f'{PROJECT}.{target.name}.{target_hash}'
@@ -550,6 +548,7 @@ def archive_target(target: BinaryMetadata) -> Path | None:
             binary_args=target.binary_args,
             version=ARCHIVE_VERSION,
             is_oss_fuzz=False,
+            source_map=json.loads(source_map),
         ),
         source_dir=Path(empty_src_dir),
         build_dir=OUT,
@@ -565,18 +564,20 @@ def archive_target(target: BinaryMetadata) -> Path | None:
   return archive_path
 
 
-def test_and_archive(targets_to_index: Sequence[str] | None):
+def test_and_archive(target_args: str, targets_to_index: Sequence[str] | None):
   """Test target and archive."""
-  targets = enumerate_build_targets()
+  targets = enumerate_build_targets(target_args)
   if targets_to_index:
     targets = [t for t in targets if t.name in targets_to_index]
 
   logging.info('targets %s', targets)
   for target in targets:
     try:
-      # TODO(metzman): Figure out if this is a good idea, it makes some things
-      # pass that should but causes some things to pass that shouldn't.
-      if not test_target(target):
+      # Check that the target binary behaves like a fuzz target,
+      # unless the caller specifically asked for a list of targets.
+      if not targets_to_index and not test_target(target):
+        # TODO(metzman): Figure out if this is a good idea, it makes some things
+        # pass that should but causes some things to pass that shouldn't.
         continue
     except Exception:  # pylint: disable=broad-exception-caught
       logging.exception('Error testing target.')
@@ -584,15 +585,40 @@ def test_and_archive(targets_to_index: Sequence[str] | None):
     archive_target(target)
 
 
+def clear_out():
+  """Clean up the OUT directory."""
+  for i in OUT.iterdir():
+    if i.is_dir():
+      shutil.rmtree(i)
+    else:
+      i.unlink()
+
+
 def main():
+  logging.basicConfig(level=logging.INFO)
   INDEXES_PATH.mkdir(exist_ok=True)
+
+  # Clean up the existing OUT, otherwise we may run into various build errors.
+  clear_out()
 
   parser = argparse.ArgumentParser(description='Index builder.')
   parser.add_argument(
       '-t',
       '--targets',
-      help=('Comma separated list of targets to build for. '
-            'If this is omitted, all target snapshots are built.'))
+      help=(
+          'Comma separated list of targets to build for. '
+          'If this is omitted, snapshots are built for all fuzz targets. '
+          'If specified, this can include binaries which are not fuzz targets '
+          '(e.g., CLI targets which are built as part of the build '
+          'integration).'),
+  )
+  parser.add_argument(
+      '--target-args',
+      default='<input_file>',
+      help=('Arguments to pass to the target when executing it. '
+            'This string is shell-escaped (interpreted with `shlex.split`). '
+            'The substring <input_file> will be replaced with the input path.'),
+  )
   args = parser.parse_args()
 
   targets_to_index = None
@@ -609,7 +635,7 @@ def main():
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
   build_project(targets_to_index)
-  test_and_archive(targets_to_index)
+  test_and_archive(args.target_args, targets_to_index)
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)

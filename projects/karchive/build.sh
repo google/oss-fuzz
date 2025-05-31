@@ -25,11 +25,6 @@ cd $SRC/zlib
 ./configure --static
 make install -j$(nproc)
 
-# Build libzip
-cd $SRC/libzip
-cmake . -DBUILD_SHARED_LIBS=OFF
-make install -j$(nproc)
-
 # Build bzip2
 # Inspired from ../bzip2/build
 cd $SRC
@@ -81,16 +76,20 @@ cd $SRC/qtbase
 cmake --build . --parallel $(nproc)
 cmake --install .
 
+# Build qttools
+cd $SRC/qttools
+cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr
+cmake --build . --parallel $(nproc)
+cmake --install .
 
 # Build karchive
-cd $SRC
-cd karchive
+cd $SRC/karchive
 rm -rf poqm
 cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
 make install -j$(nproc)
 
 # Build karchive_fuzzer
-$CXX $CXXFLAGS -fPIC -std=c++17 $SRC/karchive_fuzzer.cc -o $OUT/karchive_fuzzer -I /usr/include/QtCore/ -I /usr/local/include/KF6/KArchive -lQt6Core -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libbz2.a -llzma /usr/local/lib/libzstd.a /usr/local/lib64/libcrypto.a
+$CXX $CXXFLAGS -fPIC -std=c++17 $SRC/karchive_fuzzer.cc -o $OUT/karchive_fuzzer -I /usr/include/QtCore/ -I /usr/local/include/KF6/KArchive -lQt6Core -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libbz2.a -llzma /usr/local/lib/libzstd.a /usr/local/lib64/libcrypto.a
 
 cd $SRC
 find . -name "*.gz" -o -name "*.zip" -o -name "*.xz" -o -name "*.tar" -o -name "*.7z" | zip -q $OUT/karchive_fuzzer_seed_corpus.zip -@

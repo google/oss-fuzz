@@ -16,9 +16,11 @@
 package probes
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/ossf/scorecard/v5/checker"
 	"github.com/ossf/scorecard/v5/clients"
@@ -77,6 +79,7 @@ import (
 
 var (
 	probeDefinitionPath = "/tmp/probedefinitions"
+	emptyName           = ""
 )
 
 func writeProbeFile(probeId, yamlContents string) error {
@@ -294,7 +297,7 @@ func FuzzProbes(f *testing.F) {
 	f.Fuzz(func(t *testing.T, callType int, data []byte) {
 		fdp := gfh.NewConsumer(data)
 
-		switch callType % 16 {
+		switch callType % 31 {
 		case 0:
 			fuzzers := make([]checker.Tool, 0)
 			fdp.GenerateStruct(&fuzzers)
@@ -311,42 +314,21 @@ func FuzzProbes(f *testing.F) {
 				panic(err)
 			}
 		case 1:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = blocksDeleteOnBranches.Run(r)
 		case 2:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = branchProtectionAppliesToAdmins.Run(r)
 		case 3:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = branchesAreProtected.Run(r)
 		case 4:
@@ -395,16 +377,9 @@ func FuzzProbes(f *testing.F) {
 			}
 			_, _, _ = dependencyUpdateToolConfigured.Run(r)
 		case 8:
-			branches := make([]clients.BranchRef, 0)
-			fdp.GenerateStruct(&branches)
-			if len(branches) == 0 {
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
 				return
-			}
-			bpd := checker.BranchProtectionsData{
-				Branches: branches,
-			}
-			r := &checker.RawResults{
-				BranchProtectionResults: bpd,
 			}
 			_, _, _ = dismissesStaleReviews.Run(r)
 		case 9:
@@ -527,6 +502,201 @@ func FuzzProbes(f *testing.F) {
 				},
 			}
 			hasSBOM.Run(r)
+		case 16:
+			issues := make([]clients.Issue, 0)
+			fdp.GenerateStruct(&issues)
+			if len(issues) == 0 {
+				return
+			}
+			commits := make([]clients.Commit, 0)
+			fdp.GenerateStruct(&commits)
+			if len(commits) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				MaintainedResults: checker.MaintainedData{
+					CreatedAt:            time.Now(),
+					Issues:               issues,
+					DefaultBranchCommits: commits,
+					ArchivedStatus: checker.ArchivedStatus{
+						Status: false,
+					},
+				},
+			}
+			issueActivityByProjectMember.Run(r)
+		case 17:
+			permissions := make([]checker.TokenPermission, 0)
+			fdp.GenerateStruct(&permissions)
+			if len(permissions) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				TokenPermissionsResults: checker.TokenPermissionsData{
+					TokenPermissions: permissions,
+					NumTokens:        len(permissions),
+				},
+			}
+			jobLevelPermissions.Run(r)
+		case 18:
+			packages := make([]checker.Package, 0)
+			fdp.GenerateStruct(&packages)
+			if len(packages) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				PackagingResults: checker.PackagingData{
+					Packages: packages,
+				},
+			}
+			packagedWithAutomatedWorkflow.Run(r)
+		case 19:
+			dependencies := make([]checker.Dependency, 0)
+			fdp.GenerateStruct(&dependencies)
+			if len(dependencies) == 0 {
+				return
+			}
+			processingErrors := make([]checker.ElementError, 0)
+			fdp.GenerateStruct(&processingErrors)
+			if len(processingErrors) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				PinningDependenciesResults: checker.PinningDependenciesData{
+					Dependencies:     dependencies,
+					ProcessingErrors: processingErrors,
+				},
+			}
+			pinsDependencies.Run(r)
+		case 20:
+			releases := make([]clients.Release, 0)
+			fdp.GenerateStruct(&releases)
+			if len(releases) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				SignedReleasesResults: checker.SignedReleasesData{
+					Releases: releases,
+				},
+			}
+			releasesAreSigned.Run(r)
+		case 21:
+			releases := make([]clients.Release, 0)
+			fdp.GenerateStruct(&releases)
+			if len(releases) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				SignedReleasesResults: checker.SignedReleasesData{
+					Releases: releases,
+				},
+			}
+			releasesHaveProvenance.Run(r)
+		case 22:
+			packages := make([]checker.ProjectPackage, 0)
+			fdp.GenerateStruct(&packages)
+			if len(packages) == 0 {
+				return
+			}
+
+			r := &checker.RawResults{
+				SignedReleasesResults: checker.SignedReleasesData{
+					Packages: packages,
+				},
+			}
+			releasesHaveVerifiedProvenance.Run(r)
+		case 23:
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
+				return
+			}
+			_, _, _ = requiresApproversForPullRequests.Run(r)
+		case 24:
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
+				return
+			}
+			_, _, _ = requiresCodeOwnersReview.Run(r)
+		case 25:
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
+				return
+			}
+			_, _, _ = requiresLastPushApproval.Run(r)
+		case 26:
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
+				return
+			}
+			_, _, _ = requiresPRsToChangeCode.Run(r)
+		case 27:
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
+				return
+			}
+			_, _, _ = requiresUpToDateBranches.Run(r)
+		case 28:
+			r, err := createRawBranchProtectionsData(fdp)
+			if err != nil {
+				return
+			}
+			_, _, _ = runsStatusChecksBeforeMerging.Run(r)
+		case 29:
+			workflows := make([]checker.SASTWorkflow, 0)
+			fdp.GenerateStruct(&workflows)
+			if len(workflows) == 0 {
+				return
+			}
+			commits := make([]checker.SASTCommit, 0)
+			fdp.GenerateStruct(&commits)
+			if len(commits) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				SASTResults: checker.SASTData{
+					Workflows:    workflows,
+					Commits:      commits,
+					NumWorkflows: len(workflows),
+				},
+			}
+			_, _, _ = sastToolConfigured.Run(r)
+			_, _, _ = sastToolRunsOnAllCommits.Run(r)
+		case 30:
+			ciInfo := make([]checker.RevisionCIInfo, 0)
+			fdp.GenerateStruct(&ciInfo)
+			if len(ciInfo) == 0 {
+				return
+			}
+			r := &checker.RawResults{
+				CITestResults: checker.CITestData{
+					CIInfo: ciInfo,
+				},
+			}
+			_, _, _ = testsRunInCI.Run(r)
 		}
 	})
+}
+
+func createRawBranchProtectionsData(fdp *gfh.ConsumeFuzzer) (*checker.RawResults, error) {
+	branches := make([]clients.BranchRef, 0)
+	fdp.GenerateStruct(&branches)
+	if len(branches) == 0 {
+		return nil, fmt.Errorf("created no branches")
+	}
+	for _, branch := range branches {
+		if branch.Name == nil {
+			return nil, fmt.Errorf("created branch with nil name")
+		}
+	}
+	bpd := checker.BranchProtectionsData{
+		Branches: branches,
+	}
+	r := &checker.RawResults{
+		BranchProtectionResults: bpd,
+	}
+	return r, nil
 }

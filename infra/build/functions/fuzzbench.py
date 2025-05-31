@@ -17,6 +17,7 @@
 ################################################################################
 """Does fuzzbench runs on Google Cloud Build."""
 
+import json
 import logging
 import os
 import random
@@ -25,6 +26,7 @@ import sys
 
 import build_lib
 import build_project
+import ood_upload_corpus
 
 INFRA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -161,6 +163,8 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
   }
   steps.append(engine_step)
 
+  project_yaml_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/projects/{project.name}/project.yaml'
+  benchmark_yaml_path = '/benchmark.yaml'
   compile_project_step = {
       'name':
           get_engine_project_image_name(fuzzing_engine, project),
@@ -177,8 +181,9 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
           # `cd /src && cd {workdir}` (where {workdir} is parsed from the
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
-          (f'rm -r /out && cd /src && cd {project.workdir} && '
-           'mkdir -p $${OUT} && compile'),
+          (f'cp {project_yaml_path} {benchmark_yaml_path} && '
+           f'rm -r /out && cd /src && cd {project.workdir} && '
+           'mkdir -p $$OUT && compile'),
       ],
   }
   steps.append(compile_project_step)
@@ -380,6 +385,28 @@ def get_upload_testcase_steps(project, env_dict):
   return steps
 
 
+def get_upload_corpus_steps(fuzzing_engine, project, env_dict):
+  """Returns the build steps to upload corpus elements to GCS."""
+  steps = []
+
+  upload_corpus_script_path = f'{GCB_WORKSPACE_DIR}/oss-fuzz/infra/build/functions/ood_upload_corpus.py'
+  doc, path_prefix = ood_upload_corpus.get_corpus_signed_policy_document(
+      project.name, env_dict['FUZZ_TARGET'])
+  doc_str = json.dumps(doc.__dict__)
+  num_uploads = '1000'
+  upload_corpus_step = {
+      'name':
+          get_engine_project_image_name(fuzzing_engine, project),
+      'args': [
+          'python3', upload_corpus_script_path, doc_str, path_prefix,
+          OOD_OUTPUT_CORPUS_DIR, num_uploads
+      ]
+  }
+  steps.append(upload_corpus_step)
+
+  return steps
+
+
 def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     project_name, project_yaml, dockerfile_lines, config):
   """Returns build steps for project."""
@@ -409,6 +436,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
                                             env_dict)
   steps += get_extract_crashes_steps(config.fuzzing_engine, project, env_dict)
   steps += get_upload_testcase_steps(project, env_dict)
+  steps += get_upload_corpus_steps(config.fuzzing_engine, project, env_dict)
 
   return steps
 
