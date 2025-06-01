@@ -20,7 +20,12 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     pkg-config
 
-RUN rustup update
+#
+# We need the latest toolchain to reliably build clamav.
+# oss-fuzz requires nightly for the -Z option, so we use that as well.
+#
+RUN rustup update nightly
+ENV RUSTUP_TOOLCHAIN=nightly-x86_64-unknown-linux-gnu
 
 #
 # Build static libs for dependencies
