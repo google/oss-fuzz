@@ -27,7 +27,14 @@ jobs:
       - name: Setup python environment
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.11
+
+      # For gcloud emulators.
+      - name: Setup Java environment
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
       - name: Install dependencies
         run: |
@@ -36,9 +43,9 @@ jobs:
           sudo env "PATH=$PATH" pip install -r infra/build/functions/requirements.txt
           sudo env "PATH=$PATH" pip install -r infra/cifuzz/requirements.txt
 
-      - uses: google-github-actions/setup-gcloud@v0
+      - uses: google-github-actions/setup-gcloud@v2
         with:
-          version: '298.0.0'
+          version: '523.0.0'
       - run: |
           sudo env "PATH=$PATH" gcloud components install beta cloud-datastore-emulator
 
