@@ -20,8 +20,6 @@ import tempfile
 import unittest
 from unittest import mock
 
-from pyfakefs import fake_filesystem_unittest
-
 # pylint: disable=wrong-import-position
 INFRA_DIR = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -33,7 +31,7 @@ import test_helpers
 # pylint: disable=protected-access,no-self-use
 
 
-class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
+class GithubActionsFilestoreTest(unittest.TestCase):
   """Tests for GithubActionsFilestore."""
 
   @mock.patch('platform_config.github._get_event_data', return_value={})
@@ -47,8 +45,11 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     os.environ['CFL_PLATFORM'] = 'github'
     os.environ['GITHUB_WORKSPACE'] = '/workspace'
     self.config = test_helpers.create_run_config(token=self.token)
-    self.local_dir = '/local-dir'
+    self.local_dir = tempfile.mkdtemp()
     self.testcase = os.path.join(self.local_dir, 'testcase')
+
+  def tearDown(self):
+    shutil.rmtree(self.local_dir)
 
   def _get_expected_http_headers(self):
     return {
@@ -89,7 +90,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     find_artifact can't find an artifact."""
     filestore = github_actions.GithubActionsFilestore(self.config)
     name = 'name'
-    dst_dir = 'local-dir'
+    dst_dir = self.local_dir
     self.assertFalse(filestore.download_corpus(name, dst_dir))
     mock_warning.assert_called_with('Could not download artifact: %s.',
                                     'cifuzz-corpus-' + name)
@@ -101,7 +102,8 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     self._create_local_dir()
 
     def mock_tar_directory_impl(_, archive_path):
-      self.fs.create_file(archive_path)
+      with open(archive_path, 'w') as f:
+        pass
 
     mock_tar_directory.side_effect = mock_tar_directory_impl
 
@@ -118,7 +120,7 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_crashes('current', self.local_dir)
     mock_upload_artifact.assert_has_calls(
-        [mock.call('crashes-current', ['/local-dir/testcase'], '/local-dir')])
+        [mock.call('crashes-current', [f'{self.local_dir}/testcase'], self.local_dir)])
 
   @mock.patch('filestore.github_actions.tar_directory')
   @mock.patch('filestore.github_actions._upload_artifact_with_upload_js')
@@ -127,7 +129,8 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     self._create_local_dir()
 
     def mock_tar_directory_impl(_, archive_path):
-      self.fs.create_file(archive_path)
+      with open(archive_path, 'w') as f:
+        pass
 
     mock_tar_directory.side_effect = mock_tar_directory_impl
 
@@ -143,7 +146,8 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
     self._create_local_dir()
 
     def mock_tar_directory_impl(_, archive_path):
-      self.fs.create_file(archive_path)
+      with open(archive_path, 'w') as f:
+        pass
 
     mock_tar_directory.side_effect = mock_tar_directory_impl
 
@@ -173,10 +177,9 @@ class GithubActionsFilestoreTest(fake_filesystem_unittest.TestCase):
                      expected_artifact_name + '.tar')
 
   def _create_local_dir(self):
-    """Sets up pyfakefs and creates a corpus directory containing
-    self.testcase."""
-    self.setUpPyfakefs()
-    self.fs.create_file(self.testcase, contents='hi')
+    """Create fake testcase."""
+    with open(self.testcase, 'w') as f:
+      f.write('hi')
 
   @mock.patch('filestore.github_actions.GithubActionsFilestore._find_artifact')
   @mock.patch('http_utils.download_and_unpack_zip')
