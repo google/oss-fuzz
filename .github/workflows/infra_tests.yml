@@ -29,9 +29,15 @@ jobs:
         with:
           python-version: 3.11
 
+      # For gcloud emulators.
+      - name: Setup Java environment
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
       - name: Install dependencies
         run: |
-          sudo apt-get update && sudo apt-get install -y default-jre
           sudo env "PATH=$PATH" python -m pip install --upgrade pip
           sudo env "PATH=$PATH" pip install -r infra/ci/requirements.txt
           sudo env "PATH=$PATH" pip install -r infra/build/functions/requirements.txt
