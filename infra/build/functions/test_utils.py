@@ -23,7 +23,7 @@ import requests
 
 DATASTORE_READY_INDICATOR = b'is now running'
 DATASTORE_EMULATOR_PORT = 8432
-EMULATOR_TIMEOUT = 20
+EMULATOR_TIMEOUT = 30
 
 FUNCTIONS_DIR = os.path.dirname(__file__)
 OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.dirname(FUNCTIONS_DIR)))
