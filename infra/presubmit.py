@@ -430,6 +430,7 @@ def run_nonbuild_tests(parallel):
   # pass directories to pytest.
   command = [
       'pytest',
+      '--ignore-glob=infra/base-images/base-builder/indexer',
       '--ignore-glob=infra/build/*',
       '--ignore-glob=projects/*',
   ]
