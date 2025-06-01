@@ -119,8 +119,10 @@ class GithubActionsFilestoreTest(unittest.TestCase):
 
     filestore = github_actions.GithubActionsFilestore(self.config)
     filestore.upload_crashes('current', self.local_dir)
-    mock_upload_artifact.assert_has_calls(
-        [mock.call('crashes-current', [f'{self.local_dir}/testcase'], self.local_dir)])
+    mock_upload_artifact.assert_has_calls([
+        mock.call('crashes-current', [f'{self.local_dir}/testcase'],
+                  self.local_dir)
+    ])
 
   @mock.patch('filestore.github_actions.tar_directory')
   @mock.patch('filestore.github_actions._upload_artifact_with_upload_js')
