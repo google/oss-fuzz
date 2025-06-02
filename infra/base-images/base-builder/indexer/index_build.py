@@ -12,8 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-#!/usr/bin/env python3
 """This runs the actual build process to generate a snapshot."""
 
 import argparse
@@ -536,6 +534,7 @@ def archive_target(target: BinaryMetadata) -> Path | None:
   set_interpreter(target_path)
   set_rpath_to_ossfuzzlib(target_path)
   archive_path = SNAPSHOT_DIR / f'{uuid}.tar'
+  archive_path.parent.mkdir(parents=True, exist_ok=True)  # For `/` in $PROJECT.
 
   # We may want to eventually re-enable SRC copying (with some filtering to only
   # include source files).
