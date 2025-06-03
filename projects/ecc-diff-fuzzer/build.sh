@@ -22,16 +22,18 @@ export LDFLAGS="-fuse-ld=lld"
 #nettle
 (
 cd nettle
-tar -xvf ../gmp-6.2.1.tar.bz2
-cd gmp-6.2.1
+tar -xvf ../gmp-6.3.0.tar.bz2
+cd gmp-6.3.0
 #do not use assembly instructions as we do not know if they will be available on the machine who will run the fuzzer
 #we could do instead --enable-fat
-./configure --disable-shared --disable-assembly
+autoreconf -ivf
+./configure --disable-shared --disable-assembly --enable-maintainer-mode
 make -j$(nproc)
 make install
 cd ..
-autoreconf
-./configure --disable-shared --disable-openssl
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL"
+bash .bootstrap
+./configure --disable-shared --disable-documentation --disable-assembler --disable-openssl
 make -j$(nproc)
 make install
 )
@@ -120,15 +122,16 @@ make install
 #quickjs
 (
 cd quickjs
+sed -i -e 's/CFLAGS=/CFLAGS+=/' Makefile
 if [ "$ARCHITECTURE" = 'i386' ]; then
     make qjsc
     cp qjsc /usr/local/bin/
     make clean
     # Makefile should not override CFLAGS
     sed -i -e 's/CFLAGS=/CFLAGS+=/' Makefile
-    CFLAGS="-m32" make libquickjs.a
+    CFLAGS="-m32" CONFIG_CLANG=y make libquickjs.a
 else
-    make && make install
+    CONFIG_CLANG=y make && make install
 fi
 cp quickjs*.h /usr/local/include/
 cp libquickjs.a /usr/local/lib/
