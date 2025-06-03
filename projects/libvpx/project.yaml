@@ -23,6 +23,10 @@ vendor_ccs:
 - "albassam@apple.com"
 - "youenn@apple.com"
 - "ddkilzer@apple.com"
+- "zakr@apple.com"
+- "roberto_rodriguez2@apple.com"
+- "k_monsen@apple.com"
+- "nnothstine@apple.com"
 main_repo: 'https://chromium.googlesource.com/webm/libvpx'
 
 fuzzing_engines:

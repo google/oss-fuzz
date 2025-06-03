@@ -30,11 +30,12 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.request
 
 import constants
 import templates
 
-OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+OSS_FUZZ_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
 BASE_RUNNER_IMAGE = 'gcr.io/oss-fuzz-base/base-runner'
@@ -95,6 +96,9 @@ CLUSTERFUZZLITE_ENGINE = 'libfuzzer'
 CLUSTERFUZZLITE_ARCHITECTURE = 'x86_64'
 CLUSTERFUZZLITE_FILESTORE_DIR = 'filestore'
 CLUSTERFUZZLITE_DOCKER_IMAGE = 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers'
+
+INDEXER_PREBUILT_URL = ('https://clusterfuzz-builds.storage.googleapis.com/'
+                        'oss-fuzz-artifacts/indexer')
 
 logger = logging.getLogger(__name__)
 
@@ -367,7 +371,25 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
                                   nargs='?')
   _add_external_project_args(check_build_parser)
   index_parser = subparsers.add_parser('index', help='Index project.')
+  index_parser.add_argument(
+      '--targets', help='Allowlist of targets to index (comma-separated).')
+  index_parser.add_argument('--dev',
+                            action='store_true',
+                            help=('Use development versions of scripts and '
+                                  'indexer.'))
+  index_parser.add_argument('--shell',
+                            action='store_true',
+                            help='Run /bin/bash instead of the indexer.')
+  index_parser.add_argument('--docker_arg',
+                            help='Additional docker argument to pass through '
+                            '(can be specified multiple times).',
+                            nargs='*',
+                            action='extend')
   index_parser.add_argument('project', help='Project')
+  index_parser.add_argument(
+      'extra_args',
+      nargs='*',
+      help='Additional args to pass through to the Docker entrypoint.')
   _add_architecture_args(index_parser)
   _add_environment_args(index_parser)
 
@@ -1701,9 +1723,39 @@ def index(args):
 
   run_args = _env_to_docker_args(env)
   run_args.extend([
-      '-v', f'{args.project.out}:/out', '-v', f'{args.project.work}:/work',
-      '-t', image_name, '/opt/indexer/index_build.py'
+      '-v',
+      f'{args.project.out}:/out',
+      '-v',
+      f'{args.project.work}:/work',
+      '-t',
   ])
+
+  if args.docker_arg:
+    run_args.extend(args.docker_arg)
+
+  if args.dev:
+    indexer_dir = os.path.join(OSS_FUZZ_DIR,
+                               'infra/base-images/base-builder/indexer')
+    indexer_binary_path = os.path.join(indexer_dir, 'indexer')
+    if not os.path.exists(indexer_binary_path):
+      print('Indexer binary does not exist, pulling prebuilt.')
+      with urllib.request.urlopen(INDEXER_PREBUILT_URL) as resp, \
+          open(indexer_binary_path, 'wb') as f:
+        shutil.copyfileobj(resp, f)
+        os.chmod(indexer_binary_path, 0o755)
+
+    run_args.extend(['-v', f'{indexer_dir}:/opt/indexer'])
+
+  run_args.append(image_name)
+  if args.shell:
+    run_args.append('/bin/bash')
+  else:
+    run_args.append('/opt/indexer/index_build.py')
+
+  if args.targets:
+    run_args.extend(['--targets', args.targets])
+
+  run_args.extend(args.extra_args)
 
   logger.info(f'Running indexer for project: {args.project.name}')
   result = docker_run(run_args, architecture=args.architecture)

@@ -3,6 +3,7 @@ language: c++
 primary_contact: "antoine@python.org"
 auto_ccs:
   - "bengilgit@gmail.com"
+  - "dewey.dunnington@gmail.com"
   - "emkornfield@gmail.com"
   - "felipekde@gmail.com"
   - "fsaintjacques@gmail.com"
