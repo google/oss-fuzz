@@ -14,7 +14,10 @@
 # limitations under the License.
 
 import atheris
+import os
 import sys
+
+
 
 with atheris.instrument_imports():
   import flask
@@ -38,7 +41,7 @@ def TestOneInput(data):
     return None
 
   parse_set_header(fdp.ConsumeUnicode(fdp.ConsumeIntInRange(0, 512)))
-  
+
   client = app.test_client()
 
   try:
