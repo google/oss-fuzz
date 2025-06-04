@@ -18,4 +18,4 @@
 mv $SRC/fuzz_parser_test.go $SRC/dgraph/dql/
 printf "package dql\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > dql/register.go
 go mod tidy
-compile_native_go_fuzzer github.com/hypermodeinc/dgraph/v24/dql FuzzParserTest parser_fuzzer
+compile_native_go_fuzzer github.com/hypermodeinc/dgraph/v25/dql FuzzParserTest parser_fuzzer

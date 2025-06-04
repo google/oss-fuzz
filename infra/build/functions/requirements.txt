@@ -17,8 +17,8 @@
 Brotli==1.0.9
 hiredis==3.0.0
 PyYaml==6.0.2
-PyGithub==1.51
-grpcio==1.49.1
+PyGithub==2.6.1
+grpcio==1.71.0
 google-auth==1.21.1
 google-cloud-datastore<2.0
 google-cloud-ndb==1.7.1
@@ -30,3 +30,4 @@ oauth2client==4.1.3
 python-dateutil==2.8.1
 protobuf==3.20.2
 beautifulsoup4==4.11.1
+wrapt==1.17.2

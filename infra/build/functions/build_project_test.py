@@ -42,7 +42,9 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('build_project.get_datetime_now',
               return_value=test_utils.FAKE_DATETIME)
-  def test_get_build_steps(self, mock_url, mock_get_datetime_now):
+  @mock.patch('build_lib.get_unique_build_step_image_id',
+              return_value='UNIQUE_ID')
+  def test_get_build_steps(self, mock_url, mock_get_datetime_now, mock_get_id):
     """Test for get_build_steps."""
     del mock_url, mock_get_datetime_now
     project_yaml_contents = (
@@ -76,7 +78,10 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('build_project.get_datetime_now',
               return_value=test_utils.FAKE_DATETIME)
-  def test_get_centipede_build_steps(self, mock_url, mock_get_datetime_now):
+  @mock.patch('build_lib.get_unique_build_step_image_id',
+              return_value='UNIQUE_ID')
+  def test_get_centipede_build_steps(self, mock_url, mock_get_datetime_now,
+                                     mock_get_id):
     """Test for get_build_steps of centipede."""
     del mock_url, mock_get_datetime_now
     # The none sanitizer should be added automatically when other sanitizers are
