@@ -20,7 +20,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y \
     mercurial \
-    automake \
+    autoconf \
     autopoint \
     cmake \
     libtool \
@@ -30,6 +30,10 @@ RUN apt-get update && \
     ninja-build \
     libgflags-dev \
     yasm
+
+# Due to libxml2 requirements, build requires automake 1.16.3 (or later)
+RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+    apt install ./automake_1.16.5-1.3_all.deb
 
 # GraphicsMagick
 RUN hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
