@@ -7,6 +7,7 @@ auto_ccs:
   - "yunho@google.com"
   - "le.businessman@gmail.com"
 vendor_ccs:
+  - "media-alerts@mozilla.com"
   - "twsmith@mozilla.com"
 fuzzing_engines:
   - libfuzzer

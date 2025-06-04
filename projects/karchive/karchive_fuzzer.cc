@@ -27,7 +27,6 @@
 #include <QBuffer>
 #include <QCoreApplication>
 #include <QVector>
-#include <iostream>
 
 #include <KF6/KArchive/k7zip.h>
 #include <KF6/KArchive/ktar.h>
@@ -70,6 +69,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     std::unique_ptr<KCompressionDevice> bzipKD(new KCompressionDevice(&b, false, KCompressionDevice::BZip2));
     std::unique_ptr<KCompressionDevice> xzKD(new KCompressionDevice(&b, false, KCompressionDevice::Xz));
     std::unique_ptr<KCompressionDevice> zstdKD(new KCompressionDevice(&b, false, KCompressionDevice::Zstd));
+    std::unique_ptr<KCompressionDevice> lzKD(new KCompressionDevice(&b, false, KCompressionDevice::Lz));
 
     const QVector<KArchive*> handlers = {
         new K7Zip(&b),
@@ -78,12 +78,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         new KTar(bzipKD.get()),
         new KTar(xzKD.get()),
         new KTar(zstdKD.get()),
+        new KTar(lzKD.get()),
         new KZip(&b),
         new KAr(&b)
     };
 
     for (KArchive *h : handlers) {
-        b.reset();
+        if (b.isOpen()) {
+            b.reset();
+        }
+
+        if (auto k7zip = dynamic_cast<K7Zip *>(h)) {
+            // Set a dummy password to trigger decryption code
+            k7zip->setPassword("youshallnotpass");
+        }
+
         if (h->open(QIODevice::ReadOnly)) {
             const KArchiveDirectory *rootDir = h->directory();
             traverseArchive(rootDir); 

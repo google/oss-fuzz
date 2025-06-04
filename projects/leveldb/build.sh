@@ -26,7 +26,7 @@ CXXFLAGS="$CXXFLAGS -std=c++17"
 cd $SRC/leveldb
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DLEVELDB_BUILD_TESTS=0 \
-    -DLEVELDB_BUILD_BENCHMARKS=0 .. && cmake --build .
+    -DLEVELDB_BUILD_BENCHMARKS=0 -DCMAKE_CXX_STANDARD=17 .. && cmake --build .
 
 for fuzzer in fuzz_db; do
     # Compile
@@ -35,7 +35,7 @@ for fuzzer in fuzz_db; do
         -I$SRC/leveldb/build/include -I$SRC/leveldb/ -I$SRC/leveldb/include
 
     # Link
-    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${fuzzer}.o -o $OUT/${fuzzer} libleveldb.a
+    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${fuzzer}.o -o $OUT/${fuzzer} $SRC/leveldb/build/libleveldb.a
 done
 
 # Copy options to out

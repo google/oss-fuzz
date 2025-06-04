@@ -27,7 +27,9 @@ import logging
 import os
 import posixpath
 import re
+import shlex
 import sys
+from typing import Optional
 
 import oauth2client.client
 import six
@@ -36,6 +38,7 @@ import yaml
 import build_lib
 
 FUZZING_BUILD_TYPE = 'fuzzing'
+INDEXER_BUILD_TYPE = 'indexer'
 
 GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 GCB_EXPERIMENT_LOGS_BUCKET = 'oss-fuzz-gcb-experiment-logs'
@@ -67,15 +70,17 @@ _CACHED_SANITIZERS = ('address', 'coverage')
 @dataclass
 class Config:
   testing: bool = False
-  test_image_suffix: str = None
-  repo: str = DEFAULT_OSS_FUZZ_REPO
-  branch: str = None
+  test_image_suffix: Optional[str] = None
+  repo: Optional[str] = DEFAULT_OSS_FUZZ_REPO
+  branch: Optional[str] = None
   parallel: bool = False
   upload: bool = True
   experiment: bool = False
   # TODO(ochang): This should be different per engine+sanitizer combination.
-  upload_build_logs: str = None
-  build_type: str = None
+  upload_build_logs: Optional[str] = None
+  build_type: Optional[str] = None
+  fuzzing_engine: Optional[str] = None
+  fuzz_target: Optional[str] = None
 
 
 # Allow the WORKDIR to be commented out for OSS-Fuzz-Gen, which creates new
@@ -253,7 +258,7 @@ def get_datetime_now():
   return datetime.datetime.now()
 
 
-def get_env(fuzzing_language, build):
+def get_env(fuzzing_language, build, project_name=None):
   """Returns an environment for building. The environment is returned as a list
   and is suitable for use as the "env" parameter in a GCB build step. The
   environment variables are based on the values of |fuzzing_language| and
@@ -268,6 +273,8 @@ def get_env(fuzzing_language, build):
       'HOME': '/root',
       'OUT': build.out,
   }
+  if project_name is not None:
+    env_dict['PROJECT_NAME'] = project_name
   return list(sorted([f'{key}={value}' for key, value in env_dict.items()]))
 
 
@@ -342,27 +349,33 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
     dockerfile,
     config,
     additional_env=None,
-    use_caching=False):
+    use_caching=False,
+    timestamp=None):
   """Returns build steps for project."""
 
   project = Project(project_name, project_yaml, dockerfile)
   return get_build_steps_for_project(project,
                                      config,
                                      additional_env=additional_env,
-                                     use_caching=use_caching)
+                                     use_caching=use_caching,
+                                     timestamp=timestamp)
 
 
 def get_build_steps_for_project(project,
                                 config,
                                 additional_env=None,
-                                use_caching=False):
+                                use_caching=False,
+                                timestamp=None):
   """Returns build steps for project."""
 
   if project.disabled:
     logging.info('Project "%s" is disabled.', project.name)
     return []
 
-  timestamp = get_datetime_now().strftime('%Y%m%d%H%M')
+  if not timestamp:
+    timestamp = get_datetime_now()
+
+  timestamp = timestamp.strftime('%Y%m%d%H%M')
 
   if use_caching:
     # For cached builds: the cache images are sanitizer-specific, so we need to
@@ -486,6 +499,78 @@ def get_build_steps_for_project(project,
           upload_steps = get_upload_steps(project, build, timestamp,
                                           config.testing)
           build_steps.extend(upload_steps)
+
+  return build_steps
+
+
+def get_indexer_build_steps(project_name,
+                            project_yaml,
+                            dockerfile,
+                            config,
+                            additional_env=None,
+                            use_caching=False,
+                            timestamp=None):
+  """Get indexer build steps."""
+  project = Project(project_name, project_yaml, dockerfile)
+  if project.disabled:
+    logging.info('Project "%s" is disabled.', project.name)
+    return []
+
+  if project.fuzzing_language not in {'c', 'c++'}:
+    return []
+
+  if not timestamp:
+    timestamp = get_datetime_now()
+  timestamp = timestamp.strftime('%Y%m%d%H%M')
+
+  build_steps = build_lib.get_project_image_steps(
+      project.name,
+      project.image,
+      project.fuzzing_language,
+      config=config,
+      architectures=project.architectures,
+      experiment=config.experiment)
+  build = Build('none', 'address', 'x86_64')
+  env = get_env(project.fuzzing_language, build, project.name)
+  env.append('INDEXER_BUILD=1')
+
+  prefix = f'indexer_indexes/{project.name}/{timestamp}/'
+  signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
+      'clusterfuzz-builds', prefix)
+  curl_signed_args = shlex.join(
+      build_lib.signed_policy_document_curl_args(signed_policy_document))
+
+  index_step = {
+      'name': project.image,
+      'args': [
+          'bash', '-c',
+          f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'
+      ],
+      'env': env,
+  }
+  build_lib.dockerify_run_step(index_step,
+                               build,
+                               use_architecture_image_name=build.is_arm)
+
+  # TODO: Don't upload anything if we're in trial build.
+  build_steps.extend([
+      index_step,
+      {
+          # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
+          'name': get_uploader_image(),
+          'args': [
+              '-c', f'for tar in {build.out}/*.tar; '
+              f'do curl {curl_signed_args} -F key="{prefix}$(basename $tar)" '
+              f'-F file="@$tar" '
+              f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
+              ' done'
+          ],
+          'entrypoint': 'bash'
+      },
+      build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
+                                                    f'{prefix}srcmap.json',
+                                                    signed_policy_document),
+  ])
   return build_steps
 
 
@@ -607,9 +692,9 @@ def run_build(oss_fuzz_project,
                              experiment=experiment)
 
 
-def get_args(description):
-  """Parses command line arguments and returns them. Suitable for a build
-  script."""
+def parse_args(description, args):
+  """Parses command line arguments (or args if it is not None) and returns them.
+  Suitable for a build script."""
   parser = argparse.ArgumentParser(sys.argv[0], description=description)
   parser.add_argument('projects', help='Projects.', nargs='+')
   parser.add_argument('--testing',
@@ -621,6 +706,10 @@ def get_args(description):
                       required=False,
                       default=None,
                       help='Use testing base-images.')
+  parser.add_argument('--repo',
+                      required=False,
+                      default=DEFAULT_OSS_FUZZ_REPO,
+                      help='Use specified OSS-Fuzz repo.')
   parser.add_argument('--branch',
                       required=False,
                       default=None,
@@ -635,7 +724,15 @@ def get_args(description):
                       required=False,
                       default=False,
                       help='Configuration for experiments.')
-  return parser.parse_args()
+  parser.add_argument('--fuzzing-engine',
+                      required=False,
+                      default='libfuzzer',
+                      help='Fuzzing engine name.')
+  parser.add_argument('--fuzz-target',
+                      required=False,
+                      default='',
+                      help='Fuzz target name.')
+  return parser.parse_args(args)
 
 
 def create_config(args, build_type):
@@ -647,15 +744,20 @@ def create_config(args, build_type):
                 parallel=args.parallel,
                 upload=upload,
                 experiment=args.experiment,
-                build_type=build_type)
+                build_type=build_type,
+                fuzzing_engine=args.fuzzing_engine,
+                fuzz_target=args.fuzz_target)
 
 
-def build_script_main(script_description, get_build_steps_func, build_type):
+def build_script_main(script_description,
+                      get_build_steps_func,
+                      build_type,
+                      args=None):
   """Gets arguments from command line using |script_description| as helpstring
-  description. Gets build_steps using |get_build_steps_func| and then runs those
-  steps on GCB, tagging the builds with |build_type|. Returns 0 on success, 1 on
-  failure."""
-  args = get_args(script_description)
+  description or from args. Gets build_steps using |get_build_steps_func| and
+  then runs those steps on GCB, tagging the builds with |build_type|. Returns 0
+  on success, 1 on failure."""
+  args = parse_args(script_description, args)
   logging.basicConfig(level=logging.INFO)
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()

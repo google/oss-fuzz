@@ -17,7 +17,7 @@
 
 ./bootstrap
 autoreconf -f
-./configure
+./configure --disable-systemd
 make
 
 INCLUDES="-I. -I./src -I./lib -I./gobex -I/usr/local/include/glib-2.0/ -I/src/glib/_build/glib/"

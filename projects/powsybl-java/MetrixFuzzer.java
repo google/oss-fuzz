@@ -61,6 +61,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -105,7 +108,7 @@ public class MetrixFuzzer {
     }
   }
 
-  public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+  public static void fuzzerTestOneInput(FuzzedDataProvider data) throws IOException {
     if (tempDirPath == null) {
       return;
     }
@@ -123,7 +126,14 @@ public class MetrixFuzzer {
 
       // Randomise file content
       FileWriter fw = new FileWriter(timeFilePath.toFile());
-      fw.write(data.consumeString(data.remainingBytes() / 6));
+      fw.write("Time;Version;ts1;ts2\n");
+      Long minTs = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toEpochSecond();
+      for (Integer i = 1; i <= data.consumeInt(2, 5); i++) {
+        // Safe range for instance epoch second
+        Long ts = data.consumeLong(minTs, 32503680000L);
+        ZonedDateTime zdt = Instant.ofEpochSecond(ts + i).atZone(ZoneOffset.UTC);
+        fw.write(zdt.toString() + ";1;" + ((double) i) + ";" + (i + 0.1) + "\n");
+      }
       fw.close();
       fw = new FileWriter(mappingFilePath.toFile());
       fw.write(data.consumeString(data.remainingBytes() / 5));
@@ -270,11 +280,37 @@ public class MetrixFuzzer {
               metrixLogger,
               analysisResult);
       MetrixRunParameters runParams =
-          new MetrixRunParameters(
-              computationRange, chunkSize, true, true, false, false, false);
+          new MetrixRunParameters(computationRange, chunkSize, true, true, false, false, false);
       metrix.run(runParams, listener, "Fuzz");
-    } catch (PowsyblException | IllegalArgumentException | IOException e) {
+    } catch (PowsyblException | IllegalArgumentException | IllegalStateException | IOException e) {
       // Ignore known exceptions
+    } catch (NullPointerException e) {
+      // Capture known NPE from malformed JSON
+      if (!isExpected(e)) {
+        throw e;
+      }
     }
+  }
+
+  private static boolean isExpected(Throwable e) {
+    String[] expectedString = {
+      "java.util.Objects.requireNonNull",
+      "Cannot invoke \"String.hashCode()\"",
+      "Name is null",
+      "Cannot invoke \"com.fasterxml.jackson.databind.JsonNode.get(String)\""
+    };
+
+    for (String expected : expectedString) {
+      if (e.toString().contains(expected)) {
+        return true;
+      }
+      for (StackTraceElement ste : e.getStackTrace()) {
+        if (ste.toString().contains(expected)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }

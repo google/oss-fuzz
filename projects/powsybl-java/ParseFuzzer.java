@@ -20,11 +20,14 @@ import com.powsybl.cgmes.model.FullModel;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.exceptions.UncheckedXmlStreamException;
 import com.powsybl.computation.Partition;
+import com.powsybl.dynawo.commons.dynawologs.CsvLogParser;
+import com.powsybl.dynawo.commons.timeline.CsvTimeLineParser;
 import com.powsybl.entsoe.util.BoundaryPointXlsParser;
 import com.powsybl.entsoe.util.EntsoeFileName;
 import com.powsybl.powerfactory.model.PowerFactoryException;
 import com.powsybl.powerfactory.model.Project;
 import com.powsybl.powerfactory.model.StudyCase;
+import com.powsybl.psse.model.io.Context;
 import com.powsybl.sensitivity.SensitivityAnalysisResult.SensitivityContingencyStatus;
 import com.powsybl.sensitivity.SensitivityFactor;
 import com.powsybl.sensitivity.SensitivityValue;
@@ -37,6 +40,8 @@ import com.powsybl.timeseries.TimeSeries;
 import com.powsybl.timeseries.ast.NodeCalc;
 import com.univocity.parsers.common.TextParsingException;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
@@ -45,19 +50,23 @@ import java.time.format.DateTimeParseException;
 
 public class ParseFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+    if (data.remainingBytes() < 5) {
+      return;
+    }
+
     try {
       JsonParser parser;
       String str;
       ByteArrayInputStream bais;
       InputStreamReader reader;
 
-      byte[] bytes = data.consumeBytes(50000);
-      Integer choice = data.consumeInt(1, 16);
+      byte[] bytes = data.consumeBytes(Math.min(data.remainingBytes() - 4, 50000));
+      Integer choice = data.consumeInt(1, 19);
       switch (choice) {
         case 1:
           bais = new ByteArrayInputStream(bytes);
           reader = new InputStreamReader(bais);
-      	  FullModel.parse(reader);
+          FullModel.parse(reader);
           break;
         case 2:
           str = new String(bytes, StandardCharsets.UTF_8);
@@ -121,11 +130,26 @@ public class ParseFuzzer {
           str = new String(bytes, StandardCharsets.UTF_8);
           TimeSeries.parseCsv(str);
           break;
+        case 17:
+          File logFile = File.createTempFile("fuzz-", "-fuzz");
+          logFile.deleteOnExit();
+          try (FileOutputStream fos = new FileOutputStream(logFile)) {
+            fos.write(bytes);
+            new CsvLogParser().parse(logFile.toPath());
+          }
+          break;
+        case 18:
+          File timeFile = File.createTempFile("fuzz-", "-fuzz");
+          timeFile.deleteOnExit();
+          try (FileOutputStream fos = new FileOutputStream(timeFile)) {
+            fos.write(bytes);
+          }
+          new CsvTimeLineParser().parse(timeFile.toPath());
+          break;
+        case 19:
+          new Context().detectDelimiter(new String(bytes, StandardCharsets.UTF_8));
+          break;
       }
-
-      // Fuzz parse methods
-
-      // Fuzz other parse methods
     } catch (PowsyblException
         | IOException
         | UncheckedIOException

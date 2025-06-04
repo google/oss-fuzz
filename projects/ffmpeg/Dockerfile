@@ -15,12 +15,15 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y nasm pkg-config rsync autoconf libtool gperf
+RUN apt-get update && apt-get install -y nasm pkg-config rsync libtool gperf
 RUN curl -LO https://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
     apt install ./automake_1.16.5-1.3_all.deb
-RUN python3 -m pip install --upgrade pip && python3 -m pip install -U meson ninja
+RUN curl -LO https://mirrors.kernel.org/ubuntu/pool/main/a/autoconf/autoconf_2.72-3_all.deb && \
+    apt install ./autoconf_2.72-3_all.deb
+# Meson is pinned to get around https://github.com/mesonbuild/meson/issues/14533
+RUN python3 -m pip install --upgrade pip && python3 -m pip install -U meson==1.7.2 ninja
 
-RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+RUN git clone --depth 1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
 RUN curl -O https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.12.tar.bz2
 RUN git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git

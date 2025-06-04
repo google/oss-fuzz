@@ -29,6 +29,9 @@ RUN git clone --depth 1 https://github.com/powsybl/powsybl-dynawo
 RUN git clone --depth 1 https://github.com/powsybl/powsybl-entsoe
 RUN git clone --depth 1 https://github.com/powsybl/powsybl-open-loadflow
 
+# For corpus
+RUN git clone --depth 1 https://github.com/arthurscchan/powsybl-seed-corpus
+
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
 WORKDIR $SRC/

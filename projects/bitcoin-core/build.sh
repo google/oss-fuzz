@@ -23,12 +23,7 @@ cd $SRC/bitcoin-core/
 # Build dependencies
 # This will also force static builds
 if [ "$ARCHITECTURE" = "i386" ]; then
-  export BUILD_TRIPLET="i686-pc-linux-gnu"
-
-  # Temp workaround
-  mkdir /usr/local/lib/clang/18/lib/linux
-  ln -s /usr/local/lib/clang/18/lib/i386-unknown-linux-gnu/libclang_rt.asan_static.a /usr/local/lib/clang/18/lib/linux/libclang_rt.asan_static-i386.a
-  ln -s /usr/local/lib/clang/18/lib/i386-unknown-linux-gnu/libclang_rt.asan.a /usr/local/lib/clang/18/lib/linux/libclang_rt.asan-i386.a
+  export BUILD_TRIPLET="i386-linux-gnu"
 else
   export BUILD_TRIPLET="x86_64-pc-linux-gnu"
 fi
@@ -47,7 +42,7 @@ export CPPFLAGS="-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG -DBOOST_M
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
-  make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_USDT=1 \
+  make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_ZMQ=1 NO_USDT=1 \
        AR=llvm-ar NM=llvm-nm RANLIB=llvm-ranlib STRIP=llvm-strip \
        -j$(nproc)
 )
