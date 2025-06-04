@@ -164,6 +164,7 @@ COPY bazel_build_fuzz_tests \
     compile_fuzztests.sh \
     compile_go_fuzzer \
     compile_javascript_fuzzer \
+    compile_ruby_fuzzer \
     compile_libfuzzer \
     compile_native_go_fuzzer \
     compile_python_fuzzer \
