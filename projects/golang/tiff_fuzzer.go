@@ -26,6 +26,10 @@ func FuzzTiffDecode(data []byte) int {
 		}
 		runtime.GC()
 	}()
+	config, err := DecodeConfig(bytes.NewReader(data))
+	if err != nil || config.Width > 16384 || config.Height > 16384 {
+		return 1
+	}
 	_, _ = Decode(bytes.NewReader(data))
 	return 1
 }
