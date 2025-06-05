@@ -25,6 +25,9 @@ from elftools.elf import elffile
 _IGNORED_UNIT_TYPES = ("DW_UT_type", "DW_UT_split_type")
 
 
+# yapf: disable
+
+
 @dataclasses.dataclass
 class CompilationUnit:
   """Represents a DWARF compilation unit.
