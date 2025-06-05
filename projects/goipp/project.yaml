@@ -5,6 +5,7 @@ auto_ccs:
   - "till.kamppeter@gmail.com"
   - "ossfuzz@iosifache.me"
   - "jiongchiyu@gmail.com"
+  - "pzz@apevzner.com"
 language: go
 fuzzing_engines:
   - libfuzzer
