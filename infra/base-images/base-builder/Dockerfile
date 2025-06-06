@@ -40,7 +40,7 @@ RUN PYTHON_DEPS="\
     cd Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations --enable-shared && \
     make -j$(nproc) && \
-    make install &&
+    make install && \
     ldconfig && \
     ln -s /usr/local/bin/python3 /usr/local/bin/python && \
     cd .. && \
