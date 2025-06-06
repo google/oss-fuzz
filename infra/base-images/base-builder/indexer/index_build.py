@@ -12,25 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-#!/usr/bin/env python3
 """This runs the actual build process to generate a snapshot."""
 
 import argparse
 import dataclasses
 import hashlib
-import io
 import json
 import logging
 import os
 from pathlib import Path  # pylint: disable=g-importing-member
 import shutil
 import subprocess
-import tarfile
 import tempfile
 from typing import Any, Sequence
 
-ARCHIVE_VERSION = 1
+import manifest_types
+
 PROJECT = Path(os.environ['PROJECT_NAME']).name
 SNAPSHOT_DIR = Path('/snapshot')
 SRC = Path(os.getenv('SRC', '/src'))
@@ -38,7 +35,8 @@ SRC = Path(os.getenv('SRC', '/src'))
 OUT = Path(os.getenv('OUT', '/out'))
 INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 
-_LD_PATH = Path('/lib64/ld-linux-x86-64.so.2')
+_LD_BINARY = 'ld-linux-x86-64.so.2'
+_LD_PATH = Path('/lib64') / _LD_BINARY
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 _CLANG_VERSION = '18'
 
@@ -81,104 +79,6 @@ class BinaryMetadata:
   binary_args: str
   build_id: str
   compile_commands: list[dict[str, Any]]
-
-
-@dataclasses.dataclass(frozen=True)
-class Manifest:
-  """Contains general meta-information about the snapshot."""
-  name: str
-  uuid: str
-  binary_name: str
-  binary_args: str
-  version: int
-  # Example source map:
-  # {
-  #   "/src/hunspell": {
-  #     "type": "git",
-  #     "url": "https://github.com/hunspell/hunspell.git",
-  #     "rev": "a9b7270c1c2832312cfb20c3d1cf5c5080bf221b"
-  #   }
-  # }
-  source_map: dict[str, dict[str, str]]
-  is_oss_fuzz: bool = False
-
-
-def _is_elf(file: Path) -> bool:
-  """Returns whether a file is an ELF file."""
-  with file.open('rb') as f:
-    return f.read(4) == b'\x7fELF'
-
-
-def save_build(
-    manifest: Manifest,
-    *,
-    source_dir: Path,
-    build_dir: Path,
-    index_dir: Path,
-    archive_path: Path,
-) -> None:
-  """Saves a build archive."""
-  with tempfile.NamedTemporaryFile() as tmp:
-    mode = 'w:gz' if archive_path.suffix.endswith('gz') else 'w'
-    with tarfile.open(tmp.name, mode) as tar:
-
-      def _save_dir(
-          path: Path,
-          prefix: str,
-          exclude_build_artifacts: bool = False,
-          only_include_target: str | None = None,
-      ):
-        assert prefix.endswith('/')
-        for root, _, files in os.walk(path):
-          for file in files:
-            if file.endswith('_seed_corpus.zip'):
-              # Don't copy over the seed corpus -- it's not necessary.
-              continue
-
-            file = Path(root, file)
-            if exclude_build_artifacts and _is_elf(file):
-              continue
-
-            if only_include_target and _is_elf(file):
-              # Skip ELF files that aren't the relevant target (unless it's a
-              # shared library).
-              if (file.name != only_include_target and
-                  '.so' not in file.name and
-                  not file.absolute().is_relative_to(Path(OUT) / 'lib')):
-                continue
-
-            tar.add(
-                # Don't try to replicate symlinks in the tarfile, because they
-                # can lead to various issues (e.g. absolute symlinks).
-                file.resolve().as_posix(),
-                arcname=prefix + str(file.relative_to(path)),
-            )
-
-      _add_string_to_tar(
-          tar,
-          'manifest.json',
-          json.dumps(
-              dataclasses.asdict(manifest),
-              indent=2,
-          ),
-      )
-
-      _save_dir(source_dir, 'src/', exclude_build_artifacts=True)
-      # Only include the relevant target for the snapshot, to save on disk
-      # space.
-      _save_dir(build_dir, 'obj/', only_include_target=manifest.binary_name)
-      _save_dir(index_dir, 'idx/')
-
-    shutil.copyfile(tmp.name, archive_path)
-
-
-def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
-  bytesio = io.BytesIO(data.encode('utf-8'))
-
-  tar_info = tarfile.TarInfo(name)
-  tar_info.size = len(bytesio.getvalue())
-
-  tar.addfile(tarinfo=tar_info, fileobj=bytesio)
 
 
 def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
@@ -425,24 +325,24 @@ def test_target(target: BinaryMetadata,) -> bool:
   return True
 
 
-def set_interpreter(target_path: Path):
+def set_interpreter(target_path: Path, lib_mount_path: Path):
   subprocess.run(
       [
           'patchelf',
           '--set-interpreter',
-          '/ossfuzzlib/ld-linux-x86-64.so.2',
+          (lib_mount_path / _LD_BINARY).as_posix(),
           target_path.as_posix(),
       ],
       check=True,
   )
 
 
-def set_rpath_to_ossfuzzlib(binary_artifact: Path):
+def set_target_rpath(binary_artifact: Path, lib_mount_path: Path):
   subprocess.run(
       [
           'patchelf',
           '--set-rpath',
-          '/ossfuzzlib',
+          lib_mount_path,
           '--force-rpath',
           binary_artifact.as_posix(),
       ],
@@ -450,7 +350,8 @@ def set_rpath_to_ossfuzzlib(binary_artifact: Path):
   )
 
 
-def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
+def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path,
+                          lib_mount_path: Path) -> None:
   """Copies the shared libraries to the shared directory."""
   env = os.environ.copy()
   env['LD_TRACE_LOADED_OBJECTS'] = '1'
@@ -506,7 +407,7 @@ def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
       # objects. What about their shared objects you may ask? Well they
       # will all be from this directory where every so has the directory
       # as its rpath.
-      set_rpath_to_ossfuzzlib(dst)
+      set_target_rpath(dst, lib_mount_path)
 
     except FileNotFoundError as e:
       logging.exception('Could not copy %s', library_path)
@@ -528,32 +429,32 @@ def archive_target(target: BinaryMetadata) -> Path | None:
 
   name = f'{PROJECT}.{target.name}'
   uuid = f'{PROJECT}.{target.name}.{target_hash}'
+  lib_mount_path = Path('/tmp') / (uuid + '_lib')
 
   libs_path = OUT / 'lib'
   libs_path.mkdir(parents=False, exist_ok=True)
   target_path = OUT / target.name
-  copy_shared_libraries(target_path, libs_path)
-  set_interpreter(target_path)
-  set_rpath_to_ossfuzzlib(target_path)
+  copy_shared_libraries(target_path, libs_path, lib_mount_path)
+  set_interpreter(target_path, lib_mount_path)
+  set_target_rpath(target_path, lib_mount_path)
   archive_path = SNAPSHOT_DIR / f'{uuid}.tar'
+  archive_path.parent.mkdir(parents=True, exist_ok=True)  # For `/` in $PROJECT.
 
   # We may want to eventually re-enable SRC copying (with some filtering to only
   # include source files).
   with tempfile.TemporaryDirectory() as empty_src_dir:
-    save_build(
-        Manifest(
-            name=name,
-            uuid=uuid,
-            binary_name=target.name,
-            binary_args=target.binary_args,
-            version=ARCHIVE_VERSION,
-            is_oss_fuzz=False,
-            source_map=json.loads(source_map),
-        ),
+    manifest_types.Manifest(
+        name=name,
+        uuid=uuid,
+        binary_name=target.name,
+        binary_args=target.binary_args,
+        source_map=manifest_types.source_map_from_dict(json.loads(source_map)),
+    ).save_build(
         source_dir=Path(empty_src_dir),
         build_dir=OUT,
         index_dir=index_dir,
         archive_path=archive_path,
+        out_dir=OUT,
     )
 
   logging.info('Wrote archive to: %s', archive_path)
