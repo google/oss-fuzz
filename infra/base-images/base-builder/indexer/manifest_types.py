@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Classes and tools to build an indexer snapshot according to the spec.
 
 A snapshot is a tarball containing the following:
@@ -32,10 +31,9 @@ import pathlib
 import shutil
 import tarfile
 import tempfile
-from typing import Any, Callable 
+from typing import Any, Callable
 
 import pathlib
-
 
 # Source directory.
 SRC_DIR = pathlib.Path("src")
@@ -80,9 +78,7 @@ class SourceRef:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> 'SourceRef':
     """Creates a SourceRef object from a deserialized dict."""
-    return SourceRef(
-        url=data["url"], rev=data["rev"], type=data["type"]
-    )
+    return SourceRef(url=data["url"], rev=data["rev"], type=data["type"])
 
 
 @dataclasses.dataclass(frozen=True)
@@ -148,18 +144,16 @@ class Manifest:
         lib_mount_path=lib_mount_path,
         source_map=_get_mapped(data, "source_map", source_map_from_dict),
         source_dir_prefix=data.get("source_dir_prefix"),
-        reproducibility=_get_mapped(
-            data, "reproducibility", Reproducibility.from_dict
-        ),
+        reproducibility=_get_mapped(data, "reproducibility",
+                                    Reproducibility.from_dict),
         version=data["version"],
     )
 
   def to_dict(self) -> dict[str, Any]:
     """Converts a Manifest object to a serializable dict."""
     data = dataclasses.asdict(self)
-    data["lib_mount_path"] = _get_mapped(
-        data, "lib_mount_path", lambda x: x.as_posix()
-    )
+    data["lib_mount_path"] = _get_mapped(data, "lib_mount_path",
+                                         lambda x: x.as_posix())
     data["source_map"] = _get_mapped(data, "source_map", source_map_to_dict)
     return data
 
@@ -172,25 +166,21 @@ class Manifest:
     if self.version not in _SUPPORTED_ARCHIVE_VERSIONS:
       raise RuntimeError(
           "Build archive with version {self.version} is not supported."
-          f" Supported versions are {_SUPPORTED_ARCHIVE_VERSIONS}."
-      )
+          f" Supported versions are {_SUPPORTED_ARCHIVE_VERSIONS}.")
     if self.version == 1 and _LIB_MOUNT_PATH_V1 != self.lib_mount_path:
       raise RuntimeError(
           "Build archive with version 1 has an alternative lib_mount_path set"
-          f" ({self.lib_mount_path}). This is not a valid archive."
-      )
+          f" ({self.lib_mount_path}). This is not a valid archive.")
     if not self.name or not self.uuid or not self.binary_name:
       raise RuntimeError(
           "Attempting to load a manifest with missing fields. Expected all"
-          " fields to be set, but got {self}"
-      )
+          " fields to be set, but got {self}")
     if self.source_map is not None:
       for _, ref in self.source_map.items():
         if not ref.url:
           raise RuntimeError(
               "Attempting to load a manifest with a source map entry with an"
-              " empty URL. Source map entry: {ref}"
-          )
+              " empty URL. Source map entry: {ref}")
 
   def save_build(
       self,
@@ -228,11 +218,9 @@ class Manifest:
               if only_include_target and _is_elf(file):
                 # Skip ELF files that aren't the relevant target (unless it's a
                 # shared library).
-                if (
-                    file.name != only_include_target
-                    and ".so" not in file.name
-                    and not file.absolute().is_relative_to(out_dir / "lib")
-                ):
+                if (file.name != only_include_target and
+                    ".so" not in file.name and
+                    not file.absolute().is_relative_to(out_dir / "lib")):
                   continue
 
               tar.add(
@@ -263,9 +251,8 @@ class Manifest:
         shutil.copyfile(tmp.name, archive_path)
 
 
-def _get_mapped(
-    data: dict[str, Any], key: str, mapper: Callable[[Any], Any]
-) -> Any | None:
+def _get_mapped(data: dict[str, Any], key: str,
+                mapper: Callable[[Any], Any]) -> Any | None:
   """Get a value from a dict and apply a mapper to it, if it's not None."""
   value = data.get(key)
   if value is None:
@@ -278,9 +265,7 @@ def source_map_from_dict(data: dict[str, Any]) -> dict[pathlib.Path, SourceRef]:
   return {pathlib.Path(x): SourceRef.from_dict(y) for x, y in data.items()}
 
 
-def source_map_to_dict(
-    x: dict[pathlib.Path, SourceRef],
-) -> dict[str, Any]:
+def source_map_to_dict(x: dict[pathlib.Path, SourceRef],) -> dict[str, Any]:
   """Converts a dictionary of SourceRef objects to a string: obj dict."""
   return {k.as_posix(): v for k, v in x.items()}
 
