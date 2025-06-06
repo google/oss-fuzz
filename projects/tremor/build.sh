@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+# Build the ogg library
 pushd $SRC/ogg
 ./autogen.sh
 ./configure --prefix="$WORK" --enable-static --disable-shared --disable-crc
@@ -23,9 +24,15 @@ make -j$(nproc)
 make install
 popd
 
+# Build the tremor library
+pushd $SRC/tremor
 ./autogen.sh --prefix="$WORK" --enable-static --disable-shared
-make clean
+./configure --prefix="$WORK" --enable-static --disable-shared
 make -j$(nproc)
 make install
+popd
 
-$CXX $CXXFLAGS decode_fuzzer.cc -o $OUT/decode_fuzzer -L"$WORK/lib" -I"$WORK/include" $LIB_FUZZING_ENGINE -lvorbisidec -logg
+# Build the fuzz target
+$CXX $CXXFLAGS -I"$WORK/include" -L"$WORK/lib" \
+    /src/tremor/decode_fuzzer.cc -o $OUT/decode_fuzzer \
+    $LIB_FUZZING_ENGINE -lvorbisidec -logg
