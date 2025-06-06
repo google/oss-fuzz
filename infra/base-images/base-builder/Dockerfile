@@ -27,8 +27,9 @@ RUN    apt-get install -y $PYTHON_DEPS
 RUN cd /tmp && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
     tar -xvf Python-$PYTHON_VERSION.tar.xz
-RUN    cd /tmp/Python-$PYTHON_VERSION && \
-    ./configure --enable-optimizations --enable-shared && \
+
+RUN cd /tmp/Python-$PYTHON_VERSION && \
+    ./configure --enable-optimizations --enable-shared
 
 RUN cd /tmp/Python-$PYTHON_VERSION && make -j$(nproc) install
 RUN cd /tmp/Python-$PYTHON_VERSION && \
