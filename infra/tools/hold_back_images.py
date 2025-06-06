@@ -104,7 +104,8 @@ def hold_image(project, hold_image_digest, update_held, issue_number):
     dockerfile[idx] = f'FROM {hold_image_digest}\n'
     if issue_number:
       comment = ('# Held back because of github.com/google/oss-fuzz/pull/'
-                 f'{issue_number}\n# Please fix failure and upgrade.\n')
+                 f'{issue_number}\n# Please fix the build failure + upgrade.'
+                 '\n\n')
       dockerfile.insert(idx, comment)
     break
   else:
