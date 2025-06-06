@@ -39,7 +39,8 @@ RUN PYTHON_DEPS="\
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations --enable-shared && \
-    make -j$(nproc) install && \
+    make -j$(nproc) && \
+    make install &&
     ldconfig && \
     ln -s /usr/local/bin/python3 /usr/local/bin/python && \
     cd .. && \
