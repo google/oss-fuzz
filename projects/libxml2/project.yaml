@@ -28,3 +28,4 @@ fuzzing_engines:
   - honggfuzz
   - afl
 main_repo: 'https://gitlab.gnome.org/GNOME/libxml2.git'
+view_restrictions: none
