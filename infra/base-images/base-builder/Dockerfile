@@ -31,7 +31,7 @@ RUN cd /tmp && \
 RUN cd /tmp/Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations --enable-shared
 
-RUN cd /tmp/Python-$PYTHON_VERSION && make -j$(nproc) install
+RUN unset CFLAGS CXXFLAGS cd /tmp/Python-$PYTHON_VERSION && make -j$(nproc) install
 RUN cd /tmp/Python-$PYTHON_VERSION && \
     ldconfig && \
     ln -s /usr/local/bin/python3 /usr/local/bin/python
