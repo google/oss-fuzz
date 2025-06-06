@@ -1717,6 +1717,7 @@ def index(args):
       f'ARCHITECTURE={args.architecture}',
       'HELPER=True',
       f'PROJECT_NAME={args.project.name}',
+      'INDEXER_BUILD=1',
   ]
   if args.e:
     env.extend(args.e)
