@@ -12,7 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/oss-fuzz-base/base-builder-python
+# Held back because of github.com/google/oss-fuzz/pull/13407
+# Please fix the build failure + upgrade.
+
+FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:d223a882810372830fd7968eb3e64533f3a2318c90be43ac753a46a15946faec
 RUN git clone --depth=1 https://github.com/hukkinj1/tomli tomli
 RUN git clone --depth=1 https://github.com/hukkin/tomli-w tomli-w
 COPY *.sh $SRC/
