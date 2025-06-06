@@ -14,4 +14,5 @@ sanitizers:
 
 architectures:
 - x86_64
-- aarch64
+# aarch64 is not supported yet. Enabling it causes trouble for maintainers.
+#- aarch64
