@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """This runs the actual build process to generate a snapshot."""
 
 import argparse
@@ -21,12 +22,14 @@ import json
 import logging
 import os
 from pathlib import Path  # pylint: disable=g-importing-member
+import shlex
 import shutil
 import subprocess
 import tempfile
 from typing import Any, Sequence
 
 import manifest_types
+
 
 PROJECT = Path(os.environ['PROJECT_NAME']).name
 SNAPSHOT_DIR = Path('/snapshot')
@@ -76,7 +79,7 @@ def set_up_wrapper_dir():
 class BinaryMetadata:
   name: str
   binary_path: Path
-  binary_args: str
+  binary_args: list[str]
   build_id: str
   compile_commands: list[dict[str, Any]]
 
@@ -179,11 +182,13 @@ def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
   return None
 
 
-def enumerate_build_targets(binary_args: str) -> Sequence[BinaryMetadata]:
+def enumerate_build_targets(
+    binary_args: list[str],
+) -> Sequence[BinaryMetadata]:
   """Enumerates the build targets in the project.
 
   Args:
-    binary_args: Shell-escaped argument list, applied to all targets
+    binary_args: Argument list, applied to all targets
 
   Returns:
     A sequence of target descriptions, in BinaryMetadata form.
@@ -225,7 +230,8 @@ def enumerate_build_targets(binary_args: str) -> Sequence[BinaryMetadata]:
               binary_args=binary_args,
               compile_commands=compile_commands,
               build_id=build_id,
-          ))
+          )
+      )
 
   return targets
 
@@ -246,16 +252,18 @@ def build_project(targets_to_index: Sequence[str] | None = None):
   """Build the actual project."""
   set_env_vars()
   existing_cflags = os.environ.get('CFLAGS', '')
-  extra_flags = ('-fno-omit-frame-pointer '
-                 '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
-                 '-O0 -glldb '
-                 '-fsanitize=address '
-                 '-Wno-invalid-offsetof '
-                 '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
-                 f'-gen-cdb-fragment-path {OUT}/cdb '
-                 '-Qunused-arguments '
-                 f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
-                 f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} ')
+  extra_flags = (
+      '-fno-omit-frame-pointer '
+      '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
+      '-O0 -glldb '
+      '-fsanitize=address '
+      '-Wno-invalid-offsetof '
+      '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
+      f'-gen-cdb-fragment-path {OUT}/cdb '
+      '-Qunused-arguments '
+      f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
+      f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} '
+  )
   os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
@@ -308,12 +316,14 @@ def build_project(targets_to_index: Sequence[str] | None = None):
   subprocess.run(['/usr/local/bin/compile'], check=True)
 
 
-def test_target(target: BinaryMetadata,) -> bool:
+def test_target(
+    target: BinaryMetadata,
+) -> bool:
   """Tests a single target."""
   target_path = OUT / target.name
-  result = subprocess.run([str(target_path)],
-                          stderr=subprocess.PIPE,
-                          check=False)
+  result = subprocess.run(
+      [str(target_path)], stderr=subprocess.PIPE, check=False
+  )
   expected_error = f'Usage: {target_path} <input_file>\n'
   if result.stderr.decode() != expected_error or result.returncode != 1:
     logging.error(
@@ -350,8 +360,9 @@ def set_target_rpath(binary_artifact: Path, lib_mount_path: Path):
   )
 
 
-def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path,
-                          lib_mount_path: Path) -> None:
+def copy_shared_libraries(
+    fuzz_target_path: Path, libs_path: Path, lib_mount_path: Path
+) -> None:
   """Copies the shared libraries to the shared directory."""
   env = os.environ.copy()
   env['LD_TRACE_LOADED_OBJECTS'] = '1'
@@ -422,8 +433,9 @@ def archive_target(target: BinaryMetadata) -> Path | None:
     logging.error("didn't find index dir %s", index_dir)
     return None
 
-  source_map = subprocess.run(['srcmap'], capture_output=True,
-                              check=True).stdout
+  source_map = subprocess.run(
+      ['srcmap'], capture_output=True, check=True
+  ).stdout
 
   target_hash = hashlib.sha256(source_map).hexdigest()[:16]
 
@@ -465,7 +477,9 @@ def archive_target(target: BinaryMetadata) -> Path | None:
   return archive_path
 
 
-def test_and_archive(target_args: str, targets_to_index: Sequence[str] | None):
+def test_and_archive(
+    target_args: list[str], targets_to_index: Sequence[str] | None
+):
   """Test target and archive."""
   targets = enumerate_build_targets(target_args)
   if targets_to_index:
@@ -511,14 +525,17 @@ def main():
           'If this is omitted, snapshots are built for all fuzz targets. '
           'If specified, this can include binaries which are not fuzz targets '
           '(e.g., CLI targets which are built as part of the build '
-          'integration).'),
+          'integration).'
+      ),
   )
   parser.add_argument(
       '--target-args',
-      default='<input_file>',
-      help=('Arguments to pass to the target when executing it. '
-            'This string is shell-escaped (interpreted with `shlex.split`). '
-            'The substring <input_file> will be replaced with the input path.'),
+      default=manifest_types.INPUT_FILE,
+      help=(
+          'Arguments to pass to the target when executing it. '
+          'This string is shell-escaped (interpreted with `shlex.split`). '
+          'The substring <input_file> will be replaced with the input path.'
+      ),
   )
   args = parser.parse_args()
 
@@ -536,7 +553,7 @@ def main():
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
   build_project(targets_to_index)
-  test_and_archive(args.target_args, targets_to_index)
+  test_and_archive(shlex.split(args.target_args), targets_to_index)
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
