@@ -131,3 +131,29 @@ class ExecCommandFromGithubTest(unittest.TestCase):
               mock_trial_build_trial_build_main.assert_not_called()
               mock_oss_fuzz_on_demand.assert_called_once_with(
                   test_case["expected_command"])
+
+  @mock.patch('gcb.get_comments',
+              return_value=[('/gcbrun oss_fuzz_on_demand.py aiohttp --sanitizer'
+                             'coverage address --fuzzing-engine libfuzzer')])
+  @mock.patch('gcb.get_latest_gcbrun_command',
+              return_value=[
+                  'oss_fuzz_on_demand.py', 'aiohttp', '--fuzzing-engine',
+                  'libfuzzer'
+              ])
+  @mock.patch('trial_build.trial_build_main')
+  @mock.patch('build_project.build_script_main', return_value=0)
+  def test_build_script_main_args(self, mock_build_script_main,
+                                  mock_trial_build_main,
+                                  mock_get_latest_gcbrun_command,
+                                  mock_gcb_get_comments):
+    """Tests for build_script_main args on oss_fuzz_on_demmand call."""
+    gcb.exec_command_from_github(0, "test_repo", "test_branch")
+
+    mock_trial_build_main.assert_not_called()
+
+    build_script_main_args = [
+        'aiohttp', '--fuzzing-engine', 'libfuzzer', '--repo', 'test_repo',
+        '--branch', 'test_branch'
+    ]
+    mock_build_script_main.assert_called_once_with(mock.ANY, mock.ANY, mock.ANY,
+                                                   build_script_main_args)

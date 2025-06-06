@@ -16,9 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-ADD https://github.com/nss-dev/nspr.git /nspr
-ADD https://github.com/nss-dev/nss.git /nss
-ADD https://github.com/mozilla/neqo.git $SRC/neqo
+RUN git clone --depth 1 https://github.com/nss-dev/nspr $SRC/nspr
+RUN git clone --depth 1 https://github.com/nss-dev/nss $SRC/nss
+RUN git clone --depth 1 https://github.com/mozilla/neqo $SRC/neqo
+RUN ls -l $SRC
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libclang-dev gyp ninja-build python-is-python3 zlib1g-dev \
@@ -27,11 +28,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # We unfortunately need to build NSS from source, because the Debian package
 # in the base distribution is too old.
-ENV NSS_DIR=/nss NSS_PREBUILT=1
+ENV NSS_DIR=$SRC/nss NSS_PREBUILT=1
 
 # FIXME: Optimized NSS build fails with assembler errors.
 # Maybe not critical since the fuzzer uses AeadNull.
-RUN CXX="$CXX -stdlib=libc++" /nss/build.sh --static --disable-tests
+RUN CXX="$CXX -stdlib=libc++" $SRC/nss/build.sh --static --disable-tests
 
 RUN rustup default nightly
 RUN rustup component add --toolchain nightly rust-src

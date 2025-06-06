@@ -27,10 +27,14 @@ export PKG_CONFIG="`which pkg-config` --static"
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 export PATH=$PREFIX/bin:$PATH
 pushd $SRC/freetype
-./autogen.sh
-./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --with-png=no --with-zlib=no 
-make -j$(nproc)
-make install
+# Temporarily Add -D_GNU_SOURCE to CFLAGS to fix freetype's dependence on GNU
+# extensions for dlsym to dynamically load harfbuzz. This feature
+# should potentially be disabled instead of fixing the compilation.
+# See https://github.com/google/oss-fuzz/pull/13325 for more details.
+CFLAGS="$CFLAGS -D_GNU_SOURCE" ./autogen.sh
+CFLAGS="$CFLAGS -D_GNU_SOURCE" ./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --with-png=no --with-zlib=no
+CFLAGS="$CFLAGS -D_GNU_SOURCE" make -j$(nproc)
+CFLAGS="$CFLAGS -D_GNU_SOURCE" make install
 popd
 
 # Make minor change in the CMakeFiles file.
