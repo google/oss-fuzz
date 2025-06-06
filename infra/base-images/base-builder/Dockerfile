@@ -21,31 +21,23 @@ RUN /install_deps.sh && rm /install_deps.sh
 
 # Build and install latest Python 3.11.
 ENV PYTHON_VERSION 3.11.13
-RUN PYTHON_DEPS="\
-        zlib1g-dev \
-        libncurses5-dev \
-        libgdbm-dev \
-        libnss3-dev \
-        libssl-dev \
-        libsqlite3-dev \
-        libreadline-dev \
-        libffi-dev \
-        libbz2-dev \
-        liblzma-dev" && \
-    unset CFLAGS CXXFLAGS && \
-    apt-get install -y $PYTHON_DEPS && \
-    cd /tmp && \
+ENV PYTHON_DEPS="zlib1g-dev        libncurses5-dev        libgdbm-dev        libnss3-dev        libssl-dev        libsqlite3-dev        libreadline-dev        libffi-dev        libbz2-dev        liblzma-dev"
+RUN    apt-get install -y $PYTHON_DEPS
+
+RUN cd /tmp && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
-    tar -xvf Python-$PYTHON_VERSION.tar.xz && \
-    cd Python-$PYTHON_VERSION && \
+    tar -xvf Python-$PYTHON_VERSION.tar.xz
+RUN    cd /tmp/Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations --enable-shared && \
-    make -j$(nproc) install && \
+    make -j$(nproc) install
+RUN cd /tmp/Python-$PYTHON_VERSION && \
     ldconfig && \
-    ln -s /usr/local/bin/python3 /usr/local/bin/python && \
-    cd .. && \
+    ln -s /usr/local/bin/python3 /usr/local/bin/python
+RUN cd /tmp && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
-    rm -rf /usr/local/lib/python${PYTHON_VERSION%.*}/test && \
-    python3 -m ensurepip && \
+    rm -rf /usr/local/lib/python${PYTHON_VERSION%.*}/test
+
+RUN    python3 -m ensurepip && \
     python3 -m pip install --upgrade pip && \
     apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
 
