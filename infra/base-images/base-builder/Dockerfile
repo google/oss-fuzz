@@ -20,7 +20,7 @@ COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
 # Build and install latest Python 3.11.
-ENV PYTHON_VERSION 3.11.13
+ENV PYTHON_VERSION=3.11.13
 ENV PYTHON_DEPS="zlib1g-dev        libncurses5-dev        libgdbm-dev        libnss3-dev        libssl-dev        libsqlite3-dev        libreadline-dev        libffi-dev        libbz2-dev        liblzma-dev"
 RUN    apt-get install -y $PYTHON_DEPS
 
