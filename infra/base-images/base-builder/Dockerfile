@@ -29,7 +29,8 @@ RUN cd /tmp && \
     tar -xvf Python-$PYTHON_VERSION.tar.xz
 RUN    cd /tmp/Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations --enable-shared && \
-    make -j$(nproc) install
+
+RUN cd /tmp/Python-$PYTHON_VERSION && make -j$(nproc) install
 RUN cd /tmp/Python-$PYTHON_VERSION && \
     ldconfig && \
     ln -s /usr/local/bin/python3 /usr/local/bin/python
