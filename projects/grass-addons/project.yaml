@@ -1,6 +1,6 @@
 name: grass-addons
-language: cpp
-primary_contact: "neteler@gmail.com"
+language: c++
+primary_contact: "neteler@osgeo.org"
 
 sanitizers:
   - address
@@ -13,7 +13,6 @@ fuzzing_engines:
 architectures:
   - x86_64
 homepage: "https://grass.osgeo.org/"
-license: "GPL-2.0"
 issue_tracker: "https://github.com/OSGeo/grass-addons/issues"
 repository: "https://github.com/OSGeo/grass-addons"
 description: |
