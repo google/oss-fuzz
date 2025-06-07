@@ -1,4 +1,4 @@
-name: grass-addons
+homepage: "https://grass.osgeo.org/"
 language: c++
 primary_contact: "neteler@osgeo.org"
 main_repo: "https://github.com/OSGeo/grass-addons"
@@ -12,4 +12,4 @@ fuzzing_engines:
   - centipede
 architectures:
   - x86_64
-homepage: "https://grass.osgeo.org/"
+
