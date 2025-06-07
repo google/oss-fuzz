@@ -13,9 +13,3 @@ fuzzing_engines:
 architectures:
   - x86_64
 homepage: "https://grass.osgeo.org/"
-issue_tracker: "https://github.com/OSGeo/grass-addons/issues"
-description:
-  GRASS-addons is a collection of add-on modules for GRASS GIS, extending its
-  functionality for geospatial analysis and processing. These modules are
-  contributed by the community and provide additional tools for working with
-  geospatial data.
