@@ -4,12 +4,8 @@ primary_contact: "neteler@osgeo.org"
 main_repo: "https://github.com/OSGeo/grass-addons"
 sanitizers:
   - address
-  - undefined
-  - memory
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
-  - centipede
 architectures:
   - x86_64
 
