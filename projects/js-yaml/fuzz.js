@@ -28,7 +28,7 @@ module.exports.fuzz = function(data) {
     const parsedYaml = yaml.load(yamlString, loadOptions);
     const _serializedYaml = yaml.dump(parsedYaml, dumpOptions);
   } catch (e) {
-    if (!(e instanceof YAMLException)) {
+    if (!(e instanceof yaml.YAMLException)) {
       throw e
     }
   }
