@@ -28,9 +28,7 @@ BASE_BUILDER_TAG = 'gcr.io/oss-fuzz-base/base-builder'
 PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
 # Default fuzz configuration.
-_DEFAULT_DOCKER_RUN_ARGS = [
-    '-e', 'FUZZING_ENGINE=' + constants.DEFAULT_ENGINE, '-e', 'CIFUZZ=True'
-]
+_DEFAULT_DOCKER_RUN_ARGS = ['-e', 'CIFUZZ=True']
 
 UNIQUE_ID_SUFFIX = '-' + uuid.uuid4().hex
 
@@ -75,6 +73,7 @@ def delete_images(images):
 
 def get_base_docker_run_args(workspace,
                              sanitizer=constants.DEFAULT_SANITIZER,
+                             engine=constants.DEFAULT_FUZZING_ENGINE,
                              language=constants.DEFAULT_LANGUAGE,
                              architecture=constants.DEFAULT_ARCHITECTURE,
                              docker_in_docker=False):
@@ -83,6 +82,7 @@ def get_base_docker_run_args(workspace,
   docker_args = _DEFAULT_DOCKER_RUN_ARGS.copy()
   env_mapping = {
       'SANITIZER': sanitizer,
+      'FUZZING_ENGINE': engine,
       'ARCHITECTURE': architecture,
       'FUZZING_LANGUAGE': language,
       'OUT': workspace.out
@@ -102,6 +102,7 @@ def get_base_docker_run_args(workspace,
 
 def get_base_docker_run_command(workspace,
                                 sanitizer=constants.DEFAULT_SANITIZER,
+                                engine=constants.DEFAULT_FUZZING_ENGINE,
                                 language=constants.DEFAULT_LANGUAGE,
                                 architecture=constants.DEFAULT_ARCHITECTURE,
                                 docker_in_docker=False):
@@ -110,6 +111,7 @@ def get_base_docker_run_command(workspace,
   docker_args, docker_container = get_base_docker_run_args(
       workspace,
       sanitizer,
+      engine,
       language,
       architecture,
       docker_in_docker=docker_in_docker)

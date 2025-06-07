@@ -33,7 +33,7 @@ import constants
 CANARY_PROJECT = 'skcms'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
-DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer', 'centipede']
+DEFAULT_FUZZING_ENGINES = ['afl', 'honggfuzz', 'libfuzzer', 'centipede']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
@@ -105,7 +105,7 @@ def should_build_coverage(project_yaml):
   contents."""
   # Enable coverage builds on projects that use engines. Those that don't use
   # engines shouldn't get coverage builds.
-  engines = project_yaml.get('fuzzing_engines', DEFAULT_ENGINES)
+  engines = project_yaml.get('fuzzing_engines', DEFAULT_FUZZING_ENGINES)
   engineless = 'none' in engines
   if engineless:
     assert_message = ('Forbidden to specify multiple engines for '
@@ -153,7 +153,7 @@ def should_build(project_yaml):
     return os.getenv(env_var) in flatten_options(
         project_yaml.get(yaml_name, defaults))
 
-  return (is_enabled('ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
+  return (is_enabled('ENGINE', 'fuzzing_engines', DEFAULT_FUZZING_ENGINES) and
           is_enabled('SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
           is_enabled('ARCHITECTURE', 'architectures', DEFAULT_ARCHITECTURES))
 
