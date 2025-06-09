@@ -77,6 +77,7 @@ class IndexBuildTest(unittest.TestCase):
           self.assertIsNotNone(file)
           if file:  # Make type checkers happy.
             manifest = json.load(file)
+            self.assertTrue(manifest['lib_mount_path'])
             self.assertIsNotNone(tar.getmember('obj/' +
                                                manifest['binary_name']))
 
