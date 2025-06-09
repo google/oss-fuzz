@@ -28,10 +28,11 @@ import json
 import logging
 import os
 import pathlib
+import shlex
 import shutil
 import tarfile
 import tempfile
-from typing import Any, Callable
+from typing import Any, Callable, Self
 
 import pathlib
 
@@ -45,15 +46,20 @@ INDEX_DIR = pathlib.Path("idx")
 LIB_DIR = OBJ_DIR / "lib"
 # Manifest location
 MANIFEST_PATH = pathlib.Path("manifest.json")
-# The current version of the build archive format.
-ARCHIVE_VERSION = 2
 # Where archive version 1 expects the lib directory to be mounted.
 _LIB_MOUNT_PATH_V1 = pathlib.Path("/ossfuzzlib")
-# Versions of the build archive format that we currently support.
-_SUPPORTED_ARCHIVE_VERSIONS = frozenset([1, 2])
+# Min archive version we currently support.
+_MIN_SUPPORTED_ARCHIVE_VERSION = 1
+# The current version of the build archive format.
+ARCHIVE_VERSION = 3
+
+# Will be replaced with the input file for target execution.
+INPUT_FILE = "<input_file>"
+# A file the target can write output to.
+OUTPUT_FILE = "<output_file>"
 
 
-class RepositoryType(enum.Enum):
+class RepositoryType(enum.StrEnum):
   """The type of repository."""
 
   GIT = enum.auto()
@@ -71,14 +77,16 @@ class SourceRef:
     rev: The revision of the repository.
   """
 
-  type: str
+  type: RepositoryType
   url: str
   rev: str
 
   @classmethod
-  def from_dict(cls, data: dict[str, Any]) -> 'SourceRef':
+  def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a SourceRef object from a deserialized dict."""
-    return SourceRef(url=data["url"], rev=data["rev"], type=data["type"])
+    return SourceRef(url=data["url"],
+                     rev=data["rev"],
+                     type=RepositoryType(data["type"]))
 
 
 @dataclasses.dataclass(frozen=True)
@@ -92,11 +100,31 @@ class Reproducibility:
   trial_count: int = 0
 
   @classmethod
-  def from_dict(cls, data: dict[str, Any]) -> 'Reproducibility':
+  def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Reproducibility object from a deserialized dict."""
     return Reproducibility(
         success_count=data["success_count"],
         trial_count=data["trial_count"],
+    )
+
+
+@dataclasses.dataclass(frozen=True)
+class ReplacedBinaryArgs:
+  """Contains the new binary args and the stdin path."""
+
+  # The new binary args.
+  binary_args: list[str] | None
+  # The original stdin path.
+  input_path: str
+  # Whether the stdin path was replaced.
+  input_replaced: bool
+
+  def from_dict(self, data: dict[str, Any]) -> Self:
+    """Creates a ReplacedBinaryArgs object from a deserialized dict."""
+    return ReplacedBinaryArgs(
+        binary_args=data.get("binary_args"),
+        input_path=data["input_path"],
+        input_replaced=data["input_replaced"],
     )
 
 
@@ -107,12 +135,12 @@ class Manifest:
   name: str
   uuid: str
   binary_name: str
-  binary_args: str
+  binary_args: list[str] | None = None
 
   # The path prefix of the actual build directory (e.g., a temporary file in
   # the build host). It's used during replay to remove noisy source-file
   # prefixes from reports.
-  source_dir_prefix: str = ""
+  source_dir_prefix: str | None = None
 
   # The reproducibility information about the bug in this snapshot.
   reproducibility: Reproducibility | None = None
@@ -130,17 +158,25 @@ class Manifest:
   version: int = ARCHIVE_VERSION
 
   @classmethod
-  def from_dict(cls, data: dict[str, Any]) -> 'Manifest':
+  def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Manifest object from a deserialized dict."""
     if data["version"] == 1:
       lib_mount_path = _LIB_MOUNT_PATH_V1
     else:
       lib_mount_path = _get_mapped(data, "lib_mount_path", pathlib.Path)
+    if data["version"] < 3:
+      if not isinstance(data.get("binary_args"), str):
+        raise RuntimeError(
+            "binary_args must be a string in version 1 and 2, but got"
+            f" {type(data.get('binary_args'))}")
+      binary_args = _get_mapped(data, "binary_args", shlex.split)
+    else:
+      binary_args = data.get("binary_args")
     return Manifest(
         name=data["name"],
         uuid=data["uuid"],
         binary_name=data["binary_name"],
-        binary_args=data["binary_args"],
+        binary_args=binary_args,
         lib_mount_path=lib_mount_path,
         source_map=_get_mapped(data, "source_map", source_map_from_dict),
         source_dir_prefix=data.get("source_dir_prefix"),
@@ -163,10 +199,14 @@ class Manifest:
     Raises:
       RuntimeError: If the manifest is invalid.
     """
-    if self.version not in _SUPPORTED_ARCHIVE_VERSIONS:
+    if self.version < _MIN_SUPPORTED_ARCHIVE_VERSION:
       raise RuntimeError(
-          "Build archive with version {self.version} is not supported."
-          f" Supported versions are {_SUPPORTED_ARCHIVE_VERSIONS}.")
+          f"Build archive version too low: {self.version}. Supporting at"
+          f" least {_MIN_SUPPORTED_ARCHIVE_VERSION}.")
+    if self.version > ARCHIVE_VERSION:
+      raise RuntimeError(
+          f"Build archive version too high: {self.version}. Only supporting"
+          f" up to {ARCHIVE_VERSION}.")
     if self.version == 1 and _LIB_MOUNT_PATH_V1 != self.lib_mount_path:
       raise RuntimeError(
           "Build archive with version 1 has an alternative lib_mount_path set"
@@ -181,6 +221,18 @@ class Manifest:
           raise RuntimeError(
               "Attempting to load a manifest with a source map entry with an"
               " empty URL. Source map entry: {ref}")
+    # check very simple basic types.
+    for k, v in self.__annotations__.items():
+      if not isinstance(v, type):
+        continue
+      if not isinstance(getattr(self, k), v):
+        raise RuntimeError(f"Type mismatch for field {k}: expected {v}, got"
+                           f" {type(getattr(self, k))}")
+    # We updated from string to list in version 3, make sure this propagated.
+    if self.binary_args is not None and not isinstance(self.binary_args, list):
+      raise RuntimeError(
+          "Type mismatch for field binary_args: expected list, got"
+          f" {type(self.binary_args)}")
 
   def save_build(
       self,
@@ -268,6 +320,49 @@ def source_map_from_dict(data: dict[str, Any]) -> dict[pathlib.Path, SourceRef]:
 def source_map_to_dict(x: dict[pathlib.Path, SourceRef],) -> dict[str, Any]:
   """Converts a dictionary of SourceRef objects to a string: obj dict."""
   return {k.as_posix(): v for k, v in x.items()}
+
+
+def binary_args_from_placeholders(
+    binary_args: list[str] | None,
+    input_path: str,
+    output_path: str = "/dev/null",
+) -> ReplacedBinaryArgs:
+  """Processes binary args.
+
+  Args:
+    binary_args: List of binary args.
+    input_path: Path of the file that contains the program input bytes.
+    output_path: Path of the file that contains the program output bytes
+      (default to /dev/null).
+
+  Returns:
+    Processed binary args, where
+      "<input_file>": replaced by input_path if applicable
+      "<output_file>": replaced by /dev/null if applicable
+      and a boolean indicating whether input_path was replaced.
+  """
+  if binary_args is None:
+    return ReplacedBinaryArgs(binary_args=None,
+                              input_path=input_path,
+                              input_replaced=False)
+
+  input_replaced = False
+
+  def _replace_placeholder(arg: str) -> str:
+    if INPUT_FILE in arg:
+      nonlocal input_replaced
+      input_replaced = True
+      return arg.replace(INPUT_FILE, input_path)
+    elif OUTPUT_FILE in arg:
+      return arg.replace(OUTPUT_FILE, output_path)
+    else:
+      return arg
+
+  return ReplacedBinaryArgs(
+      binary_args=[_replace_placeholder(arg) for arg in binary_args],
+      input_path=input_path,
+      input_replaced=input_replaced,
+  )
 
 
 def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:

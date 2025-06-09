@@ -21,6 +21,7 @@ import json
 import logging
 import os
 from pathlib import Path  # pylint: disable=g-importing-member
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -76,7 +77,7 @@ def set_up_wrapper_dir():
 class BinaryMetadata:
   name: str
   binary_path: Path
-  binary_args: str
+  binary_args: list[str]
   build_id: str
   compile_commands: list[dict[str, Any]]
 
@@ -179,11 +180,12 @@ def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
   return None
 
 
-def enumerate_build_targets(binary_args: str) -> Sequence[BinaryMetadata]:
+def enumerate_build_targets(
+    binary_args: list[str],) -> Sequence[BinaryMetadata]:
   """Enumerates the build targets in the project.
 
   Args:
-    binary_args: Shell-escaped argument list, applied to all targets
+    binary_args: Argument list, applied to all targets
 
   Returns:
     A sequence of target descriptions, in BinaryMetadata form.
@@ -465,7 +467,8 @@ def archive_target(target: BinaryMetadata) -> Path | None:
   return archive_path
 
 
-def test_and_archive(target_args: str, targets_to_index: Sequence[str] | None):
+def test_and_archive(target_args: list[str],
+                     targets_to_index: Sequence[str] | None):
   """Test target and archive."""
   targets = enumerate_build_targets(target_args)
   if targets_to_index:
@@ -515,7 +518,7 @@ def main():
   )
   parser.add_argument(
       '--target-args',
-      default='<input_file>',
+      default=manifest_types.INPUT_FILE,
       help=('Arguments to pass to the target when executing it. '
             'This string is shell-escaped (interpreted with `shlex.split`). '
             'The substring <input_file> will be replaced with the input path.'),
@@ -536,7 +539,7 @@ def main():
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
   build_project(targets_to_index)
-  test_and_archive(args.target_args, targets_to_index)
+  test_and_archive(shlex.split(args.target_args), targets_to_index)
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
