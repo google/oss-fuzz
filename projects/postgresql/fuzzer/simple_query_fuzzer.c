@@ -57,7 +57,7 @@ exec_simple_query(const char *query_string)
       bool        snapshot_set = false;
       MemoryContext per_parsetree_context = NULL;
       List       *querytree_list,
-	*plantree_list;		
+	*plantree_list;
 
       if (use_implicit_block)
 	BeginImplicitTransactionBlock();
@@ -81,7 +81,7 @@ exec_simple_query(const char *query_string)
 
       querytree_list = pg_analyze_and_rewrite_fixedparams(parsetree, query_string,
 					      NULL, 0, NULL);
- 
+
       plantree_list = pg_plan_queries(querytree_list, query_string,
 				      CURSOR_OPT_PARALLEL_OK, NULL);
 
@@ -131,7 +131,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       FlushErrorState();
 
       MemoryContextSwitchTo(MessageContext);
-      MemoryContextResetAndDeleteChildren(MessageContext);
+      MemoryContextReset(MessageContext);
 
       InvalidateCatalogSnapshotConditionally();
 
