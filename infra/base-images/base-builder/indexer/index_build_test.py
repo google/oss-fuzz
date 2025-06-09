@@ -28,8 +28,8 @@ THIS_DIR = Path(__file__).parent
 OSS_FUZZ_DIR = THIS_DIR.parent.parent.parent.parent
 
 
-@unittest.skipUnless(
-    os.getenv('INDEX_BUILD_TESTS'), 'Tests do not run on infra')
+@unittest.skipUnless(os.getenv('INDEX_BUILD_TESTS'),
+                     'Tests do not run on infra')
 class IndexBuildTest(unittest.TestCase):
 
   def _build_project(self, project: str, *additional_args) -> Sequence[Path]:
