@@ -20,6 +20,7 @@ import hashlib
 import json
 import logging
 import os
+import pathlib
 from pathlib import Path  # pylint: disable=g-importing-member
 import shlex
 import shutil
@@ -28,6 +29,7 @@ import tempfile
 from typing import Any, Sequence
 
 import manifest_types
+import pathlib
 
 PROJECT = Path(os.environ['PROJECT_NAME']).name
 SNAPSHOT_DIR = Path('/snapshot')
@@ -327,7 +329,7 @@ def test_target(target: BinaryMetadata,) -> bool:
   return True
 
 
-def set_interpreter(target_path: Path, lib_mount_path: Path):
+def set_interpreter(target_path: Path, lib_mount_path: pathlib.PurePath):
   subprocess.run(
       [
           'patchelf',
@@ -339,7 +341,7 @@ def set_interpreter(target_path: Path, lib_mount_path: Path):
   )
 
 
-def set_target_rpath(binary_artifact: Path, lib_mount_path: Path):
+def set_target_rpath(binary_artifact: Path, lib_mount_path: pathlib.PurePath):
   subprocess.run(
       [
           'patchelf',
@@ -353,7 +355,7 @@ def set_target_rpath(binary_artifact: Path, lib_mount_path: Path):
 
 
 def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path,
-                          lib_mount_path: Path) -> None:
+                          lib_mount_path: pathlib.PurePath) -> None:
   """Copies the shared libraries to the shared directory."""
   env = os.environ.copy()
   env['LD_TRACE_LOADED_OBJECTS'] = '1'
@@ -431,7 +433,7 @@ def archive_target(target: BinaryMetadata) -> Path | None:
 
   name = f'{PROJECT}.{target.name}'
   uuid = f'{PROJECT}.{target.name}.{target_hash}'
-  lib_mount_path = Path('/tmp') / (uuid + '_lib')
+  lib_mount_path = pathlib.Path('/tmp') / (uuid + '_lib')
 
   libs_path = OUT / 'lib'
   libs_path.mkdir(parents=False, exist_ok=True)
@@ -451,6 +453,7 @@ def archive_target(target: BinaryMetadata) -> Path | None:
         binary_name=target.name,
         binary_args=target.binary_args,
         source_map=manifest_types.source_map_from_dict(json.loads(source_map)),
+        lib_mount_path=lib_mount_path,
     ).save_build(
         source_dir=Path(empty_src_dir),
         build_dir=OUT,
