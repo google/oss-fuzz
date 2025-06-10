@@ -16,6 +16,9 @@
 #
 ################################################################################
 
+cp -r $SRC/patch/* mysql-server/
+cat $SRC/addfuzzdir.patch >> mysql-server/sql/CMakeLists.txt
+
 cd mysql-server
 mkdir build
 cd build
