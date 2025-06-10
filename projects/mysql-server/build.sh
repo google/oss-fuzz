@@ -36,6 +36,12 @@ ls *fuzz* | while read i; do
     chrpath -r '$ORIGIN/lib' $OUT/$i
 done
 )
+(
+find router/ -type f -executable | grep fuzz | while read i; do
+    chrpath -r '$ORIGIN/lib' $i
+    cp $i $OUT/
+done
+)
 
 #TODO merge custom targets upstream
 #cp ../fuzz/fuzz*.options $OUT/
