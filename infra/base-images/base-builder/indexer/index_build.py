@@ -249,18 +249,6 @@ def copy_fuzzing_engine() -> Path:
 def build_project(targets_to_index: Sequence[str] | None = None):
   """Build the actual project."""
   set_env_vars()
-  existing_cflags = os.environ.get('CFLAGS', '')
-  extra_flags = ('-fno-omit-frame-pointer '
-                 '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
-                 '-O0 -glldb '
-                 '-fsanitize=address '
-                 '-Wno-invalid-offsetof '
-                 '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
-                 f'-gen-cdb-fragment-path {OUT}/cdb '
-                 '-Qunused-arguments '
-                 f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
-                 f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} ')
-  os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
 
