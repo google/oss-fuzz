@@ -61,10 +61,11 @@ INDEXER_CFLAGS = ['-fno-omit-frame-pointer',
                   '-fsanitize=address',
                   '-Wno-invalid-offsetof',
                   '-fsanitize-coverage=bb,no-prune,trace-pc-guard',
-                  f'-gen-cdb-fragment-path {OUT}/cdb',
+                  '-gen-cdb-fragment-path',
+                  f'{OUT}/cdb',
                   '-Qunused-arguments',
-                  f'-isystem /usr/local/lib/clang/{_CLANG_VERSION}',
-                  f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION}',]
+                  '-isystem', f'/usr/local/lib/clang/{_CLANG_VERSION}',
+                  '-resource-dir', f'/usr/local/lib/clang/{_CLANG_VERSION}',]
 
 
 def rewrite_argv0(argv: Sequence[str]) -> list[str]:
