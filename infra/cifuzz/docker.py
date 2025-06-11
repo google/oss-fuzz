@@ -73,7 +73,7 @@ def delete_images(images):
 
 def get_base_docker_run_args(workspace,
                              sanitizer=constants.DEFAULT_SANITIZER,
-                             engine=constants.DEFAULT_FUZZING_ENGINE,
+                             engine=constants.DEFAULT_ENGINE,
                              language=constants.DEFAULT_LANGUAGE,
                              architecture=constants.DEFAULT_ARCHITECTURE,
                              docker_in_docker=False):
@@ -102,7 +102,7 @@ def get_base_docker_run_args(workspace,
 
 def get_base_docker_run_command(workspace,
                                 sanitizer=constants.DEFAULT_SANITIZER,
-                                engine=constants.DEFAULT_FUZZING_ENGINE,
+                                engine=constants.DEFAULT_ENGINE,
                                 language=constants.DEFAULT_LANGUAGE,
                                 architecture=constants.DEFAULT_ARCHITECTURE,
                                 docker_in_docker=False):

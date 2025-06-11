@@ -32,7 +32,7 @@ SANITIZERS = ['address', 'memory', 'undefined', 'coverage', 'introspector']
 FUZZING_ENGINES = ['libfuzzer', 'afl', 'honggfuzz', 'centipede', 'none']
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
-DEFAULT_FUZZING_ENGINE = 'libfuzzer'
+DEFAULT_ENGINE = 'libfuzzer'
 
 # This module deals a lot with env variables. Many of these will be set by users
 # and others beyond CIFuzz's control. Thus, you should be careful about using
@@ -47,7 +47,7 @@ def _get_sanitizer():
 
 
 def _get_engine():
-  return os.getenv('FUZZING_ENGINE', constants.DEFAULT_FUZZING_ENGINE).lower()
+  return os.getenv('FUZZING_ENGINE', constants.DEFAULT_ENGINE).lower()
 
 
 def _get_architecture():
