@@ -459,16 +459,20 @@ def main(argv: list[str]) -> None:
     if output_file.name not in indexer_targets:
       # Not a relevant linker command
       print(f"Not indexing as {output_file} is not in the allowlist")
+      argv.extend(INDEXER_CFLAGS)
       execute(argv)
   elif not fuzzing_engine_in_argv:
     # Not a fuzz target.
+    argv.extend(INDEXER_CFLAGS)
     execute(argv)
 
   if output_file.name.endswith(".o"):
+    argv.extend(INDEXER_CFLAGS)
     execute(argv)  # Not a real linker command
 
   print(f"Linking {argv}")
 
+  argv.extend(INDEXER_CFLAGS)
   cdb_path = get_flag_value(argv, "-gen-cdb-fragment-path")
   assert cdb_path, f"Missing Compile Directory Path: {argv}"
 
