@@ -79,7 +79,7 @@ class IndexBuildTest(unittest.TestCase):
             manifest = json.load(file)
             self.assertTrue(manifest['lib_mount_path'])
             self.assertIsNotNone(tar.getmember('obj/' +
-                                               manifest['binary_name']))
+                                               manifest['name']))
 
     self.assertTrue(has_obj_lib, "obj/lib/ was not found in the archive.")
     self.assertTrue(has_idx_sqlite,
