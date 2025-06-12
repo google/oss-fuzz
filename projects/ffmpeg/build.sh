@@ -218,9 +218,14 @@ fi
         --disable-shared \
         --disable-doc \
         --disable-programs \
+        --enable-demuxers \
         $FFMPEG_BUILD_ARGS
 make clean
 make -j$(nproc) install
+
+if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
+  exit 0
+fi
 
 # Download test samples, will be used as seed corpus.
 # DISABLED.
@@ -314,40 +319,6 @@ zip -r $OUT/ffmpeg_AV_CODEC_ID_FFV1_fuzzer_seed_corpus.zip ffv1testset
 fuzzer_name=ffmpeg_IO_DEMUXER_fuzzer
 make tools/target_io_dem_fuzzer
 mv tools/target_io_dem_fuzzer $OUT/${fuzzer_name}
-
-#Build fuzzers for individual demuxers
-./configure \
-        --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
-        --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
-        --extra-ldflags="-L$FFMPEG_DEPS_PATH/lib" \
-        --prefix="$FFMPEG_DEPS_PATH" \
-        --pkg-config-flags="--static" \
-        --enable-ossfuzz \
-        --libfuzzer=$LIB_FUZZING_ENGINE \
-        --optflags=-O1 \
-        --enable-gpl \
-        --enable-libxml2 \
-        --disable-libdrm \
-        --disable-muxers \
-        --disable-protocols \
-        --disable-devices \
-        --disable-shared \
-        --disable-encoders \
-        --disable-filters \
-        --disable-muxers \
-        --disable-parsers \
-        --disable-decoders \
-        --disable-hwaccels \
-        --disable-bsfs \
-        --disable-vaapi \
-        --disable-vdpau \
-        --disable-v4l2_m2m \
-        --disable-cuda_llvm \
-        --enable-demuxers \
-        --disable-demuxer=rtp,rtsp,sdp \
-        --disable-doc \
-        --disable-programs \
-        $FFMPEG_BUILD_ARGS
 
 CONDITIONALS=$(grep 'DEMUXER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_DEMUXER 1/\1/')
 if [ -n "${OSS_FUZZ_CI-}" ]; then
