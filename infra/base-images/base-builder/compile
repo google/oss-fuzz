@@ -294,8 +294,10 @@ if [[ ! -z "${CAPTURE_REPLAY_SCRIPT-}" ]]; then
   # Capture a replaying build script which can be used for replaying the build
   # after a vanilla build. This script is meant to be used in a cached
   # container.
-  python3 -m pip install bashlex
-  python3 /usr/local/bin/bash_parser.py $SRC/build.sh
+  if [[ ! -f $SRC/replay_build.sh ]]; then
+    python3 -m pip install bashlex
+    python3 /usr/local/bin/bash_parser.py $SRC/build.sh
+  fi
 fi
 
 # Prepare the build command to run the project's build script.
