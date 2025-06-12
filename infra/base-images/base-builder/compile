@@ -304,9 +304,9 @@ fi
 if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
   # If this is a replay, then use replay_build.sh. This is expected to be
   # running in a cached container where a build has already happened prior.
-  BUILD_CMD="bash -eux $SRC/replay_build.sh"
+  BUILD_CMD="bash -eux $SRC/replay_build.sh $@"
 else
-  BUILD_CMD="bash -eux $SRC/build.sh"
+  BUILD_CMD="bash -eux $SRC/build.sh $@"
 fi
 
 # Set +u temporarily to continue even if GOPATH and OSSFUZZ_RUSTPATH are undefined.
