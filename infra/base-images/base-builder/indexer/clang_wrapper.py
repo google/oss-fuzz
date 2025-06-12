@@ -259,7 +259,7 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
         )
         time.sleep(2**(i + 1))
     else:
-      error = "CDB fragment {file} is invalid even after retries: {data}"
+      error = f"CDB fragment {file} is invalid even after retries: {data}"
       if "test.c" in file.name or "conftest.c" in file.name:
         # Some build systems seem to have a weird issue where the autotools
         # generated `test.c` or `conftest.c` for testing compilers doesn't
