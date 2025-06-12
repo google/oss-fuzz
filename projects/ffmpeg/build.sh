@@ -279,6 +279,8 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
       CONDITIONALS=(${CONDITIONALS[@]:0:2})
 fi
 
+# FIXME: currently, enc fuzzers are clobbering dec variants because they share the same
+# name.
 for c in $CONDITIONALS; do
       fuzzer_name=ffmpeg_AV_CODEC_ID_${c}_fuzzer
       symbol=$(echo $c | sed "s/.*/\L\0/")
@@ -319,6 +321,40 @@ zip -r $OUT/ffmpeg_AV_CODEC_ID_FFV1_fuzzer_seed_corpus.zip ffv1testset
 fuzzer_name=ffmpeg_IO_DEMUXER_fuzzer
 make tools/target_io_dem_fuzzer
 mv tools/target_io_dem_fuzzer $OUT/${fuzzer_name}
+
+# Reduce size of demuxer fuzzers by disabling various components.
+./configure \
+        --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
+        --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
+        --extra-ldflags="-L$FFMPEG_DEPS_PATH/lib" \
+        --prefix="$FFMPEG_DEPS_PATH" \
+        --pkg-config-flags="--static" \
+        --enable-ossfuzz \
+        --libfuzzer=$LIB_FUZZING_ENGINE \
+        --optflags=-O1 \
+        --enable-gpl \
+        --enable-libxml2 \
+        --disable-libdrm \
+        --disable-muxers \
+        --disable-protocols \
+        --disable-devices \
+        --disable-shared \
+        --disable-encoders \
+        --disable-filters \
+        --disable-muxers \
+        --disable-parsers \
+        --disable-decoders \
+        --disable-hwaccels \
+        --disable-bsfs \
+        --disable-vaapi \
+        --disable-vdpau \
+        --disable-v4l2_m2m \
+        --disable-cuda_llvm \
+        --enable-demuxers \
+        --disable-demuxer=rtp,rtsp,sdp \
+        --disable-doc \
+        --disable-programs \
+        $FFMPEG_BUILD_ARGS
 
 CONDITIONALS=$(grep 'DEMUXER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_DEMUXER 1/\1/')
 if [ -n "${OSS_FUZZ_CI-}" ]; then
