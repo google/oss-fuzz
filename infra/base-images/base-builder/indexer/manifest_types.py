@@ -33,7 +33,7 @@ import shutil
 import tarfile
 import tempfile
 from typing import Any, Callable, Mapping, Self, Sequence
-import urllib
+import urllib.request
 
 import pathlib
 

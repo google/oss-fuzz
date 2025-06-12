@@ -479,7 +479,7 @@ def test_and_archive(target_args: list[str],
   targets = enumerate_build_targets(target_args)
   if targets_to_index:
     targets = [t for t in targets if t.name in targets_to_index]
-    missing_targets = set(targets_to_index) - set(targets)
+    missing_targets = set(targets_to_index) - set(t.name for t in targets)
     if missing_targets:
       raise ValueError(f'Could not find specified targets {missing_targets}.')
 
