@@ -17,5 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libclang-dev libtool pkg-config libudev-dev
 RUN git clone --depth=1 https://github.com/aptos-labs/aptos-core.git
+ENV RUSTUP_TOOLCHAIN nightly-2024-09-05
 WORKDIR aptos-core
 COPY build.sh $SRC

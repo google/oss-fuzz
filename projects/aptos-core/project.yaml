@@ -1,12 +1,12 @@
 homepage: "https://aptos.dev"
 language: rust
-primary_contact: "gerardo@aptoslabs.com"
+primary_contact: "andrea.cappa@aptoslabs.com"
 main_repo: "https://github.com/aptos-labs/aptos-core"
 auto_ccs:
   - "oss-fuzz-notifications@aptoslabs.com"
   - "security@aptoslabs.com"
-  - "andrea.cappa@aptoslabs.com"
   - "marco.ilardi@aptoslabs.com"
+  - "george@aptoslabs.com"
 sanitizers:
   - address
 fuzzing_engines:
