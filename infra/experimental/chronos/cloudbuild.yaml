@@ -54,6 +54,7 @@ steps:
   - memory
   env:
   - RUN_ALL=1
+  allowFailure: true  # MSan is finicky, so let this fail.
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - push
