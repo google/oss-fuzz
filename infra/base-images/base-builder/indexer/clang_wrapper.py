@@ -53,6 +53,19 @@ SRC = Path(os.getenv("SRC", "/src"))
 OUT = Path(os.getenv("OUT", "/out"))
 INDEXES_PATH = Path(os.getenv("INDEXES_PATH", "/indexes"))
 FUZZER_ENGINE = os.getenv("LIB_FUZZING_ENGINE", "/usr/lib/libFuzzingEngine.a")
+_CLANG_VERSION = '18'
+INDEXER_CFLAGS = ['-fno-omit-frame-pointer',
+                  '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION',
+                  '-O0',
+                  '-glldb',
+                  '-fsanitize=address',
+                  '-Wno-invalid-offsetof',
+                  '-fsanitize-coverage=bb,no-prune,trace-pc-guard',
+                  '-gen-cdb-fragment-path',
+                  f'{OUT}/cdb',
+                  '-Qunused-arguments',
+                  '-isystem', f'/usr/local/lib/clang/{_CLANG_VERSION}',
+                  '-resource-dir', f'/usr/local/lib/clang/{_CLANG_VERSION}',]
 
 
 def rewrite_argv0(argv: Sequence[str]) -> list[str]:
@@ -447,16 +460,20 @@ def main(argv: list[str]) -> None:
     if output_file.name not in indexer_targets:
       # Not a relevant linker command
       print(f"Not indexing as {output_file} is not in the allowlist")
+      argv.extend(INDEXER_CFLAGS)
       execute(argv)
   elif not fuzzing_engine_in_argv:
     # Not a fuzz target.
+    argv.extend(INDEXER_CFLAGS)
     execute(argv)
 
   if output_file.name.endswith(".o"):
+    argv.extend(INDEXER_CFLAGS)
     execute(argv)  # Not a real linker command
 
   print(f"Linking {argv}")
 
+  argv.extend(INDEXER_CFLAGS)
   cdb_path = get_flag_value(argv, "-gen-cdb-fragment-path")
   assert cdb_path, f"Missing Compile Directory Path: {argv}"
 
