@@ -181,6 +181,7 @@ COPY bazel_build_fuzz_tests \
     bash_parser.py \
     srcmap \
     write_labels.py \
+    make_build_replayable.py \
     /usr/local/bin/
 
 # TODO: Build this as part of a multi-stage build.
