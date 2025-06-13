@@ -450,8 +450,11 @@ def archive_target(target: BinaryMetadata) -> Path | None:
     manifest_types.Manifest(
         name=name,
         uuid=uuid,
-        binary_name=target.name,
-        binary_args=target.binary_args,
+        binary_config=manifest_types.CommandLineBinaryConfig(
+            kind=manifest_types.BinaryConfigKind.OSS_FUZZ,
+            binary_name=target.name,
+            binary_args=target.binary_args,
+        ),
         source_map=manifest_types.source_map_from_dict(json.loads(source_map)),
         lib_mount_path=lib_mount_path,
     ).save_build(
@@ -476,6 +479,9 @@ def test_and_archive(target_args: list[str],
   targets = enumerate_build_targets(target_args)
   if targets_to_index:
     targets = [t for t in targets if t.name in targets_to_index]
+    missing_targets = set(targets_to_index) - set(t.name for t in targets)
+    if missing_targets:
+      raise ValueError(f'Could not find specified targets {missing_targets}.')
 
   logging.info('targets %s', targets)
   for target in targets:
@@ -521,12 +527,23 @@ def main():
   )
   parser.add_argument(
       '--target-args',
-      default=manifest_types.INPUT_FILE,
+      default=None,
       help=('Arguments to pass to the target when executing it. '
             'This string is shell-escaped (interpreted with `shlex.split`). '
+            'The substring <input_file> will be replaced with the input path.'
+            'Note: This is deprecated, use --target-arg instead.'),
+  )
+  parser.add_argument(
+      '--target-arg',
+      action='append',
+      help=('An argument to pass to the target binary. '
             'The substring <input_file> will be replaced with the input path.'),
   )
   args = parser.parse_args()
+
+  if args.target_args and args.target_arg:
+    raise ValueError(
+        'Only one of --target-args or --target-arg can be specified.')
 
   targets_to_index = None
   if args.targets:
@@ -542,7 +559,17 @@ def main():
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
   build_project(targets_to_index)
-  test_and_archive(shlex.split(args.target_args), targets_to_index)
+
+  if args.target_arg:
+    target_args = args.target_arg
+  elif args.target_args:
+    logging.warning('--target-args is deprecated, use --target-arg instead.')
+    target_args = shlex.split(args.target_args)
+  else:
+    logging.info('No target args specified.')
+    target_args = []
+
+  test_and_archive(target_args, targets_to_index)
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)

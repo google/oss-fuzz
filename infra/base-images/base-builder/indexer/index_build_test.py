@@ -78,8 +78,9 @@ class IndexBuildTest(unittest.TestCase):
           if file:  # Make type checkers happy.
             manifest = json.load(file)
             self.assertTrue(manifest['lib_mount_path'])
-            self.assertIsNotNone(tar.getmember('obj/' +
-                                               manifest['binary_name']))
+            self.assertIsNotNone(
+                tar.getmember('obj/' +
+                              manifest['binary_config']['binary_name']))
 
     self.assertTrue(has_obj_lib, "obj/lib/ was not found in the archive.")
     self.assertTrue(has_idx_sqlite,
