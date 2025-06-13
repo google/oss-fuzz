@@ -137,30 +137,18 @@ function run_go_fuzz_target {
   export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
 
-  # setup for native go fuzzers
-  cd $OUT
-  mkdir -p "testdata/fuzz/${target}"
-  cp -r "${FUZZ_CORPUS_DIR}" "testdata/fuzz/"
-
-  # rewrite libFuzzer corpus to Std Go corpus if native fuzzing
-  grep "TestFuzzCorpus" $target > /dev/null 2>&1 && $SYSGOPATH/bin/convertcorpus $target "testdata/fuzz/${target}"
-  cd -
-
   timeout $TIMEOUT $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
   if (( $? != 0 )); then
     echo "Error occured while running $target:"
     cat $LOGS_DIR/$target.log
   fi
 
-  # cleanup after native go fuzzers
-  rm -r "${OUT}/testdata/fuzz/${target}"
-
-  # The Go 1.18 fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
-  # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
-  # Since the copies named "*_fuzz_.go" do not exist in the file tree during
+  # The Go 1.18 fuzzers are renamed to "*libFuzzer.go" during "infra/helper.py build_fuzzers".
+  # They are are therefore refered to as "*_libFuzzer.go" in the profdata files.
+  # Since the copies named "*_libFuzzer.go" do not exist in the file tree during
   # the coverage build, we change the references in the .profdata files
   # to the original file names.
-  #sed -i "s/_test.go_fuzz_.go/_test.go/g" $DUMPS_DIR/$target.profdata
+  sed -i "s/_libFuzzer.go/_test.go/g" $DUMPS_DIR/$target.profdata
   # translate from golangish paths to current absolute paths
   cat $OUT/$target.gocovpath | while read i; do sed -i $i $DUMPS_DIR/$target.profdata; done
   # cf PATH_EQUIVALENCE_ARGS

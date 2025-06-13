@@ -15,7 +15,14 @@
 #
 ################################################################################
 
+cd "$SRC"/go-118-fuzz-build
+go build
+rm "$GOPATH"/bin/go-118-fuzz-build
+mv go-118-fuzz-build "$GOPATH"/bin/
+
+cd "$SRC"/clock
+printf "package clock\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > register.go
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
 mv $SRC/fuzz_test.go $SRC/clock/
 go mod tidy
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer github.com/benbjohnson/clock FuzzClock FuzzClock
