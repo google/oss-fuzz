@@ -49,9 +49,10 @@ docker run \
   --name=${_PROJECT}-origin-${_SANITIZER} \
   -v=$PWD/ccaches/${_PROJECT}/ccache:/workspace/ccache \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
+  -v=$BASE/infra/experimental/chronos:/chronos/ \
   gcr.io/oss-fuzz/${_PROJECT} \
   /bin/bash -c \
-  "export PATH=/ccache/bin:\$PATH && compile"
+  "export PATH=/ccache/bin:\$PATH && compile && cp /chronos/replay_build.sh \$SRC/"
 B_TIME=$(($SECONDS - $B_START))
 
 # Step 3: save (commit, locally) the cached container as an image
