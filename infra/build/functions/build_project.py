@@ -503,6 +503,10 @@ def get_build_steps_for_project(project,
   return build_steps
 
 
+def _indexer_built_image_name(name: str):
+  return f'us-central1-docker.pkg.dev/oss-fuzz/indexer/{name}'
+
+
 def get_indexer_build_steps(project_name,
                             project_yaml,
                             dockerfile,
@@ -550,11 +554,31 @@ def get_indexer_build_steps(project_name,
   }
   build_lib.dockerify_run_step(index_step,
                                build,
-                               use_architecture_image_name=build.is_arm)
+                               use_architecture_image_name=build.is_arm,
+                               container_name='indexed-container')
+
+  save_container_step = {
+      'name':
+          build_lib.DOCKER_TOOL_IMAGE,
+      'args': [
+          'container', 'commit', 'indexer-container',
+          _indexer_built_image_name(project.name)
+      ],
+  }
+  push_image_step = {
+      'name': build_lib.DOCKER_TOOL_IMAGE,
+      'args': [
+          'push',
+          _indexer_built_image_name(project.name),
+      ],
+      'allowFailure': True,
+  }
 
   # TODO: Don't upload anything if we're in trial build.
   build_steps.extend([
       index_step,
+      save_container_step,
+      push_image_step,
       {
           # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
           'name': get_uploader_image(),
