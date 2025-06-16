@@ -633,20 +633,6 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
         architecture=_ARM64)
     steps.append(docker_build_arm_step)
 
-  logging.info(f'Considering pushing {config.build_type} {language}.')
-  if (config.build_type == 'fuzzing' and language in ('c', 'c++') and
-      not not config.testing and not config.experiment and config.upload):
-    logging.info('Pushing.')
-    # Push so that historical bugs are reproducible.
-    push_step = {
-        'name': 'gcr.io/cloud-builders/docker',
-        'args': ['push', _get_unsafe_name(name)],
-        'id': 'push-image',
-        'waitFor': [docker_build_step['id']],
-        'allowFailure': True
-    }
-    steps.append(push_step)
-
   return steps
 
 
