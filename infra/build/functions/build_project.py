@@ -562,14 +562,14 @@ def get_indexer_build_steps(project_name,
           build_lib.DOCKER_TOOL_IMAGE,
       'args': [
           'container', 'commit', 'indexer-container',
-          _indexer_built_image_name(project.name)
+          _indexer_built_image_name(project.name) + f':{timestamp}'
       ],
   }
   push_image_step = {
       'name': build_lib.DOCKER_TOOL_IMAGE,
       'args': [
           'push',
-          _indexer_built_image_name(project.name),
+          _indexer_built_image_name(project.name) + f':{timestamp}'
       ],
       'allowFailure': True,
   }
