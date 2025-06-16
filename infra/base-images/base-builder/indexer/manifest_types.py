@@ -179,6 +179,10 @@ class BinaryConfig:
       val = dict(val, binary_args=shlex.split(val["binary_args"]))
     return mapping[kind].from_dict(val)
 
+  def to_dict(self) -> Mapping[Any, Any]:
+    """Converts a BinaryConfig object to a serializable dict."""
+    return dataclasses.asdict(self)
+
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class CommandLineBinaryConfig(BinaryConfig):
@@ -282,13 +286,11 @@ class Manifest:
     """Converts a Manifest object to a serializable dict."""
     data = dataclasses.asdict(self)
 
-    patches = data["binary_config"].get("patches")
-    if patches:
-      patches[:] = [path.as_posix() for path in patches]
-
+    data["binary_config"] = self.binary_config.to_dict()
     data["lib_mount_path"] = _get_mapped(data, "lib_mount_path",
                                          lambda x: x.as_posix())
     data["source_map"] = _get_mapped(data, "source_map", source_map_to_dict)
+
     return data
 
   def validate(self) -> None:
