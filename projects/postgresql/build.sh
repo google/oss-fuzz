@@ -67,10 +67,6 @@ make -j$(nproc) fuzzer
 #if [ "$FUZZING_ENGINE" = "afl" ]
 #then
 rm protocol_fuzzer
-rm simple_query_fuzzer
 #fi
 cp *_fuzzer $OUT/
 cp $SRC/postgresql_fuzzer_seed_corpus.zip $OUT/
-
-# Temporary fix. Todo: David fix this.
-#rm $OUT/protocol_fuzzer
