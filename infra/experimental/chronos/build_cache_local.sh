@@ -107,7 +107,7 @@ then
 
   if [ -z "${RUN_ALL+1}" ]; then
     echo "${_PROJECT}: Replay worked."
-    echo "${_PROJECT}: Compile times: Vanilla=${B_TIME}; Replay=${R_TIME};"
+    echo "${_PROJECT}: Compile times: Vanilla=${B_TIME}; ReplayNew=${R_TIME};"
     exit 0
   fi
 else
@@ -149,7 +149,7 @@ executables_ccache="$(find ./build/out/${_PROJECT}/ -executable -type f | sort)"
 # Step 12: validate the ccache builds are successful
 if [[ "$executables_ccache" == "$executables_vanilla" ]]
 then
-  echo "${_PROJECT}: Compile times: Vanilla=${B_TIME}; Replay=${R_TIME}; CCache=${A_TIME};"
+  echo "${_PROJECT}: Compile times: Vanilla=${B_TIME}; ReplayNew=${R_TIME}; CCache=${A_TIME};"
 
   if [[ -z "${REPLAY_WORKED}" || ${R_TIME} -gt ${A_TIME} ]]; then
     if [ ${R_TIME} -gt ${A_TIME} ]; then
