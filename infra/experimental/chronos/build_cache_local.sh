@@ -84,7 +84,7 @@ docker run \
   --name=${_PROJECT}-origin-${_SANITIZER}-replay-recached \
   $FINAL_IMAGE_NAME \
   /bin/bash -c \
-  "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && compile"
+  "export PATH=/ccache/bin:\$PATH && rm -rf /out/* && python /usr/local/bin/make_build_replayable.py && REPLAY_ENABLED= compile"
 R_TIME=$(($SECONDS - $R_START))
 
 # Step 6: Extract the newly build executables

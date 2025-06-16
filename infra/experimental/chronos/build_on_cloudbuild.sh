@@ -19,7 +19,7 @@ FUZZING_LANGUAGE=$2
 
 gcloud builds submit "https://github.com/google/oss-fuzz" \
   --async \
-  --git-source-revision=master \
+  --git-source-revision=test-make-build-replayable \
   --config=cloudbuild.yaml \
   --substitutions=_PROJECT=$PROJECT,_FUZZING_LANGUAGE=$FUZZING_LANGUAGE \
   --project=oss-fuzz \
