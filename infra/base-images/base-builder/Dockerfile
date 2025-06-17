@@ -19,8 +19,8 @@ FROM gcr.io/oss-fuzz-base/base-clang
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
-# Build and install latest Python 3.10.
-ENV PYTHON_VERSION 3.10.14
+# Build and install latest Python 3.11.
+ENV PYTHON_VERSION 3.11.13
 RUN PYTHON_DEPS="\
         zlib1g-dev \
         libncurses5-dev \
@@ -39,7 +39,8 @@ RUN PYTHON_DEPS="\
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations --enable-shared && \
-    make -j$(nproc) install && \
+    make -j$(nproc) && \
+    make install && \
     ldconfig && \
     ln -s /usr/local/bin/python3 /usr/local/bin/python && \
     cd .. && \
@@ -176,8 +177,9 @@ COPY bazel_build_fuzz_tests \
     install_ruby.sh \
     install_rust.sh \
     install_swift.sh \
+    make_build_replayable.py \
     python_coverage_helper.py \
-    bash_parser.py \
+    replay_build.sh \
     srcmap \
     write_labels.py \
     /usr/local/bin/

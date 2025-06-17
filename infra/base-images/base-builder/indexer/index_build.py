@@ -20,13 +20,16 @@ import hashlib
 import json
 import logging
 import os
+import pathlib
 from pathlib import Path  # pylint: disable=g-importing-member
+import shlex
 import shutil
 import subprocess
 import tempfile
 from typing import Any, Sequence
 
 import manifest_types
+import pathlib
 
 PROJECT = Path(os.environ['PROJECT_NAME']).name
 SNAPSHOT_DIR = Path('/snapshot')
@@ -76,7 +79,7 @@ def set_up_wrapper_dir():
 class BinaryMetadata:
   name: str
   binary_path: Path
-  binary_args: str
+  binary_args: list[str]
   build_id: str
   compile_commands: list[dict[str, Any]]
 
@@ -179,11 +182,12 @@ def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
   return None
 
 
-def enumerate_build_targets(binary_args: str) -> Sequence[BinaryMetadata]:
+def enumerate_build_targets(
+    binary_args: list[str],) -> Sequence[BinaryMetadata]:
   """Enumerates the build targets in the project.
 
   Args:
-    binary_args: Shell-escaped argument list, applied to all targets
+    binary_args: Argument list, applied to all targets
 
   Returns:
     A sequence of target descriptions, in BinaryMetadata form.
@@ -325,7 +329,7 @@ def test_target(target: BinaryMetadata,) -> bool:
   return True
 
 
-def set_interpreter(target_path: Path, lib_mount_path: Path):
+def set_interpreter(target_path: Path, lib_mount_path: pathlib.PurePath):
   subprocess.run(
       [
           'patchelf',
@@ -337,7 +341,7 @@ def set_interpreter(target_path: Path, lib_mount_path: Path):
   )
 
 
-def set_target_rpath(binary_artifact: Path, lib_mount_path: Path):
+def set_target_rpath(binary_artifact: Path, lib_mount_path: pathlib.PurePath):
   subprocess.run(
       [
           'patchelf',
@@ -351,7 +355,7 @@ def set_target_rpath(binary_artifact: Path, lib_mount_path: Path):
 
 
 def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path,
-                          lib_mount_path: Path) -> None:
+                          lib_mount_path: pathlib.PurePath) -> None:
   """Copies the shared libraries to the shared directory."""
   env = os.environ.copy()
   env['LD_TRACE_LOADED_OBJECTS'] = '1'
@@ -429,7 +433,7 @@ def archive_target(target: BinaryMetadata) -> Path | None:
 
   name = f'{PROJECT}.{target.name}'
   uuid = f'{PROJECT}.{target.name}.{target_hash}'
-  lib_mount_path = Path('/tmp') / (uuid + '_lib')
+  lib_mount_path = pathlib.Path('/tmp') / (uuid + '_lib')
 
   libs_path = OUT / 'lib'
   libs_path.mkdir(parents=False, exist_ok=True)
@@ -446,9 +450,13 @@ def archive_target(target: BinaryMetadata) -> Path | None:
     manifest_types.Manifest(
         name=name,
         uuid=uuid,
-        binary_name=target.name,
-        binary_args=target.binary_args,
+        binary_config=manifest_types.CommandLineBinaryConfig(
+            kind=manifest_types.BinaryConfigKind.OSS_FUZZ,
+            binary_name=target.name,
+            binary_args=target.binary_args,
+        ),
         source_map=manifest_types.source_map_from_dict(json.loads(source_map)),
+        lib_mount_path=lib_mount_path,
     ).save_build(
         source_dir=Path(empty_src_dir),
         build_dir=OUT,
@@ -465,11 +473,15 @@ def archive_target(target: BinaryMetadata) -> Path | None:
   return archive_path
 
 
-def test_and_archive(target_args: str, targets_to_index: Sequence[str] | None):
+def test_and_archive(target_args: list[str],
+                     targets_to_index: Sequence[str] | None):
   """Test target and archive."""
   targets = enumerate_build_targets(target_args)
   if targets_to_index:
     targets = [t for t in targets if t.name in targets_to_index]
+    missing_targets = set(targets_to_index) - set(t.name for t in targets)
+    if missing_targets:
+      raise ValueError(f'Could not find specified targets {missing_targets}.')
 
   logging.info('targets %s', targets)
   for target in targets:
@@ -515,12 +527,23 @@ def main():
   )
   parser.add_argument(
       '--target-args',
-      default='<input_file>',
+      default=None,
       help=('Arguments to pass to the target when executing it. '
             'This string is shell-escaped (interpreted with `shlex.split`). '
+            'The substring <input_file> will be replaced with the input path.'
+            'Note: This is deprecated, use --target-arg instead.'),
+  )
+  parser.add_argument(
+      '--target-arg',
+      action='append',
+      help=('An argument to pass to the target binary. '
             'The substring <input_file> will be replaced with the input path.'),
   )
   args = parser.parse_args()
+
+  if args.target_args and args.target_arg:
+    raise ValueError(
+        'Only one of --target-args or --target-arg can be specified.')
 
   targets_to_index = None
   if args.targets:
@@ -536,7 +559,17 @@ def main():
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
   build_project(targets_to_index)
-  test_and_archive(args.target_args, targets_to_index)
+
+  if args.target_arg:
+    target_args = args.target_arg
+  elif args.target_args:
+    logging.warning('--target-args is deprecated, use --target-arg instead.')
+    target_args = shlex.split(args.target_args)
+  else:
+    logging.info('No target args specified.')
+    target_args = []
+
+  test_and_archive(target_args, targets_to_index)
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
