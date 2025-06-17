@@ -37,7 +37,7 @@
 
 #include <libgen.h>
 
-const char *progname;
+extern const char *progname;
 static MemoryContext row_description_context = NULL;
 static StringInfoData row_description_buf;
 static const char *username = "username";
@@ -65,7 +65,7 @@ int FuzzerInitialize(char *dbname, char ***argv){
   av[4] = NULL;
 
   system(untar);
-  
+
   progname = get_progname(av[0]);
   MemoryContextInit();
 
@@ -81,13 +81,13 @@ int FuzzerInitialize(char *dbname, char ***argv){
   CreateDataDirLockFile(false);
   LocalProcessControlFile(false);
   InitializeMaxBackends();
-		 
-  CreateSharedMemoryAndSemaphores();
+
+  // CreateSharedMemoryAndSemaphores();
   InitProcess();
   BaseInit();
-  PG_SETMASK(&UnBlockSig);
-  InitPostgres("dbfuzz", InvalidOid, username, InvalidOid, false, false,  NULL);
- 
+  sigprocmask(SIG_SETMASK, &UnBlockSig, NULL);
+  InitPostgres("dbfuzz", InvalidOid, username, InvalidOid, false, false);
+
   SetProcessingMode(NormalProcessing);
 
   BeginReportingGUCOptions();

@@ -51,11 +51,18 @@ docker run \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
   gcr.io/oss-fuzz/${_PROJECT} \
   /bin/bash -c \
-  "export PATH=/ccache/bin:\$PATH && compile"
+  "export PATH=/ccache/bin:\$PATH && compile && cp /usr/local/bin/replay_build.sh \$SRC/"
 B_TIME=$(($SECONDS - $B_START))
 
 # Step 3: save (commit, locally) the cached container as an image
 docker container commit -c "ENV REPLAY_ENABLED=1" -c "ENV CAPTURE_REPLAY_SCRIPT=" ${_PROJECT}-origin-${_SANITIZER} $FINAL_IMAGE_NAME
+
+# If the project has declared its own replay_build.sh, assume that's the
+# approach to use and we're done.
+if [ -f projects/${_PROJECT}/replay_build.sh ]; then
+  echo "Has project-specfied replay build script."
+  exit 0
+fi
 
 # Step 4: save the list of executables created from a vanilla build. This is
 #         needed for validating if replay and ccaching works.
