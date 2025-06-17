@@ -504,7 +504,9 @@ def get_build_steps_for_project(project,
 
 
 def _indexer_built_image_name(name: str):
-  return f'us-central1-docker.pkg.dev/oss-fuzz/indexer/{name}'
+  # TODO(ochang): Write this to a tar (via docker image save) and upload this to
+  # GCS.
+  return f'us-docker.pkg.dev/oss-fuzz/indexer/{name}'
 
 
 def get_indexer_build_steps(project_name,
@@ -556,29 +558,42 @@ def get_indexer_build_steps(project_name,
                                build,
                                use_architecture_image_name=build.is_arm,
                                container_name='indexed-container')
-
-  save_container_step = {
-      'name':
-          build_lib.DOCKER_TOOL_IMAGE,
-      'args': [
-          'container', 'commit', 'indexer-container',
-          _indexer_built_image_name(project.name) + f':{timestamp}'
-      ],
-  }
-  push_image_step = {
-      'name': build_lib.DOCKER_TOOL_IMAGE,
-      'args': [
-          'push',
-          _indexer_built_image_name(project.name) + f':{timestamp}'
-      ],
-      'allowFailure': True,
-  }
+  push_image_steps = [
+      {
+          'name':
+              build_lib.DOCKER_TOOL_IMAGE,
+          'args': [
+              'container',
+              'commit',
+              # Change $OUT back to the default for replayability.
+              '-c',
+              'ENV OUT /out',
+              'indexed-container',
+              _indexer_built_image_name(project.name) + f':{timestamp}'
+          ],
+      },
+      {
+          'name':
+              build_lib.DOCKER_TOOL_IMAGE,
+          'args': [
+              'tag',
+              _indexer_built_image_name(project.name) + f':{timestamp}',
+              _indexer_built_image_name(project.name)
+          ],
+      },
+      {
+          'name': build_lib.DOCKER_TOOL_IMAGE,
+          'args': [
+              'push', '--all-tags',
+              _indexer_built_image_name(project.name)
+          ],
+          'allowFailure': True,
+      },
+  ]
 
   # TODO: Don't upload anything if we're in trial build.
   build_steps.extend([
       index_step,
-      save_container_step,
-      push_image_step,
       {
           # TODO(metzman): Make sure not to incldue other tars, and support .tar.gz
           'name': get_uploader_image(),
@@ -594,7 +609,7 @@ def get_indexer_build_steps(project_name,
       build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
                                                     f'{prefix}srcmap.json',
                                                     signed_policy_document),
-  ])
+  ] + push_image_steps)
   return build_steps
 
 
