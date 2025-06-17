@@ -177,10 +177,11 @@ COPY bazel_build_fuzz_tests \
     install_ruby.sh \
     install_rust.sh \
     install_swift.sh \
+    make_build_replayable.py \
     python_coverage_helper.py \
+    replay_build.sh \
     srcmap \
     write_labels.py \
-    make_build_replayable.py \
     /usr/local/bin/
 
 # TODO: Build this as part of a multi-stage build.
