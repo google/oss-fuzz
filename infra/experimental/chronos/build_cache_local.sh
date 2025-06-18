@@ -51,7 +51,7 @@ docker run \
   -v=$PWD/build/out/${_PROJECT}/:/out/ \
   gcr.io/oss-fuzz/${_PROJECT} \
   /bin/bash -c \
-  "export PATH=/ccache/bin:\$PATH && compile && cp /usr/local/bin/replay_build.sh \$SRC/"
+  "export PATH=/ccache/bin:\$PATH && compile && cp -n /usr/local/bin/replay_build.sh \$SRC/"
 B_TIME=$(($SECONDS - $B_START))
 
 # Step 3: save (commit, locally) the cached container as an image
