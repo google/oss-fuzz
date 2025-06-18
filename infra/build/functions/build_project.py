@@ -553,7 +553,7 @@ def get_indexer_build_steps(project_name,
           'bash', '-c',
           f'cd /src && cd {project.workdir} && mkdir -p {build.out} && '
           '/opt/indexer/index_build.py && '
-          'cp /usr/local/bin/replay_build.sh $$SRC/'
+          'cp -n /usr/local/bin/replay_build.sh $$SRC/'
       ],
       'env': env,
   }
