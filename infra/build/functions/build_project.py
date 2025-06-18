@@ -539,6 +539,7 @@ def get_indexer_build_steps(project_name,
   build = Build('none', 'address', 'x86_64')
   env = get_env(project.fuzzing_language, build, project.name)
   env.append('INDEXER_BUILD=1')
+  env.append('CAPTURE_REPLAY_SCRIPT=1')
 
   prefix = f'indexer_indexes/{project.name}/{timestamp}/'
   signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
@@ -550,7 +551,9 @@ def get_indexer_build_steps(project_name,
       'name': project.image,
       'args': [
           'bash', '-c',
-          f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'
+          f'cd /src && cd {project.workdir} && mkdir -p {build.out} && '
+          '/opt/indexer/index_build.py && '
+          'cp /usr/local/bin/replay_build.sh $$SRC/'
       ],
       'env': env,
   }
@@ -568,6 +571,12 @@ def get_indexer_build_steps(project_name,
               # Change $OUT back to the default for replayability.
               '-c',
               'ENV OUT /out',
+              '-c',
+              'ENV REPLAY_ENABLED 1',
+              # Add CFLAGS that enable debugging (this should match the
+              # index_build.py CFLAGS)
+              '-c',
+              'ENV CFLAGS "$$CFLAGS -O0 -glldb"',
               'indexed-container',
               _indexer_built_image_name(project.name) + f':{timestamp}'
           ],
@@ -604,7 +613,8 @@ def get_indexer_build_steps(project_name,
               f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
               ' done'
           ],
-          'entrypoint': 'bash'
+          'entrypoint': 'bash',
+          'allowFailure': True,
       },
       build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
                                                     f'{prefix}srcmap.json',
