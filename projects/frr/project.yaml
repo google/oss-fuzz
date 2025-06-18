@@ -9,4 +9,6 @@ auto_ccs:
 - "rwgbsd@gmail.com"
 fuzzing_engines:
  - libfuzzer
+sanitizers:
+ - address
 main_repo: 'https://github.com/FRRouting/frr'
