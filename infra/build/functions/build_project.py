@@ -553,7 +553,10 @@ def get_indexer_build_steps(project_name,
           'bash', '-c',
           f'cd /src && cd {project.workdir} && mkdir -p {build.out} && '
           '/opt/indexer/index_build.py && '
-          'cp -n /usr/local/bin/replay_build.sh $$SRC/'
+          # Enable re-building both the project and the indexes.
+          'cp -n /usr/local/bin/replay_build.sh $$SRC/ && '
+          # Save the CDB fragments so we can put them together later.
+          'cp -r $$OUT/cdb /cdb'
       ],
       'env': env,
   }
