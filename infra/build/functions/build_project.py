@@ -550,7 +550,8 @@ def get_indexer_build_steps(project_name,
   index_step = {
       'name': project.image,
       'args': [
-          'bash', '-c',
+          'bash',
+          '-c',
           f'cd /src && cd {project.workdir} && mkdir -p {build.out} && '
           '/opt/indexer/index_build.py && '
           # Enable re-building both the project and the indexes.
