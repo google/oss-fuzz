@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y git autoconf automake libtool make \
    libsnmp-dev libcap-dev libelf-dev libpcre3-dev libpcre2-dev \
    protobuf-c-compiler libprotobuf-c-dev
 RUN pip3 install pytest
-RUN git clone https://github.com/CESNET/libyang.git
+RUN git clone -b v2.0.0 https://github.com/CESNET/libyang.git
 
 RUN git clone --depth 1 --branch fuzz https://github.com/FRRouting/frr
 

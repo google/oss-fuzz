@@ -15,16 +15,11 @@
 ##########################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-RUN curl -L https://download.java.net/openjdk/jdk17/ri/openjdk-17+35_linux-x64_bin.tar.gz -o jdk.tar.gz && \
-    tar zxf jdk.tar.gz && \
-    rm -rf jdk.tar.gz
-
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
-ENV JAVA_HOME="$SRC/jdk-17"
+ENV MVN $SRC/maven/apache-maven-3.9.9/bin/mvn
 ENV PATH="$JAVA_HOME/bin:$PATH"
 RUN git clone --depth 1 https://github.com/mybatis/mybatis-3 mybatis-3
 COPY *.sh *.java $SRC/

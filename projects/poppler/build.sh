@@ -27,6 +27,13 @@ rm -rf $WORK/*
 rm -rf $BUILD
 mkdir -p $BUILD
 
+# Temporarily Add -D_GNU_SOURCE to CFLAGS to fix freetype's dependence on GNU
+# extensions for dlsym to dynamically load harfbuzz. This feature
+# should potentially be disabled instead of fixing the compilation. But that is
+# not possible to do from the OSS-Fuzz repo :-)
+# See https://github.com/google/oss-fuzz/pull/13325 for more details.
+export CFLAGS="$CFLAGS -D_GNU_SOURCE"
+
 # Install Boost headers
 cd $SRC/
 tar jxf boost_1_87_0.tar.bz2
@@ -36,7 +43,8 @@ CFLAGS="" CXXFLAGS="" ./b2 headers
 ./b2 --with-math install
 
 pushd $SRC/zlib
-CFLAGS=-fPIC ./configure --static --prefix=$PREFIX
+mkdir build && cd build
+CFLAGS=-fPIC ../configure --static --prefix=$PREFIX
 make install -j$(nproc)
 
 pushd $SRC

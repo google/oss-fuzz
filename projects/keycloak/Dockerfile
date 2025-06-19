@@ -16,14 +16,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN apt update && apt install openjdk-17-jdk libxext6 libxrender1 libxtst6 -y
+RUN apt update && apt install libxext6 libxrender1 libxtst6 -y
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
-ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
+ENV MVN $SRC/maven/apache-maven-3.9.2/bin/mvn
 ENV TARGET_PACKAGE_PREFIX org.keycloak.*
 
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing cncf-fuzzing

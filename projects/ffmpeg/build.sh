@@ -64,7 +64,7 @@ meson_install() {
   cd $SRC/$1
   CFLAGS="$MESON_CFLAGS" CXXFLAGS="$MESON_CXXFLAGS" \
   meson setup build -Dprefix="$FFMPEG_DEPS_PATH" -Ddefault_library=static -Dprefer_static=true \
-                    --libdir "$LIBDIR" ${2:-}
+                    --wrap-mode=nofallback --libdir "$LIBDIR" ${2:-}
   meson compile -C build
   meson install -C build
 }
@@ -85,10 +85,10 @@ make clean
 make -j$(nproc)
 make install
 
-meson_install freetype
+meson_install freetype "-Dharfbuzz=disabled"
 meson_install fribidi "-Ddocs=false -Dtests=false"
 meson_install harfbuzz "-Ddocs=disabled -Dtests=disabled"
-meson_install fontconfig
+meson_install fontconfig "-Dtests=disabled -Dtools=disabled"
 
 cd $SRC/libass
 ./autogen.sh
@@ -218,9 +218,14 @@ fi
         --disable-shared \
         --disable-doc \
         --disable-programs \
+        --enable-demuxers \
         $FFMPEG_BUILD_ARGS
 make clean
 make -j$(nproc) install
+
+if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
+  exit 0
+fi
 
 # Download test samples, will be used as seed corpus.
 # DISABLED.
@@ -274,6 +279,8 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
       CONDITIONALS=(${CONDITIONALS[@]:0:2})
 fi
 
+# FIXME: currently, enc fuzzers are clobbering dec variants because they share the same
+# name.
 for c in $CONDITIONALS; do
       fuzzer_name=ffmpeg_AV_CODEC_ID_${c}_fuzzer
       symbol=$(echo $c | sed "s/.*/\L\0/")
@@ -315,7 +322,7 @@ fuzzer_name=ffmpeg_IO_DEMUXER_fuzzer
 make tools/target_io_dem_fuzzer
 mv tools/target_io_dem_fuzzer $OUT/${fuzzer_name}
 
-#Build fuzzers for individual demuxers
+# Reduce size of demuxer fuzzers by disabling various components.
 ./configure \
         --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
         --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \

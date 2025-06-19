@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install -y \
  lzip
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
-RUN git clone --depth=1 git://git.savannah.gnu.org/gnulib.git
+RUN git clone --depth=500 git://git.savannah.gnu.org/gnulib.git
 RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
 RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
 RUN hg clone https://gmplib.org/repo/gmp/ gmp || \

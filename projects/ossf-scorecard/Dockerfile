@@ -16,5 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/ossf/scorecard
-COPY build.sh yaml_fuzzer.go $SRC/
+COPY build.sh yaml_fuzzer.go probes_fuzzer.go $SRC/
 WORKDIR $SRC/scorecard

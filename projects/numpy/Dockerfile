@@ -15,6 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
+# Numpy requires python3.11+
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get install -y python3.11 python3.11-dev && \
+    update-alternatives --install /usr/local/bin/python3 python $(which python3.11) 5
+# Install Python dependencies for python 3.11
+RUN curl -LO https://bootstrap.pypa.io/get-pip.py && \
+    python3 get-pip.py && \
+    python3 -m pip install --root-user-action=ignore atheris pyinstaller coverage
 RUN git clone https://github.com/numpy/numpy && cd numpy && git submodule update --init
 WORKDIR $SRC
-COPY *.py build.sh $SRC/
+COPY *.options *.py build.sh $SRC/

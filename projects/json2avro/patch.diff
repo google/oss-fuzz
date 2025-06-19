@@ -1,0 +1,22 @@
+diff --git a/converter/build.gradle b/converter/build.gradle
+index ae337ca..1593fc5 100644
+--- a/converter/build.gradle
++++ b/converter/build.gradle
+@@ -6,7 +6,7 @@ buildscript {
+         }
+     }
+     dependencies {
+-        classpath 'com.commercehub.gradle.plugin:gradle-avro-plugin:0.14.0'
++        classpath 'com.github.davidmc24.gradle.plugin:gradle-avro-plugin:1.0.0'
+     }
+ }
+
+@@ -18,7 +18,7 @@ plugins {
+     id 'me.champeau.gradle.jmh' version '0.4.5'
+ }
+
+-apply plugin: 'com.commercehub.gradle.plugin.avro'
++apply plugin: 'com.github.davidmc24.gradle.plugin.avro'
+ apply plugin: 'idea'
+
+ configurations {

@@ -1,9 +1,9 @@
-homepage: "https://crates.io/crates/askama"
+homepage: "https://askama.readthedocs.io/"
+main_repo: "https://github.com/askama-rs/askama"
 language: rust
-primary_contact: "djc.ochtman@gmail.com"
-main_repo: "https://github.com/djc/askama"
-vendor_ccs:
-  - maxnair.dev@gmail.com
+primary_contact: "rene.kijewski@fu-berlin.de"
+auto_ccs:
+  - "guillaume1.gomez@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:

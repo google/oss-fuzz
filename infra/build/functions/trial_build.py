@@ -27,6 +27,7 @@ import time
 import urllib.request
 
 from googleapiclient.discovery import build as cloud_build
+from googleapiclient.errors import HttpError
 import oauth2client.client
 import yaml
 
@@ -56,6 +57,9 @@ BUILD_TYPES = {
                   'status-introspector.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
+    'indexer':
+        BuildType('indexer', build_project.get_indexer_build_steps,
+                  'status.json'),
 }
 
 
@@ -209,7 +213,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
 
     build_project.set_yaml_defaults(project_yaml)
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers']) + ['coverage', 'introspector']
+        project_yaml['sanitizers']) + ['coverage', 'indexer', 'introspector']
     project_yaml['sanitizers'] = list(
         set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
@@ -252,8 +256,13 @@ def check_finished(build_id, project, cloudbuild_api, cloud_project,
                    build_results):
   """Checks that the |build_type| build is complete. Updates |project_status| if
   complete."""
-  build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
-                                           build_id)
+
+  try:
+    build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
+                                             build_id)
+  except HttpError:
+    logging.debug('build: HttpError when getting build status from gcb')
+    return False
   if build_status not in FINISHED_BUILD_STATUSES:
     logging.debug('build: %d not finished.', build_id)
     return False
@@ -338,6 +347,9 @@ def _do_test_builds(args, test_image_suffix, end_time):
   if 'introspector' in sanitizers:
     sanitizers.pop(sanitizers.index('introspector'))
     build_types.append(BUILD_TYPES['introspector'])
+  if 'indexer' in sanitizers:
+    sanitizers.pop(sanitizers.index('indexer'))
+    build_types.append(BUILD_TYPES['indexer'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
   build_ids = collections.defaultdict(list)

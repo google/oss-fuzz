@@ -27,6 +27,12 @@ cd binutils-gdb
 cd binutils
 sed -i 's/vfprintf (stderr/\/\//' elfcomm.c
 sed -i 's/fprintf (stderr/\/\//' elfcomm.c
+
+# Fix a dlltool leak, which won't be fixed upstream because it uses a
+# non-posix yacc feature.  It also isn't seen as a direct leak when
+# running dlltool stand-alone.
+sed -i '/^%%$/i%destructor { free (\$\$); } ID' defparse.y
+
 cd ../
 
 ./configure --disable-gdb --disable-gdbserver --disable-gdbsupport \
@@ -80,7 +86,6 @@ sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/
 
 # Special handling of dlltool
 sed 's/main (int ac/old_main32 (int ac, char **av);\nint old_main32 (int ac/' dlltool.c > fuzz_dlltool.h
-sed -i 's/copy_mian/copy_main/g' fuzz_dlltool.h
 
 # Patch the rest
 for i in objdump nm objcopy windres strings addr2line; do
@@ -136,7 +141,7 @@ fl["objdump"]=${OBJ3}
 fl["objdump_safe"]=${OBJ3}
 fl["dwarf"]=${OBJ3}
 fl["addr2line"]=${OBJ1}
-fl["objcopy"]="is-strip.o rename.o rddbg.o debug.o stabs.o rdcoff.o wrstabs.o ${OBJ1}"
+fl["objcopy"]="rename.o rddbg.o debug.o stabs.o rdcoff.o wrstabs.o ${OBJ1}"
 fl["nm"]="${OBJ1} demanguse.o"
 fl["dlltool"]="defparse.o deflex.o ${OBJ1}"
 fl["windres"]="resrc.o rescoff.o resbin.o rcparse.o rclex.o winduni.o resres.o ${OBJ1}"

@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2023 Google LLC
+#!/bin/bash
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
 #
 ################################################################################
 
-set -eox pipefail
+set -euxo pipefail
 
-target_out_dir=fuzz/target/x86_64-unknown-linux-gnu/release
-cargo fuzz build -O
+target_out_dir=target/x86_64-unknown-linux-gnu/release
+cargo fuzz build --release
 cargo fuzz list | while read i; do
-    cp $target_out_dir/$i $OUT/
+    zip --recurse-paths --junk-paths --quiet "${OUT}/${i}_seed_corpus.zip" "./fuzz/corpus/${i}/"
+    mv -t "${OUT}/" "$target_out_dir/${i}"
 done
