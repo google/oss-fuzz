@@ -1311,7 +1311,13 @@ def coverage(args):  # pylint: disable=too-many-branches
   else:
     run_args.extend(['-v', '%s:/corpus' % args.project.corpus])
 
+  pwd = os.getcwd()
+
   run_args.extend([
+      '-v',
+      f'{pwd}/infra/base-images/base-runner/coverage:/usr/local/bin/coverage',
+      '-v',
+      f'{pwd}/infra/base-images/base-runner/statefulness_detector.py:/usr/local/bin/statefulness_detector.py',
       '-v',
       '%s:/out' % args.project.out,
       '-t',
@@ -1322,6 +1328,7 @@ def coverage(args):  # pylint: disable=too-many-branches
   if args.fuzz_target:
     run_args.append(args.fuzz_target)
 
+  print(run_args)
   result = docker_run(run_args, architecture=args.architecture)
   if result:
     logger.info('Successfully generated clang code coverage report.')

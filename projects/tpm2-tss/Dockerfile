@@ -81,7 +81,15 @@ RUN wget --quiet --show-progress --progress=dot:giga "https://github.com/troydha
         && cp uthash-${uthash}/src/*.h /usr/include/
 RUN rm -rf uthash-${uthash}/ v${uthash}.tar.gz
 
+WORKDIR /tmp
 RUN git clone --depth 1 \
-  https://github.com/tpm2-software/tpm2-tss $SRC/tpm2-tss/
+  https://github.com/stefanberger/libtpms.git
+WORKDIR /tmp/libtpms
+RUN ./autogen.sh && \
+  ./configure --with-tpm2 CC=clang CXX=clang++ && \
+  make && make install
+
+RUN git clone --depth 1 -b update_fuzz \
+  https://github.com/phi-go/tpm2-tss $SRC/tpm2-tss/
 WORKDIR $SRC/tpm2-tss/
 COPY build.sh $SRC/
