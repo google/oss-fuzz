@@ -19,4 +19,5 @@ if [ ! -f /usr/bin/bash.real ]; then
   # Only run this once.
   python /usr/local/bin/make_build_replayable.py
 fi
+
 . $SRC/build.sh "$@"

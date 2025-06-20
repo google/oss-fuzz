@@ -65,6 +65,7 @@ BUILD_SUCCESS_MARKER = '/workspace/build.succeeded'
 _CACHED_IMAGE = ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
                  '{name}-ofg-cached-{sanitizer}')
 _CACHED_SANITIZERS = ('address', 'coverage')
+_INDEXED_CONTAINER_NAME = 'indexed-container'
 
 
 @dataclass
@@ -503,6 +504,12 @@ def get_build_steps_for_project(project,
   return build_steps
 
 
+def _indexer_built_image_name(name: str):
+  # TODO(ochang): Write this to a tar (via docker image save) and upload this to
+  # GCS.
+  return f'us-docker.pkg.dev/oss-fuzz/indexer/{name}'
+
+
 def get_indexer_build_steps(project_name,
                             project_yaml,
                             dockerfile,
@@ -533,6 +540,7 @@ def get_indexer_build_steps(project_name,
   build = Build('none', 'address', 'x86_64')
   env = get_env(project.fuzzing_language, build, project.name)
   env.append('INDEXER_BUILD=1')
+  env.append('CAPTURE_REPLAY_SCRIPT=1')
 
   prefix = f'indexer_indexes/{project.name}/{timestamp}/'
   signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
@@ -543,14 +551,60 @@ def get_indexer_build_steps(project_name,
   index_step = {
       'name': project.image,
       'args': [
-          'bash', '-c',
-          f'cd /src && cd {project.workdir} && mkdir -p {build.out} && /opt/indexer/index_build.py'
+          'bash',
+          '-c',
+          f'cd /src && cd {project.workdir} && mkdir -p {build.out} && '
+          '/opt/indexer/index_build.py && '
+          # Enable re-building both the project and the indexes.
+          'cp -n /usr/local/bin/replay_build.sh $$SRC/ && '
+          # Save the CDB fragments so we can re-use them for rebuilding indexes.
+          'cp -r $$OUT/cdb /cdb && '
+          # Link /out to the actual $OUT and actually create it in the
+          # container's filesystem since it's a mount.
+          'rm -rf /out && ln -s $$OUT /out && '
+          'umount /workspace && mkdir -p $$OUT'
       ],
       'env': env,
   }
   build_lib.dockerify_run_step(index_step,
                                build,
-                               use_architecture_image_name=build.is_arm)
+                               use_architecture_image_name=build.is_arm,
+                               container_name=_INDEXED_CONTAINER_NAME)
+  push_image_steps = [
+      {
+          'name':
+              build_lib.DOCKER_TOOL_IMAGE,
+          'args': [
+              'container',
+              'commit',
+              '-c',
+              'ENV REPLAY_ENABLED 1',
+              # Add CFLAGS that enable debugging (this should match the
+              # index_build.py CFLAGS)
+              '-c',
+              'ENV CFLAGS "$$CFLAGS -O0 -glldb"',
+              _INDEXED_CONTAINER_NAME,
+              _indexer_built_image_name(project.name) + f':{timestamp}'
+          ],
+      },
+      {
+          'name':
+              build_lib.DOCKER_TOOL_IMAGE,
+          'args': [
+              'tag',
+              _indexer_built_image_name(project.name) + f':{timestamp}',
+              _indexer_built_image_name(project.name)
+          ],
+      },
+      {
+          'name':
+              build_lib.DOCKER_TOOL_IMAGE,
+          'args': [
+              'push', '--all-tags',
+              _indexer_built_image_name(project.name)
+          ],
+      },
+  ]
 
   # TODO: Don't upload anything if we're in trial build.
   build_steps.extend([
@@ -565,12 +619,13 @@ def get_indexer_build_steps(project_name,
               f'https://{signed_policy_document.bucket}.storage.googleapis.com;'
               ' done'
           ],
-          'entrypoint': 'bash'
+          'entrypoint': 'bash',
+          'allowFailure': True,
       },
       build_lib.upload_using_signed_policy_document('/workspace/srcmap.json',
                                                     f'{prefix}srcmap.json',
                                                     signed_policy_document),
-  ])
+  ] + push_image_steps)
   return build_steps
 
 
