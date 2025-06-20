@@ -452,14 +452,22 @@ def archive_target(target: BinaryMetadata) -> Path | None:
   libs_path.mkdir(parents=False, exist_ok=True)
   target_path = OUT / target.name
   copy_shared_libraries(target_path, libs_path, lib_mount_path)
-  set_interpreter(target_path, lib_mount_path)
-  set_target_rpath(target_path, lib_mount_path)
-  archive_path = SNAPSHOT_DIR / f'{uuid}.tar'
-  archive_path.parent.mkdir(parents=True, exist_ok=True)  # For `/` in $PROJECT.
 
   # We may want to eventually re-enable SRC copying (with some filtering to only
   # include source files).
-  with tempfile.TemporaryDirectory() as empty_src_dir:
+  with tempfile.TemporaryDirectory() as empty_src_dir, \
+       tempfile.TemporaryDirectory() as backup_dir:
+    # Make a backup of the target binary so we can undo the rpath/interpreter
+    # changes in OUT.
+    backup_path = Path(backup_dir) / target_path.name
+    shutil.copy2(target_path, backup_path)
+
+    set_interpreter(target_path, lib_mount_path)
+    set_target_rpath(target_path, lib_mount_path)
+    archive_path = SNAPSHOT_DIR / f'{uuid}.tar'
+    # For `/` in $PROJECT.
+    archive_path.parent.mkdir(parents=True, exist_ok=True)
+
     manifest_types.Manifest(
         name=name,
         uuid=uuid,
@@ -478,6 +486,8 @@ def archive_target(target: BinaryMetadata) -> Path | None:
         archive_path=archive_path,
         out_dir=OUT,
     )
+
+    shutil.move(backup_path, target_path)
 
   logging.info('Wrote archive to: %s', archive_path)
   # TODO(ochang): this will break projects that also create a `libs` folder and
