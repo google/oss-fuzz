@@ -558,7 +558,11 @@ def get_indexer_build_steps(project_name,
           # Enable re-building both the project and the indexes.
           'cp -n /usr/local/bin/replay_build.sh $$SRC/ && '
           # Save the CDB fragments so we can re-use them for rebuilding indexes.
-          'cp -r $$OUT/cdb /cdb'
+          'cp -r $$OUT/cdb /cdb && '
+          # Link /out to the actual $OUT and actually create it in the
+          # container's filesystem since it's a mount.
+          'rm -rf /out && ln -s $$OUT /out && '
+          'umount /workspace && mkdir -p $$OUT'
       ],
       'env': env,
   }
@@ -567,45 +571,12 @@ def get_indexer_build_steps(project_name,
                                use_architecture_image_name=build.is_arm,
                                container_name=_INDEXED_CONTAINER_NAME)
   push_image_steps = [
-      # Create a link to the $OUT used during the build (which was mounted in
-      # and won't exist in the container's filesystem) in case there's
-      # references in build flags. To do this, we have to restart the container.
-      {
-          'name': build_lib.DOCKER_TOOL_IMAGE,
-          'args': [
-              'start',
-              _INDEXED_CONTAINER_NAME,
-          ],
-          'env': env,
-      },
-      {
-          'name': build_lib.DOCKER_TOOL_IMAGE,
-          'args': [
-              'exec',
-              'indexed-container',
-              'bash',
-              '-c',
-              'mkdir -p $(dirname $$OUT) && ln -s /out $$OUT',
-          ],
-          'env': env,
-      },
-      {
-          'name': build_lib.DOCKER_TOOL_IMAGE,
-          'args': [
-              'stop',
-              _INDEXED_CONTAINER_NAME,
-          ],
-          'env': env,
-      },
       {
           'name':
               build_lib.DOCKER_TOOL_IMAGE,
           'args': [
               'container',
               'commit',
-              # Change $OUT back to the default for consistency.
-              '-c',
-              'ENV OUT /out',
               '-c',
               'ENV REPLAY_ENABLED 1',
               # Add CFLAGS that enable debugging (this should match the
