@@ -73,7 +73,7 @@ function deploy_cloud_function {
 	gcloud functions deploy $name \
 	--entry-point $entry_point \
 	--trigger-topic $topic \
-	--runtime python38 \
+	--runtime python311 \
 	--project $project \
 	--timeout 540 \
 	--region us-central1 \
