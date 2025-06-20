@@ -1,5 +1,5 @@
-#!/bin/bash
-# Copyright 2024 Google LLC
+#!/bin/bash -x
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
 #
 ################################################################################
 
-set -euxo pipefail
+if [ ! -f /usr/bin/bash.real ]; then
+  # Only run this once.
+  python /usr/local/bin/make_build_replayable.py
+fi
 
-target_out_dir=target/x86_64-unknown-linux-gnu/release
-cargo fuzz build --release
-cargo fuzz list | while read i; do
-    zip --recurse-paths --junk-paths --quiet "${OUT}/${i}_seed_corpus.zip" "./fuzz/corpus/${i}/"
-    mv -t "${OUT}/" "$target_out_dir/${i}"
-done
+. $SRC/build.sh "$@"

@@ -58,13 +58,15 @@ cmake_args=(
     -DLUAJIT_ENABLE_GC64=ON
     $SANITIZERS_ARGS
 
+    -DCMAKE_BUILD_TYPE=Debug
+
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
-    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=unused-command-line-argument"
+    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=unused-command-line-argument -fno-sanitize=unsigned-integer-overflow"
 
     # C++ compiler
     -DCMAKE_CXX_COMPILER="${CXX}"
-    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Wno-error=unused-command-line-argument"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Wno-error=unused-command-line-argument -fno-sanitize=unsigned-integer-overflow"
 
     # Linker
     -DCMAKE_LINKER="${LD}"

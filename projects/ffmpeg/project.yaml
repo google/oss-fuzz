@@ -7,11 +7,11 @@ architectures:
 auto_ccs:
  - "michaelni@gmx.at"
  - "michael@niedermayer.cc"
- - "jrummell@google.com"
  - "tfoucu@google.com"
  - "twsmith@mozilla.com"
  - "kempfjb@gmail.com"
  - "jordyzomer@google.com"
+ - "epirat07@gmail.com"
 fuzzing_engines:
  - afl
  - honggfuzz

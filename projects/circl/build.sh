@@ -92,5 +92,3 @@ cd $SRC/cryptofuzz/
 make -j $(nproc)
 
 cp cryptofuzz $OUT/
-
-cp $SRC/cryptofuzz_seed_corpus.zip $OUT/

@@ -24,7 +24,7 @@ cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=$install_dir \
   -DBUILD_SHARED_LIBS=OFF -DOPENCV_GENERATE_PKGCONFIG=ON \
   -DOPENCV_GENERATE_PKGCONFIG=ON -DOPENCV_FORCE_3RDPARTY_BUILD=ON \
   -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_opencv_apps=OFF \
-  -DWITH_IMGCODEC_GIF=ON $SRC/opencv
+  -DWITH_IMGCODEC_GIF=ON -DWITH_IPP=OFF $SRC/opencv
 make -j$(nproc)
 make install
 popd
@@ -41,8 +41,8 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.cc -std=c++11 \
 -lopencv_stitching -lopencv_video -lopencv_calib3d -lopencv_features2d \
 -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc \
 -lopencv_flann -lopencv_core -llibjpeg-turbo -llibwebp -llibpng -llibtiff \
--llibopenjp2 -lIlmImf -llibprotobuf -lzlib -littnotify -lippiw \
--lippicv -lade -ldl -lm -lpthread -lrt \
+-llibopenjp2 -lIlmImf -llibprotobuf -lzlib -littnotify \
+-lade -ldl -lm -lpthread -lrt \
 -o $OUT/$fuzzer
 done
 popd

@@ -19,7 +19,13 @@ ARG glib_tag=2.78.4
 RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build  \
     libfdt-dev libpixman-1-dev zlib1g-dev libslirp-dev patchelf wget \
     libattr1 libattr1-dev libcap-ng-dev pkg-config
-RUN git clone --depth 1 --branch $glib_tag https://gitlab.gnome.org/GNOME/glib
+
+Run python3 -m pip install meson tomli
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib.git --branch=$glib_tag && \
+  meson setup _build glib --prefix=/usr -Ddefault_library=shared -Dtests=false && \
+  meson install -C _build && \
+  rm -rf glib _build
+
 RUN git clone --depth 1 https://git.qemu.org/git/qemu.git qemu
 WORKDIR qemu
 COPY build.sh $SRC/
