@@ -556,7 +556,7 @@ def get_indexer_build_steps(project_name,
           '/opt/indexer/index_build.py && '
           # Enable re-building both the project and the indexes.
           'cp -n /usr/local/bin/replay_build.sh $$SRC/ && '
-          # Save the CDB fragments so we can put them together later.
+          # Save the CDB fragments so we can re-use them for rebuilding indexes.
           'cp -r $$OUT/cdb /cdb'
       ],
       'env': env,
@@ -603,7 +603,6 @@ def get_indexer_build_steps(project_name,
               'push', '--all-tags',
               _indexer_built_image_name(project.name)
           ],
-          'allowFailure': True,
       },
   ]
 
