@@ -65,6 +65,7 @@ BUILD_SUCCESS_MARKER = '/workspace/build.succeeded'
 _CACHED_IMAGE = ('us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/'
                  '{name}-ofg-cached-{sanitizer}')
 _CACHED_SANITIZERS = ('address', 'coverage')
+_INDEXED_CONTAINER_NAME = 'indexed-container'
 
 
 @dataclass
@@ -564,18 +565,42 @@ def get_indexer_build_steps(project_name,
   build_lib.dockerify_run_step(index_step,
                                build,
                                use_architecture_image_name=build.is_arm,
-                               container_name='indexed-container')
+                               container_name=_INDEXED_CONTAINER_NAME)
   push_image_steps = [
+      # Create a link to the $OUT used during the build (which was mounted in
+      # and won't exist in the container's filesystem) in case there's
+      # references in build flags. To do this, we have to restart the container.
+      {
+        'name': build_lib.DOCKER_TOOL_IMAGE,
+        'args': [
+          'start', _INDEXED_CONTAINER_NAME,
+        ],
+        'env': env,
+      },
+      {
+        'name': build_lib.DOCKER_TOOL_IMAGE,
+        'args': [
+          'exec', 'indexed-container',
+          'bash',
+          '-c',
+          'mkdir -p $(dirname $$OUT) && ln -s /out $$OUT',
+        ],
+        'env': env,
+      },
+      {
+        'name': build_lib.DOCKER_TOOL_IMAGE,
+        'args': [
+          'stop', _INDEXED_CONTAINER_NAME,
+        ],
+        'env': env,
+      },
       {
           'name':
               build_lib.DOCKER_TOOL_IMAGE,
           'args': [
               'container',
               'commit',
-              # Change $OUT back to the default for consistency, but keep a link
-              # around in case there are old references.
-              '-c',
-              'RUN mkdir -p $(dirname $$OUT) && ln -s /out $$OUT',
+              # Change $OUT back to the default for consistency.
               '-c',
               'ENV OUT /out',
               '-c',
@@ -584,7 +609,7 @@ def get_indexer_build_steps(project_name,
               # index_build.py CFLAGS)
               '-c',
               'ENV CFLAGS "$$CFLAGS -O0 -glldb"',
-              'indexed-container',
+              _INDEXED_CONTAINER_NAME,
               _indexer_built_image_name(project.name) + f':{timestamp}'
           ],
       },
