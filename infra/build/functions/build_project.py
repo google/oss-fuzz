@@ -572,7 +572,10 @@ def get_indexer_build_steps(project_name,
           'args': [
               'container',
               'commit',
-              # Change $OUT back to the default for replayability.
+              # Change $OUT back to the default for consistency, but keep a link
+              # around in case there are old references.
+              '-c',
+              'RUN mkdir -p $(dirname $$OUT) && ln -s /out $$OUT',
               '-c',
               'ENV OUT /out',
               '-c',

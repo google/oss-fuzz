@@ -20,9 +20,4 @@ if [ ! -f /usr/bin/bash.real ]; then
   python /usr/local/bin/make_build_replayable.py
 fi
 
-# If there are cdb fragments saved, restore them to $OUT
-if [ -d /cdb ]; then
-  cp -rT /cdb $OUT/cdb
-fi
-
 . $SRC/build.sh "$@"
