@@ -571,28 +571,31 @@ def get_indexer_build_steps(project_name,
       # and won't exist in the container's filesystem) in case there's
       # references in build flags. To do this, we have to restart the container.
       {
-        'name': build_lib.DOCKER_TOOL_IMAGE,
-        'args': [
-          'start', _INDEXED_CONTAINER_NAME,
-        ],
-        'env': env,
+          'name': build_lib.DOCKER_TOOL_IMAGE,
+          'args': [
+              'start',
+              _INDEXED_CONTAINER_NAME,
+          ],
+          'env': env,
       },
       {
-        'name': build_lib.DOCKER_TOOL_IMAGE,
-        'args': [
-          'exec', 'indexed-container',
-          'bash',
-          '-c',
-          'mkdir -p $(dirname $$OUT) && ln -s /out $$OUT',
-        ],
-        'env': env,
+          'name': build_lib.DOCKER_TOOL_IMAGE,
+          'args': [
+              'exec',
+              'indexed-container',
+              'bash',
+              '-c',
+              'mkdir -p $(dirname $$OUT) && ln -s /out $$OUT',
+          ],
+          'env': env,
       },
       {
-        'name': build_lib.DOCKER_TOOL_IMAGE,
-        'args': [
-          'stop', _INDEXED_CONTAINER_NAME,
-        ],
-        'env': env,
+          'name': build_lib.DOCKER_TOOL_IMAGE,
+          'args': [
+              'stop',
+              _INDEXED_CONTAINER_NAME,
+          ],
+          'env': env,
       },
       {
           'name':
@@ -623,7 +626,8 @@ def get_indexer_build_steps(project_name,
           ],
       },
       {
-          'name': build_lib.DOCKER_TOOL_IMAGE,
+          'name':
+              build_lib.DOCKER_TOOL_IMAGE,
           'args': [
               'push', '--all-tags',
               _indexer_built_image_name(project.name)
