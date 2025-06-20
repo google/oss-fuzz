@@ -119,16 +119,22 @@ class ReplacedBinaryArgs:
   """Contains the new binary args and the stdin path."""
 
   # The new binary args.
-  binary_args: list[str] | None
+  # Input replacement (<input_file>, <output_file>) works on these args.
+  binary_args: list[str]
   # The original stdin path.
   input_path: str
-  # Whether the stdin path was replaced.
+  # Additional env variables to pass to the binary.
+  # Existing env variables of the same key will be overwritten.
+  # Input replacement works on these variable values.
+  binary_env: dict[str, str]
+  # Whether the <input_file> placeholder was replaced in args and/or env.
   input_replaced: bool
 
   def from_dict(self, data: dict[str, Any]) -> Self:
     """Creates a ReplacedBinaryArgs object from a deserialized dict."""
     return ReplacedBinaryArgs(
-        binary_args=data.get("binary_args"),
+        binary_args=data["binary_args"],
+        binary_env=data["binary_env"],
         input_path=data["input_path"],
         input_replaced=data["input_replaced"],
     )
@@ -190,6 +196,10 @@ class CommandLineBinaryConfig(BinaryConfig):
 
   binary_name: str
   binary_args: list[str]
+  # Additional environment variables to pass to the binary. They will overwrite
+  # any existing environment variables with the same name.
+  # Input replacement works on these variables as well.
+  binary_env: dict[str, str]
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[Any, Any]) -> Self:
@@ -200,6 +210,7 @@ class CommandLineBinaryConfig(BinaryConfig):
         kind=kind,
         binary_name=config_dict["binary_name"],
         binary_args=config_dict["binary_args"],
+        binary_env=config_dict.get("binary_env", {}),
     )
 
 
@@ -259,6 +270,7 @@ class Manifest:
           kind=BinaryConfigKind.BINARY,
           binary_name=data["binary_name"],
           binary_args=binary_args or [],
+          binary_env={},
       )
     else:
       binary_config = _get_mapped(data, "binary_config", BinaryConfig.from_dict)
@@ -488,7 +500,8 @@ def source_map_to_dict(x: dict[pathlib.Path, SourceRef],) -> dict[str, Any]:
 
 
 def binary_args_from_placeholders(
-    binary_args: list[str] | None,
+    binary_args: list[str],
+    binary_env: dict[str, str],
     input_path: str,
     output_path: str = "/dev/null",
 ) -> ReplacedBinaryArgs:
@@ -496,21 +509,17 @@ def binary_args_from_placeholders(
 
   Args:
     binary_args: List of binary args.
+    binary_env: Custom env variables to pass to the binary.
     input_path: Path of the file that contains the program input bytes.
     output_path: Path of the file that contains the program output bytes
       (default to /dev/null).
 
   Returns:
-    Processed binary args, where
+    Processed binary args and env variables, where
       "<input_file>": replaced by input_path if applicable
       "<output_file>": replaced by /dev/null if applicable
-      and a boolean indicating whether input_path was replaced.
+      and a boolean indicating whether input_file was present in args or env.
   """
-  if binary_args is None:
-    return ReplacedBinaryArgs(binary_args=None,
-                              input_path=input_path,
-                              input_replaced=False)
-
   input_replaced = False
 
   def _replace_placeholder(arg: str) -> str:
@@ -525,6 +534,9 @@ def binary_args_from_placeholders(
 
   return ReplacedBinaryArgs(
       binary_args=[_replace_placeholder(arg) for arg in binary_args],
+      binary_env={
+          k: _replace_placeholder(v) for k, v in binary_env.items()
+      },
       input_path=input_path,
       input_replaced=input_replaced,
   )
@@ -547,3 +559,39 @@ def _is_elf(path: pathlib.PurePath) -> bool:
   except OSError:
     # Can happen if the file is a symlink, etc.
     return False
+
+
+def parse_env(env_list: list[str]) -> dict[str, str]:
+  """Helper function to parse environment variables from a list.
+
+  Args:
+    env_list: A list of environment variables in the format of "key=value".
+
+  Returns:
+    A dictionary of environment variables.
+
+  Raises:
+    ValueError: If a key is empty or invalid.
+  """
+  env = {}
+
+  def assert_key_valid(key: str) -> None:
+    if not key:
+      raise ValueError("Environment variable key is empty.")
+    # Check that the key looks like a valid environment variable name.
+
+    if key in env:
+      raise ValueError(f"Environment variable key {key} is defined twice. "
+                       f"Existing value: {env[key]}, new value: {value}.")
+
+  for entry in env_list:
+    if "=" not in entry:
+      logging.warning(
+          "Environment variable string is not in the format of 'key=value': %s",
+          entry,
+      )
+    key, _, value = entry.partition("=")
+    assert_key_valid(key)
+    env[key] = value
+
+  return env
