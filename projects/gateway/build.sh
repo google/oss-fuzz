@@ -15,4 +15,23 @@
 #
 ################################################################################
 
-$SRC/gateway/test/fuzz/oss_fuzz_build.sh
+cd "$SRC"/go-118-fuzz-build
+go build
+rm "$GOPATH"/bin/go-118-fuzz-build
+mv go-118-fuzz-build "$GOPATH"/bin/
+
+cd "$SRC"/gateway
+
+set -o nounset
+set -o pipefail
+set -o errexit
+set -x
+printf "package envoygateway\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > register.go
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
+go mod tidy
+
+# compile native-format fuzzers
+compile_native_go_fuzzer github.com/envoyproxy/gateway/test/fuzz FuzzGatewayAPIToXDS FuzzGatewayAPIToXDS
+
+# add seed corpus
+zip -j "$OUT"/FuzzGatewayAPIToXDS_seed_corpus.zip "$SRC"/gateway/test/fuzz/testdata/FuzzGatewayAPIToXDS/*

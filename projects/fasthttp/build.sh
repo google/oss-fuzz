@@ -15,8 +15,18 @@
 #
 ################################################################################
 
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
+cd "$SRC"/go-118-fuzz-build
+go build
+rm "$GOPATH"/bin/go-118-fuzz-build
+mv go-118-fuzz-build "$GOPATH"/bin/
 
+cd $SRC/fasthttp
+printf "package fasthttp\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > register.go
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
+go mod tidy
+
+# breaks the coverage build
+rm fs_fs_test.go
 compile_native_go_fuzzer github.com/valyala/fasthttp FuzzCookieParse fuzzCookieParse
 compile_native_go_fuzzer github.com/valyala/fasthttp FuzzVisitHeaderParams fuzzVisitHeaderParams
 compile_native_go_fuzzer github.com/valyala/fasthttp FuzzResponseReadLimitBody fuzzResponseReadLimitBody
