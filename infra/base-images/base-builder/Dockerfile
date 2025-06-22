@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang
+ARG BASE_IMAGE=gcr.io/oss-fuzz-base/base-clang
+FROM ${BASE_IMAGE}
 
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
