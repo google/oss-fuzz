@@ -15,35 +15,53 @@
 #
 ################################################################################
 
-# Usage:
-#   bash run_test.sh list     - Lists all available tests
-#   bash run_test.sh          - Runs all tests (same as 'make fate')
-#   bash run_test.sh <filter> - Runs a specific test or group of tests
-#                          (e.g., './run_test.sh acodec-pcm')
+# Usage: bash run_test.sh 
+# Runs all tests (same as 'make fate') and compiles if not compiled.
 
 set -e # Exit immediately if any command fails
 
 FFMPEG_SRC_DIR="/src/ffmpeg"
+OUT_DIR="${OUT:-/out}"
 
-# if [ TODO: How can i check if ffmpeg is compiled? ]; then
-#     echo "==> FFmpeg executable not found. Running build.sh..."
-#     ./build.sh  # TODO: Check if this does what we want or just generate artefacts.
-# fi
+# Executable fuzzer implies built.
+if [ ! -d "$OUT_DIR" ]; then
+  # Output directory does not exist.
+  # This implies no build has occurred or populated this directory.
+  IS_LIKELY_BUILT=0
+else
+  if [ -z "$(ls -A "$OUT_DIR" 2>/dev/null)" ]; then
+    # Output directory exists but is empty.
+    # This implies no build has populated this directory yet.
+    IS_LIKELY_BUILT=0
+  else
+    # Check specifically for executable files within OUT_DIR or its immediate subdirectories.
+    first_executable=$(find "$OUT_DIR" -maxdepth 2 -type f -executable -print -quit 2>/dev/null)
+
+    if [ -n "$first_executable" ]; then
+      # Found executable file(s) in the output directory.
+      # This suggests a build has already occurred.
+      IS_LIKELY_BUILT=1
+
+    else
+      # $OUT is not empty, but no executables found. Could be intermediate files, logs, corpus, etc.
+      IS_LIKELY_BUILT=0
+    fi
+  fi
+fi
+
+
+if [ "$IS_LIKELY_BUILT" -eq 0 ]; then
+    echo "==> Project is not likely built. Building..."
+    bash build.sh
+    make -j$(nproc)
+
+    echo "==> Build finished."
+fi
 
 echo "==> Changing to FFmpeg source directory: $FFMPEG_SRC_DIR"
 cd "$FFMPEG_SRC_DIR"
 
-if [ "$1" == "list" ]; then
-    echo "==> Listing all FATE tests..."
-    make fate-list
-
-elif [ -z "$1" ]; then
-    echo "==> Running all FATE tests..."
-    make fate
-
-else
-    echo "==> Running FATE test(s) matching '$1'..."
-    make "fate-$1"
-fi
+echo "==> Running all FATE tests..."
+make fate
 
 echo "==> Test run finished successfully."
