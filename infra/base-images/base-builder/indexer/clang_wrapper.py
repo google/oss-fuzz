@@ -524,7 +524,6 @@ def main(argv: list[str]) -> None:
   _write_filter_log(filter_log_file, filtered_compile_commands)
 
   run_indexer(build_id, linker_commands)
-  linker_commands = json.dumps(linker_commands)
   commands_path = Path(cdb_path) / f"{build_id}_linker_commands.json"
   commands_path.write_text(linker_commands)
 
