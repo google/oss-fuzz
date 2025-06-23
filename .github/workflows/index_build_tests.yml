@@ -10,7 +10,7 @@ on:
       - '.github/workflows/index_build_tests.yml'
 
 jobs:
-  test:
+  'indexer':
     runs-on: ubuntu-latest
     permissions:
       actions: write
