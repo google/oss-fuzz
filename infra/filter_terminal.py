@@ -39,54 +39,11 @@
 # output and delivering it to us in one place.
 
 import sys
-import re
-
-# A compiled regex pattern to find and replace SHA-1 hashes.
-# The \b word boundaries ensure we only match full 40-character hashes.
-SHA1_PATTERN = re.compile(r"\b[0-9a-fA-F]{40}\b")
-
-# A list of compiled regex patterns for lines we want to KEEP.
-ALLOWED_PATTERNS = (
-    # Catches compiler errors. Example:
-    # src/main.cpp:42:5: error: 'cout' is not a member of 'std'
-    re.compile(r'.*:\s*(fatal error|error):\s'),
-
-    # Catches compiler warnings. Example:
-    # src/user.cpp:15:10: warning: unused variable 'user_id' [-Wunused-variable]
-    re.compile(r'.*:\s*warning:\s'),
-
-    # Catches compiler context notes.
-    # Example: /usr/include/c++/11/bits/basic_string.h:111:7: note: 'std::bas...
-    re.compile(r'.*:\s*note:\s'),
-    # Example: src/main.cpp:85:23:   instantiated from here
-    re.compile(r'instantiated from'),
-    # Example: /usr/include/some_template_library.hpp:50:10:   required from ...
-    re.compile(r'required from'),
-
-    # Catches the line of code accompanying an error/warning. Example:
-    #    42 |   cout << "Hello, world!" << std::endl;
-    re.compile(r'^\s*\d+\s*\|'),
-
-    # Catches lines with carets pointing to code locations in errors/warnings.
-    # Example:       |   ^~~~
-    re.compile(r'^\s*\^'),
-)
-
-
-def filter_log():
-  """Reads from stdin and only prints lines that match an allowed pattern."""
-  # This only needs to read from `sys.stdin` because shell has already done
-  # the work of gathering all the relevant output and delivering it to us in
-  # one place via the 2>&1 command.
-  for line in sys.stdin:
-    if any(pattern.search(line) for pattern in ALLOWED_PATTERNS):
-      sanitized_line = SHA1_PATTERN.sub("<hash>", line)
-      sys.stdout.write(sanitized_line)
-
+import filter_terminal_lib
 
 if __name__ == "__main__":
   try:
-    filter_log()
+    filter_terminal_lib.filter_log()
   except KeyboardInterrupt:
     print("\nFilter interrupted by user.")
     sys.exit(1)
