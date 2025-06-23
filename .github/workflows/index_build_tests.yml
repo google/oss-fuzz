@@ -30,5 +30,5 @@ jobs:
           python-version: 3.11
 
       - name: Run infra tests
-        run: sudo env "PATH=$PATH" INDEXER_BUILD_TESTS=1 python -m unittest index_build_test
+        run: sudo env "PATH=$PATH" INDEX_BUILD_TESTS=1 python -m unittest index_build_test
         working-directory: 'infra/base-images/base-builder/indexer'
