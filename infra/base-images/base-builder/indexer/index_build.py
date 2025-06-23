@@ -12,23 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """This runs the actual build process to generate a snapshot."""
 
 import argparse
 import dataclasses
 import hashlib
-import io
 import json
 import logging
 import os
+import pathlib
 from pathlib import Path  # pylint: disable=g-importing-member
+import shlex
 import shutil
 import subprocess
-import tarfile
 import tempfile
 from typing import Any, Sequence
 
-ARCHIVE_VERSION = 1
+import manifest_types
+import pathlib
+
+
 PROJECT = Path(os.environ['PROJECT_NAME']).name
 SNAPSHOT_DIR = Path('/snapshot')
 SRC = Path(os.getenv('SRC', '/src'))
@@ -36,7 +40,8 @@ SRC = Path(os.getenv('SRC', '/src'))
 OUT = Path(os.getenv('OUT', '/out'))
 INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 
-_LD_PATH = Path('/lib64/ld-linux-x86-64.so.2')
+_LD_BINARY = 'ld-linux-x86-64.so.2'
+_LD_PATH = Path('/lib64') / _LD_BINARY
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 _CLANG_VERSION = '18'
 
@@ -76,107 +81,10 @@ def set_up_wrapper_dir():
 class BinaryMetadata:
   name: str
   binary_path: Path
-  binary_args: str
+  binary_args: list[str]
+  binary_env: dict[str, str]
   build_id: str
   compile_commands: list[dict[str, Any]]
-
-
-@dataclasses.dataclass(frozen=True)
-class Manifest:
-  """Contains general meta-information about the snapshot."""
-  name: str
-  uuid: str
-  binary_name: str
-  binary_args: str
-  version: int
-  # Example source map:
-  # {
-  #   "/src/hunspell": {
-  #     "type": "git",
-  #     "url": "https://github.com/hunspell/hunspell.git",
-  #     "rev": "a9b7270c1c2832312cfb20c3d1cf5c5080bf221b"
-  #   }
-  # }
-  source_map: dict[str, dict[str, str]]
-  is_oss_fuzz: bool = False
-
-
-def _is_elf(file: Path) -> bool:
-  """Returns whether a file is an ELF file."""
-  with file.open('rb') as f:
-    return f.read(4) == b'\x7fELF'
-
-
-def save_build(
-    manifest: Manifest,
-    *,
-    source_dir: Path,
-    build_dir: Path,
-    index_dir: Path,
-    archive_path: Path,
-) -> None:
-  """Saves a build archive."""
-  with tempfile.NamedTemporaryFile() as tmp:
-    mode = 'w:gz' if archive_path.suffix.endswith('gz') else 'w'
-    with tarfile.open(tmp.name, mode) as tar:
-
-      def _save_dir(
-          path: Path,
-          prefix: str,
-          exclude_build_artifacts: bool = False,
-          only_include_target: str | None = None,
-      ):
-        assert prefix.endswith('/')
-        for root, _, files in os.walk(path):
-          for file in files:
-            if file.endswith('_seed_corpus.zip'):
-              # Don't copy over the seed corpus -- it's not necessary.
-              continue
-
-            file = Path(root, file)
-            if exclude_build_artifacts and _is_elf(file):
-              continue
-
-            if only_include_target and _is_elf(file):
-              # Skip ELF files that aren't the relevant target (unless it's a
-              # shared library).
-              if (file.name != only_include_target and
-                  '.so' not in file.name and
-                  not file.absolute().is_relative_to(Path(OUT) / 'lib')):
-                continue
-
-            tar.add(
-                # Don't try to replicate symlinks in the tarfile, because they
-                # can lead to various issues (e.g. absolute symlinks).
-                file.resolve().as_posix(),
-                arcname=prefix + str(file.relative_to(path)),
-            )
-
-      _add_string_to_tar(
-          tar,
-          'manifest.json',
-          json.dumps(
-              dataclasses.asdict(manifest),
-              indent=2,
-          ),
-      )
-
-      _save_dir(source_dir, 'src/', exclude_build_artifacts=True)
-      # Only include the relevant target for the snapshot, to save on disk
-      # space.
-      _save_dir(build_dir, 'obj/', only_include_target=manifest.binary_name)
-      _save_dir(index_dir, 'idx/')
-
-    shutil.copyfile(tmp.name, archive_path)
-
-
-def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
-  bytesio = io.BytesIO(data.encode('utf-8'))
-
-  tar_info = tarfile.TarInfo(name)
-  tar_info.size = len(bytesio.getvalue())
-
-  tar.addfile(tarinfo=tar_info, fileobj=bytesio)
 
 
 def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
@@ -277,11 +185,15 @@ def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
   return None
 
 
-def enumerate_build_targets(binary_args: str) -> Sequence[BinaryMetadata]:
+def enumerate_build_targets(
+    binary_args: list[str],
+    binary_env: dict[str, str],
+) -> Sequence[BinaryMetadata]:
   """Enumerates the build targets in the project.
 
   Args:
-    binary_args: Shell-escaped argument list, applied to all targets
+    binary_args: Argument list, applied to all targets
+    binary_env: Environment variables, applied to all targets
 
   Returns:
     A sequence of target descriptions, in BinaryMetadata form.
@@ -321,9 +233,11 @@ def enumerate_build_targets(binary_args: str) -> Sequence[BinaryMetadata]:
               name=name,
               binary_path=binary_path,
               binary_args=binary_args,
+              binary_env=binary_env,
               compile_commands=compile_commands,
               build_id=build_id,
-          ))
+          )
+      )
 
   return targets
 
@@ -340,20 +254,25 @@ def copy_fuzzing_engine() -> Path:
   return fuzzing_engine_dir
 
 
-def build_project(targets_to_index: Sequence[str] | None = None):
+def build_project(
+    targets_to_index: Sequence[str] | None = None,
+    compile_args: Sequence[str] | None = None,
+):
   """Build the actual project."""
   set_env_vars()
   existing_cflags = os.environ.get('CFLAGS', '')
-  extra_flags = ('-fno-omit-frame-pointer '
-                 '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
-                 '-O0 -glldb '
-                 '-fsanitize=address '
-                 '-Wno-invalid-offsetof '
-                 '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
-                 f'-gen-cdb-fragment-path {OUT}/cdb '
-                 '-Qunused-arguments '
-                 f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
-                 f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} ')
+  extra_flags = (
+      '-fno-omit-frame-pointer '
+      '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
+      '-O0 -glldb '
+      '-fsanitize=address '
+      '-Wno-invalid-offsetof '
+      '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
+      f'-gen-cdb-fragment-path {OUT}/cdb '
+      '-Qunused-arguments '
+      f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
+      f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} '
+  )
   os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
@@ -403,15 +322,22 @@ def build_project(targets_to_index: Sequence[str] | None = None):
     os.remove(lib_fuzzing_engine)
   os.symlink('/opt/indexer/fuzzing_engine.a', lib_fuzzing_engine)
   set_up_wrapper_dir()
-  subprocess.run(['/usr/local/bin/compile'], check=True)
+
+  compile_command = ['/usr/local/bin/compile']
+  if compile_args:
+    compile_command.extend(compile_args)
+
+  subprocess.run(compile_command, check=True)
 
 
-def test_target(target: BinaryMetadata,) -> bool:
+def test_target(
+    target: BinaryMetadata,
+) -> bool:
   """Tests a single target."""
   target_path = OUT / target.name
-  result = subprocess.run([str(target_path)],
-                          stderr=subprocess.PIPE,
-                          check=False)
+  result = subprocess.run(
+      [str(target_path)], stderr=subprocess.PIPE, check=False
+  )
   expected_error = f'Usage: {target_path} <input_file>\n'
   if result.stderr.decode() != expected_error or result.returncode != 1:
     logging.error(
@@ -423,24 +349,24 @@ def test_target(target: BinaryMetadata,) -> bool:
   return True
 
 
-def set_interpreter(target_path: Path):
+def set_interpreter(target_path: Path, lib_mount_path: pathlib.PurePath):
   subprocess.run(
       [
           'patchelf',
           '--set-interpreter',
-          '/ossfuzzlib/ld-linux-x86-64.so.2',
+          (lib_mount_path / _LD_BINARY).as_posix(),
           target_path.as_posix(),
       ],
       check=True,
   )
 
 
-def set_rpath_to_ossfuzzlib(binary_artifact: Path):
+def set_target_rpath(binary_artifact: Path, lib_mount_path: pathlib.PurePath):
   subprocess.run(
       [
           'patchelf',
           '--set-rpath',
-          '/ossfuzzlib',
+          lib_mount_path,
           '--force-rpath',
           binary_artifact.as_posix(),
       ],
@@ -448,12 +374,14 @@ def set_rpath_to_ossfuzzlib(binary_artifact: Path):
   )
 
 
-def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
+def copy_shared_libraries(
+    fuzz_target_path: Path, libs_path: Path, lib_mount_path: pathlib.PurePath
+) -> None:
   """Copies the shared libraries to the shared directory."""
   env = os.environ.copy()
   env['LD_TRACE_LOADED_OBJECTS'] = '1'
   env['LD_BIND_NOW'] = '1'
-  # TODO(unassigned): Should we take ld.so from interp?
+  # TODO: Should we take ld.so from interp?
 
   res = subprocess.run(
       [_LD_PATH.as_posix(), fuzz_target_path.as_posix()],
@@ -504,7 +432,7 @@ def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path) -> None:
       # objects. What about their shared objects you may ask? Well they
       # will all be from this directory where every so has the directory
       # as its rpath.
-      set_rpath_to_ossfuzzlib(dst)
+      set_target_rpath(dst, lib_mount_path)
 
     except FileNotFoundError as e:
       logging.exception('Could not copy %s', library_path)
@@ -519,55 +447,77 @@ def archive_target(target: BinaryMetadata) -> Path | None:
     logging.error("didn't find index dir %s", index_dir)
     return None
 
-  source_map = subprocess.run(['srcmap'], capture_output=True,
-                              check=True).stdout
+  source_map = subprocess.run(
+      ['srcmap'], capture_output=True, check=True
+  ).stdout
 
   target_hash = hashlib.sha256(source_map).hexdigest()[:16]
 
   name = f'{PROJECT}.{target.name}'
   uuid = f'{PROJECT}.{target.name}.{target_hash}'
+  lib_mount_path = pathlib.Path('/tmp') / (uuid + '_lib')
 
   libs_path = OUT / 'lib'
   libs_path.mkdir(parents=False, exist_ok=True)
   target_path = OUT / target.name
-  copy_shared_libraries(target_path, libs_path)
-  set_interpreter(target_path)
-  set_rpath_to_ossfuzzlib(target_path)
-  archive_path = SNAPSHOT_DIR / f'{uuid}.tar'
-  archive_path.parent.mkdir(parents=True, exist_ok=True)  # For `/` in $PROJECT.
+  copy_shared_libraries(target_path, libs_path, lib_mount_path)
 
   # We may want to eventually re-enable SRC copying (with some filtering to only
   # include source files).
-  with tempfile.TemporaryDirectory() as empty_src_dir:
-    save_build(
-        Manifest(
-            name=name,
-            uuid=uuid,
+  with tempfile.TemporaryDirectory() as empty_src_dir, \
+       tempfile.TemporaryDirectory() as backup_dir:
+    # Make a backup of the target binary so we can undo the rpath/interpreter
+    # changes in OUT.
+    backup_path = Path(backup_dir) / target_path.name
+    shutil.copy2(target_path, backup_path)
+
+    set_interpreter(target_path, lib_mount_path)
+    set_target_rpath(target_path, lib_mount_path)
+    archive_path = SNAPSHOT_DIR / f'{uuid}.tar'
+    # For `/` in $PROJECT.
+    archive_path.parent.mkdir(parents=True, exist_ok=True)
+
+    manifest_types.Manifest(
+        name=name,
+        uuid=uuid,
+        binary_config=manifest_types.CommandLineBinaryConfig(
+            kind=manifest_types.BinaryConfigKind.OSS_FUZZ,
             binary_name=target.name,
             binary_args=target.binary_args,
-            version=ARCHIVE_VERSION,
-            is_oss_fuzz=False,
-            source_map=json.loads(source_map),
+            binary_env=target.binary_env,
         ),
+        source_map=manifest_types.source_map_from_dict(json.loads(source_map)),
+        lib_mount_path=lib_mount_path,
+    ).save_build(
         source_dir=Path(empty_src_dir),
         build_dir=OUT,
         index_dir=index_dir,
         archive_path=archive_path,
+        out_dir=OUT,
     )
 
+    shutil.move(backup_path, target_path)
+
   logging.info('Wrote archive to: %s', archive_path)
-  # TODO(ochang): this will break projects that also create a `libs` folder and
+  # TODO: this will break projects that also create a `libs` folder and
   # have multiple targets.
   shutil.rmtree(libs_path)
 
   return archive_path
 
 
-def test_and_archive(target_args: str, targets_to_index: Sequence[str] | None):
+def test_and_archive(
+    target_args: list[str],
+    target_env: dict[str, str],
+    targets_to_index: Sequence[str] | None,
+):
   """Test target and archive."""
-  targets = enumerate_build_targets(target_args)
+  targets = enumerate_build_targets(target_args, target_env)
   if targets_to_index:
     targets = [t for t in targets if t.name in targets_to_index]
+    missing_targets = set(targets_to_index) - set(t.name for t in targets)
+    if missing_targets:
+      raise ValueError(f'Could not find specified targets {missing_targets}.')
 
   logging.info('targets %s', targets)
   for target in targets:
@@ -575,7 +525,7 @@ def test_and_archive(target_args: str, targets_to_index: Sequence[str] | None):
       # Check that the target binary behaves like a fuzz target,
       # unless the caller specifically asked for a list of targets.
       if not targets_to_index and not test_target(target):
-        # TODO(metzman): Figure out if this is a good idea, it makes some things
+        # TODO: Figure out if this is a good idea, it makes some things
         # pass that should but causes some things to pass that shouldn't.
         continue
     except Exception:  # pylint: disable=broad-exception-caught
@@ -597,9 +547,6 @@ def main():
   logging.basicConfig(level=logging.INFO)
   INDEXES_PATH.mkdir(exist_ok=True)
 
-  # Clean up the existing OUT, otherwise we may run into various build errors.
-  clear_out()
-
   parser = argparse.ArgumentParser(description='Index builder.')
   parser.add_argument(
       '-t',
@@ -609,16 +556,58 @@ def main():
           'If this is omitted, snapshots are built for all fuzz targets. '
           'If specified, this can include binaries which are not fuzz targets '
           '(e.g., CLI targets which are built as part of the build '
-          'integration).'),
+          'integration).'
+      ),
   )
   parser.add_argument(
       '--target-args',
-      default='<input_file>',
-      help=('Arguments to pass to the target when executing it. '
-            'This string is shell-escaped (interpreted with `shlex.split`). '
-            'The substring <input_file> will be replaced with the input path.'),
+      default=None,
+      help=(
+          'Arguments to pass to the target when executing it. '
+          'This string is shell-escaped (interpreted with `shlex.split`). '
+          'The substring <input_file> will be replaced with the input path.'
+          'Note: This is deprecated, use --target-arg instead.'
+      ),
+  )
+  parser.add_argument(
+      '--target-arg',
+      action='append',
+      help=(
+          'An argument to pass to the target binary. '
+          'The substring <input_file> will be replaced with the input path.'
+      ),
+  )
+  parser.add_argument(
+      '--target-env',
+      action='append',
+      default=[],
+      help=(
+          'Environment variables (key=value) to pass to the target when '
+          'executing it. The substring <input_file> in a value will be '
+          'replaced with the input path.'
+      ),
+  )
+  parser.add_argument(
+      '--no-clear-out',
+      action='store_true',
+      help='Do not clear out the OUT directory before building.',
+  )
+  parser.add_argument(
+      '--compile-arg',
+      action='append',
+      help='An argument to pass to the `compile` script.',
   )
   args = parser.parse_args()
+
+  # Clean up the existing OUT by default, otherwise we may run into various
+  # build errors.
+  if not args.no_clear_out:
+    clear_out()
+
+  if args.target_args and args.target_arg:
+    raise ValueError(
+        'Only one of --target-args or --target-arg can be specified.'
+    )
 
   targets_to_index = None
   if args.targets:
@@ -633,8 +622,23 @@ def main():
   SNAPSHOT_DIR.mkdir(exist_ok=True)
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
-  build_project(targets_to_index)
-  test_and_archive(args.target_args, targets_to_index)
+  build_project(targets_to_index, args.compile_arg)
+
+  if args.target_arg:
+    target_args = args.target_arg
+  elif args.target_args:
+    logging.warning('--target-args is deprecated, use --target-arg instead.')
+    target_args = shlex.split(args.target_args)
+  else:
+    logging.info('No target args specified.')
+    target_args = []
+  if args.target_env:
+    target_env = manifest_types.parse_env(args.target_env)
+  else:
+    logging.info('No target env specified.')
+    target_env = {}
+
+  test_and_archive(target_args, target_env, targets_to_index)
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)

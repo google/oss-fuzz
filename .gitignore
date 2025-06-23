@@ -6,6 +6,8 @@
 *.swp
 .venv
 .gdb_history
+infra/base-images/base-builder/indexer/indexer
+infra/base-images/base-builder/indexer/fuzzing_engine.a
 
 # IntelliJ IDEA
 /.idea

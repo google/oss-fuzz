@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +14,10 @@
 #
 ################################################################################
 
-# build project
-cd libhtp
-sh autogen.sh
-./configure
-make -j$(nproc)
+FROM gcr.io/oss-fuzz-base/base-builder-go
 
-$CC $CFLAGS -I. -c test/fuzz/fuzz_htp.c -o fuzz_htp.o
-$CC $CFLAGS -I. -c test/test.c -o test.o
-$CXX $CXXFLAGS fuzz_htp.o test.o -o $OUT/fuzz_htp_c ./htp/.libs/libhtp.a $LIB_FUZZING_ENGINE -lz -llzma
+RUN git clone --depth 1 https://github.com/OpenPrinting/goipp.git $SRC/goipp
+RUN git clone --depth 1 https://github.com/OpenPrinting/fuzzing.git $SRC/fuzzing
 
-# builds corpus
-zip -r $OUT/fuzz_htp_seed_corpus.zip test/files/*.t
+COPY build.sh $SRC/
+WORKDIR $SRC/goipp
