@@ -1,48 +1,63 @@
 #!/usr/bin/env python3
-# Copyright 2025 Google LLC
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-"""index_build tests."""
 
-from pathlib import Path
+"""index_build tests.
+
+This is only runnable on OSS-Fuzz infrastructure.
+"""
+
 import json
 import os
+import pathlib
 import subprocess
 import tarfile
 from typing import Sequence
 import unittest
 
-THIS_DIR = Path(__file__).parent
+THIS_DIR = pathlib.Path(__file__).parent
 OSS_FUZZ_DIR = THIS_DIR.parent.parent.parent.parent
 
 
-@unittest.skipUnless(os.getenv('INDEX_BUILD_TESTS'),
-                     'Tests do not run on infra')
+@unittest.skipUnless(
+    os.getenv('INDEX_BUILD_TESTS'), 'Tests do not run on infra'
+)
 class IndexBuildTest(unittest.TestCase):
 
-  def _build_project(self, project: str, *additional_args) -> Sequence[Path]:
+  def _build_project(
+      self, project: str, *additional_args
+  ) -> Sequence[pathlib.Path]:
     subprocess.run(
         ('python3', 'infra/helper.py', 'build_image', '--no-pull', project),
         cwd=OSS_FUZZ_DIR,
-        check=True)
+        check=True,
+    )
 
     out_dir = OSS_FUZZ_DIR / f'build/out/{project}'
     docker_args = [
-        'docker', 'run', '--rm', '-e', f'PROJECT_NAME={project}', '-v',
-        f'{THIS_DIR}:/opt/indexer', '-v', f'{out_dir}:/out',
-        f'gcr.io/oss-fuzz/{project}', '/opt/indexer/index_build.py'
+        'docker',
+        'run',
+        '--rm',
+        '-ti',
+        '-e',
+        f'PROJECT_NAME={project}',
+        '-v',
+        f'{THIS_DIR}:/opt/indexer',
+        '-v',
+        f'{out_dir}:/out',
+        f'gcr.io/oss-fuzz/{project}',
+        '/opt/indexer/index_build.py',
     ]
 
     if additional_args:
@@ -50,11 +65,12 @@ class IndexBuildTest(unittest.TestCase):
 
     subprocess.run(docker_args, cwd=OSS_FUZZ_DIR, check=True)
     return [
-        file for file in out_dir.iterdir()
+        file
+        for file in out_dir.iterdir()
         if file.suffix == '.tar' and file.name.startswith(project)
     ]
 
-  def _check_archive(self, archive_path: Path):
+  def _check_archive(self, archive_path: pathlib.Path):
     has_obj_lib = False
     has_idx_sqlite = False
     has_idx_absolute = False
@@ -79,18 +95,22 @@ class IndexBuildTest(unittest.TestCase):
             manifest = json.load(file)
             self.assertTrue(manifest['lib_mount_path'])
             self.assertIsNotNone(
-                tar.getmember('obj/' +
-                              manifest['binary_config']['binary_name']))
+                tar.getmember('obj/' + manifest['binary_config']['binary_name'])
+            )
 
-    self.assertTrue(has_obj_lib, "obj/lib/ was not found in the archive.")
-    self.assertTrue(has_idx_sqlite,
-                    "idx/db.sqlite was not found in the archive.")
-    self.assertTrue(has_idx_absolute,
-                    "idx/absolute/ was not found in the archive.")
-    self.assertTrue(has_idx_relative,
-                    "idx/relative/ was not found in the archive.")
+    self.assertTrue(has_obj_lib, 'obj/lib/ was not found in the archive.')
+    self.assertTrue(
+        has_idx_sqlite, 'idx/db.sqlite was not found in the archive.'
+    )
+    self.assertTrue(
+        has_idx_absolute, 'idx/absolute/ was not found in the archive.'
+    )
+    self.assertTrue(
+        has_idx_relative, 'idx/relative/ was not found in the archive.'
+    )
     self.assertIsNotNone(
-        manifest, "manifest.json was not found or is empty in the archive.")
+        manifest, 'manifest.json was not found or is empty in the archive.'
+    )
 
   def test_basic_build(self):
     """Test basic build."""
@@ -101,8 +121,9 @@ class IndexBuildTest(unittest.TestCase):
 
   def test_build_with_target_allowlist(self):
     """Test basic build with target allowlist."""
-    archives = self._build_project('expat', '--targets',
-                                   'xml_parse_fuzzer_UTF-8')
+    archives = self._build_project(
+        'expat', '--targets', 'xml_parse_fuzzer_UTF-8'
+    )
     self.assertEqual(len(archives), 1)
     self.assertIn('xml_parse_fuzzer_UTF-8', archives[0].name)
     for archive in archives:

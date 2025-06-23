@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """DWARF info parser for ELF files."""
 
 import dataclasses
@@ -47,7 +48,8 @@ class CompilationUnit:
 
 
 def get_all_compilation_units(
-    elf_file_path: os.PathLike[str],) -> list[CompilationUnit]:
+    elf_file_path: os.PathLike[str],
+) -> list[CompilationUnit]:
   """Parses compilation units from an ELF file.
 
   Args:
@@ -78,15 +80,18 @@ def get_all_compilation_units(
           "DW_UT_compile",
           "DW_UT_partial",
       ):
-        raise ValueError("Unsupported DWARF compilation unit type"
-                         f" {compilation_unit.header.unit_type}")
+        raise ValueError(
+            "Unsupported DWARF compilation unit type"
+            f" {compilation_unit.header.unit_type}"
+        )
 
       top_debug_info_entry = compilation_unit.get_top_DIE()
       if top_debug_info_entry.tag != "DW_TAG_compile_unit":
         logging.error("Top DIE is not a full compile unit")
 
-      producer = top_debug_info_entry.attributes["DW_AT_producer"].value.decode(
-      )
+      producer = top_debug_info_entry.attributes[
+          "DW_AT_producer"
+      ].value.decode()
 
       name = top_debug_info_entry.attributes["DW_AT_name"].value.decode()
       language = top_debug_info_entry.attributes["DW_AT_language"].value
@@ -97,12 +102,14 @@ def get_all_compilation_units(
       apple_flags = None
       if top_debug_info_entry.attributes.get("DW_AT_APPLE_flags", None):
         apple_flags = top_debug_info_entry.attributes[
-            "DW_AT_APPLE_flags"].value.decode()
+            "DW_AT_APPLE_flags"
+        ].value.decode()
 
       isysroot = None
       if top_debug_info_entry.attributes.get("DW_AT_LLVM_isysroot", None):
         isysroot = top_debug_info_entry.attributes[
-            "DW_AT_LLVM_isysroot"].value.decode()
+            "DW_AT_LLVM_isysroot"
+        ].value.decode()
 
       result.append(
           CompilationUnit(
@@ -112,7 +119,8 @@ def get_all_compilation_units(
               language=language,
               apple_flags=apple_flags,
               isysroot=isysroot,
-          ))
+          )
+      )
   return result
 
 

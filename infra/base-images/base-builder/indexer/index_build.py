@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """This runs the actual build process to generate a snapshot."""
 
 import argparse
@@ -30,6 +31,7 @@ from typing import Any, Sequence
 
 import manifest_types
 import pathlib
+
 
 PROJECT = Path(os.environ['PROJECT_NAME']).name
 SNAPSHOT_DIR = Path('/snapshot')
@@ -234,7 +236,8 @@ def enumerate_build_targets(
               binary_env=binary_env,
               compile_commands=compile_commands,
               build_id=build_id,
-          ))
+          )
+      )
 
   return targets
 
@@ -258,16 +261,18 @@ def build_project(
   """Build the actual project."""
   set_env_vars()
   existing_cflags = os.environ.get('CFLAGS', '')
-  extra_flags = ('-fno-omit-frame-pointer '
-                 '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
-                 '-O0 -glldb '
-                 '-fsanitize=address '
-                 '-Wno-invalid-offsetof '
-                 '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
-                 f'-gen-cdb-fragment-path {OUT}/cdb '
-                 '-Qunused-arguments '
-                 f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
-                 f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} ')
+  extra_flags = (
+      '-fno-omit-frame-pointer '
+      '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
+      '-O0 -glldb '
+      '-fsanitize=address '
+      '-Wno-invalid-offsetof '
+      '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
+      f'-gen-cdb-fragment-path {OUT}/cdb '
+      '-Qunused-arguments '
+      f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
+      f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} '
+  )
   os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
@@ -325,12 +330,14 @@ def build_project(
   subprocess.run(compile_command, check=True)
 
 
-def test_target(target: BinaryMetadata,) -> bool:
+def test_target(
+    target: BinaryMetadata,
+) -> bool:
   """Tests a single target."""
   target_path = OUT / target.name
-  result = subprocess.run([str(target_path)],
-                          stderr=subprocess.PIPE,
-                          check=False)
+  result = subprocess.run(
+      [str(target_path)], stderr=subprocess.PIPE, check=False
+  )
   expected_error = f'Usage: {target_path} <input_file>\n'
   if result.stderr.decode() != expected_error or result.returncode != 1:
     logging.error(
@@ -367,13 +374,14 @@ def set_target_rpath(binary_artifact: Path, lib_mount_path: pathlib.PurePath):
   )
 
 
-def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path,
-                          lib_mount_path: pathlib.PurePath) -> None:
+def copy_shared_libraries(
+    fuzz_target_path: Path, libs_path: Path, lib_mount_path: pathlib.PurePath
+) -> None:
   """Copies the shared libraries to the shared directory."""
   env = os.environ.copy()
   env['LD_TRACE_LOADED_OBJECTS'] = '1'
   env['LD_BIND_NOW'] = '1'
-  # TODO(unassigned): Should we take ld.so from interp?
+  # TODO: Should we take ld.so from interp?
 
   res = subprocess.run(
       [_LD_PATH.as_posix(), fuzz_target_path.as_posix()],
@@ -439,8 +447,9 @@ def archive_target(target: BinaryMetadata) -> Path | None:
     logging.error("didn't find index dir %s", index_dir)
     return None
 
-  source_map = subprocess.run(['srcmap'], capture_output=True,
-                              check=True).stdout
+  source_map = subprocess.run(
+      ['srcmap'], capture_output=True, check=True
+  ).stdout
 
   target_hash = hashlib.sha256(source_map).hexdigest()[:16]
 
@@ -490,7 +499,7 @@ def archive_target(target: BinaryMetadata) -> Path | None:
     shutil.move(backup_path, target_path)
 
   logging.info('Wrote archive to: %s', archive_path)
-  # TODO(ochang): this will break projects that also create a `libs` folder and
+  # TODO: this will break projects that also create a `libs` folder and
   # have multiple targets.
   shutil.rmtree(libs_path)
 
@@ -516,7 +525,7 @@ def test_and_archive(
       # Check that the target binary behaves like a fuzz target,
       # unless the caller specifically asked for a list of targets.
       if not targets_to_index and not test_target(target):
-        # TODO(metzman): Figure out if this is a good idea, it makes some things
+        # TODO: Figure out if this is a good idea, it makes some things
         # pass that should but causes some things to pass that shouldn't.
         continue
     except Exception:  # pylint: disable=broad-exception-caught
@@ -547,29 +556,36 @@ def main():
           'If this is omitted, snapshots are built for all fuzz targets. '
           'If specified, this can include binaries which are not fuzz targets '
           '(e.g., CLI targets which are built as part of the build '
-          'integration).'),
+          'integration).'
+      ),
   )
   parser.add_argument(
       '--target-args',
       default=None,
-      help=('Arguments to pass to the target when executing it. '
-            'This string is shell-escaped (interpreted with `shlex.split`). '
-            'The substring <input_file> will be replaced with the input path.'
-            'Note: This is deprecated, use --target-arg instead.'),
+      help=(
+          'Arguments to pass to the target when executing it. '
+          'This string is shell-escaped (interpreted with `shlex.split`). '
+          'The substring <input_file> will be replaced with the input path.'
+          'Note: This is deprecated, use --target-arg instead.'
+      ),
   )
   parser.add_argument(
       '--target-arg',
       action='append',
-      help=('An argument to pass to the target binary. '
-            'The substring <input_file> will be replaced with the input path.'),
+      help=(
+          'An argument to pass to the target binary. '
+          'The substring <input_file> will be replaced with the input path.'
+      ),
   )
   parser.add_argument(
       '--target-env',
       action='append',
-      default={},
-      help=('Environment variables (key=value) to pass to the target when '
-            'executing it. The substring <input_file> in a value will be '
-            'replaced with the input path.'),
+      default=[],
+      help=(
+          'Environment variables (key=value) to pass to the target when '
+          'executing it. The substring <input_file> in a value will be '
+          'replaced with the input path.'
+      ),
   )
   parser.add_argument(
       '--no-clear-out',
@@ -590,7 +606,8 @@ def main():
 
   if args.target_args and args.target_arg:
     raise ValueError(
-        'Only one of --target-args or --target-arg can be specified.')
+        'Only one of --target-args or --target-arg can be specified.'
+    )
 
   targets_to_index = None
   if args.targets:
