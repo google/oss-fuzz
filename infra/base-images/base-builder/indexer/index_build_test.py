@@ -40,7 +40,7 @@ class IndexBuildTest(unittest.TestCase):
 
     out_dir = OSS_FUZZ_DIR / f'build/out/{project}'
     docker_args = [
-        'docker', 'run', '--rm', '-ti', '-e', f'PROJECT_NAME={project}', '-v',
+        'docker', 'run', '--rm', '-e', f'PROJECT_NAME={project}', '-v',
         f'{THIS_DIR}:/opt/indexer', '-v', f'{out_dir}:/out',
         f'gcr.io/oss-fuzz/{project}', '/opt/indexer/index_build.py'
     ]
