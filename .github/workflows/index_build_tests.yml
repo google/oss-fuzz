@@ -1,0 +1,34 @@
+name: indexer tests
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - 'infra/base-images/base-builder/indexer/**'
+      - '.github/workflows/index_build_tests.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:  # Needed for git diff to work. (get_changed_files)
+          fetch-depth: 0
+      - run: |
+          git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+
+      - name: Setup python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Run infra tests
+        run: sudo env "PATH=$PATH" INDEXER_BUILD_TESTS=1 python -m unittest index_build_test
+        working-directory: 'infra/base-images/base-builder/indexer'
