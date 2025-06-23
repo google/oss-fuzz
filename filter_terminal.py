@@ -24,7 +24,7 @@
 # Example usage for a given <command>:
 #   <command> 2>&1 | ./filter_terminal.py
 #
-# Note that `2>&1 |` is an important part of the use of filter_build.py.
+# Note that `2>&1 |` is an important part of the use of filter_terminal.py.
 #
 # `2>&1` is a shell redirection that says: "Redirect stream 2 (stderr) to the
 # same place as stream 1 (stdout)." This effectively merges the error messages
@@ -47,14 +47,6 @@ SHA1_PATTERN = re.compile(r"\b[0-9a-fA-F]{40}\b")
 
 # A list of compiled regex patterns for lines we want to KEEP.
 ALLOWED_PATTERNS = (
-    # Catches C/C++ compilation lines (e.g., g++ ... -c file.cpp). Example:
-    # g++ -Iinclude -O2 -std=c++17 -Wall -Wextra -c src/user.cpp -o build/user.o
-    re.compile(r'g\+\+|gcc|clang|cc .*-c\s'),
-
-    # Catches C/C++ linking lines (e.g., g++ ... -o my_app). Example:
-    # g++ build/main.o build/user.o build/database.o -o my_application
-    re.compile(r'g\+\+|gcc|clang|cc .*-o\s'),
-
     # Catches compiler errors. Example:
     # src/main.cpp:42:5: error: 'cout' is not a member of 'std'
     re.compile(r'.*:\s*(fatal error|error):\s'),
