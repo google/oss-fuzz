@@ -139,7 +139,8 @@ def main():
   # reset/clean might remove build artifacts.
   # applyping patches is not idempotent.
   with open('/usr/bin/git', 'w') as f:
-    f.write(create_wrapper("""
+    f.write(
+        create_wrapper("""
   if any(arg in ('clean', 'reset', 'apply') for arg in sys.argv[1:]):
     sys.exit(0)
 """))
