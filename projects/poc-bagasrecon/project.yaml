@@ -1,0 +1,7 @@
+main_repo: "http://127.0.0.1:8080/internal-metadata"
+language: c++
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
