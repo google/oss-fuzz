@@ -137,11 +137,12 @@ def main():
 
   # Don't allow git `reset` or `clean` or `apply`.
   # reset/clean might remove build artifacts.
-  # applyping patches is not idempotent.
+  # clone is not idempotent.
+  # applying patches is not idempotent.
   with open('/usr/bin/git', 'w') as f:
     f.write(
         create_wrapper("""
-  if any(arg in ('clean', 'reset', 'apply') for arg in sys.argv[1:]):
+  if any(arg in ('clean', 'clone', 'reset', 'apply') for arg in sys.argv[1:]):
     sys.exit(0)
 """))
 
