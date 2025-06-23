@@ -52,7 +52,8 @@ fi
 
 if [ "$IS_LIKELY_BUILT" -eq 0 ]; then
     echo "==> Project is not likely built. Building..."
-    bash build.sh
+    bash build.sh # TODO(carlolemos): Check if we get to the same state of
+    # us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/ffmpeg-ofg-cached-address
     make -j$(nproc)
 
     echo "==> Build finished."
