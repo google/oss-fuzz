@@ -19,6 +19,7 @@
 # This script acts as a simple filter for build logs.
 # It only prints lines that match a predefined set of patterns
 # (like compile/link commands, errors, and warnings).
+# It also sanitizes the output by replacing SHA-1 hashes with "<hash>".
 #
 # Example usage for a given <command>:
 #   <command> 2>&1 | ./filter_terminal.py
@@ -38,7 +39,11 @@
 # output and delivering it to us in one place.
 
 import sys
-import re  # TODO(carlolemos): Where should this file live?
+import re
+
+# A compiled regex pattern to find and replace SHA-1 hashes.
+# The \b word boundaries ensure we only match full 40-character hashes.
+SHA1_PATTERN = re.compile(r"\b[0-9a-fA-F]{40}\b")
 
 # A list of compiled regex patterns for lines we want to KEEP.
 ALLOWED_PATTERNS = (
@@ -82,9 +87,9 @@ def filter_log():
   # the work of gathering all the relevant output and delivering it to us in
   # one place via the 2>&1 command.
   for line in sys.stdin:
-    # If the line matches any of our "allowed" patterns, print it.
     if any(pattern.search(line) for pattern in ALLOWED_PATTERNS):
-      sys.stdout.write(line)
+      sanitized_line = SHA1_PATTERN.sub("<hash>", line)
+      sys.stdout.write(sanitized_line)
 
 
 if __name__ == "__main__":
