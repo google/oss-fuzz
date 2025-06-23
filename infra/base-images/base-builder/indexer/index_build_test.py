@@ -49,7 +49,6 @@ class IndexBuildTest(unittest.TestCase):
         'docker',
         'run',
         '--rm',
-        '-ti',
         '-e',
         f'PROJECT_NAME={project}',
         '-v',
