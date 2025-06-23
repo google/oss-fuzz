@@ -48,6 +48,8 @@ def main():
       '/usr/bin/autoreconf',
       '/usr/bin/autoscan',
       '/usr/bin/autoupdate',
+      # Applying patches is not idempotent.
+      '/usr/bin/patch',
   ]
 
   for script_path in dummy_scripts:
@@ -60,6 +62,7 @@ def main():
       '/usr/local/bin/cmake',
       '/bin/sh',
       '/bin/bash',
+      '/usr/bin/git',
       '/usr/bin/ln',
       '/usr/bin/make',
       '/usr/bin/meson',
@@ -130,6 +133,17 @@ def main():
         create_wrapper("""
   if not any(arg == '-f' for arg in sys.argv[1:]):
     sys.argv.insert(1, '-f')
+"""))
+
+  # Don't allow git `reset` or `clean` or `apply`.
+  # reset/clean might remove build artifacts.
+  # clone is not idempotent.
+  # applying patches is not idempotent.
+  with open('/usr/bin/git', 'w') as f:
+    f.write(
+        create_wrapper("""
+  if any(arg in ('clean', 'clone', 'reset', 'apply') for arg in sys.argv[1:]):
+    sys.exit(0)
 """))
 
   for file_path in files_to_move:
