@@ -24,29 +24,30 @@ SHA1_PATTERN = re.compile(r"\b[0-9a-fA-F]{40}\b")
 
 # A list of compiled regex patterns for lines we want to KEEP.
 ALLOWED_PATTERNS = (
-    # Catches compiler errors. Example:
-    # src/main.cpp:42:5: error: 'cout' is not a member of 'std'
-    re.compile(r'.*:\s*(fatal error|error):\s'),
+    # Catches compiler errors. The (?:.*:\s*)? makes the "file:line: " prefix optional.
+    # Example: src/main.cpp:42:5: error: 'cout' is not a member of 'std'
+    # Example: error: linker command failed with exit code 1
+    re.compile(r'(?:.*:\s*)?(?:fatal error|error):\s'),
 
-    # Catches compiler warnings. Example:
-    # src/user.cpp:15:10: warning: unused variable 'user_id' [-Wunused-variable]
-    re.compile(r'.*:\s*warning:\s'),
+    # Catches compiler warnings, making the prefix optional.
+    # Example: src/user.cpp:15:10: warning: unused variable 'user_id' [-Wunused-variable]
+    # Example: warning: some flag is deprecated
+    re.compile(r'(?:.*:\s*)?warning:\s'),
 
-    # Catches compiler context notes.
+    # Catches compiler context notes, making the prefix optional.
     # Example: /usr/include/c++/11/bits/basic_string.h:111:7: note: 'std::bas...
-    re.compile(r'.*:\s*note:\s'),
-    # Example: src/main.cpp:85:23:   instantiated from here
+    # Example: note: instantiated from here
+    re.compile(r'(?:.*:\s*)?note:\s'),
     re.compile(r'instantiated from'),
-    # Example: /usr/include/some_template_library.hpp:50:10:   required from ...
     re.compile(r'required from'),
 
     # Catches the line of code accompanying an error/warning. Example:
     #    42 |   cout << "Hello, world!" << std::endl;
     re.compile(r'^\s*\d+\s*\|'),
 
-    # Catches lines with carets pointing to code locations in errors/warnings.
+    # Catches lines with carets, allowing for an optional '|' character.
     # Example:       |   ^~~~
-    re.compile(r'^\s*\^'),
+    re.compile(r'^\s*(?:\|\s*)?\^'),
 )
 
 
