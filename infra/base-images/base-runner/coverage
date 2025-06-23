@@ -107,6 +107,7 @@ function run_fuzz_target {
 
   if (( $cov_retcode != 0 || $grep_retcode == 0 )); then
     echo "Error occured while running $target:"
+    echo "Cov returncode: $cov_retcode, grep returncode: $grep_retcode"
     cat $LOGS_DIR/$target.log
   fi
 
