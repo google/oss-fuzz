@@ -55,7 +55,7 @@ const ignored = [
 
 // Fuzz the Root#loadSync method
 function fuzzLoadSync(root, provider) {
-  const filePath = provider.consumeString();
+  const filePath = provider.consumeString(provider.consumeIntegralInRange(1, 64));
   root.loadSync(filePath);
 }
 
@@ -75,7 +75,7 @@ function fuzzLookupType(root, provider) {
 
 // Fuzz the Message#encode method
 function fuzzEncode(root, provider) {
-  const typeName = provider.consumeString();
+  const typeName = provider.consumeString(provider.consumeIntegralInRange(1, 64));
   const message = root.create(typeName);
 
   // Construct the input for the message instance manually
