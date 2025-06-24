@@ -30,7 +30,7 @@ from enum import StrEnum, auto
 # ffmpeg_AV_CODEC_ID_<ID>_DEC_fuzzer.
 #
 # Any new encoder fuzzer with an ID in this list (e.g. a new encoder was added
-# where we previously only supported decoding) just have the format
+# where we previously only supported decoding) must have the format
 # ffmpeg_AV_CODEC_ID_<ID>_ENC_fuzzer.
 LEGACY_DECODERS = (
     'AAC_FIXED',
@@ -401,9 +401,10 @@ def binary_name(type: IDType, id: str) -> str:
       return f'ffmpeg_AV_CODEC_ID_{id}_ENC_fuzzer'
 
   if type == IDType.DECODER:
-    # New decoder.
+    # New decoder. Differentiate it.
     return f'ffmpeg_AV_CODEC_ID_{id}_DEC_fuzzer'
 
+  # By default, encoder fuzzers will map to this.
   return f'ffmpeg_AV_CODEC_ID_{id}_fuzzer'
 
 
