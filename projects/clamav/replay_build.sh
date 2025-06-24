@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -eu
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,10 @@
 #
 ################################################################################
 
-if [ ! -f /usr/bin/bash.real ]; then
-  # Only run this once.
-  python /usr/local/bin/make_build_replayable.py
-fi
+# This script is useful for OSS-Fuzz infrastructure which is used to rebuild
+# code from cached images. This is to support various ongoing efforts in
+# OSS-Fuzz.
 
-. $SRC/build.sh "$@"
+cd ${SRC}/build
+make -j$(nproc)
+cp ./fuzz/clamav_* ${OUT}/.

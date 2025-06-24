@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -eu
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,5 @@
 #
 ################################################################################
 
-if [ ! -f /usr/bin/bash.real ]; then
-  # Only run this once.
-  python /usr/local/bin/make_build_replayable.py
-fi
-
-. $SRC/build.sh "$@"
+chmod +x $SRC/fuzzing/projects/goipp/oss_fuzz_build.sh
+$SRC/fuzzing/projects/goipp/oss_fuzz_build.sh

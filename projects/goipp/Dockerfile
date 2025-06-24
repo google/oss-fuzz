@@ -1,4 +1,3 @@
-#!/bin/bash -x
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +14,10 @@
 #
 ################################################################################
 
-if [ ! -f /usr/bin/bash.real ]; then
-  # Only run this once.
-  python /usr/local/bin/make_build_replayable.py
-fi
+FROM gcr.io/oss-fuzz-base/base-builder-go
 
-. $SRC/build.sh "$@"
+RUN git clone --depth 1 https://github.com/OpenPrinting/goipp.git $SRC/goipp
+RUN git clone --depth 1 https://github.com/OpenPrinting/fuzzing.git $SRC/fuzzing
+
+COPY build.sh $SRC/
+WORKDIR $SRC/goipp
