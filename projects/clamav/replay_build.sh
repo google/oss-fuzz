@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# This script is useful for OSS-Fuzz infrastructure which is used to rebuild
+# code from cached images. This is to support various ongoing efforts in
+# OSS-Fuzz.
+
 cd ${SRC}/build
 make -j$(nproc)
 cp ./fuzz/clamav_* ${OUT}/.
