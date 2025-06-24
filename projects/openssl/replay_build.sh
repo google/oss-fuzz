@@ -24,7 +24,6 @@ export FUZZ_INTROSPECTOR_CONFIG=$SRC/openssl/fuzz/fuzz_introspector_exclusion.co
 
 function build_fuzzers() {
     SUFFIX=$1
-
     make -j$(nproc) LDCMD="$CXX $CXXFLAGS"
 
     fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test '!' -name \*.pl '!' -name \*.sh)
