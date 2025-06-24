@@ -100,8 +100,6 @@ def main():
     sys.exit(0)
 """))
 
-  shutil.copyfile('/bin/sh', '/bin/bash')
-
   # Stub out cmake, but allow cmake --build.
   with open('/usr/bin/cmake', 'w') as f:
     f.write(
