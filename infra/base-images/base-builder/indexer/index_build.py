@@ -46,6 +46,7 @@ _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 _CLANG_VERSION = '18'
 
 
+# Test change.
 def set_env_vars():
   """Set up build environment variables."""
   os.environ['SANITIZER'] = 'address'
