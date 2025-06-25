@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && \
-    apt-get install -y autoconf automake libtool bison re2c pkg-config
-RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src
-WORKDIR php-src
-COPY replay_build.sh build.sh $SRC/
+# This script is useful for OSS-Fuzz infrastructure which is used to rebuild
+# code from cached images. This is to support various ongoing efforts in
+# OSS-Fuzz.
+
+cd $SRC/libidn2
+make -j$(nproc)
+
+cd fuzz
+make oss-fuzz
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'

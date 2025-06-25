@@ -452,6 +452,9 @@ def main(argv: list[str]) -> None:
 
   output_file = Path(output_file)
 
+  if output_file.name.endswith(".o"):
+    execute(argv)  # Not a real linker command
+
   if indexer_targets:
     if output_file.name not in indexer_targets:
       # Not a relevant linker command
@@ -460,9 +463,6 @@ def main(argv: list[str]) -> None:
   elif not fuzzing_engine_in_argv:
     # Not a fuzz target.
     execute(argv)
-
-  if output_file.name.endswith(".o"):
-    execute(argv)  # Not a real linker command
 
   print(f"Linking {argv}")
 
