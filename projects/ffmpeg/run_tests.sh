@@ -20,10 +20,10 @@
 
 set -e # Exit immediately if any command fails
 
-FFMPEG_SRC_DIR="/src/ffmpeg"
+PROJECT_SRC_DIR="/src/ffmpeg"
 
-echo "==> Changing to FFmpeg source directory: $FFMPEG_SRC_DIR"
-cd "$FFMPEG_SRC_DIR"
+echo "==> Changing to FFmpeg source directory: $PROJECT_SRC_DIR"
+cd "$PROJECT_SRC_DIR"
 
 echo "==> Running all FATE tests..."
 make fate
