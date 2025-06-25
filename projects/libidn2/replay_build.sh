@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake gettext libtool autopoint pkg-config gengetopt curl gperf rsync wget
+# This script is useful for OSS-Fuzz infrastructure which is used to rebuild
+# code from cached images. This is to support various ongoing efforts in
+# OSS-Fuzz.
 
-RUN git clone --recursive https://gitlab.com/libidn/libidn2.git
+cd $SRC/libidn2
+make -j$(nproc)
 
-WORKDIR libidn2
-COPY build.sh replay_build.sh $SRC/
+cd fuzz
+make oss-fuzz
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
