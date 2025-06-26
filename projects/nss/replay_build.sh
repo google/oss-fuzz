@@ -32,11 +32,9 @@ copy_fuzzer()
     cp ../dist/Debug/bin/$fuzzer $OUT/$name
 }
 
-# Modify the harness to make sure we recompile
-ninja -C /src/nss/out/Debug -v                                                
-                                                                               
-# Build the library only in TLS fuzzing mode.                                  
+# Rebuild the library using most recent cache
 cd $SRC/nss
+ninja -C /src/nss/out/Debug -v                                                
 
 # Copy dual mode targets in TLS mode.                                          
 for name in "${!tls_targets[@]}"; do
