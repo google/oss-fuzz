@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool libz-dev
-RUN git clone --depth 1 https://github.com/sleuthkit/sleuthkit sleuthkit
-WORKDIR sleuthkit
-COPY build.sh replay_build.sh $SRC/
+# This script is useful for OSS-Fuzz infrastructure which is used to rebuild
+# code from cached images. This is to support various ongoing efforts in
+# OSS-Fuzz.
+
+make -j$(nproc)
+
+# Copy the fuzzer binaries to the output directory.
+cp *_fuzzer ${OUT}
