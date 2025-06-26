@@ -248,7 +248,7 @@ def copy_fuzzing_engine() -> Path:
   fuzzing_engine_dir = SRC / PROJECT
   if not fuzzing_engine_dir.exists():
     fuzzing_engine_dir = SRC / 'fuzzing_engine'
-    fuzzing_engine_dir.mkdir()
+    fuzzing_engine_dir.mkdir(exist_ok=True)
 
   shutil.copy('/opt/indexer/fuzzing_engine.cc', fuzzing_engine_dir)
   return fuzzing_engine_dir
