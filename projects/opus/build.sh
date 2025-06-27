@@ -65,6 +65,8 @@ for build in "${BUILDS[@]}"; do
     # fuzzer's name
     [ -f tests/$fuzzer.options ] \
         && cp tests/$fuzzer.options $OUT/${fuzzer}_${build}.options
-    cp $SRC/zipped-corpus.zip $OUT/${fuzzer}_${build}_seed_corpus.zip
+    cp $SRC/zipped-corpus.zip $OUT/${fuzzer}_${build}_seed_corpus.zip &
   done
 done
+
+wait
