@@ -20,4 +20,5 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
+  - nallocfuzz
 

@@ -12,4 +12,5 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
+  - nallocfuzz
 main_repo: 'https://github.com/OISF/suricata.git'
