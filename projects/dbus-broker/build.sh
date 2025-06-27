@@ -37,6 +37,10 @@ apt-get update -y
 
 if [[ "$ARCHITECTURE" == i386 ]]; then
     apt-get install -y pkg-config:i386
+
+    RUST_TARGET=i686-unknown-linux-gnu
+    rustup target add "$RUST_TARGET"
+    export RUSTC="rustc --target=$RUST_TARGET"
 else
     apt-get install -y pkg-config
 fi
@@ -50,8 +54,7 @@ if [[ "$SANITIZER" == undefined ]]; then
     MESON_CXXFLAGS+=" $UBSAN_FLAGS"
 fi
 
-# meson is pinned to get around https://github.com/mesonbuild/meson/issues/14533
-pip3 install meson==1.7.2 ninja
+pip3 install meson ninja
 
 if ! CFLAGS="$MESON_CFLAGS" CXXFLAGS="$MESON_CXXFLAGS" LDFLAGS="$MESON_LDFLAGS" meson -Db_lundef=false -Dlauncher=false build; then
     cat build/meson-logs/meson-log.txt
