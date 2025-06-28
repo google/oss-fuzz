@@ -37,7 +37,7 @@ sed -i '/^target_export(libobs)$/c\
 if(NOT ENABLE_STATIC)\
   target_export(libobs)\
 endif()' libobs/CMakeLists.txt
-# 3) enable -fPIC on the static lib so it can be linked into .so’s
+# 3) enable -fPIC on the static lib so it can be linked
 sed -i '/add_library(libobs STATIC)/a \
 set_target_properties(libobs PROPERTIES POSITION_INDEPENDENT_CODE ON)' libobs/CMakeLists.txt
 # 4) build libobs-opengl as a static lib as well
