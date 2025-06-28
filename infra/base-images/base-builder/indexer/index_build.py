@@ -25,6 +25,7 @@ import pathlib
 from pathlib import Path  # pylint: disable=g-importing-member
 import shlex
 import shutil
+import stat
 import subprocess
 import tempfile
 from typing import Any, Sequence
@@ -642,6 +643,18 @@ def main():
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
+
+  # By default, this directory has o-rwx and its contents can't be deleted
+  # by a non-root user from outside the container. The rest of the files are
+  # unaffected because to delete a file, a write permission on its enclosing
+  # directory is sufficient regardless of the owner.
+  cdb_dir = OUT / 'cdb'
+  try:
+    cdb_dir.chmod(
+        cdb_dir.stat().st_mode | stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+    )
+  except OSError:
+    pass
 
 
 if __name__ == '__main__':
