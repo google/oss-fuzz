@@ -50,7 +50,8 @@ if [[ "$SANITIZER" == undefined ]]; then
     MESON_CXXFLAGS+=" $UBSAN_FLAGS"
 fi
 
-pip3 install meson ninja
+# meson is pinned to get around https://github.com/mesonbuild/meson/issues/14533
+pip3 install meson==1.7.2 ninja
 
 if ! CFLAGS="$MESON_CFLAGS" CXXFLAGS="$MESON_CXXFLAGS" LDFLAGS="$MESON_LDFLAGS" meson -Db_lundef=false -Dlauncher=false build; then
     cat build/meson-logs/meson-log.txt

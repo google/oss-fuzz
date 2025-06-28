@@ -31,6 +31,7 @@ OBJS = \
 	$(SUBDIROBJS) \
 	$(top_builddir)/src/common/libpgcommon_srv.a \
 	$(top_builddir)/src/port/libpgport_srv.a \
+        $(top_builddir)/src/backend/libpostgres.a \
 
 OBJS_FUZZERS = $(filter-out ../main/objfiles.txt, $(OBJS))
 
@@ -41,19 +42,19 @@ fuzzer: simple_query_fuzzer \
 	protocol_fuzzer
 
 simple_query_fuzzer json_parser_fuzzer: %: %.o fuzzer_initialize.o $(OBJS_FUZZERS)
-	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE) -lz
+	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ -l:libicui18n.a -l:libicuuc.a -l:libicudata.a $(LIB_FUZZING_ENGINE) -lz -lpthread -ldl -lrt
 
 simple_query_fuzzer.o json_parser_fuzzer.o protocol_fuzzer.o fuzzer_initialize.o: %.o: %.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^ 
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
 
 protocol_fuzzer: %: %.o $(OBJS_FUZZERS)
-	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE) -Wl,--wrap=exit -Wl,--wrap=pq_getbyte  -lz
+	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ -l:libicui18n.a -l:libicuuc.a -l:libicudata.a $(LIB_FUZZING_ENGINE) -Wl,--wrap=exit -Wl,--wrap=pq_getbyte -lz -lpthread -ldl -lrt
 
 dbfuzz: dbfuzz.o | submake-libpgport temp-install
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) $(LDFLAGS_EX) $(LIBS) -o $@ \
 	&& PATH="$(abs_top_builddir)/tmp_install$(bindir):$$PATH" LD_LIBRARY_PATH="$(abs_top_builddir)/tmp_install/usr/local/pgsql/lib" ./dbfuzz
 
-dbfuzz.o: dbfuzz.c $(top_builddir)/src/port/pg_config_paths.h 
+dbfuzz.o: dbfuzz.c $(top_builddir)/src/port/pg_config_paths.h
 dbfuzz.o: override CPPFLAGS := $(CPPFLAGS) -I$(top_builddir)/src/port -I$(top_builddir)/../src/test/regress '-DSHELLPROG="$(SHELL)"'
 
 $(top_builddir)/src/port/pg_config_paths.h: | submake-libpgport

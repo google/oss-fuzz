@@ -71,16 +71,20 @@ function build_fuzzers() {
       fi
       find $SOURCES -type f -a \( -name '*.[ch]' -o -name '*.inc' \) -exec cp --parents '{}' $DESTDIR/ \;
     fi
-    df
-    rm -rf * .git*
-    df
+
+    if [[ -z "${INDEXER_BUILD:-}" && -z "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
+      df
+      rm -rf * .git*
+      df
+    fi
 }
 
 cd $SRC/openssl/
 build_fuzzers ""
 
-# In introspector only build the master branch
-if [[ "$SANITIZER" == introspector ]]; then
+# In introspector, indexer builds and when capturing replay builds, only build
+# the master branch
+if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" || -n "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
   exit 0
 fi
 

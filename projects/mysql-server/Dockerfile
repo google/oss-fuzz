@@ -15,11 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update
-RUN apt-get install -y build-essential libssl-dev libncurses5-dev libncursesw5-dev make cmake perl bison pkg-config
+RUN apt-get update && apt-get install -y build-essential libssl-dev libncurses5-dev libncursesw5-dev make cmake perl bison pkg-config chrpath
 RUN git clone --depth 1 https://github.com/mysql/mysql-server
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fix.diff $SRC/
-COPY targets $SRC/mysql-server/fuzz
-RUN cd mysql-server && git apply ../fix.diff
+#TODO merge custom targets upstream
+#COPY targets $SRC/mysql-server/fuzz
+#RUN cd mysql-server && git apply ../fix.diff

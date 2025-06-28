@@ -39,9 +39,6 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.maxDiff = None  # pylint: disable=invalid-name
     self.setUpPyfakefs()
-    self.patcher = mock.patch('build_lib.get_unique_build_step_image_id',
-                              return_value='UNIQUE_ID')
-    self.mock_function = self.patcher.start()
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('build_lib.download_corpora_steps',
@@ -50,8 +47,10 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
               }])
   @mock.patch('build_project.get_datetime_now',
               return_value=test_utils.FAKE_DATETIME)
+  @mock.patch('build_lib.get_unique_build_step_image_id',
+              return_value='UNIQUE_ID')
   def test_get_coverage_build_steps(self, mock_url, mock_corpora_steps,
-                                    mock_get_datetime_now):
+                                    mock_get_datetime_now, mock_get_id):
     """Test for get_build_steps."""
     del mock_url, mock_corpora_steps, mock_get_datetime_now
     project_yaml_contents = (

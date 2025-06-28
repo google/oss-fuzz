@@ -42,16 +42,16 @@ COPY --from=base-clang /usr/local/bin/llvm-cov \
      /usr/local/bin/
 
 # Copy the pre-compiled Python binaries and libraries
-COPY --from=base-builder /usr/local/bin/python3.10 /usr/local/bin/python3.10
-COPY --from=base-builder /usr/local/lib/libpython3.10.so.1.0 /usr/local/lib/libpython3.10.so.1.0
-COPY --from=base-builder /usr/local/include/python3.10 /usr/local/include/python3.10
-COPY --from=base-builder /usr/local/lib/python3.10 /usr/local/lib/python3.10
+COPY --from=base-builder /usr/local/bin/python3.11 /usr/local/bin/python3.11
+COPY --from=base-builder /usr/local/lib/libpython3.11.so.1.0 /usr/local/lib/libpython3.11.so.1.0
+COPY --from=base-builder /usr/local/include/python3.11 /usr/local/include/python3.11
+COPY --from=base-builder /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=base-builder /usr/local/bin/pip3 /usr/local/bin/pip3
 
 # Create symbolic links to ensure compatibility
 RUN ldconfig && \
-    ln -s /usr/local/bin/python3.10 /usr/local/bin/python3 && \
-    ln -s /usr/local/bin/python3.10 /usr/local/bin/python
+    ln -s /usr/local/bin/python3.11 /usr/local/bin/python3 && \
+    ln -s /usr/local/bin/python3.11 /usr/local/bin/python
 
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
@@ -64,7 +64,7 @@ RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage
     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d && \
     pip3 install wheel && \
     # If version "Jinja2==2.10" is in requirements.txt, bump it to a patch version that
-    # supports upgrading its MarkupSafe dependency to a Python 3.10 compatible release:
+    # supports upgrading its MarkupSafe dependency to a Python 3.11 compatible release:
     sed -i 's/Jinja2==2.10/Jinja2==2.10.3/' requirements.txt && \
     pip3 install -r requirements.txt && \
     pip3 install MarkupSafe==2.0.1 && \

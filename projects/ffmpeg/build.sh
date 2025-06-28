@@ -64,7 +64,7 @@ meson_install() {
   cd $SRC/$1
   CFLAGS="$MESON_CFLAGS" CXXFLAGS="$MESON_CXXFLAGS" \
   meson setup build -Dprefix="$FFMPEG_DEPS_PATH" -Ddefault_library=static -Dprefer_static=true \
-                    --libdir "$LIBDIR" ${2:-}
+                    --wrap-mode=nofallback --libdir "$LIBDIR" ${2:-}
   meson compile -C build
   meson install -C build
 }
@@ -85,10 +85,10 @@ make clean
 make -j$(nproc)
 make install
 
-meson_install freetype
+meson_install freetype "-Dharfbuzz=disabled"
 meson_install fribidi "-Ddocs=false -Dtests=false"
 meson_install harfbuzz "-Ddocs=disabled -Dtests=disabled"
-meson_install fontconfig
+meson_install fontconfig "-Dtests=disabled -Dtools=disabled"
 
 cd $SRC/libass
 ./autogen.sh
@@ -218,9 +218,14 @@ fi
         --disable-shared \
         --disable-doc \
         --disable-programs \
+        --enable-demuxers \
         $FFMPEG_BUILD_ARGS
 make clean
 make -j$(nproc) install
+
+if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
+  exit 0
+fi
 
 # Download test samples, will be used as seed corpus.
 # DISABLED.
@@ -246,7 +251,7 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
       CONDITIONALS=(${CONDITIONALS[@]:0:2})
 fi
 for c in $CONDITIONALS; do
-      fuzzer_name=ffmpeg_BSF_${c}_fuzzer
+      fuzzer_name=$($SRC/name_mappings.py binary_name bsf ${c})
       symbol=$(echo $c | sed "s/.*/\L\0/")
       echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
       make tools/target_bsf_${symbol}_fuzzer
@@ -260,7 +265,7 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
       CONDITIONALS=(${CONDITIONALS[@]:0:2})
 fi
 for c in $CONDITIONALS; do
-      fuzzer_name=ffmpeg_AV_CODEC_ID_${c}_fuzzer
+      fuzzer_name=$($SRC/name_mappings.py binary_name decoder ${c})
       symbol=$(echo $c | sed "s/.*/\L\0/")
       echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
       make tools/target_dec_${symbol}_fuzzer
@@ -275,7 +280,7 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
 fi
 
 for c in $CONDITIONALS; do
-      fuzzer_name=ffmpeg_AV_CODEC_ID_${c}_fuzzer
+      fuzzer_name=$($SRC/name_mappings.py binary_name encoder ${c})
       symbol=$(echo $c | sed "s/.*/\L\0/")
       echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
       make tools/target_enc_${symbol}_fuzzer
@@ -284,19 +289,19 @@ done
 
 
 # Build fuzzer for sws
-fuzzer_name=ffmpeg_SWS_fuzzer
+fuzzer_name=$($SRC/name_mappings.py binary_name other SWS)
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
 make tools/target_sws_fuzzer
 mv tools/target_sws_fuzzer $OUT/${fuzzer_name}
 
 # Build fuzzer for swr
-fuzzer_name=ffmpeg_SWR_fuzzer
+fuzzer_name=$($SRC/name_mappings.py binary_name other SWR)
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
 make tools/target_swr_fuzzer
 mv tools/target_swr_fuzzer $OUT/${fuzzer_name}
 
 # Build fuzzer for demuxer
-fuzzer_name=ffmpeg_DEMUXER_fuzzer
+fuzzer_name=$($SRC/name_mappings.py binary_name other DEM)
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
 make tools/target_dem_fuzzer
 mv tools/target_dem_fuzzer $OUT/${fuzzer_name}
@@ -311,11 +316,11 @@ zip -r $OUT/ffmpeg_AV_CODEC_ID_HEVC_fuzzer_seed_corpus.zip fate-suite/hevc fate-
 zip -r $OUT/ffmpeg_AV_CODEC_ID_FFV1_fuzzer_seed_corpus.zip ffv1testset
 
 # Build fuzzer for demuxer fed at IO level
-fuzzer_name=ffmpeg_IO_DEMUXER_fuzzer
+fuzzer_name=$($SRC/name_mappings.py binary_name other IO_DEM)
 make tools/target_io_dem_fuzzer
 mv tools/target_io_dem_fuzzer $OUT/${fuzzer_name}
 
-#Build fuzzers for individual demuxers
+# Reduce size of demuxer fuzzers by disabling various components.
 ./configure \
         --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
         --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
@@ -356,7 +361,7 @@ if [ -n "${OSS_FUZZ_CI-}" ]; then
 fi
 
 for c in $CONDITIONALS; do
-      fuzzer_name=ffmpeg_dem_${c}_fuzzer
+      fuzzer_name=$($SRC/name_mappings.py binary_name demuxer ${c})
       symbol=$(echo $c | sed "s/.*/\L\0/")
       make tools/target_dem_${symbol}_fuzzer
       mv tools/target_dem_${symbol}_fuzzer $OUT/${fuzzer_name}

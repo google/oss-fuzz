@@ -48,6 +48,8 @@ RUN rustup default nightly
 
 RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
 
+# PW_PROJECT_ROOT is used in requirements.build.txt
+ENV PW_PROJECT_ROOT=$SRC/connectedhomeip
 
 # Ensure global python has access to build requirements
 RUN pip3 install -r connectedhomeip/scripts/setup/requirements.build.txt

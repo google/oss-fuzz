@@ -22,11 +22,20 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$WORK" \
       -DBUILD_SHARED_LIBS=OFF \
       -DBUILD_CLAR=OFF \
       -DUSE_HTTPS=OFF \
+      -DUSE_AUTH_NTLM=OFF \
       -DUSE_SSH=OFF \
       -DUSE_BUNDLED_ZLIB=ON \
 
 make -j$(nproc)
 make install
+
+# Compile the shared fuzzer_utils.c
+$CC $CFLAGS -c \
+    -I./src -I./src/util -I./include/ -I./include/git2 \
+    -I../src/libgit2 -I../src/util -I../include \
+    -I../fuzzers \
+    ../fuzzers/fuzzer_utils.c -o "$WORK/fuzzer_utils.o"
+
 for fuzzer in ../fuzzers/*_fuzzer.c
 do
     fuzzer_name=$(basename "${fuzzer%.c}")
@@ -34,10 +43,11 @@ do
     $CC $CFLAGS -c \
         -I./src -I./src/util -I./include/ -I./include/git2 \
         -I../src/libgit2 -I../src/util -I../include \
+        -I../fuzzers \
         "$fuzzer" -o "$WORK/$fuzzer_name.o"
 
     $CXX $CXXFLAGS -std=c++11 -o "$OUT/$fuzzer_name" \
-        $LIB_FUZZING_ENGINE "$WORK/$fuzzer_name.o" "$WORK/lib/libgit2.a"
+        $LIB_FUZZING_ENGINE "$WORK/$fuzzer_name.o" "$WORK/fuzzer_utils.o" "$WORK/lib/libgit2.a"
 
     zip -j "$OUT/${fuzzer_name}_seed_corpus.zip" \
         ../fuzzers/corpora/${fuzzer_name%_fuzzer}/*
