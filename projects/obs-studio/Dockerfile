@@ -16,8 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+RUN apt-get update 
+
 # Install OBS dependencies and ffmpeg build dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     # OBS dependencies
     libx264-dev libcurl4-openssl-dev libmbedtls-dev libgl1-mesa-dev libjansson-dev \
     libluajit-5.1-dev python3-dev libx11-dev libxcb-randr0-dev libxcb-shm0-dev libxcb-xinerama0-dev \
