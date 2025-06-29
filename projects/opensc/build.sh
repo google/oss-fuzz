@@ -15,9 +15,24 @@
 #
 ################################################################################
 
+# Build OpenPACE
+if [ -d "openpace" ]; then
+    rm -rf "openpace"
+fi
+git clone https://github.com/frankmorgner/openpace.git
+pushd openpace
+autoreconf --verbose --install
+./configure --enable-static --disable-shared --prefix=/usr
+make
+make install
+popd
+
+# enable internal and old drivers
+sed -i '/^#ifdef OPENSC_CONFIG_STRING/i #define OPENSC_CONFIG_STRING "app default { card_drivers = old, internal; }"' src/libopensc/ctx.c
+
 ./bootstrap
 # FIXME FUZZING_LIBS="$LIB_FUZZING_ENGINE" fails with some missing C++ library, I don't know how to fix this
-./configure --disable-optimization --disable-shared --disable-pcsc --enable-ctapi --enable-fuzzing FUZZING_LIBS="$LIB_FUZZING_ENGINE"
+./configure --disable-optimization --enable-static --disable-shared --disable-pcsc --enable-ctapi --enable-openpace --enable-fuzzing FUZZING_LIBS="$LIB_FUZZING_ENGINE"
 make -j4
 
 fuzzerFiles=$(find $SRC/opensc/src/tests/fuzzing/ -name "fuzz_*.c")
