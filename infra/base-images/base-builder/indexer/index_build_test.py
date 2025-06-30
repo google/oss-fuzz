@@ -36,7 +36,7 @@ OSS_FUZZ_DIR = THIS_DIR.parent.parent.parent.parent
 class IndexBuildTest(unittest.TestCase):
 
   def _build_project(
-      self, project: str, *additional_args
+      self, project: str, *additional_args, compressed: bool
   ) -> Sequence[pathlib.Path]:
     subprocess.run(
         ('python3', 'infra/helper.py', 'build_image', '--no-pull', project),
@@ -62,11 +62,16 @@ class IndexBuildTest(unittest.TestCase):
     if additional_args:
       docker_args.extend(additional_args)
 
+    file_suffix = '.tar'
+    if compressed:
+      docker_args.append('--compressed')
+      file_suffix = '.tgz'
+
     subprocess.run(docker_args, cwd=OSS_FUZZ_DIR, check=True)
     return [
         file
         for file in out_dir.iterdir()
-        if file.suffix == '.tar' and file.name.startswith(project)
+        if file.suffix == file_suffix and file.name.startswith(project)
     ]
 
   def _check_archive(self, archive_path: pathlib.Path):
@@ -113,17 +118,22 @@ class IndexBuildTest(unittest.TestCase):
 
   def test_basic_build(self):
     """Test basic build."""
-    archives = self._build_project('expat')
-    self.assertGreater(len(archives), 0)
-    for archive in archives:
-      self._check_archive(archive)
+    for compressed in (False, True):
+      archives = self._build_project('expat', compressed=compressed)
+      self.assertGreater(len(archives), 0)
+      for archive in archives:
+        self._check_archive(archive)
 
   def test_build_with_target_allowlist(self):
     """Test basic build with target allowlist."""
-    archives = self._build_project(
-        'expat', '--targets', 'xml_parse_fuzzer_UTF-8'
-    )
-    self.assertEqual(len(archives), 1)
-    self.assertIn('xml_parse_fuzzer_UTF-8', archives[0].name)
-    for archive in archives:
-      self._check_archive(archive)
+    for compressed in (False, True):
+      archives = self._build_project(
+          'expat',
+          '--targets',
+          'xml_parse_fuzzer_UTF-8',
+          compressed=compressed,
+      )
+      self.assertEqual(len(archives), 1)
+      self.assertIn('xml_parse_fuzzer_UTF-8', archives[0].name)
+      for archive in archives:
+        self._check_archive(archive)
