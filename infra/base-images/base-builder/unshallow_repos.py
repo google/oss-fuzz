@@ -36,12 +36,20 @@ def main():
       repo = subprocess.check_output(['git', 'remote', 'get-url', 'origin'],
                                      cwd=subdir).decode().strip()
       if _normalize_repo(repo) in repos:
+        if not _is_shallow_repo(subdir):
+          continue
         print(f'Unshallowing {repo} at {subdir}.')
         subprocess.check_call(['git', 'fetch', '--unshallow'], cwd=subdir)
 
 
 def _normalize_repo(repo: str) -> str:
   return re.sub(r'(.git)?/?$', '', repo)
+
+
+def _is_shallow_repo(directory: pathlib.Path):
+  return subprocess.check_output(
+      ['git', 'rev-parse', '--is-shallow-repository'],
+      cwd=directory).decode().strip() == 'true'
 
 
 if __name__ == '__main__':
