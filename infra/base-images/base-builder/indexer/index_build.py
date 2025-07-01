@@ -25,6 +25,7 @@ import pathlib
 from pathlib import Path  # pylint: disable=g-importing-member
 import shlex
 import shutil
+import stat
 import subprocess
 import tempfile
 from typing import Any, Sequence
@@ -439,7 +440,7 @@ def copy_shared_libraries(
       raise e
 
 
-def archive_target(target: BinaryMetadata) -> Path | None:
+def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
   """Archives a single target in the project using the exported rootfs."""
   logging.info('archive_target %s', target.name)
   index_dir = INDEXES_PATH / target.build_id
@@ -473,7 +474,7 @@ def archive_target(target: BinaryMetadata) -> Path | None:
 
     set_interpreter(target_path, lib_mount_path)
     set_target_rpath(target_path, lib_mount_path)
-    archive_path = SNAPSHOT_DIR / f'{uuid}.tar'
+    archive_path = SNAPSHOT_DIR / f'{uuid}{file_extension}'
     # For `/` in $PROJECT.
     archive_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -510,6 +511,7 @@ def test_and_archive(
     target_args: list[str],
     target_env: dict[str, str],
     targets_to_index: Sequence[str] | None,
+    file_extension: str,
 ):
   """Test target and archive."""
   targets = enumerate_build_targets(target_args, target_env)
@@ -531,7 +533,7 @@ def test_and_archive(
     except Exception:  # pylint: disable=broad-exception-caught
       logging.exception('Error testing target.')
       continue
-    archive_target(target)
+    archive_target(target, file_extension)
 
 
 def clear_out():
@@ -597,6 +599,11 @@ def main():
       action='append',
       help='An argument to pass to the `compile` script.',
   )
+  parser.add_argument(
+      '--compressed',
+      action='store_true',
+      help='Use gzipped tar (.tgz) for the output snapshot',
+  )
   args = parser.parse_args()
 
   # Clean up the existing OUT by default, otherwise we may run into various
@@ -638,10 +645,23 @@ def main():
     logging.info('No target env specified.')
     target_env = {}
 
-  test_and_archive(target_args, target_env, targets_to_index)
+  file_extension = '.tgz' if args.compressed else '.tar'
+  test_and_archive(target_args, target_env, targets_to_index, file_extension)
 
   for snapshot in SNAPSHOT_DIR.iterdir():
     shutil.move(str(snapshot), OUT)
+
+  # By default, this directory has o-rwx and its contents can't be deleted
+  # by a non-root user from outside the container. The rest of the files are
+  # unaffected because to delete a file, a write permission on its enclosing
+  # directory is sufficient regardless of the owner.
+  cdb_dir = OUT / 'cdb'
+  try:
+    cdb_dir.chmod(
+        cdb_dir.stat().st_mode | stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+    )
+  except OSError:
+    pass
 
 
 if __name__ == '__main__':

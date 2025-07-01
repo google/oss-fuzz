@@ -140,7 +140,7 @@ def main():
   with open('/usr/bin/git', 'w') as f:
     f.write(
         create_wrapper("""
-  if any(arg in ('clean', 'clone', 'reset', 'apply') for arg in sys.argv[1:]):
+  if any(arg in ('clean', 'clone', 'reset', 'apply', 'submodule') for arg in sys.argv[1:]):
     sys.exit(0)
 """))
 

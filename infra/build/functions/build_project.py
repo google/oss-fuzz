@@ -562,7 +562,10 @@ def get_indexer_build_steps(project_name,
           # Link /out to the actual $OUT and actually create it in the
           # container's filesystem since it's a mount.
           'rm -rf /out && ln -s $$OUT /out && '
-          'umount /workspace && mkdir -p $$OUT'
+          'umount /workspace && mkdir -p $$OUT && '
+          # Unshallow the main repository so we have easy access to the git
+          # history.
+          f'/usr/local/bin/unshallow_repos.py {project.main_repo}'
       ],
       'env': env,
   }

@@ -182,6 +182,7 @@ COPY bazel_build_fuzz_tests \
     replay_build.sh \
     srcmap \
     write_labels.py \
+    unshallow_repos.py \
     /usr/local/bin/
 
 # TODO: Build this as part of a multi-stage build.
