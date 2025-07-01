@@ -69,12 +69,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t first_size = (*(size_t*)data) % 64000;
   size_t second_size = (*(size_t*)(data + sizeof(size_t))) % 64000;
 
-  //printf("First size: %zu, Second size: %zu\n", first_size, second_size);
-  //printf("Total size: %zu\n", size);
   data += 2*sizeof(size_t); // Move past the first two integers
   size -= 2*sizeof(size_t); // Adjust size to account for the first two integers
   size_t total_size_needed = first_size + second_size;
-  //printf("Total size needed: %zu\n", total_size_needed);
   if (size <= total_size_needed) {
     return 0;
   }
