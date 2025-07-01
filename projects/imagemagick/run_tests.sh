@@ -16,7 +16,7 @@
 ################################################################################
 
 # Usage: bash run_test.sh 
-# Runs all tests (same as 'make fate') and compiles if not compiled.
+# Runs all tests.
 
 set -e # Exit immediately if any command fails
 
