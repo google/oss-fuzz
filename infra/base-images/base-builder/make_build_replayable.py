@@ -100,11 +100,12 @@ def main():
     sys.exit(0)
 """))
 
-  # Stub out cmake, but allow cmake --build.
+  # Stub out cmake, but allow cmake --build, -E (command mode), -P (script
+  # mode).
   with open('/usr/bin/cmake', 'w') as f:
     f.write(
         create_wrapper("""
-  if not any(arg == '--build' for arg in sys.argv[1:]):
+  if not any(arg in ('--build', '-E', '-P') for arg in sys.argv[1:]):
     sys.exit(0)
 """))
   shutil.copyfile('/usr/bin/cmake', '/usr/local/bin/cmake')
