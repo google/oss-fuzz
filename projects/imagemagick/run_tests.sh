@@ -20,14 +20,13 @@
 
 set -e # Exit immediately if any command fails
 
-PROJECT_SRC_DIR="/src/imagemagick"
+PROJECT_SRC_DIR="$SRC/imagemagick"
 
 echo "==> Changing to ImageMagick source directory: $PROJECT_SRC_DIR"
 cd "$PROJECT_SRC_DIR"
 
 echo "==> Setup needed right now..."  # DO NOT SUBMIT
-./configure --with-quantum-depth=16 --disable-shared --enable-hdri=yes --with-frozenpaths=no 
-make -j$(nproc)
+./configure
 echo "==> Setup finished successfully."  # DO NOT SUBMIT
 
 echo "==> Running all tests..."
