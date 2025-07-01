@@ -16,11 +16,11 @@
 ################################################################################
 
 # Usage: bash run_test.sh 
-# Runs all tests (same as 'make fate') and compiles if not compiled.
+# Runs all tests.
 
 set -e # Exit immediately if any command fails
 
-PROJECT_SRC_DIR="/src/ffmpeg"
+PROJECT_SRC_DIR="$SRC/ffmpeg"
 
 echo "==> Changing to FFmpeg source directory: $PROJECT_SRC_DIR"
 cd "$PROJECT_SRC_DIR"
