@@ -19,7 +19,7 @@ mkdir -p build
 cd build
 
 cmake -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE=Release ..
-make -j4
+make -j$(nproc)
 
 ar rcs $OUT/libvulkan.a $SRC/vulkan-loader/build/loader/CMakeFiles/vulkan.dir/*.o
 
@@ -35,3 +35,12 @@ for fuzzers in $(find $SRC -name '*_fuzzer.c'); do
 
     zip -q $OUT/${fuzz_basename}_seed_corpus.zip $SRC/vulkan-loader/tests/corpus/*
 done
+
+$CC $CXXFLAGS -I$SRC/vulkan-loader/loader \
+    -I$SRC/vulkan-loader/loader/generated \
+    -I$SRC/vulkan-headers/include \
+    -DSPLIT_INPUT \
+    -c $SRC/instance_enumerate_fuzzer.c -o instance_enumerate_fuzzer_split_input.o
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE instance_enumerate_fuzzer_split_input.o \
+    -o $OUT/instance_enumerate_fuzzer_split_input -lpthread $OUT/libvulkan.a
