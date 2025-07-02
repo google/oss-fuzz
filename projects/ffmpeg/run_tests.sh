@@ -26,5 +26,5 @@ echo "==> Changing to FFmpeg source directory: $PROJECT_SRC_DIR"
 cd "$PROJECT_SRC_DIR"
 
 echo "==> Running all FATE tests..."
-make fate
+time make -k -j"$(nproc)" fate
 echo "==> Test run finished successfully."
