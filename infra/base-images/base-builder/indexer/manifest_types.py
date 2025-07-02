@@ -353,6 +353,9 @@ class Manifest:
       overwrite: bool = True,
   ) -> None:
     """Saves a build archive with this Manifest."""
+    if os.path.exists(archive_path) and not overwrite:
+      raise FileExistsError(f"Not overwriting existing archive {archive_path}")
+
     self.validate()
 
     if not hasattr(self.binary_config, "binary_name"):
@@ -433,10 +436,7 @@ class Manifest:
           except Exception:  # pylint: disable=broad-except
             logging.exception("Failed to report missing source files.")
 
-      if os.path.exists(archive_path) and not overwrite:
-        logging.warning("Skipping existing archive %s", archive_path)
-      else:
-        shutil.copyfile(tmp.name, archive_path)
+      shutil.copyfile(tmp.name, archive_path)
 
 
 def report_missing_source_files(
