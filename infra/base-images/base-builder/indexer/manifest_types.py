@@ -399,6 +399,8 @@ class Manifest:
                   arcname=prefix + str(file.relative_to(path)),
               )
 
+        # Make sure the manifest is the first file in the archive to avoid
+        # seeking when we only need the manifest.
         _add_string_to_tar(
             tar,
             MANIFEST_PATH.as_posix(),
@@ -408,7 +410,12 @@ class Manifest:
             ),
         )
 
+        # Make sure the index database (the only file directly in `INDEX_DIR`)
+        # is early in the archive for the same reason.
+        _save_dir(index_dir, INDEX_DIR)
+
         _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
+
         # Only include the relevant target for the snapshot, to save on disk
         # space.
         _save_dir(
@@ -416,7 +423,7 @@ class Manifest:
             OBJ_DIR,
             only_include_target=self.binary_config.binary_name,
         )
-        _save_dir(index_dir, INDEX_DIR)
+
         if self.binary_config.kind == BinaryConfigKind.OSS_FUZZ:
           copied_files = [tar_info.name for tar_info in tar.getmembers()]
           try:
