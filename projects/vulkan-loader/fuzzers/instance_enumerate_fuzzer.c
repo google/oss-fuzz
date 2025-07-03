@@ -16,12 +16,14 @@ limitations under the License.
 
 #include "cJSON.h"
 #include "loader.h"
+#include "fuzz_header.h"
 
 #define MAX_SIZE = 64000
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
   setenv("HOME", "/tmp", 1);
   system("mkdir -p $HOME/.local/share/vulkan/implicit_layer.d");
   system("mkdir -p $HOME/.local/share/vulkan/loader_settings.d");
+  return 0;
 }
 
 /*

@@ -15,6 +15,9 @@
 # limitations under the License.
 #
 ################################################################################
+
+git apply --ignore-space-change --ignore-whitespace $SRC/fuzz-patch.diff
+
 mkdir -p build
 cd build
 
@@ -25,19 +28,17 @@ make -j$(nproc)
 
 ar rcs $OUT/libvulkan.a $SRC/vulkan-loader/build/loader/CMakeFiles/vulkan.dir/*.o
 
-for fuzzers in $(find $SRC -name '*_fuzzer.c'); do
-    fuzz_basename=$(basename -s .c $fuzzers)
-    $CC $CXXFLAGS -I$SRC/vulkan-loader/loader \
-        -I$SRC/vulkan-loader/loader/generated \
-        -I$SRC/vulkan-headers/include \
-        -c $fuzzers -o $fuzz_basename.o
-   
-    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzz_basename.o \
-        -o $OUT/$fuzz_basename -lpthread $OUT/libvulkan.a
+$CC $CFLAGS -I$SRC/vulkan-loader/loader \
+    -I$SRC/vulkan-loader/loader/generated \
+    -I$SRC/vulkan-headers/include \
+    -I$SRC/ \
+    -DENABLE_FILE_CALLBACK \
+    -c $SRC/instance_create_advanced_fuzzer.c -o instance_create_advanced_fuzzer.o
 
-    zip -q $OUT/${fuzz_basename}_seed_corpus.zip $SRC/vulkan-loader/tests/corpus/*
-    cp $SRC/vulkan-keywords.dict $OUT/$fuzz_basename.dict
-done
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE instance_create_advanced_fuzzer.o \
+    -o $OUT/instance_create_advanced_fuzzer -lpthread $OUT/libvulkan.a
+zip -q $OUT/instance_create_advanced_fuzzer_seed_corpus.zip $SRC/vulkan-loader/tests/corpus/*
+cp $SRC/vulkan-keywords.dict $OUT/instance_create_advanced_fuzzer.dict
 
 $CC $CXXFLAGS -I$SRC/vulkan-loader/loader \
     -I$SRC/vulkan-loader/loader/generated \
@@ -48,3 +49,17 @@ $CC $CXXFLAGS -I$SRC/vulkan-loader/loader \
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE instance_enumerate_fuzzer_split_input.o \
     -o $OUT/instance_enumerate_fuzzer_split_input -lpthread $OUT/libvulkan.a
 cp $SRC/vulkan-keywords.dict $OUT/instance_enumerate_fuzzer_split_input.dict
+
+for fuzzer in instance_create_fuzzer json_load_fuzzer settings_fuzzer instance_enumerate_fuzzer; do
+    #fuzz_basename=$(basename -s .c $fuzzers)
+    $CC $CXXFLAGS -I$SRC/vulkan-loader/loader \
+        -I$SRC/vulkan-loader/loader/generated \
+        -I$SRC/vulkan-headers/include \
+        -c $SRC/$fuzzer.c -o $fuzzer.o
+
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.o \
+        -o $OUT/$fuzzer -lpthread $OUT/libvulkan.a
+
+    zip -q $OUT/${fuzzer}_seed_corpus.zip $SRC/vulkan-loader/tests/corpus/*
+    cp $SRC/vulkan-keywords.dict $OUT/$fuzzer.dict
+done
