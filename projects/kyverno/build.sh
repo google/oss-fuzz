@@ -15,4 +15,12 @@
 #
 ################################################################################
 
+cd "$SRC"/go-118-fuzz-build
+go build
+rm "$GOPATH"/bin/go-118-fuzz-build
+mv go-118-fuzz-build "$GOPATH"/bin/
+
+cd "$SRC"/kyverno
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
+
 $SRC/kyverno/test/fuzz/oss_fuzz_build.sh

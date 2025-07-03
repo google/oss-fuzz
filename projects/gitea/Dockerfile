@@ -16,5 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone https://github.com/go-gitea/gitea
+RUN git clone --depth=1 --branch=november-backup https://github.com/AdamKorcz/go-118-fuzz-build
 COPY build.sh $SRC/
 WORKDIR $SRC/gitea

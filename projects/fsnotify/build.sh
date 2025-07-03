@@ -15,9 +15,15 @@
 #
 ################################################################################
 
+cd "$SRC"/go-118-fuzz-build
+go build
+rm "$GOPATH"/bin/go-118-fuzz-build
+mv go-118-fuzz-build "$GOPATH"/bin/
+
+cd "$SRC"/fsnotify
+
 cp $SRC/fuzz_test.go ./
-go mod tidy
 printf "package fsnotify\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > register.go
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build="$SRC"/go-118-fuzz-build
 go mod tidy
-echo building
 compile_native_go_fuzzer github.com/fsnotify/fsnotify FuzzInotify FuzzInotify
