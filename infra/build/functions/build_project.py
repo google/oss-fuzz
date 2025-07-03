@@ -586,6 +586,9 @@ def get_indexer_build_steps(project_name,
               # index_build.py CFLAGS)
               '-c',
               'ENV CFLAGS "$$CFLAGS -O0 -glldb"',
+              # Make sure the compiler wrapper is in $PATH.
+              '-c',
+              'ENV PATH "/opt/indexer:$$PATH"',
               _INDEXED_CONTAINER_NAME,
               _indexer_built_image_name(project.name) + f':{timestamp}'
           ],
