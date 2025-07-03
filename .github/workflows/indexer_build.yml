@@ -6,11 +6,11 @@ permissions:
 on:
   pull_request:
     paths:
-      - 'infra/base-images/indexer/**'
+      - 'infra/indexer/**'
       - '.github/workflows/indexer_build.yml'
 
 jobs:
-  'indexer':
+  indexer:
     runs-on: ubuntu-latest
     permissions:
       actions: write
@@ -26,4 +26,4 @@ jobs:
 
       - name: Build indexer
         run: docker build -t indexer .
-        working-directory: 'infra/base-images/indexer'
+        working-directory: 'infra/indexer'
