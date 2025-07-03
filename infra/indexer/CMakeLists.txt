@@ -115,7 +115,6 @@ target_link_libraries(frontend PUBLIC
     clangBasic
     clangFrontend
     clangLex
-    clangSema
     clangTooling
     index
     merge_queue
@@ -130,11 +129,6 @@ target_link_libraries(indexer PRIVATE
     absl::log_initialize
     absl::check
     absl::string_view
-    LLVMSupport
-    clangTooling
-    frontend
-    index
-    merge_queue
     -static
 )
 
