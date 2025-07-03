@@ -153,7 +153,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     return corpus_dir
 
   def _get_build_name(self, name):
-    return f'{self.config.sanitizer}-{name}'
+    return f'{self.config.sanitizer}-{self.config.fuzzing_engine}-{name}'
 
   def _get_corpus_name(self, target_name):  # pylint: disable=no-self-use
     """Returns the name of the corpus artifact."""
