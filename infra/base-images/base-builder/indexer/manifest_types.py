@@ -353,6 +353,9 @@ class Manifest:
       overwrite: bool = True,
   ) -> None:
     """Saves a build archive with this Manifest."""
+    if os.path.exists(archive_path) and not overwrite:
+      raise FileExistsError(f"Not overwriting existing archive {archive_path}")
+
     self.validate()
 
     if not hasattr(self.binary_config, "binary_name"):
@@ -399,6 +402,8 @@ class Manifest:
                   arcname=prefix + str(file.relative_to(path)),
               )
 
+        # Make sure the manifest is the first file in the archive to avoid
+        # seeking when we only need the manifest.
         _add_string_to_tar(
             tar,
             MANIFEST_PATH.as_posix(),
@@ -408,7 +413,12 @@ class Manifest:
             ),
         )
 
+        # Make sure the index database (the only file directly in `INDEX_DIR`)
+        # is early in the archive for the same reason.
+        _save_dir(index_dir, INDEX_DIR)
+
         _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
+
         # Only include the relevant target for the snapshot, to save on disk
         # space.
         _save_dir(
@@ -416,7 +426,7 @@ class Manifest:
             OBJ_DIR,
             only_include_target=self.binary_config.binary_name,
         )
-        _save_dir(index_dir, INDEX_DIR)
+
         if self.binary_config.kind == BinaryConfigKind.OSS_FUZZ:
           copied_files = [tar_info.name for tar_info in tar.getmembers()]
           try:
@@ -426,10 +436,7 @@ class Manifest:
           except Exception:  # pylint: disable=broad-except
             logging.exception("Failed to report missing source files.")
 
-      if os.path.exists(archive_path) and not overwrite:
-        logging.warning("Skipping existing archive %s", archive_path)
-      else:
-        shutil.copyfile(tmp.name, archive_path)
+      shutil.copyfile(tmp.name, archive_path)
 
 
 def report_missing_source_files(
