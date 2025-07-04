@@ -88,7 +88,9 @@ def get_base_image_steps(images: Sequence[ImageConfig],
     image = base_image.full_image_name
     tagged_image = image + ':' + MAJOR_TAG
     steps.append(
-        build_lib.get_docker_build_step([image, tagged_image], base_image.path, build_args=base_image.build_args))
+        build_lib.get_docker_build_step([image, tagged_image],
+                                        base_image.path,
+                                        build_args=base_image.build_args))
   return steps
 
 
