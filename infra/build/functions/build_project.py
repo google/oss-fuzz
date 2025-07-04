@@ -584,8 +584,18 @@ def get_indexer_build_steps(project_name,
               'ENV REPLAY_ENABLED 1',
               # Add CFLAGS that enable debugging (this should match the
               # index_build.py CFLAGS)
+              # TODO(ochang): Figure out how to just re-use the cflags from there instead of
+              # duplicating them here.
               '-c',
-              'ENV CFLAGS "$$CFLAGS -O0 -glldb"',
+              ('ENV CFLAGS "$$CFLAGS '
+               '-fno-omit-frame-pointer '
+               '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
+               '-O0 -glldb '
+               '-fsanitize=address '
+               '-Wno-invalid-offsetof '
+               '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
+               '-gen-cdb-fragment-path $$OUT/cdb '
+               '-Qunused-arguments"'),
               # Make sure the compiler wrapper is in $PATH.
               '-c',
               'ENV PATH "/opt/indexer:$$PATH"',
