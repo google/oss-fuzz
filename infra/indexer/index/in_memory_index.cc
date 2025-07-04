@@ -148,6 +148,10 @@ void ReportEntity(std::ostream& os, const Entity& entity,
                   const Accessor<Entity, EntityId>& entities,
                   const Accessor<Location, LocationId>& locations,
                   int depth = 1) {
+  if (depth > 5) {
+    os << "...chain continues (a cycle?)...";
+    return;
+  }
   for (int i = 0; i < depth; ++i) {
     os << "  ";
   }
