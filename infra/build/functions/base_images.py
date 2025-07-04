@@ -14,6 +14,7 @@
 #
 ################################################################################
 """Cloud function to build base images on Google Cloud Builder."""
+from collections.abc import Sequence
 import logging
 import os
 
@@ -21,21 +22,6 @@ import google.auth
 
 import build_lib
 
-BASE_IMAGES = [
-    'base-image',
-    'base-clang',
-    'base-builder',
-    'base-builder-go',
-    'base-builder-javascript',
-    'base-builder-jvm',
-    'base-builder-python',
-    'base-builder-ruby',
-    'base-builder-rust',
-    'base-builder-ruby',
-    'base-builder-swift',
-    'base-runner',
-    'base-runner-debug',
-]
 BASE_PROJECT = 'oss-fuzz-base'
 TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
@@ -45,22 +31,66 @@ MANIFEST_IMAGES = [
 TIMEOUT = str(6 * 60 * 60)
 
 
+class ImageConfig:
+  name: str
+  path: str
+  build_args: Sequence[str] | None
+
+  def __init__(self,
+               name: str,
+               path: str | None = None,
+               build_args: Sequence[str] | None = None):
+    self.name = name
+    if path:
+      self.path = path
+    else:
+      self.path = get_base_image_path(name)
+
+    self.build_args = build_args
+
+  @property
+  def full_image_name(self):
+    return TAG_PREFIX + self.name
+
+
 def get_base_image_path(image_name):
   """Returns the path to the directory containing the Dockerfile of the base
   image."""
   return os.path.join('infra', 'base-images', image_name)
 
 
-def get_base_image_steps(images, tag_prefix=TAG_PREFIX):
+BASE_IMAGES = [
+    ImageConfig('base-image'),
+    ImageConfig('base-clang'),
+    ImageConfig('base-clang-full',
+                path=get_base_image_path('base-clang'),
+                build_args=('FULL_LLVM_BUILD=1',)),
+    ImageConfig('indexer', path=os.path.join('infra', 'indexer')),
+    ImageConfig('base-builder'),
+    ImageConfig('base-builder-go'),
+    ImageConfig('base-builder-javascript'),
+    ImageConfig('base-builder-jvm'),
+    ImageConfig('base-builder-python'),
+    ImageConfig('base-builder-ruby'),
+    ImageConfig('base-builder-rust'),
+    ImageConfig('base-builder-swift'),
+    ImageConfig('base-runner'),
+    ImageConfig('base-runner-debug'),
+]
+
+
+def get_base_image_steps(images: Sequence[ImageConfig],
+                         tag_prefix: str = TAG_PREFIX) -> list[dict]:
   """Returns build steps for given images."""
   steps = [build_lib.get_git_clone_step()]
 
   for base_image in images:
-    image = tag_prefix + base_image
+    image = base_image.full_image_name
     tagged_image = image + ':' + MAJOR_TAG
-    image_path = get_base_image_path(base_image)
     steps.append(
-        build_lib.get_docker_build_step([image, tagged_image], image_path))
+        build_lib.get_docker_build_step([image, tagged_image],
+                                        base_image.path,
+                                        build_args=base_image.build_args))
   return steps
 
 
@@ -145,6 +175,5 @@ def base_builder(event, context):
   logging.basicConfig(level=logging.INFO)
 
   steps = get_base_image_steps(BASE_IMAGES)
-  steps.extend(get_images_architecture_manifest_steps())
-  images = [TAG_PREFIX + base_image for base_image in BASE_IMAGES]
+  images = [base_image.full_image_name for base_image in BASE_IMAGES]
   run_build(steps, images)
