@@ -33,7 +33,7 @@ namespace indexer {
 class FileCopier {
  public:
   FileCopier(absl::string_view base_path, absl::string_view index_path,
-             const std::vector<std::string>& extra_paths, bool dry_run = false);
+             const std::vector<std::string>& extra_paths);
   FileCopier(const FileCopier&) = delete;
 
   // Rewrites a path into the representation it will have in the index
@@ -41,17 +41,18 @@ class FileCopier {
   std::string ToIndexPath(absl::string_view path) const;
 
   // `index_path` is expected to be produced by `ToIndexPath`.
-  void CopyFileIfNecessary(absl::string_view index_path);
+  void RegisterIndexedFile(absl::string_view index_path);
+
+  // Single-threaded.
+  void CopyIndexedFiles();
 
  private:
   std::string base_path_;
   std::vector<std::string> extra_paths_;
   const std::filesystem::path index_path_;
-  bool dry_run_;
 
   absl::Mutex mutex_;
-  absl::flat_hash_set<std::filesystem::path> indexed_files_
-      ABSL_GUARDED_BY(mutex_);
+  absl::flat_hash_set<std::string> indexed_files_ ABSL_GUARDED_BY(mutex_);
 };
 
 }  // namespace indexer

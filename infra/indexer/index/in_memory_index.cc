@@ -280,7 +280,7 @@ LocationId InMemoryIndex::GetLocationId(const Location& location) {
   auto [iter, inserted] = locations_.insert({new_location, next_location_id_});
   if (inserted) {
     next_location_id_++;
-    file_copier_.CopyFileIfNecessary(new_location.path());
+    file_copier_.RegisterIndexedFile(new_location.path());
   }
 
   return iter->second;

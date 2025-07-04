@@ -17,6 +17,7 @@
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
+#include <system_error>  // NOLINT
 #include <utility>
 #include <vector>
 
@@ -37,7 +38,8 @@
 
 ABSL_FLAG(std::string, source_dir, "", "Source directory");
 ABSL_FLAG(std::string, build_dir, "", "Build directory");
-ABSL_FLAG(std::string, index_dir, "", "Output index file directory");
+ABSL_FLAG(std::string, index_dir, "",
+          "Output index file directory (should be empty if it exists)");
 ABSL_FLAG(std::vector<std::string>, extra_dirs, {"/"},
           "Additional source directory/-ies (comma-separated)");
 ABSL_FLAG(std::string, dry_run_regex, "",
@@ -84,8 +86,7 @@ int main(int argc, char** argv) {
     clang::tooling::Filter.setValue(dry_run_regex);
   }
 
-  oss_fuzz::indexer::FileCopier file_copier(source_dir, index_dir, extra_dirs,
-                                            /*dry_run=*/!dry_run_regex.empty());
+  oss_fuzz::indexer::FileCopier file_copier(source_dir, index_dir, extra_dirs);
 
   std::unique_ptr<MergeQueue> merge_queue = MergeQueue::Create(
       absl::GetFlag(FLAGS_merge_queues), absl::GetFlag(FLAGS_merge_queue_size));
@@ -99,7 +100,9 @@ int main(int argc, char** argv) {
                << llvm::toString(std::move(index_error));
     if (!absl::GetFlag(FLAGS_ignore_indexing_errors)) {
       merge_queue->Cancel();
-      std::filesystem::remove_all(std::filesystem::path(index_dir));
+      std::error_code ignored_error_code;
+      std::filesystem::remove_all(std::filesystem::path(index_dir),
+                                  ignored_error_code);
       return 1;
     }
   }
@@ -108,13 +111,18 @@ int main(int argc, char** argv) {
   auto index = merge_queue->TakeIndex();
   if (!index) {
     LOG(ERROR) << "Failed to create index";
-    std::filesystem::remove_all(std::filesystem::path(index_dir));
+    std::error_code ignored_error_code;
+    std::filesystem::remove_all(std::filesystem::path(index_dir),
+                                ignored_error_code);
     return 1;
   }
 
   if (!dry_run_regex.empty()) {
     return 0;
   }
+
+  LOG(INFO) << "copying files";
+  file_copier.CopyIndexedFiles();
 
   LOG(INFO) << "exporting index";
   auto flat_index = index->Export();

@@ -64,7 +64,7 @@ TEST(FileCopierTest, ToIndexPathOutside) {
   EXPECT_DEATH(file_copier.ToIndexPath("/a/b/c/d.cc"), "/a/b/c/d.cc");
 }
 
-TEST(FileCopierTest, CopyFileIfNecessary) {
+TEST(FileCopierTest, FileCopying) {
   auto tmp_dir_path = std::filesystem::path(::testing::TempDir());
   auto base_path = tmp_dir_path / "src";
   auto index_path = tmp_dir_path / "idx";
@@ -85,18 +85,15 @@ TEST(FileCopierTest, CopyFileIfNecessary) {
   auto file_c_copy = index_path / "absolute" /
                      sysroot_path.lexically_relative("/") / "y/z/c.cc";
 
-  file_copier.CopyFileIfNecessary(file_copier.ToIndexPath(file_a.string()));
-  file_copier.CopyFileIfNecessary(file_copier.ToIndexPath(file_b.string()));
-  file_copier.CopyFileIfNecessary(file_copier.ToIndexPath(file_c.string()));
+  file_copier.RegisterIndexedFile(file_copier.ToIndexPath(file_a.string()));
+  file_copier.RegisterIndexedFile(file_copier.ToIndexPath(file_b.string()));
+  file_copier.RegisterIndexedFile(file_copier.ToIndexPath(file_c.string()));
+
+  file_copier.CopyIndexedFiles();
 
   EXPECT_EQ(GetFileContents(file_a_copy).value_or(""), "a.cc");
   EXPECT_EQ(GetFileContents(file_b_copy).value_or(""), "b.cc");
   EXPECT_EQ(GetFileContents(file_c_copy).value_or(""), "c.cc");
-
-  // Delete `file_a` and check that it's not copied more than once.
-  std::filesystem::remove(file_a_copy);
-  file_copier.CopyFileIfNecessary(file_copier.ToIndexPath(file_a.string()));
-  EXPECT_FALSE(std::filesystem::exists(file_a_copy));
 }
 
 }  // namespace indexer

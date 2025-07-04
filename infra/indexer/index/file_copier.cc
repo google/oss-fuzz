@@ -17,7 +17,6 @@
 #include <filesystem>  // NOLINT
 #include <string>
 #include <system_error>  // NOLINT
-#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
@@ -42,12 +41,10 @@ void PreparePath(std::string& path) {
 
 FileCopier::FileCopier(absl::string_view base_path,
                        absl::string_view index_path,
-                       const std::vector<std::string>& extra_paths,
-                       bool dry_run)
+                       const std::vector<std::string>& extra_paths)
     : base_path_(base_path),
       extra_paths_(extra_paths),
-      index_path_(index_path),
-      dry_run_(dry_run) {
+      index_path_(index_path) {
   PreparePath(base_path_);
   for (std::string& extra_path : extra_paths_) {
     PreparePath(extra_path);
@@ -74,49 +71,49 @@ std::string FileCopier::ToIndexPath(absl::string_view path) const {
   return result;
 }
 
-void FileCopier::CopyFileIfNecessary(absl::string_view index_path) {
+void FileCopier::RegisterIndexedFile(absl::string_view index_path) {
   if (index_path.empty() || index_path.starts_with('<')) {
     // Built-in header or a location lacking the filename.
     return;
   }
 
-  std::filesystem::path src_path;
-  std::filesystem::path dst_path;
-  src_path = std::filesystem::path(index_path);
-  if (src_path.is_absolute()) {
-    dst_path =
-        std::filesystem::path(index_path_) / "absolute" / index_path.substr(1);
-  } else {
-    src_path = std::filesystem::path(base_path_) / index_path;
-    dst_path = std::filesystem::path(index_path_) / "relative" / index_path;
-  }
-
-  DLOG(INFO) << "From: " << src_path << "\n  To: " << dst_path << "\n";
-
-  CHECK(std::filesystem::exists(src_path))
-      << "Source file does not exist: " << index_path;
-
-  bool should_copy = false;
   {
     absl::MutexLock lock(&mutex_);
-    should_copy = indexed_files_.insert(dst_path).second;
-  }
-
-  if (should_copy && !dry_run_) {
-    std::error_code error_code;
-    // We can race on creating the destination directory structure, so silently
-    // ignore errors here.
-    (void)std::filesystem::create_directories(dst_path.parent_path(),
-                                              error_code);
-
-    // We cannot race on creating the same destination file.
-    QCHECK(std::filesystem::copy_file(
-        src_path, dst_path, std::filesystem::copy_options::overwrite_existing,
-        error_code))
-        << "Failed to copy file: " << src_path
-        << " (error: " << error_code.message() << ")";
+    indexed_files_.emplace(index_path);
   }
 }
 
+void FileCopier::CopyIndexedFiles() {
+  absl::MutexLock lock(&mutex_);
+
+  for (const std::string& indexed_path : indexed_files_) {
+    std::filesystem::path src_path = indexed_path;
+    std::filesystem::path dst_path;
+    if (src_path.is_absolute()) {
+      dst_path = std::filesystem::path(index_path_) / "absolute" /
+                 indexed_path.substr(1);
+    } else {
+      src_path = std::filesystem::path(base_path_) / indexed_path;
+      dst_path = std::filesystem::path(index_path_) / "relative" / indexed_path;
+    }
+
+    DLOG(INFO) << "\nFrom: " << src_path << "\n  To: " << dst_path << "\n";
+
+    QCHECK(std::filesystem::exists(src_path))
+        << "Source file does not exist: " << src_path;
+
+    std::error_code error_code;
+    // The destination directory may already exist, but report other errors.
+    (void)std::filesystem::create_directories(dst_path.parent_path(),
+                                              error_code);
+    QCHECK(!error_code) << "Failed to create directory: "
+                        << dst_path.parent_path()
+                        << " (error: " << error_code.message() << ")";
+
+    QCHECK(std::filesystem::copy_file(src_path, dst_path, error_code))
+        << "Failed to copy file " << src_path << " to " << dst_path
+        << " (error: " << error_code.message() << ")";
+  }
+}
 }  // namespace indexer
 }  // namespace oss_fuzz
