@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,4 @@
 #
 ################################################################################
 
-# generate build env and build assimp
-cmake CMakeLists.txt -G "Ninja" -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON \
-                                -DASSIMP_BUILD_TESTS=ON -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \
-                                -DASSIMP_BUILD_SAMPLES=OFF
-cmake --build .
-
-# Build the fuzzer
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 -I$SRC/assimp/include \
-		fuzz/assimp_fuzzer.cc -o $OUT/assimp_fuzzer  \
-		./lib/libassimp.a ./contrib/zlib/libzlibstatic.a
+bin/unit
