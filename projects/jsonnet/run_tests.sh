@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y build-essential cmake
-RUN git clone --depth 1 https://github.com/google/jsonnet.git jsonnet
-WORKDIR $SRC/
-
-COPY build.sh run_tests.sh $SRC/
-COPY *.cc $SRC/
+cd $SRC/jsonnet/build
+make test
