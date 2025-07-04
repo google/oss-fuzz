@@ -46,6 +46,19 @@ _LD_PATH = Path('/lib64') / _LD_BINARY
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 _CLANG_VERSION = '18'
 
+EXTRA_CFLAGS = (
+    '-fno-omit-frame-pointer '
+    '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
+    '-O0 -glldb '
+    '-fsanitize=address '
+    '-Wno-invalid-offsetof '
+    '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
+    f'-gen-cdb-fragment-path {OUT}/cdb '
+    '-Qunused-arguments '
+    f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
+    f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} '
+)
+
 
 def set_env_vars():
   """Set up build environment variables."""
@@ -61,6 +74,9 @@ def set_env_vars():
   os.environ['COMPILING_PROJECT'] = 'True'
   # Force users of clang to use our wrapper. This fixes e.g. libcups.
   os.environ['PATH'] = f"/opt/indexer:{os.environ.get('PATH')}"
+
+  existing_cflags = os.environ.get('CFLAGS', '')
+  os.environ['CFLAGS'] = f'{existing_cflags} {EXTRA_CFLAGS}'.strip()
 
 
 def set_up_wrapper_dir():
@@ -261,20 +277,6 @@ def build_project(
 ):
   """Build the actual project."""
   set_env_vars()
-  existing_cflags = os.environ.get('CFLAGS', '')
-  extra_flags = (
-      '-fno-omit-frame-pointer '
-      '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
-      '-O0 -glldb '
-      '-fsanitize=address '
-      '-Wno-invalid-offsetof '
-      '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
-      f'-gen-cdb-fragment-path {OUT}/cdb '
-      '-Qunused-arguments '
-      f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
-      f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} '
-  )
-  os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
 
