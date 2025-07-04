@@ -64,7 +64,7 @@ BASE_IMAGES = [
     ImageConfig('base-clang'),
     ImageConfig('base-clang-full',
                 path=get_base_image_path('base-clang'),
-                build_args=('FUZZ_LLVM_BUILD=1',)),
+                build_args=('FULL_LLVM_BUILD=1',)),
     ImageConfig('indexer', path=os.path.join('infra', 'indexer')),
     ImageConfig('base-builder'),
     ImageConfig('base-builder-go'),
