@@ -18,12 +18,14 @@
 # Get data. We do this here to resolve CIFuzz issues
 # CC https://github.com/uclouvain/openjpeg/pull/1386
 git clone --depth 1 https://github.com/uclouvain/openjpeg-data data
+export OPJ_DATA_ROOT=$PWD/data
 
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release ..
 make clean -s
 make -j$(nproc) -s
+make test V=1
 cd ..
 
 ./tests/fuzzers/build_google_oss_fuzzers.sh
