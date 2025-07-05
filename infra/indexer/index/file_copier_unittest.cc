@@ -43,25 +43,27 @@ std::optional<std::string> GetFileContents(const std::filesystem::path& path) {
 }
 }  // namespace
 
-TEST(FileCopierTest, ToIndexPath) {
+TEST(FileCopierTest, AbsoluteToIndexPath) {
   auto tmp_dir_path = std::filesystem::path(::testing::TempDir());
   auto base_path = tmp_dir_path / "src";
   auto index_path = tmp_dir_path / "idx";
   FileCopier file_copier(base_path.string(), index_path.string(), {"/"});
 
-  EXPECT_EQ(file_copier.ToIndexPath("/a/b/c/d.cc"), "/a/b/c/d.cc");
-  EXPECT_EQ(file_copier.ToIndexPath((base_path / "a/b/c/d.cc").string()),
-            "a/b/c/d.cc");
-  EXPECT_EQ(file_copier.ToIndexPath("a/b/c/d.cc"), "a/b/c/d.cc");
+  EXPECT_EQ(file_copier.AbsoluteToIndexPath("/a/b/c/d.cc"), "/a/b/c/d.cc");
+  EXPECT_EQ(
+      file_copier.AbsoluteToIndexPath((base_path / "a/b/c/d.cc").string()),
+      "a/b/c/d.cc");
+  EXPECT_DEATH(file_copier.AbsoluteToIndexPath("a/b/c/d.cc"),
+               "Absolute path expected");
 }
 
-TEST(FileCopierTest, ToIndexPathOutside) {
+TEST(FileCopierTest, AbsoluteToIndexPathOutside) {
   auto tmp_dir_path = std::filesystem::path(::testing::TempDir());
   auto base_path = tmp_dir_path / "src";
   auto index_path = tmp_dir_path / "idx";
   FileCopier file_copier(base_path.string(), index_path.string(), {"/sysroot"});
 
-  EXPECT_DEATH(file_copier.ToIndexPath("/a/b/c/d.cc"), "/a/b/c/d.cc");
+  EXPECT_DEATH(file_copier.AbsoluteToIndexPath("/a/b/c/d.cc"), "/a/b/c/d.cc");
 }
 
 TEST(FileCopierTest, FileCopying) {
@@ -85,9 +87,12 @@ TEST(FileCopierTest, FileCopying) {
   auto file_c_copy = index_path / "absolute" /
                      sysroot_path.lexically_relative("/") / "y/z/c.cc";
 
-  file_copier.RegisterIndexedFile(file_copier.ToIndexPath(file_a.string()));
-  file_copier.RegisterIndexedFile(file_copier.ToIndexPath(file_b.string()));
-  file_copier.RegisterIndexedFile(file_copier.ToIndexPath(file_c.string()));
+  file_copier.RegisterIndexedFile(
+      file_copier.AbsoluteToIndexPath(file_a.string()));
+  file_copier.RegisterIndexedFile(
+      file_copier.AbsoluteToIndexPath(file_b.string()));
+  file_copier.RegisterIndexedFile(
+      file_copier.AbsoluteToIndexPath(file_c.string()));
 
   file_copier.CopyIndexedFiles();
 

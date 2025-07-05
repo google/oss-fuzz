@@ -36,9 +36,10 @@ using EntityId = uint64_t;
 using ReferenceId = uint64_t;
 constexpr LocationId kInvalidLocationId = 0xffffffffffffffffull;
 constexpr EntityId kInvalidEntityId = 0xffffffffffffffffull;
+constexpr absl::string_view kBuiltinPath = "<built-in>";
 
 inline bool IsRealPath(absl::string_view path) {
-  return !path.empty() && !path.starts_with("<");
+  return !path.empty() && path != kBuiltinPath;
 }
 
 // Represents a source-file location.
