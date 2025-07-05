@@ -29,6 +29,7 @@ RUN git clone --branch pcre2-10.39 https://github.com/PhilipHazel/pcre2 pcre2 &&
   make install && \
   sed -i "s/\$libS\$libR \(-lpcre2-8$\)/\$libS\$libR -Wl,-Bstatic \1 -Wl,-Bdynamic/" /usr/local/bin/pcre2-config
 
+RUN git clone --depth=1 https://github.com/librsync/librsync
 RUN git clone --depth 1 https://github.com/cfengine/core --recursive
 WORKDIR core
 COPY build.sh string_fuzzer.c $SRC/
