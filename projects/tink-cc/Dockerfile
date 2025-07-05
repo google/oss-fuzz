@@ -17,11 +17,11 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y make pkg-config
-RUN git clone --depth 1 https://github.com/google/tink
+RUN git clone --depth 1 https://github.com/tink-crypto/tink-cc
 
-RUN mkdir $SRC/tink/cc/fuzzing
-COPY fuzzing_CMake $SRC/tink/cc/fuzzing/CMakeLists.txt
-COPY tink_encrypt_decrypt_fuzzer.cc $SRC/tink/cc/fuzzing/tink_encrypt_decrypt_fuzzer.cc
+RUN mkdir $SRC/tink-cc/fuzzing
+COPY fuzzing_CMake $SRC/tink-cc/fuzzing/CMakeLists.txt
+COPY tink_encrypt_decrypt_fuzzer.cc $SRC/tink-cc/fuzzing/tink_encrypt_decrypt_fuzzer.cc
 COPY build.sh $SRC/
 
-WORKDIR tink
+WORKDIR tink-cc
