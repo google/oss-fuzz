@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
              << " for indexing larger codebases, or this will be extra slow.";
 #endif
 
-  std::string error;
+  std::string error;  // test
   auto db = CompilationDatabase::autoDetectFromDirectory(build_dir, error);
   if (!db) {
     LOG(ERROR) << "Failed to load compilation database: " << error;
