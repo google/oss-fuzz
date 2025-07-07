@@ -79,8 +79,7 @@ BASE_IMAGES = [
 ]
 
 
-def get_base_image_steps(images: Sequence[ImageConfig],
-                         tag_prefix: str = TAG_PREFIX) -> list[dict]:
+def get_base_image_steps(images: Sequence[ImageConfig]) -> list[dict]:
   """Returns build steps for given images."""
   steps = [build_lib.get_git_clone_step()]
 
@@ -175,5 +174,7 @@ def base_builder(event, context):
   logging.basicConfig(level=logging.INFO)
 
   steps = get_base_image_steps(BASE_IMAGES)
+  steps.extend(get_images_architecture_manifest_steps())
+
   images = [base_image.full_image_name for base_image in BASE_IMAGES]
   run_build(steps, images)
