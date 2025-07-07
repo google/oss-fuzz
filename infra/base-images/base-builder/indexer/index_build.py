@@ -274,11 +274,15 @@ def copy_fuzzing_engine() -> Path:
 def build_project(
     targets_to_index: Sequence[str] | None = None,
     compile_args: Sequence[str] | None = None,
+    binaries_only: bool = False,
 ):
   """Build the actual project."""
   set_env_vars()
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
+
+  if binaries_only:
+    os.environ['INDEXER_BINARIES_ONLY'] = '1'
 
   fuzzing_engine_path = copy_fuzzing_engine()
 
@@ -606,6 +610,11 @@ def main():
       action='store_true',
       help='Use gzipped tar (.tgz) for the output snapshot',
   )
+  parser.add_argument(
+      '--binaries-only',
+      action='store_true',
+      help='Build target binaries only, and not index archives.',
+  )
   args = parser.parse_args()
 
   # Clean up the existing OUT by default, otherwise we may run into various
@@ -631,7 +640,7 @@ def main():
   SNAPSHOT_DIR.mkdir(exist_ok=True)
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
-  build_project(targets_to_index, args.compile_arg)
+  build_project(targets_to_index, args.compile_arg, args.binaries_only)
 
   if args.target_arg:
     target_args = args.target_arg
@@ -647,11 +656,12 @@ def main():
     logging.info('No target env specified.')
     target_env = {}
 
-  file_extension = '.tgz' if args.compressed else '.tar'
-  test_and_archive(target_args, target_env, targets_to_index, file_extension)
+  if not args.binaries_only:
+    file_extension = '.tgz' if args.compressed else '.tar'
+    test_and_archive(target_args, target_env, targets_to_index, file_extension)
 
-  for snapshot in SNAPSHOT_DIR.iterdir():
-    shutil.move(str(snapshot), OUT)
+    for snapshot in SNAPSHOT_DIR.iterdir():
+      shutil.move(str(snapshot), OUT)
 
   # By default, this directory has o-rwx and its contents can't be deleted
   # by a non-root user from outside the container. The rest of the files are

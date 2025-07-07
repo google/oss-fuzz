@@ -523,7 +523,9 @@ def main(argv: list[str]) -> None:
   filter_log_file = Path(cdb_path) / f"{build_id}_filter_log.txt"
   _write_filter_log(filter_log_file, filtered_compile_commands)
 
-  run_indexer(build_id, linker_commands)
+  if not os.getenv("INDEXER_BINARIES_ONLY"):
+    run_indexer(build_id, linker_commands)
+
   linker_commands = json.dumps(linker_commands)
   commands_path = Path(cdb_path) / f"{build_id}_linker_commands.json"
   commands_path.write_text(linker_commands)
