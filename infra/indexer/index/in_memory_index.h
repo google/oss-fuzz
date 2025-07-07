@@ -47,7 +47,8 @@ class InMemoryIndex {
   // The `GetXxxId` functions return the id of an existing, matching object if
   // there is already one in the index, or allocate a new id if there is not an
   // identical object in the index.
-  LocationId GetLocationId(const Location& location);
+  // `GetLocationId` expects a location with an absolute path if not built-in.
+  LocationId GetLocationId(Location location);
   EntityId GetEntityId(const Entity& entity);
   ReferenceId GetReferenceId(const Reference& reference);
 
@@ -56,6 +57,9 @@ class InMemoryIndex {
 
  private:
   FileCopier& file_copier_;
+
+  // Like `GetLocationId`, but requires the path to be already index-adjusted.
+  LocationId GetIdForLocationWithIndexPath(const Location& location);
 
   // Although we could sort location_lookup_ in advance, the performance impact
   // on indexing if we use a btree_map is significant, and it's much faster

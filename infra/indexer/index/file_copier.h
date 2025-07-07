@@ -36,9 +36,10 @@ class FileCopier {
              const std::vector<std::string>& extra_paths);
   FileCopier(const FileCopier&) = delete;
 
-  // Rewrites a path into the representation it will have in the index
-  // (relative if within the source tree and absolute otherwise).
-  std::string ToIndexPath(absl::string_view path) const;
+  // Takes an absolute path. Rewrites this path into the representation it will
+  // have in the index (relative if within the source tree and absolute
+  // otherwise).
+  std::string AbsoluteToIndexPath(absl::string_view path) const;
 
   // `index_path` is expected to be produced by `ToIndexPath`.
   void RegisterIndexedFile(absl::string_view index_path);

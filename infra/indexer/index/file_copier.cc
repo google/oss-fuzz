@@ -51,10 +51,8 @@ FileCopier::FileCopier(absl::string_view base_path,
   }
 }
 
-std::string FileCopier::ToIndexPath(absl::string_view path) const {
-  if (!path.starts_with('/')) {
-    return std::string(path);
-  }
+std::string FileCopier::AbsoluteToIndexPath(absl::string_view path) const {
+  CHECK(path.starts_with("/")) << "Absolute path expected";
 
   std::string result = std::string(path);
   if (!base_path_.empty() && absl::StartsWith(path, base_path_)) {
@@ -72,15 +70,8 @@ std::string FileCopier::ToIndexPath(absl::string_view path) const {
 }
 
 void FileCopier::RegisterIndexedFile(absl::string_view index_path) {
-  if (index_path.empty() || index_path.starts_with('<')) {
-    // Built-in header or a location lacking the filename.
-    return;
-  }
-
-  {
-    absl::MutexLock lock(&mutex_);
-    indexed_files_.emplace(index_path);
-  }
+  absl::MutexLock lock(&mutex_);
+  indexed_files_.emplace(index_path);
 }
 
 void FileCopier::CopyIndexedFiles() {

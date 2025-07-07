@@ -196,7 +196,7 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
   std::vector<LocationId> new_location_ids(other.locations_.size(),
                                            kInvalidLocationId);
   for (const auto& [location, id] : other.locations_) {
-    new_location_ids[id] = GetLocationId(location);
+    new_location_ids[id] = GetIdForLocationWithIndexPath(location);
   }
 
   // We need to update the location_id for entities, and the entity_id and
@@ -276,15 +276,22 @@ void InMemoryIndex::Expand(size_t locations_count, size_t entities_count,
   references_.reserve(references_.size() + references_count);
 }
 
-LocationId InMemoryIndex::GetLocationId(const Location& location) {
-  // Adjust paths within the base_path to be relative paths.
-  Location new_location = location;
-  new_location.path_ = file_copier_.ToIndexPath(location.path());
+LocationId InMemoryIndex::GetLocationId(Location location) {
+  if (location.is_real()) {
+    // Adjust paths within the base_path to be relative paths.
+    location.path_ = file_copier_.AbsoluteToIndexPath(location.path());
+  }
+  return GetIdForLocationWithIndexPath(location);
+}
 
-  auto [iter, inserted] = locations_.insert({new_location, next_location_id_});
+LocationId InMemoryIndex::GetIdForLocationWithIndexPath(
+    const Location& location) {
+  auto [iter, inserted] = locations_.insert({location, next_location_id_});
   if (inserted) {
     next_location_id_++;
-    file_copier_.RegisterIndexedFile(new_location.path());
+    if (location.is_real()) {
+      file_copier_.RegisterIndexedFile(location.path());
+    }
   }
 
   return iter->second;

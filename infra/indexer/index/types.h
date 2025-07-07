@@ -38,7 +38,8 @@ constexpr LocationId kInvalidLocationId = 0xffffffffffffffffull;
 constexpr EntityId kInvalidEntityId = 0xffffffffffffffffull;
 
 inline bool IsRealPath(absl::string_view path) {
-  return !path.empty() && !path.starts_with("<");
+  // Examples of built-in paths: `<built-in>` and `<command-line>`.
+  return !path.empty() && !path.starts_with('<');
 }
 
 // Represents a source-file location.

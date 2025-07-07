@@ -3118,5 +3118,22 @@ TEST(FrontendTest, ImplicitComparisonInstantiation) {
           RequiredEntityId(index, Entity::Kind::kClass, "", "TestTemplateClass",
                            "<T>", "snippet.cc", 11, 14)));
 }
+
+TEST(FrontendTest, CommandLineMacro) {
+  auto index = IndexSnippet("int MACRO;", {"-DMACRO=expansion"})->Export();
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "expansion", "",
+                    "snippet.cc", 1, 1);
+  int found = 0;
+  for (const auto& index_entity : index.entities) {
+    if (index_entity.full_name() == "MACRO") {
+      EXPECT_EQ(index_entity.kind(), Entity::Kind::kMacro);
+      // NOTE(kartynnik): Why isn't this `<command line>`?
+      EXPECT_EQ(index.locations[index_entity.location_id()].path(),
+                "<built-in>");
+      ++found;
+    }
+  }
+  EXPECT_EQ(found, 1);
+}
 }  // namespace indexer
 }  // namespace oss_fuzz
