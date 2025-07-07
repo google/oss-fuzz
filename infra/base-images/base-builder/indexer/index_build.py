@@ -553,7 +553,6 @@ def clear_out():
 
 def main():
   logging.basicConfig(level=logging.INFO)
-  INDEXES_PATH.mkdir(exist_ok=True)
 
   parser = argparse.ArgumentParser(description='Index builder.')
   parser.add_argument(
@@ -616,6 +615,11 @@ def main():
       help='Build target binaries only, and not index archives.',
   )
   args = parser.parse_args()
+
+  # Clear existing indexer artifacts.
+  if INDEXES_PATH.exists():
+    shutil.rmtree(INDEXES_PATH)
+  INDEXES_PATH.mkdir()
 
   # Clean up the existing OUT by default, otherwise we may run into various
   # build errors.
