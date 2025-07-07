@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN git clone --depth 1 https://github.com/curl/curl.git /src/curl
-RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
-
-# Use curl-fuzzer's scripts to get latest dependencies.
-RUN $SRC/curl_fuzzer/scripts/ossfuzzdeps.sh
-
-WORKDIR $SRC/curl_fuzzer
-COPY build.sh run_tests.sh $SRC/
+cd $SRC/curl
+make test
