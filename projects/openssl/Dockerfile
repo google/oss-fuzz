@@ -28,6 +28,6 @@ RUN cd $SRC/openssl33/ && git submodule update --init fuzz/corpora
 RUN cd $SRC/openssl34/ && git submodule update --init fuzz/corpora
 RUN cd $SRC/openssl35/ && git submodule update --init fuzz/corpora
 WORKDIR openssl
-COPY build.sh *.options replay_build.sh $SRC/
+COPY build.sh *.options replay_build.sh run_tests.sh $SRC/
 ENV AFL_SKIP_OSSFUZZ=1
 ENV AFL_LLVM_MODE_WORKAROUND=0
