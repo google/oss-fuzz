@@ -90,7 +90,11 @@ fi
 
 cd $SRC/openssl30/
 build_fuzzers "_30"
-cd $SRC/openssl31/
-build_fuzzers "_31"
 cd $SRC/openssl32/
 build_fuzzers "_32"
+cd $SRC/openssl33/
+build_fuzzers "_33"
+cd $SRC/openssl34/
+build_fuzzers "_34"
+cd $SRC/openssl35/
+build_fuzzers "_35"
