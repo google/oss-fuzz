@@ -578,10 +578,7 @@ def get_indexer_build_steps(project_name,
           'name':
               build_lib.DOCKER_TOOL_IMAGE,
           'args': [
-              'container',
-              'commit',
-              '-c',
-              'ENV REPLAY_ENABLED 1',
+              'container', 'commit', '-c', 'ENV REPLAY_ENABLED 1',
               _INDEXED_CONTAINER_NAME,
               _indexer_built_image_name(project.name) + f':{timestamp}'
           ],
