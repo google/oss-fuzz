@@ -652,8 +652,11 @@ def main():
     logging.warning('--target-args is deprecated, use --target-arg instead.')
     target_args = shlex.split(args.target_args)
   else:
-    logging.info('No target args specified.')
-    target_args = []
+    target_args = [manifest_types.INPUT_FILE]
+    logging.info(
+        'No target args specified. Defaulting to %s.', repr(target_args)
+    )
+
   if args.target_env:
     target_env = manifest_types.parse_env(args.target_env)
   else:
