@@ -17,4 +17,4 @@
 
 PROJECT_SRC_DIR="$SRC/ffmpeg"
 cd $PROJECT_SRC_DIR
-time make -k -j"$(nproc)" fate
+make -k -j"$(nproc)" fate
