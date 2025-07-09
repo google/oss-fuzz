@@ -101,6 +101,10 @@ class IndexBuildTest(unittest.TestCase):
             self.assertIsNotNone(
                 tar.getmember('obj/' + manifest['binary_config']['binary_name'])
             )
+            self.assertCountEqual(
+                manifest['binary_config']['binary_args'],
+                ['<input_file>']
+            )
 
     self.assertTrue(has_obj_lib, 'obj/lib/ was not found in the archive.')
     self.assertTrue(
