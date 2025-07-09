@@ -38,14 +38,14 @@ RUN apt-get update && apt-get install -y \
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone --depth=500 git://git.savannah.gnu.org/gnulib.git
-RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
-RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
-RUN hg clone https://gmplib.org/repo/gmp/ gmp || \
-    (wget 'https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.lz' && tar xf gmp-6.2.1.tar.lz && mv $SRC/gmp-6.2.1 $SRC/gmp)
-RUN git clone https://gitlab.com/gnutls/libtasn1.git
-RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+RUN wget -qO- https://ftp.gnu.org/gnu/libunistring/libunistring-latest.tar.gz | tar xz && mv libunistring-* libunistring
+RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar xz && mv libidn2-* libidn2
+RUN wget -qO- https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.gz | tar xz && mv gmp-* gmp
+RUN wget -qO- https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz | tar xz && mv libtasn1-* libtasn1
+RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git --branch=nettle_3.10.1_release_20241230
 
-RUN git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git
+# Try twice in case of network issues.
+RUN git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git || git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git
 
 WORKDIR gnutls
 COPY build.sh $SRC/

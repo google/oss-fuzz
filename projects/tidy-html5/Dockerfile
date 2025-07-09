@@ -18,11 +18,10 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        cmake ninja-build && \
+        cmake ninja-build ruby-full && \
     apt-get clean
 
 RUN git clone -b next --single-branch \
     https://github.com/htacg/tidy-html5.git tidy-html5
 WORKDIR tidy-html5
-COPY build.sh $SRC/
-COPY *.c *.h *.options $SRC/
+COPY *.sh *.c *.h *.options $SRC/

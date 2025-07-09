@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+export CXXFLAGS="${CXXFLAGS} -std=c++17 -stdlib=libstdc++"
 
 # ===== BUILD Sqlite =====
 SQLITE_VER=sqlite-autoconf-3480000

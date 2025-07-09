@@ -562,7 +562,10 @@ def get_indexer_build_steps(project_name,
           # Link /out to the actual $OUT and actually create it in the
           # container's filesystem since it's a mount.
           'rm -rf /out && ln -s $$OUT /out && '
-          'umount /workspace && mkdir -p $$OUT'
+          'umount /workspace && mkdir -p $$OUT && '
+          # Unshallow the main repository so we have easy access to the git
+          # history.
+          f'/usr/local/bin/unshallow_repos.py {project.main_repo}'
       ],
       'env': env,
   }
@@ -575,14 +578,7 @@ def get_indexer_build_steps(project_name,
           'name':
               build_lib.DOCKER_TOOL_IMAGE,
           'args': [
-              'container',
-              'commit',
-              '-c',
-              'ENV REPLAY_ENABLED 1',
-              # Add CFLAGS that enable debugging (this should match the
-              # index_build.py CFLAGS)
-              '-c',
-              'ENV CFLAGS "$$CFLAGS -O0 -glldb"',
+              'container', 'commit', '-c', 'ENV REPLAY_ENABLED 1',
               _INDEXED_CONTAINER_NAME,
               _indexer_built_image_name(project.name) + f':{timestamp}'
           ],

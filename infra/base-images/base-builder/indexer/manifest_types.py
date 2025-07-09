@@ -169,6 +169,13 @@ class BinaryConfig:
     return dataclasses.asdict(self)
 
 
+class HarnessKind(enum.StrEnum):
+  """The target/harness kind."""
+
+  LIBFUZZER = enum.auto()
+  BINARY = enum.auto()
+
+
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class CommandLineBinaryConfig(BinaryConfig):
   """Configuration for a command-line userspace binary."""
@@ -179,14 +186,20 @@ class CommandLineBinaryConfig(BinaryConfig):
   # any existing environment variables with the same name.
   # Input replacement works on these variables as well.
   binary_env: dict[str, str]
+  harness_kind: HarnessKind
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[Any, Any]) -> Self:
     """Deserializes the `CommandLineBinaryConfig` from a dict."""
     kind = BinaryConfigKind(config_dict["kind"])
     kind.validate_in([BinaryConfigKind.OSS_FUZZ, BinaryConfigKind.BINARY])
+    # Default to "binary" for backwards compatibility.
+    harness_kind = HarnessKind(
+        config_dict.get("harness_kind", HarnessKind.BINARY)
+    )
     return CommandLineBinaryConfig(
         kind=kind,
+        harness_kind=harness_kind,
         binary_name=config_dict["binary_name"],
         binary_args=config_dict["binary_args"],
         binary_env=config_dict.get("binary_env", {}),
@@ -253,6 +266,7 @@ class Manifest:
           kind=BinaryConfigKind.BINARY,
           binary_name=data["binary_name"],
           binary_args=binary_args or [],
+          harness_kind=HarnessKind.BINARY,
           binary_env={},
       )
     else:
@@ -353,6 +367,9 @@ class Manifest:
       overwrite: bool = True,
   ) -> None:
     """Saves a build archive with this Manifest."""
+    if os.path.exists(archive_path) and not overwrite:
+      raise FileExistsError(f"Not overwriting existing archive {archive_path}")
+
     self.validate()
 
     if not hasattr(self.binary_config, "binary_name"):
@@ -399,6 +416,8 @@ class Manifest:
                   arcname=prefix + str(file.relative_to(path)),
               )
 
+        # Make sure the manifest is the first file in the archive to avoid
+        # seeking when we only need the manifest.
         _add_string_to_tar(
             tar,
             MANIFEST_PATH.as_posix(),
@@ -408,7 +427,12 @@ class Manifest:
             ),
         )
 
+        # Make sure the index database (the only file directly in `INDEX_DIR`)
+        # is early in the archive for the same reason.
+        _save_dir(index_dir, INDEX_DIR)
+
         _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
+
         # Only include the relevant target for the snapshot, to save on disk
         # space.
         _save_dir(
@@ -416,7 +440,7 @@ class Manifest:
             OBJ_DIR,
             only_include_target=self.binary_config.binary_name,
         )
-        _save_dir(index_dir, INDEX_DIR)
+
         if self.binary_config.kind == BinaryConfigKind.OSS_FUZZ:
           copied_files = [tar_info.name for tar_info in tar.getmembers()]
           try:
@@ -426,10 +450,7 @@ class Manifest:
           except Exception:  # pylint: disable=broad-except
             logging.exception("Failed to report missing source files.")
 
-      if os.path.exists(archive_path) and not overwrite:
-        logging.warning("Skipping existing archive %s", archive_path)
-      else:
-        shutil.copyfile(tmp.name, archive_path)
+      shutil.copyfile(tmp.name, archive_path)
 
 
 def report_missing_source_files(

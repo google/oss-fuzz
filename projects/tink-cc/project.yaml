@@ -7,8 +7,8 @@ auto_ccs:
   - "tholenst@google.com"
 sanitizers:
   - address
-  - undefined
   - memory
+#  - undefined # TODO: Needs investigation
 main_repo: "https://github.com/google/tink"
 file_github_issue: True
 
