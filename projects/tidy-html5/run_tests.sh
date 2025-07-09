@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
+###############################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        cmake ninja-build ruby-full && \
-    apt-get clean
-
-RUN git clone -b next --single-branch \
-    https://github.com/htacg/tidy-html5.git tidy-html5
-WORKDIR tidy-html5
-COPY *.sh *.c *.h *.options $SRC/
+cd regression_testing
+bundle2.7 install
+ASAN_OPTIONS=detect_leaks=0 ./test.rb test
