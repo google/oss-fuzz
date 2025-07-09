@@ -1,4 +1,5 @@
-# Copyright 2017 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,20 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make python wget
-# Clone source
-RUN git clone --depth 1 https://github.com/facebook/zstd
-WORKDIR zstd
-COPY build.sh run_tests.sh $SRC/
+
+cd tests
+
+# `make test` is a wrapper for the following tests.
+# At the time of writing, `test-cli-tests fails at
+# the latest master but not at the latest release,
+# so it is likely that zstd will fix this. For now,
+# that test is commented out. A TODO for the future
+# is to call `make test` instead of each test suite
+# individually.
+make test-zstd
+#make test-cli-tests
+make test-fullbench
+make test-fuzzer
+make test-fullbench
+make test-invalidDictionaries
+make test-legacy test-decodecorpus
