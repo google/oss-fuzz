@@ -25,7 +25,7 @@ pushd build
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CXX_FLAGS="$CXXFLAGS -pthread -stdlib=libc++" \
       -DSHADERC_SKIP_TESTS=True \
-      -DSHADERC_ENABLE_TESTS=OFF \
+      -DSHADERC_ENABLE_TESTS=ON \
       -DSHADERC_SKIP_COPYRIGHT_CHECK=True \
       -DSHADERC_SKIP_EXAMPLES=True \
       -DSHADERC_ENABLE_EXAMPLES=OFF \
