@@ -15,16 +15,6 @@
 #
 ################################################################################
 
-# Usage: bash run_test.sh 
-# Runs all tests.
-
-set -e # Exit immediately if any command fails
-
 PROJECT_SRC_DIR="$SRC/ffmpeg"
-
-echo "==> Changing to FFmpeg source directory: $PROJECT_SRC_DIR"
-cd "$PROJECT_SRC_DIR"
-
-echo "==> Running all FATE tests..."
+cd $PROJECT_SRC_DIR
 time make -k -j"$(nproc)" fate
-echo "==> Test run finished successfully."
