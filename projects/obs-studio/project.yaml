@@ -1,6 +1,6 @@
 homepage: "https://obsproject.com/"
 language: c
-primary_contact: "todo@mail.com"
+primary_contact: "joel.bethke@gmail.com"
 sanitizers:
 - address
 - undefined
