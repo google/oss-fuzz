@@ -169,6 +169,13 @@ class BinaryConfig:
     return dataclasses.asdict(self)
 
 
+class HarnessKind(enum.StrEnum):
+  """The target/harness kind."""
+
+  LIBFUZZER = enum.auto()
+  BINARY = enum.auto()
+
+
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class CommandLineBinaryConfig(BinaryConfig):
   """Configuration for a command-line userspace binary."""
@@ -179,14 +186,20 @@ class CommandLineBinaryConfig(BinaryConfig):
   # any existing environment variables with the same name.
   # Input replacement works on these variables as well.
   binary_env: dict[str, str]
+  harness_kind: HarnessKind
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[Any, Any]) -> Self:
     """Deserializes the `CommandLineBinaryConfig` from a dict."""
     kind = BinaryConfigKind(config_dict["kind"])
     kind.validate_in([BinaryConfigKind.OSS_FUZZ, BinaryConfigKind.BINARY])
+    # Default to "binary" for backwards compatibility.
+    harness_kind = HarnessKind(
+        config_dict.get("harness_kind", HarnessKind.BINARY)
+    )
     return CommandLineBinaryConfig(
         kind=kind,
+        harness_kind=harness_kind,
         binary_name=config_dict["binary_name"],
         binary_args=config_dict["binary_args"],
         binary_env=config_dict.get("binary_env", {}),
@@ -253,6 +266,7 @@ class Manifest:
           kind=BinaryConfigKind.BINARY,
           binary_name=data["binary_name"],
           binary_args=binary_args or [],
+          harness_kind=HarnessKind.BINARY,
           binary_env={},
       )
     else:

@@ -102,6 +102,7 @@ class BinaryMetadata:
   binary_env: dict[str, str]
   build_id: str
   compile_commands: list[dict[str, Any]]
+  harness_kind: manifest_types.HarnessKind
 
 
 def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
@@ -205,12 +206,14 @@ def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
 def enumerate_build_targets(
     binary_args: list[str],
     binary_env: dict[str, str],
+    harness_kind: manifest_types.HarnessKind,
 ) -> Sequence[BinaryMetadata]:
   """Enumerates the build targets in the project.
 
   Args:
     binary_args: Argument list, applied to all targets
     binary_env: Environment variables, applied to all targets
+    harness_kind: The harness kind of all targets.
 
   Returns:
     A sequence of target descriptions, in BinaryMetadata form.
@@ -253,6 +256,7 @@ def enumerate_build_targets(
               binary_env=binary_env,
               compile_commands=compile_commands,
               build_id=build_id,
+              harness_kind=harness_kind,
           )
       )
 
@@ -492,6 +496,7 @@ def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
             binary_name=target.name,
             binary_args=target.binary_args,
             binary_env=target.binary_env,
+            harness_kind=target.harness_kind,
         ),
         source_map=manifest_types.source_map_from_dict(json.loads(source_map)),
         lib_mount_path=lib_mount_path,
@@ -518,9 +523,10 @@ def test_and_archive(
     target_env: dict[str, str],
     targets_to_index: Sequence[str] | None,
     file_extension: str,
+    harness_kind: manifest_types.HarnessKind,
 ):
   """Test target and archive."""
-  targets = enumerate_build_targets(target_args, target_env)
+  targets = enumerate_build_targets(target_args, target_env, harness_kind)
   if targets_to_index:
     targets = [t for t in targets if t.name in targets_to_index]
     missing_targets = set(targets_to_index) - set(t.name for t in targets)
@@ -582,6 +588,7 @@ def main():
       help=(
           'An argument to pass to the target binary. '
           'The substring <input_file> will be replaced with the input path.'
+          'If you want to pass custom args, pass --harness-kind=binary as well.'
       ),
   )
   parser.add_argument(
@@ -613,6 +620,15 @@ def main():
       '--binaries-only',
       action='store_true',
       help='Build target binaries only, and not index archives.',
+  )
+  parser.add_argument(
+      '--harness-kind',
+      choices=[str(x) for x in manifest_types.HarnessKind],
+      default=manifest_types.HarnessKind.LIBFUZZER,
+      help=(
+          'The harness kind to use for the fuzz target. In order to pass custom'
+          ' args, set this to binary.'
+      ),
   )
   args = parser.parse_args()
 
@@ -660,9 +676,24 @@ def main():
     logging.info('No target env specified.')
     target_env = {}
 
+  harness_kind = manifest_types.HarnessKind(args.harness_kind)
+
+  match harness_kind:
+    case manifest_types.HarnessKind.LIBFUZZER:
+      if target_args and target_args != [manifest_types.INPUT_FILE]:
+        raise ValueError(
+            f'Unsupported target args for harness_kind libfuzzer {target_args}'
+        )
+      target_args = [manifest_types.INPUT_FILE]
+    case _:
+      pass
+
   if not args.binaries_only:
     file_extension = '.tgz' if args.compressed else '.tar'
-    test_and_archive(target_args, target_env, targets_to_index, file_extension)
+
+    test_and_archive(
+        target_args, target_env, targets_to_index, file_extension, harness_kind,
+    )
 
     for snapshot in SNAPSHOT_DIR.iterdir():
       shutil.move(str(snapshot), OUT)
