@@ -46,6 +46,7 @@ COPY build.sh text_fuzzer.go \
      fuzz_tiff_decode.options \
      openpgp_fuzzer.go \
      webp_fuzzer.go \
+     fuzz_webp_decode.options \
      filepath_fuzzer.go \
      strings_fuzzer.go \
      multipart_fuzzer.go \

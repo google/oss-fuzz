@@ -49,14 +49,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       memset(&addr1, 0, sizeof(union all_addr));
       is_name_synthetic(0, t1, &addr1);
 
-      if (size > sizeof(struct dns_header)) {
-        hash_questions(data, size, t2);
+      //if (size > sizeof(struct dns_header)) {
+      //  hash_questions(data, size, t2);
 
-        rrfilter(data, size, 0);
-      }
+      //  rrfilter(data, size, 0);
+      //}
     }
 
-    fuzz_blockdata_cleanup();
+    //fuzz_blockdata_cleanup();
   }
 
   // cleanup

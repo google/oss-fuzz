@@ -21,11 +21,11 @@ extern "C"
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
     crypto::tink::util::SecretData key = crypto::tink::util::SecretDataFromStringView("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
     auto res = crypto::tink::subtle::AesSivBoringSsl::New(key);
-    auto cipher = std::move(res.ValueOrDie());
+    auto cipher = std::move(res.value());
     std::string aad = "Additional data";
     std::string message(reinterpret_cast<const char*>(data), size);
     auto ct = cipher->EncryptDeterministically(message, aad);
-    auto pt = cipher->DecryptDeterministically(ct.ValueOrDie(), aad);
+    auto pt = cipher->DecryptDeterministically(ct.value(), aad);
 
     return 0;
 }

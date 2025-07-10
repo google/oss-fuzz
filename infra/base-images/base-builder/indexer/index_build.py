@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """This runs the actual build process to generate a snapshot."""
 
 import argparse
@@ -24,12 +25,14 @@ import pathlib
 from pathlib import Path  # pylint: disable=g-importing-member
 import shlex
 import shutil
+import stat
 import subprocess
 import tempfile
 from typing import Any, Sequence
 
 import manifest_types
 import pathlib
+
 
 PROJECT = Path(os.environ['PROJECT_NAME']).name
 SNAPSHOT_DIR = Path('/snapshot')
@@ -42,6 +45,19 @@ _LD_BINARY = 'ld-linux-x86-64.so.2'
 _LD_PATH = Path('/lib64') / _LD_BINARY
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 _CLANG_VERSION = '18'
+
+EXTRA_CFLAGS = (
+    '-fno-omit-frame-pointer '
+    '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
+    '-O0 -glldb '
+    '-fsanitize=address '
+    '-Wno-invalid-offsetof '
+    '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
+    f'-gen-cdb-fragment-path {OUT}/cdb '
+    '-Qunused-arguments '
+    f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
+    f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} '
+)
 
 
 def set_env_vars():
@@ -58,6 +74,9 @@ def set_env_vars():
   os.environ['COMPILING_PROJECT'] = 'True'
   # Force users of clang to use our wrapper. This fixes e.g. libcups.
   os.environ['PATH'] = f"/opt/indexer:{os.environ.get('PATH')}"
+
+  existing_cflags = os.environ.get('CFLAGS', '')
+  os.environ['CFLAGS'] = f'{existing_cflags} {EXTRA_CFLAGS}'.strip()
 
 
 def set_up_wrapper_dir():
@@ -80,8 +99,10 @@ class BinaryMetadata:
   name: str
   binary_path: Path
   binary_args: list[str]
+  binary_env: dict[str, str]
   build_id: str
   compile_commands: list[dict[str, Any]]
+  harness_kind: manifest_types.HarnessKind
 
 
 def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
@@ -183,11 +204,16 @@ def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
 
 
 def enumerate_build_targets(
-    binary_args: list[str],) -> Sequence[BinaryMetadata]:
+    binary_args: list[str],
+    binary_env: dict[str, str],
+    harness_kind: manifest_types.HarnessKind,
+) -> Sequence[BinaryMetadata]:
   """Enumerates the build targets in the project.
 
   Args:
     binary_args: Argument list, applied to all targets
+    binary_env: Environment variables, applied to all targets
+    harness_kind: The harness kind of all targets.
 
   Returns:
     A sequence of target descriptions, in BinaryMetadata form.
@@ -227,9 +253,12 @@ def enumerate_build_targets(
               name=name,
               binary_path=binary_path,
               binary_args=binary_args,
+              binary_env=binary_env,
               compile_commands=compile_commands,
               build_id=build_id,
-          ))
+              harness_kind=harness_kind,
+          )
+      )
 
   return targets
 
@@ -240,29 +269,24 @@ def copy_fuzzing_engine() -> Path:
   fuzzing_engine_dir = SRC / PROJECT
   if not fuzzing_engine_dir.exists():
     fuzzing_engine_dir = SRC / 'fuzzing_engine'
-    fuzzing_engine_dir.mkdir()
+    fuzzing_engine_dir.mkdir(exist_ok=True)
 
   shutil.copy('/opt/indexer/fuzzing_engine.cc', fuzzing_engine_dir)
   return fuzzing_engine_dir
 
 
-def build_project(targets_to_index: Sequence[str] | None = None):
+def build_project(
+    targets_to_index: Sequence[str] | None = None,
+    compile_args: Sequence[str] | None = None,
+    binaries_only: bool = False,
+):
   """Build the actual project."""
   set_env_vars()
-  existing_cflags = os.environ.get('CFLAGS', '')
-  extra_flags = ('-fno-omit-frame-pointer '
-                 '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
-                 '-O0 -glldb '
-                 '-fsanitize=address '
-                 '-Wno-invalid-offsetof '
-                 '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
-                 f'-gen-cdb-fragment-path {OUT}/cdb '
-                 '-Qunused-arguments '
-                 f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
-                 f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} ')
-  os.environ['CFLAGS'] = f'{existing_cflags} {extra_flags}'.strip()
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
+
+  if binaries_only:
+    os.environ['INDEXER_BINARIES_ONLY'] = '1'
 
   fuzzing_engine_path = copy_fuzzing_engine()
 
@@ -309,15 +333,22 @@ def build_project(targets_to_index: Sequence[str] | None = None):
     os.remove(lib_fuzzing_engine)
   os.symlink('/opt/indexer/fuzzing_engine.a', lib_fuzzing_engine)
   set_up_wrapper_dir()
-  subprocess.run(['/usr/local/bin/compile'], check=True)
+
+  compile_command = ['/usr/local/bin/compile']
+  if compile_args:
+    compile_command.extend(compile_args)
+
+  subprocess.run(compile_command, check=True)
 
 
-def test_target(target: BinaryMetadata,) -> bool:
+def test_target(
+    target: BinaryMetadata,
+) -> bool:
   """Tests a single target."""
   target_path = OUT / target.name
-  result = subprocess.run([str(target_path)],
-                          stderr=subprocess.PIPE,
-                          check=False)
+  result = subprocess.run(
+      [str(target_path)], stderr=subprocess.PIPE, check=False
+  )
   expected_error = f'Usage: {target_path} <input_file>\n'
   if result.stderr.decode() != expected_error or result.returncode != 1:
     logging.error(
@@ -354,13 +385,14 @@ def set_target_rpath(binary_artifact: Path, lib_mount_path: pathlib.PurePath):
   )
 
 
-def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path,
-                          lib_mount_path: pathlib.PurePath) -> None:
+def copy_shared_libraries(
+    fuzz_target_path: Path, libs_path: Path, lib_mount_path: pathlib.PurePath
+) -> None:
   """Copies the shared libraries to the shared directory."""
   env = os.environ.copy()
   env['LD_TRACE_LOADED_OBJECTS'] = '1'
   env['LD_BIND_NOW'] = '1'
-  # TODO(unassigned): Should we take ld.so from interp?
+  # TODO: Should we take ld.so from interp?
 
   res = subprocess.run(
       [_LD_PATH.as_posix(), fuzz_target_path.as_posix()],
@@ -418,7 +450,7 @@ def copy_shared_libraries(fuzz_target_path: Path, libs_path: Path,
       raise e
 
 
-def archive_target(target: BinaryMetadata) -> Path | None:
+def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
   """Archives a single target in the project using the exported rootfs."""
   logging.info('archive_target %s', target.name)
   index_dir = INDEXES_PATH / target.build_id
@@ -426,8 +458,9 @@ def archive_target(target: BinaryMetadata) -> Path | None:
     logging.error("didn't find index dir %s", index_dir)
     return None
 
-  source_map = subprocess.run(['srcmap'], capture_output=True,
-                              check=True).stdout
+  source_map = subprocess.run(
+      ['srcmap'], capture_output=True, check=True
+  ).stdout
 
   target_hash = hashlib.sha256(source_map).hexdigest()[:16]
 
@@ -439,14 +472,22 @@ def archive_target(target: BinaryMetadata) -> Path | None:
   libs_path.mkdir(parents=False, exist_ok=True)
   target_path = OUT / target.name
   copy_shared_libraries(target_path, libs_path, lib_mount_path)
-  set_interpreter(target_path, lib_mount_path)
-  set_target_rpath(target_path, lib_mount_path)
-  archive_path = SNAPSHOT_DIR / f'{uuid}.tar'
-  archive_path.parent.mkdir(parents=True, exist_ok=True)  # For `/` in $PROJECT.
 
   # We may want to eventually re-enable SRC copying (with some filtering to only
   # include source files).
-  with tempfile.TemporaryDirectory() as empty_src_dir:
+  with tempfile.TemporaryDirectory() as empty_src_dir, \
+       tempfile.TemporaryDirectory() as backup_dir:
+    # Make a backup of the target binary so we can undo the rpath/interpreter
+    # changes in OUT.
+    backup_path = Path(backup_dir) / target_path.name
+    shutil.copy2(target_path, backup_path)
+
+    set_interpreter(target_path, lib_mount_path)
+    set_target_rpath(target_path, lib_mount_path)
+    archive_path = SNAPSHOT_DIR / f'{uuid}{file_extension}'
+    # For `/` in $PROJECT.
+    archive_path.parent.mkdir(parents=True, exist_ok=True)
+
     manifest_types.Manifest(
         name=name,
         uuid=uuid,
@@ -454,6 +495,8 @@ def archive_target(target: BinaryMetadata) -> Path | None:
             kind=manifest_types.BinaryConfigKind.OSS_FUZZ,
             binary_name=target.name,
             binary_args=target.binary_args,
+            binary_env=target.binary_env,
+            harness_kind=target.harness_kind,
         ),
         source_map=manifest_types.source_map_from_dict(json.loads(source_map)),
         lib_mount_path=lib_mount_path,
@@ -465,18 +508,25 @@ def archive_target(target: BinaryMetadata) -> Path | None:
         out_dir=OUT,
     )
 
+    shutil.move(backup_path, target_path)
+
   logging.info('Wrote archive to: %s', archive_path)
-  # TODO(ochang): this will break projects that also create a `libs` folder and
+  # TODO: this will break projects that also create a `libs` folder and
   # have multiple targets.
   shutil.rmtree(libs_path)
 
   return archive_path
 
 
-def test_and_archive(target_args: list[str],
-                     targets_to_index: Sequence[str] | None):
+def test_and_archive(
+    target_args: list[str],
+    target_env: dict[str, str],
+    targets_to_index: Sequence[str] | None,
+    file_extension: str,
+    harness_kind: manifest_types.HarnessKind,
+):
   """Test target and archive."""
-  targets = enumerate_build_targets(target_args)
+  targets = enumerate_build_targets(target_args, target_env, harness_kind)
   if targets_to_index:
     targets = [t for t in targets if t.name in targets_to_index]
     missing_targets = set(targets_to_index) - set(t.name for t in targets)
@@ -489,13 +539,13 @@ def test_and_archive(target_args: list[str],
       # Check that the target binary behaves like a fuzz target,
       # unless the caller specifically asked for a list of targets.
       if not targets_to_index and not test_target(target):
-        # TODO(metzman): Figure out if this is a good idea, it makes some things
+        # TODO: Figure out if this is a good idea, it makes some things
         # pass that should but causes some things to pass that shouldn't.
         continue
     except Exception:  # pylint: disable=broad-exception-caught
       logging.exception('Error testing target.')
       continue
-    archive_target(target)
+    archive_target(target, file_extension)
 
 
 def clear_out():
@@ -509,10 +559,6 @@ def clear_out():
 
 def main():
   logging.basicConfig(level=logging.INFO)
-  INDEXES_PATH.mkdir(exist_ok=True)
-
-  # Clean up the existing OUT, otherwise we may run into various build errors.
-  clear_out()
 
   parser = argparse.ArgumentParser(description='Index builder.')
   parser.add_argument(
@@ -523,27 +569,83 @@ def main():
           'If this is omitted, snapshots are built for all fuzz targets. '
           'If specified, this can include binaries which are not fuzz targets '
           '(e.g., CLI targets which are built as part of the build '
-          'integration).'),
+          'integration).'
+      ),
   )
   parser.add_argument(
       '--target-args',
       default=None,
-      help=('Arguments to pass to the target when executing it. '
-            'This string is shell-escaped (interpreted with `shlex.split`). '
-            'The substring <input_file> will be replaced with the input path.'
-            'Note: This is deprecated, use --target-arg instead.'),
+      help=(
+          'Arguments to pass to the target when executing it. '
+          'This string is shell-escaped (interpreted with `shlex.split`). '
+          'The substring <input_file> will be replaced with the input path.'
+          'Note: This is deprecated, use --target-arg instead.'
+      ),
   )
   parser.add_argument(
       '--target-arg',
       action='append',
-      help=('An argument to pass to the target binary. '
-            'The substring <input_file> will be replaced with the input path.'),
+      help=(
+          'An argument to pass to the target binary. '
+          'The substring <input_file> will be replaced with the input path.'
+          'If you want to pass custom args, pass --harness-kind=binary as well.'
+      ),
+  )
+  parser.add_argument(
+      '--target-env',
+      action='append',
+      default=[],
+      help=(
+          'Environment variables (key=value) to pass to the target when '
+          'executing it. The substring <input_file> in a value will be '
+          'replaced with the input path.'
+      ),
+  )
+  parser.add_argument(
+      '--no-clear-out',
+      action='store_true',
+      help='Do not clear out the OUT directory before building.',
+  )
+  parser.add_argument(
+      '--compile-arg',
+      action='append',
+      help='An argument to pass to the `compile` script.',
+  )
+  parser.add_argument(
+      '--compressed',
+      action='store_true',
+      help='Use gzipped tar (.tgz) for the output snapshot',
+  )
+  parser.add_argument(
+      '--binaries-only',
+      action='store_true',
+      help='Build target binaries only, and not index archives.',
+  )
+  parser.add_argument(
+      '--harness-kind',
+      choices=[str(x) for x in manifest_types.HarnessKind],
+      default=manifest_types.HarnessKind.LIBFUZZER,
+      help=(
+          'The harness kind to use for the fuzz target. In order to pass custom'
+          ' args, set this to binary.'
+      ),
   )
   args = parser.parse_args()
 
+  # Clear existing indexer artifacts.
+  if INDEXES_PATH.exists():
+    shutil.rmtree(INDEXES_PATH)
+  INDEXES_PATH.mkdir()
+
+  # Clean up the existing OUT by default, otherwise we may run into various
+  # build errors.
+  if not args.no_clear_out:
+    clear_out()
+
   if args.target_args and args.target_arg:
     raise ValueError(
-        'Only one of --target-args or --target-arg can be specified.')
+        'Only one of --target-args or --target-arg can be specified.'
+    )
 
   targets_to_index = None
   if args.targets:
@@ -558,7 +660,7 @@ def main():
   SNAPSHOT_DIR.mkdir(exist_ok=True)
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
-  build_project(targets_to_index)
+  build_project(targets_to_index, args.compile_arg, args.binaries_only)
 
   if args.target_arg:
     target_args = args.target_arg
@@ -568,11 +670,45 @@ def main():
   else:
     logging.info('No target args specified.')
     target_args = []
+  if args.target_env:
+    target_env = manifest_types.parse_env(args.target_env)
+  else:
+    logging.info('No target env specified.')
+    target_env = {}
 
-  test_and_archive(target_args, targets_to_index)
+  harness_kind = manifest_types.HarnessKind(args.harness_kind)
 
-  for snapshot in SNAPSHOT_DIR.iterdir():
-    shutil.move(str(snapshot), OUT)
+  match harness_kind:
+    case manifest_types.HarnessKind.LIBFUZZER:
+      if target_args and target_args != [manifest_types.INPUT_FILE]:
+        raise ValueError(
+            f'Unsupported target args for harness_kind libfuzzer {target_args}'
+        )
+      target_args = [manifest_types.INPUT_FILE]
+    case _:
+      pass
+
+  if not args.binaries_only:
+    file_extension = '.tgz' if args.compressed else '.tar'
+
+    test_and_archive(
+        target_args, target_env, targets_to_index, file_extension, harness_kind,
+    )
+
+    for snapshot in SNAPSHOT_DIR.iterdir():
+      shutil.move(str(snapshot), OUT)
+
+  # By default, this directory has o-rwx and its contents can't be deleted
+  # by a non-root user from outside the container. The rest of the files are
+  # unaffected because to delete a file, a write permission on its enclosing
+  # directory is sufficient regardless of the owner.
+  cdb_dir = OUT / 'cdb'
+  try:
+    cdb_dir.chmod(
+        cdb_dir.stat().st_mode | stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+    )
+  except OSError:
+    pass
 
 
 if __name__ == '__main__':
