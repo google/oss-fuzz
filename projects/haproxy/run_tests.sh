@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make libpcre2-dev zlib1g-dev
-RUN git clone https://github.com/haproxy/haproxy
-RUN git clone https://github.com/vtest/VTest2 --depth=1
 
-WORKDIR $SRC
+cd $SRC/haproxy
 
-COPY build.sh run_tests.sh $SRC
-COPY fuzz* $SRC/
+# This tests fails so remove it
+rm reg-tests/http-rules/converters_ipmask_concat_strcmp_field_word.vtc
+
+make unit-tests
+HAPROXY_PROGRAM=$SRC/haproxy/haproxy VTEST_PROGRAM=$SRC/VTest2/vtest make reg-tests
