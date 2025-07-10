@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 ###############################################################################
-
+export CXXFLAGS="$CXXFLAGS -pthread -stdlib=libc++"
 ./test_shaders.sh
