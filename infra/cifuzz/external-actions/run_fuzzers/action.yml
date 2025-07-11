@@ -16,6 +16,9 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
+  fuzzing_engine:
+    description: 'The fuzzing engine to run the fuzzers with.'
+    default: 'libfuzzer'
   mode:
     description: |
       The mode to run the fuzzers with ("code-change", "batch", "coverage", or "prune").
@@ -81,6 +84,7 @@ runs:
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
+    FUZZING_ENGINE: ${{ inputs.fuzzing_engine }}
     MODE: ${{ inputs.mode }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
