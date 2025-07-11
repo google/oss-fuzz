@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 ################################################################################
-mkdir json-c-build
+
 cd json-c-build
-cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON ..
-make -j$(nproc)
-cd ..
-
-cp $SRC/json-c/fuzz/*.dict $OUT/
-
-for f in $SRC/json-c/fuzz/*_fuzzer.cc; do
-    fuzzer=$(basename "$f" _fuzzer.cc)
-    $CXX $CXXFLAGS -std=c++11 -I$SRC/json-c -I$SRC/json-c/json-c-build\
-         $SRC/json-c/fuzz/${fuzzer}_fuzzer.cc -o $OUT/${fuzzer}_fuzzer \
-         $LIB_FUZZING_ENGINE $SRC/json-c/json-c-build/libjson-c.a
-done
+make test
