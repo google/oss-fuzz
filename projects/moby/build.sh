@@ -25,18 +25,21 @@ then
 	
 fi
 
+cd $SRC/go-118-fuzz-build
+go build .
+mv go-118-fuzz-build /root/go/bin/
+
 cd $SRC/moby
 printf "package libnetwork\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/moby/registerfuzzdependency.go
 
 mv $SRC/moby/vendor.mod $SRC/moby/go.mod
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
 
 cp $SRC/jsonmessage_fuzzer.go $SRC/moby/pkg/jsonmessage/
-cp $SRC/backend_build_fuzzer.go $SRC/moby/api/server/backend/build/
+cp $SRC/backend_build_fuzzer.go $SRC/moby/daemon/build/
 cp $SRC/remotecontext_fuzzer.go $SRC/moby/builder/remotecontext/
-cp $SRC/containerstream_fuzzer.go $SRC/moby/container/stream/
 cp $SRC/daemon_fuzzer.go $SRC/moby/daemon/
 
-rm $SRC/moby/pkg/archive/example_changes.go
 rm $SRC/moby/daemon/logger/plugin_unsupported.go
 
 cd $SRC/moby
@@ -56,12 +59,8 @@ fi
 
 compile_native_go_fuzzer github.com/docker/docker/volume/mounts FuzzParseLinux FuzzParseLinux
 compile_go_fuzzer github.com/docker/docker/pkg/jsonmessage FuzzDisplayJSONMessagesStream FuzzDisplayJSONMessagesStream
-compile_go_fuzzer github.com/docker/docker/api/server/backend/build FuzzsanitizeRepoAndTags FuzzsanitizeRepoAndTags
+compile_go_fuzzer github.com/docker/docker/daemon/build FuzzsanitizeRepoAndTags FuzzsanitizeRepoAndTags
 compile_go_fuzzer github.com/docker/docker/builder/remotecontext FuzzreadAndParseDockerfile FuzzreadAndParseDockerfile
-compile_go_fuzzer github.com/docker/docker/container/stream FuzzcopyEscapable FuzzcopyEscapable
-compile_native_go_fuzzer github.com/docker/docker/pkg/archive FuzzUntar FuzzUntar
-compile_native_go_fuzzer github.com/docker/docker/pkg/archive FuzzDecompressStream FuzzDecompressStream
-compile_native_go_fuzzer github.com/docker/docker/pkg/archive FuzzApplyLayer FuzzApplyLayer
 compile_native_go_fuzzer github.com/docker/docker/pkg/tailfile FuzzTailfile FuzzTailfile
 compile_native_go_fuzzer github.com/docker/docker/daemon/logger/jsonfilelog FuzzLoggerDecode FuzzLoggerDecode
 compile_native_go_fuzzer github.com/docker/docker/libnetwork/etchosts FuzzAdd FuzzAdd
@@ -69,3 +68,11 @@ compile_native_go_fuzzer github.com/docker/docker/oci FuzzAppendDevicePermission
 compile_native_go_fuzzer github.com/docker/docker/daemon/logger/jsonfilelog/jsonlog FuzzJSONLogsMarshalJSONBuf FuzzJSONLogsMarshalJSONBuf
 
 cp $SRC/*.options $OUT/
+
+cd $SRC/go-archive
+printf "package archive\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/go-archive/registerfuzzdependency.go
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
+go mod tidy
+compile_native_go_fuzzer github.com/moby/go-archive/compression FuzzDecompressStream FuzzDecompressStream
+compile_native_go_fuzzer github.com/moby/go-archive FuzzApplyLayer FuzzApplyLayer
+compile_native_go_fuzzer github.com/moby/go-archive FuzzUntar FuzzUntar
