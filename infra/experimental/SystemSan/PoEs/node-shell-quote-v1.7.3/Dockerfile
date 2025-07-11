@@ -21,8 +21,10 @@ RUN apt update && \
   vim \
   npm && \
   git clone \
-    --depth 1 \
-    https://github.com/substack/node-shell-quote.git && \
+    https://github.com/ljharb/node-shell-quote.git && \
+  cd node-shell-quote && \
+  # v1.7.3 is not tagged anymore
+  git reset --hard 6a8a899c62a58a30fb128a7079f02826ed4faee0 && \
   npm config set @gitlab-org:registry \
     https://gitlab.com/api/v4/packages/npm/
 
