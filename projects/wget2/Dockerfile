@@ -60,4 +60,4 @@ RUN wget -O- https://ftp.gnu.org/pub/gnu/libmicrohttpd/libmicrohttpd-latest.tar.
 RUN git clone --recursive https://gitlab.com/gnuwget/wget2.git
 
 WORKDIR wget2
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
