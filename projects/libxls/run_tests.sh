@@ -1,4 +1,5 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone https://github.com/cert-manager/cert-manager --depth=1
-RUN git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=november-backup
-RUN wget https://go.dev/dl/go1.24.0.linux-amd64.tar.gz \
-    && mkdir temp-go \
-    && rm -rf /root/.go/* \
-    && tar -C temp-go/ -xzf go1.24.0.linux-amd64.tar.gz \
-    && mv temp-go/go/* /root/.go/
-COPY build.sh pki_fuzzer.go $SRC/
-WORKDIR $SRC/cert-manager
+ASAN_OPTIONS=detect_leaks=0 make check
