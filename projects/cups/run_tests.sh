@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +14,24 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y zlib1g-dev libavahi-client-dev libsystemd-dev
-RUN git clone --depth 1 https://github.com/OpenPrinting/cups
-RUN git clone --depth 1 https://github.com/OpenPrinting/fuzzing.git
-RUN cp $SRC/fuzzing/projects/cups/oss_fuzz_build.sh $SRC/build.sh
-COPY run_tests.sh *.diff $SRC/
-RUN cd $SRC/fuzzing && git apply $SRC/test_patch.diff
-WORKDIR $SRC/cups
+# build the unit tests
+export ASAN_OPTIONS=detect_leaks=0
+
+cd $SRC/cups
+# these locales fail:
+rm locale/cups_hu.po
+rm locale/cups_pt.po
+
+# Below we run two test suites.
+# cups has another test suite which is part
+# of `make test`: `cd test; ./run-stp-tests.sh`,
+# however, this requires a non-root user and
+# network interfaces that OSS-Fuzz doesn't support.
+
+pushd cups
+  make test
+popd
+pushd scheduler
+  make test
+popd
+
