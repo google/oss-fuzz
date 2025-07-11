@@ -5,6 +5,7 @@ auto_ccs:
   - "cbpilm@gmail.com"
   - "security@openexr.org"
   - "kdt3rd@gmail.com"
+  - "research@shielder.it"
 main_repo: 'https://github.com/AcademySoftwareFoundation/openexr'
 
 fuzzing_engines:
