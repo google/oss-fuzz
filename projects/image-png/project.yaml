@@ -9,4 +9,5 @@ language: rust
 auto_ccs:
   - "fintelia@gmail.com"
   - "david@adalogics.com"
+  - "lukasza@chromium.org"
 file_github_issue: True
