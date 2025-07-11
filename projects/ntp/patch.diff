@@ -2,9 +2,9 @@ diff --git a/configure.ac b/configure.ac
 index 7975d31..528861c 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -4399,6 +4399,37 @@ AC_DEFINE_UNQUOTED([DYNAMIC_INTERLEAVE], [$ntp_dynamic_interleave],
-     [support dynamic interleave?])
- AC_MSG_RESULT([$ntp_ok])
+@@ -4429,6 +4429,37 @@
+ 	#define	NONEMPTY_TRANSLATION_UNIT	extern int abs(int);
+ ])
  
 +AC_ARG_ENABLE(fuzztargets,
 +    AS_HELP_STRING([--enable-fuzztargets], [Enable fuzz targets]),[enable_fuzztargets=$enableval],[enable_fuzztargets=no])
@@ -39,8 +39,8 @@ index 7975d31..528861c 100644
 +
  NTP_UNITYBUILD
  
- dnl  gtest is needed for our tests subdirs. It would be nice if we could
-@@ -4459,6 +4490,7 @@ AC_CONFIG_FILES([tests/ntpd/Makefile])
+ NTP_PROBLEM_TESTS
+@@ -4484,6 +4515,7 @@
  AC_CONFIG_FILES([tests/ntpq/Makefile])
  AC_CONFIG_FILES([tests/sandbox/Makefile])
  AC_CONFIG_FILES([tests/sec-2853/Makefile])
@@ -52,7 +52,7 @@ diff --git a/ntpd/ntp_io.c b/ntpd/ntp_io.c
 index 7c3fdd4..190a373 100644
 --- a/ntpd/ntp_io.c
 +++ b/ntpd/ntp_io.c
-@@ -503,7 +503,11 @@ io_open_sockets(void)
+@@ -510,7 +510,11 @@
  	 * Create the sockets
  	 */
  	BLOCKIO();
@@ -99,7 +99,7 @@ new file mode 100644
 index 0000000..7cb8d99
 --- /dev/null
 +++ b/tests/fuzz/fuzz_ntpd_receive.c
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,93 @@
 +#include <stddef.h>
 +#include <stdint.h>
 +#include <sys/types.h>
@@ -110,14 +110,13 @@ index 0000000..7cb8d99
 +#include "recvbuff.h"
 +#include "ntpd.h"
 +
-+const char *Version = "libntpq 0.3beta";
++const char *Version = "fuzz_ntpd_receive 0.2";
 +int listen_to_virtual_ips = TRUE;
 +int mdnstries = 5;
 +char const *progname = "fuzz_ntpd_receive";
 +#ifdef HAVE_WORKING_FORK
-+int    waitsync_fd_to_close = -1;    /* -w/--wait-sync */
++int    daemon_pipe[2] = {-1, -1};    /* -w/--wait-sync */
 +#endif
-+int yydebug=0;
 +
 +static int initialized = 0;
 +int sockfd;
