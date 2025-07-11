@@ -1,5 +1,5 @@
-# Copyright 2016 Google Inc.
-# Copyright 2025 Sebastian Pipping <sebastian@pipping.org>
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
-            cmake \
-            libprotobuf-dev:amd64 \
-            libprotobuf-dev:i386 \
-            libstdc++-9-dev:i386 \
-            make \
-            protobuf-compiler
-
-RUN git clone --depth 1 https://github.com/libexpat/libexpat expat
-WORKDIR expat
-COPY run_tests.sh build.sh *.dict $SRC/
+cd build
+make test
