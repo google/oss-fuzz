@@ -20,5 +20,5 @@ RUN git clone https://github.com/vtest/VTest2 --depth=1
 
 WORKDIR $SRC
 
-COPY build.sh run_tests.sh $SRC
+COPY build.sh run_tests.sh $SRC/
 COPY fuzz* $SRC/
