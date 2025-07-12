@@ -145,7 +145,7 @@ cmake -G "Ninja" \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi" \
   -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
-  -DLLVM_ENABLE_PROJECTS="clang;lld" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;lldb" \
   -DLLVM_BINUTILS_INCDIR="/usr/include/" \
   -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
   $LLVM_SRC/llvm
@@ -216,7 +216,8 @@ function free_disk_space {
       /usr/local/bin/sanstats \
       /usr/local/bin/dsymutil \
       /usr/local/bin/verify-uselistorder \
-      /usr/local/bin/clang-format
+      /usr/local/bin/clang-format \
+      /usr/local/bin/lldb*
 
     # Remove unneeded clang libs, CMake files from LLVM build, lld libs, and the
     # libraries.
