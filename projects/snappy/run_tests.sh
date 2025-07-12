@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,5 @@
 #
 ################################################################################
 
-cd $SRC/snappy
-mkdir -p build && cd build
-cmake -DSNAPPY_FUZZING_BUILD=ON -DSNAPPY_BUILD_TESTS=1 \
-    -DSNAPPY_BUILD_BENCHMARKS=0 ../ && cmake --build .
-
-cp *_fuzzer $OUT/
+cd $SRC/snappy/build
+ctest --output-on-failure
