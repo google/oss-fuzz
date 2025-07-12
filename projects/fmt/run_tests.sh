@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,28 +15,5 @@
 #
 ################################################################################
 
-#create zip files with initial corpus, taken from version control.
-#for f in $(ls fuzzers/initial_corpus/) ;do
-#  zip -j -r $OUT/fuzzer_${f}_seed_corpus.zip fuzzers/initial_corpus/$f
-#done
-
-mkdir build
 cd build
-
-# use C++ 14 instead of 17, because even if clang is
-# bleeding edge, cmake is old in the oss fuzz image.
-
-cmake .. \
--GNinja \
--DCMAKE_BUILD_TYPE=Debug \
--DCMAKE_CXX_STANDARD=14 \
--DFMT_DOC=Off \
--DFMT_TEST=On \
--DFMT_SAFE_DURATION_CAST=On \
--DFMT_FUZZ=On \
--DFMT_FUZZ_LINKMAIN=Off \
--DFMT_FUZZ_LDFLAGS=$LIB_FUZZING_ENGINE
-
-cmake --build .
-
-cp bin/*fuzzer $OUT
+ninja test
