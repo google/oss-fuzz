@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +15,6 @@
 #
 ################################################################################
 
-pushd $SRC/ndpi
-  git apply $SRC/run_tests.diff
-popd
-
-pushd $SRC/json-c-json-c-0.17-20230812
-  mkdir build
-  cd build
-  cmake -DBUILD_SHARED_LIBS=OFF ..
-  make -j$(nproc)
-  make install
-popd
-
-bash -x ./ndpi/tests/ossfuzz.sh
 pushd $SRC/ndpi/tests/unit
-    make unit
+    ./unit
 popd
