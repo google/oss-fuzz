@@ -1,4 +1,5 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake ninja-build
-RUN git clone --depth 1 https://github.com/facebook/yoga.git yoga
-WORKDIR yoga
-COPY build.sh run_tests.sh $SRC/
+ASAN_OPTIONS="detect_leaks=0" ./unit_tests
