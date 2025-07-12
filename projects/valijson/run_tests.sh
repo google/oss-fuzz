@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
-  pkg-config cmake libcurlpp-dev libcurl4-openssl-dev
-RUN git clone --depth 1 https://github.com/tristanpenman/valijson
-COPY run_tests.diff run_tests.sh $SRC/
-RUN cd valijson && git apply $SRC/run_tests.diff
-WORKDIR valijson
-RUN cp $SRC/valijson/tests/fuzzing/oss-fuzz-build.sh $SRC/build.sh
+cd $SRC/valijson/build
+./test_suite
