@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2025 Google LLC
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/libsrtp
-autoreconf -ivf
-./configure
-LIBFUZZER="$LIB_FUZZING_ENGINE" make srtp-fuzzer
-make test
-zip -r srtp-fuzzer_seed_corpus.zip fuzzer/corpus
-cp $SRC/libsrtp/fuzzer/srtp-fuzzer $OUT
-cp srtp-fuzzer_seed_corpus.zip $OUT
+
+pushd $SRC/libsrtp
+  make runtest
+popd
