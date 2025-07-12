@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y pcscd libccid libpcsclite-dev libssl-dev libreadline-dev autoconf automake build-essential docbook-xsl xsltproc libtool pkg-config zlib1g-dev
-RUN git clone --depth 1 --single-branch --branch master https://github.com/OpenSC/OpenSC opensc
-WORKDIR opensc
-COPY build.sh run_tests.sh $SRC/
+make check
