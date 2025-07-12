@@ -16,5 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/tinyobjloader/tinyobjloader
-COPY build.sh $SRC
+COPY build.sh run_tests.sh $SRC
 WORKDIR $SRC/tinyobjloader
