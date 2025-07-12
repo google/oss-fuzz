@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool gettext 
 RUN git clone --recurse-submodules https://github.com/google/snappy
 
 WORKDIR $SRC/
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
