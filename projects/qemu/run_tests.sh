@@ -15,4 +15,6 @@
 ################################################################################
 
 cd $SRC/qemu/build-oss-fuzz
+# TODO: These tests are a subset of `make check` because there are larger
+# comparability issues with running them all.
 make -j"$(nproc)" check-unit
