@@ -1,4 +1,5 @@
-# Copyright 2021 Google Inc.
+#!/bin/bash -eux
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get update && \
-    apt-get install -y wget tar
-
-RUN git clone --depth 1 https://github.com/JuliaStrings/utf8proc.git
-
-RUN wget -O $SRC/utf8proc/test/NormalizationTest.txt https://www.unicode.org/Public/13.0.0/ucd/NormalizationTest.txt
-RUN wget -O $SRC/utf8proc/test/GraphemeBreakTest.txt https://www.unicode.org/Public/13.0.0/ucd/auxiliary/GraphemeBreakTest.txt
-
-WORKDIR $SRC/utf8proc/
-COPY *.sh $SRC/
+cd build
+make test
