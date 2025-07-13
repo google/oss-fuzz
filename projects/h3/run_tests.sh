@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eux
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
-  pkg-config
-RUN git clone --depth 1 https://github.com/uber/h3
-WORKDIR h3
-COPY *.sh $SRC/
+cd build
+make test
