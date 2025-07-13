@@ -16,4 +16,5 @@
 #
 ################################################################################
 
+git -C "$SRC/PcapPlusPlus" apply "$SRC/pcapplusplus_enable_tests.diff"
 $SRC/PcapPlusPlus/Tests/Fuzzers/ossfuzz.sh

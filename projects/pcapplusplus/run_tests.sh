@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +15,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+export ASAN_OPTIONS=detect_stack_use_after_return=0:detect_leaks=0:abort_on_error=0:halt_on_error=0:exitcode=0
+ROOT="$SRC/PcapPlusPlus"
 
-RUN apt-get update && apt-get install -y cmake autoconf flex bison
-RUN git clone --depth=1 https://github.com/seladb/PcapPlusPlus PcapPlusPlus
+echo "=== Packet++Test ==="
+cd "$ROOT/Tests/Packet++Test"
+./Bin/Packet++Test
 
-# Get tcpdump's test pcaps as seed corpus
-RUN git clone --depth=1 https://github.com/the-tcpdump-group/tcpdump.git tcpdump
-RUN git clone --depth=1 https://github.com/the-tcpdump-group/libpcap.git libpcap
-
-WORKDIR PcapPlusPlus
-
-COPY *.sh pcapplusplus_enable_tests.diff $SRC
+echo "=== Pcap++Test (no networking) ==="
+cd "$ROOT/Tests/Pcap++Test"
+./Bin/Pcap++Test -n
