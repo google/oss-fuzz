@@ -1,5 +1,5 @@
-#!/bin/bash
-# Copyright 2025 Google LLC
+#!/bin/sh -e
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,7 @@
 #
 ################################################################################
 
-# Usage: bash run_test.sh 
-# Runs all tests.
+rgrep --files-with-matches '\-lheif' . \
+  | xargs -r sed -i 's/-lheif/-lheif -lc++/'
 
-set -e # Exit immediately if any command fails
-
-PROJECT_SRC_DIR="$SRC/imagemagick"
-
-echo "==> Changing to ImageMagick source directory: $PROJECT_SRC_DIR"
-cd "$PROJECT_SRC_DIR"
-
-echo "==> Setup needed right now..."  # DO NOT SUBMIT
-./configure
-echo "==> Setup finished successfully."  # DO NOT SUBMIT
-
-echo "==> Running all tests..."
-make check
-echo "==> Test run finished successfully."
+make -j"$(nproc)" check
