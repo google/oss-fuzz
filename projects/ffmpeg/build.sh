@@ -231,11 +231,11 @@ make -j$(nproc) install
 export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
 make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
 
-rsync -av rsync://samples.ffmpeg.org/samples/avi/ffv1/testset/ $SRC/ffmpeg/ffv1testset
-
 if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
   exit 0
 fi
+
+rsync -av rsync://samples.ffmpeg.org/samples/avi/ffv1/testset/ $SRC/ffmpeg/ffv1testset
 
 # Build the fuzzers.
 cd $SRC/ffmpeg
