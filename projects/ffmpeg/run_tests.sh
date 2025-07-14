@@ -15,6 +15,5 @@
 #
 ################################################################################
 
-PROJECT_SRC_DIR="$SRC/ffmpeg"
-cd $PROJECT_SRC_DIR
-make -k -j"$(nproc)" fate
+cd $SRC/ffmpeg
+make --keep-going -j"$(nproc)" fate SAMPLES=fate-suite/
