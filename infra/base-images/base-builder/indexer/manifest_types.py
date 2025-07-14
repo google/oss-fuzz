@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Classes and tools to build an indexer snapshot according to the spec.
 
 A snapshot is a tarball containing the following:
@@ -37,6 +38,7 @@ import urllib.request
 
 import pathlib
 
+
 # Source directory.
 SRC_DIR = pathlib.Path("src")
 # Object directory.
@@ -59,10 +61,12 @@ OUT = pathlib.Path(os.getenv("OUT", "/out"))
 _COVERAGE_INFO_URL = ("https://storage.googleapis.com/oss-fuzz-coverage/"
                       f"latest_report_info/{os.getenv('PROJECT_NAME')}.json")
 
+
 # Will be replaced with the input file for target execution.
 INPUT_FILE = "<input_file>"
 # A file the target can write output to.
 OUTPUT_FILE = "<output_file>"
+
 
 
 class RepositoryType(enum.StrEnum):
@@ -90,9 +94,9 @@ class SourceRef:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a SourceRef object from a deserialized dict."""
-    return SourceRef(url=data["url"],
-                     rev=data["rev"],
-                     type=RepositoryType(data["type"]))
+    return SourceRef(
+        url=data["url"], rev=data["rev"], type=RepositoryType(data["type"])
+    )
 
 
 @dataclasses.dataclass(frozen=True)
@@ -114,26 +118,6 @@ class Reproducibility:
     )
 
 
-@dataclasses.dataclass(frozen=True)
-class ReplacedBinaryArgs:
-  """Contains the new binary args and the stdin path."""
-
-  # The new binary args.
-  binary_args: list[str] | None
-  # The original stdin path.
-  input_path: str
-  # Whether the stdin path was replaced.
-  input_replaced: bool
-
-  def from_dict(self, data: dict[str, Any]) -> Self:
-    """Creates a ReplacedBinaryArgs object from a deserialized dict."""
-    return ReplacedBinaryArgs(
-        binary_args=data.get("binary_args"),
-        input_path=data["input_path"],
-        input_replaced=data["input_replaced"],
-    )
-
-
 class BinaryConfigKind(enum.StrEnum):
   """The kind of binary configurations."""
 
@@ -144,7 +128,8 @@ class BinaryConfigKind(enum.StrEnum):
     if self not in options:
       raise ValueError(
           f"Expected one of the following binary config kinds: {options}, "
-          f"but got {self}")
+          f"but got {self}"
+      )
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
@@ -184,23 +169,44 @@ class BinaryConfig:
     return dataclasses.asdict(self)
 
 
+class HarnessKind(enum.StrEnum):
+  """The target/harness kind."""
+
+  LIBFUZZER = enum.auto()
+  BINARY = enum.auto()
+
+
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class CommandLineBinaryConfig(BinaryConfig):
   """Configuration for a command-line userspace binary."""
 
   binary_name: str
   binary_args: list[str]
+  # Additional environment variables to pass to the binary. They will overwrite
+  # any existing environment variables with the same name.
+  # Input replacement works on these variables as well.
+  binary_env: dict[str, str]
+  harness_kind: HarnessKind
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[Any, Any]) -> Self:
     """Deserializes the `CommandLineBinaryConfig` from a dict."""
     kind = BinaryConfigKind(config_dict["kind"])
     kind.validate_in([BinaryConfigKind.OSS_FUZZ, BinaryConfigKind.BINARY])
+    # Default to "binary" for backwards compatibility.
+    harness_kind = HarnessKind(
+        config_dict.get("harness_kind", HarnessKind.BINARY)
+    )
     return CommandLineBinaryConfig(
         kind=kind,
+        harness_kind=harness_kind,
         binary_name=config_dict["binary_name"],
         binary_args=config_dict["binary_args"],
+        binary_env=config_dict.get("binary_env", {}),
     )
+
+
+
 
 
 @dataclasses.dataclass(frozen=True)
@@ -250,7 +256,8 @@ class Manifest:
       if not isinstance(data.get("binary_args"), str):
         raise RuntimeError(
             "binary_args must be a string in version 1 and 2, but got"
-            f" {type(data.get('binary_args'))}")
+            f" {type(data.get('binary_args'))}"
+        )
       binary_args = _get_mapped(data, "binary_args", shlex.split)
     else:
       binary_args = data.get("binary_args")
@@ -259,6 +266,8 @@ class Manifest:
           kind=BinaryConfigKind.BINARY,
           binary_name=data["binary_name"],
           binary_args=binary_args or [],
+          harness_kind=HarnessKind.BINARY,
+          binary_env={},
       )
     else:
       binary_config = _get_mapped(data, "binary_config", BinaryConfig.from_dict)
@@ -269,7 +278,8 @@ class Manifest:
       version = ARCHIVE_VERSION
     else:
       logging.warning(
-          "Unsupported manifest version %s detected. Not upgrading.", version)
+          "Unsupported manifest version %s detected. Not upgrading.", version
+      )
     return Manifest(
         version=version,
         name=data["name"],
@@ -277,8 +287,9 @@ class Manifest:
         lib_mount_path=lib_mount_path,
         source_map=_get_mapped(data, "source_map", source_map_from_dict),
         source_dir_prefix=data.get("source_dir_prefix"),
-        reproducibility=_get_mapped(data, "reproducibility",
-                                    Reproducibility.from_dict),
+        reproducibility=_get_mapped(
+            data, "reproducibility", Reproducibility.from_dict
+        ),
         binary_config=binary_config,
     )
 
@@ -287,8 +298,9 @@ class Manifest:
     data = dataclasses.asdict(self)
 
     data["binary_config"] = self.binary_config.to_dict()
-    data["lib_mount_path"] = _get_mapped(data, "lib_mount_path",
-                                         lambda x: x.as_posix())
+    data["lib_mount_path"] = _get_mapped(
+        data, "lib_mount_path", lambda x: x.as_posix()
+    )
     data["source_map"] = _get_mapped(data, "source_map", source_map_to_dict)
 
     return data
@@ -302,39 +314,47 @@ class Manifest:
     if self.version < _MIN_SUPPORTED_ARCHIVE_VERSION:
       raise RuntimeError(
           f"Build archive version too low: {self.version}. Supporting at"
-          f" least {_MIN_SUPPORTED_ARCHIVE_VERSION}.")
+          f" least {_MIN_SUPPORTED_ARCHIVE_VERSION}."
+      )
     if self.version > ARCHIVE_VERSION:
       raise RuntimeError(
           f"Build archive version too high: {self.version}. Only supporting"
-          f" up to {ARCHIVE_VERSION}.")
+          f" up to {ARCHIVE_VERSION}."
+      )
     if self.version == 1 and _LIB_MOUNT_PATH_V1 != self.lib_mount_path:
       raise RuntimeError(
           "Build archive with version 1 has an alternative lib_mount_path set"
-          f" ({self.lib_mount_path}). This is not a valid archive.")
+          f" ({self.lib_mount_path}). This is not a valid archive."
+      )
     if not self.name or not self.uuid or not self.binary_config:
       raise RuntimeError(
           "Attempting to load a manifest with missing fields. Expected all"
-          " fields to be set, but got {self}")
+          " fields to be set, but got {self}"
+      )
     if self.source_map is not None:
       for _, ref in self.source_map.items():
         if not ref.url:
           raise RuntimeError(
               "Attempting to load a manifest with a source map entry with an"
-              " empty URL. Source map entry: {ref}")
+              " empty URL. Source map entry: {ref}"
+          )
     # check very simple basic types.
     for k, v in self.__annotations__.items():
       if not isinstance(v, type):
         continue
       if not isinstance(getattr(self, k), v):
-        raise RuntimeError(f"Type mismatch for field {k}: expected {v}, got"
-                           f" {type(getattr(self, k))}")
+        raise RuntimeError(
+            f"Type mismatch for field {k}: expected {v}, got"
+            f" {type(getattr(self, k))}"
+        )
     # We updated from string to list in version 3, make sure this propagated.
     binary_config = self.binary_config
     if hasattr(binary_config, "binary_args"):
       if not isinstance(binary_config.binary_args, list):
         raise RuntimeError(
             "Type mismatch for field binary_config.binary_args: expected list,"
-            f"got {type(binary_config.binary_args)}")
+            f"got {type(binary_config.binary_args)}"
+        )
 
   def save_build(
       self,
@@ -347,12 +367,16 @@ class Manifest:
       overwrite: bool = True,
   ) -> None:
     """Saves a build archive with this Manifest."""
+    if os.path.exists(archive_path) and not overwrite:
+      raise FileExistsError(f"Not overwriting existing archive {archive_path}")
+
     self.validate()
 
     if not hasattr(self.binary_config, "binary_name"):
       raise RuntimeError(
           "Attempting to save a binary config type without binary_name."
-          " This is not yet supported. Kind: {self.binary_config.kind}.")
+          " This is not yet supported. Kind: {self.binary_config.kind}."
+      )
 
     with tempfile.NamedTemporaryFile() as tmp:
       mode = "w:gz" if archive_path.suffix.endswith("gz") else "w"
@@ -378,9 +402,11 @@ class Manifest:
               if only_include_target and _is_elf(file):
                 # Skip ELF files that aren't the relevant target (unless it's a
                 # shared library).
-                if (file.name != only_include_target and
-                    ".so" not in file.name and
-                    not file.absolute().is_relative_to(out_dir / "lib")):
+                if (
+                    file.name != only_include_target
+                    and ".so" not in file.name
+                    and not file.absolute().is_relative_to(out_dir / "lib")
+                ):
                   continue
 
               tar.add(
@@ -390,6 +416,8 @@ class Manifest:
                   arcname=prefix + str(file.relative_to(path)),
               )
 
+        # Make sure the manifest is the first file in the archive to avoid
+        # seeking when we only need the manifest.
         _add_string_to_tar(
             tar,
             MANIFEST_PATH.as_posix(),
@@ -399,7 +427,12 @@ class Manifest:
             ),
         )
 
+        # Make sure the index database (the only file directly in `INDEX_DIR`)
+        # is early in the archive for the same reason.
+        _save_dir(index_dir, INDEX_DIR)
+
         _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
+
         # Only include the relevant target for the snapshot, to save on disk
         # space.
         _save_dir(
@@ -407,23 +440,21 @@ class Manifest:
             OBJ_DIR,
             only_include_target=self.binary_config.binary_name,
         )
-        _save_dir(index_dir, INDEX_DIR)
+
         if self.binary_config.kind == BinaryConfigKind.OSS_FUZZ:
           copied_files = [tar_info.name for tar_info in tar.getmembers()]
           try:
-            report_missing_source_files(self.binary_config.binary_name,
-                                        copied_files, tar)
+            report_missing_source_files(
+                self.binary_config.binary_name, copied_files, tar
+            )
           except Exception:  # pylint: disable=broad-except
             logging.exception("Failed to report missing source files.")
 
-      if os.path.exists(archive_path) and not overwrite:
-        logging.warning("Skipping existing archive %s", archive_path)
-      else:
-        shutil.copyfile(tmp.name, archive_path)
+      shutil.copyfile(tmp.name, archive_path)
 
 
-def report_missing_source_files(binary_name: str, copied_files: list[str],
-                                tar: tarfile.TarFile):
+def report_missing_source_files(
+    binary_name: str, copied_files: list[str], tar: tarfile.TarFile):
   """Saves a report of missing source files to the snapshot tarball."""
   copied_files = {_get_comparable_path(file) for file in copied_files}
   covered_files = {
@@ -434,7 +465,9 @@ def report_missing_source_files(binary_name: str, copied_files: list[str],
   if not missing:
     return
   logging.info("Reporting missing files: %s", missing)
-  missing_report_lines = sorted([covered_files[k] for k in missing])
+  missing_report_lines = sorted([
+      covered_files[k] for k in missing
+  ])
   report_name = f"{binary_name}_missing_files.txt"
   tar_info = tarfile.TarInfo(name=report_name)
   missing_report = " ".join(missing_report_lines)
@@ -461,15 +494,13 @@ def get_covered_files(target: str) -> Sequence[str]:
     target_cov = json.load(resp)
 
   files = target_cov["data"][0]["files"]
-  return [
-      file["filename"]
-      for file in files
-      if file["summary"]["regions"]["covered"]
-  ]
+  return [file["filename"]
+          for file in files if file["summary"]["regions"]["covered"]]
 
 
-def _get_mapped(data: dict[str, Any], key: str,
-                mapper: Callable[[Any], Any]) -> Any | None:
+def _get_mapped(
+    data: dict[str, Any], key: str, mapper: Callable[[Any], Any]
+) -> Any | None:
   """Get a value from a dict and apply a mapper to it, if it's not None."""
   value = data.get(key)
   if value is None:
@@ -482,52 +513,11 @@ def source_map_from_dict(data: dict[str, Any]) -> dict[pathlib.Path, SourceRef]:
   return {pathlib.Path(x): SourceRef.from_dict(y) for x, y in data.items()}
 
 
-def source_map_to_dict(x: dict[pathlib.Path, SourceRef],) -> dict[str, Any]:
+def source_map_to_dict(
+    x: dict[pathlib.Path, SourceRef],
+) -> dict[str, Any]:
   """Converts a dictionary of SourceRef objects to a string: obj dict."""
   return {k.as_posix(): v for k, v in x.items()}
-
-
-def binary_args_from_placeholders(
-    binary_args: list[str] | None,
-    input_path: str,
-    output_path: str = "/dev/null",
-) -> ReplacedBinaryArgs:
-  """Processes binary args.
-
-  Args:
-    binary_args: List of binary args.
-    input_path: Path of the file that contains the program input bytes.
-    output_path: Path of the file that contains the program output bytes
-      (default to /dev/null).
-
-  Returns:
-    Processed binary args, where
-      "<input_file>": replaced by input_path if applicable
-      "<output_file>": replaced by /dev/null if applicable
-      and a boolean indicating whether input_path was replaced.
-  """
-  if binary_args is None:
-    return ReplacedBinaryArgs(binary_args=None,
-                              input_path=input_path,
-                              input_replaced=False)
-
-  input_replaced = False
-
-  def _replace_placeholder(arg: str) -> str:
-    if INPUT_FILE in arg:
-      nonlocal input_replaced
-      input_replaced = True
-      return arg.replace(INPUT_FILE, input_path)
-    elif OUTPUT_FILE in arg:
-      return arg.replace(OUTPUT_FILE, output_path)
-    else:
-      return arg
-
-  return ReplacedBinaryArgs(
-      binary_args=[_replace_placeholder(arg) for arg in binary_args],
-      input_path=input_path,
-      input_replaced=input_replaced,
-  )
 
 
 def _add_string_to_tar(tar: tarfile.TarFile, name: str, data: str) -> None:
@@ -547,3 +537,41 @@ def _is_elf(path: pathlib.PurePath) -> bool:
   except OSError:
     # Can happen if the file is a symlink, etc.
     return False
+
+
+def parse_env(env_list: list[str]) -> dict[str, str]:
+  """Helper function to parse environment variables from a list.
+
+  Args:
+    env_list: A list of environment variables in the format of "key=value".
+
+  Returns:
+    A dictionary of environment variables.
+
+  Raises:
+    ValueError: If a key is empty or invalid.
+  """
+  env = {}
+
+  def assert_key_valid(key: str) -> None:
+    if not key:
+      raise ValueError("Environment variable key is empty.")
+    # Check that the key looks like a valid environment variable name.
+
+    if key in env:
+      raise ValueError(
+          f"Environment variable key {key} is defined twice. "
+          f"Existing value: {env[key]}, new value: {value}."
+      )
+
+  for entry in env_list:
+    if "=" not in entry:
+      logging.warning(
+          "Environment variable string is not in the format of 'key=value': %s",
+          entry,
+      )
+    key, _, value = entry.partition("=")
+    assert_key_valid(key)
+    env[key] = value
+
+  return env

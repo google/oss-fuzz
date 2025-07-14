@@ -34,6 +34,7 @@ fi
 meson -Denable_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
       -Dlogging=false -Dfuzzer_ldflags=$LIB_FUZZING_ENGINE \
+      -Dtestdata_tests=true \
       ${CROSS:-} \
       ${build}
 ninja -j $(nproc) -C ${build}

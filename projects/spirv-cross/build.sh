@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# Apply the following patch for tests to succeed.
+git apply --ignore-space-change --ignore-whitespace  ../patch.diff
+
 # Update submodule
 ./checkout_glslang_spirv_tools.sh
 NPROC="--parallel $(nproc)" ./build_glslang_spirv_tools.sh
