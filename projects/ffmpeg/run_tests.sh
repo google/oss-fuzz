@@ -27,4 +27,4 @@ sed -i '/^AVCODECOBJS-\$(CONFIG_H264DSP)/d' tests/checkasm/Makefile
 sed -i -e '/extern.*checkasm_check_h264dsp/d' \
         -e '/"h264dsp"/d' tests/checkasm/checkasm.c
 
-time make -j"$(nproc)" fate SAMPLES=fate-suite/
+make -j"$(nproc)" fate SAMPLES=fate-suite/
