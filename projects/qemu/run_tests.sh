@@ -1,5 +1,5 @@
-#!/bin/sh -e
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 ################################################################################
 
-cd $SRC/qemu/
-$SRC/qemu/scripts/oss-fuzz/build.sh
+cd $SRC/qemu/build-oss-fuzz
+# TODO: These tests are a subset of `make check` because there are larger
+# comparability issues with running them all.
+make -j"$(nproc)" check-unit
