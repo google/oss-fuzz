@@ -223,10 +223,6 @@ fi
 make clean
 make -j$(nproc) install
 
-if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
-  exit 0
-fi
-
 # Download test samples, will be used as seed corpus.
 # DISABLED.
 # TODO: implement a better way to maintain a minimized seed corpora
@@ -236,6 +232,10 @@ export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
 make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
 
 rsync -av rsync://samples.ffmpeg.org/samples/avi/ffv1/testset/ $SRC/ffmpeg/ffv1testset
+
+if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
+  exit 0
+fi
 
 # Build the fuzzers.
 cd $SRC/ffmpeg
