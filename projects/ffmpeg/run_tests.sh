@@ -20,9 +20,7 @@ cd $SRC/ffmpeg
 # TODO: Since the h264dsp test is failing, we are using a patch to skip it
 # entirely. Although adding --ignore-tests=checkasm-h264dsp to ./configure is an
 #option, it still compiles the test and wastes a lot of time.
-if [ -f tests/checkasm/h264dsp.c ]; then
-  mv tests/checkasm/h264dsp.c tests/checkasm/h264dsp.c.backup
-fi
+mv tests/checkasm/h264dsp.c tests/checkasm/h264dsp.c.backup
 cp tests/checkasm/Makefile tests/checkasm/Makefile.backup
 cp tests/checkasm/checkasm.c tests/checkasm/checkasm.c.backup
 
