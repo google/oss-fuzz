@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,11 +20,17 @@ cd $SRC/ffmpeg
 # TODO: Since the h264dsp test is failing, we are using a patch to skip it
 # entirely. Although adding --ignore-tests=checkasm-h264dsp to ./configure is an
 #option, it still compiles the test and wastes a lot of time.
-if [ -f tests/checkasm/h264dsp.c ]; then
-  mv tests/checkasm/h264dsp.c tests/checkasm/h264dsp.c.disabled
-fi
+mv tests/checkasm/h264dsp.c tests/checkasm/h264dsp.c.backup
+cp tests/checkasm/Makefile tests/checkasm/Makefile.backup
+cp tests/checkasm/checkasm.c tests/checkasm/checkasm.c.backup
+
 sed -i '/^AVCODECOBJS-\$(CONFIG_H264DSP)/d' tests/checkasm/Makefile
 sed -i -e '/extern.*checkasm_check_h264dsp/d' \
         -e '/"h264dsp"/d' tests/checkasm/checkasm.c
 
 make -j"$(nproc)" fate SAMPLES=fate-suite/
+
+# Undo patches.
+mv tests/checkasm/h264dsp.c.backup tests/checkasm/h264dsp.c
+mv tests/checkasm/Makefile.backup tests/checkasm/Makefile
+mv tests/checkasm/checkasm.c.backup tests/checkasm/checkasm.c
