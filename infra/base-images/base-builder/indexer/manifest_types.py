@@ -45,6 +45,8 @@ SRC_DIR = pathlib.Path("src")
 OBJ_DIR = pathlib.Path("obj")
 # Directory for indexer data.
 INDEX_DIR = pathlib.Path("idx")
+# The index database filename.
+INDEX_DB = pathlib.Path("db.sqlite")
 # Library directory, where shared libraries are copied - inside obj.
 LIB_DIR = OBJ_DIR / "lib"
 # Manifest location
@@ -54,7 +56,7 @@ _LIB_MOUNT_PATH_V1 = pathlib.Path("/ossfuzzlib")
 # Min archive version we currently support.
 _MIN_SUPPORTED_ARCHIVE_VERSION = 1
 # The current version of the build archive format.
-ARCHIVE_VERSION = 4
+ARCHIVE_VERSION = 5
 # OSS-Fuzz $OUT dir.
 OUT = pathlib.Path(os.getenv("OUT", "/out"))
 # OSS-Fuzz coverage info.
@@ -209,6 +211,26 @@ class CommandLineBinaryConfig(BinaryConfig):
 
 
 
+def _get_sqlite_db_user_version(sqlite_db_path: pathlib.Path) -> int:
+  """Retrieves `PRAGMA user_version;` value without connecting to the database."""
+  with sqlite_db_path.open("rb") as stream:
+    # https://www.sqlite.org/pragma.html#pragma_user_version - a big-endian
+    # 32-bit number at offset 60 of the database header.
+    too_small_error = ValueError(
+        f"The file '{sqlite_db_path}' is too small for an SQLite database."
+    )
+    try:
+      stream.seek(60)
+    except OSError as e:
+      raise too_small_error from e
+
+    version_bytes = stream.read(4)
+    if len(version_bytes) < 4:
+      raise too_small_error
+
+    return int.from_bytes(version_bytes, byteorder="big")
+
+
 @dataclasses.dataclass(frozen=True)
 class Manifest:
   """Contains general meta-information about the snapshot."""
@@ -244,6 +266,9 @@ class Manifest:
 
   # Version of the manifest spec.
   version: int = ARCHIVE_VERSION
+
+  # Version of the index database schema.
+  index_db_version: int | None = None
 
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
@@ -282,6 +307,7 @@ class Manifest:
       )
     return Manifest(
         version=version,
+        index_db_version=data.get("index_db_version"),
         name=data["name"],
         uuid=data["uuid"],
         lib_mount_path=lib_mount_path,
@@ -365,7 +391,7 @@ class Manifest:
       archive_path: pathlib.PurePath,
       out_dir: pathlib.PurePath = pathlib.Path("/out"),
       overwrite: bool = True,
-  ) -> None:
+  ) -> Self:
     """Saves a build archive with this Manifest."""
     if os.path.exists(archive_path) and not overwrite:
       raise FileExistsError(f"Not overwriting existing archive {archive_path}")
@@ -416,13 +442,20 @@ class Manifest:
                   arcname=prefix + str(file.relative_to(path)),
               )
 
+        dumped_self = self
+        if self.index_db_version is None:
+          index_db_version = _get_sqlite_db_user_version(index_dir / INDEX_DB)
+          dumped_self = dataclasses.replace(
+              self, index_db_version=index_db_version
+          )
+
         # Make sure the manifest is the first file in the archive to avoid
         # seeking when we only need the manifest.
         _add_string_to_tar(
             tar,
             MANIFEST_PATH.as_posix(),
             json.dumps(
-                self.to_dict(),
+                dumped_self.to_dict(),
                 indent=2,
             ),
         )
@@ -451,6 +484,8 @@ class Manifest:
             logging.exception("Failed to report missing source files.")
 
       shutil.copyfile(tmp.name, archive_path)
+
+      return dumped_self
 
 
 def report_missing_source_files(
