@@ -25,6 +25,7 @@ import hashlib
 import json
 import os
 from pathlib import Path  # pylint: disable=g-importing-member
+import shlex
 import subprocess
 import sys
 import time
@@ -429,7 +430,22 @@ def _write_filter_log(
       f.write(f"\t{cu_path}\n")
 
 
+def expand_rsp_file(argv: Sequence[str]) -> list[str]:
+  # https://llvm.org/docs/CommandLine.html#response-files
+  expanded = []
+  for arg in argv:
+    if arg.startswith("@"):
+      with open(arg[1:], "r") as f:
+        expanded_args = shlex.split(f.read())
+      expanded.extend(expanded_args)
+    else:
+      expanded.append(arg)
+
+  return expanded
+
+
 def main(argv: list[str]) -> None:
+  argv = expand_rsp_file(argv)
   argv = remove_flag_if_present(argv, "-gline-tables-only")
 
   if _has_disallowed_clang_flags(argv):
