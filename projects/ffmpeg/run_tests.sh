@@ -21,7 +21,7 @@ cd $SRC/ffmpeg
 # entirely. Although adding --ignore-tests=checkasm-h264dsp to ./configure is an
 #option, it still compiles the test and wastes a lot of time.
 if [ -f tests/checkasm/h264dsp.c ]; then
-  rm tests/checkasm/h264dsp.c
+  mv tests/checkasm/h264dsp.c tests/checkasm/h264dsp.c.disabled
 fi
 sed -i '/^AVCODECOBJS-\$(CONFIG_H264DSP)/d' tests/checkasm/Makefile
 sed -i -e '/extern.*checkasm_check_h264dsp/d' \
