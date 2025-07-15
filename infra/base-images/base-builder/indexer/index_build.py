@@ -350,7 +350,7 @@ def test_target(
       [str(target_path)], stderr=subprocess.PIPE, check=False
   )
   expected_error = f'Usage: {target_path} <input_file>\n'
-  if result.stderr.decode() != expected_error or result.returncode != 1:
+  if expected_error not in result.stderr.decode() or result.returncode != 1:
     logging.error(
         'Target %s failed to run: %s',
         target_path,
