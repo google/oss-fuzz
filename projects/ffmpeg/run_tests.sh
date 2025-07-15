@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,10 +21,13 @@ cd $SRC/ffmpeg
 # entirely. Although adding --ignore-tests=checkasm-h264dsp to ./configure is an
 #option, it still compiles the test and wastes a lot of time.
 if [ -f tests/checkasm/h264dsp.c ]; then
-  mv tests/checkasm/h264dsp.c tests/checkasm/h264dsp.c.disabled
+  rm tests/checkasm/h264dsp.c
 fi
 sed -i '/^AVCODECOBJS-\$(CONFIG_H264DSP)/d' tests/checkasm/Makefile
 sed -i -e '/extern.*checkasm_check_h264dsp/d' \
         -e '/"h264dsp"/d' tests/checkasm/checkasm.c
 
 make -j"$(nproc)" fate SAMPLES=fate-suite/
+
+# Restore changes.
+git checkout .
