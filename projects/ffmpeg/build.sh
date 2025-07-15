@@ -219,6 +219,7 @@ fi
         --disable-doc \
         --disable-programs \
         --enable-demuxers \
+        --samples=fate-suite/ \
         $FFMPEG_BUILD_ARGS
 make clean
 make -j$(nproc) install

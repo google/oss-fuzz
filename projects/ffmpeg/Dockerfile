@@ -41,4 +41,4 @@ RUN git clone --depth 1 https://gitlab.xiph.org/xiph/theora.git
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 
-COPY build.sh replay_build.sh group_seed_corpus.py name_mappings.py $SRC/
+COPY build.sh replay_build.sh run_tests.sh group_seed_corpus.py name_mappings.py $SRC/
