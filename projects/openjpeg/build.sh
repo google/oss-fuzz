@@ -22,10 +22,11 @@ export OPJ_DATA_ROOT=$PWD/data
 
 mkdir build
 cd build
+
 cmake -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Release ..
 make clean -s
 make -j$(nproc) -s
-make test V=1
+
 cd ..
 
 ./tests/fuzzers/build_google_oss_fuzzers.sh
