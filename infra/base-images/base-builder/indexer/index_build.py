@@ -97,7 +97,6 @@ def set_up_wrapper_dir():
 @dataclasses.dataclass(slots=True)
 class BinaryMetadata:
   name: str
-  binary_path: Path
   binary_args: list[str]
   binary_env: dict[str, str]
   build_id: str
@@ -105,20 +104,26 @@ class BinaryMetadata:
   harness_kind: manifest_types.HarnessKind
 
 
-def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
+def _get_build_id_from_elf_notes(elf_file: str, contents: bytes) -> str | None:
   """Extracts the build id from the ELF notes of a binary.
 
   The ELF notes are obtained with
     `llvm-readelf --notes --elf-output-style=JSON`.
 
   Args:
+    elf_file: The ELF file name.
     contents: The contents of the ELF notes, as a JSON string.
 
   Returns:
     The build id, or None if it could not be found.
   """
 
-  elf_data = json.loads(contents)
+  try:
+    elf_data = json.loads(contents)
+  except json.JSONDecodeError:
+    logging.error('failed to decode ELF notes for %s', elf_file)
+    return None
+
   assert elf_data
 
   for file_info in elf_data:
@@ -190,17 +195,18 @@ def get_build_id(elf_file: str) -> str | None:
   if ret.returncode != 0:
     return None
 
-  return _get_build_id_from_elf_notes(ret.stdout)
+  return _get_build_id_from_elf_notes(elf_file, ret.stdout)
 
 
-def find_fuzzer_binary(out_dir: Path, build_id: str) -> Path | None:
+def find_fuzzer_binaries(out_dir: Path, build_id: str) -> Sequence[Path]:
   """Find fuzzer binary with a given build ID."""
+  binaries = []
   for root, _, files in os.walk(out_dir):
     for file in files:
       if get_build_id(os.path.join(root, file)) == build_id:
-        return Path(root, file)
+        binaries.append(Path(root, file))
 
-  return None
+  return binaries
 
 
 def enumerate_build_targets(
@@ -234,31 +240,29 @@ def enumerate_build_targets(
       # Some projects may move build files around, so being more careful about
       # the binary path and checking the build id should improve the success
       # rate.
-      if not (OUT / name).exists():
+      if (OUT / name).exists():
+        binary_paths = [binary_path]
+      else:
         logging.info('trying to find %s with build id %s', name, build_id)
-        binary_path = find_fuzzer_binary(OUT, build_id)
-        if not binary_path:
+        binary_paths = find_fuzzer_binaries(OUT, build_id)
+        logging.info('found matching binaries: %s', binary_paths)
+        if not binary_paths:
           logging.error('could not find %s with build id %s', name, build_id)
           continue
 
-        name = binary_path.name
+      for binary_path in binary_paths:
+        compile_commands = data['compile_commands']
 
-      compile_commands = data['compile_commands']
-
-      if binary_path.is_relative_to(f'{OUT}/'):
-        binary_path = Path('./build', binary_path.relative_to(f'{OUT}/'))
-
-      targets.append(
-          BinaryMetadata(
-              name=name,
-              binary_path=binary_path,
-              binary_args=binary_args,
-              binary_env=binary_env,
-              compile_commands=compile_commands,
-              build_id=build_id,
-              harness_kind=harness_kind,
-          )
-      )
+        targets.append(
+            BinaryMetadata(
+                name=binary_path.name,
+                binary_args=binary_args,
+                binary_env=binary_env,
+                compile_commands=compile_commands,
+                build_id=build_id,
+                harness_kind=harness_kind,
+            )
+        )
 
   return targets
 
@@ -469,7 +473,15 @@ def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
   lib_mount_path = pathlib.Path('/tmp') / (uuid + '_lib')
 
   libs_path = OUT / 'lib'
-  libs_path.mkdir(parents=False, exist_ok=True)
+  # Keep a backup of the original 'lib' dir, in case the upstream project also
+  # bundles libs using the same directory name.
+  libs_backup_path = OUT / 'lib.backup'
+
+  if libs_path.exists():
+    shutil.copytree(libs_path, libs_backup_path)
+  else:
+    libs_path.mkdir(parents=False)
+
   target_path = OUT / target.name
   copy_shared_libraries(target_path, libs_path, lib_mount_path)
 
@@ -481,6 +493,10 @@ def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
     # changes in OUT.
     backup_path = Path(backup_dir) / target_path.name
     shutil.copy2(target_path, backup_path)
+    # This is to handle `target_path` being a hard link, where other target
+    # binaries share the same inode.
+    os.unlink(target_path)
+    shutil.copy2(backup_path, target_path)
 
     set_interpreter(target_path, lib_mount_path)
     set_target_rpath(target_path, lib_mount_path)
@@ -511,9 +527,9 @@ def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
     shutil.move(backup_path, target_path)
 
   logging.info('Wrote archive to: %s', archive_path)
-  # TODO: this will break projects that also create a `libs` folder and
-  # have multiple targets.
   shutil.rmtree(libs_path)
+  if libs_backup_path.exists():
+    shutil.move(libs_backup_path, libs_path)
 
   return archive_path
 
