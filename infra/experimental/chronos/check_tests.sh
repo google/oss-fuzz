@@ -58,8 +58,14 @@ docker run \
 # Step 3: save (commit, locally) the cached container as an image
 docker container commit -c "ENV REPLAY_ENABLED=1" -c "ENV CAPTURE_REPLAY_SCRIPT=" ${_PROJECT}-origin-${_SANITIZER} $FINAL_IMAGE_NAME
 
+T_START=$SECONDS
 # Step 4: run the actual run_tests.sh script in the container.
 docker run \
   --rm \
   -ti \
   us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address /bin/bash -c 'chmod +x /src/run_tests.sh && /src/run_tests.sh'
+T_END=$SECONDS
+
+T_TOTAL_TIME=$(($T_END - $T_START))
+echo "--------------------------------------------------------"
+echo "Total time taken to replay tests: $T_TOTAL_TIME"
