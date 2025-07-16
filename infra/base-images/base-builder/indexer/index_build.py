@@ -589,6 +589,16 @@ def main():
       ),
   )
   parser.add_argument(
+      '--targets-all-index',
+      action='store_true',
+      help=(
+          'When -t/--targets is set, allow the indexer to run on all of them, '
+          'but only archive snapshots for the specified targets. This is '
+          'useful to save some time for projects where the binary name during '
+          'build time does not match the final name in the output directory.'
+      ),
+  )
+  parser.add_argument(
       '--target-args',
       default=None,
       help=(
@@ -676,7 +686,11 @@ def main():
   SNAPSHOT_DIR.mkdir(exist_ok=True)
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
-  build_project(targets_to_index, args.compile_arg, args.binaries_only)
+  build_project(
+      None if args.targets_all_index else targets_to_index,
+      args.compile_arg,
+      args.binaries_only,
+  )
 
   if args.target_arg:
     target_args = args.target_arg
