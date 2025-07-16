@@ -1,6 +1,5 @@
 #!/bin/bash -eu
-#
-# Copyright 2019 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,16 +15,5 @@
 #
 ################################################################################
 
-mkdir -p ${WORK}/double-conversion
-cd ${WORK}/double-conversion
-
-cmake -GNinja -DBUILD_TESTING=ON ${SRC}/double-conversion/
-ninja
-
-fuzzer="string_to_double_fuzzer"
-
-${CXX} ${CXXFLAGS} -std=c++11 -I${SRC}/double-conversion/double-conversion \
-    -c ${SRC}/${fuzzer}.cc \
-    -o ${fuzzer}.o
-${CXX} ${CXXFLAGS} -std=c++11 ${fuzzer}.o \
-    -o ${OUT}/${fuzzer} "${LIB_FUZZING_ENGINE}" libdouble-conversion.a
+cd $WORK/double-conversion
+ninja test
