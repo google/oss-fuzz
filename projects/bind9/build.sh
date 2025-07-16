@@ -15,12 +15,12 @@
 #
 ################################################################################
 
-export CFLAGS="${CFLAGS} -fPIC"
-export CXXFLAGS="${CXXFLAGS} -fPIC"
+export CFLAGS="${CFLAGS} -fPIC -Wl,--allow-multiple-definition"
+export CXXFLAGS="${CXXFLAGS} -fPIC -Wl,--allow-multiple-definition"
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
 
-meson setup build -Dfuzzing=oss-fuzz \
+meson setup build -Dfuzzing=oss-fuzz -Dcmocka=enabled \
     -Dc_link_args="$CFLAGS" -Dcpp_link_args="$CXXFLAGS" \
     -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS" \
     -Ddefault_library=static -Dprefer_static=true
