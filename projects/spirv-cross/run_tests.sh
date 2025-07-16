@@ -15,4 +15,4 @@
 #
 ###############################################################################
 export CXXFLAGS="$CXXFLAGS -pthread -stdlib=libc++"
-./test_shaders.sh
+./test_shaders.sh --parallel
