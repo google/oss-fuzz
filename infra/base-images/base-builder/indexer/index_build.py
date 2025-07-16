@@ -100,6 +100,7 @@ class BinaryMetadata:
   binary_args: list[str]
   binary_env: dict[str, str]
   build_id: str
+  build_id_matches: bool
   compile_commands: list[dict[str, Any]]
   harness_kind: manifest_types.HarnessKind
 
@@ -228,8 +229,8 @@ def enumerate_build_targets(
   logging.info('enumerate_build_targets')
   linker_json_paths = list((OUT / 'cdb').glob('*_linker_commands.json'))
 
-  targets = []
   logging.info('Found %i linker JSON files.', len(linker_json_paths))
+  binary_to_build_metadata: dict[str, BinaryMetadata] = {}
   for linker_json_path in linker_json_paths:
     build_id = linker_json_path.name.split('_')[0]
     with linker_json_path.open('rt') as f:
@@ -241,7 +242,26 @@ def enumerate_build_targets(
       # the binary path and checking the build id should improve the success
       # rate.
       if (OUT / name).exists():
-        binary_paths = [binary_path]
+        # Just because the name matches, doesn't mean it's the right one for
+        # this linker command.
+        # Only set this if we haven't already found an exact build ID match.
+        # We can't always rely on build ID matching, because some builds will
+        # modify the binary after the linker runs.
+        if (
+            name in binary_to_build_metadata
+            and binary_to_build_metadata[name].build_id_matches
+        ):
+          continue
+
+        binary_to_build_metadata[name] = BinaryMetadata(
+            name=name,
+            binary_args=binary_args,
+            binary_env=binary_env,
+            compile_commands=data['compile_commands'],
+            build_id=build_id,
+            build_id_matches=build_id == get_build_id(binary_path.as_posix()),
+            harness_kind=harness_kind,
+        )
       else:
         logging.info('trying to find %s with build id %s', name, build_id)
         binary_paths = find_fuzzer_binaries(OUT, build_id)
@@ -250,21 +270,19 @@ def enumerate_build_targets(
           logging.error('could not find %s with build id %s', name, build_id)
           continue
 
-      for binary_path in binary_paths:
-        compile_commands = data['compile_commands']
+        for binary_path in binary_paths:
+          compile_commands = data['compile_commands']
+          binary_to_build_metadata[binary_path.name] = BinaryMetadata(
+              name=binary_path.name,
+              binary_args=binary_args,
+              binary_env=binary_env,
+              compile_commands=compile_commands,
+              build_id=build_id,
+              build_id_matches=True,
+              harness_kind=harness_kind,
+          )
 
-        targets.append(
-            BinaryMetadata(
-                name=binary_path.name,
-                binary_args=binary_args,
-                binary_env=binary_env,
-                compile_commands=compile_commands,
-                build_id=build_id,
-                harness_kind=harness_kind,
-            )
-        )
-
-  return targets
+  return tuple(binary_to_build_metadata.values())
 
 
 def copy_fuzzing_engine() -> Path:
@@ -658,10 +676,7 @@ def main():
   )
   args = parser.parse_args()
 
-  # Clear existing indexer artifacts.
-  if INDEXES_PATH.exists():
-    shutil.rmtree(INDEXES_PATH)
-  INDEXES_PATH.mkdir()
+  INDEXES_PATH.mkdir(exist_ok=True)
 
   # Clean up the existing OUT by default, otherwise we may run into various
   # build errors.

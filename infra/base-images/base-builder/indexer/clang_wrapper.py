@@ -26,6 +26,7 @@ import json
 import os
 from pathlib import Path  # pylint: disable=g-importing-member
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -282,8 +283,13 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
 def run_indexer(build_id: str, linker_commands: dict[str, Any]):
   """Run the indexer."""
   index_dir = INDEXES_PATH / build_id
-  # TODO: check if this is correct.
-  index_dir.mkdir(exist_ok=True)
+  if index_dir.exists():
+    # A previous indexer already ran for the same build ID.  Clear the directory
+    # so we can re-run the indexer, otherwise we might run into various issues
+    # (e.g. the indexer doesn't like it when source files already exist).
+    shutil.rmtree(index_dir)
+
+  index_dir.mkdir()
 
   # Use a build-specific compile commands directory, since there could be
   # parallel linking happening at the same time.
