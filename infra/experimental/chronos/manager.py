@@ -18,9 +18,42 @@ import sys
 import logging
 import argparse
 import time
+import json
+import requests
 import subprocess
 
 logger = logging.getLogger(__name__)
+
+OSS_FUZZ_BUILD_HISTORY_URL = 'https://oss-fuzz-build-logs.storage.googleapis.com/status.json'
+OSS_FUZZ_BUILD_HISTORY = None
+
+RUN_TEST_HEURISTIC_0 = 'make test'
+RUN_TEST_HEURISTIC_1 = 'make tests'
+RUN_TEST_HEURISTIC_2 = 'make check'
+
+RUN_TESTS_TO_TRY = [
+    RUN_TEST_HEURISTIC_0, RUN_TEST_HEURISTIC_1, RUN_TEST_HEURISTIC_2
+]
+
+
+def _get_oss_fuzz_build_status(project):
+  """Returns the build status of a project in OSS-Fuzz."""
+  global OSS_FUZZ_BUILD_HISTORY
+  if OSS_FUZZ_BUILD_HISTORY is None:
+    # Load the build history from a file or other source.
+    # This is a placeholder for actual implementation.
+    build_status = requests.get(OSS_FUZZ_BUILD_HISTORY_URL)
+    OSS_FUZZ_BUILD_HISTORY = json.loads(build_status.text)
+
+  for project_data in OSS_FUZZ_BUILD_HISTORY.get('projects', []):
+    if project_data['name'] == project:
+      logger.info('Found project %s in OSS-Fuzz build history.', project)
+      return project_data.get('history', [{
+          'success': False
+      }])[0].get('success', False)
+
+  logger.info('Project %s not found in OSS-Fuzz build history.', project)
+  return False
 
 
 def _get_project_cached_named(project, sanitizer='address'):
@@ -66,7 +99,10 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
   ]
 
   logger.info('Running: [%s]', ' '.join(cmd))
-  subprocess.check_call(' '.join(cmd), shell=True)
+  try:
+    subprocess.check_call(' '.join(cmd), shell=True)
+  except subprocess.CalledProcessError as e:
+    return False
 
   # Save the container.
   cmd = [
@@ -75,7 +111,12 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
       _get_project_cached_named(project, sanitizer)
   ]
   logger.info('Saving image: [%s]', ' '.join(cmd))
-  subprocess.check_call(' '.join(cmd), shell=True)
+  try:
+    subprocess.check_call(' '.join(cmd), shell=True)
+  except subprocess.CalledProcessError as e:
+    logger.error('Failed to save cached image: %s', e)
+    return False
+  return True
 
 
 def check_cached_replay(project, sanitizer='address'):
@@ -98,10 +139,10 @@ def check_cached_replay(project, sanitizer='address'):
   logger.info('Cached build completion time: %.2f seconds', (end - start))
 
 
-def check_test(args):
+def check_test(project, sanitizer='address'):
   """Run the `run_tests.sh` script for a specific project. Will
     build a cached container first."""
-  project = args.project
+
   script_path = os.path.join('projects', project, 'run_tests.sh')
 
   if not os.path.exists(script_path):
@@ -113,25 +154,156 @@ def check_test(args):
   build_project_image(project)
 
   # build a cached version of the project
-  build_cached_project(project, args.sanitizer)
+  if not build_cached_project(project, sanitizer):
+    return False
 
   # Run the test script
   cmd = [
       'docker', 'run', '--rm', '-ti',
-      _get_project_cached_named(project, args.sanitizer), '/bin/bash', '-c',
+      _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
       '"chmod +x /src/run_tests.sh && /src/run_tests.sh"'
   ]
+  out_idx = 0
+  stdout_file = os.path.join('projects', project, 'stdout.%d.out' % (out_idx))
+  while os.path.isfile(stdout_file):
+    out_idx += 1
+    stdout_file = os.path.join('projects', project, 'stdout.%d.out' % (out_idx))
+  stderr_file = os.path.join('projects', project, 'stderr.%d.err' % (out_idx))
+  stdout_fp = open(stdout_file, 'w')
+  stderr_fp = open(stderr_file, 'w')
+
   start = time.time()
-  subprocess.check_call(' '.join(cmd), shell=True)
+  try:
+    subprocess.check_call(' '.join(cmd),
+                          shell=True,
+                          stdout=stdout_fp,
+                          stderr=stderr_fp)
+    succeeded = True
+    stdout_fp.close()
+    stderr_fp.close()
+  except subprocess.CalledProcessError as e:
+    succeeded = False
+    stdout_fp.close()
+    stderr_fp.close()
   end = time.time()
-  logger.info('Test completion time: %.2f seconds', (end - start))
+
+  logger.info(
+      'Test completion succeessful: %s. Duration of run_tests.sh: %.2f seconds',
+      str(succeeded), (end - start))
+  return succeeded
+
+
+def _get_project_language(project):
+  """Returns the language of the project."""
+  project_path = os.path.join('projects', project)
+  if not os.path.isdir(project_path):
+    return ''
+
+  # Check for a .lang file or similar to determine the language
+  project_yaml = os.path.join(project_path, 'project.yaml')
+  if os.path.exists(project_yaml):
+    with open(project_yaml, 'r') as f:
+      for line in f:
+        if 'language' in line:
+          return line.split(':')[1].strip()
+
+  # Default to C++ if no specific language file is found
+  return ''
+
+
+def _autogenerate_run_tests_script(project):
+  """Autogenerate `run_tests.sh` for a project."""
+  project_path = os.path.join('projects', project)
+  run_tests_script = os.path.join(project_path, 'run_tests.sh')
+
+  for run_test_script in RUN_TESTS_TO_TRY:
+    with open(run_tests_script, 'w') as f:
+      f.write('#!/bin/bash\n')
+      f.write('set -eux\n')
+      f.write(run_test_script + '\n')
+      f.write('echo "Running tests for project: {}"\n'.format(project))
+      # Add more commands as needed to run tests
+    os.chmod(run_tests_script, 0o755)
+    logger.info('Created run_tests.sh for %s', project)
+
+    # Adjust the Dockerfile to copy it in
+    dockerfile_path = os.path.join(project_path, 'Dockerfile')
+
+    add_run_tests = False
+    with open(dockerfile_path, 'r') as f:
+      if 'COPY run_tests.sh' not in f.read():
+        add_run_tests = True
+    if add_run_tests:
+      with open(dockerfile_path, 'a') as f:
+        f.write('\n# Copy the autogenerated run_tests.sh script\n')
+        f.write('COPY run_tests.sh $SRC/run_tests.sh\n')
+        f.write('RUN chmod +x $SRC/run_tests.sh\n')
+
+    succeeded = check_test(project)
+    success_file = os.path.join(project_path, 'run_tests.succeeded')
+    with open(success_file, 'w') as f:
+      f.write('Auto-generation succeeded: {}\n'.format(succeeded))
+    if succeeded:
+      logger.info('Autogenerated run_tests.sh for %s successfully.', project)
+      continue
+
+
+def autogen_projects(apply_filtering=False, max_projects_to_try=1):
+  """Autogenerate `run_tests.sh` for all projects."""
+  projects = os.listdir('projects')
+  projects_tries = 0
+  for project in projects:
+    if projects_tries >= max_projects_to_try:
+      logger.info('Reached maximum number of projects to try: %d',
+                  max_projects_to_try)
+      break
+
+    project_path = os.path.join('projects', project)
+    if not os.path.isdir(project_path):
+      continue
+
+    # Ensure the project language is C or C++
+    if not _get_project_language(project).lower() in ['c', 'c++']:
+      continue
+
+    run_tests_script = os.path.join(project_path, 'run_tests.sh')
+    if os.path.exists(run_tests_script):
+      logger.info('Skipping %s, run_tests.sh already exists.', project)
+      continue
+
+    if apply_filtering:
+      # Apply filtering logic to increase performance
+      build_script = os.path.join(project_path, 'build.sh')
+      if not os.path.exists(build_script):
+        logger.warning('Skipping %s, build.sh does not exist.', project)
+        continue
+      with open(build_script, 'r') as f:
+        lines = f.readlines()
+      # Filter out lines that are not relevant for the test script
+      filtered_lines = [line for line in lines if 'make' in line]
+      if not filtered_lines:
+        logger.warning('Skipping %s, no relevant lines found in build.sh.',
+                       project)
+        continue
+
+    # It only makes sense to autogenerate if the project actually builds, so
+    # query OSS-Fuzz to make sure the most recent build was successful.
+
+    if not _get_oss_fuzz_build_status(project):
+      logger.warning('Skipping %s, most recent build was not successful.',
+                     project)
+      continue
+
+    projects_tries += 1
+    logger.info('Autogenerating run_tests.sh for %s', project)
+    _autogenerate_run_tests_script(project)
 
 
 def parse_args():
   """Parses command line arguments for the manager script."""
   parser = argparse.ArgumentParser(
       'manager.py',
-      description='Chronos Mnaager: a tool for managing cached OSS-Fuzz builds.'
+      description='Chronos Manager: a tool for managing cached OSS-Fuzz builds.'
   )
   subparsers = parser.add_subparsers(dest='command')
 
@@ -167,6 +339,21 @@ def parse_args():
       default='address',
       help='The sanitizer to use for the cached build (default: address).')
 
+  autogen_tests_parser = subparsers.add_parser(
+      'autogen-tests',
+      help='Tries to autogenerate `run_tests.sh` for projects.')
+  autogen_tests_parser.add_argument(
+      '--apply-filtering',
+      action='store_true',
+      help=
+      'If set, applies filtering to increase performance but test on fewer projects that are more likely to succeed.'
+  )
+  autogen_tests_parser.add_argument(
+      '--max-projects-to-try',
+      type=int,
+      default=1,
+      help='Maximum number of projects to try (default: 1).')
+
   return parser.parse_args()
 
 
@@ -177,11 +364,13 @@ def main():
   args = parse_args()
 
   if args.command == 'check-test':
-    check_test(args)
+    check_test(args.project, args.sanitizer)
   if args.command == 'check-replay-script':
     check_cached_replay(args.project, args.sanitizer)
   if args.command == 'build-cached-image':
     build_cached_project(args.project, sanitizer=args.sanitizer)
+  if args.command == 'autogen-tests':
+    autogen_projects(args.apply_filtering, args.max_projects_to_try)
 
 
 if __name__ == '__main__':
