@@ -62,6 +62,7 @@ T_START=$SECONDS
 # Step 4: run the actual run_tests.sh script in the container.
 docker run \
   --rm \
+  --network none \
   -ti \
   us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address /bin/bash -c 'chmod +x /src/run_tests.sh && /src/run_tests.sh'
 T_END=$SECONDS
