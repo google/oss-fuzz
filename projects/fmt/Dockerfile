@@ -23,4 +23,4 @@ RUN git clone --depth 1 --branch master \
   https://github.com/fmtlib/fmt.git
 
 WORKDIR fmt
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

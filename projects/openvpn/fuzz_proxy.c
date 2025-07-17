@@ -17,6 +17,7 @@ limitations under the License.
 #include "proxy.h"
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include "sig.h"
 
 #include "fuzz_randomizer.h"
 
@@ -48,7 +49,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   struct gc_arena gc = gc_new();
   struct http_proxy_info pi;
   ssize_t generic_ssizet;
-  int signal_received = 0;
+  struct signal_info signal_received = {0};
+  // TODO: This coul be randomized
+  register_signal(&signal_received, SIGUSR1, "remote-exit");
   struct buffer lookahead = alloc_buf(1024);
   struct event_timeout evt;
 
@@ -79,7 +82,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  generic_ssizet = fuzz_randomizer_get_int(0, 4);
+  generic_ssizet = fuzz_randomizer_get_int(0, 3);
   switch (generic_ssizet) {
   case 0:
     pi.auth_method = HTTP_AUTH_NONE;
@@ -91,15 +94,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     pi.auth_method = HTTP_AUTH_DIGEST;
     break;
   case 3:
-    pi.auth_method = HTTP_AUTH_NTLM;
-    break;
-  case 4:
     pi.auth_method = HTTP_AUTH_NTLM2;
     break;
   }
   pi.options.http_version = "1.1";
 
-  generic_ssizet = fuzz_randomizer_get_int(0, 4);
+  generic_ssizet = fuzz_randomizer_get_int(0, 2);
   switch (generic_ssizet) {
   case 0:
     pi.options.auth_retry = PAR_NO;

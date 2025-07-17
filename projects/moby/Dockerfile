@@ -17,6 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y clang libbtrfs-dev pkg-config libdevmapper-dev
 RUN git clone --depth 1 https://github.com/moby/moby
+RUN git clone --depth 1 https://github.com/moby/go-archive
+RUN git clone --depth 1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=november-backup
 COPY build.sh $SRC/
 COPY *_fuzzer.go $SRC/
 

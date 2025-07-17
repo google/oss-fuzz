@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf autoconf-archive automake
 
 RUN git clone --depth 1 https://github.com/libxls/libxls libxls
 WORKDIR libxls
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

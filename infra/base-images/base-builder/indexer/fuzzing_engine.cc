@@ -27,20 +27,24 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t n);
 
-extern "C" __attribute__((weak)) int LLVMFuzzerInitialize(
-    __attribute__((unused)) int* argc, __attribute__((unused)) char*** argv) {
-  return 0;
-}
+extern "C" __attribute__((weak)) int LLVMFuzzerInitialize(int* argc,
+                                                          char*** argv);
 
 // Projects can call LLVMFuzzerMutate, but should only do it from
 // LLVMFuzzerCustomMutator, which should be called from the fuzzing engine (we
 // don't need to).
-extern "C" size_t LLVMFuzzerMutate(uint8_t* Data, size_t Size, size_t MaxSize) {
+extern "C" size_t LLVMFuzzerMutate([[maybe_unused]] uint8_t* Data,
+                                   [[maybe_unused]] size_t Size,
+                                   [[maybe_unused]] size_t MaxSize) {
   fprintf(stderr, "LLVMFuzzerMutate was called. This should never happen.\n");
   __builtin_trap();
 }
 
 int main(int argc, char* argv[]) {
+  if (LLVMFuzzerInitialize) {
+    LLVMFuzzerInitialize(&argc, &argv);
+  }
+
   if (argc != 2) {
     // Special-case because curl invokes the fuzzer binaries without arguments
     // during make, and will fail if they don't return success.
@@ -80,7 +84,6 @@ int main(int argc, char* argv[]) {
   }
   close(fd);
 
-  LLVMFuzzerInitialize(&argc, &argv);
   int res = LLVMFuzzerTestOneInput(static_cast<uint8_t*>(mapping), size);
 
   munmap(mapping, size);

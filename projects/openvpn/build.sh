@@ -43,7 +43,7 @@ apply_sed_changes() {
 }
 
 # Changes in the code so we can fuzz it.
-git apply $SRC/crypto_patch.txt
+#git apply $SRC/crypto_patch.txt
 
 echo "" >> ${BASE}/openvpn.c
 echo "#include \"fake_fuzz_header.h\"" >> ${BASE}/openvpn.c

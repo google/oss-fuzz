@@ -17,6 +17,7 @@
 import base64
 import binascii
 import collections
+from collections.abc import Sequence
 import dataclasses
 import datetime
 import json
@@ -139,7 +140,10 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def dockerify_run_step(step, build, use_architecture_image_name=False):
+def dockerify_run_step(step,
+                       build,
+                       use_architecture_image_name=False,
+                       container_name=None):
   """Modify a docker run step to run using gcr.io/cloud-builders/docker. This
   allows us to specify which architecture to run the image on."""
   image = step['name']
@@ -154,6 +158,10 @@ def dockerify_run_step(step, build, use_architecture_image_name=False):
       'run', '--platform', platform, '-v', '/workspace:/workspace',
       '--privileged', '--cap-add=all'
   ]
+
+  if container_name:
+    new_args.extend(['--name', container_name])
+
   for env_var in step.get('env', {}):
     new_args.extend(['-e', env_var])
   new_args += ['-t', image]
@@ -506,7 +514,8 @@ def get_docker_build_step(image_names,
                           use_buildkit_cache=False,
                           src_root='oss-fuzz',
                           architecture='x86_64',
-                          cache_image=''):
+                          cache_image='',
+                          build_args: Sequence[str] | None = None):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -528,6 +537,10 @@ def get_docker_build_step(image_names,
 
   for image_name in sorted(image_names):
     args.extend(['--tag', image_name])
+
+  if build_args:
+    for build_arg in build_args:
+      args.extend(['--build-arg', build_arg])
 
   step = {
       'name': DOCKER_TOOL_IMAGE,

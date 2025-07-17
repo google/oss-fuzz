@@ -23,5 +23,5 @@ RUN apt-get update &&  \
 RUN git clone https://github.com/KhronosGroup/SPIRV-Cross spirv-cross
 WORKDIR $SRC/spirv-cross
 
-COPY *_fuzzer.cpp build.sh $SRC/
+COPY *_fuzzer.cpp *.diff *.sh $SRC/
 

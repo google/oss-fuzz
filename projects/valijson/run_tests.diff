@@ -1,0 +1,13 @@
+diff --git a/tests/fuzzing/oss-fuzz-build.sh b/tests/fuzzing/oss-fuzz-build.sh
+index be9757c..fdf5c90 100755
+--- a/tests/fuzzing/oss-fuzz-build.sh
++++ b/tests/fuzzing/oss-fuzz-build.sh
+@@ -5,7 +5,7 @@ git submodule update --init --depth 1 thirdparty
+ mkdir build
+ cd build
+ cmake \
+-  -Dvalijson_BUILD_TESTS=FALSE \
++  -Dvalijson_BUILD_TESTS=ON \
+   -Dvalijson_BUILD_EXAMPLES=FALSE \
+   -Dvalijson_EXCLUDE_BOOST=TRUE \
+   ..
