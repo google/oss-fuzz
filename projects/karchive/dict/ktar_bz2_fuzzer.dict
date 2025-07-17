@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: 2025 Azhar Momin <azhar.momin@kdemail.net>
+# SPDX-License-Identifier: CC0-1.0
+
+magic="ustar"
+version="00"
+
+magic="BZ"
+version_bzip2="h"
+version_bzip1="0"
+
+compressed_magic="\x31\x41\x59\x26\x53\x59"
+eos_magic="\x17\x72\x45\x38\x50\x90"

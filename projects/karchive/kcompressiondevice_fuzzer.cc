@@ -1,10 +1,8 @@
 /*
-# SPDX-FileCopyrightText: 2019 Google Inc.
-# SPDX-FileCopyrightText: 2025 Azhar Momin <azhar.momin@kdemail.net>
+# SPDX-FileCopyrightText: 2025 Google LLC
 # SPDX-License-Identifier: Apache-2.0
 #
-# Copyright 2019 Google Inc.
-# Copyright 2025 Azhar Momin <azhar.momin@kdemail.net>
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,16 +23,14 @@
   Usage:
     python infra/helper.py build_image karchive
     python infra/helper.py build_fuzzers --sanitizer undefined|address|memory karchive
-    python infra/helper.py run_fuzzer karchive k[ar|tar|zip|7z]_fuzzer
+    python infra/helper.py run_fuzzer karchive ktar_[gz|bz2|xz|zst|lz]_fuzzer
 */
 
 #include <QBuffer>
 #include <QCoreApplication>
 
-#include <k7zip.h>
-#include <kar.h>
+#include <kcompressiondevice.h>
 #include <ktar.h>
-#include <kzip.h>
 
 #include "karchive_fuzzer_common.h"
 
@@ -47,15 +43,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     b.setData((const char *)data, size);
 
 #ifdef HANDLER
-    HANDLER handler(&b);
+    KCompressionDevice kd(&b, false, KCompressionDevice::HANDLER);
+    KTar ktar(&kd);
 
-#ifdef USE_PASSWORD
-    handler.setPassword("youshallnotpass");
-#endif
-
-    if (handler.open(QIODevice::ReadOnly)) {
-        traverseArchive(handler.directory());
-        handler.close();
+    if (ktar.open(QIODevice::ReadOnly)) {
+        traverseArchive(ktar.directory());
+        ktar.close();
     }
 #endif
 
