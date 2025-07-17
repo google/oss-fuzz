@@ -18,4 +18,8 @@
 rgrep --files-with-matches '\-lheif' . \
   | xargs -r sed -i 's/-lheif/-lheif -lc++/'
 
-make -j"$(nproc)" check
+make -j"$(nproc)" check-TESTS
+
+# Undo patches.
+rgrep --files-with-matches -- '-lheif -lc++' . \
+  | xargs -r sed -i 's/-lheif -lc++/-lheif/'
