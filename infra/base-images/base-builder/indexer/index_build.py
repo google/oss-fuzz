@@ -94,15 +94,12 @@ def set_up_wrapper_dir():
     os.symlink(src, dst)
 
 
-@dataclasses.dataclass(slots=True)
+@dataclasses.dataclass(slots=True, frozen=True)
 class BinaryMetadata:
-  name: str
-  binary_args: list[str]
-  binary_env: dict[str, str]
+  binary_config: manifest_types.CommandLineBinaryConfig
   build_id: str
   build_id_matches: bool
   compile_commands: list[dict[str, Any]]
-  harness_kind: manifest_types.HarnessKind
 
 
 def _get_build_id_from_elf_notes(elf_file: str, contents: bytes) -> str | None:
@@ -211,16 +208,12 @@ def find_fuzzer_binaries(out_dir: Path, build_id: str) -> Sequence[Path]:
 
 
 def enumerate_build_targets(
-    binary_args: list[str],
-    binary_env: dict[str, str],
-    harness_kind: manifest_types.HarnessKind,
+    binary_config: manifest_types.CommandLineBinaryConfig,
 ) -> Sequence[BinaryMetadata]:
   """Enumerates the build targets in the project.
 
   Args:
-    binary_args: Argument list, applied to all targets
-    binary_env: Environment variables, applied to all targets
-    harness_kind: The harness kind of all targets.
+    binary_config: The binary config applied to all targets.
 
   Returns:
     A sequence of target descriptions, in BinaryMetadata form.
@@ -253,14 +246,15 @@ def enumerate_build_targets(
         ):
           continue
 
+        build_id_matches = build_id == get_build_id(binary_path.as_posix())
+        target_binary_config = manifest_types.CommandLineBinaryConfig(
+            **dict(binary_config.to_dict(), binary_name=name)
+        )
         binary_to_build_metadata[name] = BinaryMetadata(
-            name=name,
-            binary_args=binary_args,
-            binary_env=binary_env,
+            binary_config=target_binary_config,
             compile_commands=data['compile_commands'],
             build_id=build_id,
-            build_id_matches=build_id == get_build_id(binary_path.as_posix()),
-            harness_kind=harness_kind,
+            build_id_matches=build_id_matches,
         )
       else:
         logging.info('trying to find %s with build id %s', name, build_id)
@@ -272,14 +266,14 @@ def enumerate_build_targets(
 
         for binary_path in binary_paths:
           compile_commands = data['compile_commands']
+          target_binary_config = manifest_types.CommandLineBinaryConfig(
+              **dict(binary_config.to_dict(), binary_name=name)
+          )
           binary_to_build_metadata[binary_path.name] = BinaryMetadata(
-              name=binary_path.name,
-              binary_args=binary_args,
-              binary_env=binary_env,
+              binary_config=target_binary_config,
               compile_commands=compile_commands,
               build_id=build_id,
               build_id_matches=True,
-              harness_kind=harness_kind,
           )
 
   return tuple(binary_to_build_metadata.values())
@@ -367,7 +361,7 @@ def test_target(
     target: BinaryMetadata,
 ) -> bool:
   """Tests a single target."""
-  target_path = OUT / target.name
+  target_path = OUT / target.binary_config.binary_name
   result = subprocess.run(
       [str(target_path)], stderr=subprocess.PIPE, check=False
   )
@@ -474,7 +468,7 @@ def copy_shared_libraries(
 
 def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
   """Archives a single target in the project using the exported rootfs."""
-  logging.info('archive_target %s', target.name)
+  logging.info('archive_target %s', target.binary_config.binary_name)
   index_dir = INDEXES_PATH / target.build_id
   if not index_dir.exists():
     logging.error("didn't find index dir %s", index_dir)
@@ -486,8 +480,8 @@ def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
 
   target_hash = hashlib.sha256(source_map).hexdigest()[:16]
 
-  name = f'{PROJECT}.{target.name}'
-  uuid = f'{PROJECT}.{target.name}.{target_hash}'
+  name = f'{PROJECT}.{target.binary_config.binary_name}'
+  uuid = f'{PROJECT}.{target.binary_config.binary_name}.{target_hash}'
   lib_mount_path = pathlib.Path('/tmp') / (uuid + '_lib')
 
   libs_path = OUT / 'lib'
@@ -500,7 +494,7 @@ def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
   else:
     libs_path.mkdir(parents=False)
 
-  target_path = OUT / target.name
+  target_path = OUT / target.binary_config.binary_name
   copy_shared_libraries(target_path, libs_path, lib_mount_path)
 
   # We may want to eventually re-enable SRC copying (with some filtering to only
@@ -526,8 +520,8 @@ def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
         name=name,
         uuid=uuid,
         binary_config=manifest_types.CommandLineBinaryConfig(
-            kind=manifest_types.BinaryConfigKind.OSS_FUZZ,
-            binary_name=target.name,
+            kind=target.kind,
+            binary_name=target.binary_name,
             binary_args=target.binary_args,
             binary_env=target.binary_env,
             harness_kind=target.harness_kind,
@@ -553,17 +547,17 @@ def archive_target(target: BinaryMetadata, file_extension: str) -> Path | None:
 
 
 def test_and_archive(
-    target_args: list[str],
-    target_env: dict[str, str],
+    binary_config: manifest_types.CommandLineBinaryConfig,
     targets_to_index: Sequence[str] | None,
     file_extension: str,
-    harness_kind: manifest_types.HarnessKind,
 ):
   """Test target and archive."""
-  targets = enumerate_build_targets(target_args, target_env, harness_kind)
+  targets = enumerate_build_targets(binary_config)
   if targets_to_index:
-    targets = [t for t in targets if t.name in targets_to_index]
-    missing_targets = set(targets_to_index) - set(t.name for t in targets)
+    targets = [t for t in targets if t.binary_name in targets_to_index]
+    missing_targets = set(targets_to_index) - set(
+        t.binary_name for t in targets
+    )
     if missing_targets:
       raise ValueError(f'Could not find specified targets {missing_targets}.')
 
@@ -646,6 +640,17 @@ def main():
       ),
   )
   parser.add_argument(
+      '--binary-config',
+      default=None,
+      help=(
+          'JSON serialized OSS_FUZZ BinaryConfig object containing '
+          'binary_args, binary_env, harness_kind, etc. If this value is set, '
+          'redundant flags like target-arg, etc., may not be used. '
+          'The binary_name field of this BinaryConfig object is ignored, all '
+          'other fields will be applied to all targets.'
+      ),
+  )
+  parser.add_argument(
       '--no-clear-out',
       action='store_true',
       help='Do not clear out the OUT directory before building.',
@@ -707,38 +712,86 @@ def main():
       args.binaries_only,
   )
 
-  if args.target_arg:
-    target_args = args.target_arg
-  elif args.target_args:
-    logging.warning('--target-args is deprecated, use --target-arg instead.')
-    target_args = shlex.split(args.target_args)
-  else:
-    logging.info('No target args specified.')
-    target_args = []
-  if args.target_env:
-    target_env = manifest_types.parse_env(args.target_env)
-  else:
-    logging.info('No target env specified.')
-    target_env = {}
+  if args.binary_config:
+    if (
+        args.target_arg
+        or args.target_args
+        or args.target_env
+        or args.harness_kind != manifest_types.HarnessKind.LIBFUZZER
+    ):
+      raise ValueError(
+          'If --binary-config is specified, redundant flags may not be set.'
+      )
 
-  harness_kind = manifest_types.HarnessKind(args.harness_kind)
+    binary_config = manifest_types.BinaryConfig.from_dict(
+        json.loads(args.binary_config)
+    )
+    if (
+        binary_config.kind != manifest_types.BinaryConfigKind.OSS_FUZZ
+        or not isinstance(binary_config, manifest_types.CommandLineBinaryConfig)
+    ):
+      raise ValueError(
+          'Only OSS_FUZZ binary configs are supported with --binary-config.'
+      )
+  else:
+    if args.target_args and args.target_arg:
+      raise ValueError(
+          'Only one of --target-args or --target-arg can be specified.'
+      )
+    elif args.target_arg:
+      target_args = args.target_arg
+    elif args.target_args:
+      logging.warning('--target-args is deprecated, use --target-arg instead.')
+      target_args = shlex.split(args.target_args)
+    else:
+      logging.info('No target args specified.')
+      target_args = []
+    if args.target_env:
+      target_env = manifest_types.parse_env(args.target_env)
+    else:
+      logging.info('No target env specified.')
+      target_env = {}
 
-  match harness_kind:
-    case manifest_types.HarnessKind.LIBFUZZER:
-      if target_args and target_args != [manifest_types.INPUT_FILE]:
-        raise ValueError(
-            f'Unsupported target args for harness_kind libfuzzer {target_args}'
-        )
-      target_args = [manifest_types.INPUT_FILE]
-    case _:
-      pass
+    harness_kind = manifest_types.HarnessKind(args.harness_kind)
+
+    match harness_kind:
+      case manifest_types.HarnessKind.LIBFUZZER:
+        if target_args and target_args != [manifest_types.INPUT_FILE]:
+          raise ValueError(
+              'Unsupported target args for harness_kind libfuzzer:'
+              f' {target_args}'
+          )
+        target_args = [manifest_types.INPUT_FILE]
+      case _:
+        pass
+
+    binary_config = manifest_types.CommandLineBinaryConfig(
+        kind=manifest_types.BinaryConfigKind.OSS_FUZZ,
+        binary_name='oss-fuzz',  # The name will be replaced with the target.
+        binary_args=target_args,
+        binary_env=target_env,
+        harness_kind=harness_kind,
+    )
+
+  targets_to_index = None
+  if args.targets:
+    targets_to_index = args.targets.split(',')
+
+  for directory in ['aflplusplus', 'fuzztest', 'honggfuzz', 'libfuzzer']:
+    path = os.path.join(os.environ['SRC'], directory)
+    shutil.rmtree(path, ignore_errors=True)
+
+  # Initially, we put snapshots directly in /out. This caused a bug where each
+  # snapshot was added to the next because they contain the contents of /out.
+  SNAPSHOT_DIR.mkdir(exist_ok=True)
+  # We don't have an existing /out dir on oss-fuzz's build infra.
+  OUT.mkdir(parents=True, exist_ok=True)
+  build_project(targets_to_index, args.compile_arg, args.binaries_only)
 
   if not args.binaries_only:
     file_extension = '.tgz' if args.compressed else '.tar'
 
-    test_and_archive(
-        target_args, target_env, targets_to_index, file_extension, harness_kind,
-    )
+    test_and_archive(binary_config, targets_to_index, file_extension)
 
     for snapshot in SNAPSHOT_DIR.iterdir():
       shutil.move(str(snapshot), OUT)
