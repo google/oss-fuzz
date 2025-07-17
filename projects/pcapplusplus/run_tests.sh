@@ -21,9 +21,13 @@ ROOT="$SRC/PcapPlusPlus"
 echo "=== Packet++Test ==="
 cd "$ROOT/Tests/Packet++Test"
 # TODO: Skipping failing tests.
-./Bin/Packet++Test -x "VrrpCreateAndEditTest;TestMacAddress;TestTcpReassemblyRetran" 
+./Bin/Packet++Test -x "VrrpCreateAndEditTest;TestMacAddress;TestTcpReassemblyRetran"
 
 echo "=== Pcap++Test (no networking) ==="
 cd "$ROOT/Tests/Pcap++Test"
-# TODO: Skipping failing tests.
-./Bin/Pcap++Test -n -x "TestMacAddress;TestTcpReassemblyRetran;TestTcpReassemblyMissingData"
+# TODO: Skipping failing tests. TestPcapLiveDeviceList and
+# TestPcapLiveDeviceNoNetworking fail because of network so we should keep
+# them disabled.
+./Bin/Pcap++Test \
+    -n -x \
+    "TestMacAddress;TestTcpReassemblyRetran;TestTcpReassemblyMissingData;TestPcapLiveDeviceList;TestPcapLiveDeviceNoNetworking"
