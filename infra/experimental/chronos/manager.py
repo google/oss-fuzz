@@ -28,7 +28,12 @@ OSS_FUZZ_BUILD_HISTORY_URL = 'https://oss-fuzz-build-logs.storage.googleapis.com
 OSS_FUZZ_BUILD_HISTORY = None
 
 RUN_TEST_HEURISTIC_0 = 'make test'
-RUN_TEST_HEURISTIC_1 = 'make check'
+RUN_TEST_HEURISTIC_1 = 'make tests'
+RUN_TEST_HEURISTIC_2 = 'make check'
+
+RUN_TESTS_TO_TRY = [
+    RUN_TEST_HEURISTIC_0, RUN_TEST_HEURISTIC_1, RUN_TEST_HEURISTIC_2
+]
 
 
 def _get_oss_fuzz_build_status(project):
@@ -149,12 +154,28 @@ def check_test(project, sanitizer='address'):
       _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
       '"chmod +x /src/run_tests.sh && /src/run_tests.sh"'
   ]
+  out_idx = 0
+  stdout_file = os.path.join('projects', project, 'stdout.%d.out' % (out_idx))
+  while os.path.isfile(stdout_file):
+    out_idx += 1
+    stdout_file = os.path.join('projects', project, 'stdout.%d.out' % (out_idx))
+  stderr_file = os.path.join('projects', project, 'stderr.%d.err' % (out_idx))
+  stdout_fp = open(stdout_file, 'w')
+  stderr_fp = open(stderr_file, 'w')
+
   start = time.time()
   try:
-    subprocess.check_call(' '.join(cmd), shell=True)
+    subprocess.check_call(' '.join(cmd),
+                          shell=True,
+                          stdout=stdout_fp,
+                          stderr=stderr_fp)
     succeeded = True
+    stdout_fp.close()
+    stderr_fp.close()
   except subprocess.CalledProcessError as e:
     succeeded = False
+    stdout_fp.close()
+    stderr_fp.close()
   end = time.time()
 
   logger.info(
@@ -186,11 +207,7 @@ def _autogenerate_run_tests_script(project):
   project_path = os.path.join('projects', project)
   run_tests_script = os.path.join(project_path, 'run_tests.sh')
 
-  run_tests_to_try = 'make test'
-
-  run_tests_to_try = [RUN_TEST_HEURISTIC_0, RUN_TEST_HEURISTIC_1]
-
-  for run_test_script in run_tests_to_try:
+  for run_test_script in RUN_TESTS_TO_TRY:
     with open(run_tests_script, 'w') as f:
       f.write('#!/bin/bash\n')
       f.write('set -eux\n')
@@ -213,9 +230,10 @@ def _autogenerate_run_tests_script(project):
         f.write('COPY run_tests.sh $SRC/run_tests.sh\n')
         f.write('RUN chmod +x $SRC/run_tests.sh\n')
 
-    if check_test(project):
-      logger.info('run_tests.sh for %s is ready and passed the test.', project)
-      return True
+    succeeded = check_test(project)
+    success_file = os.path.join(project_path, 'run_tests.succeeded')
+    with open(success_file, 'w') as f:
+      f.write('Auto-generation succeeded: {}\n'.format(succeeded))
 
 
 def autogen_projects(apply_filtering=False, max_projects_to_try=1):
@@ -273,7 +291,7 @@ def parse_args():
   """Parses command line arguments for the manager script."""
   parser = argparse.ArgumentParser(
       'manager.py',
-      description='Chronos Mnaager: a tool for managing cached OSS-Fuzz builds.'
+      description='Chronos Manager: a tool for managing cached OSS-Fuzz builds.'
   )
   subparsers = parser.add_subparsers(dest='command')
 
