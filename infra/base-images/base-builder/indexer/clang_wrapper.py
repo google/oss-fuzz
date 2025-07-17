@@ -282,15 +282,6 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
 
 def run_indexer(build_id: str, linker_commands: dict[str, Any]):
   """Run the indexer."""
-  index_dir = INDEXES_PATH / build_id
-  if index_dir.exists():
-    # A previous indexer already ran for the same build ID.  Clear the directory
-    # so we can re-run the indexer, otherwise we might run into various issues
-    # (e.g. the indexer doesn't like it when source files already exist).
-    shutil.rmtree(index_dir)
-
-  index_dir.mkdir()
-
   # Use a build-specific compile commands directory, since there could be
   # parallel linking happening at the same time.
   compile_commands_dir = INDEXES_PATH / f"compile_commands_{build_id}"
@@ -306,6 +297,15 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
         file=sys.stderr,
     )
     return
+
+  index_dir = INDEXES_PATH / build_id
+  if index_dir.exists():
+    # A previous indexer already ran for the same build ID.  Clear the directory
+    # so we can re-run the indexer, otherwise we might run into various issues
+    # (e.g. the indexer doesn't like it when source files already exist).
+    shutil.rmtree(index_dir)
+
+  index_dir.mkdir()
 
   with (compile_commands_dir / "compile_commands.json").open("wt") as f:
     json.dump(linker_commands["compile_commands"], f, indent=2)
