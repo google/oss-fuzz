@@ -99,7 +99,10 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
   ]
 
   logger.info('Running: [%s]', ' '.join(cmd))
-  subprocess.check_call(' '.join(cmd), shell=True)
+  try:
+    subprocess.check_call(' '.join(cmd), shell=True)
+  except subprocess.CalledProcessError as e:
+    return False
 
   # Save the container.
   cmd = [
@@ -108,7 +111,12 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
       _get_project_cached_named(project, sanitizer)
   ]
   logger.info('Saving image: [%s]', ' '.join(cmd))
-  subprocess.check_call(' '.join(cmd), shell=True)
+  try:
+    subprocess.check_call(' '.join(cmd), shell=True)
+  except subprocess.CalledProcessError as e:
+    logger.error('Failed to save cached image: %s', e)
+    return False
+  return True
 
 
 def check_cached_replay(project, sanitizer='address'):
@@ -146,7 +154,8 @@ def check_test(project, sanitizer='address'):
   build_project_image(project)
 
   # build a cached version of the project
-  build_cached_project(project, sanitizer)
+  if not build_cached_project(project, sanitizer):
+    return False
 
   # Run the test script
   cmd = [
