@@ -18,6 +18,8 @@
 rgrep --files-with-matches '\-lheif' . \
   | xargs -r sed -i 's/-lheif/-lheif -lc++/'
 
+# TODO: `make check` is preferred over `make check-TESTS`, as it is the public
+# interface for comprehensive testing of ImageMagick.
 make -j"$(nproc)" check-TESTS
 
 # Undo patches.
