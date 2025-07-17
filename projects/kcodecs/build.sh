@@ -38,11 +38,6 @@ cd $SRC/qtbase
 cmake --build . --parallel $(nproc)
 cmake --install .
 
-cd $SRC/qttools
-cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr
-cmake --build . --parallel $(nproc)
-cmake --install .
-
 cd $SRC/kcodecs
 rm -rf poqm
 cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Debug
