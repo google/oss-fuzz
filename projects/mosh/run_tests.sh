@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eux
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
+###############################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake protobuf-compiler \
-    libprotobuf-dev pkg-config zlib1g-dev libncurses5-dev libssl-dev clang lcov
-RUN git clone --depth 1 https://github.com/mobile-shell/mosh.git
-WORKDIR mosh
-COPY *.sh $SRC/
+make check
