@@ -30,9 +30,11 @@ OSS_FUZZ_BUILD_HISTORY = None
 RUN_TEST_HEURISTIC_0 = 'make test'
 RUN_TEST_HEURISTIC_1 = 'make tests'
 RUN_TEST_HEURISTIC_2 = 'make check'
+RUN_TEST_HEURISTIC_4 = 'make tests && make check'
 
 RUN_TESTS_TO_TRY = [
-    RUN_TEST_HEURISTIC_0, RUN_TEST_HEURISTIC_1, RUN_TEST_HEURISTIC_2
+    RUN_TEST_HEURISTIC_2, RUN_TEST_HEURISTIC_4, RUN_TEST_HEURISTIC_0,
+    RUN_TEST_HEURISTIC_1
 ]
 
 
@@ -190,7 +192,20 @@ def check_test(project, sanitizer='address'):
   logger.info(
       'Test completion succeessful: %s. Duration of run_tests.sh: %.2f seconds',
       str(succeeded), (end - start))
+
+  # Cleanup
+  _remove_docker_image(_get_project_cached_named(project, sanitizer))
+  _remove_docker_image(f'gcr.io/oss-fuzz/{project}')
+
   return succeeded
+
+
+def _remove_docker_image(docker_image):
+  """Cleans up a Docker image."""
+  try:
+    subprocess.check_call(['docker', 'image', 'rm', '-f', docker_image])
+  except subprocess.CalledProcessError as e:
+    logger.error('Failed to remove Docker image %s: %s', docker_image, e)
 
 
 def _get_project_language(project):
