@@ -16,6 +16,9 @@
 #
 ################################################################################
 
+cp -r $SRC/patch/* mysql-server/
+cat $SRC/addfuzzdir.patch >> mysql-server/sql/CMakeLists.txt
+
 cd mysql-server
 mkdir build
 cd build
@@ -33,7 +36,13 @@ cp library_output_directory/libmysql*.so.* $OUT/lib/
 cd runtime_output_directory/
 ls *fuzz* | while read i; do
     cp $i $OUT/
-    chrpath -r '$ORIGIN/lib' $OUT/$i
+    chrpath -r '$ORIGIN/lib' $OUT/$i || true
+done
+)
+(
+find router/ -type f -executable | grep fuzz | while read i; do
+    chrpath -r '$ORIGIN/lib' $i || true
+    cp $i $OUT/
 done
 )
 
