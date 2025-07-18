@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +13,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-cmake -DPHMAP_MASTER_PROJECT=ON -DPHMAP_BUILD_TESTS=ON -B build
-cmake --build build
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/phashmap_fuzz.cc -I./ -o $OUT/phashmap_fuzz
+ctest --test-dir build
