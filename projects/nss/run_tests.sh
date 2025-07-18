@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
+###############################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make mercurial zlib1g-dev gyp ninja-build libssl-dev python
+export HOST=nss
+export DOMSUF=local
 
-RUN hg clone https://hg.mozilla.org/projects/nspr nspr
-RUN hg clone https://hg.mozilla.org/projects/nss nss
-RUN git clone --depth 1 https://github.com/MozillaSecurity/nss-fuzzing-corpus.git nss-corpus
-COPY *.sh $SRC/
-WORKDIR $SRC/nss
+cd tests/
+NSS_TESTS=ssl_gtests ./all.sh
+NSS_TESTS=gtests ./all.sh
