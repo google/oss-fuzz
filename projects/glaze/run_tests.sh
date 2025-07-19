@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +13,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-# Disable network tests
-sed -i '/add_subdirectory(networking_tests)/d' ./tests/CMakeLists.txt
-# remove some compiler flags for the tests which have conflict with OSS-Fuzz's flags
-sed -i '/target_compile_options(glz_test_common INTERFACE -fno-exceptions -fno-rtti)/d' ./tests/CMakeLists.txt
-mkdir build
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release -j$(nproc)
-
-fuzzing/ossfuzz.sh
+cd build
+ASAN_OPTIONS=detect_leaks=0 ctest -C Release -j$(nproc) --output-on-failure
