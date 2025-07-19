@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eux
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake
-
-RUN git clone --depth 1 https://github.com/ninja-build/ninja
-WORKDIR ninja
-RUN mv $SRC/ninja/misc/oss-fuzz/build.sh $SRC/
-RUN mv $SRC/ninja/misc/oss-fuzz/sample_ninja_build $SRC/
-COPY run_tests.sh $SRC/
+###############################################################################
+export ASAN_OPTIONS=detect_leaks=0
+./build-cmake/ninja_test
