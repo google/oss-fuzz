@@ -147,7 +147,7 @@ class BinaryConfig:
   kind: BinaryConfigKind
 
   @classmethod
-  def from_dict(cls, config_dict: Mapping[Any, Any]) -> Self:
+  def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
     """Deserializes the correct `BinaryConfig` subclass from a dict."""
     mapping = {
         BinaryConfigKind.OSS_FUZZ: CommandLineBinaryConfig,
@@ -166,7 +166,7 @@ class BinaryConfig:
       val = dict(val, binary_args=shlex.split(val["binary_args"]))
     return mapping[kind].from_dict(val)
 
-  def to_dict(self) -> Mapping[Any, Any]:
+  def to_dict(self) -> dict[str, Any]:
     """Converts a BinaryConfig object to a serializable dict."""
     return dataclasses.asdict(self)
 
@@ -187,11 +187,11 @@ class CommandLineBinaryConfig(BinaryConfig):
   # Additional environment variables to pass to the binary. They will overwrite
   # any existing environment variables with the same name.
   # Input replacement works on these variables as well.
-  binary_env: dict[str, str]
+  binary_env: dict[str, str] = dataclasses.field(default_factory=dict)
   harness_kind: HarnessKind
 
   @classmethod
-  def from_dict(cls, config_dict: Mapping[Any, Any]) -> Self:
+  def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
     """Deserializes the `CommandLineBinaryConfig` from a dict."""
     kind = BinaryConfigKind(config_dict["kind"])
     kind.validate_in([BinaryConfigKind.OSS_FUZZ, BinaryConfigKind.BINARY])
@@ -385,7 +385,7 @@ class Manifest:
   def save_build(
       self,
       *,
-      source_dir: pathlib.PurePath,
+      source_dir: pathlib.PurePath | None,
       build_dir: pathlib.PurePath,
       index_dir: pathlib.PurePath,
       archive_path: pathlib.PurePath,
@@ -464,7 +464,8 @@ class Manifest:
         # is early in the archive for the same reason.
         _save_dir(index_dir, INDEX_DIR)
 
-        _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
+        if source_dir:
+          _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
 
         # Only include the relevant target for the snapshot, to save on disk
         # space.
