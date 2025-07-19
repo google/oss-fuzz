@@ -1,4 +1,5 @@
-# Copyright 2017 Google Inc.
+#!/bin/bash -eux
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,24 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
+###############################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get -y update \
-	&& DEBIAN_FRONTEND=noninteractive \
-			apt-get install -y -q --no-install-recommends \
-				gdb \
-				libdbus-1-dev \
-				libboost-dev \
-				pkg-config \
-				libtool \
-				autoconf \
-				autoconf-archive \
-				automake
-
-COPY build.sh *.options run_tests.sh $SRC/
-
-RUN git clone --depth 1 https://github.com/openthread/wpantund
-
-WORKDIR wpantund
+make check
