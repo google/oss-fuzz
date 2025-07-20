@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2018 Google Inc.
+#!/bin/bash -eux
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,15 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
+##############################################################################
 
-if [ "$SANITIZER" == "introspector" ]; then
-  export WARNING_CFLAGS="${CFLAGS}"
-fi
-
-./autogen.sh && ./configure --disable-doxygen --disable-manpages \
-                            --disable-dtls --enable-tests        \
-    && make -j$(nproc)
-
-# build all fuzzer targets
-make -C tests/oss-fuzz -f Makefile.oss-fuzz
+./tests/testdriver
