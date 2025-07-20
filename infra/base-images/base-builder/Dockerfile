@@ -183,6 +183,7 @@ COPY bazel_build_fuzz_tests \
     srcmap \
     write_labels.py \
     unshallow_repos.py \
+    coverage_test_collection.py \
     /usr/local/bin/
 
 # TODO: Build this as part of a multi-stage build.
