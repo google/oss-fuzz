@@ -689,25 +689,6 @@ def main():
         'Only one of --target-args or --target-arg can be specified.'
     )
 
-  targets_to_index = None
-  if args.targets:
-    targets_to_index = args.targets.split(',')
-
-  for directory in ['aflplusplus', 'fuzztest', 'honggfuzz', 'libfuzzer']:
-    path = os.path.join(os.environ['SRC'], directory)
-    shutil.rmtree(path, ignore_errors=True)
-
-  # Initially, we put snapshots directly in /out. This caused a bug where each
-  # snapshot was added to the next because they contain the contents of /out.
-  SNAPSHOT_DIR.mkdir(exist_ok=True)
-  # We don't have an existing /out dir on oss-fuzz's build infra.
-  OUT.mkdir(parents=True, exist_ok=True)
-  build_project(
-      None if args.targets_all_index else targets_to_index,
-      args.compile_arg,
-      args.binaries_only,
-  )
-
   if args.binary_config:
     if (
         args.target_arg
@@ -782,7 +763,11 @@ def main():
   SNAPSHOT_DIR.mkdir(exist_ok=True)
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
-  build_project(targets_to_index, args.compile_arg, args.binaries_only)
+  build_project(
+      None if args.targets_all_index else targets_to_index,
+      args.compile_arg,
+      args.binaries_only,
+  )
 
   if not args.binaries_only:
     file_extension = '.tgz' if args.compressed else '.tar'

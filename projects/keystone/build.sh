@@ -15,15 +15,29 @@
 #
 ################################################################################
 
+export CXXFLAGS="${CXXFLAGS} -pthread"
+export CFLAGS="${CFLAGS} -pthread"
+
 #builds project
 cd keystone
 mkdir build
 cd build
 cmake ..
-make
+make -j$(nproc)
+make install -j$(nproc)
+ldconfig
+cd ../bindings/python
+ORIG_CFLAGS="${CFLAGS}"
+ORIG_CXXFLAGS="${CXXFLAGS}"
+export CFLAGS="-pthread"
+export CXXFLAGS="-pthread"
+make install -j$(nproc)
+python3 -m pip install .
+export CFLAGS="${ORIG_CFLAGS}"
+export CXXFLAGS="${ORIG_CXXFLAGS}"
 
 # build fuzz target
-cd ../suite/fuzz
+cd ../../suite/fuzz
 ls fuzz_*.c | cut -d_ -f2-4 | cut -d. -f1 | while read target
 do
     $CC $CFLAGS -I../../include -c fuzz_$target.c -o fuzz_$target.o
