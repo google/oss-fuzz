@@ -23,7 +23,7 @@ import (
 	"github.com/moby/sys/mount"
 	"github.com/sirupsen/logrus"
 
-	"github.com/docker/docker/api/types/backend"
+	"github.com/moby/moby/api/types/backend"
 	"github.com/docker/docker/daemon/container"
 	"github.com/docker/docker/daemon/config"
 	"github.com/docker/docker/daemon/images"
