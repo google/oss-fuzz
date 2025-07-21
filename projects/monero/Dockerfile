@@ -127,4 +127,4 @@ RUN git clone https://github.com/NLnetLabs/unbound && \
     cd unbound && ./configure && make && make install
 
 RUN git clone --depth 1 https://github.com/monero-project/monero.git monero
-COPY build.sh $SRC/
+COPY build.sh *.options $SRC/

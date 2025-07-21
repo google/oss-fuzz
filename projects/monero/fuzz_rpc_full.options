@@ -1,0 +1,3 @@
+[libfuzzer]
+min_len = 512
+detect_leaks = 0
