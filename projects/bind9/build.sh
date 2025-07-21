@@ -15,34 +15,20 @@
 #
 ################################################################################
 
-# build the project
-autoreconf -fi
-./configure --disable-shared --enable-static --enable-developer --without-cmocka --without-zlib --prefix="$WORK" --enable-fuzzing=ossfuzz
-make -C lib/isc -j"$(nproc)" all V=1
-make -C lib/dns -j"$(nproc)" all V=1
-make -C tests/libtest -j"$(nproc)" all V=1
+export CFLAGS="${CFLAGS} -fPIC -Wl,--allow-multiple-definition"
+export CXXFLAGS="${CXXFLAGS} -fPIC -Wl,--allow-multiple-definition"
 
-LIBISC_CFLAGS="-Ilib/isc/include"
-LIBDNS_CFLAGS="-Ilib/dns/include"
-LIBISC_LIBS="lib/isc/.libs/libisc.a -Wl,-Bstatic -Wl,-u,isc__initialize,-u,isc__shutdown -lssl -lcrypto -lurcu-memb -lurcu-cds -lurcu-common -luv -lnghttp2 -Wl,-Bdynamic"
-LIBDNS_LIBS="lib/dns/.libs/libdns.a -Wl,-Bstatic -Wl,-u,dst__lib_init -Wl,-u,dst__lib_destroy -Wl,-u,initialize_bits_for_byte -lcrypto -lurcu-memb -lurcu-cds -Wl,-Bdynamic"
-LIBTEST_LIBS="tests/libtest/.libs/libtest.a"
+git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
 
-# dns_name_fromwire needs old.c/old.h code to be linked in
-sed -i 's/#include "old.h"/#include "old.c"/' fuzz/dns_name_fromwire.c
+meson setup build -Dfuzzing=oss-fuzz -Dcmocka=enabled \
+    -Dc_link_args="$CFLAGS" -Dcpp_link_args="$CXXFLAGS" \
+    -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS" \
+    -Ddefault_library=static -Dprefer_static=true
+meson compile -C build fuzz_dns_master_load fuzz_dns_message_checksig fuzz_dns_message_parse fuzz_dns_name_fromtext_target fuzz_dns_name_fromwire fuzz_dns_qp fuzz_dns_qpkey_name fuzz_dns_rdata_fromtext fuzz_dns_rdata_fromwire_text fuzz_isc_lex_getmastertoken fuzz_isc_lex_gettoken --verbose
 
-for fuzzer in fuzz/*.c; do
-	output=$(basename "${fuzzer%.c}")
-	[ "$output" = "main" ] && continue
-	[ "$output" = "old" ] && continue
-	# We need to try little bit harder to link everything statically
-	make -C fuzz -j"$(nproc)" "${output}.o" V=1
-	${CXX} ${CXXFLAGS} \
-		-o "${OUT}/${output}_fuzzer" \
-		"fuzz/${output}.o" \
-		-include config.h \
-		$LIBISC_CFLAGS $LIBDNS_CFLAGS \
-		-Wl,--start-group $LIBISC_LIBS $LIBDNS_LIBS -Wl,--end-group \
-		$LIBTEST_LIBS $LIB_FUZZING_ENGINE
-	zip -j "${OUT}/${output}_seed_corpus.zip" "fuzz/${output}.in/"*
+for fuzzname in fuzz_dns_master_load fuzz_dns_message_checksig fuzz_dns_message_parse fuzz_dns_name_fromtext_target fuzz_dns_name_fromwire fuzz_dns_qp fuzz_dns_qpkey_name fuzz_dns_rdata_fromtext fuzz_dns_rdata_fromwire_text fuzz_isc_lex_getmastertoken fuzz_isc_lex_gettoken; do
+  fuzzer_basename="${fuzzname:5}"
+  fuzzer_name="${fuzzname:5}_fuzzer"
+  cp build/${fuzzname} $OUT/${fuzzer_name}
+  zip -j "${OUT}/${fuzzer_name}_seed_corpus.zip" ./fuzz/${fuzzer_basename}.in/* || true
 done

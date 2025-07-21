@@ -31,5 +31,5 @@ RUN git clone https://github.com/GNOME/glib  && \
     ninja -C _build && \
     ninja -C _build install
 WORKDIR bluez
-COPY build.sh $SRC/
+COPY *.sh $SRC/
 COPY *.c $SRC/

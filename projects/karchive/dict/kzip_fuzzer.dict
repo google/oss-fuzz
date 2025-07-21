@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2025 Azhar Momin <azhar.momin@kdemail.net>
+# SPDX-License-Identifier: CC0-1.0
+
+cd="\x50\x4B\x01\x02"
+lfh="\x50\x4B\x03\x04"
+eocd="\x50\x4B\x05\x06"
+zip64_eocd"\x50\x4B\x06\x06"
+zip64_eocd_locator="\x50\x4B\x06\x07"
+dd="\x50\x4B\x07\x08"
+
+# Compression methods
+store="\x00"
+deflate="\x08"

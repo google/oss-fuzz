@@ -24,7 +24,7 @@ scripts/config.py set MBEDTLS_PLATFORM_TIME_ALT
 scripts/config.py unset MBEDTLS_USE_PSA_CRYPTO
 mkdir build
 cd build
-cmake -DENABLE_TESTING=OFF ..
+cmake -DENABLE_TESTING=ON ..
 # build including fuzzers
 make -j$(nproc) all
 cp programs/fuzz/fuzz_* $OUT/

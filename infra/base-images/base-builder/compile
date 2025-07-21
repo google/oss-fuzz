@@ -298,6 +298,12 @@ else
   BUILD_CMD="bash -eux $SRC/build.sh $@"
 fi
 
+# If there are cdb (compilation database) fragments saved, restore them to $OUT
+# before building.
+if [ -d /cdb ]; then
+  cp -rT /cdb $OUT/cdb
+fi
+
 # Set +u temporarily to continue even if GOPATH and OSSFUZZ_RUSTPATH are undefined.
 set +u
 # We need to preserve source code files for generating a code coverage report.

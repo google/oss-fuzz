@@ -54,18 +54,7 @@ if [ "$#" -lt 1 ]; then
   exit 0
 fi
 
-name=$(echo "$1" | sed -E 's/ffmpeg_(AV_CODEC_ID_)?(.*)_fuzzer/\L\2/' | sed 's/demuxer/dem/')
-make tools/target_${name}_fuzzer || true
-if [ -f tools/target_${name}_fuzzer ]; then
-  mv tools/target_${name}_fuzzer $OUT/$1
-fi
+make_target=$($SRC/name_mappings.py build_target_name "$1")
 
-make tools/target_dec_${name}_fuzzer || true
-if [ -f tools/target_dec_${name}_fuzzer ]; then
-  mv tools/target_dec_${name}_fuzzer $OUT/$1
-fi
-
-make tools/target_enc_${name}_fuzzer || true
-if [ -f tools/target_enc_${name}_fuzzer ]; then
-  mv tools/target_enc_${name}_fuzzer $OUT/$1
-fi
+make tools/${make_target}
+mv tools/${make_target} $OUT/$1

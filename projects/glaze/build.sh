@@ -15,4 +15,12 @@
 #
 ################################################################################
 
+# Disable network tests
+sed -i '/add_subdirectory(networking_tests)/d' ./tests/CMakeLists.txt
+# remove some compiler flags for the tests which have conflict with OSS-Fuzz's flags
+sed -i '/target_compile_options(glz_test_common INTERFACE -fno-exceptions -fno-rtti)/d' ./tests/CMakeLists.txt
+mkdir build
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release -j$(nproc)
+
 fuzzing/ossfuzz.sh

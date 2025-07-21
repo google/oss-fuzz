@@ -61,9 +61,6 @@ rustup default nightly
 rm tools/fuzzing/libfuzzer/patches/*.patch
 touch tools/fuzzing/libfuzzer/patches/dummy.patch
 
-# Update internal libFuzzer.
-(cd tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh HEAD)
-
 # Build!
 ./mach build
 ./mach gtest buildbutdontrun
@@ -72,7 +69,7 @@ touch tools/fuzzing/libfuzzer/patches/dummy.patch
 # replaced with gtest-variants, which is required by the fuzzing interface.
 # Weighs in shy of 1GB afterwards. About double for coverage builds.
 ./mach package
-tar -xf $MOZ_OBJDIR/dist/firefox*bz2 -C $OUT
+tar -xf $MOZ_OBJDIR/dist/firefox*.linux-x86_64.tar.xz -C $OUT
 cp -L $MOZ_OBJDIR/dist/bin/gtest/libxul.so $OUT/firefox
 cp $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
 
@@ -98,37 +95,8 @@ cp $SRC/*.options $OUT
 # SdpParser
 find media/webrtc -iname "*.sdp" \
   -type f -exec zip -qu $OUT/SdpParser_seed_corpus.zip "{}" \;
-cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
 
 # StunParser
 find media/webrtc -iname "*.stun" \
   -type f -exec zip -qu $OUT/StunParser_seed_corpus.zip "{}" \;
-cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
 
-# ImageGIF
-zip -rj $OUT/ImageGIF_seed_corpus.zip $SRC/fuzzdata/samples/gif
-cp $SRC/fuzzdata/dicts/gif.dict $OUT/ImageGIF.dict
-
-# ImageICO
-zip -rj $OUT/ImageICO_seed_corpus.zip $SRC/fuzzdata/samples/ico
-
-# ImageBMP
-zip -rj $OUT/ImageBMP_seed_corpus.zip $SRC/fuzzdata/samples/bmp
-
-# MediaADTS
-zip -rj $OUT/MediaADTS_seed_corpus.zip $SRC/fuzzdata/samples/aac
-
-# MediaFlac
-zip -rj $OUT/MediaFlac_seed_corpus.zip $SRC/fuzzdata/samples/flac
-
-# MediaMP3
-zip -rj $OUT/MediaMP3_seed_corpus.zip $SRC/fuzzdata/samples/mp3
-
-# MediaOgg
-zip -rj $OUT/MediaOgg_seed_corpus.zip $SRC/fuzzdata/samples/ogg
-
-# MediaWebM
-zip -rj $OUT/MediaWebM_seed_corpus.zip $SRC/fuzzdata/samples/webm
-
-# MediaWAV
-# zip -rj $OUT/MediaWAV_seed_corpus.zip $SRC/fuzzdata/samples/wav

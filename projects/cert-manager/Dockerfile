@@ -17,10 +17,10 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone https://github.com/cert-manager/cert-manager --depth=1
 RUN git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=november-backup
-RUN wget https://go.dev/dl/go1.23.0.linux-amd64.tar.gz \
+RUN wget https://go.dev/dl/go1.24.0.linux-amd64.tar.gz \
     && mkdir temp-go \
     && rm -rf /root/.go/* \
-    && tar -C temp-go/ -xzf go1.23.0.linux-amd64.tar.gz \
+    && tar -C temp-go/ -xzf go1.24.0.linux-amd64.tar.gz \
     && mv temp-go/go/* /root/.go/
 COPY build.sh pki_fuzzer.go $SRC/
 WORKDIR $SRC/cert-manager

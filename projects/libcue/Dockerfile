@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool bison fl
 RUN git clone --depth 1 https://github.com/lipnitsk/libcue.git libcue
 
 WORKDIR libcue
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

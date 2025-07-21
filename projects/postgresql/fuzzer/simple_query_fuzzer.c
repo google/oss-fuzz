@@ -35,110 +35,77 @@
 #include "utils/snapmgr.h"
 #include "utils/timeout.h"
 
-static void
-exec_simple_query(const char *query_string)
-{
+static void exec_simple_query(const char *query_string) {
   MemoryContext oldcontext;
-  List       *parsetree_list;
-  ListCell   *parsetree_item;
-  bool        use_implicit_block;
+  List *parsetree_list;
+  ListCell *parsetree_item;
 
-  StartTransactionCommand();
   oldcontext = MemoryContextSwitchTo(MessageContext);
-
   parsetree_list = raw_parser(query_string, RAW_PARSE_TYPE_NAME);
   MemoryContextSwitchTo(oldcontext);
 
-  use_implicit_block = (list_length(parsetree_list) > 1);
+  foreach (parsetree_item, parsetree_list) {
+    RawStmt *parsetree = lfirst_node(RawStmt, parsetree_item);
+    MemoryContext per_parsetree_context = NULL;
+    List *querytree_list;
 
-  foreach(parsetree_item, parsetree_list)
-    {
-      RawStmt    *parsetree = lfirst_node(RawStmt, parsetree_item);
-      bool        snapshot_set = false;
-      MemoryContext per_parsetree_context = NULL;
-      List       *querytree_list,
-	*plantree_list;
-
-      if (use_implicit_block)
-	BeginImplicitTransactionBlock();
-
-      if (analyze_requires_snapshot(parsetree))
-	{
-	  PushActiveSnapshot(GetTransactionSnapshot());
-	  snapshot_set = true;
-	}
-
-      if (lnext(parsetree_list, parsetree_item) != NULL)
-	{
-	  per_parsetree_context =
-	    AllocSetContextCreate(MessageContext,
-				  "per-parsetree message context",
-				  ALLOCSET_DEFAULT_SIZES);
-	  oldcontext = MemoryContextSwitchTo(per_parsetree_context);
-	}
-      else
-	oldcontext = MemoryContextSwitchTo(MessageContext);
-
-      querytree_list = pg_analyze_and_rewrite_fixedparams(parsetree, query_string,
-					      NULL, 0, NULL);
-
-      plantree_list = pg_plan_queries(querytree_list, query_string,
-				      CURSOR_OPT_PARALLEL_OK, NULL);
-
-      if (per_parsetree_context){
-	MemoryContextDelete(per_parsetree_context);
-      }
-      CommitTransactionCommand();
+    if (lnext(parsetree_list, parsetree_item) != NULL) {
+      per_parsetree_context =
+          AllocSetContextCreate(MessageContext, "per-parsetree message context", ALLOCSET_DEFAULT_SIZES);
+      oldcontext = MemoryContextSwitchTo(per_parsetree_context);
+    } else {
+      oldcontext = MemoryContextSwitchTo(MessageContext);
     }
-}
 
+    querytree_list = pg_analyze_and_rewrite_fixedparams(parsetree, query_string, NULL, 0, NULL);
+    pg_plan_queries(querytree_list, query_string, CURSOR_OPT_PARALLEL_OK, NULL);
+
+    if (per_parsetree_context) {
+      MemoryContextDelete(per_parsetree_context);
+    } else {
+      MemoryContextSwitchTo(oldcontext);
+    }
+  }
+}
 
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
-	FuzzerInitialize("query_db", argv);
-	return 0;
+  MemoryContextInit();
+  InitializeGUCOptions();
+  InitializeMaxBackends();
+
+  MessageContext = AllocSetContextCreate(TopMemoryContext,
+                                         "MessageContext",
+                                         ALLOCSET_DEFAULT_SIZES);
+  return 0;
 }
 
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  if (size == 0)
+    return 0;
 
-/*
-** Main entry point.  The fuzzer invokes this function with each
-** fuzzed input.
-*/
-int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  char* query_string;
   sigjmp_buf local_sigjmp_buf;
-
-  query_string = (char*) calloc( (size+1), sizeof(char) );
+  char *query_string = (char *) calloc(size + 1, sizeof(char));
   memcpy(query_string, data, size);
 
-  if (!sigsetjmp(local_sigjmp_buf, 0))
-    {
-      PG_exception_stack = &local_sigjmp_buf;
-      error_context_stack = NULL;
-	  set_stack_base();
+  if (!sigsetjmp(local_sigjmp_buf, 0)) {
+    PG_exception_stack = &local_sigjmp_buf;
+    error_context_stack = NULL;
+    set_stack_base();
 
-      disable_all_timeouts(false);
-      QueryCancelPending = false;
-      pq_comm_reset();
-      EmitErrorReport();
+    disable_all_timeouts(false);
+    QueryCancelPending = false;
+    pq_comm_reset();
+    EmitErrorReport();
+    jit_reset_after_error();
 
-      AbortCurrentTransaction();
- 
-      PortalErrorCleanup();
+    MemoryContextSwitchTo(TopMemoryContext);
+    FlushErrorState();
+    MemoryContextSwitchTo(MessageContext);
+    MemoryContextReset(MessageContext);
+    SetCurrentStatementStartTimestamp();
 
-      jit_reset_after_error();
-
-      MemoryContextSwitchTo(TopMemoryContext);
-      FlushErrorState();
-
-      MemoryContextSwitchTo(MessageContext);
-      MemoryContextReset(MessageContext);
-
-      InvalidateCatalogSnapshotConditionally();
-
-      SetCurrentStatementStartTimestamp();
-
-      exec_simple_query(query_string);
-    }
+    exec_simple_query(query_string);
+  }
 
   free(query_string);
   return 0;
