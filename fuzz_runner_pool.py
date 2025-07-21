@@ -50,7 +50,8 @@ def run_command(
     cmd: str, 
     log_msg: str, 
     log_file: Path, 
-    allowed_exit_codes: Optional[List[int]] = None
+    allowed_exit_codes: Optional[List[int]] = None,
+    auto_confirm: bool = True  # 新增自动确认参数
 ) -> bool:
     """执行一个 shell 命令，并将输出实时流式传输到日志文件。"""
     if allowed_exit_codes is None:
@@ -60,6 +61,10 @@ def run_command(
     log_and_print(f"   $ {cmd}", log_file, to_stdout=False)
 
     try:
+        # 添加自动确认机制
+        if auto_confirm:
+            cmd = f"yes | {cmd}"
+
         process = subprocess.Popen(
             cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, encoding='utf-8', errors='replace', bufsize=1
@@ -131,18 +136,20 @@ def run_project_workflow(project_name: str, sanitizer: str) -> Tuple[bool, str]:
         log_and_print(f"❌ 严重错误: OSS-Fuzz 目录 '{OSS_FUZZ_DIR}' 不存在！", log_file)
         return (False, project_name)
 
-    # 步骤 1: 构建Docker镜像
+    # 步骤 1: 构建Docker镜像（启用自动确认）
     if not run_command(
         f"python3 infra/helper.py build_image {project_name}",
-        f"步骤1/5: 构建 {project_name} 的Docker镜像", log_file
+        f"步骤1/5: 构建 {project_name} 的Docker镜像", log_file,
+        auto_confirm=True  # 自动确认所有提示
     ):
         log_and_print(f"❌ 项目 {project_name} 构建镜像失败", log_file)
         return (False, project_name)
 
-    # 步骤 2: 编译带检测器的fuzzer
+    # 步骤 2: 编译带检测器的fuzzer（启用自动确认）
     if not run_command(
         f"python3 infra/helper.py build_fuzzers --sanitizer {sanitizer} {project_name}",
-        f"步骤2/5: 编译 {project_name} 的fuzzer (sanitizer={sanitizer})", log_file
+        f"步骤2/5: 编译 {project_name} 的fuzzer (sanitizer={sanitizer})", log_file,
+        auto_confirm=True  # 自动确认所有提示
     ):
         log_and_print(f"❌ 项目 {project_name} 编译fuzzer失败", log_file)
         return (False, project_name)
@@ -157,12 +164,13 @@ def run_project_workflow(project_name: str, sanitizer: str) -> Tuple[bool, str]:
     
     log_and_print(f"✅ 发现目标: {', '.join(fuzz_targets)}", log_file)
 
-    # 步骤 4: 遍历运行所有目标
+    # 步骤 4: 遍历运行所有目标（启用自动确认）
     for i, target in enumerate(fuzz_targets, 1):
         run_command(
             f"python3 infra/helper.py run_fuzzer {project_name} {target} -- -max_total_time=60",
             f"步骤4/{len(fuzz_targets)}: 运行目标 [{target}] (60秒)", log_file,
-            allowed_exit_codes=[1, 124]
+            allowed_exit_codes=[1, 124],
+            auto_confirm=True  # 自动确认所有提示
         )
 
     # 步骤 5: 生成覆盖率报告 (暂无)
