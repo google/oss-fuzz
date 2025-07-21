@@ -31,9 +31,4 @@ for fuzzer in tidy_config_fuzzer tidy_fuzzer tidy_xml_fuzzer tidy_parse_string_f
     cp $SRC/tidy_config_fuzzer.options $OUT/${fuzzer}.options
 done
 
-# We need this for run_tests.sh
-cd ../../
-cd regression_testing
-bundle2.7 install
-
 cp ${SRC}/*.options ${OUT}/
