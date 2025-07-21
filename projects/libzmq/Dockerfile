@@ -20,4 +20,4 @@ RUN git clone --depth 1 https://github.com/zeromq/libzmq.git
 RUN git clone --depth 1 https://github.com/zeromq/libzmq-fuzz-corpora.git
 RUN git clone --depth 1 -b stable https://github.com/jedisct1/libsodium.git
 WORKDIR libzmq
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

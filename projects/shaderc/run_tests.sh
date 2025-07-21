@@ -15,5 +15,6 @@
 #
 ################################################################################
 
+export CTEST_PARALLEL_LEVEL=$(nproc)
 cd build
 ninja test

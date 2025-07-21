@@ -24,4 +24,5 @@ RUN apt-get update && \
 RUN git clone -b next --single-branch \
     https://github.com/htacg/tidy-html5.git tidy-html5
 WORKDIR tidy-html5
+RUN cd regression_testing && bundle2.7 install
 COPY *.sh *.c *.h *.options $SRC/
