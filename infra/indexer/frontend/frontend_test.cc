@@ -1727,6 +1727,53 @@ TEST(FrontendTest, PureVirtualMethod) {
                     "snippet.cc", 2, 2);
 }
 
+TEST(FrontendTest, OverriddenMethod) {
+  // TODO: Enable this test once we have the missing xref.
+  GTEST_SKIP();
+
+  auto index = IndexSnippet(
+                   "class Foo {\n"
+                   "  virtual void Bar() {\n"
+                   "    fprintf(stderr, \"Foo::Bar\\n\");\n"
+                   "  }\n"
+                   "};\n"
+                   "class Baz : public Foo {\n"
+                   "  void Bar() override {\n"
+                   "    fprintf(stderr, \"Baz::Bar\\n\");\n"
+                   "  }\n"
+                   "};\n"
+                   "int main() {\n"
+                   "  Foo* foo = new Baz;\n"
+                   "  foo->Bar();\n"
+                   "};\n")
+                   ->Export();
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "", "snippet.cc", 1,
+                    5);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "", "snippet.cc",
+                       1, 5, "snippet.cc", 6, 10);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "", "snippet.cc",
+                       1, 5, "snippet.cc", 12, 12);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "", "snippet.cc",
+                       1, 5, "snippet.cc", 13, 13);
+
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Baz", "", "snippet.cc", 6,
+                    10);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Baz", "", "snippet.cc",
+                       6, 10, "snippet.cc", 12, 12);
+
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
+                    "snippet.cc", 2, 4);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
+                       "snippet.cc", 2, 4, "snippet.cc", 13, 13);
+  // We should have a cross-reference from the overridden method definition to
+  // the base method definition.
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
+                       "snippet.cc", 2, 4, "snippet.cc", 7, 9);
+
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Baz::", "Bar", "()",
+                    "snippet.cc", 7, 9);
+}
+
 TEST(FrontendTest, Builtin) {
   auto index = IndexSnippet(
                    "int foo(int value) {\n"
