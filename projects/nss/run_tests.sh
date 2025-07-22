@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
+###############################################################################
 
-sed -i 's/--disable-tests//g' automation/ossfuzz/build.sh
+export HOST=nss
+export DOMSUF=local
 
-if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
-  # Make sure we don't remove cached directory
-  sed -i 's/rm -rf/#rm -rf/g' automation/ossfuzz/build.sh
-fi
 
-# Build NSS with fuzzers.
-./automation/ossfuzz/build.sh
+# The below are a subset of the tests available. This is because other tests
+# fail in the OSS-Fuzz environment. Ideally all tests should be enabled.
+cd tests/
+#NSS_TESTS=ssl_gtests ./all.sh
+export GTESTS="base_gtest certhigh_gtest certdb_gtest der_gtest util_gtest sysinit_gtest smime_gtest"
+NSS_TESTS=gtests ./all.sh
