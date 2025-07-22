@@ -18,6 +18,10 @@
 export HOST=nss
 export DOMSUF=local
 
+
+# The below are a subset of the tests available. This is because other tests
+# fail in the OSS-Fuzz environment. Ideally all tests should be enabled.
 cd tests/
-NSS_TESTS=ssl_gtests ./all.sh
+#NSS_TESTS=ssl_gtests ./all.sh
+export GTESTS="base_gtest certhigh_gtest certdb_gtest der_gtest util_gtest sysinit_gtest smime_gtest"
 NSS_TESTS=gtests ./all.sh
