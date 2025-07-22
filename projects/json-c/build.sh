@@ -16,7 +16,7 @@
 ################################################################################
 mkdir json-c-build
 cd json-c-build
-cmake -DBUILD_SHARED_LIBS=OFF ..
+cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON ..
 make -j$(nproc)
 cd ..
 

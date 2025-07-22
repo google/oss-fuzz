@@ -17,6 +17,7 @@
 import base64
 import binascii
 import collections
+from collections.abc import Sequence
 import dataclasses
 import datetime
 import json
@@ -513,7 +514,8 @@ def get_docker_build_step(image_names,
                           use_buildkit_cache=False,
                           src_root='oss-fuzz',
                           architecture='x86_64',
-                          cache_image=''):
+                          cache_image='',
+                          build_args: Sequence[str] | None = None):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -535,6 +537,10 @@ def get_docker_build_step(image_names,
 
   for image_name in sorted(image_names):
     args.extend(['--tag', image_name])
+
+  if build_args:
+    for build_arg in build_args:
+      args.extend(['--build-arg', build_arg])
 
   step = {
       'name': DOCKER_TOOL_IMAGE,

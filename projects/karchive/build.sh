@@ -76,12 +76,6 @@ cd $SRC/qtbase
 cmake --build . --parallel $(nproc)
 cmake --install .
 
-# Build qttools
-cd $SRC/qttools
-cmake . -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=/usr
-cmake --build . --parallel $(nproc)
-cmake --install .
-
 # Build karchive
 cd $SRC/karchive
 rm -rf poqm
@@ -89,7 +83,40 @@ cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
 make install -j$(nproc)
 
 # Build karchive_fuzzer
-$CXX $CXXFLAGS -fPIC -std=c++17 $SRC/karchive_fuzzer.cc -o $OUT/karchive_fuzzer -I /usr/include/QtCore/ -I /usr/local/include/KF6/KArchive -lQt6Core -lm -lQt6BundledPcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libbz2.a -llzma /usr/local/lib/libzstd.a /usr/local/lib64/libcrypto.a
+HANDLER_TYPES="K7Zip 7z karchive_fuzzer
+        KAr ar karchive_fuzzer
+        KTar tar karchive_fuzzer
+        KZip zip karchive_fuzzer
+        GZip tar_gz kcompressiondevice_fuzzer
+        BZip2 tar_bz2 kcompressiondevice_fuzzer
+        Xz tar_xz kcompressiondevice_fuzzer
+        Zstd tar_zst kcompressiondevice_fuzzer
+        Lz tar_lz kcompressiondevice_fuzzer"
 
-cd $SRC
-find . -name "*.gz" -o -name "*.zip" -o -name "*.xz" -o -name "*.tar" -o -name "*.7z" | zip -q $OUT/karchive_fuzzer_seed_corpus.zip -@
+echo "$HANDLER_TYPES" | while read class format source_file; do
+(
+  fuzz_target_name=k${format}_fuzzer
+  fuzz_target_flags="-DHANDLER=$class"
+
+  if [[ "$class" == "K7Zip" ]]; then # KZip in future?
+    fuzz_target_flags+=" -DUSE_PASSWORD"
+  fi
+
+  $CXX $CXXFLAGS -fPIC $fuzz_target_flags -std=c++17 $SRC/$source_file.cc -o $OUT/$fuzz_target_name \
+    -I /usr/include/QtCore/ -I /usr/local/include/KF6/KArchive -lQt6Core -lm -lQt6BundledPcre2 \
+    -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libz.a -lKF6Archive /usr/local/lib/libbz2.a \
+    -llzma /usr/local/lib/libzstd.a /usr/local/lib64/libcrypto.a
+
+  extension="${format/_/.}" # Replace _ with .
+  files=$(find . -name "*.${extension}")
+  if [ -n "$files" ]; then
+    echo "$files" | zip -q $OUT/${fuzz_target_name}_seed_corpus.zip -@
+  else
+    echo "no files found with extension $extension for $fuzz_target_name seed corpus"
+  fi
+
+  if [ -f "$SRC/$fuzz_target_name.dict" ]; then
+    cp "$SRC/$fuzz_target_name.dict" $OUT/
+  fi
+)
+done

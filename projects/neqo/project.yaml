@@ -5,6 +5,10 @@ auto_ccs:
   - "leggert@mozilla.com"
   - "minden@mozilla.com"
   - "kershaw@mozilla.com"
+  - "mdauer@mozilla.com"
+  - "jkratzer@mozilla.com"
+vendor_ccs:
+  - "oss-fuzz@mozilla-fuzzing.iam.gserviceaccount.com"
 sanitizers:
   - address
 fuzzing_engines:

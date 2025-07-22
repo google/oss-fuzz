@@ -222,7 +222,7 @@ RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
     rm -rf /tmp/patchelf && apt-get remove -y autoconf
 
 COPY indexer /opt/indexer
-ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer-d106d7bfa3231d23f24382fc7838a71ec70f7359 /opt/indexer/indexer
+COPY --from=gcr.io/oss-fuzz-base/indexer /indexer/build/indexer /opt/indexer/indexer
 RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 
 CMD ["compile"]

@@ -219,13 +219,10 @@ fi
         --disable-doc \
         --disable-programs \
         --enable-demuxers \
+        --samples=fate-suite/ \
         $FFMPEG_BUILD_ARGS
 make clean
 make -j$(nproc) install
-
-if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
-  exit 0
-fi
 
 # Download test samples, will be used as seed corpus.
 # DISABLED.
@@ -234,6 +231,10 @@ fi
 # is too big for ClusterFuzz (over 10Gb compressed data).
 export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
 make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
+
+if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
+  exit 0
+fi
 
 rsync -av rsync://samples.ffmpeg.org/samples/avi/ffv1/testset/ $SRC/ffmpeg/ffv1testset
 
