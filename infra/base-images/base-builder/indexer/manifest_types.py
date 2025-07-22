@@ -68,6 +68,8 @@ _COVERAGE_INFO_URL = ("https://storage.googleapis.com/oss-fuzz-coverage/"
 INPUT_FILE = "<input_file>"
 # A file the target can write output to.
 OUTPUT_FILE = "<output_file>"
+# Will be replaced with any dynamic arguments.
+DYNAMIC_ARGS = "<dynamic_args>"
 
 
 

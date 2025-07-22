@@ -51,7 +51,6 @@ _DISALLOWED_CLANG_FLAGS = (
     "-ffile-prefix-map=",
 )
 
-PROJECT = Path(os.environ["PROJECT_NAME"])
 SRC = Path(os.getenv("SRC", "/src"))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv("OUT", "/out"))
@@ -450,9 +449,22 @@ def expand_rsp_file(argv: Sequence[str]) -> list[str]:
   return expanded
 
 
+def force_optimization_flag(argv: Sequence[str]) -> list[str]:
+  """Forces -O0 in the given argument list."""
+  args = []
+  for arg in argv:
+    if arg.startswith("-O") and arg != "-O0":
+      arg = "-O0"
+
+    args.append(arg)
+
+  return args
+
+
 def main(argv: list[str]) -> None:
   argv = expand_rsp_file(argv)
   argv = remove_flag_if_present(argv, "-gline-tables-only")
+  argv = force_optimization_flag(argv)
 
   if _has_disallowed_clang_flags(argv):
     raise ValueError("Disallowed clang flags found, aborting.")
