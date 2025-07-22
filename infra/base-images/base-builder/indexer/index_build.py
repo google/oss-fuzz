@@ -267,7 +267,7 @@ def enumerate_build_targets(
         for binary_path in binary_paths:
           compile_commands = data['compile_commands']
           target_binary_config = manifest_types.CommandLineBinaryConfig(
-              **dict(binary_config.to_dict(), binary_name=name)
+              **dict(binary_config.to_dict(), binary_name=binary_path.name)
           )
           binary_to_build_metadata[binary_path.name] = BinaryMetadata(
               binary_config=target_binary_config,
