@@ -483,8 +483,8 @@ class Manifest:
             report_missing_source_files(
                 self.binary_config.binary_name, copied_files, tar
             )
-          except Exception:  # pylint: disable=broad-except
-            logging.exception("Failed to report missing source files.")
+          except Exception as e:  # pylint: disable=broad-except
+            logging.warning("Failed to report missing source files: %s", e)
 
       shutil.copyfile(tmp.name, archive_path)
 
