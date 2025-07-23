@@ -16,7 +16,7 @@
 # remove broken tests
 # TODO: Check if these can be fixed
 # or if they fix themselves over time
-export $TMPDIR=/tmp/frr-tests
+export TMPDIR=/tmp/frr-tests
 mkdir /tmp/frr-tests
 mv tests/bgpd/test_peer_attr.py $TMPDIR/
 mv tests/bgpd/test_mp_attr.py $TMPDIR/
@@ -34,7 +34,8 @@ source $SRC/venv/bin/activate
 export ASAN_OPTIONS="detect_leaks=0"
 
 # run tests
-make check
+test_output=$(make check)
+test_exit_code=$?
 
 # restore broken tests
 mv $TMPDIR/test_peer_attr.py tests/bgpd/
@@ -48,3 +49,5 @@ mv $TMPDIR/test_cli.py tests/lib/cli/
 mv $TMPDIR/test_lsdb.py tests/ospf6d/
 mv $TMPDIR/test_ospf_spf.py tests/ospfd/
 mv $TMPDIR/test_lm_plugin.py tests/zebra/
+
+exit $test_exit_code
