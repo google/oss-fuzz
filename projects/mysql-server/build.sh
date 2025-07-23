@@ -31,7 +31,7 @@ fi
 cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_LD=lld $MY_SANITIZER -DCMAKE_VERBOSE_MAKEFILE=ON
 make -j$(nproc)
 mkdir -p $OUT/lib/
-cp library_output_directory/libmysql*.so.* $OUT/lib/
+cp library_output_directory/*.so* $OUT/lib/
 (
 cd runtime_output_directory/
 ls *fuzz* | while read i; do
