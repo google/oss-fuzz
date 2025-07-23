@@ -54,6 +54,7 @@
 #include "sql/sql_plugin.h"
 #include "sql/xa.h"
 #include "sql/xa/transaction_cache.h"  // xa::Transaction_cache
+#include "sql/check_stack.h"
 
 using namespace std;
 
@@ -119,6 +120,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         query_logger.init();
         init_optimizer_cost_module(false);
         my_testing::DD_initializer::SetUp();
+        initialize_stack_direction();
 
         initialized = 1;
     }
