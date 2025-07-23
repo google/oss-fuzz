@@ -256,6 +256,18 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
         if data.endswith(",\n"):
           contents.append(data[:-2])
           break
+        elif data.endswith(','):
+          contents.append(data[:-1])
+          break
+        else:
+          # we may be ablet ot load the json contents, and if so,
+          # we assume it's correct
+          try:
+            if json.loads(contents):
+              contents.append(contents)
+              break
+          except:
+            pass
 
       if i < num_retries - 1:
         print(
@@ -271,8 +283,6 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
         # generated `test.c` or `conftest.c` for testing compilers doesn't
         # result in valid cdb fragments.
         print(f"WARNING: {error}", file=sys.stderr)
-      else:
-        raise RuntimeError(error)
 
   contents = ",\n".join(contents)
   contents = "[" + contents + "]"
@@ -464,7 +474,7 @@ def force_optimization_flag(argv: Sequence[str]) -> list[str]:
 def main(argv: list[str]) -> None:
   argv = expand_rsp_file(argv)
   argv = remove_flag_if_present(argv, "-gline-tables-only")
-  argv = force_optimization_flag(argv)
+  #argv = force_optimization_flag(argv)
 
   if _has_disallowed_clang_flags(argv):
     raise ValueError("Disallowed clang flags found, aborting.")

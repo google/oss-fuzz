@@ -528,8 +528,11 @@ def get_covered_files(target: str) -> Sequence[str]:
       "gs://", "https://storage.googleapis.com/")
 
   target_url = f"{stats_url}/{target}.json"
-  with urllib.request.urlopen(target_url) as resp:
-    target_cov = json.load(resp)
+  try:
+    with urllib.request.urlopen(target_url) as resp:
+      target_cov = json.load(resp)
+  except urllib.error.HTTPError:
+    return []
 
   files = target_cov["data"][0]["files"]
   return [file["filename"]
