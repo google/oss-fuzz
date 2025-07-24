@@ -27,5 +27,5 @@ RUN git clone --depth 1 --branch fuzz https://github.com/FRRouting/frr
 
 RUN git clone --depth 1 https://github.com/qlyoung/corpi
 RUN git clone --depth 1 https://github.com/pytest-dev/pytest
-COPY build.sh run_tests.sh $SRC
+COPY build.sh run_tests.sh $SRC/
 WORKDIR $SRC/frr
