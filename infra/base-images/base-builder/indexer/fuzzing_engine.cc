@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <unistd.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t n);
@@ -76,16 +75,29 @@ int main(int argc, char* argv[]) {
 
   const size_t size = static_cast<size_t>(end_offset);
 
-  void* mapping = mmap(nullptr, static_cast<size_t>(size),
-                       PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-  if (mapping == MAP_FAILED) {
-    perror("mmap");
+  uint8_t* data = static_cast<uint8_t*>(malloc(size));
+  if (!data) {
+    perror("malloc");
     exit(EXIT_FAILURE);
+  }
+
+  size_t bytes_read = 0;
+  while (bytes_read < size) {
+    ssize_t res = read(fd, data + bytes_read, size - bytes_read);
+    if (res == -1) {
+      perror("read");
+      exit(EXIT_FAILURE);
+    }
+    if (res == 0) {
+      fprintf(stderr, "Unexpected EOF.\n");
+      exit(EXIT_FAILURE);
+    }
+    bytes_read += res;
   }
   close(fd);
 
-  int res = LLVMFuzzerTestOneInput(static_cast<uint8_t*>(mapping), size);
+  int res = LLVMFuzzerTestOneInput(data, size);
+  free(data);
 
-  munmap(mapping, size);
   return res;
 }
