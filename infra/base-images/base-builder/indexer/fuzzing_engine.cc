@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t n);
@@ -62,19 +63,13 @@ int main(int argc, char* argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  const off_t end_offset = lseek(fd, 0, SEEK_END);
-  if (end_offset == static_cast<off_t>(-1)) {
-    perror("lseek SEEK_END");
+  struct stat st;
+  if (fstat(fd, &st) == -1) {
+    perror("stat");
     exit(EXIT_FAILURE);
   }
 
-  if (lseek(fd, 0, SEEK_SET) == -1) {
-    perror("lseek SEEK_SET");
-    exit(EXIT_FAILURE);
-  }
-
-  const size_t size = static_cast<size_t>(end_offset);
-
+  size_t size = st.st_size;
   uint8_t* data = static_cast<uint8_t*>(malloc(size));
   if (!data) {
     perror("malloc");
