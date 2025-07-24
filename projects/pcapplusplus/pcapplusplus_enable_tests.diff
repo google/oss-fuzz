@@ -1,4 +1,27 @@
-index 6d461ff6..c984c978 100755
+diff --git a/Packet++/header/LdapLayer.h b/Packet++/header/LdapLayer.h
+index 4485d17..b986f12 100644
+--- a/Packet++/header/LdapLayer.h
++++ b/Packet++/header/LdapLayer.h
+@@ -439,7 +439,7 @@ namespace pcpp
+ 		static constexpr int diagnotsticsMessageIndex = 2;
+ 		static constexpr int referralIndex = 3;
+ 
+-		static constexpr uint8_t referralTagType = 3;
++		uint8_t referralTagType = 3;
+ 
+ 		LdapResponseLayer() = default;
+ 		LdapResponseLayer(std::unique_ptr<Asn1Record> asn1Record, uint8_t* data, size_t dataLen, Layer* prevLayer,
+@@ -595,7 +595,7 @@ namespace pcpp
+ 	protected:
+ 		friend LdapLayer* LdapLayer::parseLdapMessage(uint8_t* data, size_t dataLen, Layer* prevLayer, Packet* packet);
+ 
+-		static constexpr int serverSaslCredentialsTagType = 7;
++		int serverSaslCredentialsTagType = 7;
+ 
+ 		LdapBindResponseLayer(std::unique_ptr<Asn1Record> asn1Record, uint8_t* data, size_t dataLen, Layer* prevLayer,
+ 		                      Packet* packet)
+diff --git a/Tests/Fuzzers/ossfuzz.sh b/Tests/Fuzzers/ossfuzz.sh
+index 6d461ff..c984c97 100755
 --- a/Tests/Fuzzers/ossfuzz.sh
 +++ b/Tests/Fuzzers/ossfuzz.sh
 @@ -12,7 +12,13 @@ make -j$(nproc)
