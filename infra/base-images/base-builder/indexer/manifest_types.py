@@ -178,6 +178,8 @@ class HarnessKind(enum.StrEnum):
 
   LIBFUZZER = enum.auto()
   BINARY = enum.auto()
+  # The target is a JavaScript shell that consumes JavaScript code.
+  JS = enum.auto()
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
