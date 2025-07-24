@@ -30,7 +30,7 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
       -DSHADERC_SKIP_EXAMPLES=True \
       -DSHADERC_ENABLE_EXAMPLES=OFF \
       ..
-ninja -v
+ninja -v -j$(nproc)
 popd
 
 for fuzzer in $(find $SRC -maxdepth 1 -name '*_fuzzer.cc'); do
