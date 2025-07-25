@@ -20,5 +20,5 @@ RUN git clone --depth 1 https://github.com/ntop/nDPI.git ndpi
 ADD https://www.tcpdump.org/release/libpcap-1.9.1.tar.gz libpcap-1.9.1.tar.gz
 ADD https://github.com/json-c/json-c/archive/refs/tags/json-c-0.17-20230812.tar.gz json-c-0.17-20230812.tar.gz
 RUN tar -xvzf json-c-0.17-20230812.tar.gz
-COPY build.sh run_tests.diff run_tests.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
 WORKDIR $SRC
