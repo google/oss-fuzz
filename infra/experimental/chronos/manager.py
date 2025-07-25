@@ -160,11 +160,14 @@ def build_cached_project(project,
       '"export PATH=/ccache/bin:\$PATH && compile && cp -n /usr/local/bin/replay_build.sh \$SRC/"'
   ]
 
+  start = time.time()
   try:
     subprocess.check_call(' '.join(cmd),
                           shell=True,
                           stdout=stdout_fp,
                           stderr=stderr_fp)
+    end = time.time()
+    logger.info('Vanilla build Succeeded: Duration: %.2f seconds', end - start)
     if container_output == 'file':
       stdout_fp.close()
       stderr_fp.close()
@@ -172,6 +175,8 @@ def build_cached_project(project,
     if container_output == 'file':
       stdout_fp.close()
       stderr_fp.close()
+    end = time.time()
+    logger.info('Vanilla build Failed: Duration: %.2f seconds', end - start)
     return False
 
   # Save the container.
@@ -186,17 +191,20 @@ def build_cached_project(project,
                           shell=True,
                           stdout=subprocess.DEVNULL,
                           stderr=subprocess.DEVNULL)
+
   except subprocess.CalledProcessError as e:
     logger.error('Failed to save cached image: %s', e)
+
     return False
   return True
 
 
 def check_cached_replay(project,
                         sanitizer='address',
-                        container_output='stdout'):
+                        container_output='stdout',
+                        silent_replays=False):
   """Checks if a cache build succeeds and times is."""
-  build_project_image(project)
+  build_project_image(project, container_output=container_output)
   build_cached_project(project,
                        sanitizer=sanitizer,
                        container_output=container_output)
@@ -211,7 +219,16 @@ def check_cached_replay(project,
       '"export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile"'
   ]
   start = time.time()
-  subprocess.check_call(' '.join(cmd), shell=True)
+  if silent_replays:
+    stdout_fp = subprocess.DEVNULL
+    stderr_fp = subprocess.DEVNULL
+  else:
+    stdout_fp = None
+    stderr_fp = None
+  subprocess.check_call(' '.join(cmd),
+                        shell=True,
+                        stdout=stdout_fp,
+                        stderr=stderr_fp)
   end = time.time()
   logger.info('Cached build completion time: %.2f seconds', (end - start))
 
@@ -463,6 +480,25 @@ def parse_args():
       'The name of the project to autogenerate tests for. If not specified, all projects will be considered.'
   )
 
+  build_many_caches = subparsers.add_parser(
+      'build-many-caches',
+      help='Builds cached images for multiple projects in parallel.')
+  build_many_caches.add_argument(
+      '--projects',
+      nargs='+',
+      required=True,
+      help='List of projects to build cached images for.')
+  build_many_caches.add_argument(
+      '--sanitizer',
+      default='address',
+      help='The sanitizer to use for the cached build (default: address).')
+  build_many_caches.add_argument(
+      '--container-output',
+      choices=['silent', 'file', 'stdout'],
+      default='stdout',
+      help='How to handle output from the container. ')
+  build_many_caches.add_argument('--silent-replays', action='store_true')
+
   return parser.parse_args()
 
 
@@ -483,6 +519,13 @@ def main():
   if args.command == 'autogen-tests':
     autogen_projects(args.apply_filtering, args.max_projects_to_try,
                      args.container_output, args.project)
+  if args.command == 'build-many-caches':
+    for project in args.projects:
+      logger.info('Building cached project: %s', project)
+      check_cached_replay(project,
+                          sanitizer=args.sanitizer,
+                          container_output=args.container_output,
+                          silent_replays=args.silent_replays)
 
 
 if __name__ == '__main__':
