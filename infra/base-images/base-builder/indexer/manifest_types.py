@@ -193,6 +193,10 @@ class CommandLineBinaryConfig(BinaryConfig):
   # Input replacement works on these variables as well.
   binary_env: dict[str, str] = dataclasses.field(default_factory=dict)
   harness_kind: HarnessKind
+  # Whether to filter the compile commands to only include object files that
+  # are directly linked into the target binary. Should usually be true but
+  # some targets like V8 require this to be false, see b/433718862.
+  filter_compile_commands: bool = True
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
@@ -209,6 +213,9 @@ class CommandLineBinaryConfig(BinaryConfig):
         binary_name=config_dict["binary_name"],
         binary_args=config_dict["binary_args"],
         binary_env=config_dict.get("binary_env", {}),
+        filter_compile_commands=config_dict.get(
+            "filter_compile_commands", True
+        ),
     )
 
 
