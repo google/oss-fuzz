@@ -65,7 +65,6 @@ meson_install() {
   CFLAGS="$MESON_CFLAGS" CXXFLAGS="$MESON_CXXFLAGS" \
   meson setup build -Dprefix="$FFMPEG_DEPS_PATH" -Ddefault_library=static -Dprefer_static=true \
                     --wrap-mode=nofallback --libdir "$LIBDIR" ${2:-}
-  meson compile -C build
   meson install -C build
 }
 
@@ -73,18 +72,13 @@ meson_install bzip2
 
 cd $SRC/zlib
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
-make clean
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 cd $SRC/libxml2
 ./autogen.sh --prefix="$FFMPEG_DEPS_PATH" --enable-static \
       --without-debug --without-ftp --without-http \
       --without-legacy --without-python
-make clean
-make -j$(nproc)
-make install
-
+make -j$(nproc) install
 meson_install freetype "-Dharfbuzz=disabled"
 meson_install fribidi "-Ddocs=false -Dtests=false"
 meson_install harfbuzz "-Ddocs=disabled -Dtests=disabled"
@@ -93,8 +87,7 @@ meson_install fontconfig "-Dtests=disabled -Dtools=disabled"
 cd $SRC/libass
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared --disable-asm
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 cd $SRC
 bzip2 -f -d alsa-lib-*
@@ -102,17 +95,13 @@ tar xf alsa-lib-*
 rm alsa-lib-*.tar
 cd alsa-lib-*
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
-make clean
-make -j$(nproc) all
-make install
+make -j$(nproc) install
 
 cd $SRC/fdk-aac
 autoreconf -fiv
 CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base,signed-integer-overflow" \
 ./configure --prefix="$FFMPEG_DEPS_PATH" --disable-shared
-make clean
-make -j$(nproc) all
-make install
+make -j$(nproc) install
 
 cd $SRC/libvpx
 if [[ "$SANITIZER" == "memory" ]] || [[ "$FUZZING_ENGINE" == "centipede" ]]; then
@@ -130,23 +119,17 @@ LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
         --extra-cflags="-DVPX_MAX_ALLOCABLE_MEMORY=1073741824" \
         $TARGET
 
-make clean
-make -j$(nproc) all
-make install
+make -j$(nproc) install
 
 cd $SRC/ogg
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-crc
-make clean
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 cd $SRC/opus
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
-make clean
-make -j$(nproc) all
-make install
+make -j$(nproc) install
 
 cd $SRC/theora
 if [[ "$ARCHITECTURE" == i386 ]]; then
@@ -162,16 +145,12 @@ CFLAGS="$CFLAGS -fPIC" LDFLAGS="-L$FFMPEG_DEPS_PATH/lib/" \
       ./autogen.sh
 ./configure --with-ogg="$FFMPEG_DEPS_PATH" --prefix="$FFMPEG_DEPS_PATH" \
       --enable-static --disable-examples $THEORA_BUILD_ARGS
-make clean
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 cd $SRC/vorbis
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
-make clean
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 # Remove shared libraries to avoid accidental linking against them.
 rm $FFMPEG_DEPS_PATH/lib/*.so
@@ -221,8 +200,6 @@ fi
         --enable-demuxers \
         --samples=fate-suite/ \
         $FFMPEG_BUILD_ARGS
-make clean
-make -j$(nproc) install
 
 # Download test samples, will be used as seed corpus.
 # DISABLED.
