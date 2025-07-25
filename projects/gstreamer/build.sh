@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# gnutls requires autoconf 2.71 minimum which is not available in the Ubuntu 20 base image
+# gstreamer requires autoconf 2.71 minimum which is not available in the Ubuntu 20 base image
 # Skip this step if a newer base image is used
 if grep -q -F "20.04" /etc/os-release ; then
     cd /tmp
