@@ -12,3 +12,5 @@ infra/base-images/base-builder/indexer/fuzzing_engine.a
 # IntelliJ IDEA
 /.idea
 **/*.iml
+*.log
+*.log.*
