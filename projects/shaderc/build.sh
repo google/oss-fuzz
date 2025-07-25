@@ -30,11 +30,15 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
       -DSHADERC_SKIP_EXAMPLES=True \
       -DSHADERC_ENABLE_EXAMPLES=OFF \
       ..
-ninja -v
+ninja -v -j$(nproc)
 popd
 
+TARGET_FUZZER=${1:-}
 for fuzzer in $(find $SRC -maxdepth 1 -name '*_fuzzer.cc'); do
   fuzz_basename=$(basename -s .cc $fuzzer)
+  if [[ -n "$TARGET_FUZZER" && "$TARGET_FUZZER" != "$fuzz_basename" ]]; then
+    continue
+  fi
   $CXX $CXXFLAGS -I$SRC/shaderc/libshaderc/include \
       -I$SRC/shaderc/libshaderc_util/include \
       -I$SRC/shaderc/glslc/src -I$SRC/shaderc/third_party/glslang \

@@ -1728,50 +1728,55 @@ TEST(FrontendTest, PureVirtualMethod) {
 }
 
 TEST(FrontendTest, OverriddenMethod) {
-  // TODO: Enable this test once we have the missing xref.
-  GTEST_SKIP();
-
   auto index = IndexSnippet(
-                   "class Foo {\n"
-                   "  virtual void Bar() {\n"
-                   "    fprintf(stderr, \"Foo::Bar\\n\");\n"
-                   "  }\n"
-                   "};\n"
-                   "class Baz : public Foo {\n"
-                   "  void Bar() override {\n"
-                   "    fprintf(stderr, \"Baz::Bar\\n\");\n"
-                   "  }\n"
-                   "};\n"
-                   "int main() {\n"
-                   "  Foo* foo = new Baz;\n"
-                   "  foo->Bar();\n"
-                   "};\n")
+                   "class Foo {\n"                  // 1
+                   " public:\n"                     // 2
+                   "  virtual void Bar() {\n"       // 3
+                   "  }\n"                          // 4
+                   "};\n"                           // 5
+                   "class Baz : public Foo {\n"     // 6
+                   " public:\n"                     // 7
+                   "  // No override\n"             // 8
+                   "  // of `Bar()`\n"              // 9
+                   "};\n"                           // 10
+                   "class Foobar : public Baz {\n"  // 11
+                   " public:\n"                     // 12
+                   "  void Bar() override {\n"      // 13
+                   "  }\n"                          // 14
+                   "};\n"                           // 15
+                   "int main() {\n"                 // 16
+                   "  Foo* foo = new Foobar;\n"     // 17
+                   "  foo->Bar();\n"                // 18
+                   "};\n")                          // 19
                    ->Export();
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "", "snippet.cc", 1,
                     5);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "", "snippet.cc",
                        1, 5, "snippet.cc", 6, 10);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "", "snippet.cc",
-                       1, 5, "snippet.cc", 12, 12);
+                       1, 5, "snippet.cc", 17, 17);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "", "snippet.cc",
-                       1, 5, "snippet.cc", 13, 13);
+                       1, 5, "snippet.cc", 18, 18);
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Baz", "", "snippet.cc", 6,
                     10);
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Baz", "", "snippet.cc",
-                       6, 10, "snippet.cc", 12, 12);
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
-                    "snippet.cc", 2, 4);
+                    "snippet.cc", 3, 4);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
-                       "snippet.cc", 2, 4, "snippet.cc", 13, 13);
+                       "snippet.cc", 3, 4, "snippet.cc", 18, 18);
+
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foobar", "", "snippet.cc",
+                    11, 15);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foobar", "",
+                       "snippet.cc", 11, 15, "snippet.cc", 17, 17);
+
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foobar::", "Bar", "()",
+                    "snippet.cc", 13, 14);
   // We should have a cross-reference from the overridden method definition to
   // the base method definition.
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
-                       "snippet.cc", 2, 4, "snippet.cc", 7, 9);
-
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Baz::", "Bar", "()",
-                    "snippet.cc", 7, 9);
+                       "snippet.cc", 3, 4, "snippet.cc", 13, 14);
 }
 
 TEST(FrontendTest, Builtin) {
