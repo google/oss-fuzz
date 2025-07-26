@@ -167,7 +167,8 @@ def build_cached_project(project,
                           stdout=stdout_fp,
                           stderr=stderr_fp)
     end = time.time()
-    logger.info('Vanilla build Succeeded: Duration: %.2f seconds', end - start)
+    logger.info('%s vanilla build Succeeded: Duration: %.2f seconds', project,
+                end - start)
     if container_output == 'file':
       stdout_fp.close()
       stderr_fp.close()
@@ -176,7 +177,8 @@ def build_cached_project(project,
       stdout_fp.close()
       stderr_fp.close()
     end = time.time()
-    logger.info('Vanilla build Failed: Duration: %.2f seconds', end - start)
+    logger.info('%s vanilla build Failed: Duration: %.2f seconds', project,
+                end - start)
     return False
 
   # Save the container.
@@ -208,6 +210,7 @@ def check_cached_replay(project,
   build_cached_project(project,
                        sanitizer=sanitizer,
                        container_output=container_output)
+  logger.info('Silent replays: %s', silent_replays)
 
   # Run the cached replay script.
   cmd = [
@@ -230,10 +233,14 @@ def check_cached_replay(project,
                         stdout=stdout_fp,
                         stderr=stderr_fp)
   end = time.time()
-  logger.info('Cached build completion time: %.2f seconds', (end - start))
+  logger.info('%s cached build completion time: %.2f seconds', project,
+              (end - start))
 
 
-def check_test(project, sanitizer='address', container_output='stdout'):
+def check_test(project,
+               sanitizer='address',
+               container_output='stdout',
+               run_full_cache_replay=False):
   """Run the `run_tests.sh` script for a specific project. Will
     build a cached container first."""
 
@@ -245,11 +252,18 @@ def check_test(project, sanitizer='address', container_output='stdout'):
     sys.exit(1)
 
   # Build an OSS-Fuzz image of the project
-  build_project_image(project, container_output)
-  # build a cached version of the project
-  if not build_cached_project(
-      project, sanitizer=sanitizer, container_output=container_output):
-    return False
+  if run_full_cache_replay:
+    check_cached_replay(
+        project,
+        sanitizer,
+        container_output,
+        silent_replays=(True if container_output == 'silent' else False))
+  else:
+    build_project_image(project, container_output)
+    # build a cached version of the project
+    if not build_cached_project(
+        project, sanitizer=sanitizer, container_output=container_output):
+      return False
 
   # Run the test script
   cmd = [
@@ -292,8 +306,9 @@ def check_test(project, sanitizer='address', container_output='stdout'):
       stderr_fp.close()
   end = time.time()
 
-  logger.info('Test completion %s: Duration of run_tests.sh: %.2f seconds',
-              'failed' if not succeeded else 'succeeded', (end - start))
+  logger.info('%s test completion %s: Duration of run_tests.sh: %.2f seconds',
+              project, 'failed' if not succeeded else 'succeeded',
+              (end - start))
   return succeeded
 
 
@@ -420,8 +435,11 @@ def parse_args():
   check_test_parser = subparsers.add_parser(
       'check-test', help='Checks run_test.sh for specific project.')
   check_test_parser.add_argument(
-      'project',
-      help='The name of the project to check (e.g., "libpng").',
+      '--projects',
+      nargs='+',
+      required=True,
+      type=str,
+      help='The name of the projects to check (e.g., "libpng").',
   )
   check_test_parser.add_argument(
       '--sanitizer',
@@ -432,6 +450,12 @@ def parse_args():
       choices=['silent', 'file', 'stdout'],
       default='stdout',
       help='How to handle output from the container. ')
+  check_test_parser.add_argument(
+      '--run-full-cache-replay',
+      action='store_true',
+      help=
+      'If set, will run the full cache replay instead of just checking the script.'
+  )
 
   check_replay_script_parser = subparsers.add_parser(
       'check-replay-script',
@@ -509,7 +533,18 @@ def main():
   args = parse_args()
 
   if args.command == 'check-test':
-    check_test(args.project, args.sanitizer, args.container_output)
+    if len(args.projects) == 1 and args.projects[0] == 'all':
+      # If 'all' is specified, get all projects from the projects directory.
+      projects_to_analyse = [
+          p for p in os.listdir('projects')
+          if os.path.isfile(os.path.join('projects', p, 'run_tests.sh'))
+      ]
+    else:
+      projects_to_analyse = args.projects
+    for project in projects_to_analyse:
+      logger.info('%s checking run_tests', project)
+      check_test(project, args.sanitizer, args.container_output,
+                 args.run_full_cache_replay)
   if args.command == 'check-replay-script':
     check_cached_replay(args.project, args.sanitizer, args.container_output)
   if args.command == 'build-cached-image':
