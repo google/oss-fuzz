@@ -1,3 +1,4 @@
+disabled: true
 homepage: "https://github.com/bus1/dbus-broker"
 language: c
 primary_contact: "david.rheinsberg@gmail.com"
