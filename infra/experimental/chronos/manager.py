@@ -181,6 +181,24 @@ def build_cached_project(project,
                 end - start)
     return False
 
+  # Copy the coverage script into the container.
+  # Ensure we're are the right cwd.
+  coverage_host_script = os.path.join('infra', 'experimental', 'chronos',
+                                      'coverage_test_collection.py')
+  if not os.path.exists(coverage_host_script):
+    logger.info('Coverage script does not exist at %s', coverage_host_script)
+  else:
+    # Copy the coverage script into the container.
+    logger.info('Copying coverage script to container: %s', container_name)
+    cmd = [
+        'docker', 'container', 'cp', coverage_host_script,
+        f'{container_name}:/usr/local/bin/coverage_test_collection.py'
+    ]
+    subprocess.check_call(' '.join(cmd),
+                          shell=True,
+                          stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL)
+
   # Save the container.
   cmd = [
       'docker', 'container', 'commit', '-c', '"ENV REPLAY_ENABLED=1"', '-c',
@@ -210,8 +228,6 @@ def check_cached_replay(project,
   build_cached_project(project,
                        sanitizer=sanitizer,
                        container_output=container_output)
-  logger.info('Silent replays: %s', silent_replays)
-
   # Run the cached replay script.
   cmd = [
       'docker', 'run', '--rm', '--env=SANITIZER=' + sanitizer,
@@ -267,7 +283,7 @@ def check_test(project,
 
   # Run the test script
   cmd = [
-      'docker', 'run', '--rm', '-ti',
+      'docker', 'run', '--rm', '--network', 'none', '-ti',
       _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
       '"chmod +x /src/run_tests.sh && /src/run_tests.sh"'
   ]
@@ -424,6 +440,32 @@ def autogen_projects(apply_filtering=False,
     _autogenerate_run_tests_script(project, container_output)
 
 
+def extract_test_coverage(project):
+  build_cached_project(project, sanitizer='coverage', container_output='stdout')
+
+  os.makedirs(os.path.join('build', 'out', project), exist_ok=True)
+
+  cmd = [
+      'docker', 'run', '--rm', '--network', 'none', '-v',
+      '%s:/out' % (os.path.join(os.getcwd(), 'build', 'out', project)), '-ti',
+      _get_project_cached_named(project, 'coverage'), '/bin/bash', '-c',
+      '"chmod +x /src/run_tests.sh && /src/run_tests.sh && python3 /usr/local/bin/coverage_test_collection.py && chmod -R 755 /out/test-html-generation/"'
+  ]
+  subprocess.check_call(' '.join(cmd), shell=True)
+
+  # If the summary file is created, dump the total lines covered.
+  if os.path.isfile(
+      os.path.join('build', 'out', project, 'test-html-generation',
+                   'summary.json')):
+    with open(
+        os.path.join('build', 'out', project, 'test-html-generation',
+                     'summary.json'), 'r') as f:
+      summary = json.load(f)
+      total_lines_covered = summary['data'][0]['totals']['lines']
+      logger.info('Total lines covered for %s: %s', project,
+                  json.dumps(total_lines_covered))
+
+
 def parse_args():
   """Parses command line arguments for the manager script."""
   parser = argparse.ArgumentParser(
@@ -477,6 +519,11 @@ def parse_args():
       '--sanitizer',
       default='address',
       help='The sanitizer to use for the cached build (default: address).')
+  build_cached_image_parser.add_argument(
+      '--container-output',
+      choices=['silent', 'file', 'stdout'],
+      default='stdout',
+      help='How to handle output from the container. ')
 
   autogen_tests_parser = subparsers.add_parser(
       'autogen-tests',
@@ -523,6 +570,12 @@ def parse_args():
       help='How to handle output from the container. ')
   build_many_caches.add_argument('--silent-replays', action='store_true')
 
+  extract_coverage_parser = subparsers.add_parser(
+      'extract-test-coverage',
+      help='Extract code coverage reports from run_tests.sh script')
+  extract_coverage_parser.add_argument(
+      'project', help='The name of the project to extract coverage for.')
+
   return parser.parse_args()
 
 
@@ -561,6 +614,8 @@ def main():
                           sanitizer=args.sanitizer,
                           container_output=args.container_output,
                           silent_replays=args.silent_replays)
+  if args.command == 'extract-test-coverage':
+    extract_test_coverage(args.project)
 
 
 if __name__ == '__main__':
