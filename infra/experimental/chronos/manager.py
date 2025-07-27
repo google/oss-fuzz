@@ -460,7 +460,7 @@ def extract_test_coverage(project):
       '%s:/out' % (os.path.join(os.getcwd(), 'build', 'out', project)), '-ti',
       _get_project_cached_named(project, 'coverage'), '/bin/bash', '-c',
       ('"chmod +x /src/run_tests.sh && '
-       'find . -name "*.profraw" -exec rm -f {} \\; && '
+       'find /src/ "*.profraw" -exec rm -f {} \\; && '
        '/src/run_tests.sh && '
        'python3 /usr/local/bin/coverage_test_collection.py && '
        'chmod -R 755 /out/test-html-generation/"')
