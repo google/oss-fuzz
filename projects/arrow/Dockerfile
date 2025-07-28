@@ -25,9 +25,11 @@ RUN apt-get update -y -q && \
         flex \
         ninja-build \
         python3
-RUN wget https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.bz2  # Temporarily use manual installation over the outdated libboost-dev package
+
+RUN wget https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.gz && \
+    tar -xvf boost-1.87.0-cmake.tar.gz
 
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow
 
-COPY build.sh $SRC/
+COPY *.sh $SRC/

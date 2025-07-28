@@ -20,16 +20,27 @@ set -ex
 # Install Boost headers
 (
  cd $SRC/
- tar jxf boost_1_85_0.tar.bz2
- cd boost_1_85_0/
+ #tar jxf boost_1_85_0.tar.bz2
+ cd boost-1.87.0/
  CFLAGS="" CXXFLAGS="" ./bootstrap.sh
  CFLAGS="" CXXFLAGS="" ./b2 headers
- cp -R boost/ /usr/include/
+ CFLAGS="" CXXFLAGS="" ./b2 runtime-link=static link=static variant=release install -j 10
+ cp -R -f boost/ /usr/include/
+ echo "done"
 )
+
+echo "Start2"
+# CFLAGS="" XCXFLAGS="" ./b2 runtime-link=static link=static variant=release install -j 10
+ #system filesystem unit_test_framework program_options install -j $(nproc)
+ldconfig
 
 ARROW=${SRC}/arrow/cpp
 
-cd ${WORK}
+
+export BUILD_DIR=$SRC/build-dir
+mkdir -p ${BUILD_DIR}
+cd ${BUILD_DIR}
+#cd ${WORK}
 
 # The CMake build setup compiles and runs the Thrift compiler, but ASAN
 # would report leaks and error out.
@@ -39,6 +50,8 @@ cmake ${ARROW} -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DARROW_DEPENDENCY_SOURCE=BUNDLED \
     -DBOOST_SOURCE=SYSTEM \
+    -DBoost_USE_STATIC_RUNTIME=on \
+    -DARROW_BOOST_USE_SHARED=off \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
     -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
     -DARROW_EXTRA_ERROR_CONTEXT=off \
@@ -48,7 +61,7 @@ cmake ${ARROW} -GNinja \
     -DARROW_PARQUET=on \
     -DARROW_BUILD_SHARED=off \
     -DARROW_BUILD_STATIC=on \
-    -DARROW_BUILD_TESTS=off \
+    -DARROW_BUILD_TESTS=on \
     -DARROW_BUILD_INTEGRATION=off \
     -DARROW_BUILD_BENCHMARKS=off \
     -DARROW_BUILD_EXAMPLES=off \
