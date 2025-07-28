@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,27 +15,7 @@
 #
 ################################################################################
 
-set -ex
-
-# Install Boost headers
-(
- cd $SRC/
- #tar jxf boost_1_85_0.tar.bz2
- cd boost-1.87.0/
- CFLAGS="" CXXFLAGS="" ./bootstrap.sh
- CFLAGS="" CXXFLAGS="" ./b2 headers
- CFLAGS="" CXXFLAGS="" ./b2 runtime-link=static link=static variant=release install -j 10
- cp -R -f boost/ /usr/include/
- echo "done"
-)
-
-echo "Start2"
-# CFLAGS="" XCXFLAGS="" ./b2 runtime-link=static link=static variant=release install -j 10
- #system filesystem unit_test_framework program_options install -j $(nproc)
-ldconfig
-
 ARROW=${SRC}/arrow/cpp
-
 
 export BUILD_DIR=$SRC/build-dir
 mkdir -p ${BUILD_DIR}
@@ -82,8 +62,11 @@ cmake ${ARROW} -GNinja \
     -DARROW_USE_TSAN=off \
     -DARROW_FUZZING=on \
 
-cmake --build .
+cmake --build . -j$(nproc)
 
 cp -a release/* ${OUT}
+
+# Remove unit tests from out
+rm $OUT/*-test
 
 ${ARROW}/build-support/fuzzing/generate_corpuses.sh ${OUT}

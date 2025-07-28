@@ -19,5 +19,5 @@ set -eux
 cd $SRC/build-dir
 
 export PARQUET_TEST_DATA=$SRC/arrow/cpp/submodules/parquet-testing/data/
-export ARROW_TEST_DATA=$PWD/arrow/testing/data
-ctest
+export ARROW_TEST_DATA=$SRC/arrow/testing/data
+ASAN_OPTIONS="detect_leaks=0" ctest -j$(nproc)

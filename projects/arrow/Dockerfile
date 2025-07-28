@@ -27,7 +27,12 @@ RUN apt-get update -y -q && \
         python3
 
 RUN wget https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.gz && \
-    tar -xvf boost-1.87.0-cmake.tar.gz
+    tar -xvf boost-1.87.0-cmake.tar.gz && \
+    cd boost-1.87.0/ && \
+    CFLAGS="" CXXFLAGS="" ./bootstrap.sh && \
+    CFLAGS="" CXXFLAGS="" ./b2 headers && \
+    CFLAGS="" CXXFLAGS="" ./b2 runtime-link=static link=static variant=release install -j 10 && \
+    cp -R -f boost/ /usr/include/
 
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow
