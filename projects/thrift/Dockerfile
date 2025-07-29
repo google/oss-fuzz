@@ -29,14 +29,13 @@ RUN apt-get update && apt-get install -y libssl-dev pkg-config autoconf automake
     cmake \
     ninja-build
 
-RUN wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz && \
-    tar xzf boost_1_70_0.tar.gz && \
-    cd boost_1_70_0 && \
-    ./bootstrap.sh --with-toolset=clang && \
-    ./b2 clean && \
-    ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" -j$(nproc) install && \
-    cd .. && \
-    rm -rf boost_1_70_0
+RUN wget https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.gz && \
+    tar -xvf boost-1.87.0-cmake.tar.gz && \
+    cd boost-1.87.0/ && \
+    CFLAGS="" CXXFLAGS="" ./bootstrap.sh && \
+    CFLAGS="" CXXFLAGS="" ./b2 headers && \
+    CFLAGS="" CXXFLAGS="" ./b2 runtime-link=static link=static variant=release install -j 10 && \
+    cp -R -f boost/ /usr/include/
 
 #libboost-all-dev
 RUN git clone --depth 1 https://github.com/apache/thrift
