@@ -1,0 +1,10 @@
+homepage: "https://www.kde.org/applications/development/kcodecs/"
+main_repo: "https://invent.kde.org/frameworks/kcodecs" # Это основной Git репозиторий KCodecs
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - rafayel.m2.g@gmail.com
