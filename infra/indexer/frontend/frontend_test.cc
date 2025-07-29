@@ -3112,15 +3112,15 @@ TEST(FrontendTest, ReferencedImplicitCode) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "func", "()",
                     "snippet.cc", 1, 1);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "operator delete",
-                    "(void *, unsigned long)", "", 0, 0,
+                    "(void *, __size_t)", "", 0, 0,
                     /*is_incomplete=*/true);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "", "operator delete",
-                       "(void *, unsigned long)", "", 0, 0, "snippet.cc", 1, 1,
+                       "(void *, __size_t)", "", 0, 0, "snippet.cc", 1, 1,
                        /*is_incomplete=*/true);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "operator new",
-                    "(unsigned long)", "", 0, 0, /*is_incomplete=*/true);
+                    "(__size_t)", "", 0, 0, /*is_incomplete=*/true);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "", "operator new",
-                       "(unsigned long)", "", 0, 0, "snippet.cc", 1, 1,
+                       "(__size_t)", "", 0, 0, "snippet.cc", 1, 1,
                        /*is_incomplete=*/true);
 }
 

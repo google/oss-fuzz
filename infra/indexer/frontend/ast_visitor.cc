@@ -679,16 +679,15 @@ bool AstVisitor::VisitNonTypeTemplateParmDecl(
 }
 
 bool AstVisitor::VisitRecordDecl(clang::RecordDecl* decl) {
-  if (decl->isInjectedClassName()) {
-    // struct C {
-    //   // C is implicitly declared here as a synonym for the class name.
-    // };
-    // C::C c; // same as "C c;"
-    // Only index `C` in this case, and don't index `C::C`.
-    return true;
-  }
-
   if (auto* record_decl = llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
+    if (record_decl->isInjectedClassName()) {
+      // struct C {
+      //   // C is implicitly declared here as a synonym for the class name.
+      // };
+      // C::C c; // same as "C c;"
+      // Only index `C` in this case, and don't index `C::C`.
+      return true;
+    }
     // We opt to declare all the implicit members with a preference to report
     // e.g. an "implicitly defined" destructor over reporting it missing.
     compiler_.getSema().ForceDeclarationOfImplicitMembers(record_decl);
