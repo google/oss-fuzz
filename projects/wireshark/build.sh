@@ -59,6 +59,6 @@ cmake -GNinja \
       -DDISABLE_WERROR=ON -DOSS_FUZZ=ON $CMAKE_DEFINES \
       -DUSE_STATIC=ON -DBUILD_SHARED_LIBS=OFF $SRC/wireshark
 
-ninja all-fuzzers
+ninja all-fuzzers -j$(expr $(nproc) / 2)
 
 $SRC/wireshark/tools/oss-fuzzshark/build.sh all
