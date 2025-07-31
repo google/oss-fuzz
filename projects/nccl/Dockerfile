@@ -27,11 +27,6 @@ RUN mkdir $SRC/cuda-install && \
     apt-get update && \
     apt-get -y install cuda-toolkit-12-9
 
-#    wget https://developer.download.nvidia.com/compute/cuda/11.0.3/local_installers/cuda-repo-ubuntu2004-11-0-local_11.0.3-450.51.06-1_amd64.deb && \
-#    dpkg -i cuda-repo-ubuntu2004-11-0-local_11.0.3-450.51.06-1_amd64.deb && \
-#    apt-key add /var/cuda-repo-ubuntu2004-11-0-local/7fa2af80.pub && \
-#    apt-get update -y && apt-get install cuda -y
-
 RUN git clone --depth 1 https://github.com/NVIDIA/nccl nccl
 WORKDIR nccl
 COPY build.sh *.cpp $SRC/
