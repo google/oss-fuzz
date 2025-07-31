@@ -18,11 +18,11 @@
 # Temporarily disable coverage build in OSS-Fuzz's CI
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
-	if [ "${SANITIZER}" = 'coverage' ]
-	then
-		exit 0
-	fi
-	
+        if [ "${SANITIZER}" = 'coverage' ]
+        then
+                exit 0
+        fi
+
 fi
 
 cd $SRC/go-118-fuzz-build
@@ -30,19 +30,19 @@ go build .
 mv go-118-fuzz-build /root/go/bin/
 
 cd $SRC/moby
-printf "package libnetwork\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/moby/registerfuzzdependency.go
+
 
 mv $SRC/moby/vendor.mod $SRC/moby/go.mod
-go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
 find . -type f \( -name "*.go" -o -name "go.mod" \) -exec sed -i 's|github.com/docker/docker|github.com/moby/moby|g' {} +
 
-cp $SRC/jsonmessage_fuzzer.go $SRC/moby/pkg/jsonmessage/
+cp $SRC/jsonmessage_fuzzer.go $SRC/moby/client/pkg/jsonmessage
 cp $SRC/backend_build_fuzzer.go $SRC/moby/daemon/builder/backend/
 cp $SRC/remotecontext_fuzzer.go $SRC/moby/daemon/builder/remotecontext/
 cp $SRC/daemon_fuzzer.go $SRC/moby/daemon/
 
+printf "package libnetwork\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/moby/registerfuzzdependency.go
+go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
 rm -f $SRC/moby/daemon/logger/plugin_unsupported.go
-
 go mod tidy && go mod vendor
 
 mv $SRC/moby/daemon/volume/mounts/parser_test.go $SRC/moby/daemon/volume/mounts/parser_test_fuzz.go
@@ -50,14 +50,14 @@ mv $SRC/moby/daemon/volume/mounts/validate_unix_test.go $SRC/moby/daemon/volume/
 
 
 if [ "$SANITIZER" != "coverage" ] ; then
-	go-fuzz -func FuzzDaemonSimple -o FuzzDaemonSimple.a github.com/moby/moby/daemon
+        go-fuzz -func FuzzDaemonSimple -o FuzzDaemonSimple.a github.com/moby/moby/daemon
 
-	$CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzDaemonSimple.a \
+        $CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzDaemonSimple.a \
         /src/LVM2.2.03.15/libdm/ioctl/libdevmapper.a \
         -o $OUT/FuzzDaemonSimple
 fi
 
-go-fuzz -func FuzzDisplayJSONMessagesStream -o FuzzDisplayJSONMessagesStream.a github.com/moby/moby/pkg/jsonmessage
+go-fuzz -func FuzzDisplayJSONMessagesStream -o FuzzDisplayJSONMessagesStream.a github.com/moby/moby/client/pkg/jsonmessage
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzDisplayJSONMessagesStream.a -o $OUT/FuzzDisplayJSONMessagesStream
 go-fuzz -func FuzzsanitizeRepoAndTags -o FuzzsanitizeRepoAndTags.a github.com/moby/moby/daemon/builder/backend
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzsanitizeRepoAndTags.a -o $OUT/FuzzsanitizeRepoAndTags
@@ -80,3 +80,4 @@ go mod tidy
 compile_native_go_fuzzer github.com/moby/go-archive/compression FuzzDecompressStream FuzzDecompressStream
 compile_native_go_fuzzer github.com/moby/go-archive FuzzApplyLayer FuzzApplyLayer
 compile_native_go_fuzzer github.com/moby/go-archive FuzzUntar FuzzUntar
+
