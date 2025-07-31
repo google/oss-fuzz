@@ -47,7 +47,6 @@ def find_all_executables():
     for file in files:
       abs_file = os.path.join(subdir, file)
 
-      print(abs_file)
       if os.access(abs_file, os.X_OK):
 
         # Ensure it's an ELF
@@ -74,6 +73,7 @@ def find_all_executables():
         else:
           objects_string += f'-object {dst_name} '
         shutil.copy(abs_file, dst_name)
+  print('Found the following executables for coverage extraction:')
   print(objects_string)
   return objects_string
 
