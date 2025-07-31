@@ -18,10 +18,11 @@
 # Temporarily disable coverage build in OSS-Fuzz's CI
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
-        if [ "${SANITIZER}" = 'coverage' ]
-        then
-                exit 0
-        fi
+	if [ "${SANITIZER}" = 'coverage' ]
+	then
+		exit 0
+	fi
+	
 fi
 
 cd $SRC/go-118-fuzz-build
@@ -40,7 +41,6 @@ cp $SRC/backend_build_fuzzer.go $SRC/moby/daemon/builder/backend/
 cp $SRC/remotecontext_fuzzer.go $SRC/moby/daemon/builder/remotecontext/
 cp $SRC/daemon_fuzzer.go $SRC/moby/daemon/
 
-
 rm -f $SRC/moby/daemon/logger/plugin_unsupported.go
 
 go mod tidy && go mod vendor
@@ -48,10 +48,10 @@ go mod tidy && go mod vendor
 mv $SRC/moby/daemon/volume/mounts/parser_test.go $SRC/moby/daemon/volume/mounts/parser_test_fuzz.go
 mv $SRC/moby/daemon/volume/mounts/validate_unix_test.go $SRC/moby/daemon/volume/mounts/validate_unix_test_fuzz.go
 
-if [ "$SANITIZER" != "coverage" ] ; then
-        go-fuzz -func FuzzDaemonSimple -o FuzzDaemonSimple.a github.com/moby/moby/daemon
 
-        $CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzDaemonSimple.a \
+if [ "$SANITIZER" != "coverage" ] ; then
+	go-fuzz -func FuzzDaemonSimple -o FuzzDaemonSimple.a github.com/moby/moby/daemon
+	$CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzDaemonSimple.a \
         /src/LVM2.2.03.15/libdm/ioctl/libdevmapper.a \
         -o $OUT/FuzzDaemonSimple
 fi
@@ -70,6 +70,7 @@ compile_native_go_fuzzer github.com/moby/moby/daemon/libnetwork/etchosts FuzzAdd
 compile_native_go_fuzzer github.com/moby/moby/daemon/pkg/oci FuzzAppendDevicePermissionsFromCgroupRules FuzzAppendDevicePermissionsFromCgroupRules
 compile_native_go_fuzzer github.com/moby/moby/daemon/logger/jsonfilelog/jsonlog FuzzJSONLogsMarshalJSONBuf FuzzJSONLogsMarshalJSONBuf
 
+
 cp $SRC/*.options $OUT/
 
 cd $SRC/go-archive
@@ -79,4 +80,3 @@ go mod tidy
 compile_native_go_fuzzer github.com/moby/go-archive/compression FuzzDecompressStream FuzzDecompressStream
 compile_native_go_fuzzer github.com/moby/go-archive FuzzApplyLayer FuzzApplyLayer
 compile_native_go_fuzzer github.com/moby/go-archive FuzzUntar FuzzUntar
-
