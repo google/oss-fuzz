@@ -23,12 +23,12 @@ import (
 	"github.com/moby/sys/mount"
 	"github.com/sirupsen/logrus"
 
-	"github.com/moby/moby/api/types/backend"
-	"github.com/docker/docker/daemon/container"
-	"github.com/docker/docker/daemon/config"
-	"github.com/docker/docker/daemon/images"
-	"github.com/docker/docker/image"
-	dockerreference "github.com/docker/docker/reference"
+	"github.com/moby/moby/daemon/server/backend"
+	"github.com/moby/moby/daemon/container"
+	"github.com/moby/moby/daemon/config"
+	"github.com/moby/moby/daemon/images"
+	"github.com/moby/moby/daemon/internal/image"
+	reference "github.com/moby/moby/daemon/internal/refstore"
 	"github.com/opencontainers/go-digest"
 
 	fuzz "github.com/AdaLogics/go-fuzz-headers"
@@ -70,7 +70,7 @@ func FuzzDaemonSimple(data []byte) int {
 	if err != nil {
 		panic(err)
 	}
-	rStore, err := dockerreference.NewReferenceStore(jsonFile)
+	rStore, err := reference.NewReferenceStore(jsonFile)
 	if err != nil {
 		return 0
 	}
