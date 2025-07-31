@@ -64,7 +64,12 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzsanitizeRepoAndTags.a -o $OUT/Fuzzsanitiz
 go-fuzz -func FuzzreadAndParseDockerfile -o FuzzreadAndParseDockerfile.a github.com/moby/moby/daemon/builder/remotecontext
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzreadAndParseDockerfile.a -o $OUT/FuzzreadAndParseDockerfile
 
-
+compile_native_go_fuzzer github.com/moby/moby/daemon/volume/mounts FuzzParseLinux FuzzParseLinux
+compile_native_go_fuzzer github.com/moby/moby/pkg/tailfile FuzzTailfile FuzzTailfile
+compile_native_go_fuzzer github.com/moby/moby/daemon/logger/jsonfilelog FuzzLoggerDecode FuzzLoggerDecode
+compile_native_go_fuzzer github.com/moby/moby/daemon/libnetwork/etchosts FuzzAdd FuzzAdd
+compile_native_go_fuzzer github.com/moby/moby/daemon/pkg/oci FuzzAppendDevicePermissionsFromCgroupRules FuzzAppendDevicePermissionsFromCgroupRules
+compile_native_go_fuzzer github.com/moby/moby/daemon/logger/jsonfilelog/jsonlog FuzzJSONLogsMarshalJSONBuf FuzzJSONLogsMarshalJSONBuf
 
 cp $SRC/*.options $OUT/
 
