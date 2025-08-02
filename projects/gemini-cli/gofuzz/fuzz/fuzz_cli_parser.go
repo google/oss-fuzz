@@ -2,6 +2,7 @@ package fuzz
 
 import (
 	"strings"
+	cli "github.com/google-gemini/gemini-cli-ossfuzz/gofuzz/internal/cli"
 )
 
 // FuzzCLIParser fuzzes command-line argument parsing logic
@@ -15,13 +16,18 @@ func FuzzCLIParser(data []byte) int {
 	
 	// Parse as space-separated arguments
 	args := parseArgs(input)
-	
-	// Validate parsed arguments
-	if validateArgs(args) {
-		return 1
+	if len(args) == 0 {
+		return 0
 	}
 	
-	return 0
+	// Use the internal CLI parser
+	_, err := cli.ParseArgs(args)
+	if err != nil {
+		// Parsing errors are expected for malformed inputs
+		return 0
+	}
+	
+	return 1
 }
 
 // parseArgs simulates CLI argument parsing with shell injection prevention
