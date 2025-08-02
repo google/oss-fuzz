@@ -1,0 +1,21 @@
+Add comprehensive OSS-Fuzz integration for google-gemini/gemini-cli
+
+This PR adds a complete OSS-Fuzz integration for the Gemini CLI project using Go mirrored parsers to provide continuous fuzzing coverage of critical input processing logic.
+
+Fuzz Targets:
+- FuzzConfigParser: JSON configuration validation  
+- FuzzMCPDecoder: MCP protocol envelope processing
+- FuzzCLIParser: Command-line argument parsing
+- FuzzOAuthTokenResponse: OAuth token response validation
+- FuzzOAuthTokenRequest: OAuth token request validation
+
+Technical Details:
+- Language: Go (mirrored parsers approach)
+- Sanitizers: address, undefined, memory
+- Engine: libFuzzer
+- Comprehensive seed corpora included
+- Professional documentation and maintenance plan
+
+The integration targets critical input surfaces and provides continuous fuzzing coverage to enhance project security.
+
+Related: google-gemini/gemini-cli#5400
