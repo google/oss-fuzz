@@ -1,0 +1,24 @@
+{
+  "apiKey": "AIzaSyExample123",
+  "projectId": "my-project-123",
+  "theme": {
+    "name": "dark"
+  },
+  "proxy": {
+    "enabled": true,
+    "url": "https://proxy.example.com:8080"
+  },
+  "memory": {
+    "enabled": true,
+    "limitMb": 512
+  },
+  "tooling": {
+    "enableMcp": true,
+    "enableShell": false,
+    "enableWebFetch": true
+  },
+  "logLevel": "info",
+  "outputDir": "/tmp/gemini-output",
+  "timeout": 30,
+  "maxRetries": 3
+}
