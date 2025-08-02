@@ -1,0 +1,7 @@
+{
+  "access_token": "ya29.example_access_token_here",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "1//example_refresh_token",
+  "scope": "https://www.googleapis.com/auth/generative-language"
+}

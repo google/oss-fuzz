@@ -1,0 +1,1 @@
+gemini --api-key "AIzaSyExample" --project "my-project" --output "/tmp/output" --verbose

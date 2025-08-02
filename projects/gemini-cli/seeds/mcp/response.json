@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Hello from MCP server"
+      }
+    ]
+  },
+  "id": 1
+}

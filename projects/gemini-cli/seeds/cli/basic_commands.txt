@@ -1,0 +1,7 @@
+gemini --help
+gemini chat --model gemini-pro
+gemini config --set apiKey
+gemini --version
+gemini chat --temperature 0.7 --max-tokens 1000
+gemini config --list
+gemini chat --system-prompt "You are a helpful assistant"
