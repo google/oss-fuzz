@@ -25,10 +25,14 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/check.h"
 #include "absl/strings/string_view.h"
 
 namespace oss_fuzz {
 namespace indexer {
+namespace testing_internal {
+class TestPeer;
+}  // namespace testing_internal
 class InMemoryIndex;
 
 using LocationId = uint64_t;
@@ -70,6 +74,60 @@ H AbslHashValue(H h, const Location& location) {
                     location.end_line());
 }
 
+// Represents a relationship whereby an entity's source code is shown in lieu of
+// that of another entity, typically because the latter is not explicitly
+// defined in code.
+class SubstituteRelationship {
+ public:
+  enum class Kind : uint8_t {
+    // This entity is instantiated from the substitute entity (a template).
+    // Example: Looking up Foo<int> when only Foo<T> implementation is provided.
+    kIsTemplateInstantiationOf = 1,
+
+    // This entity is implicitly defined for the substitute entity (but not in
+    // the sense of being instantiated from a template or inherited).
+    //
+    // Example: An implicit constructor / destructor is defined for a class.
+    //   Even if the class is a template instantiation, these implicit methods
+    //   are defined post-instantiation (as in `FrontendTest.TemplateMemberFn`).
+    //
+    // Non-example: Implicit `operator==` instantiation from its counterpart
+    //   `operator==` implicitly defined in a class template by
+    //     const auto operator<=>(...) const = default;
+    //   In this case that template `operator==` will be a
+    //   `kIsTemplateInstantiationOf` substitute which, in turn, will have a
+    //   `kIsImplicitlyDefinedFor` one, specifically the class template.
+    //   (See `FrontendTest.ImplicitComparisonInstantiation` for this
+    //   situation.)
+    kIsImplicitlyDefinedFor = 2,
+  };
+
+  SubstituteRelationship(Kind kind, EntityId entity_id)
+      : kind_(kind), entity_id_(entity_id) {
+    CHECK_NE(entity_id, kInvalidEntityId);
+  }
+
+  Kind kind() const { return kind_; }
+  EntityId substitute_entity_id() const { return entity_id_; }
+
+  bool operator==(const SubstituteRelationship&) const = default;
+  std::strong_ordering operator<=>(const SubstituteRelationship&) const =
+      default;
+
+ private:
+  friend class Entity;
+  friend class InMemoryIndex;
+
+  Kind kind_;
+  EntityId entity_id_;
+};
+
+template <typename H>
+H AbslHashValue(H h, const SubstituteRelationship& relationship) {
+  return H::combine(std::move(h), relationship.kind(),
+                    relationship.substitute_entity_id());
+}
+
 // Represents a source-level entity definition.
 class Entity {
  public:
@@ -90,23 +148,24 @@ class Entity {
     kType = 7,
   };
 
-  Entity(
-      Kind kind, absl::string_view name_prefix, absl::string_view name,
-      absl::string_view name_suffix, LocationId location_id,
-      bool is_incomplete = false, bool is_weak = false,
-      std::optional<EntityId> canonical_entity_id = std::nullopt,
-      std::optional<EntityId> implicitly_defined_for_entity_id = std::nullopt,
-      std::optional<std::string> enum_value = std::nullopt);
+  Entity(Kind kind, absl::string_view name_prefix, absl::string_view name,
+         absl::string_view name_suffix, LocationId location_id,
+         bool is_incomplete = false, bool is_weak = false,
+         std::optional<SubstituteRelationship> substitute_relationship =
+             std::nullopt,
+         std::optional<std::string> enum_value = std::nullopt);
 
   // Allows to create a copy of `entity` with the ID field values replaced.
   template <class TEntity>
   Entity(TEntity&& entity, LocationId new_location_id,
-         std::optional<EntityId> new_canonical_entity_id,
-         std::optional<EntityId> new_implicitly_defined_for_entity_id)
+         std::optional<EntityId> new_substitute_entity_id)
       : Entity(std::forward<TEntity>(entity)) {
     location_id_ = new_location_id;
-    canonical_entity_id_ = new_canonical_entity_id;
-    implicitly_defined_for_entity_id_ = new_implicitly_defined_for_entity_id;
+    CHECK_EQ(substitute_relationship_.has_value(),
+             new_substitute_entity_id.has_value());
+    if (substitute_relationship_.has_value()) {
+      substitute_relationship_->entity_id_ = *new_substitute_entity_id;
+    }
   }
 
   inline Kind kind() const { return kind_; }
@@ -119,11 +178,9 @@ class Entity {
     return name_prefix() + name() + name_suffix();
   }
   inline LocationId location_id() const { return location_id_; }
-  inline std::optional<EntityId> canonical_entity_id() const {
-    return canonical_entity_id_;
-  }
-  inline std::optional<EntityId> implicitly_defined_for_entity_id() const {
-    return implicitly_defined_for_entity_id_;
+  inline const std::optional<SubstituteRelationship>& substitute_relationship()
+      const {
+    return substitute_relationship_;
   }
   inline const std::optional<std::string>& enum_value() const {
     return enum_value_;
@@ -131,6 +188,7 @@ class Entity {
 
  private:
   friend class InMemoryIndex;
+  friend class testing_internal::TestPeer;
 
   Kind kind_;
 
@@ -158,28 +216,7 @@ class Entity {
 
   LocationId location_id_;
 
-  // Sometimes there are several ways to refer to the same thing,
-  // e.g. in the case of looking up a Foo<int> specialization for Foo<T>
-  // that hasn't been explicitly provided.
-  // In this case we store all the available representations but remember the
-  // one to be chosen upon lookups (i.e. Foo<T> will be presented for Foo<int>
-  // if there is no explicit specialization).
-  std::optional<EntityId> canonical_entity_id_;
-
-  // If this is an entity implicitly defined, but not instantiated from a
-  // template (see `canonical_entity_id_`), tracks the relevant explicitly
-  // defined entity.
-  // Example: The class definition for an implicit constructor / destructor.
-  //   Even if the class is a template instantiation, these implicit methods are
-  //   defined post-instantiation (as in `FrontendTest.TemplateMemberFn`).
-  // Non-example: Implicit `operator==` instantiated from its counterpart
-  //   `operator==` implicitly defined in a class template by
-  //     const auto operator<=>(...) const = default;
-  //   In this case that template `operator==` will be pointed to by
-  //   `canonical_entity_id_` and, in turn, will have
-  //   `implicitly_defined_for_entity_id_` pointing to the class template. (See
-  //   `FrontendTest.ImplicitComparisonInstantiation` for this situation.)
-  std::optional<EntityId> implicitly_defined_for_entity_id_;
+  std::optional<SubstituteRelationship> substitute_relationship_;
 
   // Tracks the decimal value of an enum constant (only for `kEnumConstant`).
   // (A string to support both signed and unsigned 64-bit values - and beyond,
@@ -195,8 +232,7 @@ H AbslHashValue(H h, const Entity& entity) {
   return H::combine(std::move(h), entity.kind(), entity.is_incomplete(),
                     entity.is_weak(), entity.name(), entity.name_prefix(),
                     entity.name_suffix(), entity.location_id(),
-                    entity.canonical_entity_id(),
-                    entity.implicitly_defined_for_entity_id());
+                    entity.substitute_relationship(), entity.enum_value());
 }
 
 // Represents a source-level reference to an entity. This may be an implicit or
@@ -232,6 +268,17 @@ struct FlatIndex {
   std::vector<Entity> entities;
   std::vector<Reference> references;
 };
+
+namespace testing_internal {
+// For test use only: Provides access to some private members of the above.
+class TestPeer {
+ public:
+  static void SetSubstituteRelationship(
+      Entity& entity, const SubstituteRelationship& relationship) {
+    entity.substitute_relationship_ = relationship;
+  }
+};
+}  // namespace testing_internal
 }  // namespace indexer
 }  // namespace oss_fuzz
 

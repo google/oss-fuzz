@@ -107,70 +107,44 @@ struct ComparePairFirst {
 };
 
 template <class Item, typename ItemId>
-class Accessor {
- public:
-  virtual ~Accessor() = default;
-  virtual const Item& GetById(ItemId) const = 0;
-};
-
-template <class Item, typename ItemId>
-class HashAccessor : public Accessor<Item, ItemId> {
- public:
-  explicit HashAccessor(const absl::flat_hash_map<Item, ItemId>& items)
-      : items_(items) {}
-  const Item& GetById(ItemId id) const override {
-    for (const auto& [item, item_id] : items_) {
-      if (item_id == id) {
-        return item;
-      }
+const Item& GetById(const absl::flat_hash_map<Item, ItemId>& items, ItemId id) {
+  for (const auto& [item, item_id] : items) {
+    if (item_id == id) {
+      return item;
     }
-    LOG(FATAL) << "Couldn't find an item by ID";
   }
-
- private:
-  const absl::flat_hash_map<Item, ItemId>& items_;
-};
-
-template <class Item, typename ItemId>
-class VectorAccessor : public Accessor<Item, ItemId> {
- public:
-  explicit VectorAccessor(const std::vector<Item>& items) : items_(items) {}
-  const Item& GetById(ItemId id) const override {
-    CHECK_LT(id, items_.size());
-    return items_[id];
-  }
-
- private:
-  const std::vector<Item>& items_;
-};
+  LOG(FATAL) << "Couldn't find an item by ID: " << static_cast<int>(id);
+}
 
 void ReportEntity(std::ostream& os, const Entity& entity,
-                  const Accessor<Entity, EntityId>& entities,
-                  const Accessor<Location, LocationId>& locations,
+                  const absl::flat_hash_map<Entity, EntityId> entities,
+                  const absl::flat_hash_map<Location, LocationId> locations,
                   int depth = 1) {
+  for (int i = 0; i < depth; ++i) {
+    os << "  ";
+  }
   if (depth > 5) {
     os << "...chain continues (a cycle?)...";
     return;
   }
-  for (int i = 0; i < depth; ++i) {
-    os << "  ";
-  }
-  const Location& entity_location = locations.GetById(entity.location_id());
+  const Location& entity_location = GetById(locations, entity.location_id());
   os << entity.full_name() << " at " << entity_location.path() << ":"
      << entity_location.start_line() << "-" << entity_location.end_line()
      << "\n";
-  if (entity.canonical_entity_id().has_value()) {
-    const Entity& canonical_entity =
-        entities.GetById(*entity.canonical_entity_id());
-    ReportEntity(os, canonical_entity, entities, locations, depth + 1);
+  if (entity.substitute_relationship().has_value() &&
+      entity.substitute_relationship()->kind() ==
+          SubstituteRelationship::Kind::kIsTemplateInstantiationOf) {
+    const Entity& template_prototype = GetById(
+        entities, entity.substitute_relationship()->substitute_entity_id());
+    ReportEntity(os, template_prototype, entities, locations, depth + 1);
   }
 }
 
-void ReportCanonicalChain(const Entity& entity,
-                          const Accessor<Entity, EntityId>& entities,
-                          const Accessor<Location, LocationId>& locations) {
+void ReportTemplateChain(
+    const Entity& entity, const absl::flat_hash_map<Entity, EntityId> entities,
+    const absl::flat_hash_map<Location, LocationId> locations) {
   std::stringstream stream;
-  stream << "Unexpected canonical entity reference chain for:\n";
+  stream << "Unexpected template instantiation substitution chain for:\n";
   ReportEntity(stream, entity, entities, locations);
   stream << "(Please report the above as a bug marked 'CHAIN'.)\n";
   std::cerr << stream.str();
@@ -214,9 +188,8 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
   }
   std::vector<EntityId> new_entity_ids(other.entities_.size(),
                                        kInvalidEntityId);
-  // For an old entity ID, stores the new ID of its canonical entity.
-  std::vector<EntityId> new_canonical_entity_ids(other.entities_.size(),
-                                                 kInvalidEntityId);
+  std::vector<std::optional<SubstituteRelationship::Kind>>
+      substitute_relationships(other.entities_.size());
   for (const auto& optional_iter : other_entities) {
     // The fact that the CHECK above was satisfied `other_entities.size()` times
     // means that all the `other_entities` items have values.
@@ -224,43 +197,18 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
     const auto& iter = *optional_iter;
     const Entity& entity = iter->first;
     const EntityId id = iter->second;
-    std::optional<EntityId> canonical_entity_id = std::nullopt;
-    if (entity.canonical_entity_id()) {
-      const EntityId old_canonical_entity_id = *entity.canonical_entity_id();
-      CHECK_LT(old_canonical_entity_id, id);
-      // If the canonical entity for `entity` has a canonical reference in turn,
-      // this is an (undesired) canonical reference chain.
-      if (new_canonical_entity_ids[old_canonical_entity_id] !=
-          kInvalidEntityId) {
-        ReportCanonicalChain(
-            entity, HashAccessor<Entity, EntityId>(other.entities_),
-            HashAccessor<Location, LocationId>(other.locations_));
-        // Reduce the chain to its ultimate canonical entity.
-        canonical_entity_id = new_canonical_entity_ids[old_canonical_entity_id];
-      } else {
-        canonical_entity_id = new_entity_ids[old_canonical_entity_id];
-      }
-      CHECK_NE(*canonical_entity_id, kInvalidEntityId);
-    }
-    std::optional<EntityId> implicitly_defined_for_entity_id = std::nullopt;
-    if (entity.implicitly_defined_for_entity_id()) {
-      const EntityId old_implicitly_defined_for_entity_id =
-          *entity.implicitly_defined_for_entity_id();
-      CHECK_LT(old_implicitly_defined_for_entity_id, id);
-      implicitly_defined_for_entity_id =
-          new_entity_ids[old_implicitly_defined_for_entity_id];
+    std::optional<EntityId> new_substitute_entity_id;
+    if (entity.substitute_relationship()) {
+      const EntityId old_substitute_entity_id =
+          entity.substitute_relationship()->substitute_entity_id();
+      CHECK_LT(old_substitute_entity_id, id);
+      new_substitute_entity_id = new_entity_ids[old_substitute_entity_id];
+      CHECK_NE(*new_substitute_entity_id, kInvalidEntityId);
     }
     const EntityId new_id = GetEntityId(Entity(
         entity, /*new_location_id=*/new_location_ids[entity.location_id()],
-        /*new_canonical_entity_id=*/canonical_entity_id,
-        /*new_implicitly_defined_for_entity_id=*/
-        implicitly_defined_for_entity_id));
-
+        new_substitute_entity_id));
     new_entity_ids[id] = new_id;
-    if (canonical_entity_id) {
-      CHECK_LT(*canonical_entity_id, new_id);
-      new_canonical_entity_ids[id] = *canonical_entity_id;
-    }
   }
 
   for (const auto& [reference, id] : other.references_) {
@@ -297,18 +245,36 @@ LocationId InMemoryIndex::GetIdForLocationWithIndexPath(
   return iter->second;
 }
 
-EntityId InMemoryIndex::GetEntityId(const Entity& entity) {
+EntityId InMemoryIndex::GetEntityId(Entity entity) {
+  using SubstituteRelationship::Kind::kIsTemplateInstantiationOf;
+
+  auto& relationship = entity.substitute_relationship_;
+  if (relationship) {
+    EntityId substitute_entity_id = relationship->substitute_entity_id();
+    CHECK_LT(substitute_entity_id, next_entity_id_);
+    if (relationship->kind() == kIsTemplateInstantiationOf) {
+      // If the template substitution for `entity` has another one in turn,
+      // this is an undesired template chain. Report and contract it.
+      if (template_prototype_ids_[substitute_entity_id] != kInvalidEntityId) {
+        ReportTemplateChain(entity, entities_, locations_);
+        relationship->entity_id_ =
+            template_prototype_ids_[substitute_entity_id];
+      }
+    }
+  }
+
   auto [iter, inserted] = entities_.insert({entity, next_entity_id_});
   if (inserted) {
     next_entity_id_++;
   }
+  if (inserted) {
+    if (relationship && relationship->kind() == kIsTemplateInstantiationOf) {
+      template_prototype_ids_.push_back(relationship->substitute_entity_id());
+    } else {
+      template_prototype_ids_.push_back(kInvalidEntityId);
+    }
+  }
   const EntityId entity_id = iter->second;
-  if (entity.canonical_entity_id()) {
-    CHECK_LT(*entity.canonical_entity_id(), entity_id);
-  }
-  if (entity.implicitly_defined_for_entity_id()) {
-    CHECK_LT(*entity.implicitly_defined_for_entity_id(), entity_id);
-  }
   return entity_id;
 }
 
@@ -320,7 +286,7 @@ ReferenceId InMemoryIndex::GetReferenceId(const Reference& reference) {
   return iter->second;
 }
 
-FlatIndex InMemoryIndex::Export(bool store_canonical_entities) && {
+FlatIndex InMemoryIndex::Export() && {
   FlatIndex result;
 
   // Order is important here, since until we've sorted Locations we don't have
@@ -361,8 +327,8 @@ FlatIndex InMemoryIndex::Export(bool store_canonical_entities) && {
       LocationId new_location_id = new_location_ids[old_location_id];
       CHECK_NE(new_location_id, kInvalidLocationId);
 
-      if (entity.canonical_entity_id()) {
-        CHECK_LT(*entity.canonical_entity_id(), id);
+      if (entity.substitute_relationship()) {
+        CHECK_LT(entity.substitute_relationship()->substitute_entity_id(), id);
       }
 
       auto& iter = sorted_entities.emplace_back(entity, id);
@@ -373,6 +339,7 @@ FlatIndex InMemoryIndex::Export(bool store_canonical_entities) && {
               ComparePairFirst());
     CHECK_EQ(sorted_entities.size(), entities_.size());
     entities_.clear();
+    template_prototype_ids_.clear();
 
     // Now iterate through the sorted entities, building a lookup from the old
     // to the new sorted ids, and building the results vector. Since entities
@@ -404,42 +371,11 @@ FlatIndex InMemoryIndex::Export(bool store_canonical_entities) && {
     CHECK_EQ(new_entity_ids.size(), sorted_entities.size());
     CHECK_LE(result.entities.size(), sorted_entities.size());
 
-    // Update the implicit-for entity ids.
+    // Update the substitute entity ids.
     for (Entity& entity : result.entities) {
-      if (entity.implicitly_defined_for_entity_id()) {
-        entity.implicitly_defined_for_entity_id_ =
-            new_entity_ids[*entity.implicitly_defined_for_entity_id()];
-      }
-    }
-
-    if (store_canonical_entities) {
-      // Update the canonical entity ids.
-      for (Entity& entity : result.entities) {
-        if (entity.canonical_entity_id()) {
-          entity.canonical_entity_id_ =
-              new_entity_ids[*entity.canonical_entity_id()];
-        }
-      }
-      // Before the reordering, an entity's canonical entity id, if present, was
-      // guaranteed to be lower than that of the entity itself. Thus processing
-      // the entities in the order of ascending old ids gives a topological
-      // ordering with respect to canonical references.
-      for (EntityId id : new_entity_ids) {
-        Entity& entity = result.entities[id];
-        if (entity.canonical_entity_id() &&
-            result.entities[*entity.canonical_entity_id()]
-                .canonical_entity_id()) {
-          ReportCanonicalChain(
-              entity, VectorAccessor<Entity, EntityId>(result.entities),
-              VectorAccessor<Location, LocationId>(result.locations));
-          entity.canonical_entity_id_ =
-              result.entities[*entity.canonical_entity_id()]
-                  .canonical_entity_id();
-        }
-      }
-    } else {
-      for (auto& entity : result.entities) {
-        entity.canonical_entity_id_ = std::nullopt;
+      if (entity.substitute_relationship()) {
+        entity.substitute_relationship_->entity_id_ =
+            new_entity_ids[entity.substitute_relationship_->entity_id_];
       }
     }
   }
