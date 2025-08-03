@@ -19,6 +19,7 @@
 
 #include "indexer/index/in_memory_index.h"
 #include "indexer/index/types.h"
+#include "absl/container/flat_hash_map.h"
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclTemplate.h"
@@ -28,6 +29,7 @@
 #include "clang/AST/Type.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Frontend/CompilerInstance.h"
+#include "clang/Sema/Sema.h"
 
 namespace oss_fuzz {
 namespace indexer {
@@ -38,7 +40,10 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
  public:
   AstVisitor(InMemoryIndex &index, clang::ASTContext &context,
              clang::CompilerInstance &compiler)
-      : index_(index), context_(context), compiler_(compiler) {}
+      : index_(index),
+        context_(context),
+        compiler_(compiler),
+        sema_(compiler.getSema()) {}
 
   bool shouldVisitImplicitCode() const { return true; }
   bool shouldVisitTemplateInstantiations() const { return true; }
@@ -69,11 +74,14 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
   LocationId GetLocationId(clang::SourceLocation start,
                            clang::SourceLocation end);
   LocationId GetLocationId(const clang::Decl *decl);
+  std::optional<Entity> GetEntityForDecl(
+      const clang::Decl *decl, bool for_reference = false,
+      LocationId location_id = kInvalidLocationId);
   EntityId GetEntityIdForDecl(const clang::Decl *decl,
-                              LocationId location_id = kInvalidLocationId,
                               bool for_reference = false);
-  std::optional<EntityId> GetEntityIdForCanonicalDecl(
-      const clang::Decl *canonical_decl, const clang::Decl *original_decl);
+  std::optional<SubstituteRelationship> GetTemplateSubstituteRelationship(
+      const clang::Decl *template_decl, const clang::Decl *original_decl);
+  void SynthesizeInheritedFieldEntities(const clang::CXXRecordDecl *class_decl);
   void AddTypeReferencesFromLocation(LocationId location_id,
                                      const clang::Type *type,
                                      bool outermost_type = true);
@@ -87,6 +95,14 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
   InMemoryIndex &index_;
   clang::ASTContext &context_;
   clang::CompilerInstance &compiler_;
+  clang::Sema &sema_;
+
+  struct CachedEntityId {
+    EntityId entity_id;
+    bool for_reference_only;
+  };
+
+  absl::flat_hash_map<const clang::Decl *, CachedEntityId> decl_to_entity_id_;
 };
 }  // namespace indexer
 }  // namespace oss_fuzz

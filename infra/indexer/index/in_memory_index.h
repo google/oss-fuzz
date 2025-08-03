@@ -16,10 +16,12 @@
 #define OSS_FUZZ_INFRA_INDEXER_INDEX_IN_MEMORY_INDEX_H_
 
 #include <cstddef>
+#include <vector>
 
 #include "indexer/index/file_copier.h"
 #include "indexer/index/types.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/node_hash_map.h"
 
 namespace oss_fuzz {
 namespace indexer {
@@ -50,13 +52,14 @@ class InMemoryIndex {
   // `GetLocationId` expects a location with an absolute path if not built-in.
   LocationId GetLocationId(Location location);
   EntityId GetEntityId(const Entity& entity);
+  const Entity& GetEntityById(EntityId entity_id) const;
   ReferenceId GetReferenceId(const Reference& reference);
 
   // Build a sorted FlatIndex from the contents of this index. This invalidates
   // the contents of this InMemoryIndex, which should no longer be used.
   // Usage:
   //   FlatIndex& flat_index = std::move(index).Export();
-  FlatIndex Export(bool store_canonical_entities = true) &&;
+  FlatIndex Export() &&;
 
  private:
   FileCopier& file_copier_;
@@ -71,7 +74,10 @@ class InMemoryIndex {
   absl::flat_hash_map<Location, LocationId> locations_;
 
   EntityId next_entity_id_ = 0;
-  absl::flat_hash_map<Entity, EntityId> entities_;
+  // Pointer stability is needed for `id_to_entity_`.
+  absl::node_hash_map<Entity, EntityId> entities_;
+  // Maps back from the entity ID to an entity in `entities_`.
+  std::vector<const Entity*> id_to_entity_;
 
   ReferenceId next_reference_id_ = 0;
   absl::flat_hash_map<Reference, ReferenceId> references_;
