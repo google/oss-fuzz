@@ -43,6 +43,7 @@
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/SmallString.h"
+#include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/raw_ostream.h"
@@ -51,13 +52,14 @@ namespace oss_fuzz {
 namespace indexer {
 namespace {
 
-const clang::PrintingPolicy& GetPrintingPolicy() {
-  static clang::PrintingPolicy policy({});
+clang::PrintingPolicy GetPrintingPolicy() {
+  clang::PrintingPolicy policy({});
   policy.adjustForCPlusPlus();
   policy.SplitTemplateClosers = false;
   policy.SuppressTemplateArgsInCXXConstructors = true;
   return policy;
 }
+const clang::PrintingPolicy kPrintingPolicy = GetPrintingPolicy();
 
 // Helper functions used to distinguish between declarations and definitions, so
 // that we can mark declarations as incomplete and resolve them at a later
@@ -107,7 +109,14 @@ const clang::ClassTemplateDecl* GetClassTemplateDefinition(
 
 const clang::ClassTemplateSpecializationDecl* FindSpecialization(
     const clang::ClassTemplateDecl* class_template_decl,
-    const llvm::ArrayRef<clang::TemplateArgument> args) {
+    const llvm::ArrayRef<clang::TemplateArgument> args,
+    const clang::ASTContext& context) {
+  // Without this, sugared types can lead to lookup misses (see the test delta).
+  llvm::SmallVector<clang::TemplateArgument, 4> canonical_args;
+  for (const clang::TemplateArgument& arg : args) {
+    canonical_args.push_back(context.getCanonicalTemplateArgument(arg));
+  }
+
   // XXX(kartynnik): `findSpecialization` is a non-`const` method because it can
   // lead to loading external specializations. Arguably this could have been
   // handled through `mutable` fields because logically this doesn't affect the
@@ -121,11 +130,12 @@ const clang::ClassTemplateSpecializationDecl* FindSpecialization(
 // matches the provided template arguments.
 const clang::Decl* GetSpecializationDecl(
     const clang::ClassTemplateDecl* class_template_decl,
-    const llvm::ArrayRef<clang::TemplateArgument> template_arguments) {
+    const llvm::ArrayRef<clang::TemplateArgument> template_arguments,
+    const clang::ASTContext& context) {
   class_template_decl = GetClassTemplateDefinition(class_template_decl);
   const clang::Decl* decl = class_template_decl;
   const auto* specialization_decl =
-      FindSpecialization(class_template_decl, template_arguments);
+      FindSpecialization(class_template_decl, template_arguments, context);
   while (specialization_decl) {
     // This happens when we have a forward declaration of a template class,
     // followed by an explicit instantiation, followed by the definition. In
@@ -168,7 +178,8 @@ const clang::Decl* GetSpecializationDecl(
 }
 
 const clang::Decl* GetSpecializationDecl(
-    const clang::TemplateSpecializationType* type) {
+    const clang::TemplateSpecializationType* type,
+    const clang::ASTContext& context) {
   // There's no direct link to the clang::Type for the template type being
   // specialized, so this gets us a reference to the underlying template.
   //
@@ -182,7 +193,7 @@ const clang::Decl* GetSpecializationDecl(
       auto* class_template_decl =
           llvm::cast<clang::ClassTemplateDecl>(template_decl);
       decl = GetSpecializationDecl(class_template_decl,
-                                   type->template_arguments());
+                                   type->template_arguments(), context);
     } else if (llvm::isa<clang::TypeAliasTemplateDecl>(template_decl)) {
       return llvm::cast<clang::TypeAliasTemplateDecl>(template_decl)
           ->getTemplatedDecl();
@@ -193,19 +204,21 @@ const clang::Decl* GetSpecializationDecl(
 }
 
 const clang::Decl* GetSpecializationDecl(
-    const clang::ClassTemplateSpecializationDecl* decl) {
+    const clang::ClassTemplateSpecializationDecl* decl,
+    const clang::ASTContext& context) {
   // If this is an explicit specialization, then there's no need to look for
   // the best matching specialization.
   if (decl->isExplicitSpecialization()) {
     return decl;
   }
   return GetSpecializationDecl(decl->getSpecializedTemplate(),
-                               decl->getTemplateArgs().asArray());
+                               decl->getTemplateArgs().asArray(), context);
 }
 
-const clang::CXXRecordDecl* GetCanonicalRecordDecl(
-    const clang::ClassTemplateSpecializationDecl* decl) {
-  const clang::Decl* specialization_decl = GetSpecializationDecl(decl);
+const clang::CXXRecordDecl* GetTemplatePrototypeRecordDecl(
+    const clang::ClassTemplateSpecializationDecl* decl,
+    const clang::ASTContext& context) {
+  const clang::Decl* specialization_decl = GetSpecializationDecl(decl, context);
   if (const auto* class_template_decl =
           llvm::dyn_cast<clang::ClassTemplateDecl>(specialization_decl)) {
     return class_template_decl->getTemplatedDecl();
@@ -238,14 +251,15 @@ bool IsEphemeralContext(const clang::DeclContext* context) {
 // `decl` is required to be a `clang::NamedDecl`.
 // If it is inside a template instantiation, finds the context where it is
 // instantiated from and finds the corresponding entity by name.
-const clang::NamedDecl* GetCanonicalNamedDecl(const clang::Decl* decl) {
+const clang::NamedDecl* GetTemplatePrototypeNamedDecl(
+    const clang::Decl* decl, const clang::ASTContext& context) {
   const clang::NamedDecl* named_decl = llvm::dyn_cast<clang::NamedDecl>(decl);
   CHECK_NE(named_decl, nullptr);
   if (named_decl->getName().empty()) {
     // Such as for a `DecompositionDecl`.
     return nullptr;
   }
-  const clang::DeclContext* canonical_context = nullptr;
+  const clang::DeclContext* template_context = nullptr;
 
   if (const auto* class_specialization_decl =
           llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(
@@ -254,8 +268,9 @@ const clang::NamedDecl* GetCanonicalNamedDecl(const clang::Decl* decl) {
       return nullptr;
     }
     if (const clang::CXXRecordDecl* template_definition =
-            GetCanonicalRecordDecl(class_specialization_decl)) {
-      canonical_context = template_definition;
+            GetTemplatePrototypeRecordDecl(class_specialization_decl,
+                                           context)) {
+      template_context = template_definition;
     } else {
       return nullptr;
     }
@@ -263,7 +278,7 @@ const clang::NamedDecl* GetCanonicalNamedDecl(const clang::Decl* decl) {
                  named_decl->getDeclContext())) {
     if (const clang::FunctionDecl* instantiation_pattern =
             function_decl->getTemplateInstantiationPattern()) {
-      canonical_context = instantiation_pattern;
+      template_context = instantiation_pattern;
     } else {
       return nullptr;
     }
@@ -273,7 +288,7 @@ const clang::NamedDecl* GetCanonicalNamedDecl(const clang::Decl* decl) {
 
   clang::DeclarationName field_name = named_decl->getDeclName();
   // We are using `decls` instead of `fields` to also account for statics.
-  for (const clang::Decl* inner_decl : canonical_context->decls()) {
+  for (const clang::Decl* inner_decl : template_context->decls()) {
     if (const auto* inner_named_decl =
             llvm::dyn_cast<clang::NamedDecl>(inner_decl)) {
       if (inner_named_decl->getDeclName() == field_name) {
@@ -309,9 +324,9 @@ std::string FormatTemplateParameters(
       const auto* value_param =
           llvm::cast<clang::NonTypeTemplateParmDecl>(param);
       auto value_type = value_param->getType();
-      stream << value_type.getAsString(GetPrintingPolicy());
+      stream << value_type.getAsString(kPrintingPolicy);
     } else {
-      param->getNameForDiagnostic(stream, GetPrintingPolicy(), false);
+      param->getNameForDiagnostic(stream, kPrintingPolicy, false);
       if (param->isParameterPack()) {
         stream << "...";
       }
@@ -321,47 +336,44 @@ std::string FormatTemplateParameters(
   return stream.str().str();
 }
 
-std::string FormatTemplateArguments(
-    const clang::TemplateParameterList* params,
-    llvm::ArrayRef<clang::TemplateArgument> args) {
+template <class TemplateArgumentType>
+std::string FormatTemplateArguments(const clang::TemplateParameterList* params,
+                                    llvm::ArrayRef<TemplateArgumentType> args) {
   llvm::SmallString<128> string;
   llvm::raw_svector_ostream stream(string);
-  clang::printTemplateArgumentList(stream, args, GetPrintingPolicy(), params);
+  clang::printTemplateArgumentList(stream, args, kPrintingPolicy, params);
   return stream.str().str();
 }
 
 // Helper functions to generate the `<typename T, int S>` suffixes when handling
 // templates.
-std::string GetTemplateParameterSuffix(const clang::ClassTemplateDecl* decl) {
+std::string GetTemplateParameterSuffix(const clang::TemplateDecl* decl) {
   return FormatTemplateParameters(decl->getTemplateParameters());
 }
 
 std::string GetTemplateParameterSuffix(
     const clang::ClassTemplateSpecializationDecl* decl) {
-  llvm::SmallString<128> string;
-  llvm::raw_svector_ostream stream(string);
-  decl->getNameForDiagnostic(stream, GetPrintingPolicy(), false);
-  return stream.str().str().substr(decl->getNameAsString().size());
+  const clang::TemplateParameterList* params =
+      decl->getSpecializedTemplate()->getTemplateParameters();
+  if (const auto* partial_spec_decl =
+          llvm::dyn_cast<clang::ClassTemplatePartialSpecializationDecl>(decl)) {
+    if (const clang::ASTTemplateArgumentListInfo* args_as_written =
+            partial_spec_decl->getTemplateArgsAsWritten()) {
+      return FormatTemplateArguments(params, args_as_written->arguments());
+    }
+  }
+  return FormatTemplateArguments(params, decl->getTemplateArgs().asArray());
 }
 
 std::string GetTemplateParameterSuffix(
-    const clang::TypeAliasTemplateDecl* decl) {
-  return FormatTemplateParameters(decl->getTemplateParameters());
-}
-
-std::string GetTemplateParameterSuffix(
-    const clang::FunctionTemplateDecl* decl) {
-  return FormatTemplateParameters(decl->getTemplateParameters());
-}
-
-std::string GetTemplateParameterSuffix(
-    const clang::TemplateSpecializationType* type) {
+    const clang::TemplateSpecializationType* type,
+    const clang::ASTContext& context) {
   const auto* template_decl = type->getTemplateName().getAsTemplateDecl();
   if (llvm::isa<clang::ClassTemplateDecl>(template_decl)) {
     const auto* class_template_decl =
         llvm::cast<clang::ClassTemplateDecl>(template_decl);
-    return GetTemplateParameterSuffix(
-        FindSpecialization(class_template_decl, type->template_arguments()));
+    return GetTemplateParameterSuffix(FindSpecialization(
+        class_template_decl, type->template_arguments(), context));
   } else {
     CHECK(llvm::isa<clang::TypeAliasTemplateDecl>(template_decl));
     const auto* type_alias_template_decl =
@@ -376,6 +388,21 @@ std::string GetTemplateParameterSuffix(
     const clang::FunctionTemplateSpecializationInfo* info) {
   return FormatTemplateArguments(info->getTemplate()->getTemplateParameters(),
                                  info->TemplateArguments->asArray());
+}
+
+std::string GetTemplateParameterSuffix(
+    const clang::VarTemplateSpecializationDecl* decl,
+    const clang::ASTContext& context) {
+  const clang::TemplateParameterList* params =
+      decl->getSpecializedTemplate()->getTemplateParameters();
+  if (const auto* partial_spec_decl =
+          llvm::dyn_cast<clang::VarTemplatePartialSpecializationDecl>(decl)) {
+    if (const clang::ASTTemplateArgumentListInfo* args_as_written =
+            partial_spec_decl->getTemplateArgsAsWritten()) {
+      return FormatTemplateArguments(params, args_as_written->arguments());
+    }
+  }
+  return FormatTemplateArguments(params, decl->getTemplateArgs().asArray());
 }
 
 std::string GetName(const clang::Decl* decl) {
@@ -410,14 +437,15 @@ std::string GetName(const clang::Decl* decl) {
     const auto* named_decl = llvm::cast<clang::NamedDecl>(decl);
     llvm::SmallString<32> string;
     llvm::raw_svector_ostream stream(string);
-    named_decl->printName(stream, GetPrintingPolicy());
+    named_decl->printName(stream, kPrintingPolicy);
     name = string.str().str();
   }
 
   return name;
 }
 
-std::string GetNameSuffix(const clang::Decl* decl) {
+std::string GetNameSuffix(const clang::Decl* decl,
+                          const clang::ASTContext& context) {
   std::string name_suffix = "";
   if (llvm::isa<clang::CXXRecordDecl>(decl)) {
     const auto* cxx_record_decl = llvm::cast<clang::CXXRecordDecl>(decl);
@@ -447,7 +475,7 @@ std::string GetNameSuffix(const clang::Decl* decl) {
     for (int i = 0; i < function_decl->getNumParams(); ++i) {
       const clang::ParmVarDecl* parm_decl = function_decl->getParamDecl(i);
       param_types.emplace_back(
-          parm_decl->getType().getAsString(GetPrintingPolicy()));
+          parm_decl->getType().getAsString(kPrintingPolicy));
     }
 
     if (function_decl->isVariadic()) {
@@ -478,6 +506,15 @@ std::string GetNameSuffix(const clang::Decl* decl) {
         }
       }
     }
+  } else if (llvm::isa<clang::VarDecl>(decl)) {
+    const auto* var_decl = llvm::cast<clang::VarDecl>(decl);
+    if (const auto* var_template_decl = var_decl->getDescribedVarTemplate()) {
+      name_suffix = GetTemplateParameterSuffix(var_template_decl);
+    } else if (const auto* var_template_specialization_decl =
+                   llvm::dyn_cast<clang::VarTemplateSpecializationDecl>(decl)) {
+      name_suffix =
+          GetTemplateParameterSuffix(var_template_specialization_decl, context);
+    }
   } else if (llvm::isa<clang::TypeAliasDecl>(decl)) {
     const auto* type_alias_decl = llvm::cast<clang::TypeAliasDecl>(decl);
     const auto* type_alias_template_decl =
@@ -490,7 +527,8 @@ std::string GetNameSuffix(const clang::Decl* decl) {
   return name_suffix;
 }
 
-std::string GetNamePrefix(const clang::Decl* decl) {
+std::string GetNamePrefix(const clang::Decl* decl,
+                          const clang::ASTContext& context) {
   if (llvm::isa<clang::ParmVarDecl>(decl)) {
     return {};
   }
@@ -535,8 +573,8 @@ std::string GetNamePrefix(const clang::Decl* decl) {
       }
 
       const auto* parent_decl = llvm::cast<clang::Decl>(decl_context);
-      parts.push_front(
-          absl::StrCat(GetName(parent_decl), GetNameSuffix(parent_decl)));
+      parts.push_front(absl::StrCat(GetName(parent_decl),
+                                    GetNameSuffix(parent_decl, context)));
     } else if (llvm::isa<clang::NamespaceDecl>(decl_context)) {
       // namespace name should always appear in our name prefix.
       const auto* namespace_decl =
@@ -557,8 +595,8 @@ std::string GetNamePrefix(const clang::Decl* decl) {
       // unless it's the implicit class for a lambda function.
       if (!is_lambda) {
         const auto* parent_decl = llvm::cast<clang::Decl>(decl_context);
-        parts.push_front(
-            absl::StrCat(GetName(parent_decl), GetNameSuffix(parent_decl)));
+        parts.push_front(absl::StrCat(GetName(parent_decl),
+                                      GetNameSuffix(parent_decl, context)));
       }
     } else if (llvm::isa<clang::EnumDecl>(decl_context)) {
       const auto* enum_decl = llvm::cast<clang::EnumDecl>(decl_context);
@@ -566,8 +604,8 @@ std::string GetNamePrefix(const clang::Decl* decl) {
       // is a c++11 scoped enum / enum class.
       if (enum_decl->isScoped() || enum_decl->isScopedUsingClassTag()) {
         const auto* parent_decl = llvm::cast<clang::Decl>(decl_context);
-        parts.push_front(
-            absl::StrCat(GetName(parent_decl), GetNameSuffix(parent_decl)));
+        parts.push_front(absl::StrCat(GetName(parent_decl),
+                                      GetNameSuffix(parent_decl, context)));
       }
     }
     decl_context = decl_context->getParent();
@@ -752,7 +790,7 @@ LocationId AstVisitor::GetLocationId(const clang::Decl* decl) {
   if (llvm::isa<clang::ClassTemplateSpecializationDecl>(decl)) {
     const auto* specialization_decl =
         llvm::cast<clang::ClassTemplateSpecializationDecl>(decl);
-    decl = GetSpecializationDecl(specialization_decl);
+    decl = GetSpecializationDecl(specialization_decl, context_);
   }
 
   // For class template definitions, the AST has two nodes:
@@ -781,19 +819,37 @@ LocationId AstVisitor::GetLocationId(const clang::Decl* decl) {
   // template. However, for instantiation of function templates, we have an
   // extra level of indirection via `FunctionTemplateSpecializationInfo`.
   if (llvm::isa<clang::FunctionDecl>(decl)) {
-    const auto* tmp = llvm::cast<clang::FunctionDecl>(decl);
-    if (tmp->isTemplateInstantiation()) {
-      tmp = tmp->getTemplateInstantiationPattern();
-    } else if (tmp->getTemplateSpecializationInfo()) {
-      const auto* tmp_info = tmp->getTemplateSpecializationInfo();
-      tmp = tmp_info->getFunction();
+    const auto* function_decl = llvm::cast<clang::FunctionDecl>(decl);
+    if (function_decl->isTemplateInstantiation()) {
+      function_decl = function_decl->getTemplateInstantiationPattern();
+    } else if (function_decl->getTemplateSpecializationInfo()) {
+      const auto* tmp_info = function_decl->getTemplateSpecializationInfo();
+      function_decl = tmp_info->getFunction();
     }
 
-    decl = tmp;
-    const auto* tmp_template = tmp->getDescribedFunctionTemplate();
-    if (tmp_template) {
-      return GetLocationId(tmp_template->getBeginLoc(),
-                           tmp_template->getEndLoc());
+    decl = function_decl;
+    const auto* func_template = function_decl->getDescribedFunctionTemplate();
+    if (func_template) {
+      decl = func_template;
+    }
+  }
+
+  // Same for variable template declarations.
+  if (llvm::isa<clang::VarDecl>(decl)) {
+    const auto* var_decl = llvm::cast<clang::VarDecl>(decl);
+    const auto* var_template_decl = var_decl->getDescribedVarTemplate();
+    if (var_template_decl) {
+      decl = var_template_decl;
+    }
+  }
+
+  // Same for type alias template declarations.
+  if (llvm::isa<clang::TypeAliasDecl>(decl)) {
+    const auto* type_alias_decl = llvm::cast<clang::TypeAliasDecl>(decl);
+    const auto* type_alias_template_decl =
+        type_alias_decl->getDescribedTemplate();
+    if (type_alias_template_decl) {
+      decl = type_alias_template_decl;
     }
   }
 
@@ -802,25 +858,28 @@ LocationId AstVisitor::GetLocationId(const clang::Decl* decl) {
   return GetLocationId(decl->getBeginLoc(), decl->getEndLoc());
 }
 
-std::optional<EntityId> AstVisitor::GetEntityIdForCanonicalDecl(
-    const clang::Decl* canonical_decl, const clang::Decl* original_decl) {
-  if (canonical_decl == nullptr) {
+std::optional<SubstituteRelationship>
+AstVisitor::GetTemplateSubstituteRelationship(
+    const clang::Decl* template_decl, const clang::Decl* original_decl) {
+  if (template_decl == nullptr) {
     return std::nullopt;
   }
-  const EntityId canonical_entity_id = GetEntityIdForDecl(canonical_decl);
-  if (canonical_entity_id == kInvalidEntityId) {
+  const EntityId template_entity_id = GetEntityIdForDecl(template_decl);
+  if (template_entity_id == kInvalidEntityId) {
     std::string str;
     llvm::raw_string_ostream stream(str);
-    stream << "Please report an indexer issue marked 'CANONICAL':\n";
+    stream << "Please report an indexer issue marked 'TEMPLATE':\n";
     ReportTranslationUnit(stream, context_);
     stream << "Original Decl:\n";
     original_decl->dump(stream);
-    stream << "Canonical Decl:\n";
-    canonical_decl->dump(stream);
+    stream << "Template prototype Decl:\n";
+    template_decl->dump(stream);
     llvm::errs() << str;
     return std::nullopt;
   }
-  return canonical_entity_id;
+  return SubstituteRelationship(
+      SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
+      template_entity_id);
 }
 
 EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
@@ -836,12 +895,13 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
     return kInvalidEntityId;
   }
 
-  // First handle assignments of lambda types, as we need to get the entity for
-  // the lambda::operator() rather than the implicit invisible lambda class.
+  // Handle assignments of lambda types, as we need to get the entity for the
+  // lambda::operator() rather than the implicit invisible lambda class.
   if (llvm::isa<clang::CXXRecordDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::CXXRecordDecl>(decl);
-    if (tmp->isLambda()) {
-      return GetEntityIdForDecl(tmp->getLambdaCallOperator(), location_id);
+    auto* function_decl = llvm::cast<clang::CXXRecordDecl>(decl);
+    if (function_decl->isLambda()) {
+      return GetEntityIdForDecl(function_decl->getLambdaCallOperator(),
+                                location_id);
     }
   }
 
@@ -853,10 +913,30 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
     decl = class_template_decl->getTemplatedDecl();
   }
 
+  // Resolve FunctionTemplateDecl to the underlying FunctionDecl.
+  if (llvm::isa<clang::FunctionTemplateDecl>(decl)) {
+    const auto* function_template_decl =
+        llvm::cast<clang::FunctionTemplateDecl>(decl);
+    decl = function_template_decl->getTemplatedDecl();
+  }
+
+  // Resolve VarTemplateDecl to the underlying VarDecl.
+  if (llvm::isa<clang::VarTemplateDecl>(decl)) {
+    const auto* var_template_decl = llvm::cast<clang::VarTemplateDecl>(decl);
+    decl = var_template_decl->getTemplatedDecl();
+  }
+
+  // Resolve TypeAliasTemplateDecl to the underlying TypeAliasDecl.
+  if (llvm::isa<clang::TypeAliasTemplateDecl>(decl)) {
+    const auto* type_template_decl =
+        llvm::cast<clang::TypeAliasTemplateDecl>(decl);
+    decl = type_template_decl->getTemplatedDecl();
+  }
+
   // Then handle structuring assignment.
   if (llvm::isa<clang::BindingDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::BindingDecl>(decl);
-    decl = tmp->getHoldingVar();
+    auto* function_decl = llvm::cast<clang::BindingDecl>(decl);
+    decl = function_decl->getHoldingVar();
     // It's possible that we don't have a holding var here.
     if (!decl) {
       return kInvalidEntityId;
@@ -865,19 +945,22 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
 
   // Then resolve from the declaration to the definition of the entity.
   if (llvm::isa<clang::VarDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::VarDecl>(decl);
-    if (!tmp->isThisDeclarationADefinition() && tmp->getDefinition()) {
-      decl = tmp->getDefinition();
+    auto* function_decl = llvm::cast<clang::VarDecl>(decl);
+    if (!function_decl->isThisDeclarationADefinition() &&
+        function_decl->getDefinition()) {
+      decl = function_decl->getDefinition();
     }
   } else if (llvm::isa<clang::TagDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::TagDecl>(decl);
-    if (!tmp->isThisDeclarationADefinition() && tmp->getDefinition()) {
-      decl = tmp->getDefinition();
+    auto* function_decl = llvm::cast<clang::TagDecl>(decl);
+    if (!function_decl->isThisDeclarationADefinition() &&
+        function_decl->getDefinition()) {
+      decl = function_decl->getDefinition();
     }
   } else if (llvm::isa<clang::FunctionDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::FunctionDecl>(decl);
-    if (!tmp->isThisDeclarationADefinition() && tmp->getDefinition()) {
-      decl = tmp->getDefinition();
+    auto* function_decl = llvm::cast<clang::FunctionDecl>(decl);
+    if (!function_decl->isThisDeclarationADefinition() &&
+        function_decl->getDefinition()) {
+      decl = function_decl->getDefinition();
     }
   }
 
@@ -887,13 +970,14 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
                                              : location_id;
   };
 
-  std::string name_prefix = GetNamePrefix(decl);
+  std::string name_prefix = GetNamePrefix(decl, context_);
   std::string name = GetName(decl);
-  std::string name_suffix = GetNameSuffix(decl);
+  std::string name_suffix = GetNameSuffix(decl, context_);
   if (name.empty()) {
     return kInvalidEntityId;
   }
 
+  std::optional<SubstituteRelationship> substitute_relationship;
   if (llvm::isa<clang::VarDecl>(decl) || llvm::isa<clang::FieldDecl>(decl) ||
       llvm::isa<clang::NonTypeTemplateParmDecl>(decl)) {
     if (decl->isImplicit() || llvm::isa<clang::DecompositionDecl>(decl)) {
@@ -903,19 +987,18 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
       // `DecompositionDecl` is unnamed but inherits from `VarDecl`.
       return kInvalidEntityId;
     }
-    std::optional<EntityId> canonical_entity_id;
+
     if (llvm::isa<clang::FieldDecl>(decl) || llvm::isa<clang::VarDecl>(decl)) {
-      canonical_entity_id =
-          GetEntityIdForCanonicalDecl(GetCanonicalNamedDecl(decl), decl);
+      substitute_relationship = GetTemplateSubstituteRelationship(
+          GetTemplatePrototypeNamedDecl(decl, context_), decl);
     }
     return index_.GetEntityId({Entity::Kind::kVariable, name_prefix, name,
                                name_suffix, get_location_id(),
                                /*is_incomplete=*/false, /*is_weak=*/false,
-                               canonical_entity_id});
+                               substitute_relationship});
   } else if (llvm::isa<clang::RecordDecl>(decl)) {
     const auto* record_decl = llvm::cast<clang::RecordDecl>(decl);
     bool is_incomplete = !record_decl->getDefinition();
-    std::optional<EntityId> canonical_entity_id;
     if (llvm::isa<clang::ClassTemplateSpecializationDecl>(decl)) {
       auto* class_template_specialization_decl =
           llvm::cast<clang::ClassTemplateSpecializationDecl>(decl);
@@ -932,30 +1015,29 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
         is_incomplete =
             !class_template_decl->getTemplatedDecl()->getDefinition();
 
-        canonical_entity_id = GetEntityIdForCanonicalDecl(
-            GetCanonicalRecordDecl(class_template_specialization_decl),
+        substitute_relationship = GetTemplateSubstituteRelationship(
+            GetTemplatePrototypeRecordDecl(class_template_specialization_decl,
+                                           context_),
             class_template_specialization_decl);
       }
     }
     return index_.GetEntityId({Entity::Kind::kClass, name_prefix, name,
                                name_suffix, get_location_id(), is_incomplete,
-                               /*is_weak=*/false, canonical_entity_id});
+                               /*is_weak=*/false, substitute_relationship});
   } else if (llvm::isa<clang::EnumDecl>(decl)) {
-    std::optional<EntityId> canonical_entity_id =
-        GetEntityIdForCanonicalDecl(GetCanonicalNamedDecl(decl), decl);
+    substitute_relationship = GetTemplateSubstituteRelationship(
+        GetTemplatePrototypeNamedDecl(decl, context_), decl);
     return index_.GetEntityId(
         {Entity::Kind::kEnum, name_prefix, name, name_suffix, get_location_id(),
-         /*is_incomplete=*/false, /*is_weak=*/false, canonical_entity_id});
+         /*is_incomplete=*/false, /*is_weak=*/false, substitute_relationship});
   } else if (llvm::isa<clang::EnumConstantDecl>(decl)) {
     const auto* enum_constant_decl = llvm::cast<clang::EnumConstantDecl>(decl);
-    std::optional<EntityId> canonical_entity_id =
-        GetEntityIdForCanonicalDecl(GetCanonicalNamedDecl(decl), decl);
+    substitute_relationship = GetTemplateSubstituteRelationship(
+        GetTemplatePrototypeNamedDecl(decl, context_), decl);
     return index_.GetEntityId({Entity::Kind::kEnumConstant, name_prefix, name,
                                name_suffix, get_location_id(),
                                /*is_incomplete=*/false, /*is_weak=*/false,
-                               canonical_entity_id,
-                               /*implicitly_defined_for_entity_id=*/
-                               std::nullopt,
+                               substitute_relationship,
                                /*enum_value=*/
                                GetEnumValue(enum_constant_decl)});
   } else if (llvm::isa<clang::TemplateTypeParmDecl>(decl) ||
@@ -975,17 +1057,15 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
     // instantiation, but an implicit comparison operator coming from (C++20)
     //   constexpr operator<=>(const TemplatedClass<T>& other);
     // can be instantiated by class template instantiations.
-    // In this case we report the instantiation via `canonical_entity_id` which
-    // refers to an implicit method in the template
-    // (`implicitly_defined_for_entity_id`).
+    // In this case we report the instantiation via `kIsTemplateInstantiationOf`
+    // which refers to an implicit method in the template
+    // (`kIsImplicitlyDefinedFor`).
     //
     // In contrast, an implicit destructor of an (implicit) template
-    // instantiation will have `implicitly_defined_for_entity_id` which in turn
-    // has a 'canonical_entity_id`.
-    std::optional<EntityId> canonical_entity_id = std::nullopt;
-    std::optional<EntityId> implicitly_defined_for_entity_id = std::nullopt;
+    // instantiation will have `kIsImplicitlyDefinedFor` which in turn
+    // has a 'kIsTemplateInstantiationOf`.
     if (function_decl->getTemplateInstantiationPattern()) {
-      canonical_entity_id = GetEntityIdForCanonicalDecl(
+      substitute_relationship = GetTemplateSubstituteRelationship(
           function_decl->getTemplateInstantiationPattern(), decl);
     } else if (function_decl->isImplicit() &&
                llvm::isa<clang::CXXMethodDecl>(function_decl)) {
@@ -995,16 +1075,19 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
         // An anonymous struct's/union's implicit method; ignore.
         return kInvalidEntityId;
       }
-      implicitly_defined_for_entity_id = GetEntityIdForDecl(parent_class);
-      if (*implicitly_defined_for_entity_id == kInvalidEntityId) {
+      auto implicitly_defined_for_entity_id = GetEntityIdForDecl(parent_class);
+      if (implicitly_defined_for_entity_id == kInvalidEntityId) {
         // Case in point: Implicitly defined `struct __va_list_tag`.
         return kInvalidEntityId;
+      } else {
+        substitute_relationship = {
+            SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
+            implicitly_defined_for_entity_id};
       }
     }
     return index_.GetEntityId({Entity::Kind::kFunction, name_prefix, name,
                                name_suffix, get_location_id(), is_incomplete,
-                               is_weak, canonical_entity_id,
-                               implicitly_defined_for_entity_id});
+                               is_weak, substitute_relationship});
   }
 
   return kInvalidEntityId;
@@ -1013,6 +1096,7 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
 void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
                                                const clang::Type* type,
                                                bool outermost_type) {
+  // outermost_type = true;
   const clang::Decl* type_decl = nullptr;
 
   // We can't add references if the location is invalid.
@@ -1060,7 +1144,7 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
     // parameters; so the source code version of the template that will be
     // instantiated for this type.
     const auto* specialization_decl =
-        GetSpecializationDecl(specialization_type);
+        GetSpecializationDecl(specialization_type, context_);
     if (specialization_decl) {
       auto entity_id = GetEntityIdForDecl(specialization_decl,
                                           /*location_id=*/kInvalidLocationId,
@@ -1082,16 +1166,16 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
     // We need to manually create the entities for template specializations,
     // because when we have partial specializations or forward declarations,
     // we need a different source location than the one associated to the
-    // canonical ClassTemplateDecl, and for partial specializations we also
+    // template ClassTemplateDecl, and for partial specializations we also
     // need to override the name_suffix generation with information that is only
     // stored in the TemplateSpecializationType.
     if (decl_location_id != kInvalidLocationId) {
       if (template_decl &&
           llvm::isa<clang::TypeAliasTemplateDecl>(template_decl)) {
-        std::string name_prefix = GetNamePrefix(template_decl);
+        std::string name_prefix = GetNamePrefix(template_decl, context_);
         std::string name = GetName(template_decl);
         std::string name_suffix =
-            GetTemplateParameterSuffix(specialization_type);
+            GetTemplateParameterSuffix(specialization_type, context_);
 
         auto* alias_template_decl =
             llvm::cast<clang::TypeAliasTemplateDecl>(template_decl);
@@ -1099,10 +1183,11 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
             {Entity::Kind::kType, name_prefix, name, name_suffix,
              decl_location_id,
              /*is_incomplete=*/false, /*is_weak=*/false,
-             /*canonical_entity_id=*/
-             GetEntityIdForDecl(alias_template_decl->getTemplatedDecl(),
-                                /*location_id=*/kInvalidLocationId,
-                                /*for_reference=*/true)});
+             SubstituteRelationship(
+                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
+                 GetEntityIdForDecl(alias_template_decl->getTemplatedDecl(),
+                                    /*location_id=*/kInvalidLocationId,
+                                    /*for_reference=*/true))});
         if (entity_id != kInvalidEntityId) {
           (void)index_.GetReferenceId({entity_id, location_id});
         }
@@ -1122,21 +1207,18 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
   } else {
     if (llvm::isa<clang::TemplateTypeParmType>(type)) {
       type_decl = llvm::cast<clang::TemplateTypeParmType>(type)->getDecl();
-    } else if (type->isTypedefNameType()) {
-      // We need to add references to the inner-types in the case of typedefs.
-      const clang::TypedefType* typedef_type_ptr =
-          type->getAs<clang::TypedefType>();
-      if (typedef_type_ptr) {
-        const auto* typedef_decl = typedef_type_ptr->getDecl();
-        const auto* underlying_type_ptr =
-            typedef_decl->getUnderlyingType().getTypePtrOrNull();
-        if (underlying_type_ptr) {
-          AddTypeReferencesFromLocation(location_id, underlying_type_ptr,
-                                        /*outermost_type=*/false);
-        }
-
-        type_decl = typedef_decl;
+    } else if (const auto* typedef_type_ptr =
+                   type->getAs<clang::TypedefType>()) {
+      // We need to add references to the inner types in the case of typedefs.
+      const clang::TypedefNameDecl* typedef_name_decl =
+          typedef_type_ptr->getDecl();
+      if (const auto* underlying_type_ptr =
+              typedef_name_decl->getUnderlyingType().getTypePtrOrNull()) {
+        AddTypeReferencesFromLocation(location_id, underlying_type_ptr,
+                                      /*outermost_type=*/false);
       }
+
+      type_decl = typedef_name_decl;
     } else {
       type_decl = type->getAsTagDecl();
     }
