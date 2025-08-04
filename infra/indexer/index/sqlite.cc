@@ -25,7 +25,7 @@
 #include "absl/types/span.h"
 #include "sqlite3.h"
 
-#define SCHEMA_VERSION "1"
+#define SCHEMA_VERSION "2"
 
 namespace oss_fuzz {
 namespace indexer {
@@ -43,19 +43,21 @@ const char kCreateDb[] =
     "  end_line       INT NOT NULL);\n"
     "\n"
     "CREATE TABLE IF NOT EXISTS entity(\n"
-    "  id                      INTEGER PRIMARY KEY,\n"
-    "  kind                    INT NOT NULL,\n"
-    "  is_incomplete           BOOLEAN,\n"
-    "  name_prefix             TEXT,\n"
-    "  name                    TEXT NOT NULL,\n"
-    "  name_suffix             TEXT,\n"
-    "  location_id             INTEGER NOT NULL,\n"
-    "  canonical_entity_id     INTEGER,\n"
-    "  implicitly_defined_for_entity_id  INTEGER,\n"
-    "  enum_value              TEXT,\n"
+    "  id                            INTEGER PRIMARY KEY,\n"
+    "  kind                          INT NOT NULL,\n"
+    "  is_incomplete                 BOOLEAN,\n"
+    "  name_prefix                   TEXT,\n"
+    "  name                          TEXT NOT NULL,\n"
+    "  name_suffix                   TEXT,\n"
+    "  location_id                   INTEGER NOT NULL,\n"
+    "  substitute_entity_id          INTEGER,\n"
+    "  substitute_relationship_kind  INTEGER,\n"
+    "  enum_value                    TEXT,\n"
     "  FOREIGN KEY (location_id) REFERENCES location(id),\n"
-    "  FOREIGN KEY (canonical_entity_id) REFERENCES entity(id),\n"
-    "  FOREIGN KEY (implicitly_defined_for_entity_id) REFERENCES entity(id));\n"
+    "  FOREIGN KEY (substitute_entity_id) REFERENCES entity(id),\n"
+    "  CHECK("
+    "  (substitute_entity_id IS NULL) == (substitute_relationship_kind IS NULL)"
+    "  ));\n"
     "\n"
     "CREATE TABLE IF NOT EXISTS reference(\n"
     "  id             INTEGER PRIMARY KEY,\n"
@@ -82,7 +84,7 @@ const char kInsertLocation[] =
 const char kInsertEntity[] =
     "INSERT INTO entity\n"
     "  (id, kind, is_incomplete, name_prefix, name, name_suffix, location_id,\n"
-    "   canonical_entity_id, implicitly_defined_for_entity_id, enum_value)\n"
+    "   substitute_entity_id, substitute_relationship_kind, enum_value)\n"
     "  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);";
 
 const char kInsertReference[] =
@@ -143,8 +145,7 @@ bool InsertLocations(sqlite3* db, absl::Span<const Location> locations) {
 }
 
 bool InsertEntities(sqlite3* db, absl::Span<const Entity> entities) {
-  // `{canonical,implicitly_defined_for}_entity_id` foreign key can refer to a
-  // yet-unadded entity.
+  // `substitute_entity_id` foreign key can refer to a yet-unadded entity.
   if (sqlite3_exec(db, "PRAGMA foreign_keys = OFF;", nullptr,
                    nullptr, nullptr) != SQLITE_OK) {
     LOG(ERROR) << "sqlite disabling foreign keys failed: `"
@@ -183,8 +184,8 @@ bool InsertEntities(sqlite3* db, absl::Span<const Entity> entities) {
     }
 
     // Note that unbound parameters default to NULL, which is allowed in our
-    // schema for name_{prefix,suffix}, enum_value, and
-    // {canonical,implicitly_defined_for}_entity_id.
+    // schema for name_{prefix,suffix}, substitute_entity_{id,relationship}, and
+    // enum_value.
 
     if (!entity.name_prefix().empty() &&
         sqlite3_bind_text(insert_entity, 4, entity.name_prefix().data(),
@@ -200,17 +201,20 @@ bool InsertEntities(sqlite3* db, absl::Span<const Entity> entities) {
       return false;
     }
 
-    if (entity.canonical_entity_id().has_value() &&
-        sqlite3_bind_int64(insert_entity, 8, *entity.canonical_entity_id()) !=
-            SQLITE_OK) {
-      return false;
-    }
+    if (entity.substitute_relationship().has_value()) {
+      if (sqlite3_bind_int64(
+              insert_entity, 8,
+              entity.substitute_relationship()->substitute_entity_id()) !=
+          SQLITE_OK) {
+        return false;
+      }
 
-    if (entity.implicitly_defined_for_entity_id().has_value() &&
-        sqlite3_bind_int64(insert_entity, 9,
-                           *entity.implicitly_defined_for_entity_id()) !=
-            SQLITE_OK) {
-      return false;
+      if (sqlite3_bind_int64(
+              insert_entity, 9,
+              static_cast<int>(entity.substitute_relationship()->kind())) !=
+          SQLITE_OK) {
+        return false;
+      }
     }
 
     if (entity.enum_value().has_value() &&
