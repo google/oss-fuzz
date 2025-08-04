@@ -181,32 +181,35 @@ void PrintOptionalEntityParameters(const FlatIndex& index,
   } else {
     preceding_defaults.push_back(", /*is_incomplete=*/false");
   }
-  if (entity.canonical_entity_id().has_value()) {
-    flush_preceding_defaults();
-    std::cerr << ", /*canonical_entity_id=*/RequiredEntityId(index, ";
-    const Entity& canonical_entity =
-        index.entities[*entity.canonical_entity_id()];
-    PrintAllEntityParameters(index, canonical_entity);
-    std::cerr << ")";
-  } else {
-    preceding_defaults.push_back(", /*canonical_entity_id=*/std::nullopt");
-  }
-  if (entity.implicitly_defined_for_entity_id().has_value()) {
-    for (const auto& preceding_default : preceding_defaults) {
-      std::cerr << preceding_default;
-    }
-    preceding_defaults.clear();
 
-    std::cerr
-        << ", /*implicitly_defined_for_entity_id=*/RequiredEntityId(index, ";
-    const Entity& implicitly_defined_for_entity =
-        index.entities[*entity.implicitly_defined_for_entity_id()];
-    PrintAllEntityParameters(index, implicitly_defined_for_entity);
+  std::optional<SubstituteRelationship::Kind> substitute_relationship_kind =
+      (entity.substitute_relationship()
+           ? std::make_optional(entity.substitute_relationship()->kind())
+           : std::nullopt);
+  auto handle_substitute_relationship = [&](SubstituteRelationship::Kind kind,
+                                            const char* parameter_name) {
+    if (substitute_relationship_kind != kind) {
+      preceding_defaults.push_back(", /*");
+      preceding_defaults.push_back(parameter_name);
+      preceding_defaults.push_back("=*/std::nullopt");
+      return;
+    }
+
+    flush_preceding_defaults();
+    std::cerr << ", /*" << parameter_name << "=*/RequiredEntityId(index, ";
+    const Entity& template_prototype_entity =
+        index
+            .entities[entity.substitute_relationship()->substitute_entity_id()];
+    PrintAllEntityParameters(index, template_prototype_entity);
     std::cerr << ")";
-  } else {
-    preceding_defaults.push_back(
-        ", /*implicitly_defined_for_entity_id=*/std::nullopt");
-  }
+  };
+  handle_substitute_relationship(
+      SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
+      "template_prototype_entity_id");
+  handle_substitute_relationship(
+      SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
+      "implicitly_defined_for_entity_id");
+
   if (entity.enum_value().has_value()) {
     flush_preceding_defaults();
     std::cerr << ", /*enum_value=*/\"" << *entity.enum_value() << "\"";
@@ -273,17 +276,21 @@ std::string DebugPrintIndex(const FlatIndex& index) {
     };
 
     print_entity(entity);
-    if (entity.canonical_entity_id().has_value()) {
-      const auto& canonical_entity =
-          index.entities[*entity.canonical_entity_id()];
-      stream << "  Canonical:\n";
-      print_entity(canonical_entity, /*indent=*/"    ");
-    }
-    if (entity.implicitly_defined_for_entity_id().has_value()) {
-      const auto& implicitly_defined_for_entity =
-          index.entities[*entity.implicitly_defined_for_entity_id()];
-      stream << "  Implicitly defined for:\n";
-      print_entity(implicitly_defined_for_entity, /*indent=*/"    ");
+    if (entity.substitute_relationship().has_value()) {
+      const SubstituteRelationship& relationship =
+          *entity.substitute_relationship();
+      switch (relationship.kind()) {
+        // No default. Exhaustiveness checks will force us to handle new cases.
+        case SubstituteRelationship::Kind::kIsTemplateInstantiationOf: {
+          stream << "  Template instantiation of:\n";
+        }; break;
+        case SubstituteRelationship::Kind::kIsImplicitlyDefinedFor: {
+          stream << "  Implicitly defined for:\n";
+        }; break;
+      }
+      const auto& substitute_entity =
+          index.entities[relationship.substitute_entity_id()];
+      print_entity(substitute_entity, /*indent=*/"    ");
     }
     if (entity.enum_value().has_value()) {
       stream << "  Enum value: " << *entity.enum_value() << "\n";
@@ -300,11 +307,29 @@ std::string DebugPrintIndex(const FlatIndex& index) {
   return stream.str();
 }
 
+std::optional<SubstituteRelationship> GetSubstituteRelationship(
+    std::optional<EntityId> template_prototype_entity_id,
+    std::optional<EntityId> implicitly_defined_for_entity_id) {
+  CHECK(!template_prototype_entity_id || !implicitly_defined_for_entity_id)
+      << "Multiple simultaneous substitutions are not allowed";
+  if (template_prototype_entity_id) {
+    return SubstituteRelationship(
+        SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
+        *template_prototype_entity_id);
+  }
+  if (implicitly_defined_for_entity_id) {
+    return SubstituteRelationship(
+        SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
+        *implicitly_defined_for_entity_id);
+  }
+  return std::nullopt;
+}
+
 std::optional<Entity> FindEntity(
     const FlatIndex& index, Entity::Kind kind, std::string name_prefix,
     std::string name, std::string name_suffix, std::string path, int start_line,
     int end_line, bool is_incomplete = false,
-    const std::optional<EntityId>& canonical_entity_id = std::nullopt,
+    const std::optional<EntityId>& template_prototype_entity_id = std::nullopt,
     const std::optional<EntityId>& implicitly_defined_for_entity_id =
         std::nullopt,
     const std::optional<std::string> enum_value = std::nullopt) {
@@ -322,8 +347,8 @@ std::optional<Entity> FindEntity(
                 location_id,
                 is_incomplete,
                 /*is_weak=*/false,
-                canonical_entity_id,
-                implicitly_defined_for_entity_id,
+                GetSubstituteRelationship(template_prototype_entity_id,
+                                          implicitly_defined_for_entity_id),
                 enum_value};
       break;
     }
@@ -346,12 +371,13 @@ bool IndexHasEntity(
     const FlatIndex& index, Entity::Kind kind, std::string name_prefix,
     std::string name, std::string name_suffix, std::string path, int start_line,
     int end_line, bool is_incomplete = false,
-    const std::optional<EntityId>& canonical_entity_id = std::nullopt,
+    const std::optional<EntityId>& template_prototype_entity_id = std::nullopt,
     const std::optional<EntityId>& implicitly_defined_for_entity_id =
         std::nullopt,
     const std::optional<std::string> enum_value = std::nullopt) {
   return FindEntity(index, kind, name_prefix, name, name_suffix, path,
-                    start_line, end_line, is_incomplete, canonical_entity_id,
+                    start_line, end_line, is_incomplete,
+                    template_prototype_entity_id,
                     implicitly_defined_for_entity_id, enum_value)
       .has_value();
 }
@@ -361,7 +387,7 @@ bool IndexHasReference(
     std::string name, std::string name_suffix, std::string path, int start_line,
     int end_line, std::string ref_path, int ref_start_line, int ref_end_line,
     bool is_incomplete = false,
-    std::optional<EntityId> canonical_entity_id = std::nullopt,
+    std::optional<EntityId> template_prototype_entity_id = std::nullopt,
     std::optional<EntityId> implicitly_defined_for_entity_id = std::nullopt,
     std::optional<std::string> enum_value = std::nullopt) {
   LocationId ref_location_id = kInvalidLocationId;
@@ -381,8 +407,8 @@ bool IndexHasReference(
                 location_id,
                 is_incomplete,
                 /*is_weak=*/false,
-                canonical_entity_id,
-                implicitly_defined_for_entity_id,
+                GetSubstituteRelationship(template_prototype_entity_id,
+                                          implicitly_defined_for_entity_id),
                 enum_value};
     }
 
@@ -554,18 +580,18 @@ TEST(FrontendTest, EnumDeclaration) {
                     5);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant, "", "kEnumConstant0",
                     "", "snippet.cc", 2, 2, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"0");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant, "", "kEnumConstant1",
                     "", "snippet.cc", 3, 3, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"1");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant, "",
                     "kElaborateEnumConstant", "", "snippet.cc", 4, 4,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"-7");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "enum_instance", "",
@@ -575,18 +601,18 @@ TEST(FrontendTest, EnumDeclaration) {
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kEnumConstant, "", "kEnumConstant0",
                        "", "snippet.cc", 2, 2, "snippet.cc", 6, 6,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/std::nullopt,
+                       /*template_prototype_entity_id=*/std::nullopt,
                        /*implicitly_defined_for_entity_id=*/std::nullopt,
                        /*enum_value=*/"0");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant, "Huge::", "kValue", "",
                     "snippet.cc", 11, 11, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"340282366920938463463374607431768211455");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant,
                     "LargeUnsigned::", "kNonNegative", "", "snippet.cc", 8, 8,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"18446744073709551615");
 }
@@ -604,13 +630,13 @@ TEST(FrontendTest, EnumClassDeclaration) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant,
                     "Enum::", "kEnumConstant0", "", "snippet.cc", 2, 2,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"0");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant,
                     "Enum::", "kEnumConstant1", "", "snippet.cc", 3, 3,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"1");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "enum_instance", "",
@@ -620,7 +646,7 @@ TEST(FrontendTest, EnumClassDeclaration) {
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kEnumConstant,
                        "Enum::", "kEnumConstant0", "", "snippet.cc", 2, 2,
                        "snippet.cc", 5, 5, /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/std::nullopt,
+                       /*template_prototype_entity_id=*/std::nullopt,
                        /*implicitly_defined_for_entity_id=*/std::nullopt,
                        /*enum_value=*/"0");
 }
@@ -640,12 +666,12 @@ TEST(FrontendTest, NamespacedEnumDeclaration) {
                     2, 5);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant, "n::", "kEnumConstant0",
                     "", "snippet.cc", 3, 3, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"0");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant, "n::", "kEnumConstant1",
                     "", "snippet.cc", 4, 4, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"1");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "n::", "enum_instance0", "",
@@ -657,7 +683,7 @@ TEST(FrontendTest, NamespacedEnumDeclaration) {
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kEnumConstant,
                        "n::", "kEnumConstant0", "", "snippet.cc", 3, 3,
                        "snippet.cc", 6, 6, /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/std::nullopt,
+                       /*template_prototype_entity_id=*/std::nullopt,
                        /*implicitly_defined_for_entity_id=*/std::nullopt,
                        /*enum_value=*/"0");
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kEnum, "n::", "Enum", "",
@@ -665,7 +691,7 @@ TEST(FrontendTest, NamespacedEnumDeclaration) {
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kEnumConstant,
                        "n::", "kEnumConstant1", "", "snippet.cc", 4, 4,
                        "snippet.cc", 8, 8, /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/std::nullopt,
+                       /*template_prototype_entity_id=*/std::nullopt,
                        /*implicitly_defined_for_entity_id=*/std::nullopt,
                        /*enum_value=*/"1");
 }
@@ -686,13 +712,13 @@ TEST(FrontendTest, NamespacedEnumClassDeclaration) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant,
                     "n::Enum::", "kEnumConstant0", "", "snippet.cc", 3, 3,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"0");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kEnumConstant,
                     "n::Enum::", "kEnumConstant1", "", "snippet.cc", 4, 4,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
                     /*enum_value=*/"1");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "n::", "enum_instance0", "",
@@ -704,7 +730,7 @@ TEST(FrontendTest, NamespacedEnumClassDeclaration) {
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kEnumConstant,
                        "n::Enum::", "kEnumConstant0", "", "snippet.cc", 3, 3,
                        "snippet.cc", 6, 6, /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/std::nullopt,
+                       /*template_prototype_entity_id=*/std::nullopt,
                        /*implicitly_defined_for_entity_id=*/std::nullopt,
                        /*enum_value=*/"0");
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kEnum, "n::", "Enum", "",
@@ -712,7 +738,7 @@ TEST(FrontendTest, NamespacedEnumClassDeclaration) {
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kEnumConstant,
                        "n::Enum::", "kEnumConstant1", "", "snippet.cc", 4, 4,
                        "snippet.cc", 8, 8, /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/std::nullopt,
+                       /*template_prototype_entity_id=*/std::nullopt,
                        /*implicitly_defined_for_entity_id=*/std::nullopt,
                        /*enum_value=*/"1");
 }
@@ -796,14 +822,14 @@ TEST(FrontendTest, ConstructorReference) {
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Derived::", "Derived",
                        "()", "snippet.cc", 10, 10, "snippet.cc", 14, 14,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/std::nullopt,
+                       /*template_prototype_entity_id=*/std::nullopt,
                        /*implicitly_defined_for_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "",
                                         "Derived", "", "snippet.cc", 10, 10));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "main()::Test::", "Test", "()",
       "snippet.cc", 13, 13, "snippet.cc", 13, 13, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/std::nullopt,
+      /*template_prototype_entity_id=*/std::nullopt,
       /*implicitly_defined_for_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kClass, "main()::", "Test", "",
                        "snippet.cc", 13, 13));
@@ -1084,13 +1110,13 @@ TEST(FrontendTest, TypeTemplateClass) {
                     "snippet.cc", 7, 9);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int, int>",
                     "snippet.cc", 3, 6, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<T, S>", "snippet.cc", 3, 6));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<int, int>",
                        "snippet.cc", 3, 6, "snippet.cc", 10, 10,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<T, S>", "snippet.cc", 3, 6));
 }
@@ -1117,19 +1143,19 @@ TEST(FrontendTest, UsingTypeTemplateClass) {
                     "snippet.cc", 2, 2);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Bar", "<Foo *>",
                     "snippet.cc", 2, 3, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Bar",
                                      "<T>", "snippet.cc", 2, 3));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Bar", "<Foo *>",
                        "snippet.cc", 2, 3, "snippet.cc", 4, 4,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Bar",
                                         "<T>", "snippet.cc", 2, 3));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Bar", "<Foo *>",
                        "snippet.cc", 2, 3, "snippet.cc", 5, 5,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Bar",
                                         "<T>", "snippet.cc", 2, 3));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Baz", "", "snippet.cc", 4,
@@ -1188,13 +1214,13 @@ TEST(FrontendTest, ValueTemplateClass) {
                        "snippet.cc", 5, 5, "snippet.cc", 6, 6);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<'A', 99>",
                     "snippet.cc", 1, 4, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<char, int>", "snippet.cc", 1, 4));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<'A', 99>",
                        "snippet.cc", 1, 4, "snippet.cc", 8, 8,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<char, int>", "snippet.cc", 1, 4));
 }
@@ -1311,7 +1337,7 @@ TEST(FrontendTest, TypeTemplateFunction) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "foo", "<int>(int)",
                     "snippet.cc", 1, 3,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kFunction, "", "foo",
                                      "<T>(T)", "snippet.cc", 1, 3));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "foo<T>(T)::", "T", "",
@@ -1325,7 +1351,7 @@ TEST(FrontendTest, TypeTemplateFunction) {
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "", "foo", "<int>(int)",
                        "snippet.cc", 1, 3, "snippet.cc", 5, 5,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kFunction, "",
                                         "foo", "<T>(T)", "snippet.cc", 1, 3));
 }
@@ -1354,13 +1380,13 @@ TEST(FrontendTest, ValueTemplateFunction) {
                     "snippet.cc", 5, 7);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "foo", "<88>(int)",
                     "snippet.cc", 1, 4, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kFunction, "", "foo",
                                      "<int>(int)", "snippet.cc", 1, 4));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "", "foo", "<88>(int)", "snippet.cc", 1,
       4, "snippet.cc", 6, 6, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "", "foo", "<int>(int)",
                        "snippet.cc", 1, 4));
 }
@@ -1384,14 +1410,15 @@ TEST(FrontendTest, TemplateTemplateFunction) {
                     "snippet.cc", 1, 1);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int>",
                     "snippet.cc", 1, 3,
-                    /*is_incomplete=*/false, /*canonical_entity_id=*/
+                    /*is_incomplete=*/false, /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<T>", "snippet.cc", 1, 3));
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<int>",
-                       "snippet.cc", 1, 3, "snippet.cc", 8, 8,
-                       /*is_incomplete=*/false, /*canonical_entity_id=*/
-                       RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
-                                        "<T>", "snippet.cc", 1, 3));
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kClass, "", "Foo", "<int>", "snippet.cc", 1, 3,
+      "snippet.cc", 8, 8,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kClass, "", "Foo", "<T>",
+                       "snippet.cc", 1, 3));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "bar",
                     "<S, T>(const S<T> &)", "snippet.cc", 4, 6);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType,
@@ -1399,13 +1426,13 @@ TEST(FrontendTest, TemplateTemplateFunction) {
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction, "", "bar", "<Foo, int>(const Foo<int> &)",
       "snippet.cc", 4, 6,
-      /*is_incomplete=*/false, /*canonical_entity_id=*/
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "", "bar",
                        "<S, T>(const S<T> &)", "snippet.cc", 4, 6));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "", "bar", "<Foo, int>(const Foo<int> &)",
       "snippet.cc", 4, 6, "snippet.cc", 9, 9,
-      /*is_incomplete=*/false, /*canonical_entity_id=*/
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "", "bar",
                        "<S, T>(const S<T> &)", "snippet.cc", 4, 6));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "baz", "", "snippet.cc",
@@ -1431,25 +1458,26 @@ TEST(FrontendTest, TemplateParameterPackFunction) {
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction, "", "foo",
       "<const char *, int, const char *>(const char *, int, const char *)",
-      "snippet.cc", 1, 3, /*is_incomplete=*/false, /*canonical_entity_id=*/
+      "snippet.cc", 1, 3,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "", "foo",
                        "<T...>(T...)", "snippet.cc", 1, 3));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "", "foo",
       "<const char *, int, const char *>(const char *, int, const char *)",
       "snippet.cc", 1, 3, "snippet.cc", 6, 6, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "", "foo",
                        "<T...>(T...)", "snippet.cc", 1, 3));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "foo",
                     "<int, int>(int, int)", "snippet.cc", 1, 3,
-                    /*is_incomplete=*/false, /*canonical_entity_id=*/
+                    /*is_incomplete=*/false, /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kFunction, "", "foo",
                                      "<T...>(T...)", "snippet.cc", 1, 3));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "", "foo", "<int, int>(int, int)",
       "snippet.cc", 1, 3, "snippet.cc", 5, 5, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "", "foo",
                        "<T...>(T...)", "snippet.cc", 1, 3));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "foo", "<T...>(T...)",
@@ -1862,7 +1890,7 @@ TEST(FrontendTest, RecursiveTemplateInstantiation) {
                     "Foo<int, char, int, char>::", "foo",
                     "(int, char, int, char)", "snippet.cc", 9, 12,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kFunction,
                                      "Foo<int, Args...>::", "foo",
                                      "(int, Args...)", "snippet.cc", 9, 12));
@@ -1870,7 +1898,7 @@ TEST(FrontendTest, RecursiveTemplateInstantiation) {
       index, Entity::Kind::kFunction, "Foo<int, char, int, char>::", "foo",
       "(int, char, int, char)", "snippet.cc", 9, 12, "snippet.cc", 28, 28,
       /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "Foo<int, Args...>::",
                        "foo", "(int, Args...)", "snippet.cc", 9, 12));
 }
@@ -1897,19 +1925,19 @@ TEST(FrontendTest, IncompleteTemplate) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int>",
                     "snippet.cc", 4, 8,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<T>", "snippet.cc", 4, 8));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<int>",
                        "snippet.cc", 4, 8, "snippet.cc", 3, 3,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<T>", "snippet.cc", 4, 8));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<int>",
                        "snippet.cc", 4, 8, "snippet.cc", 9, 9,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<T>", "snippet.cc", 4, 8));
 
@@ -1969,43 +1997,44 @@ TEST(FrontendTest, MoreTemplateSpecialization) {
                                  8));
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Bar", "<S, T>",
-                    "snippet.cc", 4, 4);
+                    "snippet.cc", 3, 4);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Bar", "<S, T>",
-                       "snippet.cc", 4, 4, "snippet.cc", 6, 6);
+                       "snippet.cc", 3, 4, "snippet.cc", 6, 6);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Bar", "<S, T>",
-                       "snippet.cc", 4, 4, "snippet.cc", 7, 7);
+                       "snippet.cc", 3, 4, "snippet.cc", 7, 7);
   // TODO: Maybe add these if we have implicit reference support.
   EXPECT_FALSE(IndexHasReference(index, Entity::Kind::kType, "", "Bar",
-                                 "<S, T>", "snippet.cc", 4, 4, "snippet.cc", 8,
+                                 "<S, T>", "snippet.cc", 3, 4, "snippet.cc", 8,
                                  8));
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Baz", "<S, T>",
-                    "snippet.cc", 6, 6);
+                    "snippet.cc", 5, 6);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Baz", "<S, T>",
-                       "snippet.cc", 6, 6, "snippet.cc", 8, 8);
+                       "snippet.cc", 5, 6, "snippet.cc", 8, 8);
 
   // Check that the correct specializations of Foo exist
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int, char>",
                     "snippet.cc", 1, 2,
-                    /*is_incomplete=*/false, /*canonical_entity_id=*/
+                    /*is_incomplete=*/false, /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<S, T>", "snippet.cc", 1, 2));
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<int, char>",
-                       "snippet.cc", 1, 2, "snippet.cc", 7, 7,
-                       /*is_incomplete=*/false, /*canonical_entity_id=*/
-                       RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
-                                        "<S, T>", "snippet.cc", 1, 2));
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kClass, "", "Foo", "<int, char>", "snippet.cc", 1, 2,
+      "snippet.cc", 7, 7,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kClass, "", "Foo", "<S, T>",
+                       "snippet.cc", 1, 2));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo",
                     "<Foo<int, bool>, char>", "snippet.cc", 1, 2,
-                    /*is_incomplete=*/false, /*canonical_entity_id=*/
+                    /*is_incomplete=*/false, /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<S, T>", "snippet.cc", 1, 2));
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo",
-                       "<Foo<int, bool>, char>", "snippet.cc", 1, 2,
-                       "snippet.cc", 8, 8,
-                       /*is_incomplete=*/false, /*canonical_entity_id=*/
-                       RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
-                                        "<S, T>", "snippet.cc", 1, 2));
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kClass, "", "Foo", "<Foo<int, bool>, char>",
+      "snippet.cc", 1, 2, "snippet.cc", 8, 8,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kClass, "", "Foo", "<S, T>",
+                       "snippet.cc", 1, 2));
   // Note: These entities no longer exist, because they're also implicit. Maybe
   // we want them, but it's unclear how we'd be able to use them without the
   // implicit references.
@@ -2030,14 +2059,14 @@ TEST(FrontendTest, FormatTemplateArgumentsOne) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int, int, int>",
                     "snippet.cc", 1, 1,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<Args...>", "snippet.cc", 1, 1));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo",
                        "<int, int, int>", "snippet.cc", 1, 1, "snippet.cc", 2,
                        2,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<Args...>", "snippet.cc", 1, 1));
 }
@@ -2072,25 +2101,25 @@ TEST(FrontendTest, FormatTemplateArgumentsTwo) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<Bar<int>>",
                     "snippet.cc", 1, 1,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<T>", "snippet.cc", 1, 1));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<Bar<int>>",
                        "snippet.cc", 1, 1, "snippet.cc", 4, 4,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<T>", "snippet.cc", 1, 1));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Baz", "<int>",
                     "snippet.cc", 3, 3,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kType, "", "Baz",
                                      "<T>", "snippet.cc", 3, 3));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Baz", "<int>",
                        "snippet.cc", 3, 3, "snippet.cc", 4, 4,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kType, "", "Baz",
                                         "<T>", "snippet.cc", 3, 3));
 }
@@ -2115,25 +2144,25 @@ TEST(FrontendTest, FormatTemplateArgumentsThree) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<char, int>",
                     "snippet.cc", 1, 1,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<T, S>", "snippet.cc", 1, 1));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<char, int>",
                        "snippet.cc", 1, 1, "snippet.cc", 3, 3,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<T, S>", "snippet.cc", 1, 1));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Bar", "<char>",
                     "snippet.cc", 2, 2,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kType, "", "Bar",
                                      "<T>", "snippet.cc", 2, 2));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Bar", "<char>",
                        "snippet.cc", 2, 2, "snippet.cc", 3, 3,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kType, "", "Bar",
                                         "<T>", "snippet.cc", 2, 2));
 }
@@ -2176,48 +2205,48 @@ TEST(FrontendTest, EvenMoreTemplates) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Bar", "<int, char>",
                     "snippet.cc", 2, 2,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kType, "", "Bar",
                                      "<A, B>", "snippet.cc", 2, 2));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Bar", "<int, char>",
                        "snippet.cc", 2, 2, "snippet.cc", 8, 8,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kType, "", "Bar",
                                         "<A, B>", "snippet.cc", 2, 2));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<char, int>",
                     "snippet.cc", 1, 1, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<A, B>", "snippet.cc", 1, 1));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<char, int>",
                        "snippet.cc", 1, 1, "snippet.cc", 8, 8,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<A, B>", "snippet.cc", 1, 1));
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Brrrr", "<int, char>",
                     "snippet.cc", 5, 5, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kType, "", "Brrrr",
                                      "<A, B>", "snippet.cc", 5, 5));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Brrrr", "<int, char>",
                        "snippet.cc", 5, 5, "snippet.cc", 9, 9,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kType, "", "Brrrr",
                                         "<A, B>", "snippet.cc", 5, 5));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo",
                     "<Baz<int, char, int>, char>", "snippet.cc", 1, 1,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<A, B>", "snippet.cc", 1, 1));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo",
                        "<Baz<int, char, int>, char>", "snippet.cc", 1, 1,
                        "snippet.cc", 9, 9, /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<A, B>", "snippet.cc", 1, 1));
 }
@@ -2237,13 +2266,13 @@ TEST(FrontendTest, QualifiedTypeSpecialization) {
                        "snippet.cc", 1, 1, "snippet.cc", 4, 4);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int>",
                     "snippet.cc", 1, 1, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<A>", "snippet.cc", 1, 1));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<int>",
                        "snippet.cc", 1, 1, "snippet.cc", 4, 4,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<A>", "snippet.cc", 1, 1));
 
@@ -2253,13 +2282,13 @@ TEST(FrontendTest, QualifiedTypeSpecialization) {
                        "snippet.cc", 2, 2, "snippet.cc", 5, 5);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<const int>",
                     "snippet.cc", 2, 2, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<const A>", "snippet.cc", 2, 2));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<const int>",
                        "snippet.cc", 2, 2, "snippet.cc", 5, 5,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<const A>", "snippet.cc", 2, 2));
 
@@ -2269,13 +2298,13 @@ TEST(FrontendTest, QualifiedTypeSpecialization) {
                        "snippet.cc", 3, 3, "snippet.cc", 6, 6);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<volatile int>",
                     "snippet.cc", 3, 3, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<volatile A>", "snippet.cc", 3, 3));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<volatile int>",
                        "snippet.cc", 3, 3, "snippet.cc", 6, 6,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<volatile A>", "snippet.cc", 3, 3));
 }
@@ -2297,13 +2326,13 @@ TEST(FrontendTest, QualifiedTypeSpecializationTwo) {
                        "snippet.cc", 1, 1, "snippet.cc", 5, 5);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int>",
                     "snippet.cc", 1, 1, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<A>", "snippet.cc", 1, 1));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<int>",
                        "snippet.cc", 1, 1, "snippet.cc", 5, 5,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<A>", "snippet.cc", 1, 1));
 
@@ -2313,13 +2342,13 @@ TEST(FrontendTest, QualifiedTypeSpecializationTwo) {
                        "snippet.cc", 2, 2, "snippet.cc", 6, 6);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<const int &>",
                     "snippet.cc", 2, 2, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<const A &>", "snippet.cc", 2, 2));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<const int &>",
                        "snippet.cc", 2, 2, "snippet.cc", 6, 6,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<const A &>", "snippet.cc", 2, 2));
 
@@ -2331,13 +2360,13 @@ TEST(FrontendTest, QualifiedTypeSpecializationTwo) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo",
                     "<const int *const>", "snippet.cc", 3, 3,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<const A *const>", "snippet.cc", 3, 3));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kClass, "", "Foo", "<const int *const>",
       "snippet.cc", 3, 3, "snippet.cc", 7, 7, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                        "<const A *const>", "snippet.cc", 3, 3));
 
@@ -2348,13 +2377,13 @@ TEST(FrontendTest, QualifiedTypeSpecializationTwo) {
                        8);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<volatile int &&>",
                     "snippet.cc", 4, 4, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<volatile A &&>", "snippet.cc", 4, 4));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo",
                        "<volatile int &&>", "snippet.cc", 4, 4, "snippet.cc", 8,
                        8, /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<volatile A &&>", "snippet.cc", 4, 4));
 }
@@ -2379,13 +2408,13 @@ TEST(FrontendTest, QualifiedTypeSpecializationThree) {
   //                      3, 3);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<const int[1]>",
                     "snippet.cc", 2, 2, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<const A[1]>", "snippet.cc", 2, 2));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<const int[1]>",
                        "snippet.cc", 2, 2, "snippet.cc", 3, 3,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<const A[1]>", "snippet.cc", 2, 2));
 }
@@ -2404,13 +2433,13 @@ TEST(FrontendTest, UsingSpecialization) {
                     "snippet.cc", 3, 3);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int>",
                     "snippet.cc", 3, 3, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<A>", "snippet.cc", 3, 3));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<int>",
                        "snippet.cc", 3, 3, "snippet.cc", 2, 2,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<A>", "snippet.cc", 3, 3));
 }
@@ -2490,25 +2519,25 @@ TEST(FrontendTest, MemberTemplateInstantiation) {
                     "snippet.cc", 9, 12);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "GetA", "<int>()",
                     "snippet.cc", 9, 12, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kFunction, "Foo::",
                                      "GetA", "<T>()", "snippet.cc", 9, 12));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "Foo::", "GetA", "<int>()", "snippet.cc",
       9, 12, "snippet.cc", 6, 6, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "Foo::", "GetA", "<T>()",
                        "snippet.cc", 9, 12));
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction, "Foo::", "GetA", "<unsigned int>()",
       "snippet.cc", 9, 12, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "Foo::", "GetA", "<T>()",
                        "snippet.cc", 9, 12));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "Foo::", "GetA", "<unsigned int>()",
       "snippet.cc", 9, 12, "snippet.cc", 15, 15, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "Foo::", "GetA", "<T>()",
                        "snippet.cc", 9, 12));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "GetB", "()",
@@ -2548,13 +2577,13 @@ TEST(FrontendTest, ClassTemplateMemberReference) {
                     1, 6);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int>",
                     "snippet.cc", 1, 6, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                      "<T>", "snippet.cc", 1, 6));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Foo", "<int>",
                        "snippet.cc", 1, 6, "snippet.cc", 13, 13,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "<T>", "snippet.cc", 1, 6));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo<T>::", "GetA", "()",
@@ -2563,24 +2592,24 @@ TEST(FrontendTest, ClassTemplateMemberReference) {
                     "snippet.cc", 5, 5);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo<int>::", "GetA", "()",
                     "snippet.cc", 7, 10, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kFunction, "Foo<T>::",
                                      "GetA", "()", "snippet.cc", 7, 10));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "Foo<int>::", "GetA", "()", "snippet.cc",
       7, 10, "snippet.cc", 13, 13,
-      /*is_incomplete=*/false, /*canonical_entity_id=*/
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "Foo<T>::", "GetA", "()",
                        "snippet.cc", 7, 10));
-  EXPECT_HAS_ENTITY(
-      index, Entity::Kind::kVariable, "Foo<int>::", "kConstant", "",
-      "snippet.cc", 5, 5, /*is_incomplete=*/false, /*canonical_entity_id=*/
-      RequiredEntityId(index, Entity::Kind::kVariable, "Foo<T>::", "kConstant",
-                       "", "snippet.cc", 5, 5));
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "Foo<int>::", "kConstant",
+                    "", "snippet.cc", 5, 5,
+                    /*is_incomplete=*/false, /*template_prototype_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kVariable, "Foo<T>::",
+                                     "kConstant", "", "snippet.cc", 5, 5));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kVariable, "Foo<int>::", "kConstant", "",
       "snippet.cc", 5, 5, "snippet.cc", 12, 12, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kVariable, "Foo<T>::", "kConstant",
                        "", "snippet.cc", 5, 5));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "main", "()",
@@ -2686,7 +2715,7 @@ TEST(FrontendTest, TemplatedConstructor) {
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "Test<void>::", "Test", "<int>(int &&)",
       "snippet.cc", 4, 4, "snippet.cc", 7, 7, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "Test<T>::", "Test",
                        "<U>(U &&)", "snippet.cc", 4, 4));
 }
@@ -2800,13 +2829,14 @@ TEST(FrontendTest, TemplateMemberFn) {
                     "snippet.cc", 1, 10, /*is_incomplete=*/false);
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kClass, "", "TestTemplateClass", "<int>",
-      "snippet.cc", 1, 10, /*is_incomplete=*/false, /*canonical_entity_id=*/
+      "snippet.cc", 1, 10,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kClass, "", "TestTemplateClass",
                        "<T>", "snippet.cc", 1, 10));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kClass, "", "TestTemplateClass", "<int>",
       "snippet.cc", 1, 10, "snippet.cc", 20, 20, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kClass, "", "TestTemplateClass",
                        "<T>", "snippet.cc", 1, 10));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "TestTemplateClass2",
@@ -2816,13 +2846,14 @@ TEST(FrontendTest, TemplateMemberFn) {
                        /*is_incomplete=*/false);
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kClass, "", "TestTemplateClass2", "<char>",
-      "snippet.cc", 12, 16, /*is_incomplete=*/false, /*canonical_entity_id=*/
+      "snippet.cc", 12, 16,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kClass, "", "TestTemplateClass2",
                        "<T>", "snippet.cc", 12, 16));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kClass, "", "TestTemplateClass2", "<char>",
       "snippet.cc", 12, 16, "snippet.cc", 21, 21, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kClass, "", "TestTemplateClass2",
                        "<T>", "snippet.cc", 12, 16));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "t", "", "snippet.cc",
@@ -2831,14 +2862,16 @@ TEST(FrontendTest, TemplateMemberFn) {
                        "snippet.cc", 7, 7, "snippet.cc", 8, 8,
                        /*is_incomplete=*/false);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "t", "", "snippet.cc",
-                    7, 7, /*is_incomplete=*/false, /*canonical_entity_id=*/
+                    7, 7,
+                    /*is_incomplete=*/false, /*template_prototype_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kVariable, "", "t",
                                      "", "snippet.cc", 7, 7));
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kVariable, "", "t", "",
-                       "snippet.cc", 7, 7, "snippet.cc", 8, 8,
-                       /*is_incomplete=*/false, /*canonical_entity_id=*/
-                       RequiredEntityId(index, Entity::Kind::kVariable, "", "t",
-                                        "", "snippet.cc", 7, 7));
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kVariable, "", "t", "", "snippet.cc", 7, 7,
+      "snippet.cc", 8, 8,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kVariable, "", "t", "",
+                       "snippet.cc", 7, 7));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "template_xref", "",
                     "snippet.cc", 19, 20, /*is_incomplete=*/false);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "template_xrefs", "()",
@@ -2859,14 +2892,16 @@ TEST(FrontendTest, TemplateMemberFn) {
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction,
       "TestTemplateClass2<char>::", "TestTemplateClass2", "<int>(int &&)",
-      "snippet.cc", 15, 15, /*is_incomplete=*/false, /*canonical_entity_id=*/
+      "snippet.cc", 15, 15,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction,
                        "TestTemplateClass2<T>::", "TestTemplateClass2",
                        "<U>(U &&)", "snippet.cc", 15, 15));
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kEnum,
       "TestTemplateClass2<char>::TestTemplateClass2<int>(int &&)::", "E", "",
-      "snippet.cc", 15, 15, /*is_incomplete=*/false, /*canonical_entity_id=*/
+      "snippet.cc", 15, 15,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kEnum,
                        "TestTemplateClass2<T>::TestTemplateClass2<U>(U &&)::",
                        "E", "", "snippet.cc", 15, 15));
@@ -2891,84 +2926,87 @@ TEST(FrontendTest, TemplateMemberFn) {
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction,
       "TestTemplateClass<int>::", "TestTemplateMemberFn", "<unsigned int>(int)",
-      "snippet.cc", 6, 9, /*is_incomplete=*/false, /*canonical_entity_id=*/
+      "snippet.cc", 6, 9,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "TestTemplateClass<T>::",
                        "TestTemplateMemberFn", "<S>(T)", "snippet.cc", 6, 9));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction,
       "TestTemplateClass<int>::", "TestTemplateMemberFn", "<unsigned int>(int)",
       "snippet.cc", 6, 9, "snippet.cc", 20, 20, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "TestTemplateClass<T>::",
                        "TestTemplateMemberFn", "<S>(T)", "snippet.cc", 6, 9));
-  // Implicit entities for entities which have canonical ones.
+  // Implicit entities for entities which have template prototypes.
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction,
       "TestTemplateClass3<char>::", "TestTemplateClass3", "()", "snippet.cc",
-      25, 25, /*is_incomplete=*/false, /*canonical_entity_id=*/std::nullopt,
+      25, 25, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
       /*implicitly_defined_for_entity_id=*/
       RequiredEntityId(
           index, Entity::Kind::kClass, "", "TestTemplateClass3", "<char>",
           "snippet.cc", 24, 26, /*is_incomplete=*/false,
-          /*canonical_entity_id=*/
+          /*template_prototype_entity_id=*/
           RequiredEntityId(index, Entity::Kind::kClass, "",
                            "TestTemplateClass3", "<T>", "snippet.cc", 24, 26)));
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction,
       "TestTemplateClass3<char>::", "TestTemplateClass3",
       "(TestTemplateClass3<char> &&)", "snippet.cc", 25, 25,
-      /*is_incomplete=*/false, /*canonical_entity_id=*/std::nullopt,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
       /*implicitly_defined_for_entity_id=*/
       RequiredEntityId(
           index, Entity::Kind::kClass, "", "TestTemplateClass3", "<char>",
           "snippet.cc", 24, 26, /*is_incomplete=*/false,
-          /*canonical_entity_id=*/
+          /*template_prototype_entity_id=*/
           RequiredEntityId(index, Entity::Kind::kClass, "",
                            "TestTemplateClass3", "<T>", "snippet.cc", 24, 26)));
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction,
       "TestTemplateClass3<char>::", "TestTemplateClass3",
       "(const TestTemplateClass3<char> &)", "snippet.cc", 25, 25,
-      /*is_incomplete=*/false, /*canonical_entity_id=*/std::nullopt,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
       /*implicitly_defined_for_entity_id=*/
       RequiredEntityId(
           index, Entity::Kind::kClass, "", "TestTemplateClass3", "<char>",
           "snippet.cc", 24, 26, /*is_incomplete=*/false,
-          /*canonical_entity_id=*/
+          /*template_prototype_entity_id=*/
           RequiredEntityId(index, Entity::Kind::kClass, "",
                            "TestTemplateClass3", "<T>", "snippet.cc", 24, 26)));
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction, "TestTemplateClass3<char>::", "operator=",
       "(TestTemplateClass3<char> &&)", "snippet.cc", 25, 25,
-      /*is_incomplete=*/false, /*canonical_entity_id=*/std::nullopt,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
       /*implicitly_defined_for_entity_id=*/
       RequiredEntityId(
           index, Entity::Kind::kClass, "", "TestTemplateClass3", "<char>",
           "snippet.cc", 24, 26, /*is_incomplete=*/false,
-          /*canonical_entity_id=*/
+          /*template_prototype_entity_id=*/
           RequiredEntityId(index, Entity::Kind::kClass, "",
                            "TestTemplateClass3", "<T>", "snippet.cc", 24, 26)));
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction, "TestTemplateClass3<char>::", "operator=",
       "(const TestTemplateClass3<char> &)", "snippet.cc", 25, 25,
-      /*is_incomplete=*/false, /*canonical_entity_id=*/std::nullopt,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
       /*implicitly_defined_for_entity_id=*/
       RequiredEntityId(
           index, Entity::Kind::kClass, "", "TestTemplateClass3", "<char>",
           "snippet.cc", 24, 26, /*is_incomplete=*/false,
-          /*canonical_entity_id=*/
+          /*template_prototype_entity_id=*/
           RequiredEntityId(index, Entity::Kind::kClass, "",
                            "TestTemplateClass3", "<T>", "snippet.cc", 24, 26)));
   // Implicitly defined destructor in a class instantiated from a template.
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction,
       "TestTemplateClass3<char>::", "~TestTemplateClass3", "()", "snippet.cc",
-      25, 25, /*is_incomplete=*/false, /*canonical_entity_id=*/std::nullopt,
+      25, 25, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
       /*implicitly_defined_for_entity_id=*/
       RequiredEntityId(
           index, Entity::Kind::kClass, "", "TestTemplateClass3", "<char>",
           "snippet.cc", 24, 26, /*is_incomplete=*/false,
-          /*canonical_entity_id=*/
+          /*template_prototype_entity_id=*/
           RequiredEntityId(index, Entity::Kind::kClass, "",
                            "TestTemplateClass3", "<T>", "snippet.cc", 24, 26)));
 }
@@ -2997,47 +3035,47 @@ TEST(FrontendTest, ImplicitCode) {
                     "snippet.cc", 3, 3);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "Foo", "()",
                     "snippet.cc", 1, 1, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo", "",
                                      "snippet.cc", 1, 4));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "Foo",
                     "(const Foo &)", "snippet.cc", 1, 1,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     std::nullopt, /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo", "",
                                      "snippet.cc", 1, 4));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction,
                     "Foo::", "operator=", "(const Foo &)", "snippet.cc", 1, 1,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     std::nullopt, /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Foo", "",
                                      "snippet.cc", 1, 4));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "Bar", "()",
                     "snippet.cc", 5, 5, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Bar", "",
                                      "snippet.cc", 5, 5));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "~Bar", "()",
                     "snippet.cc", 5, 5, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Bar", "",
                                      "snippet.cc", 5, 5));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Foo::", "Foo", "()",
                        "snippet.cc", 1, 1, "snippet.cc", 5, 5,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/std::nullopt,
+                       /*template_prototype_entity_id=*/std::nullopt,
                        /*implicitly_defined_for_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Foo",
                                         "", "snippet.cc", 1, 4));
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Bar::", "Bar", "()",
                        "snippet.cc", 5, 5, "snippet.cc", 7, 7,
                        /*is_incomplete=*/false,
-                       /*canonical_entity_id=*/
+                       /*template_prototype_entity_id=*/
                        std::nullopt, /*implicitly_defined_for_entity_id=*/
                        RequiredEntityId(index, Entity::Kind::kClass, "", "Bar",
                                         "", "snippet.cc", 5, 5));
@@ -3045,34 +3083,34 @@ TEST(FrontendTest, ImplicitCode) {
                     "snippet.cc", 10, 13);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Baz::", "Baz", "(Baz &&)",
                     "snippet.cc", 9, 9, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Baz", "",
                                      "snippet.cc", 9, 15));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Baz::", "Baz",
                     "(const Baz &)", "snippet.cc", 9, 9,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     std::nullopt, /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Baz", "",
                                      "snippet.cc", 9, 15));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction,
                     "Baz::", "operator=", "(Baz &&)", "snippet.cc", 9, 9,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     std::nullopt, /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Baz", "",
                                      "snippet.cc", 9, 15));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction,
                     "Baz::", "operator=", "(const Baz &)", "snippet.cc", 9, 9,
                     /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/
+                    /*template_prototype_entity_id=*/
                     std::nullopt, /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Baz", "",
                                      "snippet.cc", 9, 15));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Baz::", "~Baz", "()",
                     "snippet.cc", 9, 9, /*is_incomplete=*/false,
-                    /*canonical_entity_id=*/std::nullopt,
+                    /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Baz", "",
                                      "snippet.cc", 9, 15));
@@ -3081,7 +3119,7 @@ TEST(FrontendTest, ImplicitCode) {
   EXPECT_FALSE(IndexHasEntity(
       index, Entity::Kind::kFunction, "(anonymous union)::", "~u", "()",
       "snippet.cc", 8, 8, /*is_incomplete=*/false,
-      /*canonical_entity_id=*/
+      /*template_prototype_entity_id=*/
       std::nullopt, /*implicitly_defined_for_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kClass, "", "(anonymous union)", "",
                        "snippet.cc", 8, 8)));
@@ -3150,25 +3188,83 @@ TEST(FrontendTest, ImplicitComparisonInstantiation) {
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction, "TestTemplateClass<int>::", "operator==",
       "(const TestTemplateClass<int> &) const", "snippet.cc", 13, 13,
-      /*is_incomplete=*/false, /*canonical_entity_id=*/
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(
           index, Entity::Kind::kFunction, "TestTemplateClass<T>::",
           "operator==", "(const TestTemplateClass<T> &) const", "snippet.cc",
-          13, 13, /*is_incomplete=*/false, /*canonical_entity_id=*/std::nullopt,
+          13, 13, /*is_incomplete=*/false,
+          /*template_prototype_entity_id=*/std::nullopt,
           /*implicitly_defined_for_entity_id=*/
           RequiredEntityId(index, Entity::Kind::kClass, "", "TestTemplateClass",
                            "<T>", "snippet.cc", 11, 14)));
   EXPECT_HAS_REFERENCE(
       index, Entity::Kind::kFunction, "TestTemplateClass<int>::", "operator==",
       "(const TestTemplateClass<int> &) const", "snippet.cc", 13, 13,
-      "snippet.cc", 15, 16, /*is_incomplete=*/false, /*canonical_entity_id=*/
+      "snippet.cc", 15, 16,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
       RequiredEntityId(
           index, Entity::Kind::kFunction, "TestTemplateClass<T>::",
           "operator==", "(const TestTemplateClass<T> &) const", "snippet.cc",
-          13, 13, /*is_incomplete=*/false, /*canonical_entity_id=*/std::nullopt,
+          13, 13, /*is_incomplete=*/false,
+          /*template_prototype_entity_id=*/std::nullopt,
           /*implicitly_defined_for_entity_id=*/
           RequiredEntityId(index, Entity::Kind::kClass, "", "TestTemplateClass",
                            "<T>", "snippet.cc", 11, 14)));
+}
+
+TEST(FrontendTest, VarAndTypeAliasTemplates) {
+  auto index = IndexSnippet(
+                   "template <typename T>\n"                        // 1
+                   "constexpr T kPi = T(3.1415926535897932385);\n"  // 2
+                   "\n"                                             // 3
+                   "template <typename Y>\n"                        // 4
+                   "using Blah = Y[15];\n"                          // 5
+                   "\n"                                             // 6
+                   "int main() {\n"                                 // 7
+                   "  (void)kPi<double>;\n"                         // 8
+                   "  (void)kPi<float>;\n"                          // 9
+                   "  Blah<int> foo = {kPi<int>, };\n"              // 10
+                   "}\n")                                           // 11
+                   ->Export();
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Blah", "<Y>", "snippet.cc",
+                    4, 5);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Blah", "<Y>",
+                       "snippet.cc", 4, 5, "snippet.cc", 10, 10);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Blah", "<int>",
+                    "snippet.cc", 4, 5, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kType, "", "Blah",
+                                     "<Y>", "snippet.cc", 4, 5));
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Blah", "<int>",
+                       "snippet.cc", 4, 5, "snippet.cc", 10, 10,
+                       /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/
+                       RequiredEntityId(index, Entity::Kind::kType, "", "Blah",
+                                        "<Y>", "snippet.cc", 4, 5));
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "T", "", "snippet.cc", 1,
+                    1);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "T", "", "snippet.cc", 1,
+                       1, "snippet.cc", 2, 2);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Y", "", "snippet.cc", 4,
+                    4);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "foo", "", "snippet.cc",
+                    10, 10);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "kPi", "<T>",
+                    "snippet.cc", 1, 2);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "kPi", "<double>",
+                    "snippet.cc", 1, 2);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kVariable, "", "kPi", "<double>",
+                       "snippet.cc", 1, 2, "snippet.cc", 8, 8);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "kPi", "<float>",
+                    "snippet.cc", 1, 2);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kVariable, "", "kPi", "<float>",
+                       "snippet.cc", 1, 2, "snippet.cc", 9, 9);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "kPi", "<int>",
+                    "snippet.cc", 1, 2);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kVariable, "", "kPi", "<int>",
+                       "snippet.cc", 1, 2, "snippet.cc", 10, 10);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "main", "()",
+                    "snippet.cc", 7, 11);
 }
 
 TEST(FrontendTest, CommandLineMacro) {
