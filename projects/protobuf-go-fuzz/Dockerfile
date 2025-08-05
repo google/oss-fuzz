@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/protocolbuffers/protobuf-go.git /src/protobuf-go
+RUN git clone --depth 1 -b oss-fuzz-harness https://github.com/kripto-geek/protobuf-go.git /src/protobuf-go
 WORKDIR protobuf-go-fuzz
 COPY build.sh $SRC/
