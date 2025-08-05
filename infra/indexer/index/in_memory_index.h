@@ -16,6 +16,7 @@
 #define OSS_FUZZ_INFRA_INDEXER_INDEX_IN_MEMORY_INDEX_H_
 
 #include <cstddef>
+#include <vector>
 
 #include "indexer/index/file_copier.h"
 #include "indexer/index/types.h"
@@ -53,7 +54,7 @@ class InMemoryIndex {
   ReferenceId GetReferenceId(const Reference& reference);
 
   // Build a sorted FlatIndex from the contents of this index.
-  FlatIndex Export(bool store_canonical_entities = true);
+  FlatIndex Export();
 
  private:
   FileCopier& file_copier_;
@@ -69,6 +70,8 @@ class InMemoryIndex {
 
   EntityId next_entity_id_ = 0;
   absl::flat_hash_map<Entity, EntityId> entities_;
+  // Unless a `kInvalidEntityId`, represents a template instantiation reference.
+  std::vector<EntityId> template_prototype_ids_;
 
   ReferenceId next_reference_id_ = 0;
   absl::flat_hash_map<Reference, ReferenceId> references_;
