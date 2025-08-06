@@ -43,17 +43,13 @@ inline bool IsRealPath(absl::string_view path) {
 }
 
 // Represents a source-file location.
-// Start and end columns can be set to zero to represent a line-only location.
 class Location {
  public:
-  Location(absl::string_view path, uint32_t start_line, uint32_t start_column,
-           uint32_t end_line, uint32_t end_column);
+  Location(absl::string_view path, uint32_t start_line, uint32_t end_line);
 
   inline const std::string& path() const { return path_; }
   inline uint32_t start_line() const { return start_line_; }
-  inline uint32_t start_column() const { return start_column_; }
   inline uint32_t end_line() const { return end_line_; }
-  inline uint32_t end_column() const { return end_column_; }
 
   inline bool is_real() const { return IsRealPath(path()); }
 
@@ -62,20 +58,16 @@ class Location {
 
   std::string path_;
   uint32_t start_line_;
-  uint32_t start_column_;
   uint32_t end_line_;
-  uint32_t end_column_;
 };
 
 bool operator==(const Location& lhs, const Location& rhs);
-// In the comparison, the path and line numbers come before columns.
 std::strong_ordering operator<=>(const Location& lhs, const Location& rhs);
 
 template <typename H>
 H AbslHashValue(H h, const Location& location) {
   return H::combine(std::move(h), location.path(), location.start_line(),
-                    location.start_column(), location.end_line(),
-                    location.end_column());
+                    location.end_line());
 }
 
 // Represents a source-level entity definition.

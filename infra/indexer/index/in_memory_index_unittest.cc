@@ -59,12 +59,11 @@ std::vector<Location> GetTestLocations() {
   std::vector<Location> locations = EnsureSorted<Location>({
       // This path is outside base path, and should remain unmodified in the
       // output.
-      Location((tmp_dir_path / "last/path.cc").string(), 0, 0, 1, 0),
-      Location((tmp_dir_path / "some/file/path.cc").string(), 0, 0, 1, 0),
-      Location((tmp_dir_path / "some/file/path.cc").string(), 0, 0, 99, 0),
-      Location((tmp_dir_path / "some/other/file/path.cc").string(), 0, 0, 1, 0),
-      Location((tmp_dir_path / "some/other/file/path.cc").string(), 0, 0, 99,
-               0),
+      Location((tmp_dir_path / "last/path.cc").string(), 0, 1),
+      Location((tmp_dir_path / "some/file/path.cc").string(), 0, 1),
+      Location((tmp_dir_path / "some/file/path.cc").string(), 0, 99),
+      Location((tmp_dir_path / "some/other/file/path.cc").string(), 0, 1),
+      Location((tmp_dir_path / "some/other/file/path.cc").string(), 0, 99),
   });
   PopulateLocationFiles(locations, tmp_dir_path);
   return locations;
@@ -99,9 +98,9 @@ std::vector<Location> GetSecondTestLocations() {
   std::vector<Location> locations = EnsureSorted<Location>({
       // This path is outside base path, and should remain unmodified in the
       // output.
-      Location((tmp_dir_path / "aaaa/last/path.cc").string(), 0, 2, 0, 4),
-      Location((tmp_dir_path / "aaaa/last/path.cc").string(), 1, 2, 1, 4),
-      Location((tmp_dir_path / "bbbb/last/path.cc").string(), 1, 2, 1, 4),
+      Location((tmp_dir_path / "aaaa/last/path.cc").string(), 0, 0),
+      Location((tmp_dir_path / "aaaa/last/path.cc").string(), 1, 1),
+      Location((tmp_dir_path / "bbbb/last/path.cc").string(), 1, 1),
   });
   PopulateLocationFiles(locations, tmp_dir_path);
   return locations;
@@ -359,9 +358,7 @@ TEST(InMemoryIndexTest, MergeWithCanonicalEntities) {
     ASSERT_EQ(flat_index.locations.size(), locations.size());
     ASSERT_EQ(flat_index.entities.size(), 7);
     for (size_t i = 0; i < flat_index.locations.size(); ++i) {
-      ASSERT_EQ(flat_index.locations[i],
-                Location(locations[i].path(), locations[i].start_line(), 0,
-                         locations[i].end_line(), 0));
+      ASSERT_EQ(flat_index.locations[i], locations[i]);
     }
 
     ASSERT_EQ(flat_index.entities[0], entities_two[0]);  // bar::Baz
