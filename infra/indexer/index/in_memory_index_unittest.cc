@@ -19,6 +19,7 @@
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "indexer/index/file_copier.h"
@@ -107,62 +108,55 @@ std::vector<Location> GetSecondTestLocations() {
   return locations;
 }
 
-std::vector<Entity> EnsureCanonicalReferenceOrdering(
+std::vector<Entity> EnsureSubstituteReferenceOrdering(
     std::vector<Entity> entities) {
   for (size_t index = 0; index < entities.size(); ++index) {
     const Entity& entity = entities[index];
-    if (entity.canonical_entity_id()) {
-      CHECK_LT(*entity.canonical_entity_id(), index);
+    if (entity.substitute_relationship()) {
+      CHECK_LT(entity.substitute_relationship()->substitute_entity_id(), index);
     }
   }
   return entities;
 }
 
 std::vector<Entity> GetSecondTestEntities() {
-  // This should return a sorted vector of Entities whose canonical ID
-  // references are lower than their indices in the vector.
-  return EnsureCanonicalReferenceOrdering(EnsureSorted<Entity>({
+  // This should return a sorted vector of Entities whose substitute entity
+  // reference IDs are lower than their indices in the vector.
+  return EnsureSubstituteReferenceOrdering(EnsureSorted<Entity>({
       Entity(Entity::Kind::kClass, "bar::", "Foo", "<T>", 0),
       Entity(Entity::Kind::kClass, "bar::", "Foo", "<int>", 0,
              /*is_incomplete=*/false, /*is_weak=*/false,
-             /*canonical_entity_id=*/0),
+             /*substitute_relationship=*/
+             SubstituteRelationship(
+                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 0)),
       Entity(Entity::Kind::kClass, "jar::", "Bar", "<T>", 0),
       Entity(Entity::Kind::kClass, "jar::", "Bar", "<char>", 0,
              /*is_incomplete=*/false, /*is_weak=*/false,
-             /*canonical_entity_id=*/2),
+             /*substitute_relationship=*/
+             SubstituteRelationship(
+                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 2)),
   }));
 }
 
 std::vector<Entity> GetThirdTestEntities() {
-  // This should return a sorted vector of Entities whose canonical ID
-  // references are lower than their indices in the vector.
-  return EnsureCanonicalReferenceOrdering(EnsureSorted<Entity>({
+  // This should return a sorted vector of Entities whose substitute entity
+  // reference IDs are lower than their indices in the vector.
+  return EnsureSubstituteReferenceOrdering(EnsureSorted<Entity>({
       Entity(Entity::Kind::kEnum, "bar::", "Baz", "", 1),
       Entity(Entity::Kind::kClass, "bar::", "Foo", "<T>", 0),
       Entity(Entity::Kind::kClass, "bar::", "Foo", "<int>", 0,
              /*is_incomplete=*/false, /*is_weak=*/false,
-             /*canonical_entity_id=*/1),
+             /*substitute_relationship=*/
+             SubstituteRelationship(
+                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 1)),
       Entity(Entity::Kind::kClass, "jar::", "Bad", "<T>", 0),
       Entity(Entity::Kind::kClass, "jar::", "Bad", "<char>", 0,
              /*is_incomplete=*/false, /*is_weak=*/false,
-             /*canonical_entity_id=*/3),
+             /*substitute_relationship=*/
+             SubstituteRelationship(
+                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 3)),
   }));
 }
-
-std::vector<Entity> GetFourthTestEntities() {
-  // This should return a (not necessarily sorted) vector of Entities whose
-  // canonical ID references are lower than their indices in the vector.
-  return EnsureCanonicalReferenceOrdering(EnsureSorted<Entity>({
-      Entity(Entity::Kind::kClass, "bar::", "Foo", "<T>", 0),
-      Entity(Entity::Kind::kClass, "bar::", "Foo", "<int>", 0,
-             /*is_incomplete=*/false, /*is_weak=*/false,
-             /*canonical_entity_id=*/0),
-      Entity(Entity::Kind::kClass, "jar::", "Bad", "<char>", 0,
-             /*is_incomplete=*/false, /*is_weak=*/false,
-             /*canonical_entity_id=*/1),
-  }));
-}
-
 }  // namespace
 
 TEST(InMemoryIndexTest, Locations) {
@@ -172,7 +166,7 @@ TEST(InMemoryIndexTest, Locations) {
   for (const auto& location : locations) {
     index.GetLocationId(location);
   }
-  FlatIndex flat_index = index.Export();
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.locations.size(), locations.size());
   for (size_t i = 0; i < flat_index.locations.size(); ++i) {
     ASSERT_EQ(flat_index.locations[i], locations[i]);
@@ -188,7 +182,7 @@ TEST(InMemoryIndexTest, LocationsBasePath) {
   for (const auto& location : locations) {
     index.GetLocationId(location);
   }
-  FlatIndex flat_index = index.Export();
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.locations.size(), locations.size());
   // The first location is outside the base path, and should be unmodified.
   ASSERT_EQ(flat_index.locations[0], locations[0]);
@@ -214,7 +208,7 @@ TEST(InMemoryIndexTest, Entities) {
   for (const auto& entity : entities) {
     index.GetEntityId(entity);
   }
-  FlatIndex flat_index = index.Export(/*store_canonical_entities=*/false);
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.entities.size(), entities.size() - 1);
   for (size_t i = 0; i < flat_index.entities.size(); ++i) {
     // There is an incomplete entity in the input, which should be linked out
@@ -224,7 +218,7 @@ TEST(InMemoryIndexTest, Entities) {
   }
 }
 
-TEST(InMemoryIndexTest, CanonicalEntities) {
+TEST(InMemoryIndexTest, SubstituteEntities) {
   FileCopier file_copier("", ::testing::TempDir(), {"/"});
   InMemoryIndex index(file_copier);
   auto locations = GetSecondTestLocations();
@@ -235,10 +229,20 @@ TEST(InMemoryIndexTest, CanonicalEntities) {
   for (const auto& entity : entities) {
     index.GetEntityId(entity);
   }
-  FlatIndex flat_index = index.Export(/*store_canonical_entities=*/true);
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.entities.size(), entities.size());
-  ASSERT_EQ(flat_index.entities[1].canonical_entity_id(), 0);
-  ASSERT_EQ(flat_index.entities[3].canonical_entity_id(), 2);
+  ASSERT_TRUE(flat_index.entities[1].substitute_relationship().has_value());
+  EXPECT_EQ(flat_index.entities[1].substitute_relationship()->kind(),
+            SubstituteRelationship::Kind::kIsTemplateInstantiationOf);
+  EXPECT_EQ(
+      flat_index.entities[1].substitute_relationship()->substitute_entity_id(),
+      0);
+  ASSERT_TRUE(flat_index.entities[3].substitute_relationship().has_value());
+  EXPECT_EQ(flat_index.entities[3].substitute_relationship()->kind(),
+            SubstituteRelationship::Kind::kIsTemplateInstantiationOf);
+  EXPECT_EQ(
+      flat_index.entities[3].substitute_relationship()->substitute_entity_id(),
+      2);
 }
 
 TEST(InMemoryIndexTest, References) {
@@ -256,7 +260,7 @@ TEST(InMemoryIndexTest, References) {
   for (const auto& reference : references) {
     index.GetReferenceId(reference);
   }
-  FlatIndex flat_index = index.Export();
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.references.size(), references.size());
   for (size_t i = 0; i < flat_index.references.size(); ++i) {
     ASSERT_EQ(flat_index.references[i], references[i]);
@@ -288,7 +292,7 @@ TEST(InMemoryIndexTest, Merge) {
     // First make sure that merging a single index to an empty index works.
     InMemoryIndex index(file_copier);
     index.Merge(index_one);
-    FlatIndex flat_index = index.Export(/*store_canonical_entities=*/false);
+    FlatIndex flat_index = std::move(index).Export();
     ASSERT_EQ(flat_index.locations.size(), locations.size());
     ASSERT_EQ(flat_index.entities.size(), 3);
     ASSERT_EQ(flat_index.references.size(), references.size());
@@ -300,7 +304,7 @@ TEST(InMemoryIndexTest, Merge) {
     InMemoryIndex index(file_copier);
     index.Merge(index_one);
     index.Merge(index_two);
-    FlatIndex flat_index = index.Export(/*store_canonical_entities=*/false);
+    FlatIndex flat_index = std::move(index).Export();
     ASSERT_EQ(flat_index.locations.size(), locations.size());
     ASSERT_EQ(flat_index.entities.size(), entities.size() - 1);
     ASSERT_EQ(flat_index.references.size(), references.size());
@@ -317,7 +321,7 @@ TEST(InMemoryIndexTest, Merge) {
   }
 }
 
-TEST(InMemoryIndexTest, MergeWithCanonicalEntities) {
+TEST(InMemoryIndexTest, MergeWithSubstituteEntities) {
   FileCopier file_copier("", ::testing::TempDir(), {"/"});
   InMemoryIndex index_one(file_copier);
   InMemoryIndex index_two(file_copier);
@@ -339,14 +343,26 @@ TEST(InMemoryIndexTest, MergeWithCanonicalEntities) {
     // First make sure that merging a single index to an empty index works.
     InMemoryIndex index(file_copier);
     index.Merge(index_one);
-    FlatIndex flat_index = index.Export(/*store_canonical_entities=*/true);
+    FlatIndex flat_index = std::move(index).Export();
     ASSERT_EQ(flat_index.locations.size(), locations.size());
     ASSERT_EQ(flat_index.entities.size(), entities_one.size());
 
-    ASSERT_EQ(flat_index.entities[0].canonical_entity_id(), std::nullopt);
-    ASSERT_EQ(flat_index.entities[1].canonical_entity_id(), 0);
-    ASSERT_EQ(flat_index.entities[2].canonical_entity_id(), std::nullopt);
-    ASSERT_EQ(flat_index.entities[3].canonical_entity_id(), 2);
+    EXPECT_EQ(flat_index.entities[0].substitute_relationship(), std::nullopt);
+    ASSERT_TRUE(flat_index.entities[1].substitute_relationship().has_value());
+    EXPECT_EQ(flat_index.entities[1].substitute_relationship()->kind(),
+              SubstituteRelationship::Kind::kIsTemplateInstantiationOf);
+    EXPECT_EQ(flat_index.entities[1]
+                  .substitute_relationship()
+                  ->substitute_entity_id(),
+              0);
+    EXPECT_EQ(flat_index.entities[2].substitute_relationship(), std::nullopt);
+    ASSERT_TRUE(flat_index.entities[3].substitute_relationship().has_value());
+    EXPECT_EQ(flat_index.entities[3].substitute_relationship()->kind(),
+              SubstituteRelationship::Kind::kIsTemplateInstantiationOf);
+    EXPECT_EQ(flat_index.entities[3]
+                  .substitute_relationship()
+                  ->substitute_entity_id(),
+              2);
   }
 
   {
@@ -355,7 +371,7 @@ TEST(InMemoryIndexTest, MergeWithCanonicalEntities) {
     InMemoryIndex index(file_copier);
     index.Merge(index_one);
     index.Merge(index_two);
-    FlatIndex flat_index = index.Export(/*store_canonical_entities=*/true);
+    FlatIndex flat_index = std::move(index).Export();
     ASSERT_EQ(flat_index.locations.size(), locations.size());
     ASSERT_EQ(flat_index.entities.size(), 7);
     for (size_t i = 0; i < flat_index.locations.size(); ++i) {
@@ -371,39 +387,14 @@ TEST(InMemoryIndexTest, MergeWithCanonicalEntities) {
     ASSERT_EQ(flat_index.entities[4], entities_two[4]);  // jar::Bad<char>
     ASSERT_EQ(flat_index.entities[5], entities_one[2]);  // jar::Bar<T>
     const auto& original = entities_one[3];              // jar::Bar<T>
-    ASSERT_EQ(flat_index.entities[6],
-              Entity(original.kind(), original.name_prefix(), original.name(),
-                     original.name_suffix(), original.location_id(),
-                     original.is_incomplete(), original.is_weak(),
-                     /*canonical_entity_id=*/5));
-  }
-}
-
-TEST(InMemoryIndexTest, MergeWithCanonicalEntityChain) {
-  FileCopier file_copier("", ::testing::TempDir(), {"/"});
-  InMemoryIndex index_one(file_copier);
-  auto locations = GetSecondTestLocations();
-  auto entities = GetFourthTestEntities();
-  for (const auto& location : locations) {
-    index_one.GetLocationId(location);
-  }
-  for (const auto& entity : entities) {
-    index_one.GetEntityId(entity);
-  }
-  {
-    testing::internal::CaptureStderr();
-    InMemoryIndex index(file_copier);
-    index.Merge(index_one);
-    EXPECT_TRUE(
-        absl::StrContains(testing::internal::GetCapturedStderr(),
-                          "Unexpected canonical entity reference chain for:"));
-  }
-  {
-    testing::internal::CaptureStderr();
-    index_one.Export();
-    EXPECT_TRUE(
-        absl::StrContains(testing::internal::GetCapturedStderr(),
-                          "Unexpected canonical entity reference chain for:"));
+    ASSERT_EQ(
+        flat_index.entities[6],
+        Entity(
+            original.kind(), original.name_prefix(), original.name(),
+            original.name_suffix(), original.location_id(),
+            original.is_incomplete(), original.is_weak(),
+            SubstituteRelationship(
+                SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 5)));
   }
 }
 }  // namespace indexer
