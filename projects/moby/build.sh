@@ -30,42 +30,29 @@ go build .
 mv go-118-fuzz-build /root/go/bin/
 
 cd $SRC/moby
+sed -i 's|github.com/docker/docker|github.com/moby/moby/v2|g' $SRC/*_fuzzer.go
 printf "package libnetwork\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > $SRC/moby/registerfuzzdependency.go
 
-mv $SRC/moby/vendor.mod $SRC/moby/go.mod
 go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
 
-cp $SRC/jsonmessage_fuzzer.go $SRC/moby/pkg/jsonmessage/
+cp $SRC/jsonmessage_fuzzer.go $SRC/moby/client/pkg/jsonmessage/
 cp $SRC/backend_build_fuzzer.go $SRC/moby/daemon/builder/backend/
 cp $SRC/remotecontext_fuzzer.go $SRC/moby/daemon/builder/remotecontext/
-cp $SRC/daemon_fuzzer.go $SRC/moby/daemon/
 
-rm $SRC/moby/daemon/logger/plugin_unsupported.go
+go get github.com/moby/moby/api@latest
+go get github.com/moby/moby/client@latest
 
-cd $SRC/moby
-go mod tidy && go mod vendor
+rm -f $SRC/moby/daemon/logger/plugin_unsupported.go
 
-mv $SRC/moby/daemon/volume/mounts/parser_test.go $SRC/moby/daemon/volume/mounts/parser_test_fuzz.go
-mv $SRC/moby/daemon/volume/mounts/validate_unix_test.go $SRC/moby/daemon/volume/mounts/validate_unix_test_fuzz.go
+rm -rf vendor
+go mod tidy
 
-
-if [ "$SANITIZER" != "coverage" ] ; then
-	go-fuzz -func FuzzDaemonSimple -o FuzzDaemonSimple.a github.com/docker/docker/daemon
-
-	$CXX $CXXFLAGS $LIB_FUZZING_ENGINE FuzzDaemonSimple.a \
-        /src/LVM2.2.03.15/libdm/ioctl/libdevmapper.a \
-        -o $OUT/FuzzDaemonSimple
-fi
-
-compile_native_go_fuzzer github.com/docker/docker/daemon/volume/mounts FuzzParseLinux FuzzParseLinux
-compile_go_fuzzer github.com/docker/docker/pkg/jsonmessage FuzzDisplayJSONMessagesStream FuzzDisplayJSONMessagesStream
-compile_go_fuzzer github.com/docker/docker/daemon/builder/backend FuzzsanitizeRepoAndTags FuzzsanitizeRepoAndTags
-compile_go_fuzzer github.com/docker/docker/daemon/builder/remotecontext FuzzreadAndParseDockerfile FuzzreadAndParseDockerfile
-compile_native_go_fuzzer github.com/docker/docker/pkg/tailfile FuzzTailfile FuzzTailfile
-compile_native_go_fuzzer github.com/docker/docker/daemon/logger/jsonfilelog FuzzLoggerDecode FuzzLoggerDecode
-compile_native_go_fuzzer github.com/docker/docker/daemon/libnetwork/etchosts FuzzAdd FuzzAdd
-compile_native_go_fuzzer github.com/docker/docker/oci FuzzAppendDevicePermissionsFromCgroupRules FuzzAppendDevicePermissionsFromCgroupRules
-compile_native_go_fuzzer github.com/docker/docker/daemon/logger/jsonfilelog/jsonlog FuzzJSONLogsMarshalJSONBuf FuzzJSONLogsMarshalJSONBuf
+compile_native_go_fuzzer github.com/moby/moby/v2/daemon/volume/mounts FuzzParseLinux FuzzParseLinux
+compile_native_go_fuzzer github.com/moby/moby/v2/pkg/tailfile FuzzTailfile FuzzTailfile
+compile_native_go_fuzzer github.com/moby/moby/v2/daemon/logger/jsonfilelog FuzzLoggerDecode FuzzLoggerDecode
+compile_native_go_fuzzer github.com/moby/moby/v2/daemon/libnetwork/etchosts FuzzAdd FuzzAdd
+compile_native_go_fuzzer github.com/moby/moby/v2/daemon/pkg/oci FuzzAppendDevicePermissionsFromCgroupRules FuzzAppendDevicePermissionsFromCgroupRules
+compile_native_go_fuzzer github.com/moby/moby/v2/daemon/logger/jsonfilelog/jsonlog FuzzJSONLogsMarshalJSONBuf FuzzJSONLogsMarshalJSONBuf
 
 cp $SRC/*.options $OUT/
 
