@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
   file_copier.CopyIndexedFiles();
 
   LOG(INFO) << "exporting index";
-  auto flat_index = index->Export();
+  auto flat_index = std::move(*index).Export();
 
   bool saved = SaveAsSqlite(flat_index, index_path);
   return saved ? 0 : 1;

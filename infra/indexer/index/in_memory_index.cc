@@ -320,7 +320,7 @@ ReferenceId InMemoryIndex::GetReferenceId(const Reference& reference) {
   return iter->second;
 }
 
-FlatIndex InMemoryIndex::Export(bool store_canonical_entities) {
+FlatIndex InMemoryIndex::Export(bool store_canonical_entities) && {
   FlatIndex result;
 
   // Order is important here, since until we've sorted Locations we don't have
