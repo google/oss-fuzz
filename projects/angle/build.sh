@@ -15,16 +15,21 @@
 #
 ################################################################################
 
+# Apply diff
+git apply $SRC/build.diff
+
+# Prepare fuzzer in gn directory
+mkdir src/fuzz
+cp $SRC/*.cc src/fuzz/
+
 # Retrieve and build dependencies
 ./build/install-build-deps.sh --no-prompt
 
 # Generate ninja file for build
-gn gen out/Debug
+gn gen out/fuzz --args="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false"
 
 # Build binary
-autoninja -C out/Debug
+autoninja -C out/fuzz fuzz_sha1
 
-# Compile and link fuzzer binary
-clang++ -std=c++17 -fuse-ld=lld -fsanitize=$SANITIZER,fuzzer -Iinclude -I. \
-    -Isrc/common/base  $SRC/fuzz_base.cpp -Wl,--whole-archive \
-    $(find ./out/Debug/obj -name "*.a" -maxdepth 1) -Wl,--no-whole-archive -o $OUT/fuzz_base
+# Copy binary to $OUT
+cp ./out/fuzz/fuzz_sha1 $OUT

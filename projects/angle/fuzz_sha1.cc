@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////////
+
 #include <cstddef>
 #include <cstdint>
 #include "anglebase/sha1.h"
