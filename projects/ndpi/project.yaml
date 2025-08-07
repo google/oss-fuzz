@@ -8,6 +8,11 @@ sanitizers:
   - address
   - undefined
   - memory
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+  - nallocfuzz
 main_repo: 'https://github.com/ntop/nDPI.git'
 
 #Coverage report doesn't analyze custom mutator code (see https://github.com/google/oss-fuzz/issues/12143)

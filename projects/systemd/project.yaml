@@ -10,6 +10,7 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
+  - nallocfuzz
 auto_ccs:
   - jonathan@titanous.com
   - zbyszek@in.waw.pl
