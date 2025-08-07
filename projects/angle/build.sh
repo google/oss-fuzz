@@ -15,8 +15,22 @@
 #
 ################################################################################
 
-# Apply diff
-git apply $SRC/build.diff
+# Fix sanitizer
+ORIGINAL_SANITIZER="${SANITIZER:-}"
+
+if [ "$SANITIZER" = "coverage" ] || [ "$SANITIZER" = "introspector" ] || [ "$SANITIZER" = "none" ]; then
+    export SANITIZER="address"
+fi
+
+# Configure arguments for gn build
+if [ "$SANITIZER" = "undefined" ]; then
+    ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_ubsan=true is_debug=false"
+else
+    ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_debug=false"
+fi
+
+# Add fuzzer profile
+cat $SRC/fuzzer_profile >> $SRC/angle/BUILD.gn
 
 # Prepare fuzzer in gn directory
 mkdir src/fuzz
@@ -26,10 +40,15 @@ cp $SRC/*.cc src/fuzz/
 ./build/install-build-deps.sh --no-prompt
 
 # Generate ninja file for build
-gn gen out/fuzz --args="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false"
-
+gn gen out/fuzz --args="$ARGS"
+echo $SANITIZER
 # Build binary
 autoninja -C out/fuzz fuzz_sha1
 
 # Copy binary to $OUT
 cp ./out/fuzz/fuzz_sha1 $OUT
+
+# Reset sanitizer
+if [ -n "$ORIGINAL_SANITIZER" ]; then
+    export SANITIZER="$ORIGINAL_SANITIZER"
+fi

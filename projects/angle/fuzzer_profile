@@ -1,0 +1,49 @@
+declare_args() {
+  complete_static_lib = true
+}
+
+if (angle_has_build) {
+  executable("fuzz_sha1") {
+    sources = [ "src/fuzz/fuzz_sha1.cc" ]
+    deps = [
+      ":angle",
+      ":angle_common",
+    ]
+
+    cflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-O1",
+      "-fno-omit-frame-pointer",
+      "-g",
+      "-fprofile-instr-generate",
+      "-fcoverage-mapping",
+    ]
+
+    ldflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-L/usr/lib/x86_64-linux-gnu",
+      "-L/usr/lib/gcc/x86_64-linux-gnu/9",
+    ]
+
+    if (getenv("FUZZING_ENGINE") == "centipede") {
+      cflags += [ "-fsanitize-coverage=trace-pc-guard,pc-table,inline-8bit-counters,trace-cmp,indirect-calls" ]
+      ldflags += [ getenv("LIB_FUZZING_ENGINE") ]
+    } else if (getenv("FUZZING_ENGINE") == "afl") {
+      cflags += [ "-fsanitize=fuzzer-no-link" ]
+      ldflags += [
+        "/out/afl-compiler-rt-64.o",
+        getenv("LIB_FUZZING_ENGINE"),
+      ]
+    } else if (getenv("FUZZING_ENGINE") == "libfuzzer") {
+      cflags += [ "-fsanitize=fuzzer-no-link" ]
+      ldflags += [ getenv("LIB_FUZZING_ENGINE_DEPRECATED") ]
+    } else {
+      cflags += [ "-fsanitize=fuzzer-no-link" ]
+      ldflags += [ getenv("LIB_FUZZING_ENGINE") ]
+    }
+
+    configs -= ["//build/config/compiler:thin_archive"]
+
+    libs = []
+  }
+}
