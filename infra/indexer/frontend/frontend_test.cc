@@ -186,32 +186,35 @@ void PrintOptionalEntityParameters(const FlatIndex& index,
   } else {
     preceding_defaults.push_back(", /*is_incomplete=*/false");
   }
-  if (entity.canonical_entity_id().has_value()) {
-    flush_preceding_defaults();
-    std::cerr << ", /*canonical_entity_id=*/RequiredEntityId(index, ";
-    const Entity& canonical_entity =
-        index.entities[*entity.canonical_entity_id()];
-    PrintAllEntityParameters(index, canonical_entity);
-    std::cerr << ")";
-  } else {
-    preceding_defaults.push_back(", /*canonical_entity_id=*/std::nullopt");
-  }
-  if (entity.implicitly_defined_for_entity_id().has_value()) {
-    for (const auto& preceding_default : preceding_defaults) {
-      std::cerr << preceding_default;
-    }
-    preceding_defaults.clear();
 
-    std::cerr
-        << ", /*implicitly_defined_for_entity_id=*/RequiredEntityId(index, ";
-    const Entity& implicitly_defined_for_entity =
-        index.entities[*entity.implicitly_defined_for_entity_id()];
-    PrintAllEntityParameters(index, implicitly_defined_for_entity);
+  std::optional<SubstituteRelationship::Kind> substitute_relationship_kind =
+      (entity.substitute_relationship()
+           ? std::make_optional(entity.substitute_relationship()->kind())
+           : std::nullopt);
+  auto handle_substitute_relationship = [&](SubstituteRelationship::Kind kind,
+                                            const char* parameter_name) {
+    if (substitute_relationship_kind != kind) {
+      preceding_defaults.push_back(", /*");
+      preceding_defaults.push_back(parameter_name);
+      preceding_defaults.push_back("=*/std::nullopt");
+      return;
+    }
+
+    flush_preceding_defaults();
+    std::cerr << ", /*" << parameter_name << "=*/RequiredEntityId(index, ";
+    const Entity& template_prototype_entity =
+        index
+            .entities[entity.substitute_relationship()->substitute_entity_id()];
+    PrintAllEntityParameters(index, template_prototype_entity);
     std::cerr << ")";
-  } else {
-    preceding_defaults.push_back(
-        ", /*implicitly_defined_for_entity_id=*/std::nullopt");
-  }
+  };
+  handle_substitute_relationship(
+      SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
+      "canonical_entity_id");
+  handle_substitute_relationship(
+      SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
+      "implicitly_defined_for_entity_id");
+
   if (entity.enum_value().has_value()) {
     flush_preceding_defaults();
     std::cerr << ", /*enum_value=*/\"" << *entity.enum_value() << "\"";
@@ -255,6 +258,38 @@ void PrintAllEntityParameters(const FlatIndex& index, const Entity& entity) {
   }
 }
 
+void PrintEntity(std::ostream& stream, const FlatIndex& index,
+                 const Entity& entity, int padding = 0) {
+  const std::string indent(padding, ' ');
+  const auto& location = index.locations[entity.location_id()];
+  stream << indent << KindToString(entity.kind()) << " `"
+         << entity.name_prefix() << entity.name() << entity.name_suffix()
+         << "`\n"
+         << indent
+         << (entity.is_incomplete() ? "  Declared at \"" : "  Defined at \"")
+         << location.path() << "\" lines " << location.start_line() << "-"
+         << location.end_line() << "\n";
+  if (entity.substitute_relationship().has_value()) {
+    const SubstituteRelationship& relationship =
+        *entity.substitute_relationship();
+    switch (relationship.kind()) {
+      // No default. Exhaustiveness checks will force us to handle new cases.
+      case SubstituteRelationship::Kind::kIsTemplateInstantiationOf: {
+        stream << indent << "  Template instantiation of:\n";
+      }; break;
+      case SubstituteRelationship::Kind::kIsImplicitlyDefinedFor: {
+        stream << indent << "  Implicitly defined for:\n";
+      }; break;
+    }
+    const auto& substitute_entity =
+        index.entities[relationship.substitute_entity_id()];
+    PrintEntity(stream, index, substitute_entity, /*padding=*/padding + 4);
+  }
+  if (entity.enum_value().has_value()) {
+    stream << "  Enum value: " << *entity.enum_value() << "\n";
+  }
+}
+
 std::string DebugPrintIndex(const FlatIndex& index) {
   std::stringstream stream;
   for (EntityId entity_id = 0; entity_id < index.entities.size(); ++entity_id) {
@@ -265,34 +300,8 @@ std::string DebugPrintIndex(const FlatIndex& index) {
       continue;
     }
 
-    auto print_entity = [&stream, &index](const Entity& entity,
-                                          const char* indent = "") {
-      const auto& location = index.locations[entity.location_id()];
-      stream << indent << KindToString(entity.kind()) << " `"
-             << entity.name_prefix() << entity.name() << entity.name_suffix()
-             << "`\n"
-             << indent
-             << (entity.is_incomplete() ? " Declared at \"" : "  Defined at \"")
-             << location.path() << "\" lines " << location.start_line() << "-"
-             << location.end_line() << "\n";
-    };
+    PrintEntity(stream, index, entity);
 
-    print_entity(entity);
-    if (entity.canonical_entity_id().has_value()) {
-      const auto& canonical_entity =
-          index.entities[*entity.canonical_entity_id()];
-      stream << "  Canonical:\n";
-      print_entity(canonical_entity, /*indent=*/"    ");
-    }
-    if (entity.implicitly_defined_for_entity_id().has_value()) {
-      const auto& implicitly_defined_for_entity =
-          index.entities[*entity.implicitly_defined_for_entity_id()];
-      stream << "  Implicitly defined for:\n";
-      print_entity(implicitly_defined_for_entity, /*indent=*/"    ");
-    }
-    if (entity.enum_value().has_value()) {
-      stream << "  Enum value: " << *entity.enum_value() << "\n";
-    }
     for (const auto& reference : index.references) {
       if (reference.entity_id() == entity_id) {
         const auto& ref_location = index.locations[reference.location_id()];
@@ -303,6 +312,31 @@ std::string DebugPrintIndex(const FlatIndex& index) {
     }
   }
   return stream.str();
+}
+
+void DumpIndex(const FlatIndex& index) { std::cerr << DebugPrintIndex(index); }
+
+[[maybe_unused]] void DumpAll(const FlatIndex& index) {
+  DumpIndex(index);
+  PrintValidExpectations(index);
+}
+
+std::optional<SubstituteRelationship> GetSubstituteRelationship(
+    std::optional<EntityId> template_prototype_entity_id,
+    std::optional<EntityId> implicitly_defined_for_entity_id) {
+  CHECK(!template_prototype_entity_id || !implicitly_defined_for_entity_id)
+      << "Multiple simultaneous substitutions are not allowed";
+  if (template_prototype_entity_id) {
+    return SubstituteRelationship(
+        SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
+        *template_prototype_entity_id);
+  }
+  if (implicitly_defined_for_entity_id) {
+    return SubstituteRelationship(
+        SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
+        *implicitly_defined_for_entity_id);
+  }
+  return std::nullopt;
 }
 
 std::optional<Entity> FindEntity(
@@ -327,8 +361,8 @@ std::optional<Entity> FindEntity(
                 location_id,
                 is_incomplete,
                 /*is_weak=*/false,
-                canonical_entity_id,
-                implicitly_defined_for_entity_id,
+                GetSubstituteRelationship(canonical_entity_id,
+                                          implicitly_defined_for_entity_id),
                 enum_value};
       break;
     }
@@ -386,8 +420,8 @@ bool IndexHasReference(
                 location_id,
                 is_incomplete,
                 /*is_weak=*/false,
-                canonical_entity_id,
-                implicitly_defined_for_entity_id,
+                GetSubstituteRelationship(canonical_entity_id,
+                                          implicitly_defined_for_entity_id),
                 enum_value};
     }
 
