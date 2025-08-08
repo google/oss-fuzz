@@ -52,8 +52,11 @@ class InMemoryIndex {
   EntityId GetEntityId(const Entity& entity);
   ReferenceId GetReferenceId(const Reference& reference);
 
-  // Build a sorted FlatIndex from the contents of this index.
-  FlatIndex Export(bool store_canonical_entities = true);
+  // Build a sorted FlatIndex from the contents of this index. This invalidates
+  // the contents of this InMemoryIndex, which should no longer be used.
+  // Usage:
+  //   FlatIndex& flat_index = std::move(index).Export();
+  FlatIndex Export(bool store_canonical_entities = true) &&;
 
  private:
   FileCopier& file_copier_;
