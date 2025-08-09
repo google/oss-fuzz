@@ -1,0 +1,12 @@
+homepage: "https://gitlab.com/iniparser/iniparser"
+language: c
+primary_contact: "iniparser@gmail.com"
+main_repo: "https://github.com/ndevilla/iniparser.git"
+file_github_issue: true
+auto_ccs:
+  - "iniparser@moellendorf.eu"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
