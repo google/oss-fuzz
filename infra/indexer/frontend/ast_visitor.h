@@ -79,6 +79,8 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
                                      bool outermost_type = true);
   void AddReferencesForDecl(const clang::Decl *decl);
   void AddReferencesForExpr(const clang::Expr *expr);
+  void AddDeclReferenceForSourceRange(const clang::SourceRange &range,
+                                      const clang::Decl *decl);
   void AddTypeReferencesForSourceRange(const clang::SourceRange &range,
                                        const clang::Type *type);
 

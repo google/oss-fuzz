@@ -16,5 +16,4 @@
 ###############################################################################
 
 cd regression_testing
-bundle2.7 install
 ASAN_OPTIONS=detect_leaks=0 ./test.rb test

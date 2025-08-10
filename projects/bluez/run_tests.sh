@@ -16,8 +16,8 @@
 ###############################################################################
 
 # Remove tests that are not building with the fuzzing set up
-rm unit/test-mesh-crypto.c
-rm unit/test-midi.c
+mv unit/test-mesh-crypto.c /tmp/
+mv unit/test-midi.c /tmp/
 for unit_test in $(ls unit/test-*.c); do
   unit_name=$(basename ${unit_test})
   unit_name="${unit_name%.*}"
@@ -26,3 +26,6 @@ for unit_test in $(ls unit/test-*.c); do
   make unit/${unit_name}
   ./unit/${unit_name}
 done
+
+mv /tmp/test-mesh-crypto.c unit/test-mesh-crypto.c
+mv /tmp/test-midi.c unit/test-midi.c

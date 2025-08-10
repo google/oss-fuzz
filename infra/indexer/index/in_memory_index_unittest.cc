@@ -19,6 +19,7 @@
 #include <filesystem>  // NOLINT
 #include <fstream>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "indexer/index/file_copier.h"
@@ -59,12 +60,11 @@ std::vector<Location> GetTestLocations() {
   std::vector<Location> locations = EnsureSorted<Location>({
       // This path is outside base path, and should remain unmodified in the
       // output.
-      Location((tmp_dir_path / "last/path.cc").string(), 0, 0, 1, 0),
-      Location((tmp_dir_path / "some/file/path.cc").string(), 0, 0, 1, 0),
-      Location((tmp_dir_path / "some/file/path.cc").string(), 0, 0, 99, 0),
-      Location((tmp_dir_path / "some/other/file/path.cc").string(), 0, 0, 1, 0),
-      Location((tmp_dir_path / "some/other/file/path.cc").string(), 0, 0, 99,
-               0),
+      Location((tmp_dir_path / "last/path.cc").string(), 0, 1),
+      Location((tmp_dir_path / "some/file/path.cc").string(), 0, 1),
+      Location((tmp_dir_path / "some/file/path.cc").string(), 0, 99),
+      Location((tmp_dir_path / "some/other/file/path.cc").string(), 0, 1),
+      Location((tmp_dir_path / "some/other/file/path.cc").string(), 0, 99),
   });
   PopulateLocationFiles(locations, tmp_dir_path);
   return locations;
@@ -99,9 +99,9 @@ std::vector<Location> GetSecondTestLocations() {
   std::vector<Location> locations = EnsureSorted<Location>({
       // This path is outside base path, and should remain unmodified in the
       // output.
-      Location((tmp_dir_path / "aaaa/last/path.cc").string(), 0, 2, 0, 4),
-      Location((tmp_dir_path / "aaaa/last/path.cc").string(), 1, 2, 1, 4),
-      Location((tmp_dir_path / "bbbb/last/path.cc").string(), 1, 2, 1, 4),
+      Location((tmp_dir_path / "aaaa/last/path.cc").string(), 0, 0),
+      Location((tmp_dir_path / "aaaa/last/path.cc").string(), 1, 1),
+      Location((tmp_dir_path / "bbbb/last/path.cc").string(), 1, 1),
   });
   PopulateLocationFiles(locations, tmp_dir_path);
   return locations;
@@ -172,7 +172,7 @@ TEST(InMemoryIndexTest, Locations) {
   for (const auto& location : locations) {
     index.GetLocationId(location);
   }
-  FlatIndex flat_index = index.Export();
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.locations.size(), locations.size());
   for (size_t i = 0; i < flat_index.locations.size(); ++i) {
     ASSERT_EQ(flat_index.locations[i], locations[i]);
@@ -188,7 +188,7 @@ TEST(InMemoryIndexTest, LocationsBasePath) {
   for (const auto& location : locations) {
     index.GetLocationId(location);
   }
-  FlatIndex flat_index = index.Export();
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.locations.size(), locations.size());
   // The first location is outside the base path, and should be unmodified.
   ASSERT_EQ(flat_index.locations[0], locations[0]);
@@ -214,7 +214,7 @@ TEST(InMemoryIndexTest, Entities) {
   for (const auto& entity : entities) {
     index.GetEntityId(entity);
   }
-  FlatIndex flat_index = index.Export(/*store_canonical_entities=*/false);
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.entities.size(), entities.size() - 1);
   for (size_t i = 0; i < flat_index.entities.size(); ++i) {
     // There is an incomplete entity in the input, which should be linked out
@@ -235,7 +235,7 @@ TEST(InMemoryIndexTest, CanonicalEntities) {
   for (const auto& entity : entities) {
     index.GetEntityId(entity);
   }
-  FlatIndex flat_index = index.Export(/*store_canonical_entities=*/true);
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.entities.size(), entities.size());
   ASSERT_EQ(flat_index.entities[1].canonical_entity_id(), 0);
   ASSERT_EQ(flat_index.entities[3].canonical_entity_id(), 2);
@@ -256,7 +256,7 @@ TEST(InMemoryIndexTest, References) {
   for (const auto& reference : references) {
     index.GetReferenceId(reference);
   }
-  FlatIndex flat_index = index.Export();
+  FlatIndex flat_index = std::move(index).Export();
   ASSERT_EQ(flat_index.references.size(), references.size());
   for (size_t i = 0; i < flat_index.references.size(); ++i) {
     ASSERT_EQ(flat_index.references[i], references[i]);
@@ -288,7 +288,7 @@ TEST(InMemoryIndexTest, Merge) {
     // First make sure that merging a single index to an empty index works.
     InMemoryIndex index(file_copier);
     index.Merge(index_one);
-    FlatIndex flat_index = index.Export(/*store_canonical_entities=*/false);
+    FlatIndex flat_index = std::move(index).Export();
     ASSERT_EQ(flat_index.locations.size(), locations.size());
     ASSERT_EQ(flat_index.entities.size(), 3);
     ASSERT_EQ(flat_index.references.size(), references.size());
@@ -300,7 +300,7 @@ TEST(InMemoryIndexTest, Merge) {
     InMemoryIndex index(file_copier);
     index.Merge(index_one);
     index.Merge(index_two);
-    FlatIndex flat_index = index.Export(/*store_canonical_entities=*/false);
+    FlatIndex flat_index = std::move(index).Export();
     ASSERT_EQ(flat_index.locations.size(), locations.size());
     ASSERT_EQ(flat_index.entities.size(), entities.size() - 1);
     ASSERT_EQ(flat_index.references.size(), references.size());
@@ -339,7 +339,7 @@ TEST(InMemoryIndexTest, MergeWithCanonicalEntities) {
     // First make sure that merging a single index to an empty index works.
     InMemoryIndex index(file_copier);
     index.Merge(index_one);
-    FlatIndex flat_index = index.Export(/*store_canonical_entities=*/true);
+    FlatIndex flat_index = std::move(index).Export();
     ASSERT_EQ(flat_index.locations.size(), locations.size());
     ASSERT_EQ(flat_index.entities.size(), entities_one.size());
 
@@ -355,13 +355,11 @@ TEST(InMemoryIndexTest, MergeWithCanonicalEntities) {
     InMemoryIndex index(file_copier);
     index.Merge(index_one);
     index.Merge(index_two);
-    FlatIndex flat_index = index.Export(/*store_canonical_entities=*/true);
+    FlatIndex flat_index = std::move(index).Export();
     ASSERT_EQ(flat_index.locations.size(), locations.size());
     ASSERT_EQ(flat_index.entities.size(), 7);
     for (size_t i = 0; i < flat_index.locations.size(); ++i) {
-      ASSERT_EQ(flat_index.locations[i],
-                Location(locations[i].path(), locations[i].start_line(), 0,
-                         locations[i].end_line(), 0));
+      ASSERT_EQ(flat_index.locations[i], locations[i]);
     }
 
     ASSERT_EQ(flat_index.entities[0], entities_two[0]);  // bar::Baz
@@ -400,7 +398,7 @@ TEST(InMemoryIndexTest, MergeWithCanonicalEntityChain) {
   }
   {
     testing::internal::CaptureStderr();
-    index_one.Export();
+    std::move(index_one).Export();
     EXPECT_TRUE(
         absl::StrContains(testing::internal::GetCapturedStderr(),
                           "Unexpected canonical entity reference chain for:"));

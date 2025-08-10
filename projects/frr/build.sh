@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+python3 -m venv $SRC/venv
+source $SRC/venv/bin/activate
+pip3 install pytest
 
 function copy_lib
     {

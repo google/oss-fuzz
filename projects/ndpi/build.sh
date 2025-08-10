@@ -15,10 +15,6 @@
 #
 ################################################################################
 
-pushd $SRC/ndpi
-  git apply $SRC/run_tests.diff
-popd
-
 pushd $SRC/json-c-json-c-0.17-20230812
   mkdir build
   cd build

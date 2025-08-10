@@ -320,7 +320,7 @@ ReferenceId InMemoryIndex::GetReferenceId(const Reference& reference) {
   return iter->second;
 }
 
-FlatIndex InMemoryIndex::Export(bool store_canonical_entities) {
+FlatIndex InMemoryIndex::Export(bool store_canonical_entities) && {
   FlatIndex result;
 
   // Order is important here, since until we've sorted Locations we don't have
@@ -342,29 +342,13 @@ FlatIndex InMemoryIndex::Export(bool store_canonical_entities) {
 
     // Now iterate through the sorted locations, building a lookup from the old
     // to the new sorted ids, and building the results vector.
-    //
-    // Compress the locations by removing the column information.
-    // The comparison defined on `Location` makes sure locations with the same
-    // line ranges end up together so that we can deduplicate them on the fly.
     result.locations.reserve(sorted_locations.size());
     LocationId new_id = 0;
-    const Location* previous_location = nullptr;
-    LocationId last_id = kInvalidLocationId;
     for (auto& [location, old_id] : sorted_locations) {
-      if (previous_location == nullptr ||
-          previous_location->path() != location.path() ||
-          previous_location->start_line() != location.start_line() ||
-          previous_location->end_line() != location.end_line()) {
-        result.locations.emplace_back(/*path=*/std::move(location.path_),
-                                      /*start_line=*/location.start_line(),
-                                      /*start_column=*/0,
-                                      /*end_line=*/location.end_line(),
-                                      /*end_column=*/0);
-        last_id = new_id++;
-      }
-      CHECK_NE(last_id, kInvalidLocationId);
-      new_location_ids[old_id] = last_id;
-      previous_location = &location;
+      result.locations.emplace_back(/*path=*/std::move(location.path_),
+                                    /*start_line=*/location.start_line(),
+                                    /*end_line=*/location.end_line());
+      new_location_ids[old_id] = new_id++;
     }
   }
 

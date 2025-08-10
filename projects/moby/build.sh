@@ -36,8 +36,8 @@ mv $SRC/moby/vendor.mod $SRC/moby/go.mod
 go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
 
 cp $SRC/jsonmessage_fuzzer.go $SRC/moby/pkg/jsonmessage/
-cp $SRC/backend_build_fuzzer.go $SRC/moby/daemon/build/
-cp $SRC/remotecontext_fuzzer.go $SRC/moby/builder/remotecontext/
+cp $SRC/backend_build_fuzzer.go $SRC/moby/daemon/builder/backend/
+cp $SRC/remotecontext_fuzzer.go $SRC/moby/daemon/builder/remotecontext/
 cp $SRC/daemon_fuzzer.go $SRC/moby/daemon/
 
 rm $SRC/moby/daemon/logger/plugin_unsupported.go
@@ -45,8 +45,8 @@ rm $SRC/moby/daemon/logger/plugin_unsupported.go
 cd $SRC/moby
 go mod tidy && go mod vendor
 
-mv $SRC/moby/volume/mounts/parser_test.go $SRC/moby/volume/mounts/parser_test_fuzz.go
-mv $SRC/moby/volume/mounts/validate_unix_test.go $SRC/moby/volume/mounts/validate_unix_test_fuzz.go
+mv $SRC/moby/daemon/volume/mounts/parser_test.go $SRC/moby/daemon/volume/mounts/parser_test_fuzz.go
+mv $SRC/moby/daemon/volume/mounts/validate_unix_test.go $SRC/moby/daemon/volume/mounts/validate_unix_test_fuzz.go
 
 
 if [ "$SANITIZER" != "coverage" ] ; then
@@ -57,13 +57,13 @@ if [ "$SANITIZER" != "coverage" ] ; then
         -o $OUT/FuzzDaemonSimple
 fi
 
-compile_native_go_fuzzer github.com/docker/docker/volume/mounts FuzzParseLinux FuzzParseLinux
+compile_native_go_fuzzer github.com/docker/docker/daemon/volume/mounts FuzzParseLinux FuzzParseLinux
 compile_go_fuzzer github.com/docker/docker/pkg/jsonmessage FuzzDisplayJSONMessagesStream FuzzDisplayJSONMessagesStream
-compile_go_fuzzer github.com/docker/docker/daemon/build FuzzsanitizeRepoAndTags FuzzsanitizeRepoAndTags
-compile_go_fuzzer github.com/docker/docker/builder/remotecontext FuzzreadAndParseDockerfile FuzzreadAndParseDockerfile
+compile_go_fuzzer github.com/docker/docker/daemon/builder/backend FuzzsanitizeRepoAndTags FuzzsanitizeRepoAndTags
+compile_go_fuzzer github.com/docker/docker/daemon/builder/remotecontext FuzzreadAndParseDockerfile FuzzreadAndParseDockerfile
 compile_native_go_fuzzer github.com/docker/docker/pkg/tailfile FuzzTailfile FuzzTailfile
 compile_native_go_fuzzer github.com/docker/docker/daemon/logger/jsonfilelog FuzzLoggerDecode FuzzLoggerDecode
-compile_native_go_fuzzer github.com/docker/docker/libnetwork/etchosts FuzzAdd FuzzAdd
+compile_native_go_fuzzer github.com/docker/docker/daemon/libnetwork/etchosts FuzzAdd FuzzAdd
 compile_native_go_fuzzer github.com/docker/docker/oci FuzzAppendDevicePermissionsFromCgroupRules FuzzAppendDevicePermissionsFromCgroupRules
 compile_native_go_fuzzer github.com/docker/docker/daemon/logger/jsonfilelog/jsonlog FuzzJSONLogsMarshalJSONBuf FuzzJSONLogsMarshalJSONBuf
 

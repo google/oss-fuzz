@@ -53,31 +53,22 @@ bool IsDecimalInteger(const char* str) {
 }  // namespace
 
 Location::Location(absl::string_view path, uint32_t start_line,
-                   uint32_t start_column, uint32_t end_line,
-                   uint32_t end_column)
-    : path_(path),
-      start_line_(start_line),
-      start_column_(start_column),
-      end_line_(end_line),
-      end_column_(end_column) {
+                   uint32_t end_line)
+    : path_(path), start_line_(start_line), end_line_(end_line) {
   CHECK_LE(start_line, end_line);
 }
 
 // This is implicitly used for != in C++20.
 bool operator==(const Location& lhs, const Location& rhs) {
   return lhs.path() == rhs.path() && lhs.start_line() == rhs.start_line() &&
-         lhs.start_column() == rhs.start_column() &&
-         lhs.end_line() == rhs.end_line() &&
-         lhs.end_column() == rhs.end_column();
+         lhs.end_line() == rhs.end_line();
 }
 
 // Locations are ordered by file, then start line, then end line.
 // This is implicitly used for relational comparisons in C++20 (<, <=, >, >=).
 std::strong_ordering operator<=>(const Location& lhs, const Location& rhs) {
-  return std::forward_as_tuple(lhs.path(), lhs.start_line(), lhs.end_line(),
-                               lhs.start_column(), lhs.end_column()) <=>
-         std::forward_as_tuple(rhs.path(), rhs.start_line(), rhs.end_line(),
-                               rhs.start_column(), lhs.end_column());
+  return std::forward_as_tuple(lhs.path(), lhs.start_line(), lhs.end_line()) <=>
+         std::forward_as_tuple(rhs.path(), rhs.start_line(), rhs.end_line());
 }
 
 Entity::Entity(Kind kind, absl::string_view name_prefix, absl::string_view name,

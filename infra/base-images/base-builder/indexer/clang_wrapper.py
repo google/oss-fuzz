@@ -25,12 +25,15 @@ import hashlib
 import json
 import os
 from pathlib import Path  # pylint: disable=g-importing-member
+import shlex
+import shutil
 import subprocess
 import sys
 import time
 from typing import Any, Iterable, Set
 
 import dwarf_info
+import index_build
 
 _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
 _INDEXER_PATH = "/opt/indexer/indexer"
@@ -49,7 +52,6 @@ _DISALLOWED_CLANG_FLAGS = (
     "-ffile-prefix-map=",
 )
 
-PROJECT = Path(os.environ["PROJECT_NAME"])
 SRC = Path(os.getenv("SRC", "/src"))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv("OUT", "/out"))
@@ -280,10 +282,6 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
 
 def run_indexer(build_id: str, linker_commands: dict[str, Any]):
   """Run the indexer."""
-  index_dir = INDEXES_PATH / build_id
-  # TODO: check if this is correct.
-  index_dir.mkdir(exist_ok=True)
-
   # Use a build-specific compile commands directory, since there could be
   # parallel linking happening at the same time.
   compile_commands_dir = INDEXES_PATH / f"compile_commands_{build_id}"
@@ -299,6 +297,15 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
         file=sys.stderr,
     )
     return
+
+  index_dir = INDEXES_PATH / build_id
+  if index_dir.exists():
+    # A previous indexer already ran for the same build ID.  Clear the directory
+    # so we can re-run the indexer, otherwise we might run into various issues
+    # (e.g. the indexer doesn't like it when source files already exist).
+    shutil.rmtree(index_dir)
+
+  index_dir.mkdir()
 
   with (compile_commands_dir / "compile_commands.json").open("wt") as f:
     json.dump(linker_commands["compile_commands"], f, indent=2)
@@ -429,8 +436,52 @@ def _write_filter_log(
       f.write(f"\t{cu_path}\n")
 
 
+def expand_rsp_file(argv: Sequence[str]) -> list[str]:
+  # https://llvm.org/docs/CommandLine.html#response-files
+  expanded = []
+  for arg in argv:
+    if arg.startswith("@"):
+      with open(arg[1:], "r") as f:
+        expanded_args = shlex.split(f.read())
+      expanded.extend(expanded_args)
+    else:
+      expanded.append(arg)
+
+  return expanded
+
+
+def force_optimization_flag(argv: Sequence[str]) -> list[str]:
+  """Forces -O0 in the given argument list."""
+  args = []
+  for arg in argv:
+    if arg.startswith("-O") and arg != "-O0":
+      arg = "-O0"
+
+    args.append(arg)
+
+  return args
+
+
+def remove_invalid_coverage_flags(argv: Sequence[str]) -> list[str]:
+  """Removes invalid coverage flags from the given argument list."""
+  args = []
+  for arg in argv:
+    if (
+        arg.startswith("-fsanitize-coverage=")
+        and index_build.EXPECTED_COVERAGE_FLAGS != arg
+    ):
+      continue
+
+    args.append(arg)
+
+  return args
+
+
 def main(argv: list[str]) -> None:
+  argv = expand_rsp_file(argv)
   argv = remove_flag_if_present(argv, "-gline-tables-only")
+  argv = force_optimization_flag(argv)
+  argv = remove_invalid_coverage_flags(argv)
 
   if _has_disallowed_clang_flags(argv):
     raise ValueError("Disallowed clang flags found, aborting.")

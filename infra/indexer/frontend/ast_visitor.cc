@@ -679,16 +679,15 @@ bool AstVisitor::VisitNonTypeTemplateParmDecl(
 }
 
 bool AstVisitor::VisitRecordDecl(clang::RecordDecl* decl) {
-  if (decl->isInjectedClassName()) {
-    // struct C {
-    //   // C is implicitly declared here as a synonym for the class name.
-    // };
-    // C::C c; // same as "C c;"
-    // Only index `C` in this case, and don't index `C::C`.
-    return true;
-  }
-
   if (auto* record_decl = llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
+    if (record_decl->isInjectedClassName()) {
+      // struct C {
+      //   // C is implicitly declared here as a synonym for the class name.
+      // };
+      // C::C c; // same as "C c;"
+      // Only index `C` in this case, and don't index `C::C`.
+      return true;
+    }
     // We opt to declare all the implicit members with a preference to report
     // e.g. an "implicitly defined" destructor over reporting it missing.
     compiler_.getSema().ForceDeclarationOfImplicitMembers(record_decl);
@@ -1161,6 +1160,12 @@ void AstVisitor::AddReferencesForDecl(const clang::Decl* decl) {
     const auto* typedef_decl = llvm::cast<clang::TypedefNameDecl>(decl);
     type_ptr = typedef_decl->getUnderlyingType().getTypePtrOrNull();
   } else if (llvm::isa<clang::FunctionDecl>(decl)) {
+    if (const auto* method_decl = llvm::dyn_cast<clang::CXXMethodDecl>(decl)) {
+      for (const clang::CXXMethodDecl* overridden_method :
+           method_decl->overridden_methods()) {
+        AddDeclReferenceForSourceRange(range, overridden_method);
+      }
+    }
     const auto* function_decl = llvm::cast<clang::FunctionDecl>(decl);
     type_ptr = function_decl->getReturnType().getTypePtrOrNull();
     // We truncate function return type type references to reference only the
@@ -1236,13 +1241,18 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
   }
 
   if (decl) {
-    auto entity_id = GetEntityIdForDecl(
-        decl, /*location_id=*/kInvalidLocationId, /*for_reference=*/true);
-    auto location_id = GetLocationId(expr->getBeginLoc(), expr->getEndLoc());
+    AddDeclReferenceForSourceRange(expr->getSourceRange(), decl);
+  }
+}
 
-    if (entity_id != kInvalidEntityId && location_id != kInvalidLocationId) {
-      (void)index_.GetReferenceId({entity_id, location_id});
-    }
+void AstVisitor::AddDeclReferenceForSourceRange(const clang::SourceRange& range,
+                                                const clang::Decl* decl) {
+  auto entity_id = GetEntityIdForDecl(decl, /*location_id=*/kInvalidLocationId,
+                                      /*for_reference=*/true);
+  auto location_id = GetLocationId(range.getBegin(), range.getEnd());
+
+  if (entity_id != kInvalidEntityId && location_id != kInvalidLocationId) {
+    (void)index_.GetReferenceId({entity_id, location_id});
   }
 }
 

@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool subversi
 
 RUN git clone --recursive https://github.com/PCRE2Project/pcre2 pcre2
 WORKDIR pcre2
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

@@ -25,11 +25,15 @@
 #include "absl/types/span.h"
 #include "sqlite3.h"
 
+#define SCHEMA_VERSION "1"
+
 namespace oss_fuzz {
 namespace indexer {
 namespace {
 const char kCreateDb[] =
     "PRAGMA foreign_keys = ON;\n"
+    "PRAGMA user_version = " SCHEMA_VERSION
+    ";\n"
     "\n"
     "CREATE TABLE IF NOT EXISTS location(\n"
     "  id             INTEGER PRIMARY KEY,\n"
