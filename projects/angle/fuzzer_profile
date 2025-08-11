@@ -67,16 +67,19 @@ if (angle_has_build) {
       "-fprofile-instr-generate",
       "-fcoverage-mapping",
       "-fsanitize=fuzzer-no-link",
+      "-resource-dir=/usr/local/lib/clang/18",
+      "-UANGLE_USE_ABSEIL",
     ]
 
     ldflags = [
       "-fsanitize=" + getenv("SANITIZER"),
-      "-L/usr/lib/x86_64-linux-gnu",
-      "-L/usr/lib/gcc/x86_64-linux-gnu/9",
-      getenv("LIB_FUZZING_ENGINE_DEPRECATED"),
+      "-resource-dir=/usr/local/lib/clang/18",
     ]
 
     configs -= ["//build/config/compiler:thin_archive"]
 
+    libs = [
+      "/usr/local/lib/clang/18/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer.a",
+    ]
   }
 }
