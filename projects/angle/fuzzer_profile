@@ -48,8 +48,15 @@ if (angle_has_build) {
   }
 
   executable("fuzz_translator") {
+    sources = [ "src/compiler/fuzz/translator_fuzzer.cpp" ]
+
+    include_dirs = [
+      "include",
+      "src",
+    ]
+
     deps = [
-      ":translator_fuzzer",
+      ":translator",
     ]
 
     cflags = [
@@ -68,5 +75,8 @@ if (angle_has_build) {
       "-L/usr/lib/gcc/x86_64-linux-gnu/9",
       getenv("LIB_FUZZING_ENGINE_DEPRECATED"),
     ]
+
+    configs -= ["//build/config/compiler:thin_archive"]
+
   }
 }
