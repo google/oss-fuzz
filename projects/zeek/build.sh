@@ -60,6 +60,8 @@ for f in ${fuzzers}; do
         copy_lib ${f} libcrypto
         copy_lib ${f} libz
         copy_lib ${f} libmaxminddb
+        copy_lib ${f} libzmq
+        copy_lib ${f} libsodium
     fi
 
     patchelf --set-rpath '$ORIGIN/lib' ${OUT}/${fuzzer_exe}
