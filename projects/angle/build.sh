@@ -44,9 +44,11 @@ gn gen out/fuzz --args="$ARGS"
 echo $SANITIZER
 # Build binary
 autoninja -C out/fuzz fuzz_sha1
+autoninja -C out/fuzz fuzz_translator
 
 # Copy binary to $OUT
 cp ./out/fuzz/fuzz_sha1 $OUT
+cp ./out/fuzz/fuzz_translator $OUT
 
 # Reset sanitizer
 if [ -n "$ORIGINAL_SANITIZER" ]; then

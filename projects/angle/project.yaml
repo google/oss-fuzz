@@ -5,3 +5,7 @@ auto_ccs:
   - "david@adalogics.com"
   - "arthur.chan@adalogics.com"
 main_repo: 'https://chromium.googlesource.com/angle/angle'
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
