@@ -19,7 +19,9 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # checkout all sources needed to build your project
 RUN git clone --depth 1 https://skia.googlesource.com/skcms.git
 
-RUN wget -O $SRC/skcms/iccprofile_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/iccprofile_seed_corpus.zip
+# Disable the below to fix build. The URL is not accessible. Leaving it
+# commented out if the URL becomes available again.
+# RUN wget -O $SRC/skcms/iccprofile_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/iccprofile_seed_corpus.zip
 
 # current directory for build script
 WORKDIR skcms

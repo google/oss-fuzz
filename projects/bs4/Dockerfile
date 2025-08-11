@@ -14,7 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+# Held back because of github.com/google/oss-fuzz/pull/13407
+# Please fix the build failure + upgrade.
+
+FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:d223a882810372830fd7968eb3e64533f3a2318c90be43ac753a46a15946faec
 
 RUN apt-get install -y bzr python-lxml python-html5lib libxslt-dev libxml2-dev zlib1g-dev
 RUN python3 -m pip install --upgrade pip

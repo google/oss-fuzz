@@ -22,25 +22,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t n);
 
-extern "C" __attribute__((weak)) int LLVMFuzzerInitialize(
-    __attribute__((unused)) int* argc, __attribute__((unused)) char*** argv) {
-  return 0;
-}
+extern "C" __attribute__((weak)) int LLVMFuzzerInitialize(int* argc,
+                                                          char*** argv);
 
 // Projects can call LLVMFuzzerMutate, but should only do it from
 // LLVMFuzzerCustomMutator, which should be called from the fuzzing engine (we
 // don't need to).
-extern "C" size_t LLVMFuzzerMutate(uint8_t* Data, size_t Size, size_t MaxSize) {
+extern "C" size_t LLVMFuzzerMutate([[maybe_unused]] uint8_t* Data,
+                                   [[maybe_unused]] size_t Size,
+                                   [[maybe_unused]] size_t MaxSize) {
   fprintf(stderr, "LLVMFuzzerMutate was called. This should never happen.\n");
   __builtin_trap();
 }
 
 int main(int argc, char* argv[]) {
+  if (LLVMFuzzerInitialize) {
+    LLVMFuzzerInitialize(&argc, &argv);
+  }
+
   if (argc != 2) {
     // Special-case because curl invokes the fuzzer binaries without arguments
     // during make, and will fail if they don't return success.
@@ -59,30 +63,36 @@ int main(int argc, char* argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  const off_t end_offset = lseek(fd, 0, SEEK_END);
-  if (end_offset == static_cast<off_t>(-1)) {
-    perror("lseek SEEK_END");
+  struct stat st;
+  if (fstat(fd, &st) == -1) {
+    perror("stat");
     exit(EXIT_FAILURE);
   }
 
-  if (lseek(fd, 0, SEEK_SET) == -1) {
-    perror("lseek SEEK_SET");
+  size_t size = st.st_size;
+  uint8_t* data = static_cast<uint8_t*>(malloc(size));
+  if (!data) {
+    perror("malloc");
     exit(EXIT_FAILURE);
   }
 
-  const size_t size = static_cast<size_t>(end_offset);
-
-  void* mapping = mmap(nullptr, static_cast<size_t>(size),
-                       PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-  if (mapping == MAP_FAILED) {
-    perror("mmap");
-    exit(EXIT_FAILURE);
+  size_t bytes_read = 0;
+  while (bytes_read < size) {
+    ssize_t res = read(fd, data + bytes_read, size - bytes_read);
+    if (res == -1) {
+      perror("read");
+      exit(EXIT_FAILURE);
+    }
+    if (res == 0) {
+      fprintf(stderr, "Unexpected EOF.\n");
+      exit(EXIT_FAILURE);
+    }
+    bytes_read += res;
   }
   close(fd);
 
-  LLVMFuzzerInitialize(&argc, &argv);
-  int res = LLVMFuzzerTestOneInput(static_cast<uint8_t*>(mapping), size);
+  int res = LLVMFuzzerTestOneInput(data, size);
+  free(data);
 
-  munmap(mapping, size);
   return res;
 }

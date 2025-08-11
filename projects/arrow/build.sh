@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,21 +15,12 @@
 #
 ################################################################################
 
-set -ex
-
-# Install Boost headers
-(
- cd $SRC/
- tar jxf boost_1_85_0.tar.bz2
- cd boost_1_85_0/
- CFLAGS="" CXXFLAGS="" ./bootstrap.sh
- CFLAGS="" CXXFLAGS="" ./b2 headers
- cp -R boost/ /usr/include/
-)
-
 ARROW=${SRC}/arrow/cpp
 
-cd ${WORK}
+export BUILD_DIR=$SRC/build-dir
+mkdir -p ${BUILD_DIR}
+cd ${BUILD_DIR}
+#cd ${WORK}
 
 # The CMake build setup compiles and runs the Thrift compiler, but ASAN
 # would report leaks and error out.
@@ -39,6 +30,8 @@ cmake ${ARROW} -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DARROW_DEPENDENCY_SOURCE=BUNDLED \
     -DBOOST_SOURCE=SYSTEM \
+    -DBoost_USE_STATIC_RUNTIME=on \
+    -DARROW_BOOST_USE_SHARED=off \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
     -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
     -DARROW_EXTRA_ERROR_CONTEXT=off \
@@ -48,7 +41,7 @@ cmake ${ARROW} -GNinja \
     -DARROW_PARQUET=on \
     -DARROW_BUILD_SHARED=off \
     -DARROW_BUILD_STATIC=on \
-    -DARROW_BUILD_TESTS=off \
+    -DARROW_BUILD_TESTS=on \
     -DARROW_BUILD_INTEGRATION=off \
     -DARROW_BUILD_BENCHMARKS=off \
     -DARROW_BUILD_EXAMPLES=off \
@@ -69,8 +62,11 @@ cmake ${ARROW} -GNinja \
     -DARROW_USE_TSAN=off \
     -DARROW_FUZZING=on \
 
-cmake --build .
+cmake --build . -j$(nproc)
 
 cp -a release/* ${OUT}
+
+# Remove unit tests from out
+rm $OUT/*-test
 
 ${ARROW}/build-support/fuzzing/generate_corpuses.sh ${OUT}

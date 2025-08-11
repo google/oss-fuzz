@@ -78,7 +78,7 @@ def _run_cloudbuild(build_body):
                  check=True)
 
 
-def get_image_tags(image, test_image_suffix=None):
+def get_image_tags(image: str, test_image_suffix: str | None = None):
   """Returns tags for image build."""
   main_tag = base_images.TAG_PREFIX + image
   test_tag = None
@@ -89,16 +89,15 @@ def get_image_tags(image, test_image_suffix=None):
   return main_tag, test_tag
 
 
-def gcb_build_and_push_images(test_image_suffix):
+def gcb_build_and_push_images(test_image_suffix: str):
   """Build and push test versions of base images using GCB."""
   steps = []
   test_tags = []
   for base_image in base_images.BASE_IMAGES:
-    main_tag, test_tag = get_image_tags(base_image, test_image_suffix)
+    main_tag, test_tag = get_image_tags(base_image.name, test_image_suffix)
     test_tags.append(test_tag)
-    directory = os.path.join('infra', 'base-images', base_image)
     step = build_lib.get_docker_build_step([main_tag, test_tag],
-                                           directory,
+                                           base_image.path,
                                            use_buildkit_cache=True,
                                            src_root='.')
     steps.append(step)

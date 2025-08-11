@@ -47,3 +47,30 @@ Replay compile time:
 Ccache compile time: 
 9
 ```
+
+
+## Check tests
+
+Another feature of Chronos is the ability to run tests in a replayed build.
+This requires `run_tests.sh` to be available in the cached image at
+`$SRC/run_tests.sh`.
+
+Sample running:
+
+```
+$ git clone https://github.com/google/oss-fuzz
+$ cd oss-fuzz
+$ ./infra/experimental/chronos/check_tests.sh jsonnet
+...
+...
+100% tests passed, 0 tests failed out of 10
+
+Total Test time (real) = 119.80 sec
+```
+
+In order ot make the above work, the general approach is to have a
+`run_tests.sh` script in the OSS-Fuzz project's folder, which is copied into
+the main image.
+
+Notice that the `run_tests.sh` is run from a cached image, meaning the
+`run_tests.sh` is run after a run of building fuzzers.
