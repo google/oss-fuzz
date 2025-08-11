@@ -1,7 +1,7 @@
 homepage: "https://gitlab.com/iniparser/iniparser"
 language: c
 primary_contact: "iniparser@gmail.com"
-main_repo: "https://github.com/ndevilla/iniparser.git"
+main_repo: "https://gitlab.com/iniparser/iniparser"
 file_github_issue: true
 auto_ccs:
   - "iniparser@moellendorf.eu"
