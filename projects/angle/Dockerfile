@@ -1,6 +1,4 @@
-#!/bin/bash -eu
-#
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +13,13 @@
 # limitations under the License.
 #
 ################################################################################
-./autogen.sh
-./configure --enable-static --disable-shared LDFLAGS="-static" CFLAGS="${CFLAGS}" LDFLAGS="${CFLAGS}"
-make LDFLAGS=-all-static
 
-for f in $SRC/*_fuzzer.c; do
-  fuzzer=$(basename "$f" _fuzzer.c)
-  $CC $CFLAGS -I$SRC/hwloc/include -I$SRC/hwloc/private -c $SRC/${fuzzer}_fuzzer.c \
-    -o $SRC/${fuzzer}_fuzzer.o
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/${fuzzer}_fuzzer.o \
-    -o $OUT/${fuzzer}_fuzzer \
-    -Wl,--start-group ./hwloc/.libs/libhwloc.a \
-    ./utils/hwloc/.libs/libutils_common.a -Wl,--end-group
-done
-
-cp $SRC/*.options $OUT/
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        lsb-release sudo pkg-config file libc++-18-dev libc++abi-18-dev
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+ENV PATH=/src/depot_tools:$PATH
+WORKDIR angle
+RUN fetch angle
+COPY build.sh *.cc fuzzer_profile $SRC/
