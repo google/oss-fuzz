@@ -15,21 +15,26 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+
+# Install necessary packages
 RUN apt-get update && apt-get install -y \
     make autoconf automake libtool pkg-config \
-    libdbus-1-dev  libreadline8 libreadline-dev \
+    libdbus-1-dev libreadline8 libreadline-dev \
     python-docutils libudev-dev udev libical-dev \
-    libdbus-1-dev systemd
+    libdbus-1-dev systemd libbluetooth-dev
 
-RUN python3 -m pip install  --upgrade pip && python3 -m pip install packaging
+RUN python3 -m pip install --upgrade pip && python3 -m pip install packaging
 RUN python3 -m pip install -U meson ninja
+
+# Clone necessary repositories
 RUN git clone git://git.kernel.org/pub/scm/libs/ell/ell.git
 RUN git clone --depth 1 https://github.com/bluez/bluez bluez
-RUN git clone https://github.com/GNOME/glib  && \
+RUN git clone https://github.com/GNOME/glib && \
     cd glib && \
     meson _build -Db_lundef=false -Ddefault_library=static -Dlibmount=disabled && \
     ninja -C _build && \
     ninja -C _build install
+
 WORKDIR bluez
 COPY *.sh $SRC/
 COPY *.c $SRC/

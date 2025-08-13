@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone https://github.com/Exiv2/exiv2 exiv2
-RUN ./exiv2/ci/install_dependencies.sh
-WORKDIR exiv2
-
-COPY *.sh $SRC/
+BUILD_DIR=$WORK/_build.oss-fuzz
+cd $BUILD_DIR
+CTEST_PARALLEL_LEVEL=$(nproc) make test
