@@ -30,19 +30,20 @@ instances of [ClusterFuzz] or [ClusterFuzzLite].
 [Core Infrastructure Initiative]: https://www.coreinfrastructure.org/
 [OpenSSF]: https://www.openssf.org/
 
-We support the [libFuzzer], [AFL++], [Honggfuzz], and [Centipede] fuzzing engines in
+We support the [libFuzzer], [AFL++], [Honggfuzz], [Nallocfuzz], and [Centipede] fuzzing engines in
 combination with [Sanitizers], as well as [ClusterFuzz], a distributed fuzzer
 execution environment and reporting tool.
 
 [libFuzzer]: https://llvm.org/docs/LibFuzzer.html
 [AFL++]: https://github.com/AFLplusplus/AFLplusplus
 [Honggfuzz]: https://github.com/google/honggfuzz
+[Nallocfuzz]: https://github.com/catenacyber/nallocfuzz
 [Centipede]: https://github.com/google/centipede
 [Sanitizers]: https://github.com/google/sanitizers
 [ClusterFuzz]: https://github.com/google/clusterfuzz
 [ClusterFuzzLite]: https://google.github.io/clusterfuzzlite/
 
-Currently, OSS-Fuzz supports C/C++, Rust, Go, Python and Java/JVM code. Other
+Currently, OSS-Fuzz supports C/C++, Rust, Go, Python, Swift and Java/JVM code. Other
 languages supported by [LLVM] may work too. OSS-Fuzz supports fuzzing x86_64
 and i386 builds.
 
