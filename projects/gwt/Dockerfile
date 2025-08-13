@@ -39,7 +39,7 @@ COPY project-parent $SRC/project-parent/
 
 RUN rm -rf $SRC/project-parent/gwt
 RUN rm -rf $SRC/project-parent/tools
-RUN apt update && apt install -y openjdk-8-jdk
+RUN apt update && apt install -y openjdk-11-jdk
 RUN git clone --depth 1 https://github.com/gwtproject/gwt/ $SRC/project-parent/gwt
 RUN git clone --depth 1 https://github.com/gwtproject/tools/ $SRC/project-parent/tools
 

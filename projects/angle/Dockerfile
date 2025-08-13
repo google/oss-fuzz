@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN git clone --depth 1 https://github.com/greenmail-mail-test/greenmail.git greenmail
-
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.4/binaries/apache-maven-3.9.4-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-
-ENV MVN $SRC/maven/apache-maven-3.9.4/bin/mvn
-
-COPY build.sh $SRC/
-COPY *.java $SRC/
-WORKDIR $SRC/greenmail
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        lsb-release sudo pkg-config file libc++-18-dev libc++abi-18-dev
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+ENV PATH=/src/depot_tools:$PATH
+WORKDIR angle
+RUN fetch angle
+COPY build.sh *.cc fuzzer_profile $SRC/
