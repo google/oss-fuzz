@@ -19,5 +19,16 @@ RUN apt-get update && apt-get install -y libssl-dev
 
 RUN git clone --depth 1 https://github.com/warmcat/libwebsockets.git
 COPY build.sh $SRC
+
 COPY lws_upng_inflate_fuzzer.cpp $SRC/libwebsockets/
+COPY lws_lhs_fuzzer.cpp $SRC/libwebsockets/
+COPY lws_parse_uri_fuzzer.cpp $SRC/libwebsockets/
+COPY lws_parse_fuzzer.cpp $SRC/libwebsockets/
+
+COPY lws_lhs_fuzzer.dict $OUT
+COPY lws_parse_fuzzer.dict $OUT
+
+COPY lws_lhs_fuzzer_seed_corpus.zip $OUT
+COPY lws_parse_fuzzer_seed_corpus.zip $OUT
+
 WORKDIR $SRC/libwebsockets
