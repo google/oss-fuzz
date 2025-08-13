@@ -3,8 +3,9 @@ github.com/AdaLogics/go-fuzz-headers v0.0.0-20220824214621-3c06a36a6952/go.mod h
 github.com/AdamKorcz/go-118-fuzz-build v0.0.0-20221110144148-3ffc89b74f84 h1:a0NR83n+t4XyUh32ifxu6XsmeLMKyOx5Lxub9IeBM7k=
 github.com/AdamKorcz/go-118-fuzz-build v0.0.0-20221110144148-3ffc89b74f84/go.mod h1:pXIs8t4wo19ehhsffZsAZxSQ+oPUF41iiDrUaIDWKFU=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/cyphar/filepath-securejoin v0.2.3 h1:YX6ebbZCZP7VkM3scTTokDgBL2TY741X51MTk3ycuNI=
 github.com/cyphar/filepath-securejoin v0.2.3/go.mod h1:aPGpWjXOXUn2NCNjFvBE6aRxGGx79pTxQpKOJNYHHl4=
+github.com/cyphar/filepath-securejoin v0.2.4 h1:Ugdm7cg7i6ZK6x3xDF1oEu1nfkyfH53EtKeQYTC3kyg=
+github.com/cyphar/filepath-securejoin v0.2.4/go.mod h1:aPGpWjXOXUn2NCNjFvBE6aRxGGx79pTxQpKOJNYHHl4=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
