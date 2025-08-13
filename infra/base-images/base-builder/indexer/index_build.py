@@ -62,6 +62,7 @@ EXTRA_CFLAGS = (
 )
 
 
+# Test change.
 def set_env_vars():
   """Set up build environment variables."""
   os.environ['SANITIZER'] = 'address'
