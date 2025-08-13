@@ -1,0 +1,2 @@
+[submodule "fuzz/oss-fuzz"]
+	branch = master
