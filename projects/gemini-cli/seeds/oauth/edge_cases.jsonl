@@ -1,0 +1,9 @@
+{"grant_type":"authorization_code","code":"x","redirect_uri":"https://localhost/cb"}
+{"grant_type":"refresh_token","refresh_token":"1//token"}
+{"grant_type":"client_credentials","client_id":"id","client_secret":"secret"}
+{"grant_type":"password","client_id":"id","client_secret":"secret","scope":"openid"}
+{"access_token":"ya29.x","token_type":"Bearer","expires_in":1}
+{"access_token":"ya29.too_long_"}
+{"id_token":"bad..jwt"}
+{"redirect_uri":"ftp://example.com/cb"}
+

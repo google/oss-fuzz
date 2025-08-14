@@ -1,0 +1,7 @@
+{
+  "grant_type": "authorization_code",
+  "code": "example_auth_code",
+  "redirect_uri": "https://localhost:8080/callback",
+  "client_id": "example_client_id.apps.googleusercontent.com",
+  "client_secret": "example_client_secret"
+}
