@@ -72,8 +72,8 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
   EntityId GetEntityIdForDecl(const clang::Decl *decl,
                               LocationId location_id = kInvalidLocationId,
                               bool for_reference = false);
-  std::optional<EntityId> GetEntityIdForCanonicalDecl(
-      const clang::Decl *canonical_decl, const clang::Decl *original_decl);
+  std::optional<SubstituteRelationship> GetTemplateSubstituteRelationship(
+      const clang::Decl* template_decl, const clang::Decl* original_decl);
   void AddTypeReferencesFromLocation(LocationId location_id,
                                      const clang::Type *type,
                                      bool outermost_type = true);
