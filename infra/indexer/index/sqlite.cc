@@ -25,7 +25,7 @@
 #include "absl/types/span.h"
 #include "sqlite3.h"
 
-#define SCHEMA_VERSION "3"
+#define SCHEMA_VERSION "4"
 
 namespace oss_fuzz {
 namespace indexer {
@@ -35,14 +35,14 @@ const char kCreateDb[] =
     "PRAGMA user_version = " SCHEMA_VERSION
     ";\n"
     "\n"
-    "CREATE TABLE IF NOT EXISTS location(\n"
+    "CREATE TABLE location(\n"
     "  id             INTEGER PRIMARY KEY,\n"
     "  dirname        TEXT NOT NULL,\n"
     "  basename       TEXT NOT NULL,\n"
     "  start_line     INT NOT NULL,\n"
     "  end_line       INT NOT NULL);\n"
     "\n"
-    "CREATE TABLE IF NOT EXISTS entity(\n"
+    "CREATE TABLE entity(\n"
     "  id                            INTEGER PRIMARY KEY,\n"
     "  kind                          INT NOT NULL,\n"
     "  is_incomplete                 BOOLEAN,\n"
@@ -53,18 +53,26 @@ const char kCreateDb[] =
     "  substitute_entity_id          INTEGER,\n"
     "  substitute_relationship_kind  INTEGER,\n"
     "  enum_value                    TEXT,\n"
+    "  virtual_method_kind           INT NOT NULL,\n"
     "  FOREIGN KEY (location_id) REFERENCES location(id),\n"
     "  FOREIGN KEY (substitute_entity_id) REFERENCES entity(id),\n"
     "  CHECK("
     "  (substitute_entity_id IS NULL) == (substitute_relationship_kind IS NULL)"
     "  ));\n"
     "\n"
-    "CREATE TABLE IF NOT EXISTS reference(\n"
+    "CREATE TABLE reference(\n"
     "  id             INTEGER PRIMARY KEY,\n"
     "  entity_id      INTEGER NOT NULL,\n"
     "  location_id    INTEGER NOT NULL,\n"
     "  FOREIGN KEY (entity_id) REFERENCES entity(id),\n"
     "  FOREIGN KEY (location_id) REFERENCES location(id));\n"
+    "\n"
+    "CREATE TABLE virtual_method_link(\n"
+    "  id                INTEGER PRIMARY KEY,\n"
+    "  parent_entity_id  INTEGER NOT NULL,\n"
+    "  child_entity_id   INTEGER NOT NULL,\n"
+    "  FOREIGN KEY (parent_entity_id) REFERENCES entity(id),\n"
+    "  FOREIGN KEY (child_entity_id) REFERENCES entity(id));\n"
     "\n"
     "CREATE INDEX entity_name ON entity(name);\n"
     "\n"
@@ -74,7 +82,10 @@ const char kCreateDb[] =
     "\n"
     "CREATE INDEX reference_entity_location ON reference("
     "  entity_id,\n"
-    "  location_id);\n";
+    "  location_id);\n"
+    "\n"
+    "CREATE INDEX virtual_method_link_parent ON virtual_method_link("
+    "  parent_entity_id);\n";
 
 const char kInsertLocation[] =
     "INSERT INTO location\n"
@@ -84,12 +95,18 @@ const char kInsertLocation[] =
 const char kInsertEntity[] =
     "INSERT INTO entity\n"
     "  (id, kind, is_incomplete, name_prefix, name, name_suffix, location_id,\n"
-    "   substitute_entity_id, substitute_relationship_kind, enum_value)\n"
-    "  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);";
+    "   substitute_entity_id, substitute_relationship_kind, enum_value,\n"
+    "   virtual_method_kind)\n"
+    "  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11);";
 
 const char kInsertReference[] =
     "INSERT INTO reference\n"
     "  (id, entity_id, location_id)\n"
+    "  VALUES (?1, ?2, ?3);";
+
+const char kInsertLink[] =
+    "INSERT INTO virtual_method_link\n"
+    "  (id, parent_entity_id, child_entity_id)\n"
     "  VALUES (?1, ?2, ?3);";
 
 const char kFinalizeDb[] =
@@ -224,6 +241,12 @@ bool InsertEntities(sqlite3* db, absl::Span<const Entity> entities) {
       return false;
     }
 
+    if (sqlite3_bind_int(insert_entity, 11,
+                         static_cast<int>(entity.virtual_method_kind())) !=
+        SQLITE_OK) {
+      return false;
+    }
+
     if (sqlite3_step(insert_entity) != SQLITE_DONE) {
       LOG(ERROR) << "sqlite executing insert_entity failed: "
                  << sqlite3_errmsg(db);
@@ -286,6 +309,42 @@ bool InsertReferences(sqlite3* db, absl::Span<const Reference> references) {
   sqlite3_finalize(insert_reference);
   return true;
 }
+
+bool InsertVirtualMethodLinks(sqlite3* db,
+                              absl::Span<const VirtualMethodLink> links) {
+  sqlite3_stmt* insert_link = nullptr;
+  if (sqlite3_prepare_v2(db, kInsertLink, sizeof(kInsertLink), &insert_link,
+                         nullptr) != SQLITE_OK) {
+    LOG(ERROR) << "sqlite compiling prepared statement failed: `"
+               << sqlite3_errmsg(db) << "`";
+    return false;
+  }
+
+  for (ReferenceId i = 0; i < links.size(); ++i) {
+    const VirtualMethodLink& link = links[i];
+    if (sqlite3_bind_int64(insert_link, 1, i) != SQLITE_OK ||
+        sqlite3_bind_int64(insert_link, 2, link.parent()) != SQLITE_OK ||
+        sqlite3_bind_int64(insert_link, 3, link.child()) != SQLITE_OK) {
+      LOG(ERROR) << "sqlite binding insert_link failed: `" << sqlite3_errmsg(db)
+                 << "`";
+      sqlite3_finalize(insert_link);
+      return false;
+    }
+
+    if (sqlite3_step(insert_link) != SQLITE_DONE) {
+      LOG(ERROR) << "sqlite executing insert_reference failed: `"
+                 << sqlite3_errmsg(db) << "`";
+      sqlite3_finalize(insert_link);
+      return false;
+    }
+
+    sqlite3_reset(insert_link);
+    sqlite3_clear_bindings(insert_link);
+  }
+
+  sqlite3_finalize(insert_link);
+  return true;
+}
 }  // anonymous namespace
 
 bool SaveAsSqlite(const FlatIndex& index, const std::string& path) {
@@ -322,6 +381,12 @@ bool SaveAsSqlite(const FlatIndex& index, const std::string& path) {
 
   LOG(INFO) << "inserting references";
   if (!InsertReferences(db, index.references)) {
+    sqlite3_close(db);
+    return false;
+  }
+
+  LOG(INFO) << "inserting virtual method links";
+  if (!InsertVirtualMethodLinks(db, index.virtual_method_links)) {
     sqlite3_close(db);
     return false;
   }
