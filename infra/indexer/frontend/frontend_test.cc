@@ -3065,16 +3065,9 @@ TEST(FrontendTest, TemplateMemberFn) {
                        "snippet.cc", 7, 7, "snippet.cc", 8, 8,
                        /*is_incomplete=*/false);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "t", "", "snippet.cc",
-                    7, 7,
-                    /*is_incomplete=*/false, /*template_prototype_entity_id=*/
-                    RequiredEntityId(index, Entity::Kind::kVariable, "", "t",
-                                     "", "snippet.cc", 7, 7));
-  EXPECT_HAS_REFERENCE(
-      index, Entity::Kind::kVariable, "", "t", "", "snippet.cc", 7, 7,
-      "snippet.cc", 8, 8,
-      /*is_incomplete=*/false, /*template_prototype_entity_id=*/
-      RequiredEntityId(index, Entity::Kind::kVariable, "", "t", "",
-                       "snippet.cc", 7, 7));
+                    7, 7);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kVariable, "", "t", "",
+                       "snippet.cc", 7, 7, "snippet.cc", 8, 8);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "template_xref", "",
                     "snippet.cc", 19, 20, /*is_incomplete=*/false);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "template_xrefs", "()",

@@ -204,6 +204,18 @@ LocationId InMemoryIndex::GetIdForLocationWithIndexPath(
 }
 
 EntityId InMemoryIndex::GetEntityId(const Entity& entity) {
+  // If an entity and its substitute have identical renderings and are thus
+  // indistinguishable during index merging, prevent creating self-references
+  // due to this collapse by pre-merging them here already.
+  if (entity.substitute_relationship()) {
+    const EntityId substitute_entity_id =
+        entity.substitute_relationship()->substitute_entity_id();
+    const Entity& substitute_entity = GetEntityById(substitute_entity_id);
+    if (HasTheSameIdentity(substitute_entity, entity)) {
+      return substitute_entity_id;
+    }
+  }
+
   auto [iter, inserted] = entities_.insert({entity, next_entity_id_});
   const EntityId entity_id = iter->second;
   if (inserted) {
