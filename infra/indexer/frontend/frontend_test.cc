@@ -1957,20 +1957,20 @@ TEST(FrontendTest, MoreTemplateSpecialization) {
                                  8));
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Bar", "<S, T>",
-                    "snippet.cc", 4, 4);
+                    "snippet.cc", 3, 4);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Bar", "<S, T>",
-                       "snippet.cc", 4, 4, "snippet.cc", 6, 6);
+                       "snippet.cc", 3, 4, "snippet.cc", 6, 6);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Bar", "<S, T>",
-                       "snippet.cc", 4, 4, "snippet.cc", 7, 7);
+                       "snippet.cc", 3, 4, "snippet.cc", 7, 7);
   // TODO: Maybe add these if we have implicit reference support.
   EXPECT_FALSE(IndexHasReference(index, Entity::Kind::kType, "", "Bar",
-                                 "<S, T>", "snippet.cc", 4, 4, "snippet.cc", 8,
+                                 "<S, T>", "snippet.cc", 3, 4, "snippet.cc", 8,
                                  8));
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Baz", "<S, T>",
-                    "snippet.cc", 6, 6);
+                    "snippet.cc", 5, 6);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Baz", "<S, T>",
-                       "snippet.cc", 6, 6, "snippet.cc", 8, 8);
+                       "snippet.cc", 5, 6, "snippet.cc", 8, 8);
 
   // Check that the correct specializations of Foo exist
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "<int, char>",
@@ -3153,6 +3153,60 @@ TEST(FrontendTest, ImplicitComparisonInstantiation) {
           /*implicitly_defined_for_entity_id=*/
           RequiredEntityId(index, Entity::Kind::kClass, "", "TestTemplateClass",
                            "<T>", "snippet.cc", 11, 14)));
+}
+
+TEST(FrontendTest, VarAndTypeAliasTemplates) {
+  auto index = IndexSnippet(
+      "template <typename T>\n"                        // 1
+      "constexpr T kPi = T(3.1415926535897932385);\n"  // 2
+      "\n"                                             // 3
+      "template <typename Y>\n"                        // 4
+      "using Blah = Y[15];\n"                          // 5
+      "\n"                                             // 6
+      "int main() {\n"                                 // 7
+      "  (void)kPi<double>;\n"                         // 8
+      "  (void)kPi<float>;\n"                          // 9
+      "  Blah<int> foo = {kPi<int>, };\n"              // 10
+      "}\n");                                          // 11
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Blah", "<Y>", "snippet.cc",
+                    4, 5);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Blah", "<Y>",
+                       "snippet.cc", 4, 5, "snippet.cc", 10, 10);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Blah", "<int>",
+                    "snippet.cc", 4, 5, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kType, "", "Blah",
+                                     "<Y>", "snippet.cc", 4, 5));
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "Blah", "<int>",
+                       "snippet.cc", 4, 5, "snippet.cc", 10, 10,
+                       /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/
+                       RequiredEntityId(index, Entity::Kind::kType, "", "Blah",
+                                        "<Y>", "snippet.cc", 4, 5));
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "T", "", "snippet.cc", 1,
+                    1);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kType, "", "T", "", "snippet.cc", 1,
+                       1, "snippet.cc", 2, 2);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "", "Y", "", "snippet.cc", 4,
+                    4);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "foo", "", "snippet.cc",
+                    10, 10);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "kPi", "<T>",
+                    "snippet.cc", 1, 2);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "kPi", "<double>",
+                    "snippet.cc", 1, 2);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kVariable, "", "kPi", "<double>",
+                       "snippet.cc", 1, 2, "snippet.cc", 8, 8);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "kPi", "<float>",
+                    "snippet.cc", 1, 2);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kVariable, "", "kPi", "<float>",
+                       "snippet.cc", 1, 2, "snippet.cc", 9, 9);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "kPi", "<int>",
+                    "snippet.cc", 1, 2);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kVariable, "", "kPi", "<int>",
+                       "snippet.cc", 1, 2, "snippet.cc", 10, 10);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "main", "()",
+                    "snippet.cc", 7, 11);
 }
 
 TEST(FrontendTest, CommandLineMacro) {

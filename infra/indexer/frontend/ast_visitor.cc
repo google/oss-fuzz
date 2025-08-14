@@ -52,11 +52,14 @@ namespace indexer {
 namespace {
 
 const clang::PrintingPolicy& GetPrintingPolicy() {
-  static clang::PrintingPolicy policy({});
-  policy.adjustForCPlusPlus();
-  policy.SplitTemplateClosers = false;
-  policy.SuppressTemplateArgsInCXXConstructors = true;
-  return policy;
+  static clang::PrintingPolicy static_policy = ([] {
+    clang::PrintingPolicy policy({});
+    policy.adjustForCPlusPlus();
+    policy.SplitTemplateClosers = false;
+    policy.SuppressTemplateArgsInCXXConstructors = true;
+    return policy;
+  })();
+  return static_policy;
 }
 
 // Helper functions used to distinguish between declarations and definitions, so
@@ -321,9 +324,9 @@ std::string FormatTemplateParameters(
   return stream.str().str();
 }
 
-std::string FormatTemplateArguments(
-    const clang::TemplateParameterList* params,
-    llvm::ArrayRef<clang::TemplateArgument> args) {
+template <class TemplateArgumentType>
+std::string FormatTemplateArguments(const clang::TemplateParameterList* params,
+                                    llvm::ArrayRef<TemplateArgumentType> args) {
   llvm::SmallString<128> string;
   llvm::raw_svector_ostream stream(string);
   clang::printTemplateArgumentList(stream, args, GetPrintingPolicy(), params);
@@ -332,26 +335,22 @@ std::string FormatTemplateArguments(
 
 // Helper functions to generate the `<typename T, int S>` suffixes when handling
 // templates.
-std::string GetTemplateParameterSuffix(const clang::ClassTemplateDecl* decl) {
+std::string GetTemplateParameterSuffix(const clang::TemplateDecl* decl) {
   return FormatTemplateParameters(decl->getTemplateParameters());
 }
 
 std::string GetTemplateParameterSuffix(
     const clang::ClassTemplateSpecializationDecl* decl) {
-  llvm::SmallString<128> string;
-  llvm::raw_svector_ostream stream(string);
-  decl->getNameForDiagnostic(stream, GetPrintingPolicy(), false);
-  return stream.str().str().substr(decl->getNameAsString().size());
-}
-
-std::string GetTemplateParameterSuffix(
-    const clang::TypeAliasTemplateDecl* decl) {
-  return FormatTemplateParameters(decl->getTemplateParameters());
-}
-
-std::string GetTemplateParameterSuffix(
-    const clang::FunctionTemplateDecl* decl) {
-  return FormatTemplateParameters(decl->getTemplateParameters());
+  const clang::TemplateParameterList* params =
+      decl->getSpecializedTemplate()->getTemplateParameters();
+  if (const auto* partial_spec_decl =
+          llvm::dyn_cast<clang::ClassTemplatePartialSpecializationDecl>(decl)) {
+    if (const clang::ASTTemplateArgumentListInfo* args_as_written =
+            partial_spec_decl->getTemplateArgsAsWritten()) {
+      return FormatTemplateArguments(params, args_as_written->arguments());
+    }
+  }
+  return FormatTemplateArguments(params, decl->getTemplateArgs().asArray());
 }
 
 std::string GetTemplateParameterSuffix(
@@ -376,6 +375,20 @@ std::string GetTemplateParameterSuffix(
     const clang::FunctionTemplateSpecializationInfo* info) {
   return FormatTemplateArguments(info->getTemplate()->getTemplateParameters(),
                                  info->TemplateArguments->asArray());
+}
+
+std::string GetTemplateParameterSuffix(
+    const clang::VarTemplateSpecializationDecl* decl) {
+  const clang::TemplateParameterList* params =
+      decl->getSpecializedTemplate()->getTemplateParameters();
+  if (const auto* partial_spec_decl =
+          llvm::dyn_cast<clang::VarTemplatePartialSpecializationDecl>(decl)) {
+    if (const clang::ASTTemplateArgumentListInfo* args_as_written =
+            partial_spec_decl->getTemplateArgsAsWritten()) {
+      return FormatTemplateArguments(params, args_as_written->arguments());
+    }
+  }
+  return FormatTemplateArguments(params, decl->getTemplateArgs().asArray());
 }
 
 std::string GetName(const clang::Decl* decl) {
@@ -477,6 +490,15 @@ std::string GetNameSuffix(const clang::Decl* decl) {
             break;
         }
       }
+    }
+  } else if (llvm::isa<clang::VarDecl>(decl)) {
+    const auto* var_decl = llvm::cast<clang::VarDecl>(decl);
+    if (const auto* var_template_decl = var_decl->getDescribedVarTemplate()) {
+      name_suffix = GetTemplateParameterSuffix(var_template_decl);
+    } else if (const auto* var_template_specialization_decl =
+                   llvm::dyn_cast<clang::VarTemplateSpecializationDecl>(decl)) {
+      name_suffix =
+          GetTemplateParameterSuffix(var_template_specialization_decl);
     }
   } else if (llvm::isa<clang::TypeAliasDecl>(decl)) {
     const auto* type_alias_decl = llvm::cast<clang::TypeAliasDecl>(decl);
@@ -781,19 +803,37 @@ LocationId AstVisitor::GetLocationId(const clang::Decl* decl) {
   // template. However, for instantiation of function templates, we have an
   // extra level of indirection via `FunctionTemplateSpecializationInfo`.
   if (llvm::isa<clang::FunctionDecl>(decl)) {
-    const auto* tmp = llvm::cast<clang::FunctionDecl>(decl);
-    if (tmp->isTemplateInstantiation()) {
-      tmp = tmp->getTemplateInstantiationPattern();
-    } else if (tmp->getTemplateSpecializationInfo()) {
-      const auto* tmp_info = tmp->getTemplateSpecializationInfo();
-      tmp = tmp_info->getFunction();
+    const auto* function_decl = llvm::cast<clang::FunctionDecl>(decl);
+    if (function_decl->isTemplateInstantiation()) {
+      function_decl = function_decl->getTemplateInstantiationPattern();
+    } else if (function_decl->getTemplateSpecializationInfo()) {
+      const auto* tmp_info = function_decl->getTemplateSpecializationInfo();
+      function_decl = tmp_info->getFunction();
     }
 
-    decl = tmp;
-    const auto* tmp_template = tmp->getDescribedFunctionTemplate();
-    if (tmp_template) {
-      return GetLocationId(tmp_template->getBeginLoc(),
-                           tmp_template->getEndLoc());
+    decl = function_decl;
+    const auto* func_template = function_decl->getDescribedFunctionTemplate();
+    if (func_template) {
+      decl = func_template;
+    }
+  }
+
+  // Same for variable template declarations.
+  if (llvm::isa<clang::VarDecl>(decl)) {
+    const auto* var_decl = llvm::cast<clang::VarDecl>(decl);
+    const auto* var_template_decl = var_decl->getDescribedVarTemplate();
+    if (var_template_decl) {
+      decl = var_template_decl;
+    }
+  }
+
+  // Same for type alias template declarations.
+  if (llvm::isa<clang::TypeAliasDecl>(decl)) {
+    const auto* type_alias_decl = llvm::cast<clang::TypeAliasDecl>(decl);
+    const auto* type_alias_template_decl =
+        type_alias_decl->getDescribedTemplate();
+    if (type_alias_template_decl) {
+      decl = type_alias_template_decl;
     }
   }
 
@@ -839,12 +879,13 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
     return kInvalidEntityId;
   }
 
-  // First handle assignments of lambda types, as we need to get the entity for
-  // the lambda::operator() rather than the implicit invisible lambda class.
+  // Handle assignments of lambda types, as we need to get the entity for the
+  // lambda::operator() rather than the implicit invisible lambda class.
   if (llvm::isa<clang::CXXRecordDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::CXXRecordDecl>(decl);
-    if (tmp->isLambda()) {
-      return GetEntityIdForDecl(tmp->getLambdaCallOperator(), location_id);
+    auto* function_decl = llvm::cast<clang::CXXRecordDecl>(decl);
+    if (function_decl->isLambda()) {
+      return GetEntityIdForDecl(function_decl->getLambdaCallOperator(),
+                                location_id);
     }
   }
 
@@ -856,10 +897,30 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
     decl = class_template_decl->getTemplatedDecl();
   }
 
-  // Then handle structuring assignment.
+  // Resolve FunctionTemplateDecl to the underlying FunctionDecl.
+  if (llvm::isa<clang::FunctionTemplateDecl>(decl)) {
+    const auto* function_template_decl =
+        llvm::cast<clang::FunctionTemplateDecl>(decl);
+    decl = function_template_decl->getTemplatedDecl();
+  }
+
+  // Resolve VarTemplateDecl to the underlying VarDecl.
+  if (llvm::isa<clang::VarTemplateDecl>(decl)) {
+    const auto* var_template_decl = llvm::cast<clang::VarTemplateDecl>(decl);
+    decl = var_template_decl->getTemplatedDecl();
+  }
+
+  // Resolve TypeAliasTemplateDecl to the underlying TypeAliasDecl.
+  if (llvm::isa<clang::TypeAliasTemplateDecl>(decl)) {
+    const auto* type_template_decl =
+        llvm::cast<clang::TypeAliasTemplateDecl>(decl);
+    decl = type_template_decl->getTemplatedDecl();
+  }
+
+  // Then handle structured binding.
   if (llvm::isa<clang::BindingDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::BindingDecl>(decl);
-    decl = tmp->getHoldingVar();
+    auto* binding_decl = llvm::cast<clang::BindingDecl>(decl);
+    decl = binding_decl->getHoldingVar();
     // It's possible that we don't have a holding var here.
     if (!decl) {
       return kInvalidEntityId;
@@ -868,19 +929,22 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
 
   // Then resolve from the declaration to the definition of the entity.
   if (llvm::isa<clang::VarDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::VarDecl>(decl);
-    if (!tmp->isThisDeclarationADefinition() && tmp->getDefinition()) {
-      decl = tmp->getDefinition();
+    auto* var_decl = llvm::cast<clang::VarDecl>(decl);
+    if (!var_decl->isThisDeclarationADefinition() &&
+        var_decl->getDefinition()) {
+      decl = var_decl->getDefinition();
     }
   } else if (llvm::isa<clang::TagDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::TagDecl>(decl);
-    if (!tmp->isThisDeclarationADefinition() && tmp->getDefinition()) {
-      decl = tmp->getDefinition();
+    auto* tag_decl = llvm::cast<clang::TagDecl>(decl);
+    if (!tag_decl->isThisDeclarationADefinition() &&
+        tag_decl->getDefinition()) {
+      decl = tag_decl->getDefinition();
     }
   } else if (llvm::isa<clang::FunctionDecl>(decl)) {
-    auto* tmp = llvm::cast<clang::FunctionDecl>(decl);
-    if (!tmp->isThisDeclarationADefinition() && tmp->getDefinition()) {
-      decl = tmp->getDefinition();
+    auto* function_decl = llvm::cast<clang::FunctionDecl>(decl);
+    if (!function_decl->isThisDeclarationADefinition() &&
+        function_decl->getDefinition()) {
+      decl = function_decl->getDefinition();
     }
   }
 
