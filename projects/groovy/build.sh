@@ -20,7 +20,7 @@ ALL_JARS=""
 
 pushd "${SRC}/groovy"
 	./gradlew shadowJar
-	cp -v ./build/libs/groovy-raw-*-SNAPSHOT.jar "$OUT/groovy.jar"
+	cp -v ./build/libs/groovy-raw-5.0.0-SNAPSHOT-raw.jar "$OUT/groovy.jar"
 	ALL_JARS="${ALL_JARS} groovy.jar"
 
   cp -v ./subprojects/groovy-test/build/libs/groovy-test-*-SNAPSHOT-all.jar "$OUT/groovy-test.jar"
