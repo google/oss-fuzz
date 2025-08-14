@@ -423,13 +423,9 @@ TEST(InMemoryIndexTest, TemplateChainsContracted) {
     index_one.GetLocationId(location);
   }
 
-  testing::internal::CaptureStderr();
   for (const auto& entity : entities) {
     index_one.GetEntityId(entity);
   }
-  EXPECT_TRUE(absl::StrContains(
-      testing::internal::GetCapturedStderr(),
-      "Unexpected template instantiation substitution chain for:"));
 
   FlatIndex flat_index = std::move(index_one).Export();
   ASSERT_EQ(flat_index.entities.size(), 3);

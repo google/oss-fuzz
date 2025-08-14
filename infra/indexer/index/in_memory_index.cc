@@ -106,49 +106,6 @@ struct ComparePairFirst {
   }
 };
 
-template <class Item, typename ItemId>
-const Item& GetById(const absl::flat_hash_map<Item, ItemId>& items, ItemId id) {
-  for (const auto& [item, item_id] : items) {
-    if (item_id == id) {
-      return item;
-    }
-  }
-  LOG(FATAL) << "Couldn't find an item by ID: " << static_cast<int>(id);
-}
-
-void ReportEntity(std::ostream& os, const Entity& entity,
-                  const absl::flat_hash_map<Entity, EntityId> entities,
-                  const absl::flat_hash_map<Location, LocationId> locations,
-                  int depth = 1) {
-  for (int i = 0; i < depth; ++i) {
-    os << "  ";
-  }
-  if (depth > 5) {
-    os << "...chain continues (a cycle?)...";
-    return;
-  }
-  const Location& entity_location = GetById(locations, entity.location_id());
-  os << entity.full_name() << " at " << entity_location.path() << ":"
-     << entity_location.start_line() << "-" << entity_location.end_line()
-     << "\n";
-  if (entity.substitute_relationship().has_value() &&
-      entity.substitute_relationship()->kind() ==
-          SubstituteRelationship::Kind::kIsTemplateInstantiationOf) {
-    const Entity& template_prototype = GetById(
-        entities, entity.substitute_relationship()->substitute_entity_id());
-    ReportEntity(os, template_prototype, entities, locations, depth + 1);
-  }
-}
-
-void ReportTemplateChain(
-    const Entity& entity, const absl::flat_hash_map<Entity, EntityId> entities,
-    const absl::flat_hash_map<Location, LocationId> locations) {
-  std::stringstream stream;
-  stream << "Unexpected template instantiation substitution chain for:\n";
-  ReportEntity(stream, entity, entities, locations);
-  stream << "(Please report the above as a bug marked 'CHAIN'.)\n";
-  std::cerr << stream.str();
-}
 }  // namespace
 
 InMemoryIndex::InMemoryIndex(FileCopier& file_copier)
@@ -254,9 +211,8 @@ EntityId InMemoryIndex::GetEntityId(Entity entity) {
     CHECK_LT(substitute_entity_id, next_entity_id_);
     if (relationship->kind() == kIsTemplateInstantiationOf) {
       // If the template substitution for `entity` has another one in turn,
-      // this is an undesired template chain. Report and contract it.
+      // resolve the substitution to target the ultimate prototype.
       if (template_prototype_ids_[substitute_entity_id] != kInvalidEntityId) {
-        ReportTemplateChain(entity, entities_, locations_);
         relationship->entity_id_ =
             template_prototype_ids_[substitute_entity_id];
       }

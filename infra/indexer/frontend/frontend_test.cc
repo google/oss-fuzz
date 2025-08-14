@@ -1716,7 +1716,7 @@ TEST(FrontendTest, PureVirtualMethod) {
       "};\n");
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foo", "", "snippet.cc", 1,
                     3);
-  // pure virtual methods are complete, even though they have no body.
+  // Pure virtual methods are complete, even though they have no body.
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
                     "snippet.cc", 2, 2);
 }
@@ -2868,6 +2868,22 @@ TEST(FrontendTest, TemplateMemberFn) {
       index, Entity::Kind::kType,
       "TestTemplateClass<T>::TestTemplateMemberFn<S>(T)::", "S", "",
       "snippet.cc", 6, 6, "snippet.cc", 7, 7, /*is_incomplete=*/false);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction,
+      "TestTemplateClass<int>::", "TestTemplateMemberFn", "<S>(int)",
+      "snippet.cc", 6, 9,
+      /*is_incomplete=*/true, /*template_prototype_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kFunction, "TestTemplateClass<T>::",
+                       "TestTemplateMemberFn", "<S>(T)", "snippet.cc", 6, 9));
+  // Template function parameter in a class template specialization.
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kType,
+      "TestTemplateClass<int>::TestTemplateMemberFn<S>(int)::", "S", "",
+      "snippet.cc", 6, 6, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kType,
+                       "TestTemplateClass<T>::TestTemplateMemberFn<S>(T)::",
+                       "S", "", "snippet.cc", 6, 6));
   EXPECT_HAS_ENTITY(
       index, Entity::Kind::kFunction,
       "TestTemplateClass<int>::", "TestTemplateMemberFn", "<unsigned int>(int)",

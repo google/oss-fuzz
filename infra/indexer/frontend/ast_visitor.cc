@@ -225,30 +225,20 @@ bool IsIncompleteFunction(const clang::FunctionDecl* function_decl) {
          !function_decl->isPureVirtual() && !function_decl->getBuiltinID(true);
 }
 
-// Sometimes for a templated function in a class template, we would encounter
-// a partial specialization like Class<int>::MyFunction<T>(). Notoriously,
-// such functions don't refer back to the template they were instantiated from;
-// moreover, they're safe to ignore because they're both incomplete and inline.
-bool IsEphemeralContext(const clang::DeclContext* context) {
-  const clang::FunctionDecl* function_decl =
-      llvm::dyn_cast<clang::FunctionDecl>(context);
-  if (function_decl == nullptr) {
-    return false;
-  }
-  return IsIncompleteFunction(function_decl) && function_decl->isInlined();
-}
-
 // `decl` is required to be a `clang::NamedDecl`.
 // If it is inside a template instantiation, finds the context where it is
 // instantiated from and finds the corresponding entity by name.
 const clang::NamedDecl* GetTemplatePrototypeNamedDecl(const clang::Decl* decl) {
   const clang::NamedDecl* named_decl = llvm::dyn_cast<clang::NamedDecl>(decl);
   CHECK_NE(named_decl, nullptr);
-  if (named_decl->getName().empty()) {
-    // Such as for a `DecompositionDecl`.
+  clang::DeclarationName field_name = named_decl->getDeclName();
+
+  if (field_name.getAsString().empty()) {
+    // E.g. for a `DecompositionDecl`.
     return nullptr;
   }
   const clang::DeclContext* template_context = nullptr;
+  const clang::TemplateDecl* template_decl = nullptr;
 
   if (const auto* class_specialization_decl =
           llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(
@@ -259,6 +249,7 @@ const clang::NamedDecl* GetTemplatePrototypeNamedDecl(const clang::Decl* decl) {
     if (const clang::CXXRecordDecl* template_definition =
             GetTemplatePrototypeRecordDecl(class_specialization_decl)) {
       template_context = template_definition;
+      template_decl = template_definition->getDescribedClassTemplate();
     } else {
       return nullptr;
     }
@@ -267,6 +258,14 @@ const clang::NamedDecl* GetTemplatePrototypeNamedDecl(const clang::Decl* decl) {
     if (const clang::FunctionDecl* instantiation_pattern =
             function_decl->getTemplateInstantiationPattern()) {
       template_context = instantiation_pattern;
+      template_decl = instantiation_pattern->getDescribedFunctionTemplate();
+    } else if (function_decl->getDescribedFunctionTemplate() &&
+               function_decl->getDescribedFunctionTemplate()
+                   ->getInstantiatedFromMemberTemplate()) {
+      template_decl = function_decl->getDescribedFunctionTemplate()
+                          ->getInstantiatedFromMemberTemplate();
+      template_context = llvm::dyn_cast<clang::FunctionDecl>(
+          template_decl->getTemplatedDecl());
     } else {
       return nullptr;
     }
@@ -274,24 +273,32 @@ const clang::NamedDecl* GetTemplatePrototypeNamedDecl(const clang::Decl* decl) {
     return nullptr;
   }
 
-  clang::DeclarationName field_name = named_decl->getDeclName();
-  // We are using `decls` instead of `fields` to also account for statics.
-  for (const clang::Decl* inner_decl : template_context->decls()) {
-    if (const auto* inner_named_decl =
-            llvm::dyn_cast<clang::NamedDecl>(inner_decl)) {
-      if (inner_named_decl->getDeclName() == field_name) {
-        if (const auto* var_template_decl =
-                llvm::dyn_cast<clang::VarTemplateDecl>(inner_named_decl)) {
-          return var_template_decl->getTemplatedDecl();
+  if (template_context) {
+    // We are using `decls` instead of `fields` to also account for statics.
+    for (const clang::Decl* inner_decl : template_context->decls()) {
+      if (const auto* inner_named_decl =
+              llvm::dyn_cast<clang::NamedDecl>(inner_decl)) {
+        if (inner_named_decl->getDeclName() == field_name) {
+          if (llvm::isa<clang::BindingDecl>(inner_named_decl)) {
+            // TODO: Figure out if we can support these.
+            return nullptr;
+          }
+          return inner_named_decl;
         }
-        if (llvm::isa<clang::BindingDecl>(inner_named_decl)) {
-          // TODO: Figure out if we can support these.
-          return nullptr;
-        }
-        return inner_named_decl;
       }
     }
   }
+
+  if (template_decl) {
+    // Look up template parameters as well.
+    for (const clang::NamedDecl* template_parameter :
+         *template_decl->getTemplateParameters()) {
+      if (template_parameter->getDeclName() == field_name) {
+        return template_parameter;
+      }
+    }
+  }
+
   return nullptr;
 }
 
@@ -850,15 +857,18 @@ AstVisitor::GetTemplateSubstituteRelationship(
   }
   const EntityId template_entity_id = GetEntityIdForDecl(template_decl);
   if (template_entity_id == kInvalidEntityId) {
-    std::string str;
-    llvm::raw_string_ostream stream(str);
-    stream << "Please report an indexer issue marked 'TEMPLATE':\n";
-    ReportTranslationUnit(stream, context_);
-    stream << "Original Decl:\n";
-    original_decl->dump(stream);
-    stream << "Template prototype Decl:\n";
-    template_decl->dump(stream);
-    llvm::errs() << str;
+    // `original_decl` might have been materialized with `for_reference`.
+    if (!IsIgnoredImplicitDecl(original_decl)) {
+      std::string str;
+      llvm::raw_string_ostream stream(str);
+      stream << "Please report an indexer issue marked 'TEMPLATE':\n";
+      ReportTranslationUnit(stream, context_);
+      stream << "Original Decl:\n";
+      original_decl->dump(stream);
+      stream << "Template prototype Decl:\n";
+      template_decl->dump(stream);
+      llvm::errs() << str;
+    }
     return std::nullopt;
   }
   return SubstituteRelationship(
@@ -870,10 +880,6 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
                                         LocationId location_id,
                                         bool for_reference) {
   CHECK_NE(decl, nullptr);
-  if (IsEphemeralContext(decl->getDeclContext())) {
-    return kInvalidEntityId;
-  }
-
   // Unless they are referenced, do not index `IsIgnoredImplicitDecl` subjects.
   if (!for_reference && IsIgnoredImplicitDecl(decl)) {
     return kInvalidEntityId;
@@ -1025,15 +1031,15 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
                                GetEnumValue(enum_constant_decl)});
   } else if (llvm::isa<clang::TemplateTypeParmDecl>(decl) ||
              llvm::isa<clang::TypedefNameDecl>(decl)) {
+    substitute_relationship = GetTemplateSubstituteRelationship(
+        GetTemplatePrototypeNamedDecl(decl), decl);
     return index_.GetEntityId({Entity::Kind::kType, name_prefix, name,
-                               name_suffix, get_location_id()});
+                               name_suffix, get_location_id(),
+                               /*is_incomplete=*/false,
+                               /*is_weak=*/false, substitute_relationship});
   } else if (llvm::isa<clang::FunctionDecl>(decl)) {
     const auto* function_decl = llvm::cast<clang::FunctionDecl>(decl);
     bool is_incomplete = IsIncompleteFunction(function_decl);
-    if (is_incomplete && function_decl->isInlined()) {
-      // See the discussion for `IsEphemeralContext`.
-      return kInvalidEntityId;
-    }
     bool is_weak = !is_incomplete && function_decl->hasAttr<clang::WeakAttr>();
 
     // Note: Implicit methods are generally defined after template
@@ -1047,25 +1053,43 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
     // In contrast, an implicit destructor of an (implicit) template
     // instantiation will have `kIsImplicitlyDefinedFor` which in turn
     // has a 'kIsTemplateInstantiationOf`.
+
+    // Check for template instantiation.
+    const clang::Decl* function_template = nullptr;
     if (function_decl->getTemplateInstantiationPattern()) {
-      substitute_relationship = GetTemplateSubstituteRelationship(
-          function_decl->getTemplateInstantiationPattern(), decl);
-    } else if (function_decl->isImplicit() &&
-               llvm::isa<clang::CXXMethodDecl>(function_decl)) {
-      auto parent_class =
-          llvm::cast<clang::CXXMethodDecl>(function_decl)->getParent();
-      if (parent_class->getName().empty()) {
-        // An anonymous struct's/union's implicit method; ignore.
-        return kInvalidEntityId;
-      }
-      auto implicitly_defined_for_entity_id = GetEntityIdForDecl(parent_class);
-      if (implicitly_defined_for_entity_id == kInvalidEntityId) {
-        // Case in point: Implicitly defined `struct __va_list_tag`.
-        return kInvalidEntityId;
-      } else {
-        substitute_relationship = {
-            SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
-            implicitly_defined_for_entity_id};
+      function_template = function_decl->getTemplateInstantiationPattern();
+    } else if (function_decl->getDescribedFunctionTemplate() &&
+               function_decl->getDescribedFunctionTemplate()
+                   ->getInstantiatedFromMemberTemplate()) {
+      function_template = function_decl->getDescribedFunctionTemplate()
+                              ->getInstantiatedFromMemberTemplate();
+    }
+    if (function_template) {
+      substitute_relationship =
+          GetTemplateSubstituteRelationship(function_template, decl);
+    }
+
+    if (!substitute_relationship) {
+      if (const auto method_decl =
+              llvm::dyn_cast<clang::CXXMethodDecl>(function_decl)) {
+        // Check for an implicitly defined method.
+        if (!substitute_relationship && method_decl->isImplicit()) {
+          auto parent_class = method_decl->getParent();
+          if (parent_class->getName().empty()) {
+            // An anonymous struct's/union's implicit method; ignore.
+            return kInvalidEntityId;
+          }
+          auto implicitly_defined_for_entity_id =
+              GetEntityIdForDecl(parent_class);
+          if (implicitly_defined_for_entity_id == kInvalidEntityId) {
+            // Case in point: Implicitly defined `struct __va_list_tag`.
+            return kInvalidEntityId;
+          } else {
+            substitute_relationship = {
+                SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
+                implicitly_defined_for_entity_id};
+          }
+        }
       }
     }
     return index_.GetEntityId({Entity::Kind::kFunction, name_prefix, name,
