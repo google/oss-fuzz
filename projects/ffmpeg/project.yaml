@@ -22,4 +22,4 @@ sanitizers:
  - memory
  - undefined
 selective_unpack: true
-main_repo: 'https://git.ffmpeg.org/ffmpeg.git'
+main_repo: 'https://github.com/FFmpeg/FFmpeg'
