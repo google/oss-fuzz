@@ -1,6 +1,7 @@
 homepage: "https://git.gnunet.org/libmicrohttpd2.git"
 main_repo: "https://git.gnunet.org/libmicrohttpd2.git"
 primary_contact: "arthur.chan@adalogics.com"
+language: c++
 vendor_ccs:
   - "david@adalogics.com"
   - "adam@adalogics.com"
