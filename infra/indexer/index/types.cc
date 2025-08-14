@@ -74,9 +74,9 @@ std::strong_ordering operator<=>(const Location& lhs, const Location& rhs) {
 Entity::Entity(Kind kind, absl::string_view name_prefix, absl::string_view name,
                absl::string_view name_suffix, LocationId location_id,
                bool is_incomplete, bool is_weak,
-               std::optional<EntityId> canonical_entity_id,
-               std::optional<EntityId> implicitly_defined_for_entity_id,
-               std::optional<std::string> enum_value)
+               std::optional<SubstituteRelationship> substitute_relationship,
+               std::optional<std::string> enum_value,
+               VirtualMethodKind virtual_method_kind)
     : kind_(kind),
       is_incomplete_(is_incomplete),
       is_weak_(is_weak),
@@ -84,23 +84,18 @@ Entity::Entity(Kind kind, absl::string_view name_prefix, absl::string_view name,
       name_(name),
       name_suffix_(name_suffix),
       location_id_(location_id),
-      canonical_entity_id_(canonical_entity_id),
-      implicitly_defined_for_entity_id_(implicitly_defined_for_entity_id),
-      enum_value_(enum_value) {
+      substitute_relationship_(substitute_relationship),
+      enum_value_(enum_value),
+      virtual_method_kind_(virtual_method_kind) {
   CHECK_GT(name.size(), 0);
   CHECK_NE(location_id, kInvalidLocationId);
-  CHECK(!(canonical_entity_id.has_value() &&
-          implicitly_defined_for_entity_id.has_value()));
-  if (canonical_entity_id.has_value()) {
-    CHECK_NE(*canonical_entity_id, kInvalidEntityId);
-  }
-  if (implicitly_defined_for_entity_id.has_value()) {
-    CHECK_NE(*implicitly_defined_for_entity_id, kInvalidEntityId);
-  }
   if (kind == Kind::kEnumConstant) {
     CHECK(enum_value && IsDecimalInteger(enum_value->c_str()));
   } else {
     CHECK(!enum_value.has_value());
+  }
+  if (virtual_method_kind != VirtualMethodKind::kNotAVirtualMethod) {
+    CHECK(kind == Kind::kFunction);
   }
 }
 
@@ -111,26 +106,23 @@ bool operator==(const Entity& lhs, const Entity& rhs) {
          lhs.name_prefix() == rhs.name_prefix() &&
          lhs.name_suffix() == rhs.name_suffix() &&
          lhs.location_id() == rhs.location_id() &&
-         lhs.canonical_entity_id() == rhs.canonical_entity_id() &&
-         lhs.implicitly_defined_for_entity_id() ==
-             rhs.implicitly_defined_for_entity_id() &&
-         lhs.enum_value() == rhs.enum_value();
+         lhs.substitute_relationship() == rhs.substitute_relationship() &&
+         lhs.enum_value() == rhs.enum_value() &&
+         lhs.virtual_method_kind() == rhs.virtual_method_kind();
 }
 
 // Entities are sorted by fully-qualified name, then by kind, then by
-// completeness, by weakness, and finally by location, canonical entity ID, and
-// implicit-for entity ID.
+// completeness, by weakness, and finally by location, substitution
+// relationship fields, enum value, and virtual method kind.
 std::strong_ordering operator<=>(const Entity& lhs, const Entity& rhs) {
   return std::forward_as_tuple(lhs.name_prefix(), lhs.name(), lhs.name_suffix(),
                                lhs.kind(), lhs.is_incomplete(), lhs.is_weak(),
-                               lhs.location_id(), lhs.canonical_entity_id(),
-                               lhs.implicitly_defined_for_entity_id(),
-                               lhs.enum_value()) <=>
+                               lhs.location_id(), lhs.substitute_relationship(),
+                               lhs.enum_value(), lhs.virtual_method_kind()) <=>
          std::forward_as_tuple(rhs.name_prefix(), rhs.name(), rhs.name_suffix(),
                                rhs.kind(), rhs.is_incomplete(), rhs.is_weak(),
-                               rhs.location_id(), lhs.canonical_entity_id(),
-                               rhs.implicitly_defined_for_entity_id(),
-                               rhs.enum_value());
+                               rhs.location_id(), rhs.substitute_relationship(),
+                               rhs.enum_value(), rhs.virtual_method_kind());
 }
 
 Reference::Reference(EntityId entity_id, LocationId location_id)
