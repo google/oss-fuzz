@@ -156,25 +156,6 @@ std::vector<Entity> GetThirdTestEntities() {
                  SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 3)),
   }));
 }
-
-std::vector<Entity> GetFourthTestEntities() {
-  // This should return a sorted vector of Entities whose substitute entity
-  // reference IDs are lower than their indices in the vector.
-  return EnsureSubstituteReferenceOrdering(EnsureSorted<Entity>({
-      Entity(Entity::Kind::kClass, "bar::", "Foo", "<T>", 0),
-      Entity(Entity::Kind::kClass, "bar::", "Foo", "<int>", 0,
-             /*is_incomplete=*/false, /*is_weak=*/false,
-             /*substitute_relationship=*/
-             SubstituteRelationship(
-                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 0)),
-      Entity(Entity::Kind::kClass, "jar::", "Bad", "<char>", 0,
-             /*is_incomplete=*/false, /*is_weak=*/false,
-             /*substitute_relationship=*/
-             SubstituteRelationship(
-                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 1)),
-  }));
-}
-
 }  // namespace
 
 TEST(InMemoryIndexTest, Locations) {
@@ -412,31 +393,6 @@ TEST(InMemoryIndexTest, MergeWithSubstituteEntities) {
             SubstituteRelationship(
                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 5)));
   }
-}
-
-TEST(InMemoryIndexTest, TemplateChainsContracted) {
-  FileCopier file_copier("", ::testing::TempDir(), {"/"});
-  InMemoryIndex index_one(file_copier);
-  auto locations = GetSecondTestLocations();
-  auto entities = GetFourthTestEntities();
-  for (const auto& location : locations) {
-    index_one.GetLocationId(location);
-  }
-
-  for (const auto& entity : entities) {
-    index_one.GetEntityId(entity);
-  }
-
-  FlatIndex flat_index = std::move(index_one).Export();
-  ASSERT_EQ(flat_index.entities.size(), 3);
-  ASSERT_EQ(flat_index.entities[0], entities[0]);  // bar::Foo<T>
-  ASSERT_EQ(flat_index.entities[1], entities[1]);  // bar::Foo<int>
-
-  Entity with_contracted_chain(entities[2]);
-  testing_internal::TestPeer::SetSubstituteRelationship(
-      with_contracted_chain,
-      {SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 0});
-  ASSERT_EQ(flat_index.entities[2], with_contracted_chain);  // jar::Bad<char>
 }
 }  // namespace indexer
 }  // namespace oss_fuzz

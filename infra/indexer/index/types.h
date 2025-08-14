@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/log/check.h"
@@ -100,6 +101,12 @@ class SubstituteRelationship {
     //   (See `FrontendTest.ImplicitComparisonInstantiation` for this
     //   situation.)
     kIsImplicitlyDefinedFor = 2,
+
+    // This entity's implementation is inherited from the base class and not
+    // overridden.
+    // (We report it as "this implementation is inherited from another" with a
+    // slight abuse of wording.)
+    kIsInheritedFrom = 3,
   };
 
   SubstituteRelationship(Kind kind, EntityId entity_id)
@@ -166,6 +173,16 @@ class Entity {
     if (substitute_relationship_.has_value()) {
       substitute_relationship_->entity_id_ = *new_substitute_entity_id;
     }
+  }
+
+  // Allows to create a copy of `entity` inheriting its implementation.
+  template <class TEntity>
+  Entity(TEntity&& entity, absl::string_view new_name_prefix,
+         EntityId inherited_entity_id)
+      : Entity(std::forward<TEntity>(entity)) {
+    name_prefix_ = new_name_prefix;
+    substitute_relationship_ = SubstituteRelationship(
+        SubstituteRelationship::Kind::kIsInheritedFrom, inherited_entity_id);
   }
 
   inline Kind kind() const { return kind_; }

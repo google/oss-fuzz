@@ -25,7 +25,7 @@
 #include "absl/types/span.h"
 #include "sqlite3.h"
 
-#define SCHEMA_VERSION "2"
+#define SCHEMA_VERSION "3"
 
 namespace oss_fuzz {
 namespace indexer {

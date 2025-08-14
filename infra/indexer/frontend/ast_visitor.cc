@@ -36,12 +36,15 @@
 #include "clang/AST/TemplateBase.h"
 #include "clang/AST/Type.h"
 #include "clang/Basic/FileEntry.h"
+#include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/Specifiers.h"
 #include "clang/Basic/TypeTraits.h"
+#include "clang/Sema/Lookup.h"
 #include "clang/Sema/Sema.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Casting.h"
@@ -519,42 +522,10 @@ std::string GetNameSuffix(const clang::Decl* decl) {
   return name_suffix;
 }
 
-std::string GetNamePrefix(const clang::Decl* decl) {
-  if (llvm::isa<clang::ParmVarDecl>(decl)) {
-    return {};
-  }
-
+std::string GetNamePrefixForDeclContext(const clang::DeclContext* decl_context,
+                                        bool include_function_scope = true) {
   std::list<std::string> parts = {""};
 
-  // Function names should only appear in the name prefix in specific cases.
-  //
-  // 1. Declaration of a template parameter for a function or member function
-  //    template:
-  //    ```
-  //    template <typename T>
-  //    void foo(T bar);
-  //    ```
-  //    In this case, the Type entity for `T` should be qualified as
-  //    `foo<typename T>()::T`
-  //
-  // 2. Declaration of a nested type/class/enum or a nested function:
-  //    ```
-  //    int foo() {
-  //      class Bar {
-  //      };
-  //    }
-  //    ```
-  //    In this case, the Class entity for `Bar` should be qualified as
-  //    `foo()::Bar`
-  //
-  // Technically, I think the return type should be included when functions are
-  // used as qualifiers, but since return type overloading is not allowed I
-  // don't think that this is necessary, so it is omitted at present.
-  //
-  // In practice this means that we want to include functions in fully qualified
-  // names for anything other than variable declarations.
-  bool include_function_scope = !llvm::isa<clang::VarDecl>(decl);
-  const auto* decl_context = decl->getNonTransparentDeclContext();
   while (decl_context) {
     if (llvm::isa<clang::FunctionDecl>(decl_context)) {
       if (!include_function_scope) {
@@ -605,11 +576,147 @@ std::string GetNamePrefix(const clang::Decl* decl) {
   return absl::StrJoin(parts, "::");
 }
 
+std::string GetNamePrefix(const clang::Decl* decl) {
+  if (llvm::isa<clang::ParmVarDecl>(decl)) {
+    return {};
+  }
+
+  // Function names should only appear in the name prefix in specific cases.
+  //
+  // 1. Declaration of a template parameter for a function or member function
+  //    template:
+  //    ```
+  //    template <typename T>
+  //    void foo(T bar);
+  //    ```
+  //    In this case, the Type entity for `T` should be qualified as
+  //    `foo<typename T>()::T`
+  //
+  // 2. Declaration of a nested type/class/enum or a nested function:
+  //    ```
+  //    int foo() {
+  //      class Bar {
+  //      };
+  //    }
+  //    ```
+  //    In this case, the Class entity for `Bar` should be qualified as
+  //    `foo()::Bar`
+  //
+  // Technically, I think the return type should be included when functions are
+  // used as qualifiers, but since return type overloading is not allowed I
+  // don't think that this is necessary, so it is omitted at present.
+  //
+  // In practice this means that we want to include functions in fully qualified
+  // names for anything other than variable declarations.
+  bool include_function_scope = !llvm::isa<clang::VarDecl>(decl);
+  const auto* decl_context = decl->getNonTransparentDeclContext();
+  return GetNamePrefixForDeclContext(decl_context, include_function_scope);
+}
+
 bool IsIgnoredImplicitDecl(const clang::Decl* decl) {
   // Don't index unreferenced implicit entities except implicit methods.
   // (We opt to declare all the implicit methods with a preference to report
   // e.g. an "implicitly defined" destructor over reporting it missing.)
   return decl->isImplicit() && !llvm::isa<clang::CXXMethodDecl>(decl);
+}
+
+bool IsNotInherited(const clang::Decl* decl) {
+  if (decl->isImplicit() || llvm::isa<clang::CXXConstructorDecl>(decl) ||
+      llvm::isa<clang::CXXDestructorDecl>(decl)) {
+    return true;
+  }
+  // Assignment operators are not inherited.
+  if (const auto* function_decl = llvm::dyn_cast<clang::FunctionDecl>(decl)) {
+    if (function_decl->isOverloadedOperator() &&
+        function_decl->getOverloadedOperator() == clang::OO_Equal) {
+      return true;
+    }
+  }
+  return false;
+}
+
+using SeenNames = llvm::SmallSet<clang::DeclarationName, 32>;
+
+void CollectPotentialMemberNamesFromAncestors(
+    const clang::CXXRecordDecl* class_decl, SeenNames& seen_names) {
+  class_decl = class_decl->getDefinition();
+  if (!class_decl) {
+    return;
+  }
+  for (const auto& base_spec : class_decl->bases()) {
+    if (const clang::CXXRecordDecl* base_decl =
+            base_spec.getType()->getAsCXXRecordDecl();
+        base_decl && (base_decl = base_decl->getDefinition())) {
+      // We are using `decls` instead of `fields` to also account for statics.
+      for (const auto* decl : base_decl->decls()) {
+        if (const auto* named_decl = llvm::dyn_cast<clang::NamedDecl>(decl)) {
+          const clang::DeclarationName& decl_name = named_decl->getDeclName();
+          if (decl_name.getAsString().empty()) {
+            continue;
+          }
+          if (!seen_names.contains(decl_name)) {
+            // Process all the members with this name (e.g. method overloads).
+            auto result = base_decl->lookup(named_decl->getDeclName());
+            for (const auto* found_decl : result) {
+              if (!IsNotInherited(found_decl)) {
+                seen_names.insert(decl_name);
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      CollectPotentialMemberNamesFromAncestors(base_decl, seen_names);
+    }
+  }
+}
+
+bool IsCompleteClass(const clang::CXXRecordDecl* class_decl) {
+  // According to `Sema::LookupQualifiedName` constraints for a `TagDecl`.
+  return class_decl->isDependentContext() ||
+         class_decl->isCompleteDefinition() || class_decl->isBeingDefined();
+}
+
+template <typename Action>
+void ForAllInheritedMembers(clang::Sema& sema,
+                            const clang::CXXRecordDecl* class_decl,
+                            Action&& action) {
+  CHECK_NE(class_decl, nullptr);
+  if (!IsCompleteClass(class_decl)) {
+    return;
+  }
+
+  SeenNames seen_names;
+  CollectPotentialMemberNamesFromAncestors(class_decl, seen_names);
+
+  for (const clang::DeclarationName& decl_name : seen_names) {
+    clang::LookupResult lookup_result(
+        sema, decl_name, {}, clang::Sema::LookupNameKind::LookupMemberName);
+    lookup_result.suppressDiagnostics();
+    // `LookupQualifiedName` requires a mutable context - in particular,
+    // implicit methods can be lazily defined in the process.
+    // However, the pattern of `const` usage there is awkward - at the time of
+    // writing, `LookupDirect` takes it as a `const` pointer, then passed to
+    // `DeclareImplicitMemberFunctionsWithName` which casts the `const` away...
+    auto* mutable_class_decl = const_cast<clang::CXXRecordDecl*>(class_decl);
+    sema.LookupQualifiedName(lookup_result, mutable_class_decl,
+                             /*InUnqualifiedLookup=*/false);
+    if (!lookup_result.isSingleResult() &&
+        !lookup_result.isOverloadedResult()) {
+      // Ambiguous lookups that require qualification are not instantiated.
+      // However, qualified accesses (`A().B::x`) do count as references.
+      continue;
+    }
+    for (const auto decl : lookup_result) {
+      // Check that it is an inherited member and not one from the class itself.
+      if (decl->getNonTransparentDeclContext()->getPrimaryContext() ==
+          class_decl->getPrimaryContext()) {
+        continue;
+      }
+      action(decl);
+    }
+  }
 }
 
 void ReportTranslationUnit(llvm::raw_string_ostream& stream,
@@ -717,9 +824,14 @@ bool AstVisitor::VisitRecordDecl(clang::RecordDecl* decl) {
       // Only index `C` in this case, and don't index `C::C`.
       return true;
     }
+
+    if (IsADefinition(record_decl)) {
+      SynthesizeInheritedMemberEntities(record_decl);
+    }
+
     // We opt to declare all the implicit members with a preference to report
     // e.g. an "implicitly defined" destructor over reporting it missing.
-    compiler_.getSema().ForceDeclarationOfImplicitMembers(record_decl);
+    sema_.ForceDeclarationOfImplicitMembers(record_decl);
   }
 
   // As for FunctionDecl, we only need to add an entity for a RecordDecl if this
@@ -729,6 +841,23 @@ bool AstVisitor::VisitRecordDecl(clang::RecordDecl* decl) {
     AddReferencesForDecl(decl);
   }
   return true;
+}
+
+void AstVisitor::SynthesizeInheritedMemberEntities(
+    const clang::CXXRecordDecl* class_decl) {
+  CHECK(IsADefinition(class_decl));
+
+  const std::string new_name_prefix = GetNamePrefixForDeclContext(class_decl);
+  ForAllInheritedMembers(sema_, class_decl, [&](const clang::Decl* decl) {
+    const EntityId inherited_id = GetEntityIdForDecl(decl);
+    if (inherited_id == kInvalidEntityId) {
+      return;
+    }
+    const Entity& inherited_entity = index_.GetEntityById(inherited_id);
+    index_.GetEntityId(Entity(inherited_entity,
+                              /*new_name_prefix=*/new_name_prefix,
+                              /*inherited_entity_id=*/inherited_id));
+  });
 }
 
 bool AstVisitor::VisitTemplateTypeParmDecl(
@@ -855,7 +984,8 @@ AstVisitor::GetTemplateSubstituteRelationship(
   if (template_decl == nullptr) {
     return std::nullopt;
   }
-  const EntityId template_entity_id = GetEntityIdForDecl(template_decl);
+
+  EntityId template_entity_id = GetEntityIdForDecl(template_decl);
   if (template_entity_id == kInvalidEntityId) {
     // `original_decl` might have been materialized with `for_reference`.
     if (!IsIgnoredImplicitDecl(original_decl)) {
@@ -871,18 +1001,48 @@ AstVisitor::GetTemplateSubstituteRelationship(
     }
     return std::nullopt;
   }
-  return SubstituteRelationship(
-      SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
-      template_entity_id);
+
+  const Entity& template_entity = index_.GetEntityById(template_entity_id);
+  const auto relationship_kind =
+      SubstituteRelationship::Kind::kIsTemplateInstantiationOf;
+  if (const auto& next_relationship = template_entity.substitute_relationship();
+      next_relationship && next_relationship->kind() == relationship_kind) {
+    // Contract consecutive references to point to the ultimate prototype.
+    template_entity_id = next_relationship->substitute_entity_id();
+  }
+  return SubstituteRelationship(relationship_kind, template_entity_id);
 }
 
 EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
-                                        LocationId location_id,
                                         bool for_reference) {
+  auto it = decl_to_entity_id_.find(decl);
+  if (it != decl_to_entity_id_.end()) {
+    const CachedEntityId& cached = it->second;
+    if (for_reference || !cached.for_reference_only) {
+      return cached.entity_id;
+    }
+  }
+  std::optional<Entity> entity = GetEntityForDecl(decl, for_reference);
+  if (entity) {
+    const EntityId id = index_.GetEntityId(*entity);
+    decl_to_entity_id_.insert_or_assign(it, decl, {id, for_reference});
+    return id;
+  }
+  if (for_reference) {
+    // If even `for_reference` yields an invalid entity, we can cache that.
+    decl_to_entity_id_.insert(
+        it, {decl, {kInvalidEntityId, /*for_reference_only=*/false}});
+  }
+  return kInvalidEntityId;
+}
+
+std::optional<Entity> AstVisitor::GetEntityForDecl(const clang::Decl* decl,
+                                                   bool for_reference,
+                                                   LocationId location_id) {
   CHECK_NE(decl, nullptr);
   // Unless they are referenced, do not index `IsIgnoredImplicitDecl` subjects.
   if (!for_reference && IsIgnoredImplicitDecl(decl)) {
-    return kInvalidEntityId;
+    return std::nullopt;
   }
 
   // Handle assignments of lambda types, as we need to get the entity for the
@@ -890,8 +1050,8 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
   if (llvm::isa<clang::CXXRecordDecl>(decl)) {
     auto* function_decl = llvm::cast<clang::CXXRecordDecl>(decl);
     if (function_decl->isLambda()) {
-      return GetEntityIdForDecl(function_decl->getLambdaCallOperator(),
-                                location_id);
+      return GetEntityForDecl(function_decl->getLambdaCallOperator(),
+                              location_id);
     }
   }
 
@@ -929,7 +1089,7 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
     decl = binding_decl->getHoldingVar();
     // It's possible that we don't have a holding var here.
     if (!decl) {
-      return kInvalidEntityId;
+      return std::nullopt;
     }
   }
 
@@ -953,19 +1113,18 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
       decl = function_decl->getDefinition();
     }
   }
-
   // Defer getting the location in case the entity is invalid.
   auto get_location_id = [&]() {
     return location_id == kInvalidLocationId ? GetLocationId(decl)
                                              : location_id;
   };
 
-  std::string name_prefix = GetNamePrefix(decl);
-  std::string name = GetName(decl);
-  std::string name_suffix = GetNameSuffix(decl);
+  const std::string name = GetName(decl);
   if (name.empty()) {
-    return kInvalidEntityId;
+    return std::nullopt;
   }
+  const std::string name_prefix = GetNamePrefix(decl);
+  const std::string name_suffix = GetNameSuffix(decl);
 
   std::optional<SubstituteRelationship> substitute_relationship;
   if (llvm::isa<clang::VarDecl>(decl) || llvm::isa<clang::FieldDecl>(decl) ||
@@ -975,17 +1134,17 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
       // implicit `FieldDecl`s were unnamed anonymous struct/union fields
       // (see `FieldDecl::isAnonymousStructOrUnion`).
       // `DecompositionDecl` is unnamed but inherits from `VarDecl`.
-      return kInvalidEntityId;
+      return std::nullopt;
     }
 
     if (llvm::isa<clang::FieldDecl>(decl) || llvm::isa<clang::VarDecl>(decl)) {
+      // Check for template instantiation.
       substitute_relationship = GetTemplateSubstituteRelationship(
           GetTemplatePrototypeNamedDecl(decl), decl);
     }
-    return index_.GetEntityId({Entity::Kind::kVariable, name_prefix, name,
-                               name_suffix, get_location_id(),
-                               /*is_incomplete=*/false, /*is_weak=*/false,
-                               substitute_relationship});
+    return Entity(Entity::Kind::kVariable, name_prefix, name, name_suffix,
+                  get_location_id(), /*is_incomplete=*/false,
+                  /*is_weak=*/false, substitute_relationship);
   } else if (llvm::isa<clang::RecordDecl>(decl)) {
     const auto* record_decl = llvm::cast<clang::RecordDecl>(decl);
     bool is_incomplete = !record_decl->getDefinition();
@@ -1010,33 +1169,30 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
             class_template_specialization_decl);
       }
     }
-    return index_.GetEntityId({Entity::Kind::kClass, name_prefix, name,
-                               name_suffix, get_location_id(), is_incomplete,
-                               /*is_weak=*/false, substitute_relationship});
+    return Entity(Entity::Kind::kClass, name_prefix, name, name_suffix,
+                  get_location_id(), is_incomplete, /*is_weak=*/false,
+                  substitute_relationship);
   } else if (llvm::isa<clang::EnumDecl>(decl)) {
     substitute_relationship = GetTemplateSubstituteRelationship(
         GetTemplatePrototypeNamedDecl(decl), decl);
-    return index_.GetEntityId(
-        {Entity::Kind::kEnum, name_prefix, name, name_suffix, get_location_id(),
-         /*is_incomplete=*/false, /*is_weak=*/false, substitute_relationship});
+    return Entity(Entity::Kind::kEnum, name_prefix, name, name_suffix,
+                  get_location_id(), /*is_incomplete=*/false,
+                  /*is_weak=*/false, substitute_relationship);
   } else if (llvm::isa<clang::EnumConstantDecl>(decl)) {
     const auto* enum_constant_decl = llvm::cast<clang::EnumConstantDecl>(decl);
     substitute_relationship = GetTemplateSubstituteRelationship(
         GetTemplatePrototypeNamedDecl(decl), decl);
-    return index_.GetEntityId({Entity::Kind::kEnumConstant, name_prefix, name,
-                               name_suffix, get_location_id(),
-                               /*is_incomplete=*/false, /*is_weak=*/false,
-                               substitute_relationship,
-                               /*enum_value=*/
-                               GetEnumValue(enum_constant_decl)});
+    return Entity(Entity::Kind::kEnumConstant, name_prefix, name, name_suffix,
+                  get_location_id(), /*is_incomplete=*/false, /*is_weak=*/false,
+                  substitute_relationship,
+                  /*enum_value=*/GetEnumValue(enum_constant_decl));
   } else if (llvm::isa<clang::TemplateTypeParmDecl>(decl) ||
              llvm::isa<clang::TypedefNameDecl>(decl)) {
     substitute_relationship = GetTemplateSubstituteRelationship(
         GetTemplatePrototypeNamedDecl(decl), decl);
-    return index_.GetEntityId({Entity::Kind::kType, name_prefix, name,
-                               name_suffix, get_location_id(),
-                               /*is_incomplete=*/false,
-                               /*is_weak=*/false, substitute_relationship});
+    return Entity(Entity::Kind::kType, name_prefix, name, name_suffix,
+                  get_location_id(), /*is_incomplete=*/false, /*is_weak=*/false,
+                  substitute_relationship);
   } else if (llvm::isa<clang::FunctionDecl>(decl)) {
     const auto* function_decl = llvm::cast<clang::FunctionDecl>(decl);
     bool is_incomplete = IsIncompleteFunction(function_decl);
@@ -1077,13 +1233,13 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
           auto parent_class = method_decl->getParent();
           if (parent_class->getName().empty()) {
             // An anonymous struct's/union's implicit method; ignore.
-            return kInvalidEntityId;
+            return std::nullopt;
           }
           auto implicitly_defined_for_entity_id =
               GetEntityIdForDecl(parent_class);
           if (implicitly_defined_for_entity_id == kInvalidEntityId) {
             // Case in point: Implicitly defined `struct __va_list_tag`.
-            return kInvalidEntityId;
+            return std::nullopt;
           } else {
             substitute_relationship = {
                 SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
@@ -1092,12 +1248,12 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
         }
       }
     }
-    return index_.GetEntityId({Entity::Kind::kFunction, name_prefix, name,
-                               name_suffix, get_location_id(), is_incomplete,
-                               is_weak, substitute_relationship});
+    return Entity(Entity::Kind::kFunction, name_prefix, name, name_suffix,
+                  get_location_id(), is_incomplete, is_weak,
+                  substitute_relationship);
   }
 
-  return kInvalidEntityId;
+  return std::nullopt;
 }
 
 void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
@@ -1153,7 +1309,6 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
         GetSpecializationDecl(specialization_type);
     if (specialization_decl) {
       auto entity_id = GetEntityIdForDecl(specialization_decl,
-                                          /*location_id=*/kInvalidLocationId,
                                           /*for_reference=*/true);
       if (entity_id != kInvalidEntityId) {
         (void)index_.GetReferenceId({entity_id, location_id});
@@ -1192,7 +1347,6 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
              SubstituteRelationship(
                  SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
                  GetEntityIdForDecl(alias_template_decl->getTemplatedDecl(),
-                                    /*location_id=*/kInvalidLocationId,
                                     /*for_reference=*/true))});
         if (entity_id != kInvalidEntityId) {
           (void)index_.GetReferenceId({entity_id, location_id});
@@ -1203,9 +1357,7 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
     // Type declaration becomes the instantiation of the underlying template.
     type_decl = type->getAsTagDecl();
     if (type_decl) {
-      auto entity_id =
-          GetEntityIdForDecl(type_decl, /*location_id=*/kInvalidLocationId,
-                             /*for_reference=*/true);
+      auto entity_id = GetEntityIdForDecl(type_decl, /*for_reference=*/true);
       if (entity_id != kInvalidEntityId) {
         (void)index_.GetReferenceId({entity_id, location_id});
       }
@@ -1233,9 +1385,7 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
     }
 
     if (type_decl) {
-      auto entity_id =
-          GetEntityIdForDecl(type_decl, /*location_id=*/kInvalidLocationId,
-                             /*for_reference=*/true);
+      auto entity_id = GetEntityIdForDecl(type_decl, /*for_reference=*/true);
 
       if (entity_id != kInvalidEntityId) {
         (void)index_.GetReferenceId({entity_id, location_id});
@@ -1338,8 +1488,7 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
 
 void AstVisitor::AddDeclReferenceForSourceRange(const clang::SourceRange& range,
                                                 const clang::Decl* decl) {
-  auto entity_id = GetEntityIdForDecl(decl, /*location_id=*/kInvalidLocationId,
-                                      /*for_reference=*/true);
+  auto entity_id = GetEntityIdForDecl(decl, /*for_reference=*/true);
   auto location_id = GetLocationId(range.getBegin(), range.getEnd());
 
   if (entity_id != kInvalidEntityId && location_id != kInvalidLocationId) {

@@ -27,6 +27,7 @@
 #include "indexer/index/types.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/container/node_hash_map.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/types/span.h"
@@ -202,36 +203,23 @@ LocationId InMemoryIndex::GetIdForLocationWithIndexPath(
   return iter->second;
 }
 
-EntityId InMemoryIndex::GetEntityId(Entity entity) {
-  using SubstituteRelationship::Kind::kIsTemplateInstantiationOf;
-
-  auto& relationship = entity.substitute_relationship_;
-  if (relationship) {
-    EntityId substitute_entity_id = relationship->substitute_entity_id();
-    CHECK_LT(substitute_entity_id, next_entity_id_);
-    if (relationship->kind() == kIsTemplateInstantiationOf) {
-      // If the template substitution for `entity` has another one in turn,
-      // resolve the substitution to target the ultimate prototype.
-      if (template_prototype_ids_[substitute_entity_id] != kInvalidEntityId) {
-        relationship->entity_id_ =
-            template_prototype_ids_[substitute_entity_id];
-      }
-    }
-  }
-
+EntityId InMemoryIndex::GetEntityId(const Entity& entity) {
   auto [iter, inserted] = entities_.insert({entity, next_entity_id_});
+  const EntityId entity_id = iter->second;
   if (inserted) {
     next_entity_id_++;
-  }
-  if (inserted) {
-    if (relationship && relationship->kind() == kIsTemplateInstantiationOf) {
-      template_prototype_ids_.push_back(relationship->substitute_entity_id());
-    } else {
-      template_prototype_ids_.push_back(kInvalidEntityId);
+    id_to_entity_.push_back(&iter->first);
+    if (auto relationship = entity.substitute_relationship_) {
+      CHECK_LT(relationship->substitute_entity_id(), entity_id);
     }
   }
-  const EntityId entity_id = iter->second;
   return entity_id;
+}
+
+const Entity& InMemoryIndex::GetEntityById(EntityId entity_id) const {
+  CHECK_NE(entity_id, kInvalidEntityId);
+  CHECK_LT(entity_id, id_to_entity_.size());
+  return *id_to_entity_[entity_id];
 }
 
 ReferenceId InMemoryIndex::GetReferenceId(const Reference& reference) {
@@ -295,7 +283,7 @@ FlatIndex InMemoryIndex::Export() && {
               ComparePairFirst());
     CHECK_EQ(sorted_entities.size(), entities_.size());
     entities_.clear();
-    template_prototype_ids_.clear();
+    id_to_entity_.clear();
 
     // Now iterate through the sorted entities, building a lookup from the old
     // to the new sorted ids, and building the results vector. Since entities

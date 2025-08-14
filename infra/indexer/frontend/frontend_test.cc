@@ -218,7 +218,12 @@ void PrintOptionalEntityParameters(const FlatIndex& index,
   if (entity.enum_value().has_value()) {
     flush_preceding_defaults();
     std::cerr << ", /*enum_value=*/\"" << *entity.enum_value() << "\"";
+  } else {
+    preceding_defaults.push_back(", /*enum_value=*/std::nullopt");
   }
+
+  handle_substitute_relationship(SubstituteRelationship::Kind::kIsInheritedFrom,
+                                 "inherited_from_entity_id");
 }
 
 void PrintAllEntityParameters(const FlatIndex& index, const Entity& entity) {
@@ -230,7 +235,7 @@ void PrintAllEntityParameters(const FlatIndex& index, const Entity& entity) {
 // valid `EXPECT...`s for a given index. These should be vetted and cleaned up
 // before adding to the test body. This should not be referenced in committed
 // tests.
-[[maybe_unused]] void PrintValidExpectations(const FlatIndex& index) {
+void PrintValidExpectations(const FlatIndex& index) {
   for (EntityId entity_id = 0; entity_id < index.entities.size(); ++entity_id) {
     const auto& entity = index.entities[entity_id];
     const auto& location = index.locations[entity.location_id()];
@@ -280,6 +285,9 @@ void PrintEntity(std::ostream& stream, const FlatIndex& index,
       case SubstituteRelationship::Kind::kIsImplicitlyDefinedFor: {
         stream << indent << "  Implicitly defined for:\n";
       }; break;
+      case SubstituteRelationship::Kind::kIsInheritedFrom: {
+        stream << indent << "  Inherited from:\n";
+      }; break;
     }
     const auto& substitute_entity =
         index.entities[relationship.substitute_entity_id()];
@@ -323,8 +331,13 @@ void DumpIndex(const FlatIndex& index) { std::cerr << DebugPrintIndex(index); }
 
 std::optional<SubstituteRelationship> GetSubstituteRelationship(
     std::optional<EntityId> template_prototype_entity_id,
-    std::optional<EntityId> implicitly_defined_for_entity_id) {
-  CHECK(!template_prototype_entity_id || !implicitly_defined_for_entity_id)
+    std::optional<EntityId> implicitly_defined_for_entity_id,
+    std::optional<EntityId> inherited_from_entity_id) {
+  auto count = [](const auto& optional) { return optional ? 1 : 0; };
+  auto substitutions = count(template_prototype_entity_id) +
+                       count(implicitly_defined_for_entity_id) +
+                       count(inherited_from_entity_id);
+  CHECK_LE(substitutions, 1)
       << "Multiple simultaneous substitutions are not allowed";
   if (template_prototype_entity_id) {
     return SubstituteRelationship(
@@ -336,6 +349,11 @@ std::optional<SubstituteRelationship> GetSubstituteRelationship(
         SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
         *implicitly_defined_for_entity_id);
   }
+  if (inherited_from_entity_id) {
+    return SubstituteRelationship(
+        SubstituteRelationship::Kind::kIsInheritedFrom,
+        *inherited_from_entity_id);
+  }
   return std::nullopt;
 }
 
@@ -346,7 +364,8 @@ std::optional<Entity> FindEntity(
     const std::optional<EntityId>& template_prototype_entity_id = std::nullopt,
     const std::optional<EntityId>& implicitly_defined_for_entity_id =
         std::nullopt,
-    const std::optional<std::string> enum_value = std::nullopt) {
+    const std::optional<std::string> enum_value = std::nullopt,
+    const std::optional<EntityId>& inherited_from_entity_id = std::nullopt) {
   std::optional<Entity> entity;
   for (LocationId location_id = 0; location_id < index.locations.size();
        ++location_id) {
@@ -362,7 +381,8 @@ std::optional<Entity> FindEntity(
                 is_incomplete,
                 /*is_weak=*/false,
                 GetSubstituteRelationship(template_prototype_entity_id,
-                                          implicitly_defined_for_entity_id),
+                                          implicitly_defined_for_entity_id,
+                                          inherited_from_entity_id),
                 enum_value};
       break;
     }
@@ -388,11 +408,13 @@ bool IndexHasEntity(
     const std::optional<EntityId>& template_prototype_entity_id = std::nullopt,
     const std::optional<EntityId>& implicitly_defined_for_entity_id =
         std::nullopt,
-    const std::optional<std::string> enum_value = std::nullopt) {
+    const std::optional<std::string> enum_value = std::nullopt,
+    const std::optional<EntityId>& inherited_from_entity_id = std::nullopt) {
   return FindEntity(index, kind, name_prefix, name, name_suffix, path,
                     start_line, end_line, is_incomplete,
                     template_prototype_entity_id,
-                    implicitly_defined_for_entity_id, enum_value)
+                    implicitly_defined_for_entity_id, enum_value,
+                    inherited_from_entity_id)
       .has_value();
 }
 
@@ -401,9 +423,11 @@ bool IndexHasReference(
     std::string name, std::string name_suffix, std::string path, int start_line,
     int end_line, std::string ref_path, int ref_start_line, int ref_end_line,
     bool is_incomplete = false,
-    std::optional<EntityId> template_prototype_entity_id = std::nullopt,
-    std::optional<EntityId> implicitly_defined_for_entity_id = std::nullopt,
-    std::optional<std::string> enum_value = std::nullopt) {
+    const std::optional<EntityId> template_prototype_entity_id = std::nullopt,
+    const std::optional<EntityId> implicitly_defined_for_entity_id =
+        std::nullopt,
+    const std::optional<std::string> enum_value = std::nullopt,
+    const std::optional<EntityId>& inherited_from_entity_id = std::nullopt) {
   LocationId ref_location_id = kInvalidLocationId;
   EntityId ref_entity_id = kInvalidEntityId;
 
@@ -422,7 +446,8 @@ bool IndexHasReference(
                 is_incomplete,
                 /*is_weak=*/false,
                 GetSubstituteRelationship(template_prototype_entity_id,
-                                          implicitly_defined_for_entity_id),
+                                          implicitly_defined_for_entity_id,
+                                          inherited_from_entity_id),
                 enum_value};
     }
 
@@ -1770,6 +1795,239 @@ TEST(FrontendTest, OverriddenMethod) {
   // the base method definition.
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
                        "snippet.cc", 3, 4, "snippet.cc", 13, 14);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Baz::", "Bar", "()",
+                    "snippet.cc", 3, 4, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kFunction,
+                                     "Foo::", "Bar", "()", "snippet.cc", 3, 4));
+}
+
+TEST(FrontendTest, CursedInheritance) {
+  auto index = IndexSnippet(
+      "namespace ns {\n"                      // 1
+      " struct Base {\n"                      // 2
+      "  void foo() {}\n"                     // 3
+      "  int foo(int) { return 7; }\n"        // 4
+      "  int a;\n"                            // 5
+      "  char Deriv() { return ' '; }\n"      // 6
+      " }; \n"                                // 7
+      "}\n"                                   // 8
+      "struct Deriv : ns::Base {\n"           // 9
+      "  void foo() {}\n"                     // 10
+      "  void foo(char*) {}\n"                // 11
+      "  void foo(int[]) {}\n"                // 12
+      "  int a;\n"                            // 13
+      "};\n"                                  // 14
+      "struct DerivDeriv : public Deriv {\n"  // 15
+      "};\n"                                  // 16
+      "\n"                                    // 17
+      "int main() {\n"                        // 18
+      "  DerivDeriv().ns::Base::foo(3);\n"    // 19
+      "  (void)DerivDeriv().ns::Base::a;\n"   // 20
+      "  Deriv d = DerivDeriv::Deriv();\n"    // 21
+      "}");                                   // 22
+  // Ensure we have a full set of overloads from `Deriv::foo`.
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "DerivDeriv::", "foo", "()",
+                    "snippet.cc", 10, 10, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kFunction, "Deriv::",
+                                     "foo", "()", "snippet.cc", 10, 10));
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "DerivDeriv::", "foo",
+                    "(char *)", "snippet.cc", 11, 11, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kFunction, "Deriv::",
+                                     "foo", "(char *)", "snippet.cc", 11, 11));
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "DerivDeriv::", "foo",
+                    "(int *)", "snippet.cc", 12, 12, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kFunction, "Deriv::",
+                                     "foo", "(int *)", "snippet.cc", 12, 12));
+  // The overload in `Base` is shadowed. We do not support `.ns::Base::foo`.
+  EXPECT_FALSE(IndexHasEntity(
+      index, Entity::Kind::kFunction, "DerivDeriv::", "foo", "(int)",
+      "snippet.cc", 12, 12, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kFunction, "ns::Base::", "foo",
+                       "(int)", "snippet.cc", 4, 4)));
+  // Unqualified `a` is inherited from `Deriv`. We don't support `.ns::Base::a`.
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "DerivDeriv::", "a", "",
+                    "snippet.cc", 13, 13, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kVariable,
+                                     "Deriv::", "a", "", "snippet.cc", 13, 13));
+  // However, the references via such qualifications are still tracked.
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kVariable, "ns::Base::", "a", "",
+                       "snippet.cc", 5, 5, "snippet.cc", 20, 20);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "ns::Base::", "foo",
+                       "(int)", "snippet.cc", 4, 4, "snippet.cc", 19, 19);
+}
+
+TEST(FrontendTest, MoreCursedInheritance) {
+  auto index = IndexSnippet(
+      "struct A {\n"                                 // 1
+      "  virtual char* foo() { return nullptr; }\n"  // 2
+      "  virtual void moo() {}\n"                    // 3
+      "  virtual void bar() = 0;\n"                  // 4
+      "};\n"                                         // 5
+      "struct B {\n"                                 // 6
+      "  virtual int* foo() { return nullptr; }\n"   // 7
+      "  virtual int moo(int) { return 13; }\n"      // 8
+      "  virtual void bar() = 0;\n"                  // 9
+      "};\n"                                         // 10
+      "struct C: A, B {\n"                           // 11
+      "  void moo() override {}\n"                   // 12
+      "  void bar() override {}\n"                   // 13
+      "};\n"                                         // 14
+      "struct D: C {\n"                              // 15
+      "  int moo(int) override { return 666; }\n"    // 16
+      "};\n"                                         // 17
+      "int main() {\n"                               // 18
+      "  D().A::foo(); D().B::foo();\n"              // 19
+      "  D().moo(3);\n"                              // 20
+      "  D().bar();\n"                               // 21
+      "}\n");                                        // 22
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "A::", "bar", "()",
+                    "snippet.cc", 4, 4);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "A::", "bar", "()",
+                       "snippet.cc", 4, 4, "snippet.cc", 13, 13);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "A::", "foo", "()",
+                    "snippet.cc", 2, 2);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "A::", "foo", "()",
+                       "snippet.cc", 2, 2, "snippet.cc", 19, 19);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "A::", "moo", "()",
+                    "snippet.cc", 3, 3);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "A::", "moo", "()",
+                       "snippet.cc", 3, 3, "snippet.cc", 12, 12);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "B::", "bar", "()",
+                    "snippet.cc", 9, 9);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "B::", "bar", "()",
+                       "snippet.cc", 9, 9, "snippet.cc", 13, 13);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "B::", "foo", "()",
+                    "snippet.cc", 7, 7);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "B::", "foo", "()",
+                       "snippet.cc", 7, 7, "snippet.cc", 19, 19);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "B::", "moo", "(int)",
+                    "snippet.cc", 8, 8);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "B::", "moo", "(int)",
+                       "snippet.cc", 8, 8, "snippet.cc", 16, 16);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "C::", "bar", "()",
+                    "snippet.cc", 13, 13);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "C::", "bar", "()",
+                       "snippet.cc", 13, 13, "snippet.cc", 21, 21);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "C::", "moo", "()",
+                    "snippet.cc", 12, 12);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "D::", "bar", "()",
+                    "snippet.cc", 13, 13, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kFunction,
+                                     "C::", "bar", "()", "snippet.cc", 13, 13));
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "D::", "moo", "(int)",
+                    "snippet.cc", 16, 16);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "D::", "moo", "(int)",
+                       "snippet.cc", 16, 16, "snippet.cc", 20, 20);
+  // `C::foo` is ambiguous, so we omit it.
+  EXPECT_FALSE(IndexHasEntity(
+      index, Entity::Kind::kFunction, "C::", "foo", "()", "snippet.cc", 2, 2,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kFunction, "A::", "foo", "()",
+                       "snippet.cc", 2, 2)));
+  EXPECT_FALSE(IndexHasEntity(
+      index, Entity::Kind::kFunction, "C::", "foo", "()", "snippet.cc", 7, 7,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kFunction, "B::", "foo", "()",
+                       "snippet.cc", 7, 7)));
+  // `C::moo(int)` is not available as an overload in `C` because of `C::moo()`.
+  EXPECT_FALSE(IndexHasEntity(
+      index, Entity::Kind::kFunction, "C::", "moo", "(int)", "snippet.cc", 8, 8,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kFunction, "B::", "moo", "(int)",
+                       "snippet.cc", 8, 8)));
+  // ...And `D::moo()` is not available as an overload in `D` due to `moo(int)`.
+  EXPECT_FALSE(IndexHasEntity(
+      index, Entity::Kind::kFunction, "D::", "moo", "()", "snippet.cc", 3, 3,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kFunction, "A::", "moo", "()",
+                       "snippet.cc", 3, 3)));
+}
+
+TEST(FrontendTest, InheritanceThroughTemplateInstantiation) {
+  auto index = IndexSnippet(
+      "class Foo {\n"                         // 1
+      " public:\n"                            // 2
+      "  virtual void Bar() {}\n"             // 3
+      "  virtual int foo() { return 1; }\n"   // 4
+      "};\n"                                  // 5
+      "template <typename T>\n"               // 6
+      "class Template : public Foo {\n"       // 7
+      " public:\n"                            // 8
+      "  int field = 0;\n"                    // 9
+      "};\n"                                  // 10
+      "class Bar : public Template<int> {\n"  // 11
+      "};\n");                                // 12
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Template<T>::", "foo",
+                    "()", "snippet.cc", 4, 4, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kFunction,
+                                     "Foo::", "foo", "()", "snippet.cc", 4, 4));
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Template<int>::", "foo",
+                    "()", "snippet.cc", 4, 4, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kFunction,
+                                     "Foo::", "foo", "()", "snippet.cc", 4, 4));
+  // `Bar::Bar` is a constructor set shadowing the virtual function.
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "Bar", "()",
+                    "snippet.cc", 11, 11, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kClass, "", "Bar", "",
+                                     "snippet.cc", 11, 12));
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "Bar", "(Bar &&)",
+                    "snippet.cc", 11, 11, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kClass, "", "Bar", "",
+                                     "snippet.cc", 11, 12));
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "Bar",
+                    "(const Bar &)", "snippet.cc", 11, 11,
+                    /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kClass, "", "Bar", "",
+                                     "snippet.cc", 11, 12));
+  // `Bar::foo` is inherited from `Foo::foo` through the template base class.
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "foo", "()",
+                    "snippet.cc", 4, 4, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+                    RequiredEntityId(index, Entity::Kind::kFunction,
+                                     "Foo::", "foo", "()", "snippet.cc", 4, 4));
 }
 
 TEST(FrontendTest, Builtin) {
