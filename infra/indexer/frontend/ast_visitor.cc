@@ -203,7 +203,7 @@ const clang::Decl* GetSpecializationDecl(
                                decl->getTemplateArgs().asArray());
 }
 
-const clang::CXXRecordDecl* GetCanonicalRecordDecl(
+const clang::CXXRecordDecl* GetTemplatePrototypeRecordDecl(
     const clang::ClassTemplateSpecializationDecl* decl) {
   const clang::Decl* specialization_decl = GetSpecializationDecl(decl);
   if (const auto* class_template_decl =
@@ -238,14 +238,14 @@ bool IsEphemeralContext(const clang::DeclContext* context) {
 // `decl` is required to be a `clang::NamedDecl`.
 // If it is inside a template instantiation, finds the context where it is
 // instantiated from and finds the corresponding entity by name.
-const clang::NamedDecl* GetCanonicalNamedDecl(const clang::Decl* decl) {
+const clang::NamedDecl* GetTemplatePrototypeNamedDecl(const clang::Decl* decl) {
   const clang::NamedDecl* named_decl = llvm::dyn_cast<clang::NamedDecl>(decl);
   CHECK_NE(named_decl, nullptr);
   if (named_decl->getName().empty()) {
     // Such as for a `DecompositionDecl`.
     return nullptr;
   }
-  const clang::DeclContext* canonical_context = nullptr;
+  const clang::DeclContext* template_context = nullptr;
 
   if (const auto* class_specialization_decl =
           llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(
@@ -254,8 +254,8 @@ const clang::NamedDecl* GetCanonicalNamedDecl(const clang::Decl* decl) {
       return nullptr;
     }
     if (const clang::CXXRecordDecl* template_definition =
-            GetCanonicalRecordDecl(class_specialization_decl)) {
-      canonical_context = template_definition;
+            GetTemplatePrototypeRecordDecl(class_specialization_decl)) {
+      template_context = template_definition;
     } else {
       return nullptr;
     }
@@ -263,7 +263,7 @@ const clang::NamedDecl* GetCanonicalNamedDecl(const clang::Decl* decl) {
                  named_decl->getDeclContext())) {
     if (const clang::FunctionDecl* instantiation_pattern =
             function_decl->getTemplateInstantiationPattern()) {
-      canonical_context = instantiation_pattern;
+      template_context = instantiation_pattern;
     } else {
       return nullptr;
     }
@@ -273,7 +273,7 @@ const clang::NamedDecl* GetCanonicalNamedDecl(const clang::Decl* decl) {
 
   clang::DeclarationName field_name = named_decl->getDeclName();
   // We are using `decls` instead of `fields` to also account for statics.
-  for (const clang::Decl* inner_decl : canonical_context->decls()) {
+  for (const clang::Decl* inner_decl : template_context->decls()) {
     if (const auto* inner_named_decl =
             llvm::dyn_cast<clang::NamedDecl>(inner_decl)) {
       if (inner_named_decl->getDeclName() == field_name) {
@@ -802,25 +802,28 @@ LocationId AstVisitor::GetLocationId(const clang::Decl* decl) {
   return GetLocationId(decl->getBeginLoc(), decl->getEndLoc());
 }
 
-std::optional<EntityId> AstVisitor::GetEntityIdForCanonicalDecl(
-    const clang::Decl* canonical_decl, const clang::Decl* original_decl) {
-  if (canonical_decl == nullptr) {
+std::optional<SubstituteRelationship>
+AstVisitor::GetTemplateSubstituteRelationship(
+    const clang::Decl* template_decl, const clang::Decl* original_decl) {
+  if (template_decl == nullptr) {
     return std::nullopt;
   }
-  const EntityId canonical_entity_id = GetEntityIdForDecl(canonical_decl);
-  if (canonical_entity_id == kInvalidEntityId) {
+  const EntityId template_entity_id = GetEntityIdForDecl(template_decl);
+  if (template_entity_id == kInvalidEntityId) {
     std::string str;
     llvm::raw_string_ostream stream(str);
-    stream << "Please report an indexer issue marked 'CANONICAL':\n";
+    stream << "Please report an indexer issue marked 'TEMPLATE':\n";
     ReportTranslationUnit(stream, context_);
     stream << "Original Decl:\n";
     original_decl->dump(stream);
-    stream << "Canonical Decl:\n";
-    canonical_decl->dump(stream);
+    stream << "Template prototype Decl:\n";
+    template_decl->dump(stream);
     llvm::errs() << str;
     return std::nullopt;
   }
-  return canonical_entity_id;
+  return SubstituteRelationship(
+      SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
+      template_entity_id);
 }
 
 EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
@@ -894,6 +897,7 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
     return kInvalidEntityId;
   }
 
+  std::optional<SubstituteRelationship> substitute_relationship;
   if (llvm::isa<clang::VarDecl>(decl) || llvm::isa<clang::FieldDecl>(decl) ||
       llvm::isa<clang::NonTypeTemplateParmDecl>(decl)) {
     if (decl->isImplicit() || llvm::isa<clang::DecompositionDecl>(decl)) {
@@ -903,19 +907,18 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
       // `DecompositionDecl` is unnamed but inherits from `VarDecl`.
       return kInvalidEntityId;
     }
-    std::optional<EntityId> canonical_entity_id;
+
     if (llvm::isa<clang::FieldDecl>(decl) || llvm::isa<clang::VarDecl>(decl)) {
-      canonical_entity_id =
-          GetEntityIdForCanonicalDecl(GetCanonicalNamedDecl(decl), decl);
+      substitute_relationship = GetTemplateSubstituteRelationship(
+          GetTemplatePrototypeNamedDecl(decl), decl);
     }
     return index_.GetEntityId({Entity::Kind::kVariable, name_prefix, name,
                                name_suffix, get_location_id(),
                                /*is_incomplete=*/false, /*is_weak=*/false,
-                               canonical_entity_id});
+                               substitute_relationship});
   } else if (llvm::isa<clang::RecordDecl>(decl)) {
     const auto* record_decl = llvm::cast<clang::RecordDecl>(decl);
     bool is_incomplete = !record_decl->getDefinition();
-    std::optional<EntityId> canonical_entity_id;
     if (llvm::isa<clang::ClassTemplateSpecializationDecl>(decl)) {
       auto* class_template_specialization_decl =
           llvm::cast<clang::ClassTemplateSpecializationDecl>(decl);
@@ -932,30 +935,28 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
         is_incomplete =
             !class_template_decl->getTemplatedDecl()->getDefinition();
 
-        canonical_entity_id = GetEntityIdForCanonicalDecl(
-            GetCanonicalRecordDecl(class_template_specialization_decl),
+        substitute_relationship = GetTemplateSubstituteRelationship(
+            GetTemplatePrototypeRecordDecl(class_template_specialization_decl),
             class_template_specialization_decl);
       }
     }
     return index_.GetEntityId({Entity::Kind::kClass, name_prefix, name,
                                name_suffix, get_location_id(), is_incomplete,
-                               /*is_weak=*/false, canonical_entity_id});
+                               /*is_weak=*/false, substitute_relationship});
   } else if (llvm::isa<clang::EnumDecl>(decl)) {
-    std::optional<EntityId> canonical_entity_id =
-        GetEntityIdForCanonicalDecl(GetCanonicalNamedDecl(decl), decl);
+    substitute_relationship = GetTemplateSubstituteRelationship(
+        GetTemplatePrototypeNamedDecl(decl), decl);
     return index_.GetEntityId(
         {Entity::Kind::kEnum, name_prefix, name, name_suffix, get_location_id(),
-         /*is_incomplete=*/false, /*is_weak=*/false, canonical_entity_id});
+         /*is_incomplete=*/false, /*is_weak=*/false, substitute_relationship});
   } else if (llvm::isa<clang::EnumConstantDecl>(decl)) {
     const auto* enum_constant_decl = llvm::cast<clang::EnumConstantDecl>(decl);
-    std::optional<EntityId> canonical_entity_id =
-        GetEntityIdForCanonicalDecl(GetCanonicalNamedDecl(decl), decl);
+    substitute_relationship = GetTemplateSubstituteRelationship(
+        GetTemplatePrototypeNamedDecl(decl), decl);
     return index_.GetEntityId({Entity::Kind::kEnumConstant, name_prefix, name,
                                name_suffix, get_location_id(),
                                /*is_incomplete=*/false, /*is_weak=*/false,
-                               canonical_entity_id,
-                               /*implicitly_defined_for_entity_id=*/
-                               std::nullopt,
+                               substitute_relationship,
                                /*enum_value=*/
                                GetEnumValue(enum_constant_decl)});
   } else if (llvm::isa<clang::TemplateTypeParmDecl>(decl) ||
@@ -975,17 +976,15 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
     // instantiation, but an implicit comparison operator coming from (C++20)
     //   constexpr operator<=>(const TemplatedClass<T>& other);
     // can be instantiated by class template instantiations.
-    // In this case we report the instantiation via `canonical_entity_id` which
-    // refers to an implicit method in the template
-    // (`implicitly_defined_for_entity_id`).
+    // In this case we report the instantiation via `kIsTemplateInstantiationOf`
+    // which refers to an implicit method in the template
+    // (`kIsImplicitlyDefinedFor`).
     //
     // In contrast, an implicit destructor of an (implicit) template
-    // instantiation will have `implicitly_defined_for_entity_id` which in turn
-    // has a 'canonical_entity_id`.
-    std::optional<EntityId> canonical_entity_id = std::nullopt;
-    std::optional<EntityId> implicitly_defined_for_entity_id = std::nullopt;
+    // instantiation will have `kIsImplicitlyDefinedFor` which in turn
+    // has a 'kIsTemplateInstantiationOf`.
     if (function_decl->getTemplateInstantiationPattern()) {
-      canonical_entity_id = GetEntityIdForCanonicalDecl(
+      substitute_relationship = GetTemplateSubstituteRelationship(
           function_decl->getTemplateInstantiationPattern(), decl);
     } else if (function_decl->isImplicit() &&
                llvm::isa<clang::CXXMethodDecl>(function_decl)) {
@@ -995,16 +994,19 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
         // An anonymous struct's/union's implicit method; ignore.
         return kInvalidEntityId;
       }
-      implicitly_defined_for_entity_id = GetEntityIdForDecl(parent_class);
-      if (*implicitly_defined_for_entity_id == kInvalidEntityId) {
+      auto implicitly_defined_for_entity_id = GetEntityIdForDecl(parent_class);
+      if (implicitly_defined_for_entity_id == kInvalidEntityId) {
         // Case in point: Implicitly defined `struct __va_list_tag`.
         return kInvalidEntityId;
+      } else {
+        substitute_relationship = {
+            SubstituteRelationship::Kind::kIsImplicitlyDefinedFor,
+            implicitly_defined_for_entity_id};
       }
     }
     return index_.GetEntityId({Entity::Kind::kFunction, name_prefix, name,
                                name_suffix, get_location_id(), is_incomplete,
-                               is_weak, canonical_entity_id,
-                               implicitly_defined_for_entity_id});
+                               is_weak, substitute_relationship});
   }
 
   return kInvalidEntityId;
@@ -1082,7 +1084,7 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
     // We need to manually create the entities for template specializations,
     // because when we have partial specializations or forward declarations,
     // we need a different source location than the one associated to the
-    // canonical ClassTemplateDecl, and for partial specializations we also
+    // template ClassTemplateDecl, and for partial specializations we also
     // need to override the name_suffix generation with information that is only
     // stored in the TemplateSpecializationType.
     if (decl_location_id != kInvalidLocationId) {
@@ -1099,10 +1101,11 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
             {Entity::Kind::kType, name_prefix, name, name_suffix,
              decl_location_id,
              /*is_incomplete=*/false, /*is_weak=*/false,
-             /*canonical_entity_id=*/
-             GetEntityIdForDecl(alias_template_decl->getTemplatedDecl(),
-                                /*location_id=*/kInvalidLocationId,
-                                /*for_reference=*/true)});
+             SubstituteRelationship(
+                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf,
+                 GetEntityIdForDecl(alias_template_decl->getTemplatedDecl(),
+                                    /*location_id=*/kInvalidLocationId,
+                                    /*for_reference=*/true))});
         if (entity_id != kInvalidEntityId) {
           (void)index_.GetReferenceId({entity_id, location_id});
         }
