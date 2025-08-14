@@ -93,6 +93,12 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
   void AddTypeReferencesForSourceRange(const clang::SourceRange &range,
                                        const clang::Type *type);
 
+  void AddVirtualMethodLinks(const clang::CXXMethodDecl* method_decl,
+                             EntityId child_id);
+  void AddSynthesizedVirtualMethodLinks(
+      const clang::CXXMethodDecl* prototype_method_decl,
+      const clang::CXXRecordDecl* child_class_decl, EntityId child_id);
+
   InMemoryIndex &index_;
   clang::ASTContext &context_;
   clang::CompilerInstance &compiler_;

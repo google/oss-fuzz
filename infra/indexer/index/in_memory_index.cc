@@ -112,7 +112,7 @@ struct ComparePairFirst {
 InMemoryIndex::InMemoryIndex(FileCopier& file_copier)
     : file_copier_(file_copier) {
   Expand(kInitialReservationCount, kInitialReservationCount,
-         kInitialReservationCount);
+         kInitialReservationCount, kInitialReservationCount);
 }
 
 InMemoryIndex::~InMemoryIndex() = default;
@@ -123,7 +123,7 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
   // this is not an issue, since we almost always use the same indexes to merge
   // into, so the overly-large reservation will be used later.
   Expand(other.locations_.size(), other.entities_.size(),
-         other.references_.size());
+         other.references_.size(), other.virtual_method_links_.size());
 
   std::vector<LocationId> new_location_ids(other.locations_.size(),
                                            kInvalidLocationId);
@@ -131,8 +131,9 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
     new_location_ids[id] = GetIdForLocationWithIndexPath(location);
   }
 
-  // We need to update the location_id for entities, and the entity_id and
-  // location_id for references during insertion.
+  // We need to update the location_id for entities, the entity_id and
+  // location_id for references, and parent/child entity ids for virtual method
+  // links during insertion.
 
   // Entity references point to entities with lower ids. Process them
   // in the increasing order of old ids to ensure reference resolution.
@@ -173,13 +174,21 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
     GetReferenceId({new_entity_ids[reference.entity_id()],
                     new_location_ids[reference.location_id()]});
   }
+
+  for (const auto& [link, id] : other.virtual_method_links_) {
+    GetVirtualMethodLinkId(
+        {new_entity_ids[link.parent()], new_entity_ids[link.child()]});
+  }
 }
 
 void InMemoryIndex::Expand(size_t locations_count, size_t entities_count,
-                           size_t references_count) {
+                           size_t references_count,
+                           size_t virtual_method_links_count) {
   locations_.reserve(locations_.size() + locations_count);
   entities_.reserve(entities_.size() + entities_count);
   references_.reserve(references_.size() + references_count);
+  virtual_method_links_.reserve(virtual_method_links_.size() +
+                                virtual_method_links_count);
 }
 
 LocationId InMemoryIndex::GetLocationId(Location location) {
@@ -228,6 +237,14 @@ EntityId InMemoryIndex::GetEntityId(const Entity& entity) {
   return entity_id;
 }
 
+EntityId InMemoryIndex::GetExistingEntityId(const Entity& entity) const {
+  auto it = entities_.find(entity);
+  if (it == entities_.end()) {
+    return kInvalidEntityId;
+  }
+  return it->second;
+}
+
 const Entity& InMemoryIndex::GetEntityById(EntityId entity_id) const {
   CHECK_NE(entity_id, kInvalidEntityId);
   CHECK_LT(entity_id, id_to_entity_.size());
@@ -238,6 +255,16 @@ ReferenceId InMemoryIndex::GetReferenceId(const Reference& reference) {
   auto [iter, inserted] = references_.insert({reference, next_reference_id_});
   if (inserted) {
     next_reference_id_++;
+  }
+  return iter->second;
+}
+
+VirtualMethodLinkId InMemoryIndex::GetVirtualMethodLinkId(
+    const VirtualMethodLink& link) {
+  auto [iter, inserted] =
+      virtual_method_links_.insert({link, next_virtual_method_link_id_});
+  if (inserted) {
+    next_virtual_method_link_id_++;
   }
   return iter->second;
 }
@@ -350,6 +377,18 @@ FlatIndex InMemoryIndex::Export() && {
   // Remove duplicates that could have arisen due to location column erasure.
   auto last = std::unique(result.references.begin(), result.references.end());
   result.references.erase(last, result.references.end());
+
+  // Likewise, no need to maintain the old-to-new link id mapping.
+  result.virtual_method_links.reserve(virtual_method_links_.size());
+  for (const auto& [link, id] : virtual_method_links_) {
+    EntityId new_parent = new_entity_ids[link.parent()];
+    CHECK_NE(new_parent, kInvalidEntityId);
+    EntityId new_child = new_entity_ids[link.child()];
+    CHECK_NE(new_child, kInvalidEntityId);
+    result.virtual_method_links.emplace_back(new_parent, new_child);
+  }
+  std::sort(result.virtual_method_links.begin(),
+            result.virtual_method_links.end());
 
   return result;
 }

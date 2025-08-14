@@ -44,7 +44,7 @@ class InMemoryIndex {
   // `locations_count` new unique locations, `entities_count` new unique
   // entities, ...
   void Expand(size_t locations_count, size_t entities_count,
-              size_t references_count);
+              size_t references_count, size_t virtual_method_links_count);
 
   // The `GetXxxId` functions return the id of an existing, matching object if
   // there is already one in the index, or allocate a new id if there is not an
@@ -54,6 +54,11 @@ class InMemoryIndex {
   EntityId GetEntityId(const Entity& entity);
   const Entity& GetEntityById(EntityId entity_id) const;
   ReferenceId GetReferenceId(const Reference& reference);
+  VirtualMethodLinkId GetVirtualMethodLinkId(const VirtualMethodLink& link);
+
+  // In contrast, `GetExistingEntityId` returns `kInvalidEntityId` if such an
+  // entity has not been passed to `GetEntityId` before.
+  EntityId GetExistingEntityId(const Entity& entity) const;
 
   // Build a sorted FlatIndex from the contents of this index. This invalidates
   // the contents of this InMemoryIndex, which should no longer be used.
@@ -81,6 +86,10 @@ class InMemoryIndex {
 
   ReferenceId next_reference_id_ = 0;
   absl::flat_hash_map<Reference, ReferenceId> references_;
+
+  VirtualMethodLinkId next_virtual_method_link_id_ = 0;
+  absl::flat_hash_map<VirtualMethodLink, VirtualMethodLinkId>
+      virtual_method_links_;
 };
 
 }  // namespace indexer

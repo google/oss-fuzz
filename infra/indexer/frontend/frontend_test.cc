@@ -21,6 +21,7 @@
 #include <optional>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -224,6 +225,26 @@ void PrintOptionalEntityParameters(const FlatIndex& index,
 
   handle_substitute_relationship(SubstituteRelationship::Kind::kIsInheritedFrom,
                                  "inherited_from_entity_id");
+
+  switch (entity.virtual_method_kind()) {
+    // No default. Exhaustiveness checks will force us to handle new cases.
+    case Entity::VirtualMethodKind::kNotAVirtualMethod: {
+      preceding_defaults.push_back(
+          ", /*virtual_method_kind=*/"
+          "Entity::VirtualMethodKind::kNotAVirtualMethod");
+    }; break;
+    case Entity::VirtualMethodKind::kPureVirtual: {
+      flush_preceding_defaults();
+      std::cerr
+          << ", "
+             "/*virtual_method_kind=*/Entity::VirtualMethodKind::kPureVirtual";
+    }; break;
+    case Entity::VirtualMethodKind::kNonPureVirtual: {
+      flush_preceding_defaults();
+      std::cerr << ", /*virtual_method_kind=*/"
+                   "Entity::VirtualMethodKind::kNonPureVirtual";
+    }; break;
+  }
 }
 
 void PrintAllEntityParameters(const FlatIndex& index, const Entity& entity) {
@@ -235,9 +256,21 @@ void PrintAllEntityParameters(const FlatIndex& index, const Entity& entity) {
 // valid `EXPECT...`s for a given index. These should be vetted and cleaned up
 // before adding to the test body. This should not be referenced in committed
 // tests.
-void PrintValidExpectations(const FlatIndex& index) {
+void PrintValidExpectations(
+    const FlatIndex& index,
+    std::optional<Entity::Kind> only_of_kind = std::nullopt,
+    bool omit_implicit = false) {
   for (EntityId entity_id = 0; entity_id < index.entities.size(); ++entity_id) {
     const auto& entity = index.entities[entity_id];
+    if (omit_implicit && entity.substitute_relationship() &&
+        entity.substitute_relationship()->kind() ==
+            SubstituteRelationship::Kind::kIsImplicitlyDefinedFor) {
+      continue;
+    }
+    if (only_of_kind && entity.kind() != *only_of_kind) {
+      continue;
+    }
+
     const auto& location = index.locations[entity.location_id()];
     if (location.path() == "<built-in>" ||
         location.path() == "<command line>") {
@@ -260,6 +293,13 @@ void PrintValidExpectations(const FlatIndex& index) {
         std::cerr << ");\n";
       }
     }
+  }
+
+  for (const auto& link : index.virtual_method_links) {
+    const Entity& parent = index.entities[link.parent()];
+    const Entity& child = index.entities[link.child()];
+    std::cerr << "EXPECT_HAS_VIRTUAL_LINK(index, \"" << parent.full_name()
+              << "\", \"" << child.full_name() << "\");\n";
   }
 }
 
@@ -296,6 +336,16 @@ void PrintEntity(std::ostream& stream, const FlatIndex& index,
   if (entity.enum_value().has_value()) {
     stream << "  Enum value: " << *entity.enum_value() << "\n";
   }
+  switch (entity.virtual_method_kind()) {
+    case Entity::VirtualMethodKind::kNotAVirtualMethod:
+      break;
+    case Entity::VirtualMethodKind::kPureVirtual:
+      stream << indent << "  Pure virtual\n";
+      break;
+    case Entity::VirtualMethodKind::kNonPureVirtual:
+      stream << indent << "  Non-pure virtual\n";
+      break;
+  }
 }
 
 std::string DebugPrintIndex(const FlatIndex& index) {
@@ -319,6 +369,17 @@ std::string DebugPrintIndex(const FlatIndex& index) {
       }
     }
   }
+
+  if (!index.virtual_method_links.empty()) {
+    stream << "Virtual method links:\n";
+    for (const auto& link : index.virtual_method_links) {
+      const Entity& parent = index.entities[link.parent()];
+      const Entity& child = index.entities[link.child()];
+      stream << "  " << parent.full_name() << " -> " << child.full_name()
+             << "\n";
+    }
+  }
+
   return stream.str();
 }
 
@@ -365,7 +426,9 @@ std::optional<Entity> FindEntity(
     const std::optional<EntityId>& implicitly_defined_for_entity_id =
         std::nullopt,
     const std::optional<std::string> enum_value = std::nullopt,
-    const std::optional<EntityId>& inherited_from_entity_id = std::nullopt) {
+    const std::optional<EntityId>& inherited_from_entity_id = std::nullopt,
+    Entity::VirtualMethodKind virtual_method_kind =
+        Entity::VirtualMethodKind::kNotAVirtualMethod) {
   std::optional<Entity> entity;
   for (LocationId location_id = 0; location_id < index.locations.size();
        ++location_id) {
@@ -383,7 +446,8 @@ std::optional<Entity> FindEntity(
                 GetSubstituteRelationship(template_prototype_entity_id,
                                           implicitly_defined_for_entity_id,
                                           inherited_from_entity_id),
-                enum_value};
+                enum_value,
+                virtual_method_kind};
       break;
     }
   }
@@ -409,12 +473,14 @@ bool IndexHasEntity(
     const std::optional<EntityId>& implicitly_defined_for_entity_id =
         std::nullopt,
     const std::optional<std::string> enum_value = std::nullopt,
-    const std::optional<EntityId>& inherited_from_entity_id = std::nullopt) {
+    const std::optional<EntityId>& inherited_from_entity_id = std::nullopt,
+    Entity::VirtualMethodKind virtual_method_kind =
+        Entity::VirtualMethodKind::kNotAVirtualMethod) {
   return FindEntity(index, kind, name_prefix, name, name_suffix, path,
                     start_line, end_line, is_incomplete,
                     template_prototype_entity_id,
                     implicitly_defined_for_entity_id, enum_value,
-                    inherited_from_entity_id)
+                    inherited_from_entity_id, virtual_method_kind)
       .has_value();
 }
 
@@ -427,7 +493,9 @@ bool IndexHasReference(
     const std::optional<EntityId> implicitly_defined_for_entity_id =
         std::nullopt,
     const std::optional<std::string> enum_value = std::nullopt,
-    const std::optional<EntityId>& inherited_from_entity_id = std::nullopt) {
+    const std::optional<EntityId>& inherited_from_entity_id = std::nullopt,
+    Entity::VirtualMethodKind virtual_method_kind =
+        Entity::VirtualMethodKind::kNotAVirtualMethod) {
   LocationId ref_location_id = kInvalidLocationId;
   EntityId ref_entity_id = kInvalidEntityId;
 
@@ -448,7 +516,8 @@ bool IndexHasReference(
                 GetSubstituteRelationship(template_prototype_entity_id,
                                           implicitly_defined_for_entity_id,
                                           inherited_from_entity_id),
-                enum_value};
+                enum_value,
+                virtual_method_kind};
     }
 
     if (index_location.path() == ref_path &&
@@ -484,6 +553,20 @@ bool IndexHasReference(
   return false;
 }
 
+bool IndexHasVirtualMethodLink(const FlatIndex& index,
+                               std::string_view parent_full_name,
+                               std::string_view child_full_name) {
+  for (const auto& link : index.virtual_method_links) {
+    const Entity& parent = index.entities[link.parent()];
+    const Entity& child = index.entities[link.child()];
+    if (parent.full_name() == parent_full_name &&
+        child.full_name() == child_full_name) {
+      return true;
+    }
+  }
+  return false;
+}
+
 template <typename... Args>
 std::optional<EntityId> RequiredEntityId(const FlatIndex& index,
                                          Args&&... args) {
@@ -508,6 +591,10 @@ std::optional<EntityId> RequiredEntityId(const FlatIndex& index,
 
 #define EXPECT_HAS_REFERENCE(index, ...) \
   EXPECT_TRUE(IndexHasReference(index, __VA_ARGS__)) << DebugPrintIndex(index)
+
+#define EXPECT_HAS_VIRTUAL_LINK(index, ...)                  \
+  EXPECT_TRUE(IndexHasVirtualMethodLink(index, __VA_ARGS__)) \
+      << DebugPrintIndex(index)
 
 TEST(FrontendTest, MacroDefinition) {
   auto index = IndexSnippet("#define MACRO 1\n");
@@ -1743,7 +1830,12 @@ TEST(FrontendTest, PureVirtualMethod) {
                     3);
   // Pure virtual methods are complete, even though they have no body.
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
-                    "snippet.cc", 2, 2);
+                    "snippet.cc", 2, 2, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt,
+                    /*inherited_from_entity_id=*/std::nullopt,
+                    Entity::VirtualMethodKind::kPureVirtual);
 }
 
 TEST(FrontendTest, OverriddenMethod) {
@@ -1780,9 +1872,20 @@ TEST(FrontendTest, OverriddenMethod) {
                     10);
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
-                    "snippet.cc", 3, 4);
+                    "snippet.cc", 3, 4, /*is_incomplete=*/false,
+                    /*template_prototype_entity_id=*/std::nullopt,
+                    /*implicitly_defined_for_entity_id=*/std::nullopt,
+                    /*enum_value=*/std::nullopt,
+                    /*inherited_from_entity_id=*/std::nullopt,
+                    Entity::VirtualMethodKind::kNonPureVirtual);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
-                       "snippet.cc", 3, 4, "snippet.cc", 18, 18);
+                       "snippet.cc", 3, 4, "snippet.cc", 18, 18,
+                       /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/std::nullopt,
+                       /*implicitly_defined_for_entity_id=*/std::nullopt,
+                       /*enum_value=*/std::nullopt,
+                       /*inherited_from_entity_id=*/std::nullopt,
+                       Entity::VirtualMethodKind::kNonPureVirtual);
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Foobar", "", "snippet.cc",
                     11, 15);
@@ -1790,18 +1893,40 @@ TEST(FrontendTest, OverriddenMethod) {
                        "snippet.cc", 11, 15, "snippet.cc", 17, 17);
 
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foobar::", "Bar", "()",
-                    "snippet.cc", 13, 14);
-  // We should have a cross-reference from the overridden method definition to
-  // the base method definition.
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
-                       "snippet.cc", 3, 4, "snippet.cc", 13, 14);
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Baz::", "Bar", "()",
-                    "snippet.cc", 3, 4, /*is_incomplete=*/false,
+                    "snippet.cc", 13, 14, /*is_incomplete=*/false,
                     /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/std::nullopt,
-                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
-                    RequiredEntityId(index, Entity::Kind::kFunction,
-                                     "Foo::", "Bar", "()", "snippet.cc", 3, 4));
+                    /*enum_value=*/std::nullopt,
+                    /*inherited_from_entity_id=*/std::nullopt,
+                    Entity::VirtualMethodKind::kNonPureVirtual);
+  // We should have a cross-reference from the overridden method definition to
+  // the base method definition.
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "Foo::", "Bar", "()", "snippet.cc", 3, 4,
+      "snippet.cc", 13, 14,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "Baz::", "Bar", "()", "snippet.cc", 3, 4,
+      /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kFunction, "Foo::", "Bar", "()",
+                       "snippet.cc", 3, 4,
+                       /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/std::nullopt,
+                       /*implicitly_defined_for_entity_id=*/std::nullopt,
+                       /*enum_value=*/std::nullopt,
+                       /*inherited_from_entity_id=*/std::nullopt,
+                       Entity::VirtualMethodKind::kNonPureVirtual),
+      Entity::VirtualMethodKind::kNonPureVirtual);
+
+  EXPECT_EQ(index.virtual_method_links.size(), 2);
+  EXPECT_HAS_VIRTUAL_LINK(index, "Foo::Bar()", "Baz::Bar()");
+  EXPECT_HAS_VIRTUAL_LINK(index, "Baz::Bar()", "Foobar::Bar()");
 }
 
 TEST(FrontendTest, CursedInheritance) {
@@ -1872,6 +1997,8 @@ TEST(FrontendTest, CursedInheritance) {
                        "snippet.cc", 5, 5, "snippet.cc", 20, 20);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "ns::Base::", "foo",
                        "(int)", "snippet.cc", 4, 4, "snippet.cc", 19, 19);
+  // There are no virtual methods involved.
+  EXPECT_TRUE(index.virtual_method_links.empty());
 }
 
 TEST(FrontendTest, MoreCursedInheritance) {
@@ -1897,48 +2024,164 @@ TEST(FrontendTest, MoreCursedInheritance) {
       "  D().A::foo(); D().B::foo();\n"              // 19
       "  D().moo(3);\n"                              // 20
       "  D().bar();\n"                               // 21
-      "}\n");                                        // 22
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "A::", "bar", "()",
-                    "snippet.cc", 4, 4);
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "A::", "bar", "()",
-                       "snippet.cc", 4, 4, "snippet.cc", 13, 13);
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "A::", "foo", "()",
-                    "snippet.cc", 2, 2);
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "A::", "foo", "()",
-                       "snippet.cc", 2, 2, "snippet.cc", 19, 19);
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "A::", "moo", "()",
-                    "snippet.cc", 3, 3);
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "A::", "moo", "()",
-                       "snippet.cc", 3, 3, "snippet.cc", 12, 12);
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "B::", "bar", "()",
-                    "snippet.cc", 9, 9);
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "B::", "bar", "()",
-                       "snippet.cc", 9, 9, "snippet.cc", 13, 13);
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "B::", "foo", "()",
-                    "snippet.cc", 7, 7);
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "B::", "foo", "()",
-                       "snippet.cc", 7, 7, "snippet.cc", 19, 19);
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "B::", "moo", "(int)",
-                    "snippet.cc", 8, 8);
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "B::", "moo", "(int)",
-                       "snippet.cc", 8, 8, "snippet.cc", 16, 16);
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "C::", "bar", "()",
-                    "snippet.cc", 13, 13);
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "C::", "bar", "()",
-                       "snippet.cc", 13, 13, "snippet.cc", 21, 21);
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "C::", "moo", "()",
-                    "snippet.cc", 12, 12);
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "D::", "bar", "()",
-                    "snippet.cc", 13, 13, /*is_incomplete=*/false,
-                    /*template_prototype_entity_id=*/std::nullopt,
-                    /*implicitly_defined_for_entity_id=*/std::nullopt,
-                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
-                    RequiredEntityId(index, Entity::Kind::kFunction,
-                                     "C::", "bar", "()", "snippet.cc", 13, 13));
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "D::", "moo", "(int)",
-                    "snippet.cc", 16, 16);
-  EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "D::", "moo", "(int)",
-                       "snippet.cc", 16, 16, "snippet.cc", 20, 20);
+      "  struct E: D { void moo() override {} };\n"  // 22
+      "}\n");                                        // 23
+
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "A::", "bar", "()", "snippet.cc", 4, 4,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "A::", "foo", "()", "snippet.cc", 2, 2,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "A::", "moo", "()", "snippet.cc", 3, 3,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "B::", "bar", "()", "snippet.cc", 9, 9,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "B::", "foo", "()", "snippet.cc", 7, 7,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "B::", "moo", "(int)", "snippet.cc", 8, 8,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "C::", "bar", "()", "snippet.cc", 13, 13,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "C::", "moo", "()", "snippet.cc", 12, 12,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "D::", "bar", "()", "snippet.cc", 13, 13,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(
+          index, Entity::Kind::kFunction, "C::", "bar", "()", "snippet.cc", 13,
+          13, /*is_incomplete=*/false,
+          /*template_prototype_entity_id=*/std::nullopt,
+          /*implicitly_defined_for_entity_id=*/std::nullopt,
+          /*enum_value=*/std::nullopt,
+          /*inherited_from_entity_id=*/std::nullopt,
+          /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual),
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "D::", "moo", "(int)", "snippet.cc", 16,
+      16, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "main()::E::", "bar", "()", "snippet.cc",
+      13, 13, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(
+          index, Entity::Kind::kFunction, "C::", "bar", "()", "snippet.cc", 13,
+          13, /*is_incomplete=*/false,
+          /*template_prototype_entity_id=*/std::nullopt,
+          /*implicitly_defined_for_entity_id=*/std::nullopt,
+          /*enum_value=*/std::nullopt,
+          /*inherited_from_entity_id=*/std::nullopt,
+          /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual),
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "main()::E::", "moo", "()", "snippet.cc",
+      22, 22, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "A::", "bar", "()", "snippet.cc", 4, 4,
+      "snippet.cc", 13, 13, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "A::", "foo", "()", "snippet.cc", 2, 2,
+      "snippet.cc", 19, 19, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "A::", "moo", "()", "snippet.cc", 3, 3,
+      "snippet.cc", 12, 12, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "B::", "bar", "()", "snippet.cc", 9, 9,
+      "snippet.cc", 13, 13, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "B::", "foo", "()", "snippet.cc", 7, 7,
+      "snippet.cc", 19, 19, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "B::", "moo", "(int)", "snippet.cc", 8, 8,
+      "snippet.cc", 16, 16, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "C::", "bar", "()", "snippet.cc", 13, 13,
+      "snippet.cc", 21, 21, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "C::", "moo", "()", "snippet.cc", 12, 12,
+      "snippet.cc", 22, 22, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "D::", "moo", "(int)", "snippet.cc", 16,
+      16, "snippet.cc", 20, 20, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+
   // `C::foo` is ambiguous, so we omit it.
   EXPECT_FALSE(IndexHasEntity(
       index, Entity::Kind::kFunction, "C::", "foo", "()", "snippet.cc", 2, 2,
@@ -1946,14 +2189,26 @@ TEST(FrontendTest, MoreCursedInheritance) {
       /*implicitly_defined_for_entity_id=*/std::nullopt,
       /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "A::", "foo", "()",
-                       "snippet.cc", 2, 2)));
+                       "snippet.cc", 2, 2, /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/std::nullopt,
+                       /*implicitly_defined_for_entity_id=*/std::nullopt,
+                       /*enum_value=*/std::nullopt,
+                       /*inherited_from_entity_id=*/std::nullopt,
+                       Entity::VirtualMethodKind::kNonPureVirtual),
+      Entity::VirtualMethodKind::kNonPureVirtual));
   EXPECT_FALSE(IndexHasEntity(
       index, Entity::Kind::kFunction, "C::", "foo", "()", "snippet.cc", 7, 7,
       /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
       /*implicitly_defined_for_entity_id=*/std::nullopt,
       /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "B::", "foo", "()",
-                       "snippet.cc", 7, 7)));
+                       "snippet.cc", 7, 7, /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/std::nullopt,
+                       /*implicitly_defined_for_entity_id=*/std::nullopt,
+                       /*enum_value=*/std::nullopt,
+                       /*inherited_from_entity_id=*/std::nullopt,
+                       Entity::VirtualMethodKind::kNonPureVirtual),
+      Entity::VirtualMethodKind::kNonPureVirtual));
   // `C::moo(int)` is not available as an overload in `C` because of `C::moo()`.
   EXPECT_FALSE(IndexHasEntity(
       index, Entity::Kind::kFunction, "C::", "moo", "(int)", "snippet.cc", 8, 8,
@@ -1961,15 +2216,42 @@ TEST(FrontendTest, MoreCursedInheritance) {
       /*implicitly_defined_for_entity_id=*/std::nullopt,
       /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "B::", "moo", "(int)",
-                       "snippet.cc", 8, 8)));
+                       "snippet.cc", 8, 8, /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/std::nullopt,
+                       /*implicitly_defined_for_entity_id=*/std::nullopt,
+                       /*enum_value=*/std::nullopt,
+                       /*inherited_from_entity_id=*/std::nullopt,
+                       Entity::VirtualMethodKind::kNonPureVirtual),
+      Entity::VirtualMethodKind::kNonPureVirtual));
   // ...And `D::moo()` is not available as an overload in `D` due to `moo(int)`.
   EXPECT_FALSE(IndexHasEntity(
       index, Entity::Kind::kFunction, "D::", "moo", "()", "snippet.cc", 3, 3,
-      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
       /*implicitly_defined_for_entity_id=*/std::nullopt,
-      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      /*enum_value=*/std::nullopt,
+      /*inherited_from_entity_id=*/
       RequiredEntityId(index, Entity::Kind::kFunction, "A::", "moo", "()",
-                       "snippet.cc", 3, 3)));
+                       "snippet.cc", 3, 3, /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/std::nullopt,
+                       /*implicitly_defined_for_entity_id=*/std::nullopt,
+                       /*enum_value=*/std::nullopt,
+                       /*inherited_from_entity_id=*/std::nullopt,
+                       Entity::VirtualMethodKind::kNonPureVirtual),
+      Entity::VirtualMethodKind::kNonPureVirtual));
+
+  EXPECT_EQ(index.virtual_method_links.size(), 7);
+  EXPECT_HAS_VIRTUAL_LINK(index, "A::bar()", "C::bar()");
+  EXPECT_HAS_VIRTUAL_LINK(index, "B::bar()", "C::bar()");
+  EXPECT_HAS_VIRTUAL_LINK(index, "C::bar()", "D::bar()");
+  EXPECT_HAS_VIRTUAL_LINK(index, "D::bar()", "main()::E::bar()");
+
+  EXPECT_HAS_VIRTUAL_LINK(index, "A::moo()", "C::moo()");
+  // There's no `C::moo()` -> `D::moo()` link because `D::moo(int)` shadows it.
+  EXPECT_HAS_VIRTUAL_LINK(index, "C::moo()", "main()::E::moo()");
+
+  // Note that this link skips `C` because it is devoid of `moo(int)`.
+  EXPECT_HAS_VIRTUAL_LINK(index, "B::moo(int)", "D::moo(int)");
 }
 
 TEST(FrontendTest, InheritanceThroughTemplateInstantiation) {
@@ -1986,48 +2268,45 @@ TEST(FrontendTest, InheritanceThroughTemplateInstantiation) {
       "};\n"                                  // 10
       "class Bar : public Template<int> {\n"  // 11
       "};\n");                                // 12
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Template<T>::", "foo",
-                    "()", "snippet.cc", 4, 4, /*is_incomplete=*/false,
-                    /*template_prototype_entity_id=*/std::nullopt,
-                    /*implicitly_defined_for_entity_id=*/std::nullopt,
-                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
-                    RequiredEntityId(index, Entity::Kind::kFunction,
-                                     "Foo::", "foo", "()", "snippet.cc", 4, 4));
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Template<int>::", "foo",
-                    "()", "snippet.cc", 4, 4, /*is_incomplete=*/false,
-                    /*template_prototype_entity_id=*/std::nullopt,
-                    /*implicitly_defined_for_entity_id=*/std::nullopt,
-                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
-                    RequiredEntityId(index, Entity::Kind::kFunction,
-                                     "Foo::", "foo", "()", "snippet.cc", 4, 4));
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "Template<T>::", "foo", "()",
+      "snippet.cc", 4, 4, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kFunction, "Foo::", "foo", "()",
+                       "snippet.cc", 4, 4,
+                       /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/std::nullopt,
+                       /*implicitly_defined_for_entity_id=*/std::nullopt,
+                       /*enum_value=*/std::nullopt,
+                       /*inherited_from_entity_id=*/std::nullopt,
+                       Entity::VirtualMethodKind::kNonPureVirtual),
+      Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "Template<int>::", "foo", "()",
+      "snippet.cc", 4, 4, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(index, Entity::Kind::kFunction, "Foo::", "foo", "()",
+                       "snippet.cc", 4, 4, /*is_incomplete=*/false,
+                       /*template_prototype_entity_id=*/std::nullopt,
+                       /*implicitly_defined_for_entity_id=*/std::nullopt,
+                       /*enum_value=*/std::nullopt,
+                       /*inherited_from_entity_id=*/std::nullopt,
+                       Entity::VirtualMethodKind::kNonPureVirtual),
+      Entity::VirtualMethodKind::kNonPureVirtual);
   // `Bar::Bar` is a constructor set shadowing the virtual function.
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "Bar", "()",
                     "snippet.cc", 11, 11, /*is_incomplete=*/false,
                     /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Bar", "",
-                                     "snippet.cc", 11, 12));
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "Bar", "(Bar &&)",
-                    "snippet.cc", 11, 11, /*is_incomplete=*/false,
-                    /*template_prototype_entity_id=*/std::nullopt,
-                    /*implicitly_defined_for_entity_id=*/
-                    RequiredEntityId(index, Entity::Kind::kClass, "", "Bar", "",
-                                     "snippet.cc", 11, 12));
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "Bar",
-                    "(const Bar &)", "snippet.cc", 11, 11,
-                    /*is_incomplete=*/false,
-                    /*template_prototype_entity_id=*/std::nullopt,
-                    /*implicitly_defined_for_entity_id=*/
-                    RequiredEntityId(index, Entity::Kind::kClass, "", "Bar", "",
-                                     "snippet.cc", 11, 12));
-  // `Bar::foo` is inherited from `Foo::foo` through the template base class.
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Bar::", "foo", "()",
-                    "snippet.cc", 4, 4, /*is_incomplete=*/false,
-                    /*template_prototype_entity_id=*/std::nullopt,
-                    /*implicitly_defined_for_entity_id=*/std::nullopt,
-                    /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
-                    RequiredEntityId(index, Entity::Kind::kFunction,
-                                     "Foo::", "foo", "()", "snippet.cc", 4, 4));
+                                     "snippet.cc", 11, 12),
+                    /*enum_value=*/std::nullopt,
+                    /*inherited_from_entity_id=*/std::nullopt,
+                    Entity::VirtualMethodKind::kNotAVirtualMethod);
 }
 
 TEST(FrontendTest, Builtin) {
@@ -3242,8 +3521,12 @@ TEST(FrontendTest, ImplicitCode) {
       "  union { int a; char b; };  // anonymous union field\n"
       "};");
 
-  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "~Foo", "()",
-                    "snippet.cc", 3, 3);
+  EXPECT_HAS_ENTITY(
+      index, Entity::Kind::kFunction, "Foo::", "~Foo", "()", "snippet.cc", 3, 3,
+      /*is_incomplete=*/false, /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      Entity::VirtualMethodKind::kNonPureVirtual);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "Foo::", "Foo", "()",
                     "snippet.cc", 1, 1, /*is_incomplete=*/false,
                     /*template_prototype_entity_id=*/std::nullopt,
@@ -3275,7 +3558,10 @@ TEST(FrontendTest, ImplicitCode) {
                     /*template_prototype_entity_id=*/std::nullopt,
                     /*implicitly_defined_for_entity_id=*/
                     RequiredEntityId(index, Entity::Kind::kClass, "", "Bar", "",
-                                     "snippet.cc", 5, 5));
+                                     "snippet.cc", 5, 5),
+                    /*enum_value=*/std::nullopt,
+                    /*inherited_from_entity_id=*/std::nullopt,
+                    Entity::VirtualMethodKind::kNonPureVirtual);
   EXPECT_HAS_REFERENCE(index, Entity::Kind::kFunction, "Foo::", "Foo", "()",
                        "snippet.cc", 1, 1, "snippet.cc", 5, 5,
                        /*is_incomplete=*/false,

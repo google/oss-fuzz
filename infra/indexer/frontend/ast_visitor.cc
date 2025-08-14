@@ -23,6 +23,7 @@
 #include "indexer/frontend/common.h"
 #include "indexer/index/types.h"
 #include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "clang/AST/Attr.h"
@@ -44,8 +45,10 @@
 #include "clang/Sema/Sema.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/MapVector.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallString.h"
+#include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/raw_ostream.h"
@@ -739,6 +742,96 @@ std::string GetEnumValue(const clang::EnumConstantDecl* decl) {
   return string_value;
 }
 
+// The mapping from (not necessarily immediate) base classes defining a method
+// to their definitions thereof.
+using DefiningSuperBasesToMethods =
+    llvm::SmallMapVector<const clang::CXXRecordDecl*,
+                         const clang::CXXMethodDecl*, 16>;
+
+template <typename EntityIdByDecl>
+void AddVirtualMethodLinksImpl(
+    const clang::CXXMethodDecl* prototype_method_decl,
+    const clang::CXXRecordDecl* child_class_decl,
+    const DefiningSuperBasesToMethods& defining_super_bases_to_methods,
+    EntityId child_id, InMemoryIndex& index,
+    EntityIdByDecl&& get_entity_id_for_decl) {
+  llvm::SmallSet<const clang::CXXRecordDecl*, 32> seen;
+  llvm::SmallVector<const clang::CXXRecordDecl*, 32> to_visit;
+  auto add_bases_to_visit = [&to_visit,
+                             &seen](const clang::CXXRecordDecl* class_decl) {
+    for (const auto& base : class_decl->bases()) {
+      auto* base_cxx_record = base.getType()->getAsCXXRecordDecl();
+      if (!base_cxx_record) {
+        continue;
+      }
+      base_cxx_record = base_cxx_record->getDefinition();
+      if (!base_cxx_record) {
+        continue;
+      }
+      if (!seen.contains(base_cxx_record)) {
+        to_visit.push_back(base_cxx_record);
+        seen.insert(base_cxx_record);
+      }
+    }
+  };
+  add_bases_to_visit(child_class_decl);
+
+  while (!to_visit.empty()) {
+    const clang::CXXRecordDecl* base_cxx_record = to_visit.pop_back_val();
+
+    const auto it = defining_super_bases_to_methods.find(base_cxx_record);
+    if (it != defining_super_bases_to_methods.end()) {
+      // There is a definition in `base_cxx_record` we can link to.
+      const clang::CXXMethodDecl* overridden_method_decl = it->second;
+      EntityId parent_id = get_entity_id_for_decl(overridden_method_decl);
+      if (parent_id != kInvalidEntityId) {
+        (void)index.GetVirtualMethodLinkId({parent_id, child_id});
+      } else {
+        LOG(DFATAL) << "Parent of virtual method "
+                    << index.GetEntityById(child_id).full_name() << " in class "
+                    << base_cxx_record->getQualifiedNameAsString()
+                    << " is an invalid entity";
+      }
+      continue;
+    }
+
+    // `base_cxx_record` doesn't define this method directly.
+    for (const auto [defining_super_base, overridden_method_decl] :
+         defining_super_bases_to_methods) {
+      if (!base_cxx_record->isDerivedFrom(defining_super_base)) {
+        continue;
+      }
+      // Because it can be present in `base_cxx_record` only through inheritance
+      // (see above), check if it was synthesized there from
+      // `overridden_method_decl` in `defining_super_base`.
+      const EntityId inherited_id =
+          get_entity_id_for_decl(overridden_method_decl);
+      if (inherited_id == kInvalidEntityId) {
+        LOG(DFATAL) << "Parent of virtual method "
+                    << index.GetEntityById(child_id).full_name() << " in class "
+                    << defining_super_base->getQualifiedNameAsString()
+                    << " is an invalid entity";
+        continue;
+      }
+      const Entity& inherited_entity = index.GetEntityById(inherited_id);
+      const std::string new_name_prefix =
+          GetNamePrefixForDeclContext(base_cxx_record);
+      // Re-synthesize it to get the ID of the synthetic entity.
+      const EntityId parent_id = index.GetExistingEntityId(
+          Entity(inherited_entity, /*new_name_prefix=*/new_name_prefix,
+                 /*inherited_entity_id=*/inherited_id));
+      if (parent_id == kInvalidEntityId) {
+        // No such synthetic entity, likely due to name resolution ambiguity in
+        // the base. Skip it and consider its immediate super-bases.
+        add_bases_to_visit(base_cxx_record);
+      } else {
+        (void)index.GetVirtualMethodLinkId({parent_id, child_id});
+      }
+      // We can't break here - can have multiple bases with this virtual method.
+    }
+  }
+}
+
 }  // namespace
 
 bool AstVisitor::VisitCallExpr(const clang::CallExpr* expr) {
@@ -854,9 +947,15 @@ void AstVisitor::SynthesizeInheritedMemberEntities(
       return;
     }
     const Entity& inherited_entity = index_.GetEntityById(inherited_id);
-    index_.GetEntityId(Entity(inherited_entity,
+    const Entity synth_entity(inherited_entity,
                               /*new_name_prefix=*/new_name_prefix,
-                              /*inherited_entity_id=*/inherited_id));
+                              /*inherited_entity_id=*/inherited_id);
+    const EntityId synth_id = index_.GetEntityId(synth_entity);
+
+    if (inherited_entity.is_virtual_method()) {
+      AddSynthesizedVirtualMethodLinks(llvm::cast<clang::CXXMethodDecl>(decl),
+                                       class_decl, synth_id);
+    }
   });
 }
 
@@ -1013,6 +1112,42 @@ AstVisitor::GetTemplateSubstituteRelationship(
   return SubstituteRelationship(relationship_kind, template_entity_id);
 }
 
+// See the description of the `VirtualMethodLink` type for a discussion.
+void AstVisitor::AddVirtualMethodLinks(const clang::CXXMethodDecl* method_decl,
+                                       EntityId child_id) {
+  // For an actual virtual method, trace the chains to its prototypes, if any.
+  if (method_decl->overridden_methods().empty()) {
+    return;
+  }
+  DefiningSuperBasesToMethods defining_super_bases_to_methods;
+  for (const clang::CXXMethodDecl* overridden_method_decl :
+       method_decl->overridden_methods()) {
+    const clang::CXXRecordDecl* overridden_method_record =
+        overridden_method_decl->getParent();
+    defining_super_bases_to_methods.insert(
+        {overridden_method_record, overridden_method_decl});
+  }
+  AddVirtualMethodLinksImpl(method_decl, method_decl->getParent(),
+                            defining_super_bases_to_methods, child_id, index_,
+                            [&](const clang::Decl* decl) -> EntityId {
+                              return GetEntityIdForDecl(decl);
+                            });
+}
+
+void AstVisitor::AddSynthesizedVirtualMethodLinks(
+    const clang::CXXMethodDecl* prototype_method_decl,
+    const clang::CXXRecordDecl* child_class_decl, EntityId child_id) {
+  DefiningSuperBasesToMethods defining_super_bases_to_methods;
+  // For a synthesized entity, trace the chain(s) back to the origin class.
+  defining_super_bases_to_methods.insert(
+      {prototype_method_decl->getParent(), prototype_method_decl});
+  AddVirtualMethodLinksImpl(prototype_method_decl, child_class_decl,
+                            defining_super_bases_to_methods, child_id, index_,
+                            [&](const clang::Decl* decl) -> EntityId {
+                              return GetEntityIdForDecl(decl);
+                            });
+}
+
 EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
                                         bool for_reference) {
   auto it = decl_to_entity_id_.find(decl);
@@ -1026,6 +1161,10 @@ EntityId AstVisitor::GetEntityIdForDecl(const clang::Decl* decl,
   if (entity) {
     const EntityId id = index_.GetEntityId(*entity);
     decl_to_entity_id_.insert_or_assign(it, decl, {id, for_reference});
+    if (entity->is_virtual_method()) {
+      const auto method_decl = llvm::cast<clang::CXXMethodDecl>(decl);
+      AddVirtualMethodLinks(method_decl, id);
+    }
     return id;
   }
   if (for_reference) {
@@ -1197,6 +1336,16 @@ std::optional<Entity> AstVisitor::GetEntityForDecl(const clang::Decl* decl,
     const auto* function_decl = llvm::cast<clang::FunctionDecl>(decl);
     bool is_incomplete = IsIncompleteFunction(function_decl);
     bool is_weak = !is_incomplete && function_decl->hasAttr<clang::WeakAttr>();
+    Entity::VirtualMethodKind virtual_method_kind =
+        Entity::VirtualMethodKind::kNotAVirtualMethod;
+    if (const auto* method_decl =
+            llvm::dyn_cast<clang::CXXMethodDecl>(function_decl)) {
+      if (method_decl->isVirtual()) {
+        virtual_method_kind = method_decl->isPureVirtual()
+                                  ? Entity::VirtualMethodKind::kPureVirtual
+                                  : Entity::VirtualMethodKind::kNonPureVirtual;
+      }
+    }
 
     // Note: Implicit methods are generally defined after template
     // instantiation, but an implicit comparison operator coming from (C++20)
@@ -1250,7 +1399,8 @@ std::optional<Entity> AstVisitor::GetEntityForDecl(const clang::Decl* decl,
     }
     return Entity(Entity::Kind::kFunction, name_prefix, name, name_suffix,
                   get_location_id(), is_incomplete, is_weak,
-                  substitute_relationship);
+                  substitute_relationship, /*enum_value=*/std::nullopt,
+                  /*virtual_method_kind=*/virtual_method_kind);
   }
 
   return std::nullopt;
