@@ -1236,6 +1236,10 @@ TEST(FrontendTest, UsingTypeTemplateClass) {
                                  /*is_incomplete=*/true));
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Bar", "<T>", "snippet.cc",
                     2, 3);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Bar", "<T>",
+                       "snippet.cc", 2, 3, "snippet.cc", 4, 4);
+  EXPECT_HAS_REFERENCE(index, Entity::Kind::kClass, "", "Bar", "<T>",
+                       "snippet.cc", 2, 3, "snippet.cc", 5, 5);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kType, "Bar<T>::", "T", "",
                     "snippet.cc", 2, 2);
   EXPECT_HAS_ENTITY(index, Entity::Kind::kClass, "", "Bar", "<Foo *>",
