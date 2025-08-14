@@ -59,7 +59,7 @@ zip -r $OUT/fuzz_verify_cert_seed_corpus.zip $SRC/boringssl/fuzz/cert_corpus
 # Build openvpn
 autoreconf -ivf
 ./configure --disable-lz4 --with-crypto-library=openssl OPENSSL_LIBS="-L/usr/local/ssl/ -lssl -lcrypto" OPENSSL_CFLAGS="-I/usr/local/ssl/include/"
-make
+make -j$(nproc)
 
 # Make openvpn object files into a library we can link fuzzers to
 cd src/openvpn

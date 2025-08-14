@@ -21,6 +21,7 @@ import time
 import json
 import requests
 import subprocess
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,13 @@ RUN_TEST_HEURISTIC_2 = 'make check'
 RUN_TESTS_TO_TRY = [
     RUN_TEST_HEURISTIC_0, RUN_TEST_HEURISTIC_1, RUN_TEST_HEURISTIC_2
 ]
+
+
+class ContainerRedirection(Enum):
+  """Enum for output redirection."""
+  NONE = 1
+  FILE = 2
+  SILENT = 3
 
 
 def _get_oss_fuzz_build_status(project):
@@ -65,24 +73,78 @@ def _get_project_cached_named_local(project, sanitizer='address'):
   return f'{project}-origin-{sanitizer}'
 
 
-def build_project_image(project):
+def build_project_image(project, container_output='stdout'):
   """Build OSS-Fuzz base image for a project."""
+
+  if container_output == 'file':
+    out_idx = 0
+    stdout_file = os.path.join('projects', project,
+                               'build_image_stdout.%d.out' % (out_idx))
+    while os.path.isfile(stdout_file):
+      out_idx += 1
+      stdout_file = os.path.join('projects', project,
+                                 'build_image_stdout.%d.out' % (out_idx))
+    stderr_file = os.path.join('projects', project,
+                               'build_image_stderr.%d.err' % (out_idx))
+    stdout_fp = open(stdout_file, 'w')
+    stderr_fp = open(stderr_file, 'w')
+  elif container_output == 'silent':
+    stdout_fp = subprocess.DEVNULL
+    stderr_fp = subprocess.DEVNULL
+  else:
+    stdout_fp = None
+    stderr_fp = None
+
   cmd = ['docker', 'build', '-t', 'gcr.io/oss-fuzz/' + project, '.']
-  subprocess.check_call(' '.join(cmd),
-                        shell=True,
-                        cwd=os.path.join('projects', project))
+  try:
+    subprocess.check_call(' '.join(cmd),
+                          shell=True,
+                          cwd=os.path.join('projects', project),
+                          stdout=stdout_fp,
+                          stderr=stderr_fp)
+    if container_output == 'file':
+      stdout_fp.close()
+      stderr_fp.close()
+  except subprocess.CalledProcessError as e:
+    if container_output == 'file':
+      stdout_fp.close()
+      stderr_fp.close()
 
 
-def build_cached_project(project, cleanup=True, sanitizer='address'):
+def build_cached_project(project,
+                         cleanup=True,
+                         sanitizer='address',
+                         container_output='stdout'):
   """Build cached image for a project."""
   container_name = _get_project_cached_named_local(project, sanitizer)
 
   # Clean up the container if it exists.
   if cleanup:
     try:
-      subprocess.check_call(['docker', 'container', 'rm', '-f', container_name])
+      subprocess.check_call(['docker', 'container', 'rm', '-f', container_name],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
       pass
+
+  if container_output == 'file':
+    out_idx = 0
+    stdout_file = os.path.join('projects', project,
+                               'build_cache_stdout.%d.out' % (out_idx))
+    while os.path.isfile(stdout_file):
+      out_idx += 1
+      stdout_file = os.path.join('projects', project,
+                                 'build_cache_stdout.%d.out' % (out_idx))
+    stderr_file = os.path.join('projects', project,
+                               'build_cache_stderr.%d.err' % (out_idx))
+    stdout_fp = open(stdout_file, 'w')
+    stderr_fp = open(stderr_file, 'w')
+  elif container_output == 'silent':
+    stdout_fp = subprocess.DEVNULL
+    stderr_fp = subprocess.DEVNULL
+  else:
+    stdout_fp = None
+    stderr_fp = None
 
   project_language = 'c++'
   cwd = os.getcwd()
@@ -98,11 +160,44 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
       '"export PATH=/ccache/bin:\$PATH && compile && cp -n /usr/local/bin/replay_build.sh \$SRC/"'
   ]
 
-  logger.info('Running: [%s]', ' '.join(cmd))
+  start = time.time()
   try:
-    subprocess.check_call(' '.join(cmd), shell=True)
+    subprocess.check_call(' '.join(cmd),
+                          shell=True,
+                          stdout=stdout_fp,
+                          stderr=stderr_fp)
+    end = time.time()
+    logger.info('%s vanilla build Succeeded: Duration: %.2f seconds', project,
+                end - start)
+    if container_output == 'file':
+      stdout_fp.close()
+      stderr_fp.close()
   except subprocess.CalledProcessError as e:
+    if container_output == 'file':
+      stdout_fp.close()
+      stderr_fp.close()
+    end = time.time()
+    logger.info('%s vanilla build Failed: Duration: %.2f seconds', project,
+                end - start)
     return False
+
+  # Copy the coverage script into the container.
+  # Ensure we're are the right cwd.
+  coverage_host_script = os.path.join('infra', 'experimental', 'chronos',
+                                      'coverage_test_collection.py')
+  if not os.path.exists(coverage_host_script):
+    logger.info('Coverage script does not exist at %s', coverage_host_script)
+  else:
+    # Copy the coverage script into the container.
+    logger.info('Copying coverage script to container: %s', container_name)
+    cmd = [
+        'docker', 'container', 'cp', coverage_host_script,
+        f'{container_name}:/usr/local/bin/coverage_test_collection.py'
+    ]
+    subprocess.check_call(' '.join(cmd),
+                          shell=True,
+                          stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL)
 
   # Save the container.
   cmd = [
@@ -110,20 +205,29 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
       '"ENV CAPTURE_REPLAY_SCRIPT=1"', container_name,
       _get_project_cached_named(project, sanitizer)
   ]
-  logger.info('Saving image: [%s]', ' '.join(cmd))
+  # logger.info('Saving image: [%s]', ' '.join(cmd))
   try:
-    subprocess.check_call(' '.join(cmd), shell=True)
+    subprocess.check_call(' '.join(cmd),
+                          shell=True,
+                          stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL)
+
   except subprocess.CalledProcessError as e:
     logger.error('Failed to save cached image: %s', e)
+
     return False
   return True
 
 
-def check_cached_replay(project, sanitizer='address'):
+def check_cached_replay(project,
+                        sanitizer='address',
+                        container_output='stdout',
+                        silent_replays=False):
   """Checks if a cache build succeeds and times is."""
-  build_project_image(project)
-  build_cached_project(project, sanitizer=sanitizer)
-
+  build_project_image(project, container_output=container_output)
+  build_cached_project(project,
+                       sanitizer=sanitizer,
+                       container_output=container_output)
   # Run the cached replay script.
   cmd = [
       'docker', 'run', '--rm', '--env=SANITIZER=' + sanitizer,
@@ -134,12 +238,25 @@ def check_cached_replay(project, sanitizer='address'):
       '"export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile"'
   ]
   start = time.time()
-  subprocess.check_call(' '.join(cmd), shell=True)
+  if silent_replays:
+    stdout_fp = subprocess.DEVNULL
+    stderr_fp = subprocess.DEVNULL
+  else:
+    stdout_fp = None
+    stderr_fp = None
+  subprocess.check_call(' '.join(cmd),
+                        shell=True,
+                        stdout=stdout_fp,
+                        stderr=stderr_fp)
   end = time.time()
-  logger.info('Cached build completion time: %.2f seconds', (end - start))
+  logger.info('%s cached build completion time: %.2f seconds', project,
+              (end - start))
 
 
-def check_test(project, sanitizer='address'):
+def check_test(project,
+               sanitizer='address',
+               container_output='stdout',
+               run_full_cache_replay=False):
   """Run the `run_tests.sh` script for a specific project. Will
     build a cached container first."""
 
@@ -151,26 +268,42 @@ def check_test(project, sanitizer='address'):
     sys.exit(1)
 
   # Build an OSS-Fuzz image of the project
-  build_project_image(project)
-
-  # build a cached version of the project
-  if not build_cached_project(project, sanitizer):
-    return False
+  if run_full_cache_replay:
+    check_cached_replay(
+        project,
+        sanitizer,
+        container_output,
+        silent_replays=(True if container_output == 'silent' else False))
+  else:
+    build_project_image(project, container_output)
+    # build a cached version of the project
+    if not build_cached_project(
+        project, sanitizer=sanitizer, container_output=container_output):
+      return False
 
   # Run the test script
   cmd = [
-      'docker', 'run', '--rm', '-ti',
+      'docker', 'run', '--rm', '--network', 'none', '-ti',
       _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
       '"chmod +x /src/run_tests.sh && /src/run_tests.sh"'
   ]
-  out_idx = 0
-  stdout_file = os.path.join('projects', project, 'stdout.%d.out' % (out_idx))
-  while os.path.isfile(stdout_file):
-    out_idx += 1
+
+  if container_output == 'file':
+    out_idx = 0
     stdout_file = os.path.join('projects', project, 'stdout.%d.out' % (out_idx))
-  stderr_file = os.path.join('projects', project, 'stderr.%d.err' % (out_idx))
-  stdout_fp = open(stdout_file, 'w')
-  stderr_fp = open(stderr_file, 'w')
+    while os.path.isfile(stdout_file):
+      out_idx += 1
+      stdout_file = os.path.join('projects', project,
+                                 'stdout.%d.out' % (out_idx))
+    stderr_file = os.path.join('projects', project, 'stderr.%d.err' % (out_idx))
+    stdout_fp = open(stdout_file, 'w')
+    stderr_fp = open(stderr_file, 'w')
+  elif container_output == 'silent':
+    stdout_fp = subprocess.DEVNULL
+    stderr_fp = subprocess.DEVNULL
+  else:
+    stdout_fp = None
+    stderr_fp = None
 
   start = time.time()
   try:
@@ -179,17 +312,19 @@ def check_test(project, sanitizer='address'):
                           stdout=stdout_fp,
                           stderr=stderr_fp)
     succeeded = True
-    stdout_fp.close()
-    stderr_fp.close()
+    if container_output == 'file':
+      stdout_fp.close()
+      stderr_fp.close()
   except subprocess.CalledProcessError as e:
     succeeded = False
-    stdout_fp.close()
-    stderr_fp.close()
+    if container_output == 'file':
+      stdout_fp.close()
+      stderr_fp.close()
   end = time.time()
 
-  logger.info(
-      'Test completion succeessful: %s. Duration of run_tests.sh: %.2f seconds',
-      str(succeeded), (end - start))
+  logger.info('%s test completion %s: Duration of run_tests.sh: %.2f seconds',
+              project, 'failed' if not succeeded else 'succeeded',
+              (end - start))
   return succeeded
 
 
@@ -211,7 +346,7 @@ def _get_project_language(project):
   return ''
 
 
-def _autogenerate_run_tests_script(project):
+def _autogenerate_run_tests_script(project, container_output):
   """Autogenerate `run_tests.sh` for a project."""
   project_path = os.path.join('projects', project)
   run_tests_script = os.path.join(project_path, 'run_tests.sh')
@@ -239,18 +374,33 @@ def _autogenerate_run_tests_script(project):
         f.write('COPY run_tests.sh $SRC/run_tests.sh\n')
         f.write('RUN chmod +x $SRC/run_tests.sh\n')
 
-    succeeded = check_test(project)
+    succeeded = check_test(project, container_output=container_output)
+
+    # If it succeeded initially, then make sure that it actually succeeds
+    # to generate a coverage report. if it does not, then it means the
+    # generation actually failed.
+    coverage_success = extract_test_coverage(project)
+    if not coverage_success:
+      logger.error('Coverage generation failed for %s', project)
+      succeeded = False
+
     success_file = os.path.join(project_path, 'run_tests.succeeded')
-    with open(success_file, 'w') as f:
+    with open(success_file, 'a') as f:
       f.write('Auto-generation succeeded: {}\n'.format(succeeded))
     if succeeded:
       logger.info('Autogenerated run_tests.sh for %s successfully.', project)
       break
 
 
-def autogen_projects(apply_filtering=False, max_projects_to_try=1):
+def autogen_projects(apply_filtering=False,
+                     max_projects_to_try=1,
+                     container_output='stdout',
+                     projects_to_target=[]):
   """Autogenerate `run_tests.sh` for all projects."""
-  projects = os.listdir('projects')
+  if projects_to_target:
+    projects = projects_to_target
+  else:
+    projects = os.listdir('projects')
   projects_tries = 0
   for project in projects:
     if projects_tries >= max_projects_to_try:
@@ -296,7 +446,43 @@ def autogen_projects(apply_filtering=False, max_projects_to_try=1):
 
     projects_tries += 1
     logger.info('Autogenerating run_tests.sh for %s', project)
-    _autogenerate_run_tests_script(project)
+    _autogenerate_run_tests_script(project, container_output)
+
+
+def extract_test_coverage(project):
+  build_project_image(project, container_output='')
+  build_cached_project(project, sanitizer='coverage', container_output='stdout')
+
+  os.makedirs(os.path.join('build', 'out', project), exist_ok=True)
+
+  cmd = [
+      'docker', 'run', '--rm', '--network', 'none', '-v',
+      '%s:/out' % (os.path.join(os.getcwd(), 'build', 'out', project)), '-ti',
+      _get_project_cached_named(project, 'coverage'), '/bin/bash', '-c',
+      ('"chmod +x /src/run_tests.sh && '
+       'find /src/ -name "*.profraw" -exec rm -f {} \\; && '
+       '/src/run_tests.sh && '
+       'python3 /usr/local/bin/coverage_test_collection.py && '
+       'chmod -R 755 /out/test-html-generation/"')
+  ]
+  try:
+    subprocess.check_call(' '.join(cmd), shell=True)
+  except subprocess.CalledProcessError as e:
+    logger.error('Error occurred while running coverage collection: %s', e)
+    return False
+
+  # If the summary file is created, dump the total lines covered.
+  if os.path.isfile(
+      os.path.join('build', 'out', project, 'test-html-generation',
+                   'summary.json')):
+    with open(
+        os.path.join('build', 'out', project, 'test-html-generation',
+                     'summary.json'), 'r') as f:
+      summary = json.load(f)
+      total_lines_covered = summary['data'][0]['totals']['lines']
+      logger.info('Total lines covered for %s: %s', project,
+                  json.dumps(total_lines_covered))
+  return True
 
 
 def parse_args():
@@ -310,13 +496,27 @@ def parse_args():
   check_test_parser = subparsers.add_parser(
       'check-test', help='Checks run_test.sh for specific project.')
   check_test_parser.add_argument(
-      'project',
-      help='The name of the project to check (e.g., "libpng").',
+      '--projects',
+      nargs='+',
+      required=True,
+      type=str,
+      help='The name of the projects to check (e.g., "libpng").',
   )
   check_test_parser.add_argument(
       '--sanitizer',
       default='address',
       help='The sanitizer to use (default: address).')
+  check_test_parser.add_argument(
+      '--container-output',
+      choices=['silent', 'file', 'stdout'],
+      default='stdout',
+      help='How to handle output from the container. ')
+  check_test_parser.add_argument(
+      '--run-full-cache-replay',
+      action='store_true',
+      help=
+      'If set, will run the full cache replay instead of just checking the script.'
+  )
 
   check_replay_script_parser = subparsers.add_parser(
       'check-replay-script',
@@ -338,6 +538,11 @@ def parse_args():
       '--sanitizer',
       default='address',
       help='The sanitizer to use for the cached build (default: address).')
+  build_cached_image_parser.add_argument(
+      '--container-output',
+      choices=['silent', 'file', 'stdout'],
+      default='stdout',
+      help='How to handle output from the container. ')
 
   autogen_tests_parser = subparsers.add_parser(
       'autogen-tests',
@@ -353,6 +558,43 @@ def parse_args():
       type=int,
       default=1,
       help='Maximum number of projects to try (default: 1).')
+  autogen_tests_parser.add_argument(
+      '--container-output',
+      choices=['silent', 'file', 'stdout'],
+      default='stdout',
+      help='How to handle output from the container. ')
+  autogen_tests_parser.add_argument(
+      '--projects',
+      default='',
+      nargs='+',
+      help=
+      'The name of the projects to autogenerate tests for. If not specified, all projects will be considered.'
+  )
+
+  build_many_caches = subparsers.add_parser(
+      'build-many-caches',
+      help='Builds cached images for multiple projects in parallel.')
+  build_many_caches.add_argument(
+      '--projects',
+      nargs='+',
+      required=True,
+      help='List of projects to build cached images for.')
+  build_many_caches.add_argument(
+      '--sanitizer',
+      default='address',
+      help='The sanitizer to use for the cached build (default: address).')
+  build_many_caches.add_argument(
+      '--container-output',
+      choices=['silent', 'file', 'stdout'],
+      default='stdout',
+      help='How to handle output from the container. ')
+  build_many_caches.add_argument('--silent-replays', action='store_true')
+
+  extract_coverage_parser = subparsers.add_parser(
+      'extract-test-coverage',
+      help='Extract code coverage reports from run_tests.sh script')
+  extract_coverage_parser.add_argument(
+      'project', help='The name of the project to extract coverage for.')
 
   return parser.parse_args()
 
@@ -364,13 +606,36 @@ def main():
   args = parse_args()
 
   if args.command == 'check-test':
-    check_test(args.project, args.sanitizer)
+    if len(args.projects) == 1 and args.projects[0] == 'all':
+      # If 'all' is specified, get all projects from the projects directory.
+      projects_to_analyse = [
+          p for p in os.listdir('projects')
+          if os.path.isfile(os.path.join('projects', p, 'run_tests.sh'))
+      ]
+    else:
+      projects_to_analyse = args.projects
+    for project in projects_to_analyse:
+      logger.info('%s checking run_tests', project)
+      check_test(project, args.sanitizer, args.container_output,
+                 args.run_full_cache_replay)
   if args.command == 'check-replay-script':
-    check_cached_replay(args.project, args.sanitizer)
+    check_cached_replay(args.project, args.sanitizer, args.container_output)
   if args.command == 'build-cached-image':
-    build_cached_project(args.project, sanitizer=args.sanitizer)
+    build_cached_project(args.project,
+                         sanitizer=args.sanitizer,
+                         container_output=args.container_output)
   if args.command == 'autogen-tests':
-    autogen_projects(args.apply_filtering, args.max_projects_to_try)
+    autogen_projects(args.apply_filtering, args.max_projects_to_try,
+                     args.container_output, args.projects)
+  if args.command == 'build-many-caches':
+    for project in args.projects:
+      logger.info('Building cached project: %s', project)
+      check_cached_replay(project,
+                          sanitizer=args.sanitizer,
+                          container_output=args.container_output,
+                          silent_replays=args.silent_replays)
+  if args.command == 'extract-test-coverage':
+    extract_test_coverage(args.project)
 
 
 if __name__ == '__main__':

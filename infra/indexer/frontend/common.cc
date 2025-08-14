@@ -46,7 +46,7 @@ LocationId GetLocationId(InMemoryIndex& index,
                          clang::SourceLocation start,
                          clang::SourceLocation end) {
   std::string path = "";
-  uint32_t start_line = 0, end_line = 0, start_column = 0, end_column = 0;
+  uint32_t start_line = 0, end_line = 0;
 
   // If the location is inside a macro expansion, we want to first resolve it to
   // the source location (of the expansion). For example:
@@ -71,20 +71,16 @@ LocationId GetLocationId(InMemoryIndex& index,
   if (!presumed_start.isInvalid()) {
     path = presumed_start.getFilename();
     start_line = presumed_start.getLine();
-    start_column = presumed_start.getColumn();
     end_line = presumed_start.getLine();
-    end_column = presumed_start.getColumn();
   }
 
   clang::PresumedLoc presumed_end = source_manager.getPresumedLoc(end, false);
   if (!presumed_end.isInvalid()) {
     end_line = presumed_end.getLine();
-    end_column = presumed_end.getColumn();
   }
 
   if (end_line < start_line) {
     end_line = start_line;
-    end_column = start_column;
   }
 
   llvm::ErrorOr<std::string> cwd = source_manager.getFileManager()
@@ -99,8 +95,7 @@ LocationId GetLocationId(InMemoryIndex& index,
     // This is a real file path, so normalize it.
     path = CleanPath(path, *cwd);
   }
-  return index.GetLocationId(
-      {path, start_line, start_column, end_line, end_column});
+  return index.GetLocationId({path, start_line, end_line});
 }
 
 }  // namespace indexer

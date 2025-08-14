@@ -24,7 +24,7 @@ cmake -DEVENT__DISABLE_MBEDTLS=ON \
       -DEVENT__DISABLE_TESTS=ON \
       -DEVENT__DISABLE_SAMPLES=ON \
       ../
-make
+make -j$(nproc)
 make install
 
 # build fuzzer

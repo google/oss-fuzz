@@ -34,7 +34,7 @@ import manifest_types
 import pathlib
 
 
-PROJECT = Path(os.environ['PROJECT_NAME']).name
+PROJECT = Path(os.getenv('PROJECT_NAME', 'project')).name
 SNAPSHOT_DIR = Path('/snapshot')
 SRC = Path(os.getenv('SRC', '/src'))
 # On OSS-Fuzz build infra, $OUT is not /out.
@@ -46,13 +46,15 @@ _LD_PATH = Path('/lib64') / _LD_BINARY
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 _CLANG_VERSION = '18'
 
+EXPECTED_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
+
 EXTRA_CFLAGS = (
     '-fno-omit-frame-pointer '
     '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
     '-O0 -glldb '
     '-fsanitize=address '
     '-Wno-invalid-offsetof '
-    '-fsanitize-coverage=bb,no-prune,trace-pc-guard '
+    f'{EXPECTED_COVERAGE_FLAGS} '
     f'-gen-cdb-fragment-path {OUT}/cdb '
     '-Qunused-arguments '
     f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
@@ -267,7 +269,7 @@ def enumerate_build_targets(
         for binary_path in binary_paths:
           compile_commands = data['compile_commands']
           target_binary_config = manifest_types.CommandLineBinaryConfig(
-              **dict(binary_config.to_dict(), binary_name=name)
+              **dict(binary_config.to_dict(), binary_name=binary_path.name)
           )
           binary_to_build_metadata[binary_path.name] = BinaryMetadata(
               binary_config=target_binary_config,

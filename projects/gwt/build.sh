@@ -20,7 +20,7 @@ PROJECT_GROUP_ID=org.gwtproject
 PROJECT_ARTIFACT_ID=gwt-dev
 MAIN_REPOSITORY=https://github.com/gwtproject/gwt/
 
-MAVEN_ARGS="-Djavac.src.version=1.8 -Djavac.target.version=1.8 -Denforcer.skip=true -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=11 -Djavac.target.version=11 -Denforcer.skip=true -DskipTests"
 
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -49,9 +49,9 @@ else
   # Move seed corpus and dictionary.
   mv $SRC/{*.zip,*.dict} $OUT
 
-  export JAVA_HOME="$OUT/open-jdk-8"
+  export JAVA_HOME="$OUT/open-jdk-11"
   mkdir -p $JAVA_HOME
-  rsync -aL --exclude=*.zip "/usr/lib/jvm/java-8-openjdk-amd64/" "$JAVA_HOME"
+  rsync -aL --copy-links --exclude=blacklisted.certs --exclude=*.zip "/usr/lib/jvm/java-11-openjdk-amd64/" "$JAVA_HOME"
 
   set_project_version_in_fuzz_targets_dependency
 
@@ -85,7 +85,7 @@ else
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
   this_dir=\$(dirname \"\$0\")
-  JAVA_HOME=\"\$this_dir/open-jdk-8/\" \
+  JAVA_HOME=\"\$this_dir/open-jdk-11/\" \
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \

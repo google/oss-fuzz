@@ -35,6 +35,26 @@ class ClangWrapperTest(unittest.TestCase):
         modified_argv, ["clang", "-O0", "-c", "test.c", "-o", "test.o", "-O0"]
     )
 
+  def test_remove_invalid_coverage_flags(self):
+    """Tests that invalid coverage flags are removed."""
+    argv = [
+        "clang",
+        "-fsanitize-coverage=bb,no-prune,trace-pc-guard",
+        "-fsanitize-coverage=edge",
+        "-c",
+        "test.c",
+    ]
+    modified_argv = clang_wrapper.remove_invalid_coverage_flags(argv)
+    self.assertCountEqual(
+        modified_argv,
+        [
+            "clang",
+            "-fsanitize-coverage=bb,no-prune,trace-pc-guard",
+            "-c",
+            "test.c",
+        ],
+    )
+
 
 if __name__ == "__main__":
   unittest.main()

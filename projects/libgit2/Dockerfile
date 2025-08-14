@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y cmake make
 RUN git clone --depth 1 https://github.com/libgit2/libgit2 libgit2
 WORKDIR libgit2
 
-COPY build.sh $SRC/
+COPY *.sh $SRC/

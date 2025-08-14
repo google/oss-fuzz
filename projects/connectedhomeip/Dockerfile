@@ -38,7 +38,7 @@ ENV PATH="/usr/bin/:${PATH}"
 RUN python3 -m ensurepip --upgrade
 
 # PEP-517 needed for cryptography. Update pip
-RUN python3 -m pip install --upgrade pip setuptools wheel
+RUN python3 -m pip install --upgrade pip setuptools wheel packaging
 
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
