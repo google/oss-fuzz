@@ -3766,6 +3766,13 @@ TEST(FrontendTest, VarAndTypeAliasTemplates) {
                     "snippet.cc", 7, 11);
 }
 
+TEST(FrontendTest, AbbreviatedFunctionTemplate) {
+  auto index =
+      IndexSnippet("void template_function(auto arg) {}", {"-std=c++20"});
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "template_function",
+                    "<arg:auto>(auto)", "snippet.cc", 1, 1);
+}
+
 TEST(FrontendTest, CommandLineMacro) {
   auto index = IndexSnippet("int MACRO;", {"-DMACRO=expansion"});
   EXPECT_HAS_ENTITY(index, Entity::Kind::kVariable, "", "expansion", "",
