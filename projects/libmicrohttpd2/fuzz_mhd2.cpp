@@ -25,7 +25,7 @@
 #include <sys/types.h>
 
 #include "microhttpd2.h"
-#include <fuzzer/FuzzedDataProvider.h>
+#include "fuzzer/FuzzedDataProvider.h"
 
 static inline enum MHD_Bool ToMhdBool(bool b) {
   return b ? MHD_YES : MHD_NO;

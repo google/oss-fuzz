@@ -20,17 +20,16 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <cstring>
 #include <fcntl.h>
 #include <errno.h>
 #include <poll.h>
 
-#include <fuzzer/FuzzedDataProvider.h>
-
 extern std::unique_ptr<FuzzedDataProvider> g_fdp;
 extern std::mutex g_fdp_mu;
 
-static std::string b64encode(const std::string &in) {
+std::string b64encode(const std::string &in) {
   static const char* tbl =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   std::string out;
@@ -62,19 +61,33 @@ static std::string b64encode(const std::string &in) {
   return out;
 }
 
-void send_http_request_blocking(uint16_t port,
-                                const std::string& method,
-                                const std::string& path,
-                                const std::string& auth_user,
-                                const std::string& auth_pass,
-                                const std::string& body,
-                                bool garble_auth) {
-  int fd = socket(AF_INET, SOCK_STREAM, 0);
-  if (fd < 0) {
-    return;
+enum MHD_Bool ToMhdBool(bool b) {
+  return b ? MHD_YES : MHD_NO;
+}
+
+std::string safe_ascii(const std::string& in, bool allow_space) {
+  std::string out; out.reserve(in.size());
+  for (unsigned char c : in) {
+    if (!c || c=='\r' || c=='\n' || c<32 || c>=127 || (!allow_space && c==' ')) {
+      continue;
+    }
+    out.push_back((char)c);
+  }
+  if (out.empty()) {
+    out = "x";
   }
 
-  // Configure connection flags
+  return out;
+}
+
+/* Start of internal helpers for sending http message to daemon through localhost socket */
+static int create_socket(uint16_t port) {
+  int fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (fd < 0) {
+    return -1;
+  }
+
+  // Use flag to avoid blocking on socket
   int flags = fcntl(fd, F_GETFL, 0);
   if (flags >= 0) {
     fcntl(fd, F_SETFL, flags | O_NONBLOCK);
@@ -82,158 +95,260 @@ void send_http_request_blocking(uint16_t port,
   struct linger lg{1, 0};
   setsockopt(fd, SOL_SOCKET, SO_LINGER, &lg, sizeof(lg));
 
+  // configure the socket to target the daemon
   sockaddr_in addr{};
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);
   addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
-  // Try connect to MHD daemon
+  // Try connect to the daemon on the binded port in localhost
   int rc = connect(fd, (sockaddr*)&addr, sizeof(addr));
-  if (rc != 0) {
-    if (errno != EINPROGRESS) {
-      close(fd);
-      return;
-    }
-    pollfd p{fd, POLLOUT, 0};
-    if (poll(&p, 1, 5) <= 0) {
-      close(fd);
-      return;
-    }
-    int err = 0;
-    socklen_t elen = sizeof(err);
-    if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &elen) != 0 || err != 0) {
-      close(fd);
-      return;
-    }
+  if (rc == 0) {
+    return fd;
   }
 
-  // Generate random data
-  bool omit_host=false;
-  bool bad_cl=false;
-  bool keep_alive=false;
-  bool extra_headers=false;
-  bool use_digest=false;
-  bool send_malformed_digest=false;
-  std::string realm_hint="hint";
-  {
-    std::lock_guard<std::mutex> lk(g_fdp_mu);
-    if (g_fdp) {
-      omit_host = g_fdp->ConsumeBool();
-      bad_cl = g_fdp->ConsumeBool() && g_fdp->ConsumeBool();
-      keep_alive = g_fdp->ConsumeBool();
-      extra_headers = g_fdp->ConsumeBool();
-      use_digest = g_fdp->ConsumeBool();
-      send_malformed_digest = g_fdp->ConsumeBool();
-      if (g_fdp->ConsumeBool()) {
-        realm_hint = g_fdp->ConsumeRandomLengthString(16);
-      }
-    }
+  // Early exit for invalid connection
+  if (errno != EINPROGRESS) {
+    close(fd);
+    return -1;
+  }
+  pollfd p{fd, POLLOUT, 0};
+  if (poll(&p, 1, 5) <= 0) {
+    close(fd);
+    return -1;
+  }
+  int err = 0;
+  socklen_t elen = sizeof(err);
+  if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &elen) != 0 || err != 0) {
+    close(fd);
+    return -1;
   }
 
-  // Build Authorization header, either with legit or malformed random data
-  std::string auth_header;
-  if (!use_digest) {
+  // Return the created socket
+  return fd;
+}
+
+static void generate_daemon_options(const std::string& method, DaemonOpts& opts) {
+  std::lock_guard<std::mutex> lk(g_fdp_mu);
+  if (!g_fdp) {
+    return;
+  }
+
+  // Generate general daemon options
+  opts.omit_host = g_fdp->ConsumeBool();
+  opts.bad_cl = g_fdp->ConsumeBool() && g_fdp->ConsumeBool();
+  opts.keep_alive = g_fdp->ConsumeBool();
+  opts.extra_headers = g_fdp->ConsumeBool();
+  opts.use_digest = g_fdp->ConsumeBool();
+  opts.send_malformed_digest = g_fdp->ConsumeBool();
+  if (g_fdp->ConsumeBool()) {
+    opts.realm_hint = g_fdp->ConsumeRandomLengthString(16);
+    if (opts.realm_hint.empty()) opts.realm_hint = "hint";
+  }
+
+  // Generate specific daemon options with specific method
+  if (!method.empty() && (method == "POST" || g_fdp->ConsumeBool())) {
+    opts.te_chunked = g_fdp->ConsumeBool();
+    opts.as_multipart = g_fdp->ConsumeBool();
+    if (g_fdp->ConsumeBool()) {
+      opts.boundary = safe_ascii(g_fdp->ConsumeRandomLengthString(24), false);
+      if (opts.boundary.empty()) opts.boundary = "b";
+    }
+  }
+}
+
+static std::string generate_auth_header(const DaemonOpts& opts,
+                                        const std::string& method,
+                                        const std::string& path,
+                                        const std::string& auth_user,
+                                        const std::string& auth_pass,
+                                        bool garble_auth) {
+  // For basic auth only request
+  if (!opts.use_digest) {
     if (!garble_auth) {
       std::string up = auth_user + ":" + auth_pass;
-      auth_header = "Authorization: Basic " + b64encode(up) + "\r\n";
-    } else {
-      static const char* kBad[] = {
-        "Authorization: Basic\r\n",
-        "Authorization: Basic =\r\n",
-        "Authorization: Bearer ???\r\n",
-        "Authorization:\r\n"
-      };
-      auth_header = kBad[(auth_user.empty() ? 0 : (unsigned char)auth_user[0]) %
-                         (sizeof(kBad)/sizeof(kBad[0]))];
+      return "Authorization: Basic " + b64encode(up) + "\r\n";
     }
-  } else {
-    if (!send_malformed_digest) {
-      std::string u = auth_user.empty() ? "user" : auth_user;
-      std::string r = realm_hint;
-      std::string uri = (path.empty() || path[0] != '/') ? ("/" + path) : path;
-      if (uri.empty()) uri = "/";
-      auth_header  = "Authorization: Digest ";
-      auth_header += "username=\"" + u + "\", ";
-      auth_header += "realm=\""    + r + "\", ";
-      auth_header += "nonce=\"deadbeef\", ";
-      auth_header += "uri=\""      + uri + "\", ";
-      auth_header += "response=\"00000000000000000000000000000000\", ";
-      auth_header += "opaque=\"cafebabe\", ";
-      auth_header += "qop=auth, ";
-      auth_header += "nc=00000001, cnonce=\"0123456789abcdef\"\r\n";
-    } else {
-      static const char* kBadDigest[] = {
-        "Authorization: Digest\r\n",
-        "Authorization: Digest username=\r\n",
-        "Authorization: Digest realm=\"\", uri=/, response=\r\n",
-        "Authorization: Digest nonce=,opaque=\r\n"
-      };
-      auth_header = kBadDigest[(unsigned char)(auth_user.empty()?0:auth_user[0]) %
-                               (sizeof(kBadDigest)/sizeof(kBadDigest[0]))];
-    }
+    static const char* kBad[] = {
+      "Authorization: Basic\r\n",
+      "Authorization: Basic =\r\n",
+      "Authorization: Bearer ???\r\n",
+      "Authorization:\r\n"
+    };
+    unsigned idx = (auth_user.empty() ? 0u : (unsigned char)auth_user[0]) %
+                   (unsigned)(sizeof(kBad)/sizeof(kBad[0]));
+    return std::string(kBad[idx]);
   }
 
-  // Build request
-  std::string req;
-  req.reserve(512 + body.size());
-  req += method.empty() ? "GET" : method;
-  req += " ";
-  std::string full_path = (path.empty() || path[0] != '/') ? ("/" + path) : path;
-  if (full_path.empty()) full_path = "/";
-  req += full_path;
-  req += " HTTP/1.1\r\n";
+  // For digest auth with malformed headers
+  if (!opts.send_malformed_digest) {
+    std::string u = auth_user.empty() ? "user" : auth_user;
+    std::string r = opts.realm_hint;
+    std::string uri = (path.empty() || path[0] != '/') ? ("/" + path) : path;
+    if (uri.empty()) uri = "/";
+    std::string h = "Authorization: Digest ";
+    h += "username=\"" + u + "\", ";
+    h += "realm=\""    + r + "\", ";
+    h += "nonce=\"deadbeef\", ";
+    h += "uri=\""      + uri + "\", ";
+    h += "response=\"00000000000000000000000000000000\", ";
+    h += "opaque=\"cafebabe\", ";
+    h += "qop=auth, ";
+    h += "nc=00000001, cnonce=\"0123456789abcdef\"\r\n";
+    return h;
+  }
 
-  if (!omit_host) req += "Host: 127.0.0.1\r\n";
+  // For digest auth with correctly formatted headers with random data
+  static const char* kBadDigest[] = {
+    "Authorization: Digest\r\n",
+    "Authorization: Digest username=\r\n",
+    "Authorization: Digest realm=\"\", uri=/, response=\r\n",
+    "Authorization: Digest nonce=,opaque=\r\n"
+  };
+  unsigned idx = (unsigned char)(auth_user.empty()?0:auth_user[0]) %
+                 (unsigned)(sizeof(kBadDigest)/sizeof(kBadDigest[0]));
+
+  return std::string(kBadDigest[idx]);
+}
+
+static void append_headers(std::string& req,
+                           const DaemonOpts& opts,
+                           const std::string& auth_header) {
+  // Set host
+  if (!opts.omit_host) {
+    req += "Host: 127.0.0.1\r\n";
+  }
+
+  // Append auth headers
   req += auth_header;
 
-  if (extra_headers) {
+  // Append general headers
+  if (opts.extra_headers) {
     req += "User-Agent: fuzz\r\n";
     req += "Accept: */*\r\n";
     req += "X-Fuzz: 1\r\n";
     req += "X-Dup: a\r\nX-Dup: b\r\n";
   }
+}
 
-  if (!body.empty()) {
-    if (!bad_cl) {
-      req += "Content-Length: " + std::to_string(body.size()) + "\r\n";
+static std::string make_multipart(const DaemonOpts& opts,
+                                  const std::string& body,
+                                  std::string& content_type_line_out) {
+  // Do nothing for non-multipart iteration
+  if (!opts.as_multipart) {
+    content_type_line_out.clear();
+    return body;
+  }
+
+  // Configure the request body to be multipart format
+  std::string b = opts.boundary.empty() ? "b" : opts.boundary;
+  std::string mp;
+  mp += "--" + b + "\r\n";
+  mp += "Content-Disposition: form-data; name=\"f\"; filename=\"x\"\r\n";
+  if (!body.empty()) mp += "Content-Type: application/octet-stream\r\n";
+  mp += "\r\n";
+  mp += body;
+  mp += "\r\n--" + b + "--\r\n";
+  content_type_line_out = "Content-Type: multipart/form-data; boundary=" + b + "\r\n";
+
+  return mp;
+}
+
+
+static void append_request_headers(std::string& req,
+                                   const DaemonOpts& opts,
+                                   size_t payload_size,
+                                   const std::string& content_type_line) {
+  // Append content type header
+  if (!content_type_line.empty()) {
+    req += content_type_line;
+  }
+  if (payload_size == 0) {
+    return;
+  }
+
+  // Append encoding and payload size headers
+  if (opts.te_chunked) {
+    req += "Transfer-Encoding: chunked\r\n";
+  } else {
+    if (!opts.bad_cl) {
+      req += "Content-Length: " + std::to_string(payload_size) + "\r\n";
     } else {
-      req += "Content-Length: " + std::to_string(body.size() + 5) + "\r\n";
+      req += "Content-Length: " + std::to_string(payload_size + 5) + "\r\n";
     }
   }
 
-  req += "Connection: close\r\n";
-  req += "\r\n";
-  req += body;
+  // Append connection lifeline header
+  req += opts.keep_alive ? "Connection: keep-alive\r\n" : "Connection: close\r\n";
+}
 
+static void append_chunked_payload(std::string& req, const std::string& payload) {
+  // End the request body gracefully for empty payload
+  if (payload.empty()) {
+    req += "0\r\n\r\n";
+    return;
+  }
+
+  // Continue to write all the body data chunk by chunk to the request
+  size_t off = 0;
+  while (off < payload.size()) {
+    char szbuf[32];
+
+    size_t remain = payload.size() - off;
+    size_t chunk = std::min(remain > 1 ? remain / 2 : 1, size_t(4096));
+
+    int n = snprintf(szbuf, sizeof(szbuf), "%zx\r\n", chunk);
+    if (n > 0) {
+      req.append(szbuf, (size_t)n);
+    }
+    req.append(payload.data() + off, chunk);
+    req += "\r\n";
+    off += chunk;
+  }
+  req += "0\r\n\r\n";
+}
+
+
+static void send_request(int fd, const std::string& req) {
+  // Configure sent parameters and max timeout
   size_t off = 0;
   const int kSendStepMs = 2;
   const int kSendMaxMs = 8;
   int waited = 0;
+
+  // Continue to send data though the socket until all data is sent or timeout is reached
   while (off < req.size()) {
     ssize_t s = send(fd, req.data() + off, req.size() - off, 0);
     if (s > 0) {
       off += (size_t)s;
       continue;
     }
+
     if (s < 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
       pollfd p{fd, POLLOUT, 0};
       if (poll(&p, 1, kSendStepMs) <= 0) {
         waited += kSendStepMs;
-        if (waited >= kSendMaxMs) break;
+        if (waited >= kSendMaxMs) {
+          break;
+        }
       }
       continue;
     }
     break;
   }
 
-  // Signal request ending
   shutdown(fd, SHUT_WR);
+}
 
-  // Handling response
-  static const int kStepMs = 2, kMaxMs = 8;
+static void wait_for_response(int fd) {
+  // Configure response waiting parameters and timeout
+  static const int kStepMs = 2;
+  static const int kMaxMs = 8;
   static const size_t kMaxRead = 64 * 1024;
-  waited = 0;
+  int waited = 0;
   size_t total = 0;
+
+  // Continue to receive data from daemon throug the socket until max data threshold or timeout is reached
   while (true) {
     pollfd p{fd, POLLIN, 0};
     int pr = poll(&p, 1, kStepMs);
@@ -242,6 +357,7 @@ void send_http_request_blocking(uint16_t port,
       if (waited >= kMaxMs) {
         break;
       }
+
       continue;
     }
 
@@ -249,9 +365,7 @@ void send_http_request_blocking(uint16_t port,
     ssize_t r = recv(fd, buf, sizeof(buf), 0);
     if (r > 0) {
       total += (size_t)r;
-      if (total >= kMaxRead) {
-        break;
-      }
+      if (total >= kMaxRead) break;
       continue;
     }
     if (r == 0) {
@@ -263,177 +377,305 @@ void send_http_request_blocking(uint16_t port,
 
     break;
   }
+}
+/* End of internal helpers for sending http message to daemon through localhost socket */
 
+void send_http_request_blocking(uint16_t port,
+                                const std::string& method,
+                                const std::string& path,
+                                const std::string& auth_user,
+                                const std::string& auth_pass,
+                                const std::string& body,
+                                bool garble_auth) {
+  // Create and connect to the daemon with HTTP localhost socket
+  int fd = create_socket(port);
+  if (fd < 0) {
+    return;
+  }
+
+  // Generate options for the daemon connection and request
+  DaemonOpts opts;
+  generate_daemon_options(method, opts);
+
+  // Build the request body for the random request
+  std::string req;
+  req.reserve(512 + body.size());
+  const std::string& m = method.empty() ? std::string("GET") : method;
+  req += m;
+  req += " ";
+  std::string full_path = (path.empty() || path[0] != '/') ? ("/" + path) : path;
+  if (full_path.empty()) full_path = "/";
+  req += full_path;
+  req += " HTTP/1.1\r\n";
+
+  // Generate auth headers
+  std::string auth_header = generate_auth_header(opts, m, path, auth_user, auth_pass, garble_auth);
+
+  // Append headers into the daemon request
+  append_headers(req, opts, auth_header);
+
+  // Randomly make the request with multipart data
+  std::string content_type_line;
+  std::string payload = make_multipart(opts, body, content_type_line);
+
+  // Append additional request specific headers
+  append_request_headers(req, opts, payload.size(), content_type_line);
+  req += "\r\n";
+
+  // Add random body content to the request object depends on the content type chosen
+  if (opts.te_chunked) {
+    append_chunked_payload(req, payload);
+  } else {
+    req += payload;
+  }
+
+  // Sending the request to the daemon through the localhost socket
+  send_request(fd, req);
+
+  // Wait for a while for daemon response
+  wait_for_response(fd);
+
+  // Close the socket
   close(fd);
 }
 
-MHD_FN_PAR_NONNULL_(2) MHD_FN_PAR_NONNULL_(3)
-const struct MHD_Action*
-req_cb(void* cls,
-       struct MHD_Request* MHD_RESTRICT request,
-       const struct MHD_String* MHD_RESTRICT path,
-       enum MHD_HTTP_Method method,
-       uint_fast64_t upload_size) {
+/* Start of internal helpers for daemon request handling */
+static void generate_daemon_req_opts(DaemonReqOpts& o,
+                                     enum MHD_HTTP_Method method) {
+  std::lock_guard<std::mutex> lk(g_fdp_mu);
+  if (!g_fdp) {
+    o.realm = "realm";
+    return;
+  }
+
+  // Generate basic daemon request options
+  o.realm = g_fdp->ConsumeRandomLengthString(16);
+  if (o.realm.empty()) {
+    o.realm = "realm";
+  }
+  o.allowed_user = g_fdp->ConsumeRandomLengthString(12);
+  o.allowed_pass = g_fdp->ConsumeRandomLengthString(12);
+  o.force_challenge = g_fdp->ConsumeBool();
+  o.force_bad = g_fdp->ConsumeBool();
+  o.flip_ok_to_forbidden = g_fdp->ConsumeBool();
+  o.prefer_utf8 = ToMhdBool(g_fdp->ConsumeBool());
+  o.use_digest = g_fdp->ConsumeBool();
+
+  o.qop  = g_fdp->ConsumeBool() ? MHD_DIGEST_AUTH_MULT_QOP_AUTH
+                                : MHD_DIGEST_AUTH_MULT_QOP_AUTH_INT;
+  o.algo = g_fdp->ConsumeBool() ? MHD_DIGEST_AUTH_MULT_ALGO_ANY
+                                : MHD_DIGEST_AUTH_MULT_ALGO_MD5;
+
+  o.send_stale = g_fdp->ConsumeBool() ? MHD_YES : MHD_NO;
+  o.allow_userhash = g_fdp->ConsumeBool() ? MHD_YES : MHD_NO;
+  o.use_opaque = g_fdp->ConsumeBool();
+
+  // Generate daemon request options for form encoded request
+  o.buf_sz = 64 + g_fdp->ConsumeIntegralInRange<size_t>(0, 8192);
+  o.max_nonstream = g_fdp->ConsumeIntegralInRange<size_t>(0, 64 * 1024);
+  o.enc = g_fdp->PickValueInArray<enum MHD_HTTP_PostEncoding>({
+    MHD_HTTP_POST_ENCODING_FORM_URLENCODED,
+    MHD_HTTP_POST_ENCODING_MULTIPART_FORMDATA,
+    MHD_HTTP_POST_ENCODING_TEXT_PLAIN,
+    MHD_HTTP_POST_ENCODING_OTHER
+  });
+  o.do_parse_post = g_fdp->ConsumeBool() || (method == MHD_HTTP_METHOD_POST);
+  o.do_process_upload = g_fdp->ConsumeBool();
+}
+
+static const struct MHD_UploadAction*
+post_done_cb(struct MHD_Request *req, void *cls, enum MHD_PostParseResult pr) {
+  return MHD_upload_action_continue(req);
+}
+
+static const struct MHD_UploadAction*
+post_reader(struct MHD_Request *req,
+            void *cls,
+            const struct MHD_String *name,
+            const struct MHD_StringNullable *filename,
+            const struct MHD_StringNullable *content_type,
+            const struct MHD_StringNullable *encoding,
+            size_t size,
+            const void *data,
+            uint_fast64_t off,
+            enum MHD_Bool final_data) {
+  return MHD_upload_action_continue(req);
+}
+
+static const struct MHD_UploadAction*
+upload_cb(void *upload_cls,
+          struct MHD_Request *request,
+          size_t content_data_size,
+          void *content_data) {
+  enum MHD_HTTP_StatusCode sc = content_data_size ? MHD_HTTP_STATUS_OK : MHD_HTTP_STATUS_NO_CONTENT;
+  struct MHD_Response *r = MHD_response_from_empty(sc);
+  if (!r) {
+    return NULL;
+  }
+
+  return MHD_upload_action_from_response(request, r);
+}
+
+static const struct MHD_Action* request_parsing(struct MHD_Request* request, const DaemonReqOpts& o) {
+  // Handle parsing of post request with form data or general parameters
+  if (o.do_parse_post) {
+    const struct MHD_Action *a =
+      MHD_action_parse_post(request,
+                            o.buf_sz,
+                            o.max_nonstream,
+                            o.enc,
+                            &post_reader, nullptr,
+                            &post_done_cb, nullptr);
+    if (a) {
+      MHD_request_get_post_data_cb(
+        request,
+        [](void *cls, const struct MHD_PostField *pf)->enum MHD_Bool {
+          std::lock_guard<std::mutex> lk(g_fdp_mu);
+          if (!g_fdp) {
+            return MHD_YES;
+          }
+          return ToMhdBool(g_fdp->ConsumeBool());
+        },
+        nullptr);
+      return a;
+    }
+  }
+
+  // Handle parsing of upload request
+  if (o.do_process_upload) {
+    const struct MHD_Action *a =
+      MHD_action_process_upload(request,
+                                o.buf_sz,
+                                &upload_cb, nullptr,
+                                &upload_cb,  nullptr);
+    if (a) {
+      return a;
+    }
+  }
+
+  return nullptr;
+}
+
+static const struct MHD_Action*
+handle_basic_auth(struct MHD_Request* request,
+                  const DaemonReqOpts& o) {
   union MHD_RequestInfoDynamicData req_data;
-  enum MHD_StatusCode res;
+  enum MHD_StatusCode res = MHD_request_get_info_dynamic(
+      request, MHD_REQUEST_INFO_DYNAMIC_AUTH_BASIC_CREDS, &req_data);
 
-  std::string realm, allowed_user, allowed_pass;
-  bool force_challenge = false, force_bad = false, flip_ok_to_forbidden = false;
-  enum MHD_Bool prefer_utf8 = MHD_NO;
-
-  bool use_digest = false;
-  MHD_DigestAuthMultiQOP  qop  = MHD_DIGEST_AUTH_MULT_QOP_AUTH;
-  MHD_DigestAuthMultiAlgo algo = MHD_DIGEST_AUTH_MULT_ALGO_ANY;
-
-  enum MHD_Bool send_stale = MHD_NO;
-  enum MHD_Bool allow_userhash = MHD_NO;
-  const char* opaque_opt = NULL;
-
-  // Generate random data for response
-  {
-    std::lock_guard<std::mutex> lk(g_fdp_mu);
-    if (g_fdp) {
-      realm = g_fdp->ConsumeRandomLengthString(16);
-      allowed_user = g_fdp->ConsumeRandomLengthString(12);
-      allowed_pass = g_fdp->ConsumeRandomLengthString(12);
-      force_challenge = g_fdp->ConsumeBool();
-      force_bad = g_fdp->ConsumeBool();
-      flip_ok_to_forbidden = g_fdp->ConsumeBool();
-      prefer_utf8 = g_fdp->ConsumeBool() ? MHD_YES : MHD_NO;
-      use_digest = g_fdp->ConsumeBool();
-
-      if (g_fdp->ConsumeBool()) {
-        qop  = MHD_DIGEST_AUTH_MULT_QOP_AUTH;
-      } else {
-        qop  = MHD_DIGEST_AUTH_MULT_QOP_AUTH_INT;
-      }
-      if (g_fdp->ConsumeBool()) {
-        algo = MHD_DIGEST_AUTH_MULT_ALGO_ANY;
-      } else {
-        algo = MHD_DIGEST_AUTH_MULT_ALGO_MD5;
-      }
-      send_stale = g_fdp->ConsumeBool() ? MHD_YES : MHD_NO;
-      allow_userhash = g_fdp->ConsumeBool() ? MHD_YES : MHD_NO;
-      if (g_fdp->ConsumeBool()) {
-        opaque_opt = "opaque-token";
-      }
-    }
-  }
-
-  if (realm.empty()) {
-    realm = "realm";
-  }
-
-  // Use basic authentication for this request
-  if (!use_digest) {
-    res = MHD_request_get_info_dynamic(request,
-                                       MHD_REQUEST_INFO_DYNAMIC_AUTH_BASIC_CREDS,
-                                       &req_data);
-
-    if (force_bad || (MHD_SC_REQ_AUTH_DATA_BROKEN == res)) {
-      return MHD_action_from_response(
-        request,
-        MHD_response_from_buffer_static(
-          MHD_HTTP_STATUS_BAD_REQUEST,
-          10, "bad_header"));
-    }
-
-    if (force_challenge || (MHD_SC_AUTH_ABSENT == res)) {
-      const char* realm_cstr = realm.c_str();
-      return MHD_action_basic_auth_challenge_a(
-        request,
-        realm_cstr,
-        prefer_utf8,
-        MHD_response_from_buffer_static(
-          MHD_HTTP_STATUS_UNAUTHORIZED,
-          4, "auth"));
-    }
-
-    if (MHD_SC_OK != res) {
-      return MHD_action_abort_request(request);
-    }
-
-    // copy in data for authentication
-    const struct MHD_AuthBasicCreds *creds = req_data.v_auth_basic_creds;
-    bool user_ok = (creds->username.len == allowed_user.size()) &&
-                   (0 == memcmp(allowed_user.data(),
-                                creds->username.cstr,
-                                creds->username.len));
-    bool pass_ok = (creds->password.len == allowed_pass.size()) &&
-                   (0 == memcmp(allowed_pass.data(),
-                                creds->password.cstr,
-                                creds->password.len));
-    bool ok = user_ok && pass_ok;
-
-    if (flip_ok_to_forbidden) {
-      ok = false;
-    }
-
-    if (ok) {
-      return MHD_action_from_response(
-        request,
-        MHD_response_from_buffer_static(
-          MHD_HTTP_STATUS_OK, 2, "OK"));
-    }
-
+  // Send bad header response
+  if (o.force_bad || (MHD_SC_REQ_AUTH_DATA_BROKEN == res)) {
     return MHD_action_from_response(
       request,
       MHD_response_from_buffer_static(
-        MHD_HTTP_STATUS_FORBIDDEN, 9, "FORBIDDEN"));
+        MHD_HTTP_STATUS_BAD_REQUEST, 10, "bad_header"));
   }
 
-  // Use digest authentication for this daemon request
-  res = MHD_request_get_info_dynamic(request,
-                                     MHD_REQUEST_INFO_DYNAMIC_AUTH_DIGEST_INFO,
-                                     &req_data);
-
-  if (MHD_SC_AUTH_ABSENT == res || force_challenge) {
-    return MHD_action_digest_auth_challenge_a(
+  // Send unauthorized response
+  if (o.force_challenge || (MHD_SC_AUTH_ABSENT == res)) {
+    const char* realm_cstr = o.realm.c_str();
+    return MHD_action_basic_auth_challenge_a(
       request,
-      realm.c_str(),
-      "0",
-      opaque_opt,
-      send_stale,
-      qop,
-      algo,
-      allow_userhash,
-      MHD_YES,
+      realm_cstr,
+      o.prefer_utf8,
       MHD_response_from_buffer_static(
-        MHD_HTTP_STATUS_UNAUTHORIZED,
-        4, "auth"));
+        MHD_HTTP_STATUS_UNAUTHORIZED, 4, "auth"));
   }
 
-  if (MHD_SC_REQ_AUTH_DATA_BROKEN == res || force_bad) {
-    return MHD_action_from_response(
-      request,
-      MHD_response_from_buffer_static(
-        MHD_HTTP_STATUS_BAD_REQUEST,
-        15, "Header Invalid."));
-  }
-
+  // Fail safe to abort request if unknown request status is provided
   if (MHD_SC_OK != res) {
     return MHD_action_abort_request(request);
   }
 
-  // Prepare the digest authentication configurations and response status
+  // Prepeare and perform basic auth check
+  const struct MHD_AuthBasicCreds *creds = req_data.v_auth_basic_creds;
+  bool user_ok = (creds->username.len == o.allowed_user.size()) &&
+                 (0 == memcmp(o.allowed_user.data(),
+                              creds->username.cstr,
+                              creds->username.len));
+  bool pass_ok = (creds->password.len == o.allowed_pass.size()) &&
+                 (0 == memcmp(o.allowed_pass.data(),
+                              creds->password.cstr,
+                              creds->password.len));
+  bool ok = user_ok && pass_ok;
+
+  // Try randomly flip the result
+  if (o.flip_ok_to_forbidden) {
+    ok = false;
+  }
+
+  // Return result with status in response
+  if (ok) {
+    return MHD_action_from_response(
+      request,
+      MHD_response_from_buffer_static(
+        MHD_HTTP_STATUS_OK, 2, "OK"));
+  }
+
+  return MHD_action_from_response(
+    request,
+    MHD_response_from_buffer_static(
+      MHD_HTTP_STATUS_FORBIDDEN, 9, "FORBIDDEN"));
+}
+
+static const struct MHD_Action*
+handle_digest_auth(struct MHD_Request* request,
+                   const DaemonReqOpts& o) {
+  union MHD_RequestInfoDynamicData req_data;
+  enum MHD_StatusCode res = MHD_request_get_info_dynamic(
+      request, MHD_REQUEST_INFO_DYNAMIC_AUTH_DIGEST_INFO, &req_data);
+
+  const char* opaque_opt = o.use_opaque ? "opaque-token" : nullptr;
+
+  // Early exit for missing auth in request
+  if (MHD_SC_AUTH_ABSENT == res || o.force_challenge) {
+    return MHD_action_digest_auth_challenge_a(
+      request,
+      o.realm.c_str(),
+      "0",
+      opaque_opt,
+      o.send_stale,
+      o.qop,
+      o.algo,
+      o.allow_userhash,
+      MHD_YES,
+      MHD_response_from_buffer_static(
+        MHD_HTTP_STATUS_UNAUTHORIZED, 4, "auth"));
+  }
+
+  // Early exit for invalid or malformed request headers
+  if (MHD_SC_REQ_AUTH_DATA_BROKEN == res || o.force_bad) {
+    return MHD_action_from_response(
+      request,
+      MHD_response_from_buffer_static(
+        MHD_HTTP_STATUS_BAD_REQUEST, 15, "Header Invalid."));
+  }
+
+  // Fail safe to abort request if unknown response status is provided
+  if (MHD_SC_OK != res) {
+    return MHD_action_abort_request(request);
+  }
+
+  // Prepeare and perform digest auth check
   const struct MHD_AuthDigestInfo *di = req_data.v_auth_digest_info;
-  bool user_ok = (di->username.len == allowed_user.size()) &&
-                 (0 == memcmp(allowed_user.data(),
+  bool user_ok = (di->username.len == o.allowed_user.size()) &&
+                 (0 == memcmp(o.allowed_user.data(),
                               di->username.cstr,
                               di->username.len));
 
   if (user_ok) {
     enum MHD_DigestAuthResult auth_res =
       MHD_digest_auth_check(request,
-                            realm.c_str(),
-                            allowed_user.c_str(),
-                            allowed_pass.c_str(),
+                            o.realm.c_str(),
+                            o.allowed_user.c_str(),
+                            o.allowed_pass.c_str(),
                             0,
-                            qop,
-                            algo);
+                            o.qop,
+                            o.algo);
 
+    // Return auth result or randomly flip the result
     if (MHD_DAUTH_OK == auth_res) {
-      if (!flip_ok_to_forbidden) {
+      if (!o.flip_ok_to_forbidden) {
         return MHD_action_from_response(
           request,
           MHD_response_from_buffer_static(
@@ -448,17 +690,16 @@ req_cb(void* cls,
     if (MHD_DAUTH_NONCE_STALE == auth_res) {
       return MHD_action_digest_auth_challenge_a(
         request,
-        realm.c_str(),
+        o.realm.c_str(),
         "0",
         opaque_opt,
         MHD_YES,
-        qop,
-        algo,
-        allow_userhash,
+        o.qop,
+        o.algo,
+        o.allow_userhash,
         MHD_YES,
         MHD_response_from_buffer_static(
-          MHD_HTTP_STATUS_UNAUTHORIZED,
-          4, "auth"));
+          MHD_HTTP_STATUS_UNAUTHORIZED, 4, "auth"));
     }
 
     return MHD_action_from_response(
@@ -471,4 +712,27 @@ req_cb(void* cls,
     request,
     MHD_response_from_buffer_static(
       MHD_HTTP_STATUS_FORBIDDEN, 9, "FORBIDDEN"));
+}
+/* End of internal helpers for daemon request handling */
+
+MHD_FN_PAR_NONNULL_(2) MHD_FN_PAR_NONNULL_(3)
+const struct MHD_Action*
+req_cb(void* cls,
+       struct MHD_Request* MHD_RESTRICT request,
+       const struct MHD_String* MHD_RESTRICT path,
+       enum MHD_HTTP_Method method,
+       uint_fast64_t upload_size) {
+  DaemonReqOpts opts;
+  generate_daemon_req_opts(opts, method);
+
+  // Try parinsg or streaming request
+  if (const struct MHD_Action* a = request_parsing(request, opts)) {
+    return a;
+  }
+
+  // Perform basic or digest auth on the request
+  if (!opts.use_digest) {
+    return handle_basic_auth(request, opts);
+  }
+  return handle_digest_auth(request, opts);
 }

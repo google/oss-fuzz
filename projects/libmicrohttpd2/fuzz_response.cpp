@@ -22,7 +22,9 @@
 #include <algorithm>
 
 #include "mhd_helper.h"
-#include <fuzzer/FuzzedDataProvider.h>
+
+std::unique_ptr<FuzzedDataProvider> g_fdp;
+std::mutex g_fdp_mu;
 
 static void request_ended_cb(void *cls,
                              const struct MHD_RequestEndedData *data,

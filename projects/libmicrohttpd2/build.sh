@@ -28,15 +28,17 @@ make -j$(nproc)
 BINARY=$SRC/mhd2/src/mhd2/.libs/libmicrohttpd2.a
 
 # Compile fuzzer
-clang++ $CXXFLAGS $SRC/fuzz_mhd2.cpp -fprofile-instr-generate \
-    -Wno-unused-parameter -Wno-unused-value -fcoverage-mapping \
-    -I$SRC/mhd2/src -I$SRC/mhd2/src/include -I./ -fsanitize=fuzzer \
-    $BINARY -lgnutls -o $OUT/fuzz_mhd2
+clang++ $CXXFLAGS $SRC/fuzz_mhd2.cpp \
+    -fprofile-instr-generate -Wno-unused-parameter -Wno-unused-value \
+    -fcoverage-mapping -pthread -I$SRC -I$SRC/mhd2/src \
+    -I$SRC/mhd2/src/include -I./ -fsanitize=fuzzer $BINARY -lgnutls \
+    -o $OUT/fuzz_mhd2
 
-clang++ $CXXFLAGS $SRC/fuzz_response.cpp -fprofile-instr-generate \
-    -Wno-unused-parameter -Wno-unused-value -fcoverage-mapping \
-    -I$SRC/mhd2/src -I$SRC/mhd2/src/include -I./ -fsanitize=fuzzer \
-    $BINARY -lgnutls -o $OUT/fuzz_response
+clang++ $CXXFLAGS $SRC/fuzz_response.cpp $SRC/mhd_helper.cpp \
+    -fprofile-instr-generate -Wno-unused-parameter -Wno-unused-value \
+    -fcoverage-mapping -pthread -I$SRC -I$SRC/mhd2/src \
+    -I$SRC/mhd2/src/include -I./ -fsanitize=fuzzer $BINARY -lgnutls \
+    -o $OUT/fuzz_response
 
 clang++ $CXXFLAGS $SRC/fuzz_daemon.cpp $SRC/mhd_helper.cpp \
     -fprofile-instr-generate -Wno-unused-parameter -Wno-unused-value \

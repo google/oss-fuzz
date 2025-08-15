@@ -14,7 +14,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "mhd_helper.h"
-#include <fuzzer/FuzzedDataProvider.h>
 
 static constexpr uint16_t kPort = 54321;
 static uint16_t g_listen_port = kPort;
