@@ -1092,6 +1092,17 @@ LocationId AstVisitor::GetLocationId(const clang::Decl* decl) {
     }
   }
 
+  // b/438675191: Workaround for a `libclang` bug (incorrect start location of
+  // abbreviated function templates stemming from a missing `template` keyword).
+  if (const auto* function_template_decl =
+          llvm::dyn_cast<clang::FunctionTemplateDecl>(decl);
+      function_template_decl &&
+      function_template_decl->getBeginLoc().isInvalid()) {
+    return GetLocationId(
+        function_template_decl->getTemplatedDecl()->getBeginLoc(),
+        function_template_decl->getEndLoc());
+  }
+
   // If we reach here then we have updated decl to point to the correct location
   // already.
   return GetLocationId(decl->getBeginLoc(), decl->getEndLoc());
