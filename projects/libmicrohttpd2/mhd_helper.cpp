@@ -1,29 +1,11 @@
-// Copyright 2025 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////////
 #include "mhd_helper.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/time.h>
 #include <unistd.h>
-#include <iostream>
 
 #include <cstring>
-#include <string>
 #include <fcntl.h>
 #include <errno.h>
 #include <poll.h>
@@ -110,6 +92,7 @@ void send_http_request_blocking(uint16_t port,
     }
   }
 
+  // Generate random data
   bool omit_host=false;
   bool bad_cl=false;
   bool keep_alive=false;
@@ -117,7 +100,6 @@ void send_http_request_blocking(uint16_t port,
   bool use_digest=false;
   bool send_malformed_digest=false;
   std::string realm_hint="hint";
-
   {
     std::lock_guard<std::mutex> lk(g_fdp_mu);
     if (g_fdp) {
@@ -133,7 +115,7 @@ void send_http_request_blocking(uint16_t port,
     }
   }
 
-  // Build Authorization header
+  // Build Authorization header, either with legit or malformed random data
   std::string auth_header;
   if (!use_digest) {
     if (!garble_auth) {
@@ -279,7 +261,7 @@ req_cb(void* cls,
        uint_fast64_t upload_size) {
   union MHD_RequestInfoDynamicData req_data;
   enum MHD_StatusCode res;
-std::cout<<"A"<<std::endl;
+
   std::string realm, allowed_user, allowed_pass;
   bool force_challenge = false, force_bad = false, flip_ok_to_forbidden = false;
   enum MHD_Bool prefer_utf8 = MHD_NO;
@@ -291,8 +273,8 @@ std::cout<<"A"<<std::endl;
   enum MHD_Bool send_stale = MHD_NO;
   enum MHD_Bool allow_userhash = MHD_NO;
   const char* opaque_opt = NULL;
-std::cout<<"B"<<std::endl;
 
+  // Generate random data for response
   {
     std::lock_guard<std::mutex> lk(g_fdp_mu);
     if (g_fdp) {
@@ -322,17 +304,16 @@ std::cout<<"B"<<std::endl;
       }
     }
   }
-std::cout<<"C"<<std::endl;
 
   if (realm.empty()) {
     realm = "realm";
   }
 
+  // Use basic authentication for this request
   if (!use_digest) {
     res = MHD_request_get_info_dynamic(request,
                                        MHD_REQUEST_INFO_DYNAMIC_AUTH_BASIC_CREDS,
                                        &req_data);
-std::cout<<"D"<<std::endl;
 
     if (force_bad || (MHD_SC_REQ_AUTH_DATA_BROKEN == res)) {
       return MHD_action_from_response(
@@ -341,7 +322,6 @@ std::cout<<"D"<<std::endl;
           MHD_HTTP_STATUS_BAD_REQUEST,
           10, "bad_header"));
     }
-std::cout<<"E"<<std::endl;
 
     if (force_challenge || (MHD_SC_AUTH_ABSENT == res)) {
       const char* realm_cstr = realm.c_str();
@@ -353,12 +333,12 @@ std::cout<<"E"<<std::endl;
           MHD_HTTP_STATUS_UNAUTHORIZED,
           4, "auth"));
     }
-std::cout<<"F"<<std::endl;
 
     if (MHD_SC_OK != res) {
       return MHD_action_abort_request(request);
     }
 
+    // copy in data for authentication
     const struct MHD_AuthBasicCreds *creds = req_data.v_auth_basic_creds;
     bool user_ok = (creds->username.len == allowed_user.size()) &&
                    (0 == memcmp(allowed_user.data(),
@@ -369,7 +349,6 @@ std::cout<<"F"<<std::endl;
                                 creds->password.cstr,
                                 creds->password.len));
     bool ok = user_ok && pass_ok;
-std::cout<<"G"<<std::endl;
 
     if (flip_ok_to_forbidden) {
       ok = false;
@@ -387,8 +366,8 @@ std::cout<<"G"<<std::endl;
       MHD_response_from_buffer_static(
         MHD_HTTP_STATUS_FORBIDDEN, 9, "FORBIDDEN"));
   }
-std::cout<<"DD"<<std::endl;
 
+  // Use digest authentication for this daemon request
   res = MHD_request_get_info_dynamic(request,
                                      MHD_REQUEST_INFO_DYNAMIC_AUTH_DIGEST_INFO,
                                      &req_data);
@@ -408,7 +387,6 @@ std::cout<<"DD"<<std::endl;
         MHD_HTTP_STATUS_UNAUTHORIZED,
         4, "auth"));
   }
-std::cout<<"DE"<<std::endl;
 
   if (MHD_SC_REQ_AUTH_DATA_BROKEN == res || force_bad) {
     return MHD_action_from_response(
@@ -421,8 +399,8 @@ std::cout<<"DE"<<std::endl;
   if (MHD_SC_OK != res) {
     return MHD_action_abort_request(request);
   }
-std::cout<<"DF"<<std::endl;
 
+  // Prepare the digest authentication configurations and response status
   const struct MHD_AuthDigestInfo *di = req_data.v_auth_digest_info;
   bool user_ok = (di->username.len == allowed_user.size()) &&
                  (0 == memcmp(allowed_user.data(),
@@ -451,7 +429,6 @@ std::cout<<"DF"<<std::endl;
         MHD_response_from_buffer_static(
           MHD_HTTP_STATUS_FORBIDDEN, 9, "FORBIDDEN"));
     }
-std::cout<<"DG"<<std::endl;
 
     if (MHD_DAUTH_NONCE_STALE == auth_res) {
       return MHD_action_digest_auth_challenge_a(
@@ -474,7 +451,6 @@ std::cout<<"DG"<<std::endl;
       MHD_response_from_buffer_static(
         MHD_HTTP_STATUS_FORBIDDEN, 9, "FORBIDDEN"));
   }
-std::cout<<"H"<<std::endl;
 
   return MHD_action_from_response(
     request,

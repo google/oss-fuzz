@@ -1,31 +1,3 @@
-// Copyright 2025 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////////
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#include <unistd.h>
-#include <iostream>
-#include <string>
-#include <mutex>
-#include <memory>
-#include <cstdint>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 #include "mhd_helper.h"
 #include <fuzzer/FuzzedDataProvider.h>
 
@@ -39,40 +11,47 @@ std::unique_ptr<FuzzedDataProvider> g_fdp;
 std::mutex g_fdp_mu;
 
 static void start_daemon_once() {
-  if (g_daemon) return;
+  if (g_daemon) {
+    return;
+  }
 
-  // Tiny deterministic entropy (fine for fuzzing)
+  // Add deterministic entropy
   unsigned char entropy[32];
-  for (size_t i = 0; i < sizeof(entropy); ++i)
+  for (size_t i = 0; i < sizeof(entropy); ++i) {
     entropy[i] = (unsigned char)(0xA5 ^ (i * 17));
+  }
 
+  // Try start the daemon and map to a designated port
+  // Retry to next port if mapping to port fails
   bool started = false;
   for (int i = 0; i < 8 && !started; ++i) {
     const uint16_t try_port = static_cast<uint16_t>(kPort + i);
 
     g_daemon = MHD_daemon_create(&req_cb, NULL);
-    if (!g_daemon) continue;
+    if (!g_daemon) {
+      continue;
+    }
 
-    // Only pass options you are 100% sure exist in YOUR header.
-    // Start with the absolute minimum: bind + (optional) entropy.
+    // Configure daemon starting options
     auto sc = MHD_DAEMON_SET_OPTIONS(
                 g_daemon,
                 MHD_D_OPTION_BIND_PORT(MHD_AF_INET4, try_port),
                 MHD_D_OPTION_RANDOM_ENTROPY(sizeof(entropy), entropy)
               );
+
+    // Safeguard if daemon starting or mapping to port fails and try on next port
     if (sc != MHD_SC_OK) {
       MHD_daemon_destroy(g_daemon);
       g_daemon = nullptr;
       continue;
     }
-
-    // NOTE: do NOT set WM_WORKER_THREADS here yet.
     if (MHD_daemon_start(g_daemon) != MHD_SC_OK) {
       MHD_daemon_destroy(g_daemon);
       g_daemon = nullptr;
       continue;
     }
 
+    // Store the final port used
     g_listen_port = try_port;
     started = true;
   }
@@ -92,6 +71,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     g_fdp = std::make_unique<FuzzedDataProvider>(data, size);
   }
 
+  // Generate random number to determine number of random request to be sent
   {
     std::lock_guard<std::mutex> lk(g_fdp_mu);
     if (g_fdp) {
@@ -99,11 +79,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     }
   }
 
+  // Send multiple random requests to daemon
   for (size_t i = 0; i < reqs; ++i) {
     std::string method = "GET", path, user, pass, body;
     bool garble_auth = false;
 
-    // Prepare HTTP request in locked session
+    // Prepare HTTP request in locked session with random data
     {
       std::lock_guard<std::mutex> lk(g_fdp_mu);
       if (g_fdp) {
@@ -133,6 +114,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     // Send request
     send_http_request_blocking(g_listen_port, method, path, user, pass, body, garble_auth);
 
+    // Early exit if failed to load more random data
     {
       std::lock_guard<std::mutex> lk(g_fdp_mu);
       if (!g_fdp || g_fdp->remaining_bytes() < 8) {
@@ -150,6 +132,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   return 0;
 }
 
+// Clean up daemon
 extern "C" void LLVMFuzzerTearDown() {
   if (g_daemon) {
     MHD_daemon_destroy(g_daemon);
