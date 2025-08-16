@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.1/binaries/apache-maven-3.9.1-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-
-ENV MVN $SRC/maven/apache-maven-3.9.1/bin/mvn
-
-RUN apt update && apt install -y openjdk-17-jdk
-
-RUN git clone --depth 1 https://github.com/spring-projects/spring-data-keyvalue.git spring-data-keyvalue
-
-COPY build.sh $SRC/
-COPY *.java $SRC/
-WORKDIR $SRC/spring-data-keyvalue
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && \
+    apt-get install -y autoconf automake libtool pkg-config texinfo \
+        gnutls-dev gnutls-bin
+RUN git clone https://git.gnunet.org/libmicrohttpd2.git mhd2
+WORKDIR mhd2
+COPY build.sh *.cpp *.h $SRC/
+COPY *.options *.dict $OUT/
