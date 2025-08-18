@@ -165,7 +165,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
     circumstances."""
     self.assertEqual(self.deployment.download_latest_build(),
                      EXPECTED_LATEST_BUILD_PATH)
-    expected_artifact_name = 'address-commit2'
+    expected_artifact_name = 'address-libfuzzer-commit2'
     mock_download_build.assert_called_with(expected_artifact_name,
                                            EXPECTED_LATEST_BUILD_PATH)
 
@@ -185,7 +185,7 @@ class ClusterFuzzLiteTest(fake_filesystem_unittest.TestCase):
   def test_upload_build(self, mock_upload_build):
     """Tests that upload_build works as intended."""
     self.deployment.upload_build('commit')
-    mock_upload_build.assert_called_with('address-commit',
+    mock_upload_build.assert_called_with('address-libfuzzer-commit',
                                          '/workspace/build-out')
 
 

@@ -119,6 +119,7 @@ class InternalGithubBuildTest(unittest.TestCase):
   """Tests for building OSS-Fuzz projects on GitHub actions."""
   PROJECT_REPO_NAME = 'myproject'
   SANITIZER = 'address'
+  FUZZING_ENGINE = 'libfuzzer'
   GIT_SHA = 'fake'
   PR_REF = 'fake'
 
@@ -129,6 +130,7 @@ class InternalGithubBuildTest(unittest.TestCase):
         project_repo_name=self.PROJECT_REPO_NAME,
         workspace=tmp_dir,
         sanitizer=self.SANITIZER,
+        fuzzing_engine=self.FUZZING_ENGINE,
         git_sha=self.GIT_SHA,
         pr_ref=self.PR_REF,
         cfl_platform='github')
@@ -315,6 +317,7 @@ class CheckFuzzerBuildTest(unittest.TestCase):
   """Tests the check_fuzzer_build function in the cifuzz module."""
 
   SANITIZER = 'address'
+  FUZZING_ENGINE = 'libfuzzer'
   LANGUAGE = 'c++'
 
   def setUp(self):
@@ -323,6 +326,7 @@ class CheckFuzzerBuildTest(unittest.TestCase):
     self.config = test_helpers.create_build_config(
         oss_fuzz_project_name=EXAMPLE_PROJECT,
         sanitizer=self.SANITIZER,
+        fuzzing_engine=self.FUZZING_ENGINE,
         language=self.LANGUAGE,
         workspace=workspace_path,
         pr_ref='refs/pull/1757/merge')
