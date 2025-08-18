@@ -19,29 +19,54 @@
 export ASAN_OPTIONS=detect_leaks=0
 export LSAN_OPTIONS=detect_leaks=0
 
+BINARY=$SRC/mhd2/src/mhd2/.libs/libmicrohttpd2.a
+
 # Build libmicrohttpd
 ./autogen.sh
 ./configure --enable-dauth --enable-md5 --enable-sha256 --enable-sha512-256 \
   --enable-bauth --enable-upgrade --enable-https --enable-messages --enable-coverage
 make clean
 make -j$(nproc)
-BINARY=$SRC/mhd2/src/mhd2/.libs/libmicrohttpd2.a
+make install
 
 # Compile fuzzer
-clang++ $CXXFLAGS $SRC/fuzz_mhd2.cpp \
-    -fprofile-instr-generate -Wno-unused-parameter -Wno-unused-value \
-    -fcoverage-mapping -pthread -I$SRC -I$SRC/mhd2/src \
-    -I$SRC/mhd2/src/include -I./ -fsanitize=fuzzer $BINARY -lgnutls \
-    -o $OUT/fuzz_mhd2
+clang++ $CXXFLAGS $SRC/fuzz_mhd2.cpp -fprofile-instr-generate \
+    -Wno-unused-parameter -Wno-unused-value -fcoverage-mapping \
+    -I$SRC -I$SRC/mhd2/src/mhd2 -I$SRC/mhd2/src/include -I./ \
+    -fsanitize=fuzzer $BINARY -lgnutls -o $OUT/fuzz_mhd2
 
 clang++ $CXXFLAGS $SRC/fuzz_response.cpp $SRC/mhd_helper.cpp \
     -fprofile-instr-generate -Wno-unused-parameter -Wno-unused-value \
-    -fcoverage-mapping -pthread -I$SRC -I$SRC/mhd2/src \
-    -I$SRC/mhd2/src/include -I./ -fsanitize=fuzzer $BINARY -lgnutls \
-    -o $OUT/fuzz_response
+    -fcoverage-mapping -pthread -I$SRC -I$SRC/mhd2/src/include -I./ \
+    -fsanitize=fuzzer $BINARY -lgnutls -o $OUT/fuzz_response
 
 clang++ $CXXFLAGS $SRC/fuzz_daemon.cpp $SRC/mhd_helper.cpp \
     -fprofile-instr-generate -Wno-unused-parameter -Wno-unused-value \
-    -fcoverage-mapping -pthread -I$SRC -I$SRC/mhd2/src \
+    -fcoverage-mapping -pthread -I$SRC -I$SRC/mhd2/src/mhd2 \
     -I$SRC/mhd2/src/include -I./ -fsanitize=fuzzer $BINARY -lgnutls \
     -o $OUT/fuzz_daemon
+
+clang++ $CXXFLAGS $SRC/fuzz_str.cpp -DHAVE_CONFIG_H \
+    -fprofile-instr-generate -Wno-unused-parameter -Wno-unused-value \
+    -fcoverage-mapping -pthread -I$SRC/mhd2/src/mhd2 -I$SRC/mhd2/src/include \
+    -I$SRC/mhd2/src/incl_priv -I$SRC/mhd2/src/incl_priv/config \
+     -I./ -fsanitize=fuzzer $BINARY -lgnutls -o $OUT/fuzz_str
+
+clang++ $CXXFLAGS $SRC/fuzz_crypto_int.cpp -DHAVE_CONFIG_H \
+    -fprofile-instr-generate -Wno-unused-parameter -Wno-unused-value \
+    -fcoverage-mapping -pthread -I$SRC/mhd2/src/mhd2 -I$SRC/mhd2/src/include \
+    -I$SRC/mhd2/src/incl_priv -I$SRC/mhd2/src/incl_priv/config \
+     -I./ -fsanitize=fuzzer $BINARY -lgnutls -o $OUT/fuzz_crypto_int
+
+# Rebuild the binary for external crypto
+./autogen.sh
+./configure --enable-md5=tlslib --enable-sha256=tlslib --enable-sha512-256=builtin
+make clean
+make -j$(nproc)
+make install
+
+clang++ $CXXFLAGS $SRC/fuzz_crypto_ext.cpp -DHAVE_CONFIG_H \
+    -fprofile-instr-generate -Wno-unused-parameter -Wno-unused-value \
+    -fcoverage-mapping -pthread -I$SRC/mhd2/src/mhd2 -I$SRC/mhd2/src/include \
+    -I$SRC/mhd2/src/incl_priv -I$SRC/mhd2/src/incl_priv/config \
+     -I./ -fsanitize=fuzzer $BINARY -lgnutls -o $OUT/fuzz_crypto_ext
