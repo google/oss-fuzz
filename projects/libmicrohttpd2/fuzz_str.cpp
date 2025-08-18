@@ -1,18 +1,4 @@
-// Copyright 2025 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////////
+#include <cstring>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -25,65 +11,22 @@ extern "C" {
   #include "mhd_str.h"
 }
 
-static inline char *generate_cstr(const std::vector<uint8_t>& vec, bool sanitise) {
-  char *ptr = (char*) malloc(vec.size() + 1);
-  if (!ptr) {
-    return nullptr;
-  }
-
-  if (sanitise) {
-    for (size_t i = 0; i < vec.size(); i++) {
-      char c = (char) vec[i];
-      if (c == 0 || c == ' ' || c == '\t' || c == ',' || c == '=') {
-        c = '_';
-      }
-      ptr[i] = c;
-    }
-  } else {
-    if (vec.size()) {
-      memcpy(ptr, vec.data(), vec.size());
-    }
-  }
-
-  ptr[vec.size()] = '\0';
-  return ptr;
-}
-
 static void fuzz_tokens(FuzzedDataProvider& fdp) {
   // Prepare random data
-  std::vector<uint8_t> raw1 = fdp.ConsumeBytes<uint8_t>(
-      fdp.ConsumeIntegralInRange<size_t>(0, 1024));
-  std::vector<uint8_t> raw2 = fdp.ConsumeBytes<uint8_t>(
-      fdp.ConsumeIntegralInRange<size_t>(0, 1024));
-
-  char *str1 = generate_cstr(raw1, fdp.ConsumeBool());
-  char *str2 = generate_cstr(raw2, fdp.ConsumeBool());
-  if (!str1 || !str2) {
-    free(str1);
-    free(str2);
-    return;
-  }
+  std::string string1 = fdp.ConsumeRandomLengthString(1024);
+  std::string string2 = fdp.ConsumeRandomLengthString(1024);
+  std::string string3 = fdp.ConsumeRandomLengthString(1024);
+  const char *str1 = string1.c_str();
+  const char *str2 = string2.c_str();
+  const char *str3 = string3.c_str();
 
   // Fuzz mhd_str_equal_caseless_n
   mhd_str_equal_caseless_n(str1, str2, fdp.ConsumeIntegral<size_t>());
 
   // Fuzz mhd_str_equal_caseless_bin_n
-  const size_t min_len = std::min(raw1.size(), raw2.size());
+  const size_t min_len = std::min(strlen(str1), strlen(str2));
   if (min_len) {
-    char *bin1 = (char*)malloc(raw1.size());
-    char *bin2 = (char*)malloc(raw2.size());
-    if (bin1 && bin2) {
-      if (!raw1.empty()) {
-        memcpy(bin1, raw1.data(), raw1.size());
-      }
-      if (!raw2.empty()) {
-        memcpy(bin2, raw2.data(), raw2.size());
-      }
-
-      mhd_str_equal_caseless_bin_n(bin1, bin2, min_len);
-    }
-    free(bin1);
-    free(bin2);
+    mhd_str_equal_caseless_bin_n(str1, str2, min_len);
   }
 
   // Fuzz mhd_str_has_token_caseless
@@ -108,30 +51,17 @@ static void fuzz_tokens(FuzzedDataProvider& fdp) {
 
   // Fuzz mhd_str_starts_with_token_req_param
   bool needs_uni = fdp.ConsumeBool();
-  std::vector<uint8_t> raw3 = fdp.ConsumeBytes<uint8_t>(
-      fdp.ConsumeIntegralInRange<size_t>(0, 1024));
-  char *str3 = generate_cstr(raw3, fdp.ConsumeBool());
   struct MHD_String s_str3 {
     strlen(str3), str3
   };
   struct mhd_BufferConst str3_buf { 0, nullptr };
   mhd_str_starts_with_token_req_param(&s_str1, &s_str2, &s_str3, &str3_buf, &needs_uni);
-
-  free(str1);
-  free(str2);
-  free(str3);
 }
 
 static void fuzz_conversion(FuzzedDataProvider& fdp) {
   // Prepare random data
-  std::vector<uint8_t> raw = fdp.ConsumeBytes<uint8_t>(
-      fdp.ConsumeIntegralInRange<size_t>(0, 1024));
-  char *str = generate_cstr(raw, fdp.ConsumeBool());
-
-  if (!str) {
-    free(str);
-    return;
-  }
+  std::string string = fdp.ConsumeRandomLengthString(1024);
+  const char *str = string.c_str();
 
   uint_fast32_t u32 = 0;
   uint_fast64_t u64 = 0;
@@ -153,21 +83,13 @@ static void fuzz_conversion(FuzzedDataProvider& fdp) {
   // Fuzz uint16 conversion
   mhd_uint16_to_str((uint_least16_t)fdp.ConsumeIntegralInRange<unsigned>(0, 65535), small, sizeof(small));
   mhd_uint16_to_str((uint_least16_t)fdp.ConsumeIntegralInRange<unsigned>(0, 65535), big, sizeof(big));
-
-  free(str);
 }
 
 static void fuzz_decode(FuzzedDataProvider& fdp) {
   // Prepare random data
   bool ignored = false;
-  std::vector<uint8_t> raw = fdp.ConsumeBytes<uint8_t>(
-      fdp.ConsumeIntegralInRange<size_t>(0, 1024));
-  char *str = generate_cstr(raw, fdp.ConsumeBool());
-
-  if (!str) {
-    free(str);
-    return;
-  }
+  std::string string = fdp.ConsumeRandomLengthString(1024);
+  char *str = string.data();
 
   // Fuzz decode functions
   char *out1 = (char*) malloc(strlen(str));
@@ -185,23 +107,14 @@ static void fuzz_decode(FuzzedDataProvider& fdp) {
 
   free(out1);
   free(out2);
-  free(str);
 }
 
 static void fuzz_quoted(FuzzedDataProvider& fdp) {
   // Prepare random data
-  std::vector<uint8_t> raw1 = fdp.ConsumeBytes<uint8_t>(
-      fdp.ConsumeIntegralInRange<size_t>(0, 1024));
-  std::vector<uint8_t> raw2 = fdp.ConsumeBytes<uint8_t>(
-      fdp.ConsumeIntegralInRange<size_t>(0, 1024));
-
-  char *str1 = generate_cstr(raw1, fdp.ConsumeBool());
-  char *str2 = generate_cstr(raw2, fdp.ConsumeBool());
-  if (!str1 || !str2) {
-    free(str1);
-    free(str2);
-    return;
-  }
+  std::string string1 = fdp.ConsumeRandomLengthString(1024);
+  std::string string2 = fdp.ConsumeRandomLengthString(1024);
+  const char *str1 = string1.c_str();
+  const char *str2 = string2.c_str();
 
   // Fuzz mhd_str_equal_quoted_bin_n
   mhd_str_equal_quoted_bin_n(str1, strlen(str1), str2, strlen(str2));
@@ -221,20 +134,12 @@ static void fuzz_quoted(FuzzedDataProvider& fdp) {
   }
 
   free(out);
-  free(str1);
-  free(str2);
 }
 
 static void fuzz_base64(FuzzedDataProvider& fdp) {
   // Prepare random data
-  std::vector<uint8_t> raw = fdp.ConsumeBytes<uint8_t>(
-      fdp.ConsumeIntegralInRange<size_t>(0, 1024));
-  char *str = generate_cstr(raw, fdp.ConsumeBool());
-
-  if (!str) {
-    free(str);
-    return;
-  }
+  std::string string = fdp.ConsumeRandomLengthString(1024);
+  char *str = string.data();
 
   // Prepare a base64 string
   static const char valid_chars[] =
@@ -258,8 +163,6 @@ static void fuzz_base64(FuzzedDataProvider& fdp) {
     mhd_base64_to_bin_n(str, strlen(str), out, max_out);
     free(out);
   }
-
-  free(str);
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
