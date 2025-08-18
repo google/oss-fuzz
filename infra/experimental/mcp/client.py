@@ -172,7 +172,7 @@ OSS-Fuzz supports multiple languages:
 
 
 async def chat_with_agent(prompt: str) -> str:
-    """
+  """
     Send a message to the LLM with access to the MCP tools.
     
     Args:
@@ -181,113 +181,113 @@ async def chat_with_agent(prompt: str) -> str:
     Returns:
         String response from the agent
     """
-    try:
-        server = MCPServerSSE(url=MCP_SERVER_URL,
-                              timeout=5200.0,
-                              read_timeout=5000.0)
+  try:
+    server = MCPServerSSE(url=MCP_SERVER_URL,
+                          timeout=5200.0,
+                          read_timeout=5000.0)
 
-        agent = Agent(model="openai:gpt-4o", mcp_servers=[server], retries=30)
+    agent = Agent(model="openai:gpt-4o", mcp_servers=[server], retries=30)
 
-        # Run the agent with the MCP server context
-        async with agent.run_mcp_servers():
-            result = await agent.run(prompt)
+    # Run the agent with the MCP server context
+    async with agent.run_mcp_servers():
+      result = await agent.run(prompt)
 
-        return result.output
+    return result.output
 
-    except Exception as e:
-        return f"Error occurred: {str(e)}"
+  except Exception as e:
+    return f"Error occurred: {str(e)}"
 
 
 def initialize_oss_fuzz() -> None:
-    """
+  """
     Initialize the OSS-Fuzz environment by cloning the OSS-Fuzz repository.
     """
-    if not os.path.exists(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR):
-        logger.info('Cloning OSS-Fuzz repository...')
-        subprocess.check_call(
-            f'git clone https://github.com/google/oss-fuzz.git {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}',
-            shell=True)
+  if not os.path.exists(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR):
+    logger.info('Cloning OSS-Fuzz repository...')
+    subprocess.check_call(
+        f'git clone https://github.com/google/oss-fuzz.git {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}',
+        shell=True)
 
-    os.makedirs(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, exist_ok=True)
+  os.makedirs(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, exist_ok=True)
 
 
 def prepare_oss_fuzz_project(project_name: str) -> bool:
-    """Gets the main repo of an OSS-Fuzz project and clones it into our caching folder."""
-    # check the project yaml.
-    project_yaml = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                                'projects', project_name, 'project.yaml')
-    if not os.path.exists(project_yaml):
-        logger.warning('Project YAML does not exist: %s', project_yaml)
-        return False
+  """Gets the main repo of an OSS-Fuzz project and clones it into our caching folder."""
+  # check the project yaml.
+  project_yaml = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR, 'projects',
+                              project_name, 'project.yaml')
+  if not os.path.exists(project_yaml):
+    logger.warning('Project YAML does not exist: %s', project_yaml)
+    return False
 
-    if os.path.isdir(
-            os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name)):
-        return True
+  if os.path.isdir(
+      os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name)):
+    return True
 
-    with open(project_yaml, 'r', encoding='utf-8') as f:
-        project_data = f.read()
-    main_repo = ''
-    for line in project_data.split('\n'):
-        if line.startswith('main_repo'):
-            main_repo = line.replace('main_repo: ', '').strip()
-    if not main_repo:
-        raise Exception('No main_repo found in project.yaml')
-    logger.info('Main repo: %s', main_repo)
+  with open(project_yaml, 'r', encoding='utf-8') as f:
+    project_data = f.read()
+  main_repo = ''
+  for line in project_data.split('\n'):
+    if line.startswith('main_repo'):
+      main_repo = line.replace('main_repo: ', '').strip()
+  if not main_repo:
+    raise Exception('No main_repo found in project.yaml')
+  logger.info('Main repo: %s', main_repo)
 
-    try:
-        subprocess.check_call(
-            'git clone ' + main_repo + ' ' +
-            os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name),
-            shell=True,
-            timeout=60 * 10)
-    except subprocess.CalledProcessError as e:
-        logger.info(f"Error cloning project {project_name}: {e}")
-        return False
-    except subprocess.TimeoutExpired:
-        logger.info(f"Cloning project {project_name} timed out.")
-        return False
+  try:
+    subprocess.check_call(
+        'git clone ' + main_repo + ' ' +
+        os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name),
+        shell=True,
+        timeout=60 * 10)
+  except subprocess.CalledProcessError as e:
+    logger.info(f"Error cloning project {project_name}: {e}")
+    return False
+  except subprocess.TimeoutExpired:
+    logger.info(f"Cloning project {project_name} timed out.")
+    return False
 
-    return os.path.isdir(
-        os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name))
+  return os.path.isdir(
+      os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name))
 
 
 async def does_project_build(project: str) -> bool:
-    """Runs OSS-Fuzz build_fuzzers and check_build to validate if project is successful"""
-    try:
-        subprocess.check_call(
-            f'python3 {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/infra/helper.py build_fuzzers '
-            + project,
-            cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-            shell=True,
-            timeout=60 * 20)
-    except subprocess.CalledProcessError:
-        return False
-    except subprocess.TimeoutExpired:
-        logger.info(f"Building project {project} timed out.")
-        return False
+  """Runs OSS-Fuzz build_fuzzers and check_build to validate if project is successful"""
+  try:
+    subprocess.check_call(
+        f'python3 {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/infra/helper.py build_fuzzers '
+        + project,
+        cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
+        shell=True,
+        timeout=60 * 20)
+  except subprocess.CalledProcessError:
+    return False
+  except subprocess.TimeoutExpired:
+    logger.info(f"Building project {project} timed out.")
+    return False
 
-    try:
-        subprocess.check_call(
-            f'python3 {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/infra/helper.py check_build '
-            + project,
-            cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-            shell=True,
-            timeout=60 * 10)
+  try:
+    subprocess.check_call(
+        f'python3 {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/infra/helper.py check_build '
+        + project,
+        cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
+        shell=True,
+        timeout=60 * 10)
 
-    except subprocess.CalledProcessError:
-        return False
-    except subprocess.TimeoutExpired:
-        logger.info(f"Checking build for project {project} timed out.")
-        return False
+  except subprocess.CalledProcessError:
+    return False
+  except subprocess.TimeoutExpired:
+    logger.info(f"Checking build for project {project} timed out.")
+    return False
 
-    return True
+  return True
 
 
 async def fix_project_build(project: str):
-    """Runs an agent to fix the build of an OSS-Fuzz project."""
+  """Runs an agent to fix the build of an OSS-Fuzz project."""
 
-    response = await chat_with_agent(
-        f"""Fix the OSS-Fuzz project {project} that currently has a broken build.
+  response = await chat_with_agent(
+      f"""Fix the OSS-Fuzz project {project} that currently has a broken build.
 Use the build logs from OSS-Fuzz's project {project} and determine why it fails, then 
 proceed to adjust Dockerfile and build.sh scripts until the project builds.
 
@@ -312,102 +312,98 @@ Some rules:
 - Continue adjusting the files in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/ until "fuzzer-check" passes.
 """)
 
-    fix_success = await does_project_build(project)
-    return response, fix_success
+  fix_success = await does_project_build(project)
+  return response, fix_success
 
 
 def _get_all_broken_oss_fuzz_projects(language: str = '') -> list[str]:
-    """Gets the projects that are failing to build in OSS-Fuzz."""
-    OSS_FUZZ_BUILD_STATUS_URL = 'https://oss-fuzz-build-logs.storage.googleapis.com'
-    FUZZ_BUILD_JSON = 'status.json'
-    fuzz_build_url = OSS_FUZZ_BUILD_STATUS_URL + '/' + FUZZ_BUILD_JSON
+  """Gets the projects that are failing to build in OSS-Fuzz."""
+  OSS_FUZZ_BUILD_STATUS_URL = 'https://oss-fuzz-build-logs.storage.googleapis.com'
+  FUZZ_BUILD_JSON = 'status.json'
+  fuzz_build_url = OSS_FUZZ_BUILD_STATUS_URL + '/' + FUZZ_BUILD_JSON
 
-    raw_fuzz_builds = httpx.get(fuzz_build_url)
-    if raw_fuzz_builds.status_code != 200:
-        raise Exception(
-            f"Failed to fetch OSS-Fuzz build status: {raw_fuzz_builds.status_code}"
+  raw_fuzz_builds = httpx.get(fuzz_build_url)
+  if raw_fuzz_builds.status_code != 200:
+    raise Exception(
+        f"Failed to fetch OSS-Fuzz build status: {raw_fuzz_builds.status_code}")
+  fuzz_builds = raw_fuzz_builds.json()
+  broken_projects = []
+  for project in fuzz_builds.get('projects', []):
+
+    if len(project.get('history', [])) <= 4:
+      continue
+
+    history = project['history']
+    # Ensure the latest three build are failing, as we don't want to "fix" projects
+    # that spurious fail. This happens due to network issues, for example.
+    if history[0]['success'] or history[1]['success'] or history[2]['success']:
+      continue
+
+    # Make sure the project actually exists in the OSS-Fuzz repository.
+    # We need to do this because Clusterfuzz may keep some projects rolling
+    # withouth them being in OSS-Fuzz any longer.
+    project_path = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
+                                'projects', project['name'])
+    if not os.path.exists(project_path):
+      continue
+
+    if language:
+      # Check which language
+      project_yaml = os.path.join(project_path, 'project.yaml')
+      if not os.path.exists(project_yaml):
+        logger.info(
+            f"Project {project['name']} does not have a project.yaml file, skipping."
         )
-    fuzz_builds = raw_fuzz_builds.json()
-    broken_projects = []
-    for project in fuzz_builds.get('projects', []):
+        continue
+      with open(project_yaml, 'r', encoding='utf-8') as f:
+        project_data = f.read()
+      project_language = ''
+      for line in project_data.split('\n'):
+        if line.startswith('language:'):
+          project_language = line.replace('language:', '').strip().lower()
+          break
+      if project_language != language.lower():
+        continue
 
-        if len(project.get('history', [])) <= 4:
-            continue
-
-        history = project['history']
-        # Ensure the latest three build are failing, as we don't want to "fix" projects
-        # that spurious fail. This happens due to network issues, for example.
-        if history[0]['success'] or history[1]['success'] or history[2][
-                'success']:
-            continue
-
-        # Make sure the project actually exists in the OSS-Fuzz repository.
-        # We need to do this because Clusterfuzz may keep some projects rolling
-        # withouth them being in OSS-Fuzz any longer.
-        project_path = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                                    'projects', project['name'])
-        if not os.path.exists(project_path):
-            continue
-
-        if language:
-            # Check which language
-            project_yaml = os.path.join(project_path, 'project.yaml')
-            if not os.path.exists(project_yaml):
-                logger.info(
-                    f"Project {project['name']} does not have a project.yaml file, skipping."
-                )
-                continue
-            with open(project_yaml, 'r', encoding='utf-8') as f:
-                project_data = f.read()
-            project_language = ''
-            for line in project_data.split('\n'):
-                if line.startswith('language:'):
-                    project_language = line.replace('language:',
-                                                    '').strip().lower()
-                    break
-            if project_language != language.lower():
-                continue
-
-        broken_projects = [project['name']] + broken_projects
-    return broken_projects
+    broken_projects = [project['name']] + broken_projects
+  return broken_projects
 
 
 async def add_run_tests_command(project_name: str):
-    """Adds a run-tests.sh command for a specific OSS-Fuzz project."""
-    project_path = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                                'projects', project_name)
-    if not os.path.exists(project_path):
-        logger.warning("Project %s does not exist in OSS-Fuzz.", project_name)
-        return
-    if not prepare_oss_fuzz_project(project_name):
-        logger.warning("Failed to prepare OSS-Fuzz project %s.", project_name)
-        return
+  """Adds a run-tests.sh command for a specific OSS-Fuzz project."""
+  project_path = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR, 'projects',
+                              project_name)
+  if not os.path.exists(project_path):
+    logger.warning("Project %s does not exist in OSS-Fuzz.", project_name)
+    return
+  if not prepare_oss_fuzz_project(project_name):
+    logger.warning("Failed to prepare OSS-Fuzz project %s.", project_name)
+    return
 
-    run_tests_path = os.path.join(project_path, 'run_tests.sh')
-    if not os.path.exists(run_tests_path):
-        with open(run_tests_path, 'w', encoding='utf-8') as f:
-            f.write("#!/bin/bash\n")
-            f.write(
-                "echo 'Running tests for project: {}'\n".format(project_name))
+  run_tests_path = os.path.join(project_path, 'run_tests.sh')
+  if not os.path.exists(run_tests_path):
+    with open(run_tests_path, 'w', encoding='utf-8') as f:
+      f.write("#!/bin/bash\n")
+      f.write("echo 'Running tests for project: {}'\n".format(project_name))
 
-    dockerfile_path = os.path.join(project_path, 'Dockerfile')
-    if not os.path.exists(dockerfile_path):
-        logger.info(f"Dockerfile does not exist for project {project_name}.")
-        return
-    with open(dockerfile_path, 'r', encoding='utf-8') as f:
-        if 'run_tests.sh' not in f.read():
-            should_add = True
-        else:
-            should_add = False
+  dockerfile_path = os.path.join(project_path, 'Dockerfile')
+  if not os.path.exists(dockerfile_path):
+    logger.info(f"Dockerfile does not exist for project {project_name}.")
+    return
+  with open(dockerfile_path, 'r', encoding='utf-8') as f:
+    if 'run_tests.sh' not in f.read():
+      should_add = True
+    else:
+      should_add = False
 
-    if should_add:
-        with open(dockerfile_path, 'a', encoding='utf-8') as f:
-            f.write("COPY run_tests.sh $SRC/\n")
-            f.write("RUN chmod +x $SRC/run_tests.sh\n")
+  if should_add:
+    with open(dockerfile_path, 'a', encoding='utf-8') as f:
+      f.write("COPY run_tests.sh $SRC/\n")
+      f.write("RUN chmod +x $SRC/run_tests.sh\n")
 
-    os.chmod(run_tests_path, 0o755)
+  os.chmod(run_tests_path, 0o755)
 
-    response = await chat_with_agent(f"""
+  response = await chat_with_agent(f"""
 You are an expert software security engineer that is specialized in OSS-Fuzz.
 You are tasked with adding a run_tests.sh script to an OSS-Fuzz project.
 This script should run the tests of the project, and ensure that the project is working correctly.
@@ -428,62 +424,60 @@ You must adjust the file in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{pr
 
 You must run the `run-tests-check` after adjusting the script.""")
 
-    logger.info(
-        f"Added run_tests.sh for project {project_name}. Response: {response}")
+  logger.info(
+      f"Added run_tests.sh for project {project_name}. Response: {response}")
 
 
 async def fix_oss_fuzz_projects(projects_to_fix=None,
                                 max_projects_to_fix=4,
                                 language=''):
-    """Fixes the build of a list of OSS-Fuzz projects."""
+  """Fixes the build of a list of OSS-Fuzz projects."""
 
-    if projects_to_fix is None:
-        # Get list of all OSS-Fuzz projects that are broken.
-        broken_oss_fuzz_projects = _get_all_broken_oss_fuzz_projects(language)
-        random.shuffle(broken_oss_fuzz_projects)
-        logger.info('Total number of broken OSS-Fuzz projects: %d',
-                    len(broken_oss_fuzz_projects))
-        if len(broken_oss_fuzz_projects) > max_projects_to_fix:
-            broken_oss_fuzz_projects = broken_oss_fuzz_projects[:
-                                                                max_projects_to_fix]
-    else:
-        broken_oss_fuzz_projects = projects_to_fix
+  if projects_to_fix is None:
+    # Get list of all OSS-Fuzz projects that are broken.
+    broken_oss_fuzz_projects = _get_all_broken_oss_fuzz_projects(language)
+    random.shuffle(broken_oss_fuzz_projects)
+    logger.info('Total number of broken OSS-Fuzz projects: %d',
+                len(broken_oss_fuzz_projects))
+    if len(broken_oss_fuzz_projects) > max_projects_to_fix:
+      broken_oss_fuzz_projects = broken_oss_fuzz_projects[:max_projects_to_fix]
+  else:
+    broken_oss_fuzz_projects = projects_to_fix
 
-    logger.info('Projects to fix: %s', broken_oss_fuzz_projects)
-    if not broken_oss_fuzz_projects:
-        logger.info('No broken OSS-Fuzz projects to fix.')
-        return
+  logger.info('Projects to fix: %s', broken_oss_fuzz_projects)
+  if not broken_oss_fuzz_projects:
+    logger.info('No broken OSS-Fuzz projects to fix.')
+    return
 
-    responses = []
-    for project in broken_oss_fuzz_projects:
-        logger.info('Trying to fix project: %s', project)
-        try:
-            if not prepare_oss_fuzz_project(project):
-                continue
-        except:
-            continue
-        response, fix_success = await fix_project_build(project)
-        responses.append({
-            'project': project,
-            'response': response,
-            'fix_success': fix_success
-        })
+  responses = []
+  for project in broken_oss_fuzz_projects:
+    logger.info('Trying to fix project: %s', project)
+    try:
+      if not prepare_oss_fuzz_project(project):
+        continue
+    except:
+      continue
+    response, fix_success = await fix_project_build(project)
+    responses.append({
+        'project': project,
+        'response': response,
+        'fix_success': fix_success
+    })
 
-        with open(
-                os.path.join(oss_fuzz_mcp_config.BASE_DIR,
-                             'build-responses.txt'), 'w') as f:
-            for resp in responses:
-                f.write('-' * 60 + '\n')
-                f.write(f"{resp['project']} : {resp['fix_success']}\n")
-                f.write(f"Agent: {resp['response']}\n")
+    with open(os.path.join(oss_fuzz_mcp_config.BASE_DIR, 'build-responses.txt'),
+              'w') as f:
+      for resp in responses:
+        f.write('-' * 60 + '\n')
+        f.write(f"{resp['project']} : {resp['fix_success']}\n")
+        f.write(f"Agent: {resp['response']}\n")
 
 
 async def initiate_project_creation(project: str, project_repo: str,
                                     language: str):
-    """Runs an agent to create an OSS-Fuzz project."""
+  """Runs an agent to create an OSS-Fuzz project."""
 
-    if language == 'go':
-        extra_text = """
+  if language == 'go':
+    extra_text = """
 A sample build.sh script for a Go OSS-Fuzz project is:
 
 ```sh
@@ -509,11 +503,11 @@ You must use the `compile_go_fuzzer` command which exists inside the OSS-Fuzz co
 To debug semantics of this if needed, you should build the project and extract the logs. The first
 argument to `compile_go_fuzzer` is the package path, and the second argument is the fuzzer name.
 """
-    else:
-        extra_text = ""
+  else:
+    extra_text = ""
 
-    response = await chat_with_agent(
-        f"""You are an expert software security engineer and you are tasked with creating an OSS-Fuzz project.
+  response = await chat_with_agent(
+      f"""You are an expert software security engineer and you are tasked with creating an OSS-Fuzz project.
 I have set up an initial project structure at {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/. This structure
 includes a Dockerfile, build.sh, and project.yaml file. The Dockerfile clones the target
 project repository ({project_repo}) and the build.sh file is empty. Your task is to
@@ -555,71 +549,71 @@ The project must build success fully and the fuzzer-check must pass. If they do 
 you must refine the OSS-Fuzz project until it does.
 """)
 
-    fix_success = await does_project_build(project)
-    logger.info("Project %s creation response: %s. Fix success: %s", project,
-                response, fix_success)
+  fix_success = await does_project_build(project)
+  logger.info("Project %s creation response: %s. Fix success: %s", project,
+              response, fix_success)
 
-    return response, fix_success
+  return response, fix_success
 
 
 def prepare_new_oss_fuzz_project(project_name: str, project_url: str) -> bool:
-    """Gets the main repo of an OSS-Fuzz project and clones it into our caching folder."""
-    if os.path.isdir(
-            os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name)):
-        return True
+  """Gets the main repo of an OSS-Fuzz project and clones it into our caching folder."""
+  if os.path.isdir(
+      os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name)):
+    return True
 
-    try:
-        subprocess.check_call(
-            'git clone ' + project_url + ' ' +
-            os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name),
-            shell=True,
-            timeout=60 * 10)
-    except subprocess.CalledProcessError as e:
-        logger.info("Error cloning project %s: %s", project_name, e)
-        return False
-    except subprocess.TimeoutExpired:
-        logger.info("Cloning project %s timed out.", project_name)
-        return False
+  try:
+    subprocess.check_call(
+        'git clone ' + project_url + ' ' +
+        os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name),
+        shell=True,
+        timeout=60 * 10)
+  except subprocess.CalledProcessError as e:
+    logger.info("Error cloning project %s: %s", project_name, e)
+    return False
+  except subprocess.TimeoutExpired:
+    logger.info("Cloning project %s timed out.", project_name)
+    return False
 
-    return os.path.isdir(
-        f'{oss_fuzz_mcp_config.BASE_PROJECTS_DIR}/{project_name}')
+  return os.path.isdir(
+      f'{oss_fuzz_mcp_config.BASE_PROJECTS_DIR}/{project_name}')
 
 
 async def create_oss_fuzz_integration_for_project(project_url: str,
                                                   project_language: str):
-    """Creates an integration for a specific OSS-Fuzz project."""
-    # This function would typically create a new MCP tool for the project
-    # and register it with the MCP server.
-    # For now, we will just print the project URL.
-    logger.info(f"Creating OSS-Fuzz integration for project: {project_url}")
-    # Here you would implement the logic to create the integration.
+  """Creates an integration for a specific OSS-Fuzz project."""
+  # This function would typically create a new MCP tool for the project
+  # and register it with the MCP server.
+  # For now, we will just print the project URL.
+  logger.info(f"Creating OSS-Fuzz integration for project: {project_url}")
+  # Here you would implement the logic to create the integration.
 
-    oss_fuzz_project_name = project_url.split('/')[-1]
-    if not oss_fuzz_project_name:
-        raise ValueError("Project URL does not contain a valid project name.")
-    oss_fuzz_path = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                                 'projects', oss_fuzz_project_name)
-    if os.path.isdir(oss_fuzz_path):
-        shutil.rmtree(oss_fuzz_path)
+  oss_fuzz_project_name = project_url.split('/')[-1]
+  if not oss_fuzz_project_name:
+    raise ValueError("Project URL does not contain a valid project name.")
+  oss_fuzz_path = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
+                               'projects', oss_fuzz_project_name)
+  if os.path.isdir(oss_fuzz_path):
+    shutil.rmtree(oss_fuzz_path)
 
-    os.makedirs(oss_fuzz_path)
-    dockerfile_path = os.path.join(oss_fuzz_path, 'Dockerfile')
-    build_sh_path = os.path.join(oss_fuzz_path, 'build.sh')
-    project_yaml_path = os.path.join(oss_fuzz_path, 'project.yaml')
+  os.makedirs(oss_fuzz_path)
+  dockerfile_path = os.path.join(oss_fuzz_path, 'Dockerfile')
+  build_sh_path = os.path.join(oss_fuzz_path, 'build.sh')
+  project_yaml_path = os.path.join(oss_fuzz_path, 'project.yaml')
 
-    base_image = ''
-    project_language = project_language.lower()
+  base_image = ''
+  project_language = project_language.lower()
 
-    if project_language == 'c':
-        base_image = 'gcr.io/oss-fuzz-base/base-builder'
-    elif project_language == 'c++':
-        base_image = 'gcr.io/oss-fuzz-base/base-builder'
-    elif project_language == 'go':
-        base_image = 'gcr.io/oss-fuzz-base/base-builder-go'
+  if project_language == 'c':
+    base_image = 'gcr.io/oss-fuzz-base/base-builder'
+  elif project_language == 'c++':
+    base_image = 'gcr.io/oss-fuzz-base/base-builder'
+  elif project_language == 'go':
+    base_image = 'gcr.io/oss-fuzz-base/base-builder-go'
 
-    # Dockerfile
-    with open(dockerfile_path, 'w') as f:
-        dockerfile_content = f"""
+  # Dockerfile
+  with open(dockerfile_path, 'w') as f:
+    dockerfile_content = f"""
 FROM {base_image}
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone {project_url} /src/{oss_fuzz_project_name}
@@ -627,104 +621,101 @@ WORKDIR /src/{oss_fuzz_project_name}
 COPY build.sh $SRC/build.sh
 """
 
-        f.write(dockerfile_content)
+    f.write(dockerfile_content)
 
-    # Build script
-    with open(build_sh_path, 'w') as f:
-        build_sh_content = f"""#!/bin/bash -eux
+  # Build script
+  with open(build_sh_path, 'w') as f:
+    build_sh_content = f"""#!/bin/bash -eux
 # Empty build script for now. This needs to be filled with the actual build commands."""
-        f.write(build_sh_content)
+    f.write(build_sh_content)
 
-    # Project YAML
-    with open(project_yaml_path, 'w') as f:
-        project_yaml_content = f"""\
+  # Project YAML
+  with open(project_yaml_path, 'w') as f:
+    project_yaml_content = f"""\
 homepage: "{project_url}"
 language: {project_language}
 primary_contact: "david@adalogics.com"
 main_repo: "{project_url}"
 """
-        f.write(project_yaml_content)
+    f.write(project_yaml_content)
 
-    prepare_new_oss_fuzz_project(oss_fuzz_project_name, project_url)
+  prepare_new_oss_fuzz_project(oss_fuzz_project_name, project_url)
 
-    # First, create a template setup for the project.
-    # Use a local directory with the project clone,
-    await initiate_project_creation(oss_fuzz_project_name, project_url,
-                                    project_language)
+  # First, create a template setup for the project.
+  # Use a local directory with the project clone,
+  await initiate_project_creation(oss_fuzz_project_name, project_url,
+                                  project_language)
 
 
 def parse_arguments():
-    """Parse command line arguments."""
+  """Parse command line arguments."""
 
-    parser = argparse.ArgumentParser(description="OSS-Fuzz MCP Client")
+  parser = argparse.ArgumentParser(description="OSS-Fuzz MCP Client")
 
-    subparsers = parser.add_subparsers(dest='command')
+  subparsers = parser.add_subparsers(dest='command')
 
-    # Fix builds command
-    fix_builds = subparsers.add_parser(
-        'fix-builds',
-        help='Fix the builds of OSS-Fuzz projects that are currently broken.')
+  # Fix builds command
+  fix_builds = subparsers.add_parser(
+      'fix-builds',
+      help='Fix the builds of OSS-Fuzz projects that are currently broken.')
 
-    fix_builds.add_argument(
-        '--max-projects',
-        type=int,
-        default=4,
-        help='Maximum number of projects to fix (default: 4)')
+  fix_builds.add_argument('--max-projects',
+                          type=int,
+                          default=4,
+                          help='Maximum number of projects to fix (default: 4)')
 
-    fix_builds.add_argument(
-        '--language',
-        help='Filter projects by language (e.g., c, c++, go)',
-        default='')
-    fix_builds.add_argument(
-        '--projects',
-        nargs='*',
-        help=
-        'List of specific projects to fix. If not provided, random broken projects will be selected.'
-    )
+  fix_builds.add_argument('--language',
+                          help='Filter projects by language (e.g., c, c++, go)',
+                          default='')
+  fix_builds.add_argument(
+      '--projects',
+      nargs='*',
+      help=
+      'List of specific projects to fix. If not provided, random broken projects will be selected.'
+  )
 
-    # Create initial OSS-Fuzz project command.
-    create_project = subparsers.add_parser(
-        'create-project',
-        help=
-        'Create an initial OSS-Fuzz project with a given repository URL and language.'
-    )
-    create_project.add_argument(
-        'project_url',
-        type=str,
-        help=
-        'The URL of the project repository to create an OSS-Fuzz project for.')
-    create_project.add_argument(
-        'language',
-        type=str,
-        help='The programming language of the project (e.g., c, c++, go).')
+  # Create initial OSS-Fuzz project command.
+  create_project = subparsers.add_parser(
+      'create-project',
+      help=
+      'Create an initial OSS-Fuzz project with a given repository URL and language.'
+  )
+  create_project.add_argument(
+      'project_url',
+      type=str,
+      help='The URL of the project repository to create an OSS-Fuzz project for.'
+  )
+  create_project.add_argument(
+      'language',
+      type=str,
+      help='The programming language of the project (e.g., c, c++, go).')
 
-    # Command to add run_tests.sh
-    add_run_tests_parser = subparsers.add_parser(
-        'run-tests', help='Add run-tests.sh command for specific project')
-    add_run_tests_parser.add_argument(
-        'project_name',
-        type=str,
-        help='The name of the project to add run-tests.sh command for.')
+  # Command to add run_tests.sh
+  add_run_tests_parser = subparsers.add_parser(
+      'run-tests', help='Add run-tests.sh command for specific project')
+  add_run_tests_parser.add_argument(
+      'project_name',
+      type=str,
+      help='The name of the project to add run-tests.sh command for.')
 
-    return parser.parse_args()
+  return parser.parse_args()
 
 
 async def main():
-    """Main function to demonstrate the client usage"""
+  """Main function to demonstrate the client usage"""
 
-    args = parse_arguments()
+  args = parse_arguments()
 
-    initialize_oss_fuzz()
-    if args.command == 'fix-builds':
-        await fix_oss_fuzz_projects(args.projects, args.max_projects,
-                                    args.language)
-    elif args.command == 'create-project':
-        logger.info('Creating OSS-Fuzz project for URL:', args.project_url)
-        await create_oss_fuzz_integration_for_project(args.project_url,
-                                                      args.language)
-    elif args.command == 'run-tests':
-        await add_run_tests_command(args.project_name)
+  initialize_oss_fuzz()
+  if args.command == 'fix-builds':
+    await fix_oss_fuzz_projects(args.projects, args.max_projects, args.language)
+  elif args.command == 'create-project':
+    logger.info('Creating OSS-Fuzz project for URL:', args.project_url)
+    await create_oss_fuzz_integration_for_project(args.project_url,
+                                                  args.language)
+  elif args.command == 'run-tests':
+    await add_run_tests_command(args.project_name)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+  asyncio.run(main())
