@@ -25,8 +25,12 @@ from pydantic_ai.mcp import MCPServerSSE
 import random
 import subprocess
 import argparse
+import logfire
 
 import config as oss_fuzz_mcp_config
+
+logfire.configure(send_to_logfire='if-token-present')
+logfire.instrument_pydantic_ai()
 
 # Configure logging
 logging.basicConfig(
