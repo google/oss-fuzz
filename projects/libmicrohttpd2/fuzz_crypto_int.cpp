@@ -26,12 +26,12 @@ extern "C" {
   #include "sha512_256_int.h"
 }
 
-// Template functions for processing the hash
+// Fuzzing target function pointer types for the internal hash APIs
 template <typename HashType> using InitFn   = void (*)(HashType*);
 template <typename HashType> using UpdateFn = void (*)(HashType*, size_t, const uint8_t*);
 template <typename HashType> using FinishFn = void (*)(HashType*, uint8_t*);
 
-// General flow for hashing of different type
+// Generic hashing flow that fuzz same hashing procedure for different algorithm
 template <typename HashType>
 static void fuzz_hash_int_multi(FuzzedDataProvider &fdp,
                                 size_t block_size,
@@ -43,115 +43,130 @@ static void fuzz_hash_int_multi(FuzzedDataProvider &fdp,
     return;
   }
 
-  // Prepare random data
-  size_t pick_len = fdp.ConsumeIntegralInRange<size_t>(0, fdp.remaining_bytes());
-  std::vector<uint8_t> raw = fdp.ConsumeBytes<uint8_t>(pick_len);
+  // Pull a random slice of data for fuzzing
+  size_t take_len = fdp.ConsumeIntegralInRange<size_t>(0, fdp.remaining_bytes());
+  std::vector<uint8_t> input_bytes = fdp.ConsumeBytes<uint8_t>(take_len);
 
-  // Fuzz random round of hash initialisation
-  const unsigned round = fdp.ConsumeIntegralInRange<unsigned>(1, 4);
-  std::vector<HashType> context(round);
-  std::vector<std::vector<uint8_t>> digest(round, std::vector<uint8_t>(digest_size));
-  for (unsigned i = 0; i < round; i++) {
-    init_fn(&context[i]);
+  // Create 1 to 4 independent hashing contexts with it own digest buffer
+  const unsigned num_contexts = fdp.ConsumeIntegralInRange<unsigned>(1, 4);
+  std::vector<HashType> contexts(num_contexts);
+  std::vector<std::vector<uint8_t>> digests(num_contexts, std::vector<uint8_t>(digest_size));
+  for (unsigned i = 0; i < num_contexts; i++) {
+    init_fn(&contexts[i]);
   }
 
-  // Shift the data to introduce possible misalign
-  const size_t pad = fdp.ConsumeIntegralInRange<size_t>(0, 64);
-  std::vector<uint8_t> storage(pad + raw.size());
-  if (!raw.empty()) {
-    memcpy(storage.data() + pad, raw.data(), raw.size());
+  // Intentionally misalign the data pointer to stress alignment sensitive paths
+  const size_t misalign_pad = fdp.ConsumeIntegralInRange<size_t>(0, 64);
+  std::vector<uint8_t> scratch_buf(misalign_pad + input_bytes.size());
+  if (!input_bytes.empty()) {
+    memcpy(scratch_buf.data() + misalign_pad, input_bytes.data(), input_bytes.size());
   }
-  const uint8_t *ptr = storage.data() + pad;
-  size_t remain = raw.size();
 
-  // Fuzz random round of update
-  unsigned iters = fdp.ConsumeIntegralInRange<unsigned>(1, 4);
-  while (iters-- && remain > 0) {
-    // Choose a context
-    const unsigned choice = (round == 1) ? 0 : fdp.ConsumeIntegralInRange<unsigned>(0, round - 1);
+  // Define cursor and remaining bytes counter to keep track of the multiple hash update iterations
+  const uint8_t *cursor = scratch_buf.data() + misalign_pad;
+  size_t remaining = input_bytes.size();
 
-    // Choose different shift pattern
+  // Perform multiple hash update iterations on the raw data
+  unsigned num_iterations = fdp.ConsumeIntegralInRange<unsigned>(1, 4);
+  while (num_iterations-- && remaining > 0) {
+    // Pick which context to feed this iteration
+    const unsigned ctx_index = (num_contexts == 1) ? 0 : fdp.ConsumeIntegralInRange<unsigned>(0, num_contexts - 1);
+
+    // Choose a chunking pattern for this iteration
     enum Pattern { LESS1, EQ, PLUS1, SMALL, RANDOM, TAIL, HALT };
-    Pattern pat = fdp.PickValueInArray<Pattern>({LESS1, EQ, PLUS1, SMALL, RANDOM, TAIL, HALT});
+    Pattern pattern = fdp.PickValueInArray<Pattern>({LESS1, EQ, PLUS1, SMALL, RANDOM, TAIL, HALT});
 
-    size_t want = 0;
-    switch (pat) {
-      case LESS1:
+    size_t chunk_len = 0;
+    switch (pattern) {
+      case LESS1: {
+        // Consume 1 byte less from block size from the raw data for this iteration
         if (block_size > 1) {
-          want = std::min(remain, block_size - 1);
+          chunk_len = std::min(remaining, block_size - 1);
         }
-        break;
-      case EQ:
-        want = std::min(remain, block_size);
-        break;
-      case PLUS1:
-        want = std::min(remain, block_size + 1);
-        break;
-      case SMALL: {
-        size_t small = (size_t)fdp.ConsumeIntegralInRange<int>(1, 32);
-        want = std::min(remain, small);
         break;
       }
-      case RANDOM:
-        want = (remain >= 1) ? (size_t)fdp.ConsumeIntegralInRange<size_t>(1, remain) : 0;
+      case EQ: {
+        // Consume block size bytes from the raw data for this iteration
+        chunk_len = std::min(remaining, block_size);
         break;
-      case TAIL:
-        want = remain;
+      }
+      case PLUS1: {
+        // Consume 1 byte more from block size from the raw data for this iteration
+        chunk_len = std::min(remaining, block_size + 1);
         break;
+      }
+      case SMALL: {
+        // Consume 1 to 32 bytes from the raw data for this iteration
+        size_t small_len = (size_t)fdp.ConsumeIntegralInRange<int>(1, 32);
+        chunk_len = std::min(remaining, small_len);
+        break;
+      }
+      case RANDOM: {
+        // Consume random bytes from the raw data for this iteration
+        chunk_len = (remaining >= 1) ? (size_t)fdp.ConsumeIntegralInRange<size_t>(1, remaining) : 0;
+        break;
+      }
+      case TAIL: {
+        // Consume all remaining bytes from the raw data for this iteration
+        chunk_len = remaining;
+        break;
+      }
       case HALT: {
+        // Consume small chunk and consider reinitialisation or early halt of the hash iteration
         size_t step  = std::max<size_t>(1, fdp.ConsumeIntegralInRange<size_t>(1, block_size));
         size_t loops = fdp.ConsumeIntegralInRange<size_t>(1, 4);
-        for (size_t j = 0; j < loops && remain > 0; j++) {
-          size_t w = std::min(remain, step);
-          update_fn(&context[choice], w, ptr);
-          ptr += w;
-          remain -= w;
+        for (size_t j = 0; j < loops && remaining > 0; j++) {
+          size_t w = std::min(remaining, step);
+          update_fn(&contexts[ctx_index], w, cursor);
+          cursor += w;
+          remaining -= w;
         }
 
-        // Early finish
+        // Randomly reinitialise the hash stream
         if (fdp.ConsumeBool()) {
-          finish_fn(&context[choice], digest[choice].data());
-          init_fn(&context[choice]);
+          finish_fn(&contexts[ctx_index], digests[ctx_index].data());
+          init_fn(&contexts[ctx_index]);
         }
         continue;
       }
     }
-    if (want == 0 || want > remain) {
+    if (chunk_len == 0 || chunk_len > remaining) {
       continue;
     }
 
-    // Random re-initialisation between update
+    // Occasionally reinitialise a context between update iterations
     if (fdp.ConsumeBool()) {
-      init_fn(&context[choice]);
+      init_fn(&contexts[ctx_index]);
     }
 
-    update_fn(&context[choice], want, ptr);
-    ptr += want;
-    remain -= want;
+    // Fuzz the update function
+    update_fn(&contexts[ctx_index], chunk_len, cursor);
+    cursor += chunk_len;
+    remaining -= chunk_len;
 
-    // Random runcate and reinitialisation between update
+    // Randomly halt and reinitialise the stream
     if (fdp.ConsumeBool()) {
-      finish_fn(&context[choice], digest[choice].data());
-      init_fn(&context[choice]);
+      finish_fn(&contexts[ctx_index], digests[ctx_index].data());
+      init_fn(&contexts[ctx_index]);
     }
   }
 
-  // Fuzz finish function
-  for (unsigned i = 0; i < round; i++) {
-    finish_fn(&context[i], digest[i].data());
+  // Fuzz the finish function for all contexts
+  for (unsigned i = 0; i < num_contexts; i++) {
+    finish_fn(&contexts[i], digests[i].data());
   }
 
-  // Fuzz special case of chaining multiple context
-  if (round >= 2 && digest_size && fdp.ConsumeBool()) {
-    unsigned src = fdp.ConsumeIntegralInRange<unsigned>(0, round - 1);
-    unsigned dst = fdp.ConsumeIntegralInRange<unsigned>(0, round - 1);
-    if (src != dst) {
-      init_fn(&context[dst]);
-      size_t off = fdp.ConsumeIntegralInRange<size_t>(0, digest_size - 1);
-      size_t len = std::min(digest_size - off,
-                            (size_t)fdp.ConsumeIntegralInRange<size_t>(1, digest_size));
-      update_fn(&context[dst], len, digest[src].data() + off);
-      finish_fn(&context[dst], digest[dst].data());
+  // Additional fuzzing on special context chaining approach
+  if (num_contexts >= 2 && digest_size && fdp.ConsumeBool()) {
+    unsigned src_idx = fdp.ConsumeIntegralInRange<unsigned>(0, num_contexts - 1);
+    unsigned dst_idx = fdp.ConsumeIntegralInRange<unsigned>(0, num_contexts - 1);
+    if (src_idx != dst_idx) {
+      init_fn(&contexts[dst_idx]);
+      size_t offset = fdp.ConsumeIntegralInRange<size_t>(0, digest_size - 1);
+      size_t feed_len = std::min(digest_size - offset,
+                                 (size_t)fdp.ConsumeIntegralInRange<size_t>(1, digest_size));
+      update_fn(&contexts[dst_idx], feed_len, digests[src_idx].data() + offset);
+      finish_fn(&contexts[dst_idx], digests[dst_idx].data());
     }
   }
 }
