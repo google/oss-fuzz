@@ -14,20 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-FUZZERS_PACKAGE=github.com/hashicorp/hcl/v2
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
-
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseTemplate FuzzParseTemplate
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseTraversalAbs FuzzParseTraversalAbs
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseExpression FuzzParseExpression
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseConfig FuzzHclSyntaxParseConfig
-compile_native_go_fuzzer $FUZZERS_PACKAGE/json/fuzz FuzzParse FuzzParse
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclwrite/fuzz FuzzParseConfig FuzzHclWriteParseConfig
-
-zip $OUT/FuzzParseTemplate_seed_corpus.zip $SRC/hcl/hclsyntax/fuzz/testdata/fuzz/FuzzParseTemplate/*
-zip $OUT/FuzzParseTraversalAbs_seed_corpus.zip $SRC/hcl/hclsyntax/fuzz/testdata/fuzz/FuzzParseTraversalAbs/*
-zip $OUT/FuzzParseTemplate_seed_corpus.zip $SRC/hcl/hclsyntax/fuzz/testdata/fuzz/FuzzParseTemplate/*
-zip $OUT/FuzzParseExpression_seed_corpus.zip $SRC/hcl/hclsyntax/fuzz/testdata/fuzz/FuzzParseExpression/*
-zip $OUT/FuzzParse_seed_corpus.zip $SRC/hcl/json/fuzz/testdata/fuzz/FuzzParse/*
-zip $OUT/FuzzHclWriteParseConfig_seed_corpus.zip $SRC/hcl/hclsyntax/fuzz/testdata/fuzz/FuzzParseConfig/*
+$SRC/hcl/fuzz/oss_fuzz_build.sh

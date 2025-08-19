@@ -8,4 +8,5 @@ primary_contact: "security@hashicorp.com"
 auto_ccs:
   - jfinnigan@hashicorp.com
   - kent@hashicorp.com
+  - katy@hashicorp.com
 main_repo: 'https://github.com/hashicorp/hcl'
