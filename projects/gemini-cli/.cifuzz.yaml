@@ -1,0 +1,45 @@
+# CIFuzz configuration for Gemini CLI OSS-Fuzz integration
+# Enables continuous fuzzing on pull requests for early bug detection
+
+# Project configuration
+project_name: "gemini-cli"
+language: "go"
+
+# Fuzzing configuration
+fuzzing_time: 600  # 10 minutes per PR
+max_parallel_runs: 4
+
+# Build configuration
+build_command: "./build.sh"
+build_dir: "."
+
+# Fuzz targets to run
+fuzz_targets:
+  - "FuzzConfigParser"
+  - "FuzzCLIParser"
+  - "FuzzMCPRequest"
+  - "FuzzMCPResponse"
+  - "FuzzOAuthTokenRequest"
+  - "FuzzOAuthTokenResponse"
+
+# Sanitizers to use
+sanitizers:
+  - "address"
+  - "undefined"
+
+# Performance settings
+max_runtime: 60  # seconds per fuzzer run
+max_memory: 2048  # MB memory limit
+
+# Reporting configuration
+report_crashes: true
+report_timeouts: true
+report_ooms: true
+
+# Security settings
+security_scan: true
+vulnerability_reporting: true
+
+# Integration settings
+github_integration: true
+auto_cc_maintainers: true

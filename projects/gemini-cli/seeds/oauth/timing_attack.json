@@ -1,0 +1,36 @@
+{
+  "access_token": "ya29.example_access_token_here",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "1//example_refresh_token",
+  "scope": "https://www.googleapis.com/auth/generative-language",
+  "csrf_token": "csrf_token_here",
+  "timestamp": "2025-01-01T00:00:00Z",
+  "signature": "hmac_sha256_signature_here"
+}
+{
+  "access_token": "ya29.example_access_token_here",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "1//example_refresh_token",
+  "scope": "https://www.googleapis.com/auth/generative-language",
+  "csrf_token": "csrf_token_here",
+  "timestamp": "2025-01-01T00:00:00Z",
+  "signature": "hmac_sha256_signature_here",
+  "expected_token": "ya29.expected_token_here"
+}
+{
+  "access_token": "ya29.example_access_token_here",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "1//example_refresh_token",
+  "scope": "https://www.googleapis.com/auth/generative-language",
+  "csrf_token": "csrf_token_here",
+  "timestamp": "2025-01-01T00:00:00Z",
+  "signature": "hmac_sha256_signature_here",
+  "timing_test": {
+    "token1": "ya29.token1_here",
+    "token2": "ya29.token2_here",
+    "token3": "ya29.token3_here"
+  }
+}

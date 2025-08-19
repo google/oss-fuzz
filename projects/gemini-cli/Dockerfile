@@ -31,7 +31,13 @@ COPY build.sh /src/build.sh
 
 # Copy our project sources under /src/gemini-cli (build context is projects/gemini-cli)
 RUN mkdir -p /src/gemini-cli
-COPY . /src/gemini-cli
+COPY gofuzz/ /src/gemini-cli/gofuzz/
+COPY seeds/ /src/gemini-cli/seeds/
+COPY build.sh /src/gemini-cli/
+COPY project.yaml /src/gemini-cli/
+COPY .cifuzz.yaml /src/gemini-cli/
+COPY security_monitor.sh /src/gemini-cli/
+COPY continuous_compliance.sh /src/gemini-cli/
 
 # Build is delegated to build.sh via helper.py, which calls:
 #   bash -eux /src/gemini-cli/build.sh

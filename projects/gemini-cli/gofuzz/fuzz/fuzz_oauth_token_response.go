@@ -121,10 +121,10 @@ func FuzzOAuthTokenResponse(data []byte) int {
 	validateStateParameterSecurity(&response, validator)
 
 	// Test redirect URI validation (OWASP OAuth2 Security)
-	validateRedirectURISecurity(&response, validator)
+	validateRedirectURISecurity(&response)
 
 	// Test token-specific security (Directive 3.1)
-	validateTokenResponseDataSecurity(&response, validator)
+	validateTokenResponseDataSecurity(&response)
 
 	// Test for token hijacking (Directive 3.2)
 	validateTokenResponseHijackingPrevention(&response)
@@ -133,7 +133,7 @@ func FuzzOAuthTokenResponse(data []byte) int {
 	validateTokenResponseCSRFProtection(&response)
 
 	// Test token tampering detection (Directive 3.1)
-	testTokenResponseTamperingResistance(&response, validator)
+	testTokenResponseTamperingResistance(&response)
 
 	// Test scope privilege escalation (Least Privilege Principle)
 	validateScopePrivilegeEscalation(&response)
@@ -313,7 +313,7 @@ func validateStateParameterSecurity(response *SecurityAwareTokenResponse, valida
 	}
 }
 
-func validateRedirectURISecurity(response *SecurityAwareTokenResponse, _ *TokenValidator) {
+func validateRedirectURISecurity(response *SecurityAwareTokenResponse) {
 	// Strict redirect URI validation to prevent redirection attacks
 	if response.RedirectURI != "" {
 		// Check for dangerous redirect patterns
@@ -413,7 +413,7 @@ func validateTokenExpiryPolicies(response *SecurityAwareTokenResponse) {
 	}
 }
 
-func validateTokenResponseDataSecurity(response *SecurityAwareTokenResponse, _ *TokenValidator) {
+func validateTokenResponseDataSecurity(response *SecurityAwareTokenResponse) {
 	// Test for injection attacks in token data
 	dangerousPatterns := []string{
 		"<script", "javascript:", "data:", "vbscript:",
@@ -476,7 +476,7 @@ func validateTokenResponseCSRFProtection(response *SecurityAwareTokenResponse) {
 	}
 }
 
-func testTokenResponseTamperingResistance(response *SecurityAwareTokenResponse, _ *TokenValidator) {
+func testTokenResponseTamperingResistance(response *SecurityAwareTokenResponse) {
 	// Generate HMAC signature for token response
 	key := make([]byte, 32)
 	rand.Read(key)

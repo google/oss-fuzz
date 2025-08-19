@@ -1,0 +1,45 @@
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "file_system.read",
+    "arguments": {
+      "path": "/tmp/safe_file.txt"
+    }
+  },
+  "id": 1
+}
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "file_system.read",
+    "arguments": {
+      "path": "/tmp/safe_file.txt"
+    }
+  },
+  "id": 1,
+  "extra_field": "value"
+}
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "file_system.read",
+    "arguments": {
+      "path": "/tmp/safe_file.txt"
+    }
+  },
+  "id": 1,
+  "nested": {
+    "deep": {
+      "structure": {
+        "with": {
+          "many": {
+            "levels": "value"
+          }
+        }
+      }
+    }
+  }
+}

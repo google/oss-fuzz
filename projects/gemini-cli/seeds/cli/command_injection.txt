@@ -1,0 +1,36 @@
+gemini --help
+gemini chat --model gemini-pro
+gemini config --set apiKey
+gemini --version
+gemini chat --temperature 0.7 --max-tokens 1000
+gemini config --list
+gemini chat --system-prompt "You are a helpful assistant"
+gemini --output json
+gemini --verbose
+gemini --dry-run
+gemini config --set theme.name dark
+gemini config --set proxy.enabled true
+gemini config --set memory.limitMb 512
+gemini config --set tooling.enableMcp true
+gemini config --set tooling.enableShell false
+gemini config --set tooling.enableWebFetch true
+gemini config --set logLevel debug
+gemini config --set outputDir /tmp/gemini-output
+gemini config --set timeout 30
+gemini config --set maxRetries 3
+gemini --help; ls
+gemini --help | cat
+gemini --help && echo "test"
+gemini --help || echo "test"
+gemini --help `whoami`
+gemini --help $(whoami)
+gemini --help ${USER}
+gemini --help > /tmp/output
+gemini --help < /etc/passwd
+gemini --help >> /tmp/output
+gemini --help << EOF
+gemini --help 2>&1
+gemini --help &> /tmp/output
+gemini --help 2> /tmp/error
+gemini --help 2>> /tmp/error
+gemini --help &>> /tmp/output

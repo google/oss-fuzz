@@ -1,0 +1,55 @@
+OSS-Fuzz Compliance Report for Gemini CLI
+=========================================
+Generated: Sun Aug 17 01:00:22 EDT 2025
+Total Checks: 32
+Passed: 18
+Failed: 14
+Compliance Rate: 56%
+
+Detailed Results:
+✅ seed_corpus_dir_cli: Seed directory cli exists with 6 files
+✅ cifuzz_configuration: CIFuzz configuration exists
+❌ fuzz_targets_interface_FuzzConfigParser: Invalid libFuzzer interface for FuzzConfigParser
+✅ performance_performance_script: Performance monitoring script exists
+✅ seed_corpus_dir_mcp: Seed directory mcp exists with 6 files
+✅ build_support_project_yaml: project.yaml exists
+✅ seed_corpus_documentation: Seed corpus documentation exists
+❌ fuzz_targets_interface_FuzzOAuthTokenResponse: Invalid libFuzzer interface for FuzzOAuthTokenResponse
+✅ regression_testing_build_integration: Regression testing integrated in build
+❌ fuzz_targets_interface_FuzzMCPRequest: Invalid libFuzzer interface for FuzzMCPRequest
+✅ seed_corpus_dir_config: Seed directory config exists with 6 files
+❌ fuzz_targets_target_FuzzOAuthTokenRequest: Missing fuzz target: gofuzz/fuzz/fuzz_fuzzoauthtokenrequest.go
+❌ fuzz_targets_target_FuzzOAuthTokenResponse: Missing fuzz target: gofuzz/fuzz/fuzz_fuzzoauthtokenresponse.go
+✅ regression_testing_test_driver: Regression test driver exists
+❌ fuzz_targets_target_FuzzConfigParser: Missing fuzz target: gofuzz/fuzz/fuzz_fuzzconfigparser.go
+✅ build_support_build_script: Build script exists
+✅ documentation_main_readme: Main README exists
+✅ coverage_coverage_script: Coverage analysis script exists
+✅ build_support_dockerfile: Dockerfile exists
+✅ seed_corpus_dir_oauth: Seed directory oauth exists with 6 files
+❌ fuzz_targets_interface_FuzzCLIParser: Invalid libFuzzer interface for FuzzCLIParser
+❌ fuzz_targets_target_FuzzCLIParser: Missing fuzz target: gofuzz/fuzz/fuzz_fuzzcliparser.go
+✅ performance_options_integration: Performance options in build script
+✅ dictionaries_build_integration: Dictionary generation in build script
+✅ documentation_compliance_doc: Compliance documentation exists
+❌ fuzz_targets_target_FuzzMCPRequest: Missing fuzz target: gofuzz/fuzz/fuzz_fuzzmcprequest.go
+❌ fuzz_targets_interface_FuzzOAuthTokenRequest: Invalid libFuzzer interface for FuzzOAuthTokenRequest
+❌ build_support_env_vars: Missing environment variable support
+❌ fuzz_targets_target_FuzzMCPResponse: Missing fuzz target: gofuzz/fuzz/fuzz_fuzzmcpresponse.go
+✅ documentation_requirements_doc: Requirements enforcement documentation exists
+❌ fuzz_targets_interface_FuzzMCPResponse: Invalid libFuzzer interface for FuzzMCPResponse
+❌ security_validation_coverage: Missing security validation in some targets
+
+Summary:
+- Fuzz Target Requirements: 0/12 passed
+- Build Support Requirements: 0/4 passed
+- Seed Corpus Requirements: 0/5 passed
+- Dictionary Requirements: 0/1 passed
+- Coverage Requirements: 0/2 passed
+- Regression Testing Requirements: 0/2 passed
+- Performance Requirements: 0/2 passed
+- Security Requirements: 0/1 passed
+- CIFuzz Integration: 0/1 passed
+- Documentation Requirements: 0/4 passed
+
+Compliance Status: ❌ NON-COMPLIANT

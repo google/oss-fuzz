@@ -17,6 +17,9 @@
 homepage: "https://github.com/google-gemini/gemini-cli"
 language: go
 primary_contact: "reconsumeralization@gmail.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+  - "security@gemini-cli.dev"
 main_repo: "https://github.com/google-gemini/gemini-cli.git"
 sanitizers:
   - address
@@ -26,3 +29,5 @@ labels:
   - cli
   - security
   - json
+  - ai
+  - llm

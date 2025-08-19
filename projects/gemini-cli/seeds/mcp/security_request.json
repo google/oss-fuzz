@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "file_system.read",
+    "arguments": {
+      "path": "/tmp/safe_file.txt"
+    }
+  },
+  "id": 1,
+  "signature": "hmac_sha256_signature_here",
+  "timestamp": "2025-01-01T00:00:00Z"
+}
