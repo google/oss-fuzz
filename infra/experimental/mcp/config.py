@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +14,7 @@
 #
 ################################################################################
 
-# Run the OSS-Fuzz script in the curl-fuzzer project.
-
-if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
-  # If we don't do this, the curl library won't rebuild.
-  rm -f /src/curl_fuzzer/build/curl-install/lib/libcurl.a
-fi
-
-./ossfuzz.sh
+BASE_DIR = '/var/tmp/oss-fuzz-mcp'
+BASE_PROJECTS_DIR = f'{BASE_DIR}/projects'
+BASE_OSS_FUZZ_DIR = f'{BASE_DIR}/oss-fuzz'
+BASE_TMP_LOGS = f'{BASE_DIR}/tmp-logs'

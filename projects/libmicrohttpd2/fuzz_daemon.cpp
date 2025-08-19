@@ -145,11 +145,3 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   return 0;
 }
-
-// Clean up daemon
-extern "C" void LLVMFuzzerTearDown() {
-  if (g_daemon) {
-    MHD_daemon_destroy(g_daemon);
-    g_daemon = nullptr;
-  }
-}
