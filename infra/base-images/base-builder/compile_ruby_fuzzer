@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -e
+#!/bin/bash -eu
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,8 @@ harness_sh=${fuzz_target::-3}
 
 cp $1 $OUT/$fuzz_target
 
-echo """#!/usr/bin/env bash
+echo """#!/bin/bash
+# LLVMFuzzerTestOneInput so that the wrapper script is recognized as a fuzz target for 'check_build'.
 
 ruzzy $fuzz_target
 """ > $OUT/$harness_sh

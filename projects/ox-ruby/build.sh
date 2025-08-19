@@ -23,5 +23,5 @@ gem build
 RUZZY_DEBUG=1 gem install --development --verbose *.gem
 
 for fuzz_target_path in $SRC/harnesses/fuzz_*.rb; do
-	ruzzy-build "$fuzz_target_path"
+	compile_ruby_fuzzer "$fuzz_target_path"
 done
