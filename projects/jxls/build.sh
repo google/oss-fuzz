@@ -14,17 +14,24 @@
 # limitations under the License.
 #
 ################################################################################
+echo $JAVA_HOME
+
+java --version
+
+echo $SRC
+echo $OUT
+
+ls .
+
+mv *.dict $OUT
 
 
-CURRENT_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
-mv $SRC/*.dict $OUT
+CURRENT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
 
-git apply $SRC/build.patch --whitespace=fix --reject
+mvn package
 
-./gradlew clean shadowJar -x :jxls:javadoc -x :jxls-poi:test
-
-cp "../jxls/jxls/build/libs/jxls-$CURRENT_VERSION-all.jar" $OUT/jxls.jar
-cp "../jxls/jxls-poi/build/libs/jxls-poi-$CURRENT_VERSION-all.jar" $OUT/jxls-poi.jar
+cp "jxls/target/jxls-$CURRENT_VERSION.jar" $OUT/jxls.jar
+cp "jxls-poi/target/jxls-poi-$CURRENT_VERSION.jar" $OUT/jxls-poi.jar
 
 ALL_JARS=$(find $OUT/ -name *.jar ! -name jazzer*.jar -printf "%f ")
 
@@ -37,11 +44,10 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
+for fuzzer in $(find . -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
-  #cp $SRC/$fuzzer_basename.class $OUT/
-  cp $SRC/*.class $OUT/
+  cp *.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash
@@ -56,7 +62,7 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
---jvm_args=\"\$mem_settings\" \
+--jvm_args=\"\$mem_settings:-Djava.awt.headless=true\" \
 \$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+  chmod +x $OUT/$fuzzer_basename
 done

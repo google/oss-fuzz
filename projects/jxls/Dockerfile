@@ -16,17 +16,45 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN rm -rf $SRC/project-parent/jxls
-RUN git clone --depth 1 https://github.com/jxlsteam/jxls $SRC/jxls
-RUN chmod +x $SRC/jxls/gradlew
+# Install necessary packages
+RUN apt-get update && apt-get install -y wget apt-transport-https gnupg
+# Download and install JDK 17 from the official Oracle website
+RUN wget -q --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/java/17/archive/jdk-17.0.10_linux-x64_bin.tar.gz" -O /tmp/jdk-17_linux-x64_bin.tar.gz
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
+# extract JDK installation
+RUN mkdir -p /home/user/jdk
+RUN tar -zxvf /tmp/jdk-17_linux-x64_bin.tar.gz -C /home/user/jdk
 
-COPY *.patch $SRC/
+# Debug: List the contents of the user home directory
+RUN ls -la /home/user/jdk
+
+# Set the JAVA_HOME and PATH variables correctly
+ENV JAVA_HOME /home/user/jdk/jdk-17.0.10
+ENV PATH $JAVA_HOME/bin:$PATH
+
+# Debug: Print the JAVA_HOME, and PATH environment variables
+RUN echo "JAVA_HOME: $JAVA_HOME"
+RUN echo "PATH: $PATH"
+
+# Clean up
+RUN rm /tmp/jdk-17_linux-x64_bin.tar.gz
+
+# Confirm Java installation
+RUN java -version
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven
+
+# Clone project
+RUN rm -rf $SRC
+RUN echo "Cloning jxls into $SRC"
+RUN git clone https://github.com/jxlsteam/jxls $SRC
+
+# Copy fuzzer files
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
 COPY *.dict $SRC/
-WORKDIR $SRC/jxls
+WORKDIR $SRC
+
+RUN ls .
+
