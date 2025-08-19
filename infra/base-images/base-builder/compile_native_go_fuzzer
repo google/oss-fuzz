@@ -48,11 +48,15 @@ tags="-tags gofuzz"
 # Get absolute path.
 abs_file_dir=$(go list $tags -f {{.Dir}} $path)
 
-# TODO(adamkorcz): Get rid of "-r" flag here.
-fuzzer_filename=$(grep -r -l --include='*.go' -s "$function" "${abs_file_dir}")
+fuzzer_filename=$(grep -l --include='*.go' -s "$function" "${abs_file_dir}")
+
+if [ $(echo $fuzzer_filename | wc -l) -ne 1 ]; then
+    echo "Expected ${function} to be present in exactly one file in ${abs_file_dir}, but instead found it in the following files: ${fuzzer_filename}"
+    exit 1
+fi
 
 # Test if file contains a line with "func $function" and "testing.F".
-if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
+if [ $(grep "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
 then
 	build_native_go_fuzzer $fuzzer $function $abs_file_dir
 else
