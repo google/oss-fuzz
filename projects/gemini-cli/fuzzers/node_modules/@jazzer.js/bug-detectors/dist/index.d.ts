@@ -1,0 +1,1 @@
+export { getBugDetectorConfiguration } from "./configuration";

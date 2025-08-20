@@ -14,20 +14,14 @@
 #
 ################################################################################
 
-homepage: "https://github.com/google-gemini/gemini-cli"
-language: go
-primary_contact: "reconsumeralization@gmail.com"
-auto_ccs:
-  - "Adam@adalogics.com"
-  - "security@gemini-cli.dev"
-main_repo: "https://github.com/google-gemini/gemini-cli.git"
+# oss-fuzz/projects/gemini-cli/project.yaml
+# JavaScript-based OSS-Fuzz project for google-gemini/gemini-cli
+project_name: gemini-cli
+language: javascript
+
+# The build system will run projects/gemini-cli/build.sh
 sanitizers:
   - address
-fuzzing_engines:
-  - libfuzzer
-labels:
-  - cli
-  - security
-  - json
-  - ai
-  - llm
+  - undefined
+  - leak
+oss_fuzz_project: gemini-cli

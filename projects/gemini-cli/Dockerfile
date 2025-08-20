@@ -14,31 +14,7 @@
 #
 ################################################################################
 
-# Gemini CLI OSS-Fuzz Dockerfile (Go mirrored-parsers approach)
-# Base image for Go projects
-FROM gcr.io/oss-fuzz-base/base-builder-go
+# oss-fuzz/projects/gemini-cli/Dockerfile
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
 
-# Project name used by helper.py
-ENV PROJECT=gemini-cli
-
-# Set up working directory inside container
-WORKDIR /root
-
-WORKDIR /src
-
-# Copy build script to expected location
-COPY build.sh /src/build.sh
-
-# Copy our project sources under /src/gemini-cli (build context is projects/gemini-cli)
-RUN mkdir -p /src/gemini-cli
-COPY gofuzz/ /src/gemini-cli/gofuzz/
-COPY seeds/ /src/gemini-cli/seeds/
-COPY build.sh /src/gemini-cli/
-COPY project.yaml /src/gemini-cli/
-COPY .cifuzz.yaml /src/gemini-cli/
-COPY security_monitor.sh /src/gemini-cli/
-COPY continuous_compliance.sh /src/gemini-cli/
-
-# Build is delegated to build.sh via helper.py, which calls:
-#   bash -eux /src/gemini-cli/build.sh
-# No build steps here; keep Dockerfile minimal for faster iteration.
+# install any global tools if needed (none required for now)
