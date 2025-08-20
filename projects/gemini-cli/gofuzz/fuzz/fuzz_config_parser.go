@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	cfg "gemini-cli-ossfuzz/internal/config"
+	cfg "github.com/google-gemini/gemini-cli/gofuzz/internal/config"
 )
 
 // SecurityAwareConfig extends Config with security validation

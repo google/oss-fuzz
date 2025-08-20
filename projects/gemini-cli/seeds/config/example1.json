@@ -1,8 +1,0 @@
-{
-  "apiKey": "AIzaSyXXXX-REDACTED-EXAMPLE",
-  "projectId": "demo-project",
-  "theme": { "name": "default" },
-  "proxy": { "enabled": false, "url": "" },
-  "memory": { "enabled": true, "limitMb": 256 },
-  "tooling": { "enableMcp": true, "enableShell": false, "enableWebFetch": true }
-}

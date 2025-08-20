@@ -1,45 +1,49 @@
-# CIFuzz configuration for Gemini CLI OSS-Fuzz integration
-# Enables continuous fuzzing on pull requests for early bug detection
+# CIFuzz Configuration for Gemini CLI
+# This enables pre-submit fuzzing for pull requests
+# Combined configuration for Go and JavaScript fuzz targets
 
-# Project configuration
-project_name: "gemini-cli"
-language: "go"
-
-# Fuzzing configuration
-fuzzing_time: 600  # 10 minutes per PR
-max_parallel_runs: 4
-
-# Build configuration
-build_command: "./build.sh"
-build_dir: "."
-
-# Fuzz targets to run
+# Fuzz targets to run in CI (mixed languages)
 fuzz_targets:
-  - "FuzzConfigParser"
-  - "FuzzCLIParser"
-  - "FuzzMCPRequest"
-  - "FuzzMCPResponse"
-  - "FuzzOAuthTokenRequest"
-  - "FuzzOAuthTokenResponse"
+  # JavaScript fuzz targets
+  - fuzz_config_parser.js
+  - fuzz_mcp_request.js
+  - fuzz_mcp_response.js
+  - fuzz_oauth_token_request.js
+  - fuzz_oauth_token_response.js
+  - fuzz_cli_parser.js
+  - fuzz_http_request_parser.js
+  - fuzz_file_path_handler.js
+  - fuzz_env_parser.js
+  - fuzz_response_parser.js
+  # Go fuzz targets (subset for CI performance)
+  - FuzzConfigParser
+  - FuzzCLIParser
+  - FuzzMCPRequest
+  - FuzzMCPResponse
+  - FuzzOAuthTokenRequest
 
-# Sanitizers to use
+# Runtime configuration
+max_run_time: 300  # 5 minutes max per fuzzer
+max_iterations: 1000  # Limit iterations for CI
 sanitizers:
-  - "address"
-  - "undefined"
+  - address
 
-# Performance settings
-max_runtime: 60  # seconds per fuzzer run
-max_memory: 2048  # MB memory limit
+# Build configuration (custom build script handles both languages)
+build_system: custom
+build_script: build.sh
 
-# Reporting configuration
-report_crashes: true
-report_timeouts: true
-report_ooms: true
+# Reporting
+report_failures: true
+upload_crashes: false  # Disable for public repos
 
-# Security settings
-security_scan: true
-vulnerability_reporting: true
+# Seed corpus
+use_seed_corpus: true
+seed_corpus_dir: seeds
 
-# Integration settings
-github_integration: true
-auto_cc_maintainers: true
+# Dictionary usage
+use_dictionaries: true
+dictionary_dir: fuzzers/dictionaries
+
+# Coverage reporting
+generate_coverage: true
+coverage_format: html

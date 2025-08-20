@@ -1,0 +1,23 @@
+--help
+--version
+--verbose --debug --trace
+--config=/path/to/config.json
+--model=gpt-4 --temperature=0.7 --max-tokens=100
+--host=localhost --port=8080
+--timeout=30 --retry=3
+--output=/tmp/output.json --format=json
+--auth --token=abc123 --api-key=xyz789
+--stream --echo --best-of=3
+--prompt="Hello world" --suffix="!"
+--interactive --dry-run --force --yes
+--log-level=debug --color --no-color
+--env=production --mode=development
+--bind=0.0.0.0:3000 --listen=8080
+--user-agent="Test Agent" --headers="X-Test: value"
+--temperature=1.0 --top-p=0.9 --top-k=50
+--frequency-penalty=0.1 --presence-penalty=0.2
+--stop="END" --stop="STOP" --stop="FINISH"
+--delay=1000 --max-retries=5
+--profile=default --settings=/path/to/settings
+--input=/dev/stdin --output=/dev/stdout
+--assume-yes --assume-no --non-interactive

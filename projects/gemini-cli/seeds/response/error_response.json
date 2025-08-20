@@ -1,0 +1,29 @@
+{
+  "error": {
+    "message": "Invalid API key provided",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": "invalid_api_key"
+  },
+  "id": null,
+  "object": null,
+  "created": 1677652288
+}
+
+{
+  "error": {
+    "message": "Rate limit exceeded. Please try again later.",
+    "type": "rate_limit_exceeded",
+    "param": null,
+    "code": "rate_limit_exceeded"
+  }
+}
+
+{
+  "error": {
+    "message": "'; SELECT * FROM users; --",
+    "type": "sql_injection_attempt",
+    "param": "query",
+    "code": "malicious_input_detected"
+  }
+}

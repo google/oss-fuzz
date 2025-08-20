@@ -1,1 +1,0 @@
-gemini chat "What is the meaning of life?" --model "gemini-pro"

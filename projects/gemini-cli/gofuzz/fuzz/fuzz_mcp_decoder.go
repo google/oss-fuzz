@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	mcp "gemini-cli-ossfuzz/internal/mcp"
+	mcp "github.com/google-gemini/gemini-cli/gofuzz/internal/mcp"
 )
 
 // SecurityAwareMCPRequest extends MCP request with security validation

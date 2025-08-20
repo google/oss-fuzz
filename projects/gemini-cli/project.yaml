@@ -15,19 +15,113 @@
 ################################################################################
 
 homepage: "https://github.com/google-gemini/gemini-cli"
-language: go
-primary_contact: "reconsumeralization@gmail.com"
+# Multi-language fuzzing: Go mirrors + JavaScript runtime (Issue #1121, prompt injection)
+language: javascript  # Primary language with Go fuzzers for security testing
+primary_contact: "ntaylormullen@google.com"  # N. Taylor Mullen - Release Manager
 auto_ccs:
-  - "Adam@adalogics.com"
-  - "security@gemini-cli.dev"
+  - "bbiggs@google.com"  # Core contributor - Authentication/Telemetry
+  - "scidomino@google.com"  # Core functionality expert
+  - "security@google.com"  # Google Security Team
+vendor_ccs:
+  - "reconsumeralization@gmail.com"  # PR Author
 main_repo: "https://github.com/google-gemini/gemini-cli.git"
+file_github_issue: true  # Auto-create GitHub issues for bugs
+
+# Build integration settings
+build_integration:
+  # Use custom build script for multi-language support
+  build_script: build.sh
+  # Build runs in Docker container
+  dockerfile: Dockerfile
+
+# Sanitizers - JavaScript uses 'none', Go fuzzers use 'address'
 sanitizers:
-  - address
+  - none      # For JavaScript/Node.js fuzz targets
+  - address   # For Go fuzz targets (when available)
+# Note: JavaScript targets don't support sanitizers, Go targets support AddressSanitizer
+
+# Fuzzing engines
 fuzzing_engines:
   - libfuzzer
+
+# Supported architectures
+architectures:
+  - x86_64
+# Note: i386 removed as it's less commonly needed
+
+# Coverage configuration - optimized for >80% coverage goal
+coverage_extra_args: |
+  # Core source files for coverage measurement
+  --include=/src/gemini-cli/src/**/*.js
+  --include=/src/gemini-cli/src/**/*.ts
+  --include=/src/gemini-cli/gofuzz/internal/**/*.go
+  --include=/src/gemini-cli/packages/**/*.js
+  --include=/src/gemini-cli/packages/**/*.ts
+
+  # Exclude test and generated files from coverage
+  --exclude=/src/gemini-cli/**/test*.js
+  --exclude=/src/gemini-cli/**/spec*.js
+  --exclude=/src/gemini-cli/**/node_modules/**
+  --exclude=/src/gemini-cli/**/build_cache/**
+  --exclude=/src/gemini-cli/**/dist/**
+  --exclude=/src/gemini-cli/**/fuzzers/**
+  --exclude=/src/gemini-cli/gofuzz/fuzz/**
+
+  # Additional coverage optimization flags
+  --gcov-options="--branch-counts --branch-probabilities"
+  --keep-going
+
+# View restrictions (if needed for private projects)
+# view_restrictions: "none"  # public access
+fuzz_introspector: |
+  analyze: |
+    # Go fuzz targets (11 total)
+    - gofuzz/fuzz/fuzz_cli_parser.go
+    - gofuzz/fuzz/fuzz_config_parser.go
+    - gofuzz/fuzz/fuzz_crypto_operations.go
+    - gofuzz/fuzz/fuzz_environment_parser.go
+    - gofuzz/fuzz/fuzz_file_system_operations.go
+    - gofuzz/fuzz/fuzz_input_sanitizer.go
+    - gofuzz/fuzz/fuzz_mcp_decoder.go
+    - gofuzz/fuzz/fuzz_oauth_token_request.go
+    - gofuzz/fuzz/fuzz_oauth_token_response.go
+    - gofuzz/fuzz/fuzz_slash_commands.go
+    - gofuzz/fuzz/fuzz_url_parser.go
+
+    # JavaScript fuzz targets (11 total)
+    - fuzzers/fuzz_cli_parser.js
+    - fuzzers/fuzz_config_parser.js
+    - fuzzers/fuzz_env_parser.js
+    - fuzzers/fuzz_file_path_handler.js
+    - fuzzers/fuzz_http_request_parser.js
+    - fuzzers/fuzz_mcp_request.js
+    - fuzzers/fuzz_mcp_response.js
+    - fuzzers/fuzz_oauth_token_request.js
+    - fuzzers/fuzz_oauth_token_response.js
+    - fuzzers/fuzz_response_parser.js
+    - fuzzers/fuzz_url_parser.js
+
+    # Additional high-priority fuzz targets for security vulnerabilities
+    - gofuzz/fuzz/fuzz_context_file_parser.go         # Critical: Prompt injection
+    - gofuzz/fuzz/fuzz_file_system_operations.go      # Critical: Symlink vuln #1121
+    - gofuzz/fuzz/fuzz_shell_validation.go             # Critical: Command injection
+    - gofuzz/fuzz/fuzz_symlink_validation.go          # Critical: Issue #1121 (symlink traversal)
+
+  # Performance optimization for fuzz introspector
+  performance:
+    # Target execution speed for optimal coverage
+    target_executions_per_second: 1000
+    # Maximum memory usage per target
+    max_memory_mb: 2048
+    # Timeout for individual test cases
+    timeout_seconds: 30
+
 labels:
   - cli
   - security
   - json
   - ai
   - llm
+  - javascript
+  - typescript
+  - multi-language

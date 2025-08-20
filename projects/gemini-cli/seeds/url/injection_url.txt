@@ -1,0 +1,10 @@
+http://evil.com/path'; DROP TABLE users; --
+http://evil.com/path?param=<script>alert('xss')</script>
+http://evil.com/path?param=javascript:alert('xss')
+http://evil.com/path?param=1 UNION SELECT password FROM users
+http://evil.com/path?param=../../../etc/passwd
+http://evil.com/path?param=..%2f..%2fetc%2fpasswd
+http://user'; SELECT * FROM secrets; --:pass@evil.com/path
+http://evil.com/path#<script>alert('xss')</script>
+http://evil.com/path$(cat /etc/passwd)
+http://evil.com/path`cat /etc/passwd`

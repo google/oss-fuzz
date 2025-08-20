@@ -1,0 +1,5 @@
+https://gemini.googleapis.com/v1/chat
+https://api.gemini.ai/v1/completions
+https://example.com/api/v1/test
+https://subdomain.example.com/path?param=value
+https://user:pass@example.com:8080/path?query=test#fragment

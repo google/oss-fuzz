@@ -1,0 +1,10 @@
+AES256-GCM:test-data-for-encryption
+RSA-OAEP:public-key-data
+HMAC-SHA256:secret-key
+PBKDF2:password123
+ECDSA:secp256r1
+ChaCha20-Poly1305:key
+Ed25519:signature
+malformed data with nulls: x00x01x02
+invalid algorithm name with injection: '; DROP TABLE crypto; --
+oversized key that should cause buffer issues: 

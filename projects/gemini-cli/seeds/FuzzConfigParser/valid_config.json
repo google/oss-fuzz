@@ -1,0 +1,19 @@
+{
+  "apiKey": "AIzaSyDUMMYKEYFORTESTINGPURPOSES1234567890",
+  "model": "gemini-pro",
+  "temperature": 0.7,
+  "maxTokens": 1000,
+  "systemPrompt": "You are a helpful assistant.",
+  "tools": [
+    {
+      "name": "shell",
+      "type": "function",
+      "description": "Execute shell commands",
+      "permissions": ["execute"]
+    }
+  ],
+  "logging": {
+    "level": "info",
+    "file": "/tmp/gemini.log"
+  }
+}

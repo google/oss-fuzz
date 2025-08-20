@@ -1,0 +1,27 @@
+{
+  "file": "",
+  "content": "",
+  "metadata": {}
+}
+
+{
+  "file": "very_long_filename_that_exceeds_reasonable_limits_and_might_cause_buffer_overflows_or_memory_issues_when_processed_by_the_context_parsing_system.txt",
+  "content": "x".repeat(10000),
+  "metadata": {
+    "title": "x".repeat(1000),
+    "description": "x".repeat(1000),
+    "version": "x".repeat(100),
+    "author": "x".repeat(100)
+  }
+}
+
+{
+  "file": "unicode_test_🚀💥🔥.md",
+  "content": "# Unicode Test\n\nTesting various Unicode characters: 🚀💥🔥😀\n\n## Special Characters\n\n→ ← ↑ ↓ ⇨ ⇦ ⇧ ⇩\n\n## Emoji\n\n🎉✨🌟💫⭐\n\n## Mathematical\n\n∑ ∏ √ ∫ ∂ ∆ ∇ ∞ ∅ ∈ ∉ ⊂ ⊃ ∪ ∩ ∧ ∨ ¬ ≡ ≅ ≈ ≠ ≤ ≥ ≪ ≫\n",
+  "metadata": {
+    "title": "🚀 Unicode Test Document",
+    "description": "Testing Unicode handling in context parsing",
+    "version": "1.0.0-beta",
+    "author": "测试用户"
+  }
+}

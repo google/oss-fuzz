@@ -1,0 +1,5 @@
+AES256-GCM:test-data-for-encryption
+RSA-OAEP:public-key-data
+HMAC-SHA256:secret-key
+PBKDF2:password123
+ECDSA:secp256r1

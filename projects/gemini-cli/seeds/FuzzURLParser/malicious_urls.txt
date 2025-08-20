@@ -1,0 +1,62 @@
+javascript:alert('xss')
+javascript:eval('malicious_code()')
+javascript:document.cookie='hacked'
+data:text/html,<script>alert('xss')</script>
+data:text/javascript,alert('xss')
+data:image/svg+xml,<svg onload=alert('xss')>
+vbscript:msgbox('xss')
+livescript:alert('xss')
+mocha:alert('xss')
+file:///etc/passwd
+file:///proc/self/environ
+file:///root/.ssh/id_rsa
+file:///c:/windows/system32/config/sam
+file:///c:/windows/repair/sam
+ftp://evil.com/malicious
+ftps://evil.com/malicious
+ldap://evil.com/malicious
+ldaps://evil.com/malicious
+jar:http://evil.com/malicious.jar
+chrome://settings/
+chrome-extension://malicious-extension-id/
+qrc://malicious-qr-code
+http://evil.com/path'; DROP TABLE users; --
+http://evil.com/path" UNION SELECT * FROM secrets --
+http://evil.com/path| cat /etc/passwd
+http://evil.com/path; rm -rf /
+http://evil.com/path && echo 'hacked'
+http://evil.com/path`cat /etc/passwd`
+http://evil.com/path$(cat /etc/passwd)
+http://evil.com/path${USER}
+http://evil.com/path$(id)
+http://evil.com/path$(whoami)
+http://evil.com/path../../../etc/passwd
+http://evil.com/path..%2f..%2f..%2fetc%2fpasswd
+http://evil.com/path%2e%2e%2f%2e%2e%2fetc%2fpasswd
+http://evil.com/path..%c0%af..%c0%afetc%c0%afpasswd
+http://user:pass@evil.com/path
+http://user'; DROP TABLE users; --:pass@evil.com/path
+http://evil.com:8080/path
+http://evil.com:99999/path
+http://evil.com/path?param=<script>alert('xss')</script>
+http://evil.com/path?param=javascript:alert('xss')
+http://evil.com/path?param=1 UNION SELECT password FROM users
+http://evil.com/path?param=1'; DROP TABLE users; --
+http://evil.com/path#<script>alert('xss')</script>
+http://evil.com/path#javascript:alert('xss')
+http://evil.com/very/deep/path/that/goes/on/and/on/and/never/ends/causing/potential/stack/overflow/or/denial/of/service
+http://evil.com/path/with/many/parameters?param1=value1&param2=value2&param3=value3&param4=value4&param5=value5&param6=value6&param7=value7&param8=value8&param9=value9&param10=value10&param11=value11&param12=value12&param13=value13&param14=value14&param15=value15&param16=value16&param17=value17&param18=value18&param19=value19&param20=value20&param21=value21&param22=value22&param23=value23&param24=value24&param25=value25&param26=value26&param27=value27&param28=value28&param29=value29&param30=value30&param31=value31&param32=value32&param33=value33&param34=value34&param35=value35&param36=value36&param37=value37&param38=value38&param39=value39&param40=value40&param41=value41&param42=value42&param43=value43&param44=value44&param45=value45&param46=value46&param47=value47&param48=value48&param49=value49&param50=value50&param51=too_many_parameters
+http://evil.com/path?param=../etc/passwd
+http://evil.com/path?param=..%2f..%2fetc%2fpasswd
+http://evil.com/path?param=..%c0%af..%c0%afetc%c0%afpasswd
+http://evil.com/path?param=%00null%01bytes
+http://evil.com/path?param=unicode\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f
+http://evil.com/path?param=🚀💥🔥💯😈👾🤖💣💥🔥
+http://evil.com/path?param=very_long_parameter_that_exceeds_reasonable_limits_and_could_cause_denial_of_service_conditions_by_consuming_excessive_memory_or_processing_time_when_parsed_or_validated_by_the_url_parsing_library_or_application
+https://evil.com/path?param=<iframe src="javascript:alert('xss')"></iframe>
+https://evil.com/path?param=<img src="javascript:alert('xss')">
+https://evil.com/path?param=<svg onload=alert('xss')>
+https://evil.com/path?param=<object data="javascript:alert('xss')">
+https://evil.com/path?param=<embed src="javascript:alert('xss')">'
+https://evil.com/path?param=<form action="javascript:alert('xss')"><input type=submit></form>
+https://evil.com/path?param=<a href="javascript:alert('xss')">click me</a>

@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	oauth "gemini-cli-ossfuzz/internal/oauth"
+	oauth "github.com/google-gemini/gemini-cli/gofuzz/internal/oauth"
 )
 
 // SecurityAwareOAuthRequest extends OAuth request with security validation

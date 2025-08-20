@@ -1,0 +1,6 @@
+go 1.21
+
+use (
+    ./projects/gemini-cli
+    ./projects/gemini-cli/gofuzz
+)

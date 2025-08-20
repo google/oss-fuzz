@@ -461,7 +461,7 @@ func containsUnicodeAttacks(argv []string, sanitizer *CommandSanitizer) bool {
 	argsStr := strings.Join(argv, " ")
 
 	// Enhanced homograph attack detection (lookalike characters)
-	if containsHomographAttack(argsStr) {
+	if containsCLIHomographAttack(argsStr) {
 		sanitizer.violations = append(sanitizer.violations, SecurityViolation{
 			Type:        "homograph_attack",
 			Description: "Homograph attack detected",
@@ -730,7 +730,7 @@ func isSecurePath(path string) bool {
 	return true
 }
 
-func containsHomographAttack(text string) bool {
+func containsCLIHomographAttack(text string) bool {
 	// Simplified homograph detection - check for mixed scripts
 	hasLatin := false
 	hasCyrillic := false
