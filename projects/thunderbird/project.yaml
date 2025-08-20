@@ -1,0 +1,6 @@
+homepage: "https://www.thunderbird.net/"
+language: c++
+main_repo: "https://hg-edge.mozilla.org/comm-central/"
+primary_contact: "jtracey@thunderbird.net"
+auto_ccs:
+  - "kaie@thunderbird.net"
