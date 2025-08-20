@@ -23,9 +23,6 @@
 
 #include "mhd_helper.h"
 
-std::unique_ptr<FuzzedDataProvider> g_fdp;
-std::mutex g_fdp_mu;
-
 static void request_ended_cb(void *cls,
                              const struct MHD_RequestEndedData *data,
                              void *request_app_context) {
