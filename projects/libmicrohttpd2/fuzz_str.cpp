@@ -24,6 +24,7 @@
 #include <fuzzer/FuzzedDataProvider.h>
 extern "C" {
   #include "mhd_str.h"
+  #include "microhttpd2.h"
 }
 
 static void fuzz_tokens(FuzzedDataProvider& fdp) {
@@ -180,16 +181,30 @@ static void fuzz_base64(FuzzedDataProvider& fdp) {
   }
 }
 
+static void fuzz_transformation(FuzzedDataProvider& fdp) {
+  // Fuzz targets in multiple rounds
+  for (int i = 0; i < fdp.ConsumeIntegralInRange<unsigned>(1, 8); i++) {
+    // Generate random integer
+    int value = fdp.ConsumeIntegral<int>();
+
+    // Fuzz conversion functions
+    MHD_http_method_to_string(static_cast<MHD_HTTP_Method>(value));
+    MHD_predef_header_to_string(static_cast<MHD_PredefinedHeader>(value));
+    MHD_protocol_version_to_string(static_cast<MHD_HTTP_ProtocolVersion>(value));
+  }
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzedDataProvider fdp(data, size);
 
   for (int i = 0; i < fdp.ConsumeIntegralInRange<unsigned>(1, 6); i++) {
-    switch (fdp.ConsumeIntegralInRange<int>(0, 5)) {
+    switch (fdp.ConsumeIntegralInRange<int>(0, 6)) {
       case 0: fuzz_tokens(fdp); break;
       case 1: fuzz_conversion(fdp); break;
       case 2: fuzz_decode(fdp); break;
       case 3: fuzz_quoted(fdp); break;
       case 4: fuzz_base64(fdp); break;
+      case 5: fuzz_transformation(fdp); break;
     }
   }
   return 0;
