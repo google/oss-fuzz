@@ -1,3 +1,7 @@
 [libfuzzer]
-min_len = 512
 detect_leaks = 0
+len_control = 0
+mutate_depth = 15
+max_len = 8192
+use_counters = 1
+entropic = 1
