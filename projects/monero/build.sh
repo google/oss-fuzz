@@ -40,6 +40,7 @@ TESTS="\
   tx-extra_fuzz_tests \
   fuzz_rpc \
   fuzz_rpc_full \
+  fuzz_rpc_full_no_exceptions \
   fuzz_zmq \
 "
 
