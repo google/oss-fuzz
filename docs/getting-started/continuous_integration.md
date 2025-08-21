@@ -90,7 +90,7 @@ jobs:
        fuzz-seconds: 600
        output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
@@ -170,7 +170,7 @@ jobs:
        sanitizer: ${{ matrix.sanitizer }}
        output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: steps.build.outcome == 'success'
      with:
        name: ${{ matrix.sanitizer }}-artifacts
@@ -223,7 +223,7 @@ jobs:
        language: c++
        fuzz-seconds: 600
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts

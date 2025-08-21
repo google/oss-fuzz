@@ -18,3 +18,4 @@
 cd $SRC/chrono
 cargo fuzz build -O
 cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_format $OUT/

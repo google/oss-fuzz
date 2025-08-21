@@ -17,8 +17,8 @@
 
 mkdir build
 cd build
-cmake ../
-make cmark_static
+cmake -DBUILD_TESTING=ON ../
+make -j$(nproc)
 cd ..
 
 $CC $CFLAGS -Isrc -Ibuild/src -c fuzz/cmark-fuzz.c -o cmark_fuzzer.o

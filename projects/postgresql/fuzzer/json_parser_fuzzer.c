@@ -22,7 +22,7 @@
 #include "utils/memdebug.h"
 
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
-	FuzzerInitialize("json_db", argv);
+	//FuzzerInitialize("json_db", argv);
 	return 0;
 }
 
@@ -42,7 +42,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 	MemoryContextInit();
 	set_stack_base();
 	sem = nullSemAction;
-	lex = makeJsonLexContextCstringLen(buffer, size+1, PG_UTF8, true);
+	lex = makeJsonLexContextCstringLen(NULL, buffer, size+1, PG_UTF8, true);
 
 	if(!sigsetjmp(local_sigjmp_buf,0)){
 		error_context_stack = NULL;

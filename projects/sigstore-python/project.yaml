@@ -10,7 +10,6 @@ primary_contact: "security@sigstore.dev"
 auto_ccs:
   - lhinds@sigstore.dev
   - hblauzvern@sigstore.dev
-  - codysoyland@sigstore.dev
   - bcallaway@sigstore.dev
   - adam@adalogics.com
   - david@adalogics.com

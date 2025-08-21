@@ -11,6 +11,7 @@ auto_ccs:
   - "idan.horowitz@gmail.com"
   - "timledbetter@gmail.com"
   - "thakis@chromium.org"
+  - "lucas.chollet@serenityos.org"
 
 # Bug reports are public by default:
 view_restrictions: none

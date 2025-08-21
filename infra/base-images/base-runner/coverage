@@ -99,8 +99,15 @@ function run_fuzz_target {
 
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
-  if (( $? != 0 )); then
+  cov_retcode=$?
+
+  target_error_log="$LOGS_DIR/${target}_error.log"
+  grep -E "^==[0-9]+== ERROR: libFuzzer:" "$LOGS_DIR/$target.log" > "$target_error_log"
+  grep_retcode=$?
+
+  if (( $cov_retcode != 0 || $grep_retcode == 0 )); then
     echo "Error occured while running $target:"
+    echo "Cov returncode: $cov_retcode, grep returncode: $grep_retcode"
     cat $LOGS_DIR/$target.log
   fi
 
@@ -125,6 +132,12 @@ function run_fuzz_target {
 
   llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
+
+  # If grep returned zero an error was matched.
+  echo "Coverage error, creating log file: $FUZZER_STATS_DIR/${target}_error.log"
+  if (( $cov_retcode != 0 || $grep_retcode == 0 )); then
+    mv "$target_error_log" "$FUZZER_STATS_DIR/${target}_error.log";
+  fi
 
   # For introspector.
   llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $BRANCH_COV_ARGS $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport

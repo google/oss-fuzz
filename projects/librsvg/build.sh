@@ -34,7 +34,7 @@ export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
 # Compile and install GLib
 cd "$SRC/glib"
-meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dtests=false -Dsysprof=disabled
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dman-pages=disabled -Dtests=false -Dsysprof=disabled
 ninja -C builddir
 ninja -C builddir install
 
@@ -64,13 +64,13 @@ ninja -C builddir install
 
 # Compile and install HarfBuzz
 cd "$SRC/harfbuzz"
-meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dtests=disabled
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Ddocs=disabled -Dtests=disabled
 ninja -C builddir
 ninja -C builddir install
 
 # Compile and install Pango
 cd "$SRC/pango"
-meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir
+meson setup --prefix="$PREFIX" --buildtype=plain --default-library=static builddir -Dbuild-examples=false -Dbuild-testsuite=false
 ninja -C builddir
 ninja -C builddir install
 

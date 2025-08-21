@@ -3,3 +3,7 @@ main_repo: "https://github.com/westes/flex"
 language: c
 vendor_ccs:
 - "david@adalogics.com"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

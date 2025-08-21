@@ -38,7 +38,7 @@ ENV PATH="/usr/bin/:${PATH}"
 RUN python3 -m ensurepip --upgrade
 
 # PEP-517 needed for cryptography. Update pip
-RUN python3 -m pip install --upgrade pip setuptools wheel
+RUN python3 -m pip install --upgrade pip setuptools wheel packaging
 
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -48,6 +48,8 @@ RUN rustup default nightly
 
 RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
 
+# PW_PROJECT_ROOT is used in requirements.build.txt
+ENV PW_PROJECT_ROOT=$SRC/connectedhomeip
 
 # Ensure global python has access to build requirements
 RUN pip3 install -r connectedhomeip/scripts/setup/requirements.build.txt

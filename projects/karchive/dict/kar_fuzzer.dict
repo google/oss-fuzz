@@ -1,0 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Azhar Momin <azhar.momin@kdemail.net>
+# SPDX-License-Identifier: CC0-1.0
+
+magic="!<arch>\\n"
+file_magic="`\\n"

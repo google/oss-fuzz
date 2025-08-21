@@ -19,8 +19,8 @@ FROM gcr.io/oss-fuzz-base/base-clang
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
-# Build and install latest Python 3.10.
-ENV PYTHON_VERSION 3.10.14
+# Build and install latest Python 3.11.
+ENV PYTHON_VERSION 3.11.13
 RUN PYTHON_DEPS="\
         zlib1g-dev \
         libncurses5-dev \
@@ -39,7 +39,8 @@ RUN PYTHON_DEPS="\
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations --enable-shared && \
-    make -j$(nproc) install && \
+    make -j$(nproc) && \
+    make install && \
     ldconfig && \
     ln -s /usr/local/bin/python3 /usr/local/bin/python && \
     cd .. && \
@@ -61,7 +62,7 @@ RUN cd /tmp && curl -OL https://github.com/ccache/ccache/releases/download/v$CCA
 
 # Install six for Bazel rules.
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
-    six==1.15.0 && rm -rf /tmp/*
+    six==1.15.0 absl-py==2.3.0 pyelftools==0.32 && rm -rf /tmp/*
 
 # Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
 ENV BAZELISK_VERSION 1.9.0
@@ -176,10 +177,12 @@ COPY bazel_build_fuzz_tests \
     install_ruby.sh \
     install_rust.sh \
     install_swift.sh \
+    make_build_replayable.py \
     python_coverage_helper.py \
-    bash_parser.py \
+    replay_build.sh \
     srcmap \
     write_labels.py \
+    unshallow_repos.py \
     /usr/local/bin/
 
 # TODO: Build this as part of a multi-stage build.
@@ -208,5 +211,18 @@ ENV CCACHE_DIR /ccache/cache
 # clang under the hood and re-use the same build cache.
 ENV CCACHE_COMPILERCHECK none
 ENV CCACHE_COMPILERTYPE clang
+
+# Build newer patchelf than the one available from Ubuntu.
+RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
+    apt-get update && apt-get install -y autoconf && \
+    cd patchelf && git checkout 523f401584d9584e76c9c77004e7abeb9e6c4551 && \
+    unset CFLAGS && export CXXFLAGS='-stdlib=libc++' && export LDFLAGS='-lpthread' && \
+    ./bootstrap.sh && ./configure && make && \
+    cp /tmp/patchelf/src/patchelf /usr/local/bin && \
+    rm -rf /tmp/patchelf && apt-get remove -y autoconf
+
+COPY indexer /opt/indexer
+COPY --from=gcr.io/oss-fuzz-base/indexer /indexer/build/indexer /opt/indexer/indexer
+RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 
 CMD ["compile"]

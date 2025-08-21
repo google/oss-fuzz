@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: 2025 Azhar Momin <azhar.momin@kdemail.net>
+# SPDX-License-Identifier: CC0-1.0
+
+magic="7z\xBC\xAF\x27\x1C"
+
+# Header types
+end="\x00"
+header="\x01"
+archive_properties="\x02"
+additional_streams_info="\x03"
+main_streams_info="\x04"
+files_info="\x05"
+pack_info="\x06"
+unpack_info="\x07"
+substreams_info="\x08"
+size="\x09"
+crc="\x0A"
+folder="\x0B"
+coders_unpack_size="\x0C"
+num_unpack_stream="\x0D"
+empty_stream="\x0E"
+empty_file="\x0F"
+anti="\x10"
+name="\x11"
+ctime="\x12"
+atime="\x13"
+mtime="\x14"
+attributes="\x15"
+comment="\x16"
+encoded_header="\x17"
+start_pos="\x18"
+dummy="\x19"
+
+# Method IDs
+lzma2="\x21"
+lzma="\x03\x01\x01"
+bcj="\x03\x03\x01\x03"
+bcj2="\x03\x03\x01\x1B"
+ppmd="\x03\x04\x01"
+bzip2="\x04\x02\x02"
+aes="\x06\xF1\x07\x01"

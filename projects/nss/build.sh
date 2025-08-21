@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+sed -i 's/--disable-tests//g' automation/ossfuzz/build.sh
+
+if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
+  # Make sure we don't remove cached directory
+  sed -i 's/rm -rf/#rm -rf/g' automation/ossfuzz/build.sh
+fi
 
 # Build NSS with fuzzers.
 ./automation/ossfuzz/build.sh

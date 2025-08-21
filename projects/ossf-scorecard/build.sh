@@ -15,5 +15,36 @@
 #
 ################################################################################
 
+
+
+############################
+# Here we write the the def.yml files to a variable in each probe.
+# When the probes fuzzer runs, it writes the yaml to disk so Scorecard
+# can read it from there. This is because Scorecard embeds the .yml
+# files which is not supported when fuzzing.
+find ./probes -type f -name 'def.yml' -exec bash -c '
+    for file do
+        dirPath=$(dirname $file)
+        packageName=$(basename $dirPath)
+        yaml_contents=$(cat $dirPath/def.yml)
+        yaml_file_contents="package ${packageName}\n\nvar YmlFile=\`${yaml_contents//\`/}\`"
+        echo -e "${yaml_file_contents}" >> "${dirPath}/def.go"
+        gofmt -w "${dirPath}/def.go"
+    done
+' _ {} +
+
+# Here we rewrite the path from which we read the def.yml file.
+sed -i '19i "os"' finding/probe.go
+sed -i 's|content, err := loc.ReadFile("def.yml")|content, err := os.ReadFile(fmt.Sprintf("/tmp/probedefinitions/%s/def.yml", probeID))|' finding/probe.go
+gofmt -w finding/probe.go
+
+# End of doing the workaround of the def.yml files.
+#############################
+
+mv $SRC/probes_fuzzer.go $SRC/scorecard/probes/
+printf "package probes \nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./probes/fuzz-register.go
+go mod tidy
+compile_native_go_fuzzer github.com/ossf/scorecard/v5/probes FuzzProbes FuzzProbes gofuzz
+
 mv $SRC/yaml_fuzzer.go $SRC/scorecard/policy/
-compile_go_fuzzer github.com/ossf/scorecard/v4/policy FuzzParseFromYAML fuzz_parse_from_yaml gofuzz
+compile_go_fuzzer github.com/ossf/scorecard/v5/policy FuzzParseFromYAML fuzz_parse_from_yaml gofuzz

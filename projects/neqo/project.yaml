@@ -5,9 +5,13 @@ auto_ccs:
   - "leggert@mozilla.com"
   - "minden@mozilla.com"
   - "kershaw@mozilla.com"
+  - "mdauer@mozilla.com"
+  - "jkratzer@mozilla.com"
+vendor_ccs:
+  - "oss-fuzz@mozilla-fuzzing.iam.gserviceaccount.com"
 sanitizers:
   - address
-  - memory
-  - undefined
+fuzzing_engines:
+  - libfuzzer
 main_repo: 'https://github.com/mozilla/neqo.git'
 file_github_issue: true

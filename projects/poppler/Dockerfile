@@ -22,7 +22,11 @@ RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype.git
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git
 RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
-RUN git clone --depth 1 https://github.com/glennrp/libpng.git
+# Pin libpng to avoid a build failure:
+# configure: pkgconfig directory is ${libdir}/pkgconfig
+# ./configure: line 10024: syntax error near unexpected token `)'
+# ./configure: line 10024: `            riscv*)'
+RUN git clone https://github.com/glennrp/libpng.git && cd libpng && git checkout b4800bae3379f1abf82359703c28e727b5df4135
 RUN git clone --depth 1 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
 RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git

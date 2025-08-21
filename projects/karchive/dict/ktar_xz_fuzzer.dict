@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2025 Azhar Momin <azhar.momin@kdemail.net>
+# SPDX-License-Identifier: CC0-1.0
+
+magic="ustar"
+version="00"
+
+magic="\x5D\x37\x7A\x58\x5A\x00"
+footer_magic="\x59\x5A"
+
+check_none="\x00\x00"
+check_crc32="\x01\x00"
+check_crc64="\x04\x00"
+check_sha256="\x0A\x00"
+
+# Filter IDs
+lzma2="\x21"
+delta="\x03"
+x86="\x04"
+powerpc="\x05"
+ia64="\x06"
+arm="\x07"
+armthumb="\x08"
+sparc="\x09"

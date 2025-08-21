@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2025 Azhar Momin <azhar.momin@kdemail.net>
+# SPDX-License-Identifier: CC0-1.0
+
+magic="ustar"
+version="00"
+
+magic="\x1F\x8B"
+
+deflate="\x08"
+
+# File Flags
+ftxt="\x01"
+fhcrc="\x02"
+fextra="\x04"
+fname="\x08"
+fcomment="\x10"
+fall="\x1F"
+
+# Operating System
+fat="\x00"
+amiga="\x01"
+vms="\x02"
+unix="\x03"
+vm_cms="\x04"
+atari_tos="\x05"
+hpfs="\x06"
+mac="\x07"
+zsystem="\x08"
+cp_m="\x09"
+tops20="\x0A"
+ntfs="\x0B"
+qdos="\x0C"
+acorn_riscos="\x0D"
+unknown="\xFF"

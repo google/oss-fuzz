@@ -16,6 +16,7 @@ limitations under the License.
 
 #include "cJSON.h"
 #include "loader.h"
+#include "fuzz_header.h"
 
 /*
  * Create config files for given path and data.

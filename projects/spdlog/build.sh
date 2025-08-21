@@ -16,7 +16,7 @@
 ################################################################################
 
 # build project
-cmake . && make -j$(nproc)
+cmake -DSPDLOG_BUILD_TESTS=ON . && make -j$(nproc)
 
 # build fuzzers
 for f in $(find $SRC -name '*_fuzzer.cc'); do
