@@ -78,7 +78,7 @@ pushd "${SRC}/${LIBRARY_NAME}"
 popd
 
 pushd "${SRC}"
-	${MVN} package -DfuzzedLibaryVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
+	${MVN} package -DfuzzedLibraryVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
 	mkdir -p ${OUT}/dependency
 	install -v target/assembly/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar ${OUT}/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar
 	install -v target/assembly/${LIBRARY_NAME}-fuzzer-libs-${CURRENT_VERSION}.jar ${OUT}/dependency/${LIBRARY_NAME}-fuzzer-libs-${CURRENT_VERSION}.jar

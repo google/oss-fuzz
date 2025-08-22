@@ -4,14 +4,14 @@
 
 	<groupId>ossfuzz</groupId>
 	<artifactId>rhino-fuzzer</artifactId>
-	<version>${fuzzedLibaryVersion}</version>
+	<version>${fuzzedLibraryVersion}</version>
 	<packaging>jar</packaging>
 	
 	<properties>
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>2.7.0</fuzzedLibaryVersion>
+		<fuzzedLibraryVersion>2.7.0</fuzzedLibraryVersion>
 		<exec.mainClass>ParserFuzzer</exec.mainClass>
 	</properties>
 	<dependencies>
@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>org.mozilla</groupId>
 			<artifactId>rhino</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 	</dependencies>
 

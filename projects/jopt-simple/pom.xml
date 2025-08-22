@@ -4,14 +4,14 @@
 
 	<groupId>ossfuzz</groupId>
 	<artifactId>jopt-simple-fuzzer</artifactId>
-	<version>${fuzzedLibaryVersion}</version>
+	<version>${fuzzedLibraryVersion}</version>
 	<packaging>jar</packaging>
 	
 	<properties>
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>6.0-alpha-3</fuzzedLibaryVersion>
+		<fuzzedLibraryVersion>6.0-alpha-3</fuzzedLibraryVersion>
 		<exec.mainClass>ossfuzz.OptionParserFuzzer</exec.mainClass>
 	</properties>
 
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>net.sf.jopt-simple</groupId>
 			<artifactId>jopt-simple</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 	</dependencies>
 
