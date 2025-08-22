@@ -1,7 +1,3 @@
-/*
-# SPDX-FileCopyrightText: 2025 Google LLC
-# SPDX-License-Identifier: Apache-2.0
-#
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,21 +13,13 @@
 # limitations under the License.
 #
 ################################################################################
-*/
 
-#include <karchive.h>
-
-inline void traverseArchive(const KArchiveDirectory *dir, const QString &path = QString())
-{
-    for (const auto &entryName : dir->entries()) {
-        auto entry = dir->entry(entryName);
-
-        if (entry->isFile()) {
-            auto file = static_cast<const KArchiveFile *>(entry);
-            auto data = file->data();
-        } else if (entry->isDirectory()) {
-            auto subDir = static_cast<const KArchiveDirectory *>(entry);
-            traverseArchive(subDir, path + QString::fromUtf8("/") + entryName);
-        }
-    }
-}
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        lsb-release sudo pkg-config file libc++-18-dev libc++abi-18-dev
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+ENV PATH=/src/depot_tools:$PATH
+WORKDIR angle
+RUN fetch angle
+COPY build.sh *.cc fuzzer_profile $SRC/

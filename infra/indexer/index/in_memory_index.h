@@ -16,10 +16,12 @@
 #define OSS_FUZZ_INFRA_INDEXER_INDEX_IN_MEMORY_INDEX_H_
 
 #include <cstddef>
+#include <vector>
 
 #include "indexer/index/file_copier.h"
 #include "indexer/index/types.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/node_hash_map.h"
 
 namespace oss_fuzz {
 namespace indexer {
@@ -42,7 +44,7 @@ class InMemoryIndex {
   // `locations_count` new unique locations, `entities_count` new unique
   // entities, ...
   void Expand(size_t locations_count, size_t entities_count,
-              size_t references_count);
+              size_t references_count, size_t virtual_method_links_count);
 
   // The `GetXxxId` functions return the id of an existing, matching object if
   // there is already one in the index, or allocate a new id if there is not an
@@ -50,10 +52,19 @@ class InMemoryIndex {
   // `GetLocationId` expects a location with an absolute path if not built-in.
   LocationId GetLocationId(Location location);
   EntityId GetEntityId(const Entity& entity);
+  const Entity& GetEntityById(EntityId entity_id) const;
   ReferenceId GetReferenceId(const Reference& reference);
+  VirtualMethodLinkId GetVirtualMethodLinkId(const VirtualMethodLink& link);
 
-  // Build a sorted FlatIndex from the contents of this index.
-  FlatIndex Export(bool store_canonical_entities = true);
+  // In contrast, `GetExistingEntityId` returns `kInvalidEntityId` if such an
+  // entity has not been passed to `GetEntityId` before.
+  EntityId GetExistingEntityId(const Entity& entity) const;
+
+  // Build a sorted FlatIndex from the contents of this index. This invalidates
+  // the contents of this InMemoryIndex, which should no longer be used.
+  // Usage:
+  //   FlatIndex& flat_index = std::move(index).Export();
+  FlatIndex Export() &&;
 
  private:
   FileCopier& file_copier_;
@@ -68,10 +79,17 @@ class InMemoryIndex {
   absl::flat_hash_map<Location, LocationId> locations_;
 
   EntityId next_entity_id_ = 0;
-  absl::flat_hash_map<Entity, EntityId> entities_;
+  // Pointer stability is needed for `id_to_entity_`.
+  absl::node_hash_map<Entity, EntityId> entities_;
+  // Maps back from the entity ID to an entity in `entities_`.
+  std::vector<const Entity*> id_to_entity_;
 
   ReferenceId next_reference_id_ = 0;
   absl::flat_hash_map<Reference, ReferenceId> references_;
+
+  VirtualMethodLinkId next_virtual_method_link_id_ = 0;
+  absl::flat_hash_map<VirtualMethodLink, VirtualMethodLinkId>
+      virtual_method_links_;
 };
 
 }  // namespace indexer

@@ -24,9 +24,11 @@ cd build
 cmake -DEXIV2_ENABLE_PNG=ON -DEXIV2_ENABLE_WEBREADY=ON -DEXIV2_ENABLE_CURL=OFF -DEXIV2_ENABLE_BMFF=ON -DEXIV2_TEAM_WARNINGS_AS_ERRORS=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_CXX_COMPILER="${CXX}" -DCMAKE_CXX_FLAGS="${CXXFLAGS}" -DEXIV2_BUILD_FUZZ_TESTS=ON -DEXIV2_TEAM_OSS_FUZZ=ON -DLIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE}" -DEXIV2_ENABLE_INIH=OFF -DCMAKE_CXX_STANDARD=20 ..
 make -j $(nproc)
 
-# Copy binary and dictionary to $OUT
+# Copy binaries and dictionary to $OUT
 cp ./bin/fuzz-read-print-write $OUT
+cp ./bin/fuzz-read-write $OUT
 cp ../fuzz/exiv2.dict $OUT/fuzz-read-print-write.dict
+cp ../fuzz/exiv2.dict $OUT/fuzz-read-write.dict
 
 # Initialize the corpus, using the files in test/data
 mkdir corpus
@@ -36,3 +38,4 @@ for f in $(find ../test/data -type f -size -20k); do
 done
 
 zip -j $OUT/fuzz-read-print-write.zip corpus/*
+zip -j $OUT/fuzz-read-write.zip corpus/*

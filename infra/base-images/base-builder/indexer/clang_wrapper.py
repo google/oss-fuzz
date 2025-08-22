@@ -33,6 +33,7 @@ import time
 from typing import Any, Iterable, Set
 
 import dwarf_info
+import index_build
 
 _LLVM_READELF_PATH = "/usr/local/bin/llvm-readelf"
 _INDEXER_PATH = "/opt/indexer/indexer"
@@ -461,10 +462,26 @@ def force_optimization_flag(argv: Sequence[str]) -> list[str]:
   return args
 
 
+def remove_invalid_coverage_flags(argv: Sequence[str]) -> list[str]:
+  """Removes invalid coverage flags from the given argument list."""
+  args = []
+  for arg in argv:
+    if (
+        arg.startswith("-fsanitize-coverage=")
+        and index_build.EXPECTED_COVERAGE_FLAGS != arg
+    ):
+      continue
+
+    args.append(arg)
+
+  return args
+
+
 def main(argv: list[str]) -> None:
   argv = expand_rsp_file(argv)
   argv = remove_flag_if_present(argv, "-gline-tables-only")
   argv = force_optimization_flag(argv)
+  argv = remove_invalid_coverage_flags(argv)
 
   if _has_disallowed_clang_flags(argv):
     raise ValueError("Disallowed clang flags found, aborting.")

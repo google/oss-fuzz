@@ -18,6 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake make libasio-dev
 
 RUN git clone --depth 1 https://github.com/CrowCpp/Crow.git crow
-COPY build.sh run_tests.sh $SRC/
+RUN cp $SRC/crow/tests/fuzz/build.sh $SRC/
 WORKDIR crow
 
