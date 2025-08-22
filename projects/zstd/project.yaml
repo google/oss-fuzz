@@ -23,6 +23,7 @@ auto_ccs:
 vendor_ccs:
   - "oss-fuzz@fb.com"
   - "danilak@google.com"
+  - "twsmith@mozilla.com"
 fuzzing_engines:
   - libfuzzer
   - afl
