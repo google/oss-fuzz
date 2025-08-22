@@ -40,8 +40,10 @@ static void start_daemon_once() {
 
     if (g_fdp->ConsumeBool()) {
       g_daemon = MHD_daemon_create(&req_cb, NULL);
-    } else {
+    } else if (g_fdp->ConsumeBool()) {
       g_daemon = MHD_daemon_create(&req_cb_stream, NULL);
+    } else {
+      g_daemon = MHD_daemon_create(&req_cb_process, NULL);
     }
     if (!g_daemon) {
       continue;
@@ -105,24 +107,29 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       std::lock_guard<std::mutex> lk(g_fdp_mu);
       if (g_fdp) {
         static const char* kCommon[] = {"GET","POST","PUT","DELETE","HEAD","PATCH","OPTIONS"};
-        if (g_fdp->ConsumeBool())
+        if (g_fdp->ConsumeBool()) {
           method = g_fdp->PickValueInArray(kCommon);
-        else {
+        } else {
           method = g_fdp->ConsumeRandomLengthString(8);
-          if (method.empty()) method = "GET";
+          if (method.empty()) {
+            method = "GET";
+          }
         }
 
         path = g_fdp->ConsumeRandomLengthString(
                  g_fdp->ConsumeIntegralInRange<size_t>(0, 64));
-        for (char &c : path) if (c == ' ') c = '_';
+        for (char &c : path) {
+          if (c == ' ') {
+            c = '_';
+          }
+        }
 
         user = g_fdp->ConsumeRandomLengthString(16);
         pass = g_fdp->ConsumeRandomLengthString(16);
         garble_auth = g_fdp->ConsumeBool();
 
         if (method == "POST" || g_fdp->ConsumeBool()) {
-          body = g_fdp->ConsumeBytesAsString(
-                   g_fdp->ConsumeIntegralInRange<size_t>(0, 2048));
+          body = g_fdp->ConsumeRandomLengthString(2048);
         }
       }
     }
