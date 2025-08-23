@@ -30,7 +30,7 @@ make -j$(nproc)
 make install
 
 # Compile fuzzer
-FUZZERS="fuzz_response fuzz_daemon fuzz_mhd2 fuzz_str fuzz_crypto_int"
+FUZZERS="fuzz_response fuzz_daemon fuzz_mhd2 fuzz_str fuzz_crypto_int fuzz_libinfo fuzz_connection"
 
 for fuzzer in $FUZZERS; do
   extra_src=""

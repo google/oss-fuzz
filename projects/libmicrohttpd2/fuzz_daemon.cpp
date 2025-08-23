@@ -21,9 +21,6 @@ static uint16_t g_listen_port = kPort;
 static struct MHD_Daemon* g_daemon = nullptr;
 static std::once_flag g_start_once;
 
-std::unique_ptr<FuzzedDataProvider> g_fdp;
-std::mutex g_fdp_mu;
-
 static void start_daemon_once() {
   if (g_daemon) {
     return;
@@ -41,7 +38,13 @@ static void start_daemon_once() {
   for (int i = 0; i < 8 && !started; ++i) {
     const uint16_t try_port = static_cast<uint16_t>(kPort + i);
 
-    g_daemon = MHD_daemon_create(&req_cb, NULL);
+    if (g_fdp->ConsumeBool()) {
+      g_daemon = MHD_daemon_create(&req_cb, NULL);
+    } else if (g_fdp->ConsumeBool()) {
+      g_daemon = MHD_daemon_create(&req_cb_stream, NULL);
+    } else {
+      g_daemon = MHD_daemon_create(&req_cb_process, NULL);
+    }
     if (!g_daemon) {
       continue;
     }
@@ -72,17 +75,18 @@ static void start_daemon_once() {
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  std::call_once(g_start_once, start_daemon_once);
-  if (!g_daemon) {
-    return 0;
-  }
-
   size_t reqs = 0;
 
   // Put FuzzedDataProvider to global
   {
     std::lock_guard<std::mutex> lk(g_fdp_mu);
     g_fdp = std::make_unique<FuzzedDataProvider>(data, size);
+  }
+
+  // Start daemon
+  std::call_once(g_start_once, start_daemon_once);
+  if (!g_daemon) {
+    return 0;
   }
 
   // Generate random number to determine number of random request to be sent
@@ -103,24 +107,29 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       std::lock_guard<std::mutex> lk(g_fdp_mu);
       if (g_fdp) {
         static const char* kCommon[] = {"GET","POST","PUT","DELETE","HEAD","PATCH","OPTIONS"};
-        if (g_fdp->ConsumeBool())
+        if (g_fdp->ConsumeBool()) {
           method = g_fdp->PickValueInArray(kCommon);
-        else {
+        } else {
           method = g_fdp->ConsumeRandomLengthString(8);
-          if (method.empty()) method = "GET";
+          if (method.empty()) {
+            method = "GET";
+          }
         }
 
         path = g_fdp->ConsumeRandomLengthString(
                  g_fdp->ConsumeIntegralInRange<size_t>(0, 64));
-        for (char &c : path) if (c == ' ') c = '_';
+        for (char &c : path) {
+          if (c == ' ') {
+            c = '_';
+          }
+        }
 
         user = g_fdp->ConsumeRandomLengthString(16);
         pass = g_fdp->ConsumeRandomLengthString(16);
         garble_auth = g_fdp->ConsumeBool();
 
         if (method == "POST" || g_fdp->ConsumeBool()) {
-          body = g_fdp->ConsumeBytesAsString(
-                   g_fdp->ConsumeIntegralInRange<size_t>(0, 2048));
+          body = g_fdp->ConsumeRandomLengthString(2048);
         }
       }
     }

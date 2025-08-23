@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/karchive.git
-RUN $SRC/karchive/autotests/ossfuzz/prepare_build.sh
-RUN cp $SRC/karchive/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
-
-WORKDIR $SRC/karchive
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/sigstore/model-transparency
+WORKDIR model-transparency
+COPY build.sh $SRC/

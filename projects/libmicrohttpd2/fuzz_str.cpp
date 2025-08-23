@@ -24,6 +24,7 @@
 #include <fuzzer/FuzzedDataProvider.h>
 extern "C" {
   #include "mhd_str.h"
+  #include "microhttpd2.h"
 }
 
 static void fuzz_tokens(FuzzedDataProvider& fdp) {
@@ -37,6 +38,9 @@ static void fuzz_tokens(FuzzedDataProvider& fdp) {
   size_t payload_size1 = payload1.size();
   size_t payload_size2 = payload2.size();
   size_t payload_size3 = payload3.size();
+
+  // Fuzz mhd_str_equal_caseless
+  mhd_str_equal_caseless(payload_str1, payload_str2);
 
   // Fuzz mhd_str_equal_caseless_n
   mhd_str_equal_caseless_n(payload_str1, payload_str2, fdp.ConsumeIntegral<size_t>());
@@ -141,11 +145,12 @@ static void fuzz_quoted(FuzzedDataProvider& fdp) {
   // Fuzz mhd_str_equal_quoted_bin_n with random string payload as binary
   mhd_str_equal_quoted_bin_n(payload_str1, payload_size1, payload_str2, payload_size2);
 
-  // Fuzz mhd_str_quote with random string payload
+  // Fuzz mhd_str_quote and mhd_str_unquote with random string payload
   size_t max_out = payload_size1 * 2;
   char *out = (char*) malloc(max_out);
   if (out) {
     mhd_str_quote(payload_str1, payload_size1, out, max_out);
+    mhd_str_unquote(payload_str1, payload_size1, out);
   }
   free(out);
 
@@ -153,8 +158,8 @@ static void fuzz_quoted(FuzzedDataProvider& fdp) {
   out = (char*) malloc(max_out);
   if (out) {
     mhd_str_quote(payload_str2, payload_size2, out, max_out);
+    mhd_str_unquote(payload_str2, payload_size2, out);
   }
-
   free(out);
 }
 
@@ -180,16 +185,62 @@ static void fuzz_base64(FuzzedDataProvider& fdp) {
   }
 }
 
+static void fuzz_transformation(FuzzedDataProvider& fdp) {
+  // Fuzz targets in multiple rounds
+  for (int i = 0; i < fdp.ConsumeIntegralInRange<unsigned>(1, 8); i++) {
+    // Generate random integer
+    int value = fdp.ConsumeIntegral<int>();
+
+    // Fuzz conversion functions
+    MHD_http_method_to_string(static_cast<MHD_HTTP_Method>(value));
+    MHD_predef_header_to_string(static_cast<MHD_PredefinedHeader>(value));
+    MHD_protocol_version_to_string(static_cast<MHD_HTTP_ProtocolVersion>(value));
+  }
+}
+
+static void fuzz_hex_conversion(FuzzedDataProvider& fdp) {
+  // Prepare random data for hex conversion
+  std::string payload = fdp.ConsumeRandomLengthString(1024);
+  char *payload_str = payload.data();
+  size_t payload_size = payload.size();
+
+  // Fuzz mhd_hex_to_bin with random payload
+  uint8_t *bin_out = (uint8_t*) malloc(payload_size);
+  if (bin_out) {
+    mhd_hex_to_bin(payload_str, payload_size, bin_out);
+    free(bin_out);
+  }
+
+  // Fuzz mhd_bin_to_hex with random payload
+  char *hex_out = (char *) malloc(payload_size * 2);
+  if (hex_out) {
+    if (!payload.empty()) {
+      mhd_bin_to_hex(payload_str, payload_size, hex_out);
+    }
+    free(hex_out);
+  }
+
+  char *hexz_out = (char *) malloc(payload_size * 2 + 1);
+  if (hexz_out) {
+    if (!payload.empty()) {
+      mhd_bin_to_hex(payload_str, payload_size, hexz_out);
+    }
+    free(hexz_out);
+  }
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzedDataProvider fdp(data, size);
 
   for (int i = 0; i < fdp.ConsumeIntegralInRange<unsigned>(1, 6); i++) {
-    switch (fdp.ConsumeIntegralInRange<int>(0, 5)) {
+    switch (fdp.ConsumeIntegralInRange<int>(0, 7)) {
       case 0: fuzz_tokens(fdp); break;
       case 1: fuzz_conversion(fdp); break;
       case 2: fuzz_decode(fdp); break;
       case 3: fuzz_quoted(fdp); break;
       case 4: fuzz_base64(fdp); break;
+      case 5: fuzz_transformation(fdp); break;
+      case 6: fuzz_hex_conversion(fdp); break;
     }
   }
   return 0;
