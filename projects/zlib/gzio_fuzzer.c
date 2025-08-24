@@ -41,7 +41,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
      */
     int op_count = 2; //< Number of operations chained.
     while(op_count--) {
-      switch((--dataLen, (*data)%19)) {
+      switch((--dataLen, (*data)%26)) {
         case 0: {
           char c = dataLen ? (--dataLen, (char)*data++) : 'c';
           if(gzputc(file, c) < 0) {
@@ -111,7 +111,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
           break;
         }
         case 10: {
-          int flush = dataLen ? (--dataLen, *data++) : 1;
+          int flush = dataLen ? (--dataLen, *data++) : 0;
           gzflush(file, flush); break;
         }
         case 11: {
@@ -182,6 +182,40 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
         }
         case 18: {
           gzclearerr(file);
+          break;
+        }
+        case 19: {
+          unsigned sz = dataLen ? (--dataLen, *data++) : 8;
+          unsigned nitems = dataLen ? (--dataLen, *data++) : 8;
+          char buffer[sz * nitems];
+          if(gzfread(buffer, sz, nitems, file) < 0)
+            goto exit;
+          break;
+        }
+        case 20: {
+          gzgetc_(file);
+          break;
+        }
+        case 21: {
+          gzclose_r(file);
+          file = NULL;
+          break;
+        }
+        case 22: {
+          zlibVersion();
+          break;
+        }
+        case 23: {
+          zlibCompileFlags();
+          break;
+        }
+        case 24: {
+          get_crc_table();
+          break;
+        }
+        case 25: {
+          unsigned err = dataLen ? (--dataLen, *data++) : 0;
+          zError(err);
           break;
         }
       }
