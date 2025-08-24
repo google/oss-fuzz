@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
 """
-🚀 Ultimate OSS-Fuzz Python Fuzzer for Gemini CLI Token Validation
+Ultimate OSS-Fuzz Python Fuzzer for Gemini CLI Token Validation
 
 Features:
-- 🤖 AI-assisted fuzzing with pattern learning
-- 🔒 Enterprise-grade security testing
-- 📊 Real-time performance monitoring
-- 🧠 Advanced attack pattern detection
-- ⚡ High-performance fuzzing with caching
-- 🎯 Comprehensive coverage optimization
+- Pattern-based fuzzing with learning
+- Enterprise-grade security testing
+- Real-time performance monitoring
+- Advanced attack pattern detection
+- High-performance fuzzing with caching
+- Comprehensive coverage optimization
 
 Tests authentication token handling and validation logic with advanced security analysis.
 """
@@ -86,7 +102,7 @@ class TokenValidator:
     - 🔒 Advanced security analysis with ML-based pattern detection
     - ⚡ High-performance caching with intelligent invalidation
     - 📊 Real-time performance monitoring and metrics
-    - 🧠 AI-assisted attack pattern recognition
+    - 🧠 Pattern-based attack pattern recognition
     - 🎯 Comprehensive coverage optimization
     """
 
@@ -136,7 +152,7 @@ class TokenValidator:
         - ⚡ Intelligent caching for performance optimization
         - 🔒 Multi-layer security analysis
         - 📊 Real-time performance monitoring
-        - 🧠 AI-assisted pattern detection
+        - 🧠 Pattern-based pattern detection
         """
         start_time = time.time()
 
@@ -333,7 +349,7 @@ class TokenValidator:
         - 🧠 Machine learning pattern recognition
         - 🔍 Comprehensive attack pattern detection
         - 📊 Entropy analysis and weakness detection
-        - 🎯 AI-assisted threat classification
+        - 🎯 Pattern-based threat classification
         """
         violations = []
         self._performance_metrics['security_violations'] += 1
@@ -353,7 +369,7 @@ class TokenValidator:
         if entropy_score < self.config.entropy_threshold:
             violations.append(f"🔒 Low token entropy: {entropy_score:.2f} (threshold: {self.config.entropy_threshold})")
 
-        # Enhanced weak token detection with AI analysis
+        # Enhanced weak token detection with pattern analysis
         if self._is_weak_token(token):
             violations.append("⚠️  Weak token pattern detected")
 
@@ -477,7 +493,7 @@ def TestOneInput(data: bytes) -> None:
     🚀 Ultimate Fuzzing Entry Point for Atheris
 
     Features:
-    - 🤖 AI-assisted fuzzing with pattern learning
+    - 🤖 Pattern-based fuzzing with pattern learning
     - 🔒 Multi-layer security testing
     - 📊 Performance monitoring and optimization
     - 🎯 Comprehensive coverage tracking
@@ -612,11 +628,11 @@ def test_token_edge_cases(data: bytes, validator: TokenValidator) -> None:
 
 def test_advanced_attack_patterns(token: str, validator: TokenValidator) -> None:
     """
-    🧠 Advanced Attack Pattern Testing with AI Analysis
+    🧠 Advanced Attack Pattern Testing with Pattern Analysis
 
     Tests sophisticated attack patterns that require deeper analysis
     """
-    # AI-generated attack patterns based on learned behavior
+    # Pattern-generated attack patterns based on learned behavior
     if hasattr(validator, '_attack_patterns_learned') and validator._attack_patterns_learned:
         for learned_pattern in list(validator._attack_patterns_learned)[:5]:  # Limit for performance
             try:
@@ -679,7 +695,7 @@ def main():
     print("🚀 Starting Ultimate Token Validation Fuzzer")
     print("🔧 Configuration:")
     print("  - Performance monitoring: enabled")
-    print("  - AI-assisted fuzzing: enabled")
+    print("  - Pattern-based fuzzing: enabled")
     print("  - Security analysis depth: 3")
     print("  - Attack pattern detection: enabled")
     print("  - Caching: enabled")

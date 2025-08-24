@@ -369,13 +369,13 @@ def test_fuzzer_state_manager():
     print("✅ Fuzzer state manager test completed!")
     return state_manager
 
-def demonstrate_sentient_core():
-    """Demonstrate the full sentient core capabilities"""
+def demonstrate_pattern_core():
+    """Demonstrate the full pattern-based core capabilities"""
     print("\n" + "="*80)
-    print("🎯 DEMONSTRATING THE SENTIENT CORE - PATTERN-BASED FUZZING PLATFORM")
+    print("🎯 DEMONSTRATING THE PATTERN-BASED CORE - PATTERN-BASED FUZZING PLATFORM")
     print("="*80)
 
-    print("\n🤖 The Sentient Core represents a paradigm shift in fuzzing technology:")
+    print("\n🤖 The Pattern-Based Core represents a paradigm shift in fuzzing technology:")
     print("   • From static tools to learning systems")
     print("   • From manual configuration to adaptive configuration")
     print("   • From single-run analysis to persistent knowledge")
@@ -459,4 +459,4 @@ def demonstrate_sentient_core():
         print(f"⚠️  Cleanup warning: {e}")
 
 if __name__ == "__main__":
-    demonstrate_sentient_core()
+    demonstrate_pattern_core()

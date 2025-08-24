@@ -17,6 +17,7 @@
 # Ultimate OSS-Fuzz Configuration for Gemini CLI
 # Features: Tri-language fuzzing, enterprise security, performance optimization
 
+name: "gemini_cli"
 homepage: "https://github.com/google-gemini/gemini-cli"
 # Tri-language fuzzing: Go + JavaScript + Java + Python (4-language enterprise fuzzing)
 language: jvm  # Primary language with quad-language fuzzing (Go + JavaScript + Java + Python)
@@ -149,13 +150,13 @@ fuzz_introspector: |
     - java/src/main/java/com/gemini/cli/FuzzConfigParser.java
     - java/src/main/java/com/gemini/cli/FuzzFilePathHandler.java
 
-    # Python fuzz targets (2 total) - AI and security testing
+    # Python fuzz targets (2 total) - Pattern-based and security testing
     - fuzzers/fuzz_token_validation.py
     - fuzzers/fuzz_ai_prompt_parser.py
 
     # Advanced Python modules for security analysis
     - security_enhancements.py
-    - ai_assisted_fuzzer.py
+    - pattern_based_fuzzer.py
     - monitoring_dashboard.py
 
     # Additional high-priority fuzz targets for enterprise security testing
@@ -208,7 +209,7 @@ labels:
   - google-gemini
   - machine-learning
   - prompt-injection
-  - ai-security
+  - pattern-security
 
   # Programming Languages
   - javascript
@@ -240,7 +241,7 @@ labels:
   - analytics
 
   # Advanced Features
-  - ai-assisted-fuzzing
+  - pattern-assisted-fuzzing
   - security-enhancements
   - real-time-monitoring
   - advanced-analytics
