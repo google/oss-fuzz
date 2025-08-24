@@ -541,6 +541,11 @@ Then, run the build_fuzzers and check_build commands to ensure the project build
 Repeat this until the project builds successfully and the fuzzer-check passes.
 The project must build success fully and the fuzzer-check must pass. If they do not pass, then
 you must refine the OSS-Fuzz project until it does.
+
+The goal is to make sure we have a decent code coverage of the target project. Make
+sure the coverage of the target is above 30% in terms of line coverage. Use the tools
+available to extract code coverage of the project when you're creating the harness, and either
+add more fuzzing harnesses to the project or extend the harness to cover more functions.
 """)
 
   fix_success = await does_project_build(project)
@@ -548,6 +553,11 @@ you must refine the OSS-Fuzz project until it does.
   if response:
     with open(f'responses-{project}.json', 'wb') as f:
       f.write(response.all_messages_json())
+
+  if not fix_success:
+    logger.info('Project %s still does not build, trying to fix again.',
+                project)
+    await fix_project_build(project)
 
   return response, fix_success
 
