@@ -26,8 +26,8 @@
 #include <errno.h>
 #include <poll.h>
 
-extern std::unique_ptr<FuzzedDataProvider> g_fdp;
-extern std::mutex g_fdp_mu;
+std::unique_ptr<FuzzedDataProvider> g_fdp;
+std::mutex g_fdp_mu;
 
 std::string b64encode(const std::string &in) {
   static const char* tbl =
@@ -78,6 +78,14 @@ std::string safe_ascii(const std::string& in, bool allow_space) {
   }
 
   return out;
+}
+
+// Dummy functions
+static enum MHD_Bool kv_cb(void*, enum MHD_ValueKind, const struct MHD_NameAndValue*) {
+  return MHD_YES;
+}
+static enum MHD_Bool post_cb(void*, const struct MHD_PostField* pf) {
+  return MHD_YES;
 }
 
 /* Start of internal helpers for sending http message to daemon through localhost socket */
@@ -735,4 +743,118 @@ req_cb(void* cls,
     return handle_basic_auth(request, opts);
   }
   return handle_digest_auth(request, opts);
+}
+
+MHD_FN_PAR_NONNULL_(2) MHD_FN_PAR_NONNULL_(3)
+const struct MHD_Action*
+req_cb_stream(void*,
+              struct MHD_Request* MHD_RESTRICT request,
+              const struct MHD_String* MHD_RESTRICT path,
+              enum MHD_HTTP_Method method,
+              uint_fast64_t upload_size) {
+  // Fuzz MHD_request_get_value for different parameters on random request
+  MHD_request_get_value(request, MHD_VK_HEADER, "host");
+  MHD_request_get_value(request, MHD_VK_HEADER, "content-type");
+  MHD_request_get_value(request, MHD_VK_COOKIE, "cookie");
+  MHD_request_get_value(request, MHD_VK_GET_ARGUMENT, "q");
+  MHD_request_get_values_cb(request, MHD_VK_HEADER, kv_cb, nullptr);
+  MHD_request_get_values_cb(request, MHD_VK_COOKIE, kv_cb, nullptr);
+  MHD_request_get_values_cb(request, MHD_VK_GET_ARGUMENT, kv_cb, nullptr);
+
+  // Fuzz MHD_request_get_post_data_cb on random request
+  MHD_request_get_post_data_cb(request, post_cb, nullptr);
+
+
+  // Fuzz MHD_request_get_info_fixed for different parameters on random request
+  union MHD_RequestInfoFixedData fix;
+  MHD_request_get_info_fixed(request, MHD_REQUEST_INFO_FIXED_HTTP_VER, &fix);
+  MHD_request_get_info_fixed(request, MHD_REQUEST_INFO_FIXED_HTTP_METHOD, &fix);
+  MHD_request_get_info_fixed(request, MHD_REQUEST_INFO_FIXED_DAEMON, &fix);
+  MHD_request_get_info_fixed(request, MHD_REQUEST_INFO_FIXED_CONNECTION, &fix);
+  MHD_request_get_info_fixed(request, MHD_REQUEST_INFO_FIXED_STREAM, &fix);
+  MHD_request_get_info_fixed(request, MHD_REQUEST_INFO_FIXED_APP_CONTEXT, &fix);
+
+  // Fuzz MHD_request_get_info_dynamic for different parameters on random request
+  union MHD_RequestInfoDynamicData dyn;
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_HTTP_METHOD_STRING, &dyn);
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_URI, &dyn);
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_NUMBER_URI_PARAMS, &dyn);
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_NUMBER_COOKIES, &dyn);
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_HEADER_SIZE, &dyn);
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_NUMBER_POST_PARAMS, &dyn);
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_UPLOAD_PRESENT, &dyn);
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_UPLOAD_CHUNKED, &dyn);
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_UPLOAD_SIZE_TOTAL, &dyn);
+  MHD_request_get_info_dynamic(request, MHD_REQUEST_INFO_DYNAMIC_UPLOAD_SIZE_RECIEVED, &dyn);
+
+  // Fuzz response creation from random request processing
+  struct MHD_Response* resp = MHD_response_from_empty(MHD_HTTP_STATUS_NO_CONTENT);
+  if (!resp) {
+    return MHD_action_abort_request(request);
+  }
+
+  // Fuzz response and request abortion
+  MHD_response_add_header(resp, "x-fuzz", "values");
+  const struct MHD_Action* act = MHD_action_from_response(request, resp);
+  MHD_response_destroy(resp);
+  return act ? act : MHD_action_abort_request(request);
+}
+
+MHD_FN_PAR_NONNULL_(2) MHD_FN_PAR_NONNULL_(3)
+const struct MHD_Action*
+req_cb_process(void*,
+               struct MHD_Request* MHD_RESTRICT request,
+               const struct MHD_String* MHD_RESTRICT path,
+               enum MHD_HTTP_Method method,
+               uint_fast64_t upload_size) {
+  // Create info unions
+  union MHD_RequestInfoFixedData f;
+  union MHD_RequestInfoDynamicData d;
+
+  // Fuzz MHD_request_get_info_fixed_sz for different parameters on random request
+  MHD_request_get_info_fixed_sz(request, MHD_REQUEST_INFO_FIXED_HTTP_VER, &f, sizeof(f));
+  MHD_request_get_info_fixed_sz(request, MHD_REQUEST_INFO_FIXED_HTTP_METHOD, &f, sizeof(f));
+  MHD_request_get_info_fixed_sz(request, MHD_REQUEST_INFO_FIXED_DAEMON, &f, sizeof(f));
+  MHD_request_get_info_fixed_sz(request, MHD_REQUEST_INFO_FIXED_CONNECTION, &f, sizeof(f));
+  MHD_request_get_info_fixed_sz(request, MHD_REQUEST_INFO_FIXED_STREAM, &f, sizeof(f));
+  MHD_request_get_info_fixed_sz(request, MHD_REQUEST_INFO_FIXED_APP_CONTEXT, &f, sizeof(f));
+
+  // Fuzz MHD_request_get_info_dynamic_sz for different parameters on random request
+  MHD_request_get_info_dynamic_sz(request, MHD_REQUEST_INFO_DYNAMIC_HTTP_METHOD_STRING, &d, sizeof(d));
+  MHD_request_get_info_dynamic_sz(request, MHD_REQUEST_INFO_DYNAMIC_URI, &d, sizeof(d));
+  MHD_request_get_info_dynamic_sz(request, MHD_REQUEST_INFO_DYNAMIC_NUMBER_URI_PARAMS, &d, sizeof(d));
+  MHD_request_get_info_dynamic_sz(request, MHD_REQUEST_INFO_DYNAMIC_NUMBER_COOKIES, &d, sizeof(d));
+  MHD_request_get_info_dynamic_sz(request, MHD_REQUEST_INFO_DYNAMIC_HEADER_SIZE, &d, sizeof(d));
+  MHD_request_get_info_dynamic_sz(request, MHD_REQUEST_INFO_DYNAMIC_AUTH_DIGEST_INFO, &d, sizeof(d));
+  MHD_request_get_info_dynamic_sz(request, MHD_REQUEST_INFO_DYNAMIC_AUTH_BASIC_CREDS, &d, sizeof(d));
+
+  {
+    static const char realm[] = "fuzz-realm";
+    static const char user[]  = "u";
+    static const char pass[]  = "p";
+
+    enum MHD_DigestAuthAlgo algos[] = {
+      MHD_DIGEST_AUTH_ALGO_MD5,
+      MHD_DIGEST_AUTH_ALGO_SHA256,
+      MHD_DIGEST_AUTH_ALGO_SHA512_256
+    };
+
+    for (unsigned i = 0; i < (unsigned)(sizeof(algos)/sizeof(algos[0])); ++i) {
+      size_t sz = MHD_digest_get_hash_size(algos[i]);
+      if (sz == 0 || sz > 64) {
+        continue;
+      }
+      unsigned char ha1[64];
+      if (MHD_SC_OK == MHD_digest_auth_calc_userdigest(algos[i], user, realm, pass, sz, ha1)) {
+        MHD_digest_auth_check_digest(
+            request, realm, user, sz, ha1,
+            0, MHD_DIGEST_AUTH_MULT_QOP_AUTH_ANY,
+            MHD_DIGEST_AUTH_MULT_ALGO_ANY_NON_SESSION);
+      }
+    }
+  }
+
+  // Force OK response
+  struct MHD_Response* r = MHD_response_from_empty(MHD_HTTP_STATUS_OK);
+  return MHD_action_from_response(request, r);
 }

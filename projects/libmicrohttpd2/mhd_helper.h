@@ -82,6 +82,19 @@ const struct MHD_Action* req_cb(void* cls,
                                 const struct MHD_String* MHD_RESTRICT path,
                                 enum MHD_HTTP_Method method,
                                 uint_fast64_t upload_size);
+MHD_FN_PAR_NONNULL_(2) MHD_FN_PAR_NONNULL_(3)
+const struct MHD_Action* req_cb_stream(void* cls,
+                                       struct MHD_Request* MHD_RESTRICT request,
+                                       const struct MHD_String* MHD_RESTRICT path,
+                                       enum MHD_HTTP_Method method,
+                                       uint_fast64_t upload_size);
+
+MHD_FN_PAR_NONNULL_(2) MHD_FN_PAR_NONNULL_(3)
+const struct MHD_Action* req_cb_process(void* cls,
+                                        struct MHD_Request* MHD_RESTRICT request,
+                                        const struct MHD_String* MHD_RESTRICT path,
+                                        enum MHD_HTTP_Method method,
+                                        uint_fast64_t upload_size);
 
 // Provide base64 encoding for the response/request
 std::string b64encode(const std::string &in);

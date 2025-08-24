@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +14,8 @@
 #
 ################################################################################
 
-# Run the OSS-Fuzz script in the curl-fuzzer project.
-
-if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
-  # If we don't do this, the curl library won't rebuild.
-  rm -f /src/curl_fuzzer/build/curl-install/lib/libcurl.a
-fi
-
-./ossfuzz.sh
+FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/sigstore/model-transparency
+WORKDIR model-transparency
+COPY build.sh $SRC/
