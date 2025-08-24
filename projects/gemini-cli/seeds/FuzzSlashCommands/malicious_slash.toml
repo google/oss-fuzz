@@ -1,0 +1,21 @@
+[command]
+name = "<script>alert('xss')</script>"
+description = "../../../etc/passwd"
+usage = "javascript:alert('xss')"
+examples = ["'; rm -rf /; echo '"]
+
+[command]
+name = "../../../../etc/passwd"
+description = "<img src=x onerror=alert('xss')>"
+usage = "' OR '1'='1"
+examples = ["; cat /etc/passwd"]
+
+[command]
+name = "{{7*7}}"
+description = "${7*7}"
+usage = "<!--#exec cmd='cat /etc/passwd'-->"
+examples = ["<!ENTITY xxe SYSTEM 'file:///etc/passwd'>"]
+
+[permissions]
+admin_required = ["../../../etc/passwd"]
+user_allowed = ["<script>alert('xss')</script>", "javascript:alert('xss')"]

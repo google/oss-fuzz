@@ -14,6 +14,7 @@
 #
 ################################################################################
 
+<<<<<<< HEAD
 # Multi-stage Dockerfile for Gemini CLI OSS-Fuzz integration
 # Stage 1: Builder with all dependencies for Go and JavaScript fuzzers
 FROM gcr.io/oss-fuzz-base/base-builder-javascript AS builder
@@ -141,3 +142,9 @@ RUN set -ex && \
     rm -rf /tmp/* /var/tmp/* /root/.cache && \
     echo "=== Runtime Setup Verification Complete ===" && \
     echo "🚀 Final image ready for fuzzing with security hardening applied"
+=======
+# oss-fuzz/projects/gemini-cli/Dockerfile
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
+
+# install any global tools if needed (none required for now)
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

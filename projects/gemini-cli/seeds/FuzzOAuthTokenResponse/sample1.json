@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 {"access_token":"ya29.example_token","token_type":"Bearer","expires_in":3600}
+=======
+{"access_token":"test-token","token_type":"Bearer","expires_in":3600}
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

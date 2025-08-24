@@ -1,0 +1,142 @@
+[
+  {
+    "file": "json_format_fuzz.json",
+    "content": "{\\\"nested_array_fuzz\\\": [[[[[[]]]]]], \\\"unicode_fuzz\\\": \\\"\\\\u0000\\\\u0001\\\\u0002\\\\u0003\\\\u0004\\\\u0005\\\", \\\"number_fuzz\\\": [1.7976931348623157e+308, -1.7976931348623157e+308, \\\"NaN\\\", \\\"Infinity\\\", \\\"-Infinity\\\"], \\\"string_escapes\\\": \\\"\\\\\\\"\\\\\\\\\\\\n\\\\r\\\\t\\\\b\\\\f\\\"}",
+    "metadata": {
+      "title": "JSON Format Fuzzing",
+      "description": "Comprehensive fuzzing of JSON format parsing with nested structures, Unicode edge cases, numeric boundaries, and escape sequences",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "json",
+      "fuzz_vectors": ["nested_structures", "unicode_edge_cases", "numeric_boundaries", "escape_sequences"]
+    }
+  },
+  {
+    "file": "yaml_format_fuzz.yaml",
+    "content": "---\\n# YAML Format Fuzzing\\n\\n# Deep recursion fuzz\\nlevel1: &level1\\n  level2: &level2\\n  level3: &level3\\n  level4: &level4\\n  level5: &level5\\n  self: *level1\\n\\n# Unicode and encoding fuzz\\nunicode_fuzz: \\\"\\\\u0000\\\\u0001\\\\u0002\\\\u0003\\\\u0004\\\\u0005\\\"\\n\\n# Type confusion fuzz\\nnumber_string_confusion:\\n  - \\\"123\\\"\\n  - 123\\n  - true\\n  - \\\"true\\\"\\n  - null\\n  - \\\"null\\\"\\n\\n# Anchor explosion\\nanchor0: &anchor0 \\\"data0\\\"\\nanchor1: &anchor1 \\\"data1\\\"\\nreference_chain: *anchor0 *anchor1",
+    "metadata": {
+      "title": "YAML Format Fuzzing",
+      "description": "Comprehensive fuzzing of YAML format parsing with anchor recursion, Unicode edge cases, and type confusion",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "yaml",
+      "fuzz_vectors": ["anchor_recursion", "unicode_edge_cases", "type_confusion", "anchor_explosion"]
+    }
+  },
+  {
+    "file": "xml_format_fuzz.xml",
+    "content": "\\u003c?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?\\u003e\\n\\u003c!DOCTYPE fuzz [\\n\\u003c!ENTITY entity0 \\\"&entity1;data0\\\"\\u003e\\n\\u003c!ENTITY entity1 \\\"&entity2;data1\\\"\\u003e\\n\\u003c!ENTITY entity999 \\\"final\\\"\\u003e\\n]>\\n\\u003croot\\u003e\\n  \\u003c!-- Deep entity recursion --\\u003e\\n  \\u003cdeep_entity\\u003e&entity0;\\u003c/deep_entity\\u003e\\n\\n  \\u003c!-- Attribute fuzzing --\\u003e\\n  \\u003cattributes attr0=\\\"value0\\\" attr1=\\\"value1\\\" attr2=\\\"value2\\\" /\\u003e\\n\\n  \\u003c!-- Unicode fuzzing --\\u003e\\n  \\u003cunicode\\u003e&#0;&#1000;&#2000;&#3000;\\u003c/unicode\\u003e\\n\\n  \\u003c!-- CDATA fuzzing --\\u003e\\n  \\u003ccdata\\u003e\\u003c![CDATA[nested cdata content]]\\u003e\\u003c/cdata\\u003e\\n\\u003c/root\\u003e",
+    "metadata": {
+      "title": "XML Format Fuzzing",
+      "description": "Comprehensive fuzzing of XML format parsing with entity recursion, attribute explosion, Unicode entities, and CDATA nesting",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "xml",
+      "fuzz_vectors": ["entity_recursion", "attribute_explosion", "unicode_entities", "cdata_nesting"]
+    }
+  },
+  {
+    "file": "csv_format_fuzz.csv",
+    "content": "# CSV Format Fuzzing\\nfield0,\\\"quoted field0\\\",unquoted0,\\\"field with \\\"quotes\\\"0\\\",field with\\nnewlines0\\nfield1,\\\"quoted field1\\\",unquoted1,\\\"field with \\\"quotes\\\"1\\\",field with\\nnewlines1\\nfield2,\\\"quoted field2\\\",unquoted2,\\\"field with \\\"quotes\\\"2\\\",field with\\nnewlines2",
+    "metadata": {
+      "title": "CSV Format Fuzzing",
+      "description": "Comprehensive fuzzing of CSV format parsing with quote handling, field escaping, and newline edge cases",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "csv",
+      "fuzz_vectors": ["quote_handling", "field_escaping", "newline_edge_cases", "field_count_variations"]
+    }
+  },
+  {
+    "file": "ini_format_fuzz.ini",
+    "content": "; INI Format Fuzzing\\n\\n[section0]\\nkey0=value0_0\\nkey1=value0_1\\nkey2=value0_2\\n[section1]\\nkey0=value1_0\\nkey1=value1_1\\nkey2=value1_2\\n[section2]\\nkey0=value2_0\\nkey1=value2_1\\nkey2=value2_2",
+    "metadata": {
+      "title": "INI Format Fuzzing",
+      "description": "Comprehensive fuzzing of INI format parsing with section and key explosion",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "ini",
+      "fuzz_vectors": ["section_explosion", "key_explosion", "value_variations"]
+    }
+  },
+  {
+    "file": "toml_format_fuzz.toml",
+    "content": "# TOML Format Fuzzing\\n\\n[[table0]]\\nkey0 = \\\"value0_0\\\"\\nkey1 = \\\"value0_1\\\"\\n[[table1]]\\nkey0 = \\\"value1_0\\\"\\nkey1 = \\\"value1_1\\\"\\n[[table2]]\\nkey0 = \\\"value2_0\\\"\\nkey1 = \\\"value2_1\\\"",
+    "metadata": {
+      "title": "TOML Format Fuzzing",
+      "description": "Comprehensive fuzzing of TOML format parsing with table arrays and nested structures",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "toml",
+      "fuzz_vectors": ["table_arrays", "nested_structures", "value_types"]
+    }
+  },
+  {
+    "file": "binary_format_fuzz.bin",
+    "content": "\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\u0008\\u0009\\u000A\\u000B\\u000C\\u000D\\u000E\\u000F\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007",
+    "metadata": {
+      "title": "Binary Format Fuzzing",
+      "description": "Comprehensive fuzzing of binary format parsing with control characters and byte patterns",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "binary",
+      "fuzz_vectors": ["control_characters", "byte_patterns", "encoding_edge_cases"]
+    }
+  },
+  {
+    "file": "protobuf_format_fuzz.proto",
+    "content": "syntax = \\\"proto3\\\";\\n\\nmessage Message0 {\\n  string field0 = 1;\\n  string field1 = 2;\\n  string field2 = 3;\\n}\\n\\nmessage Message1 {\\n  string field0 = 1;\\n  string field1 = 2;\\n  string field2 = 3;\\n}",
+    "metadata": {
+      "title": "Protocol Buffer Format Fuzzing",
+      "description": "Comprehensive fuzzing of Protocol Buffer format parsing with message explosion and field variations",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "protobuf",
+      "fuzz_vectors": ["message_explosion", "field_variations", "nested_messages"]
+    }
+  },
+  {
+    "file": "html_format_fuzz.html",
+    "content": "\\u003c!DOCTYPE html\\u003e\\n\\u003chtml\\u003e\\n\\u003chead\\u003e\\n\\u003ctitle\\u003eHTML Format Fuzzing\\u003c/title\\u003e\\n\\u003c/head\\u003e\\n\\u003cbody\\u003e\\n\\u003cdiv id=\\\"div0\\\" class=\\\"class0\\\" data-attr0=\\\"value0_0\\\" data-attr1=\\\"value0_1\\\"\\u003eContent 0\\u003c/div\\u003e\\n\\u003cdiv id=\\\"div1\\\" class=\\\"class1\\\" data-attr0=\\\"value1_0\\\" data-attr1=\\\"value1_1\\\"\\u003eContent 1\\u003c/div\\u003e\\n\\u003c/body\\u003e\\n\\u003c/html\\u003e",
+    "metadata": {
+      "title": "HTML Format Fuzzing",
+      "description": "Comprehensive fuzzing of HTML format parsing with attribute explosion and nested elements",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "html",
+      "fuzz_vectors": ["attribute_explosion", "nested_elements", "tag_variations"]
+    }
+  },
+  {
+    "file": "javascript_format_fuzz.js",
+    "content": "// JavaScript Format Fuzzing\\n\\nvar obj0 = {\\n  key0: \\\"value0_0\\\",\\n  key1: \\\"value0_1\\\",\\n  key2: \\\"value0_2\\\"\\n};\\n\\nvar obj1 = {\\n  key0: \\\"value1_0\\\",\\n  key1: \\\"value1_1\\\",\\n  key2: \\\"value1_2\\\"\\n};",
+    "metadata": {
+      "title": "JavaScript Format Fuzzing",
+      "description": "Comprehensive fuzzing of JavaScript format parsing with object explosion and property variations",
+      "version": "3.0.0",
+      "author": "Fuzzing Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "javascript",
+      "fuzz_vectors": ["object_explosion", "property_variations", "nested_objects"]
+    }
+  }
+]

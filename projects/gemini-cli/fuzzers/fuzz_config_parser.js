@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // oss-fuzz/projects/gemini-cli/fuzzers/fuzz_config_parser.js
+<<<<<<< HEAD
 // Fuzzer for Gemini CLI configuration parser
 // Implements Fuchsia-style fuzz target function
 
@@ -174,3 +175,36 @@ export default FuzzFunction;
 
 // CommonJS export for OSS-Fuzz compatibility
 module.exports = { FuzzFunction };
+=======
+import { locateUpstream } from './_upstream_locator.mjs';
+
+export function FuzzConfigParser(data) {
+  const input = Buffer.isBuffer(data) ? data.toString('utf8') : String(data);
+  const p = locateUpstream([
+    'packages/cli/src/config.js',
+    'packages/cli/src/config.ts',
+    'packages/cli/lib/config.js'
+  ]);
+  if (!p) {
+    // If upstream module not found, bail out: this indicates import path needs adjustment.
+    // Throwing a specific Error makes the build/fuzzer log clear for easy fixes.
+    throw new Error('UPSTREAM_CONFIG_NOT_FOUND: adjust import path to upstream config module');
+  }
+  // dynamic import so build doesn't fail if the file is absent at author-time
+  return import(p)
+    .then(mod => {
+      const fn = mod.parseConfig || mod.default?.parseConfig || mod.parse;
+      if (!fn) throw new Error('UPSTREAM_PARSE_NOT_FOUND');
+      try {
+        fn(input);
+      } catch (e) {
+        // parsing errors expected — rethrow only if unusual
+        if (e && e.name && (e.name === 'TypeError' || e.name === 'RangeError')) {
+          // allow expected parsing exceptions to be treated as non-crash
+          return;
+        }
+        throw e;
+      }
+    });
+}
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

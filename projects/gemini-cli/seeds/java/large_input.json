@@ -1,0 +1,13 @@
+{
+  "grant_type": "authorization_code",
+  "code": "a_very_long_authorization_code_that_might_cause_buffer_issues_or_performance_problems_when_processed_by_the_fuzzer_and_parser_implementation_" + "x".repeat(1000),
+  "redirect_uri": "https://example.com/callback",
+  "client_id": "test_client_with_very_long_name_" + "y".repeat(500),
+  "client_secret": "z".repeat(2000),
+  "scope": "read write delete admin superuser",
+  "metadata": {
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "ip_address": "192.168.1.100",
+    "session_id": "sess_" + "a".repeat(256)
+  }
+}

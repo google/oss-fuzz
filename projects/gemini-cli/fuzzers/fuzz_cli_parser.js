@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // oss-fuzz/projects/gemini-cli/fuzzers/fuzz_cli_parser.js
+<<<<<<< HEAD
 
 // Import the actual source code for fuzzing
 const { parseCliArgs, validateCommand } = require('../src/cli/parser.js');
@@ -116,3 +117,27 @@ export async function FuzzCLIParser(data) {
 
 // CommonJS export for OSS-Fuzz compatibility
 module.exports = { LLVMFuzzerTestOneInput, FuzzCLIParser };
+=======
+import { locateUpstream } from './_upstream_locator.mjs';
+
+export function FuzzCLIParser(data) {
+  const input = Buffer.isBuffer(data) ? data.toString('utf8') : String(data);
+  const p = locateUpstream([
+    'packages/cli/src/cli.js',
+    'packages/cli/src/index.js',
+    'packages/cli/lib/cli.js'
+  ]);
+  if (!p) throw new Error('UPSTREAM_CLI_NOT_FOUND');
+  return import(p).then(mod => {
+    const parseArgs = mod.parseArgs || mod.default?.parseArgs || mod.parseCLI || mod.run;
+    if (!parseArgs) throw new Error('UPSTREAM_CLI_PARSE_NOT_FOUND');
+    try {
+      parseArgs(input);
+    } catch (e) {
+      // swallow expected parse errors
+      if (e && e.name === 'SyntaxError') return;
+      throw e;
+    }
+  });
+}
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

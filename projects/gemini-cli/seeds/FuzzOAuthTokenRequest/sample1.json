@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 {"grant_type":"authorization_code","code":"test_code","redirect_uri":"http://localhost"}
+=======
+{"grant_type":"authorization_code","code":"test-code","redirect_uri":"http://localhost:3000"}
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

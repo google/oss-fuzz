@@ -1,0 +1,84 @@
+# Java-specific dictionary for OSS-Fuzz
+# Contains common patterns and tokens for Java fuzzing
+
+# Java keywords and syntax
+"public"
+"private"
+"protected"
+"class"
+"interface"
+"extends"
+"implements"
+"import"
+"package"
+"static"
+"final"
+"void"
+"return"
+"new"
+"this"
+"super"
+"null"
+"true"
+"false"
+
+# Common Java exceptions
+"NullPointerException"
+"IllegalArgumentException"
+"RuntimeException"
+"IOException"
+"Exception"
+"Error"
+
+# OAuth and security related
+"Authorization"
+"Bearer"
+"token"
+"access_token"
+"refresh_token"
+"client_id"
+"client_secret"
+"grant_type"
+"authorization_code"
+"password"
+"client_credentials"
+
+# JSON patterns (common in Java APIs)
+"{\""
+"\"}"
+"[{"
+"}]"
+"\":"
+"\",\""
+"null"
+"true"
+"false"
+"0123456789"
+
+# HTTP patterns
+"GET"
+"POST"
+"PUT"
+"DELETE"
+"Content-Type: application/json"
+"application/x-www-form-urlencoded"
+
+# File path patterns
+"/"
+"\\"
+".."
+"../"
+".\\"
+"~"
+"/tmp"
+"/etc"
+"C:\\"
+"\\Windows"
+
+# Command injection patterns (for detection)
+";"
+"&&"
+"||"
+"|"
+"`"
+"$(

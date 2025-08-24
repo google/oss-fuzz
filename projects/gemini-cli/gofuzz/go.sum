@@ -1,2 +1,0 @@
-# This file is intentionally empty as there are no external dependencies
-# The gofuzz module only uses internal packages and standard library

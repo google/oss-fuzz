@@ -1,0 +1,26 @@
+GEMINI_API_KEY=AIzaSyDUMMY_API_KEY_FOR_TESTING
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+SECRET_KEY=super-secret-key-for-jwt-tokens
+TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+PRIVATE_KEY=-----BEGIN RSA PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQ...\n-----END RSA PRIVATE KEY-----
+CERT_PATH=/etc/ssl/certs/ca-certificates.crt
+CONFIG_FILE=/app/config/production.json
+UPLOAD_PATH=/app/uploads/
+COMMAND=ls -la
+EXEC_PATH=/usr/bin/node
+EVAL_CODE=console.log('Hello World')
+XSS_PAYLOAD=normal_text_value
+SQL_INJECTION=SELECT * FROM users WHERE id = 1
+PATH_INJECTION=/etc/hosts
+LFI_PAYLOAD=../../../etc/hosts
+RFI_PAYLOAD=local_file.php
+XXE_PAYLOAD=<user>John Doe</user>
+TEMPLATE_INJECTION=Hello {{name}}!
+SSTI_PAYLOAD=7*7
+DEBUG=true
+PORT=3000
+HOST=localhost
+NODE_ENV=production
+LOG_LEVEL=info
+REDIS_URL=redis://localhost:6379
+MONGO_URL=mongodb://localhost:27017/app

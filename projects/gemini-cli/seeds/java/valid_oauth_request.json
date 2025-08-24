@@ -1,0 +1,8 @@
+{
+  "grant_type": "authorization_code",
+  "code": "valid_authorization_code_123",
+  "redirect_uri": "https://example.com/callback",
+  "client_id": "test_client_123",
+  "client_secret": "test_secret_456",
+  "scope": "read write"
+}

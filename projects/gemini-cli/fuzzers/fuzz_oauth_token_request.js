@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // oss-fuzz/projects/gemini-cli/fuzzers/fuzz_oauth_token_request.js
+<<<<<<< HEAD
 
 // Import the actual source code for fuzzing
 const { parseOAuthTokenRequest, validateOAuthTokenRequest } = require('../src/oauth/token.js');
@@ -123,3 +124,26 @@ export async function FuzzOAuthTokenRequest(data) {
 
 // CommonJS export for OSS-Fuzz compatibility
 module.exports = { LLVMFuzzerTestOneInput };
+=======
+import { locateUpstream } from './_upstream_locator.mjs';
+
+export function FuzzOAuthTokenRequest(data) {
+  const input = Buffer.isBuffer(data) ? data.toString('utf8') : String(data);
+  const p = locateUpstream([
+    'packages/cli/src/oauth.js',
+    'packages/core/src/oauth.js',
+    'packages/cli/lib/oauth.js'
+  ]);
+  if (!p) throw new Error('UPSTREAM_OAUTH_NOT_FOUND');
+  return import(p).then(mod => {
+    const parse = mod.parseTokenRequest || mod.parseOAuthRequest || mod.decodeOAuth;
+    if (!parse) throw new Error('UPSTREAM_OAUTH_PARSE_NOT_FOUND');
+    try {
+      parse(input);
+    } catch (e) {
+      if (e && e.name === 'SyntaxError') return;
+      throw e;
+    }
+  });
+}
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

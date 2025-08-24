@@ -1,0 +1,77 @@
+[
+  {
+    "file": "javascript_object_fuzz.js",
+    "content": "// JavaScript object fuzzing\\nconst testObject = {\\n  __proto__: {\\n    isAdmin: true\\n  },\\n  constructor: {\\n    prototype: {\\n      isAdmin: true\\n    }\\n  },\\n  deepNested: {\\n    level1: {\\n      level2: {\\n        level3: {\\n          data: \\\"deeply nested value\\\"\\n        }\\n      }\\n    }\\n  },\\n  circular: \\\"#REF\\\"\\n};",
+    "metadata": {
+      "title": "JavaScript Object Fuzzing",
+      "description": "Testing JavaScript object parsing with prototype pollution and circular references",
+      "version": "1.0.0",
+      "author": "JavaScript Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "javascript_object",
+      "fuzz_vectors": ["prototype_pollution", "circular_references", "deep_nesting"],
+      "language": "javascript"
+    }
+  },
+  {
+    "file": "javascript_eval_fuzz.js",
+    "content": "// JavaScript eval fuzzing\\nconst dangerousInputs = [\\n  \\\"console.log('xss')\\\",\\n  \\\"alert('xss')\\\",\\n  \\\"fetch('http://evil.com')\\\",\\n  \\\"process.exit(1)\\\",\\n  \\\"require('fs').readFileSync('/etc/passwd')\\\"\\n];\\n\\n// Test eval with dangerous inputs\\ndangerousInputs.forEach(input => {\\n  try {\\n    eval(input);\\n  } catch(e) {}\\n});",
+    "metadata": {
+      "title": "JavaScript Eval Fuzzing",
+      "description": "Testing JavaScript eval function with dangerous code injection attempts",
+      "version": "1.0.0",
+      "author": "JavaScript Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "javascript_eval",
+      "fuzz_vectors": ["code_injection", "remote_code_execution", "xss_attempts"],
+      "language": "javascript"
+    }
+  },
+  {
+    "file": "javascript_dom_fuzz.js",
+    "content": "// JavaScript DOM fuzzing\\nconst domInputs = [\\n  \\\"\\u003cscript\\u003ealert('xss')\\u003c/script\\u003e\\\",\\n  \\\"javascript:alert('xss')\\\",\\n  \\\"\\u003cimg src=x onerror=alert('xss')\\u003e\\\",\\n  \\\"\\u003ciframe src=\\\"javascript:alert('xss')\\\"\\u003e\\u003c/iframe\\u003e\\\"\\n];\\n\\n// Test DOM manipulation with dangerous inputs\\ndomInputs.forEach(input => {\\n  try {\\n    document.write(input);\\n  } catch(e) {}\\n});",
+    "metadata": {
+      "title": "JavaScript DOM Fuzzing",
+      "description": "Testing JavaScript DOM manipulation with XSS and injection attempts",
+      "version": "1.0.0",
+      "author": "JavaScript Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "javascript_dom",
+      "fuzz_vectors": ["xss_injection", "dom_manipulation", "script_execution"],
+      "language": "javascript"
+    }
+  },
+  {
+    "file": "javascript_regex_fuzz.js",
+    "content": "// JavaScript regex fuzzing\\nconst regexPatterns = [\\n  \\\"a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\n  \\\"/(.*)*$/\\\",\\n  \\\"/(x+x+)+y/\\\",\\n  \\\"/^((a+)+)+$/\\\"\\n];\\n\\nconst testString = \\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\";\\n\\nregexPatterns.forEach(pattern => {\\n  try {\\n    new RegExp(pattern).test(testString);\\n  } catch(e) {}\\n});",
+    "metadata": {
+      "title": "JavaScript Regex Fuzzing",
+      "description": "Testing JavaScript regular expressions with ReDoS (Regex Denial of Service) patterns",
+      "version": "1.0.0",
+      "author": "JavaScript Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "javascript_regex",
+      "fuzz_vectors": ["redos_patterns", "catastrophic_backtracking", "complex_expressions"],
+      "language": "javascript"
+    }
+  },
+  {
+    "file": "javascript_function_fuzz.js",
+    "content": "// JavaScript function fuzzing\\nconst functionInputs = [\\n  \\\"function() { return process.env; }\\\",\\n  \\\"() => { require('fs').readFileSync('/etc/passwd'); }\\\",\\n  \\\"new Function('return this')\\\",\\n  \\\"Function(\\\"return console.log('injected')\\\")()\\\"\\n];\\n\\nfunctionInputs.forEach(input => {\\n  try {\\n    Function(input)();\\n  } catch(e) {}\\n});",
+    "metadata": {
+      "title": "JavaScript Function Fuzzing",
+      "description": "Testing JavaScript Function constructor with code injection and RCE attempts",
+      "version": "1.0.0",
+      "author": "JavaScript Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "javascript_function",
+      "fuzz_vectors": ["function_constructor", "rce_attempts", "code_injection"],
+      "language": "javascript"
+    }
+  }
+]

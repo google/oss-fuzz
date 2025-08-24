@@ -1,0 +1,41 @@
+-----BEGIN MALICIOUS KEY-----
+INVALID_KEY_DATA_HERE
+-----END MALICIOUS KEY-----
+
+-----BEGIN RSA PRIVATE KEY-----
+INVALID DATA WITH SPECIAL CHARS: !@#$%^&*()
+-----END RSA PRIVATE KEY-----
+
+-----BEGIN CERTIFICATE-----
+<script>alert('xss')</script>
+-----END CERTIFICATE-----
+
+-----BEGIN RSA PUBLIC KEY-----
+../../../etc/passwd
+-----END RSA PUBLIC KEY-----
+
+-----BEGIN ENCRYPTED PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-256-CBC,1234567890123456
+'; DROP TABLE keys; --
+-----END ENCRYPTED PRIVATE KEY-----
+
+-----BEGIN RSA PRIVATE KEY-----
+<svg onload=alert('xss')>
+-----END RSA PRIVATE KEY-----
+
+-----BEGIN CERTIFICATE-----
+../../../../etc/shadow
+-----END CERTIFICATE-----
+
+-----BEGIN RSA PUBLIC KEY-----
+| cat /etc/passwd
+-----END RSA PUBLIC KEY-----
+
+-----BEGIN RSA PRIVATE KEY-----
+javascript:alert('xss')
+-----END RSA PRIVATE KEY-----
+
+-----BEGIN CERTIFICATE-----
+data:text/html,<script>alert('xss')</script>
+-----END CERTIFICATE-----

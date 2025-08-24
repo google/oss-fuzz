@@ -1,0 +1,33 @@
+[command]
+name = "help"
+description = "Show help information"
+usage = "/help [topic]"
+examples = ["/help", "/help commands"]
+
+[command]
+name = "chat"
+description = "Start interactive chat"
+usage = "/chat [message]"
+examples = ["/chat Hello!", "/chat"]
+
+[command]
+name = "config"
+description = "Manage configuration"
+usage = "/config [key] [value]"
+examples = ["/config theme dark", "/config show"]
+
+[command]
+name = "quit"
+description = "Exit the application"
+usage = "/quit"
+examples = ["/quit"]
+
+[command]
+name = "clear"
+description = "Clear the screen"
+usage = "/clear"
+examples = ["/clear"]
+
+[permissions]
+admin_required = ["config", "quit"]
+user_allowed = ["help", "chat", "clear"]

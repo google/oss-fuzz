@@ -14,6 +14,7 @@
 #
 ################################################################################
 
+<<<<<<< HEAD
 homepage: "https://github.com/google-gemini/gemini-cli"
 # Multi-language fuzzing: Go mirrors + JavaScript runtime (Issue #1121, prompt injection)
 language: javascript  # Primary language with Go fuzzers for security testing
@@ -125,3 +126,16 @@ labels:
   - javascript
   - typescript
   - multi-language
+=======
+# oss-fuzz/projects/gemini-cli/project.yaml
+# JavaScript-based OSS-Fuzz project for google-gemini/gemini-cli
+project_name: gemini-cli
+language: javascript
+
+# The build system will run projects/gemini-cli/build.sh
+sanitizers:
+  - address
+  - undefined
+  - leak
+oss_fuzz_project: gemini-cli
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

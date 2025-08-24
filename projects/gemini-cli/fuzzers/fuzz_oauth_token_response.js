@@ -17,6 +17,7 @@
 // oss-fuzz/projects/gemini-cli/fuzzers/fuzz_oauth_token_response.js
 import { locateUpstream } from './_upstream_locator.mjs';
 
+<<<<<<< HEAD
 // Global reference to upstream module (cached for performance)
 let upstreamModule = null;
 
@@ -132,3 +133,24 @@ export async function FuzzOAuthTokenResponse(data) {
 
 // CommonJS export for OSS-Fuzz compatibility
 module.exports = { LLVMFuzzerTestOneInput };
+=======
+export function FuzzOAuthTokenResponse(data) {
+  const input = Buffer.isBuffer(data) ? data : Buffer.from(String(data));
+  const p = locateUpstream([
+    'packages/cli/src/oauth.js',
+    'packages/core/src/oauth.js',
+    'packages/cli/lib/oauth.js'
+  ]);
+  if (!p) throw new Error('UPSTREAM_OAUTH_NOT_FOUND');
+  return import(p).then(mod => {
+    const decode = mod.decodeTokenResponse || mod.parseTokenResponse || mod.decodeOAuthResponse;
+    if (!decode) throw new Error('UPSTREAM_OAUTH_RESPONSE_NOT_FOUND');
+    try {
+      decode(input);
+    } catch (e) {
+      if (e && e.name === 'TypeError') return;
+      throw e;
+    }
+  });
+}
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

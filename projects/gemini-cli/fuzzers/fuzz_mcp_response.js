@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // oss-fuzz/projects/gemini-cli/fuzzers/fuzz_mcp_response.js
+<<<<<<< HEAD
 // Fuzzer for Gemini CLI MCP response parser
 // Implements Fuchsia-style fuzz target function
 
@@ -109,3 +110,26 @@ export async function FuzzMCPResponse(data) {
 
 // CommonJS export for OSS-Fuzz compatibility
 module.exports = { LLVMFuzzerTestOneInput };
+=======
+import { locateUpstream } from './_upstream_locator.mjs';
+
+export function FuzzMCPResponse(data) {
+  const input = Buffer.isBuffer(data) ? data : Buffer.from(String(data));
+  const p = locateUpstream([
+    'packages/core/src/mcp.js',
+    'packages/cli/src/mcp.js',
+    'packages/core/lib/mcp.js'
+  ]);
+  if (!p) throw new Error('UPSTREAM_MCP_NOT_FOUND');
+  return import(p).then(mod => {
+    const decode = mod.decodeMCPResponse || mod.decodeResponse || mod.parseMCPResponse;
+    if (!decode) throw new Error('UPSTREAM_MCP_DECODE_NOT_FOUND');
+    try {
+      decode(input);
+    } catch (e) {
+      if (e && e.name === 'TypeError') return;
+      throw e;
+    }
+  });
+}
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

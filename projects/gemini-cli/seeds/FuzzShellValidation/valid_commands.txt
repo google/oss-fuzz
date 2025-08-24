@@ -1,0 +1,22 @@
+ls -la
+pwd
+echo "Hello World"
+cat file.txt
+mkdir new_directory
+rm file.txt
+cp source.txt destination.txt
+mv old_name.txt new_name.txt
+grep "search term" file.txt
+find /path -name "*.txt"
+chmod 755 script.sh
+chown user:group file.txt
+ps aux
+top
+df -h
+du -sh directory
+tar -czf archive.tar.gz directory
+gzip file.txt
+gunzip file.gz
+head -n 10 file.txt
+tail -n 10 file.txt
+wc -l file.txt

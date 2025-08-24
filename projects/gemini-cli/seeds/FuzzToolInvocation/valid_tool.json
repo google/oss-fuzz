@@ -1,0 +1,39 @@
+{
+  "tool_name": "grep",
+  "arguments": ["-r", "--include=*.txt", "--include=*.log", "--exclude-dir=.git", "search_term", "/home/user/documents"],
+  "working_directory": "/home/user",
+  "environment_variables": {
+    "PATH": "/usr/bin:/bin:/usr/local/bin",
+    "LANG": "en_US.UTF-8",
+    "LC_ALL": "en_US.UTF-8",
+    "HOME": "/home/user",
+    "USER": "testuser"
+  },
+  "timeout": 30,
+  "max_output_size": 4096,
+  "allowed_commands": ["grep", "ls", "cat", "head", "tail", "find", "wc", "sort"],
+  "user_id": 1000,
+  "group_id": 1000,
+  "parameters": {
+    "search_pattern": "search_term",
+    "target_directory": "/home/user/documents",
+    "case_sensitive": true,
+    "recursive": true,
+    "max_depth": 5,
+    "file_types": ["txt", "log", "md", "json"]
+  },
+  "security_constraints": {
+    "max_file_size": 10485760,
+    "allowed_paths": ["/home/user", "/tmp/user_temp"],
+    "blocked_paths": ["/etc", "/root", "/sys", "/proc"],
+    "network_access": false,
+    "filesystem_write": false
+  },
+  "metadata": {
+    "source": "fuzzer_seed",
+    "version": "1.2",
+    "test_case": "enhanced_grep_search",
+    "description": "Enhanced grep tool invocation with comprehensive parameters and security constraints",
+    "created_at": "2025-01-11T00:00:00Z"
+  }
+}

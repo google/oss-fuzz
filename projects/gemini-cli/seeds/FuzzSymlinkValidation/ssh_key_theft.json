@@ -1,0 +1,7 @@
+{
+  "path": "workspace/../../.ssh/id_rsa",
+  "workspace": "/workspace",
+  "symlink": "workspace",
+  "target": "/home/victim",
+  "description": "Symlink chain attack to access SSH keys"
+}

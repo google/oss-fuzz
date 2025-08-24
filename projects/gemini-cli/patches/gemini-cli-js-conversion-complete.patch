@@ -1,0 +1,741 @@
+diff --git a/projects/gemini-cli/Dockerfile b/projects/gemini-cli/Dockerfile
+index 2509ca0bb..87d239fe6 100644
+--- a/projects/gemini-cli/Dockerfile
++++ b/projects/gemini-cli/Dockerfile
+@@ -14,31 +14,7 @@
+ #
+ ################################################################################
+ 
+-# Gemini CLI OSS-Fuzz Dockerfile (Go mirrored-parsers approach)
+-# Base image for Go projects
+-FROM gcr.io/oss-fuzz-base/base-builder-go
++# oss-fuzz/projects/gemini-cli/Dockerfile
++FROM gcr.io/oss-fuzz-base/base-builder-javascript
+ 
+-# Project name used by helper.py
+-ENV PROJECT=gemini-cli
+-
+-# Set up working directory inside container
+-WORKDIR /root
+-
+-WORKDIR /src
+-
+-# Copy build script to expected location
+-COPY build.sh /src/build.sh
+-
+-# Copy our project sources under /src/gemini-cli (build context is projects/gemini-cli)
+-RUN mkdir -p /src/gemini-cli
+-COPY gofuzz/ /src/gemini-cli/gofuzz/
+-COPY seeds/ /src/gemini-cli/seeds/
+-COPY build.sh /src/gemini-cli/
+-COPY project.yaml /src/gemini-cli/
+-COPY .cifuzz.yaml /src/gemini-cli/
+-COPY security_monitor.sh /src/gemini-cli/
+-COPY continuous_compliance.sh /src/gemini-cli/
+-
+-# Build is delegated to build.sh via helper.py, which calls:
+-#   bash -eux /src/gemini-cli/build.sh
+-# No build steps here; keep Dockerfile minimal for faster iteration.
++# install any global tools if needed (none required for now)
+diff --git a/projects/gemini-cli/build.sh b/projects/gemini-cli/build.sh
+index cb37b9ff6..acf2e5969 100644
+--- a/projects/gemini-cli/build.sh
++++ b/projects/gemini-cli/build.sh
+@@ -1,5 +1,4 @@
+-#!/bin/bash -eux
+-set -euo pipefail
++#!/bin/bash -eu
+ # Copyright 2025 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+@@ -16,272 +15,27 @@ set -euo pipefail
+ #
+ ################################################################################
+ 
+-# Build script for OSS-Fuzz (gemini-cli security-enhanced fuzzers)
+-# Follows OSS-Fuzz ideal integration practices for Go projects
+-# Addresses critical OSS-Fuzz infrastructure vulnerabilities identified in security audit
+-
+-# Security hardening: Enable strict error handling
+-trap 'echo "❌ Build failed at line $LINENO"; exit 1' ERR
+-
+-# Security hardening: Verify we're not running as root (CWE-250 mitigation)
+-if [ "$(id -u)" -eq 0 ]; then
+-    echo "❌ Security violation: Build script running as root"
+-    echo "   This violates CWE-250: Execution with Unnecessary Privileges"
+-    exit 1
+-fi
+-
+-# Security hardening: Verify binary integrity (CWE-829 mitigation)
+-verify_binary_integrity() {
+-    local binary=$1
+-    local expected_hash=$2
+-    
+-    if [ -f "$binary" ]; then
+-        local actual_hash=$(sha256sum "$binary" | cut -d' ' -f1)
+-        if [ "$actual_hash" != "$expected_hash" ]; then
+-            echo "❌ Binary integrity check failed for $binary"
+-            echo "   Expected: $expected_hash"
+-            echo "   Actual:   $actual_hash"
+-            echo "   This may indicate a supply chain attack (CWE-829)"
+-            exit 1
+-        fi
+-        echo "✅ Binary integrity verified for $binary"
+-    fi
+-}
+-
+-# Security hardening: Check dependency pinning (CWE-937 mitigation)
+-check_dependency_pinning() {
+-    if grep -q "@latest" go.mod 2>/dev/null; then
+-        echo "❌ Unpinned dependencies detected in go.mod"
+-        echo "   This violates CWE-937: Using Known Vulnerable Components"
+-        exit 1
+-    fi
+-    echo "✅ All dependencies properly pinned"
+-}
+-
+-echo "🔒 Security-hardened build process starting..."
+-echo "   User: $(whoami) (UID: $(id -u))"
+-echo "   Working directory: $(pwd)"
+-
+-# Ensure Go is available in the base-builder-go image
+-go version
+-
+-# Move into our project directory
+-cd /src/gemini-cli
+-
+-# Security hardening: Check dependency pinning before build
+-echo "🔍 Checking dependency security..."
+-check_dependency_pinning
+-
+-# Security hardening: Verify critical binaries
+-if [ -f "expected_checksums.txt" ]; then
+-    echo "🔍 Verifying binary integrity..."
+-    while IFS= read -r line; do
+-        binary=$(echo "$line" | cut -d' ' -f3)
+-        hash=$(echo "$line" | cut -d' ' -f1)
+-        verify_binary_integrity "$binary" "$hash"
+-    done < expected_checksums.txt
+-fi
+-
+-# Initialize or tidy module (ensures build system integration)
+-if [ ! -f go.mod ]; then
+-  go mod init github.com/google-gemini/gemini-cli-ossfuzz
+-fi
+-
+-# Tidy modules (prevents bit rot and ensures dependency management)
+-go mod tidy
+-
+-# Security hardening: Verify go.sum integrity
+-if [ -f go.sum ]; then
+-    echo "🔍 Verifying go.sum integrity..."
+-    go mod verify || {
+-        echo "❌ go.sum integrity check failed"
+-        exit 1
+-    }
+-    echo "✅ go.sum integrity verified"
+-fi
+-
+-# Verify fuzz targets are discoverable and maintainable
+-echo "Building security-enhanced fuzzers for gemini-cli..."
+-echo "Fuzz targets: FuzzConfigParser, FuzzMCPRequest, FuzzMCPResponse, FuzzCLIParser, FuzzOAuthTokenRequest, FuzzOAuthTokenResponse"
+-
+-# Build fuzzers with unified build process
+-# compile_go_fuzzer MODULE_IMPORT_PATH FUZZ_FUNC OUT_BIN (use full import path for GOPATH compatibility)
+-PKG="github.com/google-gemini/gemini-cli-ossfuzz/gofuzz/fuzz"
+-
+-# Build each fuzzer with performance-optimized settings
+-compile_go_fuzzer ${PKG} FuzzConfigParser FuzzConfigParser
+-compile_go_fuzzer ${PKG} FuzzMCPRequest FuzzMCPRequest  
+-compile_go_fuzzer ${PKG} FuzzMCPResponse FuzzMCPResponse
+-compile_go_fuzzer ${PKG} FuzzCLIParser FuzzCLIParser
+-compile_go_fuzzer ${PKG} FuzzOAuthTokenResponse FuzzOAuthTokenResponse
+-compile_go_fuzzer ${PKG} FuzzOAuthTokenRequest FuzzOAuthTokenRequest
+-
+-# Build regression test driver for seed corpus validation
+-# Implements OSS-Fuzz ideal integration requirements
+-echo "Building regression test driver..."
+-go build -o "${OUT}/test_corpus" gofuzz/test_corpus.go
+-
+-# Place seed corpora for comprehensive code coverage
+-# Follows OSS-Fuzz seed corpus best practices
+-if [ -d seeds/config ]; then
+-  zip -jr "${OUT}/FuzzConfigParser_seed_corpus.zip" seeds/config || true
+-fi
+-if [ -d seeds/mcp ]; then
+-  zip -jr "${OUT}/FuzzMCPRequest_seed_corpus.zip" seeds/mcp || true
+-  zip -jr "${OUT}/FuzzMCPResponse_seed_corpus.zip" seeds/mcp || true
+-fi
+-if [ -d seeds/cli ]; then
+-  zip -jr "${OUT}/FuzzCLIParser_seed_corpus.zip" seeds/cli || true
+-fi
+-if [ -d seeds/oauth ]; then
+-  zip -jr "${OUT}/FuzzOAuthTokenResponse_seed_corpus.zip" seeds/oauth || true
+-  zip -jr "${OUT}/FuzzOAuthTokenRequest_seed_corpus.zip" seeds/oauth || true
+-fi
+-
+-# Provide per-target dictionaries to guide mutation (enhances fuzzing efficiency)
+-cat > "${OUT}/FuzzConfigParser.dict" <<'EOF'
+-"{"
+-"}"
+-"["
+-"]"
+-":"
+-"," 
+-"apiKey"
+-"projectId"
+-"theme"
+-"proxy"
+-"enabled"
+-"url"
+-"memory"
+-"limitMb"
+-"tooling"
+-"enableMcp"
+-"enableShell"
+-"enableWebFetch"
+-"logLevel"
+-"outputDir"
+-"timeout"
+-"maxRetries"
+-EOF
+-
+-cat > "${OUT}/FuzzMCPRequest.dict" <<'EOF'
+-"jsonrpc"
+-"2.0"
+-"method"
+-"params"
+-"id"
+-"tools/list"
+-"tools/call"
+-"notifications/list"
+-EOF
+-
+-cat > "${OUT}/FuzzMCPResponse.dict" <<'EOF'
+-"jsonrpc"
+-"2.0"
+-"result"
+-"error"
+-"code"
+-"message"
+-"data"
+-"id"
+-"success"
+-"failure"
+-EOF
+-
+-cat > "${OUT}/FuzzOAuthTokenRequest.dict" <<'EOF'
+-"grant_type"
+-"authorization_code"
+-"refresh_token"
+-"client_credentials"
+-"password"
+-"redirect_uri"
+-"https://"
+-"http://localhost"
+-"http://127.0.0.1"
+-"scope"
+-"state"
+-EOF
+-
+-cat > "${OUT}/FuzzOAuthTokenResponse.dict" <<'EOF'
+-"access_token"
+-"token_type"
+-"expires_in"
+-"refresh_token"
+-"id_token"
+-"scope"
+-"Bearer"
+-"Basic"
+-EOF
+-
+-cat > "${OUT}/FuzzCLIParser.dict" <<'EOF'
+-"gemini"
+-"chat"
+-"config"
+-"--model"
+-"--temperature"
+-"--max-tokens"
+-"--system-prompt"
+-"--set"
+-"--list"
+-"--version"
+-"-v"
+-"-vvv"
+-"--output"
+-"--verbose"
+-"--dry-run"
+-"--flag=value"
+-"--"
+-"help"
+-"auth"
+-EOF
+-
+-# Provide per-target libFuzzer option tuning for optimal performance
+-# Ensures efficient execution and prevents OOM/timeout issues
+-cat > "${OUT}/FuzzConfigParser.options" <<'EOF'
+-[libfuzzer]
+-max_len=4096
+-use_value_profile=1
+-timeout=60
+-rss_limit_mb=2048
+-artifact_prefix=/out/
+-EOF
+-
+-for name in FuzzMCPRequest FuzzMCPResponse FuzzCLIParser FuzzOAuthTokenRequest; do
+-  cat > "${OUT}/${name}.options" <<'EOF'
+-[libfuzzer]
+-max_len=2048
+-use_value_profile=1
+-timeout=60
+-rss_limit_mb=2048
+-artifact_prefix=/out/
+-EOF
+-done
+-
+-cat > "${OUT}/FuzzOAuthTokenResponse.options" <<'EOF'
+-[libfuzzer]
+-max_len=32768
+-use_value_profile=1
+-timeout=60
+-rss_limit_mb=2048
+-artifact_prefix=/out/
+-EOF
+-
+-# Verify build success and provide feedback
+-echo "✓ All fuzzers built successfully"
+-echo "✓ Seed corpora packaged for comprehensive coverage"
+-echo "✓ Dictionaries created for enhanced fuzzing efficiency"
+-echo "✓ Performance options configured for optimal execution"
+-echo "✓ Regression test driver built for continuous validation"
+-echo "✓ Ready for OSS-Fuzz continuous integration and CIFuzz testing"
+-
+-# Run regression tests to validate seed corpus
+-echo "Running regression tests on seed corpus..."
+-if [ -f "${OUT}/test_corpus" ]; then
+-  "${OUT}/test_corpus" -corpus seeds -timeout 30s || {
+-    echo "❌ Regression tests failed - seed corpus validation error"
+-    exit 1
+-  }
+-  echo "✓ Regression tests passed - seed corpus validated"
+-else
+-  echo "⚠️  Regression test driver not found, skipping validation"
+-fi
++# oss-fuzz/projects/gemini-cli/build.sh
++#
++# Build JS fuzzers for gemini-cli using OSS-Fuzz JS helpers.
++# This script is invoked by OSS-Fuzz infra.
++
++# go to project dir
++cd $SRC/projects/gemini-cli || true
++
++# ensure node + npm are present (OSS-Fuzz base-builder-javascript provides them)
++# set up fuzzer deps
++cd fuzzers
++if [ -f package.json ]; then
++  npm ci
++fi
++
++# compile JS fuzzers (name of exported function must match the second arg)
++# compile_js_fuzzer <entry-file> <exported-func-name>
++# the OSS-Fuzz build environment provides compile_js_fuzzer helper
++compile_js_fuzzer fuzz_config_parser.js FuzzConfigParser
++compile_js_fuzzer fuzz_cli_parser.js FuzzCLIParser
++compile_js_fuzzer fuzz_mcp_request.js FuzzMCPRequest
++compile_js_fuzzer fuzz_mcp_response.js FuzzMCPResponse
++compile_js_fuzzer fuzz_oauth_token_request.js FuzzOAuthTokenRequest
++compile_js_fuzzer fuzz_oauth_token_response.js FuzzOAuthTokenResponse
+diff --git a/projects/gemini-cli/fuzzers/_upstream_locator.mjs b/projects/gemini-cli/fuzzers/_upstream_locator.mjs
+new file mode 100644
+index 000000000..5f954b494
+--- /dev/null
++++ b/projects/gemini-cli/fuzzers/_upstream_locator.mjs
+@@ -0,0 +1,38 @@
++// Copyright 2025 Google LLC
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++// oss-fuzz/projects/gemini-cli/fuzzers/_upstream_locator.mjs
++import fs from 'fs';
++import path from 'path';
++
++export function locateUpstream(modulePaths=[]) {
++  // try a list of plausible JS/TS paths relative to /src/gemini-cli
++  const base = '/src/gemini-cli';
++  const candidates = modulePaths.length ? modulePaths : [
++    'packages/cli/src/index.js',
++    'packages/cli/src/config.js',
++    'packages/cli/lib/index.js',
++    'packages/cli/dist/index.js',
++    'packages/cli/index.js',
++    'packages/cli/src/cli.js'
++  ];
++  for (const rel of candidates) {
++    const p = path.join(base, rel);
++    if (fs.existsSync(p)) return p;
++  }
++  // not found — return null to let the caller handle gracefully
++  return null;
++}
+diff --git a/projects/gemini-cli/fuzzers/fuzz_cli_parser.js b/projects/gemini-cli/fuzzers/fuzz_cli_parser.js
+new file mode 100644
+index 000000000..11dca5ac4
+--- /dev/null
++++ b/projects/gemini-cli/fuzzers/fuzz_cli_parser.js
+@@ -0,0 +1,39 @@
++// Copyright 2025 Google LLC
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++// oss-fuzz/projects/gemini-cli/fuzzers/fuzz_cli_parser.js
++import { locateUpstream } from './_upstream_locator.mjs';
++
++export function FuzzCLIParser(data) {
++  const input = Buffer.isBuffer(data) ? data.toString('utf8') : String(data);
++  const p = locateUpstream([
++    'packages/cli/src/cli.js',
++    'packages/cli/src/index.js',
++    'packages/cli/lib/cli.js'
++  ]);
++  if (!p) throw new Error('UPSTREAM_CLI_NOT_FOUND');
++  return import(p).then(mod => {
++    const parseArgs = mod.parseArgs || mod.default?.parseArgs || mod.parseCLI || mod.run;
++    if (!parseArgs) throw new Error('UPSTREAM_CLI_PARSE_NOT_FOUND');
++    try {
++      parseArgs(input);
++    } catch (e) {
++      // swallow expected parse errors
++      if (e && e.name === 'SyntaxError') return;
++      throw e;
++    }
++  });
++}
+diff --git a/projects/gemini-cli/fuzzers/fuzz_config_parser.js b/projects/gemini-cli/fuzzers/fuzz_config_parser.js
+new file mode 100644
+index 000000000..e1d4b359c
+--- /dev/null
++++ b/projects/gemini-cli/fuzzers/fuzz_config_parser.js
+@@ -0,0 +1,48 @@
++// Copyright 2025 Google LLC
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++// oss-fuzz/projects/gemini-cli/fuzzers/fuzz_config_parser.js
++import { locateUpstream } from './_upstream_locator.mjs';
++
++export function FuzzConfigParser(data) {
++  const input = Buffer.isBuffer(data) ? data.toString('utf8') : String(data);
++  const p = locateUpstream([
++    'packages/cli/src/config.js',
++    'packages/cli/src/config.ts',
++    'packages/cli/lib/config.js'
++  ]);
++  if (!p) {
++    // If upstream module not found, bail out: this indicates import path needs adjustment.
++    // Throwing a specific Error makes the build/fuzzer log clear for easy fixes.
++    throw new Error('UPSTREAM_CONFIG_NOT_FOUND: adjust import path to upstream config module');
++  }
++  // dynamic import so build doesn't fail if the file is absent at author-time
++  return import(p)
++    .then(mod => {
++      const fn = mod.parseConfig || mod.default?.parseConfig || mod.parse;
++      if (!fn) throw new Error('UPSTREAM_PARSE_NOT_FOUND');
++      try {
++        fn(input);
++      } catch (e) {
++        // parsing errors expected — rethrow only if unusual
++        if (e && e.name && (e.name === 'TypeError' || e.name === 'RangeError')) {
++          // allow expected parsing exceptions to be treated as non-crash
++          return;
++        }
++        throw e;
++      }
++    });
++}
+diff --git a/projects/gemini-cli/fuzzers/fuzz_mcp_request.js b/projects/gemini-cli/fuzzers/fuzz_mcp_request.js
+new file mode 100644
+index 000000000..e1a34aef2
+--- /dev/null
++++ b/projects/gemini-cli/fuzzers/fuzz_mcp_request.js
+@@ -0,0 +1,39 @@
++// Copyright 2025 Google LLC
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++// oss-fuzz/projects/gemini-cli/fuzzers/fuzz_mcp_request.js
++import { locateUpstream } from './_upstream_locator.mjs';
++
++export function FuzzMCPRequest(data) {
++  const input = Buffer.isBuffer(data) ? data : Buffer.from(String(data));
++  const p = locateUpstream([
++    'packages/core/src/mcp.js',
++    'packages/cli/src/mcp.js',
++    'packages/core/lib/mcp.js'
++  ]);
++  if (!p) throw new Error('UPSTREAM_MCP_NOT_FOUND');
++  return import(p).then(mod => {
++    const decode = mod.decodeMCPRequest || mod.decodeRequest || mod.parseMCP;
++    if (!decode) throw new Error('UPSTREAM_MCP_DECODE_NOT_FOUND');
++    try {
++      decode(input);
++    } catch (e) {
++      // expected decode errors are fine
++      if (e && e.name === 'TypeError') return;
++      throw e;
++    }
++  });
++}
+diff --git a/projects/gemini-cli/fuzzers/fuzz_mcp_response.js b/projects/gemini-cli/fuzzers/fuzz_mcp_response.js
+new file mode 100644
+index 000000000..ff374e4c7
+--- /dev/null
++++ b/projects/gemini-cli/fuzzers/fuzz_mcp_response.js
+@@ -0,0 +1,38 @@
++// Copyright 2025 Google LLC
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++// oss-fuzz/projects/gemini-cli/fuzzers/fuzz_mcp_response.js
++import { locateUpstream } from './_upstream_locator.mjs';
++
++export function FuzzMCPResponse(data) {
++  const input = Buffer.isBuffer(data) ? data : Buffer.from(String(data));
++  const p = locateUpstream([
++    'packages/core/src/mcp.js',
++    'packages/cli/src/mcp.js',
++    'packages/core/lib/mcp.js'
++  ]);
++  if (!p) throw new Error('UPSTREAM_MCP_NOT_FOUND');
++  return import(p).then(mod => {
++    const decode = mod.decodeMCPResponse || mod.decodeResponse || mod.parseMCPResponse;
++    if (!decode) throw new Error('UPSTREAM_MCP_DECODE_NOT_FOUND');
++    try {
++      decode(input);
++    } catch (e) {
++      if (e && e.name === 'TypeError') return;
++      throw e;
++    }
++  });
++}
+diff --git a/projects/gemini-cli/fuzzers/fuzz_oauth_token_request.js b/projects/gemini-cli/fuzzers/fuzz_oauth_token_request.js
+new file mode 100644
+index 000000000..c22151cfc
+--- /dev/null
++++ b/projects/gemini-cli/fuzzers/fuzz_oauth_token_request.js
+@@ -0,0 +1,38 @@
++// Copyright 2025 Google LLC
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++// oss-fuzz/projects/gemini-cli/fuzzers/fuzz_oauth_token_request.js
++import { locateUpstream } from './_upstream_locator.mjs';
++
++export function FuzzOAuthTokenRequest(data) {
++  const input = Buffer.isBuffer(data) ? data.toString('utf8') : String(data);
++  const p = locateUpstream([
++    'packages/cli/src/oauth.js',
++    'packages/core/src/oauth.js',
++    'packages/cli/lib/oauth.js'
++  ]);
++  if (!p) throw new Error('UPSTREAM_OAUTH_NOT_FOUND');
++  return import(p).then(mod => {
++    const parse = mod.parseTokenRequest || mod.parseOAuthRequest || mod.decodeOAuth;
++    if (!parse) throw new Error('UPSTREAM_OAUTH_PARSE_NOT_FOUND');
++    try {
++      parse(input);
++    } catch (e) {
++      if (e && e.name === 'SyntaxError') return;
++      throw e;
++    }
++  });
++}
+diff --git a/projects/gemini-cli/fuzzers/fuzz_oauth_token_response.js b/projects/gemini-cli/fuzzers/fuzz_oauth_token_response.js
+new file mode 100644
+index 000000000..47b64304a
+--- /dev/null
++++ b/projects/gemini-cli/fuzzers/fuzz_oauth_token_response.js
+@@ -0,0 +1,38 @@
++// Copyright 2025 Google LLC
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++////////////////////////////////////////////////////////////////////////////////
++
++// oss-fuzz/projects/gemini-cli/fuzzers/fuzz_oauth_token_response.js
++import { locateUpstream } from './_upstream_locator.mjs';
++
++export function FuzzOAuthTokenResponse(data) {
++  const input = Buffer.isBuffer(data) ? data : Buffer.from(String(data));
++  const p = locateUpstream([
++    'packages/cli/src/oauth.js',
++    'packages/core/src/oauth.js',
++    'packages/cli/lib/oauth.js'
++  ]);
++  if (!p) throw new Error('UPSTREAM_OAUTH_NOT_FOUND');
++  return import(p).then(mod => {
++    const decode = mod.decodeTokenResponse || mod.parseTokenResponse || mod.decodeOAuthResponse;
++    if (!decode) throw new Error('UPSTREAM_OAUTH_RESPONSE_NOT_FOUND');
++    try {
++      decode(input);
++    } catch (e) {
++      if (e && e.name === 'TypeError') return;
++      throw e;
++    }
++  });
++}
+diff --git a/projects/gemini-cli/fuzzers/package.json b/projects/gemini-cli/fuzzers/package.json
+new file mode 100644
+index 000000000..4dc2f4404
+--- /dev/null
++++ b/projects/gemini-cli/fuzzers/package.json
+@@ -0,0 +1,12 @@
++{
++  "name": "gemini-cli-fuzzers",
++  "type": "module",
++  "private": true,
++  "license": "Apache-2.0",
++  "dependencies": {
++    "@jazzer.js/core": "^1.0.0"
++  },
++  "scripts": {
++    "test": "node -e \"console.log('fuzzers ready')\""
++  }
++}
+diff --git a/projects/gemini-cli/go.mod b/projects/gemini-cli/go.mod
+new file mode 100644
+index 000000000..b5e430a2d
+--- /dev/null
++++ b/projects/gemini-cli/go.mod
+@@ -0,0 +1,3 @@
++module github.com/google-gemini/gemini-cli-ossfuzz
++
++go 1.20
+diff --git a/projects/gemini-cli/go.mod.upstream b/projects/gemini-cli/go.mod.upstream
+new file mode 100644
+index 000000000..543530662
+--- /dev/null
++++ b/projects/gemini-cli/go.mod.upstream
+@@ -0,0 +1,7 @@
++module github.com/google-gemini/gemini-cli-ossfuzz
++
++go 1.20
++
++require github.com/google-gemini/gemini-cli v0.0.0
++
++replace github.com/google-gemini/gemini-cli => ../..   # resolves to the /src/gemini-cli checkout during OSS-Fuzz build
+diff --git a/projects/gemini-cli/project.yaml b/projects/gemini-cli/project.yaml
+index 15872e11f..4ba48ff1e 100644
+--- a/projects/gemini-cli/project.yaml
++++ b/projects/gemini-cli/project.yaml
+@@ -14,20 +14,14 @@
+ #
+ ################################################################################
+ 
+-homepage: "https://github.com/google-gemini/gemini-cli"
+-language: go
+-primary_contact: "reconsumeralization@gmail.com"
+-auto_ccs:
+-  - "Adam@adalogics.com"
+-  - "security@gemini-cli.dev"
+-main_repo: "https://github.com/google-gemini/gemini-cli.git"
++# oss-fuzz/projects/gemini-cli/project.yaml
++# JavaScript-based OSS-Fuzz project for google-gemini/gemini-cli
++project_name: gemini-cli
++language: javascript
++
++# The build system will run projects/gemini-cli/build.sh
+ sanitizers:
+   - address
+-fuzzing_engines:
+-  - libfuzzer
+-labels:
+-  - cli
+-  - security
+-  - json
+-  - ai
+-  - llm
++  - undefined
++  - leak
++oss_fuzz_project: gemini-cli

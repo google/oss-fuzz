@@ -1,0 +1,77 @@
+[
+  {
+    "file": "go_struct_format_fuzz.go",
+    "content": "// Go struct format fuzzing\\npackage main\\n\\nimport (\\n    \\\"fmt\\\"\\n    \\\"encoding/json\\\"\\n)\\n\\ntype DeepStruct struct {\\n    Level1 *DeepStruct \\`json:\\\"level1\\\"\\`\\n    Data   string      \\`json:\\\"data\\\"\\`\\n}\\n\\nfunc main() {\\n    var s DeepStruct\\n    json.Unmarshal([]byte(\\\"{\\\\\\\"level1\\\\\\\":{\\\\\\\"level1\\\\\\\":{\\\\\\\"level1\\\\\\\":{\\\\\\\"data\\\\\\\":\\\\\\\"test\\\\\\\"}}}}}\\\"), &s)\\n}",
+    "metadata": {
+      "title": "Go Struct Format Fuzzing",
+      "description": "Go-specific struct parsing with deep nesting and reflection edge cases",
+      "version": "1.0.0",
+      "author": "Go Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "go_struct",
+      "fuzz_vectors": ["deep_nesting", "reflection_bypass", "type_assertion"],
+      "language": "go"
+    }
+  },
+  {
+    "file": "go_json_tag_fuzz.go",
+    "content": "// Go JSON tag fuzzing\\npackage main\\n\\ntype TaggedStruct struct {\\n    Field1 string \\`json:\\\",omitempty\\\"\\`\\n    Field2 string \\`json:\\\",string\\\"\\`\\n    Field3 string \\`json:\\\"-\\\"\\`\\n    Field4 string \\`json:\\\"custom_tag,inline\\\"\\`\\n}\\n\\nfunc (t *TaggedStruct) UnmarshalJSON(data []byte) error {\\n    // Custom unmarshaling with potential issues\\n    return nil\\n}",
+    "metadata": {
+      "title": "Go JSON Tag Fuzzing",
+      "description": "Testing Go JSON tag parsing with struct tags and custom unmarshaling",
+      "version": "1.0.0",
+      "author": "Go Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "go_json_tags",
+      "fuzz_vectors": ["tag_parsing", "custom_unmarshaling", "reflection"],
+      "language": "go"
+    }
+  },
+  {
+    "file": "go_interface_fuzz.go",
+    "content": "// Go interface fuzzing\\npackage main\\n\\nimport (\\n    \\\"encoding/json\\\"\\n)\\n\\ntype InterfaceContainer struct {\\n    Data interface{} \\`json:\\\"data\\\"\\`\\n}\\n\\nfunc main() {\\n    var c InterfaceContainer\\n    json.Unmarshal([]byte(\\\"{\\\\\\\"data\\\\\\\":{\\\\\\\"nested\\\\\\\":{\\\\\\\"deeply\\\\\\\":{\\\\\\\"nested\\\\\\\":\\\\\\\"value\\\\\\\"}}}}}\\\"), &c)\\n}",
+    "metadata": {
+      "title": "Go Interface Fuzzing",
+      "description": "Testing Go interface{} type handling with complex nested structures",
+      "version": "1.0.0",
+      "author": "Go Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "go_interface",
+      "fuzz_vectors": ["interface_assertion", "type_switch", "deep_nesting"],
+      "language": "go"
+    }
+  },
+  {
+    "file": "go_gob_format_fuzz.go",
+    "content": "// Go gob format fuzzing\\npackage main\\n\\nimport (\\n    \\\"bytes\\\"\\n    \\\"encoding/gob\\\"\\n)\\n\\ntype GobStruct struct {\\n    Data map[string]interface{}\\n}\\n\\nfunc main() {\\n    var s GobStruct\\n    gob.NewDecoder(bytes.NewReader([]byte{0x0, 0x1, 0x2, 0x3})).Decode(&s)\\n}",
+    "metadata": {
+      "title": "Go GOB Format Fuzzing",
+      "description": "Testing Go's gob serialization format with binary data and complex types",
+      "version": "1.0.0",
+      "author": "Go Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "go_gob",
+      "fuzz_vectors": ["binary_serialization", "type_reconstruction", "map_handling"],
+      "language": "go"
+    }
+  },
+  {
+    "file": "go_regex_fuzz.go",
+    "content": "// Go regex fuzzing\\npackage main\\n\\nimport (\\n    \\\"regexp\\\"\\n)\\n\\nfunc main() {\\n    // Test catastrophic backtracking with Go regex\\n    pattern := \\\"a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaaaaaa\\\"\\n    regexp.MatchString(pattern, \\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\")\\n}",
+    "metadata": {
+      "title": "Go Regex Fuzzing",
+      "description": "Testing Go regular expression engine with backtracking and complex patterns",
+      "version": "1.0.0",
+      "author": "Go Security Researcher",
+      "test_type": "format_fuzzing",
+      "security_test": true,
+      "format": "go_regex",
+      "fuzz_vectors": ["catastrophic_backtracking", "complex_patterns", "large_inputs"],
+      "language": "go"
+    }
+  }
+]

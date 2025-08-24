@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 {"jsonrpc":"2.0","result":[],"id":1}
+=======
+{"jsonrpc":"2.0","result":{"tools":[]},"id":1}
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20

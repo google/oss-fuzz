@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+  <status>success</status>
+  <message>Hello, World!</message>
+  <data>
+    <user>
+      <id>123</id>
+      <name>John Doe</name>
+      <email>john@example.com</email>
+    </user>
+    <items>
+      <item>
+        <id>1</id>
+        <name>Item 1</name>
+        <price>29.99</price>
+      </item>
+      <item>
+        <id>2</id>
+        <name>Item 2</name>
+        <price>39.99</price>
+      </item>
+    </items>
+  </data>
+  <metadata>
+    <timestamp>2024-01-15T10:30:00Z</timestamp>
+    <version>1.0</version>
+    <request_id>abc-123-def-456</request_id>
+  </metadata>
+</response>

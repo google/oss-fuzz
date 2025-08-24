@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 chat "Hello, how are you?"
+=======
+gemini chat --model gemini-pro --temperature 0.7
+>>>>>>> 6beb447382265fce1442b77fb11e5a90be556a20
