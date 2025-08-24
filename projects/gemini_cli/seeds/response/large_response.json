@@ -1,0 +1,54 @@
+{
+  "id": "chatcmpl-large-response-12345",
+  "object": "chat.completion",
+  "created": 1677652288,
+  "model": "gemini-pro",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "This is a comprehensive response with extensive content to test large response parsing capabilities. " + "x".repeat(1000) + " The response includes various types of data and structures to ensure robust parsing. " + "y".repeat(1000) + " Additional content to test buffer handling and memory management during response processing. " + "z".repeat(1000) + " More content to validate that the parser can handle responses of significant size without crashing or truncating important data."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1500,
+    "completion_tokens": 3000,
+    "total_tokens": 4500
+  },
+  "metadata": {
+    "nested_object": {
+      "level_1": {
+        "level_2": {
+          "level_3": {
+            "level_4": {
+              "deep_value": "This tests deeply nested object parsing capabilities",
+              "array_data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+              "boolean_values": [true, false, true, false],
+              "null_values": [null, null, null],
+              "string_values": ["test", "data", "validation", "parsing"]
+            }
+          }
+        }
+      }
+    },
+    "large_array": [
+      {"id": 1, "name": "item1", "description": "x".repeat(100)},
+      {"id": 2, "name": "item2", "description": "y".repeat(100)},
+      {"id": 3, "name": "item3", "description": "z".repeat(100)},
+      {"id": 4, "name": "item4", "description": "a".repeat(100)},
+      {"id": 5, "name": "item5", "description": "b".repeat(100)}
+    ],
+    "mixed_data_types": {
+      "strings": ["string1", "string2", "string3"],
+      "numbers": [1, 2.5, -3, 0, 999999999999],
+      "booleans": [true, false, true],
+      "nulls": [null, null],
+      "objects": [{"nested": "value"}, {"another": "object"}],
+      "arrays": [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+      "special_chars": ["!@#$%^&*()", "[]{}|\\:;\"'<>?,./~`", "unicode: 🚀💥🔥"]
+    }
+  }
+}

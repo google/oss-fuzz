@@ -1,0 +1,42 @@
+{
+  "operations": [
+    {
+      "type": "read",
+      "path": "file.txt",
+      "expected": "success"
+    },
+    {
+      "type": "write",
+      "path": "output.txt",
+      "content": "Hello World",
+      "expected": "success"
+    },
+    {
+      "type": "list",
+      "path": "/tmp",
+      "expected": "success"
+    },
+    {
+      "type": "create_directory",
+      "path": "newdir",
+      "expected": "success"
+    },
+    {
+      "type": "delete",
+      "path": "temp.txt",
+      "expected": "success"
+    },
+    {
+      "type": "move",
+      "source": "source.txt",
+      "destination": "destination.txt",
+      "expected": "success"
+    },
+    {
+      "type": "copy",
+      "source": "original.txt",
+      "destination": "backup.txt",
+      "expected": "success"
+    }
+  ]
+}

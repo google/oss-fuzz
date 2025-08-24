@@ -1,0 +1,8 @@
+chat "Hi! I'm Gemini CLI Assistant. I can help with code analysis, documentation, and project tasks. What would you like to work on?"
+chat "Hello! I'm here to assist with your development workflow. How can I help you today?"
+chat "Welcome! I can help you with coding, debugging, and project management. What's your current challenge?"
+chat "Hi there! I'm your AI coding companion. Tell me what you're working on and I'll help you tackle it."
+chat "Greetings! I specialize in development assistance and can help streamline your workflow. What do you need?"
+chat "Hello! I'm designed to help developers like you. Whether it's code review, documentation, or troubleshooting - I'm ready to assist."
+chat "Hi! I'm your technical assistant. I can help with programming tasks, project planning, and problem-solving. What's on your agenda?"
+chat "Welcome! I'm here to support your development process. From code optimization to documentation - how can I contribute?"

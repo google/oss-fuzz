@@ -1,0 +1,46 @@
+AES256-GCM:test-data-for-encryption
+RSA-OAEP:public-key-data
+HMAC-SHA256:secret-key
+PBKDF2:password123
+ECDSA:secp256r1
+ChaCha20-Poly1305:key
+Ed25519:signature
+AES128-CBC:short-test-data
+RSA-PSS:pss-signature-data
+HMAC-SHA512:longer-secret-key-material
+PBKDF2-SHA512:strongerPassword456!
+ECDSA:secp384r1
+ECDH:curve25519-key-exchange
+X25519:key-agreement-data
+Blake2b:hash-test-input
+Argon2id:memory-hard-password
+AES192-CTR:medium-key-test
+RSA-PKCS1:legacy-padding-test
+HMAC-SHA1:weak-hash-test
+PBKDF2-SHA1:legacy-kdf-test
+ECDSA:secp521r1
+ChaCha20:stream-cipher-only
+Poly1305:mac-only-test
+AES256-XTS:disk-encryption-test
+RSA-4096:large-key-test
+HMAC-SHA384:mid-strength-hash
+PBKDF2-SHA384:mid-strength-kdf
+ECDH:secp256k1
+X448:high-security-key-exchange
+Blake2s:fast-hash-variant
+Argon2i:data-independent-variant
+Argon2d:data-dependent-variant
+Scrypt:alternative-kdf-test
+bcrypt:password-hash-test
+malformed data with nulls: 
+truncated algorithm: AES256-G
+empty algorithm: :test-data
+algorithm with spaces: AES 256 GCM:data
+unicode in algorithm: AES256-GCM🔐:test
+invalid algorithm name with injection: '; DROP TABLE crypto; --
+command injection attempt: $(rm -rf /)
+path traversal: ../../../etc/passwd
+xss payload: <script>alert('crypto')</script>
+format string: %s%x%n%p
+buffer overflow pattern: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+

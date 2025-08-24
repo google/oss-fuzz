@@ -1,0 +1,12 @@
+{
+  "symlink_path": "/home/user/documents/link.txt",
+  "target_path": "/home/user/documents/real_file.txt",
+  "permissions": "rw-r--r--",
+  "owner": "user",
+  "group": "users",
+  "created": "2024-01-15T10:30:00Z",
+  "modified": "2024-01-15T10:30:00Z",
+  "size": 1024,
+  "is_directory": false,
+  "is_broken": false
+}

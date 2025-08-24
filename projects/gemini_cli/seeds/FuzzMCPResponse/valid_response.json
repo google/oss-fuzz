@@ -1,0 +1,22 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Hello! I'm here to help you with your questions and tasks. How can I assist you today?"
+      }
+    ],
+    "isError": false,
+    "metadata": {
+      "model": "gemini-pro",
+      "usage": {
+        "prompt_tokens": 13,
+        "completion_tokens": 25,
+        "total_tokens": 38
+      },
+      "finish_reason": "stop"
+    }
+  }
+}

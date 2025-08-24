@@ -1,0 +1,101 @@
+[
+  {
+    "error": {
+      "message": "Invalid API key provided",
+      "type": "invalid_request_error",
+      "param": null,
+      "code": "invalid_api_key"
+    },
+    "id": null,
+    "object": null,
+    "created": 1677652288
+  },
+  {
+    "error": {
+      "message": "Rate limit exceeded. Please try again later.",
+      "type": "rate_limit_exceeded",
+      "param": null,
+      "code": "rate_limit_exceeded"
+    }
+  },
+  {
+    "error": {
+      "message": "'; SELECT * FROM users; --",
+      "type": "sql_injection_attempt",
+      "param": "query",
+      "code": "malicious_input_detected"
+    }
+  },
+  {
+    "error": {
+      "message": "You exceeded your current quota, please check your plan and billing details.",
+      "type": "insufficient_quota",
+      "param": null,
+      "code": "insufficient_quota"
+    }
+  },
+  {
+    "error": {
+      "message": "The model `gpt-4` does not exist or you do not have access to it.",
+      "type": "invalid_request_error",
+      "param": "model",
+      "code": "model_not_found"
+    }
+  },
+  {
+    "error": {
+      "message": "This model's maximum context length is 4097 tokens. However, your messages resulted in 5123 tokens. Please reduce the length of the messages.",
+      "type": "invalid_request_error",
+      "param": "messages",
+      "code": "context_length_exceeded"
+    }
+  },
+  {
+    "error": {
+      "message": "<script>alert('xss')</script>",
+      "type": "malicious_content_detected",
+      "param": "content",
+      "code": "xss_attempt"
+    }
+  },
+  {
+    "error": {
+      "message": "../../../etc/passwd",
+      "type": "path_traversal_attempt",
+      "param": "path",
+      "code": "invalid_path"
+    }
+  },
+  {
+    "error": {
+      "message": null,
+      "type": "internal_error",
+      "param": null,
+      "code": "internal_server_error"
+    }
+  },
+  {
+    "error": {
+      "message": "",
+      "type": "empty_error",
+      "param": "",
+      "code": ""
+    }
+  },
+  {
+    "error": {
+      "message": "This is a very long error message that exceeds normal limits and should test how the parser handles extremely long strings that might cause buffer issues or memory problems. It contains repetitive text to ensure the parser can handle large amounts of data without crashing or truncating important information. The message continues with more content to validate edge cases in response parsing and error handling capabilities. This helps test memory management and string processing limits in the fuzz target.",
+      "type": "very_long_error_message",
+      "param": "content",
+      "code": "message_too_long"
+    }
+  },
+  {
+    "error": {
+      "message": "🚀💥🔥 Unicode error message 🚀💥🔥",
+      "type": "unicode_error",
+      "param": "content",
+      "code": "unicode_characters"
+    }
+  }
+]

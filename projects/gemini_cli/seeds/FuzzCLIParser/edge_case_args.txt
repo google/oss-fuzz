@@ -1,0 +1,16 @@
+--verbose --help -v -h
+--config= --output= --input=
+"" -- "" ""
+--arg="value with spaces" --flag
+--nested="{"key":"value"}" --json='{"test":"data"}'
+--special-chars="!@#$%^&*()" --unicode="🚀💥🔥"
+--empty-flag= --flag-with-empty-value=""
+--very-long-argument=very-long-value-that-keeps-going-and-going-and-never-ends-and-should-test-buffer-limits
+--multiple-spaces   --tabs	--newlines
+
+--flag1 --flag2 --flag3
+--duplicate-flag=value1 --duplicate-flag=value2
+--case-sensitive Arg --case-sensitive arg
+--number=123 --number=abc --number=0 --number=-1 --number=999999999999999999999
+--boolean --boolean=true --boolean=false --boolean=1 --boolean=0
+--array=item1,item2,item3 --array= --array=item1,,item3

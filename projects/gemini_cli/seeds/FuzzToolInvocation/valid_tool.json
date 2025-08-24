@@ -1,0 +1,14 @@
+{
+  "tool_name": "grep",
+  "arguments": ["-r", "search_term", "/home/user/documents"],
+  "working_directory": "/home/user",
+  "environment_variables": {
+    "PATH": "/usr/bin:/bin",
+    "LANG": "en_US.UTF-8"
+  },
+  "timeout": 30,
+  "max_output_size": 1024,
+  "allowed_commands": ["grep", "ls", "cat", "head", "tail"],
+  "user_id": 1000,
+  "group_id": 1000
+}

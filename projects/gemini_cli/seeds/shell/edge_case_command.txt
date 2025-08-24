@@ -1,0 +1,19 @@
+
+ls
+ls -la
+ls -la /tmp
+ls /nonexistent
+ls /root/cannot_access
+./script.sh
+../script.sh
+../../../script.sh
+./
+..
+.
+""
+"   "
+"x".repeat(1000)
+"/bin/sh"
+"/usr/bin/env"
+"bash"
+"sh"

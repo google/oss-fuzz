@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "run_terminal_cmd",
+    "arguments": {
+      "command": "echo 'Hello World'",
+      "is_background": false
+    }
+  },
+  "id": 12345
+}

@@ -1,0 +1,7 @@
+echo "Hello World"
+ls -la /tmp
+cat file.txt
+mkdir new_directory
+rm temp_file.txt
+cp source.txt destination.txt
+mv old_name.txt new_name.txt

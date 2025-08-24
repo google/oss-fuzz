@@ -1,0 +1,5 @@
+API_KEY=AIzaSyDUMMY_KEY_HERE
+GOOGLE_API_KEY=dummy_key
+DEBUG=true
+NODE_ENV=production
+GEMINI_PROJECT_ID=test-project

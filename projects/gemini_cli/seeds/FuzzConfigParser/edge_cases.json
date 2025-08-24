@@ -1,0 +1,22 @@
+{
+  "null_value": null,
+  "empty_object": {},
+  "empty_array": [],
+  "nested_empty": {"empty": {}},
+  "deep_nest": {"a": {"b": {"c": {"d": "value"}}}},
+  "unicode": {"key": "测试"},
+  "emoji": {"face": "😀"},
+  "special_chars": {"data": "!@#$%^&*()"},
+  "whitespace": {"space": "   ", "tab": "\t", "newline": "\n"},
+  "numbers": {
+    "zero": 0,
+    "negative": -123,
+    "float": 3.14159,
+    "scientific": 1e10,
+    "max_safe": 9007199254740991,
+    "min_safe": -9007199254740991
+  },
+  "boolean": {"true": true, "false": false},
+  "mixed_array": [null, true, false, 0, "", [], {}],
+  "duplicate_keys": {"test": "first", "test": "second"}
+}

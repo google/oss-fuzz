@@ -1,0 +1,15 @@
+Hello, how are you today?
+What is the weather like?
+Can you help me with this coding problem?
+The answer to 2+2 is 4.
+This is a normal sentence without any special characters.
+User input: regular text
+Query: search for information
+Message: standard communication
+Data: normal content
+Input: legitimate user input
+Text: plain text content
+Value: normal value
+Parameter: standard parameter
+Content: regular content
+Body: normal body text

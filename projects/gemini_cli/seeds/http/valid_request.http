@@ -1,0 +1,8 @@
+GET /api/v1/chat HTTP/1.1
+Host: gemini.googleapis.com
+User-Agent: gemini-cli/1.0.0
+Authorization: Bearer ya29.example-token-here
+Content-Type: application/json
+Accept: application/json
+
+{"message": "Hello, how can I help you today?"}

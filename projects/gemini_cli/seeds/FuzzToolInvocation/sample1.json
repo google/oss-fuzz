@@ -1,0 +1,7 @@
+{
+  "tool": "google_search",
+  "parameters": {
+    "query": "test search",
+    "limit": 10
+  }
+}

@@ -1,0 +1,249 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# Ultimate OSS-Fuzz Configuration for Gemini CLI
+# Features: Tri-language fuzzing, enterprise security, performance optimization
+
+homepage: "https://github.com/google-gemini/gemini-cli"
+# Tri-language fuzzing: Go + JavaScript + Java + Python (4-language enterprise fuzzing)
+language: jvm  # Primary language with quad-language fuzzing (Go + JavaScript + Java + Python)
+# Tri-language strategy:
+# - JavaScript (Jazzer.js): Node.js runtime, TypeScript interfaces, runtime behavior
+# - Go (native): Core logic, memory safety, race conditions, filesystem operations
+# - Java (Jazzer): JVM components, cross-language validation, OAuth processing
+primary_contact: "ntaylormullen@google.com"  # N. Taylor Mullen - Release Manager
+auto_ccs:
+  - "bbiggs@google.com"  # Core contributor - Authentication/Telemetry
+  - "scidomino@google.com"  # Core functionality expert
+  - "security@google.com"  # Google Security Team
+vendor_ccs:
+  - "reconsumeralization@gmail.com"  # PR Author
+main_repo: "https://github.com/google-gemini/gemini-cli.git"
+
+# Tri-Language Fuzzing Configuration
+# This project uses a comprehensive tri-language fuzzing approach:
+# 1. JavaScript fuzz targets (Jazzer.js): Test Node.js runtime, TypeScript interfaces, and runtime behavior
+# 2. Go fuzz targets (native): Test core logic, memory safety, and race conditions
+# 3. Java fuzz targets (Jazzer): Test JVM-based components and cross-language validation
+# 4. Combined coverage: Maximum security testing across the entire Gemini CLI codebase
+# 5. Shared seed corpora: Compatible inputs that work across all three language implementations
+file_github_issue: true  # Auto-create GitHub issues for bugs
+
+# Build integration settings with performance optimization
+build_integration:
+  # Use custom build script for multi-language support
+  build_script: build.sh
+  # Build runs in Docker container with security hardening
+  dockerfile: Dockerfile
+  # Build timeout (30 minutes for complex multi-language build)
+  timeout: 1800
+  # Resource allocation for optimal performance
+  resources:
+    cpu: "4"
+    memory: "8Gi"
+    disk: "50Gi"
+
+# Sanitizers - Enterprise-grade configuration for comprehensive security testing
+sanitizers:
+  - address        # Memory safety (heap, stack, global buffer overflows)
+  - undefined      # Undefined behavior detection
+  - memory         # Uninitialized memory reads (Go targets)
+  - thread         # Data races and thread safety (Go targets)
+  # Note: JavaScript targets don't support sanitizers directly but use Jazzer.js built-in checks
+  # Java targets use Jazzer's comprehensive sanitizer suite
+
+# Fuzzing engines - Optimized for multi-language performance
+fuzzing_engines:
+  - libfuzzer      # Primary engine for C/C++/Go targets
+  - afl            # Alternative engine for coverage diversity
+  - honggfuzz      # Additional coverage with different mutation strategies
+
+# Supported architectures
+architectures:
+  - x86_64
+# Note: i386 removed as it's less commonly needed
+
+# Coverage configuration - Enterprise optimization for >90% coverage goal
+coverage_extra_args: |
+  # Core source files for comprehensive coverage measurement (quad-language)
+  --include=/src/gemini-cli/src/**/*.js
+  --include=/src/gemini-cli/src/**/*.ts
+  --include=/src/gemini-cli/gofuzz/internal/**/*.go
+  --include=/src/gemini-cli/packages/**/*.js
+  --include=/src/gemini-cli/packages/**/*.ts
+  --include=/src/gemini-cli/java/src/main/java/**/*.java
+  --include=/src/gemini-cli/fuzzers/**/*.py
+  --include=/src/gemini-cli/security_enhancements.py
+  --include=/src/gemini-cli/ai_assisted_fuzzer.py
+  --include=/src/gemini-cli/monitoring_dashboard.py
+
+  # Exclude test and generated files from coverage
+  --exclude=/src/gemini-cli/**/test*.js
+  --exclude=/src/gemini-cli/**/spec*.js
+  --exclude=/src/gemini-cli/**/node_modules/**
+  --exclude=/src/gemini-cli/**/build_cache/**
+  --exclude=/src/gemini-cli/**/dist/**
+  --exclude=/src/gemini-cli/**/coverage/**
+  --exclude=/src/gemini-cli/**/__pycache__/**
+  --exclude=/src/gemini-cli/**/.git/**
+
+  # Advanced coverage optimization flags for enterprise performance
+  --gcov-options="--branch-counts --branch-probabilities --demangled-names --relative-only"
+  --keep-going
+  --parallel=4
+  --timeout=300
+  --memory-limit=4096
+
+# View restrictions (if needed for private projects)
+# view_restrictions: "none"  # public access
+fuzz_introspector: |
+  analyze: |
+    # Go fuzz targets (17 total) - Core logic and memory safety
+    - gofuzz/fuzz/fuzz_cli_parser.go
+    - gofuzz/fuzz/fuzz_config_parser.go
+    - gofuzz/fuzz/fuzz_context_file_parser.go
+    - gofuzz/fuzz/fuzz_crypto_operations.go
+    - gofuzz/fuzz/fuzz_environment_parser.go
+    - gofuzz/fuzz/fuzz_file_system_operations.go
+    - gofuzz/fuzz/fuzz_input_sanitizer.go
+    - gofuzz/fuzz/fuzz_mcp_decoder.go
+    - gofuzz/fuzz/fuzz_oauth_token_request.go
+    - gofuzz/fuzz/fuzz_oauth_token_response.go
+    - gofuzz/fuzz/fuzz_path_validation.go
+    - gofuzz/fuzz/fuzz_shell_validation.go
+    - gofuzz/fuzz/fuzz_slash_commands.go
+    - gofuzz/fuzz/fuzz_symlink_validation.go
+    - gofuzz/fuzz/fuzz_tool_invocation.go
+    - gofuzz/fuzz/fuzz_type_script_bridge.go
+    - gofuzz/fuzz/fuzz_url_parser.go
+
+    # JavaScript fuzz targets (11 total) - Runtime and TypeScript testing
+    - fuzzers/fuzz_cli_parser.js
+    - fuzzers/fuzz_config_parser.js
+    - fuzzers/fuzz_env_parser.js
+    - fuzzers/fuzz_file_path_handler.js
+    - fuzzers/fuzz_http_request_parser.js
+    - fuzzers/fuzz_mcp_request.js
+    - fuzzers/fuzz_mcp_response.js
+    - fuzzers/fuzz_oauth_token_request.js
+    - fuzzers/fuzz_oauth_token_response.js
+    - fuzzers/fuzz_response_parser.js
+    - fuzzers/fuzz_url_parser.js
+
+    # Java fuzz targets (4 total) - Cross-language validation
+    - java/src/main/java/com/gemini/cli/FuzzOAuthTokenRequest.java
+    - java/src/main/java/com/gemini/cli/FuzzCLIParser.java
+    - java/src/main/java/com/gemini/cli/FuzzConfigParser.java
+    - java/src/main/java/com/gemini/cli/FuzzFilePathHandler.java
+
+    # Python fuzz targets (2 total) - AI and security testing
+    - fuzzers/fuzz_token_validation.py
+    - fuzzers/fuzz_ai_prompt_parser.py
+
+    # Advanced Python modules for security analysis
+    - security_enhancements.py
+    - ai_assisted_fuzzer.py
+    - monitoring_dashboard.py
+
+    # Additional high-priority fuzz targets for enterprise security testing
+    - gofuzz/fuzz/fuzz_context_file_parser.go         # Critical: Context file parsing
+    - gofuzz/fuzz/fuzz_file_system_operations.go      # Critical: File system operations
+    - gofuzz/fuzz/fuzz_shell_validation.go             # Critical: Shell command validation
+    - gofuzz/fuzz/fuzz_symlink_validation.go          # Critical: Symlink validation
+    - gofuzz/fuzz/fuzz_crypto_operations.go           # Critical: Cryptographic operations
+
+  # Enterprise performance optimization for fuzz introspector
+  performance:
+    # Target execution speed for optimal enterprise coverage
+    target_executions_per_second: 2000
+    # Maximum memory usage per target (increased for complex analysis)
+    max_memory_mb: 4096
+    # Timeout for individual test cases (extended for deep analysis)
+    timeout_seconds: 60
+    # Additional performance settings
+    max_target_runtime_seconds: 300
+    batch_size: 100
+    parallel_analysis: true
+
+labels:
+  # Core functionality
+  - cli
+  - command-line
+  - terminal
+  - interactive
+
+  # Security & Safety
+  - security
+  - fuzzing
+  - vulnerability-testing
+  - memory-safety
+  - thread-safety
+  - input-validation
+
+  # Data & Protocols
+  - json
+  - oauth
+  - http
+  - api
+  - protocol
+  - authentication
+
+  # AI & ML
+  - ai
+  - llm
+  - gemini
+  - google-gemini
+  - machine-learning
+  - prompt-injection
+  - ai-security
+
+  # Programming Languages
+  - javascript
+  - typescript
+  - nodejs
+  - go
+  - golang
+  - java
+  - jvm
+  - python
+  - multi-language
+
+  # Fuzzing Strategy
+  - tri-language-fuzzing
+  - quad-language-fuzzing
+  - differential-fuzzing
+  - multi-engine-fuzzing
+  - comprehensive-coverage
+  - enterprise-security
+  - cross-language-validation
+
+  # Performance & Quality
+  - high-performance
+  - enterprise-grade
+  - production-ready
+  - security-first
+  - reliability
+  - monitoring
+  - analytics
+
+  # Advanced Features
+  - ai-assisted-fuzzing
+  - security-enhancements
+  - real-time-monitoring
+  - advanced-analytics
+  - threat-detection
+  - compliance
+  - enterprise-integration

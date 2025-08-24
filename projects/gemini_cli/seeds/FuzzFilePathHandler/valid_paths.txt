@@ -1,0 +1,8 @@
+config/settings.json
+src/main.js
+data/users.db
+logs/app.log
+.cache/temp.file
+uploads/image.png
+downloads/document.pdf
+backup/config.bak

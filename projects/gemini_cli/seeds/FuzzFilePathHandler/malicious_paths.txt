@@ -1,0 +1,8 @@
+../../../etc/passwd
+..\\..\\..\\Windows\\System32\\cmd.exe
+../../../../etc/shadow
+..\\..\\..\\..\\..\\etc\\passwd
+/etc/passwd
+C:\\Windows\\System32\\drivers\\etc\\hosts
+../../../../root/.bashrc
+..\\..\\..\\..\\..\\..\\..\\proc\\self\\environ

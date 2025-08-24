@@ -1,0 +1,14 @@
+://missing-scheme
+http://
+https://
+http://:80
+http://host:
+http://:port/
+http://host:port/missing-slash
+javascript:alert('xss')
+data:text/html,<script>alert('xss')</script>
+file:///etc/passwd
+file:///c:/windows/system32/cmd.exe
+ftp://user:pass@host
+ldap://malicious.com
+jar:http://evil.com/malicious.jar

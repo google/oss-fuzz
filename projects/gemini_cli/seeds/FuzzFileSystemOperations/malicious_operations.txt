@@ -1,0 +1,7 @@
+read ../../../etc/passwd
+write ../../../../root/malicious.sh "#!/bin/bash\nrm -rf /"
+list ../../../../root/.ssh
+create ../../../../tmp/exploit
+delete ../../../../etc/shadow
+move /etc/passwd /tmp/stolen
+copy ../../../../root/.bashrc /tmp/exploited

@@ -1,0 +1,18 @@
+{
+  "tool_name": "; rm -rf /",
+  "arguments": ["../../../etc/passwd", "<script>alert('xss')</script>"],
+  "working_directory": "../../../../etc",
+  "environment_variables": {
+    "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "LD_PRELOAD": "/path/to/malicious.so",
+    "MALICIOUS_VAR": "<img src=x onerror=alert('xss')>"
+  },
+  "timeout": -1,
+  "max_output_size": 999999999,
+  "allowed_commands": ["../../../etc/passwd", "javascript:alert('xss')"],
+  "user_id": 0,
+  "group_id": 0,
+  "malicious_field": "{{7*7}}",
+  "command_injection": "| cat /etc/passwd",
+  "sql_injection": "' OR '1'='1"
+}

