@@ -524,6 +524,55 @@ async def search_project_file_content(project_name: str,
   ) if files_found else f'No files containing "{search_term}" found in project "{project_name}".'
 
 
+@mcp.tool()
+async def get_coverage_of_oss_fuzz_project(project_name):
+  """
+    Gets the code coverage information for an OSS-Fuzz project.
+
+    Args:
+        project_name: Name of the OSS-Fuzz project
+
+    Returns:
+        A string containing the code coverage information, or an error message.
+  """
+  _internal_delay()
+  logger.info('Getting coverage for project "%s"...', project_name)
+
+  os.makedirs(oss_fuzz_mcp_config.BASE_TMP_LOGS, exist_ok=True)
+  target_logs = os.path.join(oss_fuzz_mcp_config.BASE_TMP_LOGS, 'build-log.txt')
+  if os.path.isfile(target_logs):
+    os.remove(target_logs)
+
+  log_stdout = open(target_logs, 'w', encoding='utf-8')
+
+  try:
+    logger.info("Building OSS-Fuzz project: '%s'", project_name)
+    subprocess.check_call('python3 infra/helper.py introspector --seconds=10 ' +
+                          project_name,
+                          cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
+                          shell=True,
+                          stdout=log_stdout,
+                          stderr=subprocess.STDOUT,
+                          timeout=60 * 20)
+  except subprocess.CalledProcessError as e:
+    logger.info("Build failed for project '%s': {%s}", project_name, str(e))
+  except subprocess.TimeoutExpired:
+    logger.info(f"Building project {project_name} timed out.")
+
+  # Extract coverage if we have it.
+  coverage_info_file = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
+                                    'build', 'out', project_name, 'report',
+                                    'linux', 'summary.json')
+
+  if not os.path.isfile(coverage_info_file):
+    return f"Error: Coverage information not found for project '{project_name}'."
+
+  with open(coverage_info_file, 'r', encoding='utf-8') as f:
+    coverage_data = json.load(f)
+
+  return json.dumps(coverage_data, indent=2)
+
+
 def start_mcp_server():
   """Starts the MCP server."""
   try:
