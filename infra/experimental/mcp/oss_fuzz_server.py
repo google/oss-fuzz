@@ -547,13 +547,14 @@ async def get_coverage_of_oss_fuzz_project(project_name):
 
   try:
     logger.info("Building OSS-Fuzz project: '%s'", project_name)
-    subprocess.check_call('python3 infra/helper.py introspector --seconds=10 ' +
-                          project_name,
-                          cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                          shell=True,
-                          stdout=log_stdout,
-                          stderr=subprocess.STDOUT,
-                          timeout=60 * 20)
+    subprocess.check_call(
+        'python3 infra/helper.py introspector --coverage-only --seconds=10 ' +
+        project_name,
+        cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
+        shell=True,
+        stdout=log_stdout,
+        stderr=subprocess.STDOUT,
+        timeout=60 * 20)
   except subprocess.CalledProcessError as e:
     logger.info("Build failed for project '%s': {%s}", project_name, str(e))
   except subprocess.TimeoutExpired:
