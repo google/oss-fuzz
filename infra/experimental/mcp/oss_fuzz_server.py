@@ -20,6 +20,7 @@ import asyncio
 import os
 import json
 import httpx
+import time
 import subprocess
 from mcp.server.fastmcp import FastMCP
 
@@ -38,6 +39,19 @@ http_client = httpx.AsyncClient(timeout=10.0)
 mcp = FastMCP("OSS-Fuzz tools with relevant file system utilities.",
               host="0.0.0.0",
               port=8000)
+
+FILE_ACCESS_ERROR = f"""Error: Cannot access directories outside of the base directory.
+Remember, all paths accessible by you must be prefixed with {oss_fuzz_mcp_config.BASE_DIR}.
+
+Further:
+1) For project source code, this is available within {oss_fuzz_mcp_config.BASE_PROJECTS_DIR}.
+2) For access to OSS-Fuzz project files, these are accessible in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/PROJECT_NAME/.
+"""
+
+
+def _internal_delay():
+  """Forced delay to control LLM limits"""
+  time.sleep(2)
 
 
 def clone_oss_fuzz_if_it_does_not_exist():
@@ -79,7 +93,7 @@ async def check_if_oss_fuzz_project_builds(project_name: str) -> bool:
     logger.info('Building OSS-Fuzz project: %s', project_name)
     subprocess.check_call('python3 infra/helper.py build_fuzzers ' +
                           project_name,
-                          cwd=oss_fuzz_mcp_config.BASE_PROJECTS_DIR,
+                          cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
                           shell=True,
                           timeout=60 * 20)
     return True
@@ -334,12 +348,13 @@ async def list_files(path: str = "") -> str:
     
     Args:
         path: Optional subdirectory path relative to the base directory
-    """
-
+  """
+  _internal_delay()
   target_dir = os.path.normpath(path)
   if not target_dir.startswith(oss_fuzz_mcp_config.BASE_DIR):
     # Security check to prevent directory traversal
-    return f"Error: Cannot access directories outside of the base directory."
+    return FILE_ACCESS_ERROR
+
   logger.info("Listing files in directory: %s", target_dir)
   try:
     files = os.listdir(target_dir)
@@ -365,12 +380,12 @@ async def read_file(file_path: str) -> str:
     
     Args:
         file_path: Path to the file relative to the base directory
-    """
-
+  """
+  _internal_delay()
   target_file = os.path.normpath(file_path)
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
     # Security check to prevent directory traversal
-    return f"Error: Cannot access directories outside of the base directory."
+    return FILE_ACCESS_ERROR
 
   logger.info("Reading file: %s", target_file)
   try:
@@ -392,13 +407,14 @@ async def write_file(file_path: str, content: str) -> str:
     Args:
         file_path: Path to the file relative to the base directory
         content: Content to write to the file
-    """
+  """
+  _internal_delay()
   logger.info("Writing to file: %s", file_path)
   target_file = os.path.normpath(file_path)
 
   # Security check to prevent directory traversal
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
-    return f"Error: Cannot delete files outside of the OSS-Fuzz base directory."
+    return FILE_ACCESS_ERROR
 
   try:
     # Create directory if it doesn't exist
@@ -418,13 +434,14 @@ async def delete_file(file_path: str) -> str:
     
     Args:
         file_path: Path to the file relative to the base directory
-    """
+  """
+  _internal_delay()
   logger.info("Deleting file: %s", file_path)
   target_file = os.path.normpath(file_path)
 
   # Security check to prevent directory traversal
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
-    return f"Error: Cannot delete files outside of the OSS-Fuzz base directory."
+    return FILE_ACCESS_ERROR
 
   try:
     if not os.path.exists(target_file):
@@ -452,7 +469,8 @@ async def search_project_filename(project_name: str, filename: str) -> str:
     Returns:
         A string containing the paths of the files with the relevant
         filename, or an error message.
-    """
+  """
+  _internal_delay()
   logger.info('Searching for filename "%s" in project "%s"...', filename,
               project_name)
 
@@ -486,7 +504,7 @@ async def search_project_file_content(project_name: str,
         A string containing the paths of the files that contain the search term,
         or an error message if no files are found.
     """
-
+  _internal_delay()
   logger.info('Searching for term "%s" in project "%s"...', search_term,
               project_name)
 
