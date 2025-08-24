@@ -1,0 +1,11 @@
+homepage: "https://armeria.dev/"
+language: jvm
+primary_contact: "..."
+main_repo: "https://github.com/line/armeria.git"
+auto_ccs:
+  - ...
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+file_github_issue: true
