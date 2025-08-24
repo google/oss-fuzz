@@ -1,0 +1,4 @@
+homepage: "https://bun.sh"
+main_repo: "https://github.com/oven-sh/bun"
+language: c++
+primary_contact: "jarred@bun.sh"
