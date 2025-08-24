@@ -20,6 +20,7 @@ import os
 import shutil
 import logging
 import httpx
+import json
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerSSE
 import random
@@ -175,7 +176,7 @@ OSS-Fuzz supports multiple languages:
 """
 
 
-async def chat_with_agent(prompt: str) -> str:
+async def chat_with_agent(prompt: str):
   """
     Send a message to the LLM with access to the MCP tools.
     
@@ -196,10 +197,10 @@ async def chat_with_agent(prompt: str) -> str:
     async with agent.run_mcp_servers():
       result = await agent.run(prompt)
 
-    return result.output
+    return result
 
   except Exception as e:
-    return f"Error occurred: {str(e)}"
+    return None
 
 
 def initialize_oss_fuzz() -> None:
@@ -428,9 +429,6 @@ You must adjust the file in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{pr
 
 You must run the `run-tests-check` after adjusting the script.""")
 
-  logger.info(
-      f"Added run_tests.sh for project {project_name}. Response: {response}")
-
 
 async def fix_oss_fuzz_projects(projects_to_fix=None,
                                 max_projects_to_fix=4,
@@ -462,18 +460,10 @@ async def fix_oss_fuzz_projects(projects_to_fix=None,
     except:
       continue
     response, fix_success = await fix_project_build(project)
-    responses.append({
-        'project': project,
-        'response': response,
-        'fix_success': fix_success
-    })
-
-    with open(os.path.join(oss_fuzz_mcp_config.BASE_DIR, 'build-responses.txt'),
-              'w') as f:
-      for resp in responses:
-        f.write('-' * 60 + '\n')
-        f.write(f"{resp['project']} : {resp['fix_success']}\n")
-        f.write(f"Agent: {resp['response']}\n")
+    responses.append({'project': project, 'fix_success': fix_success})
+    if response:
+      with open(f'responses-fix-build-{project}.json', 'wb') as f:
+        f.write(response.all_messages_json())
 
 
 async def initiate_project_creation(project: str, project_repo: str,
@@ -554,8 +544,10 @@ you must refine the OSS-Fuzz project until it does.
 """)
 
   fix_success = await does_project_build(project)
-  logger.info("Project %s creation response: %s. Fix success: %s", project,
-              response, fix_success)
+
+  if response:
+    with open(f'responses-{project}.json', 'wb') as f:
+      f.write(response.all_messages_json())
 
   return response, fix_success
 
@@ -714,7 +706,7 @@ async def main():
   if args.command == 'fix-builds':
     await fix_oss_fuzz_projects(args.projects, args.max_projects, args.language)
   elif args.command == 'create-project':
-    logger.info('Creating OSS-Fuzz project for URL:', args.project_url)
+    logger.info('Creating OSS-Fuzz project for URL: %s', args.project_url)
     await create_oss_fuzz_integration_for_project(args.project_url,
                                                   args.language)
   elif args.command == 'run-tests':
