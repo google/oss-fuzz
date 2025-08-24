@@ -1,7 +1,3 @@
-/*
-# SPDX-FileCopyrightText: 2025 Google LLC
-# SPDX-License-Identifier: Apache-2.0
-#
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,21 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
-*/
 
-#include <karchive.h>
-
-inline void traverseArchive(const KArchiveDirectory *dir, const QString &path = QString())
-{
-    for (const auto &entryName : dir->entries()) {
-        auto entry = dir->entry(entryName);
-
-        if (entry->isFile()) {
-            auto file = static_cast<const KArchiveFile *>(entry);
-            auto data = file->data();
-        } else if (entry->isDirectory()) {
-            auto subDir = static_cast<const KArchiveDirectory *>(entry);
-            traverseArchive(subDir, path + QString::fromUtf8("/") + entryName);
-        }
-    }
-}
+BASE_DIR = '/var/tmp/oss-fuzz-mcp'
+BASE_PROJECTS_DIR = f'{BASE_DIR}/projects'
+BASE_OSS_FUZZ_DIR = f'{BASE_DIR}/oss-fuzz'
+BASE_TMP_LOGS = f'{BASE_DIR}/tmp-logs'
