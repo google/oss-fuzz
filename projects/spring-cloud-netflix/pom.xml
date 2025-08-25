@@ -4,14 +4,14 @@
 
 	<groupId>ossfuzz</groupId>
 	<artifactId>spring-cloud-netflix-fuzzer</artifactId>
-	<version>${fuzzedLibaryVersion}</version>
+	<version>${fuzzedLibraryVersion}</version>
 	<packaging>jar</packaging>
 	
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>4.0.0-SNAPSHOT</fuzzedLibaryVersion>
+		<fuzzedLibraryVersion>4.0.0-SNAPSHOT</fuzzedLibraryVersion>
 		<exec.mainClass>org.springframework.cloud.netflix.eureka.config.HostnameBasedUrlRandomizerFuzzer</exec.mainClass>
 	</properties>
 
@@ -83,22 +83,22 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-netflix-eureka-client</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-netflix-eureka-server</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 
 

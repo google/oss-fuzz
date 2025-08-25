@@ -36,7 +36,7 @@ pushd "${SRC}/${LIBRARY_NAME}"
 popd
 
 pushd "${SRC}/${LIBRARY_NAME}-fuzzer"
-	${MVN} ${MVN_FLAGS} package -DfuzzedLibaryVersion="${CURRENT_VERSION}"
+	${MVN} ${MVN_FLAGS} package -DfuzzedLibraryVersion="${CURRENT_VERSION}"
 	install -v target/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar ${OUT}/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar
 	ALL_JARS="${ALL_JARS} ${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar"
 popd

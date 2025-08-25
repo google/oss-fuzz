@@ -42,7 +42,7 @@ pushd "${SRC}/${LIBRARY_NAME}/impl"
 popd
 
 pushd "${SRC}/${LIBRARY_NAME}-fuzzer"
-	${MVN} package -DfuzzedLibaryVersion="${CURRENT_VERSION}" \
+	${MVN} package -DfuzzedLibraryVersion="${CURRENT_VERSION}" \
 		-DapiVersion="${CURRENT_VERSION_API}" \
 		-DimplVersion="${CURRENT_VERSION_IMPL}" \
 		${MVN_FLAGS}
