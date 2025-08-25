@@ -1,0 +1,15 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"rootDir": ".",
+		"outDir": "dist"
+	},
+	"references": [
+		{
+			"path": "../instrumentor"
+		},
+		{
+			"path": "../hooking"
+		}
+	]
+}

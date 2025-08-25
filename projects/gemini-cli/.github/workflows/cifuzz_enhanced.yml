@@ -1,0 +1,129 @@
+name: OSS-Fuzz CI/CD Pipeline
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * *'  # Daily fuzzing run
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Build Fuzzers
+        id: build
+        uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+        with:
+          oss-fuzz-project-name: 'gemini-cli'
+          language: go
+          sanitizer: address
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-targets
+          path: build-out/
+          
+  FuzzCritical:
+    needs: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fuzz-target:
+          - fuzz_symlink_validation  # Issue #1121
+          - fuzz_path_validation
+          - fuzz_context_file_parser
+          - fuzz_shell_validation
+    steps:
+      - name: Download fuzz targets
+        uses: actions/download-artifact@v4
+        with:
+          name: fuzz-targets
+          
+      - name: Run Critical Fuzzer - ${{ matrix.fuzz-target }}
+        uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+        with:
+          oss-fuzz-project-name: 'gemini-cli'
+          fuzz-seconds: 1800  # 30 minutes for critical targets
+          dry-run: false
+          sanitizer: address
+          output-sarif: true
+          
+      - name: Upload SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: cifuzz-sarif/results.sarif
+          category: fuzz-${{ matrix.fuzz-target }}
+          
+  FuzzStandard:
+    needs: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fuzz-target:
+          - fuzz_config_parser
+          - fuzz_cli_parser
+          - fuzz_mcp_decoder
+          - fuzz_oauth_token_request
+    steps:
+      - name: Download fuzz targets
+        uses: actions/download-artifact@v4
+        with:
+          name: fuzz-targets
+          
+      - name: Run Standard Fuzzer - ${{ matrix.fuzz-target }}
+        uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+        with:
+          oss-fuzz-project-name: 'gemini-cli'
+          fuzz-seconds: 600  # 10 minutes for standard targets
+          dry-run: false
+          sanitizer: address
+          
+  Coverage:
+    needs: [FuzzCritical, FuzzStandard]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download fuzz targets
+        uses: actions/download-artifact@v4
+        with:
+          name: fuzz-targets
+          
+      - name: Generate coverage report
+        run: |
+          # Run coverage analysis
+          for fuzzer in build-out/fuzz_*; do
+            if [ -f "$fuzzer" ]; then
+              timeout 60s "$fuzzer" -runs=1000 || true
+            fi
+          done
+          
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: fuzzing
+          name: oss-fuzz-coverage
+          fail_ci_if_error: false

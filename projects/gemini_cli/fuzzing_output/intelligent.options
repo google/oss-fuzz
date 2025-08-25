@@ -1,0 +1,4 @@
+# Intelligent fuzzing options
+dict=c:\Users\recon\Desktop\fuz\oss-fuzz\projects\gemini_cli\fuzzing_output\intelligent_dictionary.txt
+max_len=65536
+timeout=30

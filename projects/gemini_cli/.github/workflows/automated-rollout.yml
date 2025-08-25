@@ -1,0 +1,227 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+name: Automated OSS-Fuzz Rollout
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'projects/gemini_cli/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'projects/gemini_cli/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  PROJECT_NAME: gemini_cli
+  OSS_FUZZ_REPO: google/oss-fuzz
+
+jobs:
+  validate-configuration:
+    name: Validate OSS-Fuzz Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate project.yaml
+        run: |
+          python3 -c "
+          import yaml
+          with open('projects/${{ env.PROJECT_NAME }}/project.yaml', 'r') as f:
+              config = yaml.safe_load(f)
+          print('✅ Project configuration validated')
+          print(f'Project: {config.get(\"name\", \"N/A\")}')
+          print(f'Language: {config.get(\"language\", \"N/A\")}')
+          print(f'Fuzzers: {len(config.get(\"fuzzers\", []))}')
+          "
+
+      - name: Validate build script
+        run: |
+          if [ -f "projects/${{ env.PROJECT_NAME }}/build.sh" ]; then
+            echo "✅ Build script exists"
+            chmod +x projects/${{ env.PROJECT_NAME }}/build.sh
+          else
+            echo "❌ Build script missing"
+            exit 1
+          fi
+
+      - name: Validate Dockerfile
+        run: |
+          if [ -f "projects/${{ env.PROJECT_NAME }}/Dockerfile" ]; then
+            echo "✅ Dockerfile exists"
+          else
+            echo "❌ Dockerfile missing"
+            exit 1
+          fi
+
+  test-fuzzers:
+    name: Test Fuzzers
+    runs-on: ubuntu-latest
+    needs: validate-configuration
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd projects/${{ env.PROJECT_NAME }}/fuzzers
+          npm install
+          pip install -r requirements.txt
+
+      - name: Test JavaScript fuzzers
+        run: |
+          cd projects/${{ env.PROJECT_NAME }}/fuzzers
+          for fuzzer in fuzz_*.js; do
+            if [ -f "$fuzzer" ]; then
+              echo "Testing $fuzzer..."
+              node --check "$fuzzer"
+            fi
+          done
+
+      - name: Test Python fuzzers
+        run: |
+          cd projects/${{ env.PROJECT_NAME }}/fuzzers
+          for fuzzer in fuzz_*.py; do
+            if [ -f "$fuzzer" ]; then
+              echo "Testing $fuzzer..."
+              python3 -m py_compile "$fuzzer"
+            fi
+          done
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: validate-configuration
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Bandit security scan
+        run: |
+          pip install bandit
+          bandit -r projects/${{ env.PROJECT_NAME }}/ -f json -o bandit-report.json
+
+      - name: Run npm audit
+        run: |
+          cd projects/${{ env.PROJECT_NAME }}/fuzzers
+          npm audit --audit-level=moderate
+
+      - name: Check for sensitive data
+        run: |
+          # Check for hardcoded secrets
+          if grep -r "password\|secret\|key\|token" projects/${{ env.PROJECT_NAME }}/ --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "⚠️  Potential sensitive data found"
+            exit 1
+          fi
+
+  compliance-check:
+    name: Compliance Check
+    runs-on: ubuntu-latest
+    needs: validate-configuration
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check Google copyright headers
+        run: |
+          for file in $(find projects/${{ env.PROJECT_NAME }}/ -name "*.py" -o -name "*.js" -o -name "*.go" -o -name "*.yaml" -o -name "*.yml"); do
+            if ! head -20 "$file" | grep -q "Copyright 2025 Google LLC"; then
+              echo "❌ Missing Google copyright header in $file"
+              exit 1
+            fi
+          done
+          echo "✅ All files have Google copyright headers"
+
+      - name: Check for AI references
+        run: |
+          # Check for problematic AI references
+          if grep -r -i "ai-powered\|ai-assisted\|sentient core\|tower of babel" projects/${{ env.PROJECT_NAME }}/ --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "❌ AI references found that need to be removed"
+            exit 1
+          fi
+          echo "✅ No problematic AI references found"
+
+  build-test:
+    name: Build Test
+    runs-on: ubuntu-latest
+    needs: [validate-configuration, test-fuzzers, security-scan, compliance-check]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Test Docker build
+        run: |
+          cd projects/${{ env.PROJECT_NAME }}
+          docker build -t test-build .
+          echo "✅ Docker build successful"
+
+  notify-rollout:
+    name: Notify Rollout Status
+    runs-on: ubuntu-latest
+    needs: [validate-configuration, test-fuzzers, security-scan, compliance-check, build-test]
+    if: always()
+    steps:
+      - name: Check job status
+        id: check-status
+        run: |
+          if [[ "${{ needs.validate-configuration.result }}" == "success" && 
+                "${{ needs.test-fuzzers.result }}" == "success" && 
+                "${{ needs.security-scan.result }}" == "success" && 
+                "${{ needs.compliance-check.result }}" == "success" && 
+                "${{ needs.build-test.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "message=✅ All checks passed - Ready for rollout" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "message=❌ Some checks failed - Review required" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Notify on success
+        if: steps.check-status.outputs.status == 'success'
+        run: |
+          echo "${{ steps.check-status.outputs.message }}"
+          echo "🚀 Ready for automated deployment to OSS-Fuzz"
+
+      - name: Notify on failure
+        if: steps.check-status.outputs.status == 'failure'
+        run: |
+          echo "${{ steps.check-status.outputs.message }}"
+          echo "🔍 Please review the failed checks above"

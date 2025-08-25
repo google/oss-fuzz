@@ -1,0 +1,20 @@
+/home/user/documents
+./config/settings.json
+../data/input.txt
+../../cache/temp
+C:\Users\user\Documents
+D:\Projects\gemini-cli
+./src/main.js
+../lib/utils.js
+../../node_modules/lodash
+C:\Program Files\Gemini CLI
+/home/user/.config/gemini-cli
+./logs/application.log
+../temp/processing
+../../uploads/files
+C:\temp\cache
+./database/sqlite.db
+../certificates/ssl.crt
+../../keys/private.pem
+./public/index.html
+../assets/styles.css

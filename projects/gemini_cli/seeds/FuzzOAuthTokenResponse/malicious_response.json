@@ -1,0 +1,13 @@
+{
+  "access_token": "<script>alert('xss')</script>",
+  "expires_in": "../../../etc/passwd",
+  "scope": "javascript:alert('xss')",
+  "token_type": "'; rm -rf /; echo '",
+  "refresh_token": "' OR '1'='1",
+  "malicious_field": "<iframe src='javascript:alert(\"xss\")'>",
+  "xss_payload": "<img src=x onerror=alert('xss')>",
+  "sql_injection": "'; DROP TABLE tokens; --",
+  "command_injection": "; cat /etc/passwd",
+  "path_traversal": "../../../etc/passwd",
+  "template_injection": "{{7*7}}"
+}

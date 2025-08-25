@@ -1,0 +1,16 @@
+https://www.example.com/path/to/resource?param=value
+http://localhost:3000/api/users
+https://api.github.com/repos/user/repo
+ftp://ftp.example.com/files/document.pdf
+file:///home/user/documents/file.txt
+https://user:pass@example.com:8080/path?query=value#fragment
+http://subdomain.example.co.uk:9000/path
+https://www.example.com/search?q=hello+world&lang=en
+http://example.com/path%20with%20spaces
+https://www.example.com/path?param1=value1&param2=value2
+http://user@example.com/path
+https://example.com:443/path
+http://example.com/path/to/file.html
+https://api.example.com/v1/users/123/posts
+http://test.example.com/path?debug=true
+https://www.example.com/static/css/style.css

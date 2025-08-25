@@ -1,0 +1,296 @@
+# Magic Bytes Dictionary for File Format Detection
+# Common file headers and magic bytes for fuzzing file format parsers
+# Based on file signatures and format specifications
+
+# JSON/Text Files
+"{\""
+"[\""
+"{\"jsonrpc\""
+"null"
+"true"
+"false"
+
+# CLI and Text Patterns
+"--"
+"-h"
+"-v"
+"#"
+"//"
+"/*"
+
+# Binary and Special Characters
+"\x00"
+"\x01"
+"\x02"
+"\x03"
+"\x04"
+"\x05"
+"\x06"
+"\x07"
+"\x08"
+"\x09"
+"\x0A"
+"\x0B"
+"\x0C"
+"\x0D"
+"\x0E"
+"\x0F"
+
+# Control Characters
+"\x10"
+"\x11"
+"\x12"
+"\x13"
+"\x14"
+"\x15"
+"\x16"
+"\x17"
+"\x18"
+"\x19"
+"\x1A"
+"\x1B"
+"\x1C"
+"\x1D"
+"\x1E"
+"\x1F"
+
+# ASCII Control Characters (named)
+"\x00"  # NUL
+"\x01"  # SOH
+"\x02"  # STX
+"\x03"  # ETX
+"\x04"  # EOT
+"\x05"  # ENQ
+"\x06"  # ACK
+"\x07"  # BEL
+"\x08"  # BS
+"\x09"  # HT
+"\x0A"  # LF
+"\x0B"  # VT
+"\x0C"  # FF
+"\x0D"  # CR
+"\x0E"  # SO
+"\x0F"  # SI
+
+# High Control Characters
+"\x7F"  # DEL
+"\x80"
+"\x81"
+"\x82"
+"\x83"
+"\x84"
+"\x85"
+"\x86"
+"\x87"
+"\x88"
+"\x89"
+"\x8A"
+"\x8B"
+"\x8C"
+"\x8D"
+"\x8E"
+"\x8F"
+
+# Extended ASCII and Unicode
+"\x90"
+"\x91"
+"\x92"
+"\x93"
+"\x94"
+"\x95"
+"\x96"
+"\x97"
+"\x98"
+"\x99"
+"\x9A"
+"\x9B"
+"\x9C"
+"\x9D"
+"\x9E"
+"\x9F"
+
+# Unicode BOM (Byte Order Mark)
+"\xEF\xBB\xBF"        # UTF-8 BOM
+"\xFF\xFE"           # UTF-16 LE BOM
+"\xFE\xFF"           # UTF-16 BE BOM
+"\xFF\xFE\x00\x00"   # UTF-32 LE BOM
+"\x00\x00\xFE\xFF"   # UTF-32 BE BOM
+
+# Common File Headers
+"\x89PNG"            # PNG
+"\xFF\xD8\xFF"       # JPEG
+"GIF87a"            # GIF87
+"GIF89a"            # GIF89
+"\x42\x4D"           # BMP
+"\x49\x49\x2A\x00"   # TIFF LE
+"\x4D\x4D\x00\x2A"   # TIFF BE
+
+# Archive Formats
+"PK\x03\x04"         # ZIP
+"Rar!\x1A\x07"       # RAR
+"\x1F\x8B"           # GZIP
+"BZ"                 # BZIP
+"7z\xBC\xAF\x27\x1C" # 7ZIP
+
+# Executable Formats
+"\x4D\x5A"           # MZ (DOS)
+"\x7FELF"            # ELF
+"\xCE\xFA\xED\xFE"   # Mach-O 32-bit BE
+"\xCF\xFA\xED\xFE"   # Mach-O 32-bit LE
+"\xFE\xED\xFA\xCE"   # Mach-O 64-bit BE
+"\xFE\xED\xFA\xCF"   # Mach-O 64-bit LE
+
+# Document Formats
+"%PDF"              # PDF
+"\xD0\xCF\x11\xE0"   # Microsoft Office (OLE)
+"PK\x03\x04"         # OpenOffice (ZIP-based)
+
+# Media Formats
+"\x00\x00\x00\x14ftyp" # MP4
+"\x00\x00\x00\x20ftyp" # MP4 variant
+"RIFF"              # AVI/WAV
+"FORM"              # AIFF
+"ID3"               # MP3 with ID3
+"\xFF\xFB"           # MP3 frame
+"\xFF\xF3"           # MP3 frame
+"\xFF\xF2"           # MP3 frame
+
+# Web Formats
+"<!DOCTYPE"         # HTML
+"<?xml"             # XML
+"/*"                # CSS
+"function"          # JavaScript
+"{"                 # JSON (already covered but important)
+
+# Protocol Headers
+"HTTP/"             # HTTP
+"GET "              # HTTP GET
+"POST "             # HTTP POST
+"PUT "              # HTTP PUT
+"PATCH "            # HTTP PATCH
+"DELETE "           # HTTP DELETE
+
+# Security-Sensitive Patterns
+"../"
+"..\\"
+"../../../../"
+"%00"
+"\\x00"
+"\\u0000"
+"<script"
+"javascript:"
+"data:"
+"vbscript:"
+"onload="
+"onerror="
+
+# Compression and Encoding
+"\x78\x9C"           # ZLIB (low compression)
+"\x78\xDA"           # ZLIB (high compression)
+"\x1F\x8B"           # GZIP
+"\x42\x5A"           # BZIP2
+"\xFD\x37\x7A\x58\x5A\x00" # XZ
+
+# Database and Data Files
+"SQLite format 3"   # SQLite
+"\x00\x00\x00\x00\x00\x00\x00\x00" # Empty/invalid
+"\xFF\xFF\xFF\xFF"   # Max values
+"\x80\x00\x00\x00\x00\x00\x00\x00" # Min signed integer
+
+# Configuration Files
+"["                 # INI section
+"{"                 # JSON object (already covered)
+"---"               # YAML document separator
+"# "                # Comment
+"// "               # Comment
+"/* "               # Block comment start
+
+# Special Unicode and Encoding Edge Cases
+"\xC0\x80"           # Overlong UTF-8
+"\xE0\x80\x80"       # Overlong UTF-8
+"\xF0\x80\x80\x80"   # Overlong UTF-8
+"\xED\xA0\x80"       # UTF-16 surrogate half
+"\xED\xAD\xBF"       # UTF-16 surrogate half
+"\xED\xAE\x80"       # UTF-16 surrogate half
+"\xED\xAF\xBF"       # UTF-16 surrogate half
+"\xED\xB0\x80"       # UTF-16 surrogate half
+"\xED\xBE\x80"       # UTF-16 surrogate half
+"\xED\xBF\xBF"       # UTF-16 surrogate half
+
+# Null and High Bytes
+"\x00\x00\x00\x00"
+"\xFF\xFF\xFF\xFF"
+"\x80\x80\x80\x80"
+"\x40\x40\x40\x40"
+"\x20\x20\x20\x20"
+"\x10\x10\x10\x10"
+"\x08\x08\x08\x08"
+"\x04\x04\x04\x04"
+"\x02\x02\x02\x02"
+"\x01\x01\x01\x01"
+
+# Repeated Characters (for buffer overflow testing)
+"AAAA"
+"BBBB"
+"CCCC"
+"DDDD"
+"EEEE"
+"FFFF"
+"GGGG"
+"HHHH"
+"IIII"
+"JJJJ"
+"KKKK"
+"LLLL"
+"MMMM"
+"NNNN"
+"OOOO"
+"PPPP"
+"QQQQ"
+"RRRR"
+"SSSS"
+"TTTT"
+"UUUU"
+"V V V V"
+"WWWW"
+"XXXX"
+"YYYY"
+"ZZZZ"
+
+# Numbers and Special Characters
+"0" * 100
+"1" * 100
+"9" * 100
+"A" * 100
+"a" * 100
+"!" * 100
+"@" * 100
+"#" * 100
+"$" * 100
+"%" * 100
+"^" * 100
+"&" * 100
+"*" * 100
+"(" * 100
+")" * 100
+"-" * 100
+"_" * 100
+"+" * 100
+"=" * 100
+"[" * 100
+"]" * 100
+"{" * 100
+"}" * 100
+"|" * 100
+"\\" * 100
+";" * 100
+":" * 100
+"'" * 100
+"\"" * 100
+"," * 100
+"." * 100
+"/" * 100
+"<" * 100
+">" * 100
+"?" * 100
+"~" * 100

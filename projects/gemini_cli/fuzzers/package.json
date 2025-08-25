@@ -1,0 +1,12 @@
+{
+  "name": "gemini-cli-fuzzers",
+  "type": "commonjs",
+  "private": true,
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@jazzer.js/core": "^2.1.0"
+  },
+  "scripts": {
+    "test": "node -e \"console.log('fuzzers ready')\""
+  }
+}

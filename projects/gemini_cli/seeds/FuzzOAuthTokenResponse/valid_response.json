@@ -1,0 +1,7 @@
+{
+  "access_token": "ya29.Gls0Bx...",
+  "expires_in": 3599,
+  "scope": "https://www.googleapis.com/auth/gemini-api",
+  "token_type": "Bearer",
+  "refresh_token": "1//04Q..."
+}

@@ -1,0 +1,7 @@
+{
+  "grant_type": "authorization_code",
+  "code": "4/P7q7W91a-oMsCeLvIaQm6bTrgtp7",
+  "client_id": "123456789-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com",
+  "client_secret": "GOCSPX-dummy-secret-for-testing",
+  "redirect_uri": "https://example.com/callback"
+}

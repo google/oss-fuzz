@@ -1,0 +1,15 @@
+{
+  "symlink_path": "../../../etc/passwd",
+  "target_path": "../../../../etc/shadow",
+  "permissions": "<script>alert('xss')</script>",
+  "owner": "; rm -rf /",
+  "group": "' OR '1'='1",
+  "created": "javascript:alert('xss')",
+  "modified": "<img src=x onerror=alert('xss')>",
+  "size": -1,
+  "is_directory": true,
+  "is_broken": false,
+  "malicious_field": "{{7*7}}",
+  "command_injection": "; cat /etc/passwd",
+  "path_traversal": "../../../../../../etc/passwd"
+}

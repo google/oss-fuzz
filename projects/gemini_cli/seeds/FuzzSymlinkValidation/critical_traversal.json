@@ -1,0 +1,7 @@
+{
+  "path": "../../../etc/passwd",
+  "workspace": "/home/user/workspace",
+  "symlink": "/tmp/safe_link",
+  "target": "/etc/passwd",
+  "description": "Direct traversal to sensitive system file"
+}

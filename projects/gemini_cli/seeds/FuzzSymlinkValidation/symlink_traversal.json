@@ -1,0 +1,16 @@
+{
+  "path": "../../../etc/passwd",
+  "workspace": "/home/user/workspace",
+  "symlink_target": "/etc/passwd",
+  "symlink_path": "/tmp/workspace_symlink",
+  "traversal_attempts": [
+    "../../../etc/passwd",
+    "../../../../root/.bashrc",
+    "/tmp/symlink/../../../sensitive",
+    "workspace/../../.ssh/id_rsa",
+    "../../../../etc/shadow",
+    "../../../../root/.mysql_history",
+    "../../../../var/log/auth.log",
+    "../../../../proc/self/environ"
+  ]
+}

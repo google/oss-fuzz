@@ -1,0 +1,10 @@
+{
+  "file": "GEMINI.md",
+  "content": "# Project Documentation\n\nThis is a sample project context file.\n\n## Usage\n\nRun `gemini-cli chat` to start interactive mode.\n\n## Configuration\n\nSet API key via `GEMINI_API_KEY` environment variable.\n\n## Examples\n\n```bash\necho \"Hello\" | gemini-cli\n```\n",
+  "metadata": {
+    "title": "Sample Project",
+    "description": "A demonstration project",
+    "version": "1.0.0",
+    "author": "Example Author"
+  }
+}

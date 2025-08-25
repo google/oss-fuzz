@@ -1,0 +1,10 @@
+NODE_ENV=production
+API_KEY=sk-1234567890abcdef
+DATABASE_URL=postgresql://user:pass@localhost:5432/db
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-secret-key-here
+SESSION_SECRET=another-secret-key
+PORT=3000
+HOST=localhost
+DEBUG=false
+LOG_LEVEL=info

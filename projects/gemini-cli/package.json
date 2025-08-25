@@ -1,0 +1,32 @@
+{
+  "name": "gemini-cli",
+  "version": "1.0.0",
+  "description": "Gemini CLI tool with MCP protocol support",
+  "main": "src/cli/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test",
+    "build": "npm run compile",
+    "compile": "echo 'No TypeScript compilation needed for pure JS'",
+    "fuzz": "node fuzzers/fuzz_*.js"
+  },
+  "dependencies": {
+    "commander": "^11.0.0",
+    "axios": "^1.5.0",
+    "dotenv": "^16.3.1",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "@jazzer.js/core": "^2.1.0",
+    "@types/node": "^20.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/google-gemini/gemini-cli"
+  },
+  "author": "Gemini CLI Team",
+  "license": "Apache-2.0"
+}
