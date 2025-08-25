@@ -167,6 +167,8 @@ COPY bazel_build_fuzz_tests \
     compile_javascript_fuzzer \
     compile_libfuzzer \
     compile_native_go_fuzzer \
+    compile_native_go_fuzzer_v2 \
+    go_utils.sh \
     compile_python_fuzzer \
     debug_afl \
     # Go, JavaScript, Java, Python, Rust, and Swift installation scripts.
@@ -221,8 +223,8 @@ RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
     cp /tmp/patchelf/src/patchelf /usr/local/bin && \
     rm -rf /tmp/patchelf && apt-get remove -y autoconf
 
-COPY indexer /opt/indexer
-COPY --from=gcr.io/oss-fuzz-base/indexer /indexer/build/indexer /opt/indexer/indexer
-RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
+#COPY indexer /opt/indexer
+#COPY --from=gcr.io/oss-fuzz-base/indexer /indexer/build/indexer /opt/indexer/indexer
+#RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 
 CMD ["compile"]

@@ -41,3 +41,14 @@ git clone https://github.com/AdamKorcz/go-118-fuzz-build
 cd go-118-fuzz-build
 go build
 mv go-118-fuzz-build $GOPATH/bin/
+
+# Build v2 binaries
+git checkout v2
+go build .
+mv go-118-fuzz-build $GOPATH/bin/go-118-fuzz-build_v2
+pushd cmd/convertLibFuzzerTestcaseToStdLibGo
+  go build . && mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
+popd
+pushd cmd/addStdLibCorpusToFuzzer
+  go build . && mv addStdLibCorpusToFuzzer $GOPATH/bin/
+popd
