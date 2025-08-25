@@ -33,7 +33,8 @@ make clean
 # These CFLAGs match honggfuzz's default, with the exception of -mtune to
 # improve portability and `-D_HF_LINUX_NO_BFD` to remove assembly instructions
 # from the filenames.
-CC=clang CFLAGS="-O3 -funroll-loops -D_HF_LINUX_NO_BFD" make
+sed -i 's/-Werror//g' Makefile
+CC=clang CFLAGS="-O3 -funroll-loops -D_HF_LINUX_NO_BFD -Wno-unterminated-string-initialization -Wno-error" make
 
 # libhfuzz.a will be added by CC/CXX linker directly during linking,
 # but it's defined here to satisfy the build infrastructure
