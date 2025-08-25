@@ -99,7 +99,8 @@ def gcb_build_and_push_images(test_image_suffix: str):
     step = build_lib.get_docker_build_step([main_tag, test_tag],
                                            base_image.path,
                                            use_buildkit_cache=True,
-                                           src_root='.')
+                                           src_root='.',
+                                           build_args=base_image.build_args)
     steps.append(step)
 
   overrides = {'images': test_tags}
