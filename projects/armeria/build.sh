@@ -25,7 +25,7 @@ do
     if [[ "$JARFILE" != *sources.jar ]] \
       && [[ "$JARFILE" != *javadoc.jar ]] \
       && [[ "$JARFILE" != *tests.jar ]] \
-      && [[ "$JARFILE" != *untrimmed.jar ]]
+      && [[ "$JARFILE" != *untrimmed*.jar ]]
     then
       cp $JARFILE $OUT/
       JARFILE_LIST="$JARFILE_LIST$(basename $JARFILE) "
