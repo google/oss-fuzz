@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,32 +14,44 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm AS base
+#We need a modern version of mupdf-tools.
+#In the version of mutools that is brought in with oss-fuzz base, only some font
+#type have "font-" prepended as their name. This breaks globbing, and we don't
+#want to use such an old version.
+
+#So, we can either build it or simply use an OS that comes with a more recent version
+#I'm choosing the latter.
+FROM ubuntu:questing-20250806 AS base
+
 RUN set -eux \
     && apt-get update \
-    && apt-get install --yes --no-install-recommends mupdf-tools
+    && apt-get install --yes --no-install-recommends \
+    mupdf-tools curl ca-certificates unzip zip && \
+    apt-get clean
 
 #pull an arbitrary zip of 1k pdfs
-RUN curl -L https://digitalcorpora.s3.amazonaws.com/corpora/files/CC-MAIN-2021-31-PDF-UNTRUNCATED/zipfiles/5000-5999/5136.zip \
-    --output $SRC/PDFExtractTextFuzzer_seed_corpus.zip
-COPY extract-fonts.sh $SRC/extract-fonts.sh
-RUN cd $SRC && ./extract-fonts.sh
+RUN mkdir /work && \
+     curl -L https://digitalcorpora.s3.amazonaws.com/corpora/files/CC-MAIN-2021-31-PDF-UNTRUNCATED/zipfiles/5000-5999/5136.zip \
+    --output /work/PDFExtractTextFuzzer_seed_corpus.zip
+COPY extract-fonts.sh /work/extract-fonts.sh
+RUN cd /work && /bin/bash extract-fonts.sh
+
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
-COPY --from=base $SRC/*_seed_corpus.zip $SRC
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip && \
-    unzip maven.zip -d $SRC/maven && \
-    rm -rf maven.zip
-
-ENV MVN=$SRC/maven/apache-maven-3.9.11/bin/mvn
+COPY --from=base /work/*_seed_corpus.zip $SRC
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
     cp fuzzing/dictionaries/pdf.dict $SRC/PDFStreamParserFuzzer.dict && \
     cp fuzzing/dictionaries/pdf.dict $SRC/PDFWriteReadFuzzer.dict && \
     rm -rf fuzzing
 
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip && \
+    unzip maven.zip -d $SRC/maven && \
+    rm -rf maven.zip
+
 # if not set python infra helper cannot be used for local testing
+ENV MVN=$SRC/maven/apache-maven-3.9.11/bin/mvn
 
 COPY project-parent $SRC/project-parent/
 

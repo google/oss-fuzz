@@ -61,7 +61,7 @@ fi
 
 if [ -d "fonts/pfa" ]; then
     cd fonts/pfa
-    if [ -f "../../Type1ParserFuzzer_seed_corpus.zip"]; then
+    if [ -f "../../Type1ParserFuzzer_seed_corpus.zip" ]; then
         mv ../../Type1ParserFuzzer_seed_corpus.zip .
         zip -u Type1ParserFuzzer_seed_corpus.zip *.pfa
     else

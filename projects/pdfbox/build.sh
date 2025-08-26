@@ -44,9 +44,11 @@ if [[ -v LOCAL_DEV ]]; then
   mvn -pl fuzz-targets install
 
 else
-  # Move seed corpus and dictionary.
+  # Move dictionaries and seed corpora.
   mv $SRC/*.dict $OUT
   mv $SRC/*.zip $OUT
+
+  set_project_version_in_fuzz_targets_dependency
 
   #install
   (cd $PROJECT && $MVN install $MAVEN_ARGS -Dmaven.repo.local=$OUT/m2)
