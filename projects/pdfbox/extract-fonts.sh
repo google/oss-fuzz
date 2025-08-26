@@ -4,19 +4,17 @@ mkdir tmp
 mkdir fonts
 unzip PDFExtractTextFuzzer_seed_corpus.zip -d pdfs
 
-shopt -s nullglob
-
 #use mutool to extract the fonts and images
 #keep the fonts. get rid of the images
 #If there's a more efficient way to extract just the fonts, we should implement that
 
 for file in pdfs/*.pdf; do
-    echo "$file"
     echo "$(basename $file)"
     cp "$file" tmp
     cd tmp
     mutool extract "$(basename $file)"
-    for fnt in font-*; do
+    FONTS=($(find . -name "font-*" -printf '%P\n' 2>/dev/null))
+    for fnt in "${FONTS[@]}"; do
         if [ ! -d "../fonts/${fnt##*.}" ]; then
             mkdir "../fonts/${fnt##*.}"
         fi
