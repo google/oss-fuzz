@@ -19,16 +19,21 @@
 
 case $(uname -m) in
     x86_64)
-      # Download and install Go 1.19.
+      # Download and install Go.
       wget -q https://storage.googleapis.com/golang/getgo/installer_linux -O $SRC/installer_linux
       chmod +x $SRC/installer_linux
-      SHELL="bash" $SRC/installer_linux -version 1.19
+      SHELL="bash" $SRC/installer_linux -version 1.24.6
       rm $SRC/installer_linux
       # Set up Golang coverage modules.
       printf $(find . -name gocoverage)
       cd $GOPATH/gocoverage && /root/.go/bin/go install ./...
-      cd convertcorpus && /root/.go/bin/go install .
       cd /root/.go/src/cmd/cover && /root/.go/bin/go build && mv cover $GOPATH/bin/gotoolcover
+      pushd /tmp
+        git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2
+        cd go-118-fuzz-build/cmd/convertLibFuzzerTestcaseToStdLibGo
+        /root/.go/bin/go build .
+        mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
+      popd
       ;;
     aarch64)
       # Don't install go because installer is not provided.
