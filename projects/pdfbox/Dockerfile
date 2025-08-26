@@ -14,13 +14,25 @@
 #
 ################################################################################
 
+FROM gcr.io/oss-fuzz-base/base-builder-jvm AS base
+RUN set -eux \
+    && apt-get update \
+    && apt-get install --yes --no-install-recommends mupdf-tools
+
+#pull an arbitrary zip of 1k pdfs
+RUN curl -L https://digitalcorpora.s3.amazonaws.com/corpora/files/CC-MAIN-2021-31-PDF-UNTRUNCATED/zipfiles/5000-5999/5136.zip \
+    --output $SRC/PDFExtractTextFuzzer_seed_corpus.zip
+COPY extract-fonts.sh $SRC/extract-fonts.sh
+RUN cd $SRC && ./extract-fonts.sh
+
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
+COPY --from=base $SRC/*_seed_corpus.zip $SRC
 
 RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.9.11/bin/mvn
+ENV MVN=$SRC/maven/apache-maven-3.9.11/bin/mvn
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
     cp fuzzing/dictionaries/pdf.dict $SRC/PDFStreamParserFuzzer.dict && \

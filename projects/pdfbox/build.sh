@@ -46,8 +46,7 @@ if [[ -v LOCAL_DEV ]]; then
 else
   # Move seed corpus and dictionary.
   mv $SRC/*.dict $OUT
-
-  set_project_version_in_fuzz_targets_dependency
+  mv $SRC/*.zip $OUT
 
   #install
   (cd $PROJECT && $MVN install $MAVEN_ARGS -Dmaven.repo.local=$OUT/m2)

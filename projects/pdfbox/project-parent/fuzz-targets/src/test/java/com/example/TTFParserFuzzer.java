@@ -16,27 +16,25 @@
 
 package com.example;
 
-import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.junit.FuzzTest;
-
 import java.io.IOException;
 import java.util.logging.LogManager;
+
+import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 import org.apache.fontbox.ttf.TTFParser;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.junit.jupiter.api.BeforeAll;
 
-class TTFParserFuzzer {
+public class TTFParserFuzzer {
 
     @BeforeAll
     static void setUp() {
         LogManager.getLogManager().reset();
     }
 
-    @FuzzTest
-    void myFuzzTest(FuzzedDataProvider data) {
+    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+        byte [] bytes = data.consumeRemainingAsBytes();
         TTFParser parser = new TTFParser();
-        byte[] bytes = data.consumeRemainingAsBytes();
         try {
             parser.parse(new RandomAccessReadBuffer(bytes));
         } catch (IOException | IllegalArgumentException e) {

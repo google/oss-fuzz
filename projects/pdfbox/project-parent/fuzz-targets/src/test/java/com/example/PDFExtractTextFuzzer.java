@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,28 +17,29 @@
 package com.example;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.LogManager;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 
-import org.apache.fontbox.type1.Type1Font;
-import org.junit.jupiter.api.BeforeAll;
+class PDFExtractTextFuzzer {
 
-public class Type1ParserFuzzer {
-
-    @BeforeAll
-    static void setUp() {
+    static {
         LogManager.getLogManager().reset();
     }
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
         byte [] bytes = data.consumeRemainingAsBytes();
-        try (InputStream is = new ByteArrayInputStream(bytes)) {
-            Type1Font font = Type1Font.createWithPFB(is);
 
-        } catch (IOException | IllegalArgumentException | NegativeArraySizeException | NullPointerException e) {
+        try (InputStream is = new ByteArrayInputStream(bytes)) {
+            PDDocument pdDocument = Loader.loadPDF(new RandomAccessReadBuffer(is));
+            String txt = new PDFTextStripper().getText(pdDocument);
+        } catch (IOException | IllegalArgumentException e) {
         }
     }
 }

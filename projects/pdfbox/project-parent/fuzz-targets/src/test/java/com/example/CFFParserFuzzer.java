@@ -16,11 +16,10 @@
 
 package com.example;
 
-import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.junit.FuzzTest;
-
 import java.io.IOException;
 import java.util.logging.LogManager;
+
+import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 import org.apache.fontbox.cff.CFFParser;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
@@ -33,10 +32,9 @@ class CFFParserFuzzer {
         LogManager.getLogManager().reset();
     }
 
-    @FuzzTest
-    void myFuzzTest(FuzzedDataProvider data) {
+    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+        byte [] bytes = data.consumeRemainingAsBytes();
         CFFParser parser = new CFFParser();
-        byte[] bytes = data.consumeRemainingAsBytes();
         try {
             parser.parse(new RandomAccessReadBuffer(bytes));
         } catch (IOException | IllegalArgumentException e) {
