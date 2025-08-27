@@ -22,7 +22,7 @@ case $(uname -m) in
       # Download and install Go.
       wget -q https://storage.googleapis.com/golang/getgo/installer_linux -O $SRC/installer_linux
       chmod +x $SRC/installer_linux
-      SHELL="bash" $SRC/installer_linux -version 1.24.6
+      SHELL="bash" $SRC/installer_linux -version 1.25.0
       rm $SRC/installer_linux
       # Set up Golang coverage modules.
       printf $(find . -name gocoverage)
