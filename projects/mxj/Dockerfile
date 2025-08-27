@@ -17,6 +17,12 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/clbanning/mxj mxj
+RUN wget https://go.dev/dl/go1.24.6.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.24.6.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/ \
+    && rm -rf temp-go go1.24.6.linux-amd64.tar.gz
 COPY build.sh $SRC/
 COPY fuzz.go $SRC/mxj
 WORKDIR $SRC/mxj
