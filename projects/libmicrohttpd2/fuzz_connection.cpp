@@ -37,7 +37,7 @@ extern "C" {
 
 // MHD memory pool
 static struct mhd_MemoryPool *g_pool = nullptr;
-static const size_t g_pool_size = 64 * 1024;
+static const size_t g_pool_size = 14 * 1024;
 
 // Helper to clear memory pool
 static void destroy_global_pool() {
