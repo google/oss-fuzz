@@ -1,9 +1,25 @@
 #/bin/bash
 
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 mkdir tmp
 mkdir fonts
 unzip PDFExtractTextFuzzer_seed_corpus.zip -d pdfs
 
+#start with a zip of pdfs
 #use mutool to extract the fonts and images
 #keep the fonts. get rid of the images
 #If there's a more efficient way to extract just the fonts, we should implement that
@@ -45,29 +61,17 @@ if [ -d "fonts/ttf" ]; then
     cd ../.. 
 fi
 
-if [ -d "fonts/otf" ]; then
-    cd fonts/otf
-    zip OTFParserFuzzer_seed_corpus.zip *.otf
-    mv OTFParserFuzzer_seed_corpus.zip ../.. 
-    cd ../.. 
-fi
-
 if [ -d "fonts/cid" ]; then
     cd fonts/cid
-    zip Type1ParserFuzzer_seed_corpus.zip *.cid
-    mv Type1ParserFuzzer_seed_corpus.zip ../.. 
+    zip CMapParserFuzzer_seed_corpus.zip *.cid
+    mv CMapParserFuzzer_seed_corpus.zip ../..
     cd ../.. 
 fi
 
 if [ -d "fonts/pfa" ]; then
     cd fonts/pfa
-    if [ -f "../../Type1ParserFuzzer_seed_corpus.zip" ]; then
-        mv ../../Type1ParserFuzzer_seed_corpus.zip .
-        zip -u Type1ParserFuzzer_seed_corpus.zip *.pfa
-    else
-        zip Type1ParserFuzzer_seed_corpus.zip *.pfa
-    fi
-    mv Type1ParserFuzzer_seed_corpus.zip ../.. 
+    zip PFAParserFuzzer_seed_corpus.zip *.pfa
+    mv PFAParserFuzzer_seed_corpus.zip ../..
     cd ../.. 
 fi
 

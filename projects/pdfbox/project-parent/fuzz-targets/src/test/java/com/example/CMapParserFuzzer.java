@@ -12,32 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 package com.example;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.util.logging.LogManager;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
-import org.apache.fontbox.ttf.TTFParser;
+import org.apache.fontbox.cmap.CMapParser;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
-import org.junit.jupiter.api.BeforeAll;
-
-public class TTFParserFuzzer {
-
-    @BeforeAll
-    static void setUp() {
-        LogManager.getLogManager().reset();
-    }
+/**
+ * the .cid files extracted my mutool aren't pure character maps
+ * On a random selection, it looks like the CMapParser can parse ~30%
+ * without an exception. We should figure out why the other cid files
+ * aren't parsing, but they are a close enough fit for seeds for now.
+ */
+public class CMapParserFuzzer {
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-        byte [] bytes = data.consumeRemainingAsBytes();
-        TTFParser parser = new TTFParser();
+        byte[] bytes = data.consumeRemainingAsBytes();
         try {
-            parser.parse(new RandomAccessReadBuffer(bytes));
-        } catch (IOException | IllegalArgumentException e) {
+            new CMapParser().parse(new RandomAccessReadBuffer(bytes));
+        } catch (IOException e) {
         }
+
     }
 }

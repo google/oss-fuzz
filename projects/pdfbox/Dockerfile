@@ -34,7 +34,7 @@ RUN mkdir /work && \
      curl -L https://digitalcorpora.s3.amazonaws.com/corpora/files/CC-MAIN-2021-31-PDF-UNTRUNCATED/zipfiles/5000-5999/5136.zip \
     --output /work/PDFExtractTextFuzzer_seed_corpus.zip
 COPY extract-fonts.sh /work/extract-fonts.sh
-RUN cd /work && /bin/bash extract-fonts.sh
+RUN cd /work && /bin/bash extract-fonts.sh && rm extract-fonts.sh
 
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
@@ -54,9 +54,11 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache
 ENV MVN=$SRC/maven/apache-maven-3.9.11/bin/mvn
 
 COPY project-parent $SRC/project-parent/
-
 RUN rm -rf $SRC/project-parent/pdfbox
 RUN git clone --depth 1 https://github.com/apache/pdfbox/ $SRC/project-parent/pdfbox
+
+COPY package-afm-fonts.sh $SRC
+RUN cd $SRC && /bin/bash package-afm-fonts.sh && rm package-afm-fonts.sh
 
 COPY build.sh $SRC/
 WORKDIR $SRC/project-parent/pdfbox

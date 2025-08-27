@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 package com.example;
 
@@ -23,22 +23,17 @@ import java.util.logging.LogManager;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
-import org.apache.fontbox.type1.Type1Font;
-import org.junit.jupiter.api.BeforeAll;
+import org.apache.fontbox.afm.AFMParser;
 
-public class Type1ParserFuzzer {
-
-    @BeforeAll
-    static void setUp() {
-        LogManager.getLogManager().reset();
-    }
+public class AFMParserFuzzer {
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-        byte [] bytes = data.consumeRemainingAsBytes();
-        try (InputStream is = new ByteArrayInputStream(bytes)) {
-            Type1Font font = Type1Font.createWithPFB(is);
-
-        } catch (IOException | IllegalArgumentException | NegativeArraySizeException | NullPointerException e) {
+        byte[] bytes = data.consumeRemainingAsBytes();
+        try {
+            AFMParser parser = new AFMParser(new ByteArrayInputStream(bytes));
+            parser.parse();
+        } catch (IOException e) {
         }
+
     }
 }
