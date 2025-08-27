@@ -32,7 +32,7 @@ if [ -d "fonts/cff" ]; then
 fi
 
 if [ -d "fonts/otf" ]; then
-    cd fonts/cff
+    cd fonts/otf
     zip OTFParserFuzzer_seed_corpus.zip *.otf
     mv OTFParserFuzzer_seed_corpus.zip ../.. 
     cd ../.. 
