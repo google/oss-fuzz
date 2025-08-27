@@ -17,5 +17,11 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/ProtonMail/proton-bridge.git
 RUN git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=include-all-test-files
+RUN wget https://go.dev/dl/go1.24.6.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.24.6.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/ \
+    && rm -rf temp-go go1.24.6.linux-amd64.tar.gz
 COPY build.sh $SRC/
 WORKDIR $SRC/proton-bridge
