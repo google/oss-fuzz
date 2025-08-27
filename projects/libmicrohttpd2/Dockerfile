@@ -21,4 +21,4 @@ RUN apt-get update && \
 RUN git clone https://git.gnunet.org/libmicrohttpd2.git mhd2
 WORKDIR mhd2
 COPY build.sh *.cpp *.h $SRC/
-COPY *.options *.dict $OUT/
+COPY *.options *.dict $SRC/
