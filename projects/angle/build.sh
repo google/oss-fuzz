@@ -36,9 +36,6 @@ cat $SRC/fuzzer_profile >> $SRC/angle/BUILD.gn
 mkdir src/fuzz
 cp $SRC/*.cc src/fuzz/
 
-# Retrieve and build dependencies
-./build/install-build-deps.sh --no-prompt
-
 # Generate ninja file for build
 gn gen out/fuzz --args="$ARGS"
 echo $SANITIZER

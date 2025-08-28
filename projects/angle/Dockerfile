@@ -22,4 +22,6 @@ RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH=/src/depot_tools:$PATH
 WORKDIR angle
 RUN fetch angle
+
+RUN ./build/install-build-deps.sh --no-prompt
 COPY build.sh *.cc fuzzer_profile $SRC/
