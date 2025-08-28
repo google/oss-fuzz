@@ -17,10 +17,10 @@
 
 # Install OpenJDK 17 and trim its size by removing unused components. This enables using Jazzer's mutation framework.
 cd /tmp
-curl --silent -L -O https://download.java.net/java/GA/jdk17.0.2/dfd4a8d0985749f896bed50d7138ee7f/8/GPL/openjdk-17.0.2_linux-x64_bin.tar.gz && \
+curl --silent -L -O https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.16+8/OpenJDK17U-jdk_x64_linux_hotspot_17.0.16_8.tar.gz && \
 mkdir -p $JAVA_HOME
-tar -xz --strip-components=1 -f openjdk-17.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
-rm -f openjdk-17.0.2_linux-x64_bin.tar.gz
+tar -xz --strip-components=1 -f OpenJDK17U-jdk_x64_linux_hotspot_17.0.16_8.tar.gz --directory $JAVA_HOME && \
+rm -f OpenJDK17U-jdk_x64_linux_hotspot_17.0.16_8.tar.gz
 rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 
 # Install OpenJDK 15 and trim its size by removing unused components. Some projects only run with Java 15.

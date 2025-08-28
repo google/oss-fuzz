@@ -20,6 +20,7 @@ import os
 import shutil
 import logging
 import httpx
+import json
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerSSE
 import random
@@ -175,7 +176,7 @@ OSS-Fuzz supports multiple languages:
 """
 
 
-async def chat_with_agent(prompt: str) -> str:
+async def chat_with_agent(prompt: str):
   """
     Send a message to the LLM with access to the MCP tools.
     
@@ -196,10 +197,10 @@ async def chat_with_agent(prompt: str) -> str:
     async with agent.run_mcp_servers():
       result = await agent.run(prompt)
 
-    return result.output
+    return result
 
   except Exception as e:
-    return f"Error occurred: {str(e)}"
+    return None
 
 
 def initialize_oss_fuzz() -> None:
@@ -428,8 +429,40 @@ You must adjust the file in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{pr
 
 You must run the `run-tests-check` after adjusting the script.""")
 
-  logger.info(
-      f"Added run_tests.sh for project {project_name}. Response: {response}")
+
+async def expand_existing_project(project_name: str):
+  """Expands existing coverage harnesses of a given project."""
+
+  if not prepare_oss_fuzz_project(project_name):
+    logger.info('Failed to prepare %s. Exiting.', project_name)
+    return
+
+  response = await chat_with_agent(
+      f"""You are a security engineer that is an expert in fuzzing development, and your goal is to expand on the
+fuzzing harnesses of OSS-Fuzz project {project_name}.
+Use the tools to understand the fuzzing harnesses of the {project_name}'s OSS-Fuzz integration.
+You should edit the files directly in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project_name}/....
+
+A copy of the source code of {project_name} is available at {oss_fuzz_mcp_config.BASE_PROJECTS_DIR}/{project_name}/... This is a read-only copy
+and you should not modify the files in this directory. Instead, you should only modify the files in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project_name}/
+and you should do so to the extend that the fuzzing extensions are successful.
+
+Use file operations tools to inspect the files. However, only modify and adjust the files in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project_name}/...
+
+Use coverage tooling to understand if there are improvements in code coverage.
+
+You can both add new fuzzing harnesses or modify existing, by writing files in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project_name}/...
+
+Some rules:
+- Do not change the ENTRYPOINT of the Dockerfile, it must remain as it is.
+- Do not adjust the Dockerfile so it copies files from the {oss_fuzz_mcp_config.BASE_PROJECTS_DIR}/{project_name}/... directory, as this is not the path that exists in the container.
+- If you need to add files to the project directory when inside the container, then add them to the {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project_name}/ folder and copy via the Dockerfile.
+- The "fuzzer-check" must pass.
+- Continue adjusting the files in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project_name}/ until "fuzzer-check" passes.
+""")
+  if response:
+    with open(f'responses-expand-{project_name}.json', 'wb') as f:
+      f.write(response.all_messages_json())
 
 
 async def fix_oss_fuzz_projects(projects_to_fix=None,
@@ -462,18 +495,10 @@ async def fix_oss_fuzz_projects(projects_to_fix=None,
     except:
       continue
     response, fix_success = await fix_project_build(project)
-    responses.append({
-        'project': project,
-        'response': response,
-        'fix_success': fix_success
-    })
-
-    with open(os.path.join(oss_fuzz_mcp_config.BASE_DIR, 'build-responses.txt'),
-              'w') as f:
-      for resp in responses:
-        f.write('-' * 60 + '\n')
-        f.write(f"{resp['project']} : {resp['fix_success']}\n")
-        f.write(f"Agent: {resp['response']}\n")
+    responses.append({'project': project, 'fix_success': fix_success})
+    if response:
+      with open(f'responses-fix-build-{project}.json', 'wb') as f:
+        f.write(response.all_messages_json())
 
 
 async def initiate_project_creation(project: str, project_repo: str,
@@ -551,11 +576,26 @@ Then, run the build_fuzzers and check_build commands to ensure the project build
 Repeat this until the project builds successfully and the fuzzer-check passes.
 The project must build success fully and the fuzzer-check must pass. If they do not pass, then
 you must refine the OSS-Fuzz project until it does.
+
+The goal is to make sure we have a decent code coverage of the target project. Make
+sure the coverage of the target is above 30% in terms of line coverage. Use the tools
+available to extract code coverage of the project when you're creating the harness, and either
+add more fuzzing harnesses to the project or extend the harness to cover more functions.
 """)
 
   fix_success = await does_project_build(project)
-  logger.info("Project %s creation response: %s. Fix success: %s", project,
-              response, fix_success)
+
+  if response:
+    with open(f'responses-{project}.json', 'wb') as f:
+      f.write(response.all_messages_json())
+
+  if not fix_success:
+    logger.info('Project %s still does not build, trying to fix again.',
+                project)
+    response, fix_success = await fix_project_build(project)
+    if response:
+      with open(f'responses-fix-build-{project}.json', 'wb') as f:
+        f.write(response.all_messages_json())
 
   return response, fix_success
 
@@ -702,6 +742,12 @@ def parse_arguments():
       type=str,
       help='The name of the project to add run-tests.sh command for.')
 
+  expand_existing = subparsers.add_parser(
+      'expand-existing', help='Expand existing OSS-Fuzz project')
+  expand_existing.add_argument('project_name',
+                               type=str,
+                               help='The name of the project to expand.')
+
   return parser.parse_args()
 
 
@@ -714,11 +760,13 @@ async def main():
   if args.command == 'fix-builds':
     await fix_oss_fuzz_projects(args.projects, args.max_projects, args.language)
   elif args.command == 'create-project':
-    logger.info('Creating OSS-Fuzz project for URL:', args.project_url)
+    logger.info('Creating OSS-Fuzz project for URL: %s', args.project_url)
     await create_oss_fuzz_integration_for_project(args.project_url,
                                                   args.language)
   elif args.command == 'run-tests':
     await add_run_tests_command(args.project_name)
+  elif args.command == 'expand-existing':
+    await expand_existing_project(args.project_name)
 
 
 if __name__ == "__main__":
