@@ -1,0 +1,3 @@
+declare_args() {
+  complete_static_lib = true
+}
