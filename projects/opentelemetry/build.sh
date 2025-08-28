@@ -63,6 +63,9 @@ compile_native_go_fuzzer_v2 go.opentelemetry.io/collector/receiver/otlpreceiver 
 cd -
 
 cd pdata
+rm plog/doc_test.go
+rm pmetric/doc_test.go
+rm ptrace/doc_test.go
 compile_native_go_fuzzer_v2 go.opentelemetry.io/collector/pdata/plog FuzzUnmarshalJsonLogs FuzzUnmarshalJsonLogs_plogs
 compile_native_go_fuzzer_v2 go.opentelemetry.io/collector/pdata/plog FuzzUnmarshalPBLogs FuzzUnmarshalPBLogs_plogs
 compile_native_go_fuzzer_v2 go.opentelemetry.io/collector/pdata/plog/plogotlp FuzzRequestUnmarshalJSON FuzzRequestUnmarshalJSON_plogotlp
