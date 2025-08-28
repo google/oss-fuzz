@@ -24,4 +24,8 @@ WORKDIR angle
 RUN fetch angle
 
 RUN ./build/install-build-deps.sh --no-prompt
+
 COPY build.sh *.cc fuzzer_profile $SRC/
+
+# Add fuzzer profile
+RUN cat $SRC/fuzzer_profile >> $SRC/angle/BUILD.gn
