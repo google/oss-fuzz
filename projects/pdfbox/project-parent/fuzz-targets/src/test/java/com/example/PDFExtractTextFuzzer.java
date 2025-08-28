@@ -16,28 +16,23 @@
 
 package com.example;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.logging.LogManager;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.io.RandomAccessRead;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
 class PDFExtractTextFuzzer {
 
-    static {
-        LogManager.getLogManager().reset();
-    }
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
         byte [] bytes = data.consumeRemainingAsBytes();
 
-        try (InputStream is = new ByteArrayInputStream(bytes)) {
-            PDDocument pdDocument = Loader.loadPDF(new RandomAccessReadBuffer(is));
+        try (RandomAccessRead buffer = new RandomAccessReadBuffer(bytes)) {
+            PDDocument pdDocument = Loader.loadPDF(buffer);
             String txt = new PDFTextStripper().getText(pdDocument);
         } catch (IOException | IllegalArgumentException e) {
         }

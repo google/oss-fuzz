@@ -16,10 +16,7 @@
 
 package com.example;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.IOException;
-import java.util.logging.LogManager;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 

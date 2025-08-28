@@ -17,27 +17,22 @@
 package com.example;
 
 import java.io.IOException;
-import java.util.logging.LogManager;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 import org.apache.fontbox.ttf.TTFParser;
+import org.apache.pdfbox.io.RandomAccessRead;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
-import org.junit.jupiter.api.BeforeAll;
 
 public class TTFParserFuzzer {
 
-    @BeforeAll
-    static void setUp() {
-        LogManager.getLogManager().reset();
-    }
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
         byte [] bytes = data.consumeRemainingAsBytes();
         TTFParser parser = new TTFParser();
-        try {
+        try (RandomAccessRead buffer = new RandomAccessReadBuffer(bytes)) {
             parser.parse(new RandomAccessReadBuffer(bytes));
-        } catch (IOException | IllegalArgumentException e) {
+        } catch (IOException e) {
         }
     }
 }

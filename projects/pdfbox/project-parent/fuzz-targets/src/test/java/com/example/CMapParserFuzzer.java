@@ -16,14 +16,12 @@
 
 package com.example;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.IOException;
-import java.util.logging.LogManager;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 import org.apache.fontbox.cmap.CMapParser;
+import org.apache.pdfbox.io.RandomAccessRead;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 /**
  * the .cid files extracted my mutool aren't pure character maps
@@ -35,8 +33,8 @@ public class CMapParserFuzzer {
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
         byte[] bytes = data.consumeRemainingAsBytes();
-        try {
-            new CMapParser().parse(new RandomAccessReadBuffer(bytes));
+        try (RandomAccessRead buffer = new RandomAccessReadBuffer(bytes)) {
+            new CMapParser().parse(buffer);
         } catch (IOException e) {
         }
 

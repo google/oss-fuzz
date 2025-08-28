@@ -15,9 +15,9 @@
 ################################################################################
 
 #We need a modern version of mupdf-tools.
-#In the version of mutools that is brought in with oss-fuzz base, only some font
-#type have "font-" prepended as their name. This breaks globbing, and we don't
-#want to use such an old version.
+#In the version of mutools that is brought in with oss-fuzz base as of 28 Aug 2025,
+#only some font types have "font-" prepended as their name. This breaks
+#globbing, and, separately, we don't want to use such an old version.
 
 #So, we can either build it or simply use an OS that comes with a more recent version
 #I'm choosing the latter.
@@ -56,9 +56,6 @@ ENV MVN=$SRC/maven/apache-maven-3.9.11/bin/mvn
 COPY project-parent $SRC/project-parent/
 RUN rm -rf $SRC/project-parent/pdfbox
 RUN git clone --depth 1 https://github.com/apache/pdfbox/ $SRC/project-parent/pdfbox
-
-COPY package-afm-fonts.sh $SRC
-RUN cd $SRC && /bin/bash package-afm-fonts.sh && rm package-afm-fonts.sh
 
 COPY build.sh $SRC/
 WORKDIR $SRC/project-parent/pdfbox
