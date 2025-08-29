@@ -29,15 +29,9 @@ else
     ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_debug=false"
 fi
 
-# Add fuzzer profile
-cat $SRC/fuzzer_profile >> $SRC/angle/BUILD.gn
-
 # Prepare fuzzer in gn directory
 mkdir src/fuzz
 cp $SRC/*.cc src/fuzz/
-
-# Retrieve and build dependencies
-./build/install-build-deps.sh --no-prompt
 
 # Generate ninja file for build
 gn gen out/fuzz --args="$ARGS"
