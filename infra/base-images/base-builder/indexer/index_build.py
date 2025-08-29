@@ -46,7 +46,13 @@ _LD_PATH = Path('/lib64') / _LD_BINARY
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 _CLANG_VERSION = '18'
 
-EXPECTED_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
+DEFAULT_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
+DEFAULT_FUZZING_ENGINE = 'fuzzing_engine.cc'
+
+# Some build systems isolate the compiler environment from the parent process,
+# so we can't always rely on using environment variables to pass settings to the
+# wrapper. Get around this by writing to a file instead.
+COMPILE_SETTINGS_PATH = Path(__file__).parent / 'compile_settings.json'
 
 EXTRA_CFLAGS = (
     '-fno-omit-frame-pointer '
@@ -54,7 +60,7 @@ EXTRA_CFLAGS = (
     '-O0 -glldb '
     '-fsanitize=address '
     '-Wno-invalid-offsetof '
-    f'{EXPECTED_COVERAGE_FLAGS} '
+    '{coverage_flags} '
     f'-gen-cdb-fragment-path {OUT}/cdb '
     '-Qunused-arguments '
     f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
@@ -62,7 +68,26 @@ EXTRA_CFLAGS = (
 )
 
 
-def set_env_vars():
+@dataclasses.dataclass(slots=True, frozen=True)
+class CompileSettings:
+  coverage_flags: str
+
+
+def read_compile_settings() -> CompileSettings:
+  """Gets compile settings from file."""
+  with COMPILE_SETTINGS_PATH.open('r') as f:
+    settings_dict = json.load(f)
+
+  return CompileSettings(**settings_dict)
+
+
+def write_compile_settings(compile_settings: CompileSettings) -> None:
+  """Writes compile settings to file."""
+  with COMPILE_SETTINGS_PATH.open('w') as f:
+    json.dump(dataclasses.asdict(compile_settings), f)
+
+
+def set_env_vars(coverage_flags: str):
   """Set up build environment variables."""
   os.environ['SANITIZER'] = 'address'
   # Prevent ASan leak checker from running on `configure` script targets.
@@ -78,7 +103,8 @@ def set_env_vars():
   os.environ['PATH'] = f"/opt/indexer:{os.environ.get('PATH')}"
 
   existing_cflags = os.environ.get('CFLAGS', '')
-  os.environ['CFLAGS'] = f'{existing_cflags} {EXTRA_CFLAGS}'.strip()
+  extra_cflags = EXTRA_CFLAGS.format(coverage_flags=coverage_flags)
+  os.environ['CFLAGS'] = f'{existing_cflags} {extra_cflags}'.strip()
 
 
 def set_up_wrapper_dir():
@@ -281,7 +307,7 @@ def enumerate_build_targets(
   return tuple(binary_to_build_metadata.values())
 
 
-def copy_fuzzing_engine() -> Path:
+def copy_fuzzing_engine(fuzzing_engine: str) -> Path:
   """Copy fuzzing engine."""
   # Not every project saves source to $SRC/$PROJECT_NAME
   fuzzing_engine_dir = SRC / PROJECT
@@ -289,7 +315,7 @@ def copy_fuzzing_engine() -> Path:
     fuzzing_engine_dir = SRC / 'fuzzing_engine'
     fuzzing_engine_dir.mkdir(exist_ok=True)
 
-  shutil.copy('/opt/indexer/fuzzing_engine.cc', fuzzing_engine_dir)
+  shutil.copy(f'/opt/indexer/{fuzzing_engine}', fuzzing_engine_dir)
   return fuzzing_engine_dir
 
 
@@ -297,17 +323,20 @@ def build_project(
     targets_to_index: Sequence[str] | None = None,
     compile_args: Sequence[str] | None = None,
     binaries_only: bool = False,
+    fuzzing_engine: str = DEFAULT_FUZZING_ENGINE,
+    coverage_flags: str = DEFAULT_COVERAGE_FLAGS,
 ):
   """Build the actual project."""
-  set_env_vars()
+  set_env_vars(coverage_flags)
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
 
   if binaries_only:
     os.environ['INDEXER_BINARIES_ONLY'] = '1'
 
-  fuzzing_engine_path = copy_fuzzing_engine()
+  write_compile_settings(CompileSettings(coverage_flags=coverage_flags))
 
+  fuzzing_engine_dir = copy_fuzzing_engine(fuzzing_engine)
   build_fuzzing_engine_command = [
       '/opt/indexer/clang++',
       '-c',
@@ -317,7 +346,7 @@ def build_project(
       '-std=c++20',
       '-glldb',
       '-O0',
-      str(fuzzing_engine_path / 'fuzzing_engine.cc'),
+      (fuzzing_engine_dir / fuzzing_engine).as_posix(),
       '-o',
       f'{OUT}/fuzzing_engine.o',
       '-gen-cdb-fragment-path',
@@ -677,6 +706,16 @@ def main():
           ' args, set this to binary.'
       ),
   )
+  parser.add_argument(
+      '--fuzzing-engine',
+      default=DEFAULT_FUZZING_ENGINE,
+      help='Path to the fuzzing engine to use for the fuzz target.',
+  )
+  parser.add_argument(
+      '--coverage-flags',
+      default=DEFAULT_COVERAGE_FLAGS,
+      help='Coverage flags to set for the instrumentation.',
+  )
   args = parser.parse_args()
 
   INDEXES_PATH.mkdir(exist_ok=True)
@@ -769,6 +808,8 @@ def main():
       None if args.targets_all_index else targets_to_index,
       args.compile_arg,
       args.binaries_only,
+      args.fuzzing_engine,
+      args.coverage_flags,
   )
 
   if not args.binaries_only:

@@ -1,7 +1,3 @@
-/*
-# SPDX-FileCopyrightText: 2025 Google LLC
-# SPDX-License-Identifier: Apache-2.0
-#
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,21 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
-*/
 
-#include <karchive.h>
+FROM gcr.io/oss-fuzz-base/base-builder
 
-inline void traverseArchive(const KArchiveDirectory *dir, const QString &path = QString())
-{
-    for (const auto &entryName : dir->entries()) {
-        auto entry = dir->entry(entryName);
+RUN git clone --depth 1 -b master https://invent.kde.org/pim/kmime.git
+RUN $SRC/kmime/autotests/ossfuzz/prepare_build.sh
+RUN cp $SRC/kmime/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
 
-        if (entry->isFile()) {
-            auto file = static_cast<const KArchiveFile *>(entry);
-            auto data = file->data();
-        } else if (entry->isDirectory()) {
-            auto subDir = static_cast<const KArchiveDirectory *>(entry);
-            traverseArchive(subDir, path + QString::fromUtf8("/") + entryName);
-        }
-    }
-}
+WORKDIR $SRC/kmime

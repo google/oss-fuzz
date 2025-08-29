@@ -46,6 +46,7 @@
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/MapVector.h"
+#include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/SmallVector.h"
@@ -774,7 +775,7 @@ void AddVirtualMethodLinksImpl(
     const DefiningSuperBasesToMethods& defining_super_bases_to_methods,
     EntityId child_id, InMemoryIndex& index,
     EntityIdByDecl&& get_entity_id_for_decl, const clang::ASTContext& context) {
-  llvm::SmallSet<const clang::CXXRecordDecl*, 32> seen;
+  llvm::SmallPtrSet<const clang::CXXRecordDecl*, 32> seen;
   llvm::SmallVector<const clang::CXXRecordDecl*, 32> to_visit;
   auto add_bases_to_visit = [&to_visit,
                              &seen](const clang::CXXRecordDecl* class_decl) {

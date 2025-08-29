@@ -492,6 +492,10 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
       help='if specified, will use private corpora',
       default=False,
       action='store_true')
+  introspector_parser.add_argument(
+      '--coverage-only',
+      action='store_true',
+      help='if specified, will only collect coverage.')
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -1400,6 +1404,11 @@ def introspector(args):
   if not coverage(parse_args(parser, coverage_command)):
     logger.error('Failed to extract coverage')
     return False
+
+  logger.info('Coverage collected for %s', args.project.name)
+  if args.coverage_only:
+    logger.info('Coverage-only enabled, finishing now.')
+    return True
 
   # Build introspector.
   build_fuzzers_command = [

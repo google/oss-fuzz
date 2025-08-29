@@ -19,8 +19,10 @@ import logging
 import asyncio
 import os
 import json
-import httpx
+import time
 import subprocess
+
+import httpx
 from mcp.server.fastmcp import FastMCP
 
 import config as oss_fuzz_mcp_config
@@ -38,6 +40,19 @@ http_client = httpx.AsyncClient(timeout=10.0)
 mcp = FastMCP("OSS-Fuzz tools with relevant file system utilities.",
               host="0.0.0.0",
               port=8000)
+
+FILE_ACCESS_ERROR = f"""Error: Cannot access directories outside of the base directory.
+Remember, all paths accessible by you must be prefixed with {oss_fuzz_mcp_config.BASE_DIR}.
+
+Further:
+1) For project source code, this is available within {oss_fuzz_mcp_config.BASE_PROJECTS_DIR}.
+2) For access to OSS-Fuzz project files, these are accessible in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/PROJECT_NAME/.
+"""
+
+
+def _internal_delay():
+  """Forced delay to control LLM limits"""
+  time.sleep(2)
 
 
 def clone_oss_fuzz_if_it_does_not_exist():
@@ -79,7 +94,7 @@ async def check_if_oss_fuzz_project_builds(project_name: str) -> bool:
     logger.info('Building OSS-Fuzz project: %s', project_name)
     subprocess.check_call('python3 infra/helper.py build_fuzzers ' +
                           project_name,
-                          cwd=oss_fuzz_mcp_config.BASE_PROJECTS_DIR,
+                          cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
                           shell=True,
                           timeout=60 * 20)
     return True
@@ -314,7 +329,7 @@ async def check_oss_fuzz_fuzzers(
                           shell=True,
                           stdout=log_stdout,
                           stderr=subprocess.STDOUT,
-                          timeout=60 * 10)
+                          timeout=60 * 30)
     log_stdout.write("\n\nChecking fuzzers succeeded.\n")
   except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
     logger.info("Check failed for project '%s': {%s}", project_name, str(e))
@@ -334,12 +349,13 @@ async def list_files(path: str = "") -> str:
     
     Args:
         path: Optional subdirectory path relative to the base directory
-    """
-
+  """
+  _internal_delay()
   target_dir = os.path.normpath(path)
   if not target_dir.startswith(oss_fuzz_mcp_config.BASE_DIR):
     # Security check to prevent directory traversal
-    return f"Error: Cannot access directories outside of the base directory."
+    return FILE_ACCESS_ERROR
+
   logger.info("Listing files in directory: %s", target_dir)
   try:
     files = os.listdir(target_dir)
@@ -360,29 +376,78 @@ async def list_files(path: str = "") -> str:
 
 
 @mcp.tool()
-async def read_file(file_path: str) -> str:
-  """Read the contents of a file.
+async def get_file_size(file_path) -> str:
+  """Get the size of a file.
     
     Args:
         file_path: Path to the file relative to the base directory
-    """
 
+    Returns:
+        The size of the file in bytes or an error message.
+  """
+  _internal_delay()
   target_file = os.path.normpath(file_path)
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
     # Security check to prevent directory traversal
-    return f"Error: Cannot access directories outside of the base directory."
+    return FILE_ACCESS_ERROR
+
+  logger.info("Getting file size: %s", target_file)
+  try:
+    if not os.path.isfile(target_file):
+      return f"Error: File does not exist or is not a file: {file_path}"
+
+    size = os.path.getsize(target_file)
+    return f"File size of {file_path}: {size} bytes"
+  except Exception as e:
+    return f"Error getting file size: {str(e)}"
+
+
+@mcp.tool()
+async def read_file(file_path: str, start_idx: int, end_idx: int) -> str:
+  """Read the contents of a file. Will read a maximum of 3000 characters
+     to control size of content. Use arguments to control which part of file
+     to read.
+
+    Args:
+        file_path: Path to the file relative to the base directory
+        start_idx: character index to start reading from
+        end_idx: character index to stop reading (exclusive). If set to -1
+                 will read until the end of the file
+
+    Returns:
+        The contents of the file or an error message.
+  """
+  _internal_delay()
+  target_file = os.path.normpath(file_path)
+  if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
+    # Security check to prevent directory traversal
+    return FILE_ACCESS_ERROR
 
   logger.info("Reading file: %s", target_file)
   try:
     if not os.path.isfile(target_file):
       return f"Error: File does not exist or is not a file: {file_path}"
 
-    with open(target_file, 'r') as f:
+    with open(target_file, 'r', encoding='utf-8') as f:
       content = f.read()
-
-    return content
   except Exception as e:
     return f"Error reading file: {str(e)}"
+
+  if end_idx == -1:
+    end_idx = len(content)
+
+  buffer_size_to_read = end_idx - start_idx
+
+  if buffer_size_to_read <= 0:
+    return f"Error: Invalid indices. Negative size asked for: {buffer_size_to_read}"
+
+  if buffer_size_to_read > 3000:
+    return f"Error: Requested size too large: {buffer_size_to_read}. Maximum is 3000 characters."
+
+  try:
+    return content[start_idx:end_idx]
+  except Exception as e:
+    return f"Error extracting content: {str(e)}"
 
 
 @mcp.tool()
@@ -392,13 +457,14 @@ async def write_file(file_path: str, content: str) -> str:
     Args:
         file_path: Path to the file relative to the base directory
         content: Content to write to the file
-    """
+  """
+  _internal_delay()
   logger.info("Writing to file: %s", file_path)
   target_file = os.path.normpath(file_path)
 
   # Security check to prevent directory traversal
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
-    return f"Error: Cannot delete files outside of the OSS-Fuzz base directory."
+    return FILE_ACCESS_ERROR
 
   try:
     # Create directory if it doesn't exist
@@ -418,13 +484,14 @@ async def delete_file(file_path: str) -> str:
     
     Args:
         file_path: Path to the file relative to the base directory
-    """
+  """
+  _internal_delay()
   logger.info("Deleting file: %s", file_path)
   target_file = os.path.normpath(file_path)
 
   # Security check to prevent directory traversal
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
-    return f"Error: Cannot delete files outside of the OSS-Fuzz base directory."
+    return FILE_ACCESS_ERROR
 
   try:
     if not os.path.exists(target_file):
@@ -452,7 +519,8 @@ async def search_project_filename(project_name: str, filename: str) -> str:
     Returns:
         A string containing the paths of the files with the relevant
         filename, or an error message.
-    """
+  """
+  _internal_delay()
   logger.info('Searching for filename "%s" in project "%s"...', filename,
               project_name)
 
@@ -483,15 +551,16 @@ async def search_project_file_content(project_name: str,
         search_term: The term to search for in the file contents.
 
     Returns:
-        A string containing the paths of the files that contain the search term,
+        A string containing the paths of the files that contain the 
+        search term and the line in the file the term is found,
         or an error message if no files are found.
     """
-
+  _internal_delay()
   logger.info('Searching for term "%s" in project "%s"...', search_term,
               project_name)
 
   files_found = []
-  for root, dirs, files in os.walk(
+  for root, _, files in os.walk(
       os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
                    project_name)):
     for fname in files:
@@ -499,11 +568,104 @@ async def search_project_file_content(project_name: str,
       with open(full_path, 'r', encoding='utf-8') as f:
         content = f.read()
         if search_term in content:
-
-          files_found.append(full_path)
+          for lineno, line in enumerate(content.split('\n')):
+            if search_term in line:
+              files_found.append(f'{full_path}:{lineno}')
   return '\n'.join(
       files_found
   ) if files_found else f'No files containing "{search_term}" found in project "{project_name}".'
+
+
+@mcp.tool()
+async def get_coverage_of_oss_fuzz_project(project_name):
+  """
+    Gets the code coverage information for an OSS-Fuzz project.
+
+    Args:
+        project_name: Name of the OSS-Fuzz project
+
+    Returns:
+        A string containing the code coverage information, or an error message.
+  """
+  _internal_delay()
+  logger.info('Getting coverage for project "%s"...', project_name)
+
+  os.makedirs(oss_fuzz_mcp_config.BASE_TMP_LOGS, exist_ok=True)
+  target_logs = os.path.join(oss_fuzz_mcp_config.BASE_TMP_LOGS, 'build-log.txt')
+  if os.path.isfile(target_logs):
+    os.remove(target_logs)
+
+  log_stdout = open(target_logs, 'w', encoding='utf-8')
+
+  try:
+    logger.info("Building OSS-Fuzz project: '%s'", project_name)
+    subprocess.check_call(
+        'python3 infra/helper.py introspector --coverage-only --seconds=10 ' +
+        project_name,
+        cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
+        shell=True,
+        stdout=log_stdout,
+        stderr=subprocess.STDOUT,
+        timeout=60 * 20)
+  except subprocess.CalledProcessError as e:
+    logger.info("Build failed for project '%s': {%s}", project_name, str(e))
+  except subprocess.TimeoutExpired:
+    logger.info(f"Building project {project_name} timed out.")
+
+  # Extract coverage if we have it.
+  coverage_info_file = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
+                                    'build', 'out', project_name, 'report',
+                                    'linux', 'summary.json')
+
+  if not os.path.isfile(coverage_info_file):
+    return f"Error: Coverage information not found for project '{project_name}'."
+
+  with open(coverage_info_file, 'r', encoding='utf-8') as f:
+    oss_fuzz_cov_dict = json.load(f)
+
+  refined_cov_dict = {
+      'file-coverage': [],
+      'total-coverage': {
+          'lines': {
+              'count':
+                  oss_fuzz_cov_dict['data'][0]['totals']['lines']['count'],
+              'covered':
+                  oss_fuzz_cov_dict['data'][0]['totals']['lines']['covered'],
+              'percent':
+                  oss_fuzz_cov_dict['data'][0]['totals']['lines']['percent']
+          },
+          'functions': {
+              'count':
+                  oss_fuzz_cov_dict['data'][0]['totals']['functions']['count'],
+              'covered':
+                  oss_fuzz_cov_dict['data'][0]['totals']['functions']
+                  ['covered'],
+              'percent':
+                  oss_fuzz_cov_dict['data'][0]['totals']['functions']['percent']
+          }
+      }
+  }
+
+  for file_cov in oss_fuzz_cov_dict['data'][0]['files']:
+    refined_cov_dict['file-coverage'].append({
+        'filename': file_cov['filename'],
+        'lines': {
+            'count': file_cov['summary']['lines']['count'],
+            'covered': file_cov['summary']['lines']['covered'],
+            'percent': file_cov['summary']['lines']['percent']
+        },
+        'functions': {
+            'count': file_cov['summary']['functions']['count'],
+            'covered': file_cov['summary']['functions']['covered'],
+            'percent': file_cov['summary']['functions']['percent']
+        }
+    })
+
+  logger.info('Refined coverage dict: %s', json.dumps(refined_cov_dict,
+                                                      indent=2))
+
+  # Split up the coverage
+  return json.dumps(refined_cov_dict, indent=2)
 
 
 def start_mcp_server():

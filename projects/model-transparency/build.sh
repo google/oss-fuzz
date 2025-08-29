@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/karchive.git
-RUN $SRC/karchive/autotests/ossfuzz/prepare_build.sh
-RUN cp $SRC/karchive/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
-
-WORKDIR $SRC/karchive
+python3 -m pip install .
+for fuzzer in $(find $SRC/model-transparency/tests/fuzzing -name 'fuzz_*.py'); do
+  compile_python_fuzzer $fuzzer
+done
