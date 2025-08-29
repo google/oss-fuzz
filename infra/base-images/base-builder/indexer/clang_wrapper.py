@@ -462,13 +462,15 @@ def force_optimization_flag(argv: Sequence[str]) -> list[str]:
   return args
 
 
-def remove_invalid_coverage_flags(argv: Sequence[str]) -> list[str]:
+def remove_invalid_coverage_flags(
+    argv: Sequence[str], expected_coverage_flags: str
+) -> list[str]:
   """Removes invalid coverage flags from the given argument list."""
   args = []
   for arg in argv:
     if (
         arg.startswith("-fsanitize-coverage=")
-        and index_build.EXPECTED_COVERAGE_FLAGS != arg
+        and arg != expected_coverage_flags
     ):
       continue
 
@@ -478,10 +480,11 @@ def remove_invalid_coverage_flags(argv: Sequence[str]) -> list[str]:
 
 
 def main(argv: list[str]) -> None:
+  compile_settings = index_build.read_compile_settings()
   argv = expand_rsp_file(argv)
   argv = remove_flag_if_present(argv, "-gline-tables-only")
   argv = force_optimization_flag(argv)
-  argv = remove_invalid_coverage_flags(argv)
+  argv = remove_invalid_coverage_flags(argv, compile_settings.coverage_flags)
 
   if _has_disallowed_clang_flags(argv):
     raise ValueError("Disallowed clang flags found, aborting.")
