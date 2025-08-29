@@ -74,6 +74,7 @@ ENV CFLAGS -O1 \
   -Wno-error=implicit-function-declaration \
   -Wno-error=implicit-int \
   -Wno-error=vla-cxx-extension \
+  -Wno-error=unknown-warning-option \
   -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
