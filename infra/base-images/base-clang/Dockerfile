@@ -33,15 +33,6 @@ RUN apt-get update && apt-get install -y wget sudo && \
     SUDO_FORCE_REMOVE=yes apt-get autoremove --purge -y wget sudo && \
     rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
 
-RUN apt-get update && apt-get install -y git && \
-    git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
-    cd fuzz-introspector && \
-    git checkout 341ebbd72bc9116733bcfcfab5adfd7f9b633e07 && \
-    git submodule init && \
-    git submodule update && \
-    apt-get autoremove --purge -y git && \
-    rm -rf .git
-
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.

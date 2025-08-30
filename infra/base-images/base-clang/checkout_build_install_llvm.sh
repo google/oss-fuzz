@@ -60,8 +60,11 @@ apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 # languages, projects, ...) is needed.
 # Check CMAKE_VERSION infra/base-images/base-clang/Dockerfile was released
 # recently enough to fully support this clang version.
-OUR_LLVM_REVISION=llvmorg-18.1.8
-OUR_LLVM_REVISION=llvmorg-21.1.0-rc3
+if [[ -n "$FULL_LLVM_BUILD" ]]; then
+  OUR_LLVM_REVISION=llvmorg-21.1.0-rc3
+else
+  OUR_LLVM_REVISION=llvmorg-18.1.8
+fi
 
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
@@ -99,7 +102,20 @@ clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 git -C $LLVM_SRC checkout $OUR_LLVM_REVISION
 echo "Using LLVM revision: $OUR_LLVM_REVISION"
 
-# For fuzz introspector.
+# Prepare fuzz introspector.
+echo "Installing fuzz introspector"
+if [[ -n "$FULL_LLVM_BUILD" ]]; then
+  FUZZ_INTROSPECTOR_CHECKOUT=341ebbd72bc9116733bcfcfab5adfd7f9b633e07
+else
+  FUZZ_INTROSPECTOR_CHECKOUT=332d674f00b8abc4c9ebf10e9c42e5b72b331c63
+fi
+
+git clone https://github.com/ossf/fuzz-introspector.git /fuzz-introspector
+cd /fuzz-introspector
+git checkout $FUZZ_INTROSPECTOR_CHECKOUT
+git submodule init
+git submodule update
+
 echo "Applying introspector changes"
 OLD_WORKING_DIR=$PWD
 cd $LLVM_SRC
