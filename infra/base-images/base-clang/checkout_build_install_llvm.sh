@@ -71,9 +71,13 @@ cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 
 cd clang
-# Pin clang script due to https://github.com/google/oss-fuzz/issues/7617
-git checkout 329189001bce28e8f90dfa1c96075731a7a8f7de
-
+if [[ -n "$FULL_LLVM_BUILD" ]]; then
+  OUR_CLANG_REVISION=329189001bce28e8f90dfa1c96075731a7a8f7de
+else
+  # Pin clang script due to https://github.com/google/oss-fuzz/issues/7617
+  OUR_CLANG_REVISION=9eb79319239629c1b23cf7a59e5ebb2bab319a34
+fi
+git checkout $OUR_CLANG_REVISION
 LLVM_SRC=$SRC/llvm-project
 # Checkout
 CHECKOUT_RETRIES=10
