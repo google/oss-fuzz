@@ -1,6 +1,6 @@
 homepage: "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey"
 language: c++
-main_repo: https://hg.mozilla.org/mozilla-central/
+main_repo: https://github.com/mozilla-firefox/firefox
 primary_contact: "choller@mozilla.com"
 auto_ccs:
   - jdemooij@mozilla.com

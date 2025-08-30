@@ -1,6 +1,6 @@
 homepage: 'https://searchfox.org/mozilla-central/source/js/src/fuzz-tests/README'
 language: c++
-main_repo: https://hg.mozilla.org/mozilla-central/
+main_repo: https://github.com/mozilla-firefox/firefox
 primary_contact: 'choller@mozilla.com'
 vendor_ccs:
   - oss-fuzz@mozilla-fuzzing.iam.gserviceaccount.com
