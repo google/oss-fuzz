@@ -1,0 +1,79 @@
+# Standard flag conventions and combinations
+--verbose --help -v -h
+--version -V --quiet -q
+--debug --trace --silent
+
+# Empty values and malformed flags
+--config= --output= --input=
+--flag-without-value --flag-with-empty-value=""
+--empty-flag= --null-value=
+
+# Argument separators and edge cases
+"" -- "" ""
+-- --help
+--- ---invalid-triple-dash
+-
+
+# Values with special characters and encoding
+--arg="value with spaces" --flag
+--nested="{"key":"value"}" --json='{"test":"data"}'
+--special-chars="!@#$%^&*()" --unicode="🚀💥🔥"
+--path="../../../etc/passwd" --injection="'; DROP TABLE users; --"
+--xss="<script>alert('xss')</script>" --format-string="%s%x%n%p"
+
+# Buffer overflow and length testing
+--very-long-argument=very-long-value-that-keeps-going-and-going-and-never-ends-and-should-test-buffer-limits-and-memory-allocation-patterns-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+--buffer-overflow=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+# Whitespace and formatting edge cases
+--multiple-spaces   --tabs	--newlines
+
+--flag-with-null-byte="test\x00data"
+--flag-with-control-chars="\x01\x02\x03\x04\x05"
+
+# Flag combinations and conflicts
+--flag1 --flag2 --flag3
+--duplicate-flag=value1 --duplicate-flag=value2
+--conflicting-flag=on --conflicting-flag=off
+--case-sensitive=Arg --case-sensitive=arg --Case-Sensitive=ARG
+
+# Numeric edge cases and type confusion
+--number=123 --number=abc --number=0 --number=-1 --number=999999999999999999999
+--float=3.14 --float=invalid --float=1e308 --float=-0.0
+--hex=0xFF --octal=0777 --binary=0b1010
+
+# Boolean variations and ambiguity
+--boolean --boolean=true --boolean=false --boolean=1 --boolean=0
+--enable --disable --no-flag --yes-flag
+--on --off --enabled --disabled
+
+# Array and list parsing
+--array=item1,item2,item3 --array= --array=item1,,item3
+--list="a,b,c" --list=a --list=
+--multi-value=val1 --multi-value=val2 --multi-value=val3
+
+# File and path edge cases
+--file=/dev/null --file=/dev/random --file=/proc/self/mem
+--output=/tmp/../../../etc/passwd --input=./nonexistent
+--config=~/.config/app.conf --log-file=/var/log/app.log
+
+# Network and URL patterns
+--url=http://example.com --url=ftp://test --url=file:///etc/passwd
+--host=localhost --host=127.0.0.1 --host=::1 --host=0.0.0.0
+--port=80 --port=65536 --port=-1 --port=abc
+
+# Authentication and sensitive data patterns
+--password=secret123 --token=abc123xyz --api-key=sk-test123
+--auth-header="Bearer token123" --credentials=user:pass
+
+# Command injection attempts
+--command="ls -la" --exec="rm -rf /" --shell="$(whoami)"
+--eval="console.log('test')" --script="alert(1)"
+
+# Memory and resource exhaustion
+--memory-limit=999999999999 --timeout=0 --max-connections=-1
+--threads=999999 --buffer-size=0x7FFFFFFF
+
+# Encoding and character set issues
+--utf8="café" --latin1="naïve" --emoji="🔥💥⚡"
+--mixed-encoding="test\xFF\xFE" --invalid-utf8="\x80\x81"

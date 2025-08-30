@@ -1,0 +1,35 @@
+{
+  "app": {
+    "name": "gemini-cli",
+    "version": "1.0.0",
+    "settings": {
+      "theme": "dark",
+      "auto_save": true,
+      "max_tokens": 1000,
+      "nested": {
+        "deep": {
+          "level": {
+            "config": "value",
+            "number": 42,
+            "array": [1, 2, {"nested": "object"}]
+          }
+        }
+      }
+    },
+    "features": ["chat", "completion", "embedding"],
+    "api_keys": {
+      "gemini": "AIza...",
+      "github": "ghp_...",
+      "discord": "discord_token_here"
+    }
+  },
+  "logging": {
+    "level": "info",
+    "file": "/var/log/gemini-cli.log",
+    "rotation": {
+      "max_size": "10MB",
+      "max_files": 5,
+      "compress": true
+    }
+  }
+}

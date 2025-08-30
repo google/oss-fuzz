@@ -1,0 +1,7 @@
+{
+  "grant_type": "authorization_code",
+  "code": "test_code"
+  "redirect_uri": "https://example.com/callback",
+  "client_id": "test_client"
+  "missing_comma": true
+}

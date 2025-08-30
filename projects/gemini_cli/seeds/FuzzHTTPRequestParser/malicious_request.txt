@@ -1,0 +1,16 @@
+GET / HTTP/1.1
+Host: evil.com
+User-Agent: <script>alert('xss')</script>
+X-Forwarded-For: ../../../etc/passwd
+Referer: javascript:alert('xss')
+Cookie: session=; DROP TABLE users; --
+Authorization: Bearer '; rm -rf /; echo '
+Content-Type: ../../../../etc/passwd
+Accept: ../../../../etc/shadow
+X-Custom-Header: | cat /etc/passwd
+X-Injection: ' OR '1'='1
+X-Path-Traversal: ../../../etc/passwd
+X-Command-Injection: ; ls -la /
+X-SQL-Injection: 1' UNION SELECT password FROM users; --
+X-XXE: <!ENTITY xxe SYSTEM "file:///etc/passwd">
+X-SSTI: {{7*7}}

@@ -1,0 +1,7 @@
+read file.txt
+write output.txt "Hello World"
+list /tmp
+create directory newdir
+delete temp.txt
+move source.txt destination.txt
+copy original.txt backup.txt

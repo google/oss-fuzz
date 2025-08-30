@@ -1,0 +1,208 @@
+[
+  {
+    "id": "ctx_001",
+    "user": "alice",
+    "role": "writer",
+    "permissions": {
+      "read": true,
+      "write": true,
+      "delete": false,
+      "admin": false
+    },
+    "context_type": "user_session",
+    "session_id": "sess_abc123",
+    "created_at": "2025-01-11T10:30:00Z",
+    "expires_at": "2025-01-11T18:30:00Z",
+    "security_constraints": {
+      "max_file_size": 10485760,
+      "allowed_paths": ["/home/alice", "/tmp/alice_temp"],
+      "blocked_paths": ["/etc", "/root", "/sys", "/proc"],
+      "network_access": false,
+      "rate_limit": {
+        "requests_per_minute": 60,
+        "burst_limit": 10
+      }
+    },
+    "rbac": {
+      "roles": {
+        "reader": {
+          "permissions": ["read", "list"],
+          "description": "Can view and list documents"
+        },
+        "writer": {
+          "permissions": ["read", "write", "create", "list"],
+          "description": "Can create, edit, and view documents"
+        },
+        "admin": {
+          "permissions": ["read", "write", "create", "delete", "admin", "list"],
+          "description": "Full control over all operations"
+        }
+      },
+      "user_roles": {
+        "alice": ["writer"],
+        "bob": ["reader"],
+        "admin_user": ["admin"]
+      }
+    },
+    "metadata": {
+      "source": "fuzzer_seed",
+      "version": "2.0",
+      "test_case": "enhanced_rbac_context",
+      "description": "Enhanced context with RBAC implementation for security testing"
+    }
+  },
+  {
+    "id": "ctx_002",
+    "user": "service_account",
+    "role": "service",
+    "permissions": {
+      "read": true,
+      "write": true,
+      "delete": true,
+      "admin": false
+    },
+    "context_type": "service_session",
+    "session_id": "svc_123456789",
+    "created_at": "2025-01-11T00:00:00Z",
+    "expires_at": "2026-01-11T00:00:00Z",
+    "security_constraints": {
+      "max_file_size": 1073741824,
+      "allowed_paths": ["/data", "/logs", "/config"],
+      "blocked_paths": ["/etc", "/root", "/home"],
+      "network_access": true,
+      "rate_limit": {
+        "requests_per_minute": 1000,
+        "burst_limit": 100
+      }
+    },
+    "service_info": {
+      "service_name": "data_processor",
+      "service_version": "2.1.0",
+      "environment": "production",
+      "datacenter": "us-central1",
+      "instance_id": "instance-12345"
+    },
+    "metadata": {
+      "source": "fuzzer_seed",
+      "version": "1.0",
+      "test_case": "service_account_context",
+      "description": "Service account context with extended permissions for automated processing"
+    }
+  },
+  {
+    "id": "ctx_003",
+    "user": "readonly_user",
+    "role": "auditor",
+    "permissions": {
+      "read": true,
+      "write": false,
+      "delete": false,
+      "admin": false
+    },
+    "context_type": "audit_session",
+    "session_id": "audit_xyz789",
+    "created_at": "2025-01-11T09:00:00Z",
+    "expires_at": "2025-01-11T17:00:00Z",
+    "security_constraints": {
+      "max_file_size": 1024,
+      "allowed_paths": ["/audit", "/logs"],
+      "blocked_paths": ["/*"],
+      "network_access": false,
+      "rate_limit": {
+        "requests_per_minute": 10,
+        "burst_limit": 1
+      }
+    },
+    "audit_info": {
+      "audit_purpose": "compliance_check",
+      "audit_scope": "security_configuration",
+      "compliance_framework": "SOC2_Type_II",
+      "audit_firm": "SecurityAudit_Inc",
+      "audit_id": "AUD-2025-001"
+    },
+    "metadata": {
+      "source": "fuzzer_seed",
+      "version": "1.0",
+      "test_case": "audit_context",
+      "description": "Read-only audit context for compliance and security review"
+    }
+  },
+  {
+    "id": "ctx_004",
+    "user": "api_user",
+    "role": "api_client",
+    "permissions": {
+      "read": true,
+      "write": true,
+      "delete": false,
+      "admin": false
+    },
+    "context_type": "api_session",
+    "session_id": "api_token_abc123def456",
+    "created_at": "2025-01-11T12:00:00Z",
+    "expires_at": "2025-01-11T12:30:00Z",
+    "security_constraints": {
+      "max_file_size": 5242880,
+      "allowed_paths": ["/api", "/public"],
+      "blocked_paths": ["/admin", "/internal", "/private"],
+      "network_access": true,
+      "rate_limit": {
+        "requests_per_minute": 100,
+        "burst_limit": 20
+      }
+    },
+    "api_info": {
+      "api_version": "v2.0",
+      "client_id": "client_12345",
+      "client_secret": "secret_abc123",
+      "scopes": ["read", "write"],
+      "redirect_uri": "https://example.com/callback",
+      "token_type": "Bearer",
+      "issued_at": "2025-01-11T12:00:00Z"
+    },
+    "metadata": {
+      "source": "fuzzer_seed",
+      "version": "1.0",
+      "test_case": "api_context",
+      "description": "API client context with token-based authentication and scoped permissions"
+    }
+  },
+  {
+    "id": "ctx_005",
+    "user": "superuser",
+    "role": "super_admin",
+    "permissions": {
+      "read": true,
+      "write": true,
+      "delete": true,
+      "admin": true
+    },
+    "context_type": "system_session",
+    "session_id": "sys_root_0001",
+    "created_at": "2025-01-01T00:00:00Z",
+    "expires_at": "2025-12-31T23:59:59Z",
+    "security_constraints": {
+      "max_file_size": 0,
+      "allowed_paths": ["/*"],
+      "blocked_paths": [],
+      "network_access": true,
+      "rate_limit": {
+        "requests_per_minute": 0,
+        "burst_limit": 0
+      }
+    },
+    "system_info": {
+      "system_role": "root",
+      "system_level": "kernel",
+      "privileges": ["CAP_SYS_ADMIN", "CAP_DAC_OVERRIDE", "CAP_DAC_READ_SEARCH"],
+      "security_context": "system_u:system_r:kernel_t",
+      "audit_enabled": true
+    },
+    "metadata": {
+      "source": "fuzzer_seed",
+      "version": "1.0",
+      "test_case": "system_context",
+      "description": "System-level context with full privileges for system operations"
+    }
+  }
+]

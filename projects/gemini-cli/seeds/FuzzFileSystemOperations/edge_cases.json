@@ -1,0 +1,42 @@
+{
+  "edge_cases": [
+    {
+      "type": "read",
+      "path": "",
+      "expected": "error_empty_path"
+    },
+    {
+      "type": "write",
+      "path": ".",
+      "content": "test",
+      "expected": "error_invalid_path"
+    },
+    {
+      "type": "list",
+      "path": "/nonexistent",
+      "expected": "error_not_found"
+    },
+    {
+      "type": "create_directory",
+      "path": "/root/cannot_create",
+      "expected": "error_permission_denied"
+    },
+    {
+      "type": "delete",
+      "path": "/etc/passwd",
+      "expected": "error_permission_denied"
+    },
+    {
+      "type": "move",
+      "source": "nonexistent.txt",
+      "destination": "destination.txt",
+      "expected": "error_source_not_found"
+    },
+    {
+      "type": "copy",
+      "source": "original.txt",
+      "destination": "/etc/passwd",
+      "expected": "error_permission_denied"
+    }
+  ]
+}

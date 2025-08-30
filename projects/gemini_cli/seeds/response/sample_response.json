@@ -1,0 +1,27 @@
+{
+  "id": "chatcmpl-1234567890abcdef",
+  "object": "chat.completion",
+  "created": 1677652288,
+  "model": "gemini-pro",
+  "system_fingerprint": "fp_1234567890",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! I'm here to help you with any questions or tasks you might have. How can I assist you today? I can help with coding, writing, analysis, and many other topics."
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 13,
+    "completion_tokens": 28,
+    "total_tokens": 41,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "service_tier": "default"
+}

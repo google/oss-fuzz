@@ -1,0 +1,14 @@
+[[commands]]
+name = "help"
+description = "Show help information"
+args = []
+
+[[commands]]
+name = "config"
+description = "Configuration commands"
+args = ["--set", "api_key", "value"]
+
+[[commands]]
+name = "chat"
+description = "Start interactive chat"
+args = ["--model", "gemini-pro"]

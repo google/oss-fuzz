@@ -1,0 +1,7 @@
+GET /api/v1/users HTTP/1.1
+Host: api.example.com
+User-Agent: Mozilla/5.0 (compatible; test-client)
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+Content-Type: application/json
+Content-Length: 0

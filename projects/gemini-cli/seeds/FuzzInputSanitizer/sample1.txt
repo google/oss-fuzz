@@ -1,0 +1,6 @@
+<script>alert('xss')</script>
+../../../../etc/passwd
+'; DROP TABLE users; --
+javascript:alert('xss')
+data:text/html,<script>alert('xss')</script>
+../../../windows/system32/config/sam

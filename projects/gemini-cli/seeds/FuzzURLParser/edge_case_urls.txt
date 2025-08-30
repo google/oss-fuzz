@@ -1,0 +1,33 @@
+h!ttp://invalid-scheme
+http://host name with spaces/
+https://host
+:8080
+?query
+#fragment
+://missing-scheme
+http://
+https://
+ftp://
+javascript:alert('xss')
+data:text/html,<script>alert('xss')</script>
+vbscript:msgbox('xss')
+http://host:port:invalid
+http://host:999999999999999
+http://host:-1
+http://host:65536
+http://user:pass:extra@example.com
+http://host?param name
+http://host?param
+value
+http://host#frag
+ment
+http://user@
+@example.com
+http://@example.com
+http://user:pass@host:port:path?query#frag
+http://host%00.null.example.com
+http://host%0a.newline.example.com
+http://host%0d.carriage.example.com
+http://host%09.tab.example.com
+http://host%20.space.example.com
+http://host%2b.plus.example.com

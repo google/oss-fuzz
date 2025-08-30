@@ -1,0 +1,58 @@
+../../../etc/passwd
+../../../etc/shadow
+../../../etc/hosts
+../../../proc/self/environ
+../../../proc/self/cmdline
+../../../proc/self/maps
+../../../dev/null
+../../../dev/random
+../../../root/.bashrc
+../../../root/.ssh/id_rsa
+../../../var/log/auth.log
+../../../var/log/syslog
+../../../tmp/hacked
+../../../home/user/.bash_history
+..\\..\\..\\windows\\system32\\config\\sam
+..\\..\\..\\windows\\system32\\drivers\\etc\\hosts
+..\\..\\..\\windows\\repair\\sam
+..\\..\\..\\windows\\repair\\system
+C:\windows\system32\config\sam
+C:\windows\system32\drivers\etc\hosts
+C:\temp\malicious.exe
+\\server\share\malicious
+file:///etc/passwd
+file:///c:/windows/system32/config/sam
+javascript:alert('xss')
+data:text/html,<script>alert('xss')</script>
+vbscript:msgbox('xss')
+file:///proc/self/environ
+../../../../../../../../etc/passwd
+../../../../../../../../windows/system32/config/sam
+./../../../../../../etc/passwd
+%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd
+%2e%2e%2f%2e%2e%2f%2e%2e%2fwindows%2fsystem32%2fconfig%2fsam
+..%2f..%2f..%2fetc%2fpasswd
+..%2f..%2f..%2fwindows%2fsystem32%2fconfig%2fsam
+..%c0%af..%c0%af..%c0%afetc%c0%afpasswd
+..%c0%af..%c0%af..%c0%afwindows%c0%afsystem32%c0%afconfig%c0%afsam
+/absolute/path/to/sensitive/file
+~/../../../../../../etc/passwd
+~root/../../../../../../etc/passwd
+.concealed_file
+.hidden_directory/.secret
+/path/with/../traversal/./attempt
+/path/with/unicode/\u0000null/bytes
+/path/with/control/chars/\x01\x02\x03
+/path/that/is/way/too/long/and/should/be/rejected/because/it/exceeds/reasonable/limits/for/file/system/paths/and/could/cause/denial/of/service/conditions
+/path<script>alert('xss')</script>
+/path'; DROP TABLE users; --
+/path" UNION SELECT * FROM secrets --
+/path| cat /etc/passwd
+/path; rm -rf /
+/path && echo 'hacked'
+/path`cat /etc/passwd`
+/path$(cat /etc/passwd)
+/path${USER}
+/path$((1+1))
+/path$(id)
+/path$(whoami)
