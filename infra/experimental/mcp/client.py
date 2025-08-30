@@ -224,6 +224,38 @@ def initialize_oss_fuzz() -> None:
   os.makedirs(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, exist_ok=True)
 
 
+def _get_oss_fuzz_filetree(project_name: str) -> str:
+  """Gets the file tree for a given OSS-Fuzz project."""
+  project_dir = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR, 'projects',
+                             project_name)
+  if not os.path.isdir(project_dir):
+    logger.warning('Project directory does not exist: %s', project_dir)
+    return ''
+
+  file_tree = []
+  for root, _, files in os.walk(project_dir):
+    for fname in files:
+      file_tree.append(os.path.join(project_dir, root, fname))
+  return '\n'.join(file_tree)
+
+
+def _get_upstream_repo(project_name: str) -> str:
+  """Gets the upstream repository URL for a given project."""
+  project_yaml = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR, 'projects',
+                              project_name, 'project.yaml')
+  if not os.path.exists(project_yaml):
+    logger.warning('Project YAML does not exist: %s', project_yaml)
+    return ''
+
+  with open(project_yaml, 'r', encoding='utf-8') as f:
+    project_data = f.read()
+  main_repo = ''
+  for line in project_data.split('\n'):
+    if line.startswith('main_repo'):
+      main_repo = line.replace('main_repo: ', '').strip()
+  return main_repo
+
+
 def _detect_language(project_name: str) -> str:
   """Gets the likely language of a project, using file extension count."""
   project_src = os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR,
@@ -336,28 +368,44 @@ async def does_project_build(project: str) -> bool:
 async def fix_project_build(project: str):
   """Runs an agent to fix the build of an OSS-Fuzz project."""
 
+  project_language = _detect_language(project)
+
+  extra_project_text = ""
+  upstream_repo = _get_upstream_repo(project)
+  if upstream_repo:
+    extra_project_text += f"The upstream repository targeted by the OSS-Fuzz project is {upstream_repo}.\n"
+
+  if project_language == 'python':
+    extra_project_text += 'For Python projects, installing packages by way of pip should be done using `python3 -m pip ...` in the OSS-Fuzz build container.\n'
+
+  oss_fuzz_filetree = _get_oss_fuzz_filetree(project)
+  if oss_fuzz_filetree:
+    extra_project_text += f'The files in the OSS-Fuzz project for {project} are:\n{oss_fuzz_filetree}\n'
+
   nodes = await chat_with_agent(
       f"""Fix the OSS-Fuzz project {project} that currently has a broken build.
 Use the build logs from OSS-Fuzz's project {project} and determine why it fails, then 
 proceed to adjust Dockerfile and build.sh scripts until the project builds.
 
-You should edit the files directly in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/....
+The OSS-Fuzz project {project} targets a project written in {project_language}.
+{extra_project_text}
 
-Once the project builds, then you must ensure the project passes the tests.
-This means that "fuzzer-check" must pass for the produced Dockerfile and build.sh.
+You should edit the files directly in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/
+
+Once the project builds, then you must ensure the project passes OSS-Fuzz's "fuzzer-check".
 
 Do not stop testing new Dockerfile and build.sh scripts until the "fuzzer-check" passes.
 If you need access to the files of the project that is being built, then this is available
-at the path {oss_fuzz_mcp_config.BASE_PROJECTS_DIR}/{project}/...
+at the path {oss_fuzz_mcp_config.BASE_PROJECTS_DIR}/{project}/
 
-The files in this directory are only a copy, and not the files that will exist in the build environment.
-
+The files in {oss_fuzz_mcp_config.BASE_PROJECTS_DIR}/{project}/ are a copy for read-only purposes, and not the files that will exist in the build environment.
+In order to change files in the build environment, you must modify or create files in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/.
 Use file operations tools to inspect the files. However, only modify and adjust the files in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/...
 
 Some rules:
 - Do not change the ENTRYPOINT of the Dockerfile, it must remain as it is.
 - Do not adjust the Dockerfile so it copies files from the {oss_fuzz_mcp_config.BASE_PROJECTS_DIR}/{project}/... directory, as this is not the path that exists in the container.
-- If you need to add files to the project directory when inside the container, then add them to the {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/ folder and copy via the Dockerfile.
+- You can add new files into the build environment by creating them in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/ and copying them into the environment by adjusting {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/Dockerfile.
 - The "fuzzer-check" must pass.
 - Continue adjusting the files in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/ until "fuzzer-check" passes.
 """)
