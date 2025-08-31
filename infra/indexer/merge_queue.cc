@@ -88,7 +88,7 @@ void SingleThreadMergeQueue::ThreadFunction() {
     std::unique_ptr<InMemoryIndex> index_to_merge = nullptr;
 
     {
-      absl::MutexLock queue_lock(&queue_mutex_);
+      absl::MutexLock queue_lock(queue_mutex_);
       queue_mutex_.Await(
         absl::Condition(this, &SingleThreadMergeQueue::WaitForReading)
       );
@@ -104,7 +104,7 @@ void SingleThreadMergeQueue::ThreadFunction() {
     }  // Drop queue_mutex_
 
     if (index_to_merge) {
-      absl::MutexLock index_lock(&index_mutex_);
+      absl::MutexLock index_lock(index_mutex_);
       if (!index_) {
         index_ = std::move(index_to_merge);
       } else {
@@ -116,7 +116,7 @@ void SingleThreadMergeQueue::ThreadFunction() {
 }
 
 void SingleThreadMergeQueue::Add(std::unique_ptr<InMemoryIndex> new_index) {
-  absl::MutexLock queue_lock(&queue_mutex_);
+  absl::MutexLock queue_lock(queue_mutex_);
   state_.SetAdded();
   queue_mutex_.Await(
       absl::Condition(this, &SingleThreadMergeQueue::WaitForWriting));
@@ -127,21 +127,21 @@ void SingleThreadMergeQueue::Add(std::unique_ptr<InMemoryIndex> new_index) {
 
 void SingleThreadMergeQueue::WaitUntilComplete() {
   {
-    absl::MutexLock queue_lock(&queue_mutex_);
+    absl::MutexLock queue_lock(queue_mutex_);
     state_.SetWaiting();
   }
 
   thread_.join();
 
   {
-    absl::MutexLock queue_lock(&queue_mutex_);
+    absl::MutexLock queue_lock(queue_mutex_);
     state_.SetFinished();
   }
 }
 
 void SingleThreadMergeQueue::Cancel() {
   {
-    absl::MutexLock queue_lock(&queue_mutex_);
+    absl::MutexLock queue_lock(queue_mutex_);
     state_.SetFinished(/*cancelled=*/true);
   }
 
@@ -152,11 +152,11 @@ void SingleThreadMergeQueue::Cancel() {
 
 std::unique_ptr<InMemoryIndex> SingleThreadMergeQueue::TakeIndex() {
   {
-    absl::MutexLock queue_lock(&queue_mutex_);
+    absl::MutexLock queue_lock(queue_mutex_);
     state_.SetTaken();
   }
 
-  absl::MutexLock index_lock(&index_mutex_);
+  absl::MutexLock index_lock(index_mutex_);
   return std::move(index_);
 }
 
