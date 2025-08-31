@@ -32,6 +32,7 @@ extern "C" {
   #include "daemon_funcs.h"
   #include "microhttpd2.h"
   #include "post_parser_funcs.h"
+  #include "request_funcs.h"
   #include "response_funcs.h"
   #include "stream_process_request.h"
   #include "stream_funcs.h"
@@ -40,6 +41,7 @@ extern "C" {
 // MHD memory pool
 static struct mhd_MemoryPool *g_pool = nullptr;
 static const size_t g_pool_size = 14 * 1024;
+static std::string g_mpart_boundary;
 
 // Helper to clear memory pool
 static void destroy_global_pool() {
@@ -94,12 +96,9 @@ static void init_daemon_connection(FuzzedDataProvider& fdp,
   // Confiugre daemon request
   d.req_cfg.large_buf.space_left = fdp.ConsumeIntegralInRange<size_t>(256, 65536);
   d.req_cfg.strictness = static_cast<enum MHD_ProtocolStrictLevel>(
-      fdp.ConsumeIntegralInRange<int>(-1, 2));
+      fdp.ConsumeIntegralInRange<int>(0, 2));
 
   // Configure connection request and general settings
-  c.rq.http_ver  = MHD_HTTP_VERSION_1_1;
-  c.rq.http_mthd = static_cast<enum mhd_HTTP_Method>(
-      fdp.ConsumeIntegralInRange<int>(0, 7));
   c.discard_request = false;
   c.suspended = false;
   c.connection_timeout_ms = fdp.ConsumeIntegralInRange<uint32_t>(0, 4096);
@@ -118,74 +117,63 @@ static void init_connection_buffer(FuzzedDataProvider& fdp, MHD_Connection& c) {
     return;
   }
 
-  if (c.rq.app_act.head_act.data.post_parse.enc == MHD_HTTP_POST_ENCODING_MULTIPART_FORMDATA) {
-    // Prepare buffer and header for multipart form encoding
-    std::string boundary = "fuzz" + std::to_string(fdp.ConsumeIntegral<uint32_t>());
-    std::string req = "POST /upload HTTP/1.1\r\nHost: fuzz\r\nContent-Type: multipart/form-data; boundary=" + boundary + "\r\n\r\n";
-    const size_t n = (req.size() <= capacity) ? req.size() : capacity;
-    memcpy(buf, req.data(), n);
-
-    c.read_buffer = buf;
-    c.read_buffer_size = capacity;
-    c.read_buffer_offset = n;
-
-    std::string marker = "--" + boundary + "--\r\n";
-    size_t mlen = marker.size();
-    if (c.read_buffer_offset + mlen < c.read_buffer_size) {
-      memcpy(c.read_buffer + c.read_buffer_offset, marker.data(), mlen);
-      c.read_buffer_offset += mlen;
-    }
-  } else {
-    // Preprae buffer and header for other encoding
-    const MHD_HTTP_PostEncoding enc = c.rq.app_act.head_act.data.post_parse.enc;
-    const char* ct = "application/x-www-form-urlencoded";
-    if (enc == MHD_HTTP_POST_ENCODING_FORM_URLENCODED) {
-      ct = "application/x-www-form-urlencoded";
-    } else if (enc == MHD_HTTP_POST_ENCODING_TEXT_PLAIN) {
-      ct = "text/plain";
-    } else if (enc == MHD_HTTP_POST_ENCODING_OTHER) {
-      ct = fdp.ConsumeBool() ? "application/x-www-form-urlencoded" : "text/plain";
-    }
-    const std::string req = std::string("POST / HTTP/1.1\r\nHost: fuzz\r\nContent-Type: ") + ct + "\r\n\r\n";
-    const size_t n = (req.size() <= capacity) ? req.size() : capacity;
-    memcpy(buf, req.data(), n);
-
-    size_t tail_cap = (capacity > n) ? (capacity - n) : 0;
-    std::vector<char> data = fdp.ConsumeBytesWithTerminator<char>(
-        tail_cap > 0 ? (tail_cap - (tail_cap > 0)) : 0, '\0');
-    if (!data.empty())
-      memcpy(buf + n, data.data(), data.size());
-
-    c.read_buffer = buf;
-    c.read_buffer_size = capacity;
-    c.read_buffer_offset = n + data.size();
-
+  // Always craft a full request line with headers
+  const MHD_HTTP_PostEncoding enc = c.rq.app_act.head_act.data.post_parse.enc;
+  std::string req;
+  req.reserve(256);
+  req += "POST /upload HTTP/1.1\r\nHost: fuzz\r\nContent-Type: ";
+  bool detect_mpart = false;
+  const char* ct = "application/x-www-form-urlencoded";
+  switch (enc) {
+    case MHD_HTTP_POST_ENCODING_MULTIPART_FORMDATA:
+      g_mpart_boundary = "fuzz" + std::to_string(fdp.ConsumeIntegral<uint32_t>());
+      req += "multipart/form-data; boundary=" + g_mpart_boundary;
+      break;
+    case MHD_HTTP_POST_ENCODING_FORM_URLENCODED:
+      req += "application/x-www-form-urlencoded";
+      break;
+    case MHD_HTTP_POST_ENCODING_TEXT_PLAIN:
+      req += "text/plain";
+      break;
+    case MHD_HTTP_POST_ENCODING_OTHER:
+    default:
+      // low-probability detection lane to trigger detect_* from headers
+      detect_mpart = fdp.ConsumeBool();
+      if (detect_mpart) {
+        g_mpart_boundary = "fuzz" + std::to_string(fdp.ConsumeIntegral<uint32_t>());
+        req += "multipart/form-data; boundary=" + g_mpart_boundary;
+      } else {
+        req += (fdp.ConsumeBool() ? "application/x-www-form-urlencoded" : "text/plain");
+      }
+      break;
   }
-
-  // Configure post parsing state of the connection object
-  c.rq.u_proc.post.parse_result = MHD_POST_PARSE_RES_OK;
-  c.rq.u_proc.post.next_parse_pos = 0;
+  req += "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+  const size_t n = (req.size() <= capacity) ? req.size() : capacity;
+  memcpy(buf, req.data(), n);
+  c.read_buffer = buf;
+  c.read_buffer_size = capacity;
+  c.read_buffer_offset = n;
 }
 
-static void init_parsing_configuration(FuzzedDataProvider& fdp, MHD_Connection& c, bool reset) {
-  MHD_HTTP_PostEncoding enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
+static void init_parsing_configuration(FuzzedDataProvider& fdp, MHD_Connection& c) {
+  MHD_HTTP_PostEncoding enc;
 
-  if (!reset) {
-    // Configure connection encoding abd methods
-    c.rq.app_act.head_act.act = mhd_ACTION_POST_PARSE;
-    if (fdp.ConsumeBool()) {
-      enc = MHD_HTTP_POST_ENCODING_FORM_URLENCODED;
-    } else if (fdp.ConsumeBool()) {
-      enc = MHD_HTTP_POST_ENCODING_MULTIPART_FORMDATA;
-    } else {
-      enc = MHD_HTTP_POST_ENCODING_OTHER;
-    }
-
-    c.rq.app_act.head_act.data.post_parse.buffer_size =
-      fdp.ConsumeIntegralInRange<size_t>(1, 4096);
-    c.rq.app_act.head_act.data.post_parse.max_nonstream_size =
-      fdp.ConsumeIntegralInRange<size_t>(1, 4096);
+  // Configure connection encoding abd methods
+  c.rq.app_act.head_act.act = mhd_ACTION_POST_PARSE;
+  if (fdp.ConsumeBool()) {
+    enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
+  } else if (fdp.ConsumeBool()) {
+    enc = MHD_HTTP_POST_ENCODING_FORM_URLENCODED;
+  } else if (fdp.ConsumeBool()) {
+    enc = MHD_HTTP_POST_ENCODING_MULTIPART_FORMDATA;
+  } else {
+    enc = MHD_HTTP_POST_ENCODING_OTHER;
   }
+
+  c.rq.app_act.head_act.data.post_parse.buffer_size =
+    fdp.ConsumeIntegralInRange<size_t>(1, 4096);
+  c.rq.app_act.head_act.data.post_parse.max_nonstream_size =
+    fdp.ConsumeIntegralInRange<size_t>(1, 4096);
 
   // Confiugre head action for connection post parsing process
   c.rq.app_act.head_act.data.post_parse.enc = enc;
@@ -210,13 +198,57 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   MHD_Daemon daemon;
   MHD_Connection connection;
   init_daemon_connection(fdp, daemon, connection);
-  init_parsing_configuration(fdp, connection, false);
+  init_parsing_configuration(fdp, connection);
   init_connection_buffer(fdp, connection);
 
+  // Manually add a parameter for parsing
+  auto add_hdr = [&](const char* name_c, const std::string& val_s) {
+    const size_t nlen = strlen(name_c);
+    const size_t vlen = val_s.size();
+    char* nbuf = static_cast<char*>(mhd_stream_alloc_memory(&connection, nlen + 1));
+    char* vbuf = static_cast<char*>(mhd_stream_alloc_memory(&connection, vlen + 1));
+    if (!nbuf || !vbuf) {
+      return;
+    }
+    memcpy(nbuf, name_c, nlen); nbuf[nlen] = '\0';
+    memcpy(vbuf, val_s.data(), vlen); vbuf[vlen] = '\0';
+    struct MHD_String name;
+    name.len  = nlen;
+    name.cstr = nbuf;
+    struct MHD_String value;
+    value.len  = vlen;
+    value.cstr = vbuf;
+    mhd_stream_add_field(&connection, MHD_VK_HEADER, &name, &value);
+  };
+  add_hdr("Host", "fuzz");
+
+  bool force_mpart = (connection.rq.app_act.head_act.data.post_parse.enc
+                        == MHD_HTTP_POST_ENCODING_MULTIPART_FORMDATA);
+  if (!force_mpart) {
+    force_mpart = ((size & 0x3Fu) == 0u);
+  }
+  if (force_mpart) {
+    if (g_mpart_boundary.empty()) {
+      g_mpart_boundary = "fuzz" + std::to_string(size ^ 0x9e3779b97f4a7c15ULL);
+    }
+    std::string ct = "multipart/form-data; boundary=" + g_mpart_boundary;
+    add_hdr("Content-Type", ct);
+  }
+
   // If we wrote a real HTTP header for multipart, parse it so Content-Type is visible
-  connection.stage = mhd_HTTP_STAGE_REQ_LINE_RECEIVING;
-  mhd_stream_get_request_line(&connection);
-  mhd_stream_switch_to_rq_headers_proc(&connection);
+  connection.stage = mhd_HTTP_STAGE_INIT;
+  bool got_line = mhd_stream_get_request_line(&connection);
+  if (got_line && connection.stage == mhd_HTTP_STAGE_REQ_LINE_RECEIVED) {
+    mhd_stream_switch_to_rq_headers_proc(&connection);
+  }
+  mhd_stream_parse_request_headers(&connection);
+
+  // Only proceed to post-parse if header parsing did not bail out
+  bool headers_ok = (connection.stage != mhd_HTTP_STAGE_START_REPLY);
+  if (!headers_ok && connection.rp.response) {
+    MHD_response_destroy(connection.rp.response);
+    connection.rp.response = nullptr;
+  }
 
   // Randomly choose how many targets to fuzz
   std::vector<int> selectors;
@@ -234,29 +266,26 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  // If multipart was selected, wrap the payload into a minimal valid multipart body using the boundary marker we stored.
-  if (connection.rq.app_act.head_act.data.post_parse.enc == MHD_HTTP_POST_ENCODING_MULTIPART_FORMDATA) {
-    // Recover boundary from the tail marker we appended in init_connection_buffer: look for "\r\n--<b>--\r\n"
-    std::string b;
-    if (connection.read_buffer && connection.read_buffer_offset > 10) {
-      const char* start = static_cast<const char*>(memchr(connection.read_buffer, '-', connection.read_buffer_offset));
-      if (start) {
-        const char* end = static_cast<const char*>(memmem(start, connection.read_buffer + connection.read_buffer_offset - start, "--\r\n", 4));
-        if (end && end > start) {
-          b.assign(start + 2, end - (start + 2));
-        }
-      }
-    }
-    if (!b.empty()) {
-      std::string wrapped;
-      wrapped.reserve(body.size() + b.size() * 2 + 64);
-      wrapped += "--"; wrapped += b; wrapped += "\r\n";
-      wrapped += "Content-Disposition: form-data; name=\"x\"\r\n\r\n";
-      wrapped += body; wrapped += "\r\n";
-      wrapped += "--"; wrapped += b; wrapped += "--\r\n";
-      body.swap(wrapped);
-      body_size = body.size();
-    }
+  // Use streaming if boundary is not empty
+  if (!g_mpart_boundary.empty()) {
+    std::string wrapped;
+    wrapped.reserve(body.size() + g_mpart_boundary.size() * 2 + 128);
+    wrapped += "\r\n--"; wrapped += g_mpart_boundary; wrapped += "\r\n";
+    wrapped += "Content-Disposition: form-data; name=\"x\"; filename=\"f\"\r\n";
+    wrapped += "Content-Type: application/octet-stream\r\n\r\n";
+    wrapped += body; wrapped += "\r\n";
+    wrapped += "--"; wrapped += g_mpart_boundary; wrapped += "--\r\n";
+    body.swap(wrapped);
+    body_size = body.size();
+  }
+
+  // Ensure at least one valid argument name value pair
+  if (connection.rq.app_act.head_act.data.post_parse.enc == MHD_HTTP_POST_ENCODING_FORM_URLENCODED) {
+    body = std::string("a=b&") + body;
+    body_size = body.size();
+  } else if (connection.rq.app_act.head_act.data.post_parse.enc == MHD_HTTP_POST_ENCODING_TEXT_PLAIN) {
+    body = std::string("a=b\r\n") + body;
+    body_size = body.size();
   }
 
   if (!use_stream_body) {
@@ -285,7 +314,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (staged) {
       // Use stream body approach if success
       connection.stage = mhd_HTTP_STAGE_BODY_RECEIVING;
-      connection.rq.have_chunked_upload = false;
+      connection.rq.have_chunked_upload = MHD_NO;
       connection.rq.cntn.cntn_size = (uint64_t) body_size;
       mhd_stream_prepare_for_post_parse(&connection);
       mhd_stream_process_request_body(&connection);
@@ -357,27 +386,61 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   // Fuzz mhd_stream_process_post_finish
-  if (connection.rq.cntn.lbuf.data) {
-    // Check if mhd_stream_process_post_finish can be called
-    bool can_finish = true;
-    if (connection.rq.u_proc.post.enc == MHD_HTTP_POST_ENCODING_FORM_URLENCODED) {
-      size_t pos = connection.rq.u_proc.post.next_parse_pos;
-      if (pos >= connection.rq.cntn.lbuf.size) {
-        mhd_daemon_extend_lbuf_up_to(&daemon, 1, &connection.rq.cntn.lbuf);
-        if (pos >= connection.rq.cntn.lbuf.size)
-          can_finish = false;
-      }
-    }
+  struct mhd_PostParserData *p = &connection.rq.u_proc.post;
+  size_t pos  = p->next_parse_pos;
+  size_t need = ((p->lbuf_used > pos) ? p->lbuf_used : pos) + 1; // +1 for NUL
+  if (connection.rq.cntn.lbuf.size < need) {
+    size_t delta = need - connection.rq.cntn.lbuf.size;
+    if (delta != 0)
+      mhd_daemon_extend_lbuf_up_to(&daemon, delta, &connection.rq.cntn.lbuf);
+  }
 
-    if (can_finish) {
-      if (connection.rq.u_proc.post.enc == MHD_HTTP_POST_ENCODING_OTHER) {
-        if (connection.rq.app_act.head_act.data.post_parse.enc == MHD_HTTP_POST_ENCODING_OTHER)
-          connection.rq.app_act.head_act.data.post_parse.enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
-        mhd_stream_prepare_for_post_parse(&connection);
-      }
-      mhd_stream_process_post_finish(&connection);
+  if (connection.rq.cntn.lbuf.data == nullptr && body_size > 0) {
+    size_t to_copy = body_size;
+    if (to_copy > p->lbuf_limit) to_copy = p->lbuf_limit;
+
+    size_t min_needed = to_copy + 1;
+    if (connection.rq.cntn.lbuf.size < min_needed) {
+      size_t delta2 = min_needed - connection.rq.cntn.lbuf.size;
+      if (delta2 != 0)
+        mhd_daemon_extend_lbuf_up_to(&daemon, delta2, &connection.rq.cntn.lbuf);
+    }
+    if (connection.rq.cntn.lbuf.data) {
+      memcpy(connection.rq.cntn.lbuf.data, body.data(), to_copy);
+      p->lbuf_used = to_copy;
     }
   }
+
+  // Fail back to Text encoding
+  if (p->enc == MHD_HTTP_POST_ENCODING_OTHER) {
+    p->enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
+  }
+  mhd_stream_prepare_for_post_parse(&connection);
+  mhd_stream_process_post_finish(&connection);
+
+  bool can_finish = (connection.rq.cntn.lbuf.data != nullptr);
+  if (can_finish && connection.rq.u_proc.post.enc == MHD_HTTP_POST_ENCODING_FORM_URLENCODED) {
+    size_t pos = connection.rq.u_proc.post.next_parse_pos;
+    if (pos >= connection.rq.cntn.lbuf.size) {
+      mhd_daemon_extend_lbuf_up_to(&daemon, 1, &connection.rq.cntn.lbuf);
+      if (pos >= connection.rq.cntn.lbuf.size)
+        can_finish = false;
+    }
+  }
+
+  if (can_finish) {
+    if (connection.rq.u_proc.post.enc == MHD_HTTP_POST_ENCODING_OTHER) {
+      if (connection.rq.app_act.head_act.data.post_parse.enc == MHD_HTTP_POST_ENCODING_OTHER)
+        connection.rq.app_act.head_act.data.post_parse.enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
+      mhd_stream_prepare_for_post_parse(&connection);
+    }
+    mhd_stream_process_post_finish(&connection);
+  }
+
+  // Post process response
+  mhd_stream_switch_from_recv_to_send(&connection);
+  mhd_stream_process_req_recv_finished(&connection);
+  mhd_stream_release_write_buffer(&connection);
 
   // Release buffers in daemon to avoid memory leakage
   if (connection.rq.cntn.lbuf.data != nullptr || connection.rq.cntn.lbuf.size != 0) {
