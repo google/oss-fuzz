@@ -15,13 +15,6 @@
 #
 ################################################################################
 
-# Fix sanitizer
-ORIGINAL_SANITIZER="${SANITIZER:-}"
-
-if [ "$SANITIZER" = "coverage" ] || [ "$SANITIZER" = "introspector" ] || [ "$SANITIZER" = "none" ]; then
-    export SANITIZER="address"
-fi
-
 # Configure arguments for gn build
 ARGS='is_asan = true
  is_component_build = false
@@ -36,10 +29,16 @@ ARGS='is_asan = true
  use_reclient = false
  use_remoteexec = false
  use_siso = false
+ treat_warnings_as_errors = false
+ libcxx_is_shared = false
  v8_enable_backtrace = true
  v8_enable_slow_dchecks = false
  v8_optimized_debug = false
  v8_enable_fast_mksnapshot = true'
+
+if [[ -n "${INDEXER_BUILD:-}" ]]; then
+    ARGS="$ARGS clang_base_path=\"/opt/toolchain\""
+fi
 
 # Generate ninja file for build
 gn gen out/fuzz --args="$ARGS"
@@ -50,7 +49,5 @@ ninja -C out/fuzz d8 -j$(nproc)
 # Copy binary to $OUT
 cp ./out/fuzz/{d8,snapshot_blob.bin} $OUT
 
-# Reset sanitizer
-if [ -n "$ORIGINAL_SANITIZER" ]; then
-    export SANITIZER="$ORIGINAL_SANITIZER"
-fi
+if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" || -n "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
+
