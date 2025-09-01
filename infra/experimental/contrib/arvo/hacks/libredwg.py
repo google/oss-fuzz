@@ -1,6 +1,6 @@
 """LibreDWG project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class LibreDWGHack(ProjectHack):
@@ -14,7 +14,3 @@ class LibreDWGHack(ProjectHack):
     """Fix LibreDWG build script issues."""
     dft.replace(r'^make$', 'make -j`nproc`\n')
     return True
-
-
-# Register the hack
-register_hack("libredwg", LibreDWGHack)

@@ -1,6 +1,6 @@
 """LCMS project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class LCMSHack(ProjectHack):
@@ -11,7 +11,3 @@ class LCMSHack(ProjectHack):
     # TODO: improve this tmp patch
     dft.replace(r'#add more seeds from the testbed dir.*\n', "")
     return True
-
-
-# Register the hack
-register_hack("lcms", LCMSHack)

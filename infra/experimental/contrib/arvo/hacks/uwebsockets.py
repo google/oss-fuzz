@@ -1,6 +1,6 @@
 """uWebSockets project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class UWebSocketsHack(ProjectHack):
@@ -16,7 +16,3 @@ class UWebSocketsHack(ProjectHack):
     script = "sed -i 's/alexhultman/madler/g' fuzzing/Makefile"
     dft.insert_line_at(0, script)
     return True
-
-
-# Register the hack
-register_hack("uwebsockets", UWebSocketsHack)

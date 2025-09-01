@@ -1,7 +1,6 @@
 """LibreOffice project-specific hacks."""
 
-from pathlib import Path
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class LibreOfficeHack(ProjectHack):
@@ -43,7 +42,3 @@ class LibreOfficeHack(ProjectHack):
         line, 'echo "pushd instdir/program && mv *fuzzer $OUT" >> '
         '$SRC/libreoffice/bin/oss-fuzz-build.sh')
     return True
-
-
-# Register the hack
-register_hack("libreoffice", LibreOfficeHack)

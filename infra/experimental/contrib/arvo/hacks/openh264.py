@@ -1,6 +1,6 @@
 """OpenH264 project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class OpenH264Hack(ProjectHack):
@@ -24,7 +24,3 @@ class OpenH264Hack(ProjectHack):
     if starts != -1 and ends != -1:
       dft.remove_range(starts, ends)
     return True
-
-
-# Register the hack
-register_hack("openh264", OpenH264Hack)

@@ -1,7 +1,7 @@
 """ImageMagick project-specific hacks."""
 
 from pathlib import Path
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class ImageMagickHack(ProjectHack):
@@ -28,7 +28,3 @@ class ImageMagickHack(ProjectHack):
       with open(target, 'w', encoding='utf-8') as f:
         f.write("\n".join(lines))
     return True
-
-
-# Register the hack
-register_hack("imagemagick", ImageMagickHack)

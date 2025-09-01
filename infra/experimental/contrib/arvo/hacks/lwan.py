@@ -1,6 +1,6 @@
 """Lwan project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class LwanHack(ProjectHack):
@@ -11,7 +11,3 @@ class LwanHack(ProjectHack):
     dft.str_replace('git://github.com/lpereira/lwan',
                     'https://github.com/lpereira/lwan.git')
     return True
-
-
-# Register the hack
-register_hack("lwan", LwanHack)

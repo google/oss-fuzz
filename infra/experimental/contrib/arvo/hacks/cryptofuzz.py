@@ -1,6 +1,6 @@
 """Cryptofuzz project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class CryptofuzzHack(ProjectHack):
@@ -14,7 +14,3 @@ class CryptofuzzHack(ProjectHack):
         "RUN sed -n -i '/^# setup source paths$/,$p' $SRC/libressl/update.sh")
 
     return True
-
-
-# Register the hack
-register_hack("cryptofuzz", CryptofuzzHack)

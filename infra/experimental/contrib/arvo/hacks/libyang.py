@@ -1,6 +1,6 @@
 """LibYang project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class LibYangHack(ProjectHack):
@@ -13,7 +13,3 @@ class LibYangHack(ProjectHack):
         "RUN git clone https://github.com/PCRE2Project/pcre2 pcre2\n"
         "RUN ")
     return True
-
-
-# Register the hack
-register_hack("libyang", LibYangHack)

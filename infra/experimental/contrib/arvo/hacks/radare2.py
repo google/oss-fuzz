@@ -1,6 +1,6 @@
 """Radare2 project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class Radare2Hack(ProjectHack):
@@ -11,7 +11,3 @@ class Radare2Hack(ProjectHack):
     dft.str_replace("https://github.com/radare/radare2-regressions",
                     'https://github.com/rlaemmert/radare2-regressions.git')
     return True
-
-
-# Register the hack
-register_hack("radare2", Radare2Hack)

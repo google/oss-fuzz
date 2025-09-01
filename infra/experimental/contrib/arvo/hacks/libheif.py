@@ -1,6 +1,6 @@
 """LibHeif project-specific hacks."""
 
-from . import ProjectHack, register_hack, x265_fix
+from . import ProjectHack, x265_fix
 
 
 class LibHeifHack(ProjectHack):
@@ -11,7 +11,3 @@ class LibHeifHack(ProjectHack):
     # Apply x265 fixes
     x265_fix(dft)
     return True
-
-
-# Register the hack
-register_hack("libheif", LibHeifHack)

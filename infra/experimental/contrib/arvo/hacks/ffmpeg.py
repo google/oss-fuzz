@@ -1,6 +1,6 @@
 """FFmpeg project-specific hacks."""
 
-from . import ProjectHack, register_hack, x265_fix
+from . import ProjectHack, x265_fix
 
 
 class FFmpegHack(ProjectHack):
@@ -11,7 +11,3 @@ class FFmpegHack(ProjectHack):
     # Apply x265 fixes
     x265_fix(dft)
     return True
-
-
-# Register the hack
-register_hack("ffmpeg", FFmpegHack)

@@ -1,6 +1,6 @@
 """Skia project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class SkiaHack(ProjectHack):
@@ -13,7 +13,3 @@ class SkiaHack(ProjectHack):
     dft.insert_line_after('COPY build.sh $SRC/',
                           "RUN sed -i 's/cp.*zip.*//g' $SRC/build.sh")
     return True
-
-
-# Register the hack
-register_hack("skia", SkiaHack)

@@ -1,6 +1,6 @@
 """WolfSSL project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class WolfSSLHack(ProjectHack):
@@ -16,7 +16,3 @@ class WolfSSLHack(ProjectHack):
         '$SRC/corpus_wolfssl_disable-fastmath.zip', "RUN touch 0xdeadbeef && "
         "zip $SRC/corpus_wolfssl_disable-fastmath.zip 0xdeadbeef")
     return True
-
-
-# Register the hack
-register_hack("wolfssl", WolfSSLHack)

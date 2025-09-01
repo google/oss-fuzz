@@ -1,6 +1,6 @@
 """Ghostscript project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class GhostscriptHack(ProjectHack):
@@ -16,7 +16,3 @@ class GhostscriptHack(ProjectHack):
     new = "cp -r $SRC/freetype freetype"
     dft.replace(old, new)
     return True
-
-
-# Register the hack
-register_hack("ghostscript", GhostscriptHack)

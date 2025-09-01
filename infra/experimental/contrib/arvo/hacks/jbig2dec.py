@@ -1,6 +1,6 @@
 """JBIG2DEC project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class JBIG2DECHack(ProjectHack):
@@ -15,7 +15,3 @@ class JBIG2DECHack(ProjectHack):
     """Fix JBIG2DEC build script issues."""
     dft.replace('unzip.*', 'exit 0')
     return True
-
-
-# Register the hack
-register_hack("jbig2dec", JBIG2DECHack)

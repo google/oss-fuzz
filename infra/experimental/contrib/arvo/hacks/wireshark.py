@@ -1,6 +1,6 @@
 """Wireshark project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class WiresharkHack(ProjectHack):
@@ -10,7 +10,3 @@ class WiresharkHack(ProjectHack):
     """Fix Wireshark Dockerfile issues."""
     dft.replace(r"RUN git clone .*wireshark.*", "")
     return True
-
-
-# Register the hack
-register_hack("wireshark", WiresharkHack)

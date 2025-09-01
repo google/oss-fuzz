@@ -1,6 +1,6 @@
 """DuckDB project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class DuckDBHack(ProjectHack):
@@ -14,7 +14,3 @@ class DuckDBHack(ProjectHack):
     """Fix DuckDB build script issues."""
     dft.replace(r'^make$', 'make -j`nproc`\n')
     return True
-
-
-# Register the hack
-register_hack("duckdb", DuckDBHack)

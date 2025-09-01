@@ -1,6 +1,6 @@
 """DLPLibs project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class DLPLibsHack(ProjectHack):
@@ -11,7 +11,3 @@ class DLPLibsHack(ProjectHack):
     dft.replace(r"ADD", '# ADD')
     dft.replace(r"RUN wget", '#RUN wget')
     return True
-
-
-# Register the hack
-register_hack("dlplibs", DLPLibsHack)

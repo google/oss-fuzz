@@ -1,6 +1,6 @@
 """YARA project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class YARAHack(ProjectHack):
@@ -13,7 +13,3 @@ class YARAHack(ProjectHack):
           "RUN git clone https://github.com/VirusTotal/yara.git",
           "RUN apt install -y bison")
     return True
-
-
-# Register the hack
-register_hack("yara", YARAHack)

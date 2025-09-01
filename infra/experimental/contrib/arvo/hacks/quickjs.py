@@ -1,6 +1,6 @@
 """QuickJS project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class QuickJSHack(ProjectHack):
@@ -11,7 +11,3 @@ class QuickJSHack(ProjectHack):
     dft.str_replace('https://github.com/horhof/quickjs',
                     'https://github.com/bellard/quickjs')
     return True
-
-
-# Register the hack
-register_hack("quickjs", QuickJSHack)

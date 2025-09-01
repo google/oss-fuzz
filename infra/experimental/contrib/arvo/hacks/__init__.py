@@ -64,21 +64,25 @@ class ProjectHack(ABC):
     return True
 
 
-# Registry of all project hacks
-PROJECT_HACKS = {}
-
-
-def register_hack(project_name: str, hack_class: type):
-  """Register a project hack class."""
-  PROJECT_HACKS[project_name] = hack_class
-
-
 def get_project_hack(project_name: str) -> ProjectHack | None:
-  """Get a project hack instance by name."""
-  hack_class = PROJECT_HACKS.get(project_name)
-  if hack_class:
-    return hack_class()
-  return None
+  """Get a project hack instance by name using dynamic import."""
+  try:
+    # Try to import the module for this project
+    module = importlib.import_module(f".{project_name}", __name__)
+
+    # Look for a class that ends with 'Hack' and is a subclass of ProjectHack
+    for attr_name in dir(module):
+      attr = getattr(module, attr_name)
+      if (isinstance(attr, type) and issubclass(attr, ProjectHack) and
+          attr != ProjectHack):
+        return attr()
+
+    # If no hack class found, return None
+    return None
+
+  except ImportError:
+    # No hack module for this project
+    return None
 
 
 # Helper functions that can be reused across projects
@@ -95,26 +99,3 @@ def x265_fix(dft: DockerfileModifier) -> None:
   dft.replace(
       r'RUN\shg\sclone\s.*hg.videolan.org/x265\s*(x265)*', "RUN git clone "
       "https://bitbucket.org/multicoreware/x265_git.git x265\n")
-
-
-def _load_project_hacks():
-  """Dynamically load all project hack modules in this package."""
-  package_path = Path(__file__).parent
-  package_name = __name__
-
-  # Find all Python files in the hacks directory (excluding __init__.py)
-  for item in package_path.glob("*.py"):
-    if item.name == "__init__.py" or item.name.startswith("__"):
-      continue
-
-    module_name = item.stem
-    try:
-      # Import the module - this will trigger its register_hack() call
-      importlib.import_module(f".{module_name}", package_name)
-    except ImportError:
-      # Silently skip modules that fail to import - no hack to apply
-      pass
-
-
-# Load all project hacks
-_load_project_hacks()

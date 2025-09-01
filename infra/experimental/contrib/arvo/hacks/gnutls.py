@@ -1,6 +1,6 @@
 """GnuTLS project-specific hacks."""
 
-from . import ProjectHack, register_hack
+from . import ProjectHack
 
 
 class GnuTLSHack(ProjectHack):
@@ -12,7 +12,3 @@ class GnuTLSHack(ProjectHack):
     dft.replace(r".*client_corpus_no_fuzzer_mode.*", "")
     dft.replace(r".*server_corpus_no_fuzzer_mode.*", "")
     return True
-
-
-# Register the hack
-register_hack("gnutls", GnuTLSHack)
