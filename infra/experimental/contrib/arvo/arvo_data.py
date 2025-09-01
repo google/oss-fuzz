@@ -82,8 +82,7 @@ def fix_dockerfile(dockerfile_path: str | Path,
       # Pass commit_date to the hack if it needs it
       if hasattr(hack, 'set_commit_date') and commit_date:
         hack.set_commit_date(commit_date)
-      success = hack.apply_dockerfile_fixes(dft)
-      if not success:
+      if not hack.apply_dockerfile_fixes(dft):
         return False
 
   dft.clean_comments()
@@ -107,9 +106,7 @@ def fix_build_script(file_path: Path, project_name: str) -> bool:
 
   # Apply project-specific build script hacks
   hack = get_project_hack(project_name)
-  if hack:
-    success = hack.apply_build_script_fixes(dft)
-    if not success:
+  if hack and not hack.apply_build_script_fixes(dft):
       return False
 
   return dft.flush()
@@ -130,11 +127,8 @@ def extra_scripts(project_name: str, source_dir: Path) -> bool:
     """
   # Apply project-specific extra fixes
   hack = get_project_hack(project_name)
-  if hack:
-    success = hack.apply_extra_fixes(source_dir)
-    if not success:
-      return False
-
+  if hack and not hack.apply_extra_fixes(source_dir):
+    return False
   return True
 
 
