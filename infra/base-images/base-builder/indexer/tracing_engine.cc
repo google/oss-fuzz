@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 
 constexpr int kMaxTraceSize = 64 * 1024;
@@ -39,6 +40,8 @@ struct CoverageData {
 };
 
 static CoverageData* coverage_data;
+
+static pid_t GetTID() { return static_cast<pid_t>(syscall(SYS_gettid)); }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t n);
 
@@ -57,7 +60,7 @@ extern "C" size_t LLVMFuzzerMutate([[maybe_unused]] uint8_t* Data,
 
 extern "C" void __sanitizer_cov_trace_pc_guard_init(uint32_t* start,
                                                     uint32_t* stop) {
-  static uint64_t N;  // Counter for the guards.
+  static uint32_t N;  // Counter for the guards.
   if (start == stop || *start) return;
   for (uint32_t* x = start; x < stop; x++) *x = ++N;
 }
@@ -75,7 +78,7 @@ extern "C" void __sanitizer_cov_trace_pc_guard(uint32_t* guard) {
     ~ResetInCallback() { in_callback = false; }
   } reset_in_callback;
 
-  thread_local pid_t thread_id = gettid();
+  thread_local pid_t thread_id = GetTID();
   if (thread_id != coverage_data->main_thread_id) {
     return;
   }
@@ -122,7 +125,7 @@ void WriteTrace() {
 void Init() {
   coverage_data = new CoverageData();
   // For now, only record PCs from the main thread.
-  coverage_data->main_thread_id = gettid();
+  coverage_data->main_thread_id = GetTID();
   // Dump coverage on exit.
   atexit(WriteTrace);
   __sanitizer_set_death_callback(WriteTrace);
