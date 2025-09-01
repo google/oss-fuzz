@@ -13,8 +13,6 @@ class CryptofuzzHack(ProjectHack):
         "RUN cd $SRC/libressl && ./update.sh",
         "RUN sed -n -i '/^# setup source paths$/,$p' $SRC/libressl/update.sh")
 
-    # Remove cryptofuzz-corpora line (from old implementation)
-    dft.replace(r".*https://github.com/guidovranken/cryptofuzz-corpora.*", "")
     return True
 
 
