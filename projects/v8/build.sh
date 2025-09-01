@@ -48,6 +48,3 @@ ninja -C out/fuzz d8 -j$(nproc)
 
 # Copy binary to $OUT
 cp ./out/fuzz/{d8,snapshot_blob.bin} $OUT
-
-if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" || -n "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
-
