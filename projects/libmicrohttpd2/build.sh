@@ -34,6 +34,11 @@ for fuzzer in $FUZZERS; do
       extra_src="$SRC/mhd_helper.cpp"
       ;;
   esac
+  case "$fuzzer" in
+    fuzz_connection)
+      extra_src="$SRC/connection_helper.cpp"
+      ;;
+  esac
 
   $CXX $CXXFLAGS -DHAVE_CONFIG_H "$SRC/$fuzzer.cpp" $extra_src \
     -Wno-unused-parameter -Wno-unused-value -pthread \
