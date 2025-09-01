@@ -107,7 +107,7 @@ def fix_build_script(file_path: Path, project_name: str) -> bool:
   # Apply project-specific build script hacks
   hack = get_project_hack(project_name)
   if hack and not hack.apply_build_script_fixes(dft):
-      return False
+    return False
 
   return dft.flush()
 

@@ -5,6 +5,8 @@ for various OSS-Fuzz projects. Each project has its own module with dedicated
 hack functions.
 """
 
+import importlib
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -95,8 +97,24 @@ def x265_fix(dft: DockerfileModifier) -> None:
       "https://bitbucket.org/multicoreware/x265_git.git x265\n")
 
 
-# Import all project hacks to register them
-from . import (cryptofuzz, curl, dlplibs, duckdb, ffmpeg, flac, freeradius,
-               gdal, ghostscript, gnutls, graphicsmagick, imagemagick, jbig2dec,
-               lcms, libheif, libredwg, libreoffice, libyang, lwan, openh264,
-               quickjs, radare2, skia, uwebsockets, wireshark, wolfssl, yara)
+def _load_project_hacks():
+  """Dynamically load all project hack modules in this package."""
+  package_path = Path(__file__).parent
+  package_name = __name__
+
+  # Find all Python files in the hacks directory (excluding __init__.py)
+  for item in package_path.glob("*.py"):
+    if item.name == "__init__.py" or item.name.startswith("__"):
+      continue
+
+    module_name = item.stem
+    try:
+      # Import the module - this will trigger its register_hack() call
+      importlib.import_module(f".{module_name}", package_name)
+    except ImportError:
+      # Silently skip modules that fail to import - no hack to apply
+      pass
+
+
+# Load all project hacks
+_load_project_hacks()
