@@ -30,6 +30,59 @@ extern "C" {
   #include "stream_process_request.h"
 }
 
+// Helper to fuzz mhd_stream_process_post_finish
+static void fuzz_mhd_stream_process_post_finish(MHD_Connection& connection, MHD_Daemon& daemon, const std::string& body) {
+  struct mhd_PostParserData *p = &connection.rq.u_proc.post;
+  size_t pos  = p->next_parse_pos;
+  size_t need = ((p->lbuf_used > pos) ? p->lbuf_used : pos) + 1; // +1 for NUL
+  if (connection.rq.cntn.lbuf.size < need) {
+    size_t delta = need - connection.rq.cntn.lbuf.size;
+    if (delta != 0)
+      mhd_daemon_extend_lbuf_up_to(&daemon, delta, &connection.rq.cntn.lbuf);
+  }
+
+  if (connection.rq.cntn.lbuf.data == nullptr && !body.empty()) {
+    size_t to_copy = (body.size() < (size_t)p->lbuf_limit) ? body.size() : (size_t)p->lbuf_limit;
+    size_t min_needed = to_copy + 1; // 1 byte for \0 terminator
+    if (connection.rq.cntn.lbuf.size < min_needed) {
+      size_t delta = min_needed - connection.rq.cntn.lbuf.size;
+      if (delta != 0)
+        mhd_daemon_extend_lbuf_up_to(&daemon, delta, &connection.rq.cntn.lbuf);
+    }
+    if (connection.rq.cntn.lbuf.data != nullptr) {
+      memcpy(connection.rq.cntn.lbuf.data, body.data(), to_copy);
+      p->lbuf_used = to_copy;
+    }
+  }
+
+  // Fail back to Text encoding
+  if (p->enc == MHD_HTTP_POST_ENCODING_OTHER) {
+    p->enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
+  }
+  mhd_stream_prepare_for_post_parse(&connection);
+  mhd_stream_process_post_finish(&connection);
+
+  bool can_finish = (connection.rq.cntn.lbuf.data != nullptr);
+  if (can_finish && connection.rq.u_proc.post.enc == MHD_HTTP_POST_ENCODING_FORM_URLENCODED) {
+    size_t pos = connection.rq.u_proc.post.next_parse_pos;
+    if (pos >= connection.rq.cntn.lbuf.size) {
+      mhd_daemon_extend_lbuf_up_to(&daemon, 1, &connection.rq.cntn.lbuf);
+      if (pos >= connection.rq.cntn.lbuf.size)
+        can_finish = false;
+    }
+  }
+
+  if (can_finish) {
+    if (connection.rq.u_proc.post.enc == MHD_HTTP_POST_ENCODING_OTHER) {
+      if (connection.rq.app_act.head_act.data.post_parse.enc == MHD_HTTP_POST_ENCODING_OTHER)
+        connection.rq.app_act.head_act.data.post_parse.enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
+      mhd_stream_prepare_for_post_parse(&connection);
+    }
+    mhd_stream_process_post_finish(&connection);
+  }
+}
+
+
 // Initialising the memory pool
 extern "C" int LLVMFuzzerInitialize() {
   g_pool = mhd_pool_create(g_pool_size, MHD_MEMPOOL_ZEROING_ON_RESET);
@@ -134,57 +187,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   // Fuzz mhd_stream_process_post_finish
-  struct mhd_PostParserData *p = &connection.rq.u_proc.post;
-  size_t pos  = p->next_parse_pos;
-  size_t need = ((p->lbuf_used > pos) ? p->lbuf_used : pos) + 1; // +1 for NUL
-  if (connection.rq.cntn.lbuf.size < need) {
-    size_t delta = need - connection.rq.cntn.lbuf.size;
-    if (delta != 0)
-      mhd_daemon_extend_lbuf_up_to(&daemon, delta, &connection.rq.cntn.lbuf);
-  }
+  fuzz_mhd_stream_process_post_finish(connection, daemon, body);
 
-  if (connection.rq.cntn.lbuf.data == nullptr && body_size > 0) {
-    size_t to_copy = body_size;
-    if (to_copy > p->lbuf_limit) to_copy = p->lbuf_limit;
-
-    size_t min_needed = to_copy + 1;
-    if (connection.rq.cntn.lbuf.size < min_needed) {
-      size_t delta2 = min_needed - connection.rq.cntn.lbuf.size;
-      if (delta2 != 0)
-        mhd_daemon_extend_lbuf_up_to(&daemon, delta2, &connection.rq.cntn.lbuf);
-    }
-    if (connection.rq.cntn.lbuf.data) {
-      memcpy(connection.rq.cntn.lbuf.data, body.data(), to_copy);
-      p->lbuf_used = to_copy;
-    }
-  }
-
-  // Fail back to Text encoding
-  if (p->enc == MHD_HTTP_POST_ENCODING_OTHER) {
-    p->enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
-  }
-  mhd_stream_prepare_for_post_parse(&connection);
-  mhd_stream_process_post_finish(&connection);
-
-  bool can_finish = (connection.rq.cntn.lbuf.data != nullptr);
-  if (can_finish && connection.rq.u_proc.post.enc == MHD_HTTP_POST_ENCODING_FORM_URLENCODED) {
-    size_t pos = connection.rq.u_proc.post.next_parse_pos;
-    if (pos >= connection.rq.cntn.lbuf.size) {
-      mhd_daemon_extend_lbuf_up_to(&daemon, 1, &connection.rq.cntn.lbuf);
-      if (pos >= connection.rq.cntn.lbuf.size)
-        can_finish = false;
-    }
-  }
-
-  if (can_finish) {
-    if (connection.rq.u_proc.post.enc == MHD_HTTP_POST_ENCODING_OTHER) {
-      if (connection.rq.app_act.head_act.data.post_parse.enc == MHD_HTTP_POST_ENCODING_OTHER)
-        connection.rq.app_act.head_act.data.post_parse.enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
-      mhd_stream_prepare_for_post_parse(&connection);
-    }
-    mhd_stream_process_post_finish(&connection);
-  }
-
+  // Final cleanup to avoid memory leak
   final_cleanup(connection, daemon);
+
   return 0;
 }

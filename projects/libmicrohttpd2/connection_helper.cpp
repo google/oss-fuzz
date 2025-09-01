@@ -37,6 +37,44 @@ void destroy_global_pool() {
   if (g_pool) { mhd_pool_destroy(g_pool); g_pool = nullptr; }
 }
 
+// Helper to destroy error response
+static bool destroy_error_response(MHD_Connection c) {
+  if (c.stage == mhd_HTTP_STAGE_START_REPLY) {
+    MHD_response_destroy(c.rp.response);
+    c.rp.response = nullptr;
+    return true;
+  }
+
+  return false;
+}
+
+// Helper to randomly choose HTTP methods
+static std::string pick_method(FuzzedDataProvider& fdp) {
+  static const char* kMethods[] = {
+    "GET","POST","PUT","HEAD","DELETE","CONNECT","OPTIONS","TRACE","*"
+  };
+  return std::string(fdp.PickValueInArray(kMethods));
+}
+
+// Helper to randomly choose http versions
+static std::string pick_http_version(FuzzedDataProvider& fdp) {
+  // Common + a chance to be malformed to trigger version errors.
+  switch (fdp.ConsumeIntegralInRange<int>(0, 5)) {
+    case 0: return "HTTP/1.1";
+    case 1: return "HTTP/1.0";
+    case 2: return "HTTP/2.0";
+    case 3: return "HTTP/0.9";
+    case 4: return "HTTX/1.1";
+    default: {
+      std::string s = "HTTP/";
+      s.push_back(char('0' + fdp.ConsumeIntegralInRange<int>(0,9)));
+      s.push_back('.');
+      s.push_back(char('0' + fdp.ConsumeIntegralInRange<int>(0,9)));
+      return s;
+    }
+  }
+}
+
 // Dummy upload actions
 const struct MHD_UploadAction kContinueAction = {
   mhd_UPLOAD_ACTION_CONTINUE, { nullptr }
@@ -80,6 +118,13 @@ void init_daemon_connection(FuzzedDataProvider& fdp,
   d.req_cfg.strictness = static_cast<enum MHD_ProtocolStrictLevel>(
       fdp.ConsumeIntegralInRange<int>(0, 2));
 
+  // Safe guard for buffer space
+  if (fdp.ConsumeBool()) {
+    const size_t clamp = fdp.ConsumeIntegralInRange<size_t>(64, 512);
+    if (d.req_cfg.large_buf.space_left > clamp)
+      d.req_cfg.large_buf.space_left = clamp;
+  }
+
   // Configure connection request and general settings
   c.discard_request = false;
   c.suspended = false;
@@ -90,7 +135,7 @@ void init_daemon_connection(FuzzedDataProvider& fdp,
 void init_connection_buffer(FuzzedDataProvider& fdp, MHD_Connection& c) {
   // Prepare connection buffer in memory pool
   size_t required = 0;
-  const size_t capacity = fdp.ConsumeIntegralInRange<size_t>(256, 8192);
+  const size_t capacity = fdp.ConsumeIntegralInRange<size_t>(512, 16384);
   char* buf = static_cast<char*>(mhd_pool_try_alloc(c.pool, capacity, &required));
   if (!buf) {
     c.read_buffer = nullptr;
@@ -99,38 +144,121 @@ void init_connection_buffer(FuzzedDataProvider& fdp, MHD_Connection& c) {
     return;
   }
 
-  // Always craft a full request line with headers
-  const MHD_HTTP_PostEncoding enc = c.rq.app_act.head_act.data.post_parse.enc;
-  std::string req;
-  req.reserve(256);
-  req += "POST /upload HTTP/1.1\r\nHost: fuzz\r\nContent-Type: ";
+  // Randomly choose configuration
+  std::string hdrs;
+  const std::string method = pick_method(fdp);
+  const std::string version = pick_http_version(fdp);
+  const std::string target  = (method == "*") ? "*" : (fdp.ConsumeBool() ? "/upload" : "/x?y=z");
+
+  // Randomly break line endings in request line
+  const bool bare_lf = fdp.ConsumeBool();
+  const bool bare_cr = (!bare_lf) && fdp.ConsumeBool();
+  auto EOL = [&](bool final=false) {
+    if (bare_lf) {
+      return std::string("\n");
+    }
+    if (bare_cr) {
+      return std::string("\r");
+    }
+
+    return std::string("\r\n");
+  };
+  std::string req = method + " " + target + " " + version + EOL();
+
+  // Host headers
+  int host_count = 0;
+  if (version == "HTTP/1.1") {
+    host_count = fdp.ConsumeIntegralInRange<int>(0,2);
+   } else {
+    host_count = fdp.ConsumeIntegralInRange<int>(0,1);
+   }
+
+  for (int i = 0; i < host_count; ++i) {
+    if (fdp.ConsumeBool()) {
+      hdrs += " Host: fuzz" + std::to_string(i) + EOL();
+    } else if (fdp.ConsumeBool()) {
+      hdrs += "Host : fuzz" + std::to_string(i) + EOL();
+    } else {
+      hdrs += "Host: fuzz" + std::to_string(i) + EOL();
+    }
+  }
+
+  // Transfer-Encoding and Content-Length headers
+  const bool add_te = fdp.ConsumeBool();
+  const bool add_cl = fdp.ConsumeBool();
+  std::string te_val = fdp.PickValueInArray({"chunked","gzip","br","compress"});
+  if (add_te) {
+    hdrs += "Transfer-Encoding: " + te_val + EOL();
+  }
+  if (add_cl) {
+    std::string cl;
+    switch (fdp.ConsumeIntegralInRange<int>(0,3)) {
+      case 0: cl = "0"; break;
+      case 1: cl = std::to_string(fdp.ConsumeIntegralInRange<uint32_t>(0, 1<<20));
+              break;
+      case 2: cl = "18446744073709551616"; break;
+      default: cl = "xyz"; break;
+    }
+    hdrs += "Content-Length: " + cl + EOL();
+  }
+
+  // Random minimum headers
+  if (fdp.ConsumeBool()) {
+    hdrs += (fdp.ConsumeBool() ? "Expect: 100-continue" : "Expect: something-weird") + EOL();
+  }
+
   bool detect_mpart = false;
-  switch (enc) {
+  switch (c.rq.app_act.head_act.data.post_parse.enc) {
     case MHD_HTTP_POST_ENCODING_MULTIPART_FORMDATA:
       g_mpart_boundary = "fuzz" + std::to_string(fdp.ConsumeIntegral<uint32_t>());
-      req += "multipart/form-data; boundary=" + g_mpart_boundary;
+      hdrs += "Content-Type: multipart/form-data; boundary=" + g_mpart_boundary + EOL();
       break;
     case MHD_HTTP_POST_ENCODING_FORM_URLENCODED:
-      req += "application/x-www-form-urlencoded";
+      hdrs += "Content-Type: application/x-www-form-urlencoded" + EOL();
       break;
     case MHD_HTTP_POST_ENCODING_TEXT_PLAIN:
-      req += "text/plain";
+      hdrs += "Content-Type: text/plain" + EOL();
       break;
-    case MHD_HTTP_POST_ENCODING_OTHER:
-    default:
-      // low-probability detection lane to trigger detect_* from headers
+    default: case MHD_HTTP_POST_ENCODING_OTHER:
       detect_mpart = fdp.ConsumeBool();
       if (detect_mpart) {
         g_mpart_boundary = "fuzz" + std::to_string(fdp.ConsumeIntegral<uint32_t>());
-        req += "multipart/form-data; boundary=" + g_mpart_boundary;
+        hdrs += "Content-Type: multipart/form-data; boundary=" + g_mpart_boundary + EOL();
       } else {
-        req += (fdp.ConsumeBool() ? "application/x-www-form-urlencoded" : "text/plain");
+        hdrs += std::string("Content-Type: ")
+             + (fdp.ConsumeBool() ? "application/x-www-form-urlencoded" : "text/plain") + EOL();
       }
       break;
   }
-  req += "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
-  const size_t n = (req.size() <= capacity) ? req.size() : capacity;
-  memcpy(buf, req.data(), n);
+
+  // Randomly add some chunked headers
+  const bool add_te_chunked = fdp.ConsumeBool();
+  if (add_te_chunked) {
+    hdrs += "Transfer-Encoding: chunked" + EOL();
+  }
+  if (fdp.ConsumeBool()) {
+    const uint32_t cl = fdp.ConsumeIntegralInRange<uint32_t>(0, 256);
+    hdrs += "Content-Length: " + std::to_string(cl) + EOL();
+  }
+  if (add_te_chunked && fdp.ConsumeBool()) {
+    if (fdp.ConsumeBool())
+      hdrs += "Trailer: X-Fuzz-Trace" + EOL();
+    else
+      hdrs += "Trailer: X-One, X-Two" + EOL();
+  }
+  if (fdp.ConsumeBool()) {
+    hdrs += (fdp.ConsumeBool() ? "Expect: 100-continue" : "Expect: something-weird") + EOL();
+  }
+
+  // Connection ending line
+  hdrs += "Connection: close" + EOL();
+  std::string end = EOL() + EOL();
+
+  // Write into the read buffer
+  std::string full = req + hdrs + end;
+  const size_t n = (full.size() <= capacity) ? full.size() : capacity;
+  memcpy(buf, full.data(), n);
+
   c.read_buffer = buf;
   c.read_buffer_size = capacity;
   c.read_buffer_offset = n;
@@ -185,6 +313,12 @@ void prepare_headers_and_parse(MHD_Connection& connection, size_t size) {
     mhd_stream_add_field(&connection, MHD_VK_HEADER, &name, &value);
   };
   add_hdr("Host", "fuzz");
+  if ((size & 3u) == 0u) {
+    add_hdr("Transfer-Encoding", "chunked");
+  }
+  if ((size & 7u) == 0u) {
+    add_hdr("Content-Length", "0");
+  }
 
   bool force_mpart = (connection.rq.app_act.head_act.data.post_parse.enc
                         == MHD_HTTP_POST_ENCODING_MULTIPART_FORMDATA);
@@ -202,17 +336,16 @@ void prepare_headers_and_parse(MHD_Connection& connection, size_t size) {
   // If we wrote a real HTTP header for multipart, parse it so Content-Type is visible
   connection.stage = mhd_HTTP_STAGE_INIT;
   bool got_line = mhd_stream_get_request_line(&connection);
+  if (destroy_error_response(connection)) {
+    return;
+  }
   if (got_line && connection.stage == mhd_HTTP_STAGE_REQ_LINE_RECEIVED) {
     mhd_stream_switch_to_rq_headers_proc(&connection);
   }
   mhd_stream_parse_request_headers(&connection);
 
   // Only proceed to post-parse if header parsing did not bail out
-  bool headers_ok = (connection.stage != mhd_HTTP_STAGE_START_REPLY);
-  if (!headers_ok && connection.rp.response) {
-    MHD_response_destroy(connection.rp.response);
-    connection.rp.response = nullptr;
-  }
+  destroy_error_response(connection);
 }
 
 void prepare_body_and_process(MHD_Connection& connection, std::string& body, size_t body_size, bool use_stream_body) {
@@ -235,19 +368,54 @@ void prepare_body_and_process(MHD_Connection& connection, std::string& body, siz
     mhd_stream_post_parse(&connection, &body_size, &body[0]);
   } else {
     // Try prepare the body by streaming connection buffer
+    const bool want_chunked = (connection.rq.have_chunked_upload == MHD_YES);
+
+    std::string to_feed;
+    if (want_chunked) {
+      auto append_chunk = [&](const char* data, size_t len) {
+        char hex[32];
+        const int n = snprintf(hex, sizeof(hex), "%zx", len);
+        to_feed.append(hex, (size_t)n);
+        if ((len & 3u) == 0u) {
+          to_feed += ";ext=1";
+        }
+        to_feed += "\r\n";
+        to_feed.append(data, len);
+        to_feed += "\r\n";
+      };
+      if (body_size <= 32) {
+        append_chunk(body.data(), body_size);
+      } else {
+        const size_t mid = body_size / 2;
+        append_chunk(body.data(), mid);
+        append_chunk(body.data() + mid, body_size - mid);
+      }
+      to_feed += "0\r\n";
+      if (body_size & 1) {
+        to_feed += "X-Fuzz-Trace: 1\r\n\r\n";
+      } else {
+        to_feed += "\r\n";
+      }
+    } else {
+      // Non-chunked body is handled as is
+      to_feed.assign(body.data(), body_size);
+    }
+
+    // Stage into the connection read buffer (allocate if needed).
+    size_t feed_sz = to_feed.size();
     bool staged = false;
-    if (connection.read_buffer && connection.read_buffer_size >= body_size) {
-      memcpy(connection.read_buffer, body.data(), body_size);
-      connection.read_buffer_offset = body_size;
+    if (connection.read_buffer && connection.read_buffer_size >= feed_sz) {
+      memcpy(connection.read_buffer, to_feed.data(), feed_sz);
+      connection.read_buffer_offset = feed_sz;
       staged = true;
     } else {
       size_t need = 0;
-      char *nb = (char*) mhd_pool_try_alloc(connection.pool, body_size, &need);
+      char *nb = (char*) mhd_pool_try_alloc(connection.pool, feed_sz, &need);
       if (nb) {
-        memcpy(nb, body.data(), body_size);
+        memcpy(nb, to_feed.data(), feed_sz);
         connection.read_buffer = nb;
-        connection.read_buffer_size = body_size;
-        connection.read_buffer_offset = body_size;
+        connection.read_buffer_size = feed_sz;
+        connection.read_buffer_offset = feed_sz;
         staged = true;
       }
     }
