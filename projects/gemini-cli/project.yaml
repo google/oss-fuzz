@@ -16,10 +16,12 @@
 
 homepage: "https://github.com/google-gemini/gemini-cli"
 language: go
-primary_contact: "ntaylor@google.com"  # Project lead
+primary_contact: "ntaylor@google.com"  # Project lead (Nate Taylor)
 auto_ccs:
   - "reconsumeralization@gmail.com"  # Security researcher/contributor
-  - "allen.hutchison@google.com"     # Lead director/commander
+  - "aryagummadi@google.com"         # Google maintainer (commit history)
+  - "bbiggs@google.com"              # Google maintainer (commit history)
+  - "bryanmorgan@google.com"         # Google maintainer (commit history)
   - "security@google.com"
 main_repo: "https://github.com/google-gemini/gemini-cli.git"
 file_github_issue: true
