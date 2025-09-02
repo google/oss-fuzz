@@ -68,7 +68,6 @@ ENV CCC "clang++"
 ENV CFLAGS -O1 \
   -fno-omit-frame-pointer \
   -gline-tables-only \
-  -Wno-error=enum-constexpr-conversion \
   -Wno-error=incompatible-function-pointer-types \
   -Wno-error=int-conversion \
   -Wno-error=deprecated-declarations \
