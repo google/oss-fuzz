@@ -18,7 +18,8 @@
 # build project
 autoconf
 autoheader
-./configure
+./configure || true
+cat config.log
 make -j$(nproc) libhts.a test/fuzz/hts_open_fuzzer.o
 
 # build fuzzers

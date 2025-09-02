@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 ################################################################################
-
-cmake . -DBUILD_TESTING=ON
+export CXXFLAGS="${CXXFLAGS} -std=c++17 -Wno-enum-constexpr-conversion -Wno-character-conversion -Wno-error"
+cmake . -DBUILD_TESTING=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 make clean
-make -j$(nproc) all
+make V=1 -j$(nproc) all
 
 # TODO(eustas): add seed corpus
 
