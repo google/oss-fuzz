@@ -19,8 +19,8 @@ language: go
 primary_contact: "reconsumeralization@gmail.com"
 auto_ccs:
   - "reconsumeralization@gmail.com"
-  - "NTaylorMullen@github.com"
-  - "allenhutchison@github.com"
+  - "ntaylor@microsoft.com"
+  - "allen.hutchison@gmail.com"
   - "security@google.com"
 main_repo: "https://github.com/google-gemini/gemini-cli.git"
 file_github_issue: true
