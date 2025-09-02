@@ -15,15 +15,6 @@
 #
 ################################################################################
 
-cd $SRC/go-118-fuzz-build
-go build .
-mv go-118-fuzz-build /root/go/bin/
-
-cd $SRC/opentelemetry-go
-
 pushd sdk/metric/internal/aggregate
-printf "package aggregate \nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./fuzz-register.go
-go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
-go mod tidy
-compile_native_go_fuzzer $(go list) FuzzGetBin FuzzGetBin
+compile_native_go_fuzzer_v2 $(go list) FuzzGetBin FuzzGetBin
 popd
