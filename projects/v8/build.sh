@@ -43,6 +43,10 @@ fi
 # Generate ninja file for build
 gn gen out/fuzz --args="$ARGS"
 echo $SANITIZER
+
+# Force re-linking.
+rm -f out/fuzz/d8
+
 # Build binary
 ninja -C out/fuzz d8 -j$(nproc)
 
