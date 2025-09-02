@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+# Bump gtest to work with llvm21: https://github.com/google/oss-fuzz/pull/13915
+sed -i 's/e2239ee6043f73722e7aa812a459f54a28552929/6910c9d9165801d8827d628cb72eb7ea9dd538c5/g' CMakeLists.txt
 cmake . -DBUILD_TESTING=ON
 make clean
 make -j$(nproc) all
