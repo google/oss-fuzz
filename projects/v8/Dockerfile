@@ -20,12 +20,15 @@ RUN apt-get update && \
         lsb-release sudo pkg-config file libc++-18-dev libc++abi-18-dev
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH=/src/depot_tools:$PATH
-WORKDIR angle
-RUN fetch angle
+RUN fetch v8
+WORKDIR v8
 
 RUN ./build/install-build-deps.sh --no-prompt
+COPY build.sh *.cc $SRC/
 
-COPY build.sh *.cc fuzzer_profile $SRC/
+ENV CLANG_TOOLCHAIN $SRC/v8/third_party/llvm-build/Release+Asserts
+ENV CLANG_VERSION 21
 
-# Add fuzzer profile
-RUN cat $SRC/fuzzer_profile >> $SRC/angle/BUILD.gn
+# Temporary hack: use an indexer built against LLVM 21.
+ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer-21 /opt/indexer/indexer
+RUN chmod +x /opt/indexer/indexer
