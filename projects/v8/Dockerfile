@@ -28,3 +28,7 @@ COPY build.sh *.cc $SRC/
 
 ENV CLANG_TOOLCHAIN $SRC/v8/third_party/llvm-build/Release+Asserts
 ENV CLANG_VERSION 21
+
+# Temporary hack: use an indexer built against LLVM 21.
+ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer-21 /opt/indexer/indexer
+RUN chmod +x /opt/indexer/indexer
