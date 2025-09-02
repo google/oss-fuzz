@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y make
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
+RUN apt-get update && apt-get install -y make curl
 RUN git clone --depth 1 https://github.com/google-gemini/gemini-cli.git
 WORKDIR /src/gemini-cli
 COPY build.sh $SRC/

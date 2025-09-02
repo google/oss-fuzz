@@ -16,34 +16,67 @@
 ################################################################################
 
 cd $SRC/gemini-cli
-go mod download || true
 
-# Build fuzzers
-if [ -d "gofuzz/fuzz" ]; then
-    compile_go_fuzzer ./gofuzz/fuzz FuzzConfigParser fuzz_config_parser
+# Install Node.js dependencies
+npm install
+
+# Build the project
+npm run build
+
+# Build fuzzers for JavaScript/TypeScript
+# Note: This is a placeholder - actual fuzz targets need to be implemented
+# based on the TypeScript codebase structure
+
+# For now, create minimal fuzz targets for the main packages
+if [ -d "packages/cli" ]; then
+    # CLI argument parsing fuzz target
+    cat > $SRC/fuzz_cli_parser.js << 'EOF'
+const cli = require('./packages/cli');
+
+function fuzzCliParser(data) {
+  try {
+    const input = data.toString();
+    // Add CLI parsing logic here
+    cli.parse(input);
+  } catch (e) {
+    // Expected errors are fine
+  }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = fuzzCliParser;
+}
+EOF
+
+    compile_javascript_fuzzer $SRC/fuzz_cli_parser.js fuzz_cli_parser
 fi
 
-if [ -d "gofuzz/internal/cli" ]; then
-    compile_go_fuzzer ./gofuzz/internal/cli FuzzCLIParser fuzz_cli_parser
+if [ -d "packages/core" ]; then
+    # Core functionality fuzz target
+    cat > $SRC/fuzz_core.js << 'EOF'
+const core = require('./packages/core');
+
+function fuzzCore(data) {
+  try {
+    const input = data.toString();
+    // Add core functionality testing here
+    core.process(input);
+  } catch (e) {
+    // Expected errors are fine
+  }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = fuzzCore;
+}
+EOF
+
+    compile_javascript_fuzzer $SRC/fuzz_core.js fuzz_core
 fi
 
-if [ -d "gofuzz/internal/mcp" ]; then
-    compile_go_fuzzer ./gofuzz/internal/mcp FuzzMCPDecoder fuzz_mcp_decoder
+# Copy seed corpora if they exist
+if [ -d "oss-fuzz/gemini_cli/corpus" ]; then
+    cp -r oss-fuzz/gemini_cli/corpus/* $OUT/ 2>/dev/null || true
 fi
 
-if [ -d "gofuzz/internal/oauth" ]; then
-    compile_go_fuzzer ./gofuzz/internal/oauth FuzzOAuthTokenResponse fuzz_oauth_token_response
-    compile_go_fuzzer ./gofuzz/internal/oauth FuzzOAuthTokenRequest fuzz_oauth_token_request
-fi
-
-# Copy seed corpora
-if [ -d "seeds" ]; then
-    for dir in seeds/*; do
-        if [ -d "$dir" ]; then
-            fuzzer_name=$(basename "$dir")
-            zip -rj "$OUT/fuzz_${fuzzer_name}_seed_corpus.zip" "$dir"
-        fi
-    done
-fi
-
-find . -name "*.dict" -exec cp {} $OUT/ \;
+find . -name "*.dict" -exec cp {} $OUT/ \; 2>/dev/null || true

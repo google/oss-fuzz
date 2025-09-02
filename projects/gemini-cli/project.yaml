@@ -15,7 +15,7 @@
 ################################################################################
 
 homepage: "https://github.com/google-gemini/gemini-cli"
-language: go
+language: javascript
 primary_contact: "ntaylor@google.com"  # Project lead (Nate Taylor)
 auto_ccs:
   - "reconsumeralization@gmail.com"  # Security researcher/contributor
