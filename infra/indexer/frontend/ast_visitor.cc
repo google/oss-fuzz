@@ -119,7 +119,7 @@ const clang::ClassTemplateSpecializationDecl* FindSpecialization(
     const clang::ClassTemplateDecl* class_template_decl,
     const llvm::ArrayRef<clang::TemplateArgument> args,
     const clang::ASTContext& context) {
-  // Without this, sugared types can lead to lookup misses (see the test delta).
+  // Without this, sugared types can lead to lookup misses.
   llvm::SmallVector<clang::TemplateArgument, 4> canonical_args;
   for (const clang::TemplateArgument& arg : args) {
     canonical_args.push_back(context.getCanonicalTemplateArgument(arg));
@@ -131,7 +131,7 @@ const clang::ClassTemplateSpecializationDecl* FindSpecialization(
   // forthcoming behavior of the object.
   void* insert_pos = nullptr;
   return const_cast<clang::ClassTemplateDecl*>(class_template_decl)
-      ->findSpecialization(args, insert_pos);
+      ->findSpecialization(canonical_args, insert_pos);
 }
 
 // Helper functions to find the closest explicit template specialization that
