@@ -57,11 +57,30 @@ _ALLOWED_CLANG_FLAGS_ONLY_WITH_PERIOD = (
     "-ffile-compilation-dir=",
 )
 
+_IGNORED_FILES = (
+    # This file seems to cause a crash in the indexer, as well as performance
+    # issues.
+    "simdutf.cpp",
+)
+
+_INDEXER_THREADS_PER_MERGE_QUEUE = 16
+_INDEXER_PER_THREAD_MEMORY = 2 * 1024**3  # 2 GiB
+
 SRC = Path(os.getenv("SRC", "/src"))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv("OUT", "/out"))
 INDEXES_PATH = Path(os.getenv("INDEXES_PATH", "/indexes"))
 FUZZER_ENGINE = os.getenv("LIB_FUZZING_ENGINE", "/usr/lib/libFuzzingEngine.a")
+
+
+def _get_available_memory() -> int:
+  """Returns the available memory in bytes."""
+  with open("/proc/meminfo", "r") as f:
+    for line in f:
+      if line.startswith("MemAvailable:"):
+        return int(line.split()[1]) * 1024
+
+  raise RuntimeError("Failed to get available memory")
 
 
 def rewrite_argv0(argv: Sequence[str], clang_toolchain: str) -> list[str]:
@@ -318,6 +337,16 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
   with (compile_commands_dir / "full_compile_commands.json").open("wt") as f:
     json.dump(linker_commands["full_compile_commands"], f, indent=2)
 
+  # Auto-tune the number of threads and merge queues according to the number
+  # of cores and available memory.
+  # Note: this might require further tuning -- this might not work well if there
+  # are multiple binaries being linked/indexed at the same time.
+  num_cores = len(os.sched_getaffinity(0))
+  num_threads = max(
+      1, min(_get_available_memory() // _INDEXER_PER_THREAD_MEMORY, num_cores)
+  )
+  merge_queues = max(1, num_threads // _INDEXER_THREADS_PER_MERGE_QUEUE)
+
   cmd = [
       _INDEXER_PATH,
       "--build_dir",
@@ -326,6 +355,10 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
       index_dir.as_posix(),
       "--source_dir",
       SRC.as_posix(),
+      "--index_threads",
+      str(num_threads),
+      "--merge_queues",
+      str(merge_queues),
   ]
   result = subprocess.run(cmd, check=False, capture_output=True)
   if result.returncode != 0:
@@ -425,7 +458,7 @@ def _filter_compile_commands(
       directory = Path(compile_command["directory"])
 
     cc_path = Path(directory / compile_command["file"])
-    if cc_path in cu_paths:
+    if cc_path in cu_paths and cc_path.name not in _IGNORED_FILES:
       filtered_compile_commands.append(compile_command)
       used_cu_paths.add(cc_path)
     else:
