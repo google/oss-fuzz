@@ -16,11 +16,10 @@
 
 homepage: "https://github.com/google-gemini/gemini-cli"
 language: go
-primary_contact: "reconsumeralization@gmail.com"
+primary_contact: "ntaylor@google.com"  # Project lead
 auto_ccs:
-  - "reconsumeralization@gmail.com"
-  - "ntaylor@microsoft.com"
-  - "allen.hutchison@gmail.com"
+  - "reconsumeralization@gmail.com"  # Security researcher/contributor
+  - "allen.hutchison@google.com"     # Lead director/commander
   - "security@google.com"
 main_repo: "https://github.com/google-gemini/gemini-cli.git"
 file_github_issue: true
