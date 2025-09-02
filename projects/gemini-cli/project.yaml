@@ -16,7 +16,15 @@
 
 homepage: "https://github.com/google-gemini/gemini-cli"
 language: go
-primary_contact: "maintainer@example.com"
+primary_contact: "reconsumeralization@gmail.com"
 auto_ccs:
-  - "security@example.com"
+  - "reconsumeralization@gmail.com"
+  - "NTaylorMullen@github.com"
+  - "allenhutchison@github.com"
+  - "security@google.com"
 main_repo: "https://github.com/google-gemini/gemini-cli.git"
+file_github_issue: true
+sanitizers:
+  - address
+  - undefined
+  - memory
