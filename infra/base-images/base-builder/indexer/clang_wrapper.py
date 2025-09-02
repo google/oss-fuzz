@@ -46,11 +46,25 @@ _INTERNAL_PATHS = ("/src/llvm-project/",)
 # When we notice a project using these flags,
 # we should figure out how to handle them.
 _DISALLOWED_CLANG_FLAGS = (
-    "-fdebug-compilation-dir=",
     "-fdebug-prefix-map=",
-    "-ffile-compilation-dir=",
     "-ffile-prefix-map=",
 )
+
+# Chromium GN builds use these flags with a period to make paths relative to
+# the out directory. This is OK.
+_ALLOWED_CLANG_FLAGS_ONLY_WITH_PERIOD = (
+    "-fdebug-compilation-dir=",
+    "-ffile-compilation-dir=",
+)
+
+_IGNORED_FILES = (
+    # This file seems to cause a crash in the indexer, as well as performance
+    # issues.
+    "simdutf.cpp",
+)
+
+_INDEXER_THREADS_PER_MERGE_QUEUE = 16
+_INDEXER_PER_THREAD_MEMORY = 2 * 1024**3  # 2 GiB
 
 SRC = Path(os.getenv("SRC", "/src"))
 # On OSS-Fuzz build infra, $OUT is not /out.
@@ -59,22 +73,32 @@ INDEXES_PATH = Path(os.getenv("INDEXES_PATH", "/indexes"))
 FUZZER_ENGINE = os.getenv("LIB_FUZZING_ENGINE", "/usr/lib/libFuzzingEngine.a")
 
 
-def rewrite_argv0(argv: Sequence[str]) -> list[str]:
+def _get_available_memory() -> int:
+  """Returns the available memory in bytes."""
+  with open("/proc/meminfo", "r") as f:
+    for line in f:
+      if line.startswith("MemAvailable:"):
+        return int(line.split()[1]) * 1024
+
+  raise RuntimeError("Failed to get available memory")
+
+
+def rewrite_argv0(argv: Sequence[str], clang_toolchain: str) -> list[str]:
   """Rewrite argv[0] to point to the real clang location."""
   # We do this because we've set PATH to our wrapper.
-  rewritten = [os.path.join("/usr/local/bin/", os.path.basename(argv[0]))]
+  rewritten = [os.path.join(clang_toolchain, "bin", os.path.basename(argv[0]))]
   rewritten.extend(argv[1:])
   return rewritten
 
 
-def execute(argv: Sequence[str]) -> None:
-  argv = rewrite_argv0(argv)
+def execute(argv: Sequence[str], clang_toolchain: str) -> None:
+  argv = rewrite_argv0(argv, clang_toolchain)
   print("About to execute...", argv)
   os.execv(argv[0], tuple(argv))
 
 
-def run(argv: Sequence[str]) -> None:
-  argv = rewrite_argv0(argv)
+def run(argv: Sequence[str], clang_toolchain: str) -> None:
+  argv = rewrite_argv0(argv, clang_toolchain)
   print("About to run...", argv)
   ret = subprocess.run(argv, check=False)
   if ret.returncode != 0:
@@ -313,6 +337,16 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
   with (compile_commands_dir / "full_compile_commands.json").open("wt") as f:
     json.dump(linker_commands["full_compile_commands"], f, indent=2)
 
+  # Auto-tune the number of threads and merge queues according to the number
+  # of cores and available memory.
+  # Note: this might require further tuning -- this might not work well if there
+  # are multiple binaries being linked/indexed at the same time.
+  num_cores = len(os.sched_getaffinity(0))
+  num_threads = max(
+      1, min(_get_available_memory() // _INDEXER_PER_THREAD_MEMORY, num_cores)
+  )
+  merge_queues = max(1, num_threads // _INDEXER_THREADS_PER_MERGE_QUEUE)
+
   cmd = [
       _INDEXER_PATH,
       "--build_dir",
@@ -321,6 +355,10 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
       index_dir.as_posix(),
       "--source_dir",
       SRC.as_posix(),
+      "--index_threads",
+      str(num_threads),
+      "--merge_queues",
+      str(merge_queues),
   ]
   result = subprocess.run(cmd, check=False, capture_output=True)
   if result.returncode != 0:
@@ -371,7 +409,17 @@ def check_fuzzing_engine_and_fix_argv(argv: MutableSequence[str]) -> bool:
 
 def _has_disallowed_clang_flags(argv: Sequence[str]) -> bool:
   """Checks if the command line arguments contain disallowed flags."""
-  return any(arg.startswith(_DISALLOWED_CLANG_FLAGS) for arg in argv)
+  if any(arg.startswith(_DISALLOWED_CLANG_FLAGS) for arg in argv):
+    return True
+
+  if any(
+      arg.startswith(_ALLOWED_CLANG_FLAGS_ONLY_WITH_PERIOD)
+      and not arg.endswith("=.")
+      for arg in argv
+  ):
+    return True
+
+  return False
 
 
 @dataclasses.dataclass(frozen=True)
@@ -400,8 +448,17 @@ def _filter_compile_commands(
   unused_cc_paths = set()
 
   for compile_command in compile_commands:
-    cc_path = Path(compile_command["directory"]) / compile_command["file"]
-    if cc_path in cu_paths:
+    if (
+        "-ffile-compilation-dir=." in compile_command["arguments"]
+        or "-fdebug-compilation-dir=." in compile_command["arguments"]
+    ):
+      # Handle build systems that make their debug paths relative.
+      directory = Path(".")
+    else:
+      directory = Path(compile_command["directory"])
+
+    cc_path = Path(directory / compile_command["file"])
+    if cc_path in cu_paths and cc_path.name not in _IGNORED_FILES:
       filtered_compile_commands.append(compile_command)
       used_cu_paths.add(cc_path)
     else:
@@ -462,13 +519,15 @@ def force_optimization_flag(argv: Sequence[str]) -> list[str]:
   return args
 
 
-def remove_invalid_coverage_flags(argv: Sequence[str]) -> list[str]:
+def remove_invalid_coverage_flags(
+    argv: Sequence[str], expected_coverage_flags: str
+) -> list[str]:
   """Removes invalid coverage flags from the given argument list."""
   args = []
   for arg in argv:
     if (
         arg.startswith("-fsanitize-coverage=")
-        and index_build.EXPECTED_COVERAGE_FLAGS != arg
+        and arg != expected_coverage_flags
     ):
       continue
 
@@ -478,18 +537,36 @@ def remove_invalid_coverage_flags(argv: Sequence[str]) -> list[str]:
 
 
 def main(argv: list[str]) -> None:
+  compile_settings = index_build.read_compile_settings()
   argv = expand_rsp_file(argv)
   argv = remove_flag_if_present(argv, "-gline-tables-only")
   argv = force_optimization_flag(argv)
-  argv = remove_invalid_coverage_flags(argv)
+  argv = remove_invalid_coverage_flags(argv, compile_settings.coverage_flags)
 
   if _has_disallowed_clang_flags(argv):
     raise ValueError("Disallowed clang flags found, aborting.")
 
+  # TODO: b/441872725 - Migrate more flags to be appended in the clang wrapper
+  # instead.
+  cdb_path = index_build.OUT / "cdb"
+  argv.extend(("-gen-cdb-fragment-path", cdb_path.as_posix()))
+  argv.extend((
+      "-isystem",
+      (
+          f"{compile_settings.clang_toolchain}/lib/clang/"
+          f"{compile_settings.clang_version}"
+      ),
+      "-resource-dir",
+      (
+          f"{compile_settings.clang_toolchain}/lib/clang/"
+          f"{compile_settings.clang_version}"
+      ),
+  ))
+
   if "-E" in argv:
     # Preprocessor-only invocation.
     modified_argv = remove_flag_and_value(argv, "-gen-cdb-fragment-path")
-    execute(modified_argv)
+    execute(modified_argv, compile_settings.clang_toolchain)
 
   fuzzing_engine_in_argv = check_fuzzing_engine_and_fix_argv(argv)
   indexer_targets: list[str] = [
@@ -499,28 +576,23 @@ def main(argv: list[str]) -> None:
   # If we are linking, collect the relevant flags and dependencies.
   output_file = get_flag_value(argv, "-o")
   if not output_file:
-    execute(argv)  # Missing output file
+    execute(argv, compile_settings.clang_toolchain)  # Missing output file
 
   output_file = Path(output_file)
 
   if output_file.name.endswith(".o"):
-    execute(argv)  # Not a real linker command
+    execute(argv, compile_settings.clang_toolchain)  # Not a real linker command
 
   if indexer_targets:
     if output_file.name not in indexer_targets:
       # Not a relevant linker command
       print(f"Not indexing as {output_file} is not in the allowlist")
-      execute(argv)
+      execute(argv, compile_settings.clang_toolchain)
   elif not fuzzing_engine_in_argv:
     # Not a fuzz target.
-    execute(argv)
+    execute(argv, compile_settings.clang_toolchain)
 
   print(f"Linking {argv}")
-
-  cdb_path = get_flag_value(argv, "-gen-cdb-fragment-path")
-  assert cdb_path, f"Missing Compile Directory Path: {argv}"
-
-  cdb_path = Path(cdb_path)
 
   # We can now run the linker and look at the output of some files.
   dependency_file = (cdb_path / output_file.name).with_suffix(".deps")
@@ -532,7 +604,7 @@ def main(argv: list[str]) -> None:
   # We force lld, but it doesn't include this dir by default.
   argv.append("-L/usr/local/lib")
   argv.append("-Qunused-arguments")
-  run(argv)
+  run(argv, compile_settings.clang_toolchain)
 
   build_id = get_build_id(output_file)
   assert build_id is not None

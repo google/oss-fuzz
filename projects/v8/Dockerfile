@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,14 +16,19 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool cmake
-RUN git clone --depth 1 https://github.com/google/googletest && \
-   cd $SRC/googletest && \
-   mkdir build && \
-   cd build && \
-   cmake .. && \
-   make -j$(nproc) && \
-   make install
-RUN git clone --depth 1 https://github.com/Tencent/rapidjson.git rapidjson
-WORKDIR rapidjson
-COPY *.sh fuzzer.cpp $SRC/
+    apt-get install --no-install-recommends -y \
+        lsb-release sudo pkg-config file libc++-18-dev libc++abi-18-dev
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+ENV PATH=/src/depot_tools:$PATH
+RUN fetch v8
+WORKDIR v8
+
+RUN ./build/install-build-deps.sh --no-prompt
+COPY build.sh *.cc $SRC/
+
+ENV CLANG_TOOLCHAIN $SRC/v8/third_party/llvm-build/Release+Asserts
+ENV CLANG_VERSION 21
+
+# Temporary hack: use an indexer built against LLVM 21.
+ADD https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer-21 /opt/indexer/indexer
+RUN chmod +x /opt/indexer/indexer

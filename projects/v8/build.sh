@@ -15,36 +15,40 @@
 #
 ################################################################################
 
-# Fix sanitizer
-ORIGINAL_SANITIZER="${SANITIZER:-}"
-
-if [ "$SANITIZER" = "coverage" ] || [ "$SANITIZER" = "introspector" ] || [ "$SANITIZER" = "none" ]; then
-    export SANITIZER="address"
-fi
-
 # Configure arguments for gn build
-if [ "$SANITIZER" = "undefined" ]; then
-    ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_ubsan=true is_debug=false"
-else
-    ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_debug=false"
-fi
+ARGS='is_asan = true
+ is_component_build = false
+ use_clang_modules = false
+ is_debug = true
+ symbol_level = 2
+ forbid_non_component_debug_builds = false
+ use_debug_fission = false
+ use_dwarf5 = true
+ target_cpu = "x64"
+ target_os = "linux"
+ use_reclient = false
+ use_remoteexec = false
+ use_siso = false
+ treat_warnings_as_errors = false
+ libcxx_is_shared = false
+ v8_enable_backtrace = true
+ v8_enable_slow_dchecks = false
+ v8_optimized_debug = false
+ v8_enable_fast_mksnapshot = true'
 
-# Prepare fuzzer in gn directory
-mkdir src/fuzz
-cp $SRC/*.cc src/fuzz/
+if [[ -n "${INDEXER_BUILD:-}" ]]; then
+    ARGS="$ARGS clang_base_path=\"/opt/toolchain\""
+fi
 
 # Generate ninja file for build
 gn gen out/fuzz --args="$ARGS"
 echo $SANITIZER
+
+# Force re-linking.
+rm -f out/fuzz/d8
+
 # Build binary
-autoninja -C out/fuzz fuzz_sha1
-autoninja -C out/fuzz fuzz_translator
+ninja -C out/fuzz d8 -j$(nproc)
 
 # Copy binary to $OUT
-cp ./out/fuzz/fuzz_sha1 $OUT
-cp ./out/fuzz/fuzz_translator $OUT
-
-# Reset sanitizer
-if [ -n "$ORIGINAL_SANITIZER" ]; then
-    export SANITIZER="$ORIGINAL_SANITIZER"
-fi
+cp ./out/fuzz/{d8,snapshot_blob.bin} $OUT
