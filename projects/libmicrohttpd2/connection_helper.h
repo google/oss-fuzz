@@ -45,3 +45,7 @@ void init_parsing_configuration(FuzzedDataProvider& fdp, MHD_Connection& c);
 void prepare_headers_and_parse(MHD_Connection& connection, size_t size);
 void prepare_body_and_process(MHD_Connection& connection, std::string& body, size_t body_size, bool use_stream_body);
 void final_cleanup(MHD_Connection& connection, MHD_Daemon& daemon);
+
+void mark_post_parse_ready(MHD_Connection& connection);
+bool is_post_parse_ready(const MHD_Connection& connection);
+void clear_post_parse_ready(const MHD_Connection& connection);
