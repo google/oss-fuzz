@@ -44,15 +44,20 @@ INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 _LD_BINARY = 'ld-linux-x86-64.so.2'
 _LD_PATH = Path('/lib64') / _LD_BINARY
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
-_CLANG_VERSION = '18'
 
 DEFAULT_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
 DEFAULT_FUZZING_ENGINE = 'fuzzing_engine.cc'
 
+_CLANG_VERSION = os.getenv('CLANG_VERSION', '18')
+_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', '/usr/local'))
+_TOOLCHAIN_WITH_WRAPPER = Path('/opt/toolchain')
+
+INDEXER_DIR = Path(__file__).parent
+
 # Some build systems isolate the compiler environment from the parent process,
 # so we can't always rely on using environment variables to pass settings to the
 # wrapper. Get around this by writing to a file instead.
-COMPILE_SETTINGS_PATH = Path(__file__).parent / 'compile_settings.json'
+COMPILE_SETTINGS_PATH = INDEXER_DIR / 'compile_settings.json'
 
 EXTRA_CFLAGS = (
     '-fno-omit-frame-pointer '
@@ -61,16 +66,15 @@ EXTRA_CFLAGS = (
     '-fsanitize=address '
     '-Wno-invalid-offsetof '
     '{coverage_flags} '
-    f'-gen-cdb-fragment-path {OUT}/cdb '
     '-Qunused-arguments '
-    f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
-    f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} '
 )
 
 
 @dataclasses.dataclass(slots=True, frozen=True)
 class CompileSettings:
   coverage_flags: str
+  clang_toolchain: str
+  clang_version: str
 
 
 def read_compile_settings() -> CompileSettings:
@@ -100,7 +104,9 @@ def set_env_vars(coverage_flags: str):
   os.environ['CC'] = 'clang'
   os.environ['COMPILING_PROJECT'] = 'True'
   # Force users of clang to use our wrapper. This fixes e.g. libcups.
-  os.environ['PATH'] = f"/opt/indexer:{os.environ.get('PATH')}"
+  os.environ['PATH'] = (
+      f"{_TOOLCHAIN_WITH_WRAPPER / 'bin'}:{os.environ.get('PATH')}"
+  )
 
   existing_cflags = os.environ.get('CFLAGS', '')
   extra_cflags = EXTRA_CFLAGS.format(coverage_flags=coverage_flags)
@@ -108,18 +114,28 @@ def set_env_vars(coverage_flags: str):
 
 
 def set_up_wrapper_dir():
-  """Set up symlinks to everything in /usr/local/bin/.
+  """Sets up a shadow toolchain.
 
-  Do this so build systems that snoop around clang's directory don't explode.
+  This sets up our clang wrapper for clang/clang++ and symlinks everything else
+  to point to the real toolchain.
   """
-  real_dir = '/usr/local/bin'
-  indexer_dir = '/opt/indexer'
-  for name in os.listdir():
-    src = os.path.join(real_dir, name)
-    dst = os.path.join(indexer_dir, name)
-    if name not in {'clang', 'clang++'}:
+  if _TOOLCHAIN_WITH_WRAPPER.exists():
+    shutil.rmtree(_TOOLCHAIN_WITH_WRAPPER)
+  _TOOLCHAIN_WITH_WRAPPER.mkdir(parents=True)
+
+  # Set up symlinks to every binary except for clang.
+  wrapper_bin_dir = _TOOLCHAIN_WITH_WRAPPER / 'bin'
+  wrapper_bin_dir.mkdir()
+  for name in os.listdir(_CLANG_TOOLCHAIN / 'bin'):
+    if name in ('clang', 'clang++'):
       continue
-    os.symlink(src, dst)
+
+    os.symlink(_CLANG_TOOLCHAIN / 'bin' / name, wrapper_bin_dir / name)
+  os.symlink(_CLANG_TOOLCHAIN / 'lib', _TOOLCHAIN_WITH_WRAPPER / 'lib')
+
+  # Set up our compiler wrappers.
+  os.symlink(INDEXER_DIR / 'clang_wrapper.py', wrapper_bin_dir / 'clang')
+  os.symlink(INDEXER_DIR / 'clang_wrapper.py', wrapper_bin_dir / 'clang++')
 
 
 @dataclasses.dataclass(slots=True, frozen=True)
@@ -334,11 +350,17 @@ def build_project(
   if binaries_only:
     os.environ['INDEXER_BINARIES_ONLY'] = '1'
 
-  write_compile_settings(CompileSettings(coverage_flags=coverage_flags))
+  write_compile_settings(
+      CompileSettings(
+          coverage_flags=coverage_flags,
+          clang_toolchain=_CLANG_TOOLCHAIN.as_posix(),
+          clang_version=_CLANG_VERSION,
+      )
+  )
 
   fuzzing_engine_dir = copy_fuzzing_engine(fuzzing_engine)
   build_fuzzing_engine_command = [
-      '/opt/indexer/clang++',
+      f'{_CLANG_TOOLCHAIN}/bin/clang++',
       '-c',
       '-Wall',
       '-Wextra',
@@ -352,16 +374,16 @@ def build_project(
       '-gen-cdb-fragment-path',
       f'{OUT}/cdb',
       '-Qunused-arguments',
-      f'-isystem /usr/local/lib/clang/{_CLANG_VERSION}',
+      f'-isystem {_CLANG_TOOLCHAIN}/lib/clang/{_CLANG_VERSION}',
       '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9',
       '-I',
       '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9',
       '-I',
       '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward',
       '-I',
-      f'/usr/local/lib/clang/{_CLANG_VERSION}/include',
+      f'{_CLANG_TOOLCHAIN}/lib/clang/{_CLANG_VERSION}/include',
       '-I',
-      '/usr/local/include',
+      f'{_CLANG_TOOLCHAIN}/include',
       '-I',
       '/usr/include/x86_64-linux-gnu',
       '-I',
@@ -379,7 +401,6 @@ def build_project(
   if os.path.exists(lib_fuzzing_engine):
     os.remove(lib_fuzzing_engine)
   os.symlink('/opt/indexer/fuzzing_engine.a', lib_fuzzing_engine)
-  set_up_wrapper_dir()
 
   compile_command = ['/usr/local/bin/compile']
   if compile_args:
@@ -804,6 +825,8 @@ def main():
   SNAPSHOT_DIR.mkdir(exist_ok=True)
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
+
+  set_up_wrapper_dir()
   build_project(
       None if args.targets_all_index else targets_to_index,
       args.compile_arg,
