@@ -97,5 +97,5 @@ def x265_fix(dft: DockerfileModifier) -> None:
       "RUN git clone "
       "https://bitbucket.org/multicoreware/x265_git.git x265\n")
   dft.replace(
-      r'RUN\shg\sclone\s.*hg.videolan.org/x265\s*(x265)*', "RUN git clone "
+      r'RUN\shg\sclone\s.*hg\.videolan\.org/x265\s*(x265)*', "RUN git clone "
       "https://bitbucket.org/multicoreware/x265_git.git x265\n")
