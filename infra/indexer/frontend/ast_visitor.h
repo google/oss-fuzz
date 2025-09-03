@@ -42,7 +42,6 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
              clang::CompilerInstance& compiler)
       : index_(index),
         context_(context),
-        compiler_(compiler),
         sema_(compiler.getSema()) {}
 
   bool shouldVisitImplicitCode() const { return true; }
@@ -101,7 +100,6 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
 
   InMemoryIndex &index_;
   clang::ASTContext &context_;
-  clang::CompilerInstance &compiler_;
   clang::Sema& sema_;
 
   struct CachedEntityId {
