@@ -16,7 +16,9 @@
 #
 ################################################################################
 
-export CFLAGS="${CFLAGS} -Wno-error=unterminated-string-initialization"
+if [ -f /usr/local/bin/clang-21 ]; then
+  export CFLAGS="${CFLAGS} -Wno-error=unterminated-string-initialization"
+fi
 
 MBEDTLS_BUILD=$WORK/mbedtls
 EXPAT_BUILD=$WORK/expat
