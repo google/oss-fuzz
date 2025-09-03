@@ -1,0 +1,51 @@
+# OAuth2 and Authentication Dictionary
+# JWT tokens
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+"eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0"  # JWT none algorithm attack
+"eyJhbGciOiJIUzI1NiJ9"
+
+# Common OAuth2 parameters
+"access_token"
+"refresh_token"
+"authorization_code"
+"client_id"
+"client_secret"
+"redirect_uri"
+"state"
+"scope"
+"code_challenge"
+"code_verifier"
+
+# Dangerous URLs
+"javascript:alert(1)"
+"data:text/html,<script>alert(1)</script>"
+"file:///etc/passwd"
+"http://localhost:8080"
+"https://127.0.0.1"
+
+# Token patterns
+"Bearer "
+"Basic "
+"Digest "
+
+# OAuth2 attack patterns
+"Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+# State parameter attacks
+"../../../../../etc/passwd"
+"%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd"
+
+# Oversized tokens
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+# Prototype pollution
+"__proto__"
+"constructor"
+"prototype"
+
+# Command injection
+"; rm -rf /"
+"&& cat /etc/passwd"
+"| nc -e /bin/sh"
+"`whoami`"

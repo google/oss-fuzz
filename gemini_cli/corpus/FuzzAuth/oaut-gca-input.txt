@@ -1,0 +1,1 @@
+{"authType":"oauth-gca","switch":true,"resume":true}

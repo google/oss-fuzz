@@ -1,0 +1,14 @@
+authType=oauth-gca
+authType=invalid-type
+authType=
+authType=null
+authType=undefined
+switch auth methods
+resume after auth change
+cached credentials test
+cross-project token reuse
+invalid oauth token
+expired refresh token
+malformed jwt
+empty access token
+null refresh token

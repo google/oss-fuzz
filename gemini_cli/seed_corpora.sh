@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2025 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,12 +54,26 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"sum","params":{"nums":[1,2,3],"
 printf '%s\n' '{"jsonrpc":"2.0","id":"abc","method":"notify","params":{"message":"hello"}}' > "$BASE/FuzzMCPDecoder/notification.json"
 printf '%s\n' '{"jsonrpc":"2.0","id":42,"error":{"code":-32700,"message":"Parse error"}}' > "$BASE/FuzzMCPDecoder/error.json"
 
+# Additional MCP test cases for gemini-cli
+printf '%s\n' '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}}}' > "$BASE/FuzzMCPDecoder/initialize.json"
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' > "$BASE/FuzzMCPDecoder/tools_list.json"
+printf '%s\n' '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"assist","arguments":{"code":"function test() {}"}}}' > "$BASE/FuzzMCPDecoder/tools_call.json"
+
 # FuzzSlashCommands - CLI slash commands
 printf '/status\n' > "$BASE/FuzzSlashCommands/basic.txt"
 printf '/deploy -env=prod --force\n' > "$BASE/FuzzSlashCommands/params.txt"
 printf '/build ../../etc/passwd\n' > "$BASE/FuzzSlashCommands/traversal.txt"
 printf '/config set key=value\n' > "$BASE/FuzzSlashCommands/set.txt"
 printf '/help --verbose\n' > "$BASE/FuzzSlashCommands/help.txt"
+
+# CLI argument test cases for gemini-cli
+printf 'gemini --help\n' > "$BASE/FuzzSlashCommands/gemini_help.txt"
+printf 'gemini mcp add server1\n' > "$BASE/FuzzSlashCommands/mcp_add.txt"
+printf 'gemini mcp list\n' > "$BASE/FuzzSlashCommands/mcp_list.txt"
+printf 'gemini mcp remove server1\n' > "$BASE/FuzzSlashCommands/mcp_remove.txt"
+printf 'gemini extensions install test-ext\n' > "$BASE/FuzzSlashCommands/ext_install.txt"
+printf 'gemini extensions list\n' > "$BASE/FuzzSlashCommands/ext_list.txt"
+printf 'gemini --version\n' > "$BASE/FuzzSlashCommands/version.txt"
 
 # FuzzShellValidation - Shell command validation
 printf 'echo hello\n' > "$BASE/FuzzShellValidation/echo.txt"
