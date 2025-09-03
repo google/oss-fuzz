@@ -25,7 +25,7 @@ ASAN_OPTIONS=detect_leaks=0 make -j$(nproc)
 make install
 
 # Compile fuzzer
-FUZZERS="fuzz_response fuzz_daemon fuzz_mhd2 fuzz_str fuzz_crypto_int fuzz_libinfo fuzz_connection"
+FUZZERS="fuzz_response fuzz_daemon fuzz_mhd2 fuzz_str fuzz_crypto_int fuzz_libinfo fuzz_connection fuzz_daemon_connection"
 
 for fuzzer in $FUZZERS; do
   extra_src=""
@@ -35,7 +35,7 @@ for fuzzer in $FUZZERS; do
       ;;
   esac
   case "$fuzzer" in
-    fuzz_connection)
+    fuzz_connection|fuzz_daemon_connection)
       extra_src="$SRC/connection_helper.cpp"
       ;;
   esac
