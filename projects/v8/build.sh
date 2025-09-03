@@ -19,7 +19,6 @@
 ARGS='is_asan = true
  is_component_build = false
  use_clang_modules = false
- is_debug = true
  symbol_level = 2
  forbid_non_component_debug_builds = false
  use_debug_fission = false
@@ -37,7 +36,9 @@ ARGS='is_asan = true
  v8_enable_fast_mksnapshot = true'
 
 if [[ -n "${INDEXER_BUILD:-}" ]]; then
-    ARGS="$ARGS clang_base_path=\"/opt/toolchain\""
+  ARGS="$ARGS is_debug=true clang_base_path=\"/opt/toolchain\""
+else
+  ARGS="$ARGS is_debug=false"
 fi
 
 # Generate ninja file for build
@@ -48,7 +49,7 @@ echo $SANITIZER
 rm -f out/fuzz/d8
 
 # Build binary
-ninja -C out/fuzz d8 -j$(nproc)
+ninja -C out/fuzz -j$(nproc)
 
 # Copy binary to $OUT
 cp ./out/fuzz/{d8,snapshot_blob.bin} $OUT
