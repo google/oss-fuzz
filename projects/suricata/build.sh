@@ -155,7 +155,7 @@ cd $SRC/suricata-verify/tests
 i=0
 mkdir corpus
 set +x
-ls | grep -v corpus | while read t; do
+find . -name "*.pcap" -exec dirname "{}" \; | while read t; do
 cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; cat $t/*.pcap >> corpus/$i || true; i=$((i+1));
 done
 set -x
@@ -163,7 +163,7 @@ zip -q -r $OUT/fuzz_sigpcap_seed_corpus.zip corpus
 rm -Rf corpus
 mkdir corpus
 set +x
-ls | grep -v corpus | while read t; do
+find . -name "*.pcap" -exec dirname "{}" \; | while read t; do
 grep -v "#" $t/*.rules | head -1 | cut -d "(" -f2 | cut -d ")" -f1 > corpus/$i || true; echo -ne '\0' >> corpus/$i; fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 echo -ne '\0' >> corpus/$i; python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 done
@@ -172,7 +172,7 @@ zip -q -r $OUT/fuzz_sigpcap_aware_seed_corpus.zip corpus
 rm -Rf corpus
 mkdir corpus
 set +x
-ls | grep -v corpus | while read t; do
+find . -name "*.pcap" -exec dirname "{}" \; | while read t; do
 fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 done
