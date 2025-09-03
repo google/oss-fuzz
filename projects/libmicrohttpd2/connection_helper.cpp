@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "connection_helper.h"
 #include <cstring>
+#include <unordered_set>
 
 extern "C" {
   #include "mhd_action.h"
@@ -32,9 +33,28 @@ struct mhd_MemoryPool *g_pool = nullptr;
 const size_t g_pool_size = 14 * 1024;
 std::string g_mpart_boundary;
 
+// Body status
+static std::unordered_set<const MHD_Connection*> g_post_parse_ready;
+
 // Helper to clear memory pool
 void destroy_global_pool() {
   if (g_pool) { mhd_pool_destroy(g_pool); g_pool = nullptr; }
+}
+
+
+// Helper to set body parsing ready
+void mark_post_parse_ready(MHD_Connection& c) {
+  g_post_parse_ready.insert(&c);
+}
+
+// Helper to check parse body status
+bool is_post_parse_ready(const MHD_Connection& c) {
+  return g_post_parse_ready.find(&c) != g_post_parse_ready.end();
+}
+
+// Helper to clear parse body status
+void clear_post_parse_ready(const MHD_Connection& c) {
+  g_post_parse_ready.erase(&c);
 }
 
 // Helper to destroy error response
@@ -75,6 +95,23 @@ static std::string pick_http_version(FuzzedDataProvider& fdp) {
   }
 }
 
+// Helper to check and expand buffer capcaity
+bool ensure_lbuf_capacity(MHD_Connection& c, size_t min_needed) {
+  if (!c.daemon) {
+    return false;
+  }
+
+  if (c.rq.cntn.lbuf.data && c.rq.cntn.lbuf.size >= min_needed) {
+    return true;
+  }
+  size_t have = c.rq.cntn.lbuf.size;
+  size_t need = (min_needed > have) ? (min_needed - have) : 0;
+  if (need) {
+    mhd_daemon_extend_lbuf_up_to(c.daemon, need, &c.rq.cntn.lbuf);
+  }
+  return (c.rq.cntn.lbuf.data != nullptr) && (c.rq.cntn.lbuf.size >= min_needed);
+}
+
 // Dummy upload actions
 const struct MHD_UploadAction kContinueAction = {
   mhd_UPLOAD_ACTION_CONTINUE, { nullptr }
@@ -99,6 +136,16 @@ dummy_reader(struct MHD_Request*, void*, const struct MHD_String*,
 const struct MHD_UploadAction *
 dummy_done(struct MHD_Request*, void*, enum MHD_PostParseResult) {
   return &kContinueAction;
+}
+
+// Dummy request callback function
+static const struct MHD_Action*
+dummy_request_cb(void* cls,
+                 struct MHD_Request* request,
+                 const struct MHD_String* path,
+                 enum MHD_HTTP_Method method,
+                 uint_fast64_t upload_size) {
+  return nullptr;
 }
 
 void init_daemon_connection(FuzzedDataProvider& fdp,
@@ -130,6 +177,10 @@ void init_daemon_connection(FuzzedDataProvider& fdp,
   c.suspended = false;
   c.connection_timeout_ms = fdp.ConsumeIntegralInRange<uint32_t>(0, 4096);
   c.last_activity = 0;
+
+  // Add dummy callback function
+  d.req_cfg.cb = dummy_request_cb;
+  d.req_cfg.cb_cls = nullptr;
 }
 
 void init_connection_buffer(FuzzedDataProvider& fdp, MHD_Connection& c) {
@@ -268,7 +319,11 @@ void init_parsing_configuration(FuzzedDataProvider& fdp, MHD_Connection& c) {
   MHD_HTTP_PostEncoding enc;
 
   // Configure connection encoding abd methods
-  c.rq.app_act.head_act.act = mhd_ACTION_POST_PARSE;
+  if (fdp.ConsumeBool()) {
+    c.rq.app_act.head_act.act = mhd_ACTION_POST_PARSE;
+  } else {
+    c.rq.app_act.head_act.act = mhd_ACTION_NO_ACTION;
+  }
   if (fdp.ConsumeBool()) {
     enc = MHD_HTTP_POST_ENCODING_TEXT_PLAIN;
   } else if (fdp.ConsumeBool()) {
@@ -366,6 +421,7 @@ void prepare_body_and_process(MHD_Connection& connection, std::string& body, siz
     // Fuzz mhd_stream_prepare_for_post_parse once and mhd_stream_post_parse
     mhd_stream_prepare_for_post_parse(&connection);
     mhd_stream_post_parse(&connection, &body_size, &body[0]);
+    mark_post_parse_ready(connection);
   } else {
     // Try prepare the body by streaming connection buffer
     const bool want_chunked = (connection.rq.have_chunked_upload == MHD_YES);
@@ -422,15 +478,27 @@ void prepare_body_and_process(MHD_Connection& connection, std::string& body, siz
 
     if (staged) {
       // Use stream body approach if success
-      connection.stage = mhd_HTTP_STAGE_BODY_RECEIVING;
-      connection.rq.have_chunked_upload = MHD_NO;
-      connection.rq.cntn.cntn_size = (uint64_t) body_size;
-      mhd_stream_prepare_for_post_parse(&connection);
-      mhd_stream_process_request_body(&connection);
+      const size_t min_needed = body_size + 1;
+      if (ensure_lbuf_capacity(connection, min_needed)) {
+        // Only post parse the request if buffer is enough
+        connection.stage = mhd_HTTP_STAGE_BODY_RECEIVING;
+        connection.rq.have_chunked_upload = MHD_NO;
+        connection.rq.cntn.cntn_size = (uint64_t) body_size;
+        mhd_stream_prepare_for_post_parse(&connection);
+        mhd_stream_process_request_body(&connection);
+        mark_post_parse_ready(connection);
+      } else {
+        // Fall back if not enough buffer
+        size_t tmp = body_size;
+        mhd_stream_prepare_for_post_parse(&connection);
+        mhd_stream_post_parse(&connection, &tmp, body.data());
+        mark_post_parse_ready(connection);
+      }
     } else {
       // Use post prase approach if stream body failed
       mhd_stream_prepare_for_post_parse(&connection);
       mhd_stream_post_parse(&connection, &body_size, &body[0]);
+      mark_post_parse_ready(connection);
     }
   }
 }
@@ -445,4 +513,7 @@ void final_cleanup(MHD_Connection& connection, MHD_Daemon& daemon) {
   if (connection.rq.cntn.lbuf.data != nullptr || connection.rq.cntn.lbuf.size != 0) {
     mhd_daemon_free_lbuf(&daemon, &connection.rq.cntn.lbuf);
   }
+
+  // Clean post parse body status
+  clear_post_parse_ready(connection);
 }

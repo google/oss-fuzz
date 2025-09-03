@@ -16,4 +16,5 @@
 ################################################################################
 
 # build project and project-hosted fuzzers
+sed -i 's/c++14/c++17/g' $SRC/astc-encoder/Source/Fuzzers/build.sh
 $SRC/astc-encoder/Source/Fuzzers/build.sh

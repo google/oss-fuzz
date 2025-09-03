@@ -119,7 +119,7 @@ const clang::ClassTemplateSpecializationDecl* FindSpecialization(
     const clang::ClassTemplateDecl* class_template_decl,
     const llvm::ArrayRef<clang::TemplateArgument> args,
     const clang::ASTContext& context) {
-  // Without this, sugared types can lead to lookup misses (see the test delta).
+  // Without this, sugared types can lead to lookup misses.
   llvm::SmallVector<clang::TemplateArgument, 4> canonical_args;
   for (const clang::TemplateArgument& arg : args) {
     canonical_args.push_back(context.getCanonicalTemplateArgument(arg));
@@ -131,7 +131,7 @@ const clang::ClassTemplateSpecializationDecl* FindSpecialization(
   // forthcoming behavior of the object.
   void* insert_pos = nullptr;
   return const_cast<clang::ClassTemplateDecl*>(class_template_decl)
-      ->findSpecialization(args, insert_pos);
+      ->findSpecialization(canonical_args, insert_pos);
 }
 
 // Helper functions to find the closest explicit template specialization that
@@ -1461,12 +1461,6 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
     type = pointee_type;
   }
 
-  // Then strip sugar (`struct` keyword, name qualifications, etc.)
-  while (llvm::isa<clang::ElaboratedType>(type)) {
-    const auto* elaborated_type = llvm::cast<clang::ElaboratedType>(type);
-    type = elaborated_type->desugar().getTypePtrOrNull();
-  }
-
   if (llvm::isa<clang::TemplateSpecializationType>(type)) {
     auto* specialization_type =
         llvm::cast<clang::TemplateSpecializationType>(type);
@@ -1635,7 +1629,10 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
     if (decl && llvm::isa<clang::CXXMethodDecl>(decl)) {
       const auto* method_decl = llvm::cast<clang::CXXMethodDecl>(decl);
       if (method_decl->getParent()) {
-        const auto* type = method_decl->getParent()->getTypeForDecl();
+        const auto* type = method_decl->getParent()
+                               ->getASTContext()
+                               .getCanonicalTagType(method_decl->getParent())
+                               .getTypePtr();
         if (type) {
           AddTypeReferencesForSourceRange(expr->getSourceRange(), type);
         }
@@ -1648,7 +1645,11 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
       const auto* constructor_decl =
           llvm::cast<clang::CXXConstructorDecl>(decl);
       if (constructor_decl->getParent()) {
-        const auto* type = constructor_decl->getParent()->getTypeForDecl();
+        const auto* type =
+            constructor_decl->getParent()
+                ->getASTContext()
+                .getCanonicalTagType(constructor_decl->getParent())
+                .getTypePtr();
         if (type) {
           AddTypeReferencesForSourceRange(expr->getSourceRange(), type);
         }
