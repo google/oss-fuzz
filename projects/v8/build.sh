@@ -34,9 +34,9 @@ ARGS='is_asan = true
  v8_enable_fast_mksnapshot = false'
 
 if [[ -n "${INDEXER_BUILD:-}" ]]; then
-  ARGS="$ARGS is_debug=true v8_optimized_debug=true v8_enable_slow_dchecks=false clang_base_path=\"/opt/toolchain\""
+  ARGS="$ARGS is_debug=true v8_optimized_debug=false v8_enable_slow_dchecks=true clang_base_path=\"/opt/toolchain\""
 else
-  ARGS="$ARGS is_debug=false v8_enable_slow_dchecks=true"
+  ARGS="$ARGS is_debug=false v8_enable_slow_dchecks=false"
 fi
 
 # Generate ninja file for build
