@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-export CFLAGS="${CFLAGS} -Wno-error=character-conversion"
-export CXXFLAGS="${CXXFLAGS} -Wno-error=character-conversion"
+export CFLAGS="${CFLAGS} -Wno-error=unknown-warning-option -Wno-error=character-conversion"
+export CXXFLAGS="${CXXFLAGS} -Wno-error=unknown-warning-option -Wno-error=character-conversion"
 
 sed -i 's/--disable-tests//g' automation/ossfuzz/build.sh
 
