@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-tools/run-tests.py --outdir=out/fuzz -t 60
+./tools/dev/gm.py x64.release.check

@@ -31,14 +31,12 @@ ARGS='is_asan = true
  treat_warnings_as_errors = false
  libcxx_is_shared = false
  v8_enable_backtrace = true
- v8_enable_slow_dchecks = false
- v8_optimized_debug = false
- v8_enable_fast_mksnapshot = true'
+ v8_enable_fast_mksnapshot = false'
 
 if [[ -n "${INDEXER_BUILD:-}" ]]; then
-  ARGS="$ARGS is_debug=true clang_base_path=\"/opt/toolchain\""
+  ARGS="$ARGS is_debug=true v8_optimized_debug=true v8_enable_slow_dchecks=false clang_base_path=\"/opt/toolchain\""
 else
-  ARGS="$ARGS is_debug=false"
+  ARGS="$ARGS is_debug=false v8_enable_slow_dchecks=true"
 fi
 
 # Generate ninja file for build
