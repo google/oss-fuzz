@@ -47,7 +47,7 @@ echo $SANITIZER
 rm -f out/fuzz/d8
 
 # Build binary
-ninja -C out/fuzz -j$(nproc)
+ninja -C out/fuzz d8 -j$(nproc)
 
 # Copy binary to $OUT
 cp ./out/fuzz/{d8,snapshot_blob.bin} $OUT
