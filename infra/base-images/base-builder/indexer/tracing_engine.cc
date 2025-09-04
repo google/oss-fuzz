@@ -94,6 +94,13 @@ extern "C" void __sanitizer_cov_trace_pc_guard(uint32_t* guard) {
 
 namespace {
 
+bool IsStandardLibrary(const char* file_path) {
+  return (strstr(file_path, "include/c++/v1") ||
+          strncmp(file_path, "/usr/include", 12) == 0 ||
+          strstr(file_path, "libc++/src/include") ||
+          strstr(file_path, "/absl/"));
+}
+
 void WriteTrace() {
   coverage_data->finished = true;
   char* trace_dump_file = getenv("TRACE_DUMP_FILE");
@@ -110,12 +117,18 @@ void WriteTrace() {
   // TODO: b/441647761 - This format likely needs iteration. This just prints
   // symbolized function names, but this could still be ambiguous.
   for (size_t i = 0; i < coverage_data->idx; ++i) {
-    char outbuf[1024];
-    __sanitizer_symbolize_pc(coverage_data->pcs[i], "%f", outbuf,
-                             sizeof(outbuf));
-    // Skip standard libraries.
-    if (strncmp(outbuf, "std::", 5) == 0) continue;
-    write(fd, outbuf, strnlen(outbuf, sizeof(outbuf)));
+    char symbol[1024];
+    char file_path[1024];
+
+    // This always null terminates.
+    __sanitizer_symbolize_pc(coverage_data->pcs[i], "%f", symbol,
+                             sizeof(symbol));
+    __sanitizer_symbolize_pc(coverage_data->pcs[i], "%s", file_path,
+                             sizeof(file_path));
+
+    if (IsStandardLibrary(file_path)) continue;
+
+    write(fd, symbol, strlen(symbol));
     write(fd, "\n", 1);
   }
 
