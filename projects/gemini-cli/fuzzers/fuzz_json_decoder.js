@@ -43,7 +43,7 @@ function LLVMFuzzerTestOneInput(data) {
         });
       }
     }
-  } catch (e) {
+  } catch (_) {
     // Expected JSON parsing errors
   }
 

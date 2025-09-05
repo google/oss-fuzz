@@ -36,7 +36,7 @@ function LLVMFuzzerTestOneInput(data) {
         }
       }
     }
-  } catch (e) {
+  } catch (_) {
     // Expected parsing errors
   }
 

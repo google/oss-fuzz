@@ -41,7 +41,7 @@ function LLVMFuzzerTestOneInput(data) {
         }
       }
     }
-  } catch (e) {
+  } catch (_) {
     // Expected MCP decoding errors
   }
 

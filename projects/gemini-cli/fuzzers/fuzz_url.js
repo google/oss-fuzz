@@ -42,7 +42,7 @@ function LLVMFuzzerTestOneInput(data) {
         // Valid hash fragment
       }
     }
-  } catch (e) {
+  } catch (_) {
     // Expected URL parsing errors
   }
 

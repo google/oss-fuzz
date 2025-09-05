@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const { FuzzedDataProvider } = require('@jazzer.js/core');
+import { FuzzedDataProvider } from '@jazzer.js/core';
 
 function LLVMFuzzerTestOneInput(data) {
   if (!data || data.length === 0) return 0;
 
   const fdp = new FuzzedDataProvider(data);
   const input = fdp.consumeString(data.length);
+  
 
   try {
     // Simple proxy security validation
@@ -29,7 +30,7 @@ function LLVMFuzzerTestOneInput(data) {
         // Success
       }
     }
-  } catch (e) {
+  } catch (_) {
     // Expected URL parsing errors
   }
 
