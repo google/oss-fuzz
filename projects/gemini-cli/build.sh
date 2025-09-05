@@ -39,7 +39,7 @@ cp node_modules.tar.gz $OUT/
 
 # Build verification
 FUZZER_COUNT=$(ls -1 fuzzers/fuzz_*.js 2>/dev/null | wc -l)
-COMPILE_COUNT=$(grep -c "compile_javascript_fuzzer" /src/build.sh)
+COMPILE_COUNT=$(grep -c "compile_javascript_fuzzer.*fuzzers/" /src/build.sh)
 
 echo "Build verification:"
 echo "  Fuzzer files: $FUZZER_COUNT"
