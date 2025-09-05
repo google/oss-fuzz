@@ -1,5 +1,4 @@
-#!/bin/bash -eux
-# Copyright 2022 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,28 +14,9 @@
 #
 ################################################################################
 
-# Install dependencies in a platform-aware way.
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu20.04
 
-apt-get update && apt-get install -y \
-    binutils \
-    file \
-    ca-certificates \
-    fonts-dejavu \
-    git \
-    libcap2 \
-    rsync \
-    unzip \
-    jq \
-    wget \
-    zip --no-install-recommends
+COPY llvmsymbol.diff /src/
+RUN install_swift.sh
 
-case $(uname -m) in
-  x86_64)
-    # We only need to worry about i386 if we are on x86_64.
-    if grep -q '24.04' /etc/os-release; then
-        apt-get install -y lib32gcc-s1 libc6-i386
-    else
-        apt-get install -y lib32gcc1 libc6-i386
-    fi
-    ;;
-esac
+COPY precompile_swift /usr/local/bin/

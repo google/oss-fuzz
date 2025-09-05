@@ -14,8 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu24.04
 
+COPY llvmsymbol.diff /src/
 RUN install_swift.sh
 
 COPY precompile_swift /usr/local/bin/
