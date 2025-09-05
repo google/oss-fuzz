@@ -43,8 +43,4 @@ done
 if [ "$SANITIZER" != "memory" ] && [ "$SANITIZER" != "undefined" ]; then
     cp sapi/fuzzer/php-fuzz-function-jit $OUT/
     cp sapi/fuzzer/php-fuzz-tracing-jit $OUT/
-
-    # Copy opcache.so extension, which does not support static linking.
-    mkdir -p $OUT/modules
-    cp modules/opcache.so $OUT/modules
 fi

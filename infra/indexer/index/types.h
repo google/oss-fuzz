@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/log/check.h"
@@ -38,6 +39,7 @@ class InMemoryIndex;
 using LocationId = uint64_t;
 using EntityId = uint64_t;
 using ReferenceId = uint64_t;
+using VirtualMethodLinkId = uint64_t;
 constexpr LocationId kInvalidLocationId = 0xffffffffffffffffull;
 constexpr EntityId kInvalidEntityId = 0xffffffffffffffffull;
 
@@ -100,6 +102,12 @@ class SubstituteRelationship {
     //   (See `FrontendTest.ImplicitComparisonInstantiation` for this
     //   situation.)
     kIsImplicitlyDefinedFor = 2,
+
+    // This entity's implementation is inherited from the base class and not
+    // overridden.
+    // (We report it as "this implementation is inherited from another" with a
+    // slight abuse of wording.)
+    kIsInheritedFrom = 3,
   };
 
   SubstituteRelationship(Kind kind, EntityId entity_id)
@@ -148,12 +156,20 @@ class Entity {
     kType = 7,
   };
 
+  enum class VirtualMethodKind : uint8_t {
+    kNotAVirtualMethod = 0,
+    kPureVirtual = 1,
+    kNonPureVirtual = 2,
+  };
+
   Entity(Kind kind, absl::string_view name_prefix, absl::string_view name,
          absl::string_view name_suffix, LocationId location_id,
          bool is_incomplete = false, bool is_weak = false,
          std::optional<SubstituteRelationship> substitute_relationship =
              std::nullopt,
-         std::optional<std::string> enum_value = std::nullopt);
+         std::optional<std::string> enum_value = std::nullopt,
+         VirtualMethodKind virtual_method_kind =
+             VirtualMethodKind::kNotAVirtualMethod);
 
   // Allows to create a copy of `entity` with the ID field values replaced.
   template <class TEntity>
@@ -166,6 +182,16 @@ class Entity {
     if (substitute_relationship_.has_value()) {
       substitute_relationship_->entity_id_ = *new_substitute_entity_id;
     }
+  }
+
+  // Allows to create a copy of `entity` inheriting its implementation.
+  template <class TEntity>
+  Entity(TEntity&& entity, absl::string_view new_name_prefix,
+         EntityId inherited_entity_id)
+      : Entity(std::forward<TEntity>(entity)) {
+    name_prefix_ = new_name_prefix;
+    substitute_relationship_ = SubstituteRelationship(
+        SubstituteRelationship::Kind::kIsInheritedFrom, inherited_entity_id);
   }
 
   inline Kind kind() const { return kind_; }
@@ -184,6 +210,12 @@ class Entity {
   }
   inline const std::optional<std::string>& enum_value() const {
     return enum_value_;
+  }
+  inline bool is_virtual_method() const {
+    return virtual_method_kind_ != VirtualMethodKind::kNotAVirtualMethod;
+  }
+  inline VirtualMethodKind virtual_method_kind() const {
+    return virtual_method_kind_;
   }
 
  private:
@@ -222,6 +254,8 @@ class Entity {
   // (A string to support both signed and unsigned 64-bit values - and beyond,
   // like the `__int128` extension.)
   std::optional<std::string> enum_value_;
+
+  VirtualMethodKind virtual_method_kind_;
 };
 
 bool operator==(const Entity& lhs, const Entity& rhs);
@@ -232,7 +266,8 @@ H AbslHashValue(H h, const Entity& entity) {
   return H::combine(std::move(h), entity.kind(), entity.is_incomplete(),
                     entity.is_weak(), entity.name(), entity.name_prefix(),
                     entity.name_suffix(), entity.location_id(),
-                    entity.substitute_relationship(), entity.enum_value());
+                    entity.substitute_relationship(), entity.enum_value(),
+                    entity.virtual_method_kind());
 }
 
 // Represents a source-level reference to an entity. This may be an implicit or
@@ -261,12 +296,60 @@ H AbslHashValue(H h, const Reference& reference) {
                     reference.location_id());
 }
 
+// Represents a link between two virtual member functions.
+// (Note that the C++ standard doesn't use the term "method" but we follow
+// Clang's liberal approach of `CXXMethodDecl` for brevity.)
+//
+// We mostly track immediate parent-child relationships to be able to
+// answer the question "What virtual method implementations can be invoked as
+// `ptr->method()`?" even for `*ptr` being of a class that doesn't override, but
+// only inherits a virtual method `child`.
+// The only exception to this is when the immediate parent doesn't have the
+// method due to name resolution ambiguity / an own set of overloads for this
+// method hiding the overload in question, in which case we skip to the lowest
+// ancestor(s) that do(es) have it:
+//   struct A { virtual void X() {} };
+//   struct B { virtual int X(int) { return 0; } };
+//   // Has no `X(int)` due to its own overload set for X.
+//   struct C: A, B { void X() override {} };
+//   // `X(int)` can still be overridden through it though!
+//   // We link `D::X(int)` directly to `B::X(int)`, bypassing `C`.
+//   struct D: C { int X(int) override { return 13; } };
+// The same behavior is observed when we remove the `X()` override from `C`
+// since `C::X()` is an ambiguity.
+class VirtualMethodLink {
+ public:
+  // `parent` and `child` should point to `Entity::Kind::kFunction` entities
+  // with `is_virtual_method() == true`.
+  VirtualMethodLink(EntityId parent, EntityId child)
+      : parent_(parent), child_(child) {
+    CHECK_NE(parent, kInvalidEntityId);
+    CHECK_NE(child, kInvalidEntityId);
+  }
+
+  EntityId parent() const { return parent_; }
+  EntityId child() const { return child_; }
+
+  bool operator==(const VirtualMethodLink&) const = default;
+  std::strong_ordering operator<=>(const VirtualMethodLink&) const = default;
+
+ private:
+  EntityId parent_;
+  EntityId child_;
+};
+
+template <typename H>
+H AbslHashValue(H h, const VirtualMethodLink& link) {
+  return H::combine(std::move(h), link.parent(), link.child());
+}
+
 // A simple holder for a sorted index, used as an interchange format/interface
 // definition between uses of the index.
 struct FlatIndex {
   std::vector<Location> locations;
   std::vector<Entity> entities;
   std::vector<Reference> references;
+  std::vector<VirtualMethodLink> virtual_method_links;
 };
 
 namespace testing_internal {

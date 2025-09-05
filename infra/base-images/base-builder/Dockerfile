@@ -167,6 +167,8 @@ COPY bazel_build_fuzz_tests \
     compile_javascript_fuzzer \
     compile_libfuzzer \
     compile_native_go_fuzzer \
+    compile_native_go_fuzzer_v2 \
+    go_utils.sh \
     compile_python_fuzzer \
     debug_afl \
     # Go, JavaScript, Java, Python, Rust, and Swift installation scripts.
