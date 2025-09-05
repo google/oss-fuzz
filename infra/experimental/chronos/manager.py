@@ -619,7 +619,7 @@ def main():
       check_test(project, args.sanitizer, args.container_output,
                  args.run_full_cache_replay)
   if args.command == 'check-replay-script':
-    check_cached_replay(args.project, args.sanitizer, args.container_output)
+    check_cached_replay(args.project, args.sanitizer)
   if args.command == 'build-cached-image':
     build_cached_project(args.project,
                          sanitizer=args.sanitizer,

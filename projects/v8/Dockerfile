@@ -24,7 +24,7 @@ RUN fetch v8
 WORKDIR v8
 
 RUN ./build/install-build-deps.sh --no-prompt
-COPY build.sh *.cc $SRC/
+COPY build.sh run_tests.sh $SRC/
 
 ENV CLANG_TOOLCHAIN $SRC/v8/third_party/llvm-build/Release+Asserts
 ENV CLANG_VERSION 21
