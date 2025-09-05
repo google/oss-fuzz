@@ -35,6 +35,14 @@ npm install @jazzer.js/core
 tar -czf node_modules.tar.gz node_modules
 cp node_modules.tar.gz $OUT/
 
+# Modify fuzzer scripts to extract node_modules at runtime
+for fuzzer_script in $OUT/fuzz_*; do
+  if [ -f "$fuzzer_script" ] && [ -x "$fuzzer_script" ]; then
+    # Add extraction command before the jazzer command
+    sed -i '4i# Extract node_modules for runtime\nif [ ! -d "node_modules" ]; then\n  tar -xzf node_modules.tar.gz\nfi\n' "$fuzzer_script"
+  fi
+done
+
 
 
 # Build verification
