@@ -1,0 +1,8 @@
+homepage: "https://github.com/google-gemini/gemini-cli"
+main_repo: "https://github.com/google-gemini/gemini-cli"
+language: javascript
+primary_contact: "reconsumeralization@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
