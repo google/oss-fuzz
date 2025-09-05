@@ -56,19 +56,19 @@ echo "✅ Build verification passed - $FUZZER_COUNT fuzzers properly configured"
 
 # Performance testing and reporting
 echo "Performance testing:"
-FUZZER_COUNT=0
+PERF_COUNT=0
 
 for fuzzer in fuzz_json_decoder fuzz_http_header fuzz_proxy_security fuzz_mcp_decoder fuzz_url; do
   if [ -f "$OUT/$fuzzer" ] && [ -x "$OUT/$fuzzer" ]; then
     echo "  $fuzzer: built and executable ✅"
-    ((FUZZER_COUNT++))
+    ((PERF_COUNT++))
   else
     echo "  $fuzzer: not found or not executable ❌"
   fi
 done
 
-if [ "$FUZZER_COUNT" -gt 0 ]; then
-  echo "Performance summary: $FUZZER_COUNT fuzzers tested"
+if [ "$PERF_COUNT" -gt 0 ]; then
+  echo "Performance summary: $PERF_COUNT fuzzers tested"
   echo "✅ All fuzzers are properly built and executable"
 else
   echo "No fuzzers found for performance testing"
@@ -86,7 +86,7 @@ OSS-Fuzz Build Report - $(date)
 ================================
 Project: gemini-cli
 Fuzzers Compiled: $FUZZER_COUNT
-Average Performance: ${AVG_EXEC} exec/s
+Performance: $PERF_COUNT fuzzers verified
 Build Status: SUCCESS
 Security: Address sanitizer enabled
 EOF
