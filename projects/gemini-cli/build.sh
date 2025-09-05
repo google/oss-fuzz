@@ -56,13 +56,11 @@ echo "✅ Build verification passed - $FUZZER_COUNT fuzzers properly configured"
 
 # Performance testing and reporting
 echo "Performance testing:"
-TOTAL_EXEC=0
 FUZZER_COUNT=0
 
 for fuzzer in fuzz_json_decoder fuzz_http_header fuzz_proxy_security fuzz_mcp_decoder fuzz_url; do
   if [ -f "$OUT/$fuzzer" ] && [ -x "$OUT/$fuzzer" ]; then
     echo "  $fuzzer: built and executable ✅"
-    EXEC_RATE="1"  # Placeholder for successful build
     ((FUZZER_COUNT++))
   else
     echo "  $fuzzer: not found or not executable ❌"
