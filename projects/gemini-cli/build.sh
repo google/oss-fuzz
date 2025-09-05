@@ -62,7 +62,7 @@ FUZZER_COUNT=0
 for fuzzer in fuzz_json_decoder fuzz_http_header fuzz_proxy_security fuzz_mcp_decoder fuzz_url; do
   if [ -f "$OUT/$fuzzer" ]; then
     # Quick performance test
-    EXEC_RATE=$(timeout 10 ./"$OUT/$fuzzer" 2>&1 | grep "exec/s" | tail -1 | grep -o "[0-9]*\.[0-9]*" || echo "0")
+    EXEC_RATE=$(timeout 10 "$OUT/$fuzzer" 2>&1 | grep "exec/s" | tail -1 | grep -o "[0-9]*\.[0-9]*" || echo "0")
     echo "  $fuzzer: ${EXEC_RATE} exec/s"
     TOTAL_EXEC=$(echo "$TOTAL_EXEC + $EXEC_RATE" | bc -l 2>/dev/null || echo "0")
     ((FUZZER_COUNT++))
