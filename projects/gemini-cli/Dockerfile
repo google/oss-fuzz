@@ -16,3 +16,5 @@ FROM gcr.io/oss-fuzz-base/base-builder-javascript
 RUN git clone --depth 1 https://github.com/google-gemini/gemini-cli.git
 WORKDIR $SRC/gemini-cli
 COPY build.sh /src/
+COPY fuzzers/ $SRC/gemini-cli/fuzzers/
+COPY seeds/ $SRC/gemini-cli/seeds/
