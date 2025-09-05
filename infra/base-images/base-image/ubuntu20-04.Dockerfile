@@ -1,5 +1,4 @@
-#!/bin/bash -eux
-# Copyright 2022 Google LLC
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,28 +14,25 @@
 #
 ################################################################################
 
-# Install dependencies in a platform-aware way.
+# Base image for all other images.
 
-apt-get update && apt-get install -y \
-    binutils \
-    file \
-    ca-certificates \
-    fonts-dejavu \
-    git \
-    libcap2 \
-    rsync \
-    unzip \
-    jq \
-    wget \
-    zip --no-install-recommends
+ARG parent_image=ubuntu:20.04@sha256:4a45212e9518f35983a976eead0de5eecc555a2f047134e9dd2cfc589076a00d
 
-case $(uname -m) in
-  x86_64)
-    # We only need to worry about i386 if we are on x86_64.
-    if grep -q '24.04' /etc/os-release; then
-        apt-get install -y lib32gcc-s1 libc6-i386
-    else
-        apt-get install -y lib32gcc1 libc6-i386
-    fi
-    ;;
-esac
+FROM $parent_image
+
+ENV DEBIAN_FRONTEND noninteractive
+# Install tzadata to match ClusterFuzz
+# (https://github.com/google/oss-fuzz/issues/9280).
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y libc6-dev binutils libgcc-9-dev tzdata && \
+    apt-get autoremove -y
+
+ENV OUT=/out
+ENV SRC=/src
+ENV WORK=/work
+ENV PATH="$PATH:/out"
+ENV HWASAN_OPTIONS=random_tags=0
+
+RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK

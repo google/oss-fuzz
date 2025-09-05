@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu24.04
 
 RUN git clone https://github.com/trailofbits/ruzzy.git $SRC/ruzzy
 

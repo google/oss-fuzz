@@ -1,5 +1,4 @@
-#!/bin/bash -eux
-# Copyright 2022 Google LLC
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,28 +14,12 @@
 #
 ################################################################################
 
-# Install dependencies in a platform-aware way.
+FROM gcr.io/oss-fuzz-base/base-runner:ubuntu20.04
+RUN apt-get update && apt-get install -y valgrind zip
 
-apt-get update && apt-get install -y \
-    binutils \
-    file \
-    ca-certificates \
-    fonts-dejavu \
-    git \
-    libcap2 \
-    rsync \
-    unzip \
-    jq \
-    wget \
-    zip --no-install-recommends
-
-case $(uname -m) in
-  x86_64)
-    # We only need to worry about i386 if we are on x86_64.
-    if grep -q '24.04' /etc/os-release; then
-        apt-get install -y lib32gcc-s1 libc6-i386
-    else
-        apt-get install -y lib32gcc1 libc6-i386
-    fi
-    ;;
-esac
+# Installing GDB 12, re https://github.com/google/oss-fuzz/issues/7513.
+RUN apt-get install -y build-essential libgmp-dev && \
+    wget https://ftp.gnu.org/gnu/gdb/gdb-12.1.tar.xz && \
+    tar -xf gdb-12.1.tar.xz && cd gdb-12.1 && ./configure &&  \
+    make -j $(expr $(nproc) / 2) && make install && cd .. && \
+    rm -rf gdb-12.1* && apt-get remove --purge -y build-essential libgmp-dev
