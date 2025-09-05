@@ -11,4 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-homepage: "https://github.com/google-gemini/gemini-cli" main_repo: "https://github.com/google-gemini/gemini-cli" language: javascript primary_contact: "security@google.com" auto_ccs:   - "gemini-cli-team@google.com" fuzzing_engines:   - libfuzzer sanitizers:   - none
+
+homepage: "https://github.com/google-gemini/gemini-cli"
+main_repo: "https://github.com/google-gemini/gemini-cli"
+language: javascript
+primary_contact: "security@google.com"
+auto_ccs:
+  - "gemini-cli-team@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - none

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,33 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/bin/bash
+# Seed corpus management script for gemini-cli fuzzers
+echo "Managing seed corpus for gemini-cli fuzzers..."
 
-# Script to manage seed corpora for Gemini CLI fuzzing
-
-set -e
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CORPORA_DIR="${SCRIPT_DIR}/corpora"
-
-# Create corpora directory if it doesn't exist
-mkdir -p "${CORPORA_DIR}"
-
-echo "Seed corpora directory: ${CORPORA_DIR}"
-
-# Add basic seed files for fuzzing
-echo "Creating basic seed files..."
-
-# HTTP header seeds
-echo -e "Content-Type: application/json\nAuthorization: Bearer token123" > "${CORPORA_DIR}/http_headers.seed"
-echo -e "User-Agent: Mozilla/5.0\nAccept: */*" > "${CORPORA_DIR}/http_headers2.seed"
-
-# JSON seeds
-echo '{"key": "value", "number": 123}' > "${CORPORA_DIR}/json.seed"
-echo '["item1", "item2", {"nested": true}]' > "${CORPORA_DIR}/json2.seed"
-
-# URL seeds
-echo "https://example.com/path?param=value" > "${CORPORA_DIR}/url.seed"
-echo "http://localhost:8080/api/v1/data" > "${CORPORA_DIR}/url2.seed"
-
-echo "Seed corpora setup complete."
+# This script would be used to manage and update seed corpora
+# For now, it serves as a placeholder for future corpus management
