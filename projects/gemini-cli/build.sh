@@ -47,6 +47,7 @@ npm prune --omit=dev
 #    required by the fuzzer at runtime.
 npm install @jazzer.js/core
 
+
 # 5. Archive the minimal node_modules into a single .tar.gz file.
 #    This is MUCH faster than copying thousands of small files.
 tar -czf node_modules.tar.gz node_modules
