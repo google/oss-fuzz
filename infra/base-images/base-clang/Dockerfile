@@ -46,6 +46,7 @@ COPY checkout_build_install_llvm.sh /root/
 #COPY llvm-project $SRC/llvm-project
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.
+#COPY llvm-project $SRC/llvm-project
 ARG FULL_LLVM_BUILD
 RUN FULL_LLVM_BUILD=$FULL_LLVM_BUILD /root/checkout_build_install_llvm.sh
 RUN rm /root/checkout_build_install_llvm.sh

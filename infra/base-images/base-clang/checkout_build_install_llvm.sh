@@ -60,7 +60,8 @@ apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 # languages, projects, ...) is needed.
 # Check CMAKE_VERSION infra/base-images/base-clang/Dockerfile was released
 # recently enough to fully support this clang version.
-OUR_LLVM_REVISION=llvmorg-21.1.0-rc3
+#OUR_LLVM_REVISION=llvmorg-21.1.0-rc3
+OUR_LLVM_REVISION=cb2f0d0a5f14
 
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
@@ -68,6 +69,7 @@ git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 # Pin clang script due to https://github.com/google/oss-fuzz/issues/7617
 OUR_CLANG_REVISION=329189001bce28e8f90dfa1c96075731a7a8f7de
+OUR_CLANG_REVISION=063d3766486a820c708e888d737b004d11543410
 git checkout $OUR_CLANG_REVISION
 
 LLVM_SRC=$SRC/llvm-project
