@@ -48,7 +48,7 @@ _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 DEFAULT_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
 DEFAULT_FUZZING_ENGINE = 'fuzzing_engine.cc'
 
-_CLANG_VERSION = os.getenv('CLANG_VERSION', '18')
+_CLANG_VERSION = os.getenv('CLANG_VERSION', '21')
 _CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', '/usr/local'))
 _TOOLCHAIN_WITH_WRAPPER = Path('/opt/toolchain')
 
@@ -160,22 +160,21 @@ def _get_build_id_from_elf_notes(elf_file: str, contents: bytes) -> str | None:
     The build id, or None if it could not be found.
   """
 
-  try:
-    elf_data = json.loads(contents)
-  except json.JSONDecodeError:
-    logging.error('failed to decode ELF notes for %s', elf_file)
-    return None
-
+  elf_data = json.loads(contents)
   assert elf_data
 
   for file_info in elf_data:
-    for note_entry in file_info['Notes']:
-      note_section = note_entry['NoteSection']
-      if note_section['Name'] == '.note.gnu.build-id':
-        note_details = note_section['Note']
-        if 'Build ID' in note_details:
-          return note_details['Build ID']
+    for note_entry in file_info["NoteSections"]:
+      note_section = note_entry["NoteSection"]
+      if note_section["Name"] == ".note.gnu.build-id":
+        note_details = note_section["Notes"]
+        for note_detail in note_details:
+          if "Build ID" in note_detail:
+            return note_detail["Build ID"]
   return None
+
+
+
 
 
 def get_build_id(elf_file: str) -> str | None:

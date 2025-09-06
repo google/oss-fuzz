@@ -132,12 +132,13 @@ def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
   assert elf_data
 
   for file_info in elf_data:
-    for note_entry in file_info["Notes"]:
+    for note_entry in file_info["NoteSections"]:
       note_section = note_entry["NoteSection"]
       if note_section["Name"] == ".note.gnu.build-id":
-        note_details = note_section["Note"]
-        if "Build ID" in note_details:
-          return note_details["Build ID"]
+        note_details = note_section["Notes"]
+        for note_detail in note_details:
+          if "Build ID" in note_detail:
+            return note_detail["Build ID"]
   return None
 
 
