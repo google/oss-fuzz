@@ -34,6 +34,6 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > $SRC/rustbuild.s
     chmod +x $SRC/rustbuild.sh && \
     $SRC/rustbuild.sh -y
 
-RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
+RUN git clone --depth=1 https://github.com/mozilla-firefox/firefox mozilla-central
 WORKDIR mozilla-central/
 COPY build.sh $SRC/
