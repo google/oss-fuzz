@@ -20,3 +20,6 @@ $SRC/kio-extras/thumbnail/autotests/ossfuzz/build_fuzzers.sh
 $SRC/kdegraphics-thumbnailers/autotests/ossfuzz/build_fuzzers.sh
 $SRC/kdesdk-thumbnailers/autotests/ossfuzz/build_fuzzers.sh
 $SRC/ffmpegthumbs/autotests/ossfuzz/build_fuzzers.sh
+
+# Cleanup
+rm -rf $WORK/*
