@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/sippy/rtpproxy
-RUN git -C rtpproxy submodule update --init --recursive
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
 
-COPY build_ubuntu_20_04.sh $SRC/
-COPY build_ubuntu_24_04.sh $SRC/
-RUN . /etc/os-release && cp "$SRC/build_ubuntu_$VERSION_ID.sh" "$SRC/build.sh"
-
-WORKDIR rtpproxy
+RUN install_javascript.sh

@@ -1,3 +1,4 @@
+#! /bin/bash -eux
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +15,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/sippy/rtpproxy
-RUN git -C rtpproxy submodule update --init --recursive
-
-COPY build_ubuntu_20_04.sh $SRC/
-COPY build_ubuntu_24_04.sh $SRC/
-RUN . /etc/os-release && cp "$SRC/build_ubuntu_$VERSION_ID.sh" "$SRC/build.sh"
-
-WORKDIR rtpproxy
+if [[ $(lsb_release -rs) == "20.04" ]]; then
+  apt-get update && apt-get install -y gcc gfortran python-dev libopenblas-dev liblapack-dev cython libpq-dev
+else
+  apt-get update && apt-get install -y gcc gfortran python3-dev libopenblas-dev liblapack-dev cython3 libpq-dev
+fi
+wget -O /tmp/requirements.txt https://raw.githubusercontent.com/google/fuzzbench/master/requirements.txt
+sed -i 's/pytype==2022.10.13/pytype==2024.4.11/' /tmp/requirements.txt
+sed -i 's/Orange3==3.33.0/Orange3==3.39.0/' /tmp/requirements.txt
+pip3 install pip --upgrade
+CFLAGS= CXXFLAGS= pip3 install -r /tmp/requirements.txt
+rm /tmp/requirements.txt

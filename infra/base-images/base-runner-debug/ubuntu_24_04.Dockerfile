@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/sippy/rtpproxy
-RUN git -C rtpproxy submodule update --init --recursive
+FROM gcr.io/oss-fuzz-base/base-runner:ubuntu_24_04
+RUN apt-get update && apt-get install -y valgrind zip
 
-COPY build_ubuntu_20_04.sh $SRC/
-COPY build_ubuntu_24_04.sh $SRC/
-RUN . /etc/os-release && cp "$SRC/build_ubuntu_$VERSION_ID.sh" "$SRC/build.sh"
-
-WORKDIR rtpproxy
+# Installing GDB 12, re https://github.com/google/oss-fuzz/issues/7513.
+RUN apt-get install -y build-essential libgmp-dev && \
+    wget https://ftp.gnu.org/gnu/gdb/gdb-12.1.tar.xz && \
+    tar -xf gdb-12.1.tar.xz && cd gdb-12.1 && ./configure &&  \
+    make -j $(expr $(nproc) / 2) && make install && cd .. && \
+    rm -rf gdb-12.1* && apt-get remove --purge -y build-essential libgmp-dev

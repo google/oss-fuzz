@@ -1,0 +1,1122 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from ubuntu_20_04.Dockerfile
+#1 transferring dockerfile: 1.00kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 1.31kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
+#5 CACHED
+
+#6 [2/4] COPY fuzzbench_install_dependencies /usr/local/bin
+#6 DONE 0.0s
+
+#7 [3/4] RUN fuzzbench_install_dependencies
+#7 0.299 + apt-get update
+#7 0.710 Get:1 http://security.ubuntu.com/ubuntu focal-security InRelease [128 kB]
+#7 2.102 Hit:2 http://archive.ubuntu.com/ubuntu focal InRelease
+#7 2.117 Get:3 http://archive.ubuntu.com/ubuntu focal-updates InRelease [128 kB]
+#7 2.202 Get:4 http://archive.ubuntu.com/ubuntu focal-backports InRelease [128 kB]
+#7 2.549 Get:5 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 Packages [4919 kB]
+#7 2.926 Fetched 5303 kB in 2s (2135 kB/s)
+#7 2.926 Reading package lists...
+#7 4.321 + apt-get install -y gcc gfortran python-dev libopenblas-dev liblapack-dev cython libpq-dev
+#7 4.387 Reading package lists...
+#7 5.799 Building dependency tree...
+#7 6.062 Reading state information...
+#7 6.319 gcc is already the newest version (4:9.3.0-1ubuntu2).
+#7 6.319 gcc set to manually installed.
+#7 6.319 The following packages were automatically installed and are no longer required:
+#7 6.321   autotools-dev libsigsegv2 m4
+#7 6.321 Use 'apt autoremove' to remove them.
+#7 6.321 The following additional packages will be installed:
+#7 6.321   file gfortran-9 libexpat1-dev libgfortran-9-dev libgfortran5 liblapack3
+#7 6.321   libmagic-mgc libmagic1 libopenblas-pthread-dev libopenblas0
+#7 6.321   libopenblas0-pthread libpq5 libpython2-dev libpython2-stdlib libpython2.7
+#7 6.322   libpython2.7-dev libpython2.7-minimal libpython2.7-stdlib mime-support
+#7 6.322   python-is-python2 python2 python2-dev python2-minimal python2.7
+#7 6.322   python2.7-dev python2.7-minimal
+#7 6.323 Suggested packages:
+#7 6.323   cython-doc gfortran-multilib gfortran-doc gfortran-9-multilib gfortran-9-doc
+#7 6.323   libcoarrays-dev liblapack-doc postgresql-doc-12 python2-doc python-tk
+#7 6.323   python2.7-doc binfmt-support
+#7 6.514 The following NEW packages will be installed:
+#7 6.514   cython file gfortran gfortran-9 libexpat1-dev libgfortran-9-dev libgfortran5
+#7 6.515   liblapack-dev liblapack3 libmagic-mgc libmagic1 libopenblas-dev
+#7 6.515   libopenblas-pthread-dev libopenblas0 libopenblas0-pthread libpq-dev libpq5
+#7 6.515   libpython2-dev libpython2-stdlib libpython2.7 libpython2.7-dev
+#7 6.516   libpython2.7-minimal libpython2.7-stdlib mime-support python-dev-is-python2
+#7 6.516   python-is-python2 python2 python2-dev python2-minimal python2.7
+#7 6.516   python2.7-dev python2.7-minimal
+#7 7.814 0 upgraded, 32 newly installed, 0 to remove and 0 not upgraded.
+#7 7.814 Need to get 39.2 MB of archives.
+#7 7.814 After this operation, 271 MB of additional disk space will be used.
+#7 7.814 Get:1 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libpython2.7-minimal amd64 2.7.18-1~20.04.7 [336 kB]
+#7 7.929 Get:2 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 python2.7-minimal amd64 2.7.18-1~20.04.7 [1278 kB]
+#7 7.978 Get:3 http://archive.ubuntu.com/ubuntu focal/universe amd64 python2-minimal amd64 2.7.17-2ubuntu4 [27.5 kB]
+#7 7.978 Get:4 http://archive.ubuntu.com/ubuntu focal/main amd64 mime-support all 3.64ubuntu1 [30.6 kB]
+#7 7.979 Get:5 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libpython2.7-stdlib amd64 2.7.18-1~20.04.7 [1889 kB]
+#7 8.003 Get:6 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 python2.7 amd64 2.7.18-1~20.04.7 [248 kB]
+#7 8.006 Get:7 http://archive.ubuntu.com/ubuntu focal/universe amd64 libpython2-stdlib amd64 2.7.17-2ubuntu4 [7072 B]
+#7 8.007 Get:8 http://archive.ubuntu.com/ubuntu focal/universe amd64 python2 amd64 2.7.17-2ubuntu4 [26.5 kB]
+#7 8.008 Get:9 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic-mgc amd64 1:5.38-4 [218 kB]
+#7 8.010 Get:10 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic1 amd64 1:5.38-4 [75.9 kB]
+#7 8.012 Get:11 http://archive.ubuntu.com/ubuntu focal/main amd64 file amd64 1:5.38-4 [23.3 kB]
+#7 8.013 Get:12 http://archive.ubuntu.com/ubuntu focal/universe amd64 cython amd64 0.29.14-0.1ubuntu3 [1402 kB]
+#7 8.024 Get:13 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libgfortran5 amd64 10.5.0-1ubuntu1~20.04 [737 kB]
+#7 8.031 Get:14 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libgfortran-9-dev amd64 9.4.0-1ubuntu1~20.04.2 [685 kB]
+#7 8.038 Get:15 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gfortran-9 amd64 9.4.0-1ubuntu1~20.04.2 [7936 kB]
+#7 8.106 Get:16 http://archive.ubuntu.com/ubuntu focal/main amd64 gfortran amd64 4:9.3.0-1ubuntu2 [1372 B]
+#7 8.107 Get:17 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libexpat1-dev amd64 2.2.9-1ubuntu0.8 [117 kB]
+#7 8.109 Get:18 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libopenblas0-pthread amd64 0.3.8+ds-1ubuntu0.20.04.1 [9127 kB]
+#7 8.187 Get:19 http://archive.ubuntu.com/ubuntu focal/main amd64 liblapack3 amd64 3.9.0-1build1 [2154 kB]
+#7 8.203 Get:20 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libopenblas-pthread-dev amd64 0.3.8+ds-1ubuntu0.20.04.1 [4526 kB]
+#7 8.242 Get:21 http://archive.ubuntu.com/ubuntu focal/main amd64 liblapack-dev amd64 3.9.0-1build1 [4242 kB]
+#7 8.272 Get:22 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libopenblas0 amd64 0.3.8+ds-1ubuntu0.20.04.1 [5892 B]
+#7 8.273 Get:23 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libopenblas-dev amd64 0.3.8+ds-1ubuntu0.20.04.1 [16.4 kB]
+#7 8.274 Get:24 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpq5 amd64 12.22-0ubuntu0.20.04.4 [119 kB]
+#7 8.276 Get:25 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpq-dev amd64 12.22-0ubuntu0.20.04.4 [138 kB]
+#7 8.277 Get:26 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libpython2.7 amd64 2.7.18-1~20.04.7 [1038 kB]
+#7 8.287 Get:27 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libpython2.7-dev amd64 2.7.18-1~20.04.7 [2468 kB]
+#7 8.308 Get:28 http://archive.ubuntu.com/ubuntu focal/universe amd64 libpython2-dev amd64 2.7.17-2ubuntu4 [7140 B]
+#7 8.308 Get:29 http://archive.ubuntu.com/ubuntu focal/universe amd64 python-is-python2 all 2.7.17-4 [2496 B]
+#7 8.309 Get:30 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 python2.7-dev amd64 2.7.18-1~20.04.7 [294 kB]
+#7 8.312 Get:31 http://archive.ubuntu.com/ubuntu focal/universe amd64 python2-dev amd64 2.7.17-2ubuntu4 [1268 B]
+#7 8.313 Get:32 http://archive.ubuntu.com/ubuntu focal/universe amd64 python-dev-is-python2 all 2.7.17-4 [1396 B]
+#7 8.482 debconf: delaying package configuration, since apt-utils is not installed
+#7 8.539 Fetched 39.2 MB in 2s (22.0 MB/s)
+#7 8.585 Selecting previously unselected package libpython2.7-minimal:amd64.
+#7 8.585 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 17483 files and directories currently installed.)
+#7 8.643 Preparing to unpack .../0-libpython2.7-minimal_2.7.18-1~20.04.7_amd64.deb ...
+#7 8.647 Unpacking libpython2.7-minimal:amd64 (2.7.18-1~20.04.7) ...
+#7 8.897 Selecting previously unselected package python2.7-minimal.
+#7 8.899 Preparing to unpack .../1-python2.7-minimal_2.7.18-1~20.04.7_amd64.deb ...
+#7 8.910 Unpacking python2.7-minimal (2.7.18-1~20.04.7) ...
+#7 9.048 Selecting previously unselected package python2-minimal.
+#7 9.050 Preparing to unpack .../2-python2-minimal_2.7.17-2ubuntu4_amd64.deb ...
+#7 9.054 Unpacking python2-minimal (2.7.17-2ubuntu4) ...
+#7 9.117 Selecting previously unselected package mime-support.
+#7 9.120 Preparing to unpack .../3-mime-support_3.64ubuntu1_all.deb ...
+#7 9.124 Unpacking mime-support (3.64ubuntu1) ...
+#7 9.189 Selecting previously unselected package libpython2.7-stdlib:amd64.
+#7 9.192 Preparing to unpack .../4-libpython2.7-stdlib_2.7.18-1~20.04.7_amd64.deb ...
+#7 9.196 Unpacking libpython2.7-stdlib:amd64 (2.7.18-1~20.04.7) ...
+#7 9.706 Selecting previously unselected package python2.7.
+#7 9.709 Preparing to unpack .../5-python2.7_2.7.18-1~20.04.7_amd64.deb ...
+#7 9.713 Unpacking python2.7 (2.7.18-1~20.04.7) ...
+#7 9.768 Selecting previously unselected package libpython2-stdlib:amd64.
+#7 9.770 Preparing to unpack .../6-libpython2-stdlib_2.7.17-2ubuntu4_amd64.deb ...
+#7 9.774 Unpacking libpython2-stdlib:amd64 (2.7.17-2ubuntu4) ...
+#7 9.826 Setting up libpython2.7-minimal:amd64 (2.7.18-1~20.04.7) ...
+#7 9.844 Setting up python2.7-minimal (2.7.18-1~20.04.7) ...
+#7 10.26 Setting up python2-minimal (2.7.17-2ubuntu4) ...
+#7 10.36 Selecting previously unselected package python2.
+#7 10.36 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18259 files and directories currently installed.)
+#7 10.41 Preparing to unpack .../00-python2_2.7.17-2ubuntu4_amd64.deb ...
+#7 10.41 Unpacking python2 (2.7.17-2ubuntu4) ...
+#7 10.48 Selecting previously unselected package libmagic-mgc.
+#7 10.49 Preparing to unpack .../01-libmagic-mgc_1%3a5.38-4_amd64.deb ...
+#7 10.49 Unpacking libmagic-mgc (1:5.38-4) ...
+#7 10.57 Selecting previously unselected package libmagic1:amd64.
+#7 10.57 Preparing to unpack .../02-libmagic1_1%3a5.38-4_amd64.deb ...
+#7 10.58 Unpacking libmagic1:amd64 (1:5.38-4) ...
+#7 10.63 Selecting previously unselected package file.
+#7 10.63 Preparing to unpack .../03-file_1%3a5.38-4_amd64.deb ...
+#7 10.64 Unpacking file (1:5.38-4) ...
+#7 10.69 Selecting previously unselected package cython.
+#7 10.70 Preparing to unpack .../04-cython_0.29.14-0.1ubuntu3_amd64.deb ...
+#7 10.70 Unpacking cython (0.29.14-0.1ubuntu3) ...
+#7 11.09 Selecting previously unselected package libgfortran5:amd64.
+#7 11.09 Preparing to unpack .../05-libgfortran5_10.5.0-1ubuntu1~20.04_amd64.deb ...
+#7 11.10 Unpacking libgfortran5:amd64 (10.5.0-1ubuntu1~20.04) ...
+#7 11.18 Selecting previously unselected package libgfortran-9-dev:amd64.
+#7 11.19 Preparing to unpack .../06-libgfortran-9-dev_9.4.0-1ubuntu1~20.04.2_amd64.deb ...
+#7 11.19 Unpacking libgfortran-9-dev:amd64 (9.4.0-1ubuntu1~20.04.2) ...
+#7 11.29 Selecting previously unselected package gfortran-9.
+#7 11.29 Preparing to unpack .../07-gfortran-9_9.4.0-1ubuntu1~20.04.2_amd64.deb ...
+#7 11.30 Unpacking gfortran-9 (9.4.0-1ubuntu1~20.04.2) ...
+#7 11.88 Selecting previously unselected package gfortran.
+#7 11.88 Preparing to unpack .../08-gfortran_4%3a9.3.0-1ubuntu2_amd64.deb ...
+#7 11.89 Unpacking gfortran (4:9.3.0-1ubuntu2) ...
+#7 11.93 Selecting previously unselected package libexpat1-dev:amd64.
+#7 11.93 Preparing to unpack .../09-libexpat1-dev_2.2.9-1ubuntu0.8_amd64.deb ...
+#7 11.93 Unpacking libexpat1-dev:amd64 (2.2.9-1ubuntu0.8) ...
+#7 12.01 Selecting previously unselected package libopenblas0-pthread:amd64.
+#7 12.01 Preparing to unpack .../10-libopenblas0-pthread_0.3.8+ds-1ubuntu0.20.04.1_amd64.deb ...
+#7 12.02 Unpacking libopenblas0-pthread:amd64 (0.3.8+ds-1ubuntu0.20.04.1) ...
+#7 12.84 Selecting previously unselected package liblapack3:amd64.
+#7 12.84 Preparing to unpack .../11-liblapack3_3.9.0-1build1_amd64.deb ...
+#7 12.84 Unpacking liblapack3:amd64 (3.9.0-1build1) ...
+#7 13.04 Selecting previously unselected package libopenblas-pthread-dev:amd64.
+#7 13.04 Preparing to unpack .../12-libopenblas-pthread-dev_0.3.8+ds-1ubuntu0.20.04.1_amd64.deb ...
+#7 13.04 Unpacking libopenblas-pthread-dev:amd64 (0.3.8+ds-1ubuntu0.20.04.1) ...
+#7 13.50 Selecting previously unselected package liblapack-dev:amd64.
+#7 13.50 Preparing to unpack .../13-liblapack-dev_3.9.0-1build1_amd64.deb ...
+#7 13.50 Unpacking liblapack-dev:amd64 (3.9.0-1build1) ...
+#7 13.87 Selecting previously unselected package libopenblas0:amd64.
+#7 13.87 Preparing to unpack .../14-libopenblas0_0.3.8+ds-1ubuntu0.20.04.1_amd64.deb ...
+#7 13.87 Unpacking libopenblas0:amd64 (0.3.8+ds-1ubuntu0.20.04.1) ...
+#7 13.91 Selecting previously unselected package libopenblas-dev:amd64.
+#7 13.91 Preparing to unpack .../15-libopenblas-dev_0.3.8+ds-1ubuntu0.20.04.1_amd64.deb ...
+#7 13.92 Unpacking libopenblas-dev:amd64 (0.3.8+ds-1ubuntu0.20.04.1) ...
+#7 13.96 Selecting previously unselected package libpq5:amd64.
+#7 13.97 Preparing to unpack .../16-libpq5_12.22-0ubuntu0.20.04.4_amd64.deb ...
+#7 13.97 Unpacking libpq5:amd64 (12.22-0ubuntu0.20.04.4) ...
+#7 14.02 Selecting previously unselected package libpq-dev.
+#7 14.02 Preparing to unpack .../17-libpq-dev_12.22-0ubuntu0.20.04.4_amd64.deb ...
+#7 14.03 Unpacking libpq-dev (12.22-0ubuntu0.20.04.4) ...
+#7 14.10 Selecting previously unselected package libpython2.7:amd64.
+#7 14.10 Preparing to unpack .../18-libpython2.7_2.7.18-1~20.04.7_amd64.deb ...
+#7 14.10 Unpacking libpython2.7:amd64 (2.7.18-1~20.04.7) ...
+#7 14.22 Selecting previously unselected package libpython2.7-dev:amd64.
+#7 14.22 Preparing to unpack .../19-libpython2.7-dev_2.7.18-1~20.04.7_amd64.deb ...
+#7 14.23 Unpacking libpython2.7-dev:amd64 (2.7.18-1~20.04.7) ...
+#7 14.54 Selecting previously unselected package libpython2-dev:amd64.
+#7 14.54 Preparing to unpack .../20-libpython2-dev_2.7.17-2ubuntu4_amd64.deb ...
+#7 14.54 Unpacking libpython2-dev:amd64 (2.7.17-2ubuntu4) ...
+#7 14.58 Selecting previously unselected package python-is-python2.
+#7 14.58 Preparing to unpack .../21-python-is-python2_2.7.17-4_all.deb ...
+#7 14.59 Unpacking python-is-python2 (2.7.17-4) ...
+#7 14.63 Selecting previously unselected package python2.7-dev.
+#7 14.63 Preparing to unpack .../22-python2.7-dev_2.7.18-1~20.04.7_amd64.deb ...
+#7 14.63 Unpacking python2.7-dev (2.7.18-1~20.04.7) ...
+#7 14.68 Selecting previously unselected package python2-dev.
+#7 14.69 Preparing to unpack .../23-python2-dev_2.7.17-2ubuntu4_amd64.deb ...
+#7 14.69 Unpacking python2-dev (2.7.17-2ubuntu4) ...
+#7 14.73 Selecting previously unselected package python-dev-is-python2.
+#7 14.73 Preparing to unpack .../24-python-dev-is-python2_2.7.17-4_all.deb ...
+#7 14.74 Unpacking python-dev-is-python2 (2.7.17-4) ...
+#7 14.79 Setting up mime-support (3.64ubuntu1) ...
+#7 14.83 Setting up libmagic-mgc (1:5.38-4) ...
+#7 14.84 Setting up libmagic1:amd64 (1:5.38-4) ...
+#7 14.86 Setting up libpq5:amd64 (12.22-0ubuntu0.20.04.4) ...
+#7 14.87 Setting up libpq-dev (12.22-0ubuntu0.20.04.4) ...
+#7 14.88 Setting up file (1:5.38-4) ...
+#7 14.89 Setting up libpython2.7-stdlib:amd64 (2.7.18-1~20.04.7) ...
+#7 14.90 Setting up libexpat1-dev:amd64 (2.2.9-1ubuntu0.8) ...
+#7 14.91 Setting up libgfortran5:amd64 (10.5.0-1ubuntu1~20.04) ...
+#7 14.92 Setting up libpython2.7:amd64 (2.7.18-1~20.04.7) ...
+#7 14.94 Setting up libpython2.7-dev:amd64 (2.7.18-1~20.04.7) ...
+#7 14.95 Setting up libopenblas0-pthread:amd64 (0.3.8+ds-1ubuntu0.20.04.1) ...
+#7 14.96 update-alternatives: using /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 to provide /usr/lib/x86_64-linux-gnu/libblas.so.3 (libblas.so.3-x86_64-linux-gnu) in auto mode
+#7 14.97 update-alternatives: using /usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so.3 to provide /usr/lib/x86_64-linux-gnu/liblapack.so.3 (liblapack.so.3-x86_64-linux-gnu) in auto mode
+#7 14.98 update-alternatives: using /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so.0 to provide /usr/lib/x86_64-linux-gnu/libopenblas.so.0 (libopenblas.so.0-x86_64-linux-gnu) in auto mode
+#7 14.99 Setting up python2.7 (2.7.18-1~20.04.7) ...
+#7 15.89 Setting up libpython2-stdlib:amd64 (2.7.17-2ubuntu4) ...
+#7 15.90 Setting up libgfortran-9-dev:amd64 (9.4.0-1ubuntu1~20.04.2) ...
+#7 15.91 Setting up python2 (2.7.17-2ubuntu4) ...
+#7 15.92 Setting up libopenblas0:amd64 (0.3.8+ds-1ubuntu0.20.04.1) ...
+#7 15.93 Setting up libpython2-dev:amd64 (2.7.17-2ubuntu4) ...
+#7 15.94 Setting up python-is-python2 (2.7.17-4) ...
+#7 15.95 Setting up python2.7-dev (2.7.18-1~20.04.7) ...
+#7 15.96 Setting up libopenblas-pthread-dev:amd64 (0.3.8+ds-1ubuntu0.20.04.1) ...
+#7 15.98 update-alternatives: using /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so to provide /usr/lib/x86_64-linux-gnu/libblas.so (libblas.so-x86_64-linux-gnu) in auto mode
+#7 15.99 update-alternatives: using /usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so to provide /usr/lib/x86_64-linux-gnu/liblapack.so (liblapack.so-x86_64-linux-gnu) in auto mode
+#7 16.00 update-alternatives: using /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblas.so to provide /usr/lib/x86_64-linux-gnu/libopenblas.so (libopenblas.so-x86_64-linux-gnu) in auto mode
+#7 16.01 Setting up cython (0.29.14-0.1ubuntu3) ...
+#7 16.52 Setting up liblapack3:amd64 (3.9.0-1build1) ...
+#7 16.54 Setting up python2-dev (2.7.17-2ubuntu4) ...
+#7 16.55 Setting up gfortran-9 (9.4.0-1ubuntu1~20.04.2) ...
+#7 16.56 Setting up gfortran (4:9.3.0-1ubuntu2) ...
+#7 16.57 update-alternatives: using /usr/bin/gfortran to provide /usr/bin/f95 (f95) in auto mode
+#7 16.57 update-alternatives: warning: skip creation of /usr/share/man/man1/f95.1.gz because associated file /usr/share/man/man1/gfortran.1.gz (of link group f95) doesn't exist
+#7 16.58 update-alternatives: using /usr/bin/gfortran to provide /usr/bin/f77 (f77) in auto mode
+#7 16.58 update-alternatives: warning: skip creation of /usr/share/man/man1/f77.1.gz because associated file /usr/share/man/man1/gfortran.1.gz (of link group f77) doesn't exist
+#7 16.59 Setting up libopenblas-dev:amd64 (0.3.8+ds-1ubuntu0.20.04.1) ...
+#7 16.60 Setting up python-dev-is-python2 (2.7.17-4) ...
+#7 16.61 Setting up liblapack-dev:amd64 (3.9.0-1build1) ...
+#7 16.63 Processing triggers for libc-bin (2.31-0ubuntu9.18) ...
+#7 16.72 + wget -O /tmp/requirements.txt https://raw.githubusercontent.com/google/fuzzbench/master/requirements.txt
+#7 16.74 --2025-09-05 17:20:37--  https://raw.githubusercontent.com/google/fuzzbench/master/requirements.txt
+#7 16.74 Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.108.133, 185.199.110.133, 185.199.109.133, ...
+#7 16.75 Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.108.133|:443... connected.
+#7 16.77 HTTP request sent, awaiting response... 200 OK
+#7 16.79 Length: 564 [text/plain]
+#7 16.79 Saving to: '/tmp/requirements.txt'
+#7 16.79 
+#7 16.79      0K                                                       100% 2.43M=0s
+#7 16.79 
+#7 16.80 2025-09-05 17:20:37 (2.43 MB/s) - '/tmp/requirements.txt' saved [564/564]
+#7 16.80 
+#7 16.80 + sed -i s/pytype==2022.10.13/pytype==2024.4.11/ /tmp/requirements.txt
+#7 16.81 + sed -i s/Orange3==3.33.0/Orange3==3.39.0/ /tmp/requirements.txt
+#7 16.81 + pip3 install pip --upgrade
+#7 17.30 Requirement already satisfied: pip in /usr/local/lib/python3.11/site-packages (25.2)
+#7 17.41 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#7 17.54 + CFLAGS=
+#7 17.54 + CXXFLAGS=
+#7 17.54 + pip3 install -r /tmp/requirements.txt
+#7 18.04 Collecting alembic==1.8.1 (from -r /tmp/requirements.txt (line 1))
+#7 18.09   Downloading alembic-1.8.1-py3-none-any.whl.metadata (7.2 kB)
+#7 18.17 Collecting google-api-python-client==2.64.0 (from -r /tmp/requirements.txt (line 2))
+#7 18.19   Downloading google_api_python_client-2.64.0-py2.py3-none-any.whl.metadata (6.5 kB)
+#7 18.26 Collecting google-auth==2.12.0 (from -r /tmp/requirements.txt (line 3))
+#7 18.27   Downloading google_auth-2.12.0-py2.py3-none-any.whl.metadata (3.8 kB)
+#7 18.31 Collecting google-cloud-error-reporting==1.6.3 (from -r /tmp/requirements.txt (line 4))
+#7 18.34   Downloading google_cloud_error_reporting-1.6.3-py2.py3-none-any.whl.metadata (5.2 kB)
+#7 18.38 Collecting google-cloud-logging==3.1.2 (from -r /tmp/requirements.txt (line 5))
+#7 18.40   Downloading google_cloud_logging-3.1.2-py2.py3-none-any.whl.metadata (4.4 kB)
+#7 18.44 Collecting google-cloud-secret-manager==2.12.6 (from -r /tmp/requirements.txt (line 6))
+#7 18.45   Downloading google_cloud_secret_manager-2.12.6-py2.py3-none-any.whl.metadata (5.0 kB)
+#7 18.48 Collecting clusterfuzz==2.6.0 (from -r /tmp/requirements.txt (line 7))
+#7 18.50   Downloading clusterfuzz-2.6.0-py3-none-any.whl.metadata (1.7 kB)
+#7 18.53 Collecting Jinja2==3.1.2 (from -r /tmp/requirements.txt (line 8))
+#7 18.55   Downloading Jinja2-3.1.2-py3-none-any.whl.metadata (3.5 kB)
+#7 18.75 Collecting numpy==1.23.4 (from -r /tmp/requirements.txt (line 9))
+#7 18.77   Downloading numpy-1.23.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.3 kB)
+#7 18.84 Collecting MarkupSafe==2.1.1 (from -r /tmp/requirements.txt (line 10))
+#7 18.85   Downloading MarkupSafe-2.1.1.tar.gz (18 kB)
+#7 18.88   Installing build dependencies: started
+#7 19.92   Installing build dependencies: finished with status 'done'
+#7 19.92   Getting requirements to build wheel: started
+#7 20.38   Getting requirements to build wheel: finished with status 'done'
+#7 20.38   Preparing metadata (pyproject.toml): started
+#7 20.65   Preparing metadata (pyproject.toml): finished with status 'done'
+#7 20.72 Collecting Orange3==3.39.0 (from -r /tmp/requirements.txt (line 11))
+#7 20.74   Downloading orange3-3.39.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+#7 20.86 Collecting pandas==1.4.4 (from -r /tmp/requirements.txt (line 12))
+#7 20.88   Downloading pandas-1.4.4.tar.gz (4.9 MB)
+#7 20.96      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.9/4.9 MB 77.2 MB/s  0:00:00
+#7 22.11   Installing build dependencies: started
+#7 24.63   Installing build dependencies: finished with status 'done'
+#7 24.63   Getting requirements to build wheel: started
+#7 77.73   Getting requirements to build wheel: finished with status 'done'
+#7 77.74   Preparing metadata (pyproject.toml): started
+#7 78.80   Preparing metadata (pyproject.toml): finished with status 'done'
+#7 78.88 Collecting psutil==5.9.2 (from -r /tmp/requirements.txt (line 13))
+#7 78.90   Downloading psutil-5.9.2.tar.gz (479 kB)
+#7 79.02   Installing build dependencies: started
+#7 79.88   Installing build dependencies: finished with status 'done'
+#7 79.88   Getting requirements to build wheel: started
+#7 80.55   Getting requirements to build wheel: finished with status 'done'
+#7 80.56   Preparing metadata (pyproject.toml): started
+#7 80.91   Preparing metadata (pyproject.toml): finished with status 'done'
+#7 80.98 Collecting psycopg2-binary==2.9.4 (from -r /tmp/requirements.txt (line 14))
+#7 81.00   Downloading psycopg2-binary-2.9.4.tar.gz (384 kB)
+#7 81.11   Installing build dependencies: started
+#7 81.96   Installing build dependencies: finished with status 'done'
+#7 81.96   Getting requirements to build wheel: started
+#7 82.50   Getting requirements to build wheel: finished with status 'done'
+#7 82.50   Preparing metadata (pyproject.toml): started
+#7 82.82   Preparing metadata (pyproject.toml): finished with status 'done'
+#7 82.86 Collecting pyfakefs==5.0.0 (from -r /tmp/requirements.txt (line 15))
+#7 82.87   Downloading pyfakefs-5.0.0-py3-none-any.whl.metadata (7.3 kB)
+#7 82.92 Collecting pytest==7.1.3 (from -r /tmp/requirements.txt (line 16))
+#7 82.94   Downloading pytest-7.1.3-py3-none-any.whl.metadata (7.7 kB)
+#7 82.97 Collecting python-dateutil==2.8.2 (from -r /tmp/requirements.txt (line 17))
+#7 82.98   Downloading python_dateutil-2.8.2-py2.py3-none-any.whl.metadata (8.2 kB)
+#7 83.04 Collecting pytz==2020.1 (from -r /tmp/requirements.txt (line 18))
+#7 83.05   Downloading pytz-2020.1-py2.py3-none-any.whl.metadata (21 kB)
+#7 83.11 Collecting PyYAML==6.0 (from -r /tmp/requirements.txt (line 19))
+#7 83.12   Downloading PyYAML-6.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+#7 83.17 Collecting redis==4.3.4 (from -r /tmp/requirements.txt (line 20))
+#7 83.18   Downloading redis-4.3.4-py3-none-any.whl.metadata (53 kB)
+#7 83.22 Collecting rq==1.11.1 (from -r /tmp/requirements.txt (line 21))
+#7 83.24   Downloading rq-1.11.1-py2.py3-none-any.whl.metadata (1.6 kB)
+#7 83.27 Collecting scikit-posthocs==0.7.0 (from -r /tmp/requirements.txt (line 22))
+#7 83.29   Downloading scikit_posthocs-0.7.0-py3-none-any.whl.metadata (19 kB)
+#7 83.42 Collecting scipy==1.9.2 (from -r /tmp/requirements.txt (line 23))
+#7 83.43   Downloading scipy-1.9.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (58 kB)
+#7 83.48 Collecting seaborn==0.13.2 (from -r /tmp/requirements.txt (line 24))
+#7 83.49   Downloading seaborn-0.13.2-py3-none-any.whl.metadata (5.4 kB)
+#7 83.79 Collecting sqlalchemy==1.4.41 (from -r /tmp/requirements.txt (line 25))
+#7 83.81   Downloading SQLAlchemy-1.4.41-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (10.0 kB)
+#7 83.99 Collecting protobuf==3.20.3 (from -r /tmp/requirements.txt (line 26))
+#7 84.00   Downloading protobuf-3.20.3-py2.py3-none-any.whl.metadata (720 bytes)
+#7 84.06 Collecting pylint==2.15.4 (from -r /tmp/requirements.txt (line 29))
+#7 84.07   Downloading pylint-2.15.4-py3-none-any.whl.metadata (9.8 kB)
+#7 84.23 Collecting pytype==2024.4.11 (from -r /tmp/requirements.txt (line 30))
+#7 84.24   Downloading pytype-2024.4.11-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (10 kB)
+#7 84.28 Collecting yapf==0.32.0 (from -r /tmp/requirements.txt (line 31))
+#7 84.30   Downloading yapf-0.32.0-py2.py3-none-any.whl.metadata (34 kB)
+#7 84.35 Collecting Mako (from alembic==1.8.1->-r /tmp/requirements.txt (line 1))
+#7 84.36   Downloading mako-1.3.10-py3-none-any.whl.metadata (2.9 kB)
+#7 84.39 Collecting httplib2<1dev,>=0.15.0 (from google-api-python-client==2.64.0->-r /tmp/requirements.txt (line 2))
+#7 84.41   Downloading httplib2-0.30.0-py3-none-any.whl.metadata (2.2 kB)
+#7 84.44 Collecting google-auth-httplib2>=0.1.0 (from google-api-python-client==2.64.0->-r /tmp/requirements.txt (line 2))
+#7 84.46   Downloading google_auth_httplib2-0.2.0-py2.py3-none-any.whl.metadata (2.2 kB)
+#7 84.55 Collecting google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0dev,>=1.31.5 (from google-api-python-client==2.64.0->-r /tmp/requirements.txt (line 2))
+#7 84.56   Downloading google_api_core-2.25.1-py3-none-any.whl.metadata (3.0 kB)
+#7 84.60 Collecting uritemplate<5,>=3.0.1 (from google-api-python-client==2.64.0->-r /tmp/requirements.txt (line 2))
+#7 84.61   Downloading uritemplate-4.2.0-py3-none-any.whl.metadata (2.6 kB)
+#7 84.65 Collecting cachetools<6.0,>=2.0.0 (from google-auth==2.12.0->-r /tmp/requirements.txt (line 3))
+#7 84.67   Downloading cachetools-5.5.2-py3-none-any.whl.metadata (5.4 kB)
+#7 84.71 Collecting pyasn1-modules>=0.2.1 (from google-auth==2.12.0->-r /tmp/requirements.txt (line 3))
+#7 84.72   Downloading pyasn1_modules-0.4.2-py3-none-any.whl.metadata (3.5 kB)
+#7 84.73 Requirement already satisfied: six>=1.9.0 in /usr/local/lib/python3.11/site-packages (from google-auth==2.12.0->-r /tmp/requirements.txt (line 3)) (1.15.0)
+#7 84.76 Collecting rsa<5,>=3.1.4 (from google-auth==2.12.0->-r /tmp/requirements.txt (line 3))
+#7 84.77   Downloading rsa-4.9.1-py3-none-any.whl.metadata (5.6 kB)
+#7 84.90 Collecting proto-plus<2.0.0dev,>=1.22.0 (from google-cloud-error-reporting==1.6.3->-r /tmp/requirements.txt (line 4))
+#7 84.91   Downloading proto_plus-1.26.1-py3-none-any.whl.metadata (2.2 kB)
+#7 85.00 Collecting google-cloud-appengine-logging<2.0.0dev,>=0.1.0 (from google-cloud-logging==3.1.2->-r /tmp/requirements.txt (line 5))
+#7 85.01   Downloading google_cloud_appengine_logging-1.6.2-py3-none-any.whl.metadata (9.9 kB)
+#7 85.04 Collecting google-cloud-audit-log<1.0.0dev,>=0.1.0 (from google-cloud-logging==3.1.2->-r /tmp/requirements.txt (line 5))
+#7 85.06   Downloading google_cloud_audit_log-0.3.2-py3-none-any.whl.metadata (9.0 kB)
+#7 85.10 Collecting google-cloud-core<3.0.0dev,>=1.4.1 (from google-cloud-logging==3.1.2->-r /tmp/requirements.txt (line 5))
+#7 85.11   Downloading google_cloud_core-2.4.3-py2.py3-none-any.whl.metadata (2.7 kB)
+#7 85.14 Collecting grpc-google-iam-v1<1.0.0dev,>=0.12.4 (from google-cloud-logging==3.1.2->-r /tmp/requirements.txt (line 5))
+#7 85.16   Downloading grpc_google_iam_v1-0.14.2-py3-none-any.whl.metadata (9.1 kB)
+#7 85.26 Collecting google-auth-oauthlib (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 85.27   Downloading google_auth_oauthlib-1.2.2-py3-none-any.whl.metadata (2.7 kB)
+#7 85.31 Collecting google-cloud-datastore==1.12.0 (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 85.33   Downloading google_cloud_datastore-1.12.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 85.37 Collecting google-cloud-monitoring (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 85.38   Downloading google_cloud_monitoring-2.27.2-py3-none-any.whl.metadata (10 kB)
+#7 85.42 Collecting google-cloud-ndb<2.0.0 (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 85.44   Downloading google_cloud_ndb-1.12.0-py3-none-any.whl.metadata (2.5 kB)
+#7 85.48 Collecting google-cloud-storage (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 85.50   Downloading google_cloud_storage-3.3.1-py3-none-any.whl.metadata (13 kB)
+#7 86.03 Collecting grpcio (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 86.05   Downloading grpcio-1.74.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (3.8 kB)
+#7 86.08 Collecting mozprocess (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 86.09   Downloading mozprocess-1.4.0-py2.py3-none-any.whl.metadata (728 bytes)
+#7 86.13 Collecting oauth2client (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 86.14   Downloading oauth2client-4.1.3-py2.py3-none-any.whl.metadata (1.2 kB)
+#7 86.19 Collecting requests (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 86.20   Downloading requests-2.32.5-py3-none-any.whl.metadata (4.9 kB)
+#7 86.24 Collecting AnyQt>=0.2.0 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 86.26   Downloading anyqt-0.2.1-py3-none-any.whl.metadata (1.7 kB)
+#7 86.29 Collecting baycomp>=1.0.2 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 86.30   Downloading baycomp-1.0.3.tar.gz (15 kB)
+#7 86.32   Installing build dependencies: started
+#7 87.17   Installing build dependencies: finished with status 'done'
+#7 87.18   Getting requirements to build wheel: started
+#7 87.61   Getting requirements to build wheel: finished with status 'done'
+#7 87.61   Preparing metadata (pyproject.toml): started
+#7 87.88   Preparing metadata (pyproject.toml): finished with status 'done'
+#7 87.95 Collecting bottleneck>=1.3.4 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 87.97   Downloading bottleneck-1.5.0-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (8.1 kB)
+#7 88.00 Collecting chardet>=3.0.2 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.01   Downloading chardet-5.2.0-py3-none-any.whl.metadata (3.4 kB)
+#7 88.06 Collecting httpx>=0.21.0 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.07   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+#7 88.11 Collecting joblib>=1.2.0 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.12   Downloading joblib-1.5.2-py3-none-any.whl.metadata (5.6 kB)
+#7 88.18 Collecting keyring (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.19   Downloading keyring-25.6.0-py3-none-any.whl.metadata (20 kB)
+#7 88.23 Collecting keyrings.alt (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.24   Downloading keyrings.alt-5.0.2-py3-none-any.whl.metadata (3.6 kB)
+#7 88.45 Collecting matplotlib>=3.2.0 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.47   Downloading matplotlib-3.10.6-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (11 kB)
+#7 88.51 Collecting networkx (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.52   Downloading networkx-3.5-py3-none-any.whl.metadata (6.3 kB)
+#7 88.58 Collecting openTSNE!=0.7.0,>=0.6.2 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.59   Downloading openTSNE-1.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.8 kB)
+#7 88.63 Collecting openpyxl>=3.1.3 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.64   Downloading openpyxl-3.1.5-py2.py3-none-any.whl.metadata (2.5 kB)
+#7 88.69 Collecting orange-canvas-core<0.3a,>=0.2.5 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.70   Downloading orange_canvas_core-0.2.6-py3-none-any.whl.metadata (2.3 kB)
+#7 88.74 Collecting orange-widget-base>=4.25.0 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.76   Downloading orange_widget_base-4.26.0-py3-none-any.whl.metadata (1.8 kB)
+#7 88.80 Collecting packaging (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.81   Downloading packaging-25.0-py3-none-any.whl.metadata (3.3 kB)
+#7 88.82 Requirement already satisfied: pip>=19.3 in /usr/local/lib/python3.11/site-packages (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11)) (25.2)
+#7 88.86 Collecting pygments>=2.8.0 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.87   Downloading pygments-2.19.2-py3-none-any.whl.metadata (2.5 kB)
+#7 88.90 Collecting pyqtgraph>=0.13.1 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.92   Downloading pyqtgraph-0.13.7-py3-none-any.whl.metadata (1.3 kB)
+#7 88.95 Collecting python-louvain>=0.13 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 88.96   Downloading python-louvain-0.16.tar.gz (204 kB)
+#7 89.01   Installing build dependencies: started
+#7 89.87   Installing build dependencies: finished with status 'done'
+#7 89.87   Getting requirements to build wheel: started
+#7 90.35   Getting requirements to build wheel: finished with status 'done'
+#7 90.35   Preparing metadata (pyproject.toml): started
+#7 90.61   Preparing metadata (pyproject.toml): finished with status 'done'
+#7 90.64 Collecting qtconsole>=4.7.2 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 90.65   Downloading qtconsole-5.6.1-py3-none-any.whl.metadata (5.0 kB)
+#7 90.75 Collecting scikit-learn>=1.5.1 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 90.77   Downloading scikit_learn-1.7.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (11 kB)
+#7 90.81 Collecting serverfiles (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 90.83   Downloading serverfiles-0.3.1.tar.gz (11 kB)
+#7 90.85   Installing build dependencies: started
+#7 91.70   Installing build dependencies: finished with status 'done'
+#7 91.70   Getting requirements to build wheel: started
+#7 92.14   Getting requirements to build wheel: finished with status 'done'
+#7 92.14   Preparing metadata (pyproject.toml): started
+#7 92.40   Preparing metadata (pyproject.toml): finished with status 'done'
+#7 92.44 Collecting xgboost<2.1,>=1.7.4 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 92.46   Downloading xgboost-2.0.3-py3-none-manylinux2014_x86_64.whl.metadata (2.0 kB)
+#7 92.50 Collecting xlrd>=1.2.0 (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 92.51   Downloading xlrd-2.0.2-py2.py3-none-any.whl.metadata (3.5 kB)
+#7 92.57 Collecting xlsxwriter (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 92.58   Downloading xlsxwriter-3.2.5-py3-none-any.whl.metadata (2.7 kB)
+#7 92.63 Collecting attrs>=19.2.0 (from pytest==7.1.3->-r /tmp/requirements.txt (line 16))
+#7 92.65   Downloading attrs-25.3.0-py3-none-any.whl.metadata (10 kB)
+#7 92.69 Collecting iniconfig (from pytest==7.1.3->-r /tmp/requirements.txt (line 16))
+#7 92.71   Downloading iniconfig-2.1.0-py3-none-any.whl.metadata (2.7 kB)
+#7 92.74 Collecting pluggy<2.0,>=0.12 (from pytest==7.1.3->-r /tmp/requirements.txt (line 16))
+#7 92.75   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+#7 92.79 Collecting py>=1.8.2 (from pytest==7.1.3->-r /tmp/requirements.txt (line 16))
+#7 92.80   Downloading py-1.11.0-py2.py3-none-any.whl.metadata (2.8 kB)
+#7 92.84 Collecting tomli>=1.0.0 (from pytest==7.1.3->-r /tmp/requirements.txt (line 16))
+#7 92.85   Downloading tomli-2.2.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (11 kB)
+#7 92.89 Collecting deprecated>=1.2.3 (from redis==4.3.4->-r /tmp/requirements.txt (line 20))
+#7 92.90   Downloading Deprecated-1.2.18-py2.py3-none-any.whl.metadata (5.7 kB)
+#7 92.94 Collecting async-timeout>=4.0.2 (from redis==4.3.4->-r /tmp/requirements.txt (line 20))
+#7 92.95   Downloading async_timeout-5.0.1-py3-none-any.whl.metadata (5.1 kB)
+#7 93.00 Collecting click>=5.0.0 (from rq==1.11.1->-r /tmp/requirements.txt (line 21))
+#7 93.01   Downloading click-8.2.1-py3-none-any.whl.metadata (2.5 kB)
+#7 93.08 Collecting statsmodels (from scikit-posthocs==0.7.0->-r /tmp/requirements.txt (line 22))
+#7 93.09   Downloading statsmodels-0.14.5-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.5 kB)
+#7 93.27 Collecting greenlet!=0.4.17 (from sqlalchemy==1.4.41->-r /tmp/requirements.txt (line 25))
+#7 93.28   Downloading greenlet-3.2.4-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (4.1 kB)
+#7 93.32 Collecting dill>=0.2 (from pylint==2.15.4->-r /tmp/requirements.txt (line 29))
+#7 93.33   Downloading dill-0.4.0-py3-none-any.whl.metadata (10 kB)
+#7 93.37 Collecting platformdirs>=2.2.0 (from pylint==2.15.4->-r /tmp/requirements.txt (line 29))
+#7 93.38   Downloading platformdirs-4.4.0-py3-none-any.whl.metadata (12 kB)
+#7 93.44 Collecting astroid<=2.14.0-dev0,>=2.12.11 (from pylint==2.15.4->-r /tmp/requirements.txt (line 29))
+#7 93.46   Downloading astroid-2.13.5-py3-none-any.whl.metadata (4.7 kB)
+#7 93.51 Collecting isort<6,>=4.2.5 (from pylint==2.15.4->-r /tmp/requirements.txt (line 29))
+#7 93.53   Downloading isort-5.13.2-py3-none-any.whl.metadata (12 kB)
+#7 93.56 Collecting mccabe<0.8,>=0.6 (from pylint==2.15.4->-r /tmp/requirements.txt (line 29))
+#7 93.57   Downloading mccabe-0.7.0-py2.py3-none-any.whl.metadata (5.0 kB)
+#7 93.61 Collecting tomlkit>=0.10.1 (from pylint==2.15.4->-r /tmp/requirements.txt (line 29))
+#7 93.62   Downloading tomlkit-0.13.3-py3-none-any.whl.metadata (2.8 kB)
+#7 93.66 Collecting importlab>=0.8 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 93.67   Downloading importlab-0.8.1-py2.py3-none-any.whl.metadata (2.4 kB)
+#7 93.71 Collecting immutabledict>=4.1.0 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 93.72   Downloading immutabledict-4.2.1-py3-none-any.whl.metadata (3.5 kB)
+#7 93.80 Collecting libcst>=1.0.1 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 93.81   Downloading libcst-1.8.2-cp311-cp311-manylinux_2_28_x86_64.whl.metadata (15 kB)
+#7 93.97 Collecting msgspec>=0.18.6 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 93.98   Downloading msgspec-0.19.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.9 kB)
+#7 94.00 Collecting networkx (from Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 94.02   Downloading networkx-3.1-py3-none-any.whl.metadata (5.3 kB)
+#7 94.07 Collecting ninja>=1.10.0.post2 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 94.08   Downloading ninja-1.13.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.1 kB)
+#7 94.11 Collecting pycnite>=2023.10.11 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 94.13   Downloading pycnite-2024.7.31-py3-none-any.whl.metadata (1.3 kB)
+#7 94.16 Collecting pydot>=1.4.2 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 94.18   Downloading pydot-4.0.1-py3-none-any.whl.metadata (11 kB)
+#7 94.21 Collecting tabulate>=0.8.10 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 94.22   Downloading tabulate-0.9.0-py3-none-any.whl.metadata (34 kB)
+#7 94.26 Collecting toml>=0.10.2 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 94.27   Downloading toml-0.10.2-py2.py3-none-any.whl.metadata (7.1 kB)
+#7 94.31 Collecting typing-extensions>=4.3.0 (from pytype==2024.4.11->-r /tmp/requirements.txt (line 30))
+#7 94.33   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+#7 94.40 Collecting google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0dev,>=1.31.5 (from google-api-python-client==2.64.0->-r /tmp/requirements.txt (line 2))
+#7 94.41   Downloading google_api_core-1.34.1-py3-none-any.whl.metadata (2.4 kB)
+#7 94.43 Collecting google-cloud-core<3.0.0dev,>=1.4.1 (from google-cloud-logging==3.1.2->-r /tmp/requirements.txt (line 5))
+#7 94.44   Downloading google_cloud_core-1.7.3-py2.py3-none-any.whl.metadata (2.4 kB)
+#7 94.50 Collecting lazy-object-proxy>=1.4.0 (from astroid<=2.14.0-dev0,>=2.12.11->pylint==2.15.4->-r /tmp/requirements.txt (line 29))
+#7 94.52   Downloading lazy_object_proxy-1.12.0-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (5.1 kB)
+#7 94.64 Collecting wrapt<2,>=1.14 (from astroid<=2.14.0-dev0,>=2.12.11->pylint==2.15.4->-r /tmp/requirements.txt (line 29))
+#7 94.65   Downloading wrapt-1.17.3-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.4 kB)
+#7 94.70 Collecting googleapis-common-protos<2.0dev,>=1.56.2 (from google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0dev,>=1.31.5->google-api-python-client==2.64.0->-r /tmp/requirements.txt (line 2))
+#7 94.72   Downloading googleapis_common_protos-1.70.0-py3-none-any.whl.metadata (9.3 kB)
+#7 94.77 Collecting grpcio (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 94.79   Downloading grpcio-1.75.0rc1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (3.7 kB)
+#7 94.85 Collecting grpcio-status<2.0dev,>=1.33.2 (from google-api-core[grpc]!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,<3.0.0dev,>=1.32.0->google-cloud-error-reporting==1.6.3->-r /tmp/requirements.txt (line 4))
+#7 94.87   Downloading grpcio_status-1.75.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 94.90 INFO: pip is looking at multiple versions of google-cloud-appengine-logging to determine which version is compatible with other requirements. This could take a while.
+#7 94.90 Collecting google-cloud-appengine-logging<2.0.0dev,>=0.1.0 (from google-cloud-logging==3.1.2->-r /tmp/requirements.txt (line 5))
+#7 94.92   Downloading google_cloud_appengine_logging-1.6.1-py3-none-any.whl.metadata (9.7 kB)
+#7 94.94   Downloading google_cloud_appengine_logging-1.6.0-py2.py3-none-any.whl.metadata (5.5 kB)
+#7 94.99   Downloading google_cloud_appengine_logging-1.5.0-py2.py3-none-any.whl.metadata (5.5 kB)
+#7 95.02   Downloading google_cloud_appengine_logging-1.4.5-py2.py3-none-any.whl.metadata (5.4 kB)
+#7 95.04   Downloading google_cloud_appengine_logging-1.4.4-py2.py3-none-any.whl.metadata (5.4 kB)
+#7 95.06   Downloading google_cloud_appengine_logging-1.4.3-py2.py3-none-any.whl.metadata (5.4 kB)
+#7 95.09   Downloading google_cloud_appengine_logging-1.4.2-py2.py3-none-any.whl.metadata (5.4 kB)
+#7 95.12 INFO: pip is still looking at multiple versions of google-cloud-appengine-logging to determine which version is compatible with other requirements. This could take a while.
+#7 95.13   Downloading google_cloud_appengine_logging-1.4.1-py2.py3-none-any.whl.metadata (5.4 kB)
+#7 95.16   Downloading google_cloud_appengine_logging-1.4.0-py2.py3-none-any.whl.metadata (5.3 kB)
+#7 95.27 INFO: pip is looking at multiple versions of google-cloud-core to determine which version is compatible with other requirements. This could take a while.
+#7 95.27 Collecting google-cloud-core<3.0.0dev,>=1.4.1 (from google-cloud-logging==3.1.2->-r /tmp/requirements.txt (line 5))
+#7 95.28   Downloading google_cloud_core-1.7.2-py2.py3-none-any.whl.metadata (2.5 kB)
+#7 95.31   Downloading google_cloud_core-1.7.1-py2.py3-none-any.whl.metadata (2.5 kB)
+#7 95.33   Downloading google_cloud_core-1.7.0-py2.py3-none-any.whl.metadata (2.5 kB)
+#7 95.36   Downloading google_cloud_core-1.6.0-py2.py3-none-any.whl.metadata (2.4 kB)
+#7 95.39   Downloading google_cloud_core-1.5.0-py2.py3-none-any.whl.metadata (2.4 kB)
+#7 95.43 Collecting pymemcache<5.0.0dev,>=2.1.0 (from google-cloud-ndb<2.0.0->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 95.44   Downloading pymemcache-4.0.0-py2.py3-none-any.whl.metadata (14 kB)
+#7 95.55 INFO: pip is looking at multiple versions of grpcio-status to determine which version is compatible with other requirements. This could take a while.
+#7 95.55 Collecting grpcio-status<2.0dev,>=1.33.2 (from google-api-core[grpc]!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,<3.0.0dev,>=1.32.0->google-cloud-error-reporting==1.6.3->-r /tmp/requirements.txt (line 4))
+#7 95.56   Downloading grpcio_status-1.74.0-py3-none-any.whl.metadata (1.1 kB)
+#7 95.59   Downloading grpcio_status-1.74.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 95.62   Downloading grpcio_status-1.73.1-py3-none-any.whl.metadata (1.1 kB)
+#7 95.66   Downloading grpcio_status-1.73.0-py3-none-any.whl.metadata (1.1 kB)
+#7 95.69   Downloading grpcio_status-1.73.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 95.72   Downloading grpcio_status-1.72.2-py3-none-any.whl.metadata (1.1 kB)
+#7 95.74   Downloading grpcio_status-1.72.1-py3-none-any.whl.metadata (1.1 kB)
+#7 95.75 INFO: pip is still looking at multiple versions of grpcio-status to determine which version is compatible with other requirements. This could take a while.
+#7 95.77   Downloading grpcio_status-1.72.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 95.81   Downloading grpcio_status-1.71.2-py3-none-any.whl.metadata (1.1 kB)
+#7 95.86   Downloading grpcio_status-1.71.0-py3-none-any.whl.metadata (1.1 kB)
+#7 95.90   Downloading grpcio_status-1.71.0rc2-py3-none-any.whl.metadata (1.1 kB)
+#7 95.92   Downloading grpcio_status-1.70.0-py3-none-any.whl.metadata (1.1 kB)
+#7 95.93 INFO: This is taking longer than usual. You might need to provide the dependency resolver with stricter constraints to reduce runtime. See https://pip.pypa.io/warnings/backtracking for guidance. If you want to abort this run, press Ctrl + C.
+#7 95.95   Downloading grpcio_status-1.70.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 95.97   Downloading grpcio_status-1.69.0-py3-none-any.whl.metadata (1.1 kB)
+#7 96.00   Downloading grpcio_status-1.69.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.02   Downloading grpcio_status-1.68.1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.05   Downloading grpcio_status-1.68.0-py3-none-any.whl.metadata (1.1 kB)
+#7 96.08   Downloading grpcio_status-1.68.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.10   Downloading grpcio_status-1.67.1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.13   Downloading grpcio_status-1.67.0-py3-none-any.whl.metadata (1.1 kB)
+#7 96.15   Downloading grpcio_status-1.67.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.18   Downloading grpcio_status-1.66.2-py3-none-any.whl.metadata (1.1 kB)
+#7 96.21   Downloading grpcio_status-1.66.1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.23   Downloading grpcio_status-1.66.0-py3-none-any.whl.metadata (1.1 kB)
+#7 96.26   Downloading grpcio_status-1.66.0rc5-py3-none-any.whl.metadata (1.1 kB)
+#7 96.28   Downloading grpcio_status-1.66.0rc3-py3-none-any.whl.metadata (1.1 kB)
+#7 96.31   Downloading grpcio_status-1.66.0rc2-py3-none-any.whl.metadata (1.1 kB)
+#7 96.33   Downloading grpcio_status-1.66.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.36   Downloading grpcio_status-1.65.5-py3-none-any.whl.metadata (1.1 kB)
+#7 96.39   Downloading grpcio_status-1.65.4-py3-none-any.whl.metadata (1.1 kB)
+#7 96.41   Downloading grpcio_status-1.65.2-py3-none-any.whl.metadata (1.1 kB)
+#7 96.44   Downloading grpcio_status-1.65.1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.47   Downloading grpcio_status-1.65.0rc2-py3-none-any.whl.metadata (1.1 kB)
+#7 96.49   Downloading grpcio_status-1.65.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.52   Downloading grpcio_status-1.64.3-py3-none-any.whl.metadata (1.1 kB)
+#7 96.54   Downloading grpcio_status-1.64.1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.57   Downloading grpcio_status-1.64.0-py3-none-any.whl.metadata (1.1 kB)
+#7 96.59   Downloading grpcio_status-1.64.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.62   Downloading grpcio_status-1.63.2-py3-none-any.whl.metadata (1.1 kB)
+#7 96.64   Downloading grpcio_status-1.63.0-py3-none-any.whl.metadata (1.1 kB)
+#7 96.67   Downloading grpcio_status-1.63.0rc2-py3-none-any.whl.metadata (1.1 kB)
+#7 96.70   Downloading grpcio_status-1.63.0rc1-py3-none-any.whl.metadata (1.1 kB)
+#7 96.77   Downloading grpcio_status-1.62.3-py3-none-any.whl.metadata (1.3 kB)
+#7 96.80   Downloading grpcio_status-1.62.2-py3-none-any.whl.metadata (1.3 kB)
+#7 96.82   Downloading grpcio_status-1.62.1-py3-none-any.whl.metadata (1.3 kB)
+#7 96.85   Downloading grpcio_status-1.62.0-py3-none-any.whl.metadata (1.3 kB)
+#7 96.88   Downloading grpcio_status-1.62.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 96.90   Downloading grpcio_status-1.61.3-py3-none-any.whl.metadata (1.3 kB)
+#7 96.93   Downloading grpcio_status-1.60.2-py3-none-any.whl.metadata (1.3 kB)
+#7 96.95   Downloading grpcio_status-1.60.1-py3-none-any.whl.metadata (1.3 kB)
+#7 96.98   Downloading grpcio_status-1.60.0-py3-none-any.whl.metadata (1.3 kB)
+#7 97.00   Downloading grpcio_status-1.60.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.03   Downloading grpcio_status-1.59.5-py3-none-any.whl.metadata (1.3 kB)
+#7 97.05   Downloading grpcio_status-1.59.3-py3-none-any.whl.metadata (1.3 kB)
+#7 97.08   Downloading grpcio_status-1.59.2-py3-none-any.whl.metadata (1.3 kB)
+#7 97.11   Downloading grpcio_status-1.59.0-py3-none-any.whl.metadata (1.3 kB)
+#7 97.13   Downloading grpcio_status-1.59.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.16   Downloading grpcio_status-1.58.3-py3-none-any.whl.metadata (1.3 kB)
+#7 97.18   Downloading grpcio_status-1.58.0-py3-none-any.whl.metadata (1.3 kB)
+#7 97.21   Downloading grpcio_status-1.58.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.23   Downloading grpcio_status-1.57.0-py3-none-any.whl.metadata (1.2 kB)
+#7 97.26   Downloading grpcio_status-1.57.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.29   Downloading grpcio_status-1.56.2-py3-none-any.whl.metadata (1.3 kB)
+#7 97.31   Downloading grpcio_status-1.56.0-py3-none-any.whl.metadata (1.3 kB)
+#7 97.34   Downloading grpcio_status-1.56.0rc2-py3-none-any.whl.metadata (1.3 kB)
+#7 97.37   Downloading grpcio_status-1.55.3-py3-none-any.whl.metadata (1.3 kB)
+#7 97.39   Downloading grpcio_status-1.55.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.42   Downloading grpcio_status-1.54.3-py3-none-any.whl.metadata (1.3 kB)
+#7 97.44   Downloading grpcio_status-1.54.2-py3-none-any.whl.metadata (1.3 kB)
+#7 97.47   Downloading grpcio_status-1.54.0-py3-none-any.whl.metadata (1.3 kB)
+#7 97.49   Downloading grpcio_status-1.54.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.52   Downloading grpcio_status-1.53.2-py3-none-any.whl.metadata (1.3 kB)
+#7 97.54   Downloading grpcio_status-1.53.1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.57   Downloading grpcio_status-1.53.0-py3-none-any.whl.metadata (1.3 kB)
+#7 97.59   Downloading grpcio_status-1.53.0rc2-py3-none-any.whl.metadata (1.3 kB)
+#7 97.62   Downloading grpcio_status-1.52.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.64   Downloading grpcio_status-1.51.3-py3-none-any.whl.metadata (1.3 kB)
+#7 97.67   Downloading grpcio_status-1.51.1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.70   Downloading grpcio_status-1.51.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.72   Downloading grpcio_status-1.50.0-py3-none-any.whl.metadata (1.3 kB)
+#7 97.75   Downloading grpcio_status-1.50.0rc1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.77   Downloading grpcio_status-1.49.1-py3-none-any.whl.metadata (1.3 kB)
+#7 97.85   Downloading grpcio_status-1.49.0rc3-py3-none-any.whl.metadata (1.2 kB)
+#7 97.88   Downloading grpcio_status-1.49.0rc1-py3-none-any.whl.metadata (1.2 kB)
+#7 98.01 Collecting pyparsing<4,>=3.0.4 (from httplib2<1dev,>=0.15.0->google-api-python-client==2.64.0->-r /tmp/requirements.txt (line 2))
+#7 98.02   Downloading pyparsing-3.2.3-py3-none-any.whl.metadata (5.0 kB)
+#7 98.07 Collecting docutils (from orange-canvas-core<0.3a,>=0.2.5->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 98.08   Downloading docutils-0.22-py3-none-any.whl.metadata (15 kB)
+#7 98.11 Collecting commonmark>=0.8.1 (from orange-canvas-core<0.3a,>=0.2.5->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 98.13   Downloading commonmark-0.9.1-py2.py3-none-any.whl.metadata (5.7 kB)
+#7 98.17 Collecting requests-cache (from orange-canvas-core<0.3a,>=0.2.5->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 98.18   Downloading requests_cache-1.2.1-py3-none-any.whl.metadata (9.9 kB)
+#7 98.22 Collecting dictdiffer (from orange-canvas-core<0.3a,>=0.2.5->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 98.23   Downloading dictdiffer-0.9.0-py2.py3-none-any.whl.metadata (4.8 kB)
+#7 98.27 Collecting qasync>=0.10.0 (from orange-canvas-core<0.3a,>=0.2.5->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 98.29   Downloading qasync-0.28.0-py3-none-any.whl.metadata (4.6 kB)
+#7 98.32 Collecting truststore (from orange-canvas-core<0.3a,>=0.2.5->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 98.33   Downloading truststore-0.10.4-py3-none-any.whl.metadata (4.4 kB)
+#7 98.44 Collecting charset_normalizer<4,>=2 (from requests->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 98.46   Downloading charset_normalizer-3.4.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (36 kB)
+#7 98.49 Collecting idna<4,>=2.5 (from requests->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 98.51   Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+#7 98.55 Collecting urllib3<3,>=1.21.1 (from requests->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 98.57   Downloading urllib3-2.5.0-py3-none-any.whl.metadata (6.5 kB)
+#7 98.61 Collecting certifi>=2017.4.17 (from requests->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 98.62   Downloading certifi-2025.8.3-py3-none-any.whl.metadata (2.4 kB)
+#7 98.67 Collecting pyasn1>=0.1.3 (from rsa<5,>=3.1.4->google-auth==2.12.0->-r /tmp/requirements.txt (line 3))
+#7 98.69   Downloading pyasn1-0.6.1-py3-none-any.whl.metadata (8.4 kB)
+#7 98.80 Collecting anyio (from httpx>=0.21.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 98.82   Downloading anyio-4.10.0-py3-none-any.whl.metadata (4.0 kB)
+#7 98.86 Collecting httpcore==1.* (from httpx>=0.21.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 98.87   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+#7 98.91 Collecting h11>=0.16 (from httpcore==1.*->httpx>=0.21.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 98.92   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#7 99.03 Collecting contourpy>=1.0.1 (from matplotlib>=3.2.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 99.04   Downloading contourpy-1.3.3-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (5.5 kB)
+#7 99.08 Collecting cycler>=0.10 (from matplotlib>=3.2.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 99.09   Downloading cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+#7 99.24 Collecting fonttools>=4.22.0 (from matplotlib>=3.2.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 99.26   Downloading fonttools-4.59.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (109 kB)
+#7 99.35 Collecting kiwisolver>=1.3.1 (from matplotlib>=3.2.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 99.36   Downloading kiwisolver-1.4.9-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.3 kB)
+#7 99.66 Collecting pillow>=8 (from matplotlib>=3.2.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 99.67   Downloading pillow-11.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.0 kB)
+#7 99.71 INFO: pip is looking at multiple versions of contourpy to determine which version is compatible with other requirements. This could take a while.
+#7 99.71 Collecting contourpy>=1.0.1 (from matplotlib>=3.2.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 99.72   Downloading contourpy-1.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.5 kB)
+#7 99.78 Collecting et-xmlfile (from openpyxl>=3.1.3->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 99.79   Downloading et_xmlfile-2.0.0-py3-none-any.whl.metadata (2.7 kB)
+#7 99.93 Collecting traitlets!=5.2.1,!=5.2.2 (from qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 99.94   Downloading traitlets-5.14.3-py3-none-any.whl.metadata (10 kB)
+#7 99.98 Collecting jupyter-core (from qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.00   Downloading jupyter_core-5.8.1-py3-none-any.whl.metadata (1.6 kB)
+#7 100.0 Collecting jupyter-client>=4.1 (from qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.1   Downloading jupyter_client-8.6.3-py3-none-any.whl.metadata (8.3 kB)
+#7 100.1 Collecting ipykernel>=4.1 (from qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.1   Downloading ipykernel-6.30.1-py3-none-any.whl.metadata (6.2 kB)
+#7 100.2 Collecting qtpy>=2.4.0 (from qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.2   Downloading QtPy-2.4.3-py3-none-any.whl.metadata (12 kB)
+#7 100.2 Collecting comm>=0.1.1 (from ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.2   Downloading comm-0.2.3-py3-none-any.whl.metadata (3.7 kB)
+#7 100.3 Collecting debugpy>=1.6.5 (from ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.3   Downloading debugpy-1.8.16-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.3 kB)
+#7 100.4 Collecting ipython>=7.23.1 (from ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.4   Downloading ipython-9.5.0-py3-none-any.whl.metadata (4.4 kB)
+#7 100.5 Collecting matplotlib-inline>=0.1 (from ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.5   Downloading matplotlib_inline-0.1.7-py3-none-any.whl.metadata (3.9 kB)
+#7 100.5 Collecting nest-asyncio>=1.4 (from ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.5   Downloading nest_asyncio-1.6.0-py3-none-any.whl.metadata (2.8 kB)
+#7 100.8 Collecting pyzmq>=25 (from ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.8   Downloading pyzmq-27.0.2-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (6.0 kB)
+#7 100.8 Collecting tornado>=6.2 (from ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.9   Downloading tornado-6.5.2-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.8 kB)
+#7 100.9 Collecting decorator (from ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 100.9   Downloading decorator-5.2.1-py3-none-any.whl.metadata (3.9 kB)
+#7 101.0 Collecting ipython-pygments-lexers (from ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.0   Downloading ipython_pygments_lexers-1.1.1-py3-none-any.whl.metadata (1.1 kB)
+#7 101.0 Collecting jedi>=0.16 (from ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.0   Downloading jedi-0.19.2-py2.py3-none-any.whl.metadata (22 kB)
+#7 101.0 Collecting pexpect>4.3 (from ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.1   Downloading pexpect-4.9.0-py2.py3-none-any.whl.metadata (2.5 kB)
+#7 101.1 Collecting prompt_toolkit<3.1.0,>=3.0.41 (from ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.1   Downloading prompt_toolkit-3.0.52-py3-none-any.whl.metadata (6.4 kB)
+#7 101.2 Collecting stack_data (from ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.2   Downloading stack_data-0.6.3-py3-none-any.whl.metadata (18 kB)
+#7 101.2 Collecting wcwidth (from prompt_toolkit<3.1.0,>=3.0.41->ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.2   Downloading wcwidth-0.2.13-py2.py3-none-any.whl.metadata (14 kB)
+#7 101.3 Collecting parso<0.9.0,>=0.8.4 (from jedi>=0.16->ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.3   Downloading parso-0.8.5-py2.py3-none-any.whl.metadata (8.3 kB)
+#7 101.4 Collecting ptyprocess>=0.5 (from pexpect>4.3->ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.4   Downloading ptyprocess-0.7.0-py2.py3-none-any.whl.metadata (1.3 kB)
+#7 101.4 Collecting threadpoolctl>=3.1.0 (from scikit-learn>=1.5.1->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.4   Downloading threadpoolctl-3.6.0-py3-none-any.whl.metadata (13 kB)
+#7 101.5 Collecting sniffio>=1.1 (from anyio->httpx>=0.21.0->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 101.5   Downloading sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+#7 101.6 INFO: pip is looking at multiple versions of google-auth-oauthlib to determine which version is compatible with other requirements. This could take a while.
+#7 101.6 Collecting google-auth-oauthlib (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 101.6   Downloading google_auth_oauthlib-1.2.1-py2.py3-none-any.whl.metadata (2.7 kB)
+#7 101.6   Downloading google_auth_oauthlib-1.2.0-py2.py3-none-any.whl.metadata (2.7 kB)
+#7 101.6   Downloading google_auth_oauthlib-1.1.0-py2.py3-none-any.whl.metadata (2.7 kB)
+#7 101.7   Downloading google_auth_oauthlib-1.0.0-py2.py3-none-any.whl.metadata (2.7 kB)
+#7 101.7   Downloading google_auth_oauthlib-0.8.0-py2.py3-none-any.whl.metadata (2.6 kB)
+#7 101.7   Downloading google_auth_oauthlib-0.7.1-py2.py3-none-any.whl.metadata (2.6 kB)
+#7 101.8   Downloading google_auth_oauthlib-0.7.0-py2.py3-none-any.whl.metadata (2.6 kB)
+#7 101.8 INFO: pip is still looking at multiple versions of google-auth-oauthlib to determine which version is compatible with other requirements. This could take a while.
+#7 101.8   Downloading google_auth_oauthlib-0.5.3-py2.py3-none-any.whl.metadata (2.7 kB)
+#7 101.9 Collecting requests-oauthlib>=0.7.0 (from google-auth-oauthlib->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 101.9   Downloading requests_oauthlib-2.0.0-py2.py3-none-any.whl.metadata (11 kB)
+#7 101.9 Collecting oauthlib>=3.0.0 (from requests-oauthlib>=0.7.0->google-auth-oauthlib->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 101.9   Downloading oauthlib-3.3.1-py3-none-any.whl.metadata (7.9 kB)
+#7 102.0 INFO: pip is looking at multiple versions of google-cloud-monitoring to determine which version is compatible with other requirements. This could take a while.
+#7 102.0 Collecting google-cloud-monitoring (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 102.0   Downloading google_cloud_monitoring-2.27.1-py3-none-any.whl.metadata (9.9 kB)
+#7 102.0   Downloading google_cloud_monitoring-2.27.0-py2.py3-none-any.whl.metadata (5.8 kB)
+#7 102.1   Downloading google_cloud_monitoring-2.26.0-py2.py3-none-any.whl.metadata (5.8 kB)
+#7 102.1   Downloading google_cloud_monitoring-2.25.0-py2.py3-none-any.whl.metadata (5.8 kB)
+#7 102.1   Downloading google_cloud_monitoring-2.24.0-py2.py3-none-any.whl.metadata (5.8 kB)
+#7 102.2   Downloading google_cloud_monitoring-2.23.1-py2.py3-none-any.whl.metadata (5.8 kB)
+#7 102.2   Downloading google_cloud_monitoring-2.23.0-py2.py3-none-any.whl.metadata (5.8 kB)
+#7 102.2 INFO: pip is still looking at multiple versions of google-cloud-monitoring to determine which version is compatible with other requirements. This could take a while.
+#7 102.2   Downloading google_cloud_monitoring-2.22.2-py2.py3-none-any.whl.metadata (5.7 kB)
+#7 102.2   Downloading google_cloud_monitoring-2.22.1-py2.py3-none-any.whl.metadata (5.7 kB)
+#7 102.3   Downloading google_cloud_monitoring-2.22.0-py2.py3-none-any.whl.metadata (5.7 kB)
+#7 102.3   Downloading google_cloud_monitoring-2.21.0-py2.py3-none-any.whl.metadata (5.7 kB)
+#7 102.3   Downloading google_cloud_monitoring-2.20.0-py2.py3-none-any.whl.metadata (5.7 kB)
+#7 102.3 INFO: This is taking longer than usual. You might need to provide the dependency resolver with stricter constraints to reduce runtime. See https://pip.pypa.io/warnings/backtracking for guidance. If you want to abort this run, press Ctrl + C.
+#7 102.4   Downloading google_cloud_monitoring-2.19.4-py2.py3-none-any.whl.metadata (5.7 kB)
+#7 102.4   Downloading google_cloud_monitoring-2.19.3-py2.py3-none-any.whl.metadata (5.7 kB)
+#7 102.4   Downloading google_cloud_monitoring-2.19.2-py2.py3-none-any.whl.metadata (5.6 kB)
+#7 102.5   Downloading google_cloud_monitoring-2.19.1-py2.py3-none-any.whl.metadata (5.6 kB)
+#7 102.5   Downloading google_cloud_monitoring-2.19.0-py2.py3-none-any.whl.metadata (5.6 kB)
+#7 102.5 INFO: pip is looking at multiple versions of google-cloud-storage to determine which version is compatible with other requirements. This could take a while.
+#7 102.5 Collecting google-cloud-storage (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 102.5   Downloading google_cloud_storage-3.3.0-py3-none-any.whl.metadata (13 kB)
+#7 102.6   Downloading google_cloud_storage-3.2.0-py3-none-any.whl.metadata (13 kB)
+#7 102.6   Downloading google_cloud_storage-3.1.1-py3-none-any.whl.metadata (13 kB)
+#7 102.6   Downloading google_cloud_storage-3.1.0-py2.py3-none-any.whl.metadata (12 kB)
+#7 102.7   Downloading google_cloud_storage-3.0.0-py2.py3-none-any.whl.metadata (12 kB)
+#7 102.7   Downloading google_cloud_storage-2.19.0-py2.py3-none-any.whl.metadata (9.1 kB)
+#7 102.7   Downloading google_cloud_storage-2.18.2-py2.py3-none-any.whl.metadata (9.1 kB)
+#7 102.7 INFO: pip is still looking at multiple versions of google-cloud-storage to determine which version is compatible with other requirements. This could take a while.
+#7 102.8   Downloading google_cloud_storage-2.18.1-py2.py3-none-any.whl.metadata (9.1 kB)
+#7 102.8   Downloading google_cloud_storage-2.18.0-py2.py3-none-any.whl.metadata (9.1 kB)
+#7 102.8   Downloading google_cloud_storage-2.17.0-py2.py3-none-any.whl.metadata (6.6 kB)
+#7 102.8   Downloading google_cloud_storage-2.16.0-py2.py3-none-any.whl.metadata (6.1 kB)
+#7 102.9   Downloading google_cloud_storage-2.15.0-py2.py3-none-any.whl.metadata (6.1 kB)
+#7 102.9 INFO: This is taking longer than usual. You might need to provide the dependency resolver with stricter constraints to reduce runtime. See https://pip.pypa.io/warnings/backtracking for guidance. If you want to abort this run, press Ctrl + C.
+#7 102.9   Downloading google_cloud_storage-2.14.0-py2.py3-none-any.whl.metadata (6.1 kB)
+#7 102.9   Downloading google_cloud_storage-2.13.0-py2.py3-none-any.whl.metadata (6.1 kB)
+#7 103.0   Downloading google_cloud_storage-2.12.0-py2.py3-none-any.whl.metadata (6.1 kB)
+#7 103.0   Downloading google_cloud_storage-2.11.0-py2.py3-none-any.whl.metadata (6.0 kB)
+#7 103.0   Downloading google_cloud_storage-2.10.0-py2.py3-none-any.whl.metadata (6.0 kB)
+#7 103.0   Downloading google_cloud_storage-2.9.0-py2.py3-none-any.whl.metadata (6.0 kB)
+#7 103.1   Downloading google_cloud_storage-2.8.0-py2.py3-none-any.whl.metadata (6.0 kB)
+#7 103.1   Downloading google_cloud_storage-2.7.0-py2.py3-none-any.whl.metadata (5.0 kB)
+#7 103.1   Downloading google_cloud_storage-2.6.0-py2.py3-none-any.whl.metadata (5.0 kB)
+#7 103.2   Downloading google_cloud_storage-2.5.0-py2.py3-none-any.whl.metadata (5.0 kB)
+#7 103.2   Downloading google_cloud_storage-2.4.0-py2.py3-none-any.whl.metadata (5.3 kB)
+#7 103.2   Downloading google_cloud_storage-2.3.0-py2.py3-none-any.whl.metadata (5.3 kB)
+#7 103.2   Downloading google_cloud_storage-2.2.1-py2.py3-none-any.whl.metadata (5.3 kB)
+#7 103.3 Collecting google-resumable-media>=2.3.2 (from google-cloud-storage->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 103.3   Downloading google_resumable_media-2.7.2-py2.py3-none-any.whl.metadata (2.2 kB)
+#7 103.4 INFO: pip is still looking at multiple versions of google-cloud-core to determine which version is compatible with other requirements. This could take a while.
+#7 103.5 Collecting google-cloud-storage (from clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 103.5   Downloading google_cloud_storage-2.2.0-py2.py3-none-any.whl.metadata (5.3 kB)
+#7 103.5 INFO: This is taking longer than usual. You might need to provide the dependency resolver with stricter constraints to reduce runtime. See https://pip.pypa.io/warnings/backtracking for guidance. If you want to abort this run, press Ctrl + C.
+#7 103.6   Downloading google_cloud_storage-2.1.0-py2.py3-none-any.whl.metadata (5.2 kB)
+#7 103.8   Downloading google_cloud_storage-2.0.0-py2.py3-none-any.whl.metadata (5.3 kB)
+#7 103.9   Downloading google_cloud_storage-1.44.0-py2.py3-none-any.whl.metadata (5.9 kB)
+#7 104.1   Downloading google_cloud_storage-1.43.0-py2.py3-none-any.whl.metadata (5.4 kB)
+#7 104.2   Downloading google_cloud_storage-1.42.3-py2.py3-none-any.whl.metadata (5.6 kB)
+#7 104.4   Downloading google_cloud_storage-1.42.2-py2.py3-none-any.whl.metadata (5.6 kB)
+#7 104.5   Downloading google_cloud_storage-1.42.1-py2.py3-none-any.whl.metadata (5.5 kB)
+#7 104.6   Downloading google_cloud_storage-1.42.0-py2.py3-none-any.whl.metadata (5.5 kB)
+#7 104.8   Downloading google_cloud_storage-1.41.1-py2.py3-none-any.whl.metadata (5.1 kB)
+#7 105.0   Downloading google_cloud_storage-1.41.0-py2.py3-none-any.whl.metadata (4.8 kB)
+#7 105.0   Downloading google_cloud_storage-1.40.0-py2.py3-none-any.whl.metadata (4.8 kB)
+#7 105.0   Downloading google_cloud_storage-1.39.0-py2.py3-none-any.whl.metadata (4.8 kB)
+#7 105.1   Downloading google_cloud_storage-1.38.0-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.1   Downloading google_cloud_storage-1.37.1-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.1   Downloading google_cloud_storage-1.37.0-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.1   Downloading google_cloud_storage-1.36.2-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.2   Downloading google_cloud_storage-1.36.1-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.2   Downloading google_cloud_storage-1.36.0-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.2   Downloading google_cloud_storage-1.35.1-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.3   Downloading google_cloud_storage-1.35.0-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.3   Downloading google_cloud_storage-1.34.0-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.3   Downloading google_cloud_storage-1.33.0-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.3   Downloading google_cloud_storage-1.32.0-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.4   Downloading google_cloud_storage-1.31.2-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.4   Downloading google_cloud_storage-1.31.1-py2.py3-none-any.whl.metadata (4.7 kB)
+#7 105.4   Downloading google_cloud_storage-1.31.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.4   Downloading google_cloud_storage-1.30.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.5   Downloading google_cloud_storage-1.29.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.5   Downloading google_cloud_storage-1.28.1-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.5   Downloading google_cloud_storage-1.28.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.6   Downloading google_cloud_storage-1.27.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.6   Downloading google_cloud_storage-1.26.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.6   Downloading google_cloud_storage-1.25.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.7   Downloading google_cloud_storage-1.24.1-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.7   Downloading google_cloud_storage-1.24.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.7   Downloading google_cloud_storage-1.23.0-py2.py3-none-any.whl.metadata (4.6 kB)
+#7 105.8 Collecting google-resumable-media<0.6dev,>=0.5.0 (from google-cloud-storage->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 105.8   Downloading google_resumable_media-0.5.1-py2.py3-none-any.whl.metadata (1.7 kB)
+#7 105.8 Collecting SecretStorage>=3.2 (from keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 105.8   Downloading SecretStorage-3.3.3-py3-none-any.whl.metadata (4.0 kB)
+#7 105.9 Collecting jeepney>=0.4.2 (from keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 105.9   Downloading jeepney-0.9.0-py3-none-any.whl.metadata (1.2 kB)
+#7 105.9 Collecting importlib_metadata>=4.11.4 (from keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.0   Downloading importlib_metadata-8.7.0-py3-none-any.whl.metadata (4.8 kB)
+#7 106.0 Collecting jaraco.classes (from keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.0   Downloading jaraco.classes-3.4.0-py3-none-any.whl.metadata (2.6 kB)
+#7 106.0 Collecting jaraco.functools (from keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.1   Downloading jaraco_functools-4.3.0-py3-none-any.whl.metadata (2.9 kB)
+#7 106.1 Collecting jaraco.context (from keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.1   Downloading jaraco.context-6.0.1-py3-none-any.whl.metadata (4.1 kB)
+#7 106.1 Collecting zipp>=3.20 (from importlib_metadata>=4.11.4->keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.2   Downloading zipp-3.23.0-py3-none-any.whl.metadata (3.6 kB)
+#7 106.5 Collecting cryptography>=2.0 (from SecretStorage>=3.2->keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.5   Downloading cryptography-45.0.7-cp311-abi3-manylinux_2_28_x86_64.whl.metadata (5.7 kB)
+#7 106.7 Collecting cffi>=1.14 (from cryptography>=2.0->SecretStorage>=3.2->keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.7   Downloading cffi-1.17.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.5 kB)
+#7 106.7 Collecting pycparser (from cffi>=1.14->cryptography>=2.0->SecretStorage>=3.2->keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.7   Downloading pycparser-2.22-py3-none-any.whl.metadata (943 bytes)
+#7 106.8 Collecting more-itertools (from jaraco.classes->keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.8   Downloading more_itertools-10.8.0-py3-none-any.whl.metadata (39 kB)
+#7 106.8 Collecting backports.tarfile (from jaraco.context->keyring->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 106.8   Downloading backports.tarfile-1.2.0-py3-none-any.whl.metadata (2.0 kB)
+#7 106.9 Collecting mozinfo (from mozprocess->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 106.9   Downloading mozinfo-1.2.3-py2.py3-none-any.whl.metadata (649 bytes)
+#7 106.9 Collecting distro>=1.4.0 (from mozinfo->mozprocess->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 107.0   Downloading distro-1.9.0-py3-none-any.whl.metadata (6.8 kB)
+#7 107.0 Collecting mozfile>=0.12 (from mozinfo->mozprocess->clusterfuzz==2.6.0->-r /tmp/requirements.txt (line 7))
+#7 107.0   Downloading mozfile-3.0.0-py2.py3-none-any.whl.metadata (777 bytes)
+#7 107.1 Collecting cattrs>=22.2 (from requests-cache->orange-canvas-core<0.3a,>=0.2.5->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 107.1   Downloading cattrs-25.2.0-py3-none-any.whl.metadata (8.4 kB)
+#7 107.1 Collecting url-normalize>=1.4 (from requests-cache->orange-canvas-core<0.3a,>=0.2.5->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 107.1   Downloading url_normalize-2.2.1-py3-none-any.whl.metadata (5.6 kB)
+#7 107.2 Collecting executing>=1.2.0 (from stack_data->ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 107.2   Downloading executing-2.2.1-py2.py3-none-any.whl.metadata (8.9 kB)
+#7 107.3 Collecting asttokens>=2.1.0 (from stack_data->ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 107.3   Downloading asttokens-3.0.0-py3-none-any.whl.metadata (4.7 kB)
+#7 107.3 Collecting pure-eval (from stack_data->ipython>=7.23.1->ipykernel>=4.1->qtconsole>=4.7.2->Orange3==3.39.0->-r /tmp/requirements.txt (line 11))
+#7 107.3   Downloading pure_eval-0.2.3-py3-none-any.whl.metadata (6.3 kB)
+#7 107.4 INFO: pip is looking at multiple versions of statsmodels to determine which version is compatible with other requirements. This could take a while.
+#7 107.4 Collecting statsmodels (from scikit-posthocs==0.7.0->-r /tmp/requirements.txt (line 22))
+#7 107.4   Downloading statsmodels-0.14.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.2 kB)
+#7 107.4   Downloading statsmodels-0.14.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.2 kB)
+#7 107.5   Downloading statsmodels-0.14.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.2 kB)
+#7 107.5   Downloading statsmodels-0.14.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.5 kB)
+#7 107.6   Downloading statsmodels-0.14.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.0 kB)
+#7 107.6   Downloading statsmodels-0.13.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.5 kB)
+#7 107.6 Collecting patsy>=0.5.2 (from statsmodels->scikit-posthocs==0.7.0->-r /tmp/requirements.txt (line 22))
+#7 107.7   Downloading patsy-1.0.1-py2.py3-none-any.whl.metadata (3.3 kB)
+#7 107.7 Downloading alembic-1.8.1-py3-none-any.whl (209 kB)
+#7 107.8 Downloading google_api_python_client-2.64.0-py2.py3-none-any.whl (10.4 MB)
+#7 107.9    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.4/10.4 MB 132.1 MB/s  0:00:00
+#7 107.9 Downloading google_auth-2.12.0-py2.py3-none-any.whl (169 kB)
+#7 107.9 Downloading google_cloud_error_reporting-1.6.3-py2.py3-none-any.whl (104 kB)
+#7 107.9 Downloading google_cloud_logging-3.1.2-py2.py3-none-any.whl (188 kB)
+#7 107.9 Downloading protobuf-3.20.3-py2.py3-none-any.whl (162 kB)
+#7 108.0 Downloading google_cloud_secret_manager-2.12.6-py2.py3-none-any.whl (98 kB)
+#7 108.0 Downloading clusterfuzz-2.6.0-py3-none-any.whl (1.5 MB)
+#7 108.0    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.5/1.5 MB 76.6 MB/s  0:00:00
+#7 108.0 Downloading Jinja2-3.1.2-py3-none-any.whl (133 kB)
+#7 108.0 Downloading numpy-1.23.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (17.1 MB)
+#7 108.1    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 17.1/17.1 MB 148.9 MB/s  0:00:00
+#7 108.2 Downloading orange3-3.39.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.6 MB)
+#7 108.2    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.6/6.6 MB 92.7 MB/s  0:00:00
+#7 108.3 Downloading pyfakefs-5.0.0-py3-none-any.whl (194 kB)
+#7 108.3 Downloading pytest-7.1.3-py3-none-any.whl (298 kB)
+#7 108.3 Downloading python_dateutil-2.8.2-py2.py3-none-any.whl (247 kB)
+#7 108.3 Downloading pytz-2020.1-py2.py3-none-any.whl (510 kB)
+#7 108.3 Downloading PyYAML-6.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (757 kB)
+#7 108.4    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 757.9/757.9 kB 46.1 MB/s  0:00:00
+#7 108.4 Downloading redis-4.3.4-py3-none-any.whl (246 kB)
+#7 108.4 Downloading rq-1.11.1-py2.py3-none-any.whl (70 kB)
+#7 108.4 Downloading scikit_posthocs-0.7.0-py3-none-any.whl (38 kB)
+#7 108.4 Downloading scipy-1.9.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (33.4 MB)
+#7 108.7    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 33.4/33.4 MB 122.1 MB/s  0:00:00
+#7 108.7 Downloading seaborn-0.13.2-py3-none-any.whl (294 kB)
+#7 108.8 Downloading SQLAlchemy-1.4.41-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.6 MB)
+#7 108.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.6/1.6 MB 33.2 MB/s  0:00:00
+#7 108.8 Downloading pylint-2.15.4-py3-none-any.whl (507 kB)
+#7 108.8 Downloading pytype-2024.4.11-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (4.7 MB)
+#7 108.9    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 130.4 MB/s  0:00:00
+#7 108.9 Downloading yapf-0.32.0-py2.py3-none-any.whl (190 kB)
+#7 108.9 Downloading google_cloud_datastore-1.12.0-py2.py3-none-any.whl (97 kB)
+#7 108.9 Downloading astroid-2.13.5-py3-none-any.whl (273 kB)
+#7 109.0 Downloading cachetools-5.5.2-py3-none-any.whl (10 kB)
+#7 109.0 Downloading google_api_core-1.34.1-py3-none-any.whl (120 kB)
+#7 109.0 Downloading google_cloud_appengine_logging-1.4.0-py2.py3-none-any.whl (15 kB)
+#7 109.0 Downloading google_cloud_audit_log-0.3.2-py3-none-any.whl (32 kB)
+#7 109.0 Downloading google_cloud_core-1.5.0-py2.py3-none-any.whl (27 kB)
+#7 109.1 Downloading google_cloud_ndb-1.12.0-py3-none-any.whl (177 kB)
+#7 109.1 Downloading googleapis_common_protos-1.70.0-py3-none-any.whl (294 kB)
+#7 109.1 Downloading grpc_google_iam_v1-0.14.2-py3-none-any.whl (19 kB)
+#7 109.1 Downloading grpcio-1.75.0rc1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (6.5 MB)
+#7 109.2    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.5/6.5 MB 89.1 MB/s  0:00:00
+#7 109.2 Downloading grpcio_status-1.49.0rc1-py3-none-any.whl (14 kB)
+#7 109.2 Downloading httplib2-0.30.0-py3-none-any.whl (91 kB)
+#7 109.2 Downloading isort-5.13.2-py3-none-any.whl (92 kB)
+#7 109.3 Downloading mccabe-0.7.0-py2.py3-none-any.whl (7.3 kB)
+#7 109.3 Downloading networkx-3.1-py3-none-any.whl (2.1 MB)
+#7 109.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 108.7 MB/s  0:00:00
+#7 109.3 Downloading orange_canvas_core-0.2.6-py3-none-any.whl (535 kB)
+#7 109.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 535.3/535.3 kB 27.5 MB/s  0:00:00
+#7 109.3 Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+#7 109.4 Downloading proto_plus-1.26.1-py3-none-any.whl (50 kB)
+#7 109.4 Downloading pymemcache-4.0.0-py2.py3-none-any.whl (60 kB)
+#7 109.4 Downloading pyparsing-3.2.3-py3-none-any.whl (111 kB)
+#7 109.4 Downloading requests-2.32.5-py3-none-any.whl (64 kB)
+#7 109.4 Downloading charset_normalizer-3.4.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (150 kB)
+#7 109.5 Downloading idna-3.10-py3-none-any.whl (70 kB)
+#7 109.5 Downloading rsa-4.9.1-py3-none-any.whl (34 kB)
+#7 109.5 Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+#7 109.5 Downloading uritemplate-4.2.0-py3-none-any.whl (11 kB)
+#7 109.5 Downloading urllib3-2.5.0-py3-none-any.whl (129 kB)
+#7 109.6 Downloading wrapt-1.17.3-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (82 kB)
+#7 109.6 Downloading xgboost-2.0.3-py3-none-manylinux2014_x86_64.whl (297.1 MB)
+#7 111.6    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 297.1/297.1 MB 142.4 MB/s  0:00:02
+#7 111.6 Downloading anyqt-0.2.1-py3-none-any.whl (56 kB)
+#7 111.6 Downloading async_timeout-5.0.1-py3-none-any.whl (6.2 kB)
+#7 111.7 Downloading attrs-25.3.0-py3-none-any.whl (63 kB)
+#7 111.7 Downloading bottleneck-1.5.0-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (361 kB)
+#7 111.7 Downloading certifi-2025.8.3-py3-none-any.whl (161 kB)
+#7 111.7 Downloading chardet-5.2.0-py3-none-any.whl (199 kB)
+#7 111.8 Downloading click-8.2.1-py3-none-any.whl (102 kB)
+#7 111.8 Downloading commonmark-0.9.1-py2.py3-none-any.whl (51 kB)
+#7 111.8 Downloading Deprecated-1.2.18-py2.py3-none-any.whl (10.0 kB)
+#7 111.8 Downloading dill-0.4.0-py3-none-any.whl (119 kB)
+#7 111.8 Downloading google_auth_httplib2-0.2.0-py2.py3-none-any.whl (9.3 kB)
+#7 111.9 Downloading greenlet-3.2.4-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (587 kB)
+#7 111.9    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 587.7/587.7 kB 34.4 MB/s  0:00:00
+#7 111.9 Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+#7 111.9 Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+#7 111.9 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#7 111.9 Downloading immutabledict-4.2.1-py3-none-any.whl (4.7 kB)
+#7 112.0 Downloading importlab-0.8.1-py2.py3-none-any.whl (21 kB)
+#7 112.0 Downloading joblib-1.5.2-py3-none-any.whl (308 kB)
+#7 112.0 Downloading lazy_object_proxy-1.12.0-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (68 kB)
+#7 112.0 Downloading libcst-1.8.2-cp311-cp311-manylinux_2_28_x86_64.whl (2.3 MB)
+#7 112.0    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 87.1 MB/s  0:00:00
+#7 112.1 Downloading matplotlib-3.10.6-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (8.7 MB)
+#7 112.2    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.7/8.7 MB 95.5 MB/s  0:00:00
+#7 112.2 Downloading contourpy-1.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (326 kB)
+#7 112.2 Downloading cycler-0.12.1-py3-none-any.whl (8.3 kB)
+#7 112.2 Downloading fonttools-4.59.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.0 MB)
+#7 112.2    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.0/5.0 MB 151.2 MB/s  0:00:00
+#7 112.3 Downloading kiwisolver-1.4.9-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.4 MB)
+#7 112.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 78.5 MB/s  0:00:00
+#7 112.3 Downloading msgspec-0.19.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (210 kB)
+#7 112.3 Downloading ninja-1.13.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (180 kB)
+#7 112.3 Downloading openpyxl-3.1.5-py2.py3-none-any.whl (250 kB)
+#7 112.4 Downloading openTSNE-1.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.2 MB)
+#7 112.4    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.2/3.2 MB 105.9 MB/s  0:00:00
+#7 112.4 Downloading orange_widget_base-4.26.0-py3-none-any.whl (270 kB)
+#7 112.4 Downloading packaging-25.0-py3-none-any.whl (66 kB)
+#7 112.4 Downloading pillow-11.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.6 MB)
+#7 112.5    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.6/6.6 MB 166.8 MB/s  0:00:00
+#7 112.5 Downloading platformdirs-4.4.0-py3-none-any.whl (18 kB)
+#7 112.5 Downloading py-1.11.0-py2.py3-none-any.whl (98 kB)
+#7 112.5 Downloading pyasn1-0.6.1-py3-none-any.whl (83 kB)
+#7 112.6 Downloading pyasn1_modules-0.4.2-py3-none-any.whl (181 kB)
+#7 112.6 Downloading pycnite-2024.7.31-py3-none-any.whl (22 kB)
+#7 112.6 Downloading pydot-4.0.1-py3-none-any.whl (37 kB)
+#7 112.6 Downloading pygments-2.19.2-py3-none-any.whl (1.2 MB)
+#7 112.6    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 75.6 MB/s  0:00:00
+#7 112.7 Downloading pyqtgraph-0.13.7-py3-none-any.whl (1.9 MB)
+#7 112.7    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.9/1.9 MB 79.3 MB/s  0:00:00
+#7 112.7 Downloading qasync-0.28.0-py3-none-any.whl (16 kB)
+#7 112.7 Downloading qtconsole-5.6.1-py3-none-any.whl (125 kB)
+#7 112.7 Downloading ipykernel-6.30.1-py3-none-any.whl (117 kB)
+#7 112.8 Downloading comm-0.2.3-py3-none-any.whl (7.3 kB)
+#7 112.8 Downloading debugpy-1.8.16-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.1 MB)
+#7 112.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.1/3.1 MB 83.7 MB/s  0:00:00
+#7 112.8 Downloading ipython-9.5.0-py3-none-any.whl (612 kB)
+#7 112.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 612.4/612.4 kB 30.0 MB/s  0:00:00
+#7 112.9 Downloading prompt_toolkit-3.0.52-py3-none-any.whl (391 kB)
+#7 112.9 Downloading jedi-0.19.2-py2.py3-none-any.whl (1.6 MB)
+#7 112.9    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.6/1.6 MB 87.2 MB/s  0:00:00
+#7 112.9 Downloading parso-0.8.5-py2.py3-none-any.whl (106 kB)
+#7 112.9 Downloading jupyter_client-8.6.3-py3-none-any.whl (106 kB)
+#7 113.0 Downloading jupyter_core-5.8.1-py3-none-any.whl (28 kB)
+#7 113.0 Downloading matplotlib_inline-0.1.7-py3-none-any.whl (9.9 kB)
+#7 113.0 Downloading nest_asyncio-1.6.0-py3-none-any.whl (5.2 kB)
+#7 113.0 Downloading pexpect-4.9.0-py2.py3-none-any.whl (63 kB)
+#7 113.0 Downloading ptyprocess-0.7.0-py2.py3-none-any.whl (13 kB)
+#7 113.1 Downloading pyzmq-27.0.2-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (856 kB)
+#7 113.1    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 857.0/857.0 kB 50.1 MB/s  0:00:00
+#7 113.1 Downloading QtPy-2.4.3-py3-none-any.whl (95 kB)
+#7 113.1 Downloading scikit_learn-1.7.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (9.7 MB)
+#7 113.2    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.7/9.7 MB 107.1 MB/s  0:00:00
+#7 113.2 Downloading tabulate-0.9.0-py3-none-any.whl (35 kB)
+#7 113.2 Downloading threadpoolctl-3.6.0-py3-none-any.whl (18 kB)
+#7 113.3 Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+#7 113.3 Downloading tomli-2.2.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (236 kB)
+#7 113.3 Downloading tomlkit-0.13.3-py3-none-any.whl (38 kB)
+#7 113.3 Downloading tornado-6.5.2-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (443 kB)
+#7 113.3 Downloading traitlets-5.14.3-py3-none-any.whl (85 kB)
+#7 113.4 Downloading xlrd-2.0.2-py2.py3-none-any.whl (96 kB)
+#7 113.4 Downloading anyio-4.10.0-py3-none-any.whl (107 kB)
+#7 113.4 Downloading sniffio-1.3.1-py3-none-any.whl (10 kB)
+#7 113.4 Downloading decorator-5.2.1-py3-none-any.whl (9.2 kB)
+#7 113.4 Downloading dictdiffer-0.9.0-py2.py3-none-any.whl (16 kB)
+#7 113.5 Downloading docutils-0.22-py3-none-any.whl (630 kB)
+#7 113.5    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 630.7/630.7 kB 33.5 MB/s  0:00:00
+#7 113.5 Downloading et_xmlfile-2.0.0-py3-none-any.whl (18 kB)
+#7 113.5 Downloading google_auth_oauthlib-0.5.3-py2.py3-none-any.whl (19 kB)
+#7 113.5 Downloading requests_oauthlib-2.0.0-py2.py3-none-any.whl (24 kB)
+#7 113.6 Downloading oauthlib-3.3.1-py3-none-any.whl (160 kB)
+#7 113.6 Downloading google_cloud_monitoring-2.19.0-py2.py3-none-any.whl (341 kB)
+#7 113.6 Downloading google_cloud_storage-1.23.0-py2.py3-none-any.whl (72 kB)
+#7 113.6 Downloading google_resumable_media-0.5.1-py2.py3-none-any.whl (38 kB)
+#7 113.6 Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+#7 113.7 Downloading ipython_pygments_lexers-1.1.1-py3-none-any.whl (8.1 kB)
+#7 113.7 Downloading keyring-25.6.0-py3-none-any.whl (39 kB)
+#7 113.7 Downloading importlib_metadata-8.7.0-py3-none-any.whl (27 kB)
+#7 113.7 Downloading jeepney-0.9.0-py3-none-any.whl (49 kB)
+#7 113.8 Downloading SecretStorage-3.3.3-py3-none-any.whl (15 kB)
+#7 113.8 Downloading cryptography-45.0.7-cp311-abi3-manylinux_2_28_x86_64.whl (4.5 MB)
+#7 113.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 162.0 MB/s  0:00:00
+#7 113.8 Downloading cffi-1.17.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (467 kB)
+#7 113.8 Downloading zipp-3.23.0-py3-none-any.whl (10 kB)
+#7 113.9 Downloading jaraco.classes-3.4.0-py3-none-any.whl (6.8 kB)
+#7 113.9 Downloading jaraco.context-6.0.1-py3-none-any.whl (6.8 kB)
+#7 113.9 Downloading backports.tarfile-1.2.0-py3-none-any.whl (30 kB)
+#7 113.9 Downloading jaraco_functools-4.3.0-py3-none-any.whl (10 kB)
+#7 113.9 Downloading keyrings.alt-5.0.2-py3-none-any.whl (17 kB)
+#7 114.0 Downloading mako-1.3.10-py3-none-any.whl (78 kB)
+#7 114.0 Downloading more_itertools-10.8.0-py3-none-any.whl (69 kB)
+#7 114.0 Downloading mozprocess-1.4.0-py2.py3-none-any.whl (23 kB)
+#7 114.0 Downloading mozinfo-1.2.3-py2.py3-none-any.whl (7.5 kB)
+#7 114.0 Downloading distro-1.9.0-py3-none-any.whl (20 kB)
+#7 114.1 Downloading mozfile-3.0.0-py2.py3-none-any.whl (8.2 kB)
+#7 114.1 Downloading oauth2client-4.1.3-py2.py3-none-any.whl (98 kB)
+#7 114.1 Downloading pycparser-2.22-py3-none-any.whl (117 kB)
+#7 114.1 Downloading requests_cache-1.2.1-py3-none-any.whl (61 kB)
+#7 114.1 Downloading cattrs-25.2.0-py3-none-any.whl (70 kB)
+#7 114.2 Downloading url_normalize-2.2.1-py3-none-any.whl (14 kB)
+#7 114.2 Downloading stack_data-0.6.3-py3-none-any.whl (24 kB)
+#7 114.2 Downloading asttokens-3.0.0-py3-none-any.whl (26 kB)
+#7 114.2 Downloading executing-2.2.1-py2.py3-none-any.whl (28 kB)
+#7 114.2 Downloading pure_eval-0.2.3-py3-none-any.whl (11 kB)
+#7 114.3 Downloading statsmodels-0.13.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (9.9 MB)
+#7 114.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.9/9.9 MB 185.9 MB/s  0:00:00
+#7 114.3 Downloading patsy-1.0.1-py2.py3-none-any.whl (232 kB)
+#7 114.3 Downloading truststore-0.10.4-py3-none-any.whl (18 kB)
+#7 114.4 Downloading wcwidth-0.2.13-py2.py3-none-any.whl (34 kB)
+#7 114.4 Downloading xlsxwriter-3.2.5-py3-none-any.whl (172 kB)
+#7 115.0 Building wheels for collected packages: MarkupSafe, pandas, psutil, psycopg2-binary, baycomp, python-louvain, serverfiles
+#7 115.0   Building wheel for MarkupSafe (pyproject.toml): started
+#7 115.5   Building wheel for MarkupSafe (pyproject.toml): finished with status 'done'
+#7 115.5   Created wheel for MarkupSafe: filename=markupsafe-2.1.1-cp311-cp311-linux_x86_64.whl size=15898 sha256=1f8a587d9daae94276a6e770b274d47cd9c4639fd7576fe8b1ed0b2ccea149bb
+#7 115.5   Stored in directory: /root/.cache/pip/wheels/f2/8e/9e/4ee907ff6fb9e145722f0506c46ad9516302d1f424b43220e5
+#7 115.5   Building wheel for pandas (pyproject.toml): started
+#7 162.8   Building wheel for pandas (pyproject.toml): finished with status 'done'
+#7 162.8   Created wheel for pandas: filename=pandas-1.4.4-cp311-cp311-linux_x86_64.whl size=11591519 sha256=d693b6cc81354de11d11030a73e98ec6df4878a64895ca44ffd04acea514885b
+#7 162.8   Stored in directory: /root/.cache/pip/wheels/56/ff/8e/5497c17f51e61a95c9cf4c58914222f311ca968796ee52d430
+#7 162.8   Building wheel for psutil (pyproject.toml): started
+#7 164.0   Building wheel for psutil (pyproject.toml): finished with status 'done'
+#7 164.0   Created wheel for psutil: filename=psutil-5.9.2-cp311-cp311-linux_x86_64.whl size=232343 sha256=68b8c9b28905de889815165891f2c05cf55164bbbfabeac11655418fff8271e8
+#7 164.0   Stored in directory: /root/.cache/pip/wheels/4e/bd/55/db037adf51f2e1a6f2b6a388d4d92462c5a44e56e0b58fde3a
+#7 164.0   Building wheel for psycopg2-binary (pyproject.toml): started
+#7 169.2   Building wheel for psycopg2-binary (pyproject.toml): finished with status 'done'
+#7 169.2   Created wheel for psycopg2-binary: filename=psycopg2_binary-2.9.4-cp311-cp311-linux_x86_64.whl size=168333 sha256=ed2209073028ca3a523ebfe7c6e89a860bb062917f21cf961a88ff42b4258959
+#7 169.2   Stored in directory: /root/.cache/pip/wheels/38/0f/38/43429a4e629326f24ce8955b6adc794400b06d4ae0abf91568
+#7 169.2   Building wheel for baycomp (pyproject.toml): started
+#7 169.5   Building wheel for baycomp (pyproject.toml): finished with status 'done'
+#7 169.5   Created wheel for baycomp: filename=baycomp-1.0.3-py3-none-any.whl size=18115 sha256=2055a09c32b53d22f7bb8044bd1fced44183a80bf8f63619f4ba3d4e0c5cb635
+#7 169.5   Stored in directory: /root/.cache/pip/wheels/2b/a2/b8/9c0b9ffde746a4e0c20639b46eae34dda4e0588efebde8916e
+#7 169.5   Building wheel for python-louvain (pyproject.toml): started
+#7 169.8   Building wheel for python-louvain (pyproject.toml): finished with status 'done'
+#7 169.8   Created wheel for python-louvain: filename=python_louvain-0.16-py3-none-any.whl size=9460 sha256=fa093123b3e26b61312199352c2c7bdad2cae851bc83cd046823311c96b1b559
+#7 169.8   Stored in directory: /root/.cache/pip/wheels/11/c1/e7/f62a211c636275e2da798bf0c307a3ae79aeddaf2524a03ce4
+#7 169.8   Building wheel for serverfiles (pyproject.toml): started
+#7 170.2   Building wheel for serverfiles (pyproject.toml): finished with status 'done'
+#7 170.2   Created wheel for serverfiles: filename=serverfiles-0.3.1-py3-none-any.whl size=6989 sha256=7df9541504db412da53773c3ffdee8ebc6645ecaa4aae2fc4e71285de8f71b3a
+#7 170.2   Stored in directory: /root/.cache/pip/wheels/10/fe/96/2239afdbcabbbd85b1836ef431e6ce960f1bc84d7ff0520f5b
+#7 170.2 Successfully built MarkupSafe pandas psutil psycopg2-binary baycomp python-louvain serverfiles
+#7 170.5 Installing collected packages: yapf, wcwidth, pytz, pure-eval, ptyprocess, dictdiffer, commonmark, zipp, xlsxwriter, xlrd, wrapt, urllib3, uritemplate, typing-extensions, truststore, traitlets, tornado, tomlkit, tomli, toml, threadpoolctl, tabulate, sniffio, qasync, pyzmq, PyYAML, python-dateutil, pyparsing, pymemcache, pygments, pyfakefs, pycparser, pycnite, pyasn1, py, psycopg2-binary, psutil, protobuf, prompt_toolkit, pluggy, platformdirs, pillow, pexpect, parso, packaging, oauthlib, numpy, ninja, networkx, nest-asyncio, msgspec, mozfile, more-itertools, mccabe, MarkupSafe, lazy-object-proxy, kiwisolver, joblib, jeepney, isort, iniconfig, immutabledict, idna, h11, greenlet, google-resumable-media, fonttools, executing, et-xmlfile, docutils, distro, dill, decorator, debugpy, cycler, comm, click, charset_normalizer, chardet, certifi, cachetools, backports.tarfile, attrs, async-timeout, asttokens, AnyQt, url-normalize, stack_data, sqlalchemy, scipy, rsa, requests, qtpy, python-louvain, pytest, pyqtgraph, pydot, pyasn1-modules, proto-plus, patsy, pandas, openpyxl, mozinfo, matplotlib-inline, Mako, libcst, jupyter-core, Jinja2, jedi, jaraco.functools, jaraco.context, jaraco.classes, ipython-pygments-lexers, importlib_metadata, importlab, httplib2, httpcore, grpcio, googleapis-common-protos, deprecated, contourpy, cffi, cattrs, bottleneck, astroid, anyio, xgboost, statsmodels, serverfiles, scikit-learn, requests-oauthlib, requests-cache, redis, pytype, pylint, oauth2client, mozprocess, matplotlib, keyrings.alt, jupyter-client, ipython, httpx, grpcio-status, google-cloud-audit-log, google-auth, cryptography, alembic, SecretStorage, seaborn, rq, orange-canvas-core, openTSNE, ipykernel, grpc-google-iam-v1, google-auth-oauthlib, google-auth-httplib2, google-api-core, baycomp, scikit-posthocs, qtconsole, orange-widget-base, keyring, google-cloud-core, google-api-python-client, Orange3, google-cloud-storage, google-cloud-secret-manager, google-cloud-monitoring, google-cloud-datastore, google-cloud-appengine-logging, google-cloud-ndb, google-cloud-logging, google-cloud-error-reporting, clusterfuzz
+#7 222.2 
+#7 222.3 Successfully installed AnyQt-0.2.1 Jinja2-3.1.2 Mako-1.3.10 MarkupSafe-2.1.1 Orange3-3.39.0 PyYAML-6.0 SecretStorage-3.3.3 alembic-1.8.1 anyio-4.10.0 astroid-2.13.5 asttokens-3.0.0 async-timeout-5.0.1 attrs-25.3.0 backports.tarfile-1.2.0 baycomp-1.0.3 bottleneck-1.5.0 cachetools-5.5.2 cattrs-25.2.0 certifi-2025.8.3 cffi-1.17.1 chardet-5.2.0 charset_normalizer-3.4.3 click-8.2.1 clusterfuzz-2.6.0 comm-0.2.3 commonmark-0.9.1 contourpy-1.3.2 cryptography-45.0.7 cycler-0.12.1 debugpy-1.8.16 decorator-5.2.1 deprecated-1.2.18 dictdiffer-0.9.0 dill-0.4.0 distro-1.9.0 docutils-0.22 et-xmlfile-2.0.0 executing-2.2.1 fonttools-4.59.2 google-api-core-1.34.1 google-api-python-client-2.64.0 google-auth-2.12.0 google-auth-httplib2-0.2.0 google-auth-oauthlib-0.5.3 google-cloud-appengine-logging-1.4.0 google-cloud-audit-log-0.3.2 google-cloud-core-1.5.0 google-cloud-datastore-1.12.0 google-cloud-error-reporting-1.6.3 google-cloud-logging-3.1.2 google-cloud-monitoring-2.19.0 google-cloud-ndb-1.12.0 google-cloud-secret-manager-2.12.6 google-cloud-storage-1.23.0 google-resumable-media-0.5.1 googleapis-common-protos-1.70.0 greenlet-3.2.4 grpc-google-iam-v1-0.14.2 grpcio-1.75.0rc1 grpcio-status-1.49.0rc1 h11-0.16.0 httpcore-1.0.9 httplib2-0.30.0 httpx-0.28.1 idna-3.10 immutabledict-4.2.1 importlab-0.8.1 importlib_metadata-8.7.0 iniconfig-2.1.0 ipykernel-6.30.1 ipython-9.5.0 ipython-pygments-lexers-1.1.1 isort-5.13.2 jaraco.classes-3.4.0 jaraco.context-6.0.1 jaraco.functools-4.3.0 jedi-0.19.2 jeepney-0.9.0 joblib-1.5.2 jupyter-client-8.6.3 jupyter-core-5.8.1 keyring-25.6.0 keyrings.alt-5.0.2 kiwisolver-1.4.9 lazy-object-proxy-1.12.0 libcst-1.8.2 matplotlib-3.10.6 matplotlib-inline-0.1.7 mccabe-0.7.0 more-itertools-10.8.0 mozfile-3.0.0 mozinfo-1.2.3 mozprocess-1.4.0 msgspec-0.19.0 nest-asyncio-1.6.0 networkx-3.1 ninja-1.13.0 numpy-1.23.4 oauth2client-4.1.3 oauthlib-3.3.1 openTSNE-1.0.2 openpyxl-3.1.5 orange-canvas-core-0.2.6 orange-widget-base-4.26.0 packaging-25.0 pandas-1.4.4 parso-0.8.5 patsy-1.0.1 pexpect-4.9.0 pillow-11.3.0 platformdirs-4.4.0 pluggy-1.6.0 prompt_toolkit-3.0.52 proto-plus-1.26.1 protobuf-3.20.3 psutil-5.9.2 psycopg2-binary-2.9.4 ptyprocess-0.7.0 pure-eval-0.2.3 py-1.11.0 pyasn1-0.6.1 pyasn1-modules-0.4.2 pycnite-2024.7.31 pycparser-2.22 pydot-4.0.1 pyfakefs-5.0.0 pygments-2.19.2 pylint-2.15.4 pymemcache-4.0.0 pyparsing-3.2.3 pyqtgraph-0.13.7 pytest-7.1.3 python-dateutil-2.8.2 python-louvain-0.16 pytype-2024.4.11 pytz-2020.1 pyzmq-27.0.2 qasync-0.28.0 qtconsole-5.6.1 qtpy-2.4.3 redis-4.3.4 requests-2.32.5 requests-cache-1.2.1 requests-oauthlib-2.0.0 rq-1.11.1 rsa-4.9.1 scikit-learn-1.7.1 scikit-posthocs-0.7.0 scipy-1.9.2 seaborn-0.13.2 serverfiles-0.3.1 sniffio-1.3.1 sqlalchemy-1.4.41 stack_data-0.6.3 statsmodels-0.13.5 tabulate-0.9.0 threadpoolctl-3.6.0 toml-0.10.2 tomli-2.2.1 tomlkit-0.13.3 tornado-6.5.2 traitlets-5.14.3 truststore-0.10.4 typing-extensions-4.15.0 uritemplate-4.2.0 url-normalize-2.2.1 urllib3-2.5.0 wcwidth-0.2.13 wrapt-1.17.3 xgboost-2.0.3 xlrd-2.0.2 xlsxwriter-3.2.5 yapf-0.32.0 zipp-3.23.0
+#7 222.3 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#7 224.7 + rm /tmp/requirements.txt
+#7 DONE 226.0s
+
+#8 [4/4] COPY fuzzbench_build fuzzbench_run_fuzzer fuzzbench_measure /usr/local/bin/
+#8 DONE 0.1s
+
+#9 exporting to image
+#9 exporting layers
+#9 exporting layers 10.5s done
+#9 writing image sha256:ff6e13939398a46bea66048f9a31cb5aa73fbe6af0e39e802ac18aecf1e4881b done
+#9 naming to gcr.io/oss-fuzz-base/base-builder-fuzzbench:ubuntu_20_04-test done
+#9 DONE 10.5s

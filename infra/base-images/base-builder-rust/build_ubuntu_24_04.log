@@ -1,0 +1,170 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from ubuntu_24_04.Dockerfile
+#1 transferring dockerfile: 1.54kB done
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 23)
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 29)
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 34)
+#1 DONE 0.0s
+
+#2 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+#4 CACHED
+
+#5 [2/2] RUN install_rust.sh
+#5 0.301 + curl https://sh.rustup.rs
+#5 0.301 + sh -s -- -y --default-toolchain=nightly-2024-07-12 --profile=minimal
+#5 0.349   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+#5 0.349                                  Dload  Upload   Total   Spent    Left  Speed
+#5 0.350   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 28075  100 28075    0     0   420k      0 --:--:-- --:--:-- --:--:--  421k
+#5 0.432 info: downloading installer
+#5 0.802 warn: It looks like you have an existing installation of Rust at:
+#5 0.802 warn: /usr/local/bin
+#5 0.802 warn: It is recommended that rustup be the primary Rust installation.
+#5 0.802 warn: Otherwise you may have confusion unless you are careful with your PATH.
+#5 0.802 warn: If you are sure that you want both rustup and your already installed Rust
+#5 0.802 warn: then please reply `y' or `yes' or set RUSTUP_INIT_SKIP_PATH_CHECK to yes
+#5 0.802 warn: or pass `-y' to ignore all ignorable checks.
+#5 0.802 error: cannot install while Rust is installed
+#5 0.802 warn: continuing (because the -y flag is set and the error is ignorable)
+#5 0.838 info: profile set to 'minimal'
+#5 0.838 info: default host triple is x86_64-unknown-linux-gnu
+#5 0.838 info: syncing channel updates for 'nightly-2024-07-12-x86_64-unknown-linux-gnu'
+#5 1.055 info: latest update on 2024-07-12, rust version 1.81.0-nightly (5315cbe15 2024-07-11)
+#5 1.055 info: downloading component 'cargo'
+#5 1.211 info: downloading component 'rust-std'
+#5 1.499 info: downloading component 'rustc'
+#5 2.094 info: installing component 'cargo'
+#5 2.722 info: installing component 'rust-std'
+#5 4.567 info: installing component 'rustc'
+#5 8.774 
+#5 8.774 info: default toolchain set to 'nightly-2024-07-12-x86_64-unknown-linux-gnu'
+#5 9.358   nightly-2024-07-12-x86_64-unknown-linux-gnu installed - rustc 1.81.0-nightly (5315cbe15 2024-07-11)
+#5 9.358 
+#5 9.358 
+#5 9.358 Rust is installed now. Great!
+#5 9.358 
+#5 9.358 To get started you may need to restart your current shell.
+#5 9.358 This would reload your PATH environment variable to include
+#5 9.358 Cargo's bin directory (/rust/bin).
+#5 9.358 
+#5 9.358 To configure your current shell, you need to source
+#5 9.358 the corresponding env file under /rust.
+#5 9.358 
+#5 9.358 This is usually done by running one of the following (note the leading DOT):
+#5 9.358 . "/rust/env"            # For sh/bash/zsh/ash/dash/pdksh
+#5 9.358 source "/rust/env.fish"  # For fish
+#5 9.358 source $"/rust/env.nu"  # For nushell
+#5 9.373 + cargo install cargo-fuzz --locked
+#5 9.505     Updating crates.io index
+#5 9.576  Downloading crates ...
+#5 9.633   Downloaded cargo-fuzz v0.13.1
+#5 9.674   Installing cargo-fuzz v0.13.1
+#5 9.676     Updating crates.io index
+#5 10.14     Updating crates.io index
+#5 10.37  Downloading crates ...
+#5 10.44   Downloaded cargo-platform v0.1.5
+#5 10.44   Downloaded bitflags v1.3.2
+#5 10.46   Downloaded clap_derive v4.0.21
+#5 10.46   Downloaded camino v1.1.6
+#5 10.47   Downloaded version_check v0.9.4
+#5 10.48   Downloaded is-terminal v0.4.1
+#5 10.48   Downloaded strsim v0.10.0
+#5 10.49   Downloaded thiserror-impl v1.0.50
+#5 10.49   Downloaded unicode-ident v1.0.5
+#5 10.50   Downloaded toml v0.5.9
+#5 10.51   Downloaded proc-macro2 v1.0.70
+#5 10.52   Downloaded serde v1.0.193
+#5 10.53   Downloaded ryu v1.0.15
+#5 10.54   Downloaded once_cell v1.16.0
+#5 10.55   Downloaded clap v4.0.29
+#5 10.60   Downloaded serde_json v1.0.108
+#5 10.63   Downloaded io-lifetimes v1.0.3
+#5 10.64   Downloaded tempfile v3.3.0
+#5 10.65   Downloaded serde_derive v1.0.193
+#5 10.65   Downloaded syn v1.0.105
+#5 10.69   Downloaded syn v2.0.39
+#5 10.72   Downloaded proc-macro-error-attr v1.0.4
+#5 10.72   Downloaded rustix v0.36.5
+#5 10.80   Downloaded proc-macro-error v1.0.4
+#5 10.81   Downloaded heck v0.4.0
+#5 10.82   Downloaded semver v1.0.14
+#5 10.82   Downloaded rustc_version v0.4.0
+#5 10.83   Downloaded quote v1.0.33
+#5 10.84   Downloaded os_str_bytes v6.4.1
+#5 10.85   Downloaded fastrand v1.8.0
+#5 10.85   Downloaded thiserror v1.0.50
+#5 10.87   Downloaded termcolor v1.1.3
+#5 10.88   Downloaded remove_dir_all v0.5.3
+#5 10.88   Downloaded itoa v1.0.9
+#5 10.88   Downloaded clap_lex v0.3.0
+#5 10.89   Downloaded current_platform v0.2.0
+#5 10.89   Downloaded anyhow v1.0.66
+#5 10.90   Downloaded cfg-if v1.0.0
+#5 10.91   Downloaded cargo_metadata v0.18.1
+#5 10.92   Downloaded libc v0.2.138
+#5 11.00   Downloaded linux-raw-sys v0.1.3
+#5 11.08    Compiling proc-macro2 v1.0.70
+#5 11.08    Compiling unicode-ident v1.0.5
+#5 11.08    Compiling serde v1.0.193
+#5 11.08    Compiling version_check v0.9.4
+#5 11.08    Compiling libc v0.2.138
+#5 11.08    Compiling syn v1.0.105
+#5 11.08    Compiling io-lifetimes v1.0.3
+#5 11.08    Compiling semver v1.0.14
+#5 11.08    Compiling rustix v0.36.5
+#5 11.09    Compiling linux-raw-sys v0.1.3
+#5 11.09    Compiling bitflags v1.3.2
+#5 11.09    Compiling thiserror v1.0.50
+#5 11.09    Compiling camino v1.1.6
+#5 11.09    Compiling serde_json v1.0.108
+#5 11.10    Compiling anyhow v1.0.66
+#5 11.10    Compiling ryu v1.0.15
+#5 11.10    Compiling os_str_bytes v6.4.1
+#5 11.10    Compiling itoa v1.0.9
+#5 11.10    Compiling current_platform v0.2.0
+#5 11.11    Compiling heck v0.4.0
+#5 11.11    Compiling cfg-if v1.0.0
+#5 11.11    Compiling termcolor v1.1.3
+#5 11.11    Compiling remove_dir_all v0.5.3
+#5 11.12    Compiling strsim v0.10.0
+#5 11.12    Compiling once_cell v1.16.0
+#5 11.12    Compiling fastrand v1.8.0
+#5 11.24    Compiling clap_lex v0.3.0
+#5 11.24    Compiling proc-macro-error-attr v1.0.4
+#5 11.24    Compiling proc-macro-error v1.0.4
+#5 11.72    Compiling quote v1.0.33
+#5 11.82    Compiling syn v2.0.39
+#5 12.13    Compiling tempfile v3.3.0
+#5 12.85    Compiling serde_derive v1.0.193
+#5 12.85    Compiling thiserror-impl v1.0.50
+#5 12.85    Compiling is-terminal v0.4.1
+#5 13.49    Compiling clap_derive v4.0.21
+#5 14.74    Compiling clap v4.0.29
+#5 16.49    Compiling cargo-platform v0.1.5
+#5 16.49    Compiling toml v0.5.9
+#5 16.64    Compiling rustc_version v0.4.0
+#5 17.07    Compiling cargo_metadata v0.18.1
+#5 19.91    Compiling cargo-fuzz v0.13.1
+#5 21.77     Finished `release` profile [optimized] target(s) in 12.29s
+#5 21.78   Installing /rust/bin/cargo-fuzz
+#5 21.78    Installed package `cargo-fuzz v0.13.1` (executable `cargo-fuzz`)
+#5 21.86 + rm -rf /rust/registry
+#5 22.06 + rustup component add rust-src
+#5 22.20 info: downloading component 'rust-src'
+#5 22.32 info: installing component 'rust-src'
+#5 23.39 + cp -r /usr/local/lib/x86_64-unknown-linux-gnu/libc++.a /usr/local/lib/x86_64-unknown-linux-gnu/libc++abi.a /usr/local/lib/x86_64-unknown-linux-gnu/libc++experimental.a /usr/local/lib/
+#5 DONE 24.1s
+
+#6 exporting to image
+#6 exporting layers
+#6 exporting layers 1.3s done
+#6 writing image sha256:3bcabef2e20c79f65887d9472f556bcebb4227249c2246c8a9839f00e5a10532 done
+#6 naming to gcr.io/oss-fuzz-base/base-builder-rust:ubuntu_24_04 done
+#6 DONE 1.3s

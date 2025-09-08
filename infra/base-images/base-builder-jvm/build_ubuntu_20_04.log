@@ -1,0 +1,119 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from ubuntu_20_04.Dockerfile
+#1 transferring dockerfile: 2.53kB done
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 19)
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 20)
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 21)
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 22)
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 23)
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 24)
+#1 DONE 0.0s
+
+#2 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [base 1/3] FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
+#4 DONE 0.0s
+
+#5 [base 2/3] RUN install_java.sh
+#5 CACHED
+
+#6 [base 3/3] RUN chmod 777 /usr/local/bin && chmod 777 /usr/local/lib
+#6 CACHED
+
+#7 [builder 2/7] WORKDIR /src
+#7 CACHED
+
+#8 [builder 5/7] RUN echo "build --java_runtime_version=local_jdk_17" >> .bazelrc     && echo "build --cxxopt=-stdlib=libc++" >> .bazelrc     && echo "build --linkopt=-lc++" >> .bazelrc
+#8 CACHED
+
+#9 [builder 3/7] RUN git clone https://github.com/CodeIntelligenceTesting/jazzer &&     cd jazzer &&     git checkout 11b42852df4344737df54a380c2f522025bb4e84
+#9 CACHED
+
+#10 [builder 1/7] RUN useradd -m jazzer_user
+#10 CACHED
+
+#11 [builder 4/7] WORKDIR /src/jazzer
+#11 CACHED
+
+#12 [builder 6/7] RUN bazel build     //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar     //deploy:jazzer-api     //deploy:jazzer-junit     //launcher:jazzer
+#12 CACHED
+
+#13 [builder 7/7] RUN cp $(bazel cquery --output=files //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar) /usr/local/bin/jazzer_agent_deploy.jar &&     cp $(bazel cquery --output=files //launcher:jazzer) /usr/local/bin/jazzer_driver &&     cp $(bazel cquery --output=files //deploy:jazzer-api) /usr/local/lib/jazzer_api_deploy.jar &&     cp $(bazel cquery --output=files //deploy:jazzer-junit) /usr/local/bin/jazzer_junit.jar
+#13 0.481 Starting local Bazel server and connecting to it...
+#13 2.161 Computing main repo mapping: 
+#13 2.745 ERROR: Could not trash dir in '/home/jazzer_user/.cache/bazel/_bazel_jazzer_user/e3c2be7f6be7a238950c8073a90fc93c/bazel-workers': /home/jazzer_user/.cache/bazel/_bazel_jazzer_user/e3c2be7f6be7a238950c8073a90fc93c/bazel-workers/_moved_trash_dir -> /home/jazzer_user/.cache/bazel/_bazel_jazzer_user/e3c2be7f6be7a238950c8073a90fc93c/bazel-workers/_stale_trash (Invalid cross-device link)
+#13 2.783 Loading: 
+#13 2.785 Loading: 0 packages loaded
+#13 3.076 Analyzing: target //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar (1 packages loaded, 0 targets configured)
+#13 4.108 Analyzing: target //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar (70 packages loaded, 431 targets configured)
+#13 4.225 DEBUG: /home/jazzer_user/.cache/bazel/_bazel_jazzer_user/e3c2be7f6be7a238950c8073a90fc93c/external/rules_jvm_external~/private/extensions/maven.bzl:156:14: The maven repository 'maven' is used in two different bazel modules, originally in 'jazzer' and now in 'protobuf'
+#13 4.288 DEBUG: /home/jazzer_user/.cache/bazel/_bazel_jazzer_user/e3c2be7f6be7a238950c8073a90fc93c/external/rules_jvm_external~/private/extensions/maven.bzl:156:14: The maven repository 'maven' is used in two different bazel modules, originally in 'jazzer' and now in 'protobuf'
+#13 4.497 DEBUG: /home/jazzer_user/.cache/bazel/_bazel_jazzer_user/e3c2be7f6be7a238950c8073a90fc93c/external/rules_jvm_external~/private/extensions/maven.bzl:156:14: The maven repository 'maven' is used in two different bazel modules, originally in 'jazzer' and now in 'protobuf'
+#13 4.613 DEBUG: /home/jazzer_user/.cache/bazel/_bazel_jazzer_user/e3c2be7f6be7a238950c8073a90fc93c/external/rules_jvm_external~/private/extensions/maven.bzl:156:14: The maven repository 'maven' is used in two different bazel modules, originally in 'jazzer' and now in 'protobuf'
+#13 4.687 DEBUG: /home/jazzer_user/.cache/bazel/_bazel_jazzer_user/e3c2be7f6be7a238950c8073a90fc93c/external/rules_jvm_external~/private/extensions/maven.bzl:156:14: The maven repository 'maven' is used in two different bazel modules, originally in 'jazzer' and now in 'protobuf'
+#13 5.164 Analyzing: target //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar (208 packages loaded, 13799 targets configured)
+#13 5.194 INFO: Analyzed target //src/main/java/com/code_intelligence/jazzer:jazzer_standalone_deploy.jar (208 packages loaded, 13802 targets configured).
+#13 5.196 INFO: Found 1 target...
+#13 6.164  checking cached actions
+#13 1980.4 INFO: Elapsed time: 1979.773s, Critical Path: 0.00s
+#13 1980.4 INFO: 0 processes.
+#13 1980.4 INFO: Build completed successfully, 0 total actions
+#13 1980.5 Computing main repo mapping: 
+#13 1980.6 Loading: 
+#13 1980.6 Loading: 0 packages loaded
+#13 1980.6 Analyzing: target //launcher:jazzer (1 packages loaded, 0 targets configured)
+#13 1980.6 INFO: Analyzed target //launcher:jazzer (4 packages loaded, 34 targets configured).
+#13 1980.6 INFO: Found 1 target...
+#13 1980.7 INFO: Elapsed time: 0.248s, Critical Path: 0.00s
+#13 1980.7 INFO: 0 processes.
+#13 1980.7 INFO: Build completed successfully, 0 total actions
+#13 1980.8 Computing main repo mapping: 
+#13 1980.8 Loading: 
+#13 1980.8 Loading: 0 packages loaded
+#13 1980.8 Analyzing: target //deploy:jazzer-api (0 packages loaded, 0 targets configured)
+#13 1980.8 INFO: Analyzed target //deploy:jazzer-api (0 packages loaded, 1 target configured).
+#13 1980.8 INFO: Found 1 target...
+#13 1980.9 INFO: Elapsed time: 0.170s, Critical Path: 0.00s
+#13 1980.9 INFO: 0 processes.
+#13 1980.9 INFO: Build completed successfully, 0 total actions
+#13 1981.0 Computing main repo mapping: 
+#13 1981.0 Loading: 
+#13 1981.0 Loading: 0 packages loaded
+#13 1981.0 Analyzing: target //deploy:jazzer-junit (0 packages loaded, 0 targets configured)
+#13 1981.1 INFO: Analyzed target //deploy:jazzer-junit (12 packages loaded, 97 targets configured).
+#13 1981.1 INFO: Found 1 target...
+#13 1981.1 INFO: Elapsed time: 0.218s, Critical Path: 0.00s
+#13 1981.1 INFO: 0 processes.
+#13 1981.1 INFO: Build completed successfully, 0 total actions
+#13 DONE 1981.2s
+
+#14 [final 1/6] COPY --from=builder /usr/local/bin/jazzer_agent_deploy.jar /usr/local/bin/jazzer_agent_deploy.jar
+#14 DONE 0.0s
+
+#15 [final 2/6] COPY --from=builder /usr/local/bin/jazzer_driver /usr/local/bin/jazzer_driver
+#15 DONE 0.0s
+
+#16 [final 3/6] COPY --from=builder /usr/local/lib/jazzer_api_deploy.jar /usr/local/lib/jazzer_api_deploy.jar
+#16 DONE 0.0s
+
+#17 [final 4/6] COPY --from=builder /usr/local/bin/jazzer_junit.jar /usr/local/bin/jazzer_junit.jar
+#17 DONE 0.0s
+
+#18 [final 5/6] RUN chmod 755 /usr/local/bin && chmod 755 /usr/local/lib
+#18 DONE 0.3s
+
+#19 [final 6/6] WORKDIR /src
+#19 DONE 0.0s
+
+#20 exporting to image
+#20 exporting layers
+#20 exporting layers 0.8s done
+#20 writing image sha256:562c4a2b10897ad2a4afd94cb03087cfbc98c0aa15f5df821542cc118f1a020d done
+#20 naming to gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu_20_04 done
+#20 DONE 0.9s

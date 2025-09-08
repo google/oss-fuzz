@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,19 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/sippy/rtpproxy
-RUN git -C rtpproxy submodule update --init --recursive
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
 
-COPY build_ubuntu_20_04.sh $SRC/
-COPY build_ubuntu_24_04.sh $SRC/
-RUN . /etc/os-release && cp "$SRC/build_ubuntu_$VERSION_ID.sh" "$SRC/build.sh"
+# Set up Golang environment variables (copied from /root/.bash_profile).
+ENV GOPATH /root/go
 
-WORKDIR rtpproxy
+# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
+# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
+ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
+
+COPY gosigfuzz.c $GOPATH/gosigfuzz/
+
+RUN install_go.sh
+
+# TODO(jonathanmetzman): Install this file using install_go.sh.
+COPY ossfuzz_coverage_runner.go \
+     $GOPATH/

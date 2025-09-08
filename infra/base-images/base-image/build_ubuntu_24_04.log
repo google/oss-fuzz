@@ -1,0 +1,32 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from ubuntu_24_04.Dockerfile
+#1 transferring dockerfile: 1.30kB done
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 23)
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:9cbed754112939e914291337b5e554b07ad7c392491dba6daf25eef1332a22e8
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/3] FROM docker.io/library/ubuntu:24.04@sha256:9cbed754112939e914291337b5e554b07ad7c392491dba6daf25eef1332a22e8
+#4 resolve docker.io/library/ubuntu:24.04@sha256:9cbed754112939e914291337b5e554b07ad7c392491dba6daf25eef1332a22e8 done
+#4 DONE 0.0s
+
+#5 [2/3] RUN apt-get update &&     apt-get upgrade -y &&     apt-get install -y libc6-dev binutils libgcc-13-dev tzdata &&     apt-get autoremove -y
+#5 CACHED
+
+#6 [3/3] RUN mkdir -p /out /src /work && chmod a+rwx /out /src /work
+#6 CACHED
+
+#7 exporting to image
+#7 exporting layers done
+#7 writing image sha256:89a83332cd34693723bf1dfbf30d58deb886cd2a221aba178886168c34c741d5 done
+#7 naming to docker.io/library/base-image:ubuntu_24_04 done
+#7 DONE 0.0s
+
+ [33m1 warning found (use docker --debug to expand):
+[0m - LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 23)

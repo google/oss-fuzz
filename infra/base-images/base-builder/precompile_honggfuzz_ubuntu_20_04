@@ -1,0 +1,45 @@
+#!/bin/bash -eu
+# Copyright 2019 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+echo "Precompiling honggfuzz"
+export BUILD_OSSFUZZ_STATIC=true
+
+PACKAGES=(
+    libunwind8-dev
+    libblocksruntime-dev
+    liblzma-dev
+    libiberty-dev
+    zlib1g-dev
+    pkg-config)
+
+apt-get update && apt-get install -y ${PACKAGES[@]}
+
+pushd $SRC/honggfuzz > /dev/null
+make clean
+# These CFLAGs match honggfuzz's default, with the exception of -mtune to
+# improve portability and `-D_HF_LINUX_NO_BFD` to remove assembly instructions
+# from the filenames.
+CC=clang CFLAGS="-O3 -funroll-loops -D_HF_LINUX_NO_BFD" make
+
+# libhfuzz.a will be added by CC/CXX linker directly during linking,
+# but it's defined here to satisfy the build infrastructure
+ar rcs honggfuzz.a libhfuzz/*.o libhfcommon/*.o
+popd > /dev/null
+
+apt-get remove -y --purge ${PACKAGES[@]}
+apt-get autoremove -y
+echo "Done."

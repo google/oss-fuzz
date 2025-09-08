@@ -1,0 +1,476 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from ubuntu_24_04.Dockerfile
+#1 transferring dockerfile: 784B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+#4 CACHED
+
+#5 [2/2] RUN install_python.sh
+#5 0.316 + echo 'ATHERIS INSTALL'
+#5 0.316 + unset CFLAGS CXXFLAGS
+#5 0.316 + export PYI_STATIC_ZLIB=1
+#5 0.316 + PYI_STATIC_ZLIB=1
+#5 0.316 ATHERIS INSTALL
+#5 0.317 ++ echo /usr/local/lib/clang/18/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer_no_main.a
+#5 0.317 + LIBFUZZER_LIB=/usr/local/lib/clang/18/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer_no_main.a
+#5 0.317 + pip3 install -v --no-cache-dir 'atheris>=2.3.0' pyinstaller==6.10.0 setuptools==72.1.0 coverage==6.3.2
+#5 0.766 Using pip 25.2 from /usr/local/lib/python3.11/site-packages/pip (python 3.11)
+#5 0.931 Collecting atheris>=2.3.0
+#5 0.932   Obtaining dependency information for atheris>=2.3.0 from https://files.pythonhosted.org/packages/00/01/3a2a31c0016233599b12e8fa6c956ec6c1df78630d8cec9cfa78904d0013/atheris-2.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+#5 1.004   Downloading atheris-2.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (17 kB)
+#5 1.050   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/f8/49/dc3d7384c238708491a757219dbbf453b9d559a093dd317f10330c2a04aa/pyinstaller-4.6-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.050   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/90/8c/3aa36c18d2f05dc85d810b3fdd23dbadee15375b15c75533247347b4bb86/pyinstaller-4.6.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.051   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/1e/0f/4b936e4b49d7523d3d0c7024e41b9ba3d208e33eae1c38433b9e11a218f9/pyinstaller-4.7-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.051   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/00/ca/58dd68fee42490be1c86c9e912fc9ad0bf44c72edd882397ad11c21fbecb/pyinstaller-4.7.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.051   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/a8/64/6fb84bf9b83574034157299e98c39aa6de9a649f275f92fde3dff1ea6416/pyinstaller-4.8-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.052   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/7f/6b/688fceb8f1fafeb028de72ad47c5b1377be9f74a75801802f1463e451b22/pyinstaller-4.8.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.052   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/83/4a/7b9eca3c9ded03a285a0044f3fb18d85e80819da62249888ecfac5a5df46/pyinstaller-4.9-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.053   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/47/88/cbc8ee5a300988e67f54f0366fd4d74a01f24caff75b5dd5139c0c6223f3/pyinstaller-4.9.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.053   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/41/d8/1805bef8f48fcd97d62ad51148cde66caefc95b0aa61e2f7ac3ea3064331/pyinstaller-4.10-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.053   Link requires a different Python (3.11.13 not in: '<3.11,>=3.6'): https://files.pythonhosted.org/packages/b0/e6/e5760666896739115b0e4538a42cdd895215581618ec885ad043dd35ee57/pyinstaller-4.10.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.6)
+#5 1.054   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/05/38/9866b9a8eacdeb7176228af8071e965d9c02871f3129c5533c96468d6693/pyinstaller-5.0-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.054   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/cf/b0/69585629b023056e801a99ee4d669e2d3b85fb5a68fe461c1660af9ea514/pyinstaller-5.0.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.054   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/ce/98/0a3ee065df365894fe647ffa0800770bce3ee81af15d7f3b3e963eb68a1d/pyinstaller-5.0.1-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.055   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/ad/09/82d3f066eddb9ab3cbed8284a0bda84a93806ff2c44536474841a98ae0e7/pyinstaller-5.0.1.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.055   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/c6/de/2dc9640fc5631af7a152d710749765311b1b009e3651877ae9b78ebac31e/pyinstaller-5.1-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.056   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/c9/41/fbb2f0e6e1934a47a99295d67ba178477f8809ae939c96608c711596f478/pyinstaller-5.1.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.056   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/c1/86/6e8b7e73bf690050a83e9d10aaaac99757c9935cc368d82f212bb7f9ef58/pyinstaller-5.2-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.056   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/9c/b1/5c9cf5bceade92613196b1be4b9cc1406e82d9edadb3c682da860be96cea/pyinstaller-5.2.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.057   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/06/17/2693037a9ce73e837b1c30c79bebf232dc750d1f58ad6287f25b9354e1be/pyinstaller-5.3-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.057   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/7f/48/a60502c14ebafd3c1af193865141ede851591401287ce739816c99d12af2/pyinstaller-5.3.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.057   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/a6/43/e5e3eaef6a5092830f787d874a02300bf5957fc6d9686936e46284b34d6d/pyinstaller-5.4-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.058   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/4c/22/2f7a5308dcbf8baad514bfd8a7d453f133cf35b52055ab1668ced59e3ac5/pyinstaller-5.4.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.058   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/ab/f8/8165d18e0686bd84a64ba96cd90696a3edce906a90495f82a4db7250b65f/pyinstaller-5.4.1-py3-none-manylinux2014_x86_64.whl (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.058   Link requires a different Python (3.11.13 not in: '<3.11,>=3.7'): https://files.pythonhosted.org/packages/18/9e/dbee87c405633be8ae926520d5e91c29cd76c969328ad4c724e6983e2b58/pyinstaller-5.4.1.tar.gz (from https://pypi.org/simple/pyinstaller/) (requires-python:<3.11,>=3.7)
+#5 1.070 Collecting pyinstaller==6.10.0
+#5 1.070   Obtaining dependency information for pyinstaller==6.10.0 from https://files.pythonhosted.org/packages/19/78/604bec9cd73cd02ed29f7bd72ec25dff6eccc57554ec3ab096959fae65de/pyinstaller-6.10.0-py3-none-manylinux2014_x86_64.whl.metadata
+#5 1.088   Downloading pyinstaller-6.10.0-py3-none-manylinux2014_x86_64.whl.metadata (8.3 kB)
+#5 1.217 Collecting setuptools==72.1.0
+#5 1.217   Obtaining dependency information for setuptools==72.1.0 from https://files.pythonhosted.org/packages/e1/58/e0ef3b9974a04ce9cde2a7a33881ddcb2d68450803745804545cdd8d258f/setuptools-72.1.0-py3-none-any.whl.metadata
+#5 1.229   Downloading setuptools-72.1.0-py3-none-any.whl.metadata (6.6 kB)
+#5 1.543 Collecting coverage==6.3.2
+#5 1.558   Downloading coverage-6.3.2.tar.gz (709 kB)
+#5 1.599      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 709.3/709.3 kB 30.0 MB/s  0:00:00
+#5 1.809   Installing build dependencies: started
+#5 1.809   Running command pip subprocess to install build dependencies
+#5 2.179   Using pip 25.2 from /usr/local/lib/python3.11/site-packages/pip (python 3.11)
+#5 2.466   Collecting setuptools>=40.8.0
+#5 2.466     Obtaining dependency information for setuptools>=40.8.0 from https://files.pythonhosted.org/packages/a3/dc/17031897dae0efacfea57dfd3a82fdd2a2aeb58e0ff71b77b87e44edc772/setuptools-80.9.0-py3-none-any.whl.metadata
+#5 2.542     Downloading setuptools-80.9.0-py3-none-any.whl.metadata (6.6 kB)
+#5 2.575   Downloading setuptools-80.9.0-py3-none-any.whl (1.2 MB)
+#5 2.640      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 29.3 MB/s  0:00:00
+#5 2.659   Installing collected packages: setuptools
+#5 2.851   Successfully installed setuptools-80.9.0
+#5 2.851   WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#5 2.902   Installing build dependencies: finished with status 'done'
+#5 2.903   Getting requirements to build wheel: started
+#5 2.903   Running command Getting requirements to build wheel
+#5 3.275   /tmp/pip-build-env-qm8__if9/overlay/lib/python3.11/site-packages/setuptools/dist.py:759: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+#5 3.276   !!
+#5 3.276 
+#5 3.276           ********************************************************************************
+#5 3.276           Please consider removing the following classifiers in favor of a SPDX license expression:
+#5 3.276 
+#5 3.276           License :: OSI Approved :: Apache Software License
+#5 3.276 
+#5 3.276           See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+#5 3.277           ********************************************************************************
+#5 3.277 
+#5 3.277   !!
+#5 3.277     self._finalize_license_expression()
+#5 3.310   running egg_info
+#5 3.313   writing coverage.egg-info/PKG-INFO
+#5 3.316   writing dependency_links to coverage.egg-info/dependency_links.txt
+#5 3.317   writing entry points to coverage.egg-info/entry_points.txt
+#5 3.318   writing requirements to coverage.egg-info/requires.txt
+#5 3.318   writing top-level names to coverage.egg-info/top_level.txt
+#5 3.339   reading manifest file 'coverage.egg-info/SOURCES.txt'
+#5 3.344   reading manifest template 'MANIFEST.in'
+#5 3.364   no previously-included directories found matching 'doc/_build'
+#5 3.364   no previously-included directories found matching 'doc/_spell'
+#5 3.448   no previously-included directories found matching 'tests/eggsrc/build'
+#5 3.448   adding license file 'LICENSE.txt'
+#5 3.454   writing manifest file 'coverage.egg-info/SOURCES.txt'
+#5 3.484   Getting requirements to build wheel: finished with status 'done'
+#5 3.486   Preparing metadata (pyproject.toml): started
+#5 3.486   Running command Preparing metadata (pyproject.toml)
+#5 3.669   /tmp/pip-build-env-qm8__if9/overlay/lib/python3.11/site-packages/setuptools/dist.py:759: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+#5 3.669   !!
+#5 3.669 
+#5 3.669           ********************************************************************************
+#5 3.669           Please consider removing the following classifiers in favor of a SPDX license expression:
+#5 3.669 
+#5 3.670           License :: OSI Approved :: Apache Software License
+#5 3.670 
+#5 3.670           See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+#5 3.670           ********************************************************************************
+#5 3.670 
+#5 3.670   !!
+#5 3.670     self._finalize_license_expression()
+#5 3.682   running dist_info
+#5 3.686   creating /tmp/pip-modern-metadata-50i_36su/coverage.egg-info
+#5 3.686   writing /tmp/pip-modern-metadata-50i_36su/coverage.egg-info/PKG-INFO
+#5 3.688   writing dependency_links to /tmp/pip-modern-metadata-50i_36su/coverage.egg-info/dependency_links.txt
+#5 3.688   writing entry points to /tmp/pip-modern-metadata-50i_36su/coverage.egg-info/entry_points.txt
+#5 3.689   writing requirements to /tmp/pip-modern-metadata-50i_36su/coverage.egg-info/requires.txt
+#5 3.689   writing top-level names to /tmp/pip-modern-metadata-50i_36su/coverage.egg-info/top_level.txt
+#5 3.689   writing manifest file '/tmp/pip-modern-metadata-50i_36su/coverage.egg-info/SOURCES.txt'
+#5 3.702   reading manifest file '/tmp/pip-modern-metadata-50i_36su/coverage.egg-info/SOURCES.txt'
+#5 3.703   reading manifest template 'MANIFEST.in'
+#5 3.722   no previously-included directories found matching 'doc/_build'
+#5 3.722   no previously-included directories found matching 'doc/_spell'
+#5 3.802   no previously-included directories found matching 'tests/eggsrc/build'
+#5 3.802   adding license file 'LICENSE.txt'
+#5 3.806   writing manifest file '/tmp/pip-modern-metadata-50i_36su/coverage.egg-info/SOURCES.txt'
+#5 3.806   creating '/tmp/pip-modern-metadata-50i_36su/coverage-6.3.2.dist-info'
+#5 3.856   Preparing metadata (pyproject.toml): finished with status 'done'
+#5 3.905 Collecting altgraph (from pyinstaller==6.10.0)
+#5 3.905   Obtaining dependency information for altgraph from https://files.pythonhosted.org/packages/4d/3f/3bc3f1d83f6e4a7fcb834d3720544ca597590425be5ba9db032b2bf322a2/altgraph-0.17.4-py2.py3-none-any.whl.metadata
+#5 3.917   Downloading altgraph-0.17.4-py2.py3-none-any.whl.metadata (7.3 kB)
+#5 3.942 Collecting pyinstaller-hooks-contrib>=2024.8 (from pyinstaller==6.10.0)
+#5 3.943   Obtaining dependency information for pyinstaller-hooks-contrib>=2024.8 from https://files.pythonhosted.org/packages/48/34/1d973d0dae849683e53fbcda84443ce016f315e6f4dc7605ede4f56a28c3/pyinstaller_hooks_contrib-2025.8-py3-none-any.whl.metadata
+#5 3.955   Downloading pyinstaller_hooks_contrib-2025.8-py3-none-any.whl.metadata (16 kB)
+#5 3.997 Collecting packaging>=22.0 (from pyinstaller==6.10.0)
+#5 3.998   Obtaining dependency information for packaging>=22.0 from https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl.metadata
+#5 4.010   Downloading packaging-25.0-py3-none-any.whl.metadata (3.3 kB)
+#5 4.031 Downloading pyinstaller-6.10.0-py3-none-manylinux2014_x86_64.whl (703 kB)
+#5 4.036    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 703.3/703.3 kB 185.8 MB/s  0:00:00
+#5 4.050 Downloading setuptools-72.1.0-py3-none-any.whl (2.3 MB)
+#5 4.064    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 183.3 MB/s  0:00:00
+#5 4.079 Downloading atheris-2.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (31.2 MB)
+#5 4.215    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 31.2/31.2 MB 230.5 MB/s  0:00:00
+#5 4.227 Downloading packaging-25.0-py3-none-any.whl (66 kB)
+#5 4.239 Downloading pyinstaller_hooks_contrib-2025.8-py3-none-any.whl (442 kB)
+#5 4.253 Downloading altgraph-0.17.4-py2.py3-none-any.whl (21 kB)
+#5 4.295 Building wheels for collected packages: coverage
+#5 4.297   Building wheel for coverage (pyproject.toml): started
+#5 4.297   Running command Building wheel for coverage (pyproject.toml)
+#5 4.485   /tmp/pip-build-env-qm8__if9/overlay/lib/python3.11/site-packages/setuptools/dist.py:759: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+#5 4.485   !!
+#5 4.485 
+#5 4.486           ********************************************************************************
+#5 4.486           Please consider removing the following classifiers in favor of a SPDX license expression:
+#5 4.486 
+#5 4.486           License :: OSI Approved :: Apache Software License
+#5 4.486 
+#5 4.486           See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+#5 4.486           ********************************************************************************
+#5 4.486 
+#5 4.487   !!
+#5 4.487     self._finalize_license_expression()
+#5 4.496   running bdist_wheel
+#5 4.506   running build
+#5 4.506   running build_py
+#5 4.510   creating build/lib.linux-x86_64-cpython-311/coverage
+#5 4.510   copying coverage/tomlconfig.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.511   copying coverage/disposition.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.512   copying coverage/python.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.512   copying coverage/jsonreport.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.512   copying coverage/__init__.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.513   copying coverage/multiproc.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.513   copying coverage/pytracer.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.514   copying coverage/__main__.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.515   copying coverage/xmlreport.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.515   copying coverage/data.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.516   copying coverage/phystokens.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.516   copying coverage/numbits.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.517   copying coverage/sqldata.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.517   copying coverage/templite.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.518   copying coverage/lcovreport.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.519   copying coverage/summary.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.519   copying coverage/config.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.520   copying coverage/plugin_support.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.520   copying coverage/plugin.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.521   copying coverage/html.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.522   copying coverage/bytecode.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.522   copying coverage/env.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.523   copying coverage/misc.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.523   copying coverage/version.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.524   copying coverage/control.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.525   copying coverage/execfile.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.525   copying coverage/debug.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.526   copying coverage/collector.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.526   copying coverage/context.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.527   copying coverage/files.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.527   copying coverage/inorout.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.528   copying coverage/parser.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.529   copying coverage/cmdline.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.529   copying coverage/annotate.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.530   copying coverage/results.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.530   copying coverage/exceptions.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.531   copying coverage/report.py -> build/lib.linux-x86_64-cpython-311/coverage
+#5 4.532   creating build/lib.linux-x86_64-cpython-311/coverage/htmlfiles
+#5 4.533   copying coverage/htmlfiles/index.html -> build/lib.linux-x86_64-cpython-311/coverage/htmlfiles
+#5 4.533   copying coverage/htmlfiles/pyfile.html -> build/lib.linux-x86_64-cpython-311/coverage/htmlfiles
+#5 4.534   copying coverage/htmlfiles/keybd_open.png -> build/lib.linux-x86_64-cpython-311/coverage/htmlfiles
+#5 4.535   copying coverage/htmlfiles/keybd_closed.png -> build/lib.linux-x86_64-cpython-311/coverage/htmlfiles
+#5 4.535   copying coverage/htmlfiles/coverage_html.js -> build/lib.linux-x86_64-cpython-311/coverage/htmlfiles
+#5 4.536   copying coverage/htmlfiles/style.scss -> build/lib.linux-x86_64-cpython-311/coverage/htmlfiles
+#5 4.536   copying coverage/htmlfiles/favicon_32.png -> build/lib.linux-x86_64-cpython-311/coverage/htmlfiles
+#5 4.537   copying coverage/htmlfiles/style.css -> build/lib.linux-x86_64-cpython-311/coverage/htmlfiles
+#5 4.538   creating build/lib.linux-x86_64-cpython-311/coverage/fullcoverage
+#5 4.538   copying coverage/fullcoverage/encodings.py -> build/lib.linux-x86_64-cpython-311/coverage/fullcoverage
+#5 4.539   running build_ext
+#5 4.545   building 'coverage.tracer' extension
+#5 4.545   creating build/temp.linux-x86_64-cpython-311/coverage/ctracer
+#5 4.545   clang -Wsign-compare -Wunreachable-code -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/usr/local/include/python3.11 -c coverage/ctracer/datastack.c -o build/temp.linux-x86_64-cpython-311/coverage/ctracer/datastack.o
+#5 4.825   clang -Wsign-compare -Wunreachable-code -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/usr/local/include/python3.11 -c coverage/ctracer/filedisp.c -o build/temp.linux-x86_64-cpython-311/coverage/ctracer/filedisp.o
+#5 4.953   clang -Wsign-compare -Wunreachable-code -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/usr/local/include/python3.11 -c coverage/ctracer/module.c -o build/temp.linux-x86_64-cpython-311/coverage/ctracer/module.o
+#5 5.082   clang -Wsign-compare -Wunreachable-code -DNDEBUG -g -fwrapv -O3 -Wall -fPIC -I/usr/local/include/python3.11 -c coverage/ctracer/tracer.c -o build/temp.linux-x86_64-cpython-311/coverage/ctracer/tracer.o
+#5 5.200   coverage/ctracer/tracer.c:533:48: error: no member named 'co_code' in 'struct PyCodeObject'; did you mean '_co_code'?
+#5 5.200     533 |     PyObject * pCode = MyFrame_GetCode(frame)->co_code;
+#5 5.200         |                                                ^~~~~~~
+#5 5.200         |                                                _co_code
+#5 5.201   /usr/local/include/python3.11/cpython/code.h:103:21: note: '_co_code' declared here
+#5 5.201     103 | struct PyCodeObject _PyCode_DEF(1);
+#5 5.201         |                     ^
+#5 5.201   /usr/local/include/python3.11/cpython/code.h:92:15: note: expanded from macro '_PyCode_DEF'
+#5 5.201      92 |     PyObject *_co_code;           /* cached co_code object/attribute */        \
+#5 5.201         |               ^
+#5 5.201   coverage/ctracer/tracer.c:534:43: error: no member named 'f_lasti' in 'struct _PyInterpreterFrame'
+#5 5.202     534 |     real_call = (PyBytes_AS_STRING(pCode)[MyFrame_lasti(frame) + 1] == 0);
+#5 5.202         |                                           ^~~~~~~~~~~~~~~~~~~~
+#5 5.202   coverage/ctracer/util.h:20:44: note: expanded from macro 'MyFrame_lasti'
+#5 5.202      20 | #define MyFrame_lasti(f)    ((f)->f_frame->f_lasti * 2)
+#5 5.202         |                              ~~~~~~~~~~~~  ^
+#5 5.202   coverage/ctracer/tracer.c:701:56: error: no member named 'co_code' in 'struct PyCodeObject'; did you mean '_co_code'?
+#5 5.202     701 |             PyObject * pCode = MyFrame_GetCode(frame)->co_code;
+#5 5.202         |                                                        ^~~~~~~
+#5 5.203         |                                                        _co_code
+#5 5.203   /usr/local/include/python3.11/cpython/code.h:103:21: note: '_co_code' declared here
+#5 5.203     103 | struct PyCodeObject _PyCode_DEF(1);
+#5 5.203         |                     ^
+#5 5.203   /usr/local/include/python3.11/cpython/code.h:92:15: note: expanded from macro '_PyCode_DEF'
+#5 5.203      92 |     PyObject *_co_code;           /* cached co_code object/attribute */        \
+#5 5.203         |               ^
+#5 5.203   coverage/ctracer/tracer.c:702:25: error: no member named 'f_lasti' in 'struct _PyInterpreterFrame'
+#5 5.204     702 |             int lasti = MyFrame_lasti(frame);
+#5 5.204         |                         ^~~~~~~~~~~~~~~~~~~~
+#5 5.204   coverage/ctracer/util.h:20:44: note: expanded from macro 'MyFrame_lasti'
+#5 5.204      20 | #define MyFrame_lasti(f)    ((f)->f_frame->f_lasti * 2)
+#5 5.204         |                              ~~~~~~~~~~~~  ^
+#5 5.205   4 errors generated.
+#5 5.217   **
+#5 5.217   ** Couldn't install with extension module, trying without it...
+#5 5.218   ** BuildFailed: command '/usr/local/bin/clang' failed with exit code 1
+#5 5.218   **
+#5 5.218   running bdist_wheel
+#5 5.218   running build
+#5 5.218   running build_py
+#5 5.218   creating build/lib/coverage
+#5 5.218   copying coverage/tomlconfig.py -> build/lib/coverage
+#5 5.219   copying coverage/disposition.py -> build/lib/coverage
+#5 5.219   copying coverage/python.py -> build/lib/coverage
+#5 5.220   copying coverage/jsonreport.py -> build/lib/coverage
+#5 5.221   copying coverage/__init__.py -> build/lib/coverage
+#5 5.221   copying coverage/multiproc.py -> build/lib/coverage
+#5 5.222   copying coverage/pytracer.py -> build/lib/coverage
+#5 5.222   copying coverage/__main__.py -> build/lib/coverage
+#5 5.223   copying coverage/xmlreport.py -> build/lib/coverage
+#5 5.223   copying coverage/data.py -> build/lib/coverage
+#5 5.224   copying coverage/phystokens.py -> build/lib/coverage
+#5 5.224   copying coverage/numbits.py -> build/lib/coverage
+#5 5.225   copying coverage/sqldata.py -> build/lib/coverage
+#5 5.226   copying coverage/templite.py -> build/lib/coverage
+#5 5.226   copying coverage/lcovreport.py -> build/lib/coverage
+#5 5.227   copying coverage/summary.py -> build/lib/coverage
+#5 5.227   copying coverage/config.py -> build/lib/coverage
+#5 5.228   copying coverage/plugin_support.py -> build/lib/coverage
+#5 5.228   copying coverage/plugin.py -> build/lib/coverage
+#5 5.229   copying coverage/html.py -> build/lib/coverage
+#5 5.229   copying coverage/bytecode.py -> build/lib/coverage
+#5 5.230   copying coverage/env.py -> build/lib/coverage
+#5 5.231   copying coverage/misc.py -> build/lib/coverage
+#5 5.231   copying coverage/version.py -> build/lib/coverage
+#5 5.232   copying coverage/control.py -> build/lib/coverage
+#5 5.232   copying coverage/execfile.py -> build/lib/coverage
+#5 5.233   copying coverage/debug.py -> build/lib/coverage
+#5 5.233   copying coverage/collector.py -> build/lib/coverage
+#5 5.234   copying coverage/context.py -> build/lib/coverage
+#5 5.235   copying coverage/files.py -> build/lib/coverage
+#5 5.235   copying coverage/inorout.py -> build/lib/coverage
+#5 5.236   copying coverage/parser.py -> build/lib/coverage
+#5 5.236   copying coverage/cmdline.py -> build/lib/coverage
+#5 5.237   copying coverage/annotate.py -> build/lib/coverage
+#5 5.238   copying coverage/results.py -> build/lib/coverage
+#5 5.238   copying coverage/exceptions.py -> build/lib/coverage
+#5 5.239   copying coverage/report.py -> build/lib/coverage
+#5 5.240   creating build/lib/coverage/htmlfiles
+#5 5.240   copying coverage/htmlfiles/index.html -> build/lib/coverage/htmlfiles
+#5 5.241   copying coverage/htmlfiles/pyfile.html -> build/lib/coverage/htmlfiles
+#5 5.241   copying coverage/htmlfiles/keybd_open.png -> build/lib/coverage/htmlfiles
+#5 5.242   copying coverage/htmlfiles/keybd_closed.png -> build/lib/coverage/htmlfiles
+#5 5.243   copying coverage/htmlfiles/coverage_html.js -> build/lib/coverage/htmlfiles
+#5 5.243   copying coverage/htmlfiles/style.scss -> build/lib/coverage/htmlfiles
+#5 5.244   copying coverage/htmlfiles/favicon_32.png -> build/lib/coverage/htmlfiles
+#5 5.245   copying coverage/htmlfiles/style.css -> build/lib/coverage/htmlfiles
+#5 5.245   creating build/lib/coverage/fullcoverage
+#5 5.245   copying coverage/fullcoverage/encodings.py -> build/lib/coverage/fullcoverage
+#5 5.262   installing to build/bdist.linux-x86_64/wheel
+#5 5.262   running install
+#5 5.268   running install_lib
+#5 5.274   creating build/bdist.linux-x86_64/wheel
+#5 5.274   creating build/bdist.linux-x86_64/wheel/coverage
+#5 5.275   copying build/lib/coverage/tomlconfig.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.275   copying build/lib/coverage/disposition.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.276   copying build/lib/coverage/python.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.276   copying build/lib/coverage/jsonreport.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.277   copying build/lib/coverage/__init__.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.277   copying build/lib/coverage/multiproc.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.278   copying build/lib/coverage/pytracer.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.278   copying build/lib/coverage/__main__.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.279   copying build/lib/coverage/xmlreport.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.280   copying build/lib/coverage/data.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.280   copying build/lib/coverage/phystokens.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.281   copying build/lib/coverage/numbits.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.281   copying build/lib/coverage/sqldata.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.282   copying build/lib/coverage/templite.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.282   copying build/lib/coverage/lcovreport.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.283   copying build/lib/coverage/summary.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.283   copying build/lib/coverage/config.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.284   creating build/bdist.linux-x86_64/wheel/coverage/fullcoverage
+#5 5.284   copying build/lib/coverage/fullcoverage/encodings.py -> build/bdist.linux-x86_64/wheel/./coverage/fullcoverage
+#5 5.285   copying build/lib/coverage/plugin_support.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.286   copying build/lib/coverage/plugin.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.286   copying build/lib/coverage/html.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.287   copying build/lib/coverage/bytecode.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.287   copying build/lib/coverage/env.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.288   copying build/lib/coverage/misc.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.288   copying build/lib/coverage/version.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.289   copying build/lib/coverage/control.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.290   copying build/lib/coverage/execfile.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.290   copying build/lib/coverage/debug.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.291   creating build/bdist.linux-x86_64/wheel/coverage/htmlfiles
+#5 5.291   copying build/lib/coverage/htmlfiles/index.html -> build/bdist.linux-x86_64/wheel/./coverage/htmlfiles
+#5 5.292   copying build/lib/coverage/htmlfiles/pyfile.html -> build/bdist.linux-x86_64/wheel/./coverage/htmlfiles
+#5 5.292   copying build/lib/coverage/htmlfiles/keybd_open.png -> build/bdist.linux-x86_64/wheel/./coverage/htmlfiles
+#5 5.293   copying build/lib/coverage/htmlfiles/keybd_closed.png -> build/bdist.linux-x86_64/wheel/./coverage/htmlfiles
+#5 5.293   copying build/lib/coverage/htmlfiles/coverage_html.js -> build/bdist.linux-x86_64/wheel/./coverage/htmlfiles
+#5 5.294   copying build/lib/coverage/htmlfiles/style.scss -> build/bdist.linux-x86_64/wheel/./coverage/htmlfiles
+#5 5.294   copying build/lib/coverage/htmlfiles/favicon_32.png -> build/bdist.linux-x86_64/wheel/./coverage/htmlfiles
+#5 5.295   copying build/lib/coverage/htmlfiles/style.css -> build/bdist.linux-x86_64/wheel/./coverage/htmlfiles
+#5 5.296   copying build/lib/coverage/collector.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.296   copying build/lib/coverage/context.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.297   copying build/lib/coverage/files.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.297   copying build/lib/coverage/inorout.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.298   copying build/lib/coverage/parser.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.298   copying build/lib/coverage/cmdline.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.299   copying build/lib/coverage/annotate.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.300   copying build/lib/coverage/results.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.300   copying build/lib/coverage/exceptions.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.301   copying build/lib/coverage/report.py -> build/bdist.linux-x86_64/wheel/./coverage
+#5 5.302   running install_egg_info
+#5 5.314   running egg_info
+#5 5.317   writing coverage.egg-info/PKG-INFO
+#5 5.319   writing dependency_links to coverage.egg-info/dependency_links.txt
+#5 5.319   writing entry points to coverage.egg-info/entry_points.txt
+#5 5.319   writing requirements to coverage.egg-info/requires.txt
+#5 5.319   writing top-level names to coverage.egg-info/top_level.txt
+#5 5.325   reading manifest file 'coverage.egg-info/SOURCES.txt'
+#5 5.330   reading manifest template 'MANIFEST.in'
+#5 5.349   no previously-included directories found matching 'doc/_build'
+#5 5.349   no previously-included directories found matching 'doc/_spell'
+#5 5.427   no previously-included directories found matching 'tests/eggsrc/build'
+#5 5.427   adding license file 'LICENSE.txt'
+#5 5.432   writing manifest file 'coverage.egg-info/SOURCES.txt'
+#5 5.432   Copying coverage.egg-info to build/bdist.linux-x86_64/wheel/./coverage-6.3.2-py3.11.egg-info
+#5 5.436   running install_scripts
+#5 5.440   creating build/bdist.linux-x86_64/wheel/coverage-6.3.2.dist-info/WHEEL
+#5 5.441   creating '/tmp/pip-wheel-y8eivt1o/.tmp-vw0xhv6k/coverage-6.3.2-py3-none-any.whl' and adding 'build/bdist.linux-x86_64/wheel' to it
+#5 5.442   adding 'coverage/__init__.py'
+#5 5.442   adding 'coverage/__main__.py'
+#5 5.443   adding 'coverage/annotate.py'
+#5 5.443   adding 'coverage/bytecode.py'
+#5 5.444   adding 'coverage/cmdline.py'
+#5 5.445   adding 'coverage/collector.py'
+#5 5.446   adding 'coverage/config.py'
+#5 5.447   adding 'coverage/context.py'
+#5 5.448   adding 'coverage/control.py'
+#5 5.449   adding 'coverage/data.py'
+#5 5.449   adding 'coverage/debug.py'
+#5 5.450   adding 'coverage/disposition.py'
+#5 5.450   adding 'coverage/env.py'
+#5 5.451   adding 'coverage/exceptions.py'
+#5 5.451   adding 'coverage/execfile.py'
+#5 5.452   adding 'coverage/files.py'
+#5 5.453   adding 'coverage/html.py'
+#5 5.454   adding 'coverage/inorout.py'
+#5 5.454   adding 'coverage/jsonreport.py'
+#5 5.455   adding 'coverage/lcovreport.py'
+#5 5.455   adding 'coverage/misc.py'
+#5 5.456   adding 'coverage/multiproc.py'
+#5 5.456   adding 'coverage/numbits.py'
+#5 5.458   adding 'coverage/parser.py'
+#5 5.458   adding 'coverage/phystokens.py'
+#5 5.459   adding 'coverage/plugin.py'
+#5 5.460   adding 'coverage/plugin_support.py'
+#5 5.460   adding 'coverage/python.py'
+#5 5.461   adding 'coverage/pytracer.py'
+#5 5.461   adding 'coverage/report.py'
+#5 5.462   adding 'coverage/results.py'
+#5 5.464   adding 'coverage/sqldata.py'
+#5 5.464   adding 'coverage/summary.py'
+#5 5.465   adding 'coverage/templite.py'
+#5 5.465   adding 'coverage/tomlconfig.py'
+#5 5.465   adding 'coverage/version.py'
+#5 5.466   adding 'coverage/xmlreport.py'
+#5 5.467   adding 'coverage/fullcoverage/encodings.py'
+#5 5.468   adding 'coverage/htmlfiles/coverage_html.js'
+#5 5.468   adding 'coverage/htmlfiles/favicon_32.png'
+#5 5.468   adding 'coverage/htmlfiles/index.html'
+#5 5.469   adding 'coverage/htmlfiles/keybd_closed.png'
+#5 5.470   adding 'coverage/htmlfiles/keybd_open.png'
+#5 5.470   adding 'coverage/htmlfiles/pyfile.html'
+#5 5.471   adding 'coverage/htmlfiles/style.css'
+#5 5.471   adding 'coverage/htmlfiles/style.scss'
+#5 5.472   adding 'coverage-6.3.2.dist-info/licenses/LICENSE.txt'
+#5 5.473   adding 'coverage-6.3.2.dist-info/METADATA'
+#5 5.473   adding 'coverage-6.3.2.dist-info/WHEEL'
+#5 5.474   adding 'coverage-6.3.2.dist-info/entry_points.txt'
+#5 5.474   adding 'coverage-6.3.2.dist-info/top_level.txt'
+#5 5.474   adding 'coverage-6.3.2.dist-info/RECORD'
+#5 5.474   removing build/bdist.linux-x86_64/wheel
+#5 5.505   Building wheel for coverage (pyproject.toml): finished with status 'done'
+#5 5.507   Created wheel for coverage: filename=coverage-6.3.2-py3-none-any.whl size=175693 sha256=f445a49b842b7b6189596442e1215c1feb6bc80e2fd7fd3c5a44df400455c898
+#5 5.507   Stored in directory: /tmp/pip-ephem-wheel-cache-rhma3hyh/wheels/15/02/de/83d458bc0a1e520dea5ccb138bb72fa872672da9f55afd1386
+#5 5.510 Successfully built coverage
+#5 5.537 Installing collected packages: atheris, altgraph, setuptools, packaging, coverage, pyinstaller-hooks-contrib, pyinstaller
+#5 6.050   Attempting uninstall: setuptools
+#5 6.054     Found existing installation: setuptools 65.5.0
+#5 6.085     Uninstalling setuptools-65.5.0:
+#5 6.154       Removing file or directory /usr/local/lib/python3.11/site-packages/_distutils_hack/
+#5 6.157       Removing file or directory /usr/local/lib/python3.11/site-packages/distutils-precedence.pth
+#5 6.341       Removing file or directory /usr/local/lib/python3.11/site-packages/pkg_resources/
+#5 6.353       Removing file or directory /usr/local/lib/python3.11/site-packages/setuptools-65.5.0.dist-info/
+#5 7.127       Removing file or directory /usr/local/lib/python3.11/site-packages/setuptools/
+#5 7.127       Successfully uninstalled setuptools-65.5.0
+#5 8.544   changing mode of /usr/local/bin/coverage to 755
+#5 8.545   changing mode of /usr/local/bin/coverage-3.11 to 755
+#5 8.545   changing mode of /usr/local/bin/coverage3 to 755
+#5 10.35   changing mode of /usr/local/bin/pyi-archive_viewer to 755
+#5 10.35   changing mode of /usr/local/bin/pyi-bindepend to 755
+#5 10.35   changing mode of /usr/local/bin/pyi-grab_version to 755
+#5 10.35   changing mode of /usr/local/bin/pyi-makespec to 755
+#5 10.35   changing mode of /usr/local/bin/pyi-set_version to 755
+#5 10.35   changing mode of /usr/local/bin/pyinstaller to 755
+#5 10.37 
+#5 10.37 Successfully installed altgraph-0.17.4 atheris-2.3.0 coverage-6.3.2 packaging-25.0 pyinstaller-6.10.0 pyinstaller-hooks-contrib-2025.8 setuptools-72.1.0
+#5 10.37 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#5 10.70 + rm -rf /tmp/centipede.bazelrc /tmp/hsperfdata_root
+#5 DONE 10.9s
+
+#6 exporting to image
+#6 exporting layers
+#6 exporting layers 0.8s done
+#6 writing image sha256:3c8ba31718d196c0ee797f870e51827066c8e72080413647a5a13a9013487fe3 done
+#6 naming to gcr.io/oss-fuzz-base/base-builder-python:ubuntu_24_04 done
+#6 DONE 0.9s

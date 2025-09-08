@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,25 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/sippy/rtpproxy
-RUN git -C rtpproxy submodule update --init --recursive
+# Base image for all other images.
 
-COPY build_ubuntu_20_04.sh $SRC/
-COPY build_ubuntu_24_04.sh $SRC/
-RUN . /etc/os-release && cp "$SRC/build_ubuntu_$VERSION_ID.sh" "$SRC/build.sh"
+ARG parent_image=ubuntu:24.04@sha256:9cbed754112939e914291337b5e554b07ad7c392491dba6daf25eef1332a22e8
 
-WORKDIR rtpproxy
+FROM $parent_image
+
+ENV DEBIAN_FRONTEND noninteractive
+# Install tzadata to match ClusterFuzz
+# (https://github.com/google/oss-fuzz/issues/9280).
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y libc6-dev binutils libgcc-13-dev tzdata && \
+    apt-get autoremove -y
+
+ENV OUT=/out
+ENV SRC=/src
+ENV WORK=/work
+ENV PATH="$PATH:/out"
+ENV HWASAN_OPTIONS=random_tags=0
+
+RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK

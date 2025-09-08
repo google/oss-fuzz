@@ -1,0 +1,122 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from ubuntu_24_04.Dockerfile
+#1 transferring dockerfile: 6.43kB done
+#1 WARN: NoEmptyContinuation: Empty continuation line (line 139)
+#1 WARN: FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 19)
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 84)
+#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 88)
+#1 DONE 0.0s
+
+#2 [internal] load metadata for gcr.io/oss-fuzz-base/base-image:ubuntu_24_04
+#2 DONE 0.0s
+
+#3 [internal] load metadata for gcr.io/oss-fuzz-base/base-clang:ubuntu_24_04
+#3 DONE 0.0s
+
+#4 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder-ruby:ubuntu_24_04
+#4 DONE 0.0s
+
+#5 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+#5 DONE 0.0s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 2B done
+#6 DONE 0.0s
+
+#7 [temp-runner-binary-builder 1/3] FROM gcr.io/oss-fuzz-base/base-image:ubuntu_24_04
+#7 DONE 0.0s
+
+#8 [base-clang 1/1] FROM gcr.io/oss-fuzz-base/base-clang:ubuntu_24_04
+#8 DONE 0.0s
+
+#9 [base-builder 1/1] FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+#9 DONE 0.0s
+
+#10 [base-ruby 1/1] FROM gcr.io/oss-fuzz-base/base-builder-ruby:ubuntu_24_04
+#10 DONE 0.0s
+
+#11 [internal] load build context
+#11 transferring context: 1.23kB done
+#11 DONE 0.0s
+
+#12 [stage-4  3/24] COPY --from=base-clang /usr/local/bin/llvm-cov      /usr/local/bin/llvm-profdata      /usr/local/bin/llvm-symbolizer      /usr/local/bin/
+#12 CACHED
+
+#13 [stage-4 19/24] COPY install_javascript.sh /
+#13 CACHED
+
+#14 [stage-4 14/24] COPY install_go.sh /
+#14 CACHED
+
+#15 [temp-runner-binary-builder 2/3] RUN apt-get update && apt-get install -y cargo libyaml-dev
+#15 CACHED
+
+#16 [stage-4  4/24] COPY --from=base-builder /usr/local/bin/python3.11 /usr/local/bin/python3.11
+#16 CACHED
+
+#17 [stage-4  8/24] COPY --from=base-builder /usr/local/bin/pip3 /usr/local/bin/pip3
+#17 CACHED
+
+#18 [stage-4 22/24] COPY --from=base-ruby /install/ruzzy /install/ruzzy
+#18 CACHED
+
+#19 [stage-4  2/24] COPY --from=temp-runner-binary-builder /root/.cargo/bin/rustfilt /usr/local/bin
+#19 CACHED
+
+#20 [stage-4 11/24] RUN /install_deps.sh && rm /install_deps.sh
+#20 CACHED
+
+#21 [stage-4 15/24] RUN /install_go.sh && rm -rf /install_go.sh /root/.go
+#21 CACHED
+
+#22 [stage-4  7/24] COPY --from=base-builder /usr/local/lib/python3.11 /usr/local/lib/python3.11
+#22 CACHED
+
+#23 [stage-4 10/24] COPY install_deps.sh /
+#23 CACHED
+
+#24 [stage-4  9/24] RUN ldconfig &&     ln -s /usr/local/bin/python3.11 /usr/local/bin/python3 &&     ln -s /usr/local/bin/python3.11 /usr/local/bin/python
+#24 CACHED
+
+#25 [stage-4 16/24] COPY install_java.sh /
+#25 CACHED
+
+#26 [stage-4 18/24] RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jacoco.cli-0.8.7-nodeps.jar -O /opt/jacoco-cli.jar &&     wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.7/org.jacoco.agent-0.8.7-runtime.jar -O /opt/jacoco-agent.jar &&     echo "37df187b76888101ecd745282e9cd1ad4ea508d6  /opt/jacoco-agent.jar" | shasum --check &&     echo "c1814e7bba5fd8786224b09b43c84fd6156db690  /opt/jacoco-cli.jar" | shasum --check
+#26 CACHED
+
+#27 [stage-4 13/24] COPY gocoverage /root/go/gocoverage
+#27 CACHED
+
+#28 [stage-4 12/24] RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage &&     cd /opt/code_coverage &&     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d &&     pip3 install wheel &&     sed -i 's/Jinja2==2.10/Jinja2==2.10.3/' requirements.txt &&     pip3 install -r requirements.txt &&     pip3 install MarkupSafe==2.0.1 &&     pip3 install coverage==6.3.2
+#28 CACHED
+
+#29 [stage-4 23/24] COPY ruzzy /usr/bin/ruzzy
+#29 CACHED
+
+#30 [stage-4 17/24] RUN /install_java.sh && rm /install_java.sh
+#30 CACHED
+
+#31 [stage-4  5/24] COPY --from=base-builder /usr/local/lib/libpython3.11.so.1.0 /usr/local/lib/libpython3.11.so.1.0
+#31 CACHED
+
+#32 [stage-4 20/24] RUN /install_javascript.sh && rm /install_javascript.sh
+#32 CACHED
+
+#33 [stage-4  6/24] COPY --from=base-builder /usr/local/include/python3.11 /usr/local/include/python3.11
+#33 CACHED
+
+#34 [stage-4 21/24] COPY --from=base-ruby /usr/local/rvm /usr/local/rvm
+#34 CACHED
+
+#35 [temp-runner-binary-builder 3/3] RUN cargo install rustfilt
+#35 CACHED
+
+#36 [stage-4 24/24] COPY bad_build_check     coverage     coverage_helper     download_corpus     jacoco_report_converter.py     nyc_report_converter.py     rcfilt     reproduce     run_fuzzer     parse_options.py     generate_differential_cov_report.py     profraw_update.py     targets_list     test_all.py     test_one.py     python_coverage_runner_help.py     /usr/local/bin/
+#36 CACHED
+
+#37 exporting to image
+#37 exporting layers done
+#37 writing image sha256:1996fb36db65e3cb5cf8780a9e62efb4edd3cc802f61e17198279a6fa508086a done
+#37 naming to gcr.io/oss-fuzz-base/base-runner:ubuntu_24_04 done
+#37 DONE 0.0s

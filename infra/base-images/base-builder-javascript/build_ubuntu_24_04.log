@@ -1,0 +1,124 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from ubuntu_24_04.Dockerfile
+#1 transferring dockerfile: 788B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+#4 CACHED
+
+#5 [2/2] RUN install_javascript.sh
+#5 0.290 + apt-get update
+#5 1.615 Hit:1 http://security.ubuntu.com/ubuntu noble-security InRelease
+#5 2.094 Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+#5 2.173 Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+#5 2.256 Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+#5 2.498 Reading package lists...
+#5 3.513 + apt-get install -y ca-certificates curl gnupg
+#5 3.532 Reading package lists...
+#5 4.520 Building dependency tree...
+#5 4.720 Reading state information...
+#5 4.965 ca-certificates is already the newest version (20240203).
+#5 4.965 ca-certificates set to manually installed.
+#5 4.965 curl is already the newest version (8.5.0-2ubuntu10.6).
+#5 4.965 gnupg is already the newest version (2.4.4-2ubuntu17.3).
+#5 4.965 gnupg set to manually installed.
+#5 4.965 0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+#5 4.968 + mkdir -p /etc/apt/keyrings
+#5 4.971 + curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
+#5 4.971 + gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+#5 5.076 + NODE_MAJOR=20
+#5 5.077 + echo 'deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main'
+#5 5.077 + tee /etc/apt/sources.list.d/nodesource.list
+#5 5.082 deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main
+#5 5.082 + apt-get update
+#5 5.267 Get:1 https://deb.nodesource.com/node_20.x nodistro InRelease [12.1 kB]
+#5 5.407 Get:2 https://deb.nodesource.com/node_20.x nodistro/main amd64 Packages [12.8 kB]
+#5 6.474 Hit:3 http://archive.ubuntu.com/ubuntu noble InRelease
+#5 6.558 Hit:4 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+#5 6.643 Hit:5 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+#5 6.833 Hit:6 http://security.ubuntu.com/ubuntu noble-security InRelease
+#5 6.993 Fetched 24.9 kB in 2s (13.4 kB/s)
+#5 6.993 Reading package lists...
+#5 7.955 + apt-get install nodejs -y
+#5 7.968 Reading package lists...
+#5 8.956 Building dependency tree...
+#5 9.166 Reading state information...
+#5 9.333 The following additional packages will be installed:
+#5 9.333   libpython3-stdlib libpython3.12-minimal libpython3.12-stdlib media-types
+#5 9.333   python3 python3-minimal python3.12 python3.12-minimal
+#5 9.334 Suggested packages:
+#5 9.334   python3-doc python3-tk python3-venv python3.12-venv python3.12-doc
+#5 9.334   binfmt-support
+#5 9.406 The following NEW packages will be installed:
+#5 9.407   libpython3-stdlib libpython3.12-minimal libpython3.12-stdlib media-types
+#5 9.407   nodejs python3 python3-minimal python3.12 python3.12-minimal
+#5 9.569 0 upgraded, 9 newly installed, 0 to remove and 0 not upgraded.
+#5 9.569 Need to get 37.9 MB of archives.
+#5 9.569 After this operation, 220 MB of additional disk space will be used.
+#5 9.569 Get:1 https://deb.nodesource.com/node_20.x nodistro/main amd64 nodejs amd64 20.19.5-1nodesource1 [32.0 MB]
+#5 9.812 Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-minimal amd64 3.12.3-1ubuntu0.8 [836 kB]
+#5 10.42 Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-minimal amd64 3.12.3-1ubuntu0.8 [2334 kB]
+#5 10.85 Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3-minimal amd64 3.12.3-0ubuntu2 [27.4 kB]
+#5 10.85 Get:5 http://archive.ubuntu.com/ubuntu noble/main amd64 media-types all 10.1.0 [27.5 kB]
+#5 10.85 Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-stdlib amd64 3.12.3-1ubuntu0.8 [2068 kB]
+#5 10.97 Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12 amd64 3.12.3-1ubuntu0.8 [651 kB]
+#5 11.01 Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3-stdlib amd64 3.12.3-0ubuntu2 [10.0 kB]
+#5 11.01 Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3 amd64 3.12.3-0ubuntu2 [23.0 kB]
+#5 11.18 debconf: delaying package configuration, since apt-utils is not installed
+#5 11.23 Fetched 37.9 MB in 2s (23.8 MB/s)
+#5 11.27 Selecting previously unselected package libpython3.12-minimal:amd64.
+#5 11.27 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 17546 files and directories currently installed.)
+#5 11.33 Preparing to unpack .../libpython3.12-minimal_3.12.3-1ubuntu0.8_amd64.deb ...
+#5 11.34 Unpacking libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.8) ...
+#5 11.66 Selecting previously unselected package python3.12-minimal.
+#5 11.66 Preparing to unpack .../python3.12-minimal_3.12.3-1ubuntu0.8_amd64.deb ...
+#5 11.67 Unpacking python3.12-minimal (3.12.3-1ubuntu0.8) ...
+#5 11.76 Setting up libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.8) ...
+#5 11.78 Setting up python3.12-minimal (3.12.3-1ubuntu0.8) ...
+#5 12.76 Selecting previously unselected package python3-minimal.
+#5 12.76 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 17857 files and directories currently installed.)
+#5 12.80 Preparing to unpack .../python3-minimal_3.12.3-0ubuntu2_amd64.deb ...
+#5 12.81 Unpacking python3-minimal (3.12.3-0ubuntu2) ...
+#5 12.87 Selecting previously unselected package media-types.
+#5 12.87 Preparing to unpack .../media-types_10.1.0_all.deb ...
+#5 12.88 Unpacking media-types (10.1.0) ...
+#5 12.92 Selecting previously unselected package libpython3.12-stdlib:amd64.
+#5 12.93 Preparing to unpack .../libpython3.12-stdlib_3.12.3-1ubuntu0.8_amd64.deb ...
+#5 12.93 Unpacking libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.8) ...
+#5 13.32 Selecting previously unselected package python3.12.
+#5 13.32 Preparing to unpack .../python3.12_3.12.3-1ubuntu0.8_amd64.deb ...
+#5 13.33 Unpacking python3.12 (3.12.3-1ubuntu0.8) ...
+#5 13.38 Selecting previously unselected package libpython3-stdlib:amd64.
+#5 13.38 Preparing to unpack .../libpython3-stdlib_3.12.3-0ubuntu2_amd64.deb ...
+#5 13.39 Unpacking libpython3-stdlib:amd64 (3.12.3-0ubuntu2) ...
+#5 13.43 Setting up python3-minimal (3.12.3-0ubuntu2) ...
+#5 13.64 Selecting previously unselected package python3.
+#5 13.64 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18291 files and directories currently installed.)
+#5 13.69 Preparing to unpack .../python3_3.12.3-0ubuntu2_amd64.deb ...
+#5 13.70 Unpacking python3 (3.12.3-0ubuntu2) ...
+#5 13.76 Selecting previously unselected package nodejs.
+#5 13.76 Preparing to unpack .../nodejs_20.19.5-1nodesource1_amd64.deb ...
+#5 13.77 Unpacking nodejs (20.19.5-1nodesource1) ...
+#5 18.79 Setting up media-types (10.1.0) ...
+#5 18.81 Setting up libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.8) ...
+#5 18.82 Setting up python3.12 (3.12.3-1ubuntu0.8) ...
+#5 19.84 Setting up libpython3-stdlib:amd64 (3.12.3-0ubuntu2) ...
+#5 19.85 Setting up python3 (3.12.3-0ubuntu2) ...
+#5 20.00 Setting up nodejs (20.19.5-1nodesource1) ...
+#5 DONE 20.3s
+
+#6 exporting to image
+#6 exporting layers
+#6 exporting layers 1.3s done
+#6 writing image sha256:f731e8acb80db65eb6f9241e389b203de7da270bd2d667ca4eb24eeaac6733b9 done
+#6 naming to gcr.io/oss-fuzz-base/base-builder-javascript:ubuntu_24_04 done
+#6 DONE 1.3s
+BUILD SUCCEEDED
