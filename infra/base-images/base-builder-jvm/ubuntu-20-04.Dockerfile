@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04 AS base
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04 AS base
 
 ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
 ENV JAVA_15_HOME /usr/lib/jvm/java-15-openjdk-amd64

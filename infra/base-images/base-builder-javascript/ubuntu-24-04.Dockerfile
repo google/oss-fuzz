@@ -14,12 +14,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-# Copy/Run this now to make the cache more resilient.
-COPY fuzzbench_install_dependencies_ubuntu_20_04 /usr/local/bin
-RUN fuzzbench_install_dependencies_ubuntu_20_04
-
-ENV OSS_FUZZ_ON_DEMAND=1
-
-COPY fuzzbench_build fuzzbench_run_fuzzer fuzzbench_measure /usr/local/bin/
+RUN install_javascript.sh

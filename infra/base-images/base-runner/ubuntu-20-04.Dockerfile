@@ -16,22 +16,22 @@
 
 # Build rust stuff in its own image. We only need the resulting binaries.
 # Keeping the rust toolchain in the image wastes 1 GB.
-FROM gcr.io/oss-fuzz-base/base-image:ubuntu_24_04 as temp-runner-binary-builder
+FROM gcr.io/oss-fuzz-base/base-image:ubuntu-20-04 as temp-runner-binary-builder
 
 RUN apt-get update && apt-get install -y cargo libyaml-dev
 RUN cargo install rustfilt
 
 # Using multi-stage build to copy some LLVM binaries needed in the runner image.
-FROM gcr.io/oss-fuzz-base/base-clang:ubuntu_24_04 AS base-clang
-FROM gcr.io/oss-fuzz-base/base-builder-ruby:ubuntu_24_04 AS base-ruby
+FROM gcr.io/oss-fuzz-base/base-clang:ubuntu-20-04 AS base-clang
+FROM gcr.io/oss-fuzz-base/base-builder-ruby:ubuntu-20-04 AS base-ruby
 
 # The base builder image compiles a specific Python version. Using a multi-stage build
 # to copy that same Python interpreter into the runner image saves build time and keeps
 # the Python versions in sync.
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04 AS base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04 AS base-builder
 
 # Real image that will be used later.
-FROM gcr.io/oss-fuzz-base/base-image:ubuntu_24_04
+FROM gcr.io/oss-fuzz-base/base-image:ubuntu-20-04
 
 COPY --from=temp-runner-binary-builder /root/.cargo/bin/rustfilt /usr/local/bin
 
@@ -53,8 +53,8 @@ RUN ldconfig && \
     ln -s /usr/local/bin/python3.11 /usr/local/bin/python3 && \
     ln -s /usr/local/bin/python3.11 /usr/local/bin/python
 
-COPY install_deps.sh /
-RUN /install_deps.sh && rm /install_deps.sh
+COPY install_deps_ubuntu_20_04.sh /
+RUN /install_deps_ubuntu_20_04.sh && rm /install_deps.sh
 
 ENV CODE_COVERAGE_SRC=/opt/code_coverage
 # Pin coverage to the same as in the base builder:
@@ -131,7 +131,6 @@ COPY bad_build_check \
     parse_options.py \
     generate_differential_cov_report.py \
     profraw_update.py \
-
     targets_list \
     test_all.py \
     test_one.py \

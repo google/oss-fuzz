@@ -14,12 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-runner:ubuntu_20_04
-RUN apt-get update && apt-get install -y valgrind zip
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-# Installing GDB 12, re https://github.com/google/oss-fuzz/issues/7513.
-RUN apt-get install -y build-essential libgmp-dev && \
-    wget https://ftp.gnu.org/gnu/gdb/gdb-12.1.tar.xz && \
-    tar -xf gdb-12.1.tar.xz && cd gdb-12.1 && ./configure &&  \
-    make -j $(expr $(nproc) / 2) && make install && cd .. && \
-    rm -rf gdb-12.1* && apt-get remove --purge -y build-essential libgmp-dev
+# Copy/Run this now to make the cache more resilient.
+COPY fuzzbench_install_dependencies /usr/local/bin
+RUN fuzzbench_install_dependencies
+
+ENV OSS_FUZZ_ON_DEMAND=1
+
+COPY fuzzbench_build fuzzbench_run_fuzzer fuzzbench_measure /usr/local/bin/

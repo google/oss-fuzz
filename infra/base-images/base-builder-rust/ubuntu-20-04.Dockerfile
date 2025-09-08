@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04
 
 ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup

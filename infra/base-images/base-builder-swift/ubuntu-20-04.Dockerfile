@@ -14,12 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-runner:ubuntu_24_04
-RUN apt-get update && apt-get install -y valgrind zip
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04
 
-# Installing GDB 12, re https://github.com/google/oss-fuzz/issues/7513.
-RUN apt-get install -y build-essential libgmp-dev && \
-    wget https://ftp.gnu.org/gnu/gdb/gdb-12.1.tar.xz && \
-    tar -xf gdb-12.1.tar.xz && cd gdb-12.1 && ./configure &&  \
-    make -j $(expr $(nproc) / 2) && make install && cd .. && \
-    rm -rf gdb-12.1* && apt-get remove --purge -y build-essential libgmp-dev
+COPY llvmsymbol.diff /src/
+RUN install_swift_ubuntu_20_04.sh
+
+COPY precompile_swift /usr/local/bin/

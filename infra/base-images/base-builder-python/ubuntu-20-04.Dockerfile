@@ -14,6 +14,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04
 
-RUN install_javascript.sh
+RUN install_python.sh

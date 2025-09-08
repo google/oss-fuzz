@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup

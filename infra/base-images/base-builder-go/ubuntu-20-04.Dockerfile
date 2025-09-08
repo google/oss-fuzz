@@ -14,6 +14,19 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04
 
-RUN install_python.sh
+# Set up Golang environment variables (copied from /root/.bash_profile).
+ENV GOPATH /root/go
+
+# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
+# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
+ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
+
+COPY gosigfuzz.c $GOPATH/gosigfuzz/
+
+RUN install_go.sh
+
+# TODO(jonathanmetzman): Install this file using install_go.sh.
+COPY ossfuzz_coverage_runner.go \
+     $GOPATH/

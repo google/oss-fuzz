@@ -14,6 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_24_04
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN install_javascript.sh
+COPY llvmsymbol.diff /src/
+RUN install_swift.sh
+
+COPY precompile_swift /usr/local/bin/

@@ -16,7 +16,7 @@
 
 # Docker image with clang installed.
 
-FROM gcr.io/oss-fuzz-base/base-image:ubuntu_24_04
+FROM gcr.io/oss-fuzz-base/base-image:ubuntu-24-04
 
 ARG arch=x86_64
 
