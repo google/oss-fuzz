@@ -1,867 +1,0 @@
-#0 building with "default" instance using docker driver
-
-#1 [internal] load build definition from ubuntu_20_04.Dockerfile
-#1 transferring dockerfile: 6.43kB done
-#1 WARN: FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 19)
-#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 84)
-#1 WARN: LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 88)
-#1 DONE 0.0s
-
-#2 [internal] load metadata for gcr.io/oss-fuzz-base/base-image:ubuntu_20_04
-#2 DONE 0.0s
-
-#3 [internal] load metadata for gcr.io/oss-fuzz-base/base-clang:ubuntu_20_04
-#3 DONE 0.0s
-
-#4 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder-ruby:ubuntu_20_04
-#4 DONE 0.0s
-
-#5 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
-#5 DONE 0.0s
-
-#6 [internal] load .dockerignore
-#6 transferring context: 2B done
-#6 DONE 0.0s
-
-#7 [base-clang 1/1] FROM gcr.io/oss-fuzz-base/base-clang:ubuntu_20_04
-#7 DONE 0.0s
-
-#8 [temp-runner-binary-builder 1/3] FROM gcr.io/oss-fuzz-base/base-image:ubuntu_20_04
-#8 DONE 0.0s
-
-#9 [base-builder 1/1] FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
-#9 DONE 0.0s
-
-#10 [internal] load build context
-#10 transferring context: 80.51kB done
-#10 DONE 0.0s
-
-#11 [temp-runner-binary-builder 2/3] RUN apt-get update && apt-get install -y cargo libyaml-dev
-#11 CACHED
-
-#12 [stage-4  7/24] COPY --from=base-builder /usr/local/lib/python3.11 /usr/local/lib/python3.11
-#12 CACHED
-
-#13 [temp-runner-binary-builder 3/3] RUN cargo install rustfilt
-#13 CACHED
-
-#14 [stage-4  8/24] COPY --from=base-builder /usr/local/bin/pip3 /usr/local/bin/pip3
-#14 CACHED
-
-#15 [stage-4  6/24] COPY --from=base-builder /usr/local/include/python3.11 /usr/local/include/python3.11
-#15 CACHED
-
-#16 [stage-4  5/24] COPY --from=base-builder /usr/local/lib/libpython3.11.so.1.0 /usr/local/lib/libpython3.11.so.1.0
-#16 CACHED
-
-#17 [stage-4  3/24] COPY --from=base-clang /usr/local/bin/llvm-cov      /usr/local/bin/llvm-profdata      /usr/local/bin/llvm-symbolizer      /usr/local/bin/
-#17 CACHED
-
-#18 [stage-4  2/24] COPY --from=temp-runner-binary-builder /root/.cargo/bin/rustfilt /usr/local/bin
-#18 CACHED
-
-#19 [stage-4  4/24] COPY --from=base-builder /usr/local/bin/python3.11 /usr/local/bin/python3.11
-#19 CACHED
-
-#20 [stage-4  9/24] RUN ldconfig &&     ln -s /usr/local/bin/python3.11 /usr/local/bin/python3 &&     ln -s /usr/local/bin/python3.11 /usr/local/bin/python
-#20 CACHED
-
-#21 [base-ruby 1/1] FROM gcr.io/oss-fuzz-base/base-builder-ruby:ubuntu_20_04
-#21 CACHED
-
-#22 [stage-4 10/24] COPY install_deps.sh /
-#22 DONE 0.0s
-
-#23 [stage-4 11/24] RUN /install_deps.sh && rm /install_deps.sh
-#23 0.316 + apt-get update
-#23 1.753 Get:1 http://security.ubuntu.com/ubuntu focal-security InRelease [128 kB]
-#23 2.095 Hit:2 http://archive.ubuntu.com/ubuntu focal InRelease
-#23 2.111 Get:3 http://archive.ubuntu.com/ubuntu focal-updates InRelease [128 kB]
-#23 2.193 Get:4 http://archive.ubuntu.com/ubuntu focal-backports InRelease [128 kB]
-#23 2.481 Get:5 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 Packages [4919 kB]
-#23 2.838 Fetched 5303 kB in 2s (2219 kB/s)
-#23 2.838 Reading package lists...
-#23 3.776 + apt-get install -y binutils file ca-certificates fonts-dejavu git libcap2 rsync unzip jq wget zip --no-install-recommends
-#23 3.837 Reading package lists...
-#23 4.755 Building dependency tree...
-#23 4.945 Reading state information...
-#23 5.074 binutils is already the newest version (2.34-6ubuntu1.11).
-#23 5.074 The following additional packages will be installed:
-#23 5.074   fonts-dejavu-core fonts-dejavu-extra git-man libasn1-8-heimdal libbrotli1
-#23 5.074   libcurl3-gnutls liberror-perl libexpat1 libgdbm-compat4 libgdbm6
-#23 5.074   libgssapi-krb5-2 libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
-#23 5.074   libheimntlm0-heimdal libhx509-5-heimdal libjq1 libk5crypto3 libkeyutils1
-#23 5.074   libkrb5-26-heimdal libkrb5-3 libkrb5support0 libldap-2.4-2 libldap-common
-#23 5.074   libmagic-mgc libmagic1 libnghttp2-14 libonig5 libperl5.30 libpopt0 libpsl5
-#23 5.074   libroken18-heimdal librtmp1 libsasl2-2 libsasl2-modules-db libsqlite3-0
-#23 5.074   libssh-4 libssl1.1 libwind0-heimdal openssl perl perl-modules-5.30
-#23 5.075 Suggested packages:
-#23 5.075   gettext-base git-daemon-run | git-daemon-sysvinit git-doc git-el git-email
-#23 5.075   git-gui gitk gitweb git-cvs git-mediawiki git-svn gdbm-l10n krb5-doc
-#23 5.075   krb5-user perl-doc libterm-readline-gnu-perl | libterm-readline-perl-perl
-#23 5.075   make libb-debug-perl liblocale-codes-perl openssh-client openssh-server
-#23 5.075 Recommended packages:
-#23 5.075   patch less ssh-client krb5-locales publicsuffix libsasl2-modules netbase
-#23 5.259 The following NEW packages will be installed:
-#23 5.259   ca-certificates file fonts-dejavu fonts-dejavu-core fonts-dejavu-extra git
-#23 5.259   git-man jq libasn1-8-heimdal libbrotli1 libcap2 libcurl3-gnutls
-#23 5.259   liberror-perl libexpat1 libgdbm-compat4 libgdbm6 libgssapi-krb5-2
-#23 5.259   libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
-#23 5.259   libheimntlm0-heimdal libhx509-5-heimdal libjq1 libk5crypto3 libkeyutils1
-#23 5.259   libkrb5-26-heimdal libkrb5-3 libkrb5support0 libldap-2.4-2 libldap-common
-#23 5.260   libmagic-mgc libmagic1 libnghttp2-14 libonig5 libperl5.30 libpopt0 libpsl5
-#23 5.260   libroken18-heimdal librtmp1 libsasl2-2 libsasl2-modules-db libsqlite3-0
-#23 5.261   libssh-4 libssl1.1 libwind0-heimdal openssl perl perl-modules-5.30 rsync
-#23 5.261   unzip wget zip
-#23 5.652 0 upgraded, 52 newly installed, 0 to remove and 0 not upgraded.
-#23 5.652 Need to get 22.3 MB of archives.
-#23 5.652 After this operation, 122 MB of additional disk space will be used.
-#23 5.652 Get:1 http://archive.ubuntu.com/ubuntu focal/main amd64 libpopt0 amd64 1.16-14 [26.3 kB]
-#23 5.845 Get:2 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 rsync amd64 3.1.3-8ubuntu0.9 [323 kB]
-#23 6.147 Get:3 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 perl-modules-5.30 all 5.30.0-9ubuntu0.5 [2739 kB]
-#23 6.410 Get:4 http://archive.ubuntu.com/ubuntu focal/main amd64 libgdbm6 amd64 1.18.1-5 [27.4 kB]
-#23 6.411 Get:5 http://archive.ubuntu.com/ubuntu focal/main amd64 libgdbm-compat4 amd64 1.18.1-5 [6244 B]
-#23 6.411 Get:6 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libperl5.30 amd64 5.30.0-9ubuntu0.5 [3941 kB]
-#23 6.510 Get:7 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 perl amd64 5.30.0-9ubuntu0.5 [224 kB]
-#23 6.513 Get:8 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libssl1.1 amd64 1.1.1f-1ubuntu2.24 [1323 kB]
-#23 6.538 Get:9 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 openssl amd64 1.1.1f-1ubuntu2.24 [621 kB]
-#23 6.553 Get:10 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 ca-certificates all 20240203~20.04.1 [159 kB]
-#23 6.556 Get:11 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic-mgc amd64 1:5.38-4 [218 kB]
-#23 6.746 Get:12 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic1 amd64 1:5.38-4 [75.9 kB]
-#23 7.052 Get:13 http://archive.ubuntu.com/ubuntu focal/main amd64 file amd64 1:5.38-4 [23.3 kB]
-#23 7.071 Get:14 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libcap2 amd64 1:2.32-1ubuntu0.2 [15.7 kB]
-#23 7.086 Get:15 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libexpat1 amd64 2.2.9-1ubuntu0.8 [75.6 kB]
-#23 7.155 Get:16 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libsqlite3-0 amd64 3.31.1-4ubuntu0.7 [549 kB]
-#23 7.347 Get:17 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libkrb5support0 amd64 1.17-6ubuntu4.11 [31.5 kB]
-#23 7.351 Get:18 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libk5crypto3 amd64 1.17-6ubuntu4.11 [80.3 kB]
-#23 7.363 Get:19 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libkeyutils1 amd64 1.6-6ubuntu1.1 [10.3 kB]
-#23 7.364 Get:20 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libkrb5-3 amd64 1.17-6ubuntu4.11 [330 kB]
-#23 7.405 Get:21 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libgssapi-krb5-2 amd64 1.17-6ubuntu4.11 [121 kB]
-#23 7.418 Get:22 http://archive.ubuntu.com/ubuntu focal/main amd64 libpsl5 amd64 0.21.0-1ubuntu1 [51.5 kB]
-#23 7.844 Get:23 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 wget amd64 1.20.3-1ubuntu2.1 [349 kB]
-#23 8.349 Get:24 http://archive.ubuntu.com/ubuntu focal/main amd64 fonts-dejavu-core all 2.37-1 [1041 kB]
-#23 8.618 Get:25 http://archive.ubuntu.com/ubuntu focal/main amd64 fonts-dejavu-extra all 2.37-1 [1953 kB]
-#23 8.752 Get:26 http://archive.ubuntu.com/ubuntu focal/universe amd64 fonts-dejavu all 2.37-1 [3130 B]
-#23 8.753 Get:27 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libbrotli1 amd64 1.0.7-6ubuntu0.1 [267 kB]
-#23 8.763 Get:28 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libroken18-heimdal amd64 7.7.0+dfsg-1ubuntu1.4 [42.5 kB]
-#23 8.765 Get:29 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libasn1-8-heimdal amd64 7.7.0+dfsg-1ubuntu1.4 [181 kB]
-#23 8.772 Get:30 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libheimbase1-heimdal amd64 7.7.0+dfsg-1ubuntu1.4 [30.4 kB]
-#23 8.773 Get:31 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libhcrypto4-heimdal amd64 7.7.0+dfsg-1ubuntu1.4 [88.1 kB]
-#23 8.776 Get:32 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libwind0-heimdal amd64 7.7.0+dfsg-1ubuntu1.4 [47.7 kB]
-#23 8.778 Get:33 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libhx509-5-heimdal amd64 7.7.0+dfsg-1ubuntu1.4 [107 kB]
-#23 9.196 Get:34 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libkrb5-26-heimdal amd64 7.7.0+dfsg-1ubuntu1.4 [207 kB]
-#23 9.636 Get:35 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libheimntlm0-heimdal amd64 7.7.0+dfsg-1ubuntu1.4 [15.1 kB]
-#23 9.641 Get:36 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libgssapi3-heimdal amd64 7.7.0+dfsg-1ubuntu1.4 [96.5 kB]
-#23 9.670 Get:37 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libsasl2-modules-db amd64 2.1.27+dfsg-2ubuntu0.1 [14.7 kB]
-#23 9.675 Get:38 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libsasl2-2 amd64 2.1.27+dfsg-2ubuntu0.1 [49.3 kB]
-#23 9.691 Get:39 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libldap-common all 2.4.49+dfsg-2ubuntu1.10 [16.5 kB]
-#23 9.720 Get:40 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libldap-2.4-2 amd64 2.4.49+dfsg-2ubuntu1.10 [155 kB]
-#23 9.767 Get:41 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libnghttp2-14 amd64 1.40.0-1ubuntu0.3 [79.9 kB]
-#23 9.787 Get:42 http://archive.ubuntu.com/ubuntu focal/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2build1 [54.9 kB]
-#23 9.801 Get:43 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libssh-4 amd64 0.9.3-2ubuntu2.5 [171 kB]
-#23 9.827 Get:44 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libcurl3-gnutls amd64 7.68.0-1ubuntu2.25 [233 kB]
-#23 10.93 Get:45 http://archive.ubuntu.com/ubuntu focal/main amd64 liberror-perl all 0.17029-1 [26.5 kB]
-#23 11.13 Get:46 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 git-man all 1:2.25.1-1ubuntu3.14 [887 kB]
-#23 11.56 Get:47 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 git amd64 1:2.25.1-1ubuntu3.14 [4613 kB]
-#23 11.78 Get:48 http://archive.ubuntu.com/ubuntu focal/universe amd64 libonig5 amd64 6.9.4-1 [142 kB]
-#23 11.78 Get:49 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libjq1 amd64 1.6-1ubuntu0.20.04.1 [121 kB]
-#23 11.78 Get:50 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 jq amd64 1.6-1ubuntu0.20.04.1 [50.2 kB]
-#23 11.78 Get:51 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 unzip amd64 6.0-25ubuntu1.2 [169 kB]
-#23 11.79 Get:52 http://archive.ubuntu.com/ubuntu focal/main amd64 zip amd64 3.0-11build1 [167 kB]
-#23 11.93 debconf: delaying package configuration, since apt-utils is not installed
-#23 11.97 Fetched 22.3 MB in 7s (3432 kB/s)
-#23 12.01 Selecting previously unselected package libpopt0:amd64.
-#23 12.01 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10456 files and directories currently installed.)
-#23 12.04 Preparing to unpack .../00-libpopt0_1.16-14_amd64.deb ...
-#23 12.04 Unpacking libpopt0:amd64 (1.16-14) ...
-#23 12.10 Selecting previously unselected package rsync.
-#23 12.10 Preparing to unpack .../01-rsync_3.1.3-8ubuntu0.9_amd64.deb ...
-#23 12.11 Unpacking rsync (3.1.3-8ubuntu0.9) ...
-#23 12.19 Selecting previously unselected package perl-modules-5.30.
-#23 12.19 Preparing to unpack .../02-perl-modules-5.30_5.30.0-9ubuntu0.5_all.deb ...
-#23 12.20 Unpacking perl-modules-5.30 (5.30.0-9ubuntu0.5) ...
-#23 13.44 Selecting previously unselected package libgdbm6:amd64.
-#23 13.44 Preparing to unpack .../03-libgdbm6_1.18.1-5_amd64.deb ...
-#23 13.45 Unpacking libgdbm6:amd64 (1.18.1-5) ...
-#23 13.49 Selecting previously unselected package libgdbm-compat4:amd64.
-#23 13.49 Preparing to unpack .../04-libgdbm-compat4_1.18.1-5_amd64.deb ...
-#23 13.50 Unpacking libgdbm-compat4:amd64 (1.18.1-5) ...
-#23 13.54 Selecting previously unselected package libperl5.30:amd64.
-#23 13.54 Preparing to unpack .../05-libperl5.30_5.30.0-9ubuntu0.5_amd64.deb ...
-#23 13.55 Unpacking libperl5.30:amd64 (5.30.0-9ubuntu0.5) ...
-#23 14.25 Selecting previously unselected package perl.
-#23 14.25 Preparing to unpack .../06-perl_5.30.0-9ubuntu0.5_amd64.deb ...
-#23 14.27 Unpacking perl (5.30.0-9ubuntu0.5) ...
-#23 14.36 Selecting previously unselected package libssl1.1:amd64.
-#23 14.36 Preparing to unpack .../07-libssl1.1_1.1.1f-1ubuntu2.24_amd64.deb ...
-#23 14.37 Unpacking libssl1.1:amd64 (1.1.1f-1ubuntu2.24) ...
-#23 14.50 Selecting previously unselected package openssl.
-#23 14.50 Preparing to unpack .../08-openssl_1.1.1f-1ubuntu2.24_amd64.deb ...
-#23 14.51 Unpacking openssl (1.1.1f-1ubuntu2.24) ...
-#23 14.62 Selecting previously unselected package ca-certificates.
-#23 14.62 Preparing to unpack .../09-ca-certificates_20240203~20.04.1_all.deb ...
-#23 14.62 Unpacking ca-certificates (20240203~20.04.1) ...
-#23 14.81 Selecting previously unselected package libmagic-mgc.
-#23 14.82 Preparing to unpack .../10-libmagic-mgc_1%3a5.38-4_amd64.deb ...
-#23 14.82 Unpacking libmagic-mgc (1:5.38-4) ...
-#23 14.90 Selecting previously unselected package libmagic1:amd64.
-#23 14.90 Preparing to unpack .../11-libmagic1_1%3a5.38-4_amd64.deb ...
-#23 14.90 Unpacking libmagic1:amd64 (1:5.38-4) ...
-#23 14.96 Selecting previously unselected package file.
-#23 14.96 Preparing to unpack .../12-file_1%3a5.38-4_amd64.deb ...
-#23 14.96 Unpacking file (1:5.38-4) ...
-#23 15.01 Selecting previously unselected package libcap2:amd64.
-#23 15.02 Preparing to unpack .../13-libcap2_1%3a2.32-1ubuntu0.2_amd64.deb ...
-#23 15.02 Unpacking libcap2:amd64 (1:2.32-1ubuntu0.2) ...
-#23 15.07 Selecting previously unselected package libexpat1:amd64.
-#23 15.07 Preparing to unpack .../14-libexpat1_2.2.9-1ubuntu0.8_amd64.deb ...
-#23 15.07 Unpacking libexpat1:amd64 (2.2.9-1ubuntu0.8) ...
-#23 15.13 Selecting previously unselected package libsqlite3-0:amd64.
-#23 15.13 Preparing to unpack .../15-libsqlite3-0_3.31.1-4ubuntu0.7_amd64.deb ...
-#23 15.13 Unpacking libsqlite3-0:amd64 (3.31.1-4ubuntu0.7) ...
-#23 15.22 Selecting previously unselected package libkrb5support0:amd64.
-#23 15.22 Preparing to unpack .../16-libkrb5support0_1.17-6ubuntu4.11_amd64.deb ...
-#23 15.22 Unpacking libkrb5support0:amd64 (1.17-6ubuntu4.11) ...
-#23 15.27 Selecting previously unselected package libk5crypto3:amd64.
-#23 15.27 Preparing to unpack .../17-libk5crypto3_1.17-6ubuntu4.11_amd64.deb ...
-#23 15.27 Unpacking libk5crypto3:amd64 (1.17-6ubuntu4.11) ...
-#23 15.32 Selecting previously unselected package libkeyutils1:amd64.
-#23 15.33 Preparing to unpack .../18-libkeyutils1_1.6-6ubuntu1.1_amd64.deb ...
-#23 15.33 Unpacking libkeyutils1:amd64 (1.6-6ubuntu1.1) ...
-#23 15.38 Selecting previously unselected package libkrb5-3:amd64.
-#23 15.38 Preparing to unpack .../19-libkrb5-3_1.17-6ubuntu4.11_amd64.deb ...
-#23 15.39 Unpacking libkrb5-3:amd64 (1.17-6ubuntu4.11) ...
-#23 15.46 Selecting previously unselected package libgssapi-krb5-2:amd64.
-#23 15.46 Preparing to unpack .../20-libgssapi-krb5-2_1.17-6ubuntu4.11_amd64.deb ...
-#23 15.47 Unpacking libgssapi-krb5-2:amd64 (1.17-6ubuntu4.11) ...
-#23 15.52 Selecting previously unselected package libpsl5:amd64.
-#23 15.53 Preparing to unpack .../21-libpsl5_0.21.0-1ubuntu1_amd64.deb ...
-#23 15.53 Unpacking libpsl5:amd64 (0.21.0-1ubuntu1) ...
-#23 15.58 Selecting previously unselected package wget.
-#23 15.58 Preparing to unpack .../22-wget_1.20.3-1ubuntu2.1_amd64.deb ...
-#23 15.58 Unpacking wget (1.20.3-1ubuntu2.1) ...
-#23 15.64 Selecting previously unselected package fonts-dejavu-core.
-#23 15.65 Preparing to unpack .../23-fonts-dejavu-core_2.37-1_all.deb ...
-#23 15.65 Unpacking fonts-dejavu-core (2.37-1) ...
-#23 15.78 Selecting previously unselected package fonts-dejavu-extra.
-#23 15.78 Preparing to unpack .../24-fonts-dejavu-extra_2.37-1_all.deb ...
-#23 15.78 Unpacking fonts-dejavu-extra (2.37-1) ...
-#23 15.96 Selecting previously unselected package fonts-dejavu.
-#23 15.96 Preparing to unpack .../25-fonts-dejavu_2.37-1_all.deb ...
-#23 15.97 Unpacking fonts-dejavu (2.37-1) ...
-#23 16.01 Selecting previously unselected package libbrotli1:amd64.
-#23 16.01 Preparing to unpack .../26-libbrotli1_1.0.7-6ubuntu0.1_amd64.deb ...
-#23 16.02 Unpacking libbrotli1:amd64 (1.0.7-6ubuntu0.1) ...
-#23 16.08 Selecting previously unselected package libroken18-heimdal:amd64.
-#23 16.08 Preparing to unpack .../27-libroken18-heimdal_7.7.0+dfsg-1ubuntu1.4_amd64.deb ...
-#23 16.09 Unpacking libroken18-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 16.14 Selecting previously unselected package libasn1-8-heimdal:amd64.
-#23 16.14 Preparing to unpack .../28-libasn1-8-heimdal_7.7.0+dfsg-1ubuntu1.4_amd64.deb ...
-#23 16.14 Unpacking libasn1-8-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 16.20 Selecting previously unselected package libheimbase1-heimdal:amd64.
-#23 16.20 Preparing to unpack .../29-libheimbase1-heimdal_7.7.0+dfsg-1ubuntu1.4_amd64.deb ...
-#23 16.20 Unpacking libheimbase1-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 16.25 Selecting previously unselected package libhcrypto4-heimdal:amd64.
-#23 16.25 Preparing to unpack .../30-libhcrypto4-heimdal_7.7.0+dfsg-1ubuntu1.4_amd64.deb ...
-#23 16.26 Unpacking libhcrypto4-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 16.31 Selecting previously unselected package libwind0-heimdal:amd64.
-#23 16.31 Preparing to unpack .../31-libwind0-heimdal_7.7.0+dfsg-1ubuntu1.4_amd64.deb ...
-#23 16.31 Unpacking libwind0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 16.37 Selecting previously unselected package libhx509-5-heimdal:amd64.
-#23 16.37 Preparing to unpack .../32-libhx509-5-heimdal_7.7.0+dfsg-1ubuntu1.4_amd64.deb ...
-#23 16.37 Unpacking libhx509-5-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 16.43 Selecting previously unselected package libkrb5-26-heimdal:amd64.
-#23 16.43 Preparing to unpack .../33-libkrb5-26-heimdal_7.7.0+dfsg-1ubuntu1.4_amd64.deb ...
-#23 16.43 Unpacking libkrb5-26-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 16.49 Selecting previously unselected package libheimntlm0-heimdal:amd64.
-#23 16.49 Preparing to unpack .../34-libheimntlm0-heimdal_7.7.0+dfsg-1ubuntu1.4_amd64.deb ...
-#23 16.50 Unpacking libheimntlm0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 16.55 Selecting previously unselected package libgssapi3-heimdal:amd64.
-#23 16.55 Preparing to unpack .../35-libgssapi3-heimdal_7.7.0+dfsg-1ubuntu1.4_amd64.deb ...
-#23 16.55 Unpacking libgssapi3-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 16.60 Selecting previously unselected package libsasl2-modules-db:amd64.
-#23 16.60 Preparing to unpack .../36-libsasl2-modules-db_2.1.27+dfsg-2ubuntu0.1_amd64.deb ...
-#23 16.61 Unpacking libsasl2-modules-db:amd64 (2.1.27+dfsg-2ubuntu0.1) ...
-#23 16.65 Selecting previously unselected package libsasl2-2:amd64.
-#23 16.65 Preparing to unpack .../37-libsasl2-2_2.1.27+dfsg-2ubuntu0.1_amd64.deb ...
-#23 16.66 Unpacking libsasl2-2:amd64 (2.1.27+dfsg-2ubuntu0.1) ...
-#23 16.70 Selecting previously unselected package libldap-common.
-#23 16.70 Preparing to unpack .../38-libldap-common_2.4.49+dfsg-2ubuntu1.10_all.deb ...
-#23 16.71 Unpacking libldap-common (2.4.49+dfsg-2ubuntu1.10) ...
-#23 16.76 Selecting previously unselected package libldap-2.4-2:amd64.
-#23 16.76 Preparing to unpack .../39-libldap-2.4-2_2.4.49+dfsg-2ubuntu1.10_amd64.deb ...
-#23 16.76 Unpacking libldap-2.4-2:amd64 (2.4.49+dfsg-2ubuntu1.10) ...
-#23 16.82 Selecting previously unselected package libnghttp2-14:amd64.
-#23 16.82 Preparing to unpack .../40-libnghttp2-14_1.40.0-1ubuntu0.3_amd64.deb ...
-#23 16.83 Unpacking libnghttp2-14:amd64 (1.40.0-1ubuntu0.3) ...
-#23 16.87 Selecting previously unselected package librtmp1:amd64.
-#23 16.88 Preparing to unpack .../41-librtmp1_2.4+20151223.gitfa8646d.1-2build1_amd64.deb ...
-#23 16.88 Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build1) ...
-#23 16.93 Selecting previously unselected package libssh-4:amd64.
-#23 16.93 Preparing to unpack .../42-libssh-4_0.9.3-2ubuntu2.5_amd64.deb ...
-#23 16.93 Unpacking libssh-4:amd64 (0.9.3-2ubuntu2.5) ...
-#23 16.99 Selecting previously unselected package libcurl3-gnutls:amd64.
-#23 16.99 Preparing to unpack .../43-libcurl3-gnutls_7.68.0-1ubuntu2.25_amd64.deb ...
-#23 17.00 Unpacking libcurl3-gnutls:amd64 (7.68.0-1ubuntu2.25) ...
-#23 17.05 Selecting previously unselected package liberror-perl.
-#23 17.06 Preparing to unpack .../44-liberror-perl_0.17029-1_all.deb ...
-#23 17.06 Unpacking liberror-perl (0.17029-1) ...
-#23 17.10 Selecting previously unselected package git-man.
-#23 17.11 Preparing to unpack .../45-git-man_1%3a2.25.1-1ubuntu3.14_all.deb ...
-#23 17.11 Unpacking git-man (1:2.25.1-1ubuntu3.14) ...
-#23 17.21 Selecting previously unselected package git.
-#23 17.21 Preparing to unpack .../46-git_1%3a2.25.1-1ubuntu3.14_amd64.deb ...
-#23 17.25 Unpacking git (1:2.25.1-1ubuntu3.14) ...
-#23 17.92 Selecting previously unselected package libonig5:amd64.
-#23 17.93 Preparing to unpack .../47-libonig5_6.9.4-1_amd64.deb ...
-#23 17.93 Unpacking libonig5:amd64 (6.9.4-1) ...
-#23 17.98 Selecting previously unselected package libjq1:amd64.
-#23 17.99 Preparing to unpack .../48-libjq1_1.6-1ubuntu0.20.04.1_amd64.deb ...
-#23 17.99 Unpacking libjq1:amd64 (1.6-1ubuntu0.20.04.1) ...
-#23 18.03 Selecting previously unselected package jq.
-#23 18.04 Preparing to unpack .../49-jq_1.6-1ubuntu0.20.04.1_amd64.deb ...
-#23 18.04 Unpacking jq (1.6-1ubuntu0.20.04.1) ...
-#23 18.08 Selecting previously unselected package unzip.
-#23 18.09 Preparing to unpack .../50-unzip_6.0-25ubuntu1.2_amd64.deb ...
-#23 18.09 Unpacking unzip (6.0-25ubuntu1.2) ...
-#23 18.14 Selecting previously unselected package zip.
-#23 18.15 Preparing to unpack .../51-zip_3.0-11build1_amd64.deb ...
-#23 18.15 Unpacking zip (3.0-11build1) ...
-#23 18.22 Setting up libexpat1:amd64 (2.2.9-1ubuntu0.8) ...
-#23 18.23 Setting up libkeyutils1:amd64 (1.6-6ubuntu1.1) ...
-#23 18.24 Setting up libpsl5:amd64 (0.21.0-1ubuntu1) ...
-#23 18.25 Setting up perl-modules-5.30 (5.30.0-9ubuntu0.5) ...
-#23 18.26 Setting up libmagic-mgc (1:5.38-4) ...
-#23 18.27 Setting up libssl1.1:amd64 (1.1.1f-1ubuntu2.24) ...
-#23 18.37 Setting up unzip (6.0-25ubuntu1.2) ...
-#23 18.38 Setting up libbrotli1:amd64 (1.0.7-6ubuntu0.1) ...
-#23 18.39 Setting up libsqlite3-0:amd64 (3.31.1-4ubuntu0.7) ...
-#23 18.40 Setting up libnghttp2-14:amd64 (1.40.0-1ubuntu0.3) ...
-#23 18.41 Setting up libmagic1:amd64 (1:5.38-4) ...
-#23 18.43 Setting up file (1:5.38-4) ...
-#23 18.44 Setting up libldap-common (2.4.49+dfsg-2ubuntu1.10) ...
-#23 18.45 Setting up libcap2:amd64 (1:2.32-1ubuntu0.2) ...
-#23 18.46 Setting up libkrb5support0:amd64 (1.17-6ubuntu4.11) ...
-#23 18.47 Setting up libsasl2-modules-db:amd64 (2.1.27+dfsg-2ubuntu0.1) ...
-#23 18.48 Setting up zip (3.0-11build1) ...
-#23 18.49 Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build1) ...
-#23 18.51 Setting up fonts-dejavu-core (2.37-1) ...
-#23 18.56 Setting up libk5crypto3:amd64 (1.17-6ubuntu4.11) ...
-#23 18.57 Setting up libsasl2-2:amd64 (2.1.27+dfsg-2ubuntu0.1) ...
-#23 18.58 Setting up libroken18-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 18.59 Setting up fonts-dejavu-extra (2.37-1) ...
-#23 18.60 Setting up git-man (1:2.25.1-1ubuntu3.14) ...
-#23 18.61 Setting up libkrb5-3:amd64 (1.17-6ubuntu4.11) ...
-#23 18.63 Setting up openssl (1.1.1f-1ubuntu2.24) ...
-#23 18.64 Setting up libonig5:amd64 (6.9.4-1) ...
-#23 18.65 Setting up libheimbase1-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 18.66 Setting up libgdbm6:amd64 (1.18.1-5) ...
-#23 18.68 Setting up libpopt0:amd64 (1.16-14) ...
-#23 18.69 Setting up fonts-dejavu (2.37-1) ...
-#23 18.70 Setting up wget (1.20.3-1ubuntu2.1) ...
-#23 18.71 Setting up libjq1:amd64 (1.6-1ubuntu0.20.04.1) ...
-#23 18.72 Setting up libasn1-8-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 18.74 Setting up libhcrypto4-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 18.75 Setting up ca-certificates (20240203~20.04.1) ...
-#23 19.66 Updating certificates in /etc/ssl/certs...
-#23 21.01 146 added, 0 removed; done.
-#23 21.04 Setting up libwind0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 21.06 Setting up libgssapi-krb5-2:amd64 (1.17-6ubuntu4.11) ...
-#23 21.07 Setting up libgdbm-compat4:amd64 (1.18.1-5) ...
-#23 21.08 Setting up libssh-4:amd64 (0.9.3-2ubuntu2.5) ...
-#23 21.09 Setting up jq (1.6-1ubuntu0.20.04.1) ...
-#23 21.11 Setting up libperl5.30:amd64 (5.30.0-9ubuntu0.5) ...
-#23 21.12 Setting up rsync (3.1.3-8ubuntu0.9) ...
-#23 21.16 invoke-rc.d: could not determine current runlevel
-#23 21.16 invoke-rc.d: policy-rc.d denied execution of start.
-#23 21.31 Setting up libhx509-5-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 21.32 Setting up perl (5.30.0-9ubuntu0.5) ...
-#23 21.35 Setting up libkrb5-26-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 21.36 Setting up libheimntlm0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 21.37 Setting up liberror-perl (0.17029-1) ...
-#23 21.38 Setting up libgssapi3-heimdal:amd64 (7.7.0+dfsg-1ubuntu1.4) ...
-#23 21.39 Setting up libldap-2.4-2:amd64 (2.4.49+dfsg-2ubuntu1.10) ...
-#23 21.40 Setting up libcurl3-gnutls:amd64 (7.68.0-1ubuntu2.25) ...
-#23 21.41 Setting up git (1:2.25.1-1ubuntu3.14) ...
-#23 21.46 Processing triggers for libc-bin (2.31-0ubuntu9.18) ...
-#23 21.49 Processing triggers for ca-certificates (20240203~20.04.1) ...
-#23 21.51 Updating certificates in /etc/ssl/certs...
-#23 22.60 0 added, 0 removed; done.
-#23 22.60 Running hooks in /etc/ca-certificates/update.d...
-#23 22.61 done.
-#23 22.66 + case $(uname -m) in
-#23 22.66 ++ uname -m
-#23 22.66 + grep -q 24.04 /etc/os-release
-#23 22.66 + apt-get install -y lib32gcc1 libc6-i386
-#23 22.72 Reading package lists...
-#23 23.68 Building dependency tree...
-#23 23.88 Reading state information...
-#23 24.01 The following additional packages will be installed:
-#23 24.01   lib32gcc-s1
-#23 24.05 The following NEW packages will be installed:
-#23 24.05   lib32gcc-s1 lib32gcc1 libc6-i386
-#23 25.68 0 upgraded, 3 newly installed, 0 to remove and 0 not upgraded.
-#23 25.68 Need to get 2779 kB of archives.
-#23 25.68 After this operation, 14.9 MB of additional disk space will be used.
-#23 25.68 Get:1 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libc6-i386 amd64 2.31-0ubuntu9.18 [2729 kB]
-#23 26.43 Get:2 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 lib32gcc-s1 amd64 10.5.0-1ubuntu1~20.04 [49.1 kB]
-#23 26.43 Get:3 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 lib32gcc1 amd64 1:10.5.0-1ubuntu1~20.04 [1132 B]
-#23 26.55 debconf: delaying package configuration, since apt-utils is not installed
-#23 26.59 Fetched 2779 kB in 2s (1169 kB/s)
-#23 26.63 Selecting previously unselected package libc6-i386.
-#23 26.63 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 14052 files and directories currently installed.)
-#23 26.66 Preparing to unpack .../libc6-i386_2.31-0ubuntu9.18_amd64.deb ...
-#23 26.67 Unpacking libc6-i386 (2.31-0ubuntu9.18) ...
-#23 27.14 Selecting previously unselected package lib32gcc-s1.
-#23 27.15 Preparing to unpack .../lib32gcc-s1_10.5.0-1ubuntu1~20.04_amd64.deb ...
-#23 27.15 Unpacking lib32gcc-s1 (10.5.0-1ubuntu1~20.04) ...
-#23 27.19 Selecting previously unselected package lib32gcc1.
-#23 27.19 Preparing to unpack .../lib32gcc1_1%3a10.5.0-1ubuntu1~20.04_amd64.deb ...
-#23 27.20 Unpacking lib32gcc1 (1:10.5.0-1ubuntu1~20.04) ...
-#23 27.24 Setting up libc6-i386 (2.31-0ubuntu9.18) ...
-#23 27.26 Setting up lib32gcc-s1 (10.5.0-1ubuntu1~20.04) ...
-#23 27.27 Setting up lib32gcc1 (1:10.5.0-1ubuntu1~20.04) ...
-#23 27.28 Processing triggers for libc-bin (2.31-0ubuntu9.18) ...
-#23 DONE 27.4s
-
-#24 [stage-4 12/24] RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage &&     cd /opt/code_coverage &&     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d &&     pip3 install wheel &&     sed -i 's/Jinja2==2.10/Jinja2==2.10.3/' requirements.txt &&     pip3 install -r requirements.txt &&     pip3 install MarkupSafe==2.0.1 &&     pip3 install coverage==6.3.2
-#24 0.410 Cloning into '/opt/code_coverage'...
-#24 0.785 Note: switching to 'edba4873b5e8a390e977a64c522db2df18a8b27d'.
-#24 0.785 
-#24 0.785 You are in 'detached HEAD' state. You can look around, make experimental
-#24 0.785 changes and commit them, and you can discard any commits you make in this
-#24 0.785 state without impacting any branches by switching back to a branch.
-#24 0.785 
-#24 0.785 If you want to create a new branch to retain commits you create, you may
-#24 0.785 do so (now or later) by using -c with the switch command. Example:
-#24 0.785 
-#24 0.785   git switch -c <new-branch-name>
-#24 0.785 
-#24 0.785 Or undo this operation with:
-#24 0.785 
-#24 0.785   git switch -
-#24 0.785 
-#24 0.785 Turn off this advice by setting config variable advice.detachedHead to false
-#24 0.785 
-#24 0.785 HEAD is now at edba487 Use -compilation-dir for llvm-cov
-#24 1.361 Collecting wheel
-#24 1.412   Downloading wheel-0.45.1-py3-none-any.whl.metadata (2.3 kB)
-#24 1.437 Downloading wheel-0.45.1-py3-none-any.whl (72 kB)
-#24 1.470 Installing collected packages: wheel
-#24 1.566 Successfully installed wheel-0.45.1
-#24 1.566 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-#24 2.172 Collecting Jinja2==2.10.3 (from -r requirements.txt (line 1))
-#24 2.222   Downloading Jinja2-2.10.3-py2.py3-none-any.whl.metadata (3.4 kB)
-#24 2.305 Collecting MarkupSafe>=0.23 (from Jinja2==2.10.3->-r requirements.txt (line 1))
-#24 2.318   Downloading MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.0 kB)
-#24 2.344 Downloading Jinja2-2.10.3-py2.py3-none-any.whl (125 kB)
-#24 2.385 Downloading MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (23 kB)
-#24 2.408 Installing collected packages: MarkupSafe, Jinja2
-#24 2.532 
-#24 2.534 Successfully installed Jinja2-2.10.3 MarkupSafe-3.0.2
-#24 2.535 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-#24 3.066 Collecting MarkupSafe==2.0.1
-#24 3.115   Downloading MarkupSafe-2.0.1.tar.gz (18 kB)
-#24 3.145   Preparing metadata (setup.py): started
-#24 3.516   Preparing metadata (setup.py): finished with status 'done'
-#24 3.519 Building wheels for collected packages: MarkupSafe
-#24 3.520   DEPRECATION: Building 'MarkupSafe' using the legacy setup.py bdist_wheel mechanism, which will be removed in a future version. pip 25.3 will enforce this behaviour change. A possible replacement is to use the standardized build interface by setting the `--use-pep517` option, (possibly combined with `--no-build-isolation`), or adding a `pyproject.toml` file to the source tree of 'MarkupSafe'. Discussion can be found at https://github.com/pypa/pip/issues/6334
-#24 3.520   Building wheel for MarkupSafe (setup.py): started
-#24 4.082   Building wheel for MarkupSafe (setup.py): finished with status 'done'
-#24 4.084   Created wheel for MarkupSafe: filename=MarkupSafe-2.0.1-py3-none-any.whl size=9745 sha256=016fa6c4397502d2ca2056f1f16708371a137b9ca99f83d4c3e3022f4070f69e
-#24 4.084   Stored in directory: /root/.cache/pip/wheels/ea/18/79/6266ea508b8164a77b95aa19534c77eb805f2878612c37efca
-#24 4.087 Successfully built MarkupSafe
-#24 4.099 Installing collected packages: MarkupSafe
-#24 4.099   Attempting uninstall: MarkupSafe
-#24 4.102     Found existing installation: MarkupSafe 3.0.2
-#24 4.105     Uninstalling MarkupSafe-3.0.2:
-#24 4.107       Successfully uninstalled MarkupSafe-3.0.2
-#24 4.128 Successfully installed MarkupSafe-2.0.1
-#24 4.128 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-#24 4.991 Collecting coverage==6.3.2
-#24 5.043   Downloading coverage-6.3.2.tar.gz (709 kB)
-#24 5.095      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 709.3/709.3 kB 21.2 MB/s  0:00:00
-#24 5.303   Preparing metadata (setup.py): started
-#24 5.733   Preparing metadata (setup.py): finished with status 'done'
-#24 5.738 Building wheels for collected packages: coverage
-#24 5.739   DEPRECATION: Building 'coverage' using the legacy setup.py bdist_wheel mechanism, which will be removed in a future version. pip 25.3 will enforce this behaviour change. A possible replacement is to use the standardized build interface by setting the `--use-pep517` option, (possibly combined with `--no-build-isolation`), or adding a `pyproject.toml` file to the source tree of 'coverage'. Discussion can be found at https://github.com/pypa/pip/issues/6334
-#24 5.739   Building wheel for coverage (setup.py): started
-#24 6.395   Building wheel for coverage (setup.py): finished with status 'done'
-#24 6.396   Created wheel for coverage: filename=coverage-6.3.2-py3-none-any.whl size=175595 sha256=b021ec36cffdf6415e866f727f1350b1b5b2d3fc0a3269116d5879a9d8870176
-#24 6.397   Stored in directory: /root/.cache/pip/wheels/15/02/de/83d458bc0a1e520dea5ccb138bb72fa872672da9f55afd1386
-#24 6.400 Successfully built coverage
-#24 6.412 Installing collected packages: coverage
-#24 6.542 Successfully installed coverage-6.3.2
-#24 6.542 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
-#24 DONE 6.7s
-
-#25 [stage-4 13/24] COPY gocoverage /root/go/gocoverage
-#25 DONE 0.0s
-
-#26 [stage-4 14/24] COPY install_go.sh /
-#26 DONE 0.0s
-
-#27 [stage-4 15/24] RUN /install_go.sh && rm -rf /install_go.sh /root/.go
-#27 0.406 + case $(uname -m) in
-#27 0.407 ++ uname -m
-#27 0.409 + wget -q https://storage.googleapis.com/golang/getgo/installer_linux -O /src/installer_linux
-#27 0.542 + chmod +x /src/installer_linux
-#27 0.545 + SHELL=bash
-#27 0.545 + /src/installer_linux -version 1.24.6
-#27 0.556 Welcome to the Go installer!
-#27 0.556 Downloading Go version go1.24.6 to /root/.go
-#27 0.556 This may take a bit of time...
-#27 7.118 Downloaded!
-#27 7.118 Setting up GOPATH
-#27 7.118 
-#27 7.118 One more thing! Run `source /root/.bash_profile` to persist the
-#27 7.118 new environment variables to your current session, or open a
-#27 7.118 new shell prompt.
-#27 7.120 + rm /src/installer_linux
-#27 7.124 ++ find . -name gocoverage
-#27 8.103 ./root/go/gocoverage+ printf ./root/go/gocoverage
-#27 8.103 + cd /root/go/gocoverage
-#27 8.103 + /root/.go/bin/go install ./...
-#27 8.945 go: downloading github.com/google/pprof v0.0.0-20210226084205-cbba55b83ad5
-#27 8.946 go: downloading golang.org/x/tools v0.1.0
-#27 13.86 + cd /root/.go/src/cmd/cover
-#27 13.86 + /root/.go/bin/go build
-#27 14.93 + mv cover /root/go/bin/gotoolcover
-#27 14.94 + pushd /tmp
-#27 14.94 + git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2
-#27 14.94 /tmp ~/.go/src/cmd/cover
-#27 14.95 Cloning into 'go-118-fuzz-build'...
-#27 15.56 + cd go-118-fuzz-build/cmd/convertLibFuzzerTestcaseToStdLibGo
-#27 15.56 + /root/.go/bin/go build .
-#27 15.56 go: downloading go1.25.0 (linux/amd64)
-#27 25.67 + mv convertLibFuzzerTestcaseToStdLibGo /root/go/bin/
-#27 25.68 + popd
-#27 25.68 ~/.go/src/cmd/cover
-#27 DONE 27.5s
-
-#28 [stage-4 16/24] COPY install_java.sh /
-#28 DONE 0.0s
-
-#29 [stage-4 17/24] RUN /install_java.sh && rm /install_java.sh
-#29 0.342 + ARCHITECTURE=
-#29 0.342 + case $(uname -m) in
-#29 0.342 ++ uname -m
-#29 0.344 + ARCHITECTURE=x64
-#29 0.344 + wget -q https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.16+8/OpenJDK17U-jdk_x64_linux_hotspot_17.0.16_8.tar.gz -O /tmp/openjdk-17.0.16_linux-x64_bin.tar.gz
-#29 1.411 + wget -q https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz -O /tmp/openjdk-15.0.2_linux-x64_bin.tar.gz
-#29 3.211 + cd /tmp
-#29 3.211 + mkdir -p /usr/lib/jvm/java-17-openjdk-amd64
-#29 3.220 + tar -xz --strip-components=1 -f openjdk-17.0.16_linux-x64_bin.tar.gz --directory /usr/lib/jvm/java-17-openjdk-amd64
-#29 5.400 + rm -f openjdk-17.0.16_linux-x64_bin.tar.gz
-#29 5.443 + rm -rf /usr/lib/jvm/java-17-openjdk-amd64/jmods /usr/lib/jvm/java-17-openjdk-amd64/lib/src.zip
-#29 5.476 + mkdir -p /usr/lib/jvm/java-15-openjdk-amd64
-#29 5.479 + tar -xz --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory /usr/lib/jvm/java-15-openjdk-amd64
-#29 7.691 + rm -f openjdk-15.0.2_linux-x64_bin.tar.gz
-#29 7.731 + rm -rf /usr/lib/jvm/java-15-openjdk-amd64/jmods /usr/lib/jvm/java-15-openjdk-amd64/lib/src.zip
-#29 DONE 8.1s
-
-#30 [stage-4 18/24] RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jacoco.cli-0.8.7-nodeps.jar -O /opt/jacoco-cli.jar &&     wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.7/org.jacoco.agent-0.8.7-runtime.jar -O /opt/jacoco-agent.jar &&     echo "37df187b76888101ecd745282e9cd1ad4ea508d6  /opt/jacoco-agent.jar" | shasum --check &&     echo "c1814e7bba5fd8786224b09b43c84fd6156db690  /opt/jacoco-cli.jar" | shasum --check
-#30 0.363 --2025-09-05 17:42:12--  https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jacoco.cli-0.8.7-nodeps.jar
-#30 0.364 Resolving repo1.maven.org (repo1.maven.org)... 199.232.196.209, 199.232.192.209, 2a04:4e42:4c::209, ...
-#30 0.376 Connecting to repo1.maven.org (repo1.maven.org)|199.232.196.209|:443... connected.
-#30 0.409 HTTP request sent, awaiting response... 200 OK
-#30 0.420 Length: 567674 (554K) [application/java-archive]
-#30 0.420 Saving to: '/opt/jacoco-cli.jar'
-#30 0.420 
-#30 0.420      0K .......... .......... .......... .......... ..........  9% 4.53M 0s
-#30 0.431     50K .......... .......... .......... .......... .......... 18% 5.20M 0s
-#30 0.440    100K .......... .......... .......... .......... .......... 27% 25.6M 0s
-#30 0.442    150K .......... .......... .......... .......... .......... 36% 24.5M 0s
-#30 0.444    200K .......... .......... .......... .......... .......... 45% 37.7M 0s
-#30 0.445    250K .......... .......... .......... .......... .......... 54% 8.10M 0s
-#30 0.451    300K .......... .......... .......... .......... .......... 63% 37.3M 0s
-#30 0.453    350K .......... .......... .......... .......... .......... 72% 47.5M 0s
-#30 0.454    400K .......... .......... .......... .......... .......... 81% 64.5M 0s
-#30 0.454    450K .......... .......... .......... .......... .......... 90% 49.9M 0s
-#30 0.456    500K .......... .......... .......... .......... .......... 99% 10.8M 0s
-#30 0.460    550K ....                                                  100% 8333G=0.04s
-#30 0.460 
-#30 0.460 2025-09-05 17:42:12 (13.5 MB/s) - '/opt/jacoco-cli.jar' saved [567674/567674]
-#30 0.460 
-#30 0.466 --2025-09-05 17:42:12--  https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.7/org.jacoco.agent-0.8.7-runtime.jar
-#30 0.467 Resolving repo1.maven.org (repo1.maven.org)... 199.232.192.209, 199.232.196.209, 2a04:4e42:4c::209, ...
-#30 0.479 Connecting to repo1.maven.org (repo1.maven.org)|199.232.192.209|:443... connected.
-#30 0.508 HTTP request sent, awaiting response... 200 OK
-#30 0.521 Length: 292059 (285K) [application/java-archive]
-#30 0.521 Saving to: '/opt/jacoco-agent.jar'
-#30 0.522 
-#30 0.522      0K .......... .......... .......... .......... .......... 17% 4.98M 0s
-#30 0.531     50K .......... .......... .......... .......... .......... 35% 6.09M 0s
-#30 0.539    100K .......... .......... .......... .......... .......... 52% 23.5M 0s
-#30 0.541    150K .......... .......... .......... .......... .......... 70% 25.8M 0s
-#30 0.543    200K .......... .......... .......... .......... .......... 87% 9.86M 0s
-#30 0.548    250K .......... .......... .......... .....                100% 36.9M=0.03s
-#30 0.548 
-#30 0.549 2025-09-05 17:42:12 (10.1 MB/s) - '/opt/jacoco-agent.jar' saved [292059/292059]
-#30 0.549 
-#30 0.577 /opt/jacoco-agent.jar: OK
-#30 0.599 /opt/jacoco-cli.jar: OK
-#30 DONE 0.6s
-
-#31 [stage-4 19/24] COPY install_javascript.sh /
-#31 DONE 0.0s
-
-#32 [stage-4 20/24] RUN /install_javascript.sh && rm /install_javascript.sh
-#32 0.436 + apt-get update
-#32 1.062 Hit:1 http://archive.ubuntu.com/ubuntu focal InRelease
-#32 1.149 Hit:2 http://archive.ubuntu.com/ubuntu focal-updates InRelease
-#32 1.596 Hit:3 http://archive.ubuntu.com/ubuntu focal-backports InRelease
-#32 1.929 Hit:4 http://security.ubuntu.com/ubuntu focal-security InRelease
-#32 2.105 Reading package lists...
-#32 3.059 + apt-get install -y ca-certificates curl gnupg
-#32 3.118 Reading package lists...
-#32 4.080 Building dependency tree...
-#32 4.290 Reading state information...
-#32 4.427 ca-certificates is already the newest version (20240203~20.04.1).
-#32 4.427 The following additional packages will be installed:
-#32 4.427   dirmngr gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client gpg-wks-server
-#32 4.428   gpgconf gpgsm libassuan0 libcurl4 libksba8 libnpth0 libreadline8
-#32 4.428   pinentry-curses readline-common
-#32 4.428 Suggested packages:
-#32 4.428   dbus-user-session libpam-systemd pinentry-gnome3 tor parcimonie xloadimage
-#32 4.428   scdaemon pinentry-doc readline-doc
-#32 4.491 The following NEW packages will be installed:
-#32 4.491   curl dirmngr gnupg gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client
-#32 4.492   gpg-wks-server gpgconf gpgsm libassuan0 libcurl4 libksba8 libnpth0
-#32 4.492   libreadline8 pinentry-curses readline-common
-#32 6.177 0 upgraded, 18 newly installed, 0 to remove and 0 not upgraded.
-#32 6.177 Need to get 3120 kB of archives.
-#32 6.177 After this operation, 9164 kB of additional disk space will be used.
-#32 6.177 Get:1 http://archive.ubuntu.com/ubuntu focal/main amd64 readline-common all 8.0-4 [53.5 kB]
-#32 6.239 Get:2 http://archive.ubuntu.com/ubuntu focal/main amd64 libreadline8 amd64 8.0-4 [131 kB]
-#32 6.272 Get:3 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libcurl4 amd64 7.68.0-1ubuntu2.25 [235 kB]
-#32 6.298 Get:4 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 curl amd64 7.68.0-1ubuntu2.25 [162 kB]
-#32 6.308 Get:5 http://archive.ubuntu.com/ubuntu focal/main amd64 libassuan0 amd64 2.5.3-7ubuntu2 [35.7 kB]
-#32 6.310 Get:6 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gpgconf amd64 2.2.19-3ubuntu2.5 [124 kB]
-#32 6.316 Get:7 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libksba8 amd64 1.3.5-2ubuntu0.20.04.2 [95.2 kB]
-#32 6.320 Get:8 http://archive.ubuntu.com/ubuntu focal/main amd64 libnpth0 amd64 1.6-1 [7736 B]
-#32 6.321 Get:9 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 dirmngr amd64 2.2.19-3ubuntu2.5 [330 kB]
-#32 6.329 Get:10 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gnupg-l10n all 2.2.19-3ubuntu2.5 [51.9 kB]
-#32 6.330 Get:11 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gnupg-utils amd64 2.2.19-3ubuntu2.5 [481 kB]
-#32 6.341 Get:12 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gpg amd64 2.2.19-3ubuntu2.5 [483 kB]
-#32 6.347 Get:13 http://archive.ubuntu.com/ubuntu focal/main amd64 pinentry-curses amd64 1.1.0-3build1 [36.3 kB]
-#32 6.348 Get:14 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gpg-agent amd64 2.2.19-3ubuntu2.5 [232 kB]
-#32 6.351 Get:15 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gpg-wks-client amd64 2.2.19-3ubuntu2.5 [97.8 kB]
-#32 6.353 Get:16 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gpg-wks-server amd64 2.2.19-3ubuntu2.5 [90.0 kB]
-#32 6.360 Get:17 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gpgsm amd64 2.2.19-3ubuntu2.5 [217 kB]
-#32 6.363 Get:18 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 gnupg all 2.2.19-3ubuntu2.5 [259 kB]
-#32 6.500 debconf: delaying package configuration, since apt-utils is not installed
-#32 6.544 Fetched 3120 kB in 2s (1674 kB/s)
-#32 6.583 Selecting previously unselected package readline-common.
-#32 6.583 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 14358 files and directories currently installed.)
-#32 6.622 Preparing to unpack .../00-readline-common_8.0-4_all.deb ...
-#32 6.626 Unpacking readline-common (8.0-4) ...
-#32 6.691 Selecting previously unselected package libreadline8:amd64.
-#32 6.693 Preparing to unpack .../01-libreadline8_8.0-4_amd64.deb ...
-#32 6.701 Unpacking libreadline8:amd64 (8.0-4) ...
-#32 6.761 Selecting previously unselected package libcurl4:amd64.
-#32 6.763 Preparing to unpack .../02-libcurl4_7.68.0-1ubuntu2.25_amd64.deb ...
-#32 6.767 Unpacking libcurl4:amd64 (7.68.0-1ubuntu2.25) ...
-#32 6.824 Selecting previously unselected package curl.
-#32 6.826 Preparing to unpack .../03-curl_7.68.0-1ubuntu2.25_amd64.deb ...
-#32 6.829 Unpacking curl (7.68.0-1ubuntu2.25) ...
-#32 6.886 Selecting previously unselected package libassuan0:amd64.
-#32 6.888 Preparing to unpack .../04-libassuan0_2.5.3-7ubuntu2_amd64.deb ...
-#32 6.892 Unpacking libassuan0:amd64 (2.5.3-7ubuntu2) ...
-#32 6.934 Selecting previously unselected package gpgconf.
-#32 6.936 Preparing to unpack .../05-gpgconf_2.2.19-3ubuntu2.5_amd64.deb ...
-#32 6.940 Unpacking gpgconf (2.2.19-3ubuntu2.5) ...
-#32 6.994 Selecting previously unselected package libksba8:amd64.
-#32 6.996 Preparing to unpack .../06-libksba8_1.3.5-2ubuntu0.20.04.2_amd64.deb ...
-#32 7.000 Unpacking libksba8:amd64 (1.3.5-2ubuntu0.20.04.2) ...
-#32 7.052 Selecting previously unselected package libnpth0:amd64.
-#32 7.054 Preparing to unpack .../07-libnpth0_1.6-1_amd64.deb ...
-#32 7.058 Unpacking libnpth0:amd64 (1.6-1) ...
-#32 7.108 Selecting previously unselected package dirmngr.
-#32 7.110 Preparing to unpack .../08-dirmngr_2.2.19-3ubuntu2.5_amd64.deb ...
-#32 7.136 Unpacking dirmngr (2.2.19-3ubuntu2.5) ...
-#32 7.206 Selecting previously unselected package gnupg-l10n.
-#32 7.208 Preparing to unpack .../09-gnupg-l10n_2.2.19-3ubuntu2.5_all.deb ...
-#32 7.212 Unpacking gnupg-l10n (2.2.19-3ubuntu2.5) ...
-#32 7.274 Selecting previously unselected package gnupg-utils.
-#32 7.277 Preparing to unpack .../10-gnupg-utils_2.2.19-3ubuntu2.5_amd64.deb ...
-#32 7.280 Unpacking gnupg-utils (2.2.19-3ubuntu2.5) ...
-#32 7.367 Selecting previously unselected package gpg.
-#32 7.369 Preparing to unpack .../11-gpg_2.2.19-3ubuntu2.5_amd64.deb ...
-#32 7.373 Unpacking gpg (2.2.19-3ubuntu2.5) ...
-#32 7.445 Selecting previously unselected package pinentry-curses.
-#32 7.447 Preparing to unpack .../12-pinentry-curses_1.1.0-3build1_amd64.deb ...
-#32 7.450 Unpacking pinentry-curses (1.1.0-3build1) ...
-#32 7.498 Selecting previously unselected package gpg-agent.
-#32 7.500 Preparing to unpack .../13-gpg-agent_2.2.19-3ubuntu2.5_amd64.deb ...
-#32 7.504 Unpacking gpg-agent (2.2.19-3ubuntu2.5) ...
-#32 7.577 Selecting previously unselected package gpg-wks-client.
-#32 7.579 Preparing to unpack .../14-gpg-wks-client_2.2.19-3ubuntu2.5_amd64.deb ...
-#32 7.583 Unpacking gpg-wks-client (2.2.19-3ubuntu2.5) ...
-#32 7.629 Selecting previously unselected package gpg-wks-server.
-#32 7.631 Preparing to unpack .../15-gpg-wks-server_2.2.19-3ubuntu2.5_amd64.deb ...
-#32 7.635 Unpacking gpg-wks-server (2.2.19-3ubuntu2.5) ...
-#32 7.680 Selecting previously unselected package gpgsm.
-#32 7.682 Preparing to unpack .../16-gpgsm_2.2.19-3ubuntu2.5_amd64.deb ...
-#32 7.685 Unpacking gpgsm (2.2.19-3ubuntu2.5) ...
-#32 7.741 Selecting previously unselected package gnupg.
-#32 7.743 Preparing to unpack .../17-gnupg_2.2.19-3ubuntu2.5_all.deb ...
-#32 7.747 Unpacking gnupg (2.2.19-3ubuntu2.5) ...
-#32 7.815 Setting up libksba8:amd64 (1.3.5-2ubuntu0.20.04.2) ...
-#32 7.828 Setting up libnpth0:amd64 (1.6-1) ...
-#32 7.839 Setting up libassuan0:amd64 (2.5.3-7ubuntu2) ...
-#32 7.850 Setting up gnupg-l10n (2.2.19-3ubuntu2.5) ...
-#32 7.861 Setting up libcurl4:amd64 (7.68.0-1ubuntu2.25) ...
-#32 7.873 Setting up curl (7.68.0-1ubuntu2.25) ...
-#32 7.884 Setting up readline-common (8.0-4) ...
-#32 7.900 Setting up pinentry-curses (1.1.0-3build1) ...
-#32 7.924 Setting up libreadline8:amd64 (8.0-4) ...
-#32 7.936 Setting up gpgconf (2.2.19-3ubuntu2.5) ...
-#32 7.947 Setting up gpg (2.2.19-3ubuntu2.5) ...
-#32 7.961 Setting up gnupg-utils (2.2.19-3ubuntu2.5) ...
-#32 7.972 Setting up gpg-agent (2.2.19-3ubuntu2.5) ...
-#32 8.481 Setting up gpgsm (2.2.19-3ubuntu2.5) ...
-#32 8.493 Setting up dirmngr (2.2.19-3ubuntu2.5) ...
-#32 8.646 Setting up gpg-wks-server (2.2.19-3ubuntu2.5) ...
-#32 8.658 Setting up gpg-wks-client (2.2.19-3ubuntu2.5) ...
-#32 8.669 Setting up gnupg (2.2.19-3ubuntu2.5) ...
-#32 8.680 Processing triggers for libc-bin (2.31-0ubuntu9.18) ...
-#32 8.738 + mkdir -p /etc/apt/keyrings
-#32 8.744 + gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-#32 8.744 + curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
-#32 8.851 + NODE_MAJOR=20
-#32 8.851 + echo 'deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main'
-#32 8.851 + tee /etc/apt/sources.list.d/nodesource.list
-#32 8.855 deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main
-#32 8.856 + apt-get update
-#32 9.065 Get:1 https://deb.nodesource.com/node_20.x nodistro InRelease [12.1 kB]
-#32 9.199 Get:2 https://deb.nodesource.com/node_20.x nodistro/main amd64 Packages [12.8 kB]
-#32 9.448 Hit:3 http://archive.ubuntu.com/ubuntu focal InRelease
-#32 9.531 Hit:4 http://archive.ubuntu.com/ubuntu focal-updates InRelease
-#32 9.615 Hit:5 http://archive.ubuntu.com/ubuntu focal-backports InRelease
-#32 10.26 Hit:6 http://security.ubuntu.com/ubuntu focal-security InRelease
-#32 10.46 Fetched 24.9 kB in 2s (16.4 kB/s)
-#32 10.46 Reading package lists...
-#32 11.41 + apt-get install nodejs -y
-#32 11.46 Reading package lists...
-#32 12.37 Building dependency tree...
-#32 12.60 Reading state information...
-#32 12.75 The following additional packages will be installed:
-#32 12.75   libmpdec2 libpython3-stdlib libpython3.8-minimal libpython3.8-stdlib
-#32 12.75   mime-support python3 python3-minimal python3.8 python3.8-minimal xz-utils
-#32 12.75 Suggested packages:
-#32 12.75   python3-doc python3-tk python3-venv python3.8-venv python3.8-doc
-#32 12.75   binfmt-support
-#32 12.82 The following NEW packages will be installed:
-#32 12.82   libmpdec2 libpython3-stdlib libpython3.8-minimal libpython3.8-stdlib
-#32 12.82   mime-support nodejs python3 python3-minimal python3.8 python3.8-minimal
-#32 12.82   xz-utils
-#32 12.97 0 upgraded, 11 newly installed, 0 to remove and 0 not upgraded.
-#32 12.97 Need to get 36.9 MB of archives.
-#32 12.97 After this operation, 217 MB of additional disk space will be used.
-#32 12.97 Get:1 https://deb.nodesource.com/node_20.x nodistro/main amd64 nodejs amd64 20.19.5-1nodesource1 [32.0 MB]
-#32 14.82 Get:2 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpython3.8-minimal amd64 3.8.10-0ubuntu1~20.04.18 [721 kB]
-#32 14.96 Get:3 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 python3.8-minimal amd64 3.8.10-0ubuntu1~20.04.18 [1900 kB]
-#32 15.00 Get:4 http://archive.ubuntu.com/ubuntu focal/main amd64 python3-minimal amd64 3.8.2-0ubuntu2 [23.6 kB]
-#32 15.00 Get:5 http://archive.ubuntu.com/ubuntu focal/main amd64 mime-support all 3.64ubuntu1 [30.6 kB]
-#32 15.00 Get:6 http://archive.ubuntu.com/ubuntu focal/main amd64 libmpdec2 amd64 2.4.2-3 [81.1 kB]
-#32 15.00 Get:7 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpython3.8-stdlib amd64 3.8.10-0ubuntu1~20.04.18 [1676 kB]
-#32 15.01 Get:8 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 python3.8 amd64 3.8.10-0ubuntu1~20.04.18 [387 kB]
-#32 15.02 Get:9 http://archive.ubuntu.com/ubuntu focal/main amd64 libpython3-stdlib amd64 3.8.2-0ubuntu2 [7068 B]
-#32 15.02 Get:10 http://archive.ubuntu.com/ubuntu focal/main amd64 python3 amd64 3.8.2-0ubuntu2 [47.6 kB]
-#32 15.02 Get:11 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 xz-utils amd64 5.2.4-1ubuntu1.1 [82.6 kB]
-#32 15.13 debconf: delaying package configuration, since apt-utils is not installed
-#32 15.16 Fetched 36.9 MB in 2s (16.9 MB/s)
-#32 15.19 Selecting previously unselected package libpython3.8-minimal:amd64.
-#32 15.19 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 14610 files and directories currently installed.)
-#32 15.23 Preparing to unpack .../libpython3.8-minimal_3.8.10-0ubuntu1~20.04.18_amd64.deb ...
-#32 15.23 Unpacking libpython3.8-minimal:amd64 (3.8.10-0ubuntu1~20.04.18) ...
-#32 15.54 Selecting previously unselected package python3.8-minimal.
-#32 15.54 Preparing to unpack .../python3.8-minimal_3.8.10-0ubuntu1~20.04.18_amd64.deb ...
-#32 15.55 Unpacking python3.8-minimal (3.8.10-0ubuntu1~20.04.18) ...
-#32 15.73 Setting up libpython3.8-minimal:amd64 (3.8.10-0ubuntu1~20.04.18) ...
-#32 15.74 Setting up python3.8-minimal (3.8.10-0ubuntu1~20.04.18) ...
-#32 16.51 Selecting previously unselected package python3-minimal.
-#32 16.51 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 14893 files and directories currently installed.)
-#32 16.54 Preparing to unpack .../0-python3-minimal_3.8.2-0ubuntu2_amd64.deb ...
-#32 16.55 Unpacking python3-minimal (3.8.2-0ubuntu2) ...
-#32 16.61 Selecting previously unselected package mime-support.
-#32 16.61 Preparing to unpack .../1-mime-support_3.64ubuntu1_all.deb ...
-#32 16.61 Unpacking mime-support (3.64ubuntu1) ...
-#32 16.69 Selecting previously unselected package libmpdec2:amd64.
-#32 16.69 Preparing to unpack .../2-libmpdec2_2.4.2-3_amd64.deb ...
-#32 16.70 Unpacking libmpdec2:amd64 (2.4.2-3) ...
-#32 16.74 Selecting previously unselected package libpython3.8-stdlib:amd64.
-#32 16.74 Preparing to unpack .../3-libpython3.8-stdlib_3.8.10-0ubuntu1~20.04.18_amd64.deb ...
-#32 16.75 Unpacking libpython3.8-stdlib:amd64 (3.8.10-0ubuntu1~20.04.18) ...
-#32 17.12 Selecting previously unselected package python3.8.
-#32 17.12 Preparing to unpack .../4-python3.8_3.8.10-0ubuntu1~20.04.18_amd64.deb ...
-#32 17.12 Unpacking python3.8 (3.8.10-0ubuntu1~20.04.18) ...
-#32 17.18 Selecting previously unselected package libpython3-stdlib:amd64.
-#32 17.18 Preparing to unpack .../5-libpython3-stdlib_3.8.2-0ubuntu2_amd64.deb ...
-#32 17.19 Unpacking libpython3-stdlib:amd64 (3.8.2-0ubuntu2) ...
-#32 17.23 Setting up python3-minimal (3.8.2-0ubuntu2) ...
-#32 17.47 Selecting previously unselected package python3.
-#32 17.47 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 15295 files and directories currently installed.)
-#32 17.50 Preparing to unpack .../python3_3.8.2-0ubuntu2_amd64.deb ...
-#32 17.51 Unpacking python3 (3.8.2-0ubuntu2) ...
-#32 17.57 Selecting previously unselected package xz-utils.
-#32 17.57 Preparing to unpack .../xz-utils_5.2.4-1ubuntu1.1_amd64.deb ...
-#32 17.58 Unpacking xz-utils (5.2.4-1ubuntu1.1) ...
-#32 17.65 Selecting previously unselected package nodejs.
-#32 17.65 Preparing to unpack .../nodejs_20.19.5-1nodesource1_amd64.deb ...
-#32 17.65 Unpacking nodejs (20.19.5-1nodesource1) ...
-#32 23.92 Setting up mime-support (3.64ubuntu1) ...
-#32 23.96 Setting up xz-utils (5.2.4-1ubuntu1.1) ...
-#32 23.97 update-alternatives: using /usr/bin/xz to provide /usr/bin/lzma (lzma) in auto mode
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/lzma.1.gz because associated file /usr/share/man/man1/xz.1.gz (of link group lzma) doesn't exist
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/unlzma.1.gz because associated file /usr/share/man/man1/unxz.1.gz (of link group lzma) doesn't exist
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/lzcat.1.gz because associated file /usr/share/man/man1/xzcat.1.gz (of link group lzma) doesn't exist
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/lzmore.1.gz because associated file /usr/share/man/man1/xzmore.1.gz (of link group lzma) doesn't exist
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/lzless.1.gz because associated file /usr/share/man/man1/xzless.1.gz (of link group lzma) doesn't exist
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/lzdiff.1.gz because associated file /usr/share/man/man1/xzdiff.1.gz (of link group lzma) doesn't exist
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/lzcmp.1.gz because associated file /usr/share/man/man1/xzcmp.1.gz (of link group lzma) doesn't exist
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/lzgrep.1.gz because associated file /usr/share/man/man1/xzgrep.1.gz (of link group lzma) doesn't exist
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/lzegrep.1.gz because associated file /usr/share/man/man1/xzegrep.1.gz (of link group lzma) doesn't exist
-#32 23.97 update-alternatives: warning: skip creation of /usr/share/man/man1/lzfgrep.1.gz because associated file /usr/share/man/man1/xzfgrep.1.gz (of link group lzma) doesn't exist
-#32 23.99 Setting up libmpdec2:amd64 (2.4.2-3) ...
-#32 24.00 Setting up libpython3.8-stdlib:amd64 (3.8.10-0ubuntu1~20.04.18) ...
-#32 24.01 Setting up python3.8 (3.8.10-0ubuntu1~20.04.18) ...
-#32 24.71 Setting up libpython3-stdlib:amd64 (3.8.2-0ubuntu2) ...
-#32 24.72 Setting up python3 (3.8.2-0ubuntu2) ...
-#32 24.85 Setting up nodejs (20.19.5-1nodesource1) ...
-#32 24.87 Processing triggers for libc-bin (2.31-0ubuntu9.18) ...
-#32 24.93 + npm install --global nyc
-#32 28.37 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
-#32 28.42 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
-#32 28.44 npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
-#32 28.71 
-#32 28.71 added 143 packages in 4s
-#32 28.71 
-#32 28.71 17 packages are looking for funding
-#32 28.71   run `npm fund` for details
-#32 28.71 npm notice
-#32 28.71 npm notice New major version of npm available! 10.8.2 -> 11.6.0
-#32 28.71 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.0
-#32 28.71 npm notice To update run: npm install -g npm@11.6.0
-#32 28.71 npm notice
-#32 DONE 29.1s
-
-#33 [stage-4 21/24] COPY --from=base-ruby /usr/local/rvm /usr/local/rvm
-#33 DONE 4.8s
-
-#34 [stage-4 22/24] COPY --from=base-ruby /install/ruzzy /install/ruzzy
-#34 DONE 16.4s
-
-#35 [stage-4 23/24] COPY ruzzy /usr/bin/ruzzy
-#35 DONE 0.0s
-
-#36 [stage-4 24/24] COPY bad_build_check     coverage     coverage_helper     download_corpus     jacoco_report_converter.py     nyc_report_converter.py     rcfilt     reproduce     run_fuzzer     parse_options.py     generate_differential_cov_report.py     profraw_update.py     targets_list     test_all.py     test_one.py     python_coverage_runner_help.py     /usr/local/bin/
-#36 DONE 0.1s
-
-#37 exporting to image
-#37 exporting layers
-#37 exporting layers 5.0s done
-#37 writing image sha256:149d824bd8cd7ca64b6765d4dbee605180dbe1e9bc0b704cec8155377f7906e5 done
-#37 naming to gcr.io/oss-fuzz-base/base-runner:ubuntu_20_04 done
-#37 DONE 5.0s

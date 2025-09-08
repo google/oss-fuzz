@@ -1,155 +1,0 @@
-#0 building with "default" instance using docker driver
-
-#1 [internal] load build definition from ubuntu_20_04.Dockerfile
-#1 transferring dockerfile: 788B done
-#1 DONE 0.0s
-
-#2 [internal] load metadata for gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
-#2 DONE 0.0s
-
-#3 [internal] load .dockerignore
-#3 transferring context: 2B done
-#3 DONE 0.0s
-
-#4 [1/2] FROM gcr.io/oss-fuzz-base/base-builder:ubuntu_20_04
-#4 CACHED
-
-#5 [2/2] RUN install_javascript.sh
-#5 0.315 + apt-get update
-#5 1.775 Get:1 http://security.ubuntu.com/ubuntu focal-security InRelease [128 kB]
-#5 1.952 Hit:2 http://archive.ubuntu.com/ubuntu focal InRelease
-#5 1.969 Get:3 http://archive.ubuntu.com/ubuntu focal-updates InRelease [128 kB]
-#5 2.054 Get:4 http://archive.ubuntu.com/ubuntu focal-backports InRelease [128 kB]
-#5 2.378 Get:5 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 Packages [4919 kB]
-#5 2.764 Fetched 5303 kB in 2s (2299 kB/s)
-#5 2.764 Reading package lists...
-#5 3.915 + apt-get install -y ca-certificates curl gnupg
-#5 3.977 Reading package lists...
-#5 5.080 Building dependency tree...
-#5 5.285 Reading state information...
-#5 5.429 ca-certificates is already the newest version (20240203~20.04.1).
-#5 5.429 ca-certificates set to manually installed.
-#5 5.429 curl is already the newest version (7.68.0-1ubuntu2.25).
-#5 5.429 gnupg is already the newest version (2.2.19-3ubuntu2.5).
-#5 5.429 gnupg set to manually installed.
-#5 5.429 The following packages were automatically installed and are no longer required:
-#5 5.429   autotools-dev libsigsegv2 m4
-#5 5.429 Use 'apt autoremove' to remove them.
-#5 5.477 0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-#5 5.479 + mkdir -p /etc/apt/keyrings
-#5 5.486 + curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
-#5 5.486 + gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-#5 5.586 + NODE_MAJOR=20
-#5 5.587 + echo 'deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main'
-#5 5.587 + tee /etc/apt/sources.list.d/nodesource.list
-#5 5.605 deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main
-#5 5.606 + apt-get update
-#5 5.836 Get:1 https://deb.nodesource.com/node_20.x nodistro InRelease [12.1 kB]
-#5 5.973 Get:2 https://deb.nodesource.com/node_20.x nodistro/main amd64 Packages [12.8 kB]
-#5 6.704 Hit:3 http://security.ubuntu.com/ubuntu focal-security InRelease
-#5 6.913 Hit:4 http://archive.ubuntu.com/ubuntu focal InRelease
-#5 6.932 Hit:5 http://archive.ubuntu.com/ubuntu focal-updates InRelease
-#5 6.951 Hit:6 http://archive.ubuntu.com/ubuntu focal-backports InRelease
-#5 7.512 Fetched 24.9 kB in 2s (13.7 kB/s)
-#5 7.512 Reading package lists...
-#5 8.629 + apt-get install nodejs -y
-#5 8.684 Reading package lists...
-#5 9.848 Building dependency tree...
-#5 10.08 Reading state information...
-#5 10.23 The following packages were automatically installed and are no longer required:
-#5 10.23   autotools-dev libsigsegv2 m4
-#5 10.23 Use 'apt autoremove' to remove them.
-#5 10.23 The following additional packages will be installed:
-#5 10.23   file libmagic-mgc libmagic1 libmpdec2 libpython3-stdlib libpython3.8-minimal
-#5 10.23   libpython3.8-stdlib mime-support python3 python3-minimal python3.8
-#5 10.23   python3.8-minimal
-#5 10.23 Suggested packages:
-#5 10.23   python3-doc python3-tk python3-venv python3.8-venv python3.8-doc
-#5 10.23   binfmt-support
-#5 10.32 The following NEW packages will be installed:
-#5 10.32   file libmagic-mgc libmagic1 libmpdec2 libpython3-stdlib libpython3.8-minimal
-#5 10.32   libpython3.8-stdlib mime-support nodejs python3 python3-minimal python3.8
-#5 10.32   python3.8-minimal
-#5 10.48 0 upgraded, 13 newly installed, 0 to remove and 0 not upgraded.
-#5 10.48 Need to get 37.2 MB of archives.
-#5 10.48 After this operation, 223 MB of additional disk space will be used.
-#5 10.48 Get:1 https://deb.nodesource.com/node_20.x nodistro/main amd64 nodejs amd64 20.19.5-1nodesource1 [32.0 MB]
-#5 11.70 Get:2 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpython3.8-minimal amd64 3.8.10-0ubuntu1~20.04.18 [721 kB]
-#5 12.29 Get:3 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 python3.8-minimal amd64 3.8.10-0ubuntu1~20.04.18 [1900 kB]
-#5 12.46 Get:4 http://archive.ubuntu.com/ubuntu focal/main amd64 python3-minimal amd64 3.8.2-0ubuntu2 [23.6 kB]
-#5 12.46 Get:5 http://archive.ubuntu.com/ubuntu focal/main amd64 mime-support all 3.64ubuntu1 [30.6 kB]
-#5 12.46 Get:6 http://archive.ubuntu.com/ubuntu focal/main amd64 libmpdec2 amd64 2.4.2-3 [81.1 kB]
-#5 12.46 Get:7 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libpython3.8-stdlib amd64 3.8.10-0ubuntu1~20.04.18 [1676 kB]
-#5 12.53 Get:8 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 python3.8 amd64 3.8.10-0ubuntu1~20.04.18 [387 kB]
-#5 12.54 Get:9 http://archive.ubuntu.com/ubuntu focal/main amd64 libpython3-stdlib amd64 3.8.2-0ubuntu2 [7068 B]
-#5 12.54 Get:10 http://archive.ubuntu.com/ubuntu focal/main amd64 python3 amd64 3.8.2-0ubuntu2 [47.6 kB]
-#5 12.54 Get:11 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic-mgc amd64 1:5.38-4 [218 kB]
-#5 12.55 Get:12 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic1 amd64 1:5.38-4 [75.9 kB]
-#5 12.55 Get:13 http://archive.ubuntu.com/ubuntu focal/main amd64 file amd64 1:5.38-4 [23.3 kB]
-#5 12.71 debconf: delaying package configuration, since apt-utils is not installed
-#5 12.76 Fetched 37.2 MB in 2s (16.7 MB/s)
-#5 12.80 Selecting previously unselected package libpython3.8-minimal:amd64.
-#5 12.80 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 17483 files and directories currently installed.)
-#5 12.86 Preparing to unpack .../libpython3.8-minimal_3.8.10-0ubuntu1~20.04.18_amd64.deb ...
-#5 12.87 Unpacking libpython3.8-minimal:amd64 (3.8.10-0ubuntu1~20.04.18) ...
-#5 13.17 Selecting previously unselected package python3.8-minimal.
-#5 13.17 Preparing to unpack .../python3.8-minimal_3.8.10-0ubuntu1~20.04.18_amd64.deb ...
-#5 13.18 Unpacking python3.8-minimal (3.8.10-0ubuntu1~20.04.18) ...
-#5 13.36 Setting up libpython3.8-minimal:amd64 (3.8.10-0ubuntu1~20.04.18) ...
-#5 13.38 Setting up python3.8-minimal (3.8.10-0ubuntu1~20.04.18) ...
-#5 14.11 Selecting previously unselected package python3-minimal.
-#5 14.11 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 17766 files and directories currently installed.)
-#5 14.16 Preparing to unpack .../0-python3-minimal_3.8.2-0ubuntu2_amd64.deb ...
-#5 14.16 Unpacking python3-minimal (3.8.2-0ubuntu2) ...
-#5 14.23 Selecting previously unselected package mime-support.
-#5 14.23 Preparing to unpack .../1-mime-support_3.64ubuntu1_all.deb ...
-#5 14.23 Unpacking mime-support (3.64ubuntu1) ...
-#5 14.31 Selecting previously unselected package libmpdec2:amd64.
-#5 14.31 Preparing to unpack .../2-libmpdec2_2.4.2-3_amd64.deb ...
-#5 14.32 Unpacking libmpdec2:amd64 (2.4.2-3) ...
-#5 14.37 Selecting previously unselected package libpython3.8-stdlib:amd64.
-#5 14.37 Preparing to unpack .../3-libpython3.8-stdlib_3.8.10-0ubuntu1~20.04.18_amd64.deb ...
-#5 14.37 Unpacking libpython3.8-stdlib:amd64 (3.8.10-0ubuntu1~20.04.18) ...
-#5 14.75 Selecting previously unselected package python3.8.
-#5 14.75 Preparing to unpack .../4-python3.8_3.8.10-0ubuntu1~20.04.18_amd64.deb ...
-#5 14.75 Unpacking python3.8 (3.8.10-0ubuntu1~20.04.18) ...
-#5 14.81 Selecting previously unselected package libpython3-stdlib:amd64.
-#5 14.81 Preparing to unpack .../5-libpython3-stdlib_3.8.2-0ubuntu2_amd64.deb ...
-#5 14.82 Unpacking libpython3-stdlib:amd64 (3.8.2-0ubuntu2) ...
-#5 14.87 Setting up python3-minimal (3.8.2-0ubuntu2) ...
-#5 15.10 Selecting previously unselected package python3.
-#5 15.10 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 18168 files and directories currently installed.)
-#5 15.14 Preparing to unpack .../python3_3.8.2-0ubuntu2_amd64.deb ...
-#5 15.15 Unpacking python3 (3.8.2-0ubuntu2) ...
-#5 15.21 Selecting previously unselected package libmagic-mgc.
-#5 15.21 Preparing to unpack .../libmagic-mgc_1%3a5.38-4_amd64.deb ...
-#5 15.22 Unpacking libmagic-mgc (1:5.38-4) ...
-#5 15.30 Selecting previously unselected package libmagic1:amd64.
-#5 15.30 Preparing to unpack .../libmagic1_1%3a5.38-4_amd64.deb ...
-#5 15.30 Unpacking libmagic1:amd64 (1:5.38-4) ...
-#5 15.35 Selecting previously unselected package file.
-#5 15.35 Preparing to unpack .../file_1%3a5.38-4_amd64.deb ...
-#5 15.36 Unpacking file (1:5.38-4) ...
-#5 15.42 Selecting previously unselected package nodejs.
-#5 15.42 Preparing to unpack .../nodejs_20.19.5-1nodesource1_amd64.deb ...
-#5 15.43 Unpacking nodejs (20.19.5-1nodesource1) ...
-#5 21.67 Setting up mime-support (3.64ubuntu1) ...
-#5 21.71 Setting up libmagic-mgc (1:5.38-4) ...
-#5 21.72 Setting up libmagic1:amd64 (1:5.38-4) ...
-#5 21.74 Setting up file (1:5.38-4) ...
-#5 21.75 Setting up libmpdec2:amd64 (2.4.2-3) ...
-#5 21.76 Setting up libpython3.8-stdlib:amd64 (3.8.10-0ubuntu1~20.04.18) ...
-#5 21.77 Setting up python3.8 (3.8.10-0ubuntu1~20.04.18) ...
-#5 22.48 Setting up libpython3-stdlib:amd64 (3.8.2-0ubuntu2) ...
-#5 22.49 Setting up python3 (3.8.2-0ubuntu2) ...
-#5 22.62 Setting up nodejs (20.19.5-1nodesource1) ...
-#5 22.65 Processing triggers for libc-bin (2.31-0ubuntu9.18) ...
-#5 DONE 23.0s
-
-#6 exporting to image
-#6 exporting layers
-#6 exporting layers 1.3s done
-#6 writing image sha256:50026933d340d65265d8851c2d18acebd17ee2a681cbf78d8e37c6349ae393f4 done
-#6 naming to gcr.io/oss-fuzz-base/base-builder-javascript:ubuntu_20_04 done
-#6 DONE 1.3s
-BUILD SUCCEEDED
