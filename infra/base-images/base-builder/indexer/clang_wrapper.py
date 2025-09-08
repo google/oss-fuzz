@@ -115,93 +115,6 @@ def sha256(file: Path) -> str:
   return hash_value.hexdigest()
 
 
-def _get_build_id_from_elf_notes(contents: bytes) -> str | None:
-  """Extracts the build id from the ELF notes of a binary.
-
-  The ELF notes are obtained with
-    `llvm-readelf --notes --elf-output-style=JSON`.
-
-  Args:
-    contents: The contents of the ELF notes, as a JSON string.
-
-  Returns:
-    The build id, or None if it could not be found.
-  """
-
-  elf_data = json.loads(contents)
-  assert elf_data
-
-  for file_info in elf_data:
-    for note_entry in file_info["Notes"]:
-      note_section = note_entry["NoteSection"]
-      if note_section["Name"] == ".note.gnu.build-id":
-        note_details = note_section["Note"]
-        if "Build ID" in note_details:
-          return note_details["Build ID"]
-  return None
-
-
-def get_build_id(elf_file: Path) -> str | None:
-  """This invokes llvm-readelf to get the build ID of the given ELF file."""
-
-  # Example output of llvm-readelf JSON output:
-  # [
-  #   {
-  #     "FileSummary": {
-  #       "File": "/out/iccprofile_info",
-  #       "Format": "elf64-x86-64",
-  #       "Arch": "x86_64",
-  #       "AddressSize": "64bit",
-  #       "LoadName": "<Not found>",
-  #     },
-  #     "Notes": [
-  #       {
-  #         "NoteSection": {
-  #           "Name": ".note.ABI-tag",
-  #           "Offset": 764,
-  #           "Size": 32,
-  #           "Note": {
-  #             "Owner": "GNU",
-  #             "Data size": 16,
-  #             "Type": "NT_GNU_ABI_TAG (ABI version tag)",
-  #             "OS": "Linux",
-  #             "ABI": "3.2.0",
-  #           },
-  #         }
-  #       },
-  #       {
-  #         "NoteSection": {
-  #           "Name": ".note.gnu.build-id",
-  #           "Offset": 796,
-  #           "Size": 24,
-  #           "Note": {
-  #             "Owner": "GNU",
-  #             "Data size": 8,
-  #             "Type": "NT_GNU_BUILD_ID (unique build ID bitstring)",
-  #             "Build ID": "a03df61c5b0c26f3",
-  #           },
-  #         }
-  #       },
-  #     ],
-  #   }
-  # ]
-
-  ret = subprocess.run(
-      [
-          _LLVM_READELF_PATH,
-          "--notes",
-          "--elf-output-style=JSON",
-          elf_file.as_posix(),
-      ],
-      capture_output=True,
-      check=True,
-  )
-  if ret.returncode != 0:
-    sys.exit(ret.returncode)
-
-  return _get_build_id_from_elf_notes(ret.stdout)
-
-
 def get_flag_value(argv: Sequence[str], flag: str) -> str | None:
   for i in range(len(argv) - 1):
     if argv[i] == flag:
@@ -606,7 +519,7 @@ def main(argv: list[str]) -> None:
   argv.append("-Qunused-arguments")
   run(argv, compile_settings.clang_toolchain)
 
-  build_id = get_build_id(output_file)
+  build_id = index_build.get_build_id(output_file)
   assert build_id is not None
 
   output_hash = sha256(output_file)
