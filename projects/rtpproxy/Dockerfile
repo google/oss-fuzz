@@ -18,8 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone https://github.com/sippy/rtpproxy
 RUN git -C rtpproxy submodule update --init --recursive
 
-COPY build_ubuntu_20_04.sh $SRC/
-COPY build_ubuntu_24_04.sh $SRC/
-RUN . /etc/os-release && cp "$SRC/build_ubuntu_$VERSION_ID.sh" "$SRC/build.sh"
+COPY build.sh $SRC/
 
 WORKDIR rtpproxy
