@@ -23,12 +23,12 @@ import google.auth
 import build_lib
 
 BASE_PROJECT = 'oss-fuzz-base'
-TAG_PREFIX = f'gcr.io/{BASE_PROJECT}/'
+IMAGE_NAME_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
 MANIFEST_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder', 'gcr.io/oss-fuzz-base/base-runner'
 ]
-TIMEOUT = str(6 * 60 * 60)
+TIMEOUT = '21600'  # 6 hours
 
 
 class ImageConfig:
@@ -50,7 +50,7 @@ class ImageConfig:
 
   @property
   def full_image_name(self):
-    return TAG_PREFIX + self.name
+    return IMAGE_NAME_PREFIX + self.name
 
 
 def get_base_image_path(image_name):
@@ -65,7 +65,7 @@ BASE_IMAGES = [
     ImageConfig('base-clang-full',
                 path=get_base_image_path('base-clang'),
                 build_args=('FULL_LLVM_BUILD=1',)),
-    ImageConfig('indexer', path=os.path.join('infra', 'indexer')),
+    # ImageConfig('indexer', path=os.path.join('infra', 'indexer')),
     ImageConfig('base-builder'),
     ImageConfig('base-builder-go'),
     ImageConfig('base-builder-javascript'),
@@ -118,7 +118,7 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
 def get_images_architecture_manifest_steps():
   """Returns steps to create manifests for ARM and x86_64 versions of
   base-runner and base-builder."""
-  images = [f'{TAG_PREFIX}base-builder', f'{TAG_PREFIX}base-runner']
+  images = [f'{IMAGE_NAME_PREFIX}base-builder', f'{IMAGE_NAME_PREFIX}base-runner']
   steps = []
   for image in images:
     steps.extend(get_image_push_architecture_manifest_steps(image))

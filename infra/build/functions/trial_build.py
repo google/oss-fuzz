@@ -22,25 +22,28 @@ import functools
 import json
 import logging
 import os
+import subprocess
 import sys
 import time
 import urllib.request
+import yaml
 
+import oauth2client.client
 from googleapiclient.discovery import build as cloud_build
 from googleapiclient.errors import HttpError
-import oauth2client.client
-import yaml
 
 import build_and_push_test_images
 import build_and_run_coverage
 import build_lib
 import build_project
 
-# Warning time in minutes before build times out.
-BUILD_TIMEOUT_WARNING_MINUTES = 15
+
 # Default timeout in seconds, 7 hours.
 DEFAULT_TIMEOUT = 25200
 TEST_IMAGE_SUFFIX = 'testing'
+
+# Warning time in minutes before build times out.
+BUILD_TIMEOUT_WARNING_MINUTES = 15
 FINISHED_BUILD_STATUSES = ('SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED',
                            'EXPIRED')
 
@@ -57,31 +60,7 @@ BUILD_TYPES = {
                   'status-introspector.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
-    'indexer':
-        BuildType('indexer', build_project.get_indexer_build_steps,
-                  'status.json'),
 }
-
-
-class ProjectStatus:
-  """Class that holds info about project builds."""
-
-  def __init__(self, name):
-    self.name = name
-    self.build_result = {'coverage': None, 'fuzzing': None}
-    self.build_finished = {'coverage': True, 'fuzzing': True}
-    self.build_id = {'coverage': None, 'fuzzing': None}
-
-  def set_build_id(self, build_id, build_type):
-    """Sets the build id of |build_type| to |build_id|."""
-    self.build_id[build_type] = build_id
-    if build_id:
-      self.build_finished[build_type] = False
-
-  def set_build_result(self, result):
-    """Sets the result of |build_type| to |result|."""
-    self.build_result = result
-    self.build_finished = True
 
 
 def _get_production_build_statuses(build_type):
@@ -96,24 +75,51 @@ def _get_production_build_statuses(build_type):
   for project in project_statuses:
     name = project['name']
     history = project['history']
-    if len(history) == 0:
+    if not history:
       continue
     success = history[0]['success']
-
     results[name] = bool(success)
   return results
+
+
+@functools.lru_cache
+def get_all_projects():
+  """Returns a list of all OSS-Fuzz projects."""
+  projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
+                              'projects')
+  return sorted([
+      project for project in os.listdir(projects_dir)
+      if os.path.isdir(os.path.join(projects_dir, project))
+  ])
+
+
+@functools.lru_cache
+def get_project_languages():
+  """Returns a dictionary mapping languages to projects."""
+  all_projects = get_all_projects()
+  project_languages = collections.defaultdict(list)
+  for project in all_projects:
+    project_yaml_path = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
+                                     'projects', project, 'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      continue
+    with open(project_yaml_path, 'r', encoding='utf-8') as file_handle:
+      project_yaml = yaml.safe_load(file_handle)
+    language = project_yaml.get('language', 'c++')
+    project_languages[language].append(project)
+  return project_languages
 
 
 def handle_special_projects(args):
   """Handles "special" projects that are not actually projects such as "all" or
   "c++"."""
   all_projects = get_all_projects()
-  if 'all' in args.projects:  # Explicit opt-in for all.
+  if 'all' in args.projects:
     args.projects = all_projects
     return
   project_languages = get_project_languages()
   for project in args.projects[:]:
-    if project in project_languages.keys():
+    if project in project_languages:
       language = project
       args.projects.remove(language)
       args.projects.extend(project_languages[language])
@@ -148,72 +154,156 @@ def get_args(args=None):
                       action='store_true',
                       help='Build projects that failed to build on OSS-Fuzz\'s '
                       'production builder.')
+  parser.add_argument('--version-tag',
+                      required=False,
+                      default=None,
+                      help='Version tag to use for base images.')
+  parser.add_argument('--skip-build-images',
+                      action='store_true',
+                      help='Skip the base image build phase.')
   parsed_args = parser.parse_args(args)
   handle_special_projects(parsed_args)
   return parsed_args
 
 
-@functools.lru_cache
-def get_all_projects():
-  """Returns a list of all OSS-Fuzz projects."""
-  projects_dir = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
-                              'projects')
-  return sorted([
-      project for project in os.listdir(projects_dir)
-      if os.path.isdir(os.path.join(projects_dir, project))
-  ])
-
-
-@functools.lru_cache
-def get_project_languages():
-  """Returns a dictionary mapping languages to projects."""
-  all_projects = get_all_projects()
-  project_languages = collections.defaultdict(list)
-  for project in all_projects:
-    project_yaml_path = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
-                                     'projects', project, 'project.yaml')
-    if not os.path.exists(project_yaml_path):
-      continue
-    with open(project_yaml_path, 'r') as project_yaml_file_handle:
-      project_yaml_contents = project_yaml_file_handle.read()
-      project_yaml = yaml.safe_load(project_yaml_contents)
-    language = project_yaml.get('language', 'c++')
-    project_languages[language].append(project)
-  return project_languages
-
-
 def get_projects_to_build(specified_projects, build_type, force_build):
-  """Returns the list of projects that should be built based on the projects
-  specified by the user (|specified_projects|) the |project_statuses| of the
-  last builds and the |build_type|."""
+  """Returns the list of projects that should be built."""
   buildable_projects = []
-
   project_statuses = _get_production_build_statuses(build_type)
   for project in specified_projects:
-    if (project not in project_statuses or project_statuses[project] or
+    if (project not in project_statuses or not project_statuses[project] or
         force_build):
-      # If we don't have data on the project, then we have no reason not to
-      # build it.
       buildable_projects.append(project)
-      continue
-
   return buildable_projects
+
+
+def trial_build_main(args=None, local_base_build=True):
+  """Main function for trial_build."""
+  args = get_args(args)
+
+  test_image_tag = TEST_IMAGE_SUFFIX
+  if args.version_tag:
+    test_image_tag = f'{test_image_tag}-{args.version_tag}'
+  if args.branch:
+    test_image_tag = f'{test_image_tag}-{args.branch.lower().replace("/", "-")}'
+
+  if not args.skip_build_images:
+    logging.info('Starting "Build and Push Images" phase...')
+    if local_base_build:
+      build_and_push_test_images.build_and_push_images(test_image_tag)
+    else:
+      if not build_and_push_test_images.gcb_build_and_push_images(
+          test_image_tag, version_tag=args.version_tag):
+        logging.error('Failed to build and push images.')
+        return False
+    logging.info('"Build and Push Images" phase completed.')
+  else:
+    logging.info('================================================================')
+    logging.info('                   PHASE 1: SKIPPED')
+    logging.info('================================================================')
+    logging.info('Skipping "Build and Push Images" phase as requested.')
+
+  timeout = int(os.environ.get('TIMEOUT', DEFAULT_TIMEOUT))
+  end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
+  return _do_test_builds(args, test_image_tag, end_time)
+
+
+def _do_test_builds(args, test_image_suffix, end_time):
+  """Does test coverage and fuzzing builds."""
+  build_types = []
+  sanitizers = list(args.sanitizers)
+  if 'coverage' in sanitizers:
+    sanitizers.pop(sanitizers.index('coverage'))
+    build_types.append(BUILD_TYPES['coverage'])
+  if 'introspector' in sanitizers:
+    sanitizers.pop(sanitizers.index('introspector'))
+    build_types.append(BUILD_TYPES['introspector'])
+  if sanitizers:
+    build_types.append(BUILD_TYPES['fuzzing'])
+
+  build_ids = collections.defaultdict(list)
+  skipped_projects = []
+  projects_to_build_count = 0
+  credentials = oauth2client.client.GoogleCredentials.get_application_default()
+
+  logging.info('================================================================')
+  logging.info('            PHASE 2: STARTING TEST BUILDS')
+  logging.info('================================================================')
+
+  for build_type in build_types:
+    projects = get_projects_to_build(list(args.projects), build_type,
+                                     args.force_build)
+    if not args.force_build:
+      logging.info('Build type: %s', build_type.type_name)
+      logging.info('  - Selected projects: %d / %d (due to failed production builds)',
+                   len(projects), len(args.projects))
+      logging.info('  - To build all projects, use the --force-build flag.')
+
+    logging.info('Starting to create and trigger builds for build type: %s',
+                 build_type.type_name)
+
+    config = build_project.Config(testing=True,
+                                  test_image_suffix=test_image_suffix,
+                                  repo=args.repo,
+                                  branch=args.branch,
+                                  parallel=False,
+                                  upload=False,
+                                  build_type=build_type.type_name)
+    project_builds, new_skipped = _do_build_type_builds(
+        args, config, credentials, build_type, projects)
+    skipped_projects.extend(new_skipped)
+    for project, project_build_id in project_builds.items():
+      build_ids[project].append(project_build_id)
+      projects_to_build_count += 1
+
+  logging.info('Started builds for %d projects.', projects_to_build_count)
+
+  if skipped_projects:
+    logging.info('================================================================')
+    logging.info('               PHASE 2: SKIPPED PROJECTS')
+    logging.info('================================================================')
+    logging.info('Total projects skipped: %d', len(skipped_projects))
+    logging.info('--- SKIPPED PROJECTS ---')
+    for project, reason in sorted(skipped_projects):
+      logging.info('  - %s: %s', project, reason)
+    logging.info('-----------------------')
+
+  logging.info('================================================================')
+  logging.info('               PHASE 2: STARTED BUILDS')
+  logging.info('================================================================')
+  logging.info('Total projects with builds: %d', len(build_ids))
+  logging.info('--- STARTED BUILDS ---')
+  for project, project_build_ids in sorted(build_ids.items()):
+    logging.info('  - %s:', project)
+    for build_id in project_build_ids:
+      logging.info('    - Build ID: %s', build_id)
+      logging.info('      GCB URL: %s', build_lib.get_gcb_url(
+          build_id, build_lib.IMAGE_PROJECT))
+  logging.info('-----------------------')
+
+  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
+                        end_time, skipped_projects)
 
 
 def _do_build_type_builds(args, config, credentials, build_type, projects):
   """Does |build_type| test builds of |projects|."""
   build_ids = {}
+  skipped_projects = []
   for project_name in projects:
     try:
       project_yaml, dockerfile_contents = (
           build_project.get_project_data(project_name))
     except FileNotFoundError:
-      logging.error('Couldn\'t get project data. Skipping %s.', project_name)
+      skipped_projects.append((project_name, 'Missing Dockerfile'))
       continue
 
     build_project.set_yaml_defaults(project_yaml)
+    if project_yaml['disabled']:
+      skipped_projects.append((project_name, 'Disabled'))
+      continue
+
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers']) + ['coverage', 'indexer', 'introspector']
+        project_yaml['sanitizers']) + ['coverage', 'introspector']
     project_yaml['sanitizers'] = list(
         set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
@@ -222,12 +312,14 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
             set(args.fuzzing_engines)))
 
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
+      skipped_projects.append(
+          (project_name, 'No compatible sanitizers or engines'))
       continue
 
     steps = build_type.get_build_steps_func(project_name, project_yaml,
                                             dockerfile_contents, config)
     if not steps:
-      logging.error('No steps. Skipping %s.', project_name)
+      skipped_projects.append((project_name, 'No build steps generated'))
       continue
 
     try:
@@ -236,13 +328,14 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           steps,
           credentials,
           build_type.type_name,
-          extra_tags=['trial-build', f'branch-{args.branch}']))
+          extra_tags=['trial-build', f'branch-{args.branch.replace("/", "-")}'],
+          timeout=14400))
       time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
       print('Failed to start build', project_name, error)
 
-  return build_ids
+  return build_ids, skipped_projects
 
 
 def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
@@ -252,71 +345,60 @@ def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
   return build_result['status']
 
 
-def check_finished(build_id, project, cloudbuild_api, cloud_project,
-                   build_results):
-  """Checks that the |build_type| build is complete. Updates |project_status| if
-  complete."""
-
+def check_finished(build_id, cloudbuild_api, cloud_project):
+  """Checks that the build is complete. Returns status if complete, else None"""
   try:
     build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
                                              build_id)
   except HttpError:
     logging.debug('build: HttpError when getting build status from gcb')
-    return False
+    return None
   if build_status not in FINISHED_BUILD_STATUSES:
     logging.debug('build: %d not finished.', build_id)
-    return False
-  build_results[project] = build_status
-  return True
+    return None
+  return build_status
 
 
-def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: disable=too-many-locals
+def wait_on_builds(build_ids, credentials, cloud_project, end_time,
+                   skipped_projects):  # pylint: disable=too-many-locals
   """Waits on |builds|. Returns True if all builds succeed."""
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
                            client_options=build_lib.REGIONAL_CLIENT_OPTIONS)
-  cloudbuild_api = cloudbuild.projects().builds()  # pylint: disable=no-member
+  cloudbuild_api = cloudbuild.projects().builds()  # pylylint: disable=no-member
 
   wait_builds = build_ids.copy()
-  build_results = {}
-  failed_builds = {}
-  builds_count = len(wait_builds)
-  next_check_time = datetime.datetime.now() + datetime.timedelta(hours=1)
+  failed_builds = collections.defaultdict(list)
+  successful_builds = collections.defaultdict(list)
+  builds_count = sum(len(ids) for ids in build_ids.values())
+  finished_builds_count = 0
+
+  logging.info('Waiting for %d project builds to complete...', builds_count)
+
   timeout_warning_time = end_time - datetime.timedelta(
       minutes=BUILD_TIMEOUT_WARNING_MINUTES)
   notified_timeout = False
-  logging.info(
-      '----------------------------Build result----------------------------')
-  logging.info(f'Trial build end time: {end_time}')
-  logging.info('Failed project, Statuses, Logs')
+
   while wait_builds:
     current_time = datetime.datetime.now()
-    # Update status every hour.
-    if current_time >= next_check_time:
-      logging.info(f'[{current_time}] Remaining builds: '
-                   f'{len(wait_builds)}, {wait_builds}')
-      next_check_time += datetime.timedelta(hours=1)
-
-    # Warn users and write a summary if build is about to end.
     if not notified_timeout and current_time >= timeout_warning_time:
       notified_timeout = True
-      logging.info(
-          f'[{current_time}] Warning: trial build may time out in '
-          f'{BUILD_TIMEOUT_WARNING_MINUTES} minutes.\n'
-          f'Remaining builds: {len(wait_builds)}/{builds_count}, {wait_builds}.'
-          f'\nFailed builds: {len(failed_builds)}/{builds_count}, '
-          f'{failed_builds}')
+      logging.warning(
+          'Nearing timeout: %d minutes remaining. Remaining builds: %d',
+          BUILD_TIMEOUT_WARNING_MINUTES, len(wait_builds))
 
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
-        if check_finished(build_id, project, cloudbuild_api, cloud_project,
-                          build_results):
-          if build_results[project] != 'SUCCESS':
-            logs_url = build_lib.get_logs_url(build_id)
-            failed_builds[project] = logs_url
-            logging.info(f'{project}, {build_results[project]}, {logs_url}')
+        status = check_finished(build_id, cloudbuild_api, cloud_project)
+        if status:
+          finished_builds_count += 1
+          if status == 'SUCCESS':
+            successful_builds[project].append(build_id)
+          else:
+            logs_url = build_lib.get_gcb_url(build_id, cloud_project)
+            failed_builds[project].append((status, logs_url))
 
           wait_builds[project].remove(build_id)
           if not wait_builds[project]:
@@ -324,79 +406,46 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: 
 
         time.sleep(1)  # Avoid rate limiting.
 
-  # Return failure if any build fails or nothing is built.
-  if failed_builds or not build_results:
-    logging.info(
-        'Summary: trial build failed\n'
-        f'Failed builds: {len(failed_builds)}/{builds_count}, {failed_builds}')
+  # Final Report
+  logging.info('================================================================'
+               )
+  logging.info('               PHASE 2: FINAL BUILD REPORT')
+  logging.info('================================================================'
+               )
+  total_projects = (len(successful_builds) + len(failed_builds) +
+                    len(skipped_projects))
+  logging.info('Total projects considered: %d', total_projects)
+  logging.info('  - Successful builds: %d', len(successful_builds))
+  logging.info('  - Failed builds: %d', len(failed_builds))
+  logging.info('  - Skipped projects: %d', len(skipped_projects))
+  logging.info('================================================================'
+               )
+
+  if skipped_projects:
+    logging.info('\n--- SKIPPED PROJECTS ---')
+    for project, reason in sorted(skipped_projects):
+      logging.info('  - %s: %s', project, reason)
+
+  if failed_builds:
+    logging.error('\n--- FAILED BUILDS ---')
+    for project, failures in sorted(failed_builds.items()):
+      logging.error('  - %s:', project)
+      for status, gcb_url in failures:
+        build_id = gcb_url.split('/')[-1].split('?')[0]
+        logging.error('    - Build ID: %s', build_id)
+        logging.error('    - Status: %s', status)
+        logging.error('    - GCB URL: %s', gcb_url)
+    logging.info('-----------------------')
     return False
 
-  logging.info(f'Summary: trial build passed.')
+  if not finished_builds_count and not skipped_projects:
+    logging.warning('No builds were run.')
+    return False
+
+  logging.info('\nAll builds passed successfully!')
+  logging.info('------------------------')
   return True
 
-
-def _do_test_builds(args, test_image_suffix, end_time):
-  """Does test coverage and fuzzing builds."""
-  logging.info(
-      '---------------------------Trial build logs---------------------------')
-  build_types = []
-  sanitizers = list(args.sanitizers)
-  if 'coverage' in sanitizers:
-    sanitizers.pop(sanitizers.index('coverage'))
-    build_types.append(BUILD_TYPES['coverage'])
-  if 'introspector' in sanitizers:
-    sanitizers.pop(sanitizers.index('introspector'))
-    build_types.append(BUILD_TYPES['introspector'])
-  if 'indexer' in sanitizers:
-    sanitizers.pop(sanitizers.index('indexer'))
-    build_types.append(BUILD_TYPES['indexer'])
-  if sanitizers:
-    build_types.append(BUILD_TYPES['fuzzing'])
-  build_ids = collections.defaultdict(list)
-  for build_type in build_types:
-    projects = get_projects_to_build(list(args.projects), build_type,
-                                     args.force_build)
-    config = build_project.Config(testing=True,
-                                  test_image_suffix=test_image_suffix,
-                                  repo=args.repo,
-                                  branch=args.branch,
-                                  parallel=False,
-                                  upload=False)
-    credentials = (
-        oauth2client.client.GoogleCredentials.get_application_default())
-    project_builds = _do_build_type_builds(args, config, credentials,
-                                           build_type, projects)
-    for project, project_build_id in project_builds.items():
-      build_ids[project].append(project_build_id)
-
-  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
-                        end_time)
-
-
-def trial_build_main(args=None, local_base_build=True):
-  """Main function for trial_build. Pushes test images and then does test
-  builds."""
-  args = get_args(args)
-  timeout = int(os.environ.get('TIMEOUT', DEFAULT_TIMEOUT))
-  end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
-  logging.info(f'Timeout: {timeout}, trial build end time: {end_time}')
-  if args.branch:
-    test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
-  else:
-    test_image_suffix = TEST_IMAGE_SUFFIX
-  if local_base_build:
-    build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
-        test_image_suffix)
-  else:
-    build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
-  return _do_test_builds(args, test_image_suffix, end_time)
-
-
-def main():
-  """Builds and pushes test images of the base images. Then does test coverage
-  and fuzzing builds using the test images."""
-  logging.basicConfig(level=logging.INFO)
-  return 0 if trial_build_main() else 1
 
 
 if __name__ == '__main__':

@@ -132,7 +132,6 @@ def get_project_data(project_name):
     with open(dockerfile_path) as dockerfile:
       dockerfile = dockerfile.read()
   except FileNotFoundError:
-    logging.error('Project "%s" does not have a dockerfile.', project_name)
     raise
   project_yaml_path = os.path.join(project_dir, 'project.yaml')
   with open(project_yaml_path, 'r') as project_yaml_file_handle:
@@ -371,10 +370,6 @@ def get_build_steps_for_project(project,
                                 use_caching=False,
                                 timestamp=None):
   """Returns build steps for project."""
-
-  if project.disabled:
-    logging.info('Project "%s" is disabled.', project.name)
-    return []
 
   if not timestamp:
     timestamp = get_datetime_now()
@@ -624,9 +619,6 @@ def get_indexer_build_steps(project_name,
                             timestamp=None):
   """Get indexer build steps."""
   project = Project(project_name, project_yaml, dockerfile)
-  if project.disabled:
-    logging.info('Project "%s" is disabled.', project.name)
-    return []
 
   if project.fuzzing_language not in {'c', 'c++'}:
     return []
@@ -853,7 +845,6 @@ def build_script_main(script_description,
   error = False
   config = create_config(args, build_type)
   for project_name in args.projects:
-    logging.info('Getting steps for: "%s".', project_name)
     try:
       project_yaml, dockerfile_contents = get_project_data(project_name)
     except FileNotFoundError:

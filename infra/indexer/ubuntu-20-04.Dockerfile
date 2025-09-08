@@ -14,9 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-clang-full:ubuntu-20-04
 
-COPY llvmsymbol.diff /src/
-RUN install_swift_ubuntu_24_04.sh
+RUN mkdir /indexer
+WORKDIR /indexer
+COPY . /indexer
 
-COPY precompile_swift /usr/local/bin/
+RUN apt-get update && apt-get install -y libsqlite3-dev make zlib1g-dev
+RUN mkdir build && cd build && cmake .. && cmake --build . -j -v

@@ -16,9 +16,8 @@
       "gcr.io/oss-fuzz/test-project",
       "--tag",
       "us-central1-docker.pkg.dev/oss-fuzz/unsafe/test-project",
-      "."
+      "oss-fuzz/projects/test-project"
     ],
-    "dir": "oss-fuzz/projects/test-project",
     "id": "build-UNIQUE_ID"
   },
   {
@@ -73,9 +72,8 @@
       "gcr.io/oss-fuzz/test-project-aarch64",
       "--tag",
       "us-central1-docker.pkg.dev/oss-fuzz/unsafe/test-project-aarch64",
-      "."
+      "oss-fuzz/projects/test-project"
     ],
-    "dir": "oss-fuzz/projects/test-project",
     "id": "build-UNIQUE_ID"
   },
   {

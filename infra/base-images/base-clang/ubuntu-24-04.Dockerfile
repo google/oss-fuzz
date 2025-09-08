@@ -42,13 +42,13 @@ RUN apt-get update && apt-get install -y git && \
     apt-get autoremove --purge -y git && \
     rm -rf .git
 
-COPY checkout_build_install_llvm_24.04.sh /root/
-RUN chmod +x /root/checkout_build_install_llvm_24.04.sh
+COPY checkout_build_install_llvm_ubuntu_24_04.sh /root/
+RUN chmod +x /root/checkout_build_install_llvm_ubuntu_24_04.sh
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.
 ARG FULL_LLVM_BUILD
-RUN FULL_LLVM_BUILD=$FULL_LLVM_BUILD /root/checkout_build_install_llvm_24.04.sh
-RUN rm /root/checkout_build_install_llvm_24.04.sh
+RUN FULL_LLVM_BUILD=$FULL_LLVM_BUILD /root/checkout_build_install_llvm_ubuntu_24_04.sh
+RUN rm /root/checkout_build_install_llvm_ubuntu_24_04.sh
 
 # Setup the environment.
 ENV CC "clang"
