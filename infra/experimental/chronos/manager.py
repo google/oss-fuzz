@@ -23,6 +23,8 @@ import requests
 import subprocess
 from enum import Enum
 
+import bad_patch
+
 logger = logging.getLogger(__name__)
 
 OSS_FUZZ_BUILD_HISTORY_URL = 'https://oss-fuzz-build-logs.storage.googleapis.com/status.json'
@@ -205,7 +207,7 @@ def build_cached_project(project,
       '"ENV CAPTURE_REPLAY_SCRIPT=1"', container_name,
       _get_project_cached_named(project, sanitizer)
   ]
-  # logger.info('Saving image: [%s]', ' '.join(cmd))
+  logger.info('Saving image: [%s]', ' '.join(cmd))
   try:
     subprocess.check_call(' '.join(cmd),
                           shell=True,
@@ -222,35 +224,67 @@ def build_cached_project(project,
 def check_cached_replay(project,
                         sanitizer='address',
                         container_output='stdout',
-                        silent_replays=False):
+                        silent_replays=False) -> bool:
   """Checks if a cache build succeeds and times is."""
   build_project_image(project, container_output=container_output)
   build_cached_project(project,
                        sanitizer=sanitizer,
                        container_output=container_output)
-  # Run the cached replay script.
-  cmd = [
-      'docker', 'run', '--rm', '--env=SANITIZER=' + sanitizer,
-      '--env=FUZZING_LANGUAGE=c++',
-      '-v=' + os.getcwd() + '/build/out/' + project + '/:/out/',
-      '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
-      _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
-      '"export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile"'
-  ]
+
+  # Get which the list of bad_patch_methods
+  bad_patch_methods = list(bad_patch.BAD_PATCH_GENERATOR.keys())
+
   start = time.time()
-  if silent_replays:
-    stdout_fp = subprocess.DEVNULL
-    stderr_fp = subprocess.DEVNULL
-  else:
-    stdout_fp = None
-    stderr_fp = None
-  subprocess.check_call(' '.join(cmd),
-                        shell=True,
-                        stdout=stdout_fp,
-                        stderr=stderr_fp)
+  failed = []
+  base_cmd = 'export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile'
+
+  # Use different bad patches to test the cached replay build
+  for bad_patch_name, bad_patch_method in bad_patch.BAD_PATCH_GENERATOR.items():
+    # Generate bad patch command using different approaches
+    bad_patch_command, expected_rc = bad_patch_method()
+    if bad_patch_command:
+      bad_patch_command += ' && '
+    cmd_to_run = f'set -euo pipefail && {bad_patch_command}{base_cmd}'
+
+    # Run the cached replay script.
+    cmd = [
+        'docker', 'run', '--rm', '--env=SANITIZER=' + sanitizer,
+        '--env=FUZZING_LANGUAGE=c++',
+        '-v=' + os.getcwd() + '/build/out/' + project + '/:/out/',
+        '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
+        _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
+        f'"{cmd_to_run}"'
+    ]
+
+    if silent_replays:
+      stdout_fp = subprocess.DEVNULL
+      stderr_fp = subprocess.DEVNULL
+    else:
+      stdout_fp = None
+      stderr_fp = None
+
+    result = subprocess.run(' '.join(cmd), shell=True,
+                            stdout=stdout_fp, stderr=stderr_fp)
+
+    if not result.returncode == expected_rc:
+      failed.append(bad_patch_name)
+      logger.info(('%s check cached replay failed on bad patches %s. '
+                   'Return code: %d. Expected return code: %d'), project,
+                  bad_patch_name, result.returncode, expected_rc)
+
   end = time.time()
-  logger.info('%s cached build completion time: %.2f seconds', project,
+  logger.info('%s check cached replay completion time: %.2f seconds', project,
               (end - start))
+
+  if failed:
+    logger.info('%s check cached replay failed to detect these bad patches: %s',
+                project, ' '.join(failed))
+
+    return False
+
+  logger.info('%s check cached replay success to detect all bad patches.', project)
+
+  return True
 
 
 def check_test(project,
@@ -619,7 +653,7 @@ def main():
       check_test(project, args.sanitizer, args.container_output,
                  args.run_full_cache_replay)
   if args.command == 'check-replay-script':
-    check_cached_replay(args.project, args.sanitizer)
+    result = check_cached_replay(args.project, args.sanitizer)
   if args.command == 'build-cached-image':
     build_cached_project(args.project,
                          sanitizer=args.sanitizer,
