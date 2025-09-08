@@ -16,6 +16,7 @@
 // functions visited (in order) to TRACE_DUMP_FILE. Each function is only ever
 // recorded once. To make this work, we need to compile with
 // -fsanitize-coverage=trace-pc-guard,func
+// Note: this file cannot use any C/C++ dependencies or new/delete.
 
 #include <assert.h>
 #include <fcntl.h>
@@ -33,10 +34,10 @@ constexpr int kMaxTraceSize = 64 * 1024;
 
 struct CoverageData {
   void* pcs[kMaxTraceSize];
-  size_t idx = 0;
+  size_t idx;
   // TODO: b/441647761 - Handle multiple threads.
   pid_t main_thread_id;
-  bool finished = false;
+  bool finished;
 };
 
 static CoverageData* coverage_data;
@@ -136,7 +137,9 @@ void WriteTrace() {
 }
 
 void Init() {
-  coverage_data = new CoverageData();
+  coverage_data = static_cast<CoverageData*>(malloc(sizeof(CoverageData)));
+  coverage_data->finished = false;
+  coverage_data->idx = 0;
   // For now, only record PCs from the main thread.
   coverage_data->main_thread_id = GetTID();
   // Dump coverage on exit.

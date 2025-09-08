@@ -366,6 +366,8 @@ def build_project(
       '-Wextra',
       '-pedantic',
       '-std=c++20',
+      '-fno-rtti',
+      '-fno-exceptions',
       '-glldb',
       '-O0',
       (fuzzing_engine_dir / fuzzing_engine).as_posix(),
