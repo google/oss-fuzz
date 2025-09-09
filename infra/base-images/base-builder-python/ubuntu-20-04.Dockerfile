@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,6 @@
 #
 ################################################################################
 
-./tools/dev/gm.py x64.release.check
-#./tools/dev/gm.py x64.release test262
-#./tools/dev/gm.py x64.release mozilla
-#./tools/dev/gm.py x64.release webkit
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04
+
+RUN install_python.sh

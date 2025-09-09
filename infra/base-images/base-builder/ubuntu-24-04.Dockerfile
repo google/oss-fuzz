@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang
+FROM base-clang:ubuntu-24-04
 
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
@@ -23,7 +23,7 @@ RUN /install_deps.sh && rm /install_deps.sh
 ENV PYTHON_VERSION 3.11.13
 RUN PYTHON_DEPS="\
         zlib1g-dev \
-        libncurses5-dev \
+        libncurses-dev \
         libgdbm-dev \
         libnss3-dev \
         libssl-dev \
@@ -122,12 +122,10 @@ ENV FUZZER_LDFLAGS ""
 
 WORKDIR $SRC
 
-COPY afl_llvm22_patch.diff $SRC/
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout eadc8a2a7e0fa0338802ee6254bf296489ce4fd7 && \
+    git checkout daaefcddc063b356018c29027494a00bcfc3e240 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
-    git apply $SRC/afl_llvm22_patch.diff && \
     rm -rf .git && \
     chmod 755 oss.sh
 
@@ -195,35 +193,6 @@ ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc 
 ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang-jcc2 /usr/local/bin/
 ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc2 /usr/local/bin
 RUN chmod +x /usr/local/bin/clang-jcc /usr/local/bin/clang++-jcc /usr/local/bin/clang-jcc2 /usr/local/bin/clang++-jcc2
-
-COPY llvmsymbol.diff $SRC
-COPY detect_repo.py /opt/cifuzz/
-COPY bazel.bazelrc /root/.bazelrc
-
-# Set up ccache binary and cache directory.
-# /ccache/bin will contain the compiler wrappers, and /ccache/cache will
-# contain the actual cache, which can be saved.
-# To use this, set PATH=/ccache/bin:$PATH.
-RUN mkdir -p /ccache/bin && mkdir -p /ccache/cache && \
-    ln -s /usr/local/bin/ccache /ccache/bin/clang && \
-    ln -s /usr/local/bin/ccache /ccache/bin/clang++ && \
-    ln -s /usr/local/bin/ccache /ccache/bin/clang-jcc && \
-    ln -s /usr/local/bin/ccache /ccache/bin/clang++-jcc
-ENV CCACHE_DIR /ccache/cache
-
-# Don't check that the compiler is the same, so we can switch between jcc and
-# clang under the hood and re-use the same build cache.
-ENV CCACHE_COMPILERCHECK none
-ENV CCACHE_COMPILERTYPE clang
-
-# Build newer patchelf than the one available from Ubuntu.
-RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
-    apt-get update && apt-get install -y autoconf && \
-    cd patchelf && git checkout 523f401584d9584e76c9c77004e7abeb9e6c4551 && \
-    unset CFLAGS && export CXXFLAGS='-stdlib=libc++' && export LDFLAGS='-lpthread' && \
-    ./bootstrap.sh && ./configure && make && \
-    cp /tmp/patchelf/src/patchelf /usr/local/bin && \
-    rm -rf /tmp/patchelf && apt-get remove -y autoconf
 
 COPY indexer /opt/indexer
 COPY --from=gcr.io/oss-fuzz-base/indexer /indexer/build/indexer /opt/indexer/indexer

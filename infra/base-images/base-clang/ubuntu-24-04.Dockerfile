@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 # Docker image with clang installed.
 
-FROM gcr.io/oss-fuzz-base/base-image
+FROM gcr.io/oss-fuzz-base/base-image:ubuntu-24-04
 
 ARG arch=x86_64
 
@@ -33,13 +33,22 @@ RUN apt-get update && apt-get install -y wget sudo && \
     SUDO_FORCE_REMOVE=yes apt-get autoremove --purge -y wget sudo && \
     rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
 
-COPY checkout_build_install_llvm.sh /root/
+RUN apt-get update && apt-get install -y git && \
+    git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
+    cd fuzz-introspector && \
+    git checkout 332d674f00b8abc4c9ebf10e9c42e5b72b331c63 && \
+    git submodule init && \
+    git submodule update && \
+    apt-get autoremove --purge -y git && \
+    rm -rf .git
 
+COPY checkout_build_install_llvm_24.04.sh /root/
+RUN chmod +x /root/checkout_build_install_llvm_24.04.sh
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.
 ARG FULL_LLVM_BUILD
-RUN FULL_LLVM_BUILD=$FULL_LLVM_BUILD /root/checkout_build_install_llvm.sh
-RUN rm /root/checkout_build_install_llvm.sh
+RUN FULL_LLVM_BUILD=$FULL_LLVM_BUILD /root/checkout_build_install_llvm_24.04.sh
+RUN rm /root/checkout_build_install_llvm_24.04.sh
 
 # Setup the environment.
 ENV CC "clang"
@@ -59,12 +68,12 @@ ENV CCC "clang++"
 ENV CFLAGS -O1 \
   -fno-omit-frame-pointer \
   -gline-tables-only \
+  -Wno-error=enum-constexpr-conversion \
   -Wno-error=incompatible-function-pointer-types \
   -Wno-error=int-conversion \
   -Wno-error=deprecated-declarations \
   -Wno-error=implicit-function-declaration \
   -Wno-error=implicit-int \
-  -Wno-error=unknown-warning-option \
   -Wno-error=vla-cxx-extension \
   -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"

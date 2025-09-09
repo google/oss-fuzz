@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,12 @@
 #
 ################################################################################
 
-./tools/dev/gm.py x64.release.check
-#./tools/dev/gm.py x64.release test262
-#./tools/dev/gm.py x64.release mozilla
-#./tools/dev/gm.py x64.release webkit
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/kubeflow/katib
+RUN wget https://go.dev/dl/go1.25.1.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.25.1.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/
+WORKDIR katib
+COPY build.sh *.go $SRC/

@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04
 
 ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup
@@ -26,7 +26,7 @@ ENV OSSFUZZ_RUSTPATH /rust
 # manually specifying what toolchain to use. Note that this environment variable
 # is additionally used by `install_rust.sh` as the toolchain to install.
 # cf https://rust-lang.github.io/rustup/overrides.html
-ENV RUSTUP_TOOLCHAIN nightly-2025-09-05
+ENV RUSTUP_TOOLCHAIN nightly-2024-07-12
 
 # Configure the linker used by default for x86_64 linux to be `clang` instead of
 # rustc's default of `cc` which is able to find custom-built libraries like

@@ -1,8 +1,7 @@
-#!/bin/bash -eu
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# you may not a use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #      http://www.apache.org/licenses/LICENSE-2.0
@@ -15,7 +14,19 @@
 #
 ################################################################################
 
-./tools/dev/gm.py x64.release.check
-#./tools/dev/gm.py x64.release test262
-#./tools/dev/gm.py x64.release mozilla
-#./tools/dev/gm.py x64.release webkit
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+
+# Set up Golang environment variables (copied from /root/.bash_profile).
+ENV GOPATH /root/go
+
+# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
+# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
+ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
+
+COPY gosigfuzz.c $GOPATH/gosigfuzz/
+
+RUN install_go.sh
+
+# TODO(jonathanmetzman): Install this file using install_go.sh.
+COPY ossfuzz_coverage_runner.go \
+     $GOPATH/

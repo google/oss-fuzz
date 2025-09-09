@@ -15,7 +15,5 @@
 #
 ################################################################################
 
-./tools/dev/gm.py x64.release.check
-#./tools/dev/gm.py x64.release test262
-#./tools/dev/gm.py x64.release mozilla
-#./tools/dev/gm.py x64.release webkit
+mv $SRC/filter_fuzzer.go $SRC/model-registry/internal/db/filter/
+compile_native_go_fuzzer_v2 github.com/kubeflow/model-registry/internal/db/filter FuzzFilterParse FuzzFilterParse

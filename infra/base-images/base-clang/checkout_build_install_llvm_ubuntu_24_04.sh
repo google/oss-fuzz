@@ -1,5 +1,5 @@
 #!/bin/bash -eux
-# Copyright 2016 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ case $(uname -m) in
       # Use chromium's clang revision.
       export CC=$WORK/llvm-stage1/bin/clang
       export CXX=$WORK/llvm-stage1/bin/clang++
-      ;;
+      ;; 
     aarch64)
       TARGET_TO_BUILD=AArch64
       # g++ multilib is not needed on AArch64 because we don't care about i386.
@@ -42,33 +42,32 @@ case $(uname -m) in
       ARCHITECTURE_DEPS="clang lld g++"
       export CC=clang
       export CXX=clang++
-      ;;
+      ;; 
     *)
       echo "Error: unsupported target $(uname -m)"
       exit 1
-      ;;
+      ;; 
 esac
 
 INTROSPECTOR_DEP_PACKAGES="texinfo bison flex"
 # zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
-LLVM_DEP_PACKAGES="build-essential make ninja-build git python3 python3-distutils binutils-dev zlib1g-dev $ARCHITECTURE_DEPS $INTROSPECTOR_DEP_PACKAGES"
+LLVM_DEP_PACKAGES="build-essential make ninja-build git python3 python3-setuptools binutils-dev zlib1g-dev $ARCHITECTURE_DEPS $INTROSPECTOR_DEP_PACKAGES"
 
 apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 # For manual bumping.
-# On each bump a full trial run for everything (fuzzing engines, sanitizers,
+# On each bump a full trial run for everything (fuzzing engines, sanitizers, 
 # languages, projects, ...) is needed.
-# Check CMAKE_VERSION infra/base-images/base-clang/Dockerfile was released
+# Check CMAKE_VERSION infra/base-images/base-clang/Dockerfile was released 
 # recently enough to fully support this clang version.
-OUR_LLVM_REVISION=cb2f0d0a5f14
+OUR_LLVM_REVISION=llvmorg-18.1.8
 
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 # Pin clang script due to https://github.com/google/oss-fuzz/issues/7617
-OUR_CLANG_REVISION=063d3766486a820c708e888d737b004d11543410
-git checkout $OUR_CLANG_REVISION
+git checkout 9eb79319239629c1b23cf7a59e5ebb2bab319a34
 
 LLVM_SRC=$SRC/llvm-project
 # Checkout
@@ -80,7 +79,8 @@ function clone_with_retries {
 
   # Disable exit on error since we might encounter some failures while retrying.
   set +e
-  for i in $(seq 1 $CHECKOUT_RETRIES); do
+  for i in $(seq 1 $CHECKOUT_RETRIES);
+  do
     rm -rf $LOCAL_PATH
     git clone $REPOSITORY $LOCAL_PATH
     CHECKOUT_RETURN_CODE=$?
@@ -98,16 +98,7 @@ clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 git -C $LLVM_SRC checkout $OUR_LLVM_REVISION
 echo "Using LLVM revision: $OUR_LLVM_REVISION"
 
-# Prepare fuzz introspector.
-echo "Installing fuzz introspector"
-FUZZ_INTROSPECTOR_CHECKOUT=341ebbd72bc9116733bcfcfab5adfd7f9b633e07
-
-git clone https://github.com/ossf/fuzz-introspector.git /fuzz-introspector
-cd /fuzz-introspector
-git checkout $FUZZ_INTROSPECTOR_CHECKOUT
-git submodule init
-git submodule update
-
+# For fuzz introspector.
 echo "Applying introspector changes"
 OLD_WORKING_DIR=$PWD
 cd $LLVM_SRC
@@ -117,7 +108,6 @@ cp -rf /fuzz-introspector/frontends/llvm/lib/Transforms/FuzzIntrospector ./llvm/
 # LLVM currently does not support dynamically loading LTO passes. Thus, we
 # hardcode it into Clang instead. Ref: https://reviews.llvm.org/D77704
 /fuzz-introspector/frontends/llvm/patch-llvm.sh
-
 cd $OLD_WORKING_DIR
 
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1

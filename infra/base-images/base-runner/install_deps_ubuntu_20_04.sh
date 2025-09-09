@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,24 @@
 #
 ################################################################################
 
-./tools/dev/gm.py x64.release.check
-#./tools/dev/gm.py x64.release test262
-#./tools/dev/gm.py x64.release mozilla
-#./tools/dev/gm.py x64.release webkit
+# Install dependencies in a platform-aware way.
+
+apt-get update && apt-get install -y \
+    binutils \
+    file \
+    ca-certificates \
+    fonts-dejavu \
+    git \
+    libcap2 \
+    rsync \
+    unzip \
+    jq \
+    wget \
+    zip --no-install-recommends
+
+case $(uname -m) in
+  x86_64)
+    # We only need to worry about i386 if we are on x86_64.
+    apt-get install -y lib32gcc1 libc6-i386
+    ;;
+esac

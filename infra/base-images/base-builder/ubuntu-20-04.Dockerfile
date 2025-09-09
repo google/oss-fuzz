@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang
+FROM gcr.io/oss-fuzz-base/base-clang:ubuntu-20-04
 
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
@@ -122,12 +122,10 @@ ENV FUZZER_LDFLAGS ""
 
 WORKDIR $SRC
 
-COPY afl_llvm22_patch.diff $SRC/
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout eadc8a2a7e0fa0338802ee6254bf296489ce4fd7 && \
+    git checkout daaefcddc063b356018c29027494a00bcfc3e240 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
-    git apply $SRC/afl_llvm22_patch.diff && \
     rm -rf .git && \
     chmod 755 oss.sh
 
@@ -143,8 +141,8 @@ RUN cd $SRC && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 
-COPY precompile_honggfuzz /usr/local/bin/
-RUN precompile_honggfuzz
+COPY precompile_honggfuzz_ubuntu_20_04 /usr/local/bin/
+RUN precompile_honggfuzz_ubuntu_20_04
 
 RUN cd $SRC && \
     git clone https://github.com/google/fuzztest && \
@@ -180,7 +178,7 @@ COPY bazel_build_fuzz_tests \
     install_python.sh \
     install_ruby.sh \
     install_rust.sh \
-    install_swift.sh \
+    install_swift_ubuntu_20_04.sh \
     make_build_replayable.py \
     python_coverage_helper.py \
     replay_build.sh \

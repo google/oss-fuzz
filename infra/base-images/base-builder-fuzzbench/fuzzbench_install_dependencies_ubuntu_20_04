@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2025 Google LLC
+#! /bin/bash -eux
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-./tools/dev/gm.py x64.release.check
-#./tools/dev/gm.py x64.release test262
-#./tools/dev/gm.py x64.release mozilla
-#./tools/dev/gm.py x64.release webkit
+apt-get update && apt-get install -y gcc gfortran python-dev libopenblas-dev liblapack-dev cython libpq-dev
+wget -O /tmp/requirements.txt https://raw.githubusercontent.com/google/fuzzbench/master/requirements.txt
+pip3 install pip --upgrade
+CFLAGS= CXXFLAGS= pip3 install -r /tmp/requirements.txt
+rm /tmp/requirements.txt
