@@ -526,19 +526,17 @@ def _create_indexed_build_steps(project,
   if build_type == 'indexer':
     container_name = _INDEXED_CONTAINER_NAME
     image_name = _indexer_built_image_name(project.name)
-    # build_script_command = '/opt/indexer/index_build.py'
-    build_script_command = 'echo "SIMULATING INDEXER BUILD"'
+    build_script_command = '/opt/indexer/index_build.py'
     # Save the CDB fragments so we can re-use them for rebuilding indexes.
     artifact_commands = ['cp -r $$OUT/cdb /cdb']
   elif build_type == 'tracer':
     container_name = _TRACING_CONTAINER_NAME
     image_name = _tracer_built_image_name(project.name)
-    build_script_command = 'echo "SIMULATING TRACER BUILD"'
-    # build_script_command = (
-    #     '/opt/indexer/index_build.py '
-    #     '--fuzzing-engine=tracing_engine.cc '
-    #     '--coverage-flags=-fsanitize-coverage=trace-pc-guard,func '
-    #     '--binaries-only')
+    build_script_command = (
+        '/opt/indexer/index_build.py '
+        '--fuzzing-engine=tracing_engine.cc '
+        '--coverage-flags=-fsanitize-coverage=trace-pc-guard,func '
+        '--binaries-only')
     artifact_commands = []
   else:
     raise ValueError(f'Unknown build_type: {build_type}')
