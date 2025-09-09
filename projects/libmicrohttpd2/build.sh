@@ -15,28 +15,28 @@
 #
 ################################################################################
 
-# Avoid memory leak
-export ASAN_OPTIONS=detect_leaks=0
-export LSAN_OPTIONS=detect_leaks=0
-
 BINARY=$SRC/mhd2/src/mhd2/.libs/libmicrohttpd2.a
 
 # Build libmicrohttpd
 ./autogen.sh
 ./configure --enable-dauth --enable-md5 --enable-sha256 --enable-sha512-256 \
   --enable-bauth --enable-upgrade --enable-https --enable-messages
-make clean
-make -j$(nproc)
+ASAN_OPTIONS=detect_leaks=0 make -j$(nproc)
 make install
 
 # Compile fuzzer
-FUZZERS="fuzz_response fuzz_daemon fuzz_mhd2 fuzz_str fuzz_crypto_int fuzz_libinfo"
+FUZZERS="fuzz_response fuzz_daemon fuzz_mhd2 fuzz_str fuzz_crypto_int fuzz_libinfo fuzz_connection fuzz_daemon_connection"
 
 for fuzzer in $FUZZERS; do
   extra_src=""
   case "$fuzzer" in
     fuzz_response|fuzz_daemon)
       extra_src="$SRC/mhd_helper.cpp"
+      ;;
+  esac
+  case "$fuzzer" in
+    fuzz_connection|fuzz_daemon_connection)
+      extra_src="$SRC/connection_helper.cpp"
       ;;
   esac
 
@@ -59,3 +59,6 @@ $CXX $CXXFLAGS $SRC/fuzz_crypto_ext.cpp -DHAVE_CONFIG_H \
   -I$SRC/mhd2/src/include -I$SRC/mhd2/src/incl_priv \
   -I$SRC/mhd2/src/incl_priv/config $LIB_FUZZING_ENGINE $BINARY \
   -lgnutls -o $OUT/fuzz_crypto_ext
+
+cp $SRC/default.options $OUT/fuzz_daemon.options
+cp $SRC/*.dict $OUT/
