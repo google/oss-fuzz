@@ -20,7 +20,11 @@ sed -i 's/"\/proc\/cpuinfo"/"\/tmp\/libfuzzer.config"/g' src/x86/linux/cpuinfo.c
 sed -i 's/"\/sys\/devices\/system\/cpu\/kernel_max"/"\/tmp\/libfuzzer.config"/g' src/linux/processors.c
 mkdir build
 cd build
-cmake ..
+cmake \
+    -DCPUINFO_BUILD_UNIT_TESTS=OFF \
+    -DCPUINFO_BUILD_MOCK_TESTS=OFF \
+    -DCPUINFO_BUILD_BENCHMARKS=OFF \
+    ..
 make
 
 
