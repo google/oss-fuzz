@@ -528,7 +528,6 @@ def _create_indexed_build_steps(project,
     image_name = _indexer_built_image_name(project.name)
     build_script_command = '/opt/indexer/index_build.py'
     # Save the CDB fragments so we can re-use them for rebuilding indexes.
-    artifact_commands = ['cp -r $$OUT/cdb /cdb']
   elif build_type == 'tracer':
     container_name = _TRACING_CONTAINER_NAME
     image_name = _tracer_built_image_name(project.name)
@@ -537,7 +536,6 @@ def _create_indexed_build_steps(project,
         '--fuzzing-engine=tracing_engine.cc '
         '--coverage-flags=-fsanitize-coverage=trace-pc-guard,func '
         '--binaries-only')
-    artifact_commands = []
   else:
     raise ValueError(f'Unknown build_type: {build_type}')
 
@@ -548,16 +546,14 @@ def _create_indexed_build_steps(project,
       build_script_command,
       # Enable re-building both the project and the indexes.
       'cp -n /usr/local/bin/replay_build.sh $$SRC/',
-  ]
-  command_sequence.extend(artifact_commands)
-  command_sequence.extend([
+      'cp -r $$OUT/cdb /cdb',
       # Link /out to the actual $OUT and actually create it in the container's
       # filesystem since it's a mount.
       'rm -rf /out && ln -s $$OUT /out',
       'umount /workspace && mkdir -p $$OUT',
       # Unshallow the main repository so we have easy access to the git history.
       f'/usr/local/bin/unshallow_repos.py {project.main_repo}',
-  ])
+  ]
 
   build_step = {
       'name': project.image,
