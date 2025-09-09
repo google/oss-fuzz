@@ -144,7 +144,6 @@ def duplicate_symbol_error():
             break
 
         # Add source code with duplicated declaration randomly
-        print(random.choice([True, False]))
         if new_source and random.choice([True, False]):
           try:
             with open(path, 'w') as f:

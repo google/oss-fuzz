@@ -226,10 +226,10 @@ def check_cached_replay(project,
                         container_output='stdout',
                         silent_replays=False) -> bool:
   """Checks if a cache build succeeds and times is."""
-#  build_project_image(project, container_output=container_output)
-#  build_cached_project(project,
-#                       sanitizer=sanitizer,
-#                       container_output=container_output)
+  build_project_image(project, container_output=container_output)
+  build_cached_project(project,
+                       sanitizer=sanitizer,
+                       container_output=container_output)
 
   start = time.time()
   failed = []
@@ -239,7 +239,7 @@ def check_cached_replay(project,
   for bad_patch_name, bad_patch_map in bad_patch.BAD_PATCH_GENERATOR.items():
     # Generate bad patch command using different approaches
     expected_rc = bad_patch_map['rc']
-    bad_patch_command = f'pip3 install -r /chronos/requirements.txt && python3 /chronos/bad_patch.py {bad_patch_name}'
+    bad_patch_command = f'python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/bad_patch.py {bad_patch_name}'
     cmd_to_run = f'set -euo pipefail && {bad_patch_command} && {base_cmd}'
 
     # Run the cached replay script with bad patches
