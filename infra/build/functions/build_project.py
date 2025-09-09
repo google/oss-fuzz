@@ -514,10 +514,14 @@ def _indexer_built_image_name(name: str):
 def _tracer_built_image_name(name: str):
   # TODO(ochang): Write this to a tar (via docker image save) and upload this to
   # GCS.
-  return f'us-docker.pkg.dev/oss-fuzz/tracing/{name}'
+  return f'us-docker.pkg.dev/oss-fuzz/tracer/{name}'
 
 
-def _create_build_steps(project, build, timestamp, env, build_type='indexer'):
+def _create_indexed_build_steps(project,
+                                build,
+                                timestamp,
+                                env,
+                                build_type='indexer'):
   """Creates the build steps for a specific indexer type."""
   if build_type == 'indexer':
     container_name = _INDEXED_CONTAINER_NAME
@@ -646,17 +650,17 @@ def get_indexer_build_steps(project_name,
   env.append('INDEXER_BUILD=1')
   env.append('CAPTURE_REPLAY_SCRIPT=1')
 
-  indexer_steps = _create_build_steps(project,
-                                      build,
-                                      timestamp,
-                                      env,
-                                      build_type='indexer')
+  indexer_steps = _create_indexed_build_steps(project,
+                                              build,
+                                              timestamp,
+                                              env,
+                                              build_type='indexer')
 
-  tracer_steps = _create_build_steps(project,
-                                     build,
-                                     timestamp,
-                                     env,
-                                     build_type='tracer')
+  tracer_steps = _create_indexed_build_steps(project,
+                                             build,
+                                             timestamp,
+                                             env,
+                                             build_type='tracer')
   return build_steps + indexer_steps + tracer_steps
 
 
