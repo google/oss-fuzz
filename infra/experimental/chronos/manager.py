@@ -226,31 +226,28 @@ def check_cached_replay(project,
                         container_output='stdout',
                         silent_replays=False) -> bool:
   """Checks if a cache build succeeds and times is."""
-  build_project_image(project, container_output=container_output)
-  build_cached_project(project,
-                       sanitizer=sanitizer,
-                       container_output=container_output)
-
-  # Get which the list of bad_patch_methods
-  bad_patch_methods = list(bad_patch.BAD_PATCH_GENERATOR.keys())
+#  build_project_image(project, container_output=container_output)
+#  build_cached_project(project,
+#                       sanitizer=sanitizer,
+#                       container_output=container_output)
 
   start = time.time()
   failed = []
   base_cmd = 'export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile'
 
   # Use different bad patches to test the cached replay build
-  for bad_patch_name, bad_patch_method in bad_patch.BAD_PATCH_GENERATOR.items():
+  for bad_patch_name, bad_patch_map in bad_patch.BAD_PATCH_GENERATOR.items():
     # Generate bad patch command using different approaches
-    bad_patch_command, expected_rc = bad_patch_method()
-    if bad_patch_command:
-      bad_patch_command += ' && '
-    cmd_to_run = f'set -euo pipefail && {bad_patch_command}{base_cmd}'
+    expected_rc = bad_patch_map['rc']
+    bad_patch_command = f'pip3 install -r /chronos/requirements.txt && python3 /chronos/bad_patch.py {bad_patch_name}'
+    cmd_to_run = f'set -euo pipefail && {bad_patch_command} && {base_cmd}'
 
-    # Run the cached replay script.
+    # Run the cached replay script with bad patches
     cmd = [
         'docker', 'run', '--rm', '--env=SANITIZER=' + sanitizer,
         '--env=FUZZING_LANGUAGE=c++',
-        '-v=' + os.getcwd() + '/build/out/' + project + '/:/out/',
+        '-v=' + os.path.join(os.getcwd(), 'build', 'out', project) + ':/out',
+        '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') + ':/chronos',
         '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
         _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
         f'"{cmd_to_run}"'
@@ -266,11 +263,11 @@ def check_cached_replay(project,
     result = subprocess.run(' '.join(cmd), shell=True,
                             stdout=stdout_fp, stderr=stderr_fp)
 
-    if not result.returncode == expected_rc:
+    if result.returncode not in expected_rc:
       failed.append(bad_patch_name)
       logger.info(('%s check cached replay failed on bad patches %s. '
-                   'Return code: %d. Expected return code: %d'), project,
-                  bad_patch_name, result.returncode, expected_rc)
+                   'Return code: %d. Expected return code: %s'), project,
+                  bad_patch_name, result.returncode, str(expected_rc))
 
   end = time.time()
   logger.info('%s check cached replay completion time: %.2f seconds', project,
