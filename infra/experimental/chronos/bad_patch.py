@@ -27,6 +27,7 @@ EXCLUDE_DIRS = ['tests', 'test', 'example', 'build']
 ROOT_PATH = os.path.abspath(pathlib.Path.cwd().resolve())
 MAX_COUNT = 50
 
+
 def normal_compile():
   """Do nothing and act as a control test that should always success."""
   pass
@@ -154,26 +155,26 @@ def duplicate_symbol_error():
 
 
 BAD_PATCH_GENERATOR = {
-  'control_test': {
-    'func': normal_compile,
-    'rc': [0],
-  },
-  'compile_error': {
-    'func': source_code_compile_error,
-    'rc': [1, 2],
-  },
-  'macro_error': {
-    'func': macro_compile_error,
-    'rc': [1, 2],
-  },
-  'missing_headers': {
-    'func': missing_header_error,
-    'rc': [1, 2],
-  },
-  'duplicate_symbols': {
-    'func': duplicate_symbol_error,
-    'rc': [1, 2],
-  },
+    'control_test': {
+        'func': normal_compile,
+        'rc': [0],
+    },
+    'compile_error': {
+        'func': source_code_compile_error,
+        'rc': [1, 2],
+    },
+    'macro_error': {
+        'func': macro_compile_error,
+        'rc': [1, 2],
+    },
+    'missing_headers': {
+        'func': missing_header_error,
+        'rc': [1, 2],
+    },
+    'duplicate_symbols': {
+        'func': duplicate_symbol_error,
+        'rc': [1, 2],
+    },
 }
 
 

@@ -247,7 +247,8 @@ def check_cached_replay(project,
         'docker', 'run', '--rm', '--env=SANITIZER=' + sanitizer,
         '--env=FUZZING_LANGUAGE=c++',
         '-v=' + os.path.join(os.getcwd(), 'build', 'out', project) + ':/out',
-        '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') + ':/chronos',
+        '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
+        ':/chronos',
         '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
         _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
         f'"{cmd_to_run}"'
@@ -260,8 +261,10 @@ def check_cached_replay(project,
       stdout_fp = None
       stderr_fp = None
 
-    result = subprocess.run(' '.join(cmd), shell=True,
-                            stdout=stdout_fp, stderr=stderr_fp)
+    result = subprocess.run(' '.join(cmd),
+                            shell=True,
+                            stdout=stdout_fp,
+                            stderr=stderr_fp)
 
     if result.returncode not in expected_rc:
       failed.append(bad_patch_name)
@@ -279,7 +282,8 @@ def check_cached_replay(project,
 
     return False
 
-  logger.info('%s check cached replay success to detect all bad patches.', project)
+  logger.info('%s check cached replay success to detect all bad patches.',
+              project)
 
   return True
 
