@@ -82,6 +82,9 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
       const clang::Decl* template_decl, const clang::Decl* original_decl);
   void SynthesizeInheritedMemberEntities(
       const clang::CXXRecordDecl* class_decl);
+  void AddSyntheticMemberReference(const clang::CXXRecordDecl* child_class,
+                                   const clang::ValueDecl* inherited_member,
+                                   const clang::SourceRange& range);
   void AddTypeReferencesFromLocation(LocationId location_id,
                                      const clang::Type *type,
                                      bool outermost_type = true);
