@@ -1679,6 +1679,22 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
     if (clang::Expr* base = member_expr->getBase()) {
       AddReferencesForExpr(base);
 
+      // Check if the call can be devirtualized (the type is known precisely,
+      // or either the member function or its defining class are marked `final`
+      // etc.) Add a reference to the devirtualized method as well in that case.
+      if (const auto* method_decl =
+              llvm::dyn_cast<clang::CXXMethodDecl>(value_decl);
+          method_decl && method_decl->isVirtual()) {
+        if (const clang::CXXMethodDecl* devirtualized_method_decl =
+                method_decl->getDevirtualizedMethod(base,
+                                                    /*IsAppleKext=*/false);
+            devirtualized_method_decl &&
+            devirtualized_method_decl != method_decl) {
+          AddDeclReferenceForSourceRange(expr->getSourceRange(),
+                                         devirtualized_method_decl);
+        }
+      }
+
       // Check if the access is through an inheriting descendant, in which case
       // we add a cross-reference to the corresponding synthetic entity.
       //

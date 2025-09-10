@@ -2299,6 +2299,28 @@ TEST(FrontendTest, MoreCursedInheritance) {
       /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
 }
 
+TEST(FrontendTest, Devirtualization) {
+  auto index = IndexSnippet(
+      "struct Foo {\n"                     // 1
+      "  virtual void bar() const {}\n"    // 2
+      "};\n"                               // 3
+      "struct Bar final : public Foo {\n"  // 4
+      "  void bar() const override {}\n"   // 5
+      "};\n"                               // 6
+      "int main(void) {\n"                 // 7
+      "  const auto* bar = new Bar();\n"   // 8
+      "  ((Foo*)bar)->bar();\n"            // 9
+      "}");                                // 10
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "Bar::", "bar", "() const", "snippet.cc",
+      5, 5, "snippet.cc", 9, 9, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt,
+      /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+}
+
 TEST(FrontendTest, InheritanceThroughTemplateInstantiation) {
   auto index = IndexSnippet(
       "class Foo {\n"                         // 1
