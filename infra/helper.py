@@ -763,7 +763,7 @@ def prepare_aarch64_emulation():
 
 
 def docker_run(run_args, print_output=True, architecture='x86_64'):
-  """Calls `docker run`."""
+  """Calls `CONTAINER_TOOL run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = [
       CONTAINER_TOOL, 'run', '--pull=never', '--privileged', '--shm-size=2g',
@@ -795,7 +795,7 @@ def docker_run(run_args, print_output=True, architecture='x86_64'):
 
 
 def docker_build(build_args):
-  """Calls `docker build`."""
+  """Calls `CONTAINER_TOOL build`."""
   command = [CONTAINER_TOOL, 'build']
   command.extend(build_args)
   logger.info('Running: %s.', _get_command_string(command))
@@ -810,7 +810,7 @@ def docker_build(build_args):
 
 
 def docker_pull(image):
-  """Call `docker pull`."""
+  """Call `CONTAINER_TOOL pull`."""
   command = [CONTAINER_TOOL, 'pull', image]
   logger.info('Running: %s', _get_command_string(command))
 
