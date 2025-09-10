@@ -54,7 +54,7 @@ then
   "
 fi
 
-make -C tests/fuzz $TESTS
+make -j$(nproc) -C tests/fuzz $TESTS
 
 cd /src/monero/monero/build/tests/fuzz
 for fuzzer in *fuzz*
