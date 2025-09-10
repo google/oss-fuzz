@@ -224,7 +224,8 @@ def build_cached_project(project,
 def check_cached_replay(project,
                         sanitizer='address',
                         container_output='stdout',
-                        silent_replays=False) -> bool:
+                        silent_replays=False,
+                        integrity_test=False) -> bool:
   """Checks if a cache build succeeds and times is."""
   build_project_image(project, container_output=container_output)
   build_cached_project(project,
@@ -234,58 +235,57 @@ def check_cached_replay(project,
   start = time.time()
   failed = []
   base_cmd = 'export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile'
+  cmd = [
+    'docker', 'run', '--rm', '--env=SANITIZER=' + sanitizer,
+    '--env=FUZZING_LANGUAGE=c++',
+    '-v=' + os.path.join(os.getcwd(), 'build', 'out', project) + ':/out',
+    '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
+    ':/chronos',
+    '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
+    _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
+  ]
 
-  # Use different bad patches to test the cached replay build
-  for bad_patch_name, bad_patch_map in bad_patch.BAD_PATCH_GENERATOR.items():
-    # Generate bad patch command using different approaches
-    expected_rc = bad_patch_map['rc']
-    bad_patch_command = f'python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/bad_patch.py {bad_patch_name}'
-    cmd_to_run = f'set -euo pipefail && {bad_patch_command} && {base_cmd}'
+  # Configure output
+  if silent_replays:
+    stdout_fp = subprocess.DEVNULL
+    stderr_fp = subprocess.DEVNULL
+  else:
+    stdout_fp = None
+    stderr_fp = None
 
-    # Run the cached replay script with bad patches
-    cmd = [
-        'docker', 'run', '--rm', '--env=SANITIZER=' + sanitizer,
-        '--env=FUZZING_LANGUAGE=c++',
-        '-v=' + os.path.join(os.getcwd(), 'build', 'out', project) + ':/out',
-        '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
-        ':/chronos',
-        '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
-        _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
-        f'"{cmd_to_run}"'
-    ]
+  if integrity_test:
+    # Use different bad patches to test the cached replay build
+    failed = []
+    for bad_patch_name, bad_patch_map in bad_patch.BAD_PATCH_GENERATOR.items():
+      # Generate bad patch command using different approaches
+      expected_rc = bad_patch_map['rc']
+      bad_patch_command = f'python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/bad_patch.py {bad_patch_name}'
+      cmd_to_run = cmd[:]
+      cmd_to_run.append(f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
+      print(' '.join(cmd_to_run))
+      # Run the cached replay script with bad patches
+      result = subprocess.run(' '.join(cmd_to_run), shell=True, stdout=stdout_fp, stderr=stderr_fp)
 
-    if silent_replays:
-      stdout_fp = subprocess.DEVNULL
-      stderr_fp = subprocess.DEVNULL
-    else:
-      stdout_fp = None
-      stderr_fp = None
+      if result.returncode not in expected_rc:
+        failed.append(bad_patch_name)
+        logger.info(('%s check cached replay failed on bad patches %s. '
+                     'Return code: %d. Expected return code: %s'), project,
+                    bad_patch_name, result.returncode, str(expected_rc))
 
-    result = subprocess.run(' '.join(cmd),
-                            shell=True,
-                            stdout=stdout_fp,
-                            stderr=stderr_fp)
 
-    if result.returncode not in expected_rc:
-      failed.append(bad_patch_name)
-      logger.info(('%s check cached replay failed on bad patches %s. '
-                   'Return code: %d. Expected return code: %s'), project,
-                  bad_patch_name, result.returncode, str(expected_rc))
+      if failed:
+        logger.info('%s check cached replay failed to detect these bad patches: %s',
+                    project, ' '.join(failed))
+      else:
+        logger.info('%s check cached replay success to detect all bad patches.', project)
+  else:
+    # Normal run with no integrity check
+    cmd.append(f'"{base_cmd}"')
+    subprocess.run(' '.join(cmd), shell=True, stdout=stdout_fp, stderr=stderr_fp)
 
   end = time.time()
   logger.info('%s check cached replay completion time: %.2f seconds', project,
               (end - start))
-
-  if failed:
-    logger.info('%s check cached replay failed to detect these bad patches: %s',
-                project, ' '.join(failed))
-
-    return False
-
-  logger.info('%s check cached replay success to detect all bad patches.',
-              project)
-
-  return True
 
 
 def check_test(project,
@@ -564,6 +564,18 @@ def parse_args():
       default='address',
       help='The sanitizer to use for the cached build (default: address).')
 
+  check_replay_script_integrity_parser = subparsers.add_parser(
+      'check-replay-script-integrity',
+      help=('Checks if the replay script works for a specific project. '
+            'Integrity of the replay script is also tested with different bad patches.'))
+
+  check_replay_script_integrity_parser.add_argument(
+      'project', help='The name of the project to check.')
+  check_replay_script_integrity_parser.add_argument(
+      '--sanitizer',
+      default='address',
+      help='The sanitizer to use for the cached build (default: address).')
+
   build_cached_image_parser = subparsers.add_parser(
       'build-cached-image',
       help='Builds a cached image for a specific project.')
@@ -654,7 +666,9 @@ def main():
       check_test(project, args.sanitizer, args.container_output,
                  args.run_full_cache_replay)
   if args.command == 'check-replay-script':
-    result = check_cached_replay(args.project, args.sanitizer)
+    check_cached_replay(args.project, args.sanitizer)
+  if args.command == 'check-replay-script-integrity':
+    check_cached_replay(args.project, args.sanitizer, integrity_test=True)
   if args.command == 'build-cached-image':
     build_cached_project(args.project,
                          sanitizer=args.sanitizer,
