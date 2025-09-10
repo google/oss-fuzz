@@ -108,7 +108,7 @@ def gcb_build_and_push_images(test_image_suffix: str):
       test_tags.append(test_tag)
 
       if version == 'latest':
-        dockerfile = base_image.path
+        dockerfile = os.path.join(base_image.path, 'Dockerfile')
       else:
         dockerfile = os.path.join(base_image.path, f'{version}.Dockerfile')
 
@@ -118,11 +118,14 @@ def gcb_build_and_push_images(test_image_suffix: str):
                      dockerfile, version)
         continue
 
-      step = build_lib.get_docker_build_step([main_tag, test_tag],
-                                             dockerfile,
-                                             use_buildkit_cache=True,
-                                             src_root='.',
-                                             build_args=base_image.build_args)
+      step = build_lib.get_docker_build_step(
+          [main_tag, test_tag],
+          base_image.path,  # Pass the directory as context.
+          use_buildkit_cache=True,
+          src_root='.',
+          build_args=base_image.build_args)
+      # Add the -f flag to specify the Dockerfile name.
+      step['args'].extend(['-f', dockerfile])
       steps.append(step)
 
   overrides = {'images': test_tags}
@@ -151,7 +154,7 @@ def build_and_push_images(test_image_suffix):
           'base-builder-ruby',
       ],
   ]
-  os.environ['DOKER_BUILDKIT'] = '1'
+  os.environ['DOCKER_BUILDKIT'] = '1'
   max_parallelization = max([len(image_list) for image_list in images])
   proc_count = min(multiprocessing.cpu_count(), max_parallelization)
   logging.info('Using %d parallel processes.', proc_count)

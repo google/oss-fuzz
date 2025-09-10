@@ -141,8 +141,8 @@ RUN cd $SRC && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 
-COPY precompile_honggfuzz /usr/local/bin/
-RUN precompile_honggfuzz
+COPY precompile_honggfuzz_ubuntu_24_04 /usr/local/bin/
+RUN precompile_honggfuzz_ubuntu_24_04
 
 RUN cd $SRC && \
     git clone https://github.com/google/fuzztest && \
@@ -178,7 +178,7 @@ COPY bazel_build_fuzz_tests \
     install_python.sh \
     install_ruby.sh \
     install_rust.sh \
-    install_swift.sh \
+    install_swift_ubuntu_24_04.sh \
     make_build_replayable.py \
     python_coverage_helper.py \
     replay_build.sh \
