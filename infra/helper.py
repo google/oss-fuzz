@@ -592,7 +592,12 @@ def _check_fuzzer_exists(project, fuzzer_name, architecture='x86_64'):
   """Checks if a fuzzer exists."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = [
-      CONTAINER_TOOL, 'run', '--rm', '--platform', platform, "--pull=never",
+      CONTAINER_TOOL,
+      'run',
+      '--rm',
+      '--platform',
+      platform,
+      "--pull=never",
   ]
   command.extend(['-v', '%s:/out' % project.out])
   command.append(BASE_RUNNER_IMAGE)
