@@ -1,6 +1,6 @@
 homepage: "https://github.com/kubeflow/model-registry"
 language: go
-primary_contact: "mmortari+kubeflow@redhat.com"
+primary_contact: "mmortari@redhat.com"
 main_repo: "https://github.com/kubeflow/model-registry"
 auto_ccs:
   - "adam@adalogics.com"
