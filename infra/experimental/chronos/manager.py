@@ -225,7 +225,7 @@ def check_cached_replay(project,
                         sanitizer='address',
                         container_output='stdout',
                         silent_replays=False,
-                        integrity_test=False) -> bool:
+                        integrity_test=False):
   """Checks if a cache build succeeds and times is."""
   build_project_image(project, container_output=container_output)
   build_cached_project(project,
@@ -236,13 +236,18 @@ def check_cached_replay(project,
   failed = []
   base_cmd = 'export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile'
   cmd = [
-    'docker', 'run', '--rm', '--env=SANITIZER=' + sanitizer,
-    '--env=FUZZING_LANGUAGE=c++',
-    '-v=' + os.path.join(os.getcwd(), 'build', 'out', project) + ':/out',
-    '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
-    ':/chronos',
-    '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
-    _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
+      'docker',
+      'run',
+      '--rm',
+      '--env=SANITIZER=' + sanitizer,
+      '--env=FUZZING_LANGUAGE=c++',
+      '-v=' + os.path.join(os.getcwd(), 'build', 'out', project) + ':/out',
+      '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
+      ':/chronos',
+      '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
+      _get_project_cached_named(project, sanitizer),
+      '/bin/bash',
+      '-c',
   ]
 
   # Configure output
@@ -261,10 +266,14 @@ def check_cached_replay(project,
       expected_rc = bad_patch_map['rc']
       bad_patch_command = f'python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/bad_patch.py {bad_patch_name}'
       cmd_to_run = cmd[:]
-      cmd_to_run.append(f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
+      cmd_to_run.append(
+          f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
       print(' '.join(cmd_to_run))
       # Run the cached replay script with bad patches
-      result = subprocess.run(' '.join(cmd_to_run), shell=True, stdout=stdout_fp, stderr=stderr_fp)
+      result = subprocess.run(' '.join(cmd_to_run),
+                              shell=True,
+                              stdout=stdout_fp,
+                              stderr=stderr_fp)
 
       if result.returncode not in expected_rc:
         failed.append(bad_patch_name)
@@ -272,16 +281,20 @@ def check_cached_replay(project,
                      'Return code: %d. Expected return code: %s'), project,
                     bad_patch_name, result.returncode, str(expected_rc))
 
-
       if failed:
-        logger.info('%s check cached replay failed to detect these bad patches: %s',
-                    project, ' '.join(failed))
+        logger.info(
+            '%s check cached replay failed to detect these bad patches: %s',
+            project, ' '.join(failed))
       else:
-        logger.info('%s check cached replay success to detect all bad patches.', project)
+        logger.info('%s check cached replay success to detect all bad patches.',
+                    project)
   else:
     # Normal run with no integrity check
     cmd.append(f'"{base_cmd}"')
-    subprocess.run(' '.join(cmd), shell=True, stdout=stdout_fp, stderr=stderr_fp)
+    subprocess.run(' '.join(cmd),
+                   shell=True,
+                   stdout=stdout_fp,
+                   stderr=stderr_fp)
 
   end = time.time()
   logger.info('%s check cached replay completion time: %.2f seconds', project,
@@ -566,8 +579,10 @@ def parse_args():
 
   check_replay_script_integrity_parser = subparsers.add_parser(
       'check-replay-script-integrity',
-      help=('Checks if the replay script works for a specific project. '
-            'Integrity of the replay script is also tested with different bad patches.'))
+      help=
+      ('Checks if the replay script works for a specific project. '
+       'Integrity of the replay script is also tested with different bad patches.'
+      ))
 
   check_replay_script_integrity_parser.add_argument(
       'project', help='The name of the project to check.')
