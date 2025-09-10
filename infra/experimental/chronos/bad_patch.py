@@ -23,7 +23,7 @@ from tree_sitter import Language, Node, Parser, Query, QueryCursor
 
 LANGUAGE = Language(tree_sitter_cpp.language())
 PARSER = Parser(LANGUAGE)
-EXCLUDE_DIRS = ['tests', 'test', 'example', 'build']
+EXCLUDE_DIRS = ['tests', 'test', 'examples', 'example', 'build']
 ROOT_PATH = os.path.abspath(pathlib.Path.cwd().resolve())
 MAX_COUNT = 50
 
@@ -154,6 +154,41 @@ def duplicate_symbol_error():
             pass
 
 
+def function_linker_error():
+  """Insert an extern header to some found source files with no real definition in the /src/ directory."""
+  exts = ['.c', '.cpp', '.cxx', '.cc']
+  count = 0
+  payload = '#ifdef __cplusplus\nextern "C" {\n#endif\nvoid __not_defined(void);\n#ifdef __cplusplus\n}\n#endif\n'
+  payload_call = 'void wrong_linking_function_{COUNT}(){\n__not_defined();\n}'
+
+  # Walk and insert error macro
+  for cur, dirs, files in os.walk(ROOT_PATH):
+    dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+    for file in files:
+      # Only modify a handful of files
+      if count > MAX_COUNT:
+        return
+
+      if any(file.endswith(ext) for ext in exts):
+        path = os.path.join(cur, file)
+        try:
+          # Read source file
+          source = ''
+          with open(path, 'r') as f:
+            source = f.read()
+          if not source:
+            continue
+
+          # Append a wrong header inclusion at the beginning
+          with open(path, 'w') as f:
+            f.write(payload)
+            f.write(source)
+            f.write(payload_call.replace('{COUNT}', str(count)))
+          count += 1
+        except:
+          pass
+
+
 BAD_PATCH_GENERATOR = {
     'control_test': {
         'func': normal_compile,
@@ -173,6 +208,10 @@ BAD_PATCH_GENERATOR = {
     },
     'duplicate_symbols': {
         'func': duplicate_symbol_error,
+        'rc': [1, 2],
+    },
+    'function_missing': {
+        'func': function_linker_error,
         'rc': [1, 2],
     },
 }
