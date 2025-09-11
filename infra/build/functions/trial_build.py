@@ -349,7 +349,7 @@ def _do_test_builds(args, test_image_suffix, end_time):
     build_types.append(BUILD_TYPES['introspector'])
   if 'indexer' in sanitizers:
     sanitizers.pop(sanitizers.index('indexer'))
-    # build_types.append(BUILD_TYPES['indexer'])
+    build_types.append(BUILD_TYPES['indexer'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
   build_ids = collections.defaultdict(list)
