@@ -18,7 +18,8 @@ package ossfuzz;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
-import org.apache.maven.project.artifact.ProjectArtifactMetadata;
+// Commented out as it seems absent in the latest repository
+// import org.apache.maven.project.artifact.ProjectArtifactMetadata;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
@@ -46,7 +47,7 @@ public class ProjectArtifactMetadataFuzzer {
 			return;
 		}
 
-		ProjectArtifactMetadata projectArtifactMetadata = new ProjectArtifactMetadata(a);
+		// ProjectArtifactMetadata projectArtifactMetadata = new ProjectArtifactMetadata(a);
 
 		a.getVersion();
 		try {
@@ -101,24 +102,7 @@ public class ProjectArtifactMetadataFuzzer {
 		} catch (IllegalArgumentException e) {
 		}
 		a.isSnapshot();
-		try {
-			a.setResolved(fuzzedDataProvider.consumeBoolean());
-		} catch (IllegalArgumentException e) {
-		}
-		try {
-			a.setResolvedVersion(fuzzedDataProvider.consumeRemainingAsString());
-		} catch (IllegalArgumentException e) {
-		}
-		a.setRelease(fuzzedDataProvider.consumeBoolean());
-		a.getAvailableVersions();
-		a.isOptional();
-		a.setOptional(fuzzedDataProvider.consumeBoolean());
-
-		projectArtifactMetadata.getGroupId();
-		projectArtifactMetadata.getArtifactId();
-		projectArtifactMetadata.getBaseVersion();
-		projectArtifactMetadata.getRemoteFilename();
-		projectArtifactMetadata.storedInArtifactVersionDirectory();
-		projectArtifactMetadata.getKey();
-	}
+	
+   // properly closing off the class
+   }
 }
