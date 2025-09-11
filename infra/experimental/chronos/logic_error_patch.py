@@ -64,8 +64,10 @@ def _add_payload_random_functions(exts: list[str], payload: str) -> str:
 
           # Skip Class / Struct definition
           type_node = func.child_by_field_name('type')
-          if not type_node or type_node.type not in ['primitive_type', 'type_identifier']:
-            break
+          if not type_node or type_node.type not in [
+              'primitive_type', 'type_identifier'
+          ]:
+            continue
 
           if body and body.text and random.choice([True, False]):
             func_source = body.text.decode()
