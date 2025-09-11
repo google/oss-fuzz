@@ -23,7 +23,8 @@ from tree_sitter import Language, Node, Parser, Query, QueryCursor
 
 LANGUAGE = Language(tree_sitter_cpp.language())
 PARSER = Parser(LANGUAGE)
-EXCLUDE_DIRS = ['tests', 'test', 'examples' 'example', 'build']
+EXCLUDE_DIRS = ['tests', 'test', 'examples'
+                'example', 'build']
 ROOT_PATH = os.path.abspath(pathlib.Path.cwd().resolve())
 MAX_COUNT = 50
 
@@ -99,8 +100,8 @@ def wrong_return_value():
   """modify random return statement to force an unit test failed in source files found in the /src/directory."""
   exts = ['.c', '.cc', '.cpp', '.cxx', '.h', '.hpp']
   primitives = {
-    'bool','char','signed','unsigned','short','int','long','float','double',
-    'wchar_t', 'char8_t', 'char16_t', 'char32_t', 'size_t'
+      'bool', 'char', 'signed', 'unsigned', 'short', 'int', 'long', 'float',
+      'double', 'wchar_t', 'char8_t', 'char16_t', 'char32_t', 'size_t'
   }
   count = 0
 
@@ -139,7 +140,8 @@ def wrong_return_value():
             rtn = None
 
           # Determine if return type is a pointer
-          if func.child_by_field_name('declarator').type == 'pointer_declarator':
+          if func.child_by_field_name(
+              'declarator').type == 'pointer_declarator':
             is_pointer = True
           else:
             is_pointer = False
@@ -160,28 +162,27 @@ def wrong_return_value():
           pass
 
 
-
 LOGIC_ERROR_PATCH_GENERATOR = {
-  'control_test': {
-    'func': normal_patch,
-    'result': True,
-  },
-  'sigabrt_crash': {
-    'func': signal_abort_crash,
-    'result': False,
-  },
-  'sigkill_crash': {
-    'func': builtin_trap_crash,
-    'result': False,
-  },
-  'sigsegv_crash': {
-    'func': null_write_crash,
-    'result': False,
-  },
-  'random_return_value': {
-    'func': wrong_return_value,
-    'result': False,
-  }
+    'control_test': {
+        'func': normal_patch,
+        'result': True,
+    },
+    'sigabrt_crash': {
+        'func': signal_abort_crash,
+        'result': False,
+    },
+    'sigkill_crash': {
+        'func': builtin_trap_crash,
+        'result': False,
+    },
+    'sigsegv_crash': {
+        'func': null_write_crash,
+        'result': False,
+    },
+    'random_return_value': {
+        'func': wrong_return_value,
+        'result': False,
+    }
 }
 
 

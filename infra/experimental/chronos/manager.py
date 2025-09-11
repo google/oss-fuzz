@@ -269,7 +269,6 @@ def check_cached_replay(project,
           f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
 
       # Run the cached replay script with bad patches
-      print(' '.join(cmd_to_run))
       result = subprocess.run(' '.join(cmd_to_run),
                               shell=True,
                               stdout=stdout_fp,
@@ -352,16 +351,22 @@ def check_test(project,
   base_cmd = 'chmod +x /src/run_tests.sh && /src/run_tests.sh'
 
   cmd = [
-      'docker', 'run', '--rm', '-ti',
+      'docker',
+      'run',
+      '--rm',
+      '-ti',
       '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
       ':/chronos',
-      _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
+      _get_project_cached_named(project, sanitizer),
+      '/bin/bash',
+      '-c',
   ]
 
   if integrity_test:
     # Patch the code with some logic error and see if build_test able to detect them.
     failed = []
-    for logic_patch_name, logic_patch_map in logic_error_patch.LOGIC_ERROR_PATCH_GENERATOR.items():
+    for logic_patch_name, logic_patch_map in logic_error_patch.LOGIC_ERROR_PATCH_GENERATOR.items(
+    ):
       expected_result = logic_patch_map['result']
       patch_command = f'python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/logic_error_patch.py {logic_patch_name}'
       cmd_to_run = cmd[:]
@@ -382,10 +387,8 @@ def check_test(project,
 
     if failed:
       succeeded = False
-      logger.info(
-          '%s check failed to detect these logic patches: %s',
-          project, ' '.join(failed)
-      )
+      logger.info('%s check failed to detect these logic patches: %s', project,
+                  ' '.join(failed))
     else:
       succeeded = True
   else:
