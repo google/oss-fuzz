@@ -596,18 +596,42 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   if architectures is None:
     architectures = []
 
-  # TODO(metzman): Pass the URL to clone.
   clone_step = get_git_clone_step(repo_url=config.repo, branch=config.branch)
   if experiment:
-    # Skip cloning if we're in an experiment. The source is submitted to GCB
-    # via gcloud builds submit.
     steps = []
   else:
     steps = [clone_step]
-  if config.test_image_suffix:
-    steps.extend(get_pull_test_images_steps(config.test_image_suffix))
-  src_root = 'oss-fuzz' if not experiment else '.'
 
+  if config.test_image_suffix:
+    # This is a test build. We need to modify the Dockerfile to use the test
+    # base images.
+    if config.version_tag:
+      base_builder_tag = f'{config.version_tag}-{config.test_image_suffix}'
+      base_runner_tag = f'{config.version_tag}-{config.test_image_suffix}'
+      base_image_tag = f'{config.version_tag}-{config.test_image_suffix}'
+    else:  # Fallback for the 'latest' build.
+      base_builder_tag = config.test_image_suffix
+      base_runner_tag = config.test_image_suffix
+      base_image_tag = config.test_image_suffix
+
+    base_image = f'gcr.io/oss-fuzz-base/base-image:{base_image_tag}'
+    base_runner = f'gcr.io/oss-fuzz-base/base-runner:{base_runner_tag}'
+    base_builder = f'gcr.io/oss-fuzz-base/base-builder:{base_builder_tag}'
+
+    dockerfile_path = os.path.join('oss-fuzz', 'projects', name, 'Dockerfile')
+    sed_command = (
+        f'sed -i -r "s|gcr.io/oss-fuzz-base/base-image(:[a-zA-Z0-9_.-]+)?|{base_image}|g" {dockerfile_path} && '
+        f'sed -i -r "s|gcr.io/oss-fuzz-base/base-runner(:[a-zA-Z0-9_.-]+)?|{base_runner}|g" {dockerfile_path} && '
+        f'sed -i -r "s|gcr.io/oss-fuzz-base/base-builder(:[a-zA-Z0-9_.-]+)?|{base_builder}|g" {dockerfile_path}'
+    )
+    steps.append({
+        'name': 'gcr.io/cloud-builders/git', # Using any simple image with sed.
+        'entrypoint': 'bash',
+        'args': ['-c', sed_command],
+        'waitFor': [clone_step.get('id', '-')]
+    })
+
+  src_root = 'oss-fuzz' if not experiment else '.'
   docker_build_step = get_docker_build_step(
       [image, _get_unsafe_name(name)],
       os.path.join('projects', name),

@@ -83,6 +83,7 @@ class Config:
   build_type: Optional[str] = None
   fuzzing_engine: Optional[str] = None
   fuzz_target: Optional[str] = None
+  version_tag: Optional[str] = None
 
 
 # Allow the WORKDIR to be commented out for OSS-Fuzz-Gen, which creates new

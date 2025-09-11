@@ -87,14 +87,18 @@ def get_image_tags(image: str,
                    test_image_suffix: str | None = None,
                    version: str = 'latest'):
   """Returns tags for image build."""
+  image_name = base_images.TAG_PREFIX + image
   if version == 'latest':
-    main_tag = base_images.TAG_PREFIX + image
+    main_tag = image_name
   else:
-    main_tag = f'{base_images.TAG_PREFIX}{image}:{version}'
+    main_tag = f'{image_name}:{version}'
 
   test_tag = None
   if test_image_suffix:
-    test_tag = f'{main_tag}-{test_image_suffix}'
+    if version == 'latest':
+      test_tag = f'{image_name}:{test_image_suffix}'
+    else:
+      test_tag = f'{image_name}:{version}-{test_image_suffix}'
 
   return main_tag, test_tag
 
