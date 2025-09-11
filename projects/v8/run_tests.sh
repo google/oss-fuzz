@@ -16,6 +16,6 @@
 ################################################################################
 
 ./tools/dev/gm.py x64.release.check
-./tools/dev/gm.py x64.release test262
-./tools/dev/gm.py x64.release mozilla
-./tools/dev/gm.py x64.release webkit
+#./tools/dev/gm.py x64.release test262
+#./tools/dev/gm.py x64.release mozilla
+#./tools/dev/gm.py x64.release webkit

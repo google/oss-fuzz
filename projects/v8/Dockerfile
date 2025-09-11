@@ -23,6 +23,7 @@ ENV PATH=/src/depot_tools:$PATH
 RUN fetch v8
 WORKDIR v8
 
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN ./build/install-build-deps.sh --no-prompt
 COPY build.sh run_tests.sh $SRC/
 

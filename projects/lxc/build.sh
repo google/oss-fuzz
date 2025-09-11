@@ -14,4 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
+
+if [ -f /usr/local/bin/clang-21 ]; then
+  export CFLAGS="${CFLAGS} -Wno-error=unterminated-string-initialization"
+fi
 src/tests/oss-fuzz.sh

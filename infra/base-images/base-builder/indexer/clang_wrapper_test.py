@@ -41,6 +41,9 @@ class ClangWrapperTest(unittest.TestCase):
         "clang",
         "-fsanitize-coverage=bb,no-prune,trace-pc-guard",
         "-fsanitize-coverage=edge",
+        "-foo",
+        "-fsanitize-coverage-allowlist=allowlist",
+        "-fsanitize-coverage-ignorelist=ignorelist",
         "-c",
         "test.c",
     ]
@@ -52,6 +55,7 @@ class ClangWrapperTest(unittest.TestCase):
         [
             "clang",
             "-fsanitize-coverage=bb,no-prune,trace-pc-guard",
+            "-foo",
             "-c",
             "test.c",
         ],

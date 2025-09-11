@@ -72,7 +72,7 @@ function check_engine {
 
   if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
     # Store fuzz target's output into a temp file to be used for further checks.
-    $FUZZER -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    $FUZZER -- -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
     CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
     if (( $CHECK_FAILED > 0 )); then
       echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
