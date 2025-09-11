@@ -852,7 +852,7 @@ void AddVirtualMethodLinksImpl(
   }
 }
 
-const clang::CXXRecordDecl* GetRecordForType(const clang::QualType& type) {
+const clang::CXXRecordDecl* GetCXXRecordForType(const clang::QualType& type) {
   clang::QualType derived_type = type;
   if (const auto* pointer_type = type->getAs<clang::PointerType>()) {
     derived_type = pointer_type->getPointeeType();
@@ -862,9 +862,9 @@ const clang::CXXRecordDecl* GetRecordForType(const clang::QualType& type) {
   }
   const auto* record_type = derived_type->castAs<clang::RecordType>();
   CHECK(record_type);
-  const clang::Decl* decl = record_type->getOriginalDecl();
+  const clang::RecordDecl* decl = record_type->getOriginalDecl();
   CHECK(decl);
-  return llvm::cast<clang::CXXRecordDecl>(decl);
+  return llvm::dyn_cast<clang::CXXRecordDecl>(decl);
 }
 
 }  // namespace
@@ -1702,8 +1702,8 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
       // because it is commonly used for members not accessible through the
       // instance directly (for disambiguation).
       if (!member_expr->getQualifierLoc()) {
-        if (const auto* expr_record_decl =
-                GetRecordForType(base->IgnoreParenBaseCasts()->getType())) {
+        if (const clang::CXXRecordDecl* expr_record_decl =
+                GetCXXRecordForType(base->IgnoreParenBaseCasts()->getType())) {
           const clang::DeclContext* decl_context =
               value_decl->getNonTransparentDeclContext();
           // If the base expression is not of the same record type as the parent
