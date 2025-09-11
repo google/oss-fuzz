@@ -4,14 +4,14 @@
 
 	<groupId>ossfuzz</groupId>
 	<artifactId>poi-fuzzer</artifactId>
-	<version>${fuzzedLibaryVersion}</version>
+	<version>${fuzzedLibraryVersion}</version>
 	<packaging>jar</packaging>
 
 	<properties>
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>5.3.0</fuzzedLibaryVersion>
+		<fuzzedLibraryVersion>5.3.0</fuzzedLibraryVersion>
 		<exec.mainClass>org.apache.poi.XLSX2CSVFuzzer</exec.mainClass>
 	</properties>
 
@@ -49,22 +49,22 @@
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-examples</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -99,7 +99,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<outputFile>target/assembly/${project.artifactId}-${fuzzedLibaryVersion}.jar</outputFile>
+							<outputFile>target/assembly/${project.artifactId}-${fuzzedLibraryVersion}.jar</outputFile>
 							<artifactSet>
 								<includes>
 									<includes>org.apache.poi:poi</includes>
@@ -116,7 +116,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<outputFile>target/assembly/${project.artifactId}-libs-${fuzzedLibaryVersion}.jar</outputFile>
+							<outputFile>target/assembly/${project.artifactId}-libs-${fuzzedLibraryVersion}.jar</outputFile>
 							<artifactSet>
 								<excludes>
 									<excludes>org.apache.poi:poi</excludes>

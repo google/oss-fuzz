@@ -4,14 +4,14 @@
 
 	<groupId>ossfuzz</groupId>
 	<artifactId>axis-axis2-java-core-fuzzer</artifactId>
-	<version>${fuzzedLibaryVersion}</version>
+	<version>${fuzzedLibraryVersion}</version>
 	<packaging>jar</packaging>
 	
 	<properties>
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>1.8.2</fuzzedLibaryVersion>
+		<fuzzedLibraryVersion>1.8.2</fuzzedLibraryVersion>
 		<exec.mainClass>ossfuzz.HttpInterfaceFuzzer</exec.mainClass>
 	</properties>
 
@@ -37,27 +37,27 @@
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2-adb</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2-kernel</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
 			<artifactId>axis2-jaxws</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
     		<artifactId>axis2-transport-http</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
     		<artifactId>axis2-transport-local</artifactId>
-			<version>${fuzzedLibaryVersion}</version>
+			<version>${fuzzedLibraryVersion}</version>
 		</dependency>
 	</dependencies>
 
