@@ -61,6 +61,12 @@ def _add_payload_random_functions(exts: list[str], payload: str) -> str:
         cursor = QueryCursor(Query(LANGUAGE, '( function_definition ) @funcs'))
         for func in cursor.captures(node).get('funcs', []):
           body = func.child_by_field_name('body')
+
+          # Skip Class / Struct definition
+          type_node = func.child_by_field_name('type')
+          if not type_node or type_node.type not in ['primitive_type', 'type_identifier']:
+            break
+
           if body and body.text and random.choice([True, False]):
             func_source = body.text.decode()
             new_func_source = f'{{{payload} {func_source[1:]}'
