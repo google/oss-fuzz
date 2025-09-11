@@ -46,20 +46,22 @@ def push_image(tag):
   logging.info('Pushed: %s', tag)
 
 
-def build_and_push_image(image, test_image_suffix):
+def build_and_push_image(image, test_image_suffix, version='latest'):
   """Builds and pushes |image| to docker registry with "-testing" suffix."""
-  main_tag, testing_tag = get_image_tags(image, test_image_suffix)
-  build_image(image, [main_tag, testing_tag], testing_tag)
+  main_tag, testing_tag = get_image_tags(image, test_image_suffix, version)
+  build_image(image, [main_tag, testing_tag], main_tag, version)
   push_image(testing_tag)
 
 
-def build_image(image, tags, cache_from_tag):
+def build_image(image, tags, cache_from_tag, version='latest'):
   """Builds |image| and tags it with |tags|."""
   logging.info('Building: %s', image)
   command = ['docker', 'build']
   for tag in tags:
     command.extend(['--tag', tag])
-    path = os.path.join(IMAGES_DIR, image)
+  path = os.path.join(IMAGES_DIR, image)
+  if version != 'latest':
+    command.extend(['-f', os.path.join(path, f'{version}.Dockerfile')])
   command.extend([
       '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from', cache_from_tag
   ])
