@@ -366,8 +366,7 @@ def _do_test_builds(args, test_image_suffix, end_time):
                                   repo=args.repo,
                                   branch=args.branch,
                                   parallel=False,
-                                  upload=False,
-                                  version_tag=args.version_tag)
+                                  upload=False)
     credentials = (
         oauth2client.client.GoogleCredentials.get_application_default())
     project_builds = _do_build_type_builds(args, config, credentials,
@@ -390,6 +389,8 @@ def trial_build_main(args=None, local_base_build=True):
   test_image_suffix = TEST_IMAGE_SUFFIX
   if args.branch:
     test_image_suffix = f'{test_image_suffix}-{args.branch.lower().replace("/", "-")}'
+  if args.version_tag:
+    test_image_suffix = f'{test_image_suffix}-{args.version_tag}'
 
   if local_base_build:
     build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
