@@ -7,7 +7,6 @@ sanitizers:
   - undefined
   - memory
 fuzzing_engines:
-  - afl
   - honggfuzz
   - libfuzzer
 auto_ccs:
