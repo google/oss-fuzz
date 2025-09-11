@@ -269,6 +269,7 @@ def check_cached_replay(project,
           f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
 
       # Run the cached replay script with bad patches
+      print(' '.join(cmd_to_run))
       result = subprocess.run(' '.join(cmd_to_run),
                               shell=True,
                               stdout=stdout_fp,
