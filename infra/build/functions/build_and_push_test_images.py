@@ -99,11 +99,12 @@ def get_image_tags(image: str,
   return main_tag, test_tag
 
 
-def gcb_build_and_push_images(test_image_suffix: str):
+def gcb_build_and_push_images(test_image_suffix: str, version_tag: str = None):
   """Build and push test versions of base images using GCB."""
   steps = []
   test_tags = []
-  for version in BASE_IMAGE_VERSIONS:
+  versions = [version_tag] if version_tag else BASE_IMAGE_VERSIONS
+  for version in versions:
     for base_image in base_images.BASE_IMAGES:
       main_tag, test_tag = get_image_tags(base_image.name, test_image_suffix,
                                           version)

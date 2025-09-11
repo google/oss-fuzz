@@ -65,6 +65,13 @@ def get_latest_gcbrun_command(comments):
   return None
 
 
+import multiprocessing
+
+def run_trial_build(command):
+  """Wrapper for running trial_build.trial_build_main."""
+  return trial_build.trial_build_main(command, local_base_build=False)
+
+
 def exec_command_from_github(pull_request_number, repo, branch):
   """Executes the gcbrun command for trial_build.py or oss_fuzz_on_demand.py in
   the most recent command on |pull_request_number|. Returns True on success,
@@ -79,15 +86,33 @@ def exec_command_from_github(pull_request_number, repo, branch):
   command = full_command[1:]
 
   command.extend(['--repo', repo])
-
-  # Set the branch so that the trial_build builds the projects from the PR
-  # branch.
   command.extend(['--branch', branch])
-  logging.info('Command: %s.', command)
+  logging.info('Base command: %s.', command)
 
   if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
     return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command) == 0
-  return trial_build.trial_build_main(command, local_base_build=False)
+
+  # Run builds in parallel.
+  pool = multiprocessing.Pool()
+  results = []
+
+  # Latest build (default).
+  results.append(pool.apply_async(run_trial_build, (command.copy(),)))
+
+  # Ubuntu builds.
+  for version in ['ubuntu-20-04', 'ubuntu-24-04']:
+    ubuntu_command = command.copy()
+    ubuntu_command.extend(['--version-tag', version])
+    results.append(pool.apply_async(run_trial_build, (ubuntu_command,)))
+
+  pool.close()
+  pool.join()
+
+  # Check results.
+  for result in results:
+    if not result.get():
+      return False
+  return True
 
 
 def main():
