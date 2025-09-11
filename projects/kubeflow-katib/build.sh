@@ -15,7 +15,5 @@
 #
 ################################################################################
 
-./tools/dev/gm.py x64.release.check
-#./tools/dev/gm.py x64.release test262
-#./tools/dev/gm.py x64.release mozilla
-#./tools/dev/gm.py x64.release webkit
+mv $SRC/generateNNImage_fuzzer.go $SRC/katib/pkg/ui/v1beta1/
+compile_native_go_fuzzer_v2 github.com/kubeflow/katib/pkg/ui/v1beta1 FuzzGenerateNNImage FuzzGenerateNNImage

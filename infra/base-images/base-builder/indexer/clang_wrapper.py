@@ -444,6 +444,13 @@ def remove_invalid_coverage_flags(
     ):
       continue
 
+    # Some projects use -fsanitize-coverage-allowlist/ignorelist to optimize
+    # fuzzing feedback. For the indexer case, we would prefer to have all code
+    # instrumented, so we remove these flags.
+    if (arg.startswith("-fsanitize-coverage-allowlist=") or
+        arg.startswith("-fsanitize-coverage-ignorelist=")):
+      continue
+
     args.append(arg)
 
   return args

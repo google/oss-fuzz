@@ -1,0 +1,12 @@
+homepage: "https://github.com/kubeflow/katib"
+language: go
+primary_contact: "andrey.velichkevich@gmail.com"
+main_repo: "https://github.com/kubeflow/katib"
+auto_ccs:
+  - "adam@adalogics.com"
+  - "johnugeorge109@gmail.com"
+  - "antonin@stefanutti.fr"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

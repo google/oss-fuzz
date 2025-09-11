@@ -38,6 +38,10 @@ TESTS="\
   levin_fuzz_tests \
   bulletproof_fuzz_tests \
   tx-extra_fuzz_tests \
+  fuzz_rpc \
+  fuzz_rpc_full \
+  fuzz_rpc_full_no_exceptions \
+  fuzz_zmq \
 "
 
 # only libfuzzer can run the slow to start ones
@@ -50,21 +54,26 @@ then
   "
 fi
 
-make -C tests/fuzz $TESTS
+make -j$(nproc) -C tests/fuzz $TESTS
 
 cd /src/monero/monero/build/tests/fuzz
-for fuzzer in *_fuzz_tests
+for fuzzer in *fuzz*
 do
   cp "$fuzzer" "$OUT"
   base=$(echo $fuzzer | sed -e s/_fuzz_tests//)
-  cd "/src/monero/monero/tests/data/fuzz/$base"
-  rm -f "${OUT}/${fuzzer}_seed_corpus.zip"
-  for f in *
-  do
-    h=$(sha1sum "$f" | awk '{print $1}')
-    cp "$f" "$h"
-    zip "${OUT}/${fuzzer}_seed_corpus.zip" "$h"
-    rm -f "$h"
-  done
-  cd -
+  basedir="/src/monero/monero/tests/data/fuzz/$base"
+  if [ -d "$basedir" ]; then
+    pushd "/src/monero/monero/tests/data/fuzz/$base"
+    rm -f "${OUT}/${fuzzer}_seed_corpus.zip"
+    for f in *
+    do
+      h=$(sha1sum "$f" | awk '{print $1}')
+      cp "$f" "$h"
+      zip "${OUT}/${fuzzer}_seed_corpus.zip" "$h"
+      rm -f "$h"
+    done
+    popd
+  fi
 done
+
+cp $SRC/*.options $OUT/

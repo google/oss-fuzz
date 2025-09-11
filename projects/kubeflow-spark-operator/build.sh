@@ -15,7 +15,9 @@
 #
 ################################################################################
 
-./tools/dev/gm.py x64.release.check
-#./tools/dev/gm.py x64.release test262
-#./tools/dev/gm.py x64.release mozilla
-#./tools/dev/gm.py x64.release webkit
+rm $SRC/spark-operator/pkg/certificate/certificate_test.go
+rm $SRC/spark-operator/pkg/certificate/suite_test.go
+rm $SRC/spark-operator/pkg/certificate/util_test.go
+mv $SRC/parseSecret_fuzzer.go $SRC/spark-operator/pkg/certificate/
+compile_native_go_fuzzer_v2 github.com/kubeflow/spark-operator/v2/pkg/certificate FuzzParseCertManagerSecret FuzzParseCertManagerSecret
+compile_native_go_fuzzer_v2 github.com/kubeflow/spark-operator/v2/pkg/certificate FuzzParseInternalCertSecret FuzzParseInternalCertSecret

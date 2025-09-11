@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-./tools/dev/gm.py x64.release.check
-#./tools/dev/gm.py x64.release test262
-#./tools/dev/gm.py x64.release mozilla
-#./tools/dev/gm.py x64.release webkit
+rm $SRC/pipelines/backend/src/v2/expression/expression_test.go
+mv $SRC/expr_fuzzer.go $SRC/pipelines/backend/src/v2/expression/
+compile_native_go_fuzzer_v2 github.com/kubeflow/pipelines/backend/src/v2/expression FuzzExprSelect FuzzExprSelect
