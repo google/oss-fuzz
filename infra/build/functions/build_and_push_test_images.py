@@ -125,7 +125,7 @@ def gcb_build_and_push_images(test_image_suffix: str):
           src_root='.',
           build_args=base_image.build_args)
       # Add the -f flag to specify the Dockerfile name.
-      step['args'].extend(['-f', dockerfile])
+      step['args'].extend(['-f', os.path.basename(dockerfile)])
       steps.append(step)
 
   overrides = {'images': test_tags}
