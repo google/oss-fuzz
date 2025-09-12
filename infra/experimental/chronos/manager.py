@@ -263,7 +263,10 @@ def check_cached_replay(project,
     for bad_patch_name, bad_patch_map in bad_patch.BAD_PATCH_GENERATOR.items():
       # Generate bad patch command using different approaches
       expected_rc = bad_patch_map['rc']
-      bad_patch_command = f'python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/bad_patch.py {bad_patch_name}'
+      bad_patch_command = (
+          'python3 -m pip install -r /chronos/requirements.txt && '
+          f'python3 /chronos/bad_patch.py {bad_patch_name}'
+      )
       cmd_to_run = cmd[:]
       cmd_to_run.append(
           f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
@@ -368,10 +371,13 @@ def check_test(project,
     for logic_patch_name, logic_patch_map in logic_error_patch.LOGIC_ERROR_PATCH_GENERATOR.items(
     ):
       expected_result = logic_patch_map['result']
-      patch_command = f'python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/logic_error_patch.py {logic_patch_name}'
+      patch_command = (
+          'python3 -m pip install -r /chronos/requirements.txt && '
+          f'python3 /chronos/logic_error_patch.py {logic_patch_name} && '
+          'compile'
+      )
       cmd_to_run = cmd[:]
       cmd_to_run.append(f'"set -euo pipefail && {patch_command} && {base_cmd}"')
-      print(' '.join(cmd_to_run))
 
       # Run logic patch and check script
       try:
