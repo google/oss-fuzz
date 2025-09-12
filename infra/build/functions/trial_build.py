@@ -158,7 +158,6 @@ def get_args(args=None):
   return parsed_args
 
 
-
 @functools.lru_cache
 def get_all_projects():
   """Returns a list of all OSS-Fuzz projects."""
