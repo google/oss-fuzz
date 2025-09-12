@@ -162,8 +162,9 @@ def dockerify_run_step(step,
   if container_name:
     new_args.extend(['--name', container_name])
 
-  for env_var in step.get('env', {}):
-    new_args.extend(['-e', env_var])
+  if 'env' in step:
+    for env_var in step.get('env', {}):
+      new_args.extend(['-e', env_var])
   new_args += ['-t', image]
   new_args += step['args']
   step['args'] = new_args
