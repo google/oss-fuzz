@@ -13,116 +13,31 @@
 # limitations under the License.
 #
 ################################################################################
-"""Entrypoint for CI into trial_build or oss_fuzz_on_demand. This script will
-get the command from the last PR comment containing "/gcbrun" and pass it to
-trial_build.py or oss_fuzz_on_demand. On trial_build.py it will build test
-versions of base-images, push them and then do test builds using those images.
-"""
+"""Entrypoint for CI into trial_build. This script simply passes arguments from
+the GCB step to the trial_build.py script."""
 
 import logging
 import os
 import sys
 
-import github
-
 import trial_build
-import oss_fuzz_on_demand
-
-TRIGGER_COMMAND = '/gcbrun'
-TRIAL_BUILD_COMMAND_STR = f'{TRIGGER_COMMAND} trial_build.py '
-OSS_FUZZ_ON_DEMAND_COMMAND_STR = f'{TRIGGER_COMMAND} oss_fuzz_on_demand.py '
-SKIP_COMMAND_STR = f'{TRIGGER_COMMAND} skip'
-
-
-def get_comments(pull_request_number):
-  """Returns comments on the GitHub Pull request referenced by
-  |pull_request_number|."""
-  github_obj = github.Github()
-  repo = github_obj.get_repo('google/oss-fuzz')
-  pull = repo.get_pull(pull_request_number)
-  pull_comments = list(pull.get_comments())
-  issue = repo.get_issue(pull_request_number)
-  issue_comments = list(issue.get_comments())
-  # Github only returns comments if from the pull object when a pull request is
-  # open. If it is a draft, it will only return comments from the issue object.
-  return pull_comments + issue_comments
-
-
-def get_latest_gcbrun_command(comments):
-  """Gets the last /gcbrun comment from comments."""
-  for comment in reversed(comments):
-    # This seems to get comments on code too.
-    body = comment.body
-    if body.startswith(SKIP_COMMAND_STR):
-      return None
-    if not body.startswith(TRIAL_BUILD_COMMAND_STR) and (
-        not body.startswith(OSS_FUZZ_ON_DEMAND_COMMAND_STR)):
-      continue
-    if len(body) == len(TRIAL_BUILD_COMMAND_STR) or (
-        len(body) == len(OSS_FUZZ_ON_DEMAND_COMMAND_STR)):
-      return None
-    return body[len(TRIGGER_COMMAND):].strip().split(' ')
-  return None
-
-
-import multiprocessing
-
-def run_trial_build(command):
-  """Wrapper for running trial_build.trial_build_main."""
-  return trial_build.trial_build_main(command, local_base_build=False)
-
-
-def exec_command_from_github(pull_request_number, repo, branch):
-  """Executes the gcbrun command for trial_build.py or oss_fuzz_on_demand.py in
-  the most recent command on |pull_request_number|. Returns True on success,
-  False on failure."""
-  comments = get_comments(pull_request_number)
-  full_command = get_latest_gcbrun_command(comments)
-
-  if full_command is None:
-    logging.info('Trial build not requested.')
-    return None
-  command_file = full_command[0]
-  command = full_command[1:]
-
-  command.extend(['--repo', repo])
-  command.extend(['--branch', branch])
-  logging.info('Base command: %s.', command)
-
-  if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
-    return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command) == 0
-
-  # Run builds in parallel.
-  pool = multiprocessing.Pool()
-  results = []
-
-  # Latest build (default).
-  results.append(pool.apply_async(run_trial_build, (command.copy(),)))
-
-  # Ubuntu builds.
-  for version in ['ubuntu-20-04', 'ubuntu-24-04']:
-    ubuntu_command = command.copy()
-    ubuntu_command.extend(['--version-tag', version])
-    results.append(pool.apply_async(run_trial_build, (ubuntu_command,)))
-
-  pool.close()
-  pool.join()
-
-  # Check results.
-  for result in results:
-    if not result.get():
-      return False
-  return True
 
 
 def main():
   """Entrypoint for GitHub CI into trial_build.py"""
   logging.basicConfig(level=logging.INFO)
-  pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
-  branch = os.environ['BRANCH']
-  repo = os.environ['REPO']
-  result = exec_command_from_github(pull_request_number, repo, branch)
-  if result or result is None:
+
+  # Get the command line arguments passed from the cloudbuild.yaml step.
+  args = sys.argv[1:]
+
+  # Append the repo and branch from the environment variables, as trial_build
+  # expects them.
+  args.extend(['--repo', os.environ['REPO']])
+  args.extend(['--branch', os.environ['BRANCH']])
+
+  logging.info('Passing command to trial_build: %s', args)
+
+  if trial_build.trial_build_main(args, local_base_build=False):
     return 0
   return 1
 
