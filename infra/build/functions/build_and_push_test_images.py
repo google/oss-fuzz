@@ -127,9 +127,8 @@ def gcb_build_and_push_images(test_image_suffix: str,
           base_image.path,  # Pass the directory as context.
           use_buildkit_cache=True,
           src_root='.',
-          build_args=base_image.build_args)
-      # Add the -f flag to specify the Dockerfile name.
-      step['args'].extend(['-f', os.path.basename(dockerfile)])
+          build_args=base_image.build_args,
+          dockerfile_path=dockerfile)
       steps.append(step)
 
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT,

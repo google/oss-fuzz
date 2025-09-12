@@ -520,7 +520,8 @@ def get_docker_build_step(image_names,
                           src_root='oss-fuzz',
                           architecture='x86_64',
                           cache_image='',
-                          build_args: Sequence[str] | None = None):
+                          build_args: Sequence[str] | None = None,
+                          dockerfile_path: str | None = None):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -546,6 +547,9 @@ def get_docker_build_step(image_names,
   if build_args:
     for build_arg in build_args:
       args.extend(['--build-arg', build_arg])
+
+  if dockerfile_path:
+    args.extend(['-f', dockerfile_path])
 
   step = {
       'name': DOCKER_TOOL_IMAGE,
