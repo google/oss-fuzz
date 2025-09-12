@@ -31,11 +31,23 @@ steps:
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['all', '--branch', '${_BRANCH_NAME}', '--version-tag', 'latest']
   waitFor: ['Build the trial-build image']
+  env:
+  - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+  - 'BRANCH=${_HEAD_BRANCH}'
+  - 'REPO=${_HEAD_REPO_URL}'
 - id: 'Build ubuntu-20-04'
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['all', '--branch', '${_BRANCH_NAME}', '--version-tag', 'ubuntu-20-04']
   waitFor: ['Build the trial-build image']
+  env:
+  - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+  - 'BRANCH=${_HEAD_BRANCH}'
+  - 'REPO=${_HEAD_REPO_URL}'
 - id: 'Build ubuntu-24-04'
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['all', '--branch', '${_BRANCH_NAME}', '--version-tag', 'ubuntu-24-04']
   waitFor: ['Build the trial-build image']
+  env:
+  - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+  - 'BRANCH=${_HEAD_BRANCH}'
+  - 'REPO=${_HEAD_REPO_URL}'
