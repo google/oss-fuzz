@@ -76,9 +76,8 @@ def _run_cloudbuild(build_body):
     yaml.dump(build_body, yaml_file_handle)
 
   subprocess.run([
-      'gcloud', 'builds', 'submit',
-      os.path.join(OSS_FUZZ_ROOT, 'infra', 'base-images'),
-      '--project=oss-fuzz-base', f'--config={yaml_file}'
+      'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
+      f'--config={yaml_file}'
   ],
                  cwd=OSS_FUZZ_ROOT,
                  check=True)
@@ -113,19 +112,15 @@ def gcb_build_and_push_images(test_image_suffix: str,
       test_tags.append(test_tag)
 
       if version == 'latest':
-        dockerfile_path = os.path.join(base_image.path, 'Dockerfile')
+        dockerfile = os.path.join(base_image.path, 'Dockerfile')
       else:
-        dockerfile_path = os.path.join(base_image.path,
-                                       f'{version}.Dockerfile')
+        dockerfile = os.path.join(base_image.path, f'{version}.Dockerfile')
 
       # Skip building if the Dockerfile does not exist.
-      if not os.path.exists(os.path.join(OSS_FUZZ_ROOT, dockerfile_path)):
+      if not os.path.exists(os.path.join(OSS_FUZZ_ROOT, dockerfile)):
         logging.info('Skipping %s for version %s as it does not exist.',
-                     dockerfile_path, version)
+                     dockerfile, version)
         continue
-
-      # Make the dockerfile path relative to the build context.
-      dockerfile = os.path.relpath(dockerfile_path, IMAGES_DIR)
 
       step = build_lib.get_docker_build_step(
           [main_tag, test_tag],
