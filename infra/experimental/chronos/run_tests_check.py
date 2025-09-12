@@ -43,7 +43,8 @@ def _is_git_ignored(file_path: str) -> bool:
   # Check if the file_path is git ignored
   try:
     result = subprocess.run(
-        ["git", "check-ignore", "-q", "--", os.path.basename(file_path)],
+        ["git", "check-ignore", "-q", "--",
+         os.path.basename(file_path)],
         cwd=os.path.dirname(file_path),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -57,6 +58,7 @@ def run_test_script():
   """Helper to execute the run_tests.sh"""
   cmd = ['chmod +x /src/run_tests.sh', '/src/run_tests.sh']
   subprocess.run(' && '.join(cmd), shell=True)
+
 
 def build_snapshot(root: pathlib.Path) -> dict[str, str]:
   """Helper to record the snapshot of files in recursively in the current directory."""
@@ -89,10 +91,12 @@ def build_snapshot(root: pathlib.Path) -> dict[str, str]:
   return snapshot
 
 
-def compare_snapshots(before: dict[str, str], after: dict[str, str]) -> tuple[set[str], set[str], set[str]]:
+def compare_snapshots(
+    before: dict[str, str],
+    after: dict[str, str]) -> tuple[set[str], set[str], set[str]]:
   """Helpers to discover deleted or modified files from the two snapshot."""
   before_keys = set(before.keys())
-  after_keys  = set(after.keys())
+  after_keys = set(after.keys())
 
   deleted = before_keys - after_keys
   created = after_keys - before_keys

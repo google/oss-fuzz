@@ -432,15 +432,11 @@ def check_run_tests_script(project,
 
   start = time.time()
   cmd = [
-      'docker',
-      'run',
-      '--rm',
+      'docker', 'run', '--rm',
       '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
       ':/chronos',
       '--name=' + project + '-origin-' + sanitizer + '-run-tests-check',
-      _get_project_cached_named(project, sanitizer),
-      '/bin/bash',
-      '-c',
+      _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
       f'"python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/run_tests_check.py {ignore}"'
   ]
 
@@ -453,19 +449,22 @@ def check_run_tests_script(project,
     stderr_fp = None
 
   # Normal run with no integrity check
-  result = subprocess.run(' '.join(cmd),
-                          shell=True)
-#                          stdout=stdout_fp,
-#                          stderr=stderr_fp)
+  result = subprocess.run(' '.join(cmd), shell=True)
+  #                          stdout=stdout_fp,
+  #                          stderr=stderr_fp)
 
   end = time.time()
   logger.info('%s run_test.sh check completion time: %.2f seconds', project,
               (end - start))
 
   if not result.returncode:
-    logger.info('%s run_test.sh does not alter any files or directories content.', project)
+    logger.info(
+        '%s run_test.sh does not alter any files or directories content.',
+        project)
   else:
-    logger.info('Error: %s run_test.sh does alter files or directories content.', project)
+    logger.info(
+        'Error: %s run_test.sh does alter files or directories content.',
+        project)
 
 
 def _get_project_language(project):
@@ -691,12 +690,14 @@ def parse_args():
 
   check_run_tests_script_parser = subparsers.add_parser(
       'check-run-tests-script',
-      help='Checks if the run_tests.sh alter files in the current WORKDIR after execution')
+      help=
+      'Checks if the run_tests.sh alter files in the current WORKDIR after execution'
+  )
 
   check_run_tests_script_parser.add_argument(
       'project', help='The name of the project to check.')
-  check_run_tests_script_parser.add_argument(
-      '--ignore-new-files', action='store_true')
+  check_run_tests_script_parser.add_argument('--ignore-new-files',
+                                             action='store_true')
   check_run_tests_script_parser.add_argument(
       '--sanitizer',
       default='address',
