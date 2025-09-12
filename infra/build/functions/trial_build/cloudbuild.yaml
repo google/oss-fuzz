@@ -15,15 +15,27 @@
 ################################################################################
 
 steps:
+# First, build the trial-build image itself.
+- id: 'Build the trial-build image'
+  name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '-t'
+  - 'gcr.io/oss-fuzz-base/trial-build'
+  - '-f'
+  - 'infra/build/functions/trial_build/Dockerfile'
+  - '.'
+
+# Now, run the trial builds in parallel using the image we just built.
 - id: 'Build latest'
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['all', '--branch', '${_BRANCH_NAME}', '--version-tag', 'latest']
-  waitFor: ['-']
+  waitFor: ['Build the trial-build image']
 - id: 'Build ubuntu-20-04'
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['all', '--branch', '${_BRANCH_NAME}', '--version-tag', 'ubuntu-20-04']
-  waitFor: ['-']
+  waitFor: ['Build the trial-build image']
 - id: 'Build ubuntu-24-04'
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['all', '--branch', '${_BRANCH_NAME}', '--version-tag', 'ubuntu-24-04']
-  waitFor: ['-']
+  waitFor: ['Build the trial-build image']
