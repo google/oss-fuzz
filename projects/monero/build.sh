@@ -24,7 +24,7 @@ git submodule init
 git submodule update
 mkdir -p build
 cd build
-export CXXFLAGS="$CXXFLAGS -fPIC"
+export CXXFLAGS="${CXXFLAGS} -fPIC -DBOOST_NO_INCLASS_MEMBER_INITIALIZATION"
 cmake -D OSSFUZZ=ON -D STATIC=ON -D BUILD_TESTS=ON -D USE_LTO=OFF -D ARCH="default" ..
 
 TESTS="\
