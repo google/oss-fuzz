@@ -113,15 +113,19 @@ def gcb_build_and_push_images(test_image_suffix: str,
       test_tags.append(test_tag)
 
       if version == 'latest':
-        dockerfile = os.path.join(base_image.path, 'Dockerfile')
+        dockerfile_path = os.path.join(base_image.path, 'Dockerfile')
       else:
-        dockerfile = os.path.join(base_image.path, f'{version}.Dockerfile')
+        dockerfile_path = os.path.join(base_image.path,
+                                       f'{version}.Dockerfile')
 
       # Skip building if the Dockerfile does not exist.
-      if not os.path.exists(os.path.join(OSS_FUZZ_ROOT, dockerfile)):
+      if not os.path.exists(os.path.join(OSS_FUZZ_ROOT, dockerfile_path)):
         logging.info('Skipping %s for version %s as it does not exist.',
-                     dockerfile, version)
+                     dockerfile_path, version)
         continue
+
+      # Make the dockerfile path relative to the build context.
+      dockerfile = os.path.relpath(dockerfile_path, IMAGES_DIR)
 
       step = build_lib.get_docker_build_step(
           [main_tag, test_tag],
