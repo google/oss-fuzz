@@ -27,7 +27,7 @@ configurations, scripts, and other changes. We recommend you pull the most
 recent images by running the following command:
 
 ```bash
-$ python infra/helper.py pull_images
+$ python3 infra/helper.py pull_images
 ```
 
 ## Build fuzz targets
@@ -36,8 +36,8 @@ Code coverage report generation requires a special build configuration to be
 used. To create a code coverage build for your project, run these commands:
 
 ```bash
-$ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer=coverage $PROJECT_NAME
+$ python3 infra/helper.py build_image $PROJECT_NAME
+$ python3 infra/helper.py build_fuzzers --sanitizer=coverage $PROJECT_NAME
 ```
 
 ## Establish access to GCS
@@ -70,7 +70,7 @@ If you want to generate a code coverage report using the corpus aggregated on
 OSS-Fuzz, run this command:
 
 ```bash
-$ python infra/helper.py coverage $PROJECT_NAME
+$ python3 infra/helper.py coverage $PROJECT_NAME
 ```
 
 If you want to generate a code coverage report using the corpus you have
@@ -79,7 +79,7 @@ locally, copy the corpus into the
 target, then run this command:
 
 ```bash
-$ python infra/helper.py coverage --no-corpus-download $PROJECT_NAME
+$ python3 infra/helper.py coverage --no-corpus-download $PROJECT_NAME
 ```
 
 ### Single fuzz target
@@ -88,14 +88,14 @@ You can generate a code coverage report for a particular fuzz target by using
 the `--fuzz-target` argument:
 
 ```bash
-$ python infra/helper.py coverage --fuzz-target=<fuzz_target_name> $PROJECT_NAME
+$ python3 infra/helper.py coverage --fuzz-target=<fuzz_target_name> $PROJECT_NAME
 ```
 
 In this mode, you can specify an arbitrary corpus location for the fuzz target
 (instead of the corpus downloaded from OSS-Fuzz) by using `--corpus-dir`:
 
 ```bash
-$ python infra/helper.py coverage --fuzz-target=<fuzz_target_name> \
+$ python3 infra/helper.py coverage --fuzz-target=<fuzz_target_name> \
     --corpus-dir=<my_local_corpus_dir> $PROJECT_NAME
 ```
 
@@ -105,7 +105,7 @@ You may want to use some of the options provided by the [llvm-cov tool], like
 `-ignore-filename-regex=`. You can pass these to the helper script after `--`:
 
 ```bash
-$ python infra/helper.py coverage $PROJECT_NAME -- \
+$ python3 infra/helper.py coverage $PROJECT_NAME -- \
     -ignore-filename-regex=.*code/to/be/ignored/.* <other_extra_args>
 ```
 
@@ -113,7 +113,7 @@ If you want to specify particular source files or directories to show in the
 report, list their paths at the end of the extra arguments sequence:
 
 ```bash
-$ python infra/helper.py coverage zlib -- \
+$ python3 infra/helper.py coverage zlib -- \
     <other_extra_args> /src/zlib/inftrees.c /src/zlib_uncompress_fuzzer.cc /src/zlib/zutil.c
 ```
 
