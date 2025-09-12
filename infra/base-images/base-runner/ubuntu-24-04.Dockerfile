@@ -53,8 +53,8 @@ RUN ldconfig && \
     ln -s /usr/local/bin/python3.11 /usr/local/bin/python3 && \
     ln -s /usr/local/bin/python3.11 /usr/local/bin/python
 
-COPY install_deps.sh /
-RUN /install_deps.sh && rm /install_deps.sh
+COPY install_deps_ubuntu_24_04.sh /
+RUN /install_deps_ubuntu_24_04.sh && rm /install_deps.sh
 
 ENV CODE_COVERAGE_SRC=/opt/code_coverage
 # Pin coverage to the same as in the base builder:

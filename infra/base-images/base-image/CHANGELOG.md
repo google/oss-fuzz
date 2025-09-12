@@ -2,14 +2,14 @@
 
 ## Analysis Summary
 
-The `ubuntu20` and `ubuntu24` images for `oss-fuzz/base-image` were successfully built. Both images are based on their respective Ubuntu versions and include essential packages for the fuzzing environment. The primary difference between the two is the version of `libgcc-dev` used, which is `libgcc-9-dev` for Ubuntu 20.04 and `libgcc-13-dev` for Ubuntu 24.04.
+The `ubuntu-20-04` and `ubuntu-24-04` images for `oss-fuzz/base-image` were successfully built. Both images are based on their respective Ubuntu versions and include essential packages for the fuzzing environment. The primary difference between the two is the version of `libgcc-dev` used, which is `libgcc-9-dev` for Ubuntu 20.04 and `libgcc-13-dev` for Ubuntu 24.04.
 
 ## Build Status
 
 | Image Tag | Dockerfile | Status |
 | --- | --- | --- |
-| `oss-fuzz/base-image:ubuntu20` | `ubuntu_20_04.Dockerfile` | Success |
-| `oss-fuzz/base-image:ubuntu24` | `ubuntu_24_04.Dockerfile` | Success |
+| `oss-fuzz/base-image:ubuntu-20-04` | `ubuntu-20-04.Dockerfile` | Success |
+| `oss-fuzz/base-image:ubuntu-24-04` | `ubuntu-24-04.Dockerfile` | Success |
 
 ## Package Comparison
 
