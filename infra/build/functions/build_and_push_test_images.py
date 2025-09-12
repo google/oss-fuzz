@@ -100,8 +100,7 @@ def get_image_tags(image: str,
 
 
 def gcb_build_and_push_images(test_image_suffix: str,
-                              version_tag: str = None,
-                              machine_type: str = None):
+                              version_tag: str = None):
   """Build and push test versions of base images using GCB."""
   steps = []
   test_tags = []
@@ -133,11 +132,8 @@ def gcb_build_and_push_images(test_image_suffix: str,
       step['args'].extend(['-f', os.path.basename(dockerfile)])
       steps.append(step)
 
-  overrides = {'images': test_tags}
-  if machine_type:
-    overrides['options'] = {'machineType': machine_type}
-
-  build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
+  build_body = build_lib.get_build_body(steps, base_images.TIMEOUT,
+                                        {'images': test_tags},
                                         GCB_BUILD_TAGS + [test_image_suffix])
   _run_cloudbuild(build_body)
 

@@ -397,9 +397,7 @@ def trial_build_main(args=None, local_base_build=True):
     build_and_push_test_images.build_and_push_images(test_image_suffix)
   else:
     build_and_push_test_images.gcb_build_and_push_images(
-        test_image_suffix,
-        version_tag=args.version_tag,
-        machine_type='n2-highcpu-80')
+        test_image_suffix, version_tag=args.version_tag)
   return _do_test_builds(args, test_image_suffix, end_time)
 
 
