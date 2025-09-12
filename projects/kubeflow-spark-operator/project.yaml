@@ -1,0 +1,11 @@
+homepage: "https://github.com/kubeflow/spark-operator"
+language: go
+primary_contact: "github@chenyicn.net"
+main_repo: "https://github.com/kubeflow/spark-operator"
+auto_ccs:
+  - "adam@adalogics.com"
+  - "vara.bonthu@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

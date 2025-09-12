@@ -220,7 +220,7 @@ void ParallelMergeQueue::Cancel() {
   for (auto& queue : queues_) {
     queue->Cancel();
   }
-  (void)TakeIndex();
+  state_.SetTaken();
 }
 
 std::unique_ptr<InMemoryIndex> ParallelMergeQueue::TakeIndex() {

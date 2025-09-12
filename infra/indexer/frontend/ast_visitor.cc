@@ -46,6 +46,7 @@
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/MapVector.h"
+#include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/SmallVector.h"
@@ -118,7 +119,7 @@ const clang::ClassTemplateSpecializationDecl* FindSpecialization(
     const clang::ClassTemplateDecl* class_template_decl,
     const llvm::ArrayRef<clang::TemplateArgument> args,
     const clang::ASTContext& context) {
-  // Without this, sugared types can lead to lookup misses (see the test delta).
+  // Without this, sugared types can lead to lookup misses.
   llvm::SmallVector<clang::TemplateArgument, 4> canonical_args;
   for (const clang::TemplateArgument& arg : args) {
     canonical_args.push_back(context.getCanonicalTemplateArgument(arg));
@@ -130,7 +131,7 @@ const clang::ClassTemplateSpecializationDecl* FindSpecialization(
   // forthcoming behavior of the object.
   void* insert_pos = nullptr;
   return const_cast<clang::ClassTemplateDecl*>(class_template_decl)
-      ->findSpecialization(args, insert_pos);
+      ->findSpecialization(canonical_args, insert_pos);
 }
 
 // Helper functions to find the closest explicit template specialization that
@@ -774,7 +775,7 @@ void AddVirtualMethodLinksImpl(
     const DefiningSuperBasesToMethods& defining_super_bases_to_methods,
     EntityId child_id, InMemoryIndex& index,
     EntityIdByDecl&& get_entity_id_for_decl, const clang::ASTContext& context) {
-  llvm::SmallSet<const clang::CXXRecordDecl*, 32> seen;
+  llvm::SmallPtrSet<const clang::CXXRecordDecl*, 32> seen;
   llvm::SmallVector<const clang::CXXRecordDecl*, 32> to_visit;
   auto add_bases_to_visit = [&to_visit,
                              &seen](const clang::CXXRecordDecl* class_decl) {
@@ -849,6 +850,21 @@ void AddVirtualMethodLinksImpl(
       // We can't break here - can have multiple bases with this virtual method.
     }
   }
+}
+
+const clang::CXXRecordDecl* GetCXXRecordForType(const clang::QualType& type) {
+  clang::QualType derived_type = type;
+  if (const auto* pointer_type = type->getAs<clang::PointerType>()) {
+    derived_type = pointer_type->getPointeeType();
+  }
+  if (derived_type->isDependentType()) {
+    return nullptr;
+  }
+  const auto* record_type = derived_type->castAs<clang::RecordType>();
+  CHECK(record_type);
+  const clang::RecordDecl* decl = record_type->getOriginalDecl();
+  CHECK(decl);
+  return llvm::dyn_cast<clang::CXXRecordDecl>(decl);
 }
 
 }  // namespace
@@ -1460,12 +1476,6 @@ void AstVisitor::AddTypeReferencesFromLocation(LocationId location_id,
     type = pointee_type;
   }
 
-  // Then strip sugar (`struct` keyword, name qualifications, etc.)
-  while (llvm::isa<clang::ElaboratedType>(type)) {
-    const auto* elaborated_type = llvm::cast<clang::ElaboratedType>(type);
-    type = elaborated_type->desugar().getTypePtrOrNull();
-  }
-
   if (llvm::isa<clang::TemplateSpecializationType>(type)) {
     auto* specialization_type =
         llvm::cast<clang::TemplateSpecializationType>(type);
@@ -1634,7 +1644,10 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
     if (decl && llvm::isa<clang::CXXMethodDecl>(decl)) {
       const auto* method_decl = llvm::cast<clang::CXXMethodDecl>(decl);
       if (method_decl->getParent()) {
-        const auto* type = method_decl->getParent()->getTypeForDecl();
+        const auto* type = method_decl->getParent()
+                               ->getASTContext()
+                               .getCanonicalTagType(method_decl->getParent())
+                               .getTypePtr();
         if (type) {
           AddTypeReferencesForSourceRange(expr->getSourceRange(), type);
         }
@@ -1647,7 +1660,11 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
       const auto* constructor_decl =
           llvm::cast<clang::CXXConstructorDecl>(decl);
       if (constructor_decl->getParent()) {
-        const auto* type = constructor_decl->getParent()->getTypeForDecl();
+        const auto* type =
+            constructor_decl->getParent()
+                ->getASTContext()
+                .getCanonicalTagType(constructor_decl->getParent())
+                .getTypePtr();
         if (type) {
           AddTypeReferencesForSourceRange(expr->getSourceRange(), type);
         }
@@ -1657,9 +1674,50 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
     decl = llvm::cast<clang::DeclRefExpr>(expr)->getDecl();
   } else if (llvm::isa<clang::MemberExpr>(expr)) {
     const auto* member_expr = llvm::cast<clang::MemberExpr>(expr);
-    decl = member_expr->getMemberDecl();
-    if (member_expr->getBase()) {
-      AddReferencesForExpr(member_expr->getBase());
+    const clang::ValueDecl* value_decl = member_expr->getMemberDecl();
+    decl = value_decl;
+    if (clang::Expr* base = member_expr->getBase()) {
+      AddReferencesForExpr(base);
+
+      // Check if the call can be devirtualized (the type is known precisely,
+      // or either the member function or its defining class are marked `final`
+      // etc.) Add a reference to the devirtualized method as well in that case.
+      if (const auto* method_decl =
+              llvm::dyn_cast<clang::CXXMethodDecl>(value_decl);
+          method_decl && method_decl->isVirtual()) {
+        if (const clang::CXXMethodDecl* devirtualized_method_decl =
+                method_decl->getDevirtualizedMethod(base,
+                                                    /*IsAppleKext=*/false);
+            devirtualized_method_decl &&
+            devirtualized_method_decl != method_decl) {
+          AddDeclReferenceForSourceRange(expr->getSourceRange(),
+                                         devirtualized_method_decl);
+        }
+      }
+
+      // Check if the access is through an inheriting descendant, in which case
+      // we add a cross-reference to the corresponding synthetic entity.
+      //
+      // Skip the case of an explicit qualification (`instance.Base::method`)
+      // because it is commonly used for members not accessible through the
+      // instance directly (for disambiguation).
+      if (!member_expr->getQualifierLoc()) {
+        if (const clang::CXXRecordDecl* expr_record_decl =
+                GetCXXRecordForType(base->IgnoreParenBaseCasts()->getType())) {
+          const clang::DeclContext* decl_context =
+              value_decl->getNonTransparentDeclContext();
+          // If the base expression is not of the same record type as the parent
+          // of the retrieved member...
+          if (const auto* record_decl =
+                  llvm::dyn_cast<clang::CXXRecordDecl>(decl_context);
+              record_decl && record_decl->getCanonicalDecl() !=
+                                 expr_record_decl->getCanonicalDecl()) {
+            // ...add synthetic entity cross-references.
+            AddSyntheticMemberReference(expr_record_decl, value_decl,
+                                        expr->getSourceRange());
+          }
+        }
+      }
     }
   } else if (llvm::isa<clang::LambdaExpr>(expr)) {
     decl = llvm::cast<clang::LambdaExpr>(expr)
@@ -1670,6 +1728,24 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
   if (decl) {
     AddDeclReferenceForSourceRange(expr->getSourceRange(), decl);
   }
+}
+
+void AstVisitor::AddSyntheticMemberReference(
+    const clang::CXXRecordDecl* child_class,
+    const clang::ValueDecl* inherited_member, const clang::SourceRange& range) {
+  const EntityId base_member_entity_id = GetEntityIdForDecl(inherited_member);
+  if (base_member_entity_id == kInvalidEntityId) {
+    return;
+  }
+  const Entity& base_member_entity =
+      index_.GetEntityById(base_member_entity_id);
+  const Entity synthetic_inherited_member = Entity(
+      base_member_entity, GetNamePrefixForDeclContext(child_class, context_),
+      /*inherited_entity_id=*/base_member_entity_id);
+  const EntityId synthetic_inherited_member_id =
+      index_.GetEntityId(synthetic_inherited_member);
+  auto location_id = GetLocationId(range.getBegin(), range.getEnd());
+  (void)index_.GetReferenceId({synthetic_inherited_member_id, location_id});
 }
 
 void AstVisitor::AddDeclReferenceForSourceRange(const clang::SourceRange& range,

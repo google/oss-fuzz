@@ -44,9 +44,19 @@ INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 _LD_BINARY = 'ld-linux-x86-64.so.2'
 _LD_PATH = Path('/lib64') / _LD_BINARY
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
-_CLANG_VERSION = '18'
 
-EXPECTED_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
+DEFAULT_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
+DEFAULT_FUZZING_ENGINE = 'fuzzing_engine.cc'
+
+_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', '/usr/local'))
+_TOOLCHAIN_WITH_WRAPPER = Path('/opt/toolchain')
+
+INDEXER_DIR = Path(__file__).parent
+
+# Some build systems isolate the compiler environment from the parent process,
+# so we can't always rely on using environment variables to pass settings to the
+# wrapper. Get around this by writing to a file instead.
+COMPILE_SETTINGS_PATH = INDEXER_DIR / 'compile_settings.json'
 
 EXTRA_CFLAGS = (
     '-fno-omit-frame-pointer '
@@ -54,15 +64,33 @@ EXTRA_CFLAGS = (
     '-O0 -glldb '
     '-fsanitize=address '
     '-Wno-invalid-offsetof '
-    f'{EXPECTED_COVERAGE_FLAGS} '
-    f'-gen-cdb-fragment-path {OUT}/cdb '
+    '{coverage_flags} '
     '-Qunused-arguments '
-    f'-isystem /usr/local/lib/clang/{_CLANG_VERSION} '
-    f'-resource-dir /usr/local/lib/clang/{_CLANG_VERSION} '
 )
 
 
-def set_env_vars():
+@dataclasses.dataclass(slots=True, frozen=True)
+class CompileSettings:
+  coverage_flags: str
+  clang_toolchain: str
+  clang_version: str
+
+
+def read_compile_settings() -> CompileSettings:
+  """Gets compile settings from file."""
+  with COMPILE_SETTINGS_PATH.open('r') as f:
+    settings_dict = json.load(f)
+
+  return CompileSettings(**settings_dict)
+
+
+def write_compile_settings(compile_settings: CompileSettings) -> None:
+  """Writes compile settings to file."""
+  with COMPILE_SETTINGS_PATH.open('w') as f:
+    json.dump(dataclasses.asdict(compile_settings), f)
+
+
+def set_env_vars(coverage_flags: str):
   """Set up build environment variables."""
   os.environ['SANITIZER'] = 'address'
   # Prevent ASan leak checker from running on `configure` script targets.
@@ -75,25 +103,38 @@ def set_env_vars():
   os.environ['CC'] = 'clang'
   os.environ['COMPILING_PROJECT'] = 'True'
   # Force users of clang to use our wrapper. This fixes e.g. libcups.
-  os.environ['PATH'] = f"/opt/indexer:{os.environ.get('PATH')}"
+  os.environ['PATH'] = (
+      f"{_TOOLCHAIN_WITH_WRAPPER / 'bin'}:{os.environ.get('PATH')}"
+  )
 
   existing_cflags = os.environ.get('CFLAGS', '')
-  os.environ['CFLAGS'] = f'{existing_cflags} {EXTRA_CFLAGS}'.strip()
+  extra_cflags = EXTRA_CFLAGS.format(coverage_flags=coverage_flags)
+  os.environ['CFLAGS'] = f'{existing_cflags} {extra_cflags}'.strip()
 
 
 def set_up_wrapper_dir():
-  """Set up symlinks to everything in /usr/local/bin/.
+  """Sets up a shadow toolchain.
 
-  Do this so build systems that snoop around clang's directory don't explode.
+  This sets up our clang wrapper for clang/clang++ and symlinks everything else
+  to point to the real toolchain.
   """
-  real_dir = '/usr/local/bin'
-  indexer_dir = '/opt/indexer'
-  for name in os.listdir():
-    src = os.path.join(real_dir, name)
-    dst = os.path.join(indexer_dir, name)
-    if name not in {'clang', 'clang++'}:
+  if _TOOLCHAIN_WITH_WRAPPER.exists():
+    shutil.rmtree(_TOOLCHAIN_WITH_WRAPPER)
+  _TOOLCHAIN_WITH_WRAPPER.mkdir(parents=True)
+
+  # Set up symlinks to every binary except for clang.
+  wrapper_bin_dir = _TOOLCHAIN_WITH_WRAPPER / 'bin'
+  wrapper_bin_dir.mkdir()
+  for name in os.listdir(_CLANG_TOOLCHAIN / 'bin'):
+    if name in ('clang', 'clang++'):
       continue
-    os.symlink(src, dst)
+
+    os.symlink(_CLANG_TOOLCHAIN / 'bin' / name, wrapper_bin_dir / name)
+  os.symlink(_CLANG_TOOLCHAIN / 'lib', _TOOLCHAIN_WITH_WRAPPER / 'lib')
+
+  # Set up our compiler wrappers.
+  os.symlink(INDEXER_DIR / 'clang_wrapper.py', wrapper_bin_dir / 'clang')
+  os.symlink(INDEXER_DIR / 'clang_wrapper.py', wrapper_bin_dir / 'clang++')
 
 
 @dataclasses.dataclass(slots=True, frozen=True)
@@ -104,7 +145,7 @@ class BinaryMetadata:
   compile_commands: list[dict[str, Any]]
 
 
-def _get_build_id_from_elf_notes(elf_file: str, contents: bytes) -> str | None:
+def _get_build_id_from_elf_notes(elf_file: Path, contents: bytes) -> str | None:
   """Extracts the build id from the ELF notes of a binary.
 
   The ELF notes are obtained with
@@ -126,68 +167,110 @@ def _get_build_id_from_elf_notes(elf_file: str, contents: bytes) -> str | None:
 
   assert elf_data
 
-  for file_info in elf_data:
-    for note_entry in file_info['Notes']:
-      note_section = note_entry['NoteSection']
-      if note_section['Name'] == '.note.gnu.build-id':
-        note_details = note_section['Note']
-        if 'Build ID' in note_details:
-          return note_details['Build ID']
-  return None
-
-
-def get_build_id(elf_file: str) -> str | None:
-  """This invokes llvm-readelf to get the build ID of the given ELF file."""
-
-  # Note: this format changed in llvm-readelf19.
-  # Example output of llvm-readelf JSON output:
+  # Example output of llvm-readelf JSON output for llvm 19+:
   # [
   #   {
   #     "FileSummary": {
-  #       "File": "/out/iccprofile_info",
+  #       "File": "binary",
   #       "Format": "elf64-x86-64",
   #       "Arch": "x86_64",
   #       "AddressSize": "64bit",
-  #       "LoadName": "<Not found>",
+  #       "LoadName": "<Not found>"
   #     },
-  #     "Notes": [
+  #     "NoteSections": [
   #       {
   #         "NoteSection": {
-  #           "Name": ".note.ABI-tag",
-  #           "Offset": 764,
+  #           "Name": ".note.gnu.property",
+  #           "Offset": 904,
   #           "Size": 32,
-  #           "Note": {
-  #             "Owner": "GNU",
-  #             "Data size": 16,
-  #             "Type": "NT_GNU_ABI_TAG (ABI version tag)",
-  #             "OS": "Linux",
-  #             "ABI": "3.2.0",
-  #           },
+  #           "Notes": [
+  #             {
+  #               "Owner": "GNU",
+  #               "Data size": 16,
+  #               "Type": "NT_GNU_PROPERTY_TYPE_0 (property note)",
+  #               "Property": [
+  #                 "x86 ISA needed: x86-64-baseline"
+  #               ]
+  #             }
+  #           ]
   #         }
   #       },
   #       {
   #         "NoteSection": {
   #           "Name": ".note.gnu.build-id",
-  #           "Offset": 796,
-  #           "Size": 24,
-  #           "Note": {
-  #             "Owner": "GNU",
-  #             "Data size": 8,
-  #             "Type": "NT_GNU_BUILD_ID (unique build ID bitstring)",
-  #             "Build ID": "a03df61c5b0c26f3",
-  #           },
+  #           "Offset": 936,
+  #           "Size": 36,
+  #           "Notes": [
+  #             {
+  #               "Owner": "GNU",
+  #               "Data size": 20,
+  #               "Type": "NT_GNU_BUILD_ID (unique build ID bitstring)",
+  #               "Build ID": "182a06c3dca5ee4d7e9c1d94b432c8bd9279438f"
+  #             }
+  #           ]
   #         }
   #       },
-  #     ],
+  #       {
+  #         "NoteSection": {
+  #           "Name": ".note.ABI-tag",
+  #           "Offset": 1630064,
+  #           "Size": 32,
+  #           "Notes": [
+  #             {
+  #               "Owner": "GNU",
+  #               "Data size": 16,
+  #               "Type": "NT_GNU_ABI_TAG (ABI version tag)",
+  #               "OS": "Linux",
+  #               "ABI": "3.2.0"
+  #             }
+  #           ]
+  #         }
+  #       }
+  #     ]
   #   }
   # ]
 
+  for file_info in elf_data:
+    if 'Notes' in file_info:
+      # llvm < 19
+      for note_entry in file_info['Notes']:
+        note_section = note_entry['NoteSection']
+        if note_section['Name'] == '.note.gnu.build-id':
+          note_details = note_section['Note']
+          if 'Build ID' in note_details:
+            return note_details['Build ID']
+    elif 'NoteSections' in file_info:
+      # llvm 19+
+      for note_entry in file_info['NoteSections']:
+        note_section = note_entry['NoteSection']
+        if note_section['Name'] == '.note.gnu.build-id':
+          note_details = note_section['Notes']
+          for note_detail in note_details:
+            if 'Build ID' in note_detail:
+              return note_detail['Build ID']
+    else:
+      raise ValueError('Unknown ELF notes format.')
+
+  return None
+
+
+def _get_clang_version(toolchain: Path) -> str:
+  """Returns the clang version."""
+  clang = toolchain / 'bin' / 'clang'
+  clang_version = subprocess.run(
+      [clang, '-dumpversion'], capture_output=True, check=True, text=True
+  ).stdout
+  return clang_version.split('.')[0]
+
+
+def get_build_id(elf_file: Path) -> str | None:
+  """This invokes llvm-readelf to get the build ID of the given ELF file."""
   ret = subprocess.run(
       [
           _LLVM_READELF_PATH,
           '--notes',
           '--elf-output-style=JSON',
-          elf_file,
+          elf_file.as_posix(),
       ],
       capture_output=True,
       check=False,
@@ -203,8 +286,9 @@ def find_fuzzer_binaries(out_dir: Path, build_id: str) -> Sequence[Path]:
   binaries = []
   for root, _, files in os.walk(out_dir):
     for file in files:
-      if get_build_id(os.path.join(root, file)) == build_id:
-        binaries.append(Path(root, file))
+      file_path = Path(root, file)
+      if get_build_id(file_path) == build_id:
+        binaries.append(file_path)
 
   return binaries
 
@@ -248,7 +332,7 @@ def enumerate_build_targets(
         ):
           continue
 
-        build_id_matches = build_id == get_build_id(binary_path.as_posix())
+        build_id_matches = build_id == get_build_id(binary_path)
         target_binary_config = manifest_types.CommandLineBinaryConfig(
             **dict(binary_config.to_dict(), binary_name=name)
         )
@@ -281,7 +365,7 @@ def enumerate_build_targets(
   return tuple(binary_to_build_metadata.values())
 
 
-def copy_fuzzing_engine() -> Path:
+def copy_fuzzing_engine(fuzzing_engine: str) -> Path:
   """Copy fuzzing engine."""
   # Not every project saves source to $SRC/$PROJECT_NAME
   fuzzing_engine_dir = SRC / PROJECT
@@ -289,7 +373,7 @@ def copy_fuzzing_engine() -> Path:
     fuzzing_engine_dir = SRC / 'fuzzing_engine'
     fuzzing_engine_dir.mkdir(exist_ok=True)
 
-  shutil.copy('/opt/indexer/fuzzing_engine.cc', fuzzing_engine_dir)
+  shutil.copy(f'/opt/indexer/{fuzzing_engine}', fuzzing_engine_dir)
   return fuzzing_engine_dir
 
 
@@ -297,42 +381,54 @@ def build_project(
     targets_to_index: Sequence[str] | None = None,
     compile_args: Sequence[str] | None = None,
     binaries_only: bool = False,
+    fuzzing_engine: str = DEFAULT_FUZZING_ENGINE,
+    coverage_flags: str = DEFAULT_COVERAGE_FLAGS,
 ):
   """Build the actual project."""
-  set_env_vars()
+  set_env_vars(coverage_flags)
   if targets_to_index:
     os.environ['INDEXER_TARGETS'] = ','.join(targets_to_index)
 
   if binaries_only:
     os.environ['INDEXER_BINARIES_ONLY'] = '1'
 
-  fuzzing_engine_path = copy_fuzzing_engine()
+  clang_version = _get_clang_version(_CLANG_TOOLCHAIN)
+  write_compile_settings(
+      CompileSettings(
+          coverage_flags=coverage_flags,
+          clang_toolchain=_CLANG_TOOLCHAIN.as_posix(),
+          clang_version=clang_version,
+      )
+  )
 
+  fuzzing_engine_dir = copy_fuzzing_engine(fuzzing_engine)
   build_fuzzing_engine_command = [
-      '/opt/indexer/clang++',
+      f'{_CLANG_TOOLCHAIN}/bin/clang++',
       '-c',
       '-Wall',
       '-Wextra',
       '-pedantic',
       '-std=c++20',
+      '-fno-rtti',
+      '-fno-exceptions',
       '-glldb',
       '-O0',
-      str(fuzzing_engine_path / 'fuzzing_engine.cc'),
+      (fuzzing_engine_dir / fuzzing_engine).as_posix(),
       '-o',
       f'{OUT}/fuzzing_engine.o',
       '-gen-cdb-fragment-path',
       f'{OUT}/cdb',
       '-Qunused-arguments',
-      f'-isystem /usr/local/lib/clang/{_CLANG_VERSION}',
+      f'-isystem {_CLANG_TOOLCHAIN}/lib/clang/{clang_version}',
       '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9',
       '-I',
       '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9',
       '-I',
       '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward',
       '-I',
-      f'/usr/local/lib/clang/{_CLANG_VERSION}/include',
+      f'{_CLANG_TOOLCHAIN}/lib/clang/{clang_version}/include',
       '-I',
-      '/usr/local/include',
+      f'{_CLANG_TOOLCHAIN}/include',
       '-I',
       '/usr/include/x86_64-linux-gnu',
       '-I',
@@ -350,7 +446,6 @@ def build_project(
   if os.path.exists(lib_fuzzing_engine):
     os.remove(lib_fuzzing_engine)
   os.symlink('/opt/indexer/fuzzing_engine.a', lib_fuzzing_engine)
-  set_up_wrapper_dir()
 
   compile_command = ['/usr/local/bin/compile']
   if compile_args:
@@ -677,6 +772,16 @@ def main():
           ' args, set this to binary.'
       ),
   )
+  parser.add_argument(
+      '--fuzzing-engine',
+      default=DEFAULT_FUZZING_ENGINE,
+      help='Path to the fuzzing engine to use for the fuzz target.',
+  )
+  parser.add_argument(
+      '--coverage-flags',
+      default=DEFAULT_COVERAGE_FLAGS,
+      help='Coverage flags to set for the instrumentation.',
+  )
   args = parser.parse_args()
 
   INDEXES_PATH.mkdir(exist_ok=True)
@@ -765,10 +870,14 @@ def main():
   SNAPSHOT_DIR.mkdir(exist_ok=True)
   # We don't have an existing /out dir on oss-fuzz's build infra.
   OUT.mkdir(parents=True, exist_ok=True)
+
+  set_up_wrapper_dir()
   build_project(
       None if args.targets_all_index else targets_to_index,
       args.compile_arg,
       args.binaries_only,
+      args.fuzzing_engine,
+      args.coverage_flags,
   )
 
   if not args.binaries_only:

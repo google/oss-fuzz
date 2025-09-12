@@ -41,15 +41,21 @@ class ClangWrapperTest(unittest.TestCase):
         "clang",
         "-fsanitize-coverage=bb,no-prune,trace-pc-guard",
         "-fsanitize-coverage=edge",
+        "-foo",
+        "-fsanitize-coverage-allowlist=allowlist",
+        "-fsanitize-coverage-ignorelist=ignorelist",
         "-c",
         "test.c",
     ]
-    modified_argv = clang_wrapper.remove_invalid_coverage_flags(argv)
+    modified_argv = clang_wrapper.remove_invalid_coverage_flags(
+        argv, "-fsanitize-coverage=bb,no-prune,trace-pc-guard"
+    )
     self.assertCountEqual(
         modified_argv,
         [
             "clang",
             "-fsanitize-coverage=bb,no-prune,trace-pc-guard",
+            "-foo",
             "-c",
             "test.c",
         ],

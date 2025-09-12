@@ -38,7 +38,7 @@ fi
 make -j$(nproc) all
 
 # Build fuzzers
-EXTRA_CFLAGS="-DCIPHER_NONE_AVAIL=1 -D_GNU_SOURCE"
+EXTRA_CFLAGS="-DCIPHER_NONE_AVAIL=1 -D_GNU_SOURCE -Iopenbsd-compat/include"
 STATIC_CRYPTO="-Wl,-Bstatic -lcrypto -Wl,-Bdynamic"
 
 SK_NULL=ssh-sk-null.o
