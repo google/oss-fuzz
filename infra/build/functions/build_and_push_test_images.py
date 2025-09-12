@@ -99,7 +99,9 @@ def get_image_tags(image: str,
   return main_tag, test_tag
 
 
-def gcb_build_and_push_images(test_image_suffix: str, version_tag: str = None):
+def gcb_build_and_push_images(test_image_suffix: str,
+                              version_tag: str = None,
+                              machine_type: str = None):
   """Build and push test versions of base images using GCB."""
   steps = []
   test_tags = []
@@ -132,6 +134,9 @@ def gcb_build_and_push_images(test_image_suffix: str, version_tag: str = None):
       steps.append(step)
 
   overrides = {'images': test_tags}
+  if machine_type:
+    overrides['options'] = {'machineType': machine_type}
+
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT, overrides,
                                         GCB_BUILD_TAGS + [test_image_suffix])
   _run_cloudbuild(build_body)

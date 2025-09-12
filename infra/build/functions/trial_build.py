@@ -396,20 +396,10 @@ def trial_build_main(args=None, local_base_build=True):
   if local_base_build:
     build_and_push_test_images.build_and_push_images(test_image_suffix)
   else:
-    # Run builds in parallel.
-    pool = multiprocessing.Pool()
-    results = []
-    for version in build_and_push_test_images.BASE_IMAGE_VERSIONS:
-      results.append(
-          pool.apply_async(build_and_push_test_images.gcb_build_and_push_images,
-                           (test_image_suffix, version)))
-    pool.close()
-    pool.join()
-
-    # Check results.
-    for result in results:
-      if not result.get():
-        return False
+    build_and_push_test_images.gcb_build_and_push_images(
+        test_image_suffix,
+        version_tag=args.version_tag,
+        machine_type='n2-highcpu-80')
   return _do_test_builds(args, test_image_suffix, end_time)
 
 
