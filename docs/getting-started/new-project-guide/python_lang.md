@@ -4,7 +4,7 @@ title: Integrating a Python project
 parent: Setting up a new project
 grand_parent: Getting started
 nav_order: 3
-permalink: /getting-started/new-project-guide/python-lang/
+permalink: /getting-started/new-project-guide/python3-lang/
 ---
 
 # Integrating a Python project
@@ -40,7 +40,7 @@ Atheris + Hypothesis harnesses.
 The `language` attribute must be specified.
 
 ```yaml
-language: python
+language: python3
 ```
 
 The only supported fuzzing engine is libFuzzer (`libfuzzer`). The supported
@@ -57,7 +57,7 @@ sanitizers:
 
 ### Dockerfile
 
-The Dockerfile should start by `FROM gcr.io/oss-fuzz-base/base-builder-python`
+The Dockerfile should start by `FROM gcr.io/oss-fuzz-base/base-builder-python3`
 
 Because most dependencies are already pre-installed on the images, no
 significant changes are needed in the Dockerfile for Python fuzzing projects.
@@ -90,7 +90,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   # preloaded, so this is also done here to ensure compatibility and simplify
   # test case reproduction. Since this helper script is what OSS-Fuzz will
   # actually execute, it is also always required.
-  # NOTE: If you are fuzzing python-only code and do not have native C/C++
+  # NOTE: If you are fuzzing python3-only code and do not have native C/C++
   # extensions, then remove the LD_PRELOAD line below as preloading sanitizer
   # library is not required and can lead to unexpected startup crashes.
   echo "#!/bin/sh
