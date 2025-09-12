@@ -76,8 +76,9 @@ def _run_cloudbuild(build_body):
     yaml.dump(build_body, yaml_file_handle)
 
   subprocess.run([
-      'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
-      f'--config={yaml_file}'
+      'gcloud', 'builds', 'submit',
+      os.path.join(OSS_FUZZ_ROOT, 'infra', 'base-images'),
+      '--project=oss-fuzz-base', f'--config={yaml_file}'
   ],
                  cwd=OSS_FUZZ_ROOT,
                  check=True)
