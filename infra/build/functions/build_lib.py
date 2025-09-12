@@ -554,7 +554,6 @@ def get_docker_build_step(image_names,
   step = {
       'name': DOCKER_TOOL_IMAGE,
       'args': args,
-      'dir': directory,
       'id': f'build-{get_unique_build_step_image_id()}',
   }
   # Handle buildkit args
@@ -566,7 +565,7 @@ def get_docker_build_step(image_names,
     for image in image_names:
       args.extend(['--cache-from', image])
 
-  args.append('.')
+  args.append(directory)
 
   return step
 
