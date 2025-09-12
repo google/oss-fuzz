@@ -265,8 +265,7 @@ def check_cached_replay(project,
       expected_rc = bad_patch_map['rc']
       bad_patch_command = (
           'python3 -m pip install -r /chronos/requirements.txt && '
-          f'python3 /chronos/bad_patch.py {bad_patch_name}'
-      )
+          f'python3 /chronos/bad_patch.py {bad_patch_name}')
       cmd_to_run = cmd[:]
       cmd_to_run.append(
           f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
@@ -374,8 +373,7 @@ def check_test(project,
       patch_command = (
           'python3 -m pip install -r /chronos/requirements.txt && '
           f'python3 /chronos/logic_error_patch.py {logic_patch_name} && '
-          'compile'
-      )
+          'compile')
       cmd_to_run = cmd[:]
       cmd_to_run.append(f'"set -euo pipefail && {patch_command} && {base_cmd}"')
 
