@@ -98,7 +98,7 @@ Programming language the project is written in. Values you can specify include:
 * `c++`
 * [`go`]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)
 * [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
-* [`python3`]({{ site.baseurl }}//getting-started/new-project-guide/python3-lang/)
+* [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
 * [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift-lang/)
 * [`javascript`]({{ site.baseurl }}//getting-started/new-project-guide/javascript-lang/)
