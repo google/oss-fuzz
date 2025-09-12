@@ -122,8 +122,13 @@ def gcb_build_and_push_images(test_image_suffix: str,
                      dockerfile, version)
         continue
 
+      # The tag that the *next* Dockerfile in the sequence will look for.
+      # e.g., base-clang's Dockerfile just says "FROM gcr.io/oss-fuzz-base/base-image"
+      intermediate_tag = base_images.TAG_PREFIX + base_image.name
+      tags_for_build = sorted(list(set([main_tag, test_tag, intermediate_tag])))
+
       step = build_lib.get_docker_build_step(
-          [main_tag, test_tag],
+          tags_for_build,  # Pass the new list of tags.
           base_image.path,  # Pass the directory as context.
           use_buildkit_cache=True,
           src_root='.',
