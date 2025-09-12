@@ -92,27 +92,8 @@ def exec_command_from_github(pull_request_number, repo, branch):
   if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
     return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command) == 0
 
-  # Run builds in parallel.
-  pool = multiprocessing.Pool()
-  results = []
-
-  # Latest build (default).
-  results.append(pool.apply_async(run_trial_build, (command.copy(),)))
-
-  # Ubuntu builds.
-  for version in ['ubuntu-20-04', 'ubuntu-24-04']:
-    ubuntu_command = command.copy()
-    ubuntu_command.extend(['--version-tag', version])
-    results.append(pool.apply_async(run_trial_build, (ubuntu_command,)))
-
-  pool.close()
-  pool.join()
-
-  # Check results.
-  for result in results:
-    if not result.get():
-      return False
-  return True
+  # Run trial build.
+  return run_trial_build(command)
 
 
 def main():
