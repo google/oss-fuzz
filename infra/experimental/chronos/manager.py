@@ -415,6 +415,59 @@ def check_test(project,
   return succeeded
 
 
+def check_run_tests_script(project,
+                           sanitizer='address',
+                           ignore_new_files=False,
+                           container_output='stdout',
+                           silent_replays=False):
+  """Checks if the run_tests.sh changes the source files in the current directory."""
+  build_project_image(project, container_output=container_output)
+  build_cached_project(project,
+                       sanitizer=sanitizer,
+                       container_output=container_output)
+
+  ignore = ''
+  if ignore_new_files:
+    ignore = '--ignore-new-files'
+
+  start = time.time()
+  cmd = [
+      'docker',
+      'run',
+      '--rm',
+      '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
+      ':/chronos',
+      '--name=' + project + '-origin-' + sanitizer + '-run-tests-check',
+      _get_project_cached_named(project, sanitizer),
+      '/bin/bash',
+      '-c',
+      f'"python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/run_tests_check.py {ignore}"'
+  ]
+
+  # Configure output
+  if silent_replays:
+    stdout_fp = subprocess.DEVNULL
+    stderr_fp = subprocess.DEVNULL
+  else:
+    stdout_fp = None
+    stderr_fp = None
+
+  # Normal run with no integrity check
+  result = subprocess.run(' '.join(cmd),
+                          shell=True)
+#                          stdout=stdout_fp,
+#                          stderr=stderr_fp)
+
+  end = time.time()
+  logger.info('%s run_test.sh check completion time: %.2f seconds', project,
+              (end - start))
+
+  if not result.returncode:
+    logger.info('%s run_test.sh does not alter any files or directories content.', project)
+  else:
+    logger.info('Error: %s run_test.sh does alter files or directories content.', project)
+
+
 def _get_project_language(project):
   """Returns the language of the project."""
   project_path = os.path.join('projects', project)
@@ -636,6 +689,19 @@ def parse_args():
       default='address',
       help='The sanitizer to use for the cached build (default: address).')
 
+  check_run_tests_script_parser = subparsers.add_parser(
+      'check-run-tests-script',
+      help='Checks if the run_tests.sh alter files in the current WORKDIR after execution')
+
+  check_run_tests_script_parser.add_argument(
+      'project', help='The name of the project to check.')
+  check_run_tests_script_parser.add_argument(
+      '--ignore-new-files', action='store_true')
+  check_run_tests_script_parser.add_argument(
+      '--sanitizer',
+      default='address',
+      help='The sanitizer to use for the cached build (default: address).')
+
   build_cached_image_parser = subparsers.add_parser(
       'build-cached-image',
       help='Builds a cached image for a specific project.')
@@ -745,6 +811,8 @@ def main():
                           silent_replays=args.silent_replays)
   if args.command == 'extract-test-coverage':
     extract_test_coverage(args.project)
+  if args.command == 'check-run-tests-script':
+    check_run_tests_script(args.project, args.sanitizer, args.ignore_new_files)
 
 
 if __name__ == '__main__':
