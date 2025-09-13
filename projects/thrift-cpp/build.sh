@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,18 @@
 #
 ################################################################################
 
-# build project
 export ASAN_OPTIONS=detect_leaks=0
 
-if [ "$SANITIZER" = "coverage" ]
-then
-    cp /usr/bin/ld.gold /usr/bin/ld
-fi
+# Build and install the compiler (disable other languages to save time)
 ./bootstrap.sh
-# rust fails compilation with clippy warnings
-./configure --with-rs=no
+./configure --enable-static --disable-shared --with-cpp=yes --with-c_glib=no --with-python=no --with-py3=no --with-go=no --with-rs=no --with-java=no --with-nodejs=no --with-dotnet=no --with-kotlin=no
 make -j$(nproc)
 make install
 
-cd lib/go/test/fuzz
-thrift -r --gen go:package_prefix=github.com/apache/thrift/lib/go/test/fuzz/gen-go/ ../../../../tutorial/tutorial.thrift
-go mod tidy || true
-compile_go_fuzzer . Fuzz fuzz_go_tutorial
+# Build C++ library and fuzzers
+pushd lib/cpp/test/fuzz
+make check
+for i in $(find . -maxdepth 1 -type f -executable -printf "%f\n"); do
+    cp $i $OUT/$i
+done
+popd 
