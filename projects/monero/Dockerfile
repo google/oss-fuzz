@@ -81,7 +81,7 @@ RUN set -ex \
     && cd openssl-${OPENSSL_VERSION} \
     && ./Configure linux-x86_64 no-shared --static "$CFLAGS" \
     && make build_generated \
-    && make libcrypto.a \
+    && make -j$(nproc) libcrypto.a \
     && make install
 ENV OPENSSL_ROOT_DIR=/usr/local/openssl-${OPENSSL_VERSION}
 
@@ -95,7 +95,7 @@ RUN set -ex \
     && sed -i -e 's/::~generic_mtrie_t /::~generic_mtrie_t<T> /' src/generic_mtrie_impl.hpp \
     && ./autogen.sh \
     && ./configure --enable-static --disable-shared --with-libsodium \
-    && make \
+    && make -j$(nproc) \
     && make install \
     && ldconfig
 
@@ -108,7 +108,7 @@ RUN set -ex \
     && test `git rev-parse HEAD` = ${USB_HASH} || exit 1 \
     && ./autogen.sh \
     && ./configure --disable-shared \
-    && make \
+    && make -j$(nproc) \
     && make install
 
 # Hidapi
@@ -120,11 +120,11 @@ RUN set -ex \
     && test `git rev-parse HEAD` = ${HIDAPI_HASH} || exit 1 \
     && ./bootstrap \
     && ./configure --enable-static --disable-shared \
-    && make \
+    && make -j$(nproc) \
     && make install
 
 RUN git clone https://github.com/NLnetLabs/unbound && \
     cd unbound && ./configure && make && make install
 
 RUN git clone --depth 1 https://github.com/monero-project/monero.git monero
-COPY build.sh $SRC/
+COPY build.sh *.options $SRC/
