@@ -1,0 +1,7 @@
+homepage: "https://invent.kde.org/network/kio-extras.git"
+language: c++
+primary_contact: tsdgeos@gmail.com
+sanitizers:
+  - address
+  - undefined
+main_repo: "https://invent.kde.org/network/kio-extras.git"

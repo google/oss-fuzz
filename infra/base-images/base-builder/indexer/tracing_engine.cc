@@ -16,6 +16,7 @@
 // functions visited (in order) to TRACE_DUMP_FILE. Each function is only ever
 // recorded once. To make this work, we need to compile with
 // -fsanitize-coverage=trace-pc-guard,func
+// Note: this file cannot use any C/C++ dependencies or new/delete.
 
 #include <assert.h>
 #include <fcntl.h>
@@ -33,10 +34,10 @@ constexpr int kMaxTraceSize = 64 * 1024;
 
 struct CoverageData {
   void* pcs[kMaxTraceSize];
-  size_t idx = 0;
+  size_t idx;
   // TODO: b/441647761 - Handle multiple threads.
   pid_t main_thread_id;
-  bool finished = false;
+  bool finished;
 };
 
 static CoverageData* coverage_data;
@@ -94,6 +95,13 @@ extern "C" void __sanitizer_cov_trace_pc_guard(uint32_t* guard) {
 
 namespace {
 
+bool IsStandardLibrary(const char* file_path) {
+  return (strstr(file_path, "include/c++/v1") ||
+          strncmp(file_path, "/usr/include", 12) == 0 ||
+          strstr(file_path, "libc++/src/include") ||
+          strstr(file_path, "/absl/"));
+}
+
 void WriteTrace() {
   coverage_data->finished = true;
   char* trace_dump_file = getenv("TRACE_DUMP_FILE");
@@ -110,12 +118,18 @@ void WriteTrace() {
   // TODO: b/441647761 - This format likely needs iteration. This just prints
   // symbolized function names, but this could still be ambiguous.
   for (size_t i = 0; i < coverage_data->idx; ++i) {
-    char outbuf[1024];
-    __sanitizer_symbolize_pc(coverage_data->pcs[i], "%f", outbuf,
-                             sizeof(outbuf));
-    // Skip standard libraries.
-    if (strncmp(outbuf, "std::", 5) == 0) continue;
-    write(fd, outbuf, strnlen(outbuf, sizeof(outbuf)));
+    char symbol[1024];
+    char file_path[1024];
+
+    // This always null terminates.
+    __sanitizer_symbolize_pc(coverage_data->pcs[i], "%f", symbol,
+                             sizeof(symbol));
+    __sanitizer_symbolize_pc(coverage_data->pcs[i], "%s", file_path,
+                             sizeof(file_path));
+
+    if (IsStandardLibrary(file_path)) continue;
+
+    write(fd, symbol, strlen(symbol));
     write(fd, "\n", 1);
   }
 
@@ -123,7 +137,9 @@ void WriteTrace() {
 }
 
 void Init() {
-  coverage_data = new CoverageData();
+  coverage_data = static_cast<CoverageData*>(malloc(sizeof(CoverageData)));
+  coverage_data->finished = false;
+  coverage_data->idx = 0;
   // For now, only record PCs from the main thread.
   coverage_data->main_thread_id = GetTID();
   // Dump coverage on exit.
