@@ -72,7 +72,7 @@ can be reproduced only with a fresh image being used. Pull the latest images
 by running the following command:
 
 ```bash
-$ python infra/helper.py pull_images
+$ python3 infra/helper.py pull_images
 ```
 
 ### Build the image and the fuzzers
@@ -80,8 +80,8 @@ $ python infra/helper.py pull_images
 Run the following commands:
 
 ```bash
-$ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
+$ python3 infra/helper.py build_image $PROJECT_NAME
+$ python3 infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
     --architecture <x86_64/i386> $PROJECT_NAME
 ```
 
@@ -102,7 +102,7 @@ If you can't reproduce a particular bug building for x86_64, try building for i3
 After you build an image and a fuzzer, you can reproduce a bug by running the following command:
 
 ```bash
-$ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
+$ python3 infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
 For example, to build the [libxml2](https://github.com/google/oss-fuzz/tree/master/projects/libxml2)
@@ -111,9 +111,9 @@ reproduce a crash testcase for a fuzzer named `libxml2_xml_read_memory_fuzzer`,
 you would run: 
 
 ```bash
-$ python infra/helper.py build_image libxml2
-$ python infra/helper.py build_fuzzers --sanitizer undefined libxml2
-$ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Downloads/testcase
+$ python3 infra/helper.py build_image libxml2
+$ python3 infra/helper.py build_fuzzers --sanitizer undefined libxml2
+$ python3 infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Downloads/testcase
 ```
 
 ## Reproduce using local source checkout
@@ -121,9 +121,9 @@ $ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Down
 You can also mount local sources into the running container by using these commands:
 
 ```bash
-$ python infra/helper.py build_fuzzers \
+$ python3 infra/helper.py build_fuzzers \
     --sanitizer <address/memory/undefined> $PROJECT_NAME <source_path>
-$ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
+$ python3 infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
 Once you reproduce the bug, you can do the following:
@@ -144,10 +144,10 @@ Our infrastructure runs some sanity tests to make sure that your build was
 correctly configured, even if it succeeded. To reproduce these locally, run these commands:
 
 ```bash
-$ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
+$ python3 infra/helper.py build_image $PROJECT_NAME
+$ python3 infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
     --engine <libfuzzer/afl/honggfuzz/centipede> --architecture <x86_64/i386> $PROJECT_NAME
-$ python infra/helper.py check_build  --sanitizer <address/memory/undefined> \
+$ python3 infra/helper.py check_build  --sanitizer <address/memory/undefined> \
     --engine <libfuzzer/afl/honggfuzz/centipede> --architecture <x86_64/i386> $PROJECT_NAME \
     <fuzz_target_name>
 ```

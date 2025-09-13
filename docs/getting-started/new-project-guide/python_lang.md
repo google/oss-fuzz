@@ -40,7 +40,7 @@ Atheris + Hypothesis harnesses.
 The `language` attribute must be specified.
 
 ```yaml
-language: python
+language: python3
 ```
 
 The only supported fuzzing engine is libFuzzer (`libfuzzer`). The supported
