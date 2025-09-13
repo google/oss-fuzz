@@ -19,4 +19,5 @@ if ! [[ -f go.mod ]]; then
   go mod init mxj
 fi
 
+rm example_test.go
 compile_go_fuzzer . FuzzMapXml  fuzz_map_xml gofuzz
