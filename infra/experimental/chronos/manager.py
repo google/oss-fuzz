@@ -263,7 +263,9 @@ def check_cached_replay(project,
     for bad_patch_name, bad_patch_map in bad_patch.BAD_PATCH_GENERATOR.items():
       # Generate bad patch command using different approaches
       expected_rc = bad_patch_map['rc']
-      bad_patch_command = f'python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/bad_patch.py {bad_patch_name}'
+      bad_patch_command = (
+          'python3 -m pip install -r /chronos/requirements.txt && '
+          f'python3 /chronos/bad_patch.py {bad_patch_name}')
       cmd_to_run = cmd[:]
       cmd_to_run.append(
           f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
@@ -368,10 +370,12 @@ def check_test(project,
     for logic_patch_name, logic_patch_map in logic_error_patch.LOGIC_ERROR_PATCH_GENERATOR.items(
     ):
       expected_result = logic_patch_map['result']
-      patch_command = f'python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/logic_error_patch.py {logic_patch_name}'
+      patch_command = (
+          'python3 -m pip install -r /chronos/requirements.txt && '
+          f'python3 /chronos/logic_error_patch.py {logic_patch_name} && '
+          'compile')
       cmd_to_run = cmd[:]
       cmd_to_run.append(f'"set -euo pipefail && {patch_command} && {base_cmd}"')
-      print(' '.join(cmd_to_run))
 
       # Run logic patch and check script
       try:
@@ -413,6 +417,58 @@ def check_test(project,
               (end - start))
 
   return succeeded
+
+
+def check_run_tests_script(project,
+                           sanitizer='address',
+                           ignore_new_files=False,
+                           container_output='stdout',
+                           silent_replays=False):
+  """Checks if the run_tests.sh changes the source files in the current directory."""
+  build_project_image(project, container_output=container_output)
+  build_cached_project(project,
+                       sanitizer=sanitizer,
+                       container_output=container_output)
+
+  ignore = ''
+  if ignore_new_files:
+    ignore = '--ignore-new-files'
+
+  start = time.time()
+  cmd = [
+      'docker', 'run', '--rm',
+      '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
+      ':/chronos',
+      '--name=' + project + '-origin-' + sanitizer + '-run-tests-check',
+      _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
+      f'"python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/run_tests_check.py {ignore}"'
+  ]
+
+  # Configure output
+  if silent_replays:
+    stdout_fp = subprocess.DEVNULL
+    stderr_fp = subprocess.DEVNULL
+  else:
+    stdout_fp = None
+    stderr_fp = None
+
+  # Normal run with no integrity check
+  result = subprocess.run(' '.join(cmd), shell=True)
+  #                          stdout=stdout_fp,
+  #                          stderr=stderr_fp)
+
+  end = time.time()
+  logger.info('%s run_test.sh check completion time: %.2f seconds', project,
+              (end - start))
+
+  if not result.returncode:
+    logger.info(
+        '%s run_test.sh does not alter any files or directories content.',
+        project)
+  else:
+    logger.info(
+        'Error: %s run_test.sh does alter files or directories content.',
+        project)
 
 
 def _get_project_language(project):
@@ -636,6 +692,21 @@ def parse_args():
       default='address',
       help='The sanitizer to use for the cached build (default: address).')
 
+  check_run_tests_script_parser = subparsers.add_parser(
+      'check-run-tests-script',
+      help=
+      'Checks if the run_tests.sh alter files in the current WORKDIR after execution'
+  )
+
+  check_run_tests_script_parser.add_argument(
+      'project', help='The name of the project to check.')
+  check_run_tests_script_parser.add_argument('--ignore-new-files',
+                                             action='store_true')
+  check_run_tests_script_parser.add_argument(
+      '--sanitizer',
+      default='address',
+      help='The sanitizer to use for the cached build (default: address).')
+
   build_cached_image_parser = subparsers.add_parser(
       'build-cached-image',
       help='Builds a cached image for a specific project.')
@@ -745,6 +816,8 @@ def main():
                           silent_replays=args.silent_replays)
   if args.command == 'extract-test-coverage':
     extract_test_coverage(args.project)
+  if args.command == 'check-run-tests-script':
+    check_run_tests_script(args.project, args.sanitizer, args.ignore_new_files)
 
 
 if __name__ == '__main__':
