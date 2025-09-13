@@ -14,6 +14,7 @@
 #
 ################################################################################
 
+# Todo: unpin to support llvm 22
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kimageformats.git
 RUN $SRC/kimageformats/autotests/ossfuzz/prepare_build.sh
