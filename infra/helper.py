@@ -597,7 +597,6 @@ def _check_fuzzer_exists(project, fuzzer_name, architecture='x86_64'):
       '--rm',
       '--platform',
       platform,
-      "--pull=never",
   ]
   command.extend(['-v', '%s:/out' % project.out])
   command.append(BASE_RUNNER_IMAGE)
@@ -766,8 +765,8 @@ def docker_run(run_args, print_output=True, architecture='x86_64'):
   """Calls `CONTAINER_TOOL run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = [
-      CONTAINER_TOOL, 'run', '--pull=never', '--privileged', '--shm-size=2g',
-      '--platform', platform
+      CONTAINER_TOOL, 'run', '--privileged', '--shm-size=2g', '--platform',
+      platform
   ]
   if os.getenv('OSS_FUZZ_SAVE_CONTAINERS_NAME'):
     command.append('--name')
