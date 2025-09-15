@@ -13,7 +13,6 @@ architectures:
 help_url: "https://code.qt.io/cgit/qt/qtbase.git/plain/tests/libfuzzer/README"
 
 fuzzing_engines:
-  - afl
   - honggfuzz
   - libfuzzer
 
