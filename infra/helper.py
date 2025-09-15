@@ -225,7 +225,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
       args.sanitizer = constants.DEFAULT_SANITIZER
 
   if (hasattr(args, 'architecture') and
-      args.architecture != constants.DEFAULT_ARCHITECTURE):
+      args.architecture != constants.DEFAULT_ARCHITECTURE and
+      CONTAINER_TOOL != 'docker'):
     raise RuntimeError('Non-default architectures require Docker.')
 
   if args.command == 'generate':
