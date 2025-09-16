@@ -61,6 +61,8 @@ compile_native_go_fuzzer_v2 github.com/moby/moby/v2/daemon/logger/jsonfilelog/js
 cp $SRC/*.options $OUT/
 
 cd $SRC/go-archive
+go mod tidy
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
 compile_native_go_fuzzer github.com/moby/go-archive/compression FuzzDecompressStream FuzzDecompressStream
 compile_native_go_fuzzer github.com/moby/go-archive FuzzApplyLayer FuzzApplyLayer
 compile_native_go_fuzzer github.com/moby/go-archive FuzzUntar FuzzUntar
