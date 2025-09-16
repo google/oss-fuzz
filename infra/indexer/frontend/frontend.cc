@@ -118,12 +118,13 @@ clang::tooling::CommandLineArguments ExtraArgumentsAdjuster(
 // perform indexing on a compilation database.
 std::vector<std::pair<std::unique_ptr<clang::tooling::FrontendActionFactory>,
                       clang::tooling::ArgumentsAdjuster>>
-GetIndexActions(FileCopier& file_copier, MergeQueue& merge_queue) {
+GetIndexActions(FileCopier& file_copier, MergeQueue& merge_queue,
+                bool support_incremental_indexing) {
   std::vector<std::pair<std::unique_ptr<clang::tooling::FrontendActionFactory>,
                         clang::tooling::ArgumentsAdjuster>>
       actions;
-  auto index_action =
-      std::make_unique<IndexActionFactory>(file_copier, merge_queue);
+  auto index_action = std::make_unique<IndexActionFactory>(
+      file_copier, merge_queue, support_incremental_indexing);
   auto adjuster = clang::tooling::combineAdjusters(RemoveClangArgumentsAdjuster,
                                                    ExtraArgumentsAdjuster);
   actions.push_back(

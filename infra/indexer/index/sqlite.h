@@ -15,13 +15,18 @@
 #ifndef OSS_FUZZ_INFRA_INDEXER_INDEX_SQLITE_H_
 #define OSS_FUZZ_INFRA_INDEXER_INDEX_SQLITE_H_
 
+#include <optional>
 #include <string>
 
 #include "indexer/index/types.h"
 
 namespace oss_fuzz {
 namespace indexer {
+
+bool InitializeSqlite();
+std::optional<FlatIndex> LoadFromSqlite(const std::string& path);
 bool SaveAsSqlite(const FlatIndex& index, const std::string& path);
+
 }  // namespace indexer
 }  // namespace oss_fuzz
 
