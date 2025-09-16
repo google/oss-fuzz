@@ -15,21 +15,6 @@
 #
 ################################################################################
 
-# This part is temporary. I (AdamKorcz)
-# will remove it.
-cd $SRC/go-118-fuzz-build
-go build
-mv go-118-fuzz-build $GOPATH/bin/go-118-fuzz-build_v2
-
-pushd cmd/convertLibFuzzerTestcaseToStdLibGo
-  go build . && mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
-popd
-pushd cmd/addStdLibCorpusToFuzzer
-  go build . && mv addStdLibCorpusToFuzzer $GOPATH/bin/
-popd
-
-cd $SRC/moby
-
 # Temporarily disable coverage build in OSS-Fuzz's CI
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
@@ -76,6 +61,6 @@ compile_native_go_fuzzer_v2 github.com/moby/moby/v2/daemon/logger/jsonfilelog/js
 cp $SRC/*.options $OUT/
 
 cd $SRC/go-archive
-compile_native_go_fuzzer_v2 github.com/moby/go-archive/compression FuzzDecompressStream FuzzDecompressStream
-compile_native_go_fuzzer_v2 github.com/moby/go-archive FuzzApplyLayer FuzzApplyLayer
-compile_native_go_fuzzer_v2 github.com/moby/go-archive FuzzUntar FuzzUntar
+compile_native_go_fuzzer github.com/moby/go-archive/compression FuzzDecompressStream FuzzDecompressStream
+compile_native_go_fuzzer github.com/moby/go-archive FuzzApplyLayer FuzzApplyLayer
+compile_native_go_fuzzer github.com/moby/go-archive FuzzUntar FuzzUntar
