@@ -412,7 +412,7 @@ def check_test(project,
 
     if compile_failed:
       logger.info(('%s check failed to compile after these logic patches: %s, '
-                  'skipping them for run_tests check'), project,
+                   'skipping them for run_tests check'), project,
                   ' '.join(compile_failed))
   else:
     # Run normal build_test
