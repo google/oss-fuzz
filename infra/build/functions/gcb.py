@@ -20,24 +20,83 @@ import logging
 import os
 import sys
 
-import trial_build
+import github
 
+import trial_build
+import oss_fuzz_on_demand
+
+TRIGGER_COMMAND = '/gcbrun'
+TRIAL_BUILD_COMMAND_STR = f'{TRIGGER_COMMAND} trial_build.py '
+OSS_FUZZ_ON_DEMAND_COMMAND_STR = f'{TRIGGER_COMMAND} oss_fuzz_on_demand.py '
+SKIP_COMMAND_STR = f'{TRIGGER_COMMAND} skip'
+
+
+def get_comments(pull_request_number):
+  """Returns comments on the GitHub Pull request referenced by
+  |pull_request_number|."""
+  github_obj = github.Github()
+  repo = github_obj.get_repo('google/oss-fuzz')
+  pull = repo.get_pull(pull_request_number)
+  pull_comments = list(pull.get_comments())
+  issue = repo.get_issue(pull_request_number)
+  issue_comments = list(issue.get_comments())
+  # Github only returns comments if from the pull object when a pull request is
+  # open. If it is a draft, it will only return comments from the issue object.
+  return pull_comments + issue_comments
+
+
+def get_latest_gcbrun_command(comments):
+  """Gets the last /gcbrun comment from comments."""
+  for comment in reversed(comments):
+    # This seems to get comments on code too.
+    body = comment.body
+    if body.startswith(SKIP_COMMAND_STR):
+      return None
+    if not body.startswith(TRIAL_BUILD_COMMAND_STR) and (
+        not body.startswith(OSS_FUZZ_ON_DEMAND_COMMAND_STR)):
+      continue
+    if len(body) == len(TRIAL_BUILD_COMMAND_STR) or (
+        len(body) == len(OSS_FUZZ_ON_DEMAND_COMMAND_STR)):
+      return None
+    return body[len(TRIGGER_COMMAND):].strip().split(' ')
+  return None
+
+
+def exec_command_from_github(pull_request_number, repo, branch):
+  """Executes the gcbrun command for trial_build.py or oss_fuzz_on_demand.py in
+  the most recent command on |pull_request_number|. Returns True on success,
+  False on failure."""
+  comments = get_comments(pull_request_number)
+  full_command = get_latest_gcbrun_command(comments)
+
+  if full_command is None:
+    logging.info('Trial build not requested.')
+    return None
+  command_file = full_command[0]
+  command = full_command[1:]
+
+  command.extend(['--repo', repo])
+  
+  command.extend(['--branch', branch])
+  logging.info('Command: %s.', command)
+
+  if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
+    return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command) == 0
+  return trial_build.trial_build_main(command, local_base_build=False)
 
 def main():
   """Entrypoint for GitHub CI into trial_build.py"""
   logging.basicConfig(level=logging.INFO)
 
-  # Get the command line arguments passed from the cloudbuild.yaml step.
   args = sys.argv[1:]
-
-  # Append the repo and branch from the environment variables, as trial_build
-  # expects them.
-  args.extend(['--repo', os.environ['REPO']])
-  args.extend(['--branch', os.environ['BRANCH']])
-
   logging.info('Passing command to trial_build: %s', args)
 
-  if trial_build.trial_build_main(args, local_base_build=False):
+  pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
+  branch = os.environ['BRANCH']
+  repo = os.environ['REPO']
+  result = exec_command_from_github(pull_request_number, repo, branch)
+
+  if result is None:
     return 0
   return 1
 
