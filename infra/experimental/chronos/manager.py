@@ -367,6 +367,7 @@ def check_test(project,
   if integrity_test:
     # Patch the code with some logic error and see if build_test able to detect them.
     failed = []
+    compile_failed = []
     for logic_patch_name, logic_patch_map in logic_error_patch.LOGIC_ERROR_PATCH_GENERATOR.items(
     ):
       expected_result = logic_patch_map['result']
@@ -375,9 +376,26 @@ def check_test(project,
           f'python3 /chronos/logic_error_patch.py {logic_patch_name} && '
           'compile')
       cmd_to_run = cmd[:]
-      cmd_to_run.append(f'"set -euo pipefail && {patch_command} && {base_cmd}"')
 
-      # Run logic patch and check script
+      # Try compile first
+      cmd_to_run.append(f'"set -euo pipefail && {patch_command}"')
+      try:
+        subprocess.check_call(' '.join(cmd_to_run),
+                              shell=True,
+                              stdout=stdout_fp,
+                              stderr=stderr_fp)
+        compile_success = True
+      except:
+        compile_success = False
+
+      if not compile_success:
+        logger.info('%s skipping logic patch %s that failed to compile.',
+                    project, logic_patch_name)
+        compile_failed.append(logic_patch_name)
+        continue
+
+      # Compile success, check the run_tests.sh with the patch
+      cmd_to_run[-1] = f'"set -euo pipefail && {patch_command} && {base_cmd}"'
       try:
         subprocess.check_call(' '.join(cmd_to_run),
                               shell=True,
@@ -395,6 +413,11 @@ def check_test(project,
                   ' '.join(failed))
     else:
       succeeded = True
+
+    if compile_failed:
+      logger.info(('%s check failed to compile after these logic patches: %s, '
+                  'skipping them for run_tests check'), project,
+                  ' '.join(compile_failed))
   else:
     # Run normal build_test
     cmd.append(f'"{base_cmd}"')
