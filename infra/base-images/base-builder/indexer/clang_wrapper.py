@@ -217,7 +217,9 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
   return json.loads(contents)
 
 
-def run_indexer(build_id: str, linker_commands: dict[str, Any]):
+def run_indexer(
+    build_id: str, linker_commands: dict[str, Any], allow_errors: bool = False
+):
   """Run the indexer."""
   # Use a build-specific compile commands directory, since there could be
   # parallel linking happening at the same time.
@@ -273,6 +275,9 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
       "--merge_queues",
       str(merge_queues),
   ]
+  if allow_errors:
+    cmd.append("--ignore_indexing_errors")
+
   result = subprocess.run(cmd, check=False, capture_output=True)
   if result.returncode != 0:
     raise RuntimeError(
@@ -567,7 +572,10 @@ def main(argv: list[str]) -> None:
   _write_filter_log(filter_log_file, filtered_compile_commands)
 
   if not os.getenv("INDEXER_BINARIES_ONLY"):
-    run_indexer(build_id, linker_commands)
+    is_custom_toolchain = (
+        compile_settings.clang_toolchain != index_build.DEFAULT_CLANG_TOOLCHAIN
+    )
+    run_indexer(build_id, linker_commands, allow_errors=is_custom_toolchain)
 
   linker_commands = json.dumps(linker_commands)
   commands_path = Path(cdb_path) / f"{build_id}_linker_commands.json"
