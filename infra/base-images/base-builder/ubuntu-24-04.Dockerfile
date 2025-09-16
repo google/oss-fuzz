@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM base-clang:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-clang:ubuntu-24-04
 
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
