@@ -54,7 +54,7 @@ RUN ldconfig && \
     ln -s /usr/local/bin/python3.11 /usr/local/bin/python
 
 COPY install_deps_ubuntu_20_04.sh /
-RUN /install_deps_ubuntu_20_04.sh && rm /install_deps.sh
+RUN /install_deps_ubuntu_20_04.sh && rm /install_deps_ubuntu_20_04.sh
 
 ENV CODE_COVERAGE_SRC=/opt/code_coverage
 # Pin coverage to the same as in the base builder:
