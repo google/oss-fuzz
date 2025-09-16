@@ -384,11 +384,7 @@ def check_test(project,
                               shell=True,
                               stdout=stdout_fp,
                               stderr=stderr_fp)
-        compile_success = True
       except:
-        compile_success = False
-
-      if not compile_success:
         logger.info('%s skipping logic patch %s that failed to compile.',
                     project, logic_patch_name)
         compile_failed.append(logic_patch_name)
