@@ -39,7 +39,8 @@ std::vector<std::string> ParseCommandLine(absl::string_view commandLine);
 // perform indexing on a compilation database.
 std::vector<std::pair<std::unique_ptr<clang::tooling::FrontendActionFactory>,
                       clang::tooling::ArgumentsAdjuster>>
-GetIndexActions(FileCopier& file_copier, MergeQueue& merge_queue);
+GetIndexActions(FileCopier& file_copier, MergeQueue& merge_queue,
+                bool support_incremental_indexing = false);
 }  // namespace indexer
 }  // namespace oss_fuzz
 
