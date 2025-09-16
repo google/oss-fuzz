@@ -17,12 +17,12 @@ if (angle_has_build) {
       "-g",
       "-fprofile-instr-generate",
       "-fcoverage-mapping",
+      "-resource-dir=/usr/local/lib/clang/22",
     ]
 
     ldflags = [
       "-fsanitize=" + getenv("SANITIZER"),
-      "-L/usr/lib/x86_64-linux-gnu",
-      "-L/usr/lib/gcc/x86_64-linux-gnu/9",
+      "-fprofile-instr-generate",
     ]
 
     if (getenv("FUZZING_ENGINE") == "centipede") {
@@ -44,7 +44,9 @@ if (angle_has_build) {
 
     configs -= ["//build/config/compiler:thin_archive"]
 
-    libs = []
+    libs = [
+      "/usr/local/lib/clang/22/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer.a",
+    ]
   }
 
   executable("fuzz_translator") {
@@ -67,19 +69,19 @@ if (angle_has_build) {
       "-fprofile-instr-generate",
       "-fcoverage-mapping",
       "-fsanitize=fuzzer-no-link",
-      "-resource-dir=/usr/local/lib/clang/18",
+      "-resource-dir=/usr/local/lib/clang/22",
       "-UANGLE_USE_ABSEIL",
     ]
 
     ldflags = [
       "-fsanitize=" + getenv("SANITIZER"),
-      "-resource-dir=/usr/local/lib/clang/18",
+      "-fprofile-instr-generate",
     ]
 
     configs -= ["//build/config/compiler:thin_archive"]
 
     libs = [
-      "/usr/local/lib/clang/18/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer.a",
+      "/usr/local/lib/clang/22/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer.a",
     ]
   }
 }
