@@ -15,39 +15,40 @@
 ################################################################################
 
 steps:
-# First, build the trial-build image itself.
-- id: 'Build the trial-build image'
-  name: 'gcr.io/cloud-builders/docker'
+- name: 'Build the trial-build image'
   args:
-  - 'build'
+  - build
   - '-t'
-  - 'gcr.io/oss-fuzz-base/trial-build'
+  - gcr.io/oss-fuzz-base/trial-build
   - '-f'
-  - 'infra/build/functions/trial_build/Dockerfile'
-  - '.'
-
-# Now, run the trial builds in parallel using the image we just built.
-- id: 'Build latest'
-  name: 'gcr.io/oss-fuzz-base/trial-build'
-  args: ['all', '--branch', '${_BRANCH_NAME}', '--version-tag', 'latest']
+  - infra/build/functions/trial_build/Dockerfile
+  - .
+- name: 'Build latest'
+  args: ['--version-tag', 'latest']
   waitFor: ['Build the trial-build image']
   env:
-  - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
-  - 'BRANCH=${_HEAD_BRANCH}'
-  - 'REPO=${_HEAD_REPO_URL}'
-- id: 'Build ubuntu-20-04'
-  name: 'gcr.io/oss-fuzz-base/trial-build'
-  args: ['all', '--branch', '${_BRANCH_NAME}', '--version-tag', 'ubuntu-20-04']
+    - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+    - 'BRANCH=${_HEAD_BRANCH}'
+    - 'REPO=${_HEAD_REPO_URL}'
+    - 'TIMEOUT=25200'
+  timeout: 25200s
+- name: 'Build ubuntu-20-04'
+  args: ['--version-tag', 'ubuntu-20-04']
   waitFor: ['Build the trial-build image']
   env:
-  - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
-  - 'BRANCH=${_HEAD_BRANCH}'
-  - 'REPO=${_HEAD_REPO_URL}'
-- id: 'Build ubuntu-24-04'
-  name: 'gcr.io/oss-fuzz-base/trial-build'
-  args: ['all', '--branch', '${_BRANCH_NAME}', '--version-tag', 'ubuntu-24-04']
+    - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+    - 'BRANCH=${_HEAD_BRANCH}'
+    - 'REPO=${_HEAD_REPO_URL}'
+    - 'TIMEOUT=25200'
+  timeout: 25200s
+- name: 'Build ubuntu-24-04'
+  args: ['--version-tag', 'ubuntu-24-04']
   waitFor: ['Build the trial-build image']
   env:
-  - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
-  - 'BRANCH=${_HEAD_BRANCH}'
-  - 'REPO=${_HEAD_REPO_URL}'
+    - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+    - 'BRANCH=${_HEAD_BRANCH}'
+    - 'REPO=${_HEAD_REPO_URL}'
+    - 'TIMEOUT=25200'
+  timeout: 25200s
+logsBucket: gs://oss-fuzz-trialbuild-logs
+timeout: 25200s

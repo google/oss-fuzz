@@ -13,8 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
-"""Entrypoint for CI into trial_build. This script simply passes arguments from
-the GCB step to the trial_build.py script."""
+"""Entrypoint for CI into trial_build or oss_fuzz_on_demand. This script will
+get the command from the last PR comment containing "/gcbrun" and pass it to
+trial_build.py or oss_fuzz_on_demand. On trial_build.py it will build test
+versions of base-images, push them and then do test builds using those images.
+"""
 
 import logging
 import os
@@ -62,10 +65,14 @@ def get_latest_gcbrun_command(comments):
   return None
 
 
-def exec_command_from_github(pull_request_number, repo, branch):
+def exec_command_from_github(args):
   """Executes the gcbrun command for trial_build.py or oss_fuzz_on_demand.py in
   the most recent command on |pull_request_number|. Returns True on success,
   False on failure."""
+  pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
+  branch = os.environ['BRANCH']
+  repo = os.environ['REPO']
+
   comments = get_comments(pull_request_number)
   full_command = get_latest_gcbrun_command(comments)
 
@@ -76,27 +83,29 @@ def exec_command_from_github(pull_request_number, repo, branch):
   command = full_command[1:]
 
   command.extend(['--repo', repo])
-  
+
+  # Set the branch so that the trial_build builds the projects from the PR
+  # branch.
   command.extend(['--branch', branch])
   logging.info('Command: %s.', command)
+
+  command.extend(args)
+
+  logging.info('Full command: %s.', command)
 
   if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
     return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command) == 0
   return trial_build.trial_build_main(command, local_base_build=False)
+
 
 def main():
   """Entrypoint for GitHub CI into trial_build.py"""
   logging.basicConfig(level=logging.INFO)
 
   args = sys.argv[1:]
-  logging.info('Passing command to trial_build: %s', args)
 
-  pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
-  branch = os.environ['BRANCH']
-  repo = os.environ['REPO']
-  result = exec_command_from_github(pull_request_number, repo, branch)
-
-  if result is None:
+  result = exec_command_from_github(args)
+  if result or result is None:
     return 0
   return 1
 
