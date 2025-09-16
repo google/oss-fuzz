@@ -1,7 +1,7 @@
 homepage: "https://sourceware.org/elfutils/"
 language: c++
 builds_per_day: 4
-primary_contact: "elfutils-devel@sourceware.org"
+primary_contact: "david@adalogics.com"
 main_repo: "https://sourceware.org/git/elfutils.git"
 fuzzing_engines:
   - libfuzzer
@@ -16,6 +16,4 @@ architectures:
   - i386
 view_restrictions: none
 auto_ccs:
-  - evverx@gmail.com
   - izzeem@google.com
-  - david@adalogics.com

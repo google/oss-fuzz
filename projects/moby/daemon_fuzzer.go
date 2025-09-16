@@ -23,12 +23,12 @@ import (
 	"github.com/moby/sys/mount"
 	"github.com/sirupsen/logrus"
 
-	"github.com/moby/moby/api/types/backend"
-	"github.com/docker/docker/daemon/container"
-	"github.com/docker/docker/daemon/config"
-	"github.com/docker/docker/daemon/images"
-	"github.com/docker/docker/image"
-	dockerreference "github.com/docker/docker/reference"
+	"github.com/moby/moby/v2/daemon/server/backend"
+	"github.com/moby/moby/v2/daemon/container"
+	"github.com/moby/moby/v2/daemon/config"
+	"github.com/moby/moby/v2/daemon/images"
+	"github.com/moby/moby/v2/daemon/internal/image"
+	dockerreference "github.com/moby/moby/v2/daemon/internal/refstore"
 	"github.com/opencontainers/go-digest"
 
 	fuzz "github.com/AdaLogics/go-fuzz-headers"
@@ -120,7 +120,7 @@ func FuzzDaemonSimple(data []byte) int {
 
 	d := &Daemon{
 		root:         cfg.Root,
-		imageService: images.NewImageService(images.ImageServiceConfig{ReferenceStore: rStore, ImageStore: is}),
+		imageService: images.NewImageService(context.Background(), images.ImageServiceConfig{ReferenceStore: rStore, ImageStore: is}),
 		containers:   container.NewMemoryStore(),
 	}
 

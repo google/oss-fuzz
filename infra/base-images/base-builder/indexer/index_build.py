@@ -48,7 +48,8 @@ _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 DEFAULT_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
 DEFAULT_FUZZING_ENGINE = 'fuzzing_engine.cc'
 
-_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', '/usr/local'))
+DEFAULT_CLANG_TOOLCHAIN = '/usr/local'
+_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', DEFAULT_CLANG_TOOLCHAIN))
 _TOOLCHAIN_WITH_WRAPPER = Path('/opt/toolchain')
 
 INDEXER_DIR = Path(__file__).parent

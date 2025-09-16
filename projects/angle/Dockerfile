@@ -17,7 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
-        lsb-release sudo pkg-config file libc++-18-dev libc++abi-18-dev
+        lsb-release sudo pkg-config file
+
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH=/src/depot_tools:$PATH
 WORKDIR angle

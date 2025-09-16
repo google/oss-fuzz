@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
+# Wrong naming in this fuzzer breaks the coverage build
+rm promql/fuzz_test.go
 
 compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseMetric fuzzParseMetric
 compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseOpenMetric fuzzParseOpenMetric
