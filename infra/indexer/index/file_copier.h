@@ -33,7 +33,8 @@ namespace indexer {
 class FileCopier {
  public:
   FileCopier(absl::string_view base_path, absl::string_view index_path,
-             const std::vector<std::string>& extra_paths);
+             const std::vector<std::string>& extra_paths,
+             bool exist_ok = false);
   FileCopier(const FileCopier&) = delete;
 
   // Takes an absolute path. Rewrites this path into the representation it will
@@ -51,6 +52,7 @@ class FileCopier {
   std::string base_path_;
   std::vector<std::string> extra_paths_;
   const std::filesystem::path index_path_;
+  const bool exist_ok_;
 
   absl::Mutex mutex_;
   absl::flat_hash_set<std::string> indexed_files_ ABSL_GUARDED_BY(mutex_);

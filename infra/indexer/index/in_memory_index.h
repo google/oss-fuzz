@@ -16,12 +16,15 @@
 #define OSS_FUZZ_INFRA_INDEXER_INDEX_IN_MEMORY_INDEX_H_
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #include "indexer/index/file_copier.h"
 #include "indexer/index/types.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_map.h"
+#include "absl/strings/string_view.h"
 
 namespace oss_fuzz {
 namespace indexer {
@@ -36,6 +39,14 @@ class InMemoryIndex {
   // in the index.
   explicit InMemoryIndex(FileCopier& file_copier);
 
+  // Creates an `InMemoryIndex` from `flat_index`, omitting entities and
+  // references from translation units given by `excluded_tu_absolute_paths`;
+  // if the latter is provided, `flat_index` is required to contain incremental
+  // indexing metadata.
+  InMemoryIndex(
+      FileCopier& file_copier, const FlatIndex& flat_index,
+      const std::vector<std::string>& excluded_tu_absolute_paths = {});
+
   ~InMemoryIndex();
 
   void Merge(const InMemoryIndex& other);
@@ -44,7 +55,16 @@ class InMemoryIndex {
   // `locations_count` new unique locations, `entities_count` new unique
   // entities, ...
   void Expand(size_t locations_count, size_t entities_count,
-              size_t references_count, size_t virtual_method_links_count);
+              size_t references_count, size_t virtual_method_links_count,
+              size_t translation_units_count,
+              size_t entity_translation_units_count,
+              size_t reference_translation_units_count);
+
+  // Further `GetEntityId` / `GetReferenceId` will attribute the corresponding
+  // entities / references to the translation unit specified by `absolute_path`
+  // (note that there can be existing translation attributions for those, which
+  // are preserved).
+  void SetTranslationUnit(absl::string_view absolute_path);
 
   // The `GetXxxId` functions return the id of an existing, matching object if
   // there is already one in the index, or allocate a new id if there is not an
@@ -72,6 +92,11 @@ class InMemoryIndex {
   // Like `GetLocationId`, but requires the path to be already index-adjusted.
   LocationId GetIdForLocationWithIndexPath(const Location& location);
 
+  // More `GetXxxId` functions that are only used internally.
+  TranslationUnitId GetTranslationUnitId(const TranslationUnit&);
+  void AddEntityTranslationUnit(const EntityTranslationUnit&);
+  void AddReferenceTranslationUnit(const ReferenceTranslationUnit&);
+
   // Although we could sort location_lookup_ in advance, the performance impact
   // on indexing if we use a btree_map is significant, and it's much faster
   // to sort the index at the end.
@@ -90,6 +115,14 @@ class InMemoryIndex {
   VirtualMethodLinkId next_virtual_method_link_id_ = 0;
   absl::flat_hash_map<VirtualMethodLink, VirtualMethodLinkId>
       virtual_method_links_;
+
+  TranslationUnitId next_translation_unit_id_ = 0;
+  absl::flat_hash_map<TranslationUnit, TranslationUnitId> translation_units_;
+  // If `kInvalidTranslationUnitId`, no TU attribution is maintained.
+  TranslationUnitId current_translation_unit_id_ = kInvalidTranslationUnitId;
+
+  absl::flat_hash_set<EntityTranslationUnit> entity_translation_units_;
+  absl::flat_hash_set<ReferenceTranslationUnit> reference_translation_units_;
 };
 
 }  // namespace indexer
