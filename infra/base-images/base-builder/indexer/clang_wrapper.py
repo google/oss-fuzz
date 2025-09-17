@@ -437,18 +437,12 @@ def force_optimization_flag(argv: Sequence[str]) -> list[str]:
   return args
 
 
-def remove_invalid_coverage_flags(
+def fix_coverage_flags(
     argv: Sequence[str], expected_coverage_flags: str
 ) -> list[str]:
-  """Removes invalid coverage flags from the given argument list."""
+  """Makes sure that the right coverage flags are set."""
   args = []
   for arg in argv:
-    if (
-        arg.startswith("-fsanitize-coverage=")
-        and arg != expected_coverage_flags
-    ):
-      continue
-
     # Some projects use -fsanitize-coverage-allowlist/ignorelist to optimize
     # fuzzing feedback. For the indexer case, we would prefer to have all code
     # instrumented, so we remove these flags.
@@ -458,6 +452,7 @@ def remove_invalid_coverage_flags(
 
     args.append(arg)
 
+  args.append(expected_coverage_flags)
   return args
 
 
@@ -466,7 +461,7 @@ def main(argv: list[str]) -> None:
   argv = expand_rsp_file(argv)
   argv = remove_flag_if_present(argv, "-gline-tables-only")
   argv = force_optimization_flag(argv)
-  argv = remove_invalid_coverage_flags(argv, compile_settings.coverage_flags)
+  argv = fix_coverage_flags(argv, compile_settings.coverage_flags)
 
   if _has_disallowed_clang_flags(argv):
     raise ValueError("Disallowed clang flags found, aborting.")
@@ -529,6 +524,10 @@ def main(argv: list[str]) -> None:
   # We force lld, but it doesn't include this dir by default.
   argv.append("-L/usr/local/lib")
   argv.append("-Qunused-arguments")
+
+  if compile_settings.coverage_flags == index_build.TRACING_COVERAGE_FLAGS:
+    argv.append("/opt/indexer/coverage.o")
+
   run(argv, compile_settings.clang_toolchain)
 
   build_id = index_build.get_build_id(output_file)
