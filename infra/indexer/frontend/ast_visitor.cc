@@ -862,7 +862,7 @@ const clang::CXXRecordDecl* GetCXXRecordForType(const clang::QualType& type) {
   }
   const auto* record_type = derived_type->castAs<clang::RecordType>();
   CHECK(record_type);
-  const clang::RecordDecl* decl = record_type->getOriginalDecl();
+  const clang::RecordDecl* decl = record_type->getDecl();
   CHECK(decl);
   return llvm::dyn_cast<clang::CXXRecordDecl>(decl);
 }
@@ -1646,7 +1646,8 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
       if (method_decl->getParent()) {
         const auto* type = method_decl->getParent()
                                ->getASTContext()
-                               .getCanonicalTagType(method_decl->getParent())
+                               .getCanonicalType(context_.getRecordType(
+                                   method_decl->getParent()))
                                .getTypePtr();
         if (type) {
           AddTypeReferencesForSourceRange(expr->getSourceRange(), type);
@@ -1663,7 +1664,8 @@ void AstVisitor::AddReferencesForExpr(const clang::Expr* expr) {
         const auto* type =
             constructor_decl->getParent()
                 ->getASTContext()
-                .getCanonicalTagType(constructor_decl->getParent())
+                .getCanonicalType(context_.getRecordType(
+                    constructor_decl->getParent()))
                 .getTypePtr();
         if (type) {
           AddTypeReferencesForSourceRange(expr->getSourceRange(), type);
