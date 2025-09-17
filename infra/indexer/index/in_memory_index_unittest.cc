@@ -24,6 +24,7 @@
 
 #include "indexer/index/file_copier.h"
 #include "indexer/index/types.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/log/check.h"
 #include "absl/strings/match.h"
@@ -87,9 +88,9 @@ std::vector<Entity> GetTestEntities() {
 std::vector<Reference> GetTestReferences() {
   // This should return a sorted vector of References.
   return EnsureSorted<Reference>({
-      Reference(0, 0),
-      Reference(0, 1),
-      Reference(1, 1),
+      Reference(/*entity_id=*/0, /*location_id=*/0),
+      Reference(/*entity_id=*/0, /*location_id=*/1),
+      Reference(/*entity_id=*/1, /*location_id=*/1),
   });
 }
 
@@ -266,6 +267,45 @@ TEST(InMemoryIndexTest, References) {
   }
 }
 
+TEST(InMemoryIndexTest, TranslationUnits) {
+  FileCopier file_copier("", ::testing::TempDir(), {"/"});
+  InMemoryIndex index(file_copier);
+  auto locations = GetTestLocations();
+  auto entities = GetTestEntities();
+  auto references = GetTestReferences();
+  index.SetTranslationUnit("/a/b.cc");
+  for (const auto& location : locations) {
+    index.GetLocationId(location);
+  }
+  for (const auto& entity : entities) {
+    index.GetEntityId(entity);
+  }
+  for (const auto& reference : references) {
+    index.GetReferenceId(reference);
+  }
+  FlatIndex flat_index = std::move(index).Export();
+  ASSERT_TRUE(flat_index.incremental_indexing_metadata.has_value());
+  ASSERT_EQ(flat_index.incremental_indexing_metadata->translation_units.size(),
+            1);
+  EXPECT_EQ(flat_index.incremental_indexing_metadata->translation_units[0]
+                .index_path(),
+            "/a/b.cc");
+  EXPECT_EQ(
+      flat_index.incremental_indexing_metadata->entity_translation_units.size(),
+      flat_index.entities.size());
+  EXPECT_EQ(flat_index.incremental_indexing_metadata
+                ->reference_translation_units.size(),
+            flat_index.references.size());
+  for (const auto& etu :
+       flat_index.incremental_indexing_metadata->entity_translation_units) {
+    EXPECT_EQ(etu.tu_id(), 0);
+  }
+  for (const auto& rtu :
+       flat_index.incremental_indexing_metadata->reference_translation_units) {
+    EXPECT_EQ(rtu.tu_id(), 0);
+  }
+}
+
 TEST(InMemoryIndexTest, Merge) {
   FileCopier file_copier("", ::testing::TempDir(), {"/"});
   InMemoryIndex index_one(file_copier);
@@ -318,6 +358,67 @@ TEST(InMemoryIndexTest, Merge) {
       ASSERT_EQ(flat_index.references[i], references[i]);
     }
   }
+}
+
+TEST(InMemoryIndexTest, MergeWithTranslationUnits) {
+  FileCopier file_copier("", ::testing::TempDir(), {"/"});
+  InMemoryIndex index_one(file_copier);
+  InMemoryIndex index_two(file_copier);
+  auto locations = GetTestLocations();
+  auto entities = GetTestEntities();
+  auto references = GetTestReferences();
+
+  index_one.SetTranslationUnit("/a/1.cc");
+  for (const auto& location : locations) {
+    index_one.GetLocationId(location);
+  }
+  for (size_t i = 0; i < entities.size(); ++i) {
+    if (i < 3) {
+      index_one.GetEntityId(entities[i]);
+    }
+  }
+  for (const auto& reference : references) {
+    index_one.GetReferenceId(reference);
+  }
+
+  index_two.SetTranslationUnit("/a/2.cc");
+  for (const auto& location : locations) {
+    index_two.GetLocationId(location);
+  }
+  for (size_t i = 0; i < entities.size(); ++i) {
+    index_two.GetEntityId(entities[i]);
+  }
+
+  InMemoryIndex index(file_copier);
+  index.Merge(index_one);
+  index.Merge(index_two);
+  FlatIndex flat_index = std::move(index).Export();
+  ASSERT_EQ(flat_index.locations.size(), locations.size());
+  ASSERT_EQ(flat_index.entities.size(), entities.size() - 1);
+  ASSERT_EQ(flat_index.references.size(), references.size());
+
+  ASSERT_TRUE(flat_index.incremental_indexing_metadata.has_value());
+  const auto& metadata = *flat_index.incremental_indexing_metadata;
+  ASSERT_EQ(metadata.translation_units.size(), 2);
+  EXPECT_EQ(metadata.translation_units[0].index_path(), "/a/1.cc");
+  EXPECT_EQ(metadata.translation_units[1].index_path(), "/a/2.cc");
+
+  EXPECT_THAT(metadata.entity_translation_units,
+              ::testing::ElementsAre(
+                  EntityTranslationUnit(/*entity_id=*/0, /*tu_id=*/0),
+                  EntityTranslationUnit(/*entity_id=*/0, /*tu_id=*/1),
+                  EntityTranslationUnit(/*entity_id=*/1, /*tu_id=*/0),
+                  EntityTranslationUnit(/*entity_id=*/1, /*tu_id=*/1),
+                  EntityTranslationUnit(/*entity_id=*/2, /*tu_id=*/0),
+                  EntityTranslationUnit(/*entity_id=*/2, /*tu_id=*/1),
+                  EntityTranslationUnit(/*entity_id=*/3, /*tu_id=*/1),
+                  EntityTranslationUnit(/*entity_id=*/4, /*tu_id=*/1),
+                  EntityTranslationUnit(/*entity_id=*/5, /*tu_id=*/1)));
+  EXPECT_THAT(metadata.reference_translation_units,
+              ::testing::ElementsAre(
+                  ReferenceTranslationUnit(/*reference_id=*/0, /*tu_id=*/0),
+                  ReferenceTranslationUnit(/*reference_id=*/1, /*tu_id=*/0),
+                  ReferenceTranslationUnit(/*reference_id=*/2, /*tu_id=*/0)));
 }
 
 TEST(InMemoryIndexTest, MergeWithSubstituteEntities) {
@@ -393,6 +494,83 @@ TEST(InMemoryIndexTest, MergeWithSubstituteEntities) {
             SubstituteRelationship(
                 SubstituteRelationship::Kind::kIsTemplateInstantiationOf, 5)));
   }
+}
+
+TEST(InMemoryIndexTest, ConstructWithExcludedTranslationUnits) {
+  auto tmp_dir_path = std::filesystem::path(::testing::TempDir());
+  auto loc0_path = tmp_dir_path / "a/b.cc";
+  auto loc1_path = tmp_dir_path / "c/d.h";
+  PopulateLocationFiles(
+      {Location(loc0_path.string(), 1, 2), Location(loc1_path.string(), 3, 4)},
+      tmp_dir_path);
+
+  FlatIndex flat_index;
+  flat_index.locations = {
+      Location(loc0_path.string(), 1, 2),
+      Location(loc1_path.string(), 3, 4),
+  };
+  flat_index.entities = {
+      Entity(Entity::Kind::kEnumConstant, "", "kEnumValue", "", 1, false, false,
+             std::nullopt, "123"),
+      Entity(Entity::Kind::kClass, "foo::", "Bar", "", 0),
+      Entity(Entity::Kind::kFunction, "foo::", "Bar", "()", 1, false, false,
+             std::nullopt, std::nullopt,
+             Entity::VirtualMethodKind::kPureVirtual),
+  };
+  flat_index.references = {
+      Reference(/*entity_id=*/0, /*location_id=*/1),
+      Reference(/*entity_id=*/1, /*location_id=*/0),
+  };
+  flat_index.virtual_method_links = {
+      VirtualMethodLink(2, 2),
+  };
+  flat_index.incremental_indexing_metadata.emplace();
+  flat_index.incremental_indexing_metadata->translation_units = {
+      TranslationUnit("/tu1"),
+      TranslationUnit("/tu2"),
+  };
+  flat_index.incremental_indexing_metadata->entity_translation_units = {
+      EntityTranslationUnit(/*entity_id=*/0, /*tu_id=*/0),
+      EntityTranslationUnit(/*entity_id=*/0, /*tu_id=*/1),
+      EntityTranslationUnit(/*entity_id=*/1, /*tu_id=*/1),
+      EntityTranslationUnit(/*entity_id=*/2, /*tu_id=*/1),
+  };
+  flat_index.incremental_indexing_metadata->reference_translation_units = {
+      ReferenceTranslationUnit(/*reference_id=*/0, /*tu_id=*/1),
+      ReferenceTranslationUnit(/*reference_id=*/1, /*tu_id=*/0),
+      ReferenceTranslationUnit(/*reference_id=*/1, /*tu_id=*/1),
+  };
+
+  FileCopier file_copier(/*base_path=*/"", /*index_path=*/::testing::TempDir(),
+                         /*extra_paths=*/{"/"});
+  InMemoryIndex index(file_copier, flat_index,
+                      /*excluded_tu_absolute_paths=*/{"/tu1"});
+
+  FlatIndex result = std::move(index).Export();
+
+  EXPECT_THAT(
+      result.locations,
+      ::testing::ElementsAre(flat_index.locations[0], flat_index.locations[1]));
+  EXPECT_THAT(result.entities, ::testing::ElementsAre(flat_index.entities[0],
+                                                      flat_index.entities[1],
+                                                      flat_index.entities[2]));
+  EXPECT_THAT(result.references,
+              ::testing::ElementsAre(flat_index.references[0],
+                                     flat_index.references[1]));
+  EXPECT_THAT(result.virtual_method_links,
+              ::testing::ElementsAre(VirtualMethodLink(2, 2)));
+  ASSERT_TRUE(result.incremental_indexing_metadata.has_value());
+  EXPECT_THAT(result.incremental_indexing_metadata->translation_units,
+              ::testing::ElementsAre(TranslationUnit("/tu2")));
+  EXPECT_THAT(result.incremental_indexing_metadata->entity_translation_units,
+              ::testing::ElementsAre(
+                  EntityTranslationUnit(/*entity_id=*/0, /*tu_id=*/0),
+                  EntityTranslationUnit(/*entity_id=*/1, /*tu_id=*/0),
+                  EntityTranslationUnit(/*entity_id=*/2, /*tu_id=*/0)));
+  EXPECT_THAT(result.incremental_indexing_metadata->reference_translation_units,
+              ::testing::ElementsAre(
+                  ReferenceTranslationUnit(/*reference_id=*/0, /*tu_id=*/0),
+                  ReferenceTranslationUnit(/*reference_id=*/1, /*tu_id=*/0)));
 }
 }  // namespace indexer
 }  // namespace oss_fuzz
