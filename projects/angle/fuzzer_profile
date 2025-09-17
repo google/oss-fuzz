@@ -18,6 +18,9 @@ if (angle_has_build) {
       "-fprofile-instr-generate",
       "-fcoverage-mapping",
       "-resource-dir=/usr/local/lib/clang/22",
+      "-fcoverage-prefix-map=../../src/=/src/angle/src/",
+      "-fcoverage-prefix-map=../../include/=/src/angle/include/",
+      "-fdebug-compilation-dir=/src/angle",
     ]
 
     ldflags = [
@@ -71,6 +74,9 @@ if (angle_has_build) {
       "-fsanitize=fuzzer-no-link",
       "-resource-dir=/usr/local/lib/clang/22",
       "-UANGLE_USE_ABSEIL",
+      "-fcoverage-prefix-map=../../src/=/src/angle/src/",
+      "-fcoverage-prefix-map=../../include/=/src/angle/include/",
+      "-fdebug-compilation-dir=/src/angle",
     ]
 
     ldflags = [
