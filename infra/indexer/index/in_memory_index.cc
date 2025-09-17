@@ -27,9 +27,11 @@
 #include "indexer/index/types.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/container/inlined_vector.h"
 #include "absl/container/node_hash_map.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 
 namespace oss_fuzz {
@@ -112,7 +114,233 @@ struct ComparePairFirst {
 InMemoryIndex::InMemoryIndex(FileCopier& file_copier)
     : file_copier_(file_copier) {
   Expand(kInitialReservationCount, kInitialReservationCount,
-         kInitialReservationCount, kInitialReservationCount);
+         kInitialReservationCount, kInitialReservationCount,
+         kInitialReservationCount, kInitialReservationCount,
+         kInitialReservationCount);
+}
+
+InMemoryIndex::InMemoryIndex(
+    FileCopier& file_copier, const FlatIndex& flat_index,
+    const std::vector<std::string>& excluded_tu_absolute_paths)
+    : file_copier_(file_copier) {
+  absl::flat_hash_set<EntityId> excluded_entity_ids;
+  absl::flat_hash_set<ReferenceId> excluded_reference_ids;
+  absl::flat_hash_set<TranslationUnitId> excluded_tu_ids;
+
+  if (!excluded_tu_absolute_paths.empty()) {
+    CHECK(flat_index.incremental_indexing_metadata.has_value())
+        << "Excluding translation units requires incremental indexing metadata";
+    const IncrementalIndexingMetadata& incremental_metadata =
+        *flat_index.incremental_indexing_metadata;
+
+    absl::flat_hash_set<std::string> excluded_tu_index_paths;
+    for (const auto& path : excluded_tu_absolute_paths) {
+      excluded_tu_index_paths.insert(file_copier.AbsoluteToIndexPath(path));
+    }
+
+    TranslationUnitId tu_id = 0;
+    for (const TranslationUnit& tu : incremental_metadata.translation_units) {
+      if (excluded_tu_index_paths.contains(tu.index_path())) {
+        excluded_tu_ids.insert(tu_id);
+      }
+      ++tu_id;
+    }
+
+    absl::flat_hash_map<EntityId, absl::flat_hash_set<TranslationUnitId>>
+        entity_to_tus;
+    for (const auto& entity_translation_unit :
+         flat_index.incremental_indexing_metadata->entity_translation_units) {
+      entity_to_tus[entity_translation_unit.entity_id()].insert(
+          entity_translation_unit.tu_id());
+    }
+
+    for (const auto& [entity_id, tu_ids] : entity_to_tus) {
+      bool all_excluded = true;
+      for (const auto& tu_id : tu_ids) {
+        if (!excluded_tu_ids.contains(tu_id)) {
+          all_excluded = false;
+          break;
+        }
+      }
+      if (all_excluded) {
+        excluded_entity_ids.insert(entity_id);
+      }
+    }
+
+    // Check that referenced substitute entities are preserved.
+    // This should be guaranteed by the fact that an entity being in an included
+    // translation unit implies its substitute entity is also there.
+    for (size_t entity_id = 0; entity_id < flat_index.entities.size();
+         ++entity_id) {
+      if (excluded_entity_ids.contains(entity_id)) {
+        continue;
+      }
+      const Entity& entity = flat_index.entities[entity_id];
+      if (entity.substitute_relationship().has_value()) {
+        CHECK(!excluded_entity_ids.contains(
+            entity.substitute_relationship()->substitute_entity_id()));
+      }
+    }
+
+    // The same applies to virtual method links.
+    for (const VirtualMethodLink& link : flat_index.virtual_method_links) {
+      CHECK(!excluded_entity_ids.contains(link.parent()));
+      CHECK(!excluded_entity_ids.contains(link.child()));
+    }
+
+    // Exclude references to entities that have been excluded.
+    for (size_t reference_id = 0; reference_id < flat_index.references.size();
+         ++reference_id) {
+      if (excluded_entity_ids.contains(
+              flat_index.references[reference_id].entity_id())) {
+        excluded_reference_ids.insert(reference_id);
+      }
+    }
+
+    // Exclude references only occurring in the excluded translation units (even
+    // if the referenced entities are not excluded).
+    absl::flat_hash_map<ReferenceId, absl::flat_hash_set<TranslationUnitId>>
+        reference_to_tus;
+    for (const auto& reference_translation_unit :
+         flat_index.incremental_indexing_metadata
+             ->reference_translation_units) {
+      reference_to_tus[reference_translation_unit.reference_id()].insert(
+          reference_translation_unit.tu_id());
+    }
+
+    for (const auto& [reference_id, tu_ids] : reference_to_tus) {
+      bool all_excluded = true;
+      for (const auto& tu_id : tu_ids) {
+        if (!excluded_tu_ids.contains(tu_id)) {
+          all_excluded = false;
+          break;
+        }
+      }
+      if (all_excluded) {
+        excluded_reference_ids.insert(reference_id);
+      }
+    }
+  }
+
+  absl::flat_hash_set<LocationId> locations_to_keep;
+  for (size_t entity_id = 0; entity_id < flat_index.entities.size();
+       ++entity_id) {
+    if (!excluded_entity_ids.contains(entity_id)) {
+      locations_to_keep.insert(flat_index.entities[entity_id].location_id());
+    }
+  }
+  for (size_t reference_id = 0; reference_id < flat_index.references.size();
+       ++reference_id) {
+    if (!excluded_reference_ids.contains(reference_id)) {
+      locations_to_keep.insert(
+          flat_index.references[reference_id].location_id());
+    }
+  }
+
+  std::vector<LocationId> new_location_ids(flat_index.locations.size(),
+                                           kInvalidLocationId);
+  for (size_t location_id = 0; location_id < flat_index.locations.size();
+       ++location_id) {
+    if (locations_to_keep.contains(location_id)) {
+      new_location_ids[location_id] =
+          GetIdForLocationWithIndexPath(flat_index.locations[location_id]);
+    }
+  }
+
+  std::vector<EntityId> new_entity_ids(flat_index.entities.size(),
+                                       kInvalidEntityId);
+  for (size_t entity_id = 0; entity_id < flat_index.entities.size();
+       ++entity_id) {
+    if (excluded_entity_ids.contains(entity_id)) {
+      continue;
+    }
+    if (new_entity_ids[entity_id] != kInvalidEntityId) {
+      continue;
+    }
+    absl::InlinedVector<EntityId, 4> entities_to_process;
+    EntityId referenced_entity_id = entity_id;
+    while (true) {
+      entities_to_process.push_back(referenced_entity_id);
+      const Entity& entity = flat_index.entities[referenced_entity_id];
+      if (entity.substitute_relationship().has_value() &&
+          new_entity_ids[entity.substitute_relationship()
+                             ->substitute_entity_id()] == kInvalidEntityId) {
+        referenced_entity_id =
+            entity.substitute_relationship()->substitute_entity_id();
+      } else {
+        break;
+      }
+    }
+
+    // Process the substitute entities in reverse order to ensure the referenced
+    // entity IDs are ready whenever necessary.
+    for (auto it = entities_to_process.rbegin();
+         it != entities_to_process.rend(); ++it) {
+      const EntityId processed_entity_id = *it;
+      const Entity& entity = flat_index.entities[processed_entity_id];
+      const LocationId new_location_id = new_location_ids[entity.location_id()];
+      const std::optional<EntityId> new_substitute_entity_id =
+          entity.substitute_relationship().has_value()
+              ? std::optional<EntityId>(
+                    new_entity_ids[entity.substitute_relationship()
+                                       ->substitute_entity_id()])
+              : std::nullopt;
+      new_entity_ids[processed_entity_id] = GetEntityId(
+          Entity(entity, new_location_id, new_substitute_entity_id));
+    }
+  }
+
+  std::vector<ReferenceId> new_reference_ids(flat_index.references.size(),
+                                             kInvalidReferenceId);
+  for (size_t reference_id = 0; reference_id < flat_index.references.size();
+       ++reference_id) {
+    if (!excluded_reference_ids.contains(reference_id)) {
+      const Reference& reference = flat_index.references[reference_id];
+      new_reference_ids[reference_id] =
+          GetReferenceId({new_entity_ids[reference.entity_id()],
+                          new_location_ids[reference.location_id()]});
+    }
+  }
+
+  for (size_t i = 0; i < flat_index.virtual_method_links.size(); ++i) {
+    const VirtualMethodLink& link = flat_index.virtual_method_links[i];
+    if (!excluded_entity_ids.contains(link.parent()) &&
+        !excluded_entity_ids.contains(link.child())) {
+      GetVirtualMethodLinkId(
+          {new_entity_ids[link.parent()], new_entity_ids[link.child()]});
+    }
+  }
+
+  if (flat_index.incremental_indexing_metadata.has_value()) {
+    const auto& metadata = *flat_index.incremental_indexing_metadata;
+    std::vector<TranslationUnitId> new_tu_ids(metadata.translation_units.size(),
+                                              kInvalidTranslationUnitId);
+    for (size_t tu_id = 0; tu_id < metadata.translation_units.size(); ++tu_id) {
+      if (excluded_tu_ids.contains(tu_id)) {
+        continue;
+      }
+      new_tu_ids[tu_id] =
+          GetTranslationUnitId(metadata.translation_units[tu_id]);
+    }
+    for (const auto& entity_translation_unit :
+         metadata.entity_translation_units) {
+      if (excluded_tu_ids.contains(entity_translation_unit.tu_id())) {
+        continue;
+      }
+      AddEntityTranslationUnit(
+          {new_entity_ids[entity_translation_unit.entity_id()],
+           new_tu_ids[entity_translation_unit.tu_id()]});
+    }
+    for (const auto& reference_translation_unit :
+         metadata.reference_translation_units) {
+      if (excluded_tu_ids.contains(reference_translation_unit.tu_id())) {
+        continue;
+      }
+      AddReferenceTranslationUnit(
+          {new_reference_ids[reference_translation_unit.reference_id()],
+           new_tu_ids[reference_translation_unit.tu_id()]});
+    }
+  }
 }
 
 InMemoryIndex::~InMemoryIndex() = default;
@@ -123,7 +351,10 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
   // this is not an issue, since we almost always use the same indexes to merge
   // into, so the overly-large reservation will be used later.
   Expand(other.locations_.size(), other.entities_.size(),
-         other.references_.size(), other.virtual_method_links_.size());
+         other.references_.size(), other.virtual_method_links_.size(),
+         other.translation_units_.size(),
+         other.entity_translation_units_.size(),
+         other.reference_translation_units_.size());
 
   std::vector<LocationId> new_location_ids(other.locations_.size(),
                                            kInvalidLocationId);
@@ -170,25 +401,63 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
     new_entity_ids[id] = new_id;
   }
 
+  std::vector<ReferenceId> new_reference_ids(other.references_.size(),
+                                             kInvalidReferenceId);
   for (const auto& [reference, id] : other.references_) {
-    GetReferenceId({new_entity_ids[reference.entity_id()],
-                    new_location_ids[reference.location_id()]});
+    new_reference_ids[id] =
+        GetReferenceId({new_entity_ids[reference.entity_id()],
+                        new_location_ids[reference.location_id()]});
   }
 
   for (const auto& [link, id] : other.virtual_method_links_) {
     GetVirtualMethodLinkId(
         {new_entity_ids[link.parent()], new_entity_ids[link.child()]});
   }
+
+  std::vector<TranslationUnitId> new_translation_unit_ids(
+      other.translation_units_.size(), kInvalidEntityId);
+  for (const auto& [tu, id] : other.translation_units_) {
+    new_translation_unit_ids[id] = GetTranslationUnitId(tu);
+  }
+
+  for (const auto& entity_translation_unit : other.entity_translation_units_) {
+    AddEntityTranslationUnit(
+        {new_entity_ids[entity_translation_unit.entity_id()],
+         new_translation_unit_ids[entity_translation_unit.tu_id()]});
+  }
+
+  for (const auto& reference_translation_unit :
+       other.reference_translation_units_) {
+    AddReferenceTranslationUnit(
+        {new_reference_ids[reference_translation_unit.reference_id()],
+         new_translation_unit_ids[reference_translation_unit.tu_id()]});
+  }
 }
 
 void InMemoryIndex::Expand(size_t locations_count, size_t entities_count,
                            size_t references_count,
-                           size_t virtual_method_links_count) {
+                           size_t virtual_method_links_count,
+                           size_t translation_units_count,
+                           size_t entity_translation_units_count,
+                           size_t reference_translation_units_count) {
   locations_.reserve(locations_.size() + locations_count);
   entities_.reserve(entities_.size() + entities_count);
   references_.reserve(references_.size() + references_count);
   virtual_method_links_.reserve(virtual_method_links_.size() +
                                 virtual_method_links_count);
+  translation_units_.reserve(translation_units_.size() +
+                             translation_units_count);
+  entity_translation_units_.reserve(entity_translation_units_.size() +
+                                    entity_translation_units_count);
+  reference_translation_units_.reserve(reference_translation_units_.size() +
+                                       reference_translation_units_count);
+}
+
+void InMemoryIndex::SetTranslationUnit(absl::string_view absolute_path) {
+  const std::string index_path =
+      file_copier_.AbsoluteToIndexPath(absolute_path);
+  current_translation_unit_id_ =
+      GetTranslationUnitId(TranslationUnit(index_path));
 }
 
 LocationId InMemoryIndex::GetLocationId(Location location) {
@@ -234,6 +503,11 @@ EntityId InMemoryIndex::GetEntityId(const Entity& entity) {
       CHECK_LT(relationship->substitute_entity_id(), entity_id);
     }
   }
+
+  if (current_translation_unit_id_ != kInvalidTranslationUnitId) {
+    AddEntityTranslationUnit({entity_id, current_translation_unit_id_});
+  }
+
   return entity_id;
 }
 
@@ -256,7 +530,13 @@ ReferenceId InMemoryIndex::GetReferenceId(const Reference& reference) {
   if (inserted) {
     next_reference_id_++;
   }
-  return iter->second;
+  const ReferenceId reference_id = iter->second;
+
+  if (current_translation_unit_id_ != kInvalidTranslationUnitId) {
+    AddReferenceTranslationUnit({reference_id, current_translation_unit_id_});
+  }
+
+  return reference_id;
 }
 
 VirtualMethodLinkId InMemoryIndex::GetVirtualMethodLinkId(
@@ -267,6 +547,26 @@ VirtualMethodLinkId InMemoryIndex::GetVirtualMethodLinkId(
     next_virtual_method_link_id_++;
   }
   return iter->second;
+}
+
+TranslationUnitId InMemoryIndex::GetTranslationUnitId(
+    const TranslationUnit& tu) {
+  auto [iter, inserted] =
+      translation_units_.insert({tu, next_translation_unit_id_});
+  if (inserted) {
+    next_translation_unit_id_++;
+  }
+  return iter->second;
+}
+
+void InMemoryIndex::AddEntityTranslationUnit(
+    const EntityTranslationUnit& entity_translation_unit) {
+  entity_translation_units_.insert(entity_translation_unit);
+}
+
+void InMemoryIndex::AddReferenceTranslationUnit(
+    const ReferenceTranslationUnit& reference_translation_unit) {
+  reference_translation_units_.insert(reference_translation_unit);
 }
 
 FlatIndex InMemoryIndex::Export() && {
@@ -301,7 +601,7 @@ FlatIndex InMemoryIndex::Export() && {
     }
   }
 
-  std::vector<LocationId> new_entity_ids(entities_.size(), kInvalidEntityId);
+  std::vector<EntityId> new_entity_ids(entities_.size(), kInvalidEntityId);
   {
     // Repeat for entities, but updating stale location ids.
     std::vector<std::pair<Entity, EntityId>> sorted_entities;
@@ -314,8 +614,8 @@ FlatIndex InMemoryIndex::Export() && {
         CHECK_LT(entity.substitute_relationship()->substitute_entity_id(), id);
       }
 
-      auto& iter = sorted_entities.emplace_back(entity, id);
-      Entity& new_entity = iter.first;
+      sorted_entities.emplace_back(entity, id);
+      Entity& new_entity = sorted_entities.back().first;
       new_entity.location_id_ = new_location_id;
     }
     std::sort(sorted_entities.begin(), sorted_entities.end(),
@@ -363,22 +663,38 @@ FlatIndex InMemoryIndex::Export() && {
     }
   }
 
-  // Here we don't need to maintain a mapping from the old to the new reference
-  // ids.
-  result.references.reserve(references_.size());
-  for (const auto& [reference, id] : references_) {
-    EntityId new_entity_id = new_entity_ids[reference.entity_id()];
-    CHECK_NE(new_entity_id, kInvalidEntityId);
-    LocationId new_location_id = new_location_ids[reference.location_id()];
-    CHECK_NE(new_location_id, kInvalidLocationId);
-    result.references.emplace_back(new_entity_id, new_location_id);
-  }
-  std::sort(result.references.begin(), result.references.end());
-  // Remove duplicates that could have arisen due to location column erasure.
-  auto last = std::unique(result.references.begin(), result.references.end());
-  result.references.erase(last, result.references.end());
+  // Maintain old-to-new reference ids for the case of reference-TU pairs below.
+  std::vector<ReferenceId> new_reference_ids(references_.size(),
+                                             kInvalidReferenceId);
+  {
+    std::vector<std::pair<Reference, ReferenceId>> sorted_references;
+    for (const auto& [reference, id] : references_) {
+      EntityId new_entity_id = new_entity_ids[reference.entity_id()];
+      CHECK_NE(new_entity_id, kInvalidEntityId);
+      LocationId new_location_id = new_location_ids[reference.location_id()];
+      CHECK_NE(new_location_id, kInvalidLocationId);
+      sorted_references.emplace_back(Reference(new_entity_id, new_location_id),
+                                     id);
+    }
+    std::sort(sorted_references.begin(), sorted_references.end(),
+              ComparePairFirst());
+    CHECK_EQ(sorted_references.size(), references_.size());
+    references_.clear();
 
-  // Likewise, no need to maintain the old-to-new link id mapping.
+    result.references.reserve(references_.size());
+    ReferenceId new_id = 0;
+    for (auto& [reference, old_id] : sorted_references) {
+      // Avoid duplicate references that may have arisen from entity linkage.
+      if (!result.references.empty() && result.references.back() == reference) {
+        new_reference_ids[old_id] = new_id - 1;
+      } else {
+        result.references.emplace_back(reference);
+        new_reference_ids[old_id] = new_id++;
+      }
+    }
+  }
+
+  // We don't have to maintain the old-to-new link id mapping.
   result.virtual_method_links.reserve(virtual_method_links_.size());
   for (const auto& [link, id] : virtual_method_links_) {
     EntityId new_parent = new_entity_ids[link.parent()];
@@ -389,6 +705,70 @@ FlatIndex InMemoryIndex::Export() && {
   }
   std::sort(result.virtual_method_links.begin(),
             result.virtual_method_links.end());
+
+  if (!translation_units_.empty()) {
+    auto& metadata = result.incremental_indexing_metadata.emplace();
+
+    std::vector<TranslationUnitId> new_translation_unit_ids(
+        translation_units_.size(), kInvalidEntityId);
+    {
+      std::vector<std::pair<TranslationUnit, TranslationUnitId>> sorted_tus;
+      for (const auto& [tu, id] : translation_units_) {
+        sorted_tus.emplace_back(tu, id);
+      }
+      std::sort(sorted_tus.begin(), sorted_tus.end(), ComparePairFirst());
+      CHECK_EQ(sorted_tus.size(), translation_units_.size());
+      translation_units_.clear();
+
+      metadata.translation_units.reserve(sorted_tus.size());
+      TranslationUnitId new_id = 0;
+      for (auto& [tu, old_id] : sorted_tus) {
+        metadata.translation_units.emplace_back(tu);
+        new_translation_unit_ids[old_id] = new_id++;
+      }
+    }
+
+    metadata.entity_translation_units.reserve(entity_translation_units_.size());
+    for (const auto& entity_translation_unit : entity_translation_units_) {
+      EntityId new_entity_id =
+          new_entity_ids[entity_translation_unit.entity_id()];
+      CHECK_NE(new_entity_id, kInvalidEntityId);
+      TranslationUnitId new_tu_id =
+          new_translation_unit_ids[entity_translation_unit.tu_id()];
+      CHECK_NE(new_tu_id, kInvalidTranslationUnitId);
+      metadata.entity_translation_units.emplace_back(new_entity_id, new_tu_id);
+    }
+    std::sort(metadata.entity_translation_units.begin(),
+              metadata.entity_translation_units.end());
+    // Remove duplicate entity-TU pairs that may have arisen from entity
+    // linkage.
+    metadata.entity_translation_units.erase(
+        std::unique(metadata.entity_translation_units.begin(),
+                    metadata.entity_translation_units.end()),
+        metadata.entity_translation_units.end());
+
+    metadata.reference_translation_units.reserve(
+        reference_translation_units_.size());
+    for (const auto& reference_translation_unit :
+         reference_translation_units_) {
+      ReferenceId new_reference_id =
+          new_reference_ids[reference_translation_unit.reference_id()];
+      CHECK_NE(new_reference_id, kInvalidReferenceId);
+      TranslationUnitId new_tu_id =
+          new_translation_unit_ids[reference_translation_unit.tu_id()];
+      CHECK_NE(new_tu_id, kInvalidTranslationUnitId);
+      metadata.reference_translation_units.emplace_back(new_reference_id,
+                                                        new_tu_id);
+    }
+    std::sort(metadata.reference_translation_units.begin(),
+              metadata.reference_translation_units.end());
+    // Remove duplicate reference-TU pairs that may have arisen from entity
+    // linkage.
+    metadata.reference_translation_units.erase(
+        std::unique(metadata.reference_translation_units.begin(),
+                    metadata.reference_translation_units.end()),
+        metadata.reference_translation_units.end());
+  }
 
   return result;
 }

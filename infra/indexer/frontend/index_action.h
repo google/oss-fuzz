@@ -16,6 +16,7 @@
 #define OSS_FUZZ_INFRA_INDEXER_FRONTEND_INDEX_ACTION_H_
 
 #include <memory>
+#include <string>
 
 #include "indexer/index/file_copier.h"
 #include "indexer/index/in_memory_index.h"
@@ -32,28 +33,32 @@ namespace indexer {
 // indexer/frontend.h should be used instead.
 class IndexAction : public clang::ASTFrontendAction {
  public:
-  explicit IndexAction(FileCopier& file_copier, MergeQueue& merge_queue);
+  explicit IndexAction(FileCopier& file_copier, MergeQueue& merge_queue,
+                       bool support_incremental_indexing = false);
 
   bool BeginSourceFileAction(clang::CompilerInstance& compiler) override;
   void EndSourceFileAction() override;
 
   std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
-      clang::CompilerInstance& compiler, llvm::StringRef) override;
+      clang::CompilerInstance& compiler, llvm::StringRef path) override;
 
  private:
   std::unique_ptr<InMemoryIndex> index_;
   MergeQueue& merge_queue_;
+  bool support_incremental_indexing_;
 };
 
 class IndexActionFactory : public clang::tooling::FrontendActionFactory {
  public:
-  explicit IndexActionFactory(FileCopier& file_copier, MergeQueue& merge_queue);
+  IndexActionFactory(FileCopier& file_copier, MergeQueue& merge_queue,
+                     bool support_incremental_indexing = false);
 
   std::unique_ptr<clang::FrontendAction> create() override;
 
  private:
   FileCopier& file_copier_;
   MergeQueue& merge_queue_;
+  const bool support_incremental_indexing_;
 };
 }  // namespace indexer
 }  // namespace oss_fuzz
