@@ -40,8 +40,13 @@ using LocationId = uint64_t;
 using EntityId = uint64_t;
 using ReferenceId = uint64_t;
 using VirtualMethodLinkId = uint64_t;
+using TranslationUnitId = uint64_t;
+using EntityTranslationUnitId = uint64_t;
+using ReferenceTranslationUnitId = uint64_t;
 constexpr LocationId kInvalidLocationId = 0xffffffffffffffffull;
 constexpr EntityId kInvalidEntityId = 0xffffffffffffffffull;
+constexpr ReferenceId kInvalidReferenceId = 0xffffffffffffffffull;
+constexpr TranslationUnitId kInvalidTranslationUnitId = 0xffffffffffffffffull;
 
 inline bool IsRealPath(absl::string_view path) {
   // Examples of built-in paths: `<built-in>` and `<command-line>`.
@@ -180,6 +185,7 @@ class Entity {
     CHECK_EQ(substitute_relationship_.has_value(),
              new_substitute_entity_id.has_value());
     if (substitute_relationship_.has_value()) {
+      CHECK_NE(*new_substitute_entity_id, kInvalidEntityId);
       substitute_relationship_->entity_id_ = *new_substitute_entity_id;
     }
   }
@@ -343,6 +349,81 @@ H AbslHashValue(H h, const VirtualMethodLink& link) {
   return H::combine(std::move(h), link.parent(), link.child());
 }
 
+// Represents a single translation unit.
+class TranslationUnit {
+ public:
+  explicit TranslationUnit(const std::string& index_path)
+      : index_path_(index_path) {}
+
+  const std::string& index_path() const { return index_path_; }
+
+  bool operator==(const TranslationUnit&) const = default;
+  std::strong_ordering operator<=>(const TranslationUnit&) const = default;
+
+ private:
+  std::string index_path_;
+};
+
+template <typename H>
+H AbslHashValue(H h, const TranslationUnit& tu) {
+  return H::combine(std::move(h), tu.index_path());
+}
+
+// Links an entity to a translation unit it is encountered in (many-to-many).
+class EntityTranslationUnit {
+ public:
+  EntityTranslationUnit(EntityId entity_id, TranslationUnitId tu_id)
+      : entity_id_(entity_id), tu_id_(tu_id) {
+    CHECK_NE(entity_id, kInvalidEntityId);
+  }
+
+  EntityId entity_id() const { return entity_id_; }
+  TranslationUnitId tu_id() const { return tu_id_; }
+
+  bool operator==(const EntityTranslationUnit&) const = default;
+  std::strong_ordering operator<=>(const EntityTranslationUnit&) const =
+      default;
+
+ private:
+  EntityId entity_id_;
+  TranslationUnitId tu_id_;
+};
+
+template <typename H>
+H AbslHashValue(H h, const EntityTranslationUnit& etu) {
+  return H::combine(std::move(h), etu.entity_id(), etu.tu_id());
+}
+
+// Links a reference to a translation unit it is encountered in (many-to-many).
+class ReferenceTranslationUnit {
+ public:
+  ReferenceTranslationUnit(ReferenceId reference_id, TranslationUnitId tu_id)
+      : reference_id_(reference_id), tu_id_(tu_id) {}
+
+  ReferenceId reference_id() const { return reference_id_; }
+  TranslationUnitId tu_id() const { return tu_id_; }
+
+  bool operator==(const ReferenceTranslationUnit&) const = default;
+  std::strong_ordering operator<=>(const ReferenceTranslationUnit&) const =
+      default;
+
+ private:
+  ReferenceId reference_id_;
+  TranslationUnitId tu_id_;
+};
+
+template <typename H>
+H AbslHashValue(H h, const ReferenceTranslationUnit& etu) {
+  return H::combine(std::move(h), etu.reference_id(), etu.tu_id());
+}
+
+// A set of optional metadata for incremental indexing support.
+struct IncrementalIndexingMetadata {
+  std::vector<TranslationUnit> translation_units;
+  std::vector<EntityTranslationUnit> entity_translation_units;
+  std::vector<ReferenceTranslationUnit> reference_translation_units;
+};
+
 // A simple holder for a sorted index, used as an interchange format/interface
 // definition between uses of the index.
 struct FlatIndex {
@@ -350,6 +431,7 @@ struct FlatIndex {
   std::vector<Entity> entities;
   std::vector<Reference> references;
   std::vector<VirtualMethodLink> virtual_method_links;
+  std::optional<IncrementalIndexingMetadata> incremental_indexing_metadata;
 };
 
 namespace testing_internal {
