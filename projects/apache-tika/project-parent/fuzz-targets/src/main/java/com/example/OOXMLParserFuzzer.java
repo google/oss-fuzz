@@ -35,22 +35,13 @@ import org.apache.tika.sax.ToTextContentHandler;
 
 class OOXMLParserFuzzer {
 
-    public static void fuzzerTestOneInput(byte[] bytes) throws Exception {
-        try {
-            parseOne(bytes);
-        } catch (TikaException | SAXException | IOException e) {
-            //swallow
-        }
-    }
-
-    private static void parseOne(byte[] bytes) throws TikaException, IOException, SAXException {
+    public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
         Parser p = new OOXMLParser();
-        ContentHandler handler = new ToTextContentHandler();
-        ParseContext parseContext = new ParseContext();
-        //make sure that other parsers cannot be invoked
-        parseContext.set(Parser.class, p);
-        try (InputStream is = TikaInputStream.get(bytes)) {
-            p.parse(is, handler, new Metadata(), parseContext);
+        try {
+            ParserFuzzer.parseOne(p, bytes);
+        } catch (org.apache.poi.ooxml.POIXMLException | org.apache.poi.util.RecordFormatException |
+                 AssertionError | IllegalStateException | TikaException | SAXException | IOException e) {
+            //swallow
         }
     }
 }

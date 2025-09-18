@@ -18,39 +18,20 @@ package com.example;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.html.JSoupParser;
-import org.apache.tika.sax.ToTextContentHandler;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 final class HtmlParserFuzzer {
 
-  private HtmlParserFuzzer() {
-  }
-
-  public static void fuzzerTestOneInput(final byte[] bytes) throws Exception {
-
-    try {
-      parseOne(bytes);
-    } catch (TikaException | SAXException | IOException e) {
-      // swallow
+    public static void fuzzerTestOneInput(final byte[] bytes) throws Throwable {
+        Parser p = new JSoupParser();
+        try {
+            ParserFuzzer.parseOne(p, bytes);
+        } catch (TikaException | SAXException | IOException e) {
+          // swallow
+        }
     }
-  }
-
-  private static void parseOne(final byte[] bytes)
-      throws TikaException, IOException, SAXException {
-    Parser p = new JSoupParser();
-    ContentHandler handler = new ToTextContentHandler();
-    ParseContext parseContext = new ParseContext();
-    // make sure that other parsers cannot be invoked
-    parseContext.set(Parser.class, p);
-    try (InputStream is = TikaInputStream.get(bytes)) {
-      p.parse(is, handler, new Metadata(), parseContext);
-    }
-  }
 }

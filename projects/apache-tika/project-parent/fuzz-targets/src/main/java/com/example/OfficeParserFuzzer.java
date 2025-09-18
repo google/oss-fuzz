@@ -35,22 +35,19 @@ import org.apache.tika.sax.ToTextContentHandler;
 
 class OfficeParserFuzzer {
 
-    public static void fuzzerTestOneInput(byte[] bytes) throws Exception {
-        try {
-            parseOne(bytes);
-        } catch (TikaException | SAXException | IOException e) {
-            //swallow
-        }
-    }
-
-    private static void parseOne(byte[] bytes) throws TikaException, IOException, SAXException {
+    public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
         Parser p = new OfficeParser();
-        ContentHandler handler = new ToTextContentHandler();
-        ParseContext parseContext = new ParseContext();
-        //make sure that other parsers cannot be invoked
-        parseContext.set(Parser.class, p);
-        try (InputStream is = TikaInputStream.get(bytes)) {
-            p.parse(is, handler, new Metadata(), parseContext);
+        try {
+            ParserFuzzer.parseOne(p, bytes);
+        } catch ( org.apache.poi.util.RecordFormatException |
+                  org.apache.poi.hssf.record.RecordInputStream.LeftoverDataException |
+                  org.apache.poi.hslf.exceptions.HSLFException |
+                  IndexOutOfBoundsException |
+                  AssertionError | IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException |
+                  java.nio.BufferUnderflowException | NullPointerException |
+                  TikaException | SAXException | IOException e) {
+            //swallow
+            //org.apache.poi.hssf.OldExcelFormatException subclasses IllegalArgumentException
         }
     }
 }

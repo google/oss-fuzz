@@ -26,31 +26,18 @@ import org.xml.sax.SAXException;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.pkg.CompressorParser;
-import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.ToTextContentHandler;
 
 
 class CompressorParserFuzzer {
 
-    public static void fuzzerTestOneInput(byte[] bytes) throws Exception {
+    public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
+        Parser p = new CompressorParser();
         try {
-            parseOne(bytes);
+            ParserFuzzer.parseOne(p, bytes);
         } catch (TikaException | SAXException | IOException e) {
             //swallow
-        }
-    }
-
-    private static void parseOne(byte[] bytes) throws TikaException, IOException, SAXException {
-        Parser p = new CompressorParser();
-        ContentHandler handler = new ToTextContentHandler();
-        ParseContext parseContext = new ParseContext();
-        //make sure that other parsers cannot be invoked
-        parseContext.set(Parser.class, p);
-        try (InputStream is = TikaInputStream.get(bytes)) {
-            p.parse(is, handler, new Metadata(), parseContext);
         }
     }
 }

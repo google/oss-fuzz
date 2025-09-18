@@ -35,22 +35,13 @@ import org.apache.tika.sax.ToTextContentHandler;
 
 class RTFParserFuzzer {
 
-    public static void fuzzerTestOneInput(byte[] bytes) throws Exception {
-        try {
-            parseOne(bytes);
-        } catch (AssertionError | TikaException | SAXException | IOException | org.apache.tika.metadata.PropertyTypeException e) {
-            //swallow
-        }
-    }
-
-    private static void parseOne(byte[] bytes) throws TikaException, IOException, SAXException {
+    public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
         Parser p = new RTFParser();
-        ContentHandler handler = new ToTextContentHandler();
-        ParseContext parseContext = new ParseContext();
-        //make sure that other parsers cannot be invoked
-        parseContext.set(Parser.class, p);
-        try (InputStream is = TikaInputStream.get(bytes)) {
-            p.parse(is, handler, new Metadata(), parseContext);
+        try {
+            ParserFuzzer.parseOne(p, bytes);
+        } catch (AssertionError | TikaException | SAXException | IOException |
+                 org.apache.tika.metadata.PropertyTypeException e) {
+            //swallow
         }
     }
 }

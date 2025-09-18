@@ -25,10 +25,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 
 import org.apache.tika.parser.image.BPGParser;
@@ -41,20 +38,10 @@ import org.apache.tika.parser.image.HeifParser;
 import org.apache.tika.parser.image.ICNSParser;
 import org.apache.tika.parser.image.JXLParser;
 
-import org.apache.tika.sax.ToTextContentHandler;
-
 
 class ImageParsersFuzzer {
 
-    public static void fuzzerTestOneInput(byte[] bytes) throws Exception {
-        try {
-            parseOne(bytes);
-        } catch (TikaException | SAXException | IOException e) {
-            //swallow
-        }
-    }
-
-    private static void parseOne(byte[] bytes) throws TikaException, IOException, SAXException {
+    public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
         Parser[] parsers = new Parser[] {
                 new BPGParser(),
                 new ImageParser(),
@@ -67,12 +54,10 @@ class ImageParsersFuzzer {
                 new JXLParser()
         };
         Parser p = new AutoDetectParser(parsers);
-        ContentHandler handler = new ToTextContentHandler();
-        ParseContext parseContext = new ParseContext();
-        //make sure that other parsers cannot be invoked
-        parseContext.set(Parser.class, p);
-        try (InputStream is = TikaInputStream.get(bytes)) {
-            p.parse(is, handler, new Metadata(), parseContext);
+        try {
+            ParserFuzzer.parseOne(p, bytes);
+        } catch (TikaException | SAXException | IOException e) {
+            //swallow
         }
     }
 }

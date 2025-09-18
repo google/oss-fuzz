@@ -16,6 +16,8 @@
 ################################################################################
 
 mkdir ${SRC}/seeds
+#This packages the unit test files based on file extension from within the Tika project
+#we could also pull in other seeds from other parser projects.
 
 find ${SRC}/project-parent/tika -name "*-webm.noext" -print0 | xargs -0 zip -u ${SRC}/seeds/AudioVideoParsersFuzzer_seed_corpus.zip
 find ${SRC}/project-parent/tika -name "*-mkv.noext" -print0 | xargs -0 zip -u ${SRC}/seeds/AudioVideoParsersFuzzer_seed_corpus.zip
@@ -53,6 +55,7 @@ find ${SRC}/project-parent/tika -name "*.psd" -print0 | xargs -0 zip -u ${SRC}/s
 find ${SRC}/project-parent/tika -name "*.tif" -print0 | xargs -0 zip -u ${SRC}/seeds/ImageParsersFuzzer_seed_corpus.zip
 find ${SRC}/project-parent/tika -name "*.webp" -print0 | xargs -0 zip -u ${SRC}/seeds/ImageParsersFuzzer_seed_corpus.zip
 
+#we could get more seeds by cloning POI
 find ${SRC}/project-parent/tika -name "*.msg" -print0 | xargs -0 zip -u ${SRC}/seeds/OfficeParserFuzzer_seed_corpus.zip
 find ${SRC}/project-parent/tika -name "*.doc" -print0 | xargs -0 zip -u ${SRC}/seeds/OfficeParserFuzzer_seed_corpus.zip
 find ${SRC}/project-parent/tika -name "*.ppt" -print0 | xargs -0 zip -u ${SRC}/seeds/OfficeParserFuzzer_seed_corpus.zip
@@ -74,6 +77,7 @@ find ${SRC}/project-parent/tika -name "*.zip" -print0 | xargs -0 zip -u ${SRC}/s
 find ${SRC}/project-parent/tika -name "*.zlib" -print0 | xargs -0 zip -u ${SRC}/seeds/PackageParserFuzzer_seed_corpus.zip
 
 
+#we could get more seeds by cloning PDFBox or...?
 find ${SRC}/project-parent/tika -name "*.pdf" -print0 | xargs -0 zip ${SRC}/seeds/PDFParserFuzzer_seed_corpus.zip
 
 find ${SRC}/project-parent/tika -name "*.rtf" -print0 | xargs -0 zip ${SRC}/seeds/RTFParserFuzzer_seed_corpus.zip
@@ -83,6 +87,8 @@ find ${SRC}/project-parent/tika -name "*.tsv" -print0 | xargs -0 zip -u ${SRC}/s
 find ${SRC}/project-parent/tika -name "*.csv" -print0 | xargs -0 zip -u ${SRC}/seeds/TextAndCSVParserFuzzer_seed_corpus.zip
 
 find ${SRC}/project-parent/tika -name "*.xml" -print0 | xargs -0 zip ${SRC}/seeds/XMLReaderUtils_seed_corpus.zip
+
+find ${SRC}/project-parent/tika -path '*/test-documents/*' -type f | xargs -n1 -d '\n' zip ${SRC}/seeds/AutoDetectParser_seed_corpus.zip
 
 cp ${SRC}/seeds/*_seed_corpus.zip ${OUT}/
 

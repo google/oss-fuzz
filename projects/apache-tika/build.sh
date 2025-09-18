@@ -47,18 +47,18 @@ for fuzzer in $(find $SRC/project-parent -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
 
   # Create an execution wrapper for every fuzztarget
+  # This bumps memory to > 2gb to get around new byte[Integer.MAX_VALUE] single
+  # allocation issues that plague audio, video, image and other parsers.
+  # if we're able to get an oom > 2gb, we should really fix that.
   echo "#!/bin/bash
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
   this_dir=\$(dirname \"\$0\")
-  if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-    mem_settings='-Xmx1900m:-Xss900k'
-  else
-    mem_settings='-Xmx2048m:-Xss1024k'
-  fi
+  mem_settings='-Xmx3000m:-Xss1024k'
   LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
   \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
   --cp=$RUNTIME_CLASSPATH \
   --target_class=com.example.$fuzzer_basename \
+  -rss_limit_mb=3600mb
   --jvm_args=\"\$mem_settings\" \
   --instrumentation_includes=\"com.**:org.**\" \
   \$@" > $OUT/$fuzzer_basename

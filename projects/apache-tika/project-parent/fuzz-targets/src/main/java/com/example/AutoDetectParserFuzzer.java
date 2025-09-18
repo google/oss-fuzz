@@ -26,32 +26,21 @@ import org.xml.sax.SAXException;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 
 import org.apache.tika.sax.ToTextContentHandler;
 
 
-class AutoDetectParsersFuzzer {
+class AutoDetectParserFuzzer {
+    private static final Parser AUTO_DETECT_PARSER = new AutoDetectParser();
 
-    public static void fuzzerTestOneInput(byte[] bytes) throws Exception {
+    public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
         try {
-            parseOne(bytes);
-        } catch (TikaException | SAXException | IOException e) {
+            ParserFuzzer.parseOne(AUTO_DETECT_PARSER, bytes);
+        } catch (AssertionError | RuntimeException | IOException | TikaException | SAXException e) {
             //swallow
         }
     }
 
-    private static void parseOne(byte[] bytes) throws TikaException, IOException, SAXException {
-        Parser p = new AutoDetectParser();
-        ContentHandler handler = new ToTextContentHandler();
-        ParseContext parseContext = new ParseContext();
-        //make sure that other parsers cannot be invoked
-        parseContext.set(Parser.class, p);
-        try (InputStream is = TikaInputStream.get(bytes)) {
-            p.parse(is, handler, new Metadata(), parseContext);
-        }
-    }
 }

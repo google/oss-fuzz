@@ -29,19 +29,37 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
-import org.apache.tika.parser.csv.TextAndCSVParser;
+
 import org.apache.tika.sax.ToTextContentHandler;
 
 
-class TextAndCSVParserFuzzer {
+class ParserFuzzer {
 
-    public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
-        Parser p = new TextAndCSVParser();
-        try {
-            ParserFuzzer.parseOne(p, bytes);
-        } catch (TikaException | SAXException | IOException e) {
-            //swallow
+    public static void parseOne(Parser parser, byte[] bytes) throws Throwable {
+        parseBytes(parser, bytes);
+        parseFile(parser, bytes);
+    }
+
+    public static void parseBytes(Parser parser, byte[] bytes) throws Throwable {
+        ContentHandler handler = new ToTextContentHandler();
+        ParseContext parseContext = new ParseContext();
+        //make sure that other parsers cannot be invoked
+        parseContext.set(Parser.class, parser);
+        //try first with bytes
+        try (InputStream is = TikaInputStream.get(bytes)) {
+            parser.parse(is, handler, new Metadata(), parseContext);
         }
     }
 
+    public static void parseFile(Parser parser, byte[] bytes) throws Throwable {
+        ContentHandler handler = new ToTextContentHandler();
+        ParseContext parseContext = new ParseContext();
+        //make sure that other parsers cannot be invoked
+        parseContext.set(Parser.class, parser);
+        try (TikaInputStream tis = TikaInputStream.get(bytes)) {
+            //force writing to tmp file
+            tis.getPath();
+            parser.parse(tis, handler, new Metadata(), parseContext);
+        }
+    }
 }
