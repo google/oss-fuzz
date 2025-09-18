@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <sched.h>
-
+#include <cstdlib>
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
@@ -30,6 +29,7 @@
 #include "absl/flags/flag.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "clang/Tooling/AllTUsExecution.h"
 #include "clang/Tooling/CompilationDatabase.h"
@@ -51,25 +51,48 @@ ABSL_FLAG(int, merge_queue_size, 16, "Length of merge queues");
 ABSL_FLAG(bool, enable_expensive_checks, false,
           "Enable expensive database integrity checks");
 ABSL_FLAG(bool, ignore_indexing_errors, false, "Ignore indexing errors");
+ABSL_FLAG(bool, cascade, false,
+          "If the index database exists, store a new delta database on the side"
+          ", as a new component of an index database cascade. Useful for "
+          "reindexing a subset of translation units in an incremental fashion");
+
+static std::filesystem::path GetIndexPath(
+    const std::filesystem::path& index_dir, bool cascade) {
+  std::string candidate = "db.sqlite";
+  for (size_t index = 0;
+       cascade && std::filesystem::exists(index_dir / candidate); ++index) {
+    candidate = absl::StrCat("delta", index, ".sqlite");
+  }
+  return index_dir / candidate;
+}
 
 int main(int argc, char** argv) {
+  using oss_fuzz::indexer::FileCopier;
   using oss_fuzz::indexer::InMemoryIndex;
   using oss_fuzz::indexer::MergeQueue;
+  using oss_fuzz::indexer::SaveAsSqlite;
   using clang::tooling::AllTUsToolExecutor;
   using clang::tooling::CompilationDatabase;
+  using clang::tooling::CompileCommand;
 
 #ifdef NO_CHANGE_ROOT_AND_USER
   // When running inside a container, we cannot drop privileges.
   InitGoogleExceptChangeRootAndUser(argv[0], &argc, &argv, true);
 #else
-  InitGoogle(absl::NullSafeStringView(argv[0]), &argc, &argv, true);
+  InitGoogle(argv[0], &argc, &argv, true);
 #endif
 
   const std::string& source_dir = absl::GetFlag(FLAGS_source_dir);
   const std::string& build_dir = absl::GetFlag(FLAGS_build_dir);
   const std::string& index_dir = absl::GetFlag(FLAGS_index_dir);
   const std::vector<std::string>& extra_dirs = absl::GetFlag(FLAGS_extra_dirs);
-  auto index_path = std::filesystem::path(index_dir) / "db.sqlite";
+  const bool cascade = absl::GetFlag(FLAGS_cascade);
+
+  const std::filesystem::path index_path = GetIndexPath(index_dir, cascade);
+  if (std::filesystem::exists(index_path)) {
+    LOG(ERROR) << "Index database already exists: " << index_path;
+    return 1;
+  }
 
 #ifndef NDEBUG
   LOG(ERROR) << "indexer is built without optimisations. Use 'blaze run -c opt'"
@@ -88,7 +111,11 @@ int main(int argc, char** argv) {
     clang::tooling::Filter.setValue(dry_run_regex);
   }
 
-  oss_fuzz::indexer::FileCopier file_copier(source_dir, index_dir, extra_dirs);
+  FileCopier::ExistingFileBehavior existing_file_behavior =
+      cascade ? FileCopier::ExistingFileBehavior::kOverwrite
+              : FileCopier::ExistingFileBehavior::kFail;
+  FileCopier file_copier(source_dir, index_dir, extra_dirs,
+                         existing_file_behavior);
 
   std::unique_ptr<MergeQueue> merge_queue = MergeQueue::Create(
       absl::GetFlag(FLAGS_merge_queues), absl::GetFlag(FLAGS_merge_queue_size));
