@@ -41,6 +41,12 @@ class AutoDetectParserFuzzer {
         } catch (AssertionError | RuntimeException | IOException | TikaException | SAXException e) {
             //swallow
         }
+        //now try rmeta
+        try {
+            ParserFuzzer.parseRMetaFile(AUTO_DETECT_PARSER, bytes);
+        } catch (AssertionError | RuntimeException | IOException | TikaException | SAXException e) {
+            //swallow
+        }
     }
 
 }

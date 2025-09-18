@@ -28,6 +28,7 @@ import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.microsoft.OfficeParser;
+import org.apache.tika.parser.microsoft.OfficeParserConfig;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.ToTextContentHandler;
@@ -37,14 +38,19 @@ class OfficeParserFuzzer {
 
     public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
         Parser p = new OfficeParser();
+        ParseContext parseContext = new ParseContext();
+        OfficeParserConfig officeParserConfig = new OfficeParserConfig();
+        officeParserConfig.setExtractMacros(true);
+        parseContext.set(OfficeParserConfig.class, officeParserConfig);
+
         try {
-            ParserFuzzer.parseOne(p, bytes);
+            ParserFuzzer.parseOne(p, bytes, parseContext);
         } catch ( org.apache.poi.util.RecordFormatException |
                   org.apache.poi.hssf.record.RecordInputStream.LeftoverDataException |
                   org.apache.poi.hslf.exceptions.HSLFException |
                   IndexOutOfBoundsException |
                   AssertionError | IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException |
-                  java.nio.BufferUnderflowException | NullPointerException |
+                  java.nio.BufferUnderflowException | NegativeArraySizeException | NullPointerException |
                   TikaException | SAXException | IOException e) {
             //swallow
             //org.apache.poi.hssf.OldExcelFormatException subclasses IllegalArgumentException

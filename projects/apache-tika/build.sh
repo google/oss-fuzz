@@ -58,7 +58,7 @@ for fuzzer in $(find $SRC/project-parent -name '*Fuzzer.java'); do
   \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
   --cp=$RUNTIME_CLASSPATH \
   --target_class=com.example.$fuzzer_basename \
-  -rss_limit_mb=3600mb
+  -rss_limit_mb=3600mb \
   --jvm_args=\"\$mem_settings\" \
   --instrumentation_includes=\"com.**:org.**\" \
   \$@" > $OUT/$fuzzer_basename

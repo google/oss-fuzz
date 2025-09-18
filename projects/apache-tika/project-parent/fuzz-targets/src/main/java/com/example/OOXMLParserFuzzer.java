@@ -27,6 +27,7 @@ import org.xml.sax.SAXException;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.microsoft.OfficeParserConfig;
 import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
@@ -37,8 +38,13 @@ class OOXMLParserFuzzer {
 
     public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
         Parser p = new OOXMLParser();
+        ParseContext parseContext = new ParseContext();
+        OfficeParserConfig officeParserConfig = new OfficeParserConfig();
+        officeParserConfig.setExtractMacros(true);
+        parseContext.set(OfficeParserConfig.class, officeParserConfig);
+
         try {
-            ParserFuzzer.parseOne(p, bytes);
+            ParserFuzzer.parseOne(p, bytes, parseContext);
         } catch (org.apache.poi.ooxml.POIXMLException | org.apache.poi.util.RecordFormatException |
                  AssertionError | IllegalStateException | TikaException | SAXException | IOException e) {
             //swallow

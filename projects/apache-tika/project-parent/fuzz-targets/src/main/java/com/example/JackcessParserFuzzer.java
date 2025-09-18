@@ -25,24 +25,18 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.parser.pdf.PDFParser;
-import org.apache.tika.parser.pdf.PDFParserConfig;
-import org.apache.tika.parser.ParseContext;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.parser.microsoft.JackcessParser;
 import org.apache.tika.parser.Parser;
 
 
-class PDFParserFuzzer {
+class JackcessParserFuzzer {
 
     public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
-        Parser p = new PDFParser();
-        PDFParserConfig config = new PDFParserConfig();
-        //what else do we want to exercise?
-        config.setExtractActions(true);
-        ParseContext parseContext = new ParseContext();
-        parseContext.set(PDFParserConfig.class, config);
+        Parser p = new JackcessParser();
         try {
-            ParserFuzzer.parseOne(p, bytes, parseContext);
-        } catch (TikaException | SAXException | IOException e) {
+            ParserFuzzer.parseOne(p, bytes);
+        } catch (IllegalArgumentException | TikaException | SAXException | IOException e) {
             //swallow
         }
     }

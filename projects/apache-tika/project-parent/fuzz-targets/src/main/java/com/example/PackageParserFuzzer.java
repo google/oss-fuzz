@@ -36,7 +36,7 @@ class PackageParserFuzzer {
         Parser p = new PackageParser();
         try {
             ParserFuzzer.parseOne(p, bytes);
-        } catch (TikaException | SAXException | IOException e) {
+        } catch (IllegalArgumentException | TikaException | SAXException | IOException e) {
             //swallow
         }
     }

@@ -29,20 +29,39 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.RecursiveParserWrapper;
+import org.apache.tika.sax.BasicContentHandlerFactory;
+import org.apache.tika.sax.BodyContentHandler;
+import org.apache.tika.sax.RecursiveParserWrapperHandler;
 
 import org.apache.tika.sax.ToTextContentHandler;
 
 
 class ParserFuzzer {
 
-    public static void parseOne(Parser parser, byte[] bytes) throws Throwable {
-        parseBytes(parser, bytes);
-        parseFile(parser, bytes);
+    public static void parseOne(Parser parser, byte[] bytes, ParseContext parseContext) throws Throwable {
+        parseBytes(parser, bytes, parseContext);
+        parseFile(parser, bytes, parseContext);
     }
 
-    public static void parseBytes(Parser parser, byte[] bytes) throws Throwable {
+
+    public static void parseOne(Parser parser, byte[] bytes) throws Throwable {
+        parseBytes(parser, bytes, new ParseContext());
+        parseFile(parser, bytes, new ParseContext());
+    }
+
+    public static void parseRMetaFile(Parser parser, byte[] bytes) throws Throwable {
+        RecursiveParserWrapper wrapper = new RecursiveParserWrapper(parser);
+        RecursiveParserWrapperHandler rpwh = new RecursiveParserWrapperHandler(
+                new BasicContentHandlerFactory(BasicContentHandlerFactory.HANDLER_TYPE.XML, -1));
+        try (TikaInputStream tis = TikaInputStream.get(bytes)) {
+            tis.getPath();
+            wrapper.parse(tis, rpwh, new Metadata(), new ParseContext());
+        }
+    }
+
+    public static void parseBytes(Parser parser, byte[] bytes, ParseContext parseContext) throws Throwable {
         ContentHandler handler = new ToTextContentHandler();
-        ParseContext parseContext = new ParseContext();
         //make sure that other parsers cannot be invoked
         parseContext.set(Parser.class, parser);
         //try first with bytes
@@ -51,9 +70,8 @@ class ParserFuzzer {
         }
     }
 
-    public static void parseFile(Parser parser, byte[] bytes) throws Throwable {
+    public static void parseFile(Parser parser, byte[] bytes, ParseContext parseContext) throws Throwable {
         ContentHandler handler = new ToTextContentHandler();
-        ParseContext parseContext = new ParseContext();
         //make sure that other parsers cannot be invoked
         parseContext.set(Parser.class, parser);
         try (TikaInputStream tis = TikaInputStream.get(bytes)) {

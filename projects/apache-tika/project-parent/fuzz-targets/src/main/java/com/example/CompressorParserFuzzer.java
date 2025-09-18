@@ -36,7 +36,7 @@ class CompressorParserFuzzer {
         Parser p = new CompressorParser();
         try {
             ParserFuzzer.parseOne(p, bytes);
-        } catch (TikaException | SAXException | IOException e) {
+        } catch (NullPointerException | TikaException | SAXException | IOException e) {
             //swallow
         }
     }

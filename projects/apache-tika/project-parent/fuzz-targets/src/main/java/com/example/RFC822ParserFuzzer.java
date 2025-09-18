@@ -25,23 +25,16 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.parser.pdf.PDFParser;
-import org.apache.tika.parser.pdf.PDFParserConfig;
-import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.mail.RFC822Parser;
 import org.apache.tika.parser.Parser;
 
 
-class PDFParserFuzzer {
+class RFC822ParserFuzzer {
 
     public static void fuzzerTestOneInput(byte[] bytes) throws Throwable {
-        Parser p = new PDFParser();
-        PDFParserConfig config = new PDFParserConfig();
-        //what else do we want to exercise?
-        config.setExtractActions(true);
-        ParseContext parseContext = new ParseContext();
-        parseContext.set(PDFParserConfig.class, config);
+        Parser p = new RFC822Parser();
         try {
-            ParserFuzzer.parseOne(p, bytes, parseContext);
+            ParserFuzzer.parseOne(p, bytes);
         } catch (TikaException | SAXException | IOException e) {
             //swallow
         }
