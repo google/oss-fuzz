@@ -17,9 +17,10 @@
 
 cd /tmp
 
-wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz
+export GOROOT=/root/.go
+wget https://go.dev/dl/go1.25.0.linux-amd64.tar.gz
 mkdir temp-go
-tar -C temp-go/ -xzf go1.23.4.linux-amd64.tar.gz
+tar -C temp-go/ -xzf go1.25.0.linux-amd64.tar.gz
 
 mkdir /root/.go/
 mv temp-go/go/* /root/.go/

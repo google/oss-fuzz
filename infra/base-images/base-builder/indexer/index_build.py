@@ -46,9 +46,11 @@ _LD_PATH = Path('/lib64') / _LD_BINARY
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 
 DEFAULT_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
+TRACING_COVERAGE_FLAGS = '-fsanitize-coverage=func,trace-pc-guard'
 DEFAULT_FUZZING_ENGINE = 'fuzzing_engine.cc'
 
-_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', '/usr/local'))
+DEFAULT_CLANG_TOOLCHAIN = '/usr/local'
+_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', DEFAULT_CLANG_TOOLCHAIN))
 _TOOLCHAIN_WITH_WRAPPER = Path('/opt/toolchain')
 
 INDEXER_DIR = Path(__file__).parent
@@ -381,7 +383,6 @@ def build_project(
     targets_to_index: Sequence[str] | None = None,
     compile_args: Sequence[str] | None = None,
     binaries_only: bool = False,
-    fuzzing_engine: str = DEFAULT_FUZZING_ENGINE,
     coverage_flags: str = DEFAULT_COVERAGE_FLAGS,
 ):
   """Build the actual project."""
@@ -401,7 +402,7 @@ def build_project(
       )
   )
 
-  fuzzing_engine_dir = copy_fuzzing_engine(fuzzing_engine)
+  fuzzing_engine_dir = copy_fuzzing_engine(DEFAULT_FUZZING_ENGINE)
   build_fuzzing_engine_command = [
       f'{_CLANG_TOOLCHAIN}/bin/clang++',
       '-c',
@@ -413,7 +414,7 @@ def build_project(
       '-fno-exceptions',
       '-glldb',
       '-O0',
-      (fuzzing_engine_dir / fuzzing_engine).as_posix(),
+      (fuzzing_engine_dir / DEFAULT_FUZZING_ENGINE).as_posix(),
       '-o',
       f'{OUT}/fuzzing_engine.o',
       '-gen-cdb-fragment-path',
@@ -435,6 +436,16 @@ def build_project(
       '/usr/include',
   ]
   subprocess.run(build_fuzzing_engine_command, check=True, cwd='/opt/indexer')
+
+  build_cov_instrumentation_command = [
+      f'{_CLANG_TOOLCHAIN}/bin/clang++',
+      '-c',
+      '/opt/indexer/coverage.cc',
+  ]
+  subprocess.run(
+      build_cov_instrumentation_command, check=True, cwd='/opt/indexer'
+  )
+
   ar_cmd = [
       'ar',
       'rcs',
@@ -773,14 +784,9 @@ def main():
       ),
   )
   parser.add_argument(
-      '--fuzzing-engine',
-      default=DEFAULT_FUZZING_ENGINE,
-      help='Path to the fuzzing engine to use for the fuzz target.',
-  )
-  parser.add_argument(
-      '--coverage-flags',
-      default=DEFAULT_COVERAGE_FLAGS,
-      help='Coverage flags to set for the instrumentation.',
+      '--tracing-instrumentation',
+      action='store_true',
+      help='Enable tracing coverage instrumentation.',
   )
   args = parser.parse_args()
 
@@ -876,8 +882,9 @@ def main():
       None if args.targets_all_index else targets_to_index,
       args.compile_arg,
       args.binaries_only,
-      args.fuzzing_engine,
-      args.coverage_flags,
+      TRACING_COVERAGE_FLAGS
+      if args.tracing_instrumentation
+      else DEFAULT_COVERAGE_FLAGS,
   )
 
   if not args.binaries_only:

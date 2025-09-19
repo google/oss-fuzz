@@ -217,7 +217,9 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
   return json.loads(contents)
 
 
-def run_indexer(build_id: str, linker_commands: dict[str, Any]):
+def run_indexer(
+    build_id: str, linker_commands: dict[str, Any], allow_errors: bool = False
+):
   """Run the indexer."""
   # Use a build-specific compile commands directory, since there could be
   # parallel linking happening at the same time.
@@ -273,6 +275,9 @@ def run_indexer(build_id: str, linker_commands: dict[str, Any]):
       "--merge_queues",
       str(merge_queues),
   ]
+  if allow_errors:
+    cmd.append("--ignore_indexing_errors")
+
   result = subprocess.run(cmd, check=False, capture_output=True)
   if result.returncode != 0:
     raise RuntimeError(
@@ -432,18 +437,12 @@ def force_optimization_flag(argv: Sequence[str]) -> list[str]:
   return args
 
 
-def remove_invalid_coverage_flags(
+def fix_coverage_flags(
     argv: Sequence[str], expected_coverage_flags: str
 ) -> list[str]:
-  """Removes invalid coverage flags from the given argument list."""
+  """Makes sure that the right coverage flags are set."""
   args = []
   for arg in argv:
-    if (
-        arg.startswith("-fsanitize-coverage=")
-        and arg != expected_coverage_flags
-    ):
-      continue
-
     # Some projects use -fsanitize-coverage-allowlist/ignorelist to optimize
     # fuzzing feedback. For the indexer case, we would prefer to have all code
     # instrumented, so we remove these flags.
@@ -453,6 +452,7 @@ def remove_invalid_coverage_flags(
 
     args.append(arg)
 
+  args.append(expected_coverage_flags)
   return args
 
 
@@ -461,7 +461,7 @@ def main(argv: list[str]) -> None:
   argv = expand_rsp_file(argv)
   argv = remove_flag_if_present(argv, "-gline-tables-only")
   argv = force_optimization_flag(argv)
-  argv = remove_invalid_coverage_flags(argv, compile_settings.coverage_flags)
+  argv = fix_coverage_flags(argv, compile_settings.coverage_flags)
 
   if _has_disallowed_clang_flags(argv):
     raise ValueError("Disallowed clang flags found, aborting.")
@@ -524,6 +524,10 @@ def main(argv: list[str]) -> None:
   # We force lld, but it doesn't include this dir by default.
   argv.append("-L/usr/local/lib")
   argv.append("-Qunused-arguments")
+
+  if compile_settings.coverage_flags == index_build.TRACING_COVERAGE_FLAGS:
+    argv.append("/opt/indexer/coverage.o")
+
   run(argv, compile_settings.clang_toolchain)
 
   build_id = index_build.get_build_id(output_file)
@@ -567,7 +571,10 @@ def main(argv: list[str]) -> None:
   _write_filter_log(filter_log_file, filtered_compile_commands)
 
   if not os.getenv("INDEXER_BINARIES_ONLY"):
-    run_indexer(build_id, linker_commands)
+    is_custom_toolchain = (
+        compile_settings.clang_toolchain != index_build.DEFAULT_CLANG_TOOLCHAIN
+    )
+    run_indexer(build_id, linker_commands, allow_errors=is_custom_toolchain)
 
   linker_commands = json.dumps(linker_commands)
   commands_path = Path(cdb_path) / f"{build_id}_linker_commands.json"
