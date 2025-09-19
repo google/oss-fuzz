@@ -21,6 +21,7 @@ import datetime
 import functools
 import json
 import logging
+import multiprocessing
 import os
 import sys
 import time
@@ -148,6 +149,10 @@ def get_args(args=None):
                       action='store_true',
                       help='Build projects that failed to build on OSS-Fuzz\'s '
                       'production builder.')
+  parser.add_argument('--version-tag',
+                      required=False,
+                      default=None,
+                      help='Version tag to use for base images.')
   parsed_args = parser.parse_args(args)
   handle_special_projects(parsed_args)
   return parsed_args
@@ -236,7 +241,9 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           steps,
           credentials,
           build_type.type_name,
-          extra_tags=['trial-build', f'branch-{args.branch}']))
+          extra_tags=[
+              'trial-build', f'branch-{args.branch.lower().replace("/", "-")}'
+          ]))
       time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
@@ -349,7 +356,7 @@ def _do_test_builds(args, test_image_suffix, end_time):
     build_types.append(BUILD_TYPES['introspector'])
   if 'indexer' in sanitizers:
     sanitizers.pop(sanitizers.index('indexer'))
-    build_types.append(BUILD_TYPES['indexer'])
+    # build_types.append(BUILD_TYPES['indexer'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
   build_ids = collections.defaultdict(list)
@@ -380,15 +387,18 @@ def trial_build_main(args=None, local_base_build=True):
   timeout = int(os.environ.get('TIMEOUT', DEFAULT_TIMEOUT))
   end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
   logging.info(f'Timeout: {timeout}, trial build end time: {end_time}')
+
+  test_image_suffix = TEST_IMAGE_SUFFIX
   if args.branch:
-    test_image_suffix = f'{TEST_IMAGE_SUFFIX}-{args.branch.lower()}'
-  else:
-    test_image_suffix = TEST_IMAGE_SUFFIX
+    test_image_suffix = f'{test_image_suffix}-{args.branch.lower().replace("/", "-")}'
+  if args.version_tag:
+    test_image_suffix = f'{test_image_suffix}-{args.version_tag}'
+
   if local_base_build:
-    build_and_push_test_images.build_and_push_images(  # pylint: disable=unexpected-keyword-arg
-        test_image_suffix)
+    build_and_push_test_images.build_and_push_images(test_image_suffix)
   else:
-    build_and_push_test_images.gcb_build_and_push_images(test_image_suffix)
+    build_and_push_test_images.gcb_build_and_push_images(
+        test_image_suffix, version_tag=args.version_tag)
   return _do_test_builds(args, test_image_suffix, end_time)
 
 

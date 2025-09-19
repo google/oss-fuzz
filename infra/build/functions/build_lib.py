@@ -109,6 +109,10 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
 
+OSS_FUZZ_TRIAL_BUILDPOOL_NAME = os.getenv(
+    'GCB_TRIAL_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/high-cpu-buildpool')
+
 OSS_FUZZ_INDEXER_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/indexer-buildpool')
@@ -162,8 +166,9 @@ def dockerify_run_step(step,
   if container_name:
     new_args.extend(['--name', container_name])
 
-  for env_var in step.get('env', {}):
-    new_args.extend(['-e', env_var])
+  if 'env' in step:
+    for env_var in step.get('env', {}):
+      new_args.extend(['-e', env_var])
   new_args += ['-t', image]
   new_args += step['args']
   step['args'] = new_args
@@ -515,7 +520,8 @@ def get_docker_build_step(image_names,
                           src_root='oss-fuzz',
                           architecture='x86_64',
                           cache_image='',
-                          build_args: Sequence[str] | None = None):
+                          build_args: Sequence[str] | None = None,
+                          dockerfile_path: str | None = None):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -542,10 +548,12 @@ def get_docker_build_step(image_names,
     for build_arg in build_args:
       args.extend(['--build-arg', build_arg])
 
+  if dockerfile_path:
+    args.extend(['-f', dockerfile_path])
+
   step = {
       'name': DOCKER_TOOL_IMAGE,
       'args': args,
-      'dir': directory,
       'id': f'build-{get_unique_build_step_image_id()}',
   }
   # Handle buildkit args
@@ -557,7 +565,7 @@ def get_docker_build_step(image_names,
     for image in image_names:
       args.extend(['--cache-from', image])
 
-  args.append('.')
+  args.append(directory)
 
   return step
 
@@ -696,7 +704,9 @@ def get_build_body(  # pylint: disable=too-many-arguments
     options = {}
 
   if use_build_pool:
-    if experiment:
+    if 'trial-build' in build_tags:
+      options['pool'] = {'name': OSS_FUZZ_TRIAL_BUILDPOOL_NAME}
+    elif experiment:
       options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
     # TODO: refactor all of this to make this less ugly.
     elif 'indexer' in build_tags:
