@@ -70,12 +70,12 @@ std::string FileCopier::AbsoluteToIndexPath(absl::string_view path) const {
 }
 
 void FileCopier::RegisterIndexedFile(absl::string_view index_path) {
-  absl::MutexLock lock(&mutex_);
+  absl::MutexLock lock(mutex_);
   indexed_files_.emplace(index_path);
 }
 
 void FileCopier::CopyIndexedFiles() {
-  absl::MutexLock lock(&mutex_);
+  absl::MutexLock lock(mutex_);
 
   for (const std::string& indexed_path : indexed_files_) {
     std::filesystem::path src_path = indexed_path;
