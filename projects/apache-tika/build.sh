@@ -35,9 +35,8 @@ set_project_version_in_fuzz_targets_dependency
 $MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
 
 # build classpath
-cp  $PROJECT/tika-app/target/tika-app-*-SNAPSHOT.jar $OUT/tika-app.jar
 cp  $SRC/project-parent/fuzz-targets/target/fuzz-targets-0.0.1-SNAPSHOT.jar $OUT/fuzz-targets.jar
-RUNTIME_CLASSPATH_ABSOLUTE="$OUT/tika-app.jar:$OUT/fuzz-targets.jar"
+RUNTIME_CLASSPATH_ABSOLUTE="$OUT/fuzz-targets.jar"
 # replace $OUT with placeholder $this_dir that will be dissolved at runtime
 RUNTIME_CLASSPATH=$(echo $RUNTIME_CLASSPATH_ABSOLUTE | sed "s|$OUT|\$this_dir|g")
 
