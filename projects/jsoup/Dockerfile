@@ -23,8 +23,13 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
-    mv fuzzing/dictionaries/html.dict $SRC/HtmlFuzzer.dict && \
-    mv fuzzing/dictionaries/xml.dict $SRC/XmlFuzzer.dict && \
+    cat fuzzing/dictionaries/html.dict \
+        fuzzing/dictionaries/svg.dict \
+        fuzzing/dictionaries/mathml.dict \
+        fuzzing/dictionaries/css.dict \
+        fuzzing/dictionaries/xml.dict \
+        fuzzing/dictionaries/xpath.dict \
+    fuzzing/dictionaries/http.dict >> $SRC/combo.dict && \
     rm -rf fuzzing
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
@@ -33,6 +38,5 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
 
 RUN git clone --depth 1 https://github.com/jhy/jsoup/
 
-COPY build.sh $SRC/
-COPY HtmlFuzzer.java XmlFuzzer.java $SRC/
+COPY build.sh *.java *.options $SRC/
 WORKDIR $SRC/jsoup
