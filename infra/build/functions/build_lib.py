@@ -109,10 +109,6 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
 
-OSS_FUZZ_TRIAL_BUILDPOOL_NAME = os.getenv(
-    'GCB_TRIAL_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
-    'workerPools/high-cpu-buildpool')
-
 OSS_FUZZ_INDEXER_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/indexer-buildpool')
@@ -704,9 +700,7 @@ def get_build_body(  # pylint: disable=too-many-arguments
     options = {}
 
   if use_build_pool:
-    if 'trial-build' in build_tags:
-      options['pool'] = {'name': OSS_FUZZ_TRIAL_BUILDPOOL_NAME}
-    elif experiment:
+    if experiment:
       options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
     # TODO: refactor all of this to make this less ugly.
     elif 'indexer' in build_tags:
