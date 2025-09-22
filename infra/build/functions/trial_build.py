@@ -236,14 +236,19 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     try:
+      tags = [
+          'trial-build',
+          f'branch-{args.branch.lower().replace("/", "-")}'
+      ]
+      if args.version_tag:
+        tags.append(f'version-{args.version_tag}')
+
       build_ids[project_name] = (build_project.run_build(
           project_name,
           steps,
           credentials,
           build_type.type_name,
-          extra_tags=[
-              'trial-build', f'branch-{args.branch.lower().replace("/", "-")}'
-          ]))
+          extra_tags=tags))
       time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
