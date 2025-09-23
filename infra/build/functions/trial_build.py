@@ -24,6 +24,8 @@ import os
 import subprocess
 import sys
 import yaml
+import json
+import time
 
 import build_and_push_test_images
 import build_lib
@@ -119,11 +121,6 @@ def get_args(args=None):
   return parsed_args
 
 
-import json
-import time
-
-# ... (imports existentes) ...
-
 def _gcb_build_and_run_project_tests(args):
   """Submits and waits on the test phase build."""
   BATCH_SIZE = 300
@@ -135,25 +132,25 @@ def _gcb_build_and_run_project_tests(args):
     batch = projects[i:i + BATCH_SIZE]
     steps = []
     for project in batch:
-      # Construct the args for the nested build.
-      nested_args = [project] + [
-          '--sanitizers'
-      ] + args.sanitizers + ['--fuzzing-engines'] + args.fuzzing_engines + [
-          '--repo', args.repo, '--branch', args.branch or 'main',
-          f'--version-tag={args.version_tag}'
-      ]
-      if args.force_build:
-        nested_args.append('--force-build')
+      for sanitizer in args.sanitizers:
+        for fuzzing_engine in args.fuzzing_engines:
+          # Construct the args for the nested build.
+          nested_args = [
+              project,
+              '--sanitizer', sanitizer,
+              '--fuzzing-engine', fuzzing_engine,
+              '--architecture', 'x86_64',
+          ]
 
-      steps.append({
-          'name': 'gcr.io/oss-fuzz-base/base-builder',
-          'entrypoint': 'python3',
-          'args': ['infra/build/functions/build_and_run_project_tests.py'
-                  ] + nested_args,
-          'id': f'test-{project}',
-          'allowFailure': True,
-          'waitFor': ['-']
-      })
+          steps.append({
+              'name': 'gcr.io/oss-fuzz-base/base-builder',
+              'entrypoint': 'python3',
+              'args': ['infra/build/functions/run_single_project_build.py'
+                      ] + nested_args,
+              'id': f'test-{project}-{sanitizer}-{fuzzing_engine}',
+              'allowFailure': True,
+              'waitFor': ['-']
+          })
 
     tags = ['trial-build', 'testing-projects-batch']
     if args.branch:
@@ -226,8 +223,8 @@ def _wait_on_builds_and_report_results(build_ids):
       time.sleep(60)
 
   print('\nAll batch builds finished. Analyzing results...')
-  successful_projects = []
-  failed_projects = {}  # project_name -> (status, log_url)
+  successful_builds = []
+  failed_builds = {}  # build_name -> (status, log_url)
 
   for build_id in build_ids:
     try:
@@ -238,33 +235,33 @@ def _wait_on_builds_and_report_results(build_ids):
       build_info_raw = subprocess.check_output(gcloud_command)
       build_info = json.loads(build_info_raw)
       for step in build_info.get('steps', []):
-        project_name = step['id'].replace('test-', '')
+        build_name = step['id'].replace('test-', '')
         status = step.get('status', 'UNKNOWN')
         if status == 'SUCCESS':
-          successful_projects.append(project_name)
+          successful_builds.append(build_name)
         else:
-          failed_projects[project_name] = (status,
+          failed_builds[build_name] = (status,
                                            build_info.get('logUrl', 'N/A'))
     except (subprocess.CalledProcessError, json.JSONDecodeError) as error:
       print(f'Error analyzing build {build_id}: {error}')
 
   # Final Report
   print('\n--- FINAL BUILD REPORT ---')
-  total_projects = len(successful_projects) + len(failed_projects)
-  print(f'Total projects tested: {total_projects}')
-  print(f'  - Successful: {len(successful_projects)}')
-  print(f'  - Failed: {len(failed_projects)}')
+  total_builds = len(successful_builds) + len(failed_builds)
+  print(f'Total builds tested: {total_builds}')
+  print(f'  - Successful: {len(successful_builds)}')
+  print(f'  - Failed: {len(failed_builds)}')
 
-  if failed_projects:
-    print('\n--- FAILED PROJECTS ---')
-    for name, (status, log_url) in failed_projects.items():
-      print(f'  - Project: {name}')
+  if failed_builds:
+    print('\n--- FAILED BUILDS ---')
+    for name, (status, log_url) in failed_builds.items():
+      print(f'  - Build: {name}')
       print(f'    Status: {status}')
       print(f'    Logs: {log_url}')
     print('-----------------------')
     return False  # Indicate failure
 
-  print('\nAll projects passed successfully!')
+  print('\nAll builds passed successfully!')
   print('------------------------')
   return True
 
