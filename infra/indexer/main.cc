@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <sched.h>
-
 #include <filesystem>  // NOLINT
 #include <memory>
 #include <string>
@@ -24,7 +22,6 @@
 #include "init.h"
 #include "indexer/frontend/frontend.h"
 #include "indexer/index/file_copier.h"
-#include "indexer/index/in_memory_index.h"
 #include "indexer/index/sqlite.h"
 #include "indexer/merge_queue.h"
 #include "absl/flags/flag.h"
@@ -39,7 +36,9 @@
 ABSL_FLAG(std::string, source_dir, "", "Source directory");
 ABSL_FLAG(std::string, build_dir, "", "Build directory");
 ABSL_FLAG(std::string, index_dir, "",
-          "Output index file directory (should be empty if it exists)");
+          "Output index file directory (should be empty if it exists for a new "
+          "index or contain the old index for a --delta); required unless"
+          "--database_only is specified");
 ABSL_FLAG(std::vector<std::string>, extra_dirs, {"/"},
           "Additional source directory/-ies (comma-separated)");
 ABSL_FLAG(std::string, dry_run_regex, "",
@@ -51,10 +50,26 @@ ABSL_FLAG(int, merge_queue_size, 16, "Length of merge queues");
 ABSL_FLAG(bool, enable_expensive_checks, false,
           "Enable expensive database integrity checks");
 ABSL_FLAG(bool, ignore_indexing_errors, false, "Ignore indexing errors");
+ABSL_FLAG(bool, delta, false,
+          "Has no effect with --database_only (which can however be directly "
+          "pointed to the delta database filename for the same effect). Expects"
+          " --index_dir to point to an existing database. Stores a delta"
+          " database alongside it only for the translation units in"
+          "`compile_commands.json` (for incremental indexing). IMPORTANT: The "
+          "latter should contain all the translation units dependent on any "
+          "files changed since the original index was built. Source files that "
+          "get indexed are copied to --index_dir (again)");
+ABSL_FLAG(std::string, database_only, "",
+          "Do not copy source files, only build the index database at the given"
+          " location (--index_dir is not effective in that case)");
+
+static constexpr char kIndexDbName[] = "db.sqlite";
+static constexpr char kDeltaDbName[] = "delta.sqlite";
 
 int main(int argc, char** argv) {
-  using oss_fuzz::indexer::InMemoryIndex;
+  using oss_fuzz::indexer::FileCopier;
   using oss_fuzz::indexer::MergeQueue;
+  using oss_fuzz::indexer::SaveAsSqlite;
   using clang::tooling::AllTUsToolExecutor;
   using clang::tooling::CompilationDatabase;
 
@@ -62,14 +77,15 @@ int main(int argc, char** argv) {
   // When running inside a container, we cannot drop privileges.
   InitGoogleExceptChangeRootAndUser(argv[0], &argc, &argv, true);
 #else
-  InitGoogle(absl::NullSafeStringView(argv[0]), &argc, &argv, true);
+  InitGoogle(argv[0], &argc, &argv, true);
 #endif
 
   const std::string& source_dir = absl::GetFlag(FLAGS_source_dir);
   const std::string& build_dir = absl::GetFlag(FLAGS_build_dir);
   const std::string& index_dir = absl::GetFlag(FLAGS_index_dir);
+  const std::string& database_only = absl::GetFlag(FLAGS_database_only);
   const std::vector<std::string>& extra_dirs = absl::GetFlag(FLAGS_extra_dirs);
-  auto index_path = std::filesystem::path(index_dir) / "db.sqlite";
+  const bool delta = absl::GetFlag(FLAGS_delta);
 
 #ifndef NDEBUG
   LOG(ERROR) << "indexer is built without optimisations. Use 'blaze run -c opt'"
@@ -88,7 +104,25 @@ int main(int argc, char** argv) {
     clang::tooling::Filter.setValue(dry_run_regex);
   }
 
-  oss_fuzz::indexer::FileCopier file_copier(source_dir, index_dir, extra_dirs);
+  std::string index_path = database_only;
+  FileCopier::Behavior behavior = FileCopier::Behavior::kNoOp;
+  if (database_only.empty()) {
+    if (delta) {
+      index_path = std::filesystem::path(index_dir) / kDeltaDbName;
+      behavior = FileCopier::Behavior::kOverwriteExistingFiles;
+    } else {
+      index_path = std::filesystem::path(index_dir) / kIndexDbName;
+      if (std::filesystem::exists(index_path)) {
+        LOG(ERROR) << "Index database '" << index_path
+                   << "' already exists. Either specify an empty --index_dir or"
+                      "use --delta or --database_only";
+        return 1;
+      }
+      behavior = FileCopier::Behavior::kFailOnExistingFiles;
+    }
+  }
+
+  FileCopier file_copier(source_dir, index_dir, extra_dirs, behavior);
 
   std::unique_ptr<MergeQueue> merge_queue = MergeQueue::Create(
       absl::GetFlag(FLAGS_merge_queues), absl::GetFlag(FLAGS_merge_queue_size));
