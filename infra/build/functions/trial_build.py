@@ -182,10 +182,16 @@ def _gcb_build_and_run_project_tests(args):
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
+    print(f"builds submit stdout: {stdout.decode()}")
+    print(f"builds submit stderr: {stderr.decode()}")
     if process.returncode != 0:
       print(f'Error submitting build for batch {i//BATCH_SIZE}:',
             stderr.decode())
       continue
+    
+    if not stdout:
+        print(f'Error: gcloud builds submit returned empty stdout for batch {i//BATCH_SIZE}.')
+        continue
 
     build_info = json.loads(stdout)
     build_id = build_info['id']
