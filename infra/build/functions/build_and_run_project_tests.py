@@ -111,8 +111,7 @@ def get_args(args=None):
   """Parses command line arguments."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('projects',
-                      help='Projects. "all" for all projects',
-                      nargs='+')
+                      help='Projects. "all" for all projects')
   parser.add_argument(
       '--sanitizers',
       required=False,
@@ -141,6 +140,7 @@ def get_args(args=None):
                       default=None,
                       help='Version tag to use for base images.')
   parsed_args = parser.parse_args(args)
+  parsed_args.projects = parsed_args.projects.split(',')
   handle_special_projects(parsed_args)
   return parsed_args
 

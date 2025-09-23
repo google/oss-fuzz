@@ -119,7 +119,7 @@ def get_args(args=None):
 def _gcb_build_and_run_project_tests(args):
     """Submits and waits on the test phase build."""
     # Construct the args for the nested build.
-    nested_args = args.projects + [
+    nested_args = [','.join(args.projects)] + [
         '--sanitizers'] + args.sanitizers + [
         '--fuzzing-engines'] + args.fuzzing_engines + [
         '--repo', args.repo, '--branch', args.branch or 'main',
