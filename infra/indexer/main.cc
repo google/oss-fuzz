@@ -48,6 +48,8 @@ ABSL_FLAG(std::string, dry_run_regex, "",
 ABSL_FLAG(int, index_threads, 4, "Number of parallel indexing threads");
 ABSL_FLAG(int, merge_queues, 1, "Number of parallel merge queues");
 ABSL_FLAG(int, merge_queue_size, 16, "Length of merge queues");
+ABSL_FLAG(bool, enable_expensive_checks, false,
+          "Enable expensive database integrity checks");
 ABSL_FLAG(bool, ignore_indexing_errors, false, "Ignore indexing errors");
 
 int main(int argc, char** argv) {
@@ -127,6 +129,7 @@ int main(int argc, char** argv) {
   LOG(INFO) << "exporting index";
   auto flat_index = std::move(*index).Export();
 
-  bool saved = SaveAsSqlite(flat_index, index_path);
+  bool saved = SaveAsSqlite(flat_index, index_path,
+                            absl::GetFlag(FLAGS_enable_expensive_checks));
   return saved ? 0 : 1;
 }

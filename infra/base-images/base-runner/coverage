@@ -242,7 +242,7 @@ function run_go_fuzz_target {
       -seeds-dir "${FUZZ_CORPUS_DIR}" \
       -out-dir "${OUT}/testdata/fuzz/${function_name}"
 
-    pusdh $OUT
+    pushd $OUT
       timeout "$TIMEOUT" \
         "$OUT/$target" \
         -test.run="$function_name" \
