@@ -37,6 +37,9 @@ fi
 # export CXXFLAGS="$CXXFLAGS -flto=thin"
 # export LDFLAGS="-flto=thin"
 
+# Use lld to workaround <module> referenced in <section> of /tmp/lto-llvm-*.o: defined in discarded section
+export LDFLAGS="-fuse-ld=lld"
+
 export CPPFLAGS="-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG -DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE"
 
 (
