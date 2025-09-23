@@ -126,8 +126,7 @@ import time
 
 def _gcb_build_and_run_project_tests(args):
   """Submits and waits on the test phase build."""
-  # GCB has a limit of 255 steps per build, so we use that as the batch size.
-  BATCH_SIZE = 300
+  BATCH_SIZE = 500
   projects = args.projects
   batch_build_ids = []
   print('Starting parallel batch builds.')
