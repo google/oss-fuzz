@@ -26,7 +26,7 @@ steps:
   - .
 - id: 'Legacy'
   name: 'gcr.io/oss-fuzz-base/trial-build'
-  args: ['--version-tag', 'latest']
+  args: ['--version-tag', 'legacy']
   waitFor: ['Build the trial-build image']
   env:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
