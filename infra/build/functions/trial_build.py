@@ -142,6 +142,7 @@ def _gcb_build_and_run_project_tests(args):
 
     build_body = build_lib.get_build_body(steps,
                                           timeout=DEFAULT_TIMEOUT,
+                                          body_overrides={},
                                           tags=tags)
 
     yaml_file = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
