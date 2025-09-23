@@ -215,12 +215,16 @@ function run_go_fuzz_target {
   export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
 
+  # "NAME" in testdata/fuzz/NAME needs to be the function
+  # name of the fuzz test in the compiled binary. We have
+  # stored that name in $OUT/fuzzer_function_names.json.
+  # We also need this parameter for go-fuzz fuzzers, to
+  # run only the single function. Otherwise, the test may
+  # run other tests that are included in the binary
+  function_names_file="$OUT/fuzzer_function_names.json"
+  function_name=$(get_function_name "$target" "$function_names_file")
+
   if [[ "$(is_std_lib_fuzzer "${target}")" == "true" ]]; then
-    # "NAME" om testdata/fuzz/NAME needs to be the function
-    # name of the fuzz test in the compiled binary. We have
-    # stored that name in $OUT/fuzzer_function_names.json.
-    function_names_file="$OUT/fuzzer_function_names.json"
-    function_name=$(get_function_name "$target" "$function_names_file")
 
     # Create the corpus dir testdata/fuzz/NAME
     mkdir -p "${OUT}/testdata/fuzz/${function_name}"
@@ -245,7 +249,7 @@ function run_go_fuzz_target {
     pushd $OUT
       timeout "$TIMEOUT" \
         "$OUT/$target" \
-        -test.run="$function_name" \
+        -test.run="^${function_name}\$" \
         -test.coverprofile "$DUMPS_DIR/$target.profdata" \
         &> "$LOGS_DIR/$target.log"
       if (( $? != 0 )); then
@@ -264,6 +268,7 @@ function run_go_fuzz_target {
   else
     timeout "$TIMEOUT" \
       "$OUT/$target" \
+      -test.run="^${function_name}\$" \
       -test.coverprofile "$DUMPS_DIR/$target.profdata" \
       &> "$LOGS_DIR/$target.log"
     if (( $? != 0 )); then
