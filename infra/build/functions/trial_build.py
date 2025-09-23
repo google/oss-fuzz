@@ -121,7 +121,7 @@ def get_args(args=None):
   return parsed_args
 
 
-def _gcb_build_and_run_project_tests(args):
+def _gcb_build_and_run_project_tests(args, test_image_tag):
   """Submits and waits on the test phase build."""
   BATCH_SIZE = 300
   projects = args.projects
@@ -131,10 +131,7 @@ def _gcb_build_and_run_project_tests(args):
   for i in range(0, len(projects), BATCH_SIZE):
     batch = projects[i:i + BATCH_SIZE]
     steps = []
-    # Sanitize the branch name for the Docker tag.
-    branch_name_sanitized = args.branch.replace('/', '-')
-    image_tag = f'{args.version_tag}-branch-{branch_name_sanitized}'
-    base_builder_image = f'gcr.io/oss-fuzz-base/base-builder:{image_tag}'
+    base_builder_image = f'gcr.io/oss-fuzz-base/base-builder:{test_image_tag}'
     for project in batch:
       for sanitizer in args.sanitizers:
         for fuzzing_engine in args.fuzzing_engines:
@@ -274,27 +271,27 @@ def trial_build_main(args=None, local_base_build=True):
   builds."""
   args = get_args(args)
 
-  test_image_suffix = TEST_IMAGE_SUFFIX
+  test_image_tag = TEST_IMAGE_SUFFIX
   if args.branch:
-    test_image_suffix = f'{test_image_suffix}-{args.branch.lower().replace("/", "-")}'
+    test_image_tag = f'{test_image_tag}-{args.branch.lower().replace("/", "-")}'
   if args.version_tag:
-    test_image_suffix = f'{test_image_suffix}-{args.version_tag}'
+    test_image_tag = f'{test_image_tag}-{args.version_tag}'
 
   # Phase 1: Build and push images.
   if not args.skip_build_images:
     logging.info('Starting "Build and Push Images" phase...')
     if local_base_build:
-      build_and_push_test_images.build_and_push_images(test_image_suffix)
+      build_and_push_test_images.build_and_push_images(test_image_tag)
     else:
       build_and_push_test_images.gcb_build_and_push_images(
-          test_image_suffix, version_tag=args.version_tag)
+          test_image_tag, version_tag=args.version_tag)
     logging.info('"Build and Push Images" phase completed.')
   else:
     logging.info('Skipping "Build and Push Images" phase as requested.')
 
   # Phase 2: Trigger the project testing build.
   logging.info('Starting "Testing Projects" phase...')
-  result = _gcb_build_and_run_project_tests(args)
+  result = _gcb_build_and_run_project_tests(args, test_image_tag)
   logging.info('"Testing Projects" phase completed.')
   return result
 
