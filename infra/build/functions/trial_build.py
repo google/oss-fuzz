@@ -234,7 +234,7 @@ def _wait_on_builds_and_report_results(build_ids):
     try:
       gcloud_command = [
           'gcloud', 'builds', 'describe', build_id, '--project=oss-fuzz-base',
-          '--format=json'
+          '--format=json', '--region=us-central1'
       ]
       build_info_raw = subprocess.check_output(gcloud_command)
       build_info = json.loads(build_info_raw)
