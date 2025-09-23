@@ -1,11 +1,14 @@
 homepage: "https://thrift.apache.org/"
-language: c++
-primary_contact: "jensg@apache.org"
-auto_ccs :
-- "p.antoine@catenacyber.fr"
+language: swift
+primary_contact: "mhlakhani@apache.org"
+auto_ccs:
+- "jensg@apache.org"
+- "m.hasnain.lakhani@gmail.com"
 
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+  - thread
+
 main_repo: 'https://github.com/apache/thrift'
