@@ -174,7 +174,7 @@ def build_and_push_images(test_image_tag):
       for image in image_list:
         for version in BASE_IMAGE_VERSIONS:
           # Check if the specific versioned Dockerfile exists before adding.
-          if version == 'latest':
+          if version == 'legacy':
             dockerfile_path = os.path.join(IMAGES_DIR, image, 'Dockerfile')
           else:
             dockerfile_path = os.path.join(IMAGES_DIR, image,
