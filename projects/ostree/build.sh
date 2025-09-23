@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+if [[ $FUZZING_ENGINE == centipede ]]
+then
+  sed -i '1s/^/#include <stdint.h>\n/' $SRC/ostree/src/libostree/ostree-bootloader-aboot.c
+fi
+
 # Build glib with sanitizer support
 cd glib
 mkdir build
