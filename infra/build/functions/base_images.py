@@ -50,7 +50,7 @@ class ImageConfig:
 
   @property
   def full_image_name(self):
-    return TAG_PREFIX + self.name
+    return IMAGE_NAME_PREFIX + self.name
 
 
 def get_base_image_path(image_name):

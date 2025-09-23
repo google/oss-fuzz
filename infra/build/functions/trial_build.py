@@ -138,18 +138,25 @@ def _gcb_build_and_run_project_tests(args, test_image_tag):
           # Construct the args for the nested build.
           nested_args = [
               project,
-              '--sanitizer', sanitizer,
-              '--fuzzing-engine', fuzzing_engine,
-              '--architecture', 'x86_64',
+              '--sanitizer',
+              sanitizer,
+              '--fuzzing-engine',
+              fuzzing_engine,
+              '--architecture',
+              'x86_64',
           ]
 
           steps.append({
-              'name': base_builder_image,
-              'entrypoint': 'python3',
-              'args': ['infra/build/functions/run_single_project_build.py'
-                      ] + nested_args,
-              'id': f'test-{project}-{sanitizer}-{fuzzing_engine}',
-              'allowFailure': True,
+              'name':
+                  base_builder_image,
+              'entrypoint':
+                  'python3',
+              'args': ['infra/build/functions/run_single_project_build.py'] +
+                      nested_args,
+              'id':
+                  f'test-{project}-{sanitizer}-{fuzzing_engine}',
+              'allowFailure':
+                  True,
               'waitFor': ['-']
           })
 
@@ -185,7 +192,9 @@ def _gcb_build_and_run_project_tests(args, test_image_tag):
       continue
 
     if not stdout:
-      print(f'Error: gcloud builds submit returned empty stdout for batch {i//BATCH_SIZE}.')
+      print(
+          f'Error: gcloud builds submit returned empty stdout for batch {i//BATCH_SIZE}.'
+      )
       continue
 
     build_info = json.loads(stdout)
@@ -241,8 +250,7 @@ def _wait_on_builds_and_report_results(build_ids):
         if status == 'SUCCESS':
           successful_builds.append(build_name)
         else:
-          failed_builds[build_name] = (status,
-                                           build_info.get('logUrl', 'N/A'))
+          failed_builds[build_name] = (status, build_info.get('logUrl', 'N/A'))
     except (subprocess.CalledProcessError, json.JSONDecodeError) as error:
       print(f'Error analyzing build {build_id}: {error}')
 
@@ -266,16 +274,17 @@ def _wait_on_builds_and_report_results(build_ids):
   print('------------------------')
   return True
 
+
 def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
   args = get_args(args)
 
   test_image_tag = TEST_IMAGE_SUFFIX
-  if args.branch:
-    test_image_tag = f'{test_image_tag}-{args.branch.lower().replace("/", "-")}'
   if args.version_tag:
     test_image_tag = f'{test_image_tag}-{args.version_tag}'
+  if args.branch:
+    test_image_tag = f'{test_image_tag}-{args.branch.lower().replace("/", "-")}'
 
   # Phase 1: Build and push images.
   if not args.skip_build_images:
@@ -294,6 +303,7 @@ def trial_build_main(args=None, local_base_build=True):
   result = _gcb_build_and_run_project_tests(args, test_image_tag)
   logging.info('"Testing Projects" phase completed.')
   return result
+
 
 def main():
   """Builds and pushes test images of the base images. Then does test coverage

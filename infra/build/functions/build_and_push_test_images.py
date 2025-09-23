@@ -35,7 +35,7 @@ OSS_FUZZ_ROOT = os.path.dirname(INFRA_DIR)
 GCB_BUILD_TAGS = ['trial-build']
 
 # Add the new Ubuntu versions to the list of versions to build.
-BASE_IMAGE_VERSIONS = ['latest', 'ubuntu-20-04', 'ubuntu-24-04']
+BASE_IMAGE_VERSIONS = ['legacy', 'ubuntu-20-04', 'ubuntu-24-04']
 
 
 def push_image(tag):
@@ -46,11 +46,13 @@ def push_image(tag):
   logging.info('Pushed: %s', tag)
 
 
-def build_and_push_image(image, test_image_suffix, version='latest'):
+def build_and_push_image(image, test_image_tag, version='legacy'):
   """Builds and pushes |image| to docker registry with "-testing" suffix."""
-  main_tag, testing_tag = get_image_tags(image, test_image_suffix, version)
-  build_image(image, [main_tag, testing_tag], main_tag, version)
-  push_image(testing_tag)
+  main_image_name, test_image_name = get_image_tags(image, test_image_tag,
+                                                    version)
+  build_image(image, [main_image_name, test_image_name], main_image_name,
+              version)
+  push_image(test_image_name)
 
 
 def build_image(image, tags, cache_from_tag, version='latest'):
@@ -84,33 +86,34 @@ def _run_cloudbuild(build_body):
 
 
 def get_image_tags(image: str,
-                   test_image_suffix: str | None = None,
-                   version: str = 'latest'):
+                   test_image_tag: str | None = None,
+                   version: str = 'legacy'):
   """Returns tags for image build."""
-  if version == 'latest':
-    main_tag = base_images.TAG_PREFIX + image
+  if version == 'legacy':
+    main_image_name = f'{base_images.IMAGE_NAME_PREFIX}{image}'
   else:
-    main_tag = f'{base_images.TAG_PREFIX}{image}:{version}'
+    main_image_name = f'{base_images.IMAGE_NAME_PREFIX}{image}:{version}'
 
-  test_tag = None
-  if test_image_suffix:
-    test_tag = f'{main_tag}-{test_image_suffix}'
+  test_image_name = None
+  if test_image_tag:
+    test_image_name = (
+        f'{base_images.IMAGE_NAME_PREFIX}{image}:{test_image_tag}')
 
-  return main_tag, test_tag
+  return main_image_name, test_image_name
 
 
-def gcb_build_and_push_images(test_image_suffix: str, version_tag: str = None):
+def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   """Build and push test versions of base images using GCB."""
   steps = []
-  test_tags = []
+  test_image_names = []
   versions = [version_tag] if version_tag else BASE_IMAGE_VERSIONS
   for version in versions:
     for base_image in base_images.BASE_IMAGES:
-      main_tag, test_tag = get_image_tags(base_image.name, test_image_suffix,
-                                          version)
-      test_tags.append(test_tag)
+      main_image_name, test_image_name = get_image_tags(base_image.name,
+                                                        test_image_tag, version)
+      test_image_names.append(test_image_name)
 
-      if version == 'latest':
+      if version == 'legacy':
         dockerfile = os.path.join(base_image.path, 'Dockerfile')
       else:
         dockerfile = os.path.join(base_image.path, f'{version}.Dockerfile')
@@ -123,8 +126,9 @@ def gcb_build_and_push_images(test_image_suffix: str, version_tag: str = None):
 
       # The tag that the *next* Dockerfile in the sequence will look for.
       # e.g., base-clang's Dockerfile just says "FROM gcr.io/oss-fuzz-base/base-image"
-      intermediate_tag = base_images.TAG_PREFIX + base_image.name
-      tags_for_build = sorted(list(set([main_tag, test_tag, intermediate_tag])))
+      intermediate_tag = base_images.IMAGE_NAME_PREFIX + base_image.name
+      tags_for_build = sorted(
+          list(set([main_image_name, test_image_name, intermediate_tag])))
 
       step = build_lib.get_docker_build_step(
           tags_for_build,  # Pass the new list of tags.
@@ -136,12 +140,11 @@ def gcb_build_and_push_images(test_image_suffix: str, version_tag: str = None):
       steps.append(step)
 
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT,
-                                        {'images': test_tags},
-                                        GCB_BUILD_TAGS + [test_image_suffix])
-  _run_cloudbuild(build_body)
+                                        {'images': test_image_names},
+                                        GCB_BUILD_TAGS + [test_image_tag])
 
 
-def build_and_push_images(test_image_suffix):
+def build_and_push_images(test_image_tag):
   """Builds and pushes base-images."""
   images = [
       ['base-image'],
@@ -177,7 +180,7 @@ def build_and_push_images(test_image_suffix):
             dockerfile_path = os.path.join(IMAGES_DIR, image,
                                            f'{version}.Dockerfile')
           if os.path.exists(dockerfile_path):
-            args_list.append((image, test_image_suffix, version))
+            args_list.append((image, test_image_tag, version))
 
       pool.starmap(build_and_push_image, args_list)
 
@@ -185,11 +188,11 @@ def build_and_push_images(test_image_suffix):
 def main():
   """Builds base-images tags them with "-testing" suffix (in addition to normal
   tag) and pushes testing suffixed images to docker registry."""
-  test_image_suffix = sys.argv[1]
+  test_image_tag = sys.argv[1]
   logging.basicConfig(level=logging.DEBUG)
   logging.info('Doing simple gcloud command to ensure 2FA passes.')
   subprocess.run(['gcloud', 'projects', 'list', '--limit=1'], check=True)
-  build_and_push_images(test_image_suffix)
+  build_and_push_images(test_image_tag)
 
 
 if __name__ == '__main__':
