@@ -118,31 +118,36 @@ def get_args(args=None):
 
 def _gcb_build_and_run_project_tests(args):
   """Submits and waits on the test phase build."""
-  steps = []
-  for project in args.projects:
-    # Construct the args for the nested build.
-    nested_args = [project] + [
-        '--sanitizers'
-    ] + args.sanitizers + ['--fuzzing-engines'] + args.fuzzing_engines + [
-        '--repo', args.repo, '--branch', args.branch or 'main',
-        f'--version-tag={args.version_tag}'
-    ]
-    if args.force_build:
-      nested_args.append('--force-build')
+  # GCB has a limit of 255 steps per build.
+  BATCH_SIZE = 100
+  projects = args.projects
+  for i in range(0, len(projects), BATCH_SIZE):
+    batch = projects[i:i + BATCH_SIZE]
+    steps = []
+    for project in batch:
+      # Construct the args for the nested build.
+      nested_args = [project] + [
+          '--sanitizers'
+      ] + args.sanitizers + ['--fuzzing-engines'] + args.fuzzing_engines + [
+          '--repo', args.repo, '--branch', args.branch or 'main',
+          f'--version-tag={args.version_tag}'
+      ]
+      if args.force_build:
+        nested_args.append('--force-build')
 
-    steps.append({
-        'name': 'gcr.io/oss-fuzz-base/base-builder',
-        'entrypoint': 'python3',
-        'args': ['infra/build/functions/build_and_run_project_tests.py'
-                ] + nested_args,
-        'id': f'test-{project}'
-    })
+      steps.append({
+          'name': 'gcr.io/oss-fuzz-base/base-builder',
+          'entrypoint': 'python3',
+          'args': ['infra/build/functions/build_and_run_project_tests.py'
+                  ] + nested_args,
+          'id': f'test-{project}'
+      })
 
     tags = ['trial-build', 'testing-projects']
     if args.branch:
-        tags.append(f'branch-{args.branch.lower().replace("/", "-")}')
+      tags.append(f'branch-{args.branch.lower().replace("/", "-")}')
     if args.version_tag:
-        tags.append(f'version-{args.version_tag}')
+      tags.append(f'version-{args.version_tag}')
 
     build_body = build_lib.get_build_body(steps,
                                           timeout=DEFAULT_TIMEOUT,
@@ -152,7 +157,7 @@ def _gcb_build_and_run_project_tests(args):
     yaml_file = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
                              'cloudbuild-testing-projects.yaml')
     with open(yaml_file, 'w') as yaml_file_handle:
-        yaml.dump(build_body, yaml_file_handle)
+      yaml.dump(build_body, yaml_file_handle)
 
     subprocess.run([
         'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
@@ -160,8 +165,7 @@ def _gcb_build_and_run_project_tests(args):
     ],
                    cwd=build_and_push_test_images.OSS_FUZZ_ROOT,
                    check=True)
-    return True
-
+  return True
 def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
