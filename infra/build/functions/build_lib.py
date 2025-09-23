@@ -690,7 +690,7 @@ def get_build_body(  # pylint: disable=too-many-arguments
     steps,
     timeout,
     body_overrides,
-    build_tags,
+    tags,
     use_build_pool=True,
     experiment=False):
   """Helper function to create a build from |steps|."""
@@ -703,7 +703,7 @@ def get_build_body(  # pylint: disable=too-many-arguments
     if experiment:
       options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
     # TODO: refactor all of this to make this less ugly.
-    elif 'indexer' in build_tags:
+    elif 'indexer' in tags:
       options['pool'] = {'name': OSS_FUZZ_INDEXER_BUILDPOOL_NAME}
     else:
       options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
@@ -713,8 +713,8 @@ def get_build_body(  # pylint: disable=too-many-arguments
       'timeout': str(timeout) + 's',
       'options': options,
   }
-  if build_tags:
-    build_body['tags'] = build_tags
+  if tags:
+    build_body['tags'] = tags
 
   if body_overrides is None:
     body_overrides = {}
