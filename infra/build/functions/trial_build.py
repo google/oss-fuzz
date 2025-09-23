@@ -116,11 +116,19 @@ def get_args(args=None):
   return parsed_args
 
 
+import json
+import time
+
+# ... (imports existentes) ...
+
 def _gcb_build_and_run_project_tests(args):
   """Submits and waits on the test phase build."""
   # GCB has a limit of 255 steps per build.
   BATCH_SIZE = 100
   projects = args.projects
+  batch_build_ids = []
+  print('Starting parallel batch builds.')
+
   for i in range(0, len(projects), BATCH_SIZE):
     batch = projects[i:i + BATCH_SIZE]
     steps = []
@@ -140,10 +148,12 @@ def _gcb_build_and_run_project_tests(args):
           'entrypoint': 'python3',
           'args': ['infra/build/functions/build_and_run_project_tests.py'
                   ] + nested_args,
-          'id': f'test-{project}'
+          'id': f'test-{project}',
+          'allowFailure': True,
+          'waitFor': ['-']
       })
 
-    tags = ['trial-build', 'testing-projects']
+    tags = ['trial-build', 'testing-projects-batch']
     if args.branch:
       tags.append(f'branch-{args.branch.lower().replace("/", "-")}')
     if args.version_tag:
@@ -155,17 +165,103 @@ def _gcb_build_and_run_project_tests(args):
                                           tags=tags)
 
     yaml_file = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
-                             'cloudbuild-testing-projects.yaml')
+                             f'cloudbuild-testing-batch-{i//BATCH_SIZE}.yaml')
     with open(yaml_file, 'w') as yaml_file_handle:
       yaml.dump(build_body, yaml_file_handle)
 
-    subprocess.run([
+    # Submit the build asynchronously.
+    gcloud_command = [
         'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
-        f'--config={yaml_file}'
-    ],
-                   cwd=build_and_push_test_images.OSS_FUZZ_ROOT,
-                   check=True)
+        f'--config={yaml_file}', '--format=json'
+    ]
+    process = subprocess.Popen(gcloud_command,
+                               cwd=build_and_push_test_images.OSS_FUZZ_ROOT,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    if process.returncode != 0:
+      print(f'Error submitting build for batch {i//BATCH_SIZE}:',
+            stderr.decode())
+      continue
+
+    build_info = json.loads(stdout)
+    build_id = build_info['id']
+    batch_build_ids.append(build_id)
+    print(f'Successfully submitted build for batch {i//BATCH_SIZE} with '
+          f'build ID: {build_id}')
+
+  return _wait_on_builds_and_report_results(batch_build_ids)
+
+
+def _wait_on_builds_and_report_results(build_ids):
+  """Waits on a list of GCB builds, then analyzes and reports results."""
+  print('\nWaiting for all batch builds to complete...')
+  finished_builds = 0
+  while finished_builds < len(build_ids):
+    finished_builds = 0
+    for build_id in build_ids:
+      try:
+        gcloud_command = [
+            'gcloud', 'builds', 'describe', build_id, '--project=oss-fuzz-base',
+            '--format=json'
+        ]
+        build_info_raw = subprocess.check_output(gcloud_command)
+        build_info = json.loads(build_info_raw)
+        if build_info['status'] in ('SUCCESS', 'FAILURE', 'TIMEOUT',
+                                    'CANCELLED', 'EXPIRED'):
+          finished_builds += 1
+      except (subprocess.CalledProcessError, json.JSONDecodeError) as error:
+        print(f'Error checking status of build {build_id}: {error}')
+        # Consider a failed check as a finished build to avoid infinite loops.
+        finished_builds += 1
+    if finished_builds < len(build_ids):
+      print(f'  {finished_builds} / {len(build_ids)} batches complete. '
+            'Waiting 60 seconds...')
+      time.sleep(60)
+
+  print('\nAll batch builds finished. Analyzing results...')
+  successful_projects = []
+  failed_projects = {}  # project_name -> (status, log_url)
+
+  for build_id in build_ids:
+    try:
+      gcloud_command = [
+          'gcloud', 'builds', 'describe', build_id, '--project=oss-fuzz-base',
+          '--format=json'
+      ]
+      build_info_raw = subprocess.check_output(gcloud_command)
+      build_info = json.loads(build_info_raw)
+      for step in build_info.get('steps', []):
+        project_name = step['id'].replace('test-', '')
+        status = step.get('status', 'UNKNOWN')
+        if status == 'SUCCESS':
+          successful_projects.append(project_name)
+        else:
+          failed_projects[project_name] = (status,
+                                           build_info.get('logUrl', 'N/A'))
+    except (subprocess.CalledProcessError, json.JSONDecodeError) as error:
+      print(f'Error analyzing build {build_id}: {error}')
+
+  # Final Report
+  print('\n--- FINAL BUILD REPORT ---')
+  total_projects = len(successful_projects) + len(failed_projects)
+  print(f'Total projects tested: {total_projects}')
+  print(f'  - Successful: {len(successful_projects)}')
+  print(f'  - Failed: {len(failed_projects)}')
+
+  if failed_projects:
+    print('\n--- FAILED PROJECTS ---')
+    for name, (status, log_url) in failed_projects.items():
+      print(f'  - Project: {name}')
+      print(f'    Status: {status}')
+      print(f'    Logs: {log_url}')
+    print('-----------------------')
+    return False  # Indicate failure
+
+  print('\nAll projects passed successfully!')
+  print('------------------------')
   return True
+
 def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build. Pushes test images and then does test
   builds."""
