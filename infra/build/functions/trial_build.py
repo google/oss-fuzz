@@ -111,6 +111,9 @@ def get_args(args=None):
                       required=False,
                       default=None,
                       help='Version tag to use for base images.')
+  parser.add_argument('--skip-build-images',
+                      action='store_true',
+                      help='Skip the base image build phase.')
   parsed_args = parser.parse_args(args)
   handle_special_projects(parsed_args)
   return parsed_args
@@ -274,13 +277,16 @@ def trial_build_main(args=None, local_base_build=True):
     test_image_suffix = f'{test_image_suffix}-{args.version_tag}'
 
   # Phase 1: Build and push images.
-  logging.info('Starting "Build and Push Images" phase...')
-  if local_base_build:
-    build_and_push_test_images.build_and_push_images(test_image_suffix)
+  if not args.skip_build_images:
+    logging.info('Starting "Build and Push Images" phase...')
+    if local_base_build:
+      build_and_push_test_images.build_and_push_images(test_image_suffix)
+    else:
+      build_and_push_test_images.gcb_build_and_push_images(
+          test_image_suffix, version_tag=args.version_tag)
+    logging.info('"Build and Push Images" phase completed.')
   else:
-    build_and_push_test_images.gcb_build_and_push_images(
-        test_image_suffix, version_tag=args.version_tag)
-  logging.info('"Build and Push Images" phase completed.')
+    logging.info('Skipping "Build and Push Images" phase as requested.')
 
   # Phase 2: Trigger the project testing build.
   logging.info('Starting "Testing Projects" phase...')
