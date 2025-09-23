@@ -126,7 +126,7 @@ import time
 
 def _gcb_build_and_run_project_tests(args):
   """Submits and waits on the test phase build."""
-  BATCH_SIZE = 500
+  BATCH_SIZE = 300
   projects = args.projects
   batch_build_ids = []
   print('Starting parallel batch builds.')
