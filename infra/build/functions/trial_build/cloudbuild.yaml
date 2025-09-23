@@ -24,7 +24,7 @@ steps:
   - '-f'
   - infra/build/functions/trial_build/Dockerfile
   - .
-- id: 'Build latest'
+- id: 'Legacy'
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['--version-tag', 'latest']
   waitFor: ['Build the trial-build image']
@@ -34,7 +34,7 @@ steps:
     - 'REPO=${_HEAD_REPO_URL}'
     - 'TIMEOUT=25200'
   timeout: 25200s
-- id: 'Build ubuntu-20-04'
+- id: 'Ubuntu 20.04'
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['--version-tag', 'ubuntu-20-04']
   waitFor: ['Build the trial-build image']
@@ -44,7 +44,7 @@ steps:
     - 'REPO=${_HEAD_REPO_URL}'
     - 'TIMEOUT=25200'
   timeout: 25200s
-- id: 'Build ubuntu-24-04'
+- id: 'Ubuntu 24.04'
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['--version-tag', 'ubuntu-24-04']
   waitFor: ['Build the trial-build image']
