@@ -131,6 +131,10 @@ def _gcb_build_and_run_project_tests(args):
   for i in range(0, len(projects), BATCH_SIZE):
     batch = projects[i:i + BATCH_SIZE]
     steps = []
+    # Sanitize the branch name for the Docker tag.
+    branch_name_sanitized = args.branch.replace('/', '-')
+    image_tag = f'{args.version_tag}-branch-{branch_name_sanitized}'
+    base_builder_image = f'gcr.io/oss-fuzz-base/base-builder:{image_tag}'
     for project in batch:
       for sanitizer in args.sanitizers:
         for fuzzing_engine in args.fuzzing_engines:
@@ -143,7 +147,7 @@ def _gcb_build_and_run_project_tests(args):
           ]
 
           steps.append({
-              'name': 'gcr.io/oss-fuzz-base/base-builder',
+              'name': base_builder_image,
               'entrypoint': 'python3',
               'args': ['infra/build/functions/run_single_project_build.py'
                       ] + nested_args,
