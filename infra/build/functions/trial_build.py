@@ -117,22 +117,26 @@ def get_args(args=None):
 
 
 def _gcb_build_and_run_project_tests(args):
-    """Submits and waits on the test phase build."""
+  """Submits and waits on the test phase build."""
+  steps = []
+  for project in args.projects:
     # Construct the args for the nested build.
-    nested_args = [','.join(args.projects)] + [
-        '--sanitizers'] + args.sanitizers + [
-        '--fuzzing-engines'] + args.fuzzing_engines + [
+    nested_args = [project] + [
+        '--sanitizers'
+    ] + args.sanitizers + ['--fuzzing-engines'] + args.fuzzing_engines + [
         '--repo', args.repo, '--branch', args.branch or 'main',
         f'--version-tag={args.version_tag}'
     ]
     if args.force_build:
-        nested_args.append('--force-build')
+      nested_args.append('--force-build')
 
-    steps = [{
-        'name': 'gcr.io/oss-fuzz-base/base-builder', # Use a standard builder
+    steps.append({
+        'name': 'gcr.io/oss-fuzz-base/base-builder',
         'entrypoint': 'python3',
-        'args': ['infra/build/functions/build_and_run_project_tests.py'] + nested_args
-    }]
+        'args': ['infra/build/functions/build_and_run_project_tests.py'
+                ] + nested_args,
+        'id': f'test-{project}'
+    })
 
     tags = ['trial-build', 'testing-projects']
     if args.branch:
