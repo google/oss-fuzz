@@ -190,6 +190,7 @@ function free_disk_space {
       /usr/local/bin/llvm-as \
       /usr/local/bin/llvm-config \
       /usr/local/bin/llvm-cov \
+      /usr/local/bin/llvm-link \
       /usr/local/bin/llvm-objcopy \
       /usr/local/bin/llvm-nm \
       /usr/local/bin/llvm-profdata \

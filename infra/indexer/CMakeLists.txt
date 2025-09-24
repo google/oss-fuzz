@@ -15,7 +15,8 @@ set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld -lc++")
 include(FetchContent)
 FetchContent_Declare(
     absl
-    URL https://github.com/abseil/abseil-cpp/archive/d9e4955c65cd4367dd6bf46f4ccb8cd3d100540b.zip
+    URL https://github.com/abseil/abseil-cpp/archive/987c57f325f7fa8472fa84e1f885f7534d391b0d.zip
+    # https://github.com/abseil/abseil-cpp/releases/tag/20250814.0
 )
 FetchContent_MakeAvailable(absl)
 
