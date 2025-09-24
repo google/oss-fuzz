@@ -142,6 +142,7 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT,
                                         {'images': test_image_names},
                                         GCB_BUILD_TAGS + [test_image_tag])
+  _run_cloudbuild(build_body)
 
 
 def build_and_push_images(test_image_tag):
