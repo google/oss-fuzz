@@ -282,19 +282,24 @@ def get_signed_policy_document_upload_prefix(bucket, path_prefix):
   )
 
 
-# pylint: disable=no-member
 def get_signed_url(path, method='PUT', content_type=''):
-  """Returns signed url."""
-  timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = f'{method}\n\n{content_type}\n{timestamp}\n{path}'
+  """Returns a signed URL for |path|."""
+  timestamp = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+  timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+  path = urlparse(path)
+  blob_path = path.path.lstrip('/')
+  blob = f"""{method}
+
+{content_type}
+
+{timestamp}
+/{path.netloc}/{blob_path}"""
 
   client_id, signature = _sign_blob(blob)
-  values = {
-      'GoogleAccessId': client_id,
-      'Expires': timestamp,
-      'Signature': signature,
-  }
-  return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
+  return (f'https://storage.googleapis.com/{path.netloc}/{blob_path}'
+          f'?GoogleAccessId={client_id}&Expires={int(time.time() + 3600)}'
+          f'&Signature={urllib.parse.quote_plus(signature)}')
 
 
 def _normalized_name(name):

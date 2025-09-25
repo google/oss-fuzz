@@ -182,7 +182,6 @@ COPY bazel_build_fuzz_tests \
     make_build_replayable.py \
     python_coverage_helper.py \
     replay_build.sh \
-    run_single_project_build.py \
     srcmap \
     write_labels.py \
     unshallow_repos.py \

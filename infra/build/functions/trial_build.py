@@ -19,21 +19,57 @@ import argparse
 import collections
 import datetime
 import functools
+import json
 import logging
 import os
 import subprocess
 import sys
-import yaml
-import json
 import time
+import urllib.request
+import yaml
 
 import build_and_push_test_images
+import build_and_run_coverage
 import build_lib
 import build_project
 
 # Default timeout in seconds, 7 hours.
 DEFAULT_TIMEOUT = 25200
 TEST_IMAGE_SUFFIX = 'testing'
+
+BuildType = collections.namedtuple(
+    'BuildType', ['type_name', 'get_build_steps_func', 'status_filename'])
+
+BUILD_TYPES = {
+    'coverage':
+        BuildType('coverage', build_and_run_coverage.get_build_steps,
+                  'status-coverage.json'),
+    'introspector':
+        BuildType('introspector',
+                  build_and_run_coverage.get_fuzz_introspector_steps,
+                  'status-introspector.json'),
+    'fuzzing':
+        BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
+}
+
+
+def _get_production_build_statuses(build_type):
+  """Gets the statuses for |build_type| that is reported by build-status.
+  Returns a dictionary mapping projects to bools indicating whether the last
+  build of |build_type| succeeded."""
+  request = urllib.request.urlopen(
+      'https://oss-fuzz-build-logs.storage.googleapis.com/'
+      f'{build_type.status_filename}')
+  project_statuses = json.load(request)['projects']
+  results = {}
+  for project in project_statuses:
+    name = project['name']
+    history = project['history']
+    if not history:
+      continue
+    success = history[0]['success']
+    results[name] = bool(success)
+  return results
 
 
 @functools.lru_cache
@@ -57,9 +93,8 @@ def get_project_languages():
                                      'projects', project, 'project.yaml')
     if not os.path.exists(project_yaml_path):
       continue
-    with open(project_yaml_path, 'r') as project_yaml_file_handle:
-      project_yaml_contents = project_yaml_file_handle.read()
-      project_yaml = yaml.safe_load(project_yaml_contents)
+    with open(project_yaml_path, 'r', encoding='utf-8') as file_handle:
+      project_yaml = yaml.safe_load(file_handle)
     language = project_yaml.get('language', 'c++')
     project_languages[language].append(project)
   return project_languages
@@ -69,12 +104,12 @@ def handle_special_projects(args):
   """Handles "special" projects that are not actually projects such as "all" or
   "c++"."""
   all_projects = get_all_projects()
-  if 'all' in args.projects:  # Explicit opt-in for all.
+  if 'all' in args.projects:
     args.projects = all_projects
     return
   project_languages = get_project_languages()
   for project in args.projects[:]:
-    if project in project_languages.keys():
+    if project in project_languages:
       language = project
       args.projects.remove(language)
       args.projects.extend(project_languages[language])
@@ -121,89 +156,122 @@ def get_args(args=None):
   return parsed_args
 
 
+def get_projects_to_build(specified_projects, build_type, force_build):
+  """Returns the list of projects that should be built."""
+  buildable_projects = []
+  project_statuses = _get_production_build_statuses(build_type)
+  for project in specified_projects:
+    if (project not in project_statuses or not project_statuses[project] or
+        force_build):
+      buildable_projects.append(project)
+  return buildable_projects
+
+
 def _gcb_build_and_run_project_tests(args, test_image_tag):
   """Submits and waits on the test phase build."""
-  BATCH_SIZE = 300
-  projects = args.projects
-  batch_build_ids = []
-  print('Starting parallel batch builds.')
+  steps = []
+  build_types = []
+  sanitizers = list(args.sanitizers)
+  if 'coverage' in sanitizers:
+    sanitizers.remove('coverage')
+    build_types.append(BUILD_TYPES['coverage'])
+  if 'introspector' in sanitizers:
+    sanitizers.remove('introspector')
+    build_types.append(BUILD_TYPES['introspector'])
+  if sanitizers:
+    build_types.append(BUILD_TYPES['fuzzing'])
 
-  for i in range(0, len(projects), BATCH_SIZE):
-    batch = projects[i:i + BATCH_SIZE]
-    steps = []
-    base_builder_image = f'gcr.io/oss-fuzz-base/base-builder:{test_image_tag}'
-    for project in batch:
-      for sanitizer in args.sanitizers:
-        for fuzzing_engine in args.fuzzing_engines:
-          # Construct the args for the nested build.
-          nested_args = [
-              project,
-              '--sanitizer',
-              sanitizer,
-              '--fuzzing-engine',
-              fuzzing_engine,
-              '--architecture',
-              'x86_64',
-          ]
+  for build_type in build_types:
+    projects_to_build = get_projects_to_build(args.projects, build_type,
+                                              args.force_build)
+    for project_name in projects_to_build:
+      try:
+        project_yaml, dockerfile_contents = build_project.get_project_data(
+            project_name)
+      except FileNotFoundError:
+        logging.error('Couldn\'t get project data for %s.', project_name)
+        continue
 
-          steps.append({
-              'name':
-                  base_builder_image,
-              'entrypoint':
-                  'python3',
-              'args': ['infra/build/functions/run_single_project_build.py'] +
-                      nested_args,
-              'id':
-                  f'test-{project}-{sanitizer}-{fuzzing_engine}',
-              'allowFailure':
-                  True,
-              'waitFor': ['-']
-          })
+      build_project.set_yaml_defaults(project_yaml)
 
-    tags = ['trial-build', 'testing-projects-batch']
-    if args.branch:
-      tags.append(f'branch-{args.branch.lower().replace("/", "-")}')
-    if args.version_tag:
-      tags.append(f'version-{args.version_tag}')
+      # Use a deep copy to avoid modifying the original args.
+      project_args = argparse.Namespace(**vars(args))
 
-    build_body = build_lib.get_build_body(steps,
-                                          timeout=DEFAULT_TIMEOUT,
-                                          body_overrides={},
-                                          tags=tags)
+      project_yaml_sanitizers = build_project.get_sanitizer_strings(
+          project_yaml.get('sanitizers', []))
+      project_args.sanitizers = list(
+          set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
-    yaml_file = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
-                             f'cloudbuild-testing-batch-{i//BATCH_SIZE}.yaml')
-    with open(yaml_file, 'w') as yaml_file_handle:
-      yaml.dump(build_body, yaml_file_handle)
+      project_yaml_engines = project_yaml.get('fuzzing_engines', [])
+      project_args.fuzzing_engines = list(
+          set(project_yaml_engines).intersection(set(args.fuzzing_engines)))
 
-    # Submit the build asynchronously.
-    gcloud_command = [
-        'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
-        f'--config={yaml_file}', '--format=json', '--async'
-    ]
-    process = subprocess.Popen(gcloud_command,
-                               cwd=build_and_push_test_images.OSS_FUZZ_ROOT,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate()
-    if process.returncode != 0:
-      print(f'Error submitting build for batch {i//BATCH_SIZE}:',
-            stderr.decode())
-      continue
+      if not project_args.sanitizers or not project_args.fuzzing_engines:
+        continue
 
-    if not stdout:
-      print(
-          f'Error: gcloud builds submit returned empty stdout for batch {i//BATCH_SIZE}.'
-      )
-      continue
+      config = build_project.Config(testing=True,
+                                    test_image_suffix=test_image_tag,
+                                    repo=project_args.repo,
+                                    branch=project_args.branch,
+                                    parallel=False,
+                                    upload=False)
 
-    build_info = json.loads(stdout)
-    build_id = build_info['id']
-    batch_build_ids.append(build_id)
-    print(f'Successfully submitted build for batch {i//BATCH_SIZE} with '
-          f'build ID: {build_id}')
+      build_steps = build_type.get_build_steps_func(project_name, project_yaml,
+                                                    dockerfile_contents,
+                                                    config)
+      if not build_steps:
+        logging.error('No steps for %s.', project_name)
+        continue
 
-  return _wait_on_builds_and_report_results(batch_build_ids)
+      for step in build_steps:
+        step[
+            'id'] = f'{project_name}-{build_type.type_name}-{step.get("id", "")}'
+        step['allowFailure'] = True
+        step['waitFor'] = ['-']
+      steps.extend(build_steps)
+
+  if not steps:
+    logging.error('No projects to build.')
+    return True
+
+  tags = ['trial-build', 'testing-projects-batch']
+  if args.branch:
+    tags.append(f'branch-{args.branch.lower().replace("/", "-")}')
+  if args.version_tag:
+    tags.append(f'version-{args.version_tag}')
+
+  build_body = build_lib.get_build_body(steps,
+                                        timeout=DEFAULT_TIMEOUT,
+                                        body_overrides={},
+                                        tags=tags)
+
+  yaml_file = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
+                           'cloudbuild-testing-batch.yaml')
+  with open(yaml_file, 'w', encoding='utf-8') as file_handle:
+    yaml.dump(build_body, file_handle)
+
+  gcloud_command = [
+      'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
+      f'--config={yaml_file}', '--format=json', '--async'
+  ]
+  process = subprocess.Popen(gcloud_command,
+                             cwd=build_and_push_test_images.OSS_FUZZ_ROOT,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+  stdout, stderr = process.communicate()
+  if process.returncode != 0:
+    logging.error('Error submitting build: %s', stderr.decode())
+    return False
+
+  if not stdout:
+    logging.error('gcloud builds submit returned empty stdout.')
+    return False
+
+  build_info = json.loads(stdout)
+  build_id = build_info['id']
+  logging.info('Successfully submitted build with ID: %s', build_id)
+
+  return _wait_on_builds_and_report_results([build_id])
 
 
 def _wait_on_builds_and_report_results(build_ids):
@@ -225,7 +293,6 @@ def _wait_on_builds_and_report_results(build_ids):
           finished_builds += 1
       except (subprocess.CalledProcessError, json.JSONDecodeError) as error:
         print(f'Error checking status of build {build_id}: {error}')
-        # Consider a failed check as a finished build to avoid infinite loops.
         finished_builds += 1
     if finished_builds < len(build_ids):
       print(f'  {finished_builds} / {len(build_ids)} batches complete. '
@@ -234,7 +301,7 @@ def _wait_on_builds_and_report_results(build_ids):
 
   print('\nAll batch builds finished. Analyzing results...')
   successful_builds = []
-  failed_builds = {}  # build_name -> (status, log_url)
+  failed_builds = {}
 
   for build_id in build_ids:
     try:
@@ -245,7 +312,7 @@ def _wait_on_builds_and_report_results(build_ids):
       build_info_raw = subprocess.check_output(gcloud_command)
       build_info = json.loads(build_info_raw)
       for step in build_info.get('steps', []):
-        build_name = step['id'].replace('test-', '')
+        build_name = step.get('id', 'unknown-step')
         status = step.get('status', 'UNKNOWN')
         if status == 'SUCCESS':
           successful_builds.append(build_name)
@@ -254,7 +321,6 @@ def _wait_on_builds_and_report_results(build_ids):
     except (subprocess.CalledProcessError, json.JSONDecodeError) as error:
       print(f'Error analyzing build {build_id}: {error}')
 
-  # Final Report
   print('\n--- FINAL BUILD REPORT ---')
   total_builds = len(successful_builds) + len(failed_builds)
   print(f'Total builds tested: {total_builds}')
@@ -268,7 +334,7 @@ def _wait_on_builds_and_report_results(build_ids):
       print(f'    Status: {status}')
       print(f'    Logs: {log_url}')
     print('-----------------------')
-    return False  # Indicate failure
+    return False
 
   print('\nAll builds passed successfully!')
   print('------------------------')
@@ -276,8 +342,7 @@ def _wait_on_builds_and_report_results(build_ids):
 
 
 def trial_build_main(args=None, local_base_build=True):
-  """Main function for trial_build. Pushes test images and then does test
-  builds."""
+  """Main function for trial_build."""
   args = get_args(args)
 
   test_image_tag = TEST_IMAGE_SUFFIX
@@ -286,7 +351,6 @@ def trial_build_main(args=None, local_base_build=True):
   if args.branch:
     test_image_tag = f'{test_image_tag}-{args.branch.lower().replace("/", "-")}'
 
-  # Phase 1: Build and push images.
   if not args.skip_build_images:
     logging.info('Starting "Build and Push Images" phase...')
     if local_base_build:
@@ -298,7 +362,6 @@ def trial_build_main(args=None, local_base_build=True):
   else:
     logging.info('Skipping "Build and Push Images" phase as requested.')
 
-  # Phase 2: Trigger the project testing build.
   logging.info('Starting "Testing Projects" phase...')
   result = _gcb_build_and_run_project_tests(args, test_image_tag)
   logging.info('"Testing Projects" phase completed.')
@@ -306,8 +369,7 @@ def trial_build_main(args=None, local_base_build=True):
 
 
 def main():
-  """Builds and pushes test images of the base images. Then does test coverage
-  and fuzzing builds using the test images."""
+  """Builds and pushes test images, then runs project tests."""
   logging.basicConfig(level=logging.INFO)
   return 0 if trial_build_main() else 1
 

@@ -52,7 +52,7 @@ def build_and_push_image(image, test_image_tag, version='legacy'):
                                                     version)
   build_image(image, [main_image_name, test_image_name], main_image_name,
               version)
-  push_image(test_image_name)
+  # push_image(test_image_name)
 
 
 def build_image(image, tags, cache_from_tag, version='latest'):
@@ -62,7 +62,7 @@ def build_image(image, tags, cache_from_tag, version='latest'):
   for tag in tags:
     command.extend(['--tag', tag])
   path = os.path.join(IMAGES_DIR, image)
-  if version != 'latest':
+  if version != 'legacy':
     command.extend(['-f', os.path.join(path, f'{version}.Dockerfile')])
   command.extend([
       '--build-arg', 'BUILDKIT_INLINE_CACHE=1', '--cache-from', cache_from_tag
@@ -150,8 +150,8 @@ def build_and_push_images(test_image_tag):
   images = [
       ['base-image'],
       ['base-clang'],
-      # base-runner is also dependent on base-clang.
-      ['base-builder', 'base-runner'],
+      ['base-builder'],
+      ['base-runner'],
       # Exclude 'base-builder-swift' as it takes extremely long to build because
       # it clones LLVM.
       [
@@ -162,7 +162,6 @@ def build_and_push_images(test_image_tag):
           'base-builder-python',
           'base-builder-ruby',
           'base-builder-rust',
-          'base-builder-ruby',
       ],
   ]
   os.environ['DOCKER_BUILDKIT'] = '1'
