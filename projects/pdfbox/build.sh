@@ -28,7 +28,7 @@ function set_project_version_in_fuzz_targets_dependency {
   (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
 }
 
-cd project-parent
+cd $SRC/project-parent
 
 # LOCAL_DEV env variable need to be set in local development env
 if [[ -v LOCAL_DEV ]]; then
@@ -44,8 +44,9 @@ if [[ -v LOCAL_DEV ]]; then
   mvn -pl fuzz-targets install
 
 else
-  # Move seed corpus and dictionary.
+  # Move dictionaries and seed corpora.
   mv $SRC/*.dict $OUT
+  mv $SRC/*.zip $OUT
 
   set_project_version_in_fuzz_targets_dependency
 
