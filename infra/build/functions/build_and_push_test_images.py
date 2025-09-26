@@ -117,7 +117,7 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
       logging.error('Error checking build status: %s', e)
     time.sleep(15)
 
-  logs_url = build_lib.get_logs_url(build_id, cloud_project)
+  logs_url = build_lib.get_logs_url(build_id)
   logging.info('================================================================'
                )
   logging.info('            PHASE 1: BASE IMAGE BUILD REPORT')
