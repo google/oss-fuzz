@@ -95,7 +95,7 @@ def _run_cloudbuild(build_body):
 
 
 def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
-  """Waits for a GCB build to complete and reports a summary."""
+  """Waits for a GCB build to complete and reports a detailed summary."""
   credentials, _ = google.auth.default()
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -105,6 +105,7 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
   cloudbuild_api = cloudbuild.projects().builds()
 
   logging.info('Waiting for build %s to complete...', build_id)
+  build_result = None
   while True:
     try:
       build_result = cloudbuild_api.get(projectId=cloud_project,
@@ -116,24 +117,46 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
       logging.error('Error checking build status: %s', e)
     time.sleep(15)
 
-  logs_url = build_lib.get_logs_url(build_id)
+  logs_url = build_lib.get_logs_url(build_id, cloud_project)
   logging.info('================================================================'
                )
   logging.info('            PHASE 1: BASE IMAGE BUILD REPORT')
   logging.info('================================================================'
                )
-  if status == 'SUCCESS':
-    logging.info('Build finished successfully.')
-    logging.info('================================================================'
-                 )
-    return True
 
-  logging.error('Build failed.')
-  logging.error('  - Status: %s', status)
-  logging.error('  - Logs: %s', logs_url)
+  if not build_result or 'steps' not in build_result:
+    logging.error('Could not retrieve build steps. See logs for details: %s',
+                  logs_url)
+    return False
+
+  # Detailed step-by-step report
+  succeeded_steps = 0
+  failed_steps = []
+  for step in build_result['steps']:
+    step_id = step.get('id', step.get('name', 'Unnamed Step'))
+    step_status = step.get('status', 'UNKNOWN')
+    if step_status == 'SUCCESS':
+      logging.info('  - %s: %s', step_id, step_status)
+      succeeded_steps += 1
+    else:
+      logging.error('  - %s: %s', step_id, step_status)
+      failed_steps.append(step_id)
+
+  logging.info('----------------------------------------------------------------'
+               )
+  logging.info('Summary: %d succeeded, %d failed.', succeeded_steps,
+               len(failed_steps))
   logging.info('================================================================'
                )
-  return False
+
+  if failed_steps:
+    logging.error('The following images failed to build: %s',
+                  ', '.join(failed_steps))
+    logging.error('See full logs for details: %s', logs_url)
+    return False
+
+  logging.info('All base images built successfully.')
+  return True
 
 
 def get_image_tags(image: str,
@@ -155,6 +178,22 @@ def get_image_tags(image: str,
 
 def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   """Build and push test versions of base images using GCB."""
+  # Define the dependency hierarchy for base images.
+  IMAGE_DEPENDENCIES = {
+      'base-clang': 'base-image',
+      'base-clang-full': 'base-clang',
+      'base-builder': 'base-clang',
+      'base-runner': 'base-image',
+      'base-builder-go': 'base-builder',
+      'base-builder-javascript': 'base-builder',
+      'base-builder-jvm': 'base-builder',
+      'base-builder-python': 'base-builder',
+      'base-builder-ruby': 'base-builder',
+      'base-builder-rust': 'base-builder',
+      'base-builder-swift': 'base-builder',
+      'base-runner-debug': 'base-runner',
+  }
+
   steps = []
   test_image_names = []
   versions = [version_tag] if version_tag else BASE_IMAGE_VERSIONS
@@ -188,6 +227,15 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
           src_root='.',
           build_args=base_image.build_args,
           dockerfile_path=dockerfile)
+
+      # Add a unique ID to each step for dependency tracking.
+      step['id'] = f'build-{base_image.name}-{version}'
+
+      # Add 'waitFor' if the image has a dependency.
+      dependency = IMAGE_DEPENDENCIES.get(base_image.name)
+      if dependency:
+        step['waitFor'] = [f'build-{dependency}-{version}']
+
       steps.append(step)
 
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT,
