@@ -311,7 +311,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: 
                            credentials=credentials,
                            cache_discovery=False,
                            client_options=build_lib.REGIONAL_CLIENT_OPTIONS)
-  cloudbuild_api = cloudbuild.projects().builds()  # pylint: disable=no-member
+  cloudbuild_api = cloudbuild.projects().builds()  # pylylint: disable=no-member
 
   wait_builds = build_ids.copy()
   failed_builds = collections.defaultdict(list)
@@ -350,25 +350,29 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: 
 
         time.sleep(1)  # Avoid rate limiting.
 
-  logging.info(
-      '----------------------------Build summary----------------------------')
-  if successful_builds:
-    logging.info('%d successful builds:', len(successful_builds))
-    for project in sorted(successful_builds):
-      logging.info('  - %s', project)
+  # Final Report
+  logging.info('--- FINAL BUILD REPORT ---')
+  total_builds = finished_builds_count
+  logging.info('Total builds tested: %d', total_builds)
+  logging.info('  - Successful: %d', len(successful_builds))
+  logging.info('  - Failed: %d', len(failed_builds))
 
   if failed_builds:
-    logging.error('%d failed projects:', len(failed_builds))
+    logging.info('--- FAILED BUILDS ---')
     for project, failures in sorted(failed_builds.items()):
       for status, logs_url in failures:
-        logging.error('  - %s: %s - %s', project, status, logs_url)
+        logging.info('  - Build: %s', project)
+        logging.info('    Status: %s', status)
+        logging.info('    Logs: %s', logs_url)
+    logging.info('-----------------------')
     return False
 
   if not finished_builds_count:
     logging.warning('No builds were run.')
     return False
 
-  logging.info('All builds passed.')
+  logging.info('All builds passed successfully!')
+  logging.info('------------------------')
   return True
 
 
