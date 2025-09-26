@@ -183,7 +183,9 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
       'base-clang': 'base-image',
       'base-clang-full': 'base-clang',
       'base-builder': 'base-clang',
-      'base-runner': 'base-image',
+      'base-runner': [
+          'base-image', 'base-clang', 'base-builder', 'base-builder-ruby'
+      ],
       'base-builder-go': 'base-builder',
       'base-builder-javascript': 'base-builder',
       'base-builder-jvm': 'base-builder',
@@ -195,6 +197,7 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   }
 
   steps = []
+  added_step_ids = set()
   test_image_names = []
   versions = [version_tag] if version_tag else BASE_IMAGE_VERSIONS
   for version in versions:
@@ -229,20 +232,25 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
           dockerfile_path=dockerfile)
 
       # Add a unique ID to each step for dependency tracking.
-      step['id'] = f'build-{base_image.name}-{version}'
+      step_id = f'build-{base_image.name}-{version}'
+      step['id'] = step_id
 
-      # Add 'waitFor' if the image has a dependency.
-      dependency = IMAGE_DEPENDENCIES.get(base_image.name)
-      if dependency:
-        step['waitFor'] = [f'build-{dependency}-{version}']
+      # Add 'waitFor' if the image has dependencies that have been added.
+      dependencies = IMAGE_DEPENDENCIES.get(base_image.name)
+      if dependencies:
+        if not isinstance(dependencies, list):
+          dependencies = [dependencies]
+
+        wait_for_ids = []
+        for dependency in dependencies:
+          dependency_id = f'build-{dependency}-{version}'
+          if dependency_id in added_step_ids:
+            wait_for_ids.append(dependency_id)
+        if wait_for_ids:
+          step['waitFor'] = wait_for_ids
 
       steps.append(step)
-
-  build_body = build_lib.get_build_body(steps, base_images.TIMEOUT,
-                                        {'images': test_image_names},
-                                        GCB_BUILD_TAGS + [test_image_tag])
-  build_id = _run_cloudbuild(build_body)
-  return wait_for_build_and_report_summary(build_id)
+      added_step_ids.add(step_id)
 
 
 def build_and_push_images(test_image_tag):
