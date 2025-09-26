@@ -107,10 +107,8 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
   logging.info('Waiting for build %s to complete...', build_id)
   while True:
     try:
-      build_result = cloudbuild_api.get(
-          name=
-          f'projects/{cloud_project}/locations/{build_lib.CLOUD_BUILD_LOCATION}'
-          f'/builds/{build_id}').execute()
+      build_result = cloudbuild_api.get(projectId=cloud_project,
+                                          id=build_id).execute()
       status = build_result['status']
       if status in ('SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED', 'EXPIRED'):
         break
