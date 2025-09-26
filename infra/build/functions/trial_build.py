@@ -367,7 +367,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   # Final Report
   logging.info('================================================================'
                )
-  logging.info('                       FINAL BUILD REPORT')
+  logging.info('               PHASE 2: FINAL BUILD REPORT')
   logging.info('================================================================'
                )
   total_projects = (len(successful_builds) + len(failed_builds) +

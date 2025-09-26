@@ -119,12 +119,22 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
     time.sleep(15)
 
   logs_url = build_lib.get_logs_url(build_id)
+  logging.info('================================================================'
+               )
+  logging.info('            PHASE 1: BASE IMAGE BUILD REPORT')
+  logging.info('================================================================'
+               )
   if status == 'SUCCESS':
-    logging.info('Build %s finished successfully.', build_id)
+    logging.info('Build finished successfully.')
+    logging.info('================================================================'
+                 )
     return True
 
-  logging.error('Build %s failed with status: %s. Logs: %s', build_id, status,
-                logs_url)
+  logging.error('Build failed.')
+  logging.error('  - Status: %s', status)
+  logging.error('  - Logs: %s', logs_url)
+  logging.info('================================================================'
+               )
   return False
 
 
