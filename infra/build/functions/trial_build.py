@@ -225,9 +225,9 @@ def _gcb_build_and_run_project_tests(args, test_image_tag):
         logging.error('No steps for %s.', project_name)
         continue
 
-      for step in build_steps:
+      for i, step in enumerate(build_steps):
         step[
-            'id'] = f'{project_name}-{build_type.type_name}-{step.get("id", "")}'
+            'id'] = f'{project_name}-{build_type.type_name}-{i}-{step.get("id", "")}'
         step['allowFailure'] = True
         step['waitFor'] = ['-']
       steps.extend(build_steps)
