@@ -20,10 +20,14 @@ changes."""
 import logging
 import multiprocessing
 import os
+import re
 import subprocess
 import sys
+import time
 
+import google.auth
 import yaml
+from googleapiclient.discovery import build as cloud_build
 
 import base_images
 import build_lib
@@ -73,16 +77,53 @@ def build_image(image, tags, cache_from_tag, version='latest'):
 
 
 def _run_cloudbuild(build_body):
+  """Runs a cloud build and returns the build ID."""
   yaml_file = os.path.join(OSS_FUZZ_ROOT, 'cloudbuild.yaml')
   with open(yaml_file, 'w') as yaml_file_handle:
     yaml.dump(build_body, yaml_file_handle)
 
-  subprocess.run([
+  # Use --async to not wait on the build.
+  result = subprocess.run([
       'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
-      f'--config={yaml_file}'
+      f'--config={yaml_file}', '--async', '--format=value(id)'
   ],
-                 cwd=OSS_FUZZ_ROOT,
-                 check=True)
+                          cwd=OSS_FUZZ_ROOT,
+                          check=True,
+                          capture_output=True,
+                          text=True)
+  return result.stdout.strip()
+
+
+def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
+  """Waits for a GCB build to complete and reports a summary."""
+  credentials, _ = google.auth.default()
+  cloudbuild = cloud_build('cloudbuild',
+                           'v1',
+                           credentials=credentials,
+                           cache_discovery=False,
+                           client_options=build_lib.REGIONAL_CLIENT_OPTIONS)
+  cloudbuild_api = cloudbuild.projects().builds()
+
+  logging.info('Waiting for build %s to complete...', build_id)
+  while True:
+    try:
+      build_result = cloudbuild_api.get(projectId=cloud_project,
+                                        id=build_id).execute()
+      status = build_result['status']
+      if status in ('SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED', 'EXPIRED'):
+        break
+    except Exception as e:
+      logging.error('Error checking build status: %s', e)
+    time.sleep(15)
+
+  logs_url = build_lib.get_logs_url(build_id)
+  if status == 'SUCCESS':
+    logging.info('Build %s finished successfully.', build_id)
+    return True
+
+  logging.error('Build %s failed with status: %s. Logs: %s', build_id, status,
+                logs_url)
+  return False
 
 
 def get_image_tags(image: str,
@@ -142,7 +183,8 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   build_body = build_lib.get_build_body(steps, base_images.TIMEOUT,
                                         {'images': test_image_names},
                                         GCB_BUILD_TAGS + [test_image_tag])
-  _run_cloudbuild(build_body)
+  build_id = _run_cloudbuild(build_body)
+  return wait_for_build_and_report_summary(build_id)
 
 
 def build_and_push_images(test_image_tag):

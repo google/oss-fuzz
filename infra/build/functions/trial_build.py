@@ -192,8 +192,10 @@ def trial_build_main(args=None, local_base_build=True):
     if local_base_build:
       build_and_push_test_images.build_and_push_images(test_image_tag)
     else:
-      build_and_push_test_images.gcb_build_and_push_images(
-          test_image_tag, version_tag=args.version_tag)
+      if not build_and_push_test_images.gcb_build_and_push_images(
+          test_image_tag, version_tag=args.version_tag):
+        logging.error('Failed to build and push images.')
+        return False
     logging.info('"Build and Push Images" phase completed.')
   else:
     logging.info('Skipping "Build and Push Images" phase as requested.')
@@ -288,22 +290,18 @@ def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
   return build_result['status']
 
 
-def check_finished(build_id, project, cloudbuild_api, cloud_project,
-                   build_results):
-  """Checks that the |build_type| build is complete. Updates |project_status| if
-  complete."""
-
+def check_finished(build_id, cloudbuild_api, cloud_project):
+  """Checks that the build is complete. Returns status if complete, else None"""
   try:
     build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
                                              build_id)
   except HttpError:
     logging.debug('build: HttpError when getting build status from gcb')
-    return False
+    return None
   if build_status not in FINISHED_BUILD_STATUSES:
     logging.debug('build: %d not finished.', build_id)
-    return False
-  build_results[project] = build_status
-  return True
+    return None
+  return build_status
 
 
 def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: disable=too-many-locals
@@ -316,43 +314,35 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: 
   cloudbuild_api = cloudbuild.projects().builds()  # pylint: disable=no-member
 
   wait_builds = build_ids.copy()
-  build_results = {}
-  failed_builds = {}
-  builds_count = len(wait_builds)
-  next_check_time = datetime.datetime.now() + datetime.timedelta(hours=1)
+  failed_builds = collections.defaultdict(list)
+  successful_builds = collections.defaultdict(list)
+  builds_count = sum(len(ids) for ids in build_ids.values())
+  finished_builds_count = 0
+
+  logging.info('Waiting for %d project builds to complete...', builds_count)
+
   timeout_warning_time = end_time - datetime.timedelta(
       minutes=BUILD_TIMEOUT_WARNING_MINUTES)
   notified_timeout = False
-  logging.info(
-      '----------------------------Build result----------------------------')
-  logging.info(f'Trial build end time: {end_time}')
-  logging.info('Failed project, Statuses, Logs')
+
   while wait_builds:
     current_time = datetime.datetime.now()
-    # Update status every hour.
-    if current_time >= next_check_time:
-      logging.info(f'[{current_time}] Remaining builds: '
-                   f'{len(wait_builds)}, {wait_builds}')
-      next_check_time += datetime.timedelta(hours=1)
-
-    # Warn users and write a summary if build is about to end.
     if not notified_timeout and current_time >= timeout_warning_time:
       notified_timeout = True
-      logging.info(
-          f'[{current_time}] Warning: trial build may time out in '
-          f'{BUILD_TIMEOUT_WARNING_MINUTES} minutes.\n'
-          f'Remaining builds: {len(wait_builds)}/{builds_count}, {wait_builds}.'
-          f'\nFailed builds: {len(failed_builds)}/{builds_count}, '
-          f'{failed_builds}')
+      logging.warning(
+          'Nearing timeout: %d minutes remaining. Remaining builds: %d',
+          BUILD_TIMEOUT_WARNING_MINUTES, len(wait_builds))
 
     for project, project_build_ids in list(wait_builds.items()):
       for build_id in project_build_ids[:]:
-        if check_finished(build_id, project, cloudbuild_api, cloud_project,
-                          build_results):
-          if build_results[project] != 'SUCCESS':
+        status = check_finished(build_id, cloudbuild_api, cloud_project)
+        if status:
+          finished_builds_count += 1
+          if status == 'SUCCESS':
+            successful_builds[project].append(build_id)
+          else:
             logs_url = build_lib.get_logs_url(build_id)
-            failed_builds[project] = logs_url
-            logging.info(f'{project}, {build_results[project]}, {logs_url}')
+            failed_builds[project].append((status, logs_url))
 
           wait_builds[project].remove(build_id)
           if not wait_builds[project]:
@@ -360,14 +350,25 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: 
 
         time.sleep(1)  # Avoid rate limiting.
 
-  # Return failure if any build fails or nothing is built.
-  if failed_builds or not build_results:
-    logging.info(
-        'Summary: trial build failed\n'
-        f'Failed builds: {len(failed_builds)}/{builds_count}, {failed_builds}')
+  logging.info(
+      '----------------------------Build summary----------------------------')
+  if successful_builds:
+    logging.info('%d successful builds:', len(successful_builds))
+    for project in sorted(successful_builds):
+      logging.info('  - %s', project)
+
+  if failed_builds:
+    logging.error('%d failed projects:', len(failed_builds))
+    for project, failures in sorted(failed_builds.items()):
+      for status, logs_url in failures:
+        logging.error('  - %s: %s - %s', project, status, logs_url)
     return False
 
-  logging.info(f'Summary: trial build passed.')
+  if not finished_builds_count:
+    logging.warning('No builds were run.')
+    return False
+
+  logging.info('All builds passed.')
   return True
 
 
