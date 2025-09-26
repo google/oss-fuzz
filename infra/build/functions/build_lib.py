@@ -461,7 +461,7 @@ def get_pull_test_images_steps(test_image_suffix):
   ]
   steps = []
   for image in images:
-    test_image = image + ':' + test_image_suffix
+    test_image = image + '-' + test_image_suffix
     steps.append({
         'name': DOCKER_TOOL_IMAGE,
         'args': [
@@ -687,7 +687,7 @@ def get_runner_image_name(test_image_suffix):
   |test_image_suffix|."""
   image = f'gcr.io/{BASE_IMAGES_PROJECT}/base-runner'
   if test_image_suffix:
-    image += ':' + test_image_suffix
+    image += '-' + test_image_suffix
   return image
 
 

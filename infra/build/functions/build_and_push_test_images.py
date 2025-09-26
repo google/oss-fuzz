@@ -97,7 +97,7 @@ def get_image_tags(image: str,
   test_image_name = None
   if test_image_tag:
     test_image_name = (
-        f'{base_images.IMAGE_NAME_PREFIX}{image}:{test_image_tag}')
+        f'{base_images.IMAGE_NAME_PREFIX}{image}-{test_image_tag}')
 
   return main_image_name, test_image_name
 
