@@ -365,26 +365,32 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
         time.sleep(1)  # Avoid rate limiting.
 
   # Final Report
-  logging.info('--- FINAL BUILD REPORT ---')
+  logging.info('================================================================'
+               )
+  logging.info('                       FINAL BUILD REPORT')
+  logging.info('================================================================'
+               )
   total_projects = (len(successful_builds) + len(failed_builds) +
                     len(skipped_projects))
-  logging.info('Total projects: %d', total_projects)
-  logging.info('  - Successful: %d', len(successful_builds))
-  logging.info('  - Failed: %d', len(failed_builds))
-  logging.info('  - Skipped: %d', len(skipped_projects))
+  logging.info('Total projects considered: %d', total_projects)
+  logging.info('  - Successful builds: %d', len(successful_builds))
+  logging.info('  - Failed builds: %d', len(failed_builds))
+  logging.info('  - Skipped projects: %d', len(skipped_projects))
+  logging.info('================================================================'
+               )
 
   if skipped_projects:
-    logging.info('--- SKIPPED BUILDS ---')
+    logging.info('\n--- SKIPPED PROJECTS ---')
     for project, reason in sorted(skipped_projects):
       logging.info('  - %s: %s', project, reason)
 
   if failed_builds:
-    logging.info('--- FAILED BUILDS ---')
+    logging.error('\n--- FAILED BUILDS ---')
     for project, failures in sorted(failed_builds.items()):
+      logging.error('  - Project: %s', project)
       for status, logs_url in failures:
-        logging.info('  - Build: %s', project)
-        logging.info('    Status: %s', status)
-        logging.info('    Logs: %s', logs_url)
+        logging.error('    - Status: %s', status)
+        logging.error('    - Logs: %s', logs_url)
     logging.info('-----------------------')
     return False
 
@@ -392,7 +398,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
     logging.warning('No builds were run.')
     return False
 
-  logging.info('All builds passed successfully!')
+  logging.info('\nAll builds passed successfully!')
   logging.info('------------------------')
   return True
 
