@@ -207,8 +207,6 @@ def trial_build_main(args=None, local_base_build=True):
 
 def _do_test_builds(args, test_image_suffix, end_time):
   """Does test coverage and fuzzing builds."""
-  logging.info(
-      '---------------------------Trial build logs---------------------------')
   build_types = []
   sanitizers = list(args.sanitizers)
   if 'coverage' in sanitizers:
@@ -219,7 +217,15 @@ def _do_test_builds(args, test_image_suffix, end_time):
     build_types.append(BUILD_TYPES['introspector'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
+
   build_ids = collections.defaultdict(list)
+  skipped_projects = []
+  projects_to_build_count = 0
+  credentials = oauth2client.client.GoogleCredentials.get_application_default()
+
+  logging.info('--- Starting test builds for %d projects ---',
+               len(args.projects))
+
   for build_type in build_types:
     projects = get_projects_to_build(list(args.projects), build_type,
                                      args.force_build)
@@ -229,24 +235,29 @@ def _do_test_builds(args, test_image_suffix, end_time):
                                   branch=args.branch,
                                   parallel=False,
                                   upload=False)
-    credentials = (
-        oauth2client.client.GoogleCredentials.get_application_default())
-    project_builds = _do_build_type_builds(args, config, credentials,
-                                           build_type, projects)
+    project_builds, new_skipped = _do_build_type_builds(
+        args, config, credentials, build_type, projects)
+    skipped_projects.extend(new_skipped)
     for project, project_build_id in project_builds.items():
       build_ids[project].append(project_build_id)
-  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT, end_time)
+      projects_to_build_count += 1
+
+  logging.info('Started builds for %d projects.', projects_to_build_count)
+
+  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
+                        end_time, skipped_projects)
 
 
 def _do_build_type_builds(args, config, credentials, build_type, projects):
   """Does |build_type| test builds of |projects|."""
   build_ids = {}
+  skipped_projects = []
   for project_name in projects:
     try:
       project_yaml, dockerfile_contents = (
           build_project.get_project_data(project_name))
     except FileNotFoundError:
-      logging.error('Couldn\'t get project data. Skipping %s.', project_name)
+      skipped_projects.append((project_name, 'Missing Dockerfile'))
       continue
 
     build_project.set_yaml_defaults(project_yaml)
@@ -260,12 +271,14 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
             set(args.fuzzing_engines)))
 
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
+      skipped_projects.append(
+          (project_name, 'No compatible sanitizers or engines'))
       continue
 
     steps = build_type.get_build_steps_func(project_name, project_yaml,
                                             dockerfile_contents, config)
     if not steps:
-      logging.error('No steps. Skipping %s.', project_name)
+      skipped_projects.append((project_name, 'No build steps generated'))
       continue
 
     try:
@@ -280,7 +293,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       # Handle flake.
       print('Failed to start build', project_name, error)
 
-  return build_ids
+  return build_ids, skipped_projects
 
 
 def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
@@ -304,7 +317,8 @@ def check_finished(build_id, cloudbuild_api, cloud_project):
   return build_status
 
 
-def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: disable=too-many-locals
+def wait_on_builds(build_ids, credentials, cloud_project, end_time,
+                   skipped_projects):  # pylint: disable=too-many-locals
   """Waits on |builds|. Returns True if all builds succeed."""
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -352,10 +366,17 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: 
 
   # Final Report
   logging.info('--- FINAL BUILD REPORT ---')
-  total_builds = finished_builds_count
-  logging.info('Total builds tested: %d', total_builds)
+  total_projects = (len(successful_builds) + len(failed_builds) +
+                    len(skipped_projects))
+  logging.info('Total projects: %d', total_projects)
   logging.info('  - Successful: %d', len(successful_builds))
   logging.info('  - Failed: %d', len(failed_builds))
+  logging.info('  - Skipped: %d', len(skipped_projects))
+
+  if skipped_projects:
+    logging.info('--- SKIPPED BUILDS ---')
+    for project, reason in sorted(skipped_projects):
+      logging.info('  - %s: %s', project, reason)
 
   if failed_builds:
     logging.info('--- FAILED BUILDS ---')
@@ -367,7 +388,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time):  # pylint: 
     logging.info('-----------------------')
     return False
 
-  if not finished_builds_count:
+  if not finished_builds_count and not skipped_projects:
     logging.warning('No builds were run.')
     return False
 
