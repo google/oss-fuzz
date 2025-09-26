@@ -15,9 +15,27 @@
 ################################################################################
 """Tool for testing changes to base-images in OSS-Fuzz. This script builds test
 versions of all base images and the builds projects using those test images."""
+import argparse
+import collections
+import datetime
+import functools
+import json
+import logging
+import os
+import subprocess
+import sys
+import time
+import urllib.request
+import yaml
+
 import oauth2client.client
 from googleapiclient.discovery import build as cloud_build
 from googleapiclient.errors import HttpError
+
+import build_and_push_test_images
+import build_and_run_coverage
+import build_lib
+import build_project
 
 
 # Default timeout in seconds, 7 hours.
