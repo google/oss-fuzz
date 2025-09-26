@@ -33,9 +33,11 @@ import build_and_run_coverage
 import build_lib
 import build_project
 
+
 # Default timeout in seconds, 7 hours.
 DEFAULT_TIMEOUT = 25200
 TEST_IMAGE_SUFFIX = 'testing'
+MAX_BUILD_STEPS = 300
 
 BuildType = collections.namedtuple(
     'BuildType', ['type_name', 'get_build_steps_func', 'status_filename'])
@@ -234,44 +236,48 @@ def _gcb_build_and_run_project_tests(args, test_image_tag):
     logging.error('No projects to build.')
     return True
 
-  tags = ['trial-build', 'testing-projects-batch']
-  if args.branch:
-    tags.append(f'branch-{args.branch.lower().replace("/", "-")}')
-  if args.version_tag:
-    tags.append(f'version-{args.version_tag}')
+  batch_build_ids = []
+  for i in range(0, len(steps), MAX_BUILD_STEPS):
+    batch_steps = steps[i:i + MAX_BUILD_STEPS]
+    tags = ['trial-build', 'testing-projects-batch']
+    if args.branch:
+      tags.append(f'branch-{args.branch.lower().replace("/", "-")}')
+    if args.version_tag:
+      tags.append(f'version-{args.version_tag}')
 
-  build_body = build_lib.get_build_body(steps,
-                                        timeout=DEFAULT_TIMEOUT,
-                                        body_overrides={},
-                                        tags=tags)
+    build_body = build_lib.get_build_body(batch_steps,
+                                          timeout=DEFAULT_TIMEOUT,
+                                          body_overrides={},
+                                          tags=tags)
 
-  yaml_file = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
-                           'cloudbuild-testing-batch.yaml')
-  with open(yaml_file, 'w', encoding='utf-8') as file_handle:
-    yaml.dump(build_body, file_handle)
+    yaml_file = os.path.join(build_and_push_test_images.OSS_FUZZ_ROOT,
+                             'cloudbuild-testing-batch.yaml')
+    with open(yaml_file, 'w', encoding='utf-8') as file_handle:
+      yaml.dump(build_body, file_handle)
 
-  gcloud_command = [
-      'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
-      f'--config={yaml_file}', '--format=json', '--async'
-  ]
-  process = subprocess.Popen(gcloud_command,
-                             cwd=build_and_push_test_images.OSS_FUZZ_ROOT,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-  stdout, stderr = process.communicate()
-  if process.returncode != 0:
-    logging.error('Error submitting build: %s', stderr.decode())
-    return False
+    gcloud_command = [
+        'gcloud', 'builds', 'submit', '--project=oss-fuzz-base',
+        f'--config={yaml_file}', '--format=json', '--async'
+    ]
+    process = subprocess.Popen(gcloud_command,
+                               cwd=build_and_push_test_images.OSS_FUZZ_ROOT,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    if process.returncode != 0:
+      logging.error('Error submitting build: %s', stderr.decode())
+      return False
 
-  if not stdout:
-    logging.error('gcloud builds submit returned empty stdout.')
-    return False
+    if not stdout:
+      logging.error('gcloud builds submit returned empty stdout.')
+      return False
 
-  build_info = json.loads(stdout)
-  build_id = build_info['id']
-  logging.info('Successfully submitted build with ID: %s', build_id)
+    build_info = json.loads(stdout)
+    build_id = build_info['id']
+    logging.info('Successfully submitted build with ID: %s', build_id)
+    batch_build_ids.append(build_id)
 
-  return _wait_on_builds_and_report_results([build_id])
+  return _wait_on_builds_and_report_results(batch_build_ids)
 
 
 def _wait_on_builds_and_report_results(build_ids):
