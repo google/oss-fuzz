@@ -355,7 +355,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
           if status == 'SUCCESS':
             successful_builds[project].append(build_id)
           else:
-            logs_url = build_lib.get_logs_url(build_id)
+            logs_url = build_lib.get_gcb_url(build_id, cloud_project)
             failed_builds[project].append((status, logs_url))
 
           wait_builds[project].remove(build_id)
