@@ -106,13 +106,22 @@
       "gcr.io/oss-fuzz-base/base-builder-python"
     ]
   },
-  {"args": ["pull", "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch"],
-   "name": "gcr.io/cloud-builders/docker",
-   "waitFor": "-"},
-  {"args": ["tag",
-            "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch",
-            "gcr.io/oss-fuzz-base/base-builder-ruby"],
-   "name": "gcr.io/cloud-builders/docker"},
+  {
+    "args": [
+      "pull",
+      "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch"
+    ],
+    "name": "gcr.io/cloud-builders/docker",
+    "waitFor": "-"
+  },
+  {
+    "args": [
+      "tag",
+      "gcr.io/oss-fuzz-base/base-builder-ruby-testing-mybranch",
+      "gcr.io/oss-fuzz-base/base-builder-ruby"
+    ],
+    "name": "gcr.io/cloud-builders/docker"
+  },
   {
     "name": "gcr.io/cloud-builders/docker",
     "args": [
@@ -169,9 +178,8 @@
       "gcr.io/oss-fuzz/skcms",
       "--tag",
       "us-central1-docker.pkg.dev/oss-fuzz/unsafe/skcms",
-      "."
+      "oss-fuzz/projects/skcms"
     ],
-    "dir": "oss-fuzz/projects/skcms",
     "id": "build-UNIQUE_ID"
   },
   {

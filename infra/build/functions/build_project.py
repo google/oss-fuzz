@@ -756,7 +756,8 @@ def run_build(oss_fuzz_project,
               build_type,
               cloud_project='oss-fuzz',
               extra_tags=None,
-              experiment=False):
+              experiment=False,
+              verbose=True):
   """Run the build for given steps on cloud build. |build_steps| are the steps
   to run. |credentials| are are used to authenticate to GCB and build in
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
@@ -771,14 +772,19 @@ def run_build(oss_fuzz_project,
       'logsBucket': bucket,
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
-  return build_lib.run_build(oss_fuzz_project,
-                             build_steps,
-                             credentials,
-                             cloud_project,
-                             timeout,
-                             body_overrides=body_overrides,
-                             tags=tags,
-                             experiment=experiment)
+  build_id = build_lib.run_build(oss_fuzz_project,
+                                 build_steps,
+                                 credentials,
+                                 cloud_project,
+                                 timeout,
+                                 body_overrides=body_overrides,
+                                 tags=tags,
+                                 experiment=experiment)
+
+  if verbose:
+    logging.info(f'{oss_fuzz_project}. logs: {build_lib.get_logs_url(build_id)}. '
+                 f'GCB page: {build_lib.get_gcb_url(build_id, cloud_project)}')
+  return build_id
 
 
 def parse_args(description, args):
