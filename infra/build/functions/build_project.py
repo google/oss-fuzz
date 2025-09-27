@@ -539,7 +539,7 @@ def _create_indexed_build_steps(project,
     raise ValueError(f'Unknown build_type: {build_type}')
 
   if indexer_targets:
-    build_script_command += ' ' + ','.join(indexer_targets)
+    build_script_command += ' -t ' + ','.join(indexer_targets)
 
   command_sequence = [
       'cd /src',
