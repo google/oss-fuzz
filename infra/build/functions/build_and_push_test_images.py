@@ -180,20 +180,20 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   """Build and push test versions of base images using GCB."""
   # Define the dependency hierarchy for base images.
   IMAGE_DEPENDENCIES = {
-      'base-clang': 'base-image',
-      'base-clang-full': 'base-clang',
-      'base-builder': 'base-clang',
+      'base-clang': ['base-image'],
+      'base-clang-full': ['base-clang'],
+      'base-builder': ['base-clang'],
       'base-runner': [
           'base-image', 'base-clang', 'base-builder', 'base-builder-ruby'
       ],
-      'base-builder-go': 'base-builder',
-      'base-builder-javascript': 'base-builder',
-      'base-builder-jvm': 'base-builder',
-      'base-builder-python': 'base-builder',
-      'base-builder-ruby': 'base-builder',
-      'base-builder-rust': 'base-builder',
-      'base-builder-swift': 'base-builder',
-      'base-runner-debug': 'base-runner',
+      'base-builder-go': ['base-builder'],
+      'base-builder-javascript': ['base-builder'],
+      'base-builder-jvm': ['base-builder'],
+      'base-builder-python': ['base-builder'],
+      'base-builder-ruby': ['base-builder'],
+      'base-builder-rust': ['base-builder'],
+      'base-builder-swift': ['base-builder'],
+      'base-runner-debug': ['base-runner'],
   }
 
   steps = []
@@ -217,40 +217,50 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
                      dockerfile, version)
         continue
 
-      # The tag that the *next* Dockerfile in the sequence will look for.
-      # e.g., base-clang's Dockerfile just says "FROM gcr.io/oss-fuzz-base/base-image"
       intermediate_tag = base_images.IMAGE_NAME_PREFIX + base_image.name
       tags_for_build = sorted(
           list(set([main_image_name, test_image_name, intermediate_tag])))
 
+      # Get dependency tags for caching.
+      dependencies = IMAGE_DEPENDENCIES.get(base_image.name, [])
+      if not isinstance(dependencies, list):
+        dependencies = [dependencies]
+      
+      cache_tags = []
+      for dep_name in dependencies:
+        dep_main_tag, _ = get_image_tags(dep_name, None, version)
+        cache_tags.append(dep_main_tag)
+
       step = build_lib.get_docker_build_step(
-          tags_for_build,  # Pass the new list of tags.
-          base_image.path,  # Pass the directory as context.
+          tags_for_build,
+          base_image.path,
           use_buildkit_cache=True,
           src_root='.',
           build_args=base_image.build_args,
-          dockerfile_path=dockerfile)
+          dockerfile_path=dockerfile,
+          additional_cache_from_tags=cache_tags)
 
       # Add a unique ID to each step for dependency tracking.
       step_id = f'build-{base_image.name}-{version}'
       step['id'] = step_id
 
       # Add 'waitFor' if the image has dependencies that have been added.
-      dependencies = IMAGE_DEPENDENCIES.get(base_image.name)
-      if dependencies:
-        if not isinstance(dependencies, list):
-          dependencies = [dependencies]
-
-        wait_for_ids = []
-        for dependency in dependencies:
-          dependency_id = f'build-{dependency}-{version}'
-          if dependency_id in added_step_ids:
-            wait_for_ids.append(dependency_id)
-        if wait_for_ids:
-          step['waitFor'] = wait_for_ids
+      wait_for_ids = []
+      for dependency in dependencies:
+        dependency_id = f'build-{dependency}-{version}'
+        if dependency_id in added_step_ids:
+          wait_for_ids.append(dependency_id)
+      if wait_for_ids:
+        step['waitFor'] = wait_for_ids
 
       steps.append(step)
       added_step_ids.add(step_id)
+
+  build_body = build_lib.get_build_body(steps, base_images.TIMEOUT,
+                                        {'images': test_image_names},
+                                        GCB_BUILD_TAGS + [test_image_tag])
+  build_id = _run_cloudbuild(build_body)
+  return wait_for_build_and_report_summary(build_id)
 
 
 def build_and_push_images(test_image_tag):

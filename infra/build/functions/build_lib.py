@@ -522,7 +522,8 @@ def get_docker_build_step(image_names,
                           architecture='x86_64',
                           cache_image='',
                           build_args: Sequence[str] | None = None,
-                          dockerfile_path: str | None = None):
+                          dockerfile_path: str | None = None,
+                          additional_cache_from_tags: list | None = None):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -563,7 +564,12 @@ def get_docker_build_step(image_names,
     env = ['DOCKER_BUILDKIT=1']
     step['env'] = env
     args.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1'])
-    for image in image_names:
+    
+    all_cache_tags = set(image_names)
+    if additional_cache_from_tags:
+      all_cache_tags.update(additional_cache_from_tags)
+
+    for image in sorted(list(all_cache_tags)):
       args.extend(['--cache-from', image])
 
   args.append(directory)
