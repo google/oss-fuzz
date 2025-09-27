@@ -121,6 +121,10 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
   logging.info('================================================================'
                )
   logging.info('            PHASE 1: BASE IMAGE BUILD REPORT')
+  logging.info('----------------------------------------------------------------'
+               )
+  logging.info('GCB Build ID: %s', build_id)
+  logging.info('GCB Build URL: %s', logs_url)
   logging.info('================================================================'
                )
 

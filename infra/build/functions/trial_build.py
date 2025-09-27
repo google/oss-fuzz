@@ -387,10 +387,12 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   if failed_builds:
     logging.error('\n--- FAILED BUILDS ---')
     for project, failures in sorted(failed_builds.items()):
-      logging.error('  - Project: %s', project)
-      for status, logs_url in failures:
+      logging.error('  - %s:', project)
+      for status, gcb_url in failures:
+        build_id = gcb_url.split('/')[-1].split('?')[0]
+        logging.error('    - Build ID: %s', build_id)
         logging.error('    - Status: %s', status)
-        logging.error('    - Logs: %s', logs_url)
+        logging.error('    - GCB URL: %s', gcb_url)
     logging.info('-----------------------')
     return False
 
