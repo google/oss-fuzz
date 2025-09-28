@@ -226,6 +226,7 @@ RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
     rm -rf /tmp/patchelf && apt-get remove -y autoconf
 
 COPY indexer /opt/indexer
+COPY indexer_override/* /opt/indexer/
 COPY --from=gcr.io/oss-fuzz-base/indexer /indexer/build/indexer /opt/indexer/indexer
 RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 
