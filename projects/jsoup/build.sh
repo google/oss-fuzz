@@ -24,7 +24,10 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
  -Dexpression=project.version -q -DforceStdout)
 cp "target/jsoup-$CURRENT_VERSION.jar" $OUT/jsoup.jar
 
-ALL_JARS="jsoup.jar"
+# re2j into classpath
+cp "$SRC/re2j.jar" $OUT/re2j.jar
+
+ALL_JARS="jsoup.jar re2j.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
