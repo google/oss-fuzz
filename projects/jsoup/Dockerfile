@@ -38,5 +38,8 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
 
 RUN git clone --depth 1 https://github.com/jhy/jsoup/
 
+# re2j is an optional/test dependency, but we want it available on the fuzzed classpath
+RUN curl -L https://github.com/google/re2j/releases/download/re2j-1.8/re2j-1.8.jar -o $SRC/re2j.jar
+
 COPY build.sh *.java *.options $SRC/
 WORKDIR $SRC/jsoup
