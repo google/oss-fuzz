@@ -15,12 +15,6 @@
 #
 ################################################################################
 
-cd $SRC/imath
-mkdir build
-cd build
-cmake -D BUILD_SHARED_LIBS=OFF ../
-make -j$(nproc) && make install
-
 # build alembic
 mkdir -p $WORK/build_alembic
 cd $WORK/build_alembic
