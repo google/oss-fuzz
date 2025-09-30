@@ -99,11 +99,13 @@ class ClangWrapperTest(unittest.TestCase):
 
     for cdb_fragment_path, cdb_fragment in old_cdb_fragments.items():
       (merged_cdb_path / cdb_fragment_path).write_text(
-          json.dumps(cdb_fragment) + ","
+          json.dumps(cdb_fragment) + ",\n"
       )
 
     for cdb_fragment_path, cdb_fragment in new_cdb_fragments.items():
-      (cdb_path / cdb_fragment_path).write_text(json.dumps(cdb_fragment) + ",")
+      (cdb_path / cdb_fragment_path).write_text(
+          json.dumps(cdb_fragment) + ",\n"
+      )
 
     (cdb_path / "not_a_json").write_text("not a json")
 
