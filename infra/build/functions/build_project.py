@@ -748,7 +748,8 @@ def run_build(oss_fuzz_project,
               build_type,
               cloud_project='oss-fuzz',
               extra_tags=None,
-              experiment=False):
+              experiment=False,
+              timeout=None):
   """Run the build for given steps on cloud build. |build_steps| are the steps
   to run. |credentials| are are used to authenticate to GCB and build in
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
@@ -757,7 +758,8 @@ def run_build(oss_fuzz_project,
     extra_tags = []
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
   tags.extend(extra_tags)
-  timeout = build_lib.BUILD_TIMEOUT
+  if timeout is None:
+    timeout = build_lib.BUILD_TIMEOUT
   bucket = GCB_LOGS_BUCKET if not experiment else GCB_EXPERIMENT_LOGS_BUCKET
   body_overrides = {
       'logsBucket': bucket,

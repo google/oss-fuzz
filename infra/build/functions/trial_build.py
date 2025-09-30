@@ -37,8 +37,12 @@ import build_and_run_coverage
 import build_lib
 import build_project
 
-# Default timeout in seconds, 7 hours.
-DEFAULT_TIMEOUT = 25200
+# Default timeout for the entire script in seconds, 7 hours.
+SCRIPT_DEFAULT_TIMEOUT = 25200
+
+# Default timeout for a single project build in seconds, 4 hours.
+PROJECT_BUILD_TIMEOUT = 14400
+
 TEST_IMAGE_SUFFIX = 'testing'
 
 # Warning time in minutes before build times out.
@@ -204,7 +208,7 @@ def trial_build_main(args=None, local_base_build=True):
         '================================================================')
     logging.info('Skipping "Build and Push Images" phase as requested.')
 
-  timeout = int(os.environ.get('TIMEOUT', DEFAULT_TIMEOUT))
+  timeout = int(os.environ.get('TIMEOUT', SCRIPT_DEFAULT_TIMEOUT))
   end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
   return _do_test_builds(args, test_image_tag, end_time)
 
@@ -224,6 +228,7 @@ def _do_test_builds(args, test_image_suffix, end_time):
 
   build_ids = collections.defaultdict(list)
   skipped_projects = []
+  failed_to_start_builds = []
   projects_to_build_count = 0
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
 
@@ -253,10 +258,10 @@ def _do_test_builds(args, test_image_suffix, end_time):
                                   parallel=False,
                                   upload=False,
                                   build_type=build_type.type_name)
-    project_builds, new_skipped = _do_build_type_builds(args, config,
-                                                        credentials, build_type,
-                                                        projects)
+    project_builds, new_skipped, new_failed_to_start = _do_build_type_builds(
+        args, config, credentials, build_type, projects)
     skipped_projects.extend(new_skipped)
+    failed_to_start_builds.extend(new_failed_to_start)
     for project, project_build_id in project_builds.items():
       build_ids[project].append(project_build_id)
       projects_to_build_count += 1
@@ -290,14 +295,28 @@ def _do_test_builds(args, test_image_suffix, end_time):
                    build_lib.get_gcb_url(build_id, build_lib.IMAGE_PROJECT))
   logging.info('-----------------------')
 
-  return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
-                        end_time, skipped_projects)
+  wait_result = wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
+                               end_time, skipped_projects)
+
+  if failed_to_start_builds:
+    logging.error(
+        '================================================================')
+    logging.error('           PHASE 2: FAILED TO START BUILDS')
+    logging.error(
+        '================================================================')
+    logging.error('Total projects that failed to start: %d',
+                  len(failed_to_start_builds))
+    for project, reason in sorted(failed_to_start_builds):
+      logging.error('  - %s: %s', project, reason)
+
+  return wait_result and not failed_to_start_builds
 
 
 def _do_build_type_builds(args, config, credentials, build_type, projects):
   """Does |build_type| test builds of |projects|."""
   build_ids = {}
   skipped_projects = []
+  failed_to_start_builds = []
   for project_name in projects:
     try:
       project_yaml, dockerfile_contents = (
@@ -338,13 +357,14 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           credentials,
           build_type.type_name,
           extra_tags=['trial-build', f'branch-{args.branch.replace("/", "-")}'],
-          timeout=14400))
+          timeout=PROJECT_BUILD_TIMEOUT))
       time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
-      print('Failed to start build', project_name, error)
+      logging.error('Failed to start build %s: %s', project_name, error)
+      failed_to_start_builds.append((project_name, error))
 
-  return build_ids, skipped_projects
+  return build_ids, skipped_projects, failed_to_start_builds
 
 
 def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
