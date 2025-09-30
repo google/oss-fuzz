@@ -14,8 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make flex bison build-essential
-RUN git clone --recursive --depth 1 https://github.com/AdamKorcz/node --branch=all-new-fuzzers
-WORKDIR $SRC
-COPY build.sh $SRC/
+RUN git clone --recursive --depth 1 https://github.com/nodejs/node
+RUN wget https://go.dev/dl/go1.24.5.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && mkdir mkdir /root/.go/ \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.24.5.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/
+ENV PATH=$PATH:/root/.go/bin:$GOPATH/bin
+WORKDIR $SRC/node
+ADD fuzz_sources $SRC/fuzz_sources
+COPY *.sh *.cc *.h *add_fuzzers_to_node_gyp.go $SRC/
