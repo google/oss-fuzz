@@ -118,7 +118,9 @@ def run_build(steps, images, tags=None, build_version=MAJOR_TAG):
 def get_images_architecture_manifest_steps():
   """Returns steps to create manifests for ARM and x86_64 versions of
   base-runner and base-builder."""
-  images = [f'{IMAGE_NAME_PREFIX}base-builder', f'{IMAGE_NAME_PREFIX}base-runner']
+  images = [
+      f'{IMAGE_NAME_PREFIX}base-builder', f'{IMAGE_NAME_PREFIX}base-runner'
+  ]
   steps = []
   for image in images:
     steps.extend(get_image_push_architecture_manifest_steps(image))

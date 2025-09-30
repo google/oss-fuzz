@@ -37,7 +37,6 @@ import build_and_run_coverage
 import build_lib
 import build_project
 
-
 # Default timeout in seconds, 7 hours.
 DEFAULT_TIMEOUT = 25200
 TEST_IMAGE_SUFFIX = 'testing'
@@ -198,9 +197,11 @@ def trial_build_main(args=None, local_base_build=True):
         return False
     logging.info('"Build and Push Images" phase completed.')
   else:
-    logging.info('================================================================')
+    logging.info(
+        '================================================================')
     logging.info('                   PHASE 1: SKIPPED')
-    logging.info('================================================================')
+    logging.info(
+        '================================================================')
     logging.info('Skipping "Build and Push Images" phase as requested.')
 
   timeout = int(os.environ.get('TIMEOUT', DEFAULT_TIMEOUT))
@@ -226,17 +227,20 @@ def _do_test_builds(args, test_image_suffix, end_time):
   projects_to_build_count = 0
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
 
-  logging.info('================================================================')
+  logging.info(
+      '================================================================')
   logging.info('            PHASE 2: STARTING TEST BUILDS')
-  logging.info('================================================================')
+  logging.info(
+      '================================================================')
 
   for build_type in build_types:
     projects = get_projects_to_build(list(args.projects), build_type,
                                      args.force_build)
     if not args.force_build:
       logging.info('Build type: %s', build_type.type_name)
-      logging.info('  - Selected projects: %d / %d (due to failed production builds)',
-                   len(projects), len(args.projects))
+      logging.info(
+          '  - Selected projects: %d / %d (due to failed production builds)',
+          len(projects), len(args.projects))
       logging.info('  - To build all projects, use the --force-build flag.')
 
     logging.info('Starting to create and trigger builds for build type: %s',
@@ -249,8 +253,9 @@ def _do_test_builds(args, test_image_suffix, end_time):
                                   parallel=False,
                                   upload=False,
                                   build_type=build_type.type_name)
-    project_builds, new_skipped = _do_build_type_builds(
-        args, config, credentials, build_type, projects)
+    project_builds, new_skipped = _do_build_type_builds(args, config,
+                                                        credentials, build_type,
+                                                        projects)
     skipped_projects.extend(new_skipped)
     for project, project_build_id in project_builds.items():
       build_ids[project].append(project_build_id)
@@ -259,26 +264,30 @@ def _do_test_builds(args, test_image_suffix, end_time):
   logging.info('Started builds for %d projects.', projects_to_build_count)
 
   if skipped_projects:
-    logging.info('================================================================')
+    logging.info(
+        '================================================================')
     logging.info('               PHASE 2: SKIPPED PROJECTS')
-    logging.info('================================================================')
+    logging.info(
+        '================================================================')
     logging.info('Total projects skipped: %d', len(skipped_projects))
     logging.info('--- SKIPPED PROJECTS ---')
     for project, reason in sorted(skipped_projects):
       logging.info('  - %s: %s', project, reason)
     logging.info('-----------------------')
 
-  logging.info('================================================================')
+  logging.info(
+      '================================================================')
   logging.info('               PHASE 2: STARTED BUILDS')
-  logging.info('================================================================')
+  logging.info(
+      '================================================================')
   logging.info('Total projects with builds: %d', len(build_ids))
   logging.info('--- STARTED BUILDS ---')
   for project, project_build_ids in sorted(build_ids.items()):
     logging.info('  - %s:', project)
     for build_id in project_build_ids:
       logging.info('    - Build ID: %s', build_id)
-      logging.info('      GCB URL: %s', build_lib.get_gcb_url(
-          build_id, build_lib.IMAGE_PROJECT))
+      logging.info('      GCB URL: %s',
+                   build_lib.get_gcb_url(build_id, build_lib.IMAGE_PROJECT))
   logging.info('-----------------------')
 
   return wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
@@ -407,19 +416,19 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
         time.sleep(1)  # Avoid rate limiting.
 
   # Final Report
-  logging.info('================================================================'
-               )
+  logging.info(
+      '================================================================')
   logging.info('               PHASE 2: FINAL BUILD REPORT')
-  logging.info('================================================================'
-               )
+  logging.info(
+      '================================================================')
   total_projects = (len(successful_builds) + len(failed_builds) +
                     len(skipped_projects))
   logging.info('Total projects considered: %d', total_projects)
   logging.info('  - Successful builds: %d', len(successful_builds))
   logging.info('  - Failed builds: %d', len(failed_builds))
   logging.info('  - Skipped projects: %d', len(skipped_projects))
-  logging.info('================================================================'
-               )
+  logging.info(
+      '================================================================')
 
   if skipped_projects:
     logging.info('\n--- SKIPPED PROJECTS ---')
@@ -445,7 +454,6 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   logging.info('\nAll builds passed successfully!')
   logging.info('------------------------')
   return True
-
 
 
 if __name__ == '__main__':

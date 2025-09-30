@@ -105,19 +105,22 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
   cloudbuild_api = cloudbuild.projects().builds()
 
   logs_url = build_lib.get_gcb_url(build_id, cloud_project)
-  logging.info('================================================================')
+  logging.info(
+      '================================================================')
   logging.info('            PHASE 1: STARTED BASE IMAGE BUILD')
-  logging.info('----------------------------------------------------------------')
+  logging.info(
+      '----------------------------------------------------------------')
   logging.info('GCB Build ID: %s', build_id)
   logging.info('GCB Build URL: %s', logs_url)
-  logging.info('================================================================')
+  logging.info(
+      '================================================================')
 
   logging.info('Waiting for base image build to complete...')
   build_result = None
   while True:
     try:
       build_result = cloudbuild_api.get(projectId=cloud_project,
-                                          id=build_id).execute()
+                                        id=build_id).execute()
       status = build_result['status']
       if status in ('SUCCESS', 'FAILURE', 'TIMEOUT', 'CANCELLED', 'EXPIRED'):
         break
@@ -126,15 +129,15 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
     time.sleep(15)
 
   logs_url = build_lib.get_gcb_url(build_id, cloud_project)
-  logging.info('================================================================'
-               )
+  logging.info(
+      '================================================================')
   logging.info('            PHASE 1: BASE IMAGE BUILD REPORT')
-  logging.info('----------------------------------------------------------------'
-               )
+  logging.info(
+      '----------------------------------------------------------------')
   logging.info('GCB Build ID: %s', build_id)
   logging.info('GCB Build URL: %s', logs_url)
-  logging.info('================================================================'
-               )
+  logging.info(
+      '================================================================')
 
   if not build_result or 'steps' not in build_result:
     logging.error('Could not retrieve build steps. See logs for details: %s',
@@ -154,12 +157,12 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
       logging.error('  - %s: %s', step_id, step_status)
       failed_steps.append(step_id)
 
-  logging.info('----------------------------------------------------------------'
-               )
+  logging.info(
+      '----------------------------------------------------------------')
   logging.info('Summary: %d succeeded, %d failed.', succeeded_steps,
                len(failed_steps))
-  logging.info('================================================================'
-               )
+  logging.info(
+      '================================================================')
 
   if failed_steps:
     logging.error('The following images failed to build: %s',
@@ -237,7 +240,7 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
       dependencies = IMAGE_DEPENDENCIES.get(base_image.name, [])
       if not isinstance(dependencies, list):
         dependencies = [dependencies]
-      
+
       cache_tags = []
       for dep_name in dependencies:
         dep_main_tag, _ = get_image_tags(dep_name, None, version)

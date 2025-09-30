@@ -564,7 +564,7 @@ def get_docker_build_step(image_names,
     env = ['DOCKER_BUILDKIT=1']
     step['env'] = env
     args.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1'])
-    
+
     all_cache_tags = set(image_names)
     if additional_cache_from_tags:
       all_cache_tags.update(additional_cache_from_tags)
@@ -653,7 +653,6 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
         os.path.join('projects', name),
         architecture=_ARM64)
     steps.append(docker_build_arm_step)
-
 
   if (config.build_type == 'fuzzing' and language in ('c', 'c++') and
       not not config.testing and not config.experiment and config.upload):
