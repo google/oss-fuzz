@@ -3852,5 +3852,16 @@ TEST(FrontendTest, CommandLineMacro) {
   }
   EXPECT_EQ(found, 1);
 }
+
+TEST(FrontendTest, AliasedSymbol) {
+  auto index = IndexSnippet(
+      "extern \"C\" int foo(void) { return 0; }\n"
+      "int bar(void) __attribute__((alias(\"foo\")));\n"
+      "int main(void) { bar(); return 0; }");
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "foo", "()",
+                    "snippet.cc", 1, 1);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "bar", "()",
+                    "snippet.cc", 2, 2);
+}
 }  // namespace indexer
 }  // namespace oss_fuzz
