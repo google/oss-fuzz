@@ -177,6 +177,34 @@ def files_by_creation_time(folder_path: Path) -> Sequence[Path]:
   return files
 
 
+def _wait_for_cdb_fragment(file: Path) -> str | None:
+  """Returns the CDB fragment from the given file, waiting if needed."""
+  num_retries = 3
+  for i in range(1 + num_retries):
+    data = file.read_text()
+    if data.endswith(",\n"):
+      return data.rstrip().rstrip(",")
+
+    if i < num_retries:
+      print(
+          f"WARNING: CDB fragment {file} appears to be invalid: {data}, "
+          f"sleeping for 2^{i+1} seconds before retrying.",
+          file=sys.stderr,
+      )
+      time.sleep(2 ** (i + 1))
+    else:
+      error = f"CDB fragment {file} is invalid even after retries: {data}"
+      if "test.c" in file.name or "conftest.c" in file.name:
+        # Some build systems seem to have a weird issue where the autotools
+        # generated `test.c` or `conftest.c` for testing compilers doesn't
+        # result in valid cdb fragments.
+        print(f"WARNING: {error}", file=sys.stderr)
+      else:
+        raise RuntimeError(error)
+
+  return None
+
+
 def read_cdb_fragments(cdb_path: Path) -> Any:
   """Iterates through the CDB fragments to reconstruct the compile commands."""
   files = files_by_creation_time(cdb_path)
@@ -188,31 +216,9 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
     if not file.name.endswith(".json"):
       continue
 
-    data = ""
-    num_retries = 3
-    for i in range(num_retries):
-      with file.open("rt") as f:
-        data = f.read()
-        if data.endswith(",\n"):
-          contents.append(data[:-2])
-          break
-
-      if i < num_retries - 1:
-        print(
-            f"WARNING: CDB fragment {file} appears to be invalid: {data}, "
-            f"sleeping for 2^{i+1} seconds before retrying.",
-            file=sys.stderr,
-        )
-        time.sleep(2 ** (i + 1))
-    else:
-      error = f"CDB fragment {file} is invalid even after retries: {data}"
-      if "test.c" in file.name or "conftest.c" in file.name:
-        # Some build systems seem to have a weird issue where the autotools
-        # generated `test.c` or `conftest.c` for testing compilers doesn't
-        # result in valid cdb fragments.
-        print(f"WARNING: {error}", file=sys.stderr)
-      else:
-        raise RuntimeError(error)
+    fragment = _wait_for_cdb_fragment(file)
+    if fragment:
+      contents.append(fragment)
 
   contents = ",\n".join(contents)
   contents = "[" + contents + "]"
@@ -505,7 +511,11 @@ def merge_incremental_cdb(cdb_path: Path, merged_cdb_path: Path) -> None:
       if file.suffix != ".json":
         continue
 
-      fragment = json.loads(file.read_text().rstrip(", "))
+      fragment_data = _wait_for_cdb_fragment(file)
+      if not fragment_data:
+        continue
+
+      fragment = json.loads(fragment_data)
       if "output" not in fragment:
         continue
 
