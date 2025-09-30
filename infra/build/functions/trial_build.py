@@ -247,6 +247,10 @@ def _do_test_builds(args, test_image_suffix, end_time):
           '  - Selected projects: %d / %d (due to failed production builds)',
           len(projects), len(args.projects))
       logging.info('  - To build all projects, use the --force-build flag.')
+    else:
+      logging.info('Build type: %s', build_type.type_name)
+      logging.info('  - Building all %d projects (--force-build)',
+                   len(projects))
 
     logging.info('Starting to create and trigger builds for build type: %s',
                  build_type.type_name)
