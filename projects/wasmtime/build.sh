@@ -65,7 +65,7 @@ eval $(opam env)
 
 build wasmtime "" "" target
 build wasm-tools wasm-tools- "" target --features wasmtime
-build regalloc2 regalloc2- ion_checker fuzz/target
+build regalloc2 regalloc2- ion fuzz/target
 
 # In coverage builds copy the opam header files into the output so coverage can
 # find the source files.

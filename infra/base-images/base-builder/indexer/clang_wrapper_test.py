@@ -15,6 +15,9 @@
 
 """clang_wrapper tests."""
 
+import json
+import pathlib
+
 import clang_wrapper
 import unittest
 
@@ -39,21 +42,82 @@ class ClangWrapperTest(unittest.TestCase):
     """Tests that invalid coverage flags are removed."""
     argv = [
         "clang",
-        "-fsanitize-coverage=bb,no-prune,trace-pc-guard",
-        "-fsanitize-coverage=edge",
+        "-foo",
+        "-fsanitize-coverage-allowlist=allowlist",
+        "-fsanitize-coverage-ignorelist=ignorelist",
         "-c",
         "test.c",
     ]
-    modified_argv = clang_wrapper.remove_invalid_coverage_flags(
+    modified_argv = clang_wrapper.fix_coverage_flags(
         argv, "-fsanitize-coverage=bb,no-prune,trace-pc-guard"
     )
     self.assertCountEqual(
         modified_argv,
         [
             "clang",
-            "-fsanitize-coverage=bb,no-prune,trace-pc-guard",
+            "-foo",
             "-c",
             "test.c",
+            "-fsanitize-coverage=bb,no-prune,trace-pc-guard",
+        ],
+    )
+
+  def test_merge_incremental_cdb(self):
+    """Tests that incremental cdb is merged correctly."""
+    cdb_path = pathlib.Path(self.create_tempdir().full_path)
+    merged_cdb_path = pathlib.Path(self.create_tempdir().full_path)
+
+    old_cdb_fragments = {
+        "test.c.123.json": {
+            "directory": "/build",
+            "file": "test.c",
+            "output": "test.o",
+            "arguments": ["-c", "test.c"],
+        },
+        "test.c.455.json": {
+            "directory": "/build/subdir",
+            "file": "test.c",
+            "output": "test.o",
+            "arguments": ["-c", "test.c"],
+        },
+        "foo.c.455.json": {
+            "directory": "/build",
+            "file": "foo.c",
+            "output": "foo.o",
+            "arguments": ["-c", "foo.c"],
+        },
+    }
+
+    new_cdb_fragments = {
+        "test.c.aaa.json": {
+            "directory": "/build/subdir",
+            "file": "test.c",
+            "output": "test.o",
+            "arguments": ["-c", "test.c"],
+        },
+    }
+
+    for cdb_fragment_path, cdb_fragment in old_cdb_fragments.items():
+      (merged_cdb_path / cdb_fragment_path).write_text(
+          json.dumps(cdb_fragment) + ",\n"
+      )
+
+    for cdb_fragment_path, cdb_fragment in new_cdb_fragments.items():
+      (cdb_path / cdb_fragment_path).write_text(
+          json.dumps(cdb_fragment) + ",\n"
+      )
+
+    (cdb_path / "not_a_json").write_text("not a json")
+
+    clang_wrapper.merge_incremental_cdb(cdb_path, merged_cdb_path)
+
+    self.assertCountEqual(
+        merged_cdb_path.iterdir(),
+        [
+            pathlib.Path(merged_cdb_path) / ".lock",
+            pathlib.Path(merged_cdb_path) / "test.c.123.json",
+            pathlib.Path(merged_cdb_path) / "test.c.aaa.json",
+            pathlib.Path(merged_cdb_path) / "foo.c.455.json",
         ],
     )
 

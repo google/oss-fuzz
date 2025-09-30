@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/kkos/oniguruma.git oniguruma
-
-WORKDIR oniguruma
-COPY build.sh $SRC/
-COPY fuzzer.options $SRC/oniguruma/harnesses
+rm $SRC/pipelines/backend/src/v2/expression/expression_test.go
+mv $SRC/expr_fuzzer.go $SRC/pipelines/backend/src/v2/expression/
+compile_native_go_fuzzer_v2 github.com/kubeflow/pipelines/backend/src/v2/expression FuzzExprSelect FuzzExprSelect

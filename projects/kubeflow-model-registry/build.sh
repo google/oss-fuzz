@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +15,5 @@
 #
 ################################################################################
 
-# build project
-./autogen.sh
-./configure
-make clean
-make -j$(nproc)
-
-FUZZ_SRCDIR=harnesses
-FUZZ_TARGET=fuzzer
-
-# build fuzzer
-$CC $CFLAGS -o $FUZZ_SRCDIR/fuzzer_syntax.o -I src -c -DSYNTAX_TEST $FUZZ_SRCDIR/base.c
-$CXX $CXXFLAGS -o $OUT/$FUZZ_TARGET $FUZZ_SRCDIR/fuzzer_syntax.o $LIB_FUZZING_ENGINE src/.libs/libonig.a
-
-# setup files
-cp $FUZZ_SRCDIR/$FUZZ_TARGET.options $OUT/
-cp $FUZZ_SRCDIR/ascii_compatible.dict $OUT/$FUZZ_TARGET.dict
+mv $SRC/filter_fuzzer.go $SRC/model-registry/internal/db/filter/
+compile_native_go_fuzzer_v2 github.com/kubeflow/model-registry/internal/db/filter FuzzFilterParse FuzzFilterParse
