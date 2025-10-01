@@ -19,7 +19,7 @@ import random
 import sys
 
 import tree_sitter_cpp
-from tree_sitter import Language, Node, Parser, Query, QueryCursor
+from tree_sitter import Language, Parser, Query, QueryCursor
 
 LANGUAGE = Language(tree_sitter_cpp.language())
 PARSER = Parser(LANGUAGE)
@@ -47,11 +47,11 @@ def _add_payload_random_functions(exts: list[str], payload: str) -> str:
         try:
           # Try read and parse the source with tree-sitter
           source = ''
-          with open(path, 'r') as f:
+          with open(path, 'r', encoding='utf-8') as f:
             source = f.read()
           if source:
             node = PARSER.parse(source.encode()).root_node
-        except:
+        except Exception:
           pass
 
         if not node:
@@ -74,16 +74,16 @@ def _add_payload_random_functions(exts: list[str], payload: str) -> str:
             new_func_source = f'{{{payload} {func_source[1:]}'
             source = source.replace(func_source, new_func_source)
         try:
-          with open(path, 'w') as f:
+          with open(path, 'w', encoding='utf-8') as f:
             f.write(source)
           count += 1
-        except:
+        except Exception:
           pass
 
 
 def normal_patch():
   """Do nothing and act as a control test that should always success."""
-  pass
+  return
 
 
 def signal_abort_crash():
@@ -127,11 +127,11 @@ def wrong_return_value():
         try:
           # Try read and parse the source with tree-sitter
           source = ''
-          with open(path, 'r') as f:
+          with open(path, 'r', encoding='utf-8') as f:
             source = f.read()
           if source:
             node = PARSER.parse(source.encode()).root_node
-        except:
+        except Exception:
           pass
 
         if not node:
@@ -163,10 +163,10 @@ def wrong_return_value():
             source = source.replace(func_source, new_func_source)
 
         try:
-          with open(path, 'w') as f:
+          with open(path, 'w', encoding='utf-8') as f:
             f.write(source)
           count += 1
-        except:
+        except Exception:
           pass
 
 
