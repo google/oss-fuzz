@@ -28,6 +28,7 @@ steps:
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['--version-tag', 'legacy']
   waitFor: ['Build the trial-build image']
+  allowFailure: true
   env:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
     - 'BRANCH=${_HEAD_BRANCH}'
@@ -38,6 +39,7 @@ steps:
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['--version-tag', 'ubuntu-20-04']
   waitFor: ['Build the trial-build image']
+  allowFailure: true
   env:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
     - 'BRANCH=${_HEAD_BRANCH}'
@@ -48,11 +50,17 @@ steps:
   name: 'gcr.io/oss-fuzz-base/trial-build'
   args: ['--version-tag', 'ubuntu-24-04']
   waitFor: ['Build the trial-build image']
+  allowFailure: true
   env:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
     - 'BRANCH=${_HEAD_BRANCH}'
     - 'REPO=${_HEAD_REPO_URL}'
     - 'TIMEOUT=25200'
   timeout: 25200s
+- id: 'Generate Report'
+  name: 'gcr.io/oss-fuzz-base/trial-build'
+  entrypoint: 'python3'
+  args: ['infra/build/functions/report_generator.py']
+  waitFor: ['Legacy', 'Ubuntu 20.04', 'Ubuntu 24.04']
 logsBucket: gs://oss-fuzz-trialbuild-logs
 timeout: 25200s

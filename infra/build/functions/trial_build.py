@@ -24,10 +24,10 @@ import logging
 import os
 import subprocess
 import sys
+import textwrap
 import time
 import urllib.request
 import yaml
-
 import oauth2client.client
 from googleapiclient.discovery import build as cloud_build
 from googleapiclient.errors import HttpError
@@ -300,7 +300,7 @@ def _do_test_builds(args, test_image_suffix, end_time):
   logging.info('-----------------------')
 
   wait_result = wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
-                               end_time, skipped_projects)
+                               end_time, skipped_projects, args.version_tag)
 
   if failed_to_start_builds:
     logging.error(
@@ -371,6 +371,24 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
   return build_ids, skipped_projects, failed_to_start_builds
 
 
+def _print_summary_box(title, lines):
+  """Prints a formatted box for summarizing build results."""
+  box_width = 80
+  title_line = f'║ {title.center(box_width - 4)} ║'
+  separator = '╟' + '─' * (box_width - 2) + '╢'
+  summary_lines = [
+      '╔' + '═' * (box_width - 2) + '╗',
+      title_line,
+      '╠' + '═' * (box_width - 2) + '╣',
+  ]
+  for line in lines:
+    wrapped_lines = textwrap.wrap(line, box_width - 6)
+    for i, sub_line in enumerate(wrapped_lines):
+      summary_lines.append(f'║  {sub_line.ljust(box_width - 6)}  ║')
+  summary_lines.append('╚' + '═' * (box_width - 2) + '╝')
+  print('\n'.join(summary_lines))
+
+
 def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
   """Returns the status of the build: |build_id| from cloudbuild_api."""
   build_result = cloudbuild_api.get(projectId=cloud_project,
@@ -393,7 +411,7 @@ def check_finished(build_id, cloudbuild_api, cloud_project):
 
 
 def wait_on_builds(build_ids, credentials, cloud_project, end_time,
-                   skipped_projects):  # pylint: disable=too-many-locals
+                   skipped_projects, version_tag):  # pylint: disable=too-many-locals
   """Waits on |builds|. Returns True if all builds succeed."""
   cloudbuild = cloud_build('cloudbuild',
                            'v1',
@@ -440,19 +458,26 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
         time.sleep(1)  # Avoid rate limiting.
 
   # Final Report
-  logging.info(
-      '================================================================')
-  logging.info('               PHASE 2: FINAL BUILD REPORT')
-  logging.info(
-      '================================================================')
   total_projects = (len(successful_builds) + len(failed_builds) +
                     len(skipped_projects))
-  logging.info('Total projects considered: %d', total_projects)
-  logging.info('  - Successful builds: %d', len(successful_builds))
-  logging.info('  - Failed builds: %d', len(failed_builds))
-  logging.info('  - Skipped projects: %d', len(skipped_projects))
-  logging.info(
-      '================================================================')
+  results = {
+      'total': total_projects,
+      'successful': len(successful_builds),
+      'failed': len(failed_builds),
+      'skipped': len(skipped_projects),
+      'failed_projects': sorted(list(failed_builds.keys())),
+  }
+  with open(f'{version_tag}-results.json', 'w') as f:
+    json.dump(results, f)
+
+  summary_title = f'BUILD REPORT: {version_tag.upper()}'
+  summary_lines = [
+      f"Total projects analyzed: {total_projects}",
+      f"✅ Successful builds: {len(successful_builds)}",
+      f"❌ Failed builds: {len(failed_builds)}",
+      f"➖ Skipped projects: {len(skipped_projects)}",
+  ]
+  _print_summary_box(summary_title, summary_lines)
 
   if skipped_projects:
     logging.info('\n--- SKIPPED PROJECTS ---')
