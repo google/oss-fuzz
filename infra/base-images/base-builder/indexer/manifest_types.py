@@ -432,6 +432,9 @@ class Manifest:
                 # Don't copy over the seed corpus -- it's not necessary.
                 continue
 
+              if file == ".git":
+                continue
+
               file = pathlib.Path(root, file)
               if exclude_build_artifacts and _is_elf(file):
                 continue
