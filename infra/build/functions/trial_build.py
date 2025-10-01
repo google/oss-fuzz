@@ -480,12 +480,12 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   _print_summary_box(summary_title, summary_lines)
 
   if skipped_projects:
-    logging.info('\n--- SKIPPED PROJECTS ---')
+    logging.info('--- SKIPPED PROJECTS ---')
     for project, reason in sorted(skipped_projects):
       logging.info('  - %s: %s', project, reason)
 
   if failed_builds:
-    logging.error('\n--- FAILED BUILDS ---')
+    logging.error('--- FAILED BUILDS ---')
     for project, failures in sorted(failed_builds.items()):
       logging.error('  - %s:', project)
       for status, gcb_url in failures:

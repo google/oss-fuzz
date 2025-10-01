@@ -101,6 +101,7 @@ def exec_command_from_github(args):
 def main():
   """Entrypoint for GitHub CI into trial_build.py"""
   logging.basicConfig(level=logging.INFO)
+  logging.getLogger('oauth2client').setLevel(logging.WARNING)
 
   args = sys.argv[1:]
 
