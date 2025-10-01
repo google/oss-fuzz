@@ -473,9 +473,9 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   summary_title = f'BUILD REPORT: {version_tag.upper()}'
   summary_lines = [
       f"Total projects analyzed: {total_projects}",
-      f"✅ Successful builds: {len(successful_builds)}",
-      f"❌ Failed builds: {len(failed_builds)}",
-      f"➖ Skipped projects: {len(skipped_projects)}",
+      f"[PASSED]  Successful builds: {len(successful_builds)}",
+      f"[FAILED]  Failed builds: {len(failed_builds)}",
+      f"[SKIPPED] Skipped projects: {len(skipped_projects)}",
   ]
   _print_summary_box(summary_title, summary_lines)
 
