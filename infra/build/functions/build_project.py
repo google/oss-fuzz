@@ -184,6 +184,8 @@ class Project:  # pylint: disable=too-many-instance-attributes
     else:
       self.main_repo = ''
 
+    self.indexer_targets = project_yaml.get('indexer', {}).get('targets', [])
+
     # This is set to enable build infra to use cached images (which are
     # specific to a sanitizer).
     # TODO: find a better way to handle this.
@@ -521,23 +523,23 @@ def _create_indexed_build_steps(project,
                                 build,
                                 timestamp,
                                 env,
+                                indexer_targets,
                                 build_type='indexer'):
   """Creates the build steps for a specific indexer type."""
   if build_type == 'indexer':
     container_name = _INDEXED_CONTAINER_NAME
     image_name = _indexer_built_image_name(project.name)
     build_script_command = '/opt/indexer/index_build.py'
-    # Save the CDB fragments so we can re-use them for rebuilding indexes.
   elif build_type == 'tracer':
     container_name = _TRACING_CONTAINER_NAME
     image_name = _tracer_built_image_name(project.name)
     build_script_command = (
-        '/opt/indexer/index_build.py '
-        '--fuzzing-engine=tracing_engine.cc '
-        '--coverage-flags=-fsanitize-coverage=trace-pc-guard,func '
-        '--binaries-only')
+        '/opt/indexer/index_build.py --tracing-instrumentation')
   else:
     raise ValueError(f'Unknown build_type: {build_type}')
+
+  if indexer_targets:
+    build_script_command += ' -t ' + ','.join(indexer_targets)
 
   command_sequence = [
       'cd /src',
@@ -546,7 +548,6 @@ def _create_indexed_build_steps(project,
       build_script_command,
       # Enable re-building both the project and the indexes.
       'cp -n /usr/local/bin/replay_build.sh $$SRC/',
-      'cp -r $$OUT/cdb /cdb',
       # Link /out to the actual $OUT and actually create it in the container's
       # filesystem since it's a mount.
       'rm -rf /out && ln -s $$OUT /out',
@@ -650,12 +651,14 @@ def get_indexer_build_steps(project_name,
                                               build,
                                               timestamp,
                                               env,
+                                              project.indexer_targets,
                                               build_type='indexer')
 
   tracer_steps = _create_indexed_build_steps(project,
                                              build,
                                              timestamp,
                                              env,
+                                             project.indexer_targets,
                                              build_type='tracer')
   return build_steps + indexer_steps + tracer_steps
 

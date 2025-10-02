@@ -19,16 +19,18 @@ import logging
 import argparse
 import time
 import json
-import requests
 import subprocess
-from enum import Enum
 
-import bad_patch, logic_error_patch
+import requests
+
+import bad_patch
+import logic_error_patch
 
 logger = logging.getLogger(__name__)
 
-OSS_FUZZ_BUILD_HISTORY_URL = 'https://oss-fuzz-build-logs.storage.googleapis.com/status.json'
-OSS_FUZZ_BUILD_HISTORY = None
+OSS_FUZZ_BUILD_HISTORY_URL = (
+    'https://oss-fuzz-build-logs.storage.googleapis.com/status.json')
+OSS_FUZZ_BUILD_HISTORY = []
 
 RUN_TEST_HEURISTIC_0 = 'make test'
 RUN_TEST_HEURISTIC_1 = 'make tests'
@@ -39,23 +41,17 @@ RUN_TESTS_TO_TRY = [
 ]
 
 
-class ContainerRedirection(Enum):
-  """Enum for output redirection."""
-  NONE = 1
-  FILE = 2
-  SILENT = 3
-
-
 def _get_oss_fuzz_build_status(project):
   """Returns the build status of a project in OSS-Fuzz."""
-  global OSS_FUZZ_BUILD_HISTORY
-  if OSS_FUZZ_BUILD_HISTORY is None:
+  #global OSS_FUZZ_BUILD_HISTORY
+  if not OSS_FUZZ_BUILD_HISTORY:
     # Load the build history from a file or other source.
     # This is a placeholder for actual implementation.
-    build_status = requests.get(OSS_FUZZ_BUILD_HISTORY_URL)
-    OSS_FUZZ_BUILD_HISTORY = json.loads(build_status.text)
+    build_status = requests.get(OSS_FUZZ_BUILD_HISTORY_URL, timeout=30)
+    OSS_FUZZ_BUILD_HISTORY.extend(
+        json.loads(build_status.text).get('projects', []))
 
-  for project_data in OSS_FUZZ_BUILD_HISTORY.get('projects', []):
+  for project_data in OSS_FUZZ_BUILD_HISTORY:
     if project_data['name'] == project:
       logger.info('Found project %s in OSS-Fuzz build history.', project)
       return project_data.get('history', [{
@@ -81,15 +77,15 @@ def build_project_image(project, container_output='stdout'):
   if container_output == 'file':
     out_idx = 0
     stdout_file = os.path.join('projects', project,
-                               'build_image_stdout.%d.out' % (out_idx))
+                               f'build_image_stdout.{out_idx}.out')
     while os.path.isfile(stdout_file):
       out_idx += 1
       stdout_file = os.path.join('projects', project,
-                                 'build_image_stdout.%d.out' % (out_idx))
+                                 f'build_image_stdout.{out_idx}.out')
     stderr_file = os.path.join('projects', project,
-                               'build_image_stderr.%d.err' % (out_idx))
-    stdout_fp = open(stdout_file, 'w')
-    stderr_fp = open(stderr_file, 'w')
+                               f'build_image_stderr.{out_idx}.err')
+    stdout_fp = open(stdout_file, 'w', encoding='utf-8')
+    stderr_fp = open(stderr_file, 'w', encoding='utf-8')
   elif container_output == 'silent':
     stdout_fp = subprocess.DEVNULL
     stderr_fp = subprocess.DEVNULL
@@ -107,7 +103,7 @@ def build_project_image(project, container_output='stdout'):
     if container_output == 'file':
       stdout_fp.close()
       stderr_fp.close()
-  except subprocess.CalledProcessError as e:
+  except subprocess.CalledProcessError:
     if container_output == 'file':
       stdout_fp.close()
       stderr_fp.close()
@@ -132,15 +128,15 @@ def build_cached_project(project,
   if container_output == 'file':
     out_idx = 0
     stdout_file = os.path.join('projects', project,
-                               'build_cache_stdout.%d.out' % (out_idx))
+                               f'build_cache_stdout.{out_idx}.out')
     while os.path.isfile(stdout_file):
       out_idx += 1
       stdout_file = os.path.join('projects', project,
-                                 'build_cache_stdout.%d.out' % (out_idx))
+                                 f'build_cache_stdout.{out_idx}.out')
     stderr_file = os.path.join('projects', project,
-                               'build_cache_stderr.%d.err' % (out_idx))
-    stdout_fp = open(stdout_file, 'w')
-    stderr_fp = open(stderr_file, 'w')
+                               f'build_cache_stderr.{out_idx}.err')
+    stdout_fp = open(stdout_file, 'w', encoding='utf-8')
+    stderr_fp = open(stderr_file, 'w', encoding='utf-8')
   elif container_output == 'silent':
     stdout_fp = subprocess.DEVNULL
     stderr_fp = subprocess.DEVNULL
@@ -174,7 +170,7 @@ def build_cached_project(project,
     if container_output == 'file':
       stdout_fp.close()
       stderr_fp.close()
-  except subprocess.CalledProcessError as e:
+  except subprocess.CalledProcessError:
     if container_output == 'file':
       stdout_fp.close()
       stderr_fp.close()
@@ -274,7 +270,8 @@ def check_cached_replay(project,
       result = subprocess.run(' '.join(cmd_to_run),
                               shell=True,
                               stdout=stdout_fp,
-                              stderr=stderr_fp)
+                              stderr=stderr_fp,
+                              check=False)
 
       if result.returncode not in expected_rc:
         failed.append(bad_patch_name)
@@ -295,7 +292,8 @@ def check_cached_replay(project,
     subprocess.run(' '.join(cmd),
                    shell=True,
                    stdout=stdout_fp,
-                   stderr=stderr_fp)
+                   stderr=stderr_fp,
+                   check=False)
 
   end = time.time()
   logger.info('%s check cached replay completion time: %.2f seconds', project,
@@ -317,6 +315,7 @@ def check_test(project,
                 project, script_path)
     sys.exit(1)
 
+  logger.info('Building image for project for use in check-tests: %s', project)
   # Build an OSS-Fuzz image of the project
   if run_full_cache_replay:
     check_cached_replay(
@@ -331,28 +330,10 @@ def check_test(project,
         project, sanitizer=sanitizer, container_output=container_output):
       return False
 
-  if container_output == 'file':
-    out_idx = 0
-    stdout_file = os.path.join('projects', project, 'stdout.%d.out' % (out_idx))
-    while os.path.isfile(stdout_file):
-      out_idx += 1
-      stdout_file = os.path.join('projects', project,
-                                 'stdout.%d.out' % (out_idx))
-    stderr_file = os.path.join('projects', project, 'stderr.%d.err' % (out_idx))
-    stdout_fp = open(stdout_file, 'w')
-    stderr_fp = open(stderr_file, 'w')
-  elif container_output == 'silent':
-    stdout_fp = subprocess.DEVNULL
-    stderr_fp = subprocess.DEVNULL
-  else:
-    stdout_fp = None
-    stderr_fp = None
-
   # Run the test script
   start = time.time()
-  base_cmd = 'chmod +x /src/run_tests.sh && /src/run_tests.sh'
-
-  cmd = [
+  run_tests_cmd = 'chmod +x /src/run_tests.sh && /src/run_tests.sh'
+  docker_cmd = [
       'docker',
       'run',
       '--rm',
@@ -363,74 +344,75 @@ def check_test(project,
       '/bin/bash',
       '-c',
   ]
-
   if integrity_test:
-    # Patch the code with some logic error and see if build_test able to detect them.
-    failed = []
-    compile_failed = []
-    for logic_patch_name, logic_patch_map in logic_error_patch.LOGIC_ERROR_PATCH_GENERATOR.items(
-    ):
-      expected_result = logic_patch_map['result']
+    integrity_checks = []
+
+    # Patch the code with some logic error and see if build_test able to detect
+    # them.
+    for logic_patch in logic_error_patch.LOGIC_ERROR_PATCHES:
+      logger.info('Checking logic patch: %s', logic_patch.name)
       patch_command = (
           'python3 -m pip install -r /chronos/requirements.txt && '
-          f'python3 /chronos/logic_error_patch.py {logic_patch_name} && '
+          f'python3 /chronos/logic_error_patch.py {logic_patch.name} && '
           'compile')
-      cmd_to_run = cmd[:]
+      cmd_to_run = docker_cmd[:]
 
-      # Try compile first
+      # In the below, we will apply a set of changes in the source code, rebuild
+      # the target and then run the run_tests.sh script.
+      # The patches are meant to check the semantics of the code, but they are
+      # not bulletproof, which means they may break the build in exceptional
+      # circumstances. So, we first try to compile the code after having applied
+      # the patches, but without running the tests, and if this step fails, then
+      # we skip running the tests for this patch as well.
+      # Patch and build first.
       cmd_to_run.append(f'"set -euo pipefail && {patch_command}"')
       try:
-        subprocess.check_call(' '.join(cmd_to_run),
-                              shell=True,
-                              stdout=stdout_fp,
-                              stderr=stderr_fp)
-      except:
+        subprocess.check_call(' '.join(cmd_to_run), shell=True)
+      except subprocess.CalledProcessError:
         logger.info('%s skipping logic patch %s that failed to compile.',
-                    project, logic_patch_name)
-        compile_failed.append(logic_patch_name)
+                    project, logic_patch.name)
+        integrity_checks.append({
+            'patch': logic_patch.name,
+            'result': 'compile_fail'
+        })
         continue
 
-      # Compile success, check the run_tests.sh with the patch
-      cmd_to_run[-1] = f'"set -euo pipefail && {patch_command} && {base_cmd}"'
+      # Patch and build succeeded, now proceed to patch, build and run tests in
+      # one go. This will indicate if the patch was detected by the tests or
+      # not.
+      cmd_to_run[
+          -1] = f'"set -euo pipefail && {patch_command} && {run_tests_cmd}"'
       try:
-        subprocess.check_call(' '.join(cmd_to_run),
-                              shell=True,
-                              stdout=stdout_fp,
-                              stderr=stderr_fp)
-        if not expected_result:
-          failed.append(logic_patch_name)
-      except:
-        if expected_result:
-          failed.append(logic_patch_name)
+        subprocess.check_call(' '.join(cmd_to_run), shell=True)
+        exception_thrown = False
+      except subprocess.CalledProcessError:
+        exception_thrown = True
 
-    if failed:
-      succeeded = False
-      logger.info('%s check failed to detect these logic patches: %s', project,
-                  ' '.join(failed))
-    else:
-      succeeded = True
+      if ((exception_thrown and not logic_patch.expected_result) or
+          (not exception_thrown and logic_patch.expected_result)):
+        # The patch was detected by the tests as it should have been.
+        integrity_checks.append({
+            'patch': logic_patch.name,
+            'result': 'Success'
+        })
+      else:
+        integrity_checks.append({'patch': logic_patch.name, 'result': 'Failed'})
 
-    if compile_failed:
-      logger.info(('%s check failed to compile after these logic patches: %s, '
-                   'skipping them for run_tests check'), project,
-                  ' '.join(compile_failed))
+    logger.info('%s integrity check results:', project)
+    for check in integrity_checks:
+      logger.info('%s integrity check patch %s result: %s', project,
+                  check['patch'], check['result'])
+    succeeded = any([chk['result'] == 'Success' for chk in integrity_checks])
   else:
     # Run normal build_test
-    cmd.append(f'"{base_cmd}"')
+    docker_cmd.append(f'"{run_tests_cmd}"')
     try:
-      subprocess.check_call(' '.join(cmd),
-                            shell=True,
-                            stdout=stdout_fp,
-                            stderr=stderr_fp)
+      subprocess.check_call(' '.join(docker_cmd), shell=True)
       succeeded = True
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
       succeeded = False
 
   end = time.time()
-  if container_output == 'file':
-    stdout_fp.close()
-    stderr_fp.close()
-
   logger.info('%s test completion %s: Duration of run_tests.sh: %.2f seconds',
               project, 'failed' if not succeeded else 'succeeded',
               (end - start))
@@ -441,9 +423,9 @@ def check_test(project,
 def check_run_tests_script(project,
                            sanitizer='address',
                            ignore_new_files=False,
-                           container_output='stdout',
-                           silent_replays=False):
+                           container_output='stdout'):
   """Checks if the run_tests.sh changes the source files in the current directory."""
+
   build_project_image(project, container_output=container_output)
   build_cached_project(project,
                        sanitizer=sanitizer,
@@ -462,19 +444,8 @@ def check_run_tests_script(project,
       _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
       f'"python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/run_tests_check.py {ignore}"'
   ]
-
-  # Configure output
-  if silent_replays:
-    stdout_fp = subprocess.DEVNULL
-    stderr_fp = subprocess.DEVNULL
-  else:
-    stdout_fp = None
-    stderr_fp = None
-
   # Normal run with no integrity check
-  result = subprocess.run(' '.join(cmd), shell=True)
-  #                          stdout=stdout_fp,
-  #                          stderr=stderr_fp)
+  result = subprocess.run(' '.join(cmd), shell=True, check=False)
 
   end = time.time()
   logger.info('%s run_test.sh check completion time: %.2f seconds', project,
@@ -499,7 +470,7 @@ def _get_project_language(project):
   # Check for a .lang file or similar to determine the language
   project_yaml = os.path.join(project_path, 'project.yaml')
   if os.path.exists(project_yaml):
-    with open(project_yaml, 'r') as f:
+    with open(project_yaml, 'r', encoding='utf-8') as f:
       for line in f:
         if 'language' in line:
           return line.split(':')[1].strip()
@@ -514,11 +485,11 @@ def _autogenerate_run_tests_script(project, container_output):
   run_tests_script = os.path.join(project_path, 'run_tests.sh')
 
   for run_test_script in RUN_TESTS_TO_TRY:
-    with open(run_tests_script, 'w') as f:
+    with open(run_tests_script, 'w', encoding='utf-8') as f:
       f.write('#!/bin/bash\n')
       f.write('set -eux\n')
       f.write(run_test_script + '\n')
-      f.write('echo "Running tests for project: {}"\n'.format(project))
+      f.write(f'echo "Running tests for project: {project}"\n')
       # Add more commands as needed to run tests
     os.chmod(run_tests_script, 0o755)
     logger.info('Created run_tests.sh for %s', project)
@@ -527,11 +498,11 @@ def _autogenerate_run_tests_script(project, container_output):
     dockerfile_path = os.path.join(project_path, 'Dockerfile')
 
     add_run_tests = False
-    with open(dockerfile_path, 'r') as f:
+    with open(dockerfile_path, 'r', encoding='utf-8') as f:
       if 'COPY run_tests.sh' not in f.read():
         add_run_tests = True
     if add_run_tests:
-      with open(dockerfile_path, 'a') as f:
+      with open(dockerfile_path, 'a', encoding='utf-8') as f:
         f.write('\n# Copy the autogenerated run_tests.sh script\n')
         f.write('COPY run_tests.sh $SRC/run_tests.sh\n')
         f.write('RUN chmod +x $SRC/run_tests.sh\n')
@@ -547,8 +518,8 @@ def _autogenerate_run_tests_script(project, container_output):
       succeeded = False
 
     success_file = os.path.join(project_path, 'run_tests.succeeded')
-    with open(success_file, 'a') as f:
-      f.write('Auto-generation succeeded: {}\n'.format(succeeded))
+    with open(success_file, 'a', encoding='utf-8') as f:
+      f.write(f'Auto-generation succeeded: {succeeded}\n')
     if succeeded:
       logger.info('Autogenerated run_tests.sh for %s successfully.', project)
       break
@@ -575,7 +546,7 @@ def autogen_projects(apply_filtering=False,
       continue
 
     # Ensure the project language is C or C++
-    if not _get_project_language(project).lower() in ['c', 'c++']:
+    if _get_project_language(project).lower() not in ['c', 'c++']:
       continue
 
     run_tests_script = os.path.join(project_path, 'run_tests.sh')
@@ -589,7 +560,7 @@ def autogen_projects(apply_filtering=False,
       if not os.path.exists(build_script):
         logger.warning('Skipping %s, build.sh does not exist.', project)
         continue
-      with open(build_script, 'r') as f:
+      with open(build_script, 'r', encoding='utf-8') as f:
         lines = f.readlines()
       # Filter out lines that are not relevant for the test script
       filtered_lines = [line for line in lines if 'make' in line]
@@ -612,14 +583,16 @@ def autogen_projects(apply_filtering=False,
 
 
 def extract_test_coverage(project):
+  """Extract code coverage report from run_tests.sh script."""
   build_project_image(project, container_output='')
   build_cached_project(project, sanitizer='coverage', container_output='stdout')
 
   os.makedirs(os.path.join('build', 'out', project), exist_ok=True)
 
+  shared_folder = os.path.join(os.getcwd(), 'build', 'out', project)
   cmd = [
       'docker', 'run', '--rm', '--network', 'none', '-v',
-      '%s:/out' % (os.path.join(os.getcwd(), 'build', 'out', project)), '-ti',
+      f'{shared_folder}:/out', '-ti',
       _get_project_cached_named(project, 'coverage'), '/bin/bash', '-c',
       ('"chmod +x /src/run_tests.sh && '
        'find /src/ -name "*.profraw" -exec rm -f {} \\; && '
@@ -637,9 +610,9 @@ def extract_test_coverage(project):
   if os.path.isfile(
       os.path.join('build', 'out', project, 'test-html-generation',
                    'summary.json')):
-    with open(
-        os.path.join('build', 'out', project, 'test-html-generation',
-                     'summary.json'), 'r') as f:
+    summary_json = os.path.join('build', 'out', project, 'test-html-generation',
+                                'summary.json')
+    with open(summary_json, 'r', encoding='utf-8') as f:
       summary = json.load(f)
       total_lines_covered = summary['data'][0]['totals']['lines']
       logger.info('Total lines covered for %s: %s', project,
@@ -658,11 +631,9 @@ def parse_args():
   check_test_parser = subparsers.add_parser(
       'check-test', help='Checks run_test.sh for specific project.')
   check_test_parser.add_argument(
-      '--projects',
-      nargs='+',
-      required=True,
+      'project',
       type=str,
-      help='The name of the projects to check (e.g., "libpng").',
+      help='The name of the project to check (e.g., "libpng").',
   )
   check_test_parser.add_argument(
       '--sanitizer',
@@ -747,9 +718,8 @@ def parse_args():
   autogen_tests_parser.add_argument(
       '--apply-filtering',
       action='store_true',
-      help=
-      'If set, applies filtering to increase performance but test on fewer projects that are more likely to succeed.'
-  )
+      help=('If set, applies filtering to increase performance but '
+            'tests on fewer projects that are more likely to succeed.'))
   autogen_tests_parser.add_argument(
       '--max-projects-to-try',
       type=int,
@@ -764,9 +734,8 @@ def parse_args():
       '--projects',
       default='',
       nargs='+',
-      help=
-      'The name of the projects to autogenerate tests for. If not specified, all projects will be considered.'
-  )
+      help=('The name of the projects to autogenerate tests for. '
+            'If not specified, all projects will be considered.'))
 
   build_many_caches = subparsers.add_parser(
       'build-many-caches',
@@ -803,18 +772,10 @@ def main():
   args = parse_args()
 
   if args.command == 'check-test':
-    if len(args.projects) == 1 and args.projects[0] == 'all':
-      # If 'all' is specified, get all projects from the projects directory.
-      projects_to_analyse = [
-          p for p in os.listdir('projects')
-          if os.path.isfile(os.path.join('projects', p, 'run_tests.sh'))
-      ]
-    else:
-      projects_to_analyse = args.projects
-    for project in projects_to_analyse:
-      logger.info('%s checking run_tests', project)
-      check_test(project, args.sanitizer, args.container_output,
-                 args.run_full_cache_replay, args.check_patch_integrity)
+    logger.info('Executing check-test command on %s to check run_tests',
+                args.project)
+    check_test(args.project, args.sanitizer, args.container_output,
+               args.run_full_cache_replay, args.check_patch_integrity)
   if args.command == 'check-replay-script':
     check_cached_replay(args.project, args.sanitizer)
   if args.command == 'check-replay-script-integrity':
