@@ -321,6 +321,10 @@ function check_mixed_sanitizers {
     return 0
   fi
 
+  if [ "${FUZZING_LANGUAGE:-}" = "ruby" ]; then
+    return 0
+  fi
+
   if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
     # Sanitizer runtime is loaded via LD_PRELOAD, so this check does not apply.
     return 0
@@ -411,6 +415,10 @@ function check_architecture {
   if [ "${FUZZING_LANGUAGE:-}" = "javascript" ]; then
     # Jazzer.js fuzzers are wrapper scripts that start the fuzz target with
     # the Jazzer.js CLI.
+    return 0;
+  fi
+
+  if [ "${FUZZING_LANGUAGE:-}" = "ruby" ]; then
     return 0;
   fi
 
