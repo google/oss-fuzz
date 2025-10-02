@@ -315,6 +315,7 @@ def check_test(project,
                 project, script_path)
     sys.exit(1)
 
+  logger.info('Building image for project for use in check-tests: %s', project)
   # Build an OSS-Fuzz image of the project
   if run_full_cache_replay:
     check_cached_replay(
@@ -329,27 +330,10 @@ def check_test(project,
         project, sanitizer=sanitizer, container_output=container_output):
       return False
 
-  if container_output == 'file':
-    out_idx = 0
-    stdout_file = os.path.join('projects', project, f'stdout.{out_idx}.out')
-    while os.path.isfile(stdout_file):
-      out_idx += 1
-      stdout_file = os.path.join('projects', project, f'stdout.{out_idx}.out')
-    stderr_file = os.path.join('projects', project, f'stderr.{out_idx}.err')
-    stdout_fp = open(stdout_file, 'w', encoding='utf-8')
-    stderr_fp = open(stderr_file, 'w', encoding='utf-8')
-  elif container_output == 'silent':
-    stdout_fp = subprocess.DEVNULL
-    stderr_fp = subprocess.DEVNULL
-  else:
-    stdout_fp = None
-    stderr_fp = None
-
   # Run the test script
   start = time.time()
-  base_cmd = 'chmod +x /src/run_tests.sh && /src/run_tests.sh'
-
-  cmd = [
+  run_tests_cmd = 'chmod +x /src/run_tests.sh && /src/run_tests.sh'
+  docker_cmd = [
       'docker',
       'run',
       '--rm',
@@ -360,103 +344,75 @@ def check_test(project,
       '/bin/bash',
       '-c',
   ]
-
-  integrity_checks = []
   if integrity_test:
-    # Patch the code with some logic error and see if build_test able to detect them.
-    failed = []
-    compile_failed = []
-    for logic_patch_name, logic_patch_map in logic_error_patch.LOGIC_ERROR_PATCH_GENERATOR.items(
-    ):
-      expected_result = logic_patch_map['result']
+    integrity_checks = []
+
+    # Patch the code with some logic error and see if build_test able to detect
+    # them.
+    for logic_patch in logic_error_patch.LOGIC_ERROR_PATCHES:
+      logger.info('Checking logic patch: %s', logic_patch.name)
       patch_command = (
           'python3 -m pip install -r /chronos/requirements.txt && '
-          f'python3 /chronos/logic_error_patch.py {logic_patch_name} && '
+          f'python3 /chronos/logic_error_patch.py {logic_patch.name} && '
           'compile')
-      cmd_to_run = cmd[:]
+      cmd_to_run = docker_cmd[:]
 
-      # Try compile first
+      # In the below, we will apply a set of changes in the source code, rebuild
+      # the target and then run the run_tests.sh script.
+      # The patches are meant to check the semantics of the code, but they are
+      # not bulletproof, which means they may break the build in exceptional
+      # circumstances. So, we first try to compile the code after having applied
+      # the patches, but without running the tests, and if this step fails, then
+      # we skip running the tests for this patch as well.
+      # Patch and build first.
       cmd_to_run.append(f'"set -euo pipefail && {patch_command}"')
       try:
-        subprocess.check_call(' '.join(cmd_to_run),
-                              shell=True,
-                              stdout=stdout_fp,
-                              stderr=stderr_fp)
+        subprocess.check_call(' '.join(cmd_to_run), shell=True)
       except subprocess.CalledProcessError:
         logger.info('%s skipping logic patch %s that failed to compile.',
-                    project, logic_patch_name)
-        compile_failed.append(logic_patch_name)
+                    project, logic_patch.name)
         integrity_checks.append({
-            'patch': logic_patch_name,
+            'patch': logic_patch.name,
             'result': 'compile_fail'
         })
         continue
 
-      # Compile success, check the run_tests.sh with the patch
-      cmd_to_run[-1] = f'"set -euo pipefail && {patch_command} && {base_cmd}"'
+      # Patch and build succeeded, now proceed to patch, build and run tests in
+      # one go. This will indicate if the patch was detected by the tests or
+      # not.
+      cmd_to_run[
+          -1] = f'"set -euo pipefail && {patch_command} && {run_tests_cmd}"'
       try:
-        subprocess.check_call(' '.join(cmd_to_run),
-                              shell=True,
-                              stdout=stdout_fp,
-                              stderr=stderr_fp)
-        if not expected_result:
-          failed.append(logic_patch_name)
-          integrity_checks.append({
-              'patch': logic_patch_name,
-              'result': 'not_detected'
-          })
-        else:
-          integrity_checks.append({
-              'patch': logic_patch_name,
-              'result': 'Success'
-          })
+        subprocess.check_call(' '.join(cmd_to_run), shell=True)
+        exception_thrown = False
       except subprocess.CalledProcessError:
-        if expected_result:
-          failed.append(logic_patch_name)
-          integrity_checks.append({
-              'patch': logic_patch_name,
-              'result': 'Failed'
-          })
-        else:
-          integrity_checks.append({
-              'patch': logic_patch_name,
-              'result': 'Success'
-          })
+        exception_thrown = True
 
-    if failed:
-      succeeded = False
-      logger.info('%s check failed to detect these logic patches: %s', project,
-                  ' '.join(failed))
-    else:
-      succeeded = True
+      if ((exception_thrown and not logic_patch.expected_result) or
+          (not exception_thrown and logic_patch.expected_result)):
+        # The patch was detected by the tests as it should have been.
+        integrity_checks.append({
+            'patch': logic_patch.name,
+            'result': 'Success'
+        })
+      else:
+        integrity_checks.append({'patch': logic_patch.name, 'result': 'Failed'})
 
-    if compile_failed:
-      logger.info(('%s check failed to compile after these logic patches: %s, '
-                   'skipping them for run_tests check'), project,
-                  ' '.join(compile_failed))
+    logger.info('%s integrity check results:', project)
+    for check in integrity_checks:
+      logger.info('%s integrity check patch %s result: %s', project,
+                  check['patch'], check['result'])
+    succeeded = any([chk['result'] == 'Success' for chk in integrity_checks])
   else:
     # Run normal build_test
-    cmd.append(f'"{base_cmd}"')
+    docker_cmd.append(f'"{run_tests_cmd}"')
     try:
-      subprocess.check_call(' '.join(cmd),
-                            shell=True,
-                            stdout=stdout_fp,
-                            stderr=stderr_fp)
+      subprocess.check_call(' '.join(docker_cmd), shell=True)
       succeeded = True
     except subprocess.CalledProcessError:
       succeeded = False
 
   end = time.time()
-  if container_output == 'file':
-    stdout_fp.close()
-    stderr_fp.close()
-
-  if integrity_checks:
-    logger.info('%s integrity check results:', project)
-    for check in integrity_checks:
-      logger.info('%s integrity check patch %s result: %s', project,
-                  check['patch'], check['result'])
-
   logger.info('%s test completion %s: Duration of run_tests.sh: %.2f seconds',
               project, 'failed' if not succeeded else 'succeeded',
               (end - start))
@@ -675,11 +631,9 @@ def parse_args():
   check_test_parser = subparsers.add_parser(
       'check-test', help='Checks run_test.sh for specific project.')
   check_test_parser.add_argument(
-      '--projects',
-      nargs='+',
-      required=True,
+      'project',
       type=str,
-      help='The name of the projects to check (e.g., "libpng").',
+      help='The name of the project to check (e.g., "libpng").',
   )
   check_test_parser.add_argument(
       '--sanitizer',
@@ -818,18 +772,10 @@ def main():
   args = parse_args()
 
   if args.command == 'check-test':
-    if len(args.projects) == 1 and args.projects[0] == 'all':
-      # If 'all' is specified, get all projects from the projects directory.
-      projects_to_analyse = [
-          p for p in os.listdir('projects')
-          if os.path.isfile(os.path.join('projects', p, 'run_tests.sh'))
-      ]
-    else:
-      projects_to_analyse = args.projects
-    for project in projects_to_analyse:
-      logger.info('%s checking run_tests', project)
-      check_test(project, args.sanitizer, args.container_output,
-                 args.run_full_cache_replay, args.check_patch_integrity)
+    logger.info('Executing check-test command on %s to check run_tests',
+                args.project)
+    check_test(args.project, args.sanitizer, args.container_output,
+               args.run_full_cache_replay, args.check_patch_integrity)
   if args.command == 'check-replay-script':
     check_cached_replay(args.project, args.sanitizer)
   if args.command == 'check-replay-script-integrity':
