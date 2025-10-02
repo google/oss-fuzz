@@ -20,6 +20,7 @@
 case $(uname -m) in
     x86_64)
       # Download and install Go.
+      apt-get update && apt-get install -y gcc
       wget -q https://storage.googleapis.com/golang/getgo/installer_linux -O $SRC/installer_linux
       chmod +x $SRC/installer_linux
       SHELL="bash" $SRC/installer_linux -version 1.25.0
@@ -29,9 +30,12 @@ case $(uname -m) in
       cd $GOPATH/gocoverage && /root/.go/bin/go install ./...
       cd /root/.go/src/cmd/cover && /root/.go/bin/go build && mv cover $GOPATH/bin/gotoolcover
       pushd /tmp
-        git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2
-        cd go-118-fuzz-build/cmd/convertLibFuzzerTestcaseToStdLibGo
-        /root/.go/bin/go build .
+        git clone https://github.com/AdamKorcz/go-118-fuzz-build
+        cd go-118-fuzz-build
+        # this commit is from the v2_2 branch on 19th September 2025:
+        git checkout 12ba36022eb64f94909df63a957fc5e3a9a4da8a
+        cd cmd/convertLibFuzzerTestcaseToStdLibGo
+        env CGO_ENABLED=1 /root/.go/bin/go build .
         mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
       popd
       ;;
