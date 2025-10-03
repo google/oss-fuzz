@@ -548,10 +548,17 @@ def _create_indexed_build_steps(project,
       build_script_command,
       # Enable re-building both the project and the indexes.
       'cp -n /usr/local/bin/replay_build.sh $$SRC/',
-      # Link /out to the actual $OUT and actually create it in the container's
-      # filesystem since it's a mount.
-      'rm -rf /out && ln -s $$OUT /out',
-      'umount /workspace && mkdir -p $$OUT',
+      # The following complicated dance is so that the resulting image works
+      # in a standalone way without the mount paths GCB installs by default
+      # (/workspace).
+      # First we save the $OUT contents into /outbak.
+      'mkdir -p /outbak && mv $$OUT/* /outbak/ && '
+      # Create a link from /out to the actual $OUT.
+      'rm -rf /out && ln -s $$OUT /out && '
+      # Unmount GCB's mount paths.
+      'umount /workspace && mkdir -p $$OUT && '
+      # Restore the actual contents into $OUT after unmounting.
+      'mv -T /outbak $$OUT && '
       # Unshallow the main repository so we have easy access to the git history.
       f'/usr/local/bin/unshallow_repos.py {project.main_repo}',
   ]
