@@ -169,6 +169,25 @@ def get_args(args=None):
   return parsed_args
 
 
+def handle_phase1_failure(version_tag):
+  """Handles the case where phase 1 (image build) fails."""
+  all_projects = get_all_projects()
+  results = {
+      'total': len(all_projects),
+      'successful': 0,
+      'failed': len(all_projects),
+      'skipped': 0,
+      'failed_projects': all_projects,
+  }
+  if version_tag:
+    with open(f'{version_tag}-results.json', 'w') as f:
+      json.dump(results, f)
+  logging.error(
+      'Failed to build and push images. All projects for this version will be '
+      'marked as failed.')
+  return False
+
+
 def get_projects_to_build(specified_projects, build_type, force_build):
   """Returns the list of projects that should be built."""
   buildable_projects = []
@@ -197,8 +216,7 @@ def trial_build_main(args=None, local_base_build=True):
     else:
       if not build_and_push_test_images.gcb_build_and_push_images(
           test_image_tag, version_tag=args.version_tag):
-        logging.error('Failed to build and push images.')
-        return False
+        return handle_phase1_failure(args.version_tag)
     logging.info('"Build and Push Images" phase completed.')
   else:
     logging.info(
