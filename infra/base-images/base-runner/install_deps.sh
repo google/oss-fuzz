@@ -26,6 +26,7 @@ apt-get update && apt-get install -y \
     libcap2 \
     rsync \
     unzip \
+    jq \
     wget \
     zip --no-install-recommends
 

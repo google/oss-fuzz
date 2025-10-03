@@ -28,21 +28,20 @@ else
   export BUILD_TRIPLET="x86_64-pc-linux-gnu"
 fi
 
-# Build using ThinLTO, to avoid OOM, and other LLVM issues.
-# See https://github.com/google/oss-fuzz/pull/10123.
-# Skip CFLAGS for now, to avoid:
-# "/usr/bin/ld: error: Failed to link module lib/libevent.a.llvm.17822.buffer.c: Expected at most one ThinLTO module per bitcode file".
-# export CFLAGS="$CFLAGS -flto=thin"
-# Skip CXXFLAGS for now, to avoid: undefined reference to __sancov_gen_.
-# export CXXFLAGS="$CXXFLAGS -flto=thin"
-# export LDFLAGS="-flto=thin"
+
+export CFLAGS="$CFLAGS -flto=full"
+export CXXFLAGS="$CXXFLAGS -flto=full"
+# Use lld to workaround <module> referenced in <section> of /tmp/lto-llvm-*.o: defined in discarded section
+export LDFLAGS="-fuse-ld=lld -flto=full"
 
 export CPPFLAGS="-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG -DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE"
 
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
+  # Disable IPC pending https://github.com/google/oss-fuzz/pull/13018
   make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_ZMQ=1 NO_USDT=1 \
+       NO_IPC=1 \
        AR=llvm-ar NM=llvm-nm RANLIB=llvm-ranlib STRIP=llvm-strip \
        -j$(nproc)
 )
