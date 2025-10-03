@@ -22,7 +22,7 @@ import re
 import subprocess
 from typing import Final, Sequence
 
-_LD_PATH = "/usr/bin/ld.so.2"
+LD_NAME: Final[str] = "ld.so"
 _LD_PATH: Final[pathlib.Path] = pathlib.Path("/lib64/ld-linux-x86-64.so.2")
 
 
@@ -50,9 +50,11 @@ def _parse_ld_trace_output(output: str) -> Sequence[SharedLibrary]:
   # The dynamic linker should always be copied.
   # The lines that have a => could contain a space, but we copy whatever is on
   # the right side of the =>, removing the load address.
-  shared_libraries = [SharedLibrary(name="ld.so", path=_LD_PATH)]
+  shared_libraries = [SharedLibrary(name=LD_NAME, path=_LD_PATH)]
   for lib_name, lib_path in re.findall(r"(\S+) => .*?(\S+) \(", output):
     lib_path = pathlib.Path(lib_path)
+    if lib_path == _LD_PATH:
+      continue
     shared_libraries.append(SharedLibrary(name=lib_name, path=lib_path))
 
   return shared_libraries
