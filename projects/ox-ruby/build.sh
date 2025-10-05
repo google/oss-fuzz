@@ -33,11 +33,15 @@ echo """#!/usr/bin/env bash
 this_dir=\$(dirname \"\$0\")
 
 echo "GEM_HOME FIRST: \$GEM_HOME"
-export GEM_HOME=\$this_dir/fuzz-gem
 
+export GEM_HOME=\$this_dir/fuzz-gem
 echo "GEM_PATH: \$GEM_PATH"
 echo "GEM_HOME: \$GEM_HOME"
+echo "Showing gem home:"
 ls -la \$GEM_HOME
+
+echo "Showing this dir:"
+ls -la \$this_dir
 
 
 ruzzy \$this_dir/fuzz_parse.rb \$@""" > $OUT/fuzz_parse
