@@ -1,12 +1,11 @@
+name: kafka
+language: jvm
+primary_contact: "jhrag13@gmail.com"
+main_repo: "https://github.com/apache/kafka"
+homepage: "https://github.com/apache/kafka"
+file_github_issue: true
 fuzzing_engines:
-- libfuzzer
-homepage: https://github.com/confluentinc/confluent-kafka-python
-language: python
-main_repo: https://github.com/confluentinc/confluent-kafka-python
+  - jazzer
 sanitizers:
-- address
-- undefined
-vendor_ccs:
-- david@adalogics.com
-- adam@adalogics.com
-- arthur.chan@adalogics.com
+  - address
+  - undefined
