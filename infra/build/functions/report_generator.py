@@ -29,8 +29,8 @@ RESULT_FILES = {
 }
 
 
-def _print_summary_box(title, lines):
-  """Prints a formatted box for summarizing build results."""
+def _print_box(title, lines):
+  """Prints a formatted box with a title and lines."""
   box_width = 80
   title_line = f'║ {title.center(box_width - 4)} ║'
   summary_lines = [
@@ -39,9 +39,7 @@ def _print_summary_box(title, lines):
       '╠' + '═' * (box_width - 2) + '╣',
   ]
   for line in lines:
-    wrapped_lines = textwrap.wrap(line, box_width - 6)
-    for i, sub_line in enumerate(wrapped_lines):
-      summary_lines.append(f'║  {sub_line.ljust(box_width - 6)}  ║')
+    summary_lines.append(f'║ {line.ljust(box_width - 4)} ║')
   summary_lines.append('╚' + '═' * (box_width - 2) + '╝')
   print('\n'.join(summary_lines))
 
@@ -51,13 +49,17 @@ def generate_final_summary(all_results):
   summary_lines = []
   for version, data in all_results.items():
     if data:
+      passed = str(data['successful'])
+      failed = str(data['failed'])
+      skipped = str(data['skipped'])
+      total = str(data['total'])
       line = (
-          f"  {version.ljust(15)} ► Passed: {data['successful']} | "
-          f"Failed: {data['failed']} | Skipped: {data['skipped']} | "
-          f"Total: {data['total']}")
+          f"  {version.ljust(15)} ► Passed: {passed.ljust(2)} | "
+          f"Failed: {failed.ljust(2)} | Skipped: {skipped.ljust(2)} | "
+          f"Total: {total.ljust(2)}")
       summary_lines.append(line)
 
-  _print_summary_box('FINAL BUILD REPORT', summary_lines)
+  _print_box('FINAL BUILD REPORT', summary_lines)
 
 
 def generate_comparison_table(all_results):
@@ -71,12 +73,10 @@ def generate_comparison_table(all_results):
     print('\n✅ No projects were run.')
     return
 
-  table_rows = []
-  header = ('Project'.ljust(20) + '| ' + 'Legacy'.center(15) + '| ' +
-            'Ubuntu 20.04'.center(15) + '| ' + 'Ubuntu 24.04'.center(15))
+  header = ('Project'.ljust(20) + ' | ' + 'Legacy'.center(15) + ' | ' +
+            'Ubuntu 20.04'.center(15) + ' | ' + 'Ubuntu 24.04'.center(15))
   separator = ('-' * 21 + '+' + '-' * 17 + '+' + '-' * 17 + '+' + '-' * 17)
-  table_rows.append(header)
-  table_rows.append(separator)
+  table_lines = [header, separator]
 
   for project in sorted(list(all_projects)):
     row_parts = [f' {project.ljust(19)}']
@@ -90,9 +90,9 @@ def generate_comparison_table(all_results):
         else:
           status_icon = '✅'
       row_parts.append(f' {status_icon.center(15)} ')
-    table_rows.append('|'.join(row_parts))
+    table_lines.append('|'.join(row_parts))
 
-  _print_summary_box('FAILURE COMPARISON TABLE', table_rows)
+  _print_box('FAILURE COMPARISON TABLE', table_lines)
 
 
 def main():
