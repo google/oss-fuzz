@@ -86,7 +86,7 @@ def generate_comparison_table(all_results):
         if project in all_results[version].get('failed_projects', []):
           status_icon = '❌'
         elif project in all_results[version].get('skipped_projects', []):
-          status_icon = '⏭️'
+          status_icon = '➡️'
         else:
           status_icon = '✅'
       row_parts.append(f' {status_icon.center(15)} ')
