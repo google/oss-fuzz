@@ -34,7 +34,7 @@ this_dir=\$(dirname \"\$0\")
 
 echo "GEM_HOME FIRST: \$GEM_HOME"
 
-export GEM_HOME=\$this_dir/fuzz-gem
+export GEM_HOME=\$this_dir/fuzz_parse-gem
 echo "GEM_PATH: \$GEM_PATH"
 echo "GEM_HOME: \$GEM_HOME"
 echo "Showing gem home:"
@@ -47,3 +47,5 @@ ls -la \$this_dir
 ruzzy \$this_dir/fuzz_parse.rb \$@""" > $OUT/fuzz_parse
 
 chmod +x $OUT/fuzz_parse
+
+mv $OUT/fuzz-gem $OUT/fuzz_parse-gem
