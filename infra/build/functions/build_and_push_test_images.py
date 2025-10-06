@@ -209,6 +209,7 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
       'base-builder-rust': ['base-builder'],
       'base-builder-swift': ['base-builder'],
       'base-runner-debug': ['base-runner'],
+      'indexer': ['base-clang-full'],
   }
 
   steps = []

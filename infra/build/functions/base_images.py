@@ -65,7 +65,7 @@ BASE_IMAGES = [
     ImageConfig('base-clang-full',
                 path=get_base_image_path('base-clang'),
                 build_args=('FULL_LLVM_BUILD=1',)),
-    # ImageConfig('indexer', path=os.path.join('infra', 'indexer')),
+    ImageConfig('indexer', path=os.path.join('infra', 'indexer')),
     ImageConfig('base-builder'),
     ImageConfig('base-builder-go'),
     ImageConfig('base-builder-javascript'),
