@@ -27,119 +27,121 @@ RESULT_FILES = {
     'Ubuntu 24.04': 'ubuntu-24-04-results.json',
 }
 
+
 def get_visible_width(text):
-    """Calculates the visible width of a string containing emojis."""
-    width = 0
-    for char in text:
-        if char in ['✅', '❌', '⏩']:
-            width += 2
-        else:
-            width += 1
-    return width
+  """Calculates the visible width of a string containing emojis."""
+  width = 0
+  for char in text:
+    if char in ['✅', '❌', '⏩']:
+      width += 2
+    else:
+      width += 1
+  return width
+
 
 def _print_box(title, lines):
-    """Prints a formatted box with a title and lines."""
-    box_width = 80
-    title_line = f'║ {title.center(box_width - 4)} ║'
-    summary_lines = [
-        '╔' + '═' * (box_width - 2) + '╗',
-        title_line,
-        '╠' + '═' * (box_width - 2) + '╣',
-    ]
-    for line in lines:
-        padding = box_width - 4 - get_visible_width(line)
-        summary_lines.append(f'║ {line}{" " * padding} ║')
-        
-    summary_lines.append('╚' + '═' * (box_width - 2) + '╝')
-    print('\n'.join(summary_lines))
+  """Prints a formatted box with a title and lines."""
+  box_width = 80
+  title_line = f'║ {title.center(box_width - 4)} ║'
+  summary_lines = [
+      '╔' + '═' * (box_width - 2) + '╗',
+      title_line,
+      '╠' + '═' * (box_width - 2) + '╣',
+  ]
+  for line in lines:
+    padding = box_width - 4 - get_visible_width(line)
+    summary_lines.append(f'║ {line}{" " * padding} ║')
+
+  summary_lines.append('╚' + '═' * (box_width - 2) + '╝')
+  print('\n'.join(summary_lines))
 
 
 def generate_final_summary(all_results):
-    """Prints a visually appealing summary of all build versions."""
-    summary_lines = []
-    for version, data in all_results.items():
-        if data:
-            passed = str(data['successful'])
-            failed = str(data['failed'])
-            skipped = str(data['skipped'])
-            total = str(data['total'])
-            line = (
-                    f"  {version.ljust(15)} ► {'Passed:'.ljust(8)} {passed.ljust(2)} | "
-                    f"{'Failed:'.ljust(8)} {failed.ljust(2)} | {'Skipped:'.ljust(8)} {skipped.ljust(2)} | "
-                    f"{'Total:'.ljust(8)} {total.ljust(2)}")
-            summary_lines.append(line)
+  """Prints a visually appealing summary of all build versions."""
+  summary_lines = []
+  for version, data in all_results.items():
+    if data:
+      passed = str(data['successful'])
+      failed = str(data['failed'])
+      skipped = str(data['skipped'])
+      total = str(data['total'])
+      line = (
+          f"  {version.ljust(15)} ► {'Passed:'.ljust(8)} {passed.ljust(2)} | "
+          f"{'Failed:'.ljust(8)} {failed.ljust(2)} | {'Skipped:'.ljust(8)} {skipped.ljust(2)} | "
+          f"{'Total:'.ljust(8)} {total.ljust(2)}")
+      summary_lines.append(line)
 
-    _print_box('FINAL BUILD REPORT', summary_lines)
+  _print_box('FINAL BUILD REPORT', summary_lines)
 
 
 def generate_comparison_table(all_results):
-    """Prints a table comparing failures across versions."""
-    all_projects = set()
-    for data in all_results.values():
-        if data and 'all_projects' in data:
-            all_projects.update(data['all_projects'])
+  """Prints a table comparing failures across versions."""
+  all_projects = set()
+  for data in all_results.values():
+    if data and 'all_projects' in data:
+      all_projects.update(data['all_projects'])
 
-    if not all_projects:
-        print('\n✅ No projects were run.')
-        return
+  if not all_projects:
+    print('\n✅ No projects were run.')
+    return
 
-    project_col_width = 18
-    header = ' Project           |      Legacy      |   Ubuntu 20.04   |   Ubuntu 24.04'
-    separator = '-------------------+------------------+------------------+------------------'
-    
-    table_lines = [header, separator]
+  project_col_width = 18
+  header = ' Project           |      Legacy      |   Ubuntu 20.04   |   Ubuntu 24.04'
+  separator = '-------------------+------------------+------------------+------------------'
 
-    for project in sorted(list(all_projects)):
-        project_name = project
-        if len(project_name) > project_col_width:
-            project_name = project_name[:project_col_width - 3] + '...'
-        
-        row = f' {project_name.ljust(project_col_width)}|'
-        for version in RESULT_FILES:
-            status_icon = ' '
-            if all_results.get(version):
-                if project in all_results[version].get('failed_projects', []):
-                    status_icon = '❌'
-                elif project in all_results[version].get('skipped_projects', []):
-                    status_icon = '⏩'
-                else:
-                    status_icon = '✅'
-            row += f' {status_icon.center(15)} |'
-        row = row[:-1]
-        table_lines.append(row)
+  table_lines = [header, separator]
 
-    _print_box('FAILURE COMPARISON TABLE', table_lines)
+  for project in sorted(list(all_projects)):
+    project_name = project
+    if len(project_name) > project_col_width:
+      project_name = project_name[:project_col_width - 3] + '...'
+
+    row = f' {project_name.ljust(project_col_width)}|'
+    for version in RESULT_FILES:
+      status_icon = ' '
+      if all_results.get(version):
+        if project in all_results[version].get('failed_projects', []):
+          status_icon = '❌'
+        elif project in all_results[version].get('skipped_projects', []):
+          status_icon = '⏩'
+        else:
+          status_icon = '✅'
+      row += f' {status_icon.center(15)} |'
+    row = row[:-1]
+    table_lines.append(row)
+
+  _print_box('FAILURE COMPARISON TABLE', table_lines)
 
 
 def main():
-    """Main function to generate report and determine pipeline status.""" 
-    all_results = {}
-    any_failures = False
+  """Main function to generate report and determine pipeline status."""
+  all_results = {}
+  any_failures = False
 
-    print('Generating final build report...')
+  print('Generating final build report...')
 
-    for version, filename in RESULT_FILES.items():
-        if not os.path.exists(filename):
-            print(f'Warning: Result file "{filename}" not found.')
-            all_results[version] = None
-            continue
+  for version, filename in RESULT_FILES.items():
+    if not os.path.exists(filename):
+      print(f'Warning: Result file "{filename}" not found.')
+      all_results[version] = None
+      continue
 
-        with open(filename, 'r') as f:
-            data = json.load(f)
-            all_results[version] = data
-            if data['failed'] > 0:
-                any_failures = True
+    with open(filename, 'r') as f:
+      data = json.load(f)
+      all_results[version] = data
+      if data['failed'] > 0:
+        any_failures = True
 
-    generate_comparison_table(all_results)
-    generate_final_summary(all_results)
+  generate_comparison_table(all_results)
+  generate_final_summary(all_results)
 
-    if any_failures:
-        print('\nPipeline finished with failures.')
-        sys.exit(1)
-    else:
-        print('\nPipeline finished successfully.')
-        sys.exit(0)
+  if any_failures:
+    print('\nPipeline finished with failures.')
+    sys.exit(1)
+  else:
+    print('\nPipeline finished successfully.')
+    sys.exit(0)
 
 
 if __name__ == '__main__':
-    main()
+  main()
