@@ -22,6 +22,28 @@ cd $SRC/ox-ruby
 gem build
 RUZZY_DEBUG=1 gem install --development --verbose *.gem
 
-for fuzz_target_path in $SRC/harnesses/fuzz_*.rb; do
-	ruzzy-build "$fuzz_target_path"
-done
+#for fuzz_target_path in $SRC/harnesses/fuzz_*.rb; do
+#	ruzzy-build "$fuzz_target_path"
+#done
+
+cp $SRC/harnesses/fuzz_parse.rb $OUT/
+
+echo """#!/usr/bin/env bash
+# LLVMFuzzerTestOneInput for fuzzer detection.
+this_dir=\$(dirname \"\$0\")
+
+echo "GEM_HOME FIRST: \$GEM_HOME"
+
+export GEM_HOME=\$this_dir/fuzz-gem
+echo "GEM_PATH: \$GEM_PATH"
+echo "GEM_HOME: \$GEM_HOME"
+echo "Showing gem home:"
+ls -la \$GEM_HOME
+
+echo "Showing this dir:"
+ls -la \$this_dir
+
+
+ruzzy \$this_dir/fuzz_parse.rb \$@""" > $OUT/fuzz_parse
+
+chmod +x $OUT/fuzz_parse
