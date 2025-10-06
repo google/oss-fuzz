@@ -19,6 +19,7 @@ final status of the pipeline."""
 import json
 import os
 import sys
+import textwrap
 
 # Define the expected result files for each build version.
 RESULT_FILES = {
@@ -28,52 +29,70 @@ RESULT_FILES = {
 }
 
 
-def generate_final_summary(all_results):
-  """Prints a visually appealing summary of all build versions."""
+def _print_summary_box(title, lines):
+  """Prints a formatted box for summarizing build results."""
+  box_width = 80
+  title_line = f'║ {title.center(box_width - 4)} ║'
   summary_lines = [
-      '╔═════════════════════════════════════════════════════════════════════════════╗',
-      '║                             FINAL BUILD REPORT                              ║',
-      '╠═════════════════════════════════════════════════════════════════════════════╣',
+      '╔' + '═' * (box_width - 2) + '╗',
+      title_line,
+      '╠' + '═' * (box_width - 2) + '╣',
   ]
-  for version, data in all_results.items():
-    if data:
-      line = (f"║ {version.ljust(15)} ► Passed: {data['successful']} | "
-              f"Failed: {data['failed']} | Skipped: {data['skipped']} | "
-              f"Total: {data['total']}     ║")
-      summary_lines.append(line)
-  summary_lines.append(
-      '╚═════════════════════════════════════════════════════════════════════════════╝'
-  )
+  for line in lines:
+    wrapped_lines = textwrap.wrap(line, box_width - 6)
+    for i, sub_line in enumerate(wrapped_lines):
+      summary_lines.append(f'║  {sub_line.ljust(box_width - 6)}  ║')
+  summary_lines.append('╚' + '═' * (box_width - 2) + '╝')
   print('\n'.join(summary_lines))
 
 
-def generate_comparison_table(all_results):
-  """Prints a Markdown table comparing failures across versions."""
-  all_failed_projects = set()
-  for data in all_results.values():
+def generate_final_summary(all_results):
+  """Prints a visually appealing summary of all build versions."""
+  summary_lines = []
+  for version, data in all_results.items():
     if data:
-      all_failed_projects.update(data['failed_projects'])
+      line = (
+          f"  {version.ljust(15)} ► Passed: {data['successful']} | "
+          f"Failed: {data['failed']} | Skipped: {data['skipped']} | "
+          f"Total: {data['total']}")
+      summary_lines.append(line)
 
-  if not all_failed_projects:
-    print('\n✅ No projects failed on any version. Great success!')
+  _print_summary_box('FINAL BUILD REPORT', summary_lines)
+
+
+def generate_comparison_table(all_results):
+  """Prints a table comparing failures across versions."""
+  all_projects = set()
+  for data in all_results.values():
+    if data and 'all_projects' in data:
+      all_projects.update(data['all_projects'])
+
+  if not all_projects:
+    print('\n✅ No projects were run.')
     return
 
-  header = ('| Project        | Legacy | Ubuntu 20.04 | Ubuntu 24.04 |\n'
-            '| :------------- | :----: | :----------: | :----------: |')
-  table_rows = [header]
+  table_rows = []
+  header = ('Project'.ljust(20) + '| ' + 'Legacy'.center(15) + '| ' +
+            'Ubuntu 20.04'.center(15) + '| ' + 'Ubuntu 24.04'.center(15))
+  separator = ('-' * 21 + '+' + '-' * 17 + '+' + '-' * 17 + '+' + '-' * 17)
+  table_rows.append(header)
+  table_rows.append(separator)
 
-  for project in sorted(list(all_failed_projects)):
-    row = f'| `{project}` |'
+  for project in sorted(list(all_projects)):
+    row_parts = [f' {project.ljust(19)}']
     for version in RESULT_FILES:
-      if (all_results[version] and
-          project in all_results[version]['failed_projects']):
-        row += ' ❌ |'
-      else:
-        row += ' ✅ |'
-    table_rows.append(row)
+      status_icon = '❓'
+      if all_results.get(version):
+        if project in all_results[version].get('failed_projects', []):
+          status_icon = '❌'
+        elif project in all_results[version].get('skipped_projects', []):
+          status_icon = '⏭️'
+        else:
+          status_icon = '✅'
+      row_parts.append(f' {status_icon.center(15)} ')
+    table_rows.append('|'.join(row_parts))
 
-  print('\n### Failure Comparison Table\n')
-  print('\n'.join(table_rows))
+  _print_summary_box('FAILURE COMPARISON TABLE', table_rows)
 
 
 def main():

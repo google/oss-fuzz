@@ -478,12 +478,17 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   # Final Report
   total_projects = (len(successful_builds) + len(failed_builds) +
                     len(skipped_projects))
+  all_projects_in_build = (list(successful_builds.keys()) +
+                           list(failed_builds.keys()) +
+                           [name for name, reason in skipped_projects])
   results = {
       'total': total_projects,
       'successful': len(successful_builds),
       'failed': len(failed_builds),
       'skipped': len(skipped_projects),
       'failed_projects': sorted(list(failed_builds.keys())),
+      'skipped_projects': sorted([name for name, reason in skipped_projects]),
+      'all_projects': sorted(all_projects_in_build),
   }
   with open(f'{version_tag}-results.json', 'w') as f:
     json.dump(results, f)
