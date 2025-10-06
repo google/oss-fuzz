@@ -1,11 +1,11 @@
-homepage: "https://github.com/google/gson"
+name: gson
 language: jvm
-primary_contact: "emcmanus@google.com"
+primary_contact: "jhrag13@gmail.com"
 main_repo: "https://github.com/google/gson"
-auto_ccs:
-  - "david@adalogics.com"
+homepage: "https://github.com/google/gson"
+file_github_issue: true
 fuzzing_engines:
-  - libfuzzer
+  - jazzer
 sanitizers:
   - address
-file_github_issue: True
+  - undefined
