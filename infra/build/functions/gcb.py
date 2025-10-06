@@ -87,11 +87,9 @@ def exec_command_from_github(args):
   # Set the branch so that the trial_build builds the projects from the PR
   # branch.
   command.extend(['--branch', branch])
-  logging.info('Command: %s.', command)
-
   command.extend(args)
 
-  logging.info('Full command: %s.', command)
+  logging.info('Executing command: %s.', command)
 
   if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
     return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command) == 0
