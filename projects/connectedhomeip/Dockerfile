@@ -29,8 +29,8 @@ RUN apt-get update && \
     apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \
-    apt-get install -y pkg-config python3.9 python3.9-dev python3.9-venv && \
-    ln --force -s /usr/bin/python3.9 /usr/bin/python3
+    apt-get install -y pkg-config python3.11 python3.11-dev python3.11-venv && \
+    ln --force -s /usr/bin/python3.11 /usr/bin/python3
 
 # Ensure python that was just installed gets precedence over
 # the one already installed in /usr/local/bin
