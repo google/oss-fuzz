@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export GEM_HOME=$OUT/fuzz_parse-gem
+
 # setup
 BUILD=$WORK/Build
 
@@ -48,4 +50,4 @@ ruzzy \$this_dir/fuzz_parse.rb \$@""" > $OUT/fuzz_parse
 
 chmod +x $OUT/fuzz_parse
 
-mv $OUT/fuzz-gem $OUT/fuzz_parse-gem
+#mv $OUT/fuzz-gem $OUT/fuzz_parse-gem
