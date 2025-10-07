@@ -203,12 +203,6 @@ def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build."""
   args = get_args(args)
 
-  test_image_tag = TEST_IMAGE_SUFFIX
-  if args.version_tag:
-    test_image_tag = f'{test_image_tag}-{args.version_tag}'
-  if args.branch:
-    test_image_tag = f'{test_image_tag}-{args.branch.lower().replace("/", "-")}'
-
   if not args.skip_build_images:
     logging.info('Starting "Build and Push Images" phase...')
 
@@ -246,10 +240,38 @@ def trial_build_main(args=None, local_base_build=True):
 
   timeout = int(os.environ.get('TIMEOUT', SCRIPT_DEFAULT_TIMEOUT))
   end_time = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
-  return _do_test_builds(args, test_image_tag, end_time)
+
+  if local_base_build and not args.version_tag:
+    versions_to_build = build_and_push_test_images.BASE_IMAGE_VERSIONS
+    if not versions_to_build:
+      return False
+
+    overall_result = True
+    for version in versions_to_build:
+      logging.info(
+          '================================================================')
+      logging.info('      RUNNING TEST BUILDS FOR VERSION: %s', version.upper())
+      logging.info(
+          '================================================================')
+      test_image_tag = f'{TEST_IMAGE_SUFFIX}-{version}'
+      if args.branch:
+        test_image_tag = (
+            f'{test_image_tag}-{args.branch.lower().replace("/", "-")}')
+
+      result = _do_test_builds(args, test_image_tag, end_time, version)
+      overall_result = overall_result and result
+    return overall_result
+
+  # GCB or local single-version case
+  test_image_tag = TEST_IMAGE_SUFFIX
+  if args.version_tag:
+    test_image_tag = f'{test_image_tag}-{args.version_tag}'
+  if args.branch:
+    test_image_tag = f'{test_image_tag}-{args.branch.lower().replace("/", "-")}'
+  return _do_test_builds(args, test_image_tag, end_time, args.version_tag)
 
 
-def _do_test_builds(args, test_image_suffix, end_time):
+def _do_test_builds(args, test_image_suffix, end_time, version_tag):
   """Does test coverage and fuzzing builds."""
   build_types = []
   sanitizers = list(args.sanitizers)
@@ -336,7 +358,7 @@ def _do_test_builds(args, test_image_suffix, end_time):
   logging.info('-----------------------')
 
   wait_result = wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
-                               end_time, skipped_projects, args.version_tag)
+                               end_time, skipped_projects, version_tag)
 
   if failed_to_start_builds:
     logging.error(
