@@ -440,6 +440,8 @@ def build_project(
 
   build_cov_instrumentation_command = [
       f'{_CLANG_TOOLCHAIN}/bin/clang++',
+      '-fno-rtti',
+      '-fno-exceptions',
       '-c',
       '/opt/indexer/coverage.cc',
   ]
