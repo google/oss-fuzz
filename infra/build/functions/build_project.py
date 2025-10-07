@@ -290,11 +290,11 @@ def get_compile_step(project,
   """Returns the GCB step for compiling |projects| fuzzers using |env|. The type
   of build is specified by |build|."""
   failure_msg = (
-      '*' * 80 + '\nFailed to build.\nTo reproduce, run:\n'
-      f'python infra/helper.py build_image {project.name}\n'
+      '*' * 80 + '\\nFailed to build.\\nTo reproduce, run:\\n'
+      f'python infra/helper.py build_image {project.name}\\n'
       'python infra/helper.py build_fuzzers --sanitizer '
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
-      f'{build.architecture} {project.name}\n' + '*' * 80)
+      f'{build.architecture} {project.name}\\n' + '*' * 80)
   compile_output_redirect = ''
 
   if upload_build_logs:
@@ -442,15 +442,15 @@ def get_build_steps_for_project(project,
 
         if project.run_tests:
           failure_msg = (
-              '*' * 80 + '\nBuild checks failed.\n'
-              'To reproduce, run:\n'
-              f'python infra/helper.py build_image {project.name}\n'
+              '*' * 80 + '\\nBuild checks failed.\\n'
+              'To reproduce, run:\\n'
+              f'python infra/helper.py build_image {project.name}\\n'
               'python infra/helper.py build_fuzzers --sanitizer '
               f'{build.sanitizer} --engine {build.fuzzing_engine} '
-              f'--architecture {build.architecture} {project.name}\n'
+              f'--architecture {build.architecture} {project.name}\\n'
               'python infra/helper.py check_build --sanitizer '
               f'{build.sanitizer} --engine {build.fuzzing_engine} '
-              f'--architecture {build.architecture} {project.name}\n' +
+              f'--architecture {build.architecture} {project.name}\\n' +
               '*' * 80)
           # Test fuzz targets.
           test_step = {
