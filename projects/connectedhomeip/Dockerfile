@@ -24,23 +24,32 @@ RUN apt-get update && \
         libavahi-client-dev ninja-build \
         unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
-# Installing Python3.9 and using it instead of the default Python taken from the base-builder image
+# Build Python 3.10 from source (no more available in deadsnakes for Ubuntu 20.04)
+# ONCE OSS-Fuzz release Base image with Ubuntu 24.04, we can switch to that and stop building python from source
 RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y pkg-config python3.11 python3.11-dev python3.11-venv && \
-    ln --force -s /usr/bin/python3.11 /usr/bin/python3
+    apt-get install -y --no-install-recommends \
+        build-essential zlib1g-dev libncurses5-dev libgdbm-dev libgdbm-compat-dev \
+        libnss3-dev libffi-dev libsqlite3-dev wget curl ca-certificates \
+        libbz2-dev liblzma-dev xz-utils uuid-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    cd /tmp && set -eux; \
+    curl -fL https://www.python.org/ftp/python/3.10.14/Python-3.10.14.tgz -o Python-3.10.14.tgz && \
+    tar -xf Python-3.10.14.tgz && \
+    cd Python-3.10.14 && \
+    ./configure --enable-optimizations --prefix=/usr/local \
+                --with-lto --enable-shared && \
+    make -j"$(nproc)" && \
+    make altinstall && \
+    ln --force -s /usr/local/bin/python3.10 /usr/bin/python3 && \
+    ln --force -s /usr/local/bin/pip3.10 /usr/bin/pip3 && \
+    echo "/usr/local/lib" > /etc/ld.so.conf.d/python3.10.conf && ldconfig && \
+    cd / && rm -rf /tmp/Python-3.10.14*
 
-# Ensure python that was just installed gets precedence over
-# the one already installed in /usr/local/bin
-ENV PATH="/usr/bin/:${PATH}"
-
-#RUN python3 -m ensurepip --upgrade
 
 # PEP-517 needed for cryptography. Update pip
-RUN pip install --upgrade pip setuptools wheel packaging
-
+RUN python3 -m ensurepip --upgrade && \
+    python3 -m pip install --upgrade pip setuptools wheel packaging
+    
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
