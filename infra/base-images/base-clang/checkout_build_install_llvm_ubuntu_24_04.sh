@@ -79,8 +79,7 @@ function clone_with_retries {
 
   # Disable exit on error since we might encounter some failures while retrying.
   set +e
-  for i in $(seq 1 $CHECKOUT_RETRIES);
-  do
+  for i in $(seq 1 $CHECKOUT_RETRIES); do
     rm -rf $LOCAL_PATH
     git clone $REPOSITORY $LOCAL_PATH
     CHECKOUT_RETURN_CODE=$?
@@ -97,6 +96,16 @@ clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
 git -C $LLVM_SRC checkout $OUR_LLVM_REVISION
 echo "Using LLVM revision: $OUR_LLVM_REVISION"
+
+# Prepare fuzz introspector.
+echo "Installing fuzz introspector"
+FUZZ_INTROSPECTOR_CHECKOUT=341ebbd72bc9116733bcfcfab5adfd7f9b633e07
+
+git clone https://github.com/ossf/fuzz-introspector.git /fuzz-introspector
+cd /fuzz-introspector
+git checkout $FUZZ_INTROSPECTOR_CHECKOUT
+git submodule init
+git submodule update
 
 # For fuzz introspector.
 echo "Applying introspector changes"

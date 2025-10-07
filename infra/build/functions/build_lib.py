@@ -287,7 +287,7 @@ def get_signed_url(path, method='PUT', content_type=''):
   timestamp = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
   timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-  path = urlparse(path)
+  path = urlparse.urlparse(path)
   blob_path = path.path.lstrip('/')
   blob = f"""{method}
 

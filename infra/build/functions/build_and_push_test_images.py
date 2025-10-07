@@ -56,7 +56,7 @@ def build_and_push_image(image, test_image_tag, version='legacy'):
                                                     version)
   build_image(image, [main_image_name, test_image_name], main_image_name,
               version)
-  # push_image(test_image_name)
+  push_image(test_image_name)
 
 
 def build_image(image, tags, cache_from_tag, version='latest'):
@@ -279,24 +279,23 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   return wait_for_build_and_report_summary(build_id)
 
 
-def build_and_push_images(test_image_tag):
+def build_and_push_images(test_image_tag, version_tag=None):
   """Builds and pushes base-images."""
   images = [
       ['base-image'],
       ['base-clang'],
       ['base-builder'],
-      ['base-runner'],
-      # Exclude 'base-builder-swift' as it takes extremely long to build because
-      # it clones LLVM.
       [
-          'base-runner-debug',
+          'base-builder-swift',
+          'base-builder-ruby',
+          'base-builder-rust',
           'base-builder-go',
           'base-builder-javascript',
           'base-builder-jvm',
           'base-builder-python',
-          'base-builder-ruby',
-          'base-builder-rust',
       ],
+      ['base-runner'],
+      ['base-runner-debug'],
   ]
   os.environ['DOCKER_BUILDKIT'] = '1'
   max_parallelization = max([len(image_list) for image_list in images])
@@ -306,7 +305,8 @@ def build_and_push_images(test_image_tag):
     for image_list in images:
       args_list = []
       for image in image_list:
-        for version in BASE_IMAGE_VERSIONS:
+        versions = [version_tag] if version_tag else BASE_IMAGE_VERSIONS
+        for version in versions:
           # Check if the specific versioned Dockerfile exists before adding.
           if version == 'legacy':
             dockerfile_path = os.path.join(IMAGES_DIR, image, 'Dockerfile')

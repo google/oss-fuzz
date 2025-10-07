@@ -80,7 +80,7 @@ function clone_with_retries {
 
   # Disable exit on error since we might encounter some failures while retrying.
   set +e
-  for i in $(seq 1 $CHECKOUT_RETRIES);
+  for i in $(seq 1 $CHECKOUT_RETRIES); do
     rm -rf $LOCAL_PATH
     git clone $REPOSITORY $LOCAL_PATH
     CHECKOUT_RETURN_CODE=$?

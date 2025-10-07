@@ -41,7 +41,7 @@ def get_visible_width(text):
 
 def _print_box(title, lines):
   """Prints a formatted box with a title and lines."""
-  box_width = 80
+  box_width = 92
   title_line = f'║ {title.center(box_width - 4)} ║'
   summary_lines = [
       '╔' + '═' * (box_width - 2) + '╗',
@@ -66,9 +66,9 @@ def generate_final_summary(all_results):
       skipped = str(data['skipped'])
       total = str(data['total'])
       line = (
-          f"  {version.ljust(15)} ► {'Passed:'.ljust(8)} {passed.ljust(2)} | "
-          f"{'Failed:'.ljust(8)} {failed.ljust(2)} | {'Skipped:'.ljust(8)} {skipped.ljust(2)} | "
-          f"{'Total:'.ljust(8)} {total.ljust(2)}")
+          f"  {version.ljust(15)} ► {'Passed:'.ljust(8)} {passed.ljust(6)} | "
+          f"{'Failed:'.ljust(8)} {failed.ljust(6)} | {'Skipped:'.ljust(8)} {skipped.ljust(6)} | "
+          f"{'Total:'.ljust(7)} {total.ljust(6)}")
       summary_lines.append(line)
 
   _print_box('FINAL BUILD REPORT', summary_lines)
@@ -85,9 +85,9 @@ def generate_comparison_table(all_results):
     print('\n✅ No projects were run.')
     return
 
-  project_col_width = 18
-  header = ' Project           |      Legacy      |   Ubuntu 20.04   |   Ubuntu 24.04'
-  separator = '-------------------+------------------+------------------+------------------'
+  project_col_width = 30
+  header = ' Project                       |      Legacy      |   Ubuntu 20.04   |   Ubuntu 24.04'
+  separator = '-------------------------------+------------------+------------------+------------------'
 
   table_lines = [header, separator]
 

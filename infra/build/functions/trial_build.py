@@ -212,7 +212,8 @@ def trial_build_main(args=None, local_base_build=True):
   if not args.skip_build_images:
     logging.info('Starting "Build and Push Images" phase...')
     if local_base_build:
-      build_and_push_test_images.build_and_push_images(test_image_tag)
+      build_and_push_test_images.build_and_push_images(test_image_tag,
+                                                       args.version_tag)
     else:
       if not build_and_push_test_images.gcb_build_and_push_images(
           test_image_tag, version_tag=args.version_tag):
@@ -373,12 +374,15 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     try:
+      tags = ['trial-build']
+      if args.branch:
+        tags.append(f'branch-{args.branch.replace("/", "-")}')
       build_ids[project_name] = (build_project.run_build(
           project_name,
           steps,
           credentials,
           build_type.type_name,
-          extra_tags=['trial-build', f'branch-{args.branch.replace("/", "-")}'],
+          extra_tags=tags,
           timeout=PROJECT_BUILD_TIMEOUT))
       time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
@@ -529,4 +533,4 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(trial_build_main())
