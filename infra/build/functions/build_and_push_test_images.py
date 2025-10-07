@@ -284,6 +284,8 @@ def build_and_push_images(test_image_tag, version_tag=None):
   images = [
       ['base-image'],
       ['base-clang'],
+      ['base-clang-full'],
+      ['indexer'],
       ['base-builder'],
       [
           'base-builder-swift',

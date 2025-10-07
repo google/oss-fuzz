@@ -211,13 +211,30 @@ def trial_build_main(args=None, local_base_build=True):
 
   if not args.skip_build_images:
     logging.info('Starting "Build and Push Images" phase...')
-    if local_base_build:
-      build_and_push_test_images.build_and_push_images(test_image_tag,
-                                                       args.version_tag)
-    else:
-      if not build_and_push_test_images.gcb_build_and_push_images(
-          test_image_tag, version_tag=args.version_tag):
-        return handle_phase1_failure(args.version_tag)
+
+    versions_to_build = ([args.version_tag] if args.version_tag else
+                         build_and_push_test_images.BASE_IMAGE_VERSIONS)
+
+    for version in versions_to_build:
+      logging.info(
+          '================================================================')
+      logging.info('      BUILDING BASE IMAGES FOR VERSION: %s',
+                   version.upper())
+      logging.info(
+          '================================================================')
+      version_test_image_tag = f'{TEST_IMAGE_SUFFIX}-{version}'
+      if args.branch:
+        version_test_image_tag = (
+            f'{version_test_image_tag}-{args.branch.lower().replace("/", "-")}')
+
+      if local_base_build:
+        build_and_push_test_images.build_and_push_images(
+            version_test_image_tag, version)
+      else:
+        if not build_and_push_test_images.gcb_build_and_push_images(
+            version_test_image_tag, version_tag=version):
+          return handle_phase1_failure(version)
+
     logging.info('"Build and Push Images" phase completed.')
   else:
     logging.info(
