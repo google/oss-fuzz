@@ -511,6 +511,9 @@ def merge_incremental_cdb(cdb_path: Path, merged_cdb_path: Path) -> None:
       if file.suffix != ".json":
         continue
 
+      if file.name.endswith("_linker_commands.json"):
+        continue
+
       fragment_data = _wait_for_cdb_fragment(file)
       if not fragment_data:
         continue
