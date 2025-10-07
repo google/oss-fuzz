@@ -117,6 +117,7 @@ def main():
   """Main function to generate report and determine pipeline status."""
   all_results = {}
   any_failures = False
+  any_results_found = False
 
   print('Generating final build report...')
 
@@ -129,8 +130,15 @@ def main():
     with open(filename, 'r') as f:
       data = json.load(f)
       all_results[version] = data
+      any_results_found = True
       if data['failed'] > 0:
         any_failures = True
+
+  if not any_results_found:
+    error_lines = ['All build versions failed to produce results.']
+    _print_box('FINAL BUILD REPORT', error_lines)
+    print('\nPipeline finished with failures.')
+    sys.exit(1)
 
   generate_comparison_table(all_results)
   generate_final_summary(all_results)

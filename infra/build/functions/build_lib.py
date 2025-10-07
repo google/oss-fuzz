@@ -299,7 +299,7 @@ def get_signed_url(path, method='PUT', content_type=''):
   client_id, signature = _sign_blob(blob)
   return (f'https://storage.googleapis.com/{path.netloc}/{blob_path}'
           f'?GoogleAccessId={client_id}&Expires={int(time.time() + 3600)}'
-          f'&Signature={urllib.parse.quote_plus(signature)}')
+          f'&Signature={urlparse.quote_plus(signature)}')
 
 
 def _normalized_name(name):
