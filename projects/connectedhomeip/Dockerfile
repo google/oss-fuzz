@@ -36,7 +36,7 @@ RUN apt-get update && \
     curl -fL https://www.python.org/ftp/python/3.10.14/Python-3.10.14.tgz -o Python-3.10.14.tgz && \
     tar -xf Python-3.10.14.tgz && \
     cd Python-3.10.14 && \
-    ./configure --enable-optimizations --prefix=/usr/local \
+    ./configure --prefix=/usr/local \
                 --with-lto --enable-shared && \
     make -j"$(nproc)" && \
     make altinstall && \
@@ -46,10 +46,15 @@ RUN apt-get update && \
     cd / && rm -rf /tmp/Python-3.10.14*
 
 
+# Reinstall GLib development headers (workaround needed for gio/gio.h)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libglib2.0-dev
+
+RUN python3 -m ensurepip --upgrade
+
 # PEP-517 needed for cryptography. Update pip
-RUN python3 -m ensurepip --upgrade && \
-    python3 -m pip install --upgrade pip setuptools wheel packaging
-    
+RUN python3 -m pip install --upgrade pip setuptools wheel packaging
+
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
