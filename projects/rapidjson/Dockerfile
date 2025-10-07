@@ -16,7 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool cmake libgtest-dev
+    apt-get install -y make autoconf automake libtool cmake
+RUN git clone --depth 1 https://github.com/google/googletest && \
+   cd $SRC/googletest && \
+   mkdir build && \
+   cd build && \
+   cmake .. && \
+   make -j$(nproc) && \
+   make install
 RUN git clone --depth 1 https://github.com/Tencent/rapidjson.git rapidjson
 WORKDIR rapidjson
 COPY *.sh fuzzer.cpp $SRC/

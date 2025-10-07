@@ -103,6 +103,7 @@ class ProjectYamlChecker:
       'vendor_ccs',
       'view_restrictions',
       'file_github_issue',
+      'indexer',  # Flags specific to infra/indexer.
   ]
 
   REQUIRED_SECTIONS = ['main_repo']

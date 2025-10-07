@@ -19,7 +19,7 @@ While developing your build script, it may be useful to run bash within the
 container:
 
 ```bash
-$ python infra/helper.py shell $PROJECT_NAME  # runs /bin/bash within container
+$ python3 infra/helper.py shell $PROJECT_NAME  # runs /bin/bash within container
 $ compile                                     # runs compilation manually
 ```
 
@@ -34,7 +34,7 @@ image:
 $ cp /path/to/testcase build/out/$PROJECT_NAME
 
 # Run the Docker image containing GDB.
-$ python infra/helper.py shell base-runner-debug
+$ python3 infra/helper.py shell base-runner-debug
 $ gdb --args /out/$PROJECT_NAME/$FUZZ_TARGET_NAME /out/$PROJECT_NAME/testcase
 ```
 
