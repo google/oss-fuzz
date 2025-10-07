@@ -287,7 +287,6 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
   build_ids = collections.defaultdict(list)
   skipped_projects = []
   failed_to_start_builds = []
-  projects_to_build_count = 0
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
 
   logging.info(
@@ -332,10 +331,8 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
     failed_to_start_builds.extend(new_failed_to_start)
     for project, project_build_id in project_builds.items():
       build_ids[project].append(project_build_id)
-            projects_to_build_count += 1
 
   logging.info('Triggered all builds.')
-
   if skipped_projects:
     logging.info(
         '================================================================')
@@ -413,7 +410,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     steps, reason = build_type.get_build_steps_func(project_name, project_yaml,
-                                                  dockerfile_contents, config)
+                                                    dockerfile_contents, config)
     if reason:
       skipped_projects.append((project_name, reason))
       continue

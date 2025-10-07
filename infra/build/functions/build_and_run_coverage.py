@@ -90,7 +90,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   if project.fuzzing_language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
     return [], (f'Project "{project.name}" is written in '
-                 f'"{project.fuzzing_language}", coverage is not supported yet.')
+                f'"{project.fuzzing_language}", coverage is not supported yet.')
 
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
@@ -258,7 +258,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
 
   build_steps.append(
       build_lib.http_upload_step(latest_report_info_body,
-                                  latest_report_info_url,
+                                 latest_report_info_url,
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
   return build_steps, None
 
@@ -273,8 +273,8 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   if project.fuzzing_language not in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
     return [], (f'Project "{project.name}" is written in '
-                 f'"{project.fuzzing_language}", Fuzz Introspector is not '
-                 'supported yet.')
+                f'"{project.fuzzing_language}", Fuzz Introspector is not '
+                'supported yet.')
 
   build_steps = []
   build = build_project.Build(FUZZING_ENGINE, 'introspector', ARCHITECTURE)
