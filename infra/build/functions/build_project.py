@@ -361,7 +361,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
                                      config,
                                      additional_env=additional_env,
                                      use_caching=use_caching,
-                                     timestamp=timestamp)
+                                     timestamp=timestamp), None
 
 
 def get_build_steps_for_project(project,

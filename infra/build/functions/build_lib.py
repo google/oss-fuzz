@@ -314,8 +314,7 @@ def download_corpora_steps(project_name, test_image_suffix):
   """
   fuzz_targets = _get_targets_list(project_name)
   if not fuzz_targets:
-    sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
-    return None
+    return None, f'No fuzz targets found for project "{project_name}".'
 
   steps = []
   # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
@@ -347,7 +346,7 @@ def download_corpora_steps(project_name, test_image_suffix):
         }],
     })
 
-  return steps
+  return steps, None
 
 
 def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):

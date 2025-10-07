@@ -297,18 +297,24 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
       '================================================================')
 
   for build_type in build_types:
-    projects = get_projects_to_build(list(args.projects), build_type,
-                                     args.force_build)
+    specified_projects = list(args.projects)
+    projects_to_build = get_projects_to_build(specified_projects, build_type,
+                                              args.force_build)
     if not args.force_build:
+      unselected_projects = set(specified_projects) - set(projects_to_build)
+      for project in unselected_projects:
+        skipped_projects.append(
+            (project, f'{build_type.type_name}: Production build succeeded'))
+
       logging.info('Build type: %s', build_type.type_name)
       logging.info(
           '  - Selected projects: %d / %d (due to failed production builds)',
-          len(projects), len(args.projects))
+          len(projects_to_build), len(args.projects))
       logging.info('  - To build all projects, use the --force-build flag.')
     else:
       logging.info('Build type: %s', build_type.type_name)
       logging.info('  - Building all %d projects (--force-build)',
-                   len(projects))
+                   len(projects_to_build))
 
     logging.info('Starting to create and trigger builds for build type: %s',
                  build_type.type_name)
@@ -321,14 +327,14 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
                                   upload=False,
                                   build_type=build_type.type_name)
     project_builds, new_skipped, new_failed_to_start = _do_build_type_builds(
-        args, config, credentials, build_type, projects)
+        args, config, credentials, build_type, projects_to_build)
     skipped_projects.extend(new_skipped)
     failed_to_start_builds.extend(new_failed_to_start)
     for project, project_build_id in project_builds.items():
       build_ids[project].append(project_build_id)
-      projects_to_build_count += 1
+            projects_to_build_count += 1
 
-  logging.info('Started builds for %d projects.', projects_to_build_count)
+  logging.info('Triggered all builds.')
 
   if skipped_projects:
     logging.info(
@@ -406,10 +412,10 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           (project_name, 'No compatible sanitizers or engines'))
       continue
 
-    steps = build_type.get_build_steps_func(project_name, project_yaml,
-                                            dockerfile_contents, config)
-    if not steps:
-      skipped_projects.append((project_name, 'No build steps generated'))
+    steps, reason = build_type.get_build_steps_func(project_name, project_yaml,
+                                                  dockerfile_contents, config)
+    if reason:
+      skipped_projects.append((project_name, reason))
       continue
 
     try:
@@ -487,7 +493,10 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   builds_count = sum(len(ids) for ids in build_ids.values())
   finished_builds_count = 0
 
-  logging.info('Waiting for %d project builds to complete...', builds_count)
+  builds_count = sum(len(v) for v in build_ids.values())
+  projects_count = len(build_ids)
+  logging.info('Waiting for %d builds from %d projects to complete...',
+               builds_count, projects_count)
 
   timeout_warning_time = end_time - datetime.timedelta(
       minutes=BUILD_TIMEOUT_WARNING_MINUTES)
@@ -547,8 +556,17 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
 
   if skipped_projects:
     logging.info('--- SKIPPED PROJECTS ---')
-    for project, reason in sorted(skipped_projects):
-      logging.info('  - %s: %s', project, reason)
+    # Group skipped projects by reason
+    grouped_skipped = {}
+    for project, reason in skipped_projects:
+      if reason not in grouped_skipped:
+        grouped_skipped[reason] = []
+      grouped_skipped[reason].append(project)
+
+    for reason, projects in sorted(grouped_skipped.items()):
+      logging.info('  - %s:', reason)
+      for project in sorted(projects):
+        logging.info('    - %s', project)
 
   if failed_builds:
     logging.error('--- FAILED BUILDS ---')
