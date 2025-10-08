@@ -59,17 +59,28 @@ def _print_box(title, lines):
 def generate_final_summary(all_results):
   """Prints a visually appealing summary of all build versions."""
   summary_lines = []
+  total_unique_projects = set()
+
   for version, data in all_results.items():
     if data:
-      passed = str(data['successful'])
-      failed = str(data['failed'])
-      skipped = str(data['skipped'])
-      total = str(data['total'])
+      total_unique_projects.update(data.get('all_projects', []))
+      passed = str(data['successful_builds'])
+      failed = str(data['failed_builds'])
+      skipped = str(data['skipped_builds'])
+      total_builds = str(data['successful_builds'] + data['failed_builds'] +
+                         data['skipped_builds'])
       line = (
           f"  {version.ljust(15)} ► {'Passed:'.ljust(8)} {passed.ljust(6)} | "
           f"{'Failed:'.ljust(8)} {failed.ljust(6)} | {'Skipped:'.ljust(8)} {skipped.ljust(6)} | "
-          f"{'Total:'.ljust(7)} {total.ljust(6)}")
+          f"{'Total:'.ljust(7)} {total_builds.ljust(6)}")
       summary_lines.append(line)
+
+  if summary_lines:
+    separator = '╟' + '─' * 90 + '╢'
+    summary_lines.append(separator)
+    project_summary_line = (
+        f"  Total Projects Analyzed: {len(total_unique_projects)}")
+    summary_lines.append(project_summary_line)
 
   _print_box('FINAL BUILD REPORT', summary_lines)
 
@@ -131,7 +142,7 @@ def main():
       data = json.load(f)
       all_results[version] = data
       any_results_found = True
-      if data['failed'] > 0:
+      if data['failed_builds'] > 0:
         any_failures = True
 
   if not any_results_found:

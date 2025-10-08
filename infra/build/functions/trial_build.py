@@ -285,7 +285,7 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
     build_types.append(BUILD_TYPES['fuzzing'])
 
   build_ids = collections.defaultdict(list)
-  skipped_projects = []
+  skipped_projects = collections.defaultdict(list)
   failed_to_start_builds = []
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
 
@@ -302,8 +302,8 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
     if not args.force_build:
       unselected_projects = set(specified_projects) - set(projects_to_build)
       for project in unselected_projects:
-        skipped_projects.append(
-            (project, f'{build_type.type_name}: Production build succeeded'))
+        skipped_projects[build_type.type_name].append(
+            (project, 'Production build succeeded'))
 
       logging.info('Build type: %s', build_type.type_name)
       logging.info(
@@ -327,7 +327,8 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
                                   build_type=build_type.type_name)
     project_builds, new_skipped, new_failed_to_start = _do_build_type_builds(
         args, config, credentials, build_type, projects_to_build)
-    skipped_projects.extend(new_skipped)
+    for project, reason in new_skipped:
+      skipped_projects[build_type.type_name].append((project, reason))
     failed_to_start_builds.extend(new_failed_to_start)
     for project, project_build_id in project_builds.items():
       build_ids[project].append(project_build_id)
@@ -336,13 +337,17 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
   if skipped_projects:
     logging.info(
         '================================================================')
-    logging.info('               PHASE 2: SKIPPED PROJECTS')
+    logging.info('               PHASE 2: SKIPPED BUILDS')
     logging.info(
         '================================================================')
-    logging.info('Total projects skipped: %d', len(skipped_projects))
-    logging.info('--- SKIPPED PROJECTS ---')
-    for project, reason in sorted(skipped_projects):
-      logging.info('  - %s: %s', project, reason)
+    total_skipped_builds = sum(
+        len(skips) for skips in skipped_projects.values())
+    logging.info('Total skipped builds: %d', total_skipped_builds)
+    logging.info('--- SKIPPED BUILDS ---')
+    for build_type_name, skips in sorted(skipped_projects.items()):
+      logging.info('  - %s:', build_type_name)
+      for project, reason in sorted(skips):
+        logging.info('    - %s: %s', project, reason)
     logging.info('-----------------------')
 
   logging.info(
@@ -525,19 +530,29 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
         time.sleep(1)  # Avoid rate limiting.
 
   # Final Report
-  total_projects = (len(successful_builds) + len(failed_builds) +
-                    len(skipped_projects))
-  all_projects_in_build = (list(successful_builds.keys()) +
-                           list(failed_builds.keys()) +
-                           [name for name, reason in skipped_projects])
+  successful_builds_count = sum(
+      len(builds) for builds in successful_builds.values())
+  failed_builds_count = sum(len(builds) for builds in failed_builds.values())
+  skipped_builds_count = sum(
+      len(skips) for skips in skipped_projects.values())
+
+  # Note: To get all unique project names, we create a set from the keys of
+  # successful_builds, failed_builds, and the project names in skipped_projects.
+  all_projects_in_build = set(successful_builds.keys()) | set(
+      failed_builds.keys()) | set(p for sl in skipped_projects.values()
+                                  for p, r in sl)
+  total_projects = len(all_projects_in_build)
+
   results = {
-      'total': total_projects,
-      'successful': len(successful_builds),
-      'failed': len(failed_builds),
-      'skipped': len(skipped_projects),
+      'total_projects_analyzed': total_projects,
+      'successful_builds': successful_builds_count,
+      'failed_builds': failed_builds_count,
+      'skipped_builds': skipped_builds_count,
       'failed_projects': sorted(list(failed_builds.keys())),
-      'skipped_projects': sorted([name for name, reason in skipped_projects]),
-      'all_projects': sorted(all_projects_in_build),
+      'skipped_projects':
+          sorted(
+              list(set(p for sl in skipped_projects.values() for p, r in sl))),
+      'all_projects': sorted(list(all_projects_in_build)),
   }
   with open(f'{version_tag}-results.json', 'w') as f:
     json.dump(results, f)
@@ -545,25 +560,11 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   summary_title = f'BUILD REPORT: {version_tag.upper()}'
   summary_lines = [
       f"Total projects analyzed: {total_projects}",
-      f"[PASSED]  Successful builds: {len(successful_builds)}",
-      f"[FAILED]  Failed builds: {len(failed_builds)}",
-      f"[SKIPPED] Skipped projects: {len(skipped_projects)}",
+      f"[PASSED]  Successful builds: {successful_builds_count}",
+      f"[FAILED]  Failed builds: {failed_builds_count}",
+      f"[SKIPPED] Skipped builds: {skipped_builds_count}",
   ]
   _print_summary_box(summary_title, summary_lines)
-
-  if skipped_projects:
-    logging.info('--- SKIPPED PROJECTS ---')
-    # Group skipped projects by reason
-    grouped_skipped = {}
-    for project, reason in skipped_projects:
-      if reason not in grouped_skipped:
-        grouped_skipped[reason] = []
-      grouped_skipped[reason].append(project)
-
-    for reason, projects in sorted(grouped_skipped.items()):
-      logging.info('  - %s:', reason)
-      for project in sorted(projects):
-        logging.info('    - %s', project)
 
   if failed_builds:
     logging.error('--- FAILED BUILDS ---')
@@ -577,7 +578,7 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
     logging.info('-----------------------')
     return False
 
-  if not finished_builds_count and not skipped_projects:
+  if not finished_builds_count and not skipped_builds_count:
     logging.warning('No builds were run.')
     return False
 
