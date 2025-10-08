@@ -331,7 +331,7 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
       skipped_projects[build_type.type_name].append((project, reason))
     failed_to_start_builds.extend(new_failed_to_start)
     for project, project_build_id in project_builds.items():
-      build_ids[project].append(project_build_id)
+      build_ids[project].append((project_build_id, build_type.type_name))
 
   logging.info('Triggered all builds.')
   if skipped_projects:
@@ -357,10 +357,11 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
       '================================================================')
   logging.info('Total projects with builds: %d', len(build_ids))
   logging.info('--- STARTED BUILDS ---')
-  for project, project_build_ids in sorted(build_ids.items()):
+  for project, project_builds in sorted(build_ids.items()):
     logging.info('  - %s:', project)
-    for build_id in project_build_ids:
+    for build_id, build_type in project_builds:
       logging.info('    - Build ID: %s', build_id)
+      logging.info('    - Build Type: %s', build_type)
       logging.info('      GCB URL: %s',
                    build_lib.get_gcb_url(build_id, build_lib.IMAGE_PROJECT))
   logging.info('-----------------------')
@@ -512,8 +513,8 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
           'Nearing timeout: %d minutes remaining. Remaining builds: %d',
           BUILD_TIMEOUT_WARNING_MINUTES, len(wait_builds))
 
-    for project, project_build_ids in list(wait_builds.items()):
-      for build_id in project_build_ids[:]:
+    for project, project_builds in list(wait_builds.items()):
+      for build_id, build_type in project_builds[:]:
         status = check_finished(build_id, cloudbuild_api, cloud_project)
         if status:
           finished_builds_count += 1
@@ -521,9 +522,9 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
             successful_builds[project].append(build_id)
           else:
             logs_url = build_lib.get_gcb_url(build_id, cloud_project)
-            failed_builds[project].append((status, logs_url))
+            failed_builds[project].append((status, logs_url, build_type))
 
-          wait_builds[project].remove(build_id)
+          wait_builds[project].remove((build_id, build_type))
           if not wait_builds[project]:
             del wait_builds[project]
 
@@ -575,9 +576,10 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
     logging.error('--- FAILED BUILDS ---')
     for project, failures in sorted(failed_builds.items()):
       logging.error('  - %s:', project)
-      for status, gcb_url in failures:
+      for status, gcb_url, build_type in failures:
         build_id = gcb_url.split('/')[-1].split('?')[0]
         logging.error('    - Build ID: %s', build_id)
+        logging.error('    - Build Type: %s', build_type)
         logging.error('    - Status: %s', status)
         logging.error('    - GCB URL: %s', gcb_url)
     logging.info('-----------------------')
