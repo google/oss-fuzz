@@ -40,6 +40,7 @@ SRC = Path(os.getenv('SRC', '/src'))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv('OUT', '/out'))
 INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
+INCREMENTAL_CDB_PATH = Path('/incremental_cdb')
 
 _LD_BINARY = 'ld-linux-x86-64.so.2'
 _LD_PATH = Path('/lib64') / _LD_BINARY
@@ -439,6 +440,8 @@ def build_project(
 
   build_cov_instrumentation_command = [
       f'{_CLANG_TOOLCHAIN}/bin/clang++',
+      '-fno-rtti',
+      '-fno-exceptions',
       '-c',
       '/opt/indexer/coverage.cc',
   ]
@@ -791,6 +794,7 @@ def main():
   args = parser.parse_args()
 
   INDEXES_PATH.mkdir(exist_ok=True)
+  INCREMENTAL_CDB_PATH.mkdir(exist_ok=True)
 
   # Clean up the existing OUT by default, otherwise we may run into various
   # build errors.

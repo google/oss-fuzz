@@ -19,8 +19,10 @@ This is copied into the OSS-Fuzz container image and run there as part of the
 instrumentation process.
 """
 
-from collections.abc import MutableSequence, Sequence
+from collections.abc import Iterator, MutableSequence, Sequence
+import contextlib
 import dataclasses
+import fcntl
 import hashlib
 import json
 import os
@@ -175,6 +177,34 @@ def files_by_creation_time(folder_path: Path) -> Sequence[Path]:
   return files
 
 
+def _wait_for_cdb_fragment(file: Path) -> str | None:
+  """Returns the CDB fragment from the given file, waiting if needed."""
+  num_retries = 3
+  for i in range(1 + num_retries):
+    data = file.read_text()
+    if data.endswith(",\n"):
+      return data.rstrip().rstrip(",")
+
+    if i < num_retries:
+      print(
+          f"WARNING: CDB fragment {file} appears to be invalid: {data}, "
+          f"sleeping for 2^{i+1} seconds before retrying.",
+          file=sys.stderr,
+      )
+      time.sleep(2 ** (i + 1))
+    else:
+      error = f"CDB fragment {file} is invalid even after retries: {data}"
+      if "test.c" in file.name or "conftest.c" in file.name:
+        # Some build systems seem to have a weird issue where the autotools
+        # generated `test.c` or `conftest.c` for testing compilers doesn't
+        # result in valid cdb fragments.
+        print(f"WARNING: {error}", file=sys.stderr)
+      else:
+        raise RuntimeError(error)
+
+  return None
+
+
 def read_cdb_fragments(cdb_path: Path) -> Any:
   """Iterates through the CDB fragments to reconstruct the compile commands."""
   files = files_by_creation_time(cdb_path)
@@ -186,41 +216,30 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
     if not file.name.endswith(".json"):
       continue
 
-    data = ""
-    num_retries = 3
-    for i in range(num_retries):
-      with file.open("rt") as f:
-        data = f.read()
-        if data.endswith(",\n"):
-          contents.append(data[:-2])
-          break
-
-      if i < num_retries - 1:
-        print(
-            f"WARNING: CDB fragment {file} appears to be invalid: {data}, "
-            f"sleeping for 2^{i+1} seconds before retrying.",
-            file=sys.stderr,
-        )
-        time.sleep(2 ** (i + 1))
-    else:
-      error = f"CDB fragment {file} is invalid even after retries: {data}"
-      if "test.c" in file.name or "conftest.c" in file.name:
-        # Some build systems seem to have a weird issue where the autotools
-        # generated `test.c` or `conftest.c` for testing compilers doesn't
-        # result in valid cdb fragments.
-        print(f"WARNING: {error}", file=sys.stderr)
-      else:
-        raise RuntimeError(error)
+    fragment = _wait_for_cdb_fragment(file)
+    if fragment:
+      contents.append(fragment)
 
   contents = ",\n".join(contents)
   contents = "[" + contents + "]"
   return json.loads(contents)
 
 
+def _index_dir_path(output_file: Path) -> Path:
+  """Returns the path to the index directory for the given output binary."""
+  # This mirrors the absolute path of the output file.
+  absolute_path = (Path(os.getcwd()) / output_file).resolve()
+  return INDEXES_PATH / absolute_path.relative_to("/")
+
+
 def run_indexer(
-    build_id: str, linker_commands: dict[str, Any], allow_errors: bool = False
+    output_file: Path,
+    build_id: str,
+    linker_commands: dict[str, Any],
+    allow_errors: bool = False,
 ):
   """Run the indexer."""
+
   # Use a build-specific compile commands directory, since there could be
   # parallel linking happening at the same time.
   compile_commands_dir = INDEXES_PATH / f"compile_commands_{build_id}"
@@ -237,14 +256,21 @@ def run_indexer(
     )
     return
 
-  index_dir = INDEXES_PATH / build_id
-  if index_dir.exists():
-    # A previous indexer already ran for the same build ID.  Clear the directory
-    # so we can re-run the indexer, otherwise we might run into various issues
-    # (e.g. the indexer doesn't like it when source files already exist).
-    shutil.rmtree(index_dir)
+  # Indexes can be built incrementally, so use the same directory for each
+  # output binary.
 
-  index_dir.mkdir()
+  index_dir = _index_dir_path(output_file)
+  index_dir.mkdir(parents=True, exist_ok=True)
+
+  # Symlink by build ID, because `index_build.py` relies on build IDs to match
+  # the binaries (which may have moved around) to indexes.
+  build_id_symlink = INDEXES_PATH / build_id
+  if not build_id_symlink.exists():
+    os.symlink(index_dir, build_id_symlink)
+
+  if not linker_commands["compile_commands"]:
+    # Nothing to index.
+    return
 
   with (compile_commands_dir / "compile_commands.json").open("wt") as f:
     json.dump(linker_commands["compile_commands"], f, indent=2)
@@ -262,6 +288,7 @@ def run_indexer(
   )
   merge_queues = max(1, num_threads // _INDEXER_THREADS_PER_MERGE_QUEUE)
 
+  # TODO: b/447468859 - Use database_only once users are ready.
   cmd = [
       _INDEXER_PATH,
       "--build_dir",
@@ -275,6 +302,10 @@ def run_indexer(
       "--merge_queues",
       str(merge_queues),
   ]
+
+  if (index_dir / "db.sqlite").exists():
+    cmd.append("--delta")
+
   if allow_errors:
     cmd.append("--ignore_indexing_errors")
 
@@ -456,6 +487,62 @@ def fix_coverage_flags(
   return args
 
 
+@contextlib.contextmanager
+def _file_lock(lock_path: Path):
+  """Context manager for acquiring an exclusive file lock."""
+  fd = os.open(lock_path.as_posix(), os.O_CREAT | os.O_RDWR)
+  fcntl.flock(fd, fcntl.LOCK_EX)
+
+  try:
+    yield
+  finally:
+    fcntl.flock(fd, fcntl.LOCK_UN)
+    os.close(fd)
+
+
+def merge_incremental_cdb(cdb_path: Path, merged_cdb_path: Path) -> None:
+  """Merges new CDB fragments into the incremental CDB."""
+  # Map of output file to the path of the file in the incremental CDB.
+  # Use the output file path as the key for merging.
+  existing_output_files: dict[Path, Path] = {}
+
+  def load_cdbs(directory: Path) -> Iterator[tuple[Path, dict[str, Any]]]:
+    for file in directory.iterdir():
+      if file.suffix != ".json":
+        continue
+
+      if file.name.endswith("_linker_commands.json"):
+        continue
+
+      fragment_data = _wait_for_cdb_fragment(file)
+      if not fragment_data:
+        continue
+
+      fragment = json.loads(fragment_data)
+      if "output" not in fragment:
+        continue
+
+      yield file, fragment
+
+  # We could be running multiple linking steps in parallel, so serialize merges.
+  with _file_lock(merged_cdb_path / ".lock"):
+    # Load existing CDB fragments, and build the map of output file -> fragment.
+    for file, fragment in load_cdbs(merged_cdb_path):
+      output_path = Path(fragment["directory"]) / fragment["output"]
+      existing_output_files[output_path] = file
+
+    # Load new CDB fragments, replacing existing fragments for the same output
+    # file.
+    for file, fragment in load_cdbs(cdb_path):
+      output_path = Path(fragment["directory"]) / fragment["output"]
+
+      if output_path in existing_output_files:
+        # Remove existing entry for the output file.
+        os.unlink(existing_output_files[output_path])
+
+      shutil.copy2(file, merged_cdb_path / file.name)
+
+
 def main(argv: list[str]) -> None:
   compile_settings = index_build.read_compile_settings()
   argv = expand_rsp_file(argv)
@@ -546,9 +633,16 @@ def main(argv: list[str]) -> None:
     res = subprocess.run(["ar", "-t", archive], capture_output=True, check=True)
     archive_deps += [dep.decode() for dep in res.stdout.splitlines()]
 
+  # Incremental index building relies on merging all new compilation fragments
+  # since the initial indexing.
+  cdb_fragments_dir = cdb_path
+  if _index_dir_path(output_file).exists():
+    merge_incremental_cdb(cdb_path, index_build.INCREMENTAL_CDB_PATH)
+    cdb_fragments_dir = index_build.INCREMENTAL_CDB_PATH
+
   # We only care about the compile commands that emitted an output file.
   full_compile_commands = [
-      cc for cc in read_cdb_fragments(cdb_path) if "output" in cc
+      cc for cc in read_cdb_fragments(cdb_fragments_dir) if "output" in cc
   ]
 
   # Discard compile commands that didn't end up in the final binary.
@@ -574,7 +668,10 @@ def main(argv: list[str]) -> None:
     is_custom_toolchain = (
         compile_settings.clang_toolchain != index_build.DEFAULT_CLANG_TOOLCHAIN
     )
-    run_indexer(build_id, linker_commands, allow_errors=is_custom_toolchain)
+
+    run_indexer(
+        output_file, build_id, linker_commands, allow_errors=is_custom_toolchain
+    )
 
   linker_commands = json.dumps(linker_commands)
   commands_path = Path(cdb_path) / f"{build_id}_linker_commands.json"
