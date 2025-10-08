@@ -20,6 +20,7 @@ import collections
 import datetime
 import functools
 import json
+import random
 import logging
 import os
 import subprocess
@@ -466,13 +467,14 @@ def get_build_status_from_gcb(cloudbuild_api, cloud_project, build_id):
   return build_result['status']
 
 
-def check_finished(build_id, cloudbuild_api, cloud_project):
+def check_finished(build_id, cloudbuild_api, cloud_project, retries_map):
   """Checks that the build is complete. Returns status if complete, else None"""
   try:
     build_status = get_build_status_from_gcb(cloudbuild_api, cloud_project,
                                              build_id)
   except HttpError:
     logging.debug('build: HttpError when getting build status from gcb')
+    retries_map[build_id] = retries_map.get(build_id, 0) + 1
     return None
   if build_status not in FINISHED_BUILD_STATUSES:
     logging.debug('build: %d not finished.', build_id)
@@ -493,8 +495,11 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   wait_builds = build_ids.copy()
   failed_builds = collections.defaultdict(list)
   successful_builds = collections.defaultdict(list)
-  builds_count = sum(len(ids) for ids in build_ids.values())
   finished_builds_count = 0
+  retries_map = {}
+  next_retry_time = {}
+  MAX_RETRIES = 5
+  BASE_BACKOFF_SECONDS = 2
 
   builds_count = sum(len(v) for v in build_ids.values())
   projects_count = len(build_ids)
@@ -507,16 +512,33 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
 
   while wait_builds:
     current_time = datetime.datetime.now()
+    if current_time >= end_time:
+      logging.error(
+          'Coordinator timeout reached. Marking remaining builds as TIMEOUT.')
+      break
+
     if not notified_timeout and current_time >= timeout_warning_time:
       notified_timeout = True
       logging.warning(
           'Nearing timeout: %d minutes remaining. Remaining builds: %d',
           BUILD_TIMEOUT_WARNING_MINUTES, len(wait_builds))
 
+    processed_a_build_in_iteration = False
     for project, project_builds in list(wait_builds.items()):
       for build_id, build_type in project_builds[:]:
-        status = check_finished(build_id, cloudbuild_api, cloud_project)
+        if (build_id in next_retry_time and
+            datetime.datetime.now() < next_retry_time[build_id]):
+          continue  # In backoff period, skip for now.
+
+        processed_a_build_in_iteration = True
+        status = check_finished(build_id, cloudbuild_api, cloud_project,
+                                retries_map)
+
         if status:
+          # API call was successful, remove from backoff map if it exists.
+          if build_id in next_retry_time:
+            del next_retry_time[build_id]
+
           finished_builds_count += 1
           if status == 'SUCCESS':
             successful_builds[project].append(build_id)
@@ -528,7 +550,44 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
           if not wait_builds[project]:
             del wait_builds[project]
 
-        time.sleep(1)  # Avoid rate limiting.
+        elif retries_map.get(build_id, 0) >= MAX_RETRIES:
+          # Max retries reached, mark as failed.
+          if build_id in next_retry_time:
+            del next_retry_time[build_id]
+
+          finished_builds_count += 1
+          status = 'UNKNOWN (too many HttpErrors)'
+          logs_url = build_lib.get_gcb_url(build_id, cloud_project)
+          failed_builds[project].append((status, logs_url, build_type))
+          wait_builds[project].remove((build_id, build_type))
+          if not wait_builds[project]:
+            del wait_builds[project]
+        else:
+          # API call failed, calculate and set next retry time.
+          retry_count = retries_map.get(build_id, 0)
+          backoff_time = (BASE_BACKOFF_SECONDS * (2**retry_count) +
+                          random.uniform(0, 1))
+          next_retry_time[build_id] = (
+              datetime.datetime.now() +
+              datetime.timedelta(seconds=backoff_time))
+          logging.warning(
+              'HttpError for build %s. Retrying in %.2f seconds.', build_id,
+              backoff_time)
+
+    if not processed_a_build_in_iteration and wait_builds:
+      # All remaining builds are in backoff, sleep to prevent busy-waiting.
+      time.sleep(1)
+    else:
+      # General rate limiting after one full pass.
+      time.sleep(0.5)
+
+  # Handle builds that were still running when the coordinator timed out.
+  if wait_builds:
+    for project, project_builds in list(wait_builds.items()):
+      for build_id, build_type in project_builds:
+        logs_url = build_lib.get_gcb_url(build_id, cloud_project)
+        failed_builds[project].append(('TIMEOUT (Coordinator)', logs_url,
+                                       build_type))
 
   # Final Report
   successful_builds_count = sum(
