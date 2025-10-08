@@ -47,3 +47,11 @@ esac
 curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/universe/l/lcab/lcab_1.0b12-7_amd64.deb && \
     apt-get install -y ./lcab_1.0b12-7_amd64.deb && \
     rm lcab_1.0b12-7_amd64.deb
+
+# Remove default automake to install the version required by libarchive.
+apt-get remove -y automake
+
+# Install the specific automake version required by libarchive.
+curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+    apt-get install -y ./automake_1.16.5-1.3_all.deb && \
+    rm automake_1.16.5-1.3_all.deb
