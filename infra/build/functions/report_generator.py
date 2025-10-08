@@ -58,6 +58,7 @@ def _print_box(title, lines):
 
 def generate_final_summary(all_results):
   """Prints a visually appealing summary of all build versions."""
+  box_width = 92
   summary_lines = []
   total_unique_projects = set()
 
@@ -77,7 +78,7 @@ def generate_final_summary(all_results):
       summary_lines.append(line)
 
   if summary_lines:
-    separator = '╟' + '─' * 90 + '╢'
+    separator = '-' * (box_width - 4)
     summary_lines.append(separator)
     project_summary_line = (
         f"  Total Projects Analyzed: {len(total_unique_projects)}")
