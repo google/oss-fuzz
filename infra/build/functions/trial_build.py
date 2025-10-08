@@ -533,26 +533,31 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   successful_builds_count = sum(
       len(builds) for builds in successful_builds.values())
   failed_builds_count = sum(len(builds) for builds in failed_builds.values())
-  skipped_builds_count = sum(
-      len(skips) for skips in skipped_projects.values())
+  skipped_builds_count = sum(len(skips) for skips in skipped_projects.values())
 
   # Note: To get all unique project names, we create a set from the keys of
   # successful_builds, failed_builds, and the project names in skipped_projects.
   all_projects_in_build = set(successful_builds.keys()) | set(
-      failed_builds.keys()) | set(p for sl in skipped_projects.values()
-                                  for p, r in sl)
+      failed_builds.keys()) | set(
+          p for sl in skipped_projects.values() for p, r in sl)
   total_projects = len(all_projects_in_build)
 
   results = {
-      'total_projects_analyzed': total_projects,
-      'successful_builds': successful_builds_count,
-      'failed_builds': failed_builds_count,
-      'skipped_builds': skipped_builds_count,
-      'failed_projects': sorted(list(failed_builds.keys())),
+      'total_projects_analyzed':
+          total_projects,
+      'successful_builds':
+          successful_builds_count,
+      'failed_builds':
+          failed_builds_count,
+      'skipped_builds':
+          skipped_builds_count,
+      'failed_projects':
+          sorted(list(failed_builds.keys())),
       'skipped_projects':
-          sorted(
-              list(set(p for sl in skipped_projects.values() for p, r in sl))),
-      'all_projects': sorted(list(all_projects_in_build)),
+          sorted(list(set(p for sl in skipped_projects.values() for p, r in sl))
+                ),
+      'all_projects':
+          sorted(list(all_projects_in_build)),
   }
   with open(f'{version_tag}-results.json', 'w') as f:
     json.dump(results, f)
