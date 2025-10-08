@@ -567,12 +567,10 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
           retry_count = retries_map.get(build_id, 0)
           backoff_time = (BASE_BACKOFF_SECONDS * (2**retry_count) +
                           random.uniform(0, 1))
-          next_retry_time[build_id] = (
-              datetime.datetime.now() +
-              datetime.timedelta(seconds=backoff_time))
-          logging.warning(
-              'HttpError for build %s. Retrying in %.2f seconds.', build_id,
-              backoff_time)
+          next_retry_time[build_id] = (datetime.datetime.now() +
+                                       datetime.timedelta(seconds=backoff_time))
+          logging.warning('HttpError for build %s. Retrying in %.2f seconds.',
+                          build_id, backoff_time)
 
     if not processed_a_build_in_iteration and wait_builds:
       # All remaining builds are in backoff, sleep to prevent busy-waiting.
@@ -586,8 +584,8 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
     for project, project_builds in list(wait_builds.items()):
       for build_id, build_type in project_builds:
         logs_url = build_lib.get_gcb_url(build_id, cloud_project)
-        failed_builds[project].append(('TIMEOUT (Coordinator)', logs_url,
-                                       build_type))
+        failed_builds[project].append(
+            ('TIMEOUT (Coordinator)', logs_url, build_type))
 
   # Final Report
   successful_builds_count = sum(
