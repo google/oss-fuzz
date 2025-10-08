@@ -64,11 +64,12 @@ def generate_final_summary(all_results):
   for version, data in all_results.items():
     if data:
       total_unique_projects.update(data.get('all_projects', []))
-      passed = str(data['successful_builds'])
-      failed = str(data['failed_builds'])
-      skipped = str(data['skipped_builds'])
-      total_builds = str(data['successful_builds'] + data['failed_builds'] +
-                         data['skipped_builds'])
+      passed = str(data.get('successful_builds', 0))
+      failed = str(data.get('failed_builds', 0))
+      skipped = str(data.get('skipped_builds', 0))
+      total_builds = str(
+          data.get('successful_builds', 0) + data.get('failed_builds', 0) +
+          data.get('skipped_builds', 0))
       line = (
           f"  {version.ljust(15)} ► {'Passed:'.ljust(8)} {passed.ljust(6)} | "
           f"{'Failed:'.ljust(8)} {failed.ljust(6)} | {'Skipped:'.ljust(8)} {skipped.ljust(6)} | "
@@ -142,7 +143,7 @@ def main():
       data = json.load(f)
       all_results[version] = data
       any_results_found = True
-      if data['failed_builds'] > 0:
+      if data.get('failed_builds', 0) > 0:
         any_failures = True
 
   if not any_results_found:
