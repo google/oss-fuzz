@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-clang:ubuntu-20-04
 
-COPY install_deps.sh /
-RUN /install_deps.sh && rm /install_deps.sh
+COPY install_deps_ubuntu-20-04.sh install_swift_ubuntu_20_04.sh /
+RUN /install_deps_ubuntu-20-04.sh
 
 # Build and install latest Python 3.11.
 ENV PYTHON_VERSION 3.11.13

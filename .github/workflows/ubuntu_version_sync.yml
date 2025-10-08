@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-name: 'Check Ubuntu Config Sync'
+name: 'Ubuntu Version Sync'
 
 on:
   pull_request:
@@ -54,6 +54,7 @@ jobs:
 
         declare -A LEGACY_SCRIPTS
         LEGACY_SCRIPTS["infra/base-images/base-builder-fuzzbench/fuzzbench_install_dependencies"]="infra/base-images/base-builder-fuzzbench/fuzzbench_install_dependencies_{version}"
+        LEGACY_SCRIPTS["infra/base-images/base-builder/install_deps.sh"]="infra/base-images/base-builder/install_deps_{version}.sh"
         LEGACY_SCRIPTS["infra/base-images/base-builder/install_swift.sh"]="infra/base-images/base-builder/install_swift_{version}.sh"
         LEGACY_SCRIPTS["infra/base-images/base-builder/precompile_honggfuzz"]="infra/base-images/base-builder/precompile_honggfuzz_{version}"
         LEGACY_SCRIPTS["infra/base-images/base-clang/checkout_build_install_llvm.sh"]="infra/base-images/base-clang/checkout_build_install_llvm_{version}.sh"
