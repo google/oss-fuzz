@@ -13,9 +13,24 @@
 # limitations under the License.
 #
 ################################################################################
+"""
+Helper script to print the official list of base images.
+This script serves as the single source of truth for shell scripts,
+avoiding logic duplication.
+"""
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04
+import os
+import sys
 
-RUN install_swift_ubuntu_20_04.sh
+# Add the path to the `functions` directory to import the `base_images` module.
+FUNCTIONS_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', 'build', 'functions'))
+sys.path.append(FUNCTIONS_DIR)
 
-COPY precompile_swift /usr/local/bin/
+import base_images
+
+for image_config in base_images.BASE_IMAGES:
+  # Exclude 'base-clang-full' as it is a special case not intended for
+  # the general build script.
+  if image_config.name != 'base-clang-full':
+    print(image_config.name)

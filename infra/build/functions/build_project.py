@@ -132,7 +132,6 @@ def get_project_data(project_name):
     with open(dockerfile_path) as dockerfile:
       dockerfile = dockerfile.read()
   except FileNotFoundError:
-    logging.error('Project "%s" does not have a dockerfile.', project_name)
     raise
   project_yaml_path = os.path.join(project_dir, 'project.yaml')
   with open(project_yaml_path, 'r') as project_yaml_file_handle:
@@ -291,11 +290,11 @@ def get_compile_step(project,
   """Returns the GCB step for compiling |projects| fuzzers using |env|. The type
   of build is specified by |build|."""
   failure_msg = (
-      '*' * 80 + '\nFailed to build.\nTo reproduce, run:\n'
-      f'python infra/helper.py build_image {project.name}\n'
+      '*' * 80 + '\\nFailed to build.\\nTo reproduce, run:\\n'
+      f'python infra/helper.py build_image {project.name}\\n'
       'python infra/helper.py build_fuzzers --sanitizer '
       f'{build.sanitizer} --engine {build.fuzzing_engine} --architecture '
-      f'{build.architecture} {project.name}\n' + '*' * 80)
+      f'{build.architecture} {project.name}\\n' + '*' * 80)
   compile_output_redirect = ''
 
   if upload_build_logs:
@@ -362,7 +361,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, to
                                      config,
                                      additional_env=additional_env,
                                      use_caching=use_caching,
-                                     timestamp=timestamp)
+                                     timestamp=timestamp), None
 
 
 def get_build_steps_for_project(project,
@@ -371,10 +370,6 @@ def get_build_steps_for_project(project,
                                 use_caching=False,
                                 timestamp=None):
   """Returns build steps for project."""
-
-  if project.disabled:
-    logging.info('Project "%s" is disabled.', project.name)
-    return []
 
   if not timestamp:
     timestamp = get_datetime_now()
@@ -447,15 +442,15 @@ def get_build_steps_for_project(project,
 
         if project.run_tests:
           failure_msg = (
-              '*' * 80 + '\nBuild checks failed.\n'
-              'To reproduce, run:\n'
-              f'python infra/helper.py build_image {project.name}\n'
+              '*' * 80 + '\\nBuild checks failed.\\n'
+              'To reproduce, run:\\n'
+              f'python infra/helper.py build_image {project.name}\\n'
               'python infra/helper.py build_fuzzers --sanitizer '
               f'{build.sanitizer} --engine {build.fuzzing_engine} '
-              f'--architecture {build.architecture} {project.name}\n'
+              f'--architecture {build.architecture} {project.name}\\n'
               'python infra/helper.py check_build --sanitizer '
               f'{build.sanitizer} --engine {build.fuzzing_engine} '
-              f'--architecture {build.architecture} {project.name}\n' +
+              f'--architecture {build.architecture} {project.name}\\n' +
               '*' * 80)
           # Test fuzz targets.
           test_step = {
@@ -631,9 +626,6 @@ def get_indexer_build_steps(project_name,
                             timestamp=None):
   """Get indexer build steps."""
   project = Project(project_name, project_yaml, dockerfile)
-  if project.disabled:
-    logging.info('Project "%s" is disabled.', project.name)
-    return []
 
   if project.fuzzing_language not in {'c', 'c++'}:
     return []
@@ -763,7 +755,8 @@ def run_build(oss_fuzz_project,
               build_type,
               cloud_project='oss-fuzz',
               extra_tags=None,
-              experiment=False):
+              experiment=False,
+              timeout=None):
   """Run the build for given steps on cloud build. |build_steps| are the steps
   to run. |credentials| are are used to authenticate to GCB and build in
   |cloud_project|. |oss_fuzz_project| and |build_type| are used to tag the build
@@ -772,7 +765,8 @@ def run_build(oss_fuzz_project,
     extra_tags = []
   tags = [oss_fuzz_project + '-' + build_type, build_type, oss_fuzz_project]
   tags.extend(extra_tags)
-  timeout = build_lib.BUILD_TIMEOUT
+  if timeout is None:
+    timeout = build_lib.BUILD_TIMEOUT
   bucket = GCB_LOGS_BUCKET if not experiment else GCB_EXPERIMENT_LOGS_BUCKET
   body_overrides = {
       'logsBucket': bucket,
@@ -860,7 +854,6 @@ def build_script_main(script_description,
   error = False
   config = create_config(args, build_type)
   for project_name in args.projects:
-    logging.info('Getting steps for: "%s".', project_name)
     try:
       project_yaml, dockerfile_contents = get_project_data(project_name)
     except FileNotFoundError:

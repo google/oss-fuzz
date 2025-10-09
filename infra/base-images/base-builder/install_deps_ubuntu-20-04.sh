@@ -1,5 +1,5 @@
-#! /bin/bash -eux
-# Copyright 2023 Google LLC
+#!/bin/bash -eux
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,30 @@
 #
 ################################################################################
 
-if [[ $(lsb_release -rs) == "20.04" ]]; then
-  apt-get update && apt-get install -y gcc gfortran python-dev libopenblas-dev liblapack-dev cython libpq-dev
-else
-  apt-get update && apt-get install -y gcc gfortran python3-dev libopenblas-dev liblapack-dev cython3 libpq-dev
-fi
-wget -O /tmp/requirements.txt https://raw.githubusercontent.com/google/fuzzbench/master/requirements.txt
-pip3 install pip --upgrade
-CFLAGS= CXXFLAGS= pip3 install -r /tmp/requirements.txt
-rm /tmp/requirements.txt
+# Install base-builder's dependencies in a architecture-aware way.
+
+
+case $(uname -m) in
+    x86_64)
+	dpkg --add-architecture i386
+        ;;
+esac
+
+apt-get update && \
+    apt-get install -y \
+        binutils-dev \
+        build-essential \
+        curl \
+        wget \
+        git \
+        jq \
+        patchelf \
+        rsync \
+        subversion \
+        zip
+
+case $(uname -m) in
+    x86_64)
+	apt-get install -y libc6-dev-i386
+        ;;
+esac

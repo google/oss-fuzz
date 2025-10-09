@@ -1,5 +1,4 @@
-#! /bin/bash -eux
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +14,11 @@
 #
 ################################################################################
 
-if [[ $(lsb_release -rs) == "20.04" ]]; then
-  apt-get update && apt-get install -y gcc gfortran python-dev libopenblas-dev liblapack-dev cython libpq-dev
-else
-  apt-get update && apt-get install -y gcc gfortran python3-dev libopenblas-dev liblapack-dev cython3 libpq-dev
-fi
-wget -O /tmp/requirements.txt https://raw.githubusercontent.com/google/fuzzbench/master/requirements.txt
-pip3 install pip --upgrade
-CFLAGS= CXXFLAGS= pip3 install -r /tmp/requirements.txt
-rm /tmp/requirements.txt
+FROM gcr.io/oss-fuzz-base/base-clang-full:ubuntu-20-04
+
+RUN mkdir /indexer
+WORKDIR /indexer
+COPY . /indexer
+
+RUN apt-get update && apt-get install -y libsqlite3-dev make zlib1g-dev
+RUN mkdir build && cd build && cmake .. && cmake --build . -j -v
