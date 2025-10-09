@@ -104,10 +104,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   env = build_project.get_env(project.fuzzing_language, build)
   build_steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
-  download_corpora_steps, reason = build_lib.download_corpora_steps(
+  download_corpora_steps = build_lib.download_corpora_steps(
       project.name, test_image_suffix=config.test_image_suffix)
   if not download_corpora_steps:
-    return [], reason
+    return [], f'Failed to get corpora for project "{project.name}".'
 
   build_steps.extend(download_corpora_steps)
 
