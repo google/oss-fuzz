@@ -1,0 +1,12 @@
+homepage: "https://github.com/sjors/sv2-tp"
+main_repo: 'https://github.com/sjors/sv2-tp.git'
+language: c++
+primary_contact: "sjors@sprovoost.nl"
+auto_ccs: ["provoostenator@gmail.com"]
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+fuzzing_engines:
+  - libfuzzer
