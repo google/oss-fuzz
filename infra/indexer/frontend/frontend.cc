@@ -110,6 +110,7 @@ clang::tooling::CommandLineArguments ExtraArgumentsAdjuster(
   std::vector<std::string> extra_args = frontend_internal::ParseCommandLine(
       absl::GetFlag(FLAGS_extra_compiler_args));
   result.insert(result.end(), extra_args.begin(), extra_args.end());
+  result.push_back("-Wno-error");
   return result;
 }
 }  // namespace
