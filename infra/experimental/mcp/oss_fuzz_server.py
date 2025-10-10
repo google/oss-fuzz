@@ -21,9 +21,11 @@ import os
 import json
 import time
 import subprocess
+import re
 
 import httpx
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 import config as oss_fuzz_mcp_config
 
@@ -37,9 +39,17 @@ logger = logging.getLogger("mcp-server")
 http_client = httpx.AsyncClient(timeout=10.0)
 
 # Create an MCP server with a name
-mcp = FastMCP("OSS-Fuzz tools with relevant file system utilities.",
-              host="0.0.0.0",
-              port=8000)
+# Security: Binding to 127.0.0.1 (localhost only) to prevent unauthorized network access
+mcp = FastMCP(
+  "OSS-Fuzz tools with relevant file system utilities.",
+  host="127.0.0.1",
+  port=8000,
+  transport_security=TransportSecuritySettings(
+    enable_dns_rebinding_protection=True,
+    allowed_hosts=["127.0.0.1:8000"],
+    allowed_origins=["http://127.0.0.1:8000"],
+  )
+)
 
 FILE_ACCESS_ERROR = f"""Error: Cannot access directories outside of the base directory.
 Remember, all paths accessible by you must be prefixed with {oss_fuzz_mcp_config.BASE_DIR}.
@@ -53,6 +63,47 @@ Further:
 def _internal_delay():
   """Forced delay to control LLM limits"""
   time.sleep(2)
+
+
+def _validate_project_name(project_name: str) -> bool:
+  """
+  Validates that a project name is safe to use in commands.
+  
+  Args:
+      project_name: The project name to validate
+  
+  Returns:
+      True if the project name is valid, False otherwise
+  """
+  # Only allow alphanumeric characters, hyphens, and underscores
+  # This prevents command injection attacks
+  if not re.match(r'^[a-zA-Z0-9_-]+$', project_name):
+    return False
+  # Additional check: project name should not be too long
+  if len(project_name) > 100:
+    return False
+  return True
+
+
+def _sanitize_project_name(project_name: str) -> str:
+  """
+  Sanitizes and validates a project name.
+  
+  Args:
+      project_name: The project name to sanitize
+  
+  Returns:
+      The sanitized project name
+  
+  Raises:
+      ValueError: If the project name is invalid
+  """
+  if not _validate_project_name(project_name):
+    raise ValueError(
+        f"Invalid project name: {project_name}. "
+        "Project names must contain only alphanumeric characters, hyphens, and underscores."
+    )
+  return project_name
 
 
 def clone_oss_fuzz_if_it_does_not_exist():
@@ -87,15 +138,20 @@ async def check_if_oss_fuzz_project_builds(project_name: str) -> bool:
         True if the project builds successfully, False otherwise
     """
   clone_oss_fuzz_if_it_does_not_exist()
+  
+  try:
+    project_name = _sanitize_project_name(project_name)
+  except ValueError as e:
+    logger.error(str(e))
+    return False
+  
   logger.info("Checking if OSS-Fuzz project '%s' builds successfully...",
               project_name)
 
   try:
     logger.info('Building OSS-Fuzz project: %s', project_name)
-    subprocess.check_call('python3 infra/helper.py build_fuzzers ' +
-                          project_name,
+    subprocess.check_call(['python3', 'infra/helper.py', 'build_fuzzers', project_name],
                           cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                          shell=True,
                           timeout=60 * 20)
     return True
   except subprocess.CalledProcessError as e:
@@ -134,6 +190,13 @@ async def get_build_logs_from_oss_fuzz(project_name: str) -> str:
         A string containing the build logs for the project
     """
   clone_oss_fuzz_if_it_does_not_exist()
+  
+  try:
+    project_name = _sanitize_project_name(project_name)
+  except ValueError as e:
+    logger.error(str(e))
+    return f"Error: {str(e)}"
+  
   logger.info("Retrieving build logs for OSS-Fuzz project '%s'...",
               project_name)
 
@@ -146,10 +209,8 @@ async def get_build_logs_from_oss_fuzz(project_name: str) -> str:
 
   try:
     logger.info("Building OSS-Fuzz project: '%s'", project_name)
-    subprocess.check_call('python3 infra/helper.py build_fuzzers ' +
-                          project_name,
+    subprocess.check_call(['python3', 'infra/helper.py', 'build_fuzzers', project_name],
                           cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                          shell=True,
                           stdout=log_stdout,
                           stderr=subprocess.STDOUT,
                           timeout=60 * 20)
@@ -229,6 +290,13 @@ async def check_run_tests(
     """
   logger.info('Running test 1')
   clone_oss_fuzz_if_it_does_not_exist()
+  
+  try:
+    project_name = _sanitize_project_name(project_name)
+  except ValueError as e:
+    logger.error(str(e))
+    return f"Error: {str(e)}"
+  
   logger.info(
       "Checking if OSS-Fuzz project '%s' builds with custom artifacts...",
       project_name)
@@ -243,9 +311,8 @@ async def check_run_tests(
   try:
     logger.info('Running test 3')
     subprocess.check_call(
-        f'infra/experimental/chronos/check_tests.sh {project_name} c++',
+        ['infra/experimental/chronos/check_tests.sh', project_name, 'c++'],
         cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-        shell=True,
         stdout=log_stdout,
         stderr=subprocess.STDOUT,
         timeout=60 * 20)
@@ -289,6 +356,13 @@ async def check_oss_fuzz_fuzzers(
         The build logs from building the project with custom artifacts.
     """
   clone_oss_fuzz_if_it_does_not_exist()
+  
+  try:
+    project_name = _sanitize_project_name(project_name)
+  except ValueError as e:
+    logger.error(str(e))
+    return f"Error: {str(e)}"
+  
   logger.info(
       "Checking if OSS-Fuzz project '%s' builds and fuzzers pass check_build",
       project_name)
@@ -300,10 +374,8 @@ async def check_oss_fuzz_fuzzers(
     os.remove(target_logs)
   log_stdout = open(target_logs, 'w', encoding='utf-8')
   try:
-    subprocess.check_call('python3 infra/helper.py build_fuzzers ' +
-                          project_name,
+    subprocess.check_call(['python3', 'infra/helper.py', 'build_fuzzers', project_name],
                           cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                          shell=True,
                           stdout=log_stdout,
                           stderr=subprocess.STDOUT,
                           timeout=60 * 20)
@@ -324,9 +396,8 @@ async def check_oss_fuzz_fuzzers(
     os.remove(check_target_logs)
   log_stdout = open(check_target_logs, 'w', encoding='utf-8')
   try:
-    subprocess.check_call('python3 infra/helper.py check_build ' + project_name,
+    subprocess.check_call(['python3', 'infra/helper.py', 'check_build', project_name],
                           cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                          shell=True,
                           stdout=log_stdout,
                           stderr=subprocess.STDOUT,
                           timeout=60 * 30)
@@ -521,11 +592,22 @@ async def search_project_filename(project_name: str, filename: str) -> str:
         filename, or an error message.
   """
   _internal_delay()
+  
+  try:
+    project_name = _sanitize_project_name(project_name)
+  except ValueError as e:
+    logger.error(str(e))
+    return f"Error: {str(e)}"
+  
   logger.info('Searching for filename "%s" in project "%s"...', filename,
               project_name)
 
-  if '/' in filename:
+  if '/' in filename or '\\' in filename:
     return "Error: Filename should not contain directory separators, only basename."
+  
+  # Validate filename to prevent path traversal
+  if '..' in filename or filename.startswith('.'):
+    return "Error: Invalid filename."
 
   files_found = []
   for root, dirs, files in os.walk(
@@ -556,6 +638,13 @@ async def search_project_file_content(project_name: str,
         or an error message if no files are found.
     """
   _internal_delay()
+  
+  try:
+    project_name = _sanitize_project_name(project_name)
+  except ValueError as e:
+    logger.error(str(e))
+    return f"Error: {str(e)}"
+  
   logger.info('Searching for term "%s" in project "%s"...', search_term,
               project_name)
 
@@ -565,12 +654,16 @@ async def search_project_file_content(project_name: str,
                    project_name)):
     for fname in files:
       full_path = os.path.join(root, fname)
-      with open(full_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-        if search_term in content:
-          for lineno, line in enumerate(content.split('\n')):
-            if search_term in line:
-              files_found.append(f'{full_path}:{lineno}')
+      try:
+        with open(full_path, 'r', encoding='utf-8') as f:
+          content = f.read()
+          if search_term in content:
+            for lineno, line in enumerate(content.split('\n')):
+              if search_term in line:
+                files_found.append(f'{full_path}:{lineno}')
+      except (UnicodeDecodeError, IOError):
+        # Skip files that can't be read as text
+        continue
   return '\n'.join(
       files_found
   ) if files_found else f'No files containing "{search_term}" found in project "{project_name}".'
@@ -588,6 +681,13 @@ async def get_coverage_of_oss_fuzz_project(project_name):
         A string containing the code coverage information, or an error message.
   """
   _internal_delay()
+  
+  try:
+    project_name = _sanitize_project_name(project_name)
+  except ValueError as e:
+    logger.error(str(e))
+    return f"Error: {str(e)}"
+  
   logger.info('Getting coverage for project "%s"...', project_name)
 
   os.makedirs(oss_fuzz_mcp_config.BASE_TMP_LOGS, exist_ok=True)
@@ -600,10 +700,8 @@ async def get_coverage_of_oss_fuzz_project(project_name):
   try:
     logger.info("Building OSS-Fuzz project: '%s'", project_name)
     subprocess.check_call(
-        'python3 infra/helper.py introspector --coverage-only --seconds=10 ' +
-        project_name,
+        ['python3', 'infra/helper.py', 'introspector', '--coverage-only', '--seconds=10', project_name],
         cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-        shell=True,
         stdout=log_stdout,
         stderr=subprocess.STDOUT,
         timeout=60 * 20)
