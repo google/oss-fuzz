@@ -155,11 +155,10 @@ def get_base_image_steps(images: Sequence[ImageConfig]) -> list[dict]:
 
     dockerfile_path = os.path.join('oss-fuzz', image_config.dockerfile_path)
     steps.append(
-        build_lib.get_docker_build_step(
-            tags,
-            image_config.path,
-            dockerfile_path=dockerfile_path,
-            build_args=image_config.build_args))
+        build_lib.get_docker_build_step(tags,
+                                        image_config.path,
+                                        dockerfile_path=dockerfile_path,
+                                        build_args=image_config.build_args))
   return steps
 
 
@@ -174,15 +173,19 @@ def run_build(steps: list[dict],
     configuration if in dry_run mode.
     """
   if dry_run:
-    print('--------------------------------------------------------------------')
+    print(
+        '--------------------------------------------------------------------')
     print(f'DRY RUN FOR VERSION: {build_version}')
-    print('--------------------------------------------------------------------')
+    print(
+        '--------------------------------------------------------------------')
     print(f'Images to push: {images_to_push}')
     print(f'Push enabled: {not no_push}')
     print('Build steps:')
     for step in steps:
       print(f"  - {step['name']}: {' '.join(step['args'])}")
-    print('--------------------------------------------------------------------\n')
+    print(
+        '--------------------------------------------------------------------\n'
+    )
     return
 
   images_for_gcb = images_to_push
@@ -230,8 +233,7 @@ def get_images_architecture_manifest_steps(target_tag: str) -> list[dict]:
   ]
   steps = []
   for image in images:
-    steps.extend(
-        get_image_push_architecture_manifest_steps(image, target_tag))
+    steps.extend(get_image_push_architecture_manifest_steps(image, target_tag))
   return steps
 
 
@@ -292,10 +294,7 @@ def get_image_push_architecture_manifest_steps(image: str,
   return steps
 
 
-def base_builder(event,
-                 context,
-                 dry_run: bool = False,
-                 no_push: bool = False):
+def base_builder(event, context, dry_run: bool = False, no_push: bool = False):
   """
     Cloud function entry point. Triggers parallel base image builds for each
     supported Ubuntu version.
@@ -325,12 +324,11 @@ def base_builder(event,
     ])
 
     logging.info('Triggering GCB build for version: %s', version)
-    run_build(
-        steps,
-        images_to_push,
-        build_version=version,
-        dry_run=dry_run,
-        no_push=no_push)
+    run_build(steps,
+              images_to_push,
+              build_version=version,
+              dry_run=dry_run,
+              no_push=no_push)
 
 
 if __name__ == '__main__':
