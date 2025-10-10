@@ -471,8 +471,8 @@ class Manifest:
             ),
         )
 
-        # Make sure the index database (the only file directly in `INDEX_DIR`)
-        # is early in the archive for the same reason.
+        # Make sure the index databases (the only files directly in `INDEX_DIR`)
+        # are early in the archive for the same reason.
         _save_dir(index_dir, INDEX_DIR)
 
         if source_dir:
