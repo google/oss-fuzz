@@ -15,7 +15,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 # Clone the repository with fuzzing branch
-RUN git clone --depth 1 --branch ossFuzz https://github.com/telegramdesktop/tdesktop $SRC/tdesktop
+RUN git clone --depth 1 https://github.com/telegramdesktop/tdesktop $SRC/tdesktop
 
 # Create fuzzer directory
 RUN mkdir -p $SRC/telegram_fuzzers
