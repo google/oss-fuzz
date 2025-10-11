@@ -21,7 +21,7 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install -y --no-install-recommends pkg-config libssl-dev libdbus-1-dev libglib2.0-dev \
         libavahi-client-dev ninja-build \
-        unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
+        unzip libgirepository1.0-dev libcairo2-dev libreadline-dev libmount-dev
 
 # PEP-517 needed for cryptography. Update pip
 RUN python3 -m pip install --upgrade pip setuptools wheel packaging
