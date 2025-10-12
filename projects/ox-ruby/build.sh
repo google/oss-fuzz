@@ -46,7 +46,7 @@ echo "Showing this dir:"
 ls -la \$this_dir
 
 
-/usr/bin/ruzzy \$this_dir/fuzz_parse.rb \$@""" > $OUT/fuzz_parse
+/usr/local/bin/ruzzy \$this_dir/fuzz_parse.rb \$@""" > $OUT/fuzz_parse
 
 chmod +x $OUT/fuzz_parse
 
