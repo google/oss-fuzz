@@ -21,10 +21,7 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install -y --no-install-recommends pkg-config libssl-dev libdbus-1-dev libglib2.0-dev \
         libavahi-client-dev ninja-build \
-        unzip libgirepository1.0-dev libcairo2-dev libreadline-dev libmount-dev
-
-# PEP-517 needed for cryptography. Update pip
-RUN python3 -m pip install --upgrade pip setuptools wheel packaging
+        unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -32,7 +29,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install nightly
 RUN rustup default nightly
 
-RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
+RUN git clone --depth=1 --branch AA/stopStaticLibLinkingOSS https://github.com/Alami-Amine/connectedhomeip.git connectedhomeip
 
 # PW_PROJECT_ROOT is used in requirements.build.txt
 ENV PW_PROJECT_ROOT=$SRC/connectedhomeip
