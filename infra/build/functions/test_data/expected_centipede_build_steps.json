@@ -105,7 +105,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine centipede --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer address --engine centipede --architecture x86_64 test-project\\n********************************************************************************\" && false)"
+      "python3 infra/helper.py check_build --sanitizer address --engine centipede --architecture x86_64 test-project || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine centipede --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer address --engine centipede --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-centipede-address-x86_64"
   },
@@ -246,7 +246,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer none --engine centipede --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer none --engine centipede --architecture x86_64 test-project\\n********************************************************************************\" && false)"
+      "python3 infra/helper.py check_build --sanitizer none --engine centipede --architecture x86_64 test-project || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer none --engine centipede --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer none --engine centipede --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-centipede-none-x86_64"
   },
