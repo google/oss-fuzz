@@ -13,7 +13,7 @@ executes untrusted code. As such, when running this tool you
 should assume you will be running untrusted code on your machine. You should
 only run this in a trusted environment and on a trusted network. In practice,
 this means you must run this in a heavily sandboxed environment, and from a
-security perspective if you run this tool you will run untrusted code on
+security perspective if you run this tool you will run untrusted code in
 your environment.
 
 This code does not run in OSS-Fuzz production services and is not part of the
