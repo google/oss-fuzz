@@ -10,9 +10,18 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.n#
+# limitations under the License.
+#
 ################################################################################
-"""Cloud function to build base images on Google Cloud Builder."""
+"""Cloud function to build base images on Google Cloud Builder.
+
+This script can be run locally for testing or deployment purposes. By default,
+it performs a real build. To perform a dry run, use the '--dry-run' flag. To
+prevent images from being pushed to the registry, use '--no-push'.
+
+Example:
+  python3 infra/build/functions/base_images.py --dry-run
+"""
 from collections.abc import Sequence
 import logging
 import os
@@ -27,8 +36,11 @@ IMAGE_NAME_PREFIX = f'gcr.io/{BASE_PROJECT}/'
 MAJOR_TAG = 'v1'
 TIMEOUT = '21600'  # 6 hours
 
-# Define the supported Ubuntu versions for base images.
+# Defines the Ubuntu versions supported by the build infrastructure.
 # 'legacy' refers to the unversioned, default image.
+# Note: This list indicates build capability, not production readiness.
+# A version is only ready for general use after being fully enabled in
+# ClusterFuzz.
 SUPPORTED_VERSIONS = ('legacy', 'ubuntu-20-04', 'ubuntu-24-04')
 
 # Define which of the supported versions is considered the default.
@@ -62,9 +74,10 @@ class ImageConfig:
     return os.path.join('infra', 'base-images', self.name)
 
   def _resolve_dockerfile(self) -> str:
-    """
-    Resolves the path to the Dockerfile, preferring a version-specific
-    one if it exists, otherwise falling back to the legacy Dockerfile.
+    """Resolves the path to the Dockerfile.
+
+    Prefers a version-specific one if it exists, otherwise falling back to the
+    legacy Dockerfile.
     """
     if self.version != 'legacy':
       versioned_dockerfile = os.path.join(self.path,
@@ -168,10 +181,10 @@ def run_build(steps: list[dict],
               tags: list[str] | None = None,
               dry_run: bool = False,
               no_push: bool = False):
+  """Executes a build in GCB and pushes the resulting images.
+
+  Alternatively, prints the configuration if in dry_run mode.
   """
-    Executes a build in GCB and pushes the resulting images, or prints the
-    configuration if in dry_run mode.
-    """
   if dry_run:
     print(
         '--------------------------------------------------------------------')
@@ -224,10 +237,11 @@ def run_build(steps: list[dict],
 
 
 def get_images_architecture_manifest_steps(target_tag: str) -> list[dict]:
+  """Returns steps for creating and pushing a multi-architecture manifest.
+
+  The manifest is for the base-builder and base-runner images with a
+  specific tag.
   """
-    Returns steps to create and push a multi-architecture manifest for
-    the base-builder and base-runner images with a specific tag.
-    """
   images = [
       f'{IMAGE_NAME_PREFIX}base-builder', f'{IMAGE_NAME_PREFIX}base-runner'
   ]
@@ -239,10 +253,7 @@ def get_images_architecture_manifest_steps(target_tag: str) -> list[dict]:
 
 def get_image_push_architecture_manifest_steps(image: str,
                                                target_tag: str) -> list[dict]:
-  """
-    Returns the steps to push a manifest pointing to ARM64 and AMD64
-    versions of an |image| with a specific |target_tag|.
-    """
+  """Returns steps for pushing a manifest pointing to ARM64/AMD64 versions."""
   # The AMD64 image is the one we just built.
   amd64_source_image = f'{image}:{target_tag}'
   # The ARM64 image is a pre-built generic testing image.
@@ -295,10 +306,10 @@ def get_image_push_architecture_manifest_steps(image: str,
 
 
 def base_builder(event, context, dry_run: bool = False, no_push: bool = False):
+  """Cloud function entry point.
+
+  Triggers parallel base image builds for each supported Ubuntu version.
   """
-    Cloud function entry point. Triggers parallel base image builds for each
-    supported Ubuntu version.
-    """
   del event, context
   logging.basicConfig(level=logging.INFO)
 
@@ -332,10 +343,6 @@ def base_builder(event, context, dry_run: bool = False, no_push: bool = False):
 
 
 if __name__ == '__main__':
-  # This allows the script to be run locally for testing or deployment.
-  # By default, it performs a real build.
-  # To perform a dry run, pass the '--dry-run' flag.
-  # To prevent pushing images to the registry, pass '--no-push'.
   is_dry_run = '--dry-run' in sys.argv
   no_push = '--no-push' in sys.argv
   base_builder(None, None, dry_run=is_dry_run, no_push=no_push)

@@ -147,7 +147,6 @@ def main():
       any_results_found = True
       if data.get('failed_builds', 0) > 0:
         any_failures = True
-      # Use .get() for safe access to prevent potential KeyErrors.
       total_unique_projects.update(data.get('all_projects', []))
 
   if not any_results_found:
@@ -162,7 +161,6 @@ def main():
   generate_comparison_table(all_results)
   generate_final_summary(all_results)
 
-  # Define failure conditions explicitly for clarity.
   has_explicit_failures = any_failures
   no_projects_were_run = any_results_found and not total_unique_projects
 
