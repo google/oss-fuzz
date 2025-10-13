@@ -15,6 +15,6 @@
 #
 ################################################################################
 
-mv $SRC/fuzz.go $SRC/hugo/tpl/transform/
+mv $SRC/fuzz_pageparser.go $SRC/hugo/parser/pageparser/
 
-compile_go_fuzzer github.com/gohugoio/hugo/tpl/transform FuzzMarkdownify fuzzmarkdownify
+compile_go_fuzzer github.com/gohugoio/hugo/parser/pageparser FuzzParseFrontMatterAndContent FuzzParseFrontMatterAndContent

@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export CXXFLAGS="${CXXFLAGS} -pthread"
+
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
@@ -25,5 +27,13 @@ then
     export CXXFLAGS="$CXXFLAGS -DASAN"
 fi
 
+# First build library and tests, which is needed for OSS-Fuzz's Chronos.
+mkdir build
+cd build
+cmake ../
+make -j$(nproc)
+cd ../
+
+# Build fuzz harness.
 $CXX $CXXFLAGS -D_GLIBCXX_DEBUG -I $SRC/rapidjson/include $SRC/fuzzer.cpp $LIB_FUZZING_ENGINE -o $OUT/fuzzer
 

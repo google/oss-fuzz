@@ -27,6 +27,7 @@
 #include "indexer/index/types.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/container/node_hash_map.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/types/span.h"
@@ -73,14 +74,14 @@ void MaybePrintLinkerMessage(absl::Span<const Entity> entities,
   // Secondly, if we have an incomplete entity that does not have a
   // corresponding complete entity, then linking will be incomplete.
   if (complete_count > 1 && incomplete_count) {
-    stream << "error: multiple definitions for " << entities[0].name_prefix()
-           << entities[0].name() << entities[0].name_suffix() << "\n";
+    stream << "error: multiple definitions for " << entities[0].full_name()
+           << "\n";
   } else if (!complete_count && incomplete_count) {
 #ifndef NDEBUG
     // TODO: Enable this in opt builds once the number of warnings is
     // more reasonable.
-    stream << "warning: no definition found for " << entities[0].name_prefix()
-           << entities[0].name() << entities[0].name_suffix() << "\n";
+    stream << "warning: no definition found for " << entities[0].full_name()
+           << "\n";
 #else
     return;
 #endif  // NDEBUG
@@ -90,7 +91,7 @@ void MaybePrintLinkerMessage(absl::Span<const Entity> entities,
 
   for (const auto& entity : entities) {
     const auto& location = locations[entity.location_id()];
-    stream << "  " << location.path() << ":" << location.start_line() << ":"
+    stream << "  " << location.path() << ":" << location.start_line() << "-"
            << location.end_line()
            << (entity.is_incomplete() ? "" : " [definition]")
            << (entity.is_weak() ? " [weak]" : "") << "\n";
@@ -106,77 +107,12 @@ struct ComparePairFirst {
   }
 };
 
-template <class Item, typename ItemId>
-class Accessor {
- public:
-  virtual ~Accessor() = default;
-  virtual const Item& GetById(ItemId) const = 0;
-};
-
-template <class Item, typename ItemId>
-class HashAccessor : public Accessor<Item, ItemId> {
- public:
-  explicit HashAccessor(const absl::flat_hash_map<Item, ItemId>& items)
-      : items_(items) {}
-  const Item& GetById(ItemId id) const override {
-    for (const auto& [item, item_id] : items_) {
-      if (item_id == id) {
-        return item;
-      }
-    }
-    LOG(FATAL) << "Couldn't find an item by ID";
-  }
-
- private:
-  const absl::flat_hash_map<Item, ItemId>& items_;
-};
-
-template <class Item, typename ItemId>
-class VectorAccessor : public Accessor<Item, ItemId> {
- public:
-  explicit VectorAccessor(const std::vector<Item>& items) : items_(items) {}
-  const Item& GetById(ItemId id) const override {
-    CHECK_LT(id, items_.size());
-    return items_[id];
-  }
-
- private:
-  const std::vector<Item>& items_;
-};
-
-void ReportEntity(std::ostream& os, const Entity& entity,
-                  const Accessor<Entity, EntityId>& entities,
-                  const Accessor<Location, LocationId>& locations,
-                  int depth = 1) {
-  for (int i = 0; i < depth; ++i) {
-    os << "  ";
-  }
-  const Location& entity_location = locations.GetById(entity.location_id());
-  os << entity.full_name() << " at " << entity_location.path() << ":"
-     << entity_location.start_line() << "-" << entity_location.end_line()
-     << "\n";
-  if (entity.canonical_entity_id().has_value()) {
-    const Entity& canonical_entity =
-        entities.GetById(*entity.canonical_entity_id());
-    ReportEntity(os, canonical_entity, entities, locations, depth + 1);
-  }
-}
-
-void ReportCanonicalChain(const Entity& entity,
-                          const Accessor<Entity, EntityId>& entities,
-                          const Accessor<Location, LocationId>& locations) {
-  std::stringstream stream;
-  stream << "Unexpected canonical entity reference chain for:\n";
-  ReportEntity(stream, entity, entities, locations);
-  stream << "(Please report the above as a bug marked 'CHAIN'.)\n";
-  std::cerr << stream.str();
-}
 }  // namespace
 
 InMemoryIndex::InMemoryIndex(FileCopier& file_copier)
     : file_copier_(file_copier) {
   Expand(kInitialReservationCount, kInitialReservationCount,
-         kInitialReservationCount);
+         kInitialReservationCount, kInitialReservationCount);
 }
 
 InMemoryIndex::~InMemoryIndex() = default;
@@ -187,16 +123,17 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
   // this is not an issue, since we almost always use the same indexes to merge
   // into, so the overly-large reservation will be used later.
   Expand(other.locations_.size(), other.entities_.size(),
-         other.references_.size());
+         other.references_.size(), other.virtual_method_links_.size());
 
   std::vector<LocationId> new_location_ids(other.locations_.size(),
                                            kInvalidLocationId);
   for (const auto& [location, id] : other.locations_) {
-    new_location_ids[id] = GetLocationId(location);
+    new_location_ids[id] = GetIdForLocationWithIndexPath(location);
   }
 
-  // We need to update the location_id for entities, and the entity_id and
-  // location_id for references during insertion.
+  // We need to update the location_id for entities, the entity_id and
+  // location_id for references, and parent/child entity ids for virtual method
+  // links during insertion.
 
   // Entity references point to entities with lower ids. Process them
   // in the increasing order of old ids to ensure reference resolution.
@@ -210,9 +147,8 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
   }
   std::vector<EntityId> new_entity_ids(other.entities_.size(),
                                        kInvalidEntityId);
-  // For an old entity ID, stores the new ID of its canonical entity.
-  std::vector<EntityId> new_canonical_entity_ids(other.entities_.size(),
-                                                 kInvalidEntityId);
+  std::vector<std::optional<SubstituteRelationship::Kind>>
+      substitute_relationships(other.entities_.size());
   for (const auto& optional_iter : other_entities) {
     // The fact that the CHECK above was satisfied `other_entities.size()` times
     // means that all the `other_entities` items have values.
@@ -220,85 +156,99 @@ void InMemoryIndex::Merge(const InMemoryIndex& other) {
     const auto& iter = *optional_iter;
     const Entity& entity = iter->first;
     const EntityId id = iter->second;
-    std::optional<EntityId> canonical_entity_id = std::nullopt;
-    if (entity.canonical_entity_id()) {
-      const EntityId old_canonical_entity_id = *entity.canonical_entity_id();
-      CHECK_LT(old_canonical_entity_id, id);
-      // If the canonical entity for `entity` has a canonical reference in turn,
-      // this is an (undesired) canonical reference chain.
-      if (new_canonical_entity_ids[old_canonical_entity_id] !=
-          kInvalidEntityId) {
-        ReportCanonicalChain(
-            entity, HashAccessor<Entity, EntityId>(other.entities_),
-            HashAccessor<Location, LocationId>(other.locations_));
-        // Reduce the chain to its ultimate canonical entity.
-        canonical_entity_id = new_canonical_entity_ids[old_canonical_entity_id];
-      } else {
-        canonical_entity_id = new_entity_ids[old_canonical_entity_id];
-      }
-      CHECK_NE(*canonical_entity_id, kInvalidEntityId);
-    }
-    std::optional<EntityId> implicitly_defined_for_entity_id = std::nullopt;
-    if (entity.implicitly_defined_for_entity_id()) {
-      const EntityId old_implicitly_defined_for_entity_id =
-          *entity.implicitly_defined_for_entity_id();
-      CHECK_LT(old_implicitly_defined_for_entity_id, id);
-      implicitly_defined_for_entity_id =
-          new_entity_ids[old_implicitly_defined_for_entity_id];
+    std::optional<EntityId> new_substitute_entity_id;
+    if (entity.substitute_relationship()) {
+      const EntityId old_substitute_entity_id =
+          entity.substitute_relationship()->substitute_entity_id();
+      CHECK_LT(old_substitute_entity_id, id);
+      new_substitute_entity_id = new_entity_ids[old_substitute_entity_id];
+      CHECK_NE(*new_substitute_entity_id, kInvalidEntityId);
     }
     const EntityId new_id = GetEntityId(Entity(
         entity, /*new_location_id=*/new_location_ids[entity.location_id()],
-        /*new_canonical_entity_id=*/canonical_entity_id,
-        /*new_implicitly_defined_for_entity_id=*/
-        implicitly_defined_for_entity_id));
-
+        new_substitute_entity_id));
     new_entity_ids[id] = new_id;
-    if (canonical_entity_id) {
-      CHECK_LT(*canonical_entity_id, new_id);
-      new_canonical_entity_ids[id] = *canonical_entity_id;
-    }
   }
 
   for (const auto& [reference, id] : other.references_) {
     GetReferenceId({new_entity_ids[reference.entity_id()],
                     new_location_ids[reference.location_id()]});
   }
+
+  for (const auto& [link, id] : other.virtual_method_links_) {
+    GetVirtualMethodLinkId(
+        {new_entity_ids[link.parent()], new_entity_ids[link.child()]});
+  }
 }
 
 void InMemoryIndex::Expand(size_t locations_count, size_t entities_count,
-                           size_t references_count) {
+                           size_t references_count,
+                           size_t virtual_method_links_count) {
   locations_.reserve(locations_.size() + locations_count);
   entities_.reserve(entities_.size() + entities_count);
   references_.reserve(references_.size() + references_count);
+  virtual_method_links_.reserve(virtual_method_links_.size() +
+                                virtual_method_links_count);
 }
 
-LocationId InMemoryIndex::GetLocationId(const Location& location) {
-  // Adjust paths within the base_path to be relative paths.
-  Location new_location = location;
-  new_location.path_ = file_copier_.ToIndexPath(location.path());
+LocationId InMemoryIndex::GetLocationId(Location location) {
+  if (location.is_real()) {
+    // Adjust paths within the base_path to be relative paths.
+    location.path_ = file_copier_.AbsoluteToIndexPath(location.path());
+  }
+  return GetIdForLocationWithIndexPath(location);
+}
 
-  auto [iter, inserted] = locations_.insert({new_location, next_location_id_});
+LocationId InMemoryIndex::GetIdForLocationWithIndexPath(
+    const Location& location) {
+  auto [iter, inserted] = locations_.insert({location, next_location_id_});
   if (inserted) {
     next_location_id_++;
-    file_copier_.CopyFileIfNecessary(new_location.path());
+    if (location.is_real()) {
+      file_copier_.RegisterIndexedFile(location.path());
+    }
   }
 
   return iter->second;
 }
 
 EntityId InMemoryIndex::GetEntityId(const Entity& entity) {
+  // If an entity and its substitute have identical renderings and are thus
+  // indistinguishable during index merging, prevent creating self-references
+  // due to this collapse by pre-merging them here already.
+  if (entity.substitute_relationship()) {
+    const EntityId substitute_entity_id =
+        entity.substitute_relationship()->substitute_entity_id();
+    const Entity& substitute_entity = GetEntityById(substitute_entity_id);
+    if (HasTheSameIdentity(substitute_entity, entity)) {
+      return substitute_entity_id;
+    }
+  }
+
   auto [iter, inserted] = entities_.insert({entity, next_entity_id_});
+  const EntityId entity_id = iter->second;
   if (inserted) {
     next_entity_id_++;
-  }
-  const EntityId entity_id = iter->second;
-  if (entity.canonical_entity_id()) {
-    CHECK_LT(*entity.canonical_entity_id(), entity_id);
-  }
-  if (entity.implicitly_defined_for_entity_id()) {
-    CHECK_LT(*entity.implicitly_defined_for_entity_id(), entity_id);
+    id_to_entity_.push_back(&iter->first);
+    if (auto relationship = entity.substitute_relationship_) {
+      CHECK_LT(relationship->substitute_entity_id(), entity_id);
+    }
   }
   return entity_id;
+}
+
+EntityId InMemoryIndex::GetExistingEntityId(const Entity& entity) const {
+  auto it = entities_.find(entity);
+  if (it == entities_.end()) {
+    return kInvalidEntityId;
+  }
+  return it->second;
+}
+
+const Entity& InMemoryIndex::GetEntityById(EntityId entity_id) const {
+  CHECK_NE(entity_id, kInvalidEntityId);
+  CHECK_LT(entity_id, id_to_entity_.size());
+  return *id_to_entity_[entity_id];
 }
 
 ReferenceId InMemoryIndex::GetReferenceId(const Reference& reference) {
@@ -309,7 +259,17 @@ ReferenceId InMemoryIndex::GetReferenceId(const Reference& reference) {
   return iter->second;
 }
 
-FlatIndex InMemoryIndex::Export(bool store_canonical_entities) {
+VirtualMethodLinkId InMemoryIndex::GetVirtualMethodLinkId(
+    const VirtualMethodLink& link) {
+  auto [iter, inserted] =
+      virtual_method_links_.insert({link, next_virtual_method_link_id_});
+  if (inserted) {
+    next_virtual_method_link_id_++;
+  }
+  return iter->second;
+}
+
+FlatIndex InMemoryIndex::Export() && {
   FlatIndex result;
 
   // Order is important here, since until we've sorted Locations we don't have
@@ -331,29 +291,13 @@ FlatIndex InMemoryIndex::Export(bool store_canonical_entities) {
 
     // Now iterate through the sorted locations, building a lookup from the old
     // to the new sorted ids, and building the results vector.
-    //
-    // Compress the locations by removing the column information.
-    // The comparison defined on `Location` makes sure locations with the same
-    // line ranges end up together so that we can deduplicate them on the fly.
     result.locations.reserve(sorted_locations.size());
     LocationId new_id = 0;
-    const Location* previous_location = nullptr;
-    LocationId last_id = kInvalidLocationId;
     for (auto& [location, old_id] : sorted_locations) {
-      if (previous_location == nullptr ||
-          previous_location->path() != location.path() ||
-          previous_location->start_line() != location.start_line() ||
-          previous_location->end_line() != location.end_line()) {
-        result.locations.emplace_back(/*path=*/std::move(location.path_),
-                                      /*start_line=*/location.start_line(),
-                                      /*start_column=*/0,
-                                      /*end_line=*/location.end_line(),
-                                      /*end_column=*/0);
-        last_id = new_id++;
-      }
-      CHECK_NE(last_id, kInvalidLocationId);
-      new_location_ids[old_id] = last_id;
-      previous_location = &location;
+      result.locations.emplace_back(/*path=*/std::move(location.path_),
+                                    /*start_line=*/location.start_line(),
+                                    /*end_line=*/location.end_line());
+      new_location_ids[old_id] = new_id++;
     }
   }
 
@@ -366,8 +310,8 @@ FlatIndex InMemoryIndex::Export(bool store_canonical_entities) {
       LocationId new_location_id = new_location_ids[old_location_id];
       CHECK_NE(new_location_id, kInvalidLocationId);
 
-      if (entity.canonical_entity_id()) {
-        CHECK_LT(*entity.canonical_entity_id(), id);
+      if (entity.substitute_relationship()) {
+        CHECK_LT(entity.substitute_relationship()->substitute_entity_id(), id);
       }
 
       auto& iter = sorted_entities.emplace_back(entity, id);
@@ -378,6 +322,7 @@ FlatIndex InMemoryIndex::Export(bool store_canonical_entities) {
               ComparePairFirst());
     CHECK_EQ(sorted_entities.size(), entities_.size());
     entities_.clear();
+    id_to_entity_.clear();
 
     // Now iterate through the sorted entities, building a lookup from the old
     // to the new sorted ids, and building the results vector. Since entities
@@ -409,42 +354,11 @@ FlatIndex InMemoryIndex::Export(bool store_canonical_entities) {
     CHECK_EQ(new_entity_ids.size(), sorted_entities.size());
     CHECK_LE(result.entities.size(), sorted_entities.size());
 
-    // Update the implicit-for entity ids.
+    // Update the substitute entity ids.
     for (Entity& entity : result.entities) {
-      if (entity.implicitly_defined_for_entity_id()) {
-        entity.implicitly_defined_for_entity_id_ =
-            new_entity_ids[*entity.implicitly_defined_for_entity_id()];
-      }
-    }
-
-    if (store_canonical_entities) {
-      // Update the canonical entity ids.
-      for (Entity& entity : result.entities) {
-        if (entity.canonical_entity_id()) {
-          entity.canonical_entity_id_ =
-              new_entity_ids[*entity.canonical_entity_id()];
-        }
-      }
-      // Before the reordering, an entity's canonical entity id, if present, was
-      // guaranteed to be lower than that of the entity itself. Thus processing
-      // the entities in the order of ascending old ids gives a topological
-      // ordering with respect to canonical references.
-      for (EntityId id : new_entity_ids) {
-        Entity& entity = result.entities[id];
-        if (entity.canonical_entity_id() &&
-            result.entities[*entity.canonical_entity_id()]
-                .canonical_entity_id()) {
-          ReportCanonicalChain(
-              entity, VectorAccessor<Entity, EntityId>(result.entities),
-              VectorAccessor<Location, LocationId>(result.locations));
-          entity.canonical_entity_id_ =
-              result.entities[*entity.canonical_entity_id()]
-                  .canonical_entity_id();
-        }
-      }
-    } else {
-      for (auto& entity : result.entities) {
-        entity.canonical_entity_id_ = std::nullopt;
+      if (entity.substitute_relationship()) {
+        entity.substitute_relationship_->entity_id_ =
+            new_entity_ids[entity.substitute_relationship_->entity_id_];
       }
     }
   }
@@ -463,6 +377,18 @@ FlatIndex InMemoryIndex::Export(bool store_canonical_entities) {
   // Remove duplicates that could have arisen due to location column erasure.
   auto last = std::unique(result.references.begin(), result.references.end());
   result.references.erase(last, result.references.end());
+
+  // Likewise, no need to maintain the old-to-new link id mapping.
+  result.virtual_method_links.reserve(virtual_method_links_.size());
+  for (const auto& [link, id] : virtual_method_links_) {
+    EntityId new_parent = new_entity_ids[link.parent()];
+    CHECK_NE(new_parent, kInvalidEntityId);
+    EntityId new_child = new_entity_ids[link.child()];
+    CHECK_NE(new_child, kInvalidEntityId);
+    result.virtual_method_links.emplace_back(new_parent, new_child);
+  }
+  std::sort(result.virtual_method_links.begin(),
+            result.virtual_method_links.end());
 
   return result;
 }

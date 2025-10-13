@@ -45,6 +45,8 @@ SRC_DIR = pathlib.Path("src")
 OBJ_DIR = pathlib.Path("obj")
 # Directory for indexer data.
 INDEX_DIR = pathlib.Path("idx")
+# The index database filename.
+INDEX_DB = pathlib.Path("db.sqlite")
 # Library directory, where shared libraries are copied - inside obj.
 LIB_DIR = OBJ_DIR / "lib"
 # Manifest location
@@ -54,7 +56,7 @@ _LIB_MOUNT_PATH_V1 = pathlib.Path("/ossfuzzlib")
 # Min archive version we currently support.
 _MIN_SUPPORTED_ARCHIVE_VERSION = 1
 # The current version of the build archive format.
-ARCHIVE_VERSION = 4
+ARCHIVE_VERSION = 5
 # OSS-Fuzz $OUT dir.
 OUT = pathlib.Path(os.getenv("OUT", "/out"))
 # OSS-Fuzz coverage info.
@@ -66,6 +68,8 @@ _COVERAGE_INFO_URL = ("https://storage.googleapis.com/oss-fuzz-coverage/"
 INPUT_FILE = "<input_file>"
 # A file the target can write output to.
 OUTPUT_FILE = "<output_file>"
+# Will be replaced with any dynamic arguments.
+DYNAMIC_ARGS = "<dynamic_args>"
 
 
 
@@ -145,7 +149,7 @@ class BinaryConfig:
   kind: BinaryConfigKind
 
   @classmethod
-  def from_dict(cls, config_dict: Mapping[Any, Any]) -> Self:
+  def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
     """Deserializes the correct `BinaryConfig` subclass from a dict."""
     mapping = {
         BinaryConfigKind.OSS_FUZZ: CommandLineBinaryConfig,
@@ -164,9 +168,18 @@ class BinaryConfig:
       val = dict(val, binary_args=shlex.split(val["binary_args"]))
     return mapping[kind].from_dict(val)
 
-  def to_dict(self) -> Mapping[Any, Any]:
+  def to_dict(self) -> dict[str, Any]:
     """Converts a BinaryConfig object to a serializable dict."""
     return dataclasses.asdict(self)
+
+
+class HarnessKind(enum.StrEnum):
+  """The target/harness kind."""
+
+  LIBFUZZER = enum.auto()
+  BINARY = enum.auto()
+  # The target is a JavaScript shell that consumes JavaScript code.
+  JS = enum.auto()
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
@@ -178,22 +191,55 @@ class CommandLineBinaryConfig(BinaryConfig):
   # Additional environment variables to pass to the binary. They will overwrite
   # any existing environment variables with the same name.
   # Input replacement works on these variables as well.
-  binary_env: dict[str, str]
+  binary_env: dict[str, str] = dataclasses.field(default_factory=dict)
+  harness_kind: HarnessKind
+  # Whether to filter the compile commands to only include object files that
+  # are directly linked into the target binary. Should usually be true but
+  # some targets like V8 require this to be false, see b/433718862.
+  filter_compile_commands: bool = True
 
   @classmethod
-  def from_dict(cls, config_dict: Mapping[Any, Any]) -> Self:
+  def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
     """Deserializes the `CommandLineBinaryConfig` from a dict."""
     kind = BinaryConfigKind(config_dict["kind"])
     kind.validate_in([BinaryConfigKind.OSS_FUZZ, BinaryConfigKind.BINARY])
+    # Default to "binary" for backwards compatibility.
+    harness_kind = HarnessKind(
+        config_dict.get("harness_kind", HarnessKind.BINARY)
+    )
     return CommandLineBinaryConfig(
         kind=kind,
+        harness_kind=harness_kind,
         binary_name=config_dict["binary_name"],
         binary_args=config_dict["binary_args"],
         binary_env=config_dict.get("binary_env", {}),
+        filter_compile_commands=config_dict.get(
+            "filter_compile_commands", True
+        ),
     )
 
 
 
+
+
+def _get_sqlite_db_user_version(sqlite_db_path: pathlib.Path) -> int:
+  """Retrieves `PRAGMA user_version;` value without connecting to the database."""
+  with sqlite_db_path.open("rb") as stream:
+    # https://www.sqlite.org/pragma.html#pragma_user_version - a big-endian
+    # 32-bit number at offset 60 of the database header.
+    too_small_error = ValueError(
+        f"The file '{sqlite_db_path}' is too small for an SQLite database."
+    )
+    try:
+      stream.seek(60)
+    except OSError as e:
+      raise too_small_error from e
+
+    version_bytes = stream.read(4)
+    if len(version_bytes) < 4:
+      raise too_small_error
+
+    return int.from_bytes(version_bytes, byteorder="big")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -232,6 +278,9 @@ class Manifest:
   # Version of the manifest spec.
   version: int = ARCHIVE_VERSION
 
+  # Version of the index database schema.
+  index_db_version: int | None = None
+
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Manifest object from a deserialized dict."""
@@ -253,6 +302,7 @@ class Manifest:
           kind=BinaryConfigKind.BINARY,
           binary_name=data["binary_name"],
           binary_args=binary_args or [],
+          harness_kind=HarnessKind.BINARY,
           binary_env={},
       )
     else:
@@ -268,6 +318,7 @@ class Manifest:
       )
     return Manifest(
         version=version,
+        index_db_version=data.get("index_db_version"),
         name=data["name"],
         uuid=data["uuid"],
         lib_mount_path=lib_mount_path,
@@ -345,13 +396,13 @@ class Manifest:
   def save_build(
       self,
       *,
-      source_dir: pathlib.PurePath,
+      source_dir: pathlib.PurePath | None,
       build_dir: pathlib.PurePath,
       index_dir: pathlib.PurePath,
       archive_path: pathlib.PurePath,
       out_dir: pathlib.PurePath = pathlib.Path("/out"),
       overwrite: bool = True,
-  ) -> None:
+  ) -> Self:
     """Saves a build archive with this Manifest."""
     if os.path.exists(archive_path) and not overwrite:
       raise FileExistsError(f"Not overwriting existing archive {archive_path}")
@@ -402,13 +453,20 @@ class Manifest:
                   arcname=prefix + str(file.relative_to(path)),
               )
 
+        dumped_self = self
+        if self.index_db_version is None:
+          index_db_version = _get_sqlite_db_user_version(index_dir / INDEX_DB)
+          dumped_self = dataclasses.replace(
+              self, index_db_version=index_db_version
+          )
+
         # Make sure the manifest is the first file in the archive to avoid
         # seeking when we only need the manifest.
         _add_string_to_tar(
             tar,
             MANIFEST_PATH.as_posix(),
             json.dumps(
-                self.to_dict(),
+                dumped_self.to_dict(),
                 indent=2,
             ),
         )
@@ -417,7 +475,8 @@ class Manifest:
         # is early in the archive for the same reason.
         _save_dir(index_dir, INDEX_DIR)
 
-        _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
+        if source_dir:
+          _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
 
         # Only include the relevant target for the snapshot, to save on disk
         # space.
@@ -433,10 +492,12 @@ class Manifest:
             report_missing_source_files(
                 self.binary_config.binary_name, copied_files, tar
             )
-          except Exception:  # pylint: disable=broad-except
-            logging.exception("Failed to report missing source files.")
+          except Exception as e:  # pylint: disable=broad-except
+            logging.warning("Failed to report missing source files: %s", e)
 
       shutil.copyfile(tmp.name, archive_path)
+
+      return dumped_self
 
 
 def report_missing_source_files(

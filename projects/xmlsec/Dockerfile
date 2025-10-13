@@ -23,4 +23,4 @@ RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake
 RUN git clone --depth 1 https://github.com/lsh123/xmlsec
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxslt.git
-COPY build.sh $SRC/
+COPY build.sh *.diff $SRC/

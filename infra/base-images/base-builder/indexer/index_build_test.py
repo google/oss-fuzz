@@ -26,6 +26,8 @@ import tarfile
 from typing import Sequence
 import unittest
 
+import manifest_types
+
 THIS_DIR = pathlib.Path(__file__).parent
 OSS_FUZZ_DIR = THIS_DIR.parent.parent.parent.parent
 
@@ -100,6 +102,10 @@ class IndexBuildTest(unittest.TestCase):
             self.assertTrue(manifest['lib_mount_path'])
             self.assertIsNotNone(
                 tar.getmember('obj/' + manifest['binary_config']['binary_name'])
+            )
+            self.assertEqual(
+                manifest['binary_config']['binary_args'],
+                [manifest_types.INPUT_FILE],
             )
 
     self.assertTrue(has_obj_lib, 'obj/lib/ was not found in the archive.')

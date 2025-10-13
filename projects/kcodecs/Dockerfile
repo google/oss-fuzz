@@ -14,13 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install --yes cmake ninja-build
-RUN curl -L http://ftp.gnu.org/pub/gnu/gperf/gperf-3.1.tar.gz -O
-RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
-RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qttools.git
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/extra-cmake-modules.git
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
+
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kcodecs.git
-RUN git clone --depth 1 https://gitlab.freedesktop.org/uchardet/uchardet.git
-COPY build.sh kcodecs_fuzzer.cc $SRC/
+RUN $SRC/kcodecs/autotests/ossfuzz/prepare_build.sh
+RUN cp $SRC/kcodecs/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
+
 WORKDIR $SRC/kcodecs

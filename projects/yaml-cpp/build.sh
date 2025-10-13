@@ -19,7 +19,7 @@
 mkdir build
 cd build
 
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release -DYAML_CPP_BUILD_TESTS=ON ..
 make -j4
 
 cp $SRC/yaml-cpp-fuzzer/*.dict $OUT/

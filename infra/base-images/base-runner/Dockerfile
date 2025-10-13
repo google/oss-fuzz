@@ -112,7 +112,7 @@ RUN /install_javascript.sh && rm /install_javascript.sh
 # Copy built ruby and ruzzy from builder
 COPY --from=base-ruby /usr/local/rvm /usr/local/rvm
 COPY --from=base-ruby /install/ruzzy /install/ruzzy
-COPY ruzzy /usr/bin/ruzzy
+COPY ruzzy /usr/local/bin/ruzzy
 ENV PATH="$PATH:/usr/local/rvm/rubies/ruby-3.3.1/bin"
 # RubyGems installation directory
 ENV GEM_HOME="$OUT/fuzz-gem"

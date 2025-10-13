@@ -1,3 +1,5 @@
+#!/bin/bash -eux
+
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +19,7 @@
 cp $SRC/ucl_add_string_fuzzer.options $OUT/
 
 cd libucl
-./autogen.sh && ./configure
+./autogen.sh --force && ./configure
 make
 
 $CC $CFLAGS -c tests/fuzzers/ucl_add_string_fuzzer.c \

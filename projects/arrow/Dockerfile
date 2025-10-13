@@ -16,18 +16,22 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y -q && \
     apt-get install -y -q --no-install-recommends \
         bison \
-        build-essential \
-        cmake \
         flex \
-        ninja-build \
-        python3
-RUN wget https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.bz2  # Temporarily use manual installation over the outdated libboost-dev package
+        ninja-build
+
+RUN wget https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.gz && \
+    tar -xvf boost-1.87.0-cmake.tar.gz && \
+    cd boost-1.87.0/ && \
+    CFLAGS="" CXXFLAGS="" ./bootstrap.sh && \
+    CFLAGS="" CXXFLAGS="" ./b2 headers && \
+    CFLAGS="" CXXFLAGS="" ./b2 --with-process runtime-link=static link=static variant=release install -j 10 && \
+    cp -R -f boost/ /usr/include/
 
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow
 
-COPY build.sh $SRC/
+COPY *.sh $SRC/

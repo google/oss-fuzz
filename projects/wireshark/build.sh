@@ -15,6 +15,18 @@
 #
 ################################################################################
 
+cd $SRC
+tar -xzf $SRC/libxml2-2.9.7.tar.gz
+cd libxml2-2.9.7
+./configure --disable-shared --enable-static --disable-ipv6 --without-python --without-zlib --without-lzma
+make -j$(nproc)
+make install
+export LIBXML_CFLAGS="-I$(pwd)/include"
+export LIBXML_LIBS="-L$(pwd) -lxml2"
+export XML_CFLAGS="$LIBXML_CFLAGS"
+export XML_LIBS="$LIBXML_LIBS"
+cd $SRC/wireshark
+
 WIRESHARK_BUILD_PATH="$WORK/build"
 mkdir -p "$WIRESHARK_BUILD_PATH"
 
@@ -44,8 +56,9 @@ cd "$WIRESHARK_BUILD_PATH"
 cmake -GNinja \
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
       -DCMAKE_C_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CFLAGS" -DCMAKE_CXX_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CXXFLAGS" \
-      -DDISABLE_WERROR=ON -DOSS_FUZZ=ON $CMAKE_DEFINES $SRC/wireshark/
+      -DDISABLE_WERROR=ON -DOSS_FUZZ=ON $CMAKE_DEFINES \
+      -DUSE_STATIC=ON -DBUILD_SHARED_LIBS=OFF $SRC/wireshark
 
-ninja all-fuzzers
+ninja all-fuzzers -j$(expr $(nproc) / 2)
 
 $SRC/wireshark/tools/oss-fuzzshark/build.sh all

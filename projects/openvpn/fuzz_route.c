@@ -47,6 +47,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   setenv_settings(c.es, &c.options);
 
+  ALLOC_OBJ_CLEAR_GC(c.options.ce.local_list, struct local_list, &c.options.gc);
   ALLOC_OBJ_CLEAR_GC(c.options.connection_list, struct connection_list,
                      &c.options.gc);
   context_init_1(&c);
@@ -170,17 +171,22 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       }
       break;
     case 10: {
-      add_route_ipv6_to_option_list(opt6, gb_get_random_string(),
+      add_route_ipv6_to_option_list(opt6,
+		                    gb_get_random_string(),
                                     gb_get_random_string(),
-                                    gb_get_random_string());
+                                    gb_get_random_string(),
+				    fuzz_randomizer_get_int(0, 100));
     } break;
     case 11: {
       print_route_options(opt, M_NONFATAL);
     } break;
     case 12: {
-      add_route_to_option_list(opt, gb_get_random_string(),
-                               gb_get_random_string(), gb_get_random_string(),
-                               gb_get_random_string());
+      add_route_to_option_list(opt,
+		               gb_get_random_string(),
+                               gb_get_random_string(),
+			       gb_get_random_string(),
+                               gb_get_random_string(),
+			       fuzz_randomizer_get_int(0, 100));
     } break;
     default:
       break;
