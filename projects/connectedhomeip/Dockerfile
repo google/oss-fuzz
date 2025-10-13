@@ -30,7 +30,8 @@ RUN cd /tmp && \
     wget https://download.gnome.org/sources/glib/2.68/glib-2.68.0.tar.xz && \
     tar xf glib-2.68.0.tar.xz && \
     cd glib-2.68.0 && \
-    meson _build --prefix=/usr/local && \
+    meson _build --prefix=/usr/local \
+        --default-library=both && \
     ninja -C _build && \
     ninja -C _build install && \
     ldconfig && \
