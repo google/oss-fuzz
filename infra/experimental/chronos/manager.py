@@ -43,7 +43,6 @@ RUN_TESTS_TO_TRY = [
 
 def _get_oss_fuzz_build_status(project):
   """Returns the build status of a project in OSS-Fuzz."""
-  #global OSS_FUZZ_BUILD_HISTORY
   if not OSS_FUZZ_BUILD_HISTORY:
     # Load the build history from a file or other source.
     # This is a placeholder for actual implementation.
@@ -71,48 +70,19 @@ def _get_project_cached_named_local(project, sanitizer='address'):
   return f'{project}-origin-{sanitizer}'
 
 
-def build_project_image(project, container_output='stdout'):
+def build_project_image(project):
   """Build OSS-Fuzz base image for a project."""
-
-  if container_output == 'file':
-    out_idx = 0
-    stdout_file = os.path.join('projects', project,
-                               f'build_image_stdout.{out_idx}.out')
-    while os.path.isfile(stdout_file):
-      out_idx += 1
-      stdout_file = os.path.join('projects', project,
-                                 f'build_image_stdout.{out_idx}.out')
-    stderr_file = os.path.join('projects', project,
-                               f'build_image_stderr.{out_idx}.err')
-    stdout_fp = open(stdout_file, 'w', encoding='utf-8')
-    stderr_fp = open(stderr_file, 'w', encoding='utf-8')
-  elif container_output == 'silent':
-    stdout_fp = subprocess.DEVNULL
-    stderr_fp = subprocess.DEVNULL
-  else:
-    stdout_fp = None
-    stderr_fp = None
 
   cmd = ['docker', 'build', '-t', 'gcr.io/oss-fuzz/' + project, '.']
   try:
     subprocess.check_call(' '.join(cmd),
                           shell=True,
-                          cwd=os.path.join('projects', project),
-                          stdout=stdout_fp,
-                          stderr=stderr_fp)
-    if container_output == 'file':
-      stdout_fp.close()
-      stderr_fp.close()
+                          cwd=os.path.join('projects', project))
   except subprocess.CalledProcessError:
-    if container_output == 'file':
-      stdout_fp.close()
-      stderr_fp.close()
+    pass
 
 
-def build_cached_project(project,
-                         cleanup=True,
-                         sanitizer='address',
-                         container_output='stdout'):
+def build_cached_project(project, cleanup=True, sanitizer='address'):
   """Build cached image for a project."""
   container_name = _get_project_cached_named_local(project, sanitizer)
 
@@ -124,25 +94,6 @@ def build_cached_project(project,
                             stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
       pass
-
-  if container_output == 'file':
-    out_idx = 0
-    stdout_file = os.path.join('projects', project,
-                               f'build_cache_stdout.{out_idx}.out')
-    while os.path.isfile(stdout_file):
-      out_idx += 1
-      stdout_file = os.path.join('projects', project,
-                                 f'build_cache_stdout.{out_idx}.out')
-    stderr_file = os.path.join('projects', project,
-                               f'build_cache_stderr.{out_idx}.err')
-    stdout_fp = open(stdout_file, 'w', encoding='utf-8')
-    stderr_fp = open(stderr_file, 'w', encoding='utf-8')
-  elif container_output == 'silent':
-    stdout_fp = subprocess.DEVNULL
-    stderr_fp = subprocess.DEVNULL
-  else:
-    stdout_fp = None
-    stderr_fp = None
 
   project_language = 'c++'
   cwd = os.getcwd()
@@ -160,20 +111,11 @@ def build_cached_project(project,
 
   start = time.time()
   try:
-    subprocess.check_call(' '.join(cmd),
-                          shell=True,
-                          stdout=stdout_fp,
-                          stderr=stderr_fp)
+    subprocess.check_call(' '.join(cmd), shell=True)
     end = time.time()
     logger.info('%s vanilla build Succeeded: Duration: %.2f seconds', project,
                 end - start)
-    if container_output == 'file':
-      stdout_fp.close()
-      stderr_fp.close()
   except subprocess.CalledProcessError:
-    if container_output == 'file':
-      stdout_fp.close()
-      stderr_fp.close()
     end = time.time()
     logger.info('%s vanilla build Failed: Duration: %.2f seconds', project,
                 end - start)
@@ -217,16 +159,10 @@ def build_cached_project(project,
   return True
 
 
-def check_cached_replay(project,
-                        sanitizer='address',
-                        container_output='stdout',
-                        silent_replays=False,
-                        integrity_test=False):
+def check_cached_replay(project, sanitizer='address', integrity_test=False):
   """Checks if a cache build succeeds and times is."""
-  build_project_image(project, container_output=container_output)
-  build_cached_project(project,
-                       sanitizer=sanitizer,
-                       container_output=container_output)
+  build_project_image(project)
+  build_cached_project(project, sanitizer=sanitizer)
 
   start = time.time()
   base_cmd = 'export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile'
@@ -245,14 +181,6 @@ def check_cached_replay(project,
       '-c',
   ]
 
-  # Configure output
-  if silent_replays:
-    stdout_fp = subprocess.DEVNULL
-    stderr_fp = subprocess.DEVNULL
-  else:
-    stdout_fp = None
-    stderr_fp = None
-
   if integrity_test:
     # Use different bad patches to test the cached replay build
     failed = []
@@ -267,11 +195,7 @@ def check_cached_replay(project,
           f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
 
       # Run the cached replay script with bad patches
-      result = subprocess.run(' '.join(cmd_to_run),
-                              shell=True,
-                              stdout=stdout_fp,
-                              stderr=stderr_fp,
-                              check=False)
+      result = subprocess.run(' '.join(cmd_to_run), shell=True, check=False)
 
       if result.returncode not in expected_rc:
         failed.append(bad_patch_name)
@@ -289,11 +213,7 @@ def check_cached_replay(project,
   else:
     # Normal run with no integrity check
     cmd.append(f'"{base_cmd}"')
-    subprocess.run(' '.join(cmd),
-                   shell=True,
-                   stdout=stdout_fp,
-                   stderr=stderr_fp,
-                   check=False)
+    subprocess.run(' '.join(cmd), shell=True, check=False)
 
   end = time.time()
   logger.info('%s check cached replay completion time: %.2f seconds', project,
@@ -302,7 +222,6 @@ def check_cached_replay(project,
 
 def check_test(project,
                sanitizer='address',
-               container_output='stdout',
                run_full_cache_replay=False,
                integrity_test=False):
   """Run the `run_tests.sh` script for a specific project. Will
@@ -318,16 +237,11 @@ def check_test(project,
   logger.info('Building image for project for use in check-tests: %s', project)
   # Build an OSS-Fuzz image of the project
   if run_full_cache_replay:
-    check_cached_replay(
-        project,
-        sanitizer,
-        container_output,
-        silent_replays=(True if container_output == 'silent' else False))
+    check_cached_replay(project, sanitizer)
   else:
-    build_project_image(project, container_output)
+    build_project_image(project)
     # build a cached version of the project
-    if not build_cached_project(
-        project, sanitizer=sanitizer, container_output=container_output):
+    if not build_cached_project(project, sanitizer=sanitizer):
       return False
 
   # Run the test script
@@ -422,14 +336,11 @@ def check_test(project,
 
 def check_run_tests_script(project,
                            sanitizer='address',
-                           ignore_new_files=False,
-                           container_output='stdout'):
+                           ignore_new_files=False):
   """Checks if the run_tests.sh changes the source files in the current directory."""
 
-  build_project_image(project, container_output=container_output)
-  build_cached_project(project,
-                       sanitizer=sanitizer,
-                       container_output=container_output)
+  build_project_image(project)
+  build_cached_project(project, sanitizer=sanitizer)
 
   ignore = ''
   if ignore_new_files:
@@ -584,8 +495,8 @@ def autogen_projects(apply_filtering=False,
 
 def extract_test_coverage(project):
   """Extract code coverage report from run_tests.sh script."""
-  build_project_image(project, container_output='')
-  build_cached_project(project, sanitizer='coverage', container_output='stdout')
+  build_project_image(project)
+  build_cached_project(project, sanitizer='coverage')
 
   os.makedirs(os.path.join('build', 'out', project), exist_ok=True)
 
@@ -618,6 +529,44 @@ def extract_test_coverage(project):
       logger.info('Total lines covered for %s: %s', project,
                   json.dumps(total_lines_covered))
   return True
+
+
+def _cmd_dispatcher_check_test(args):
+  check_test(args.project, args.sanitizer, args.run_full_cache_replay,
+             args.check_patch_integrity)
+
+
+def _cmd_dispatcher_check_replay(args):
+  check_cached_replay(args.project, args.sanitizer)
+
+
+def _cmd_dispatcher_check_replay_integrity(args):
+  check_cached_replay(args.project, args.sanitizer, integrity_test=True)
+
+
+def _cmd_dispatcher_build_cached_image(args):
+  build_cached_project(args.project, sanitizer=args.sanitizer)
+
+
+def _cmd_dispatcher_autogen_tests(args):
+  autogen_projects(args.apply_filtering, args.max_projects_to_try,
+                   args.projects)
+
+
+def _cmd_dispatcher_build_many_caches(args):
+  for project in args.projects:
+    logger.info('Building cached project: %s', project)
+    check_cached_replay(project, sanitizer=args.sanitizer)
+
+
+def _cmd_dispatcher_extract_coverage(args):
+  extract_test_coverage(args.project)
+
+
+def _cmd_check_run_tests_script(args):
+  check_run_tests_script(args.project,
+                         sanitizer=args.sanitizer,
+                         ignore_new_files=args.ignore_new_files)
 
 
 def parse_args():
@@ -771,33 +720,23 @@ def main():
 
   args = parse_args()
 
-  if args.command == 'check-test':
-    logger.info('Executing check-test command on %s to check run_tests',
-                args.project)
-    check_test(args.project, args.sanitizer, args.container_output,
-               args.run_full_cache_replay, args.check_patch_integrity)
-  if args.command == 'check-replay-script':
-    check_cached_replay(args.project, args.sanitizer)
-  if args.command == 'check-replay-script-integrity':
-    check_cached_replay(args.project, args.sanitizer, integrity_test=True)
-  if args.command == 'build-cached-image':
-    build_cached_project(args.project,
-                         sanitizer=args.sanitizer,
-                         container_output=args.container_output)
-  if args.command == 'autogen-tests':
-    autogen_projects(args.apply_filtering, args.max_projects_to_try,
-                     args.container_output, args.projects)
-  if args.command == 'build-many-caches':
-    for project in args.projects:
-      logger.info('Building cached project: %s', project)
-      check_cached_replay(project,
-                          sanitizer=args.sanitizer,
-                          container_output=args.container_output,
-                          silent_replays=args.silent_replays)
-  if args.command == 'extract-test-coverage':
-    extract_test_coverage(args.project)
-  if args.command == 'check-run-tests-script':
-    check_run_tests_script(args.project, args.sanitizer, args.ignore_new_files)
+  dispatch_map = {
+      'check-test': _cmd_dispatcher_check_test,
+      'check-replay-script': _cmd_dispatcher_check_replay,
+      'check-replay-script-integrity': _cmd_dispatcher_check_replay_integrity,
+      'build-cached-image': _cmd_dispatcher_build_cached_image,
+      'autogen-tests': _cmd_dispatcher_autogen_tests,
+      'build-many-caches': _cmd_dispatcher_build_many_caches,
+      'extract-test-coverage': _cmd_dispatcher_extract_coverage,
+      'check-run-tests-script': _cmd_check_run_tests_script
+  }
+
+  dispatch_cmd = dispatch_map.get(args.command, None)
+  if not dispatch_cmd:
+    logger.error('Unknown command: %s', args.command)
+    sys.exit(1)
+  logger.info('Dispatching command: %s', args.command)
+  dispatch_cmd(args)
 
 
 if __name__ == '__main__':
