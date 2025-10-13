@@ -30,7 +30,10 @@ RUN git clone https://github.com/glennrp/libpng.git && cd libpng && git checkout
 RUN git clone --depth 1 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
 RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/pango.git
+# Pin libpango to avoid build failure:
+# Header for g_sort_array() was not included in gen_script_for_lang.c
+# https://gitlab.gnome.org/GNOME/pango/-/commits/main/tools/gen-script-for-lang.c?ref_type=heads
+RUN git clone https://gitlab.gnome.org/GNOME/pango.git && cd pango && git checkout d0cd499e17cdcfdc3f7a93d0d28a3df3c5f9b10e
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.80/glib-2.80.0.tar.xz $SRC
 RUN tar xvJf $SRC/glib-2.80.0.tar.xz
 RUN wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2
