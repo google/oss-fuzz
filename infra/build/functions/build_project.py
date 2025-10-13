@@ -468,8 +468,7 @@ def get_build_steps_for_project(project,
               'name': build_lib.get_runner_image_name(config.test_image_suffix),
               'env': env,
               'args': [
-                  'bash', '-c',
-                  f'{" ".join(check_build_command)} || '
+                  'bash', '-c', f'{" ".join(check_build_command)} || '
                   f'(echo "{failure_msg}" && false)'
               ],
               'id': get_id('build-check', build)
