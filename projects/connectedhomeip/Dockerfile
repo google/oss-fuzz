@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder:latest
 
 # Install prerequisite packages
 # See connectedhomeip/docs/guides/BUILDING.md#prerequisites
@@ -23,13 +23,27 @@ RUN apt-get update && \
         libavahi-client-dev ninja-build \
         unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
+RUN pip3 install meson
+
+
+RUN cd /tmp && \
+    wget https://download.gnome.org/sources/glib/2.68/glib-2.68.0.tar.xz && \
+    tar xf glib-2.68.0.tar.xz && \
+    cd glib-2.68.0 && \
+    meson _build --prefix=/usr/local && \
+    ninja -C _build && \
+    ninja -C _build install && \
+    ldconfig && \
+    cd / && rm -rf /tmp/glib-2.68.0*
+
+
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install nightly
 RUN rustup default nightly
 
-RUN git clone --depth=1 --branch AA/stopStaticLibLinkingOSS https://github.com/Alami-Amine/connectedhomeip.git connectedhomeip
+RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
 
 # PW_PROJECT_ROOT is used in requirements.build.txt
 ENV PW_PROJECT_ROOT=$SRC/connectedhomeip
