@@ -321,6 +321,7 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
 
     config = build_project.Config(testing=True,
                                   test_image_suffix=test_image_suffix,
+                                  base_image_tag=version_tag,
                                   repo=args.repo,
                                   branch=args.branch,
                                   parallel=False,
