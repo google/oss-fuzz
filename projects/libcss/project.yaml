@@ -1,0 +1,12 @@
+homepage: "https://gitlab.collabora.com/libcss"
+primary_contact: "aaron.boxer@collabora.com"
+language: c
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://gitlab.collabora.com/libcss/libcss.git'
