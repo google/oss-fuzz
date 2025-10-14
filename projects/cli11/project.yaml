@@ -21,6 +21,7 @@ sanitizers:
   - address
   - undefined
 architectures:
+  - i386
   - x86_64
 
 auto_ccs:
