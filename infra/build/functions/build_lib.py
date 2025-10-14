@@ -685,12 +685,20 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
-def get_runner_image_name(test_image_suffix):
-  """Returns the runner image that should be used. Returns the testing image if
-  |test_image_suffix|."""
+def get_runner_image_name(test_image_suffix, base_image_tag=None):
+  """Returns the runner image that should be used.
+
+  Returns the testing image if |test_image_suffix|.
+  """
   image = f'gcr.io/{BASE_IMAGES_PROJECT}/base-runner'
   if test_image_suffix:
     image += '-' + test_image_suffix
+
+  # Only add a tag if it's specified and not 'legacy', as 'legacy' implies
+  # 'latest', which is the default behavior.
+  if base_image_tag and base_image_tag != 'legacy':
+    image += ':' + base_image_tag
+
   return image
 
 

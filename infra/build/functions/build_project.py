@@ -454,22 +454,14 @@ def get_build_steps_for_project(project,
               f'--architecture {build.architecture} {project.name}\\n' +
               '*' * 80)
           # Test fuzz targets.
-          check_build_command = [
-              'python3', 'infra/helper.py', 'check_build', '--sanitizer',
-              build.sanitizer, '--engine', build.fuzzing_engine,
-              '--architecture', build.architecture
-          ]
-          if config.base_image_tag:
-            check_build_command.extend(
-                ['--base-image-tag', config.base_image_tag])
-          check_build_command.append(project.name)
-
+          runner_image_name = build_lib.get_runner_image_name(
+              config.test_image_suffix, config.base_image_tag)
           test_step = {
-              'name': build_lib.get_runner_image_name(config.test_image_suffix),
+              'name': runner_image_name,
               'env': env,
               'args': [
-                  'bash', '-c', f'{" ".join(check_build_command)} || '
-                  f'(echo "{failure_msg}" && false)'
+                  'bash', '-c',
+                  f'test_all.py || (echo "{failure_msg}" && false)'
               ],
               'id': get_id('build-check', build)
           }

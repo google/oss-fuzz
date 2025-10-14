@@ -251,7 +251,7 @@
       "gcr.io/oss-fuzz-base/base-runner-testing-legacy-mybranch",
       "bash",
       "-c",
-      "python3 infra/helper.py check_build --sanitizer address --engine afl --architecture x86_64 --base-image-tag legacy skcms || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image skcms\\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 skcms\\npython infra/helper.py check_build --sanitizer address --engine afl --architecture x86_64 skcms\\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image skcms\\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 skcms\\npython infra/helper.py check_build --sanitizer address --engine afl --architecture x86_64 skcms\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-afl-address-x86_64"
   },
@@ -343,7 +343,7 @@
       "gcr.io/oss-fuzz-base/base-runner-testing-legacy-mybranch",
       "bash",
       "-c",
-      "python3 infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 --base-image-tag legacy skcms || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image skcms\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 skcms\\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 skcms\\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image skcms\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 skcms\\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 skcms\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-libfuzzer-address-x86_64"
   },
@@ -435,7 +435,7 @@
       "gcr.io/oss-fuzz-base/base-runner-testing-legacy-mybranch",
       "bash",
       "-c",
-      "python3 infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture i386 --base-image-tag legacy skcms || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image skcms\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture i386 skcms\\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture i386 skcms\\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image skcms\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture i386 skcms\\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture i386 skcms\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-libfuzzer-address-i386"
   },
@@ -527,7 +527,7 @@
       "gcr.io/oss-fuzz-base/base-runner-testing-legacy-mybranch",
       "bash",
       "-c",
-      "python3 infra/helper.py check_build --sanitizer undefined --engine libfuzzer --architecture x86_64 --base-image-tag legacy skcms || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image skcms\\npython infra/helper.py build_fuzzers --sanitizer undefined --engine libfuzzer --architecture x86_64 skcms\\npython infra/helper.py check_build --sanitizer undefined --engine libfuzzer --architecture x86_64 skcms\\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image skcms\\npython infra/helper.py build_fuzzers --sanitizer undefined --engine libfuzzer --architecture x86_64 skcms\\npython infra/helper.py check_build --sanitizer undefined --engine libfuzzer --architecture x86_64 skcms\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-libfuzzer-undefined-x86_64"
   },
