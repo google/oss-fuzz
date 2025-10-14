@@ -12,12 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 set -o pipefail
-for f in "$SRC"/fuzzers/*.cc; do
-  b="$(basename "$f" .cc)"
-  "$CXX" ${CXXFLAGS:-} -std=c++17 -I"$SRC/cli11/include" \
-    "$f" -o "$OUT/$b" $LIB_FUZZING_ENGINE ${LDFLAGS:-}
-done
-# Package seed corpus if present.
-[ -d "$SRC/fuzzers/corpus" ] && zip -rq "$OUT/fuzz_cli_parse_seed_corpus.zip" "$SRC/fuzzers/corpus" || true
+
+# Build CLI11's upstream fuzzer (header-only library; compile harness directly)
+"$CXX" ${CXXFLAGS:-} -std=c++17 -I"$SRC/cli11/include" \
+  "$SRC/cli11/fuzz/cli11_app_fuzz.cpp" \
+  "$SRC/cli11/fuzz/fuzzApp.cpp" \
+  -o "$OUT/cli11_app_fuzzer" $LIB_FUZZING_ENGINE ${LDFLAGS:-}
+
+# Ship libFuzzer dictionary if available (improves coverage)
+if [ -f "$SRC/cli11/fuzz/fuzz_dictionary1.txt" ] || [ -f "$SRC/cli11/fuzz/fuzz_dictionary2.txt" ]; then
+  cat "$SRC/cli11/fuzz"/fuzz_dictionary*.txt > "$OUT/cli11_app_fuzzer.dict" || true
+fi
+
+# Minimal seed corpus (maintainers can provide a richer corpus later)
+mkdir -p /tmp/seed && printf -- '--help\n' > /tmp/seed/a
+zip -rq "$OUT/cli11_app_fuzzer_seed_corpus.zip" /tmp/seed
