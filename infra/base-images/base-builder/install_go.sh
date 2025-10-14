@@ -44,7 +44,8 @@ go build
 mv go-118-fuzz-build $GOPATH/bin/
 
 # Build v2 binaries
-git checkout v2
+# this commit is from the v2_2 branch on 19th September 2025:
+git checkout 12ba36022eb64f94909df63a957fc5e3a9a4da8a
 go build .
 mv go-118-fuzz-build $GOPATH/bin/go-118-fuzz-build_v2
 pushd cmd/convertLibFuzzerTestcaseToStdLibGo
