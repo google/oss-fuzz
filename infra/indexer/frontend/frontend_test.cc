@@ -3863,5 +3863,13 @@ TEST(FrontendTest, AliasedSymbol) {
   EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "bar", "()",
                     "snippet.cc", 2, 2);
 }
+
+TEST(FrontendTest, NoWarningsAsErrors) {
+  auto index =
+      GetSnippetIndex("int main() { int unused; }",
+                      /*extra_args=*/{"-Werror", "-Wunused"},
+                      /*fail_on_error=*/true);
+  EXPECT_NE(index, nullptr);
+}
 }  // namespace indexer
 }  // namespace oss_fuzz
