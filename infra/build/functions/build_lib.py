@@ -691,9 +691,13 @@ def get_runner_image_name(test_image_suffix, base_image_tag=None):
   Returns the testing image if |test_image_suffix|.
   """
   image = f'gcr.io/{BASE_IMAGES_PROJECT}/base-runner'
+
+  # For trial builds, the version is embedded in the suffix.
   if test_image_suffix:
     image += '-' + test_image_suffix
+    return image
 
+  # For local/manual runs, the version is passed as a tag.
   # Only add a tag if it's specified and not 'legacy', as 'legacy' implies
   # 'latest', which is the default behavior.
   if base_image_tag and base_image_tag != 'legacy':
