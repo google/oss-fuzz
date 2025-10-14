@@ -16,11 +16,16 @@ set -o pipefail
 "$CXX" ${CXXFLAGS:-} -std=c++17 -I"$SRC/cli11/include" \
   "$SRC/cli11/fuzz/cli11_app_fuzz.cpp" "$SRC/cli11/fuzz/fuzzApp.cpp" \
   -o "$OUT/cli11_app_fuzzer" $LIB_FUZZING_ENGINE ${LDFLAGS:-}
-
 # Package dictionary (if present) and a tiny seed corpus.
 if [[ -f "$SRC/cli11/fuzz/fuzz_dictionary1.txt" ]]; then
-  cat "$SRC/cli11/fuzz/fuzz_dictionary1.txt" "$SRC/cli11/fuzz/fuzz_dictionary2.txt" \
-    > "$OUT/cli11_app_fuzzer.dict" || true
+  cat "$SRC/cli11/fuzz/fuzz_dictionary1.txt" "$SRC/cli11/fuzz/fuzz_dictionary2.txt"     > "$OUT/cli11_app_fuzzer.dict" || true
 fi
-mkdir -p /tmp/seed && printf -- '--help\n' > /tmp/seed/seed
-zip -rq "$OUT/cli11_app_fuzzer_seed_corpus.zip" /tmp/seed
+
+# AFL++ needs at least one non-crashing seed; also flatten paths in the zip (-j)
+# so files land at the corpus root (AFL++'s check doesn't recurse).
+mkdir -p /tmp/seed
+: > /tmp/seed/empty
+printf -- '--help
+' > /tmp/seed/help
+zip -j -q "$OUT/cli11_app_fuzzer_seed_corpus.zip" /tmp/seed/*
+
