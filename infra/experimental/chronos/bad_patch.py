@@ -53,6 +53,7 @@ def source_code_white_noise():
         except Exception:
           pass
 
+
 def source_code_compile_error():
   """Insert garbage code to all found source files in the /src/ directory."""
   exts = ['.c', '.cc', '.cpp', '.cxx', '.h', '.hpp']
@@ -239,6 +240,7 @@ BAD_PATCH_GENERATOR = {
         'rc': [1, 2],
     },
 }
+
 
 def main():
   """Main entrypoint."""
