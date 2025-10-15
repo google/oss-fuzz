@@ -18,14 +18,14 @@ fi
 
 # --- Tiny, non-crashing seed corpus (zip + plain dir) ---
 seeddir=/tmp/cli11_seeds
-mkdir -p "$seeddir"
-: > "$seeddir/empty"                 # zero-byte
+rm -rf "$seeddir" "$OUT/cli11_app_fuzzer_seed_corpus" || true
+mkdir -p "$seeddir" "$OUT/cli11_app_fuzzer_seed_corpus"
+
+: > "$seeddir/empty"               # zero-byte; must not crash
 printf -- '--help\n' > "$seeddir/help"
 
-# 1) Flat zip (no directories) for libFuzzer/honggfuzz
+# 1) Flat zip (no subdirectories) for libFuzzer/Honggfuzz
 zip -j -q "$OUT/cli11_app_fuzzer_seed_corpus.zip" "$seeddir/empty" "$seeddir/help"
 
-# 2) Plain directory for AFL++ (some runners rely on a real dir)
-rm -rf "$OUT/cli11_app_fuzzer_seed_corpus"
-mkdir -p "$OUT/cli11_app_fuzzer_seed_corpus"
-cp -f "$seeddir/empty" "$seeddir/help" "$OUT/cli11_app_fuzzer_seed_corpus/" || true
+# 2) Plain directory for AFL++ (used by check_build)
+cp -f "$seeddir/empty" "$seeddir/help" "$OUT/cli11_app_fuzzer_seed_corpus/"
