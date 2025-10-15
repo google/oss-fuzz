@@ -19,7 +19,7 @@ import random
 import sys
 
 import tree_sitter_cpp
-from tree_sitter import Language, Node, Parser, Query, QueryCursor
+from tree_sitter import Language, Parser, Query, QueryCursor
 
 LANGUAGE = Language(tree_sitter_cpp.language())
 PARSER = Parser(LANGUAGE)
@@ -30,7 +30,6 @@ MAX_COUNT = 50
 
 def normal_compile():
   """Do nothing and act as a control test that should always success."""
-  pass
 
 
 def source_code_white_noise():
@@ -48,7 +47,7 @@ def source_code_white_noise():
       if any(file.endswith(ext) for ext in exts):
         path = os.path.join(cur, file)
         try:
-          with open(path, 'a') as f:
+          with open(path, 'a', encoding='utf-8') as f:
             f.write(payload)
         except Exception:
           pass
@@ -66,7 +65,7 @@ def source_code_compile_error():
       if any(file.endswith(ext) for ext in exts):
         path = os.path.join(cur, file)
         try:
-          with open(path, 'a') as f:
+          with open(path, 'a', encoding='utf-8') as f:
             f.write(payload)
         except Exception:
           pass
@@ -84,7 +83,7 @@ def macro_compile_error():
       if any(file.endswith(ext) for ext in exts):
         path = os.path.join(cur, file)
         try:
-          with open(path, 'a') as f:
+          with open(path, 'a', encoding='utf-8') as f:
             f.write(payload)
         except Exception:
           pass
@@ -195,18 +194,18 @@ def function_linker_error():
         try:
           # Read source file
           source = ''
-          with open(path, 'r') as f:
+          with open(path, 'r', encoding='utf-8') as f:
             source = f.read()
           if not source:
             continue
 
           # Append a wrong header inclusion at the beginning
-          with open(path, 'w') as f:
+          with open(path, 'w', encoding='utf-8') as f:
             f.write(payload)
             f.write(source)
             f.write(payload_call.replace('{COUNT}', str(count)))
           count += 1
-        except:
+        except Exception:
           pass
 
 
