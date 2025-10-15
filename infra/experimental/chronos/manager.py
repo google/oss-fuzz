@@ -170,6 +170,8 @@ def check_cached_replay(project, sanitizer='address', integrity_test=False):
       'docker',
       'run',
       '--rm',
+      '--network',
+      'none',
       '--env=SANITIZER=' + sanitizer,
       '--env=FUZZING_LANGUAGE=c++',
       '-v=' + os.path.join(os.getcwd(), 'build', 'out', project) + ':/out',
@@ -213,7 +215,15 @@ def check_cached_replay(project, sanitizer='address', integrity_test=False):
   else:
     # Normal run with no integrity check
     cmd.append(f'"{base_cmd}"')
-    subprocess.run(' '.join(cmd), shell=True, check=False)
+    replay_success = False
+    try:
+      subprocess.run(' '.join(cmd), shell=True, check=True)
+      replay_success = True
+    except subprocess.CalledProcessError as e:
+      logger.error('Failed to run cached replay: %s', e)
+      replay_success = False
+    logger.info('%s check cached replay: %s.', project,
+                'succeeded' if replay_success else 'failed')
 
   end = time.time()
   logger.info('%s check cached replay completion time: %.2f seconds', project,
