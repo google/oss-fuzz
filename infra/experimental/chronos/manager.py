@@ -85,7 +85,7 @@ def build_project_image(project):
 def build_cached_project(project, cleanup=True, sanitizer='address'):
   """Build cached image for a project."""
   container_name = _get_project_cached_named_local(project, sanitizer)
-
+  logger.info('Building cached image for project: %s', project)
   # Clean up the container if it exists.
   if cleanup:
     try:
@@ -104,10 +104,15 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
       f'--env=FUZZING_LANGUAGE={project_language}',
       '--env=CAPTURE_REPLAY_SCRIPT=1', f'--name={container_name}',
       f'-v={cwd}/ccaches/{project}/ccache:/workspace/ccache',
-      f'-v={cwd}/build/out/{project}/:/out/', f'gcr.io/oss-fuzz/{project}',
-      'bash', '-c',
-      '"export PATH=/ccache/bin:\$PATH && compile && cp -n /usr/local/bin/replay_build.sh \$SRC/"'
+      f'-v={cwd}/build/out/{project}/:/out/',
+      '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
+      ':/chronos/', f'gcr.io/oss-fuzz/{project}', 'bash', '-c',
+      ('"export PATH=/ccache/bin:\$PATH && python3.11 -m pip install -r /chronos/requirements.txt && '
+       'rm -rf /out/* && compile && cp -n /usr/local/bin/replay_build.sh \$SRC/"'
+      )
   ]
+
+  logger.info('Command: %s', ' '.join(cmd))
 
   start = time.time()
   try:
@@ -162,10 +167,12 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
 def check_cached_replay(project, sanitizer='address', integrity_test=False):
   """Checks if a cache build succeeds and times is."""
   build_project_image(project)
-  build_cached_project(project, sanitizer=sanitizer)
+  if not build_cached_project(project, sanitizer=sanitizer):
+    logger.info('Failed to build cached image for project: %s', project)
+    return
 
   start = time.time()
-  base_cmd = 'export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile'
+  base_cmd = 'export PATH=/ccache/bin:\\$PATH && rm -rf /out/* && compile'
   cmd = [
       'docker',
       'run',
@@ -189,9 +196,7 @@ def check_cached_replay(project, sanitizer='address', integrity_test=False):
     for bad_patch_name, bad_patch_map in bad_patch.BAD_PATCH_GENERATOR.items():
       # Generate bad patch command using different approaches
       expected_rc = bad_patch_map['rc']
-      bad_patch_command = (
-          'python3 -m pip install -r /chronos/requirements.txt && '
-          f'python3 /chronos/bad_patch.py {bad_patch_name}')
+      bad_patch_command = (f'python3 /chronos/bad_patch.py {bad_patch_name}')
       cmd_to_run = cmd[:]
       cmd_to_run.append(
           f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
@@ -205,13 +210,13 @@ def check_cached_replay(project, sanitizer='address', integrity_test=False):
                      'Return code: %d. Expected return code: %s'), project,
                     bad_patch_name, result.returncode, str(expected_rc))
 
-      if failed:
-        logger.info(
-            '%s check cached replay failed to detect these bad patches: %s',
-            project, ' '.join(failed))
-      else:
-        logger.info('%s check cached replay success to detect all bad patches.',
-                    project)
+    if failed:
+      logger.info(
+          '%s check cached replay failed to detect these bad patches: %s',
+          project, ' '.join(failed))
+    else:
+      logger.info('%s check cached replay success to detect all bad patches.',
+                  project)
   else:
     # Normal run with no integrity check
     cmd.append(f'"{base_cmd}"')
@@ -276,7 +281,7 @@ def check_test(project,
     for logic_patch in logic_error_patch.LOGIC_ERROR_PATCHES:
       logger.info('Checking logic patch: %s', logic_patch.name)
       patch_command = (
-          'python3 -m pip install -r /chronos/requirements.txt && '
+          'python3 -m pip install -r /chronos/requirements.txt &&'
           f'python3 /chronos/logic_error_patch.py {logic_patch.name} && '
           'compile')
       cmd_to_run = docker_cmd[:]
@@ -547,11 +552,9 @@ def _cmd_dispatcher_check_test(args):
 
 
 def _cmd_dispatcher_check_replay(args):
-  check_cached_replay(args.project, args.sanitizer)
-
-
-def _cmd_dispatcher_check_replay_integrity(args):
-  check_cached_replay(args.project, args.sanitizer, integrity_test=True)
+  check_cached_replay(args.project,
+                      args.sanitizer,
+                      integrity_test=args.integrity_test)
 
 
 def _cmd_dispatcher_build_cached_image(args):
@@ -626,20 +629,10 @@ def parse_args():
       '--sanitizer',
       default='address',
       help='The sanitizer to use for the cached build (default: address).')
-
-  check_replay_script_integrity_parser = subparsers.add_parser(
-      'check-replay-script-integrity',
-      help=
-      ('Checks if the replay script works for a specific project. '
-       'Integrity of the replay script is also tested with different bad patches.'
-      ))
-
-  check_replay_script_integrity_parser.add_argument(
-      'project', help='The name of the project to check.')
-  check_replay_script_integrity_parser.add_argument(
-      '--sanitizer',
-      default='address',
-      help='The sanitizer to use for the cached build (default: address).')
+  check_replay_script_parser.add_argument(
+      '--integrity-test',
+      action='store_true',
+      help='If set, will test the integrity of the replay script.')
 
   check_run_tests_script_parser = subparsers.add_parser(
       'check-run-tests-script',
@@ -733,7 +726,6 @@ def main():
   dispatch_map = {
       'check-test': _cmd_dispatcher_check_test,
       'check-replay-script': _cmd_dispatcher_check_replay,
-      'check-replay-script-integrity': _cmd_dispatcher_check_replay_integrity,
       'build-cached-image': _cmd_dispatcher_build_cached_image,
       'autogen-tests': _cmd_dispatcher_autogen_tests,
       'build-many-caches': _cmd_dispatcher_build_many_caches,
