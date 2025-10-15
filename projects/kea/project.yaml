@@ -1,0 +1,12 @@
+homepage: "https://gitlab.isc.org/isc-projects/kea"
+language: c++
+primary_contact: "oss-fuzz-kea@isc.org"
+auto_ccs:
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+  - "arthur.chan@adalogics.com"
+main_repo: 'https://gitlab.isc.org/isc-projects/kea'
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
