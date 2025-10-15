@@ -19,7 +19,7 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y meson ninja-build pkg-config \
       build-essential python3 libssl-dev libboost-dev libboost-system-dev \
       libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev \
-      libpq-dev libmariadb-dev
+      libpq-dev libmariadb-dev libkrb5-dev
 RUN mkdir -p /opt/boost-headers && \
     wget https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz && \
     tar -xzf boost_1_83_0.tar.gz -C /opt/boost-headers --strip-components=1 && \
