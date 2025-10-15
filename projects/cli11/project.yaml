@@ -2,7 +2,6 @@ homepage: https://github.com/CLIUtils/CLI11
 main_repo: https://github.com/CLIUtils/CLI11
 language: c++
 fuzzing_engines:
-- afl
 - honggfuzz
 - libfuzzer
 sanitizers:
