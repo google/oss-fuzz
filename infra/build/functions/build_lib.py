@@ -162,8 +162,9 @@ def dockerify_run_step(step,
   if container_name:
     new_args.extend(['--name', container_name])
 
-  for env_var in step.get('env', {}):
-    new_args.extend(['-e', env_var])
+  if 'env' in step:
+    for env_var in step.get('env', {}):
+      new_args.extend(['-e', env_var])
   new_args += ['-t', image]
   new_args += step['args']
   step['args'] = new_args
@@ -281,19 +282,24 @@ def get_signed_policy_document_upload_prefix(bucket, path_prefix):
   )
 
 
-# pylint: disable=no-member
 def get_signed_url(path, method='PUT', content_type=''):
-  """Returns signed url."""
-  timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = f'{method}\n\n{content_type}\n{timestamp}\n{path}'
+  """Returns a signed URL for |path|."""
+  timestamp = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+  timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+  path = urlparse.urlparse(path)
+  blob_path = path.path.lstrip('/')
+  blob = f"""{method}
+
+{content_type}
+
+{timestamp}
+/{path.netloc}/{blob_path}"""
 
   client_id, signature = _sign_blob(blob)
-  values = {
-      'GoogleAccessId': client_id,
-      'Expires': timestamp,
-      'Signature': signature,
-  }
-  return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
+  return (f'https://storage.googleapis.com/{path.netloc}/{blob_path}'
+          f'?GoogleAccessId={client_id}&Expires={int(time.time() + 3600)}'
+          f'&Signature={urlparse.quote_plus(signature)}')
 
 
 def _normalized_name(name):
@@ -308,8 +314,7 @@ def download_corpora_steps(project_name, test_image_suffix):
   """
   fuzz_targets = _get_targets_list(project_name)
   if not fuzz_targets:
-    sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
-    return None
+    return None, f'No fuzz targets found for project "{project_name}".'
 
   steps = []
   # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
@@ -341,7 +346,7 @@ def download_corpora_steps(project_name, test_image_suffix):
         }],
     })
 
-  return steps
+  return steps, None
 
 
 def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
@@ -450,7 +455,6 @@ def get_pull_test_images_steps(test_image_suffix):
       'gcr.io/oss-fuzz-base/base-builder-python',
       'gcr.io/oss-fuzz-base/base-builder-ruby',
       'gcr.io/oss-fuzz-base/base-builder-rust',
-      'gcr.io/oss-fuzz-base/base-builder-ruby',
       'gcr.io/oss-fuzz-base/base-runner',
   ]
   steps = []
@@ -515,7 +519,9 @@ def get_docker_build_step(image_names,
                           src_root='oss-fuzz',
                           architecture='x86_64',
                           cache_image='',
-                          build_args: Sequence[str] | None = None):
+                          build_args: Sequence[str] | None = None,
+                          dockerfile_path: str | None = None,
+                          additional_cache_from_tags: list | None = None):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -542,10 +548,12 @@ def get_docker_build_step(image_names,
     for build_arg in build_args:
       args.extend(['--build-arg', build_arg])
 
+  if dockerfile_path:
+    args.extend(['-f', dockerfile_path])
+
   step = {
       'name': DOCKER_TOOL_IMAGE,
       'args': args,
-      'dir': directory,
       'id': f'build-{get_unique_build_step_image_id()}',
   }
   # Handle buildkit args
@@ -554,10 +562,15 @@ def get_docker_build_step(image_names,
     env = ['DOCKER_BUILDKIT=1']
     step['env'] = env
     args.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1'])
-    for image in image_names:
+
+    all_cache_tags = set(image_names)
+    if additional_cache_from_tags:
+      all_cache_tags.update(additional_cache_from_tags)
+
+    for image in sorted(list(all_cache_tags)):
       args.extend(['--cache-from', image])
 
-  args.append('.')
+  args.append(directory)
 
   return step
 
@@ -639,7 +652,6 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
         architecture=_ARM64)
     steps.append(docker_build_arm_step)
 
-  logging.info(f'Considering pushing {config.build_type} {language}.')
   if (config.build_type == 'fuzzing' and language in ('c', 'c++') and
       not not config.testing and not config.experiment and config.upload):
     logging.info('Pushing.')
@@ -673,12 +685,24 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
-def get_runner_image_name(test_image_suffix):
-  """Returns the runner image that should be used. Returns the testing image if
-  |test_image_suffix|."""
+def get_runner_image_name(test_image_suffix, base_image_tag=None):
+  """Returns the runner image that should be used.
+
+  Returns the testing image if |test_image_suffix|.
+  """
   image = f'gcr.io/{BASE_IMAGES_PROJECT}/base-runner'
+
+  # For trial builds, the version is embedded in the suffix.
   if test_image_suffix:
     image += '-' + test_image_suffix
+    return image
+
+  # For local/manual runs, the version is passed as a tag.
+  # Only add a tag if it's specified and not 'legacy', as 'legacy' implies
+  # 'latest', which is the default behavior.
+  if base_image_tag and base_image_tag != 'legacy':
+    image += ':' + base_image_tag
+
   return image
 
 
@@ -686,7 +710,7 @@ def get_build_body(  # pylint: disable=too-many-arguments
     steps,
     timeout,
     body_overrides,
-    build_tags,
+    tags,
     use_build_pool=True,
     experiment=False):
   """Helper function to create a build from |steps|."""
@@ -699,7 +723,7 @@ def get_build_body(  # pylint: disable=too-many-arguments
     if experiment:
       options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
     # TODO: refactor all of this to make this less ugly.
-    elif 'indexer' in build_tags:
+    elif 'indexer' in tags:
       options['pool'] = {'name': OSS_FUZZ_INDEXER_BUILDPOOL_NAME}
     else:
       options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
@@ -709,8 +733,8 @@ def get_build_body(  # pylint: disable=too-many-arguments
       'timeout': str(timeout) + 's',
       'options': options,
   }
-  if build_tags:
-    build_body['tags'] = build_tags
+  if tags:
+    build_body['tags'] = tags
 
   if body_overrides is None:
     body_overrides = {}
@@ -775,12 +799,7 @@ def run_build(  # pylint: disable=too-many-arguments, too-many-locals
 
   build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
                                                      body=build_body).execute()
-
-  build_id = build_info['metadata']['build']['id']
-
-  logging.info(f'{oss_fuzz_project}. logs: {get_logs_url(build_id)}. '
-               f'GCB page: {get_gcb_url(build_id, cloud_project)}')
-  return build_id
+  return build_info['metadata']['build']
 
 
 def wait_for_build(build_id, credentials, cloud_project):

@@ -17,7 +17,7 @@
 
 ARROW=${SRC}/arrow/cpp
 
-export BUILD_DIR=$SRC/build-dir
+BUILD_DIR=${SRC}/build-dir
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
 
@@ -47,6 +47,7 @@ cmake ${ARROW} -GNinja \
     -DPARQUET_BUILD_EXECUTABLES=off \
     -DPARQUET_REQUIRE_ENCRYPTION=off \
     \
+    -DARROW_CSV=on \
     -DARROW_JEMALLOC=off \
     -DARROW_MIMALLOC=off \
     -DARROW_PARQUET=on \
@@ -64,9 +65,7 @@ cmake ${ARROW} -GNinja \
 
 cmake --build . -j$(nproc)
 
-cp -a release/* ${OUT}
+# Copy fuzz targets
+find . -executable -name "*-fuzz" -exec cp -a -v '{}' ${OUT} \;
 
-# Remove unit tests from out
-rm $OUT/*-test
-
-${ARROW}/build-support/fuzzing/generate_corpuses.sh ${OUT}
+${ARROW}/build-support/fuzzing/generate_corpuses.sh ${BUILD_DIR}/release

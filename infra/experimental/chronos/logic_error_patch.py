@@ -13,6 +13,7 @@
 # limitations under the License.
 """Helper to generate logic error patches for general test using different approach."""
 
+from dataclasses import dataclass
 import os
 import pathlib
 import random
@@ -170,33 +171,48 @@ def wrong_return_value():
           pass
 
 
-LOGIC_ERROR_PATCH_GENERATOR = {
-    'control_test': {
-        'func': normal_patch,
-        'result': True,
-    },
-    'sigabrt_crash': {
-        'func': signal_abort_crash,
-        'result': False,
-    },
-    'sigkill_crash': {
-        'func': builtin_trap_crash,
-        'result': False,
-    },
-    'sigsegv_crash': {
-        'func': null_write_crash,
-        'result': False,
-    },
-    'random_return_value': {
-        'func': wrong_return_value,
-        'result': False,
-    }
-}
+@dataclass
+class LogicErrorPatch:
+  """Dataclass to hold the patch function and expected result."""
+  name: str
+  func: callable
+  expected_result: bool
+
+
+LOGIC_ERROR_PATCHES: list[LogicErrorPatch] = [
+    LogicErrorPatch(
+        name='control_test',
+        func=normal_patch,
+        expected_result=True,
+    ),
+    LogicErrorPatch(
+        name='sigabrt_crash',
+        func=signal_abort_crash,
+        expected_result=False,
+    ),
+    LogicErrorPatch(
+        name='sigkill_crash',
+        func=builtin_trap_crash,
+        expected_result=False,
+    ),
+    LogicErrorPatch(
+        name='sigsegv_crash',
+        func=null_write_crash,
+        expected_result=False,
+    ),
+    LogicErrorPatch(
+        name='random_return_value',
+        func=wrong_return_value,
+        expected_result=False,
+    )
+]
 
 
 def main():
   target = sys.argv[1]
-  LOGIC_ERROR_PATCH_GENERATOR[target]['func']()
+  for logic_error_patch in LOGIC_ERROR_PATCHES:
+    if logic_error_patch.name == target:
+      logic_error_patch.func()
 
 
 if __name__ == "__main__":
