@@ -342,7 +342,6 @@ def check_fuzzing_engine_and_fix_argv(argv: MutableSequence[str]) -> bool:
       elif "fuzzer-no-link" in sanitize_vals:
         sanitize_vals.remove("fuzzer-no-link")
         arg = "-fsanitize=" + ",".join(sanitize_vals)
-
       argv[idx] = arg
 
       if fuzzing_engine_in_argv:
@@ -478,8 +477,11 @@ def fix_coverage_flags(
     # Some projects use -fsanitize-coverage-allowlist/ignorelist to optimize
     # fuzzing feedback. For the indexer case, we would prefer to have all code
     # instrumented, so we remove these flags.
+    # Some projects hardcode -fsanitize-coverage= options that cause conflicts
+    # with our indexer / tracer options.
     if (arg.startswith("-fsanitize-coverage-allowlist=") or
-        arg.startswith("-fsanitize-coverage-ignorelist=")):
+        arg.startswith("-fsanitize-coverage-ignorelist=") or
+        arg.startswith("-fsanitize-coverage=")):
       continue
 
     args.append(arg)

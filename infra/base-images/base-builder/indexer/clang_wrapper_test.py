@@ -45,6 +45,7 @@ class ClangWrapperTest(unittest.TestCase):
         "-foo",
         "-fsanitize-coverage-allowlist=allowlist",
         "-fsanitize-coverage-ignorelist=ignorelist",
+        "-fsanitize-coverage=edge",
         "-c",
         "test.c",
     ]
