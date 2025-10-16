@@ -322,6 +322,11 @@ def base_builder(event, context, dry_run: bool = False, no_push: bool = False):
     steps = get_base_image_steps(version_images)
     images_to_push = [img.full_image_name_with_tag for img in version_images]
 
+    # Also push the 'latest' tag for the default build.
+    if version == DEFAULT_VERSION:
+      images_to_push.extend(
+          [f'{IMAGE_NAME_PREFIX}{img.name}:latest' for img in version_images])
+
     # Determine the final tag for this build.
     target_tag = MAJOR_TAG if version == DEFAULT_VERSION else version
 
