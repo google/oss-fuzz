@@ -73,7 +73,6 @@ _TRACING_CONTAINER_NAME = 'tracing-container'
 class Config:
   testing: bool = False
   test_image_suffix: Optional[str] = None
-  base_image_tag: Optional[str] = None
   repo: Optional[str] = DEFAULT_OSS_FUZZ_REPO
   branch: Optional[str] = None
   parallel: bool = False
@@ -454,10 +453,8 @@ def get_build_steps_for_project(project,
               f'--architecture {build.architecture} {project.name}\\n' +
               '*' * 80)
           # Test fuzz targets.
-          runner_image_name = build_lib.get_runner_image_name(
-              config.test_image_suffix, config.base_image_tag)
           test_step = {
-              'name': runner_image_name,
+              'name': build_lib.get_runner_image_name(config.test_image_suffix),
               'env': env,
               'args': [
                   'bash', '-c',

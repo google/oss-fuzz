@@ -321,7 +321,6 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
 
     config = build_project.Config(testing=True,
                                   test_image_suffix=test_image_suffix,
-                                  base_image_tag=version_tag,
                                   repo=args.repo,
                                   branch=args.branch,
                                   parallel=False,
@@ -433,7 +432,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           credentials,
           build_type.type_name,
           extra_tags=tags,
-          timeout=PROJECT_BUILD_TIMEOUT))['id']
+          timeout=PROJECT_BUILD_TIMEOUT))
       time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
