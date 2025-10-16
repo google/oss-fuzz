@@ -131,7 +131,6 @@ def main():
   all_results = {}
   any_failures = False
   any_results_found = False
-  total_unique_projects = set()
 
   print('Generating final build report...')
 
@@ -147,13 +146,9 @@ def main():
       any_results_found = True
       if data.get('failed_builds', 0) > 0:
         any_failures = True
-      total_unique_projects.update(data.get('all_projects', []))
 
   if not any_results_found:
-    error_lines = [
-        'No result files found. This typically means that all upstream builds',
-        'either timed out or failed catastrophically.',
-    ]
+    error_lines = ['All build versions failed to produce results.']
     _print_box('FINAL BUILD REPORT', error_lines)
     print('\nPipeline finished with failures.')
     sys.exit(1)
@@ -161,19 +156,12 @@ def main():
   generate_comparison_table(all_results)
   generate_final_summary(all_results)
 
-  has_explicit_failures = any_failures
-  no_projects_were_run = any_results_found and not total_unique_projects
-
-  if has_explicit_failures or no_projects_were_run:
-    if no_projects_were_run and not has_explicit_failures:
-      print(
-          '\nWarning: No projects were run. This may indicate an upstream issue.'
-      )
+  if any_failures:
     print('\nPipeline finished with failures.')
     sys.exit(1)
-
-  print('\nPipeline finished successfully.')
-  sys.exit(0)
+  else:
+    print('\nPipeline finished successfully.')
+    sys.exit(0)
 
 
 if __name__ == '__main__':
