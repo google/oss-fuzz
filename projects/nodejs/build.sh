@@ -98,6 +98,6 @@ else
         make -j$(nproc) || make -j1
 fi
 
-# Copy all fuzzers to OUT folder 
-cp out/Release/fuzz_* ${OUT}/
+# Move all fuzzers to OUT folder 
+mv out/Release/fuzz_* ${OUT}/
 
