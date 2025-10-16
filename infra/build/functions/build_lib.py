@@ -799,7 +799,10 @@ def run_build(  # pylint: disable=too-many-arguments, too-many-locals
 
   build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
                                                      body=build_body).execute()
-  return build_info['metadata']['build']
+
+  build_id = build_info['metadata']['build']['id']
+
+  return build_id
 
 
 def wait_for_build(build_id, credentials, cloud_project):
