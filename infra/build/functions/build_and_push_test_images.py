@@ -217,7 +217,8 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   test_image_names = []
   versions = [version_tag] if version_tag else BASE_IMAGE_VERSIONS
   for version in versions:
-    for base_image in base_images.BASE_IMAGES:
+    for base_image_def in base_images.BASE_IMAGE_DEFS:
+      base_image = base_images.ImageConfig(version=version, **base_image_def)
       main_image_name, test_image_name = get_image_tags(base_image.name,
                                                         test_image_tag, version)
       test_image_names.append(test_image_name)
