@@ -31,7 +31,6 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
-import yaml
 
 import constants
 import templates
@@ -91,6 +90,7 @@ HTTPS_CORPUS_BACKUP_URL_FORMAT = (
 
 LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
+BASE_OS_VERSION_REGEX = re.compile(r'\s*base_os_version\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -161,9 +161,11 @@ class Project:
       return constants.DEFAULT_LANGUAGE
 
     with open(project_yaml_path) as file_handle:
-      config = yaml.safe_load(file_handle)
-      if config and 'language' in config:
-        return config['language']
+      content = file_handle.read()
+      for line in content.splitlines():
+        match = PROJECT_LANGUAGE_REGEX.match(line)
+        if match:
+          return match.group(1)
 
     logger.warning('Language not specified in project.yaml. Assuming c++.')
     return constants.DEFAULT_LANGUAGE
@@ -177,11 +179,13 @@ class Project:
       return 'legacy'
 
     with open(project_yaml_path) as file_handle:
-      config = yaml.safe_load(file_handle)
-      version = 'legacy'
-      if config and 'base_os_version' in config:
-        version = config['base_os_version']
-      return version
+      content = file_handle.read()
+      for line in content.splitlines():
+        match = BASE_OS_VERSION_REGEX.match(line)
+        if match:
+          return match.group(1)
+
+    return 'legacy'
 
   @property
   def coverage_extra_args(self):
