@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:latest
 
 # Install prerequisite packages
 # See connectedhomeip/docs/guides/BUILDING.md#prerequisites
@@ -23,22 +23,20 @@ RUN apt-get update && \
         libavahi-client-dev ninja-build \
         unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
-# Installing Python3.10 and using it instead of the default Python taken from the base-builder image
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y pkg-config python3.10 python3.10-dev python3.10-venv && \
-    ln --force -s /usr/bin/python3.10 /usr/bin/python3
+RUN pip3 install meson
 
-# Ensure python that was just installed gets precedence over
-# the one already installed in /usr/local/bin
-ENV PATH="/usr/bin/:${PATH}"
 
-RUN python3 -m ensurepip --upgrade
+RUN cd /tmp && \
+    wget https://download.gnome.org/sources/glib/2.68/glib-2.68.0.tar.xz && \
+    tar xf glib-2.68.0.tar.xz && \
+    cd glib-2.68.0 && \
+    meson _build --prefix=/usr/local \
+        --default-library=both && \
+    ninja -C _build && \
+    ninja -C _build install && \
+    ldconfig && \
+    cd / && rm -rf /tmp/glib-2.68.0*
 
-# PEP-517 needed for cryptography. Update pip
-RUN python3 -m pip install --upgrade pip setuptools wheel packaging
 
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
