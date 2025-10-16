@@ -23,22 +23,20 @@ import random
 import subprocess
 import argparse
 import time
-
+import sys
 import httpx
-from pydantic_ai import Agent
-from pydantic_ai.mcp import MCPServerSSE
+import pathlib
 
-import logfire
+from pydantic_ai import Agent
+from pydantic_ai.mcp import MCPServerStdio
 
 import config as oss_fuzz_mcp_config
-
-logfire.configure(send_to_logfire='if-token-present')
-logfire.instrument_pydantic_ai()
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    format="[CLIENT] %(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stderr)
 logger = logging.getLogger("mcp-server")
 
 MCP_SERVER_URL = "http://localhost:8000/sse"
@@ -178,9 +176,9 @@ OSS-Fuzz supports multiple languages:
 """
 
 
-async def chat_with_agent(prompt: str) -> list:
+async def run_agent_loop(prompt: str) -> list:
   """
-    Send a message to the LLM with access to the MCP tools.
+    Performs a run with the LLM.
     
     Args:
         prompt: The user's message
@@ -190,23 +188,24 @@ async def chat_with_agent(prompt: str) -> list:
     """
   nodes = []
   try:
-    server = MCPServerSSE(url=MCP_SERVER_URL,
-                          timeout=5200.0,
-                          read_timeout=5000.0)
+    server = MCPServerStdio(
+        'python3',
+        [str(pathlib.Path(__file__).parent.resolve()) + '/oss_fuzz_server.py'],
+        timeout=5200.0)
 
-    agent = Agent(model="openai:gpt-4o", toolsets=[server], retries=30)
+    agent = Agent(model="openai:gpt-4", toolsets=[server], retries=30)
 
     # Run the agent with the MCP server context
     logger.info('Starting agent run')
     async with agent.iter(prompt) as agent_run:
       logger.info('Agent run started')
-
       async for node in agent_run:
-        logger.info('Running node %s', node.__class__.__name__)
+        logger.info('Running node [%d] %s', len(nodes), node.__class__.__name__)
         time.sleep(3)
         nodes.append(node)
   except Exception as e:
     logger.info('Error during agent run: %s', e)
+    sys.exit(1)
 
   return nodes
 
@@ -365,7 +364,7 @@ async def does_project_build(project: str) -> bool:
   return True
 
 
-async def fix_project_build(project: str):
+async def fix_project_build(project: str, max_tries: int = 3):
   """Runs an agent to fix the build of an OSS-Fuzz project."""
 
   project_language = _detect_language(project)
@@ -382,8 +381,11 @@ async def fix_project_build(project: str):
   if oss_fuzz_filetree:
     extra_project_text += f'The files in the OSS-Fuzz project for {project} are:\n{oss_fuzz_filetree}\n'
 
-  nodes = await chat_with_agent(
-      f"""Fix the OSS-Fuzz project {project} that currently has a broken build.
+  nodes = []
+  for _attempt in range(max_tries):
+    logger.info('Attempt %d to fix project %s', _attempt + 1, project)
+    nodes += await run_agent_loop(
+        f"""Fix the OSS-Fuzz project {project} that currently has a broken build.
 Use the build logs from OSS-Fuzz's project {project} and determine why it fails, then 
 proceed to adjust Dockerfile and build.sh scripts until the project builds.
 
@@ -410,7 +412,10 @@ Some rules:
 - Continue adjusting the files in {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/ until "fuzzer-check" passes.
 """)
 
-  fix_success = await does_project_build(project)
+    fix_success = await does_project_build(project)
+    if fix_success:
+      logger.info('Project %s build fixed successfully.', project)
+      break
   return nodes, fix_success
 
 
@@ -501,7 +506,7 @@ async def add_run_tests_command(project_name: str):
 
   os.chmod(run_tests_path, 0o755)
 
-  await chat_with_agent(f"""
+  await run_agent_loop(f"""
 You are an expert software security engineer that is specialized in OSS-Fuzz.
 You are tasked with adding a run_tests.sh script to an OSS-Fuzz project.
 This script should run the tests of the project, and ensure that the project is working correctly.
@@ -530,7 +535,7 @@ async def expand_existing_project(project_name: str):
     logger.info('Failed to prepare %s. Exiting.', project_name)
     return
 
-  nodes = await chat_with_agent(
+  nodes = await run_agent_loop(
       f"""You are a security engineer that is an expert in fuzzing development, and your goal is to expand on the
 fuzzing harnesses of OSS-Fuzz project {project_name}.
 Use the tools to understand the fuzzing harnesses of the {project_name}'s OSS-Fuzz integration.
@@ -571,7 +576,8 @@ def _log_nodes(logfile, nodes, header_text=''):
 
 async def fix_oss_fuzz_projects(projects_to_fix=None,
                                 max_projects_to_fix=4,
-                                language=''):
+                                language='',
+                                max_tries=3):
   """Fixes the build of a list of OSS-Fuzz projects."""
 
   if projects_to_fix is None:
@@ -598,7 +604,7 @@ async def fix_oss_fuzz_projects(projects_to_fix=None,
         continue
     except:
       continue
-    nodes, fix_success = await fix_project_build(project)
+    nodes, fix_success = await fix_project_build(project, max_tries)
     responses.append({'project': project, 'fix_success': fix_success})
     if nodes:
       _log_nodes(f'responses-fix-build-{project}.json',
@@ -707,7 +713,7 @@ sure the coverage of the target is above 10% in terms of line coverage. Use the 
 available to extract code coverage of the project when you're creating the harness, and either
 add more fuzzing harnesses to the project or extend the harness to cover more functions."""
 
-  nodes = await chat_with_agent(
+  nodes = await run_agent_loop(
       f"""You are an expert software security engineer and you are tasked with creating an OSS-Fuzz project.
 I have set up an initial project structure at {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/projects/{project}/. This structure
 includes a Dockerfile, build.sh, and project.yaml file. The Dockerfile clones the target
@@ -882,6 +888,11 @@ def parse_arguments():
   fix_builds = subparsers.add_parser(
       'fix-builds',
       help='Fix the builds of OSS-Fuzz projects that are currently broken.')
+  fix_builds.add_argument(
+      '--max_attempts',
+      type=int,
+      default=3,
+      help='Maximum number of attempts to fix each project (default: 3)')
 
   fix_builds.add_argument('--max-projects',
                           type=int,
@@ -939,7 +950,8 @@ async def main():
 
   initialize_oss_fuzz()
   if args.command == 'fix-builds':
-    await fix_oss_fuzz_projects(args.projects, args.max_projects, args.language)
+    await fix_oss_fuzz_projects(args.projects, args.max_projects, args.language,
+                                args.max_attempts)
   elif args.command == 'create-project':
     logger.info('Creating OSS-Fuzz project for URL: %s', args.project_url)
     await create_oss_fuzz_integration_for_project(args.project_url,
