@@ -20,7 +20,7 @@
 cd $SRC/mruby
 export LD=$CC
 export LDFLAGS="$CFLAGS"
-rake -m
+rake -m test
 
 # build fuzzers
 FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_fuzzer.c
