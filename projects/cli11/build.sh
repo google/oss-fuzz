@@ -12,8 +12,7 @@ set -o pipefail
 
 # --- Package dictionary (if present) ---
 if [[ -f "$SRC/cli11/fuzz/fuzz_dictionary1.txt" ]]; then
-  cat "$SRC/cli11/fuzz/fuzz_dictionary1.txt" "$SRC/cli11/fuzz/fuzz_dictionary2.txt" \
-    > "$OUT/cli11_app_fuzzer.dict" || true
+  cp "$SRC/cli11/fuzz/fuzz_dictionary1.txt" "$OUT/cli11_app_fuzzer.dict" || true
 fi
 
 # --- Tiny, non-crashing seed corpus (zip + plain dir) ---
