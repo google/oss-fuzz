@@ -238,7 +238,8 @@ def check_cached_replay(project, sanitizer='address', integrity_test=False):
 def check_test(project,
                sanitizer='address',
                run_full_cache_replay=False,
-               integrity_test=False):
+               integrity_test=False,
+               stop_on_failure=False):
   """Run the `run_tests.sh` script for a specific project. Will
     build a cached container first."""
 
@@ -325,6 +326,11 @@ def check_test(project,
             'result': 'Success'
         })
       else:
+        if stop_on_failure:
+          logger.info(
+              '%s integrity check failed on patch %s, stopping as requested.',
+              project, logic_patch.name)
+          return False
         integrity_checks.append({'patch': logic_patch.name, 'result': 'Failed'})
 
     logger.info('%s integrity check results:', project)
@@ -548,7 +554,7 @@ def extract_test_coverage(project):
 
 def _cmd_dispatcher_check_test(args):
   check_test(args.project, args.sanitizer, args.run_full_cache_replay,
-             args.check_patch_integrity)
+             args.check_patch_integrity, args.stop_on_failure)
 
 
 def _cmd_dispatcher_check_replay(args):
@@ -597,6 +603,10 @@ def parse_args():
       type=str,
       help='The name of the project to check (e.g., "libpng").',
   )
+  check_test_parser.add_argument(
+      '--stop-on-failure',
+      action='store_true',
+      help='If set, will stop integrity checks on first failure.')
   check_test_parser.add_argument(
       '--sanitizer',
       default='address',
