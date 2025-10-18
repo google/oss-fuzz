@@ -1,0 +1,10 @@
+homepage: "https://docs.quic.tech/quiche/"
+primary_contact: "alessandro@cloudflare.com"
+main_repo: "https://github.com/cloudflare/quiche"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "lucas@cloudflare.com"
