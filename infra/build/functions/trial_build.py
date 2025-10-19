@@ -544,8 +544,11 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
           if status == 'SUCCESS':
             successful_builds[project].append(build_id)
           else:
-            logs_url = build_lib.get_gcb_url(build_id, cloud_project)
-            failed_builds[project].append((status, logs_url, build_type))
+            gcb_url = build_lib.get_gcb_url(build_id, cloud_project)
+            log_url = (f'https://oss-fuzz-gcb-logs.storage.googleapis.com/'
+                       f'log-{build_id}.txt')
+            failed_builds[project].append(
+                (status, gcb_url, build_type, log_url))
 
           wait_builds[project].remove((build_id, build_type))
           if not wait_builds[project]:
@@ -558,8 +561,10 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
 
           finished_builds_count += 1
           status = 'UNKNOWN (too many HttpErrors)'
-          logs_url = build_lib.get_gcb_url(build_id, cloud_project)
-          failed_builds[project].append((status, logs_url, build_type))
+          gcb_url = build_lib.get_gcb_url(build_id, cloud_project)
+          log_url = (f'https://oss-fuzz-gcb-logs.storage.googleapis.com/'
+                     f'log-{build_id}.txt')
+          failed_builds[project].append((status, gcb_url, build_type, log_url))
           wait_builds[project].remove((build_id, build_type))
           if not wait_builds[project]:
             del wait_builds[project]
@@ -584,9 +589,11 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   if wait_builds:
     for project, project_builds in list(wait_builds.items()):
       for build_id, build_type in project_builds:
-        logs_url = build_lib.get_gcb_url(build_id, cloud_project)
+        gcb_url = build_lib.get_gcb_url(build_id, cloud_project)
+        log_url = (f'https://oss-fuzz-gcb-logs.storage.googleapis.com/'
+                   f'log-{build_id}.txt')
         failed_builds[project].append(
-            ('TIMEOUT (Coordinator)', logs_url, build_type))
+            ('TIMEOUT (Coordinator)', gcb_url, build_type, log_url))
 
   # Final Report
   successful_builds_count = sum(
@@ -634,12 +641,13 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
     logging.error('--- FAILED BUILDS ---')
     for project, failures in sorted(failed_builds.items()):
       logging.error('  - %s:', project)
-      for status, gcb_url, build_type in failures:
+      for status, gcb_url, build_type, log_url in failures:
         build_id = gcb_url.split('/')[-1].split('?')[0]
         logging.error('    - Build ID: %s', build_id)
         logging.error('    - Build Type: %s', build_type)
         logging.error('    - Status: %s', status)
         logging.error('    - GCB URL: %s', gcb_url)
+        logging.error('    - Log URL: %s', log_url)
     logging.info('-----------------------')
     return False
 
