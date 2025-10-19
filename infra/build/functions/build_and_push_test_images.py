@@ -112,6 +112,9 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
       '----------------------------------------------------------------')
   logging.info('GCB Build ID: %s', build_id)
   logging.info('GCB Build URL: %s', logs_url)
+  log_url = (f'https://oss-fuzz-gcb-logs.storage.googleapis.com/'
+             f'log-{build_id}.txt')
+  logging.info('Log URL: %s', log_url)
   logging.info(
       '================================================================')
 
