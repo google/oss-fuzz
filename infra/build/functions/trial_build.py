@@ -364,8 +364,10 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
     for build_id, build_type in project_builds:
       logging.info('    - Build ID: %s', build_id)
       logging.info('    - Build Type: %s', build_type)
-      logging.info('      GCB URL: %s',
-                   build_lib.get_gcb_url(build_id, build_lib.IMAGE_PROJECT))
+      gcb_url = build_lib.get_gcb_url(build_id, build_lib.IMAGE_PROJECT)
+      log_url = f'https://oss-fuzz-gcb-logs.storage.googleapis.com/log-{build_id}.txt'
+      logging.info('      GCB URL: %s', gcb_url)
+      logging.info('      Log URL: %s', log_url)
   logging.info('-----------------------')
 
   wait_result = wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
