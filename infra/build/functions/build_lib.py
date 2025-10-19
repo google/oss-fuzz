@@ -732,6 +732,7 @@ def get_build_body(  # pylint: disable=too-many-arguments
       'steps': steps,
       'timeout': str(timeout) + 's',
       'options': options,
+      'logsBucket': 'gs://oss-fuzz-gcb-logs',
   }
   if tags:
     build_body['tags'] = tags
