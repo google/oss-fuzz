@@ -203,9 +203,27 @@ def get_projects_to_build(specified_projects, build_type, force_build):
 def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build."""
   comment = os.environ.get('_COMMENT_BODY')
-  if comment and 'trial_build.py' not in comment:
-    logging.info('Skipping trial build because it was not invoked explicitly.')
+  if not comment or 'trial_build.py' not in comment:
+    logging.info(
+        'Skipping trial build because it was not invoked explicitly via /gcbrun.'
+    )
+    # Find the version tag to create the correct empty result file.
+    parsed_args = get_args(args)
+    version_tag = parsed_args.version_tag or 'legacy'  # Default to legacy
+    filename = f'{version_tag.lower()}-results.json'
+    empty_results = {
+        'total_projects_analyzed': 0,
+        'successful_builds': 0,
+        'failed_builds': 0,
+        'skipped_builds': 0,
+        'failed_projects': [],
+        'skipped_projects': [],
+        'all_projects': []
+    }
+    with open(filename, 'w') as f:
+      json.dump(empty_results, f)
     return False
+
   args = get_args(args)
 
   if not args.skip_build_images:
