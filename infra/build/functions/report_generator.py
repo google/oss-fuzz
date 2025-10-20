@@ -128,11 +128,6 @@ def generate_comparison_table(all_results):
 
 def main():
   """Main function to generate report and determine pipeline status."""
-  # The GCB trigger for trial builds is configured to run on all pull requests
-  # that modify infra/build/functions/**. This is too broad and runs on changes
-  # that don't affect trial builds. This is a temporary fix to prevent these
-  # builds from failing.
-  # TODO(https://github.com/google/oss-fuzz/issues/14165): Fix the trigger.
   comment = os.environ.get('_COMMENT_BODY')
   if not comment or 'trial_build.py' not in comment:
     logging.info(
