@@ -17,7 +17,6 @@
 final status of the pipeline."""
 
 import json
-import logging
 import os
 import sys
 
@@ -129,15 +128,12 @@ def generate_comparison_table(all_results):
 
 def main():
   """Main function to generate report and determine pipeline status."""
-  logging.basicConfig(level=logging.INFO)
   comment = os.environ.get('_COMMENT_BODY')
   if not comment or 'trial_build.py' not in comment:
-    logging.info(
+    print(
         'Skipping report generation because trial build was not invoked '
         'explicitly via /gcbrun.')
-    sys.stdout.flush()
-    sys.stderr.flush()
-    sys.exit(0)
+    return None
 
   all_results = {}
   any_failures = False
