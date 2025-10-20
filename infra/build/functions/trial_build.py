@@ -428,13 +428,12 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       tags = ['trial-build']
       if args.branch:
         tags.append(f'branch-{args.branch.replace("/", "-")}')
-      build_result = build_project.run_build(
-          project_name,
-          steps,
-          credentials,
-          build_type.type_name,
-          extra_tags=tags,
-          timeout=PROJECT_BUILD_TIMEOUT)
+      build_result = build_project.run_build(project_name,
+                                             steps,
+                                             credentials,
+                                             build_type.type_name,
+                                             extra_tags=tags,
+                                             timeout=PROJECT_BUILD_TIMEOUT)
       if build_result and 'id' in build_result:
         build_ids[project_name] = build_result['id']
       else:
