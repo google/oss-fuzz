@@ -13,13 +13,14 @@
 # limitations under the License.
 """Helper to generate logic error patches for general test using different approach."""
 
+from dataclasses import dataclass
 import os
 import pathlib
 import random
 import sys
 
 import tree_sitter_cpp
-from tree_sitter import Language, Node, Parser, Query, QueryCursor
+from tree_sitter import Language, Parser, Query, QueryCursor
 
 LANGUAGE = Language(tree_sitter_cpp.language())
 PARSER = Parser(LANGUAGE)
@@ -47,11 +48,11 @@ def _add_payload_random_functions(exts: list[str], payload: str) -> str:
         try:
           # Try read and parse the source with tree-sitter
           source = ''
-          with open(path, 'r') as f:
+          with open(path, 'r', encoding='utf-8') as f:
             source = f.read()
           if source:
             node = PARSER.parse(source.encode()).root_node
-        except:
+        except Exception:
           pass
 
         if not node:
@@ -74,16 +75,16 @@ def _add_payload_random_functions(exts: list[str], payload: str) -> str:
             new_func_source = f'{{{payload} {func_source[1:]}'
             source = source.replace(func_source, new_func_source)
         try:
-          with open(path, 'w') as f:
+          with open(path, 'w', encoding='utf-8') as f:
             f.write(source)
           count += 1
-        except:
+        except Exception:
           pass
 
 
 def normal_patch():
   """Do nothing and act as a control test that should always success."""
-  pass
+  return
 
 
 def signal_abort_crash():
@@ -127,11 +128,11 @@ def wrong_return_value():
         try:
           # Try read and parse the source with tree-sitter
           source = ''
-          with open(path, 'r') as f:
+          with open(path, 'r', encoding='utf-8') as f:
             source = f.read()
           if source:
             node = PARSER.parse(source.encode()).root_node
-        except:
+        except Exception:
           pass
 
         if not node:
@@ -163,40 +164,55 @@ def wrong_return_value():
             source = source.replace(func_source, new_func_source)
 
         try:
-          with open(path, 'w') as f:
+          with open(path, 'w', encoding='utf-8') as f:
             f.write(source)
           count += 1
-        except:
+        except Exception:
           pass
 
 
-LOGIC_ERROR_PATCH_GENERATOR = {
-    'control_test': {
-        'func': normal_patch,
-        'result': True,
-    },
-    'sigabrt_crash': {
-        'func': signal_abort_crash,
-        'result': False,
-    },
-    'sigkill_crash': {
-        'func': builtin_trap_crash,
-        'result': False,
-    },
-    'sigsegv_crash': {
-        'func': null_write_crash,
-        'result': False,
-    },
-    'random_return_value': {
-        'func': wrong_return_value,
-        'result': False,
-    }
-}
+@dataclass
+class LogicErrorPatch:
+  """Dataclass to hold the patch function and expected result."""
+  name: str
+  func: callable
+  expected_result: bool
+
+
+LOGIC_ERROR_PATCHES: list[LogicErrorPatch] = [
+    LogicErrorPatch(
+        name='control_test',
+        func=normal_patch,
+        expected_result=True,
+    ),
+    LogicErrorPatch(
+        name='sigabrt_crash',
+        func=signal_abort_crash,
+        expected_result=False,
+    ),
+    LogicErrorPatch(
+        name='sigkill_crash',
+        func=builtin_trap_crash,
+        expected_result=False,
+    ),
+    LogicErrorPatch(
+        name='sigsegv_crash',
+        func=null_write_crash,
+        expected_result=False,
+    ),
+    LogicErrorPatch(
+        name='random_return_value',
+        func=wrong_return_value,
+        expected_result=False,
+    )
+]
 
 
 def main():
   target = sys.argv[1]
-  LOGIC_ERROR_PATCH_GENERATOR[target]['func']()
+  for logic_error_patch in LOGIC_ERROR_PATCHES:
+    if logic_error_patch.name == target:
+      logic_error_patch.func()
 
 
 if __name__ == "__main__":

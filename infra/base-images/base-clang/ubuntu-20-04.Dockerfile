@@ -33,15 +33,6 @@ RUN apt-get update && apt-get install -y wget sudo && \
     SUDO_FORCE_REMOVE=yes apt-get autoremove --purge -y wget sudo && \
     rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
 
-RUN apt-get update && apt-get install -y git && \
-    git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
-    cd fuzz-introspector && \
-    git checkout 332d674f00b8abc4c9ebf10e9c42e5b72b331c63 && \
-    git submodule init && \
-    git submodule update && \
-    apt-get autoremove --purge -y git && \
-    rm -rf .git
-
 COPY checkout_build_install_llvm_ubuntu_20_04.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.
@@ -67,12 +58,12 @@ ENV CCC "clang++"
 ENV CFLAGS -O1 \
   -fno-omit-frame-pointer \
   -gline-tables-only \
-  -Wno-error=enum-constexpr-conversion \
   -Wno-error=incompatible-function-pointer-types \
   -Wno-error=int-conversion \
   -Wno-error=deprecated-declarations \
   -Wno-error=implicit-function-declaration \
   -Wno-error=implicit-int \
+  -Wno-error=unknown-warning-option \
   -Wno-error=vla-cxx-extension \
   -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"

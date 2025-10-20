@@ -118,6 +118,9 @@ RUN git -C libjxl submodule update --init --recommend-shallow \
 # JBIG-kit
 RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit # does not support shallow
 
+# libwmf
+RUN git clone --depth 1 https://github.com/caolanm/libwmf.git
+
 # Build!
 WORKDIR $SRC/graphicsmagick
 COPY build.sh $SRC/

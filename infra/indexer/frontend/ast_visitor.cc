@@ -240,7 +240,9 @@ const clang::CXXRecordDecl* GetTemplatePrototypeRecordDecl(
 
 bool IsIncompleteFunction(const clang::FunctionDecl* function_decl) {
   return !function_decl->hasBody() && !function_decl->isDefaulted() &&
-         !function_decl->isPureVirtual() && !function_decl->getBuiltinID(true);
+         !function_decl->isPureVirtual() &&
+         !function_decl->getBuiltinID(true) &&
+         !function_decl->hasDefiningAttr();
 }
 
 // `decl` is required to be a `clang::NamedDecl`.

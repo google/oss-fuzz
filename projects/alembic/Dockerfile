@@ -18,11 +18,14 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y build-essential zlib1g-dev zlib1g-dev:i386 python make automake
 
-RUN git clone --depth 1 https://github.com/alembic/alembic
+RUN git clone -b v3.2.1 --depth 1 https://github.com/AcademySoftwareFoundation/imath $SRC/imath && \
+    cd $SRC/imath && \
+    mkdir build && \
+    cd build && \
+    cmake -D BUILD_SHARED_LIBS=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ../ && \
+    make -j$(nproc) V=1 && make install
 
-# Ubuntu's libilmbase-dev package doesn't include static libraries, so we have
-# to build OpenEXR from source.
-RUN git clone -b v2.5.9 --depth 1 https://github.com/AcademySoftwareFoundation/openexr
+RUN git clone --depth 1 https://github.com/alembic/alembic
 
 COPY build.sh *.h *.cc $SRC/
 WORKDIR $WORK/

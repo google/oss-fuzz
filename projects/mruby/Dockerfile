@@ -25,4 +25,4 @@ RUN mkdir LPM; \
   cmake $SRC/libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release; \
   ninja;
 
-COPY build.sh $SRC
+COPY *.sh $SRC
