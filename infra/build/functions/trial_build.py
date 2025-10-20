@@ -429,11 +429,11 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       if args.branch:
         tags.append(f'branch-{args.branch.replace("/", "-")}')
       build_ids[project_name] = (build_project.run_build(
-                                  steps,
-                                  credentials,
-                                  build_type.type_name,
-                                  extra_tags=tags,
-                                  timeout=PROJECT_BUILD_TIMEOUT))['id']
+          steps,
+          credentials,
+          build_type.type_name,
+          extra_tags=tags,
+          timeout=PROJECT_BUILD_TIMEOUT))['id']
       time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
