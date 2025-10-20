@@ -202,6 +202,10 @@ def get_projects_to_build(specified_projects, build_type, force_build):
 
 def trial_build_main(args=None, local_base_build=True):
   """Main function for trial_build."""
+  comment = os.environ.get('_COMMENT_BODY')
+  if comment and 'trial_build.py' not in comment:
+    logging.info('Skipping trial build because it was not invoked explicitly.')
+    return False
   args = get_args(args)
 
   if not args.skip_build_images:
