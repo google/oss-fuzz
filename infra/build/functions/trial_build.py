@@ -428,18 +428,12 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       tags = ['trial-build']
       if args.branch:
         tags.append(f'branch-{args.branch.replace("/", "-")}')
-      build_result = build_project.run_build(project_name,
-                                             steps,
-                                             credentials,
-                                             build_type.type_name,
-                                             extra_tags=tags,
-                                             timeout=PROJECT_BUILD_TIMEOUT)
-      if build_result and 'id' in build_result:
-        build_ids[project_name] = build_result['id']
-      else:
-        error_message = f'Failed to start build {project_name}: {build_result}'
-        logging.error(error_message)
-        failed_to_start_builds.append((project_name, error_message))
+      build_ids[project_name] = (build_project.run_build(
+                                  steps,
+                                  credentials,
+                                  build_type.type_name,
+                                  extra_tags=tags,
+                                  timeout=PROJECT_BUILD_TIMEOUT))['id']
       time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
