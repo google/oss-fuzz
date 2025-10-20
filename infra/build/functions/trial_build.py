@@ -428,13 +428,19 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       tags = ['trial-build']
       if args.branch:
         tags.append(f'branch-{args.branch.replace("/", "-")}')
-      build_ids[project_name] = (build_project.run_build(
+      build_result = build_project.run_build(
           project_name,
           steps,
           credentials,
           build_type.type_name,
           extra_tags=tags,
-          timeout=PROJECT_BUILD_TIMEOUT))['id']
+          timeout=PROJECT_BUILD_TIMEOUT)
+      if build_result and 'id' in build_result:
+        build_ids[project_name] = build_result['id']
+      else:
+        error_message = f'Failed to start build {project_name}: {build_result}'
+        logging.error(error_message)
+        failed_to_start_builds.append((project_name, error_message))
       time.sleep(1)  # Avoid going over 75 requests per second limit.
     except Exception as error:  # pylint: disable=broad-except
       # Handle flake.
@@ -501,7 +507,7 @@ def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
   retries_map = {}
   next_retry_time = {}
   MAX_RETRIES = 5
-  BASE_BACKOFF_SECONDS = 5
+  BASE_BACKOFF_SECONDS = 2
 
   builds_count = sum(len(v) for v in build_ids.values())
   projects_count = len(build_ids)
