@@ -370,8 +370,9 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
       logging.info('      Log URL: %s', log_url)
   logging.info('-----------------------')
 
-  wait_result = wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
-                               end_time, skipped_projects, version_tag)
+  wait_result = wait_on_builds(args, build_ids, credentials,
+                               build_lib.IMAGE_PROJECT, end_time,
+                               skipped_projects, version_tag)
 
   if failed_to_start_builds:
     logging.error(
@@ -485,7 +486,7 @@ def check_finished(build_id, cloudbuild_api, cloud_project, retries_map):
   return build_status
 
 
-def wait_on_builds(build_ids, credentials, cloud_project, end_time,
+def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
                    skipped_projects, version_tag):  # pylint: disable=too-many-locals
   """Waits on |builds|. Returns True if all builds succeed."""
   cloudbuild = cloud_build('cloudbuild',
@@ -655,6 +656,8 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
 
   if not finished_builds_count and not skipped_builds_count:
     logging.warning('No builds were run.')
+    if args.skip_build_images:
+      return True
     return False
 
   logging.info('\nAll builds passed successfully!')
