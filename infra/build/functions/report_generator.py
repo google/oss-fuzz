@@ -130,9 +130,8 @@ def main():
   """Main function to generate report and determine pipeline status."""
   comment = os.environ.get('_COMMENT_BODY')
   if not comment or 'trial_build.py' not in comment:
-    print(
-        'Skipping report generation because trial build was not invoked '
-        'explicitly via /gcbrun.')
+    print('Skipping report generation because trial build was not invoked '
+          'explicitly via /gcbrun.')
     return None
 
   all_results = {}
