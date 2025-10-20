@@ -432,6 +432,10 @@ class Manifest:
                 # Don't copy over the seed corpus -- it's not necessary.
                 continue
 
+              if "/.git/" in root or root.endswith("/.git"):
+                # Skip the .git directory -- it can be large.
+                continue
+
               file = pathlib.Path(root, file)
               if exclude_build_artifacts and _is_elf(file):
                 continue
