@@ -17,6 +17,7 @@
 final status of the pipeline."""
 
 import json
+import logging
 import os
 import sys
 
