@@ -362,12 +362,10 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
   for project, project_builds in sorted(build_ids.items()):
     logging.info('  - %s:', project)
     for build_id, build_type in project_builds:
-      logging.info('    - Build ID: %s', build_id)
       logging.info('    - Build Type: %s', build_type)
-      gcb_url = build_lib.get_gcb_url(build_id, build_lib.IMAGE_PROJECT)
-      log_url = f'https://oss-fuzz-gcb-logs.storage.googleapis.com/log-{build_id}.txt'
-      logging.info('      GCB URL: %s', gcb_url)
-      logging.info('      Log URL: %s', log_url)
+      for line in build_lib.get_build_info_lines(build_id,
+                                                 build_lib.IMAGE_PROJECT):
+        logging.info('      %s', line)
   logging.info('-----------------------')
 
   wait_result = wait_on_builds(args, build_ids, credentials,
@@ -646,11 +644,10 @@ def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
       logging.error('  - %s:', project)
       for status, gcb_url, build_type, log_url in failures:
         build_id = gcb_url.split('/')[-1].split('?')[0]
-        logging.error('    - Build ID: %s', build_id)
         logging.error('    - Build Type: %s', build_type)
         logging.error('    - Status: %s', status)
-        logging.error('    - GCB URL: %s', gcb_url)
-        logging.error('    - Log URL: %s', log_url)
+        for line in build_lib.get_build_info_lines(build_id, cloud_project):
+          logging.error('    - %s', line)
     logging.info('-----------------------')
     return False
 

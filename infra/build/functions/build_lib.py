@@ -685,6 +685,17 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
+def get_build_info_lines(build_id, cloud_project='oss-fuzz'):
+  """Returns a list of strings with build information."""
+  gcb_url = get_gcb_url(build_id, cloud_project)
+  log_url = get_logs_url(build_id)
+  return [
+      f'GCB Build ID: {build_id}',
+      f'GCB Build URL: {gcb_url}',
+      f'Log URL: {log_url}',
+  ]
+
+
 def get_runner_image_name(test_image_suffix, base_image_tag=None):
   """Returns the runner image that should be used.
 
