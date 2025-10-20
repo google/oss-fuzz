@@ -451,6 +451,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       if args.branch:
         tags.append(f'branch-{args.branch.replace("/", "-")}')
       build_ids[project_name] = (build_project.run_build(
+          project_name,
           steps,
           credentials,
           build_type.type_name,
