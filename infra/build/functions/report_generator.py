@@ -128,11 +128,9 @@ def generate_comparison_table(all_results):
 
 def main():
   """Main function to generate report and determine pipeline status."""
-  comment = os.environ.get('_COMMENT_BODY')
-  if not comment or 'trial_build.py' not in comment:
-    print('Skipping report generation because trial build was not invoked '
-          'explicitly via /gcbrun.')
-    return None
+  if os.path.exists('/workspace/build_skipped.flag'):
+    print('Skipping report generation because trial build was not invoked.')
+    sys.exit(0)
 
   all_results = {}
   any_failures = False

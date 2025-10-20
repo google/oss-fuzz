@@ -546,8 +546,7 @@ def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
             successful_builds[project].append(build_id)
           else:
             gcb_url = build_lib.get_gcb_url(build_id, cloud_project)
-            log_url = (f'https://oss-fuzz-gcb-logs.storage.googleapis.com/'
-                       f'log-{build_id}.txt')
+            log_url = build_lib.get_logs_url(build_id)
             failed_builds[project].append(
                 (status, gcb_url, build_type, log_url))
 
@@ -565,8 +564,7 @@ def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
           finished_builds_count += 1
           status = 'UNKNOWN (too many HttpErrors)'
           gcb_url = build_lib.get_gcb_url(build_id, cloud_project)
-          log_url = (f'https://oss-fuzz-gcb-logs.storage.googleapis.com/'
-                     f'log-{build_id}.txt')
+          log_url = build_lib.get_logs_url(build_id)
           failed_builds[project].append((status, gcb_url, build_type, log_url))
           wait_builds[project].remove((build_id, build_type))
           if not wait_builds[project]:
@@ -591,8 +589,7 @@ def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
     for project, project_builds in list(wait_builds.items()):
       for build_id, build_type in project_builds:
         gcb_url = build_lib.get_gcb_url(build_id, cloud_project)
-        log_url = (f'https://oss-fuzz-gcb-logs.storage.googleapis.com/'
-                   f'log-{build_id}.txt')
+        log_url = build_lib.get_logs_url(build_id)
         failed_builds[project].append(
             ('TIMEOUT (Coordinator)', gcb_url, build_type, log_url))
 
