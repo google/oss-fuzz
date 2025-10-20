@@ -775,14 +775,15 @@ def run_build(oss_fuzz_project,
       'logsBucket': bucket,
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
-  return build_lib.run_build(oss_fuzz_project,
-                             build_steps,
-                             credentials,
-                             cloud_project,
-                             timeout,
-                             body_overrides=body_overrides,
-                             tags=tags,
-                             experiment=experiment)
+  build = build_lib.run_build(oss_fuzz_project,
+                              build_steps,
+                              credentials,
+                              cloud_project,
+                              timeout,
+                              body_overrides=body_overrides,
+                              tags=tags,
+                              experiment=experiment)
+  return build['id']
 
 
 def parse_args(description, args):
