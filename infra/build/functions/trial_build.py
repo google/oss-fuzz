@@ -501,7 +501,7 @@ def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
   retries_map = {}
   next_retry_time = {}
   MAX_RETRIES = 5
-  BASE_BACKOFF_SECONDS = 2
+  BASE_BACKOFF_SECONDS = 5
 
   builds_count = sum(len(v) for v in build_ids.values())
   projects_count = len(build_ids)
@@ -557,6 +557,8 @@ def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
 
         elif retries_map.get(build_id, 0) >= MAX_RETRIES:
           # Max retries reached, mark as failed.
+          logging.error('HttpError for build %s. Max retries reached.',
+                        build_id)
           if build_id in next_retry_time:
             del next_retry_time[build_id]
 
@@ -576,8 +578,6 @@ def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
                           random.uniform(0, 1))
           next_retry_time[build_id] = (datetime.datetime.now() +
                                        datetime.timedelta(seconds=backoff_time))
-          logging.warning('HttpError for build %s. Retrying in %.2f seconds.',
-                          build_id, backoff_time)
 
     if not processed_a_build_in_iteration and wait_builds:
       # All remaining builds are in backoff, sleep to prevent busy-waiting.
