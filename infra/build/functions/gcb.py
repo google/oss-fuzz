@@ -79,7 +79,7 @@ def exec_command_from_github(args):
   if full_command is None:
     logging.info('Trial build not requested.')
     # Create a flag file to indicate that the build was skipped.
-    with open('/workspace/build_skipped.flag', 'w') as f:
+    with open('trial_build_skipped.flag', 'w') as f:
       pass
     return None
   command_file = full_command[0]
