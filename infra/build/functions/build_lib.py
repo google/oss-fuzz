@@ -282,24 +282,19 @@ def get_signed_policy_document_upload_prefix(bucket, path_prefix):
   )
 
 
+# pylint: disable=no-member
 def get_signed_url(path, method='PUT', content_type=''):
-  """Returns a signed URL for |path|."""
-  timestamp = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-  timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-  path = urlparse.urlparse(path)
-  blob_path = path.path.lstrip('/')
-  blob = f"""{method}
-
-{content_type}
-
-{timestamp}
-/{path.netloc}/{blob_path}"""
+  """Returns signed url."""
+  timestamp = int(time.time() + BUILD_TIMEOUT)
+  blob = f'{method}\n\n{content_type}\n{timestamp}\n{path}'
 
   client_id, signature = _sign_blob(blob)
-  return (f'https://storage.googleapis.com/{path.netloc}/{blob_path}'
-          f'?GoogleAccessId={client_id}&Expires={int(time.time() + 3600)}'
-          f'&Signature={urlparse.quote_plus(signature)}')
+  values = {
+      'GoogleAccessId': client_id,
+      'Expires': timestamp,
+      'Signature': signature,
+  }
+  return f'https://storage.googleapis.com{path}?{urlparse.urlencode(values)}'
 
 
 def _normalized_name(name):
@@ -685,6 +680,17 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
+def get_build_info_lines(build_id, cloud_project='oss-fuzz'):
+  """Returns a list of strings with build information."""
+  gcb_url = get_gcb_url(build_id, cloud_project)
+  log_url = get_logs_url(build_id)
+  return [
+      f'GCB Build ID: {build_id}',
+      f'GCB Build URL: {gcb_url}',
+      f'Log URL: {log_url}',
+  ]
+
+
 def get_runner_image_name(test_image_suffix, base_image_tag=None):
   """Returns the runner image that should be used.
 
@@ -732,6 +738,7 @@ def get_build_body(  # pylint: disable=too-many-arguments
       'steps': steps,
       'timeout': str(timeout) + 's',
       'options': options,
+      'logsBucket': 'gs://oss-fuzz-gcb-logs',
   }
   if tags:
     build_body['tags'] = tags
