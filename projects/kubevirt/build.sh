@@ -40,6 +40,10 @@ go work vendor
 
 find . -type f -name "fuzz_suite_test.go" -delete
 rm pkg/virt-operator/resource/generate/install/install_suite_test.go
+# this t.Fail() is not OSS-Fuzz friendly and creates false crashes
+sed -i 's/t\.Fail()/return/g' pkg/virt-api/webhooks/fuzz/fuzz_test.go
+# remove logging from fuzzer
+sed -i 's/fmt\.Println(string(j))/_ = j/g' pkg/virt-api/webhooks/fuzz/fuzz_test.go
 compile_native_go_fuzzer_v2 kubevirt.io/kubevirt/pkg/virt-api/webhooks/mutating-webhook FuzzWebhookMutators FuzzWebhookMutators
 compile_native_go_fuzzer_v2 kubevirt.io/kubevirt/pkg/virt-api/webhooks/validating-webhook FuzzWebhookAdmitters FuzzWebhookAdmitters
 compile_native_go_fuzzer_v2 kubevirt.io/kubevirt/pkg/virt-api/webhooks/fuzz FuzzAdmitter FuzzAdmitter
