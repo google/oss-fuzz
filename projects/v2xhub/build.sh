@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+
 # build a mocking fuzzer
 pushd /home/V2X-Hub/src
 CC=gcc CXX=g++ CFLAGS="" CXXFLAGS="" ./build_tmx.sh
@@ -22,7 +23,7 @@ popd
 
 pushd /home/V2X-Hub/src/tmx
 $CXX $CFLAGS \
-  -o /out/mockfuzzer $LIB_FUZZING_ENGINE \
+  -o $OUT/mockfuzzer $LIB_FUZZING_ENGINE \
   $SRC/StringParserSubstringFuzzer.cpp \
   -Wl,--start-group \
     /home/V2X-Hub/src/tmx/build/lib/libtmxutils.a \
@@ -30,13 +31,4 @@ $CXX $CFLAGS \
   -Wl,--end-group
 
 popd
-# e.g.
-# ./autogen.sh
-# ./configure
-# make -j$(nproc) all
 
-# build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     $LIB_FUZZING_ENGINE /path/to/library.a
