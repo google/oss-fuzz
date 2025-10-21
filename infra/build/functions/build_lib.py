@@ -288,13 +288,13 @@ def get_signed_url(path, method='PUT', content_type=''):
   timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
 
   path = urlparse.urlparse(path)
-  blob_path = path.path.lstrip('/')
+  blob_path = path.path
   blob = f"""{method}
 
 {content_type}
 
 {timestamp}
-/{path.netloc}/{blob_path}"""
+{blob_path}"""
 
   client_id, signature = _sign_blob(blob)
   return (f'https://storage.googleapis.com/{path.netloc}/{blob_path}'
