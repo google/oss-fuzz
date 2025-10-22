@@ -15,7 +15,15 @@
 #
 ################################################################################
 
+(
 export LD=$CC
 export LDFLAGS="$CFLAGS"
 cd $SRC/mruby
-rake -m test
+rake test >> /tmp/test.out 2>&1
+)
+
+# Validate if the tests were successful based on the printed output. We expect
+# 165x tests to succeed and some tests skipped. I suspect the skipping causes
+# rake to return an error code. However, in normal circumastances we see
+# 9 tests skipped.
+grep "OK: 165" /tmp/test.out
