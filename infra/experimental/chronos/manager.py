@@ -268,6 +268,8 @@ def check_test(project,
       'run',
       '--rm',
       '-ti',
+      '--network',
+      'none',
       '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
       ':/chronos',
       _get_project_cached_named(project, sanitizer),
