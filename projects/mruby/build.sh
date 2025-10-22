@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,8 @@
 cd $SRC/mruby
 export LD=$CC
 export LDFLAGS="$CFLAGS"
-rake -m
+rake all
+rake test
 
 # build fuzzers
 FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_fuzzer.c

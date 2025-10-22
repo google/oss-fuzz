@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/moby/moby/v2/daemon/server/backend"
+	"github.com/moby/moby/v2/daemon/server/imagebackend"
 	"github.com/moby/moby/v2/daemon/container"
 	"github.com/moby/moby/v2/daemon/config"
 	"github.com/moby/moby/v2/daemon/images"
@@ -157,7 +158,7 @@ func FuzzDaemonSimple(data []byte) int {
 			if refOrID == "" {
 				continue
 			}
-			options := backend.GetImageOpts{}
+			options := imagebackend.GetImageOpts{}
 			f.GenerateStruct(&options)
 			_, _ = d.imageService.GetImage(context.Background(), refOrID, options)
 		case 1:
@@ -173,7 +174,6 @@ func FuzzDaemonSimple(data []byte) int {
 			if c.ID == "" {
 				continue
 			}
-			c.State = container.NewState()
 			c.ExecCommands = container.NewExecStore()
 			d.containers.Add(c.ID, c)
 		case 3:
