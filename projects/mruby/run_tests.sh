@@ -19,7 +19,7 @@
 export LD=$CC
 export LDFLAGS="$CFLAGS"
 cd $SRC/mruby
-rake test >> /tmp/test.out 2>&1
+rake test > /tmp/test.out 2>&1
 )
 
 # Validate if the tests were successful based on the printed output. We expect
