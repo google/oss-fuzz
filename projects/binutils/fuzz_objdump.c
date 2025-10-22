@@ -66,7 +66,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 #endif
 
   // Main fuzz entrypoint in objdump.c
-  display_file(filename, NULL, true);
+  display_file(filename, NULL);
 
   unlink(filename);
   return 0;

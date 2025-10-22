@@ -23,7 +23,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     // Currently, we just consume all the fuzzed corpus into the regex pattern
     std::string regex_string = fdp.ConsumeRemainingBytesAsString();
     const uint8_t where_array[] = {0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48};
-    std::string random(where_array, where_array + sizeof(where_array)); 
+    std::string random(where_array, where_array + sizeof(where_array));
     std::string empty("");
     std::string spaces("                         ");
     try {
@@ -38,8 +38,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 #endif
 
         for (const auto& where : wheres) {
-            boost::match_results<std::string::const_iterator> what;
-            bool match = boost::regex_match(where, what, e, boost::match_default | boost::match_partial | boost::match_perl | boost::match_posix | boost::match_any);
+            try {
+                boost::match_results<std::string::const_iterator> what;
+                bool match = boost::regex_match(where, what, e, boost::match_default | boost::match_partial | boost::match_posix | boost::match_any);
+            } catch(...) {
+            }
+
+            try {
+                boost::match_results<std::string::const_iterator> what;
+                bool match = boost::regex_match(where, what, e, boost::match_default | boost::match_partial | boost::match_perl | boost::match_any);
+            } catch(...) {
+            }
         }
     } catch(...) {
     }

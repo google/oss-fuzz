@@ -20,6 +20,7 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-
     rm -rf maven.zip
 
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+RUN git clone https://github.com/DataGrip/mongo-jdbc-driver
 RUN git clone --depth 1 https://github.com/flyway/flyway flyway
 COPY *.sh *.java $SRC/
-WORKDIR $SRC/flyway
+WORKDIR $SRC/

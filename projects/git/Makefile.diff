@@ -1,8 +1,16 @@
 diff --git a/Makefile b/Makefile
-index 4e255c81f2..05905e3a2e 100644
+index e298c8b55e..d813aac130 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -760,6 +760,19 @@ FUZZ_OBJS += oss-fuzz/fuzz-commit-graph.o
+@@ -1075,6 +1075,7 @@ LIB_OBJS += oid-array.o
+ LIB_OBJS += oidmap.o
+ LIB_OBJS += oidset.o
+ LIB_OBJS += oidtree.o
++LIB_OBJS += oss-fuzz/fuzz-cmd-base.o
+ LIB_OBJS += pack-bitmap-write.o
+ LIB_OBJS += pack-bitmap.o
+ LIB_OBJS += pack-check.o
+@@ -2381,6 +2382,19 @@ FUZZ_OBJS += oss-fuzz/fuzz-config.o
  FUZZ_OBJS += oss-fuzz/fuzz-date.o
  FUZZ_OBJS += oss-fuzz/fuzz-pack-headers.o
  FUZZ_OBJS += oss-fuzz/fuzz-pack-idx.o
@@ -22,28 +30,20 @@ index 4e255c81f2..05905e3a2e 100644
  .PHONY: fuzz-objs
  fuzz-objs: $(FUZZ_OBJS)
  
-@@ -1087,6 +1100,7 @@ LIB_OBJS += oid-array.o
- LIB_OBJS += oidmap.o
- LIB_OBJS += oidset.o
- LIB_OBJS += oidtree.o
-+LIB_OBJS += oss-fuzz/fuzz-cmd-base.o
- LIB_OBJS += pack-bitmap-write.o
- LIB_OBJS += pack-bitmap.o
- LIB_OBJS += pack-check.o
-@@ -3862,10 +3876,10 @@ FUZZ_CXXFLAGS ?= $(ALL_CFLAGS)
- 
+@@ -3847,10 +3861,10 @@ FUZZ_CXXFLAGS ?= $(ALL_CFLAGS)
  .PHONY: fuzz-all
+ fuzz-all: $(FUZZ_PROGRAMS)
  
 -$(FUZZ_PROGRAMS): %: %.o oss-fuzz/dummy-cmd-main.o $(GITLIBS) GIT-LDFLAGS
--	$(QUIET_LINK)$(CXX) $(FUZZ_CXXFLAGS) -o $@ $(ALL_LDFLAGS) \
+-	$(QUIET_LINK)$(FUZZ_CXX) $(FUZZ_CXXFLAGS) -o $@ $(ALL_LDFLAGS) \
 +$(FUZZ_PROGRAMS): all
-+	$(QUIET_LINK)$(CXX) $(FUZZ_CXXFLAGS) -o $@ $(ALL_LDFLAGS) $(BUILTIN_OBJS) \
++	$(QUIET_LINK)$(FUZZ_CXX) $(FUZZ_CXXFLAGS) -o $@ $(ALL_LDFLAGS) $(BUILTIN_OBJS) \
  		-Wl,--allow-multiple-definition \
 -		$(filter %.o,$^) $(filter %.a,$^) $(LIBS) $(LIB_FUZZING_ENGINE)
 +		$(filter %.o,$^) $(filter %.a,$^) git.o $@.o $(LIBS) $(LIB_FUZZING_ENGINE)
  
- fuzz-all: $(FUZZ_PROGRAMS)
- 
+ $(UNIT_TEST_PROGS): $(UNIT_TEST_BIN)/%$X: $(UNIT_TEST_DIR)/%.o \
+ 	$(UNIT_TEST_DIR)/test-lib.o \
 diff --git a/attr.c b/attr.c
 index 679e42258c..20e426726a 100644
 --- a/attr.c
@@ -71,10 +71,10 @@ index 3ad11dc5d0..2443906572 100644
  	int bundle_fd = -1;
  	int quiet = 0;
 diff --git a/builtin/tag.c b/builtin/tag.c
-index 37473ac21f..c719ea10e7 100644
+index a1fb218512..2b90e31ced 100644
 --- a/builtin/tag.c
 +++ b/builtin/tag.c
-@@ -589,8 +589,11 @@ int cmd_tag(int argc, const char **argv, const char *prefix)
+@@ -646,8 +646,11 @@ int cmd_tag(int argc, const char **argv, const char *prefix)
  	if (repo_get_oid(the_repository, object_ref, &object))
  		die(_("Failed to resolve '%s' as a valid ref."), object_ref);
  
@@ -86,8 +86,8 @@ index 37473ac21f..c719ea10e7 100644
 +		goto cleanup;
 +	}
  
- 	if (read_ref(ref.buf, &prev))
- 		oidclr(&prev);
+ 	if (refs_read_ref(get_main_ref_store(the_repository), ref.buf, &prev))
+ 		oidclr(&prev, the_repository->hash_algo);
 diff --git a/diff.c b/diff.c
 index ccfa1fca0d..97f895a122 100644
 --- a/diff.c

@@ -17,7 +17,7 @@
 
 autoreconf -f -i
 ./configure --disable-shared --enable-static --without-wbclient
-make
+make -j$(nproc)
 
 pushd fuzzing/
 make fuzzer

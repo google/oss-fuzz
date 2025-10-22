@@ -27,7 +27,10 @@ module.exports.fuzz = function(data) {
   try {
     const parsedYaml = yaml.load(yamlString, loadOptions);
     const _serializedYaml = yaml.dump(parsedYaml, dumpOptions);
-  } catch (YAMLException) {
+  } catch (e) {
+    if (!(e instanceof yaml.YAMLException)) {
+      throw e
+    }
   }
 };
 
@@ -56,19 +59,10 @@ function generateRandomDumpOptions(provider) {
 
 
 function getSchema(number) {
-
   switch (number) {
-    case 0:
-      options.schema = "DEFAULT_SCHEMA";
-      break
-    case 1:
-      options.schema = "FAILSAFE_SCHEMA";
-      break
-    case 2:
-      options.schema = "JSON_SCHEMA";
-      break
-    case 3:
-      options.schema = "CORE_SCHEMA";
-      break
+    case 0: return yaml.DEFAULT_SCHEMA
+    case 1: return yaml.FAILSAFE_SCHEMA
+    case 2: return yaml.JSON_SCHEMA
+    case 3: return yaml.CORE_SCHEMA
   }
 }

@@ -15,9 +15,12 @@
 #
 ################################################################################
 
+rm -rf contrib/googletest
+git clone https://github.com/google/googletest contrib/googletest
+
 # generate build env and build assimp
 cmake CMakeLists.txt -G "Ninja" -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON \
-                                -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \
+                                -DASSIMP_BUILD_TESTS=ON -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \
                                 -DASSIMP_BUILD_SAMPLES=OFF
 cmake --build .
 

@@ -18,7 +18,7 @@
 find . -name '*.star' -exec zip starlark_seed_corpus.zip {} \;
 
 cd starlark
-cargo fuzz build -O
+cargo +nightly fuzz build -O
 
 FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs

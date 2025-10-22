@@ -15,6 +15,5 @@
 #
 ################################################################################
 
-pip3 install meson
-
-./scripts/oss-fuzz/build.sh
+cd $SRC/qemu/
+$SRC/qemu/scripts/oss-fuzz/build.sh

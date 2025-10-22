@@ -19,7 +19,7 @@ cd crosvm
 
 # Build crosvm fuzzers
 # Unset the SRC variable as it will interfere with minijail's common.mk framework.
-env -u SRC cargo +nightly-2023-12-28 fuzz build -O
+env -u SRC cargo fuzz build -O
 
 # Copy fuzzer binaries to $OUT
 FUZZ_TARGET_OUTPUT_DIR="target/x86_64-unknown-linux-gnu/release"

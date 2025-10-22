@@ -16,10 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    pkg-config
+    pkg-config libcunit1 libcunit1-doc libcunit1-dev
 RUN git clone --depth 1 https://github.com/obgm/libcoap.git libcoap
 WORKDIR libcoap
-COPY build.sh $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1
+COPY *.sh $SRC/

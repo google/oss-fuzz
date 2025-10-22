@@ -15,10 +15,23 @@
 #
 ################################################################################
 
-pip3 install .
+python3 -m pip install .
+
+make_dictionary_for_fuzz_harness() {
+  local fuzz_harness="$1"
+  local base_dictionary="$SRC/__base.dict"
+  local output_dict="$OUT/${fuzz_harness##*/}"
+  output_dict="${output_dict%.py}.dict"
+
+  [[ -r "$base_dictionary" ]] && {
+    [[ -s "$output_dict" ]] && echo >>"$output_dict"
+    cat "$base_dictionary" >>"$output_dict"
+  }
+}
 
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
+  make_dictionary_for_fuzz_harness "$fuzzer"
 done
 
 zip -rj $OUT/fuzz_pem_seed_corpus.zip $SRC/data.pem

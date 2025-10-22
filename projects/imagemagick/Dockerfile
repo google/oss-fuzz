@@ -26,7 +26,7 @@ RUN git clone --depth 1 https://github.com/webmproject/libwebp
 RUN git clone --depth 1 https://github.com/madler/zlib
 RUN git clone --depth 1 https://github.com/ebiggers/libdeflate
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
-RUN git clone --depth 1 https://github.com/xz-mirror/xz
+RUN git clone --depth 1 https://github.com/tukaani-project/xz
 RUN git clone --depth 1 https://github.com/libraw/libraw
 RUN git clone --depth 1 https://github.com/pnggroup/libpng
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS
@@ -36,4 +36,4 @@ RUN git clone --depth 1 --recursive https://github.com/libjxl/libjxl
 RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit # does not support shallow
 ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
 WORKDIR imagemagick
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh replay_build.sh $SRC/

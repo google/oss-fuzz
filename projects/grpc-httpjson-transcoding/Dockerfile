@@ -14,13 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# Todo: unpin to support llvm 22
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
 MAINTAINER nareddyt@google.com
 
-RUN apt-get update && apt-get install python -y
+RUN apt-get update && apt-get install python3 -y
 RUN git clone https://github.com/grpc-ecosystem/grpc-httpjson-transcoding.git
 WORKDIR $SRC/grpc-httpjson-transcoding/
 COPY build.sh $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1

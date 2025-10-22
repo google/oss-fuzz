@@ -31,8 +31,7 @@ RUN mkdir $SRC/seeds && \
     cp $SRC/lcms/testbed/test3.icc . && \
     cp $SRC/lcms/testbed/test4.icc . && \
     cp $SRC/lcms/testbed/test5.icc . && \
-    cp $SRC/lcms/testbed/TestCLT.icc . && \
     zip -rj $SRC/seed_corpus.zip $SRC/seeds/*
 
 WORKDIR lcms
-COPY build.sh *.c *.options *.dict $SRC/
+COPY build.sh run_tests.sh *.c *.options *.dict $SRC/

@@ -41,7 +41,7 @@ wget -P $OUT/ https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-
 BUILD_CLASSPATH=$BUILD_CLASSPATH:$JAZZER_API_PATH:$OUT/commons-lang3-3.12.0.jar:$OUT/jackson-databind-2.15.2.jar:$OUT/jackson-core-2.15.2.jar:$OUT/jackson-annotations-2.15.2.jar
 RUNTIME_CLASSPATH=$RUNTIME_CLASSPATH:\$this_dir/commons-lang3-3.12.0.jar:\$this_dir/jackson-databind-2.15.2.jar:\$this_dir/jackson-core-2.15.2.jar:\$this_dir/jackson-annotations-2.15.2.jar:\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/

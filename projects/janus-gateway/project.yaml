@@ -1,8 +1,9 @@
 homepage: "https://github.com/meetecho/janus-gateway"
 language: c++
-primary_contact: "toppi.ale@gmail.com"
+primary_contact: "lminiero@gmail.com"
 auto_ccs:
-  - "lminiero@gmail.com"
+  - "lorenzo@meetecho.com"
+  - "alex@meetecho.com"
 sanitizers:
   - address
   - undefined

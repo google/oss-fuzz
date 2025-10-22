@@ -23,14 +23,13 @@ import (
 	"github.com/moby/sys/mount"
 	"github.com/sirupsen/logrus"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/backend"
-	imagetypes "github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/container"
-	"github.com/docker/docker/daemon/config"
-	"github.com/docker/docker/daemon/images"
-	"github.com/docker/docker/image"
-	dockerreference "github.com/docker/docker/reference"
+	"github.com/moby/moby/v2/daemon/server/backend"
+	"github.com/moby/moby/v2/daemon/server/imagebackend"
+	"github.com/moby/moby/v2/daemon/container"
+	"github.com/moby/moby/v2/daemon/config"
+	"github.com/moby/moby/v2/daemon/images"
+	"github.com/moby/moby/v2/daemon/internal/image"
+	dockerreference "github.com/moby/moby/v2/daemon/internal/refstore"
 	"github.com/opencontainers/go-digest"
 
 	fuzz "github.com/AdaLogics/go-fuzz-headers"
@@ -122,7 +121,7 @@ func FuzzDaemonSimple(data []byte) int {
 
 	d := &Daemon{
 		root:         cfg.Root,
-		imageService: images.NewImageService(images.ImageServiceConfig{ReferenceStore: rStore, ImageStore: is}),
+		imageService: images.NewImageService(context.Background(), images.ImageServiceConfig{ReferenceStore: rStore, ImageStore: is}),
 		containers:   container.NewMemoryStore(),
 	}
 
@@ -159,7 +158,7 @@ func FuzzDaemonSimple(data []byte) int {
 			if refOrID == "" {
 				continue
 			}
-			options := imagetypes.GetImageOpts{}
+			options := imagebackend.GetImageOpts{}
 			f.GenerateStruct(&options)
 			_, _ = d.imageService.GetImage(context.Background(), refOrID, options)
 		case 1:
@@ -175,7 +174,6 @@ func FuzzDaemonSimple(data []byte) int {
 			if c.ID == "" {
 				continue
 			}
-			c.State = container.NewState()
 			c.ExecCommands = container.NewExecStore()
 			d.containers.Add(c.ID, c)
 		case 3:
@@ -189,16 +187,6 @@ func FuzzDaemonSimple(data []byte) int {
 		case 5:
 			d.containers.Size()
 		case 6:
-			name, err := f.GetString()
-			if err != nil {
-				return -1
-			}
-			res, err := f.GetString()
-			if err != nil {
-				return -1
-			}
-			_, _ = d.ContainerCopy(name, res)
-		case 7:
 			prefixOrName, err := f.GetString()
 			if err != nil {
 				return -1
@@ -206,7 +194,7 @@ func FuzzDaemonSimple(data []byte) int {
 			c := &backend.ContainerAttachConfig{}
 			f.GenerateStruct(c)
 			d.ContainerAttach(prefixOrName, c)
-		case 8:
+		case 7:
 			imageConfig, err := f.GetBytes()
 			if err != nil {
 				return 0
@@ -217,11 +205,11 @@ func FuzzDaemonSimple(data []byte) int {
 			}
 			dig := digest.FromBytes([]byte("fuzz"))
 			_, _ = d.imageService.CreateImage(context.Background(), imageConfig, parent, dig)
-		case 9:
-			params := &types.ContainerCreateConfig{}
+		case 8:
+			params := &backend.ContainerCreateConfig{}
 			f.GenerateStruct(params)
 			_, _ = d.ContainerCreate(context.Background(), *params)
-		case 10:
+		case 9:
 			name, err := f.GetString()
 			if err != nil {
 				return 0

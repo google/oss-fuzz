@@ -1,0 +1,11 @@
+homepage: https://github.com/microsoft/ms-tpm-20-ref
+language: c
+main_repo: https://github.com/microsoft/ms-tpm-20-ref
+auto_ccs:
+  - "tamas.k.lengyel@gmail.com"
+sanitizers:
+  - address
+  - undefined
+
+fuzzing_engines:
+  - libfuzzer

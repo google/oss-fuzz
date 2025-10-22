@@ -2,7 +2,7 @@ fuzzing_engines:
 - libfuzzer
 homepage: https://commons.apache.org/proper/commons-collections/
 language: jvm
-main_repo: https://gitbox.apache.org/repos/asf/commons-codellections.git
+main_repo: https://github.com/apache/commons-collections.git
 primary_contact: "fuzz-testing@commons.apache.org"
 sanitizers:
 - address

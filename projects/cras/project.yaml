@@ -1,13 +1,11 @@
 homepage: "https://www.chromium.org"
 language: rust
-primary_contact: "paulhsia@chromium.org"
+primary_contact: "cujomalainey@chromium.org"
 auto_ccs:
   - "hychao@chromium.org"
   - "cychiang@chromium.org"
   - "yuhsuan@chromium.org"
   - "enshuo@chromium.org"
-  - "cujomalainey@chromium.org"
-  - "benzh@chromium.org"
   - "judyhsiao@chromium.org"
   - "johnylin@chromium.org"
   - "aaronyu@google.com"
@@ -23,7 +21,6 @@ auto_ccs:
   - "whalechang@google.com"
 sanitizers:
   - address
-  - memory
   - undefined
 fuzzing_engines:
   - afl

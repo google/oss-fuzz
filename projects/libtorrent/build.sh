@@ -15,13 +15,6 @@
 #
 ################################################################################
 
-export PATH=${PATH}:${PWD}/../boost
-export BOOST_ROOT=${PWD}/../boost
-export BOOST_BUILD_PATH=${PWD}/../boost/tools/build
-# when building b2, we don't want sanitizers enabled
-ASAN_OPTIONS=detect_leaks=0
-(cd ${PWD}/../boost && ./bootstrap.sh && ./b2 headers)
-
 echo "CXX=$CXX"
 echo "CXXFLAGS=$CXXFLAGS"
 

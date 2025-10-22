@@ -130,5 +130,3 @@ LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBRESSL -
 cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz
 # Copy dictionary
 cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz.dict
-# Copy seed corpus
-cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz_seed_corpus.zip

@@ -110,6 +110,21 @@
         "command": "oss-fuzz.testFuzzerCFLite",
         "title": "OSS-Fuzz: [CFLite] Test running a specific fuzzer.",
         "description": "Builds the CFLite setup and runs a fuzzer for a short period of time."
+      },
+      {
+        "command": "oss-fuzz.setupFuzzIntrospector",
+        "title": "OSS-Fuzz: Set up Fuzz Introspector",
+        "description": "Install fuzz introspector on the system"
+      },
+      {
+        "command": "oss-fuzz.runFuzzIntrospector",
+        "title": "OSS-Fuzz: Run Full Fuzz Introspector",
+        "description": "Runs a full Fuzz Introspector"
+      },
+      {
+        "command": "oss-fuzz.GetOptimalTargets",
+        "title": "OSS-Fuzz: Get optimal targets",
+        "description": "Gets the optimal targets of this project"
       }
     ],
     "walkthroughs":[
@@ -150,7 +165,7 @@
     "@vscode/test-electron": "^2.2.3",
     "eslint": "^8.34.0",
     "glob": "^8.1.0",
-    "mocha": "^10.2.0",
+    "mocha": "^10.8.2",
     "typescript": "~4.7.0",
     "gts": "^3.1.1"
   },

@@ -17,7 +17,9 @@
 ################################################################################
 
 go build jcc.go
-cp jcc clang
-cp jcc clang++
+go build jcc2.go
 gsutil cp jcc gs://clusterfuzz-builds/jcc/clang++-jcc
 gsutil cp jcc gs://clusterfuzz-builds/jcc/clang-jcc
+
+gsutil cp jcc2 gs://clusterfuzz-builds/jcc/clang++-jcc2
+gsutil cp jcc2 gs://clusterfuzz-builds/jcc/clang-jcc2

@@ -5,6 +5,8 @@ primary_contact: "guedou@gmail.com"
 auto_ccs:
   - "julien.voisin@dustri.org"
   - "ipudney@google.com"
+  - "evverx@gmail.com"
+builds_per_day: 4
 fuzzing_engines:
   - libfuzzer
 sanitizers:

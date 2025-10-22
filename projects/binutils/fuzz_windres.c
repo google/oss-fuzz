@@ -11,7 +11,7 @@ limitations under the License.
 */
 
 /*
- * We convert dlltool.c into a header file to make convenient for fuzzing.
+ * We convert windres.c into a header file to make convenient for fuzzing.
  * We do this for several of the binutils applications when creating
  * the binutils fuzzers.
  */
@@ -110,7 +110,9 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   // the two additional formats later.
   if (input_format == RES_FORMAT_COFF) {
 	  if (fuzz_check_coff_rsrc(filename, NULL) != 0) {
+		  res_init ();
 		  read_coff_rsrc (filename, NULL);
+		  obstack_free (&res_obstack, NULL);
 	  }
   }
 

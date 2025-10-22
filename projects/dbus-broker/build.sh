@@ -34,9 +34,15 @@ if [[ "$SANITIZER" == introspector ]]; then
 fi
 
 apt-get update -y
+apt-get install -y libclang-dev
 
 if [[ "$ARCHITECTURE" == i386 ]]; then
     apt-get install -y pkg-config:i386
+
+    RUST_TARGET=i686-unknown-linux-gnu
+    rustup target add "$RUST_TARGET"
+    export RUSTC="rustc --target=$RUST_TARGET"
+    export BINDGEN_EXTRA_CLANG_ARGS="--target=$RUST_TARGET"
 else
     apt-get install -y pkg-config
 fi

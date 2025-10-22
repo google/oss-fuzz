@@ -1,0 +1,17 @@
+diff --git a/fuzz/helpers.py b/fuzz/helpers.py
+index 7fcd45c..d107cc1 100644
+--- a/fuzz/helpers.py
++++ b/fuzz/helpers.py
+@@ -1,9 +1,11 @@
+ import atheris
+
+-
+ class EnhancedDataProvider(atheris.FuzzedDataProvider):
+     def ConsumeRandomBytes(self) -> bytes:
+         return self.ConsumeBytes(self.ConsumeIntInRange(0, self.remaining_bytes()))
+
+     def ConsumeRandomString(self) -> str:
+         return self.ConsumeUnicodeNoSurrogates(self.ConsumeIntInRange(0, self.remaining_bytes()))
++
++    def ConsumeRandomStringOfSize(self, val: int) -> str:
++        return self.ConsumeUnicodeNoSurrogates(self.ConsumeIntInRange(0, val))

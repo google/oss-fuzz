@@ -14,9 +14,15 @@
 # limitations under the License.
 #
 ##########################################################################
+exclude="!docs,!samples,!samples/auction,!samples/cdi,!samples/chat,!samples/draw,"
+exclude=$exclude"!samples/echo-basic-auth,!samples/echo-https,!samples/echo,"
+exclude=$exclude"!samples/programmatic-echo,!samples/shared-collection,"
+exclude=$exclude"!samples/simplelife"
+
 $MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
     -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
-    -DperformRelease=True org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade
+    -DperformRelease=True org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade \
+    -pl "$exclude"
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 
@@ -33,7 +39,7 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer

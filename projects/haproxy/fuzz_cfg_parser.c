@@ -23,25 +23,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int
-LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
-{
-    if (size < 50)
-        return 0;
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  struct cfgfile dummy_cfg = {
+      .filename = "fuzzer",
+      .content = (const char *)data,
+      .size = size,
+  };
+  if (size < 50)
+    return 0;
 
-	char filename[256];
-	sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-
-	FILE *fp = fopen(filename, "wb");
-	if (!fp)
-			return 0;
-	fwrite(data, size, 1, fp);
-	fclose(fp);
-
-	// Fuzz the cfg parser
-	readcfgfile(filename);
-
-	unlink(filename);
-
-	return 0;
+  parse_cfg(&dummy_cfg);
+  return 0;
 }

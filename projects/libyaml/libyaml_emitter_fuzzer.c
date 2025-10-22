@@ -233,7 +233,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_emitter_set_canonical(&emitter, is_canonical);
   yaml_emitter_set_unicode(&emitter, is_unicode);
 
-  yaml_output_buffer_t out = {/*buf=*/NULL, /*size=*/0};
+  yaml_output_buffer_t out = {/*buf=*/NULL, /*size=*/0, /*capacity=*/1000};
   yaml_emitter_set_output(&emitter, yaml_write_handler, &out);
 
   while (!done) {

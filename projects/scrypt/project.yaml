@@ -1,0 +1,12 @@
+homepage: "https://docs.rs/scrypt"
+main_repo: "https://github.com/RustCrypto/password-hashes"
+primary_contact: "newpavlov@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
+  - "bascule@gmail.com"

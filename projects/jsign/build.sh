@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-$MVN package --projects jsign-core,jsign-cli,jsign-ant,jsign \
+$MVN package --projects jsign-crypto,jsign-core,jsign-cli,jsign-ant,jsign \
     -DskipTests -Dmaven.javadoc.skip -Djacoco.skip -Dproguard.skip -Djapicmp.skip -Djdeb.skip -Dmaven.antrun.skip
 
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)

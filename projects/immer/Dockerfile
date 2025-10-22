@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
 RUN apt-get update && apt-get install -y cmake libgc-dev pkg-config
 RUN git clone --depth 1 https://github.com/arximboldi/immer.git immer
 WORKDIR immer

@@ -35,19 +35,6 @@ then
     CFLAGS="" CXXFLAGS="" ./b2 headers
     cp -R boost/ /usr/include/
 
-    # Build Botan
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
-    cd $SRC/botan
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
-    else
-        ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
-    fi
-    make -j$(nproc)
-    export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
-    export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
-
     OLD_CFLAGS="$CFLAGS"
     OLD_CXXFLAGS="$CXXFLAGS"
 
@@ -131,12 +118,10 @@ then
         ./configure $WOLFCRYPT_CONFIGURE_PARAMS --disable-asm
     fi
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-normal-math/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-normal-math/"
     cd $SRC/cryptofuzz-normal-math/modules/wolfcrypt
-    make -j$(nproc)
-    cd $SRC/cryptofuzz-normal-math/modules/botan
     make -j$(nproc)
     cd $SRC/cryptofuzz-normal-math/
     LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
@@ -154,12 +139,10 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DWOLFSSL_SP_INT_NEGATIVE"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-sp-math-all
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-sp-math-all/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-sp-math-all/"
     cd $SRC/cryptofuzz-sp-math-all/modules/wolfcrypt
-    make -j$(nproc)
-    cd $SRC/cryptofuzz-sp-math-all/modules/botan
     make -j$(nproc)
     cd $SRC/cryptofuzz-sp-math-all/
     LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
@@ -177,12 +160,10 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DSP_WORD_SIZE=8 -DWOLFSSL_SP_INT_NEGATIVE"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-sp-math-all
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-sp-math-all-8bit/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-sp-math-all-8bit/"
     cd $SRC/cryptofuzz-sp-math-all-8bit/modules/wolfcrypt
-    make -j$(nproc)
-    cd $SRC/cryptofuzz-sp-math-all-8bit/modules/botan
     make -j$(nproc)
     cd $SRC/cryptofuzz-sp-math-all-8bit/
     LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
@@ -211,12 +192,10 @@ then
         ./configure $WOLFCRYPT_CONFIGURE_PARAMS_SP_MATH --enable-sp --enable-sp-math
     fi
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-sp-math/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-sp-math/"
     cd $SRC/cryptofuzz-sp-math/modules/wolfcrypt
-    make -j$(nproc)
-    cd $SRC/cryptofuzz-sp-math/modules/botan
     make -j$(nproc)
     cd $SRC/cryptofuzz-sp-math/
     LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
@@ -234,12 +213,10 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-fastmath
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-fastmath/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-fastmath/"
     cd $SRC/cryptofuzz-fastmath/modules/wolfcrypt
-    make -j$(nproc)
-    cd $SRC/cryptofuzz-fastmath/modules/botan
     make -j$(nproc)
     cd $SRC/cryptofuzz-fastmath/
     LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
@@ -257,12 +234,10 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-heapmath
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-heapmath/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-heapmath/"
     cd $SRC/cryptofuzz-heapmath/modules/wolfcrypt
-    make -j$(nproc)
-    cd $SRC/cryptofuzz-heapmath/modules/botan
     make -j$(nproc)
     cd $SRC/cryptofuzz-heapmath/
     LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
@@ -286,30 +261,6 @@ then
     unzip -n $SRC/corpus_cryptofuzz-openssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_cryptofuzz-boringssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_cryptofuzz-nss.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_bitcoin-core-w2-p2.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_bitcoin-core-w15-p4.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_bitcoin-core-w20-p8.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_num-bigint.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_wolfssl_sp-math-all.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_wolfssl_sp-math-all-8bit.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_wolfssl_sp-math.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-
-    # Import Botan corpora
-    mkdir $SRC/botan-p256-corpus/
-    unzip $SRC/corpus_botan_ecc_p256.zip -d $SRC/botan-p256-corpus/ >/dev/null
-    find $SRC/botan-p256-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp256r1 \;
-
-    mkdir $SRC/botan-p384-corpus/
-    unzip $SRC/corpus_botan_ecc_p384.zip -d $SRC/botan-p384-corpus/ >/dev/null
-    find $SRC/botan-p384-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp384r1 \;
-
-    mkdir $SRC/botan-p521-corpus/
-    unzip $SRC/corpus_botan_ecc_p521.zip -d $SRC/botan-p521-corpus/ >/dev/null
-    find $SRC/botan-p521-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,secp521r1 \;
-
-    mkdir $SRC/botan-bp256-corpus/
-    unzip $SRC/corpus_botan_ecc_bp256.zip -d $SRC/botan-bp256-corpus/ >/dev/null
-    find $SRC/botan-bp256-corpus/ -type f -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-botan={},$SRC/cryptofuzz-seed-corpus/,brainpool256r1 \;
 
     # Import OpenSSL/LibreSSL corpora
     mkdir $SRC/openssl-expmod-corpus/
@@ -336,10 +287,6 @@ then
     cp $SRC/cryptofuzz_seed_corpus.zip $OUT/cryptofuzz-heapmath_seed_corpus.zip
 
     # Remove files that are no longer needed to prevent running out of disk space
-    rm -rf $SRC/botan-p256-corpus/
-    rm -rf $SRC/botan-p384-corpus/
-    rm -rf $SRC/botan-p521-corpus/
-    rm -rf $SRC/botan-bp256-corpus/
     rm -rf $SRC/openssl-expmod-corpus/
     rm -rf $SRC/libressl-expmod-corpus/
     rm -rf $SRC/cryptofuzz_seed_corpus/

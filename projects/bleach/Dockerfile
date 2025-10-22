@@ -24,7 +24,5 @@ RUN git clone \
 WORKDIR bleach
 
 RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN cat fuzzing/dictionaries/html.dict > $OUT/linkify_fuzzer.dict
-RUN cat fuzzing/dictionaries/html.dict > $OUT/sanitize_fuzzer.dict
 
 COPY build.sh sanitize_fuzzer.py linkify_fuzzer.py $SRC/

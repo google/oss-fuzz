@@ -38,19 +38,14 @@ cd $SRC/libpsl
 make -j$(nproc)
 make install
 
-GNUTLS_CONFIGURE_FLAGS=""
-NETTLE_CONFIGURE_FLAGS=""
-if [[ $CFLAGS = *sanitize=memory* ]]; then
-  GNUTLS_CONFIGURE_FLAGS="--disable-hardware-acceleration"
-  NETTLE_CONFIGURE_FLAGS="--disable-assembler --disable-fat"
-fi
+cd $SRC/gmp
+./configure --enable-static --disable-shared --prefix=$WGET2_DEPS_PATH
+make -j$(nproc)
+make install
 
-# We could use GMP from git repository to avoid false positives in
-# sanitizers, but GMP doesn't compile with clang. We use gmp-mini
-# instead.
 cd $SRC/nettle
 bash .bootstrap
-./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --disable-openssl --prefix=$WGET2_DEPS_PATH $NETTLE_CONFIGURE_FLAGS
+./configure --enable-static --disable-shared --disable-documentation --disable-openssl --disable-assembler --disable-fat --prefix=$WGET2_DEPS_PATH
 ( make -j$(nproc) || make -j$(nproc) ) && make install
 if test $? != 0;then
         echo "Failed to compile nettle"
@@ -63,10 +58,10 @@ touch .submodule.stamp
 GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
 LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
-./configure --with-nettle-mini --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
+./configure --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
-    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite \
-    --prefix=$WGET2_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
+    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite --disable-guile \
+    --prefix=$WGET2_DEPS_PATH
 make -j$(nproc)
 make install
 
@@ -74,17 +69,20 @@ make install
 export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget2
+sed -i 's/0\.21/0\.19\.8/g' configure.ac
 ./bootstrap
 
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
-  ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support --with-libdane=no
+LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
+  ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support --with-libdane=no \
+  --disable-examples
 make clean
 make -j$(nproc)
 make -j$(nproc) -C unit-tests check
 make -j$(nproc) -C fuzz check
 
-LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring -lpsl -lz" \
-  ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support --with-libdane=no
+LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
+  ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support --with-libdane=no \
+  --disable-examples
 make clean
 make -j$(nproc) -C lib
 make -j$(nproc) -C include
@@ -92,8 +90,8 @@ make -j$(nproc) -C libwget
 make -j$(nproc) -C src
 
 # Ensure our libraries can be found
-ln -s $WGET2_DEPS_PATH/lib64/libhogweed.a $WGET2_DEPS_PATH/lib/libhogweed.a
-ln -s $WGET2_DEPS_PATH/lib64/libnettle.a  $WGET2_DEPS_PATH/lib/libnettle.a
+ln -sf $WGET2_DEPS_PATH/lib64/libhogweed.a $WGET2_DEPS_PATH/lib/libhogweed.a
+ln -sf $WGET2_DEPS_PATH/lib64/libnettle.a  $WGET2_DEPS_PATH/lib/libnettle.a
 
 # build fuzzers
 cd fuzz

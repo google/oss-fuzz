@@ -24,7 +24,7 @@ scripts/config.py set MBEDTLS_PLATFORM_TIME_ALT
 scripts/config.py unset MBEDTLS_USE_PSA_CRYPTO
 mkdir build
 cd build
-cmake -DENABLE_TESTING=OFF ..
+cmake -DENABLE_TESTING=ON ..
 # build including fuzzers
 make -j$(nproc) all
 cp programs/fuzz/fuzz_* $OUT/
@@ -36,11 +36,11 @@ cp -r ../../openssl/fuzz/corpora/crl fuzz/corpuses/
 cp -r ../../openssl/fuzz/corpora/x509 fuzz/corpuses/
 cp -r ../../boringssl/fuzz/privkey_corpus fuzz/corpuses/
 cp ../../boringssl/fuzz/cert_corpus/* fuzz/corpuses/x509/
-zip -r fuzz/fuzz_x509crl_seed_corpus.zip ../tests/data_files/crl* fuzz/corpuses/crl
-zip -r fuzz/fuzz_x509crt_seed_corpus.zip ../tests/data_files/*.crt ../tests/data_files/dir*/*.crt  fuzz/corpuses/x509/
-zip -r fuzz/fuzz_x509csr_seed_corpus.zip ../tests/data_files/*.csr ../tests/data_files/*.req.*
-zip -r fuzz/fuzz_privkey_seed_corpus.zip ../tests/data_files/*.key ../tests/data_files/*.pem fuzz/corpuses/privkey_corpus
-zip -r fuzz/fuzz_pubkey_seed_corpus.zip ../tests/data_files/*.pub ../tests/data_files/*.pubkey
+zip -r fuzz/fuzz_x509crl_seed_corpus.zip ../framework/data_files/crl* fuzz/corpuses/crl
+zip -r fuzz/fuzz_x509crt_seed_corpus.zip ../framework/data_files/*.crt ../framework/data_files/dir*/*.crt  fuzz/corpuses/x509/
+zip -r fuzz/fuzz_x509csr_seed_corpus.zip ../framework/data_files/*.csr ../framework/data_files/*.req.*
+zip -r fuzz/fuzz_privkey_seed_corpus.zip ../framework/data_files/*.key ../framework/data_files/*.pem fuzz/corpuses/privkey_corpus
+zip -r fuzz/fuzz_pubkey_seed_corpus.zip ../framework/data_files/*.pub ../framework/data_files/*.pubkey
 zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
 zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
 zip -r fuzz/fuzz_client_seed_corpus.zip fuzz/corpuses/client

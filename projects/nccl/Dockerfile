@@ -22,10 +22,10 @@ RUN mkdir $SRC/cuda-install && \
     cd $SRC/cuda-install && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    wget https://developer.download.nvidia.com/compute/cuda/11.0.3/local_installers/cuda-repo-ubuntu2004-11-0-local_11.0.3-450.51.06-1_amd64.deb && \
-    dpkg -i cuda-repo-ubuntu2004-11-0-local_11.0.3-450.51.06-1_amd64.deb && \
-    apt-key add /var/cuda-repo-ubuntu2004-11-0-local/7fa2af80.pub && \
-    apt-get update -y && apt-get install cuda -y
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    apt-get update && \
+    apt-get -y install cuda-toolkit-12-9
 
 RUN git clone --depth 1 https://github.com/NVIDIA/nccl nccl
 WORKDIR nccl

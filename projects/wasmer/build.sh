@@ -15,9 +15,10 @@
 #
 ################################################################################
 
-export LLVM_SYS_150_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
+export LLVM_SYS_180_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
 
-nightly="+nightly-2023-10-05"
+# Needed for coverage to work.
+nightly="+$RUSTUP_TOOLCHAIN"
 
 cargo $nightly fuzz build universal_cranelift --features=universal,cranelift -O
 cargo $nightly fuzz build universal_llvm --features=universal,llvm -O

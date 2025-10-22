@@ -20,7 +20,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y \
     mercurial \
-    automake \
+    autoconf \
     autopoint \
     cmake \
     libtool \
@@ -30,6 +30,10 @@ RUN apt-get update && \
     ninja-build \
     libgflags-dev \
     yasm
+
+# Due to libxml2 requirements, build requires automake 1.16.3 (or later)
+RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+    apt install ./automake_1.16.5-1.3_all.deb
 
 # GraphicsMagick
 RUN hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
@@ -44,12 +48,20 @@ RUN git clone --depth 1 https://github.com/strukturag/libde265 || \
     printf "https://github.com/strukturag/libde265 is not available!\n"
 
 # x265 HEVC Encoder needed by libheif
-RUN git clone --depth 1 https://bitbucket.org/multicoreware/x265_git.git x265 || \
-    printf "https://bitbucket.org/multicoreware/x265_git.git is not available!\n"
+# https://bitbucket.org/multicoreware/x265_git/src/stable/
+# https://bitbucket.org/multicoreware/x265_git/src/master/
+RUN git clone --depth 1 https://bitbucket.org/multicoreware/x265_git/src/stable/ x265 || \
+    printf "https://bitbucket.org/multicoreware/x265_git/src/stable/ is not available!\n"
 
 # AV1 Codec Library needed by libheif
 RUN git clone --depth 1 --branch master https://aomedia.googlesource.com/aom aom || \
     printf "https://aomedia.googlesource.com/aom is not available!\n"
+
+# AVC (OpenH264) Codec Library needed by libheif
+RUN git clone --depth 1 https://github.com/cisco/openh264 openh264
+
+# JPEG 2000 (OpenJPEG) Library needed by libheif
+RUN git clone --depth 1 https://github.com/uclouvain/openjpeg openjpeg
 
 # Libheif
 RUN git clone --depth 1 https://github.com/strukturag/libheif
@@ -61,7 +73,7 @@ RUN git clone --depth 1 https://github.com/webmproject/libwebp
 RUN git clone --depth 1 https://github.com/madler/zlib
 
 # XZ
-RUN git clone --depth 1 https://github.com/xz-mirror/xz
+RUN git clone --depth 1 https://github.com/tukaani-project/xz
 
 # Zstd
 RUN git clone --depth 1 https://github.com/facebook/zstd
@@ -84,11 +96,16 @@ RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
 # Jasper
 RUN git clone --depth 1 https://github.com/jasper-software/jasper
 
-# Libxml2
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
+# Libxml2 (fall back to github mirror if gitlab.gnome.org is overloaded)
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git || \
+    git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git || \
+    git clone --depth 1 https://github.com/GNOME/libxml2
 
 # Libjxl
 RUN git clone --depth 1 https://github.com/libjxl/libjxl.git
+
+# Libzip
+RUN git clone --depth 1 https://github.com/nih-at/libzip.git
 
 # Libjxl sub-repositories
 # Borrowed from projects/libjxl/Dockerfile
@@ -101,6 +118,9 @@ RUN git -C libjxl submodule update --init --recommend-shallow \
 # JBIG-kit
 RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit # does not support shallow
 
+# libwmf
+RUN git clone --depth 1 https://github.com/caolanm/libwmf.git
+
 # Build!
-WORKDIR graphicsmagick
+WORKDIR $SRC/graphicsmagick
 COPY build.sh $SRC/

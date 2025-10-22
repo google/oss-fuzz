@@ -20,8 +20,8 @@ $MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 
-cp "object-mapper-jackson/target/unirest-objectmapper-jackson-$CURRENT_VERSION.jar" $OUT/jackson.jar
-cp "object-mapper-gson/target/unirest-object-mappers-gson-$CURRENT_VERSION.jar" $OUT/gson.jar
+cp "unirest-modules-jackson/target/unirest-modules-jackson-$CURRENT_VERSION.jar" $OUT/jackson.jar
+cp "unirest-modules-gson/target/unirest-modules-gson-$CURRENT_VERSION.jar" $OUT/gson.jar
 cp "unirest/target/unirest-java-core-$CURRENT_VERSION.jar" $OUT/unirest.jar
 
 ALL_JARS="jackson.jar gson.jar unirest.jar"
@@ -33,7 +33,7 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer

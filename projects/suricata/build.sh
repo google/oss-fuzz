@@ -25,9 +25,6 @@ then
     make -j$(nproc) all
     make -j$(nproc) install
     )
-    # Temporary workaround for https://github.com/rust-lang/rust/issues/107149
-    # until oss-fuzz clang is up to rustc clang (15.0.6).
-    export RUSTFLAGS="$RUSTFLAGS -Zsanitizer-memory-track-origins -Cllvm-args=-msan-eager-checks=0"
 fi
 
 (
@@ -46,8 +43,8 @@ cp lib/liblz4.a /usr/local/lib/
 cp lib/lz4*.h /usr/local/include/
 cd ..
 
-tar -xvzf jansson-2.12.tar.gz
-cd jansson-2.12
+tar -xvzf jansson-2.14.tar.gz
+cd jansson-2.14
 ./configure --disable-shared
 make -j$(nproc)
 make install
@@ -88,7 +85,6 @@ fi
 fuzz_branches=("")
 if [[ "$SANITIZER" != "memory" ]] && [[ ! -v CIFUZZ ]]
 then
-    fuzz_branches+=("6")
     fuzz_branches+=("7")
 fi
 
@@ -159,29 +155,26 @@ cd $SRC/suricata-verify/tests
 i=0
 mkdir corpus
 set +x
-ls | grep -v corpus | while read t; do
+find . -name "*.pcap" -exec dirname "{}" \; | while read t; do
 cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; cat $t/*.pcap >> corpus/$i || true; i=$((i+1));
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_seed_corpus.zip corpus
-cp $OUT/fuzz_sigpcap_seed_corpus.zip $OUT/fuzz_sigpcap6_seed_corpus.zip
 rm -Rf corpus
 mkdir corpus
 set +x
-ls | grep -v corpus | while read t; do
+find . -name "*.pcap" -exec dirname "{}" \; | while read t; do
 grep -v "#" $t/*.rules | head -1 | cut -d "(" -f2 | cut -d ")" -f1 > corpus/$i || true; echo -ne '\0' >> corpus/$i; fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 echo -ne '\0' >> corpus/$i; python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_aware_seed_corpus.zip corpus
-cp $OUT/fuzz_sigpcap_aware_seed_corpus.zip $OUT/fuzz_sigpcap_aware6_seed_corpus.zip
 rm -Rf corpus
 mkdir corpus
 set +x
-ls | grep -v corpus | while read t; do
+find . -name "*.pcap" -exec dirname "{}" \; | while read t; do
 fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
 done
 set -x
 zip -q -r $OUT/fuzz_predefpcap_aware_seed_corpus.zip corpus
-cp $OUT/fuzz_predefpcap_aware_seed_corpus.zip $OUT/fuzz_predefpcap_aware6_seed_corpus.zip
