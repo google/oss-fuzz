@@ -17,7 +17,7 @@
 
 # Temporary fix for clang bug of upx
 sed -i 's/ \&\& __clang_major__ < 15//m' /src/upx/src/util/util.cpp
-git apply $SRC/upx/fuzzers/build.patch
+git apply   --ignore-space-change --ignore-whitespace  $SRC/upx/fuzzers/build.patch
 
 # build project
 # e.g.

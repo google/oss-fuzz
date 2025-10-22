@@ -17,7 +17,7 @@
 
 echo 'add_subdirectory(ci/fuzz)' >> CMakeLists.txt
 
-export LIBFUZZER_LIB="/usr/local/lib/clang/15.0.0/lib/linux/libclang_rt.fuzzer_no_main-${ARCHITECTURE}.a"
+export LIBFUZZER_LIB=$( echo /usr/local/lib/clang/*/lib/$ARCHITECTURE-unknown-linux-gnu/libclang_rt.fuzzer_no_main.a )
 
 CXXFLAGS="${CXXFLAGS} -DHILTI_HAVE_SANITIZER" ./configure --generator=Ninja --build-type=Release || (cat build/config.log && exit)
 mapfile -t FUZZ_TARGETS < <(ninja -C build -t targets | grep fuzz- | cut -d: -f1)
@@ -40,7 +40,7 @@ rm -rf "${TO}/spicy/runtime/include/spicy/rt"/*
 cp -rP "${FROM}/spicy/runtime/include/"* "${TO}/spicy/runtime/include/spicy/rt"
 
 # Replace softlinks to 3rdparty dependencies with actual contents.
-for DEP in any ArticleEnumClass-v2 ghc SafeInt tinyformat nlohmann; do
+for DEP in ArticleEnumClass-v2 SafeInt tinyformat nlohmann; do
 	D=${TO}/hilti/runtime/include/hilti/rt/3rdparty
 	rm -r "${D}/${DEP}"
 	mkdir -p "${D}/${DEP}"

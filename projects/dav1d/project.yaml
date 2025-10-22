@@ -9,6 +9,7 @@ auto_ccs:
   - "psilokos@twoorioles.com"
   - "gramner@twoorioles.com"
 vendor_ccs:
+  - "media-alerts@mozilla.com"
   - "twsmith@mozilla.com"
 sanitizers:
   - address
@@ -24,4 +25,3 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-

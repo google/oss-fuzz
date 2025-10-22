@@ -1,0 +1,21 @@
+[package]
+name = "utf8parse-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2018"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.utf8parse]
+path = ".."
+
+[[bin]]
+name = "parse"
+path = "fuzz_targets/parse.rs"
+test = false
+doc = false
+bench = false

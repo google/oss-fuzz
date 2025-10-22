@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/bluejekyll/trust-dns trust-dns
-WORKDIR trust-dns
+RUN git clone --depth 1 https://github.com/hickory-dns/hickory-dns hickory-dns
+WORKDIR hickory-dns
 COPY build.sh $SRC/

@@ -85,8 +85,7 @@ The above output gives you directions on how to start a simple webserver using
 ### Generate reports by using public corpora
 
 The following command will generate a Fuzz Introspector report for the `libdwarf` project
-and will extract code coverage based on a corpus created from running the fuzzers for 30
-seconds.
+and will extract code coverage based on the publicly available corpora. 
 
 ```bash
 $ python3 infra/helper.py introspector libdwarf --public-corpora

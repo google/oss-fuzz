@@ -1,0 +1,11 @@
+homepage: "https://github.com/gyscos/zstd-rs"
+main_repo: "https://github.com/gyscos/zstd-rs.git"
+primary_contact: "alexandre.bury@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"

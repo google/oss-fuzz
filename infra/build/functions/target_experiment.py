@@ -25,12 +25,22 @@ import google.auth
 import build_lib
 import build_project
 
-JCC_DIR = '/usr/local/bin'
+# 12 hours, allowing more than enough waiting time before cloud build starts.
+build_lib.BUILD_TIMEOUT = 12 * 60 * 60
 
 
-def run_experiment(project_name, target_name, args, output_path, errlog_path,
-                   build_output_path, upload_corpus_path, upload_coverage_path,
-                   experiment_name, upload_reproducer_path):
+def run_experiment(project_name,
+                   target_name,
+                   args,
+                   output_path,
+                   build_output_path,
+                   upload_corpus_path,
+                   upload_coverage_path,
+                   experiment_name,
+                   upload_reproducer_path,
+                   tags,
+                   use_cached_image,
+                   real_project_name=None):
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
@@ -47,9 +57,6 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
     logging.error('Couldn\'t get project data. Skipping %s.', project_name)
     return
 
-  project = build_project.Project(project_name, project_yaml,
-                                  dockerfile_contents)
-
   # Override sanitizers and engine because we only care about libFuzzer+ASan
   # for benchmarking purposes.
   build_project.set_yaml_defaults(project_yaml)
@@ -59,20 +66,19 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
 
   # Don't do bad build checks.
   project_yaml['run_tests'] = False
+  project = build_project.Project(project_name, project_yaml,
+                                  dockerfile_contents)
 
-  jcc_env = [
-      f'CC={JCC_DIR}/clang-jcc',
-      f'CXX={JCC_DIR}/clang++-jcc',
-  ]
-  steps = build_project.get_build_steps(project_name,
-                                        project_yaml,
-                                        dockerfile_contents,
-                                        config,
-                                        additional_env=jcc_env)
+  if real_project_name:
+    # If the passed project name is not the actual OSS-Fuzz project name (e.g.
+    # OSS-Fuzz-Gen generated benchmark), record the real one here.
+    project.real_name = real_project_name
+
+  steps = build_project.get_build_steps_for_project(
+      project, config, use_caching=use_cached_image)
 
   build = build_project.Build('libfuzzer', 'address', 'x86_64')
   local_output_path = '/workspace/output.log'
-  local_jcc_err_path = '/workspace/err.log'  # From jcc.go:360.
   local_corpus_path_base = '/workspace/corpus'
   local_corpus_path = os.path.join(local_corpus_path_base, target_name)
   default_target_path = os.path.join(build.out, target_name)
@@ -81,33 +87,6 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   local_artifact_path = os.path.join(build.out, 'artifacts/')
   local_stacktrace_path = os.path.join(build.out, 'stacktrace/')
   fuzzer_args = ' '.join(args + [f'-artifact_prefix={local_artifact_path}'])
-
-  # Upload JCC's err.log.
-  if errlog_path:
-    compile_step_index = -1
-    for i, step in enumerate(steps):
-      step_args = step.get('args', [])
-      if '&& compile' in ' '.join(step_args):
-        compile_step_index = i
-        break
-    if compile_step_index == -1:
-      print('Cannot find compile step.')
-    else:
-      # Insert the upload step right after compile step.
-      upload_jcc_err_step = {
-          'name':
-              'gcr.io/cloud-builders/gsutil',
-          'entrypoint':
-              '/bin/bash',
-          'args': [
-              '-c',
-              (f'test -f {local_jcc_err_path} || '
-               f'echo "Failed to generate JCC error log." | '
-               f'tee -a {local_jcc_err_path} && '
-               f'gsutil cp {local_jcc_err_path} {errlog_path}'),
-          ]
-      }
-      steps.insert(compile_step_index + 1, upload_jcc_err_step)
 
   env = build_project.get_env(project_yaml['language'], build)
   env.append('RUN_FUZZER_MODE=batch')
@@ -207,7 +186,18 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   # Build for coverage.
   build = build_project.Build('libfuzzer', 'coverage', 'x86_64')
   env = build_project.get_env(project_yaml['language'], build)
-  env.extend(jcc_env)
+
+  if use_cached_image:
+    project.cached_sanitizer = 'coverage'
+    steps.extend(
+        build_lib.get_project_image_steps(project.name,
+                                          project.image,
+                                          project.fuzzing_language,
+                                          config=config,
+                                          architectures=project.architectures,
+                                          experiment=config.experiment,
+                                          cache_image=project.cached_image,
+                                          srcmap=False))
 
   steps.append(
       build_project.get_compile_step(project, build, env, config.parallel))
@@ -220,11 +210,20 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
       f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
   ])
   steps.append({
-      'name': build_lib.get_runner_image_name(''),
-      'env': env,
+      'name':
+          build_lib.get_runner_image_name(''),
+      'env':
+          env,
+      'entrypoint':
+          '/bin/bash',
       'args': [
-          'coverage',
-          target_name,
+          '-c',
+          (
+              f'timeout 30m coverage {target_name}; ret=$?; '
+              '[ $ret -eq 124 ] '  # Exit code 124 indicates a time out.
+              f'&& echo "coverage {target_name} timed out after 30 minutes" '
+              f'|| echo "coverage {target_name} completed with exit code $ret"'
+          ),
       ],
   })
 
@@ -268,16 +267,15 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
   })
 
   credentials, _ = google.auth.default()
-  build_id = build_project.run_build(project_name,
-                                     steps,
-                                     credentials,
-                                     'experiment',
-                                     experiment=True,
-                                     extra_tags=[
-                                         f'experiment-{experiment_name}',
-                                         f'experiment-{project_name}'
-                                     ])
+  build = build_project.run_build(project_name,
+                                  steps,
+                                  credentials,
+                                  'experiment',
+                                  experiment=True,
+                                  extra_tags=[experiment_name, project_name] +
+                                  tags)
 
+  build_id = build['id']
   print('Waiting for build', build_id)
   try:
     build_lib.wait_for_build(build_id, credentials, 'oss-fuzz')
@@ -287,6 +285,7 @@ def run_experiment(project_name, target_name, args, output_path, errlog_path,
 
 
 def main():
+  """Runs a target experiment on GCB."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('--project', required=True, help='Project name')
   parser.add_argument('--target', required=True, help='Target name')
@@ -296,10 +295,6 @@ def main():
   parser.add_argument('--upload_build_log',
                       required=True,
                       help='GCS build log location.')
-  parser.add_argument('--upload_err_log',
-                      required=False,
-                      default='',
-                      help='GCS JCC error log location.')
   parser.add_argument('--upload_output_log',
                       required=True,
                       help='GCS log location.')
@@ -316,12 +311,26 @@ def main():
   parser.add_argument('--experiment_name',
                       required=True,
                       help='Experiment name.')
+  parser.add_argument('--tags',
+                      nargs='*',
+                      help='Tags for cloud build.',
+                      default=[])
+  parser.add_argument('--use_cached_image',
+                      action='store_true',
+                      help='Use cached images post build.')
+  parser.add_argument(
+      '--real_project',
+      required=False,
+      default='',
+      help=('The real OSS-Fuzz project name (e.g. if `--project` '
+            'is an autogenerated project name).'))
   args = parser.parse_args()
 
   run_experiment(args.project, args.target, args.args, args.upload_output_log,
-                 args.upload_err_log, args.upload_build_log, args.upload_corpus,
+                 args.upload_build_log, args.upload_corpus,
                  args.upload_coverage, args.experiment_name,
-                 args.upload_reproducer)
+                 args.upload_reproducer, args.tags, args.use_cached_image,
+                 args.real_project)
 
 
 if __name__ == '__main__':

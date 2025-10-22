@@ -13,11 +13,13 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
+# Held back because of github.com/google/oss-fuzz/pull/13407
+# Please fix the build failure + upgrade.
+
+FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:d223a882810372830fd7968eb3e64533f3a2318c90be43ac753a46a15946faec
 
 RUN apt-get update && \
-    apt-get install -y python-is-python3 build-essential pip python3-dev
-RUN python3 -m pip install --upgrade pip
+    apt-get install -y build-essential
 
 RUN git clone https://github.com/pybind/pybind11
 COPY build.sh *_fuzzer.cc $SRC/

@@ -20,5 +20,6 @@ COPY build.sh $SRC/
 
 COPY ExampleFuzzerNative.h ExampleFuzzerNative.cpp $SRC/
 COPY ExampleFuzzer.java ExampleValueProfileFuzzer.java ExampleFuzzerNative.java default.options $SRC/
+COPY ExampleFuzzTest.java MutatorFuzzTest.java $SRC/
 
 WORKDIR $SRC/

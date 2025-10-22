@@ -15,7 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
+
+# Update and install Go using the package manager
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:longsleep/golang-backports -y && \
+    apt-get install -y golang-go
+
 RUN git clone --depth 1 https://github.com/ProtonMail/proton-bridge.git
-RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
+RUN git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=include-all-test-files
 COPY build.sh $SRC/
 WORKDIR $SRC/proton-bridge

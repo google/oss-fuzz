@@ -15,8 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN pip3 install --upgrade pip && pip install google-api-core google-cloud-core mock
-RUN git clone --depth 1 https://github.com/googleapis/python-resource-manager
-WORKDIR python-resource-manager
+RUN apt-get update && \
+    apt-get install -y libre2-dev zlib1g-dev libssl-dev
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install --upgrade mock
+RUN git clone --depth 1 https://github.com/googleapis/google-cloud-python $SRC/google-cloud-python
+WORKDIR $SRC/google-cloud-python/packages/google-cloud-resource-manager
 COPY build.sh *.py $SRC/

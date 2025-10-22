@@ -3,4 +3,9 @@ language: python
 primary_contact: "pietermarsman@gmail.com"
 auto_ccs:
   - "capuanobailey@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
 main_repo: "https://github.com/pdfminer/pdfminer.six"
+file_github_issue: True

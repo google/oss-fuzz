@@ -1,0 +1,13 @@
+diff --git a/fuzz/fuzz_form.py b/fuzz/fuzz_form.py
+index 9a3d854..fbc6ad9 100644
+--- a/fuzz/fuzz_form.py
++++ b/fuzz/fuzz_form.py
+@@ -29,7 +29,7 @@ def parse_form_urlencoded(fdp: EnhancedDataProvider) -> None:
+
+
+ def parse_multipart_form_data(fdp: EnhancedDataProvider) -> None:
+-    boundary = "boundary"
++    boundary = fdp.ConsumeRandomStringOfSize(16) or "boundary"
+     header = {"Content-Type": f"multipart/form-data; boundary={boundary}"}
+     body = (
+         f"--{boundary}\r\n"

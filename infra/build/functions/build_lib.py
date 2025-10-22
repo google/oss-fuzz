@@ -15,17 +15,20 @@
 ################################################################################
 """Utility module for Google Cloud Build scripts."""
 import base64
+import binascii
 import collections
+from collections.abc import Sequence
+import dataclasses
+import datetime
+import json
 import logging
 import os
 import re
 import six.moves.urllib.parse as urlparse
 import sys
 import time
-import subprocess
 import tarfile
 import tempfile
-import json
 import uuid
 
 from googleapiclient.discovery import build as cloud_build
@@ -63,6 +66,18 @@ EngineInfo = collections.namedtuple(
     'EngineInfo',
     ['upload_bucket', 'supported_sanitizers', 'supported_architectures'])
 
+
+@dataclasses.dataclass
+class SignedPolicyDocument:
+  """Signed policy document"""
+  bucket: str
+  policy: str
+  x_goog_algorithm: str
+  x_goog_date: str
+  x_goog_credential: str
+  x_goog_signature: str
+
+
 ENGINE_INFO = {
     'libfuzzer':
         EngineInfo(upload_bucket='clusterfuzz-builds',
@@ -94,12 +109,17 @@ OSS_FUZZ_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool')
 
+OSS_FUZZ_INDEXER_BUILDPOOL_NAME = os.getenv(
+    'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
+    'workerPools/indexer-buildpool')
+
 OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME = os.getenv(
     'GCB_BUILDPOOL_NAME', 'projects/oss-fuzz/locations/us-central1/'
     'workerPools/buildpool-experiments')
 
-US_CENTRAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
-    api_endpoint='https://us-central1-cloudbuild.googleapis.com/')
+CLOUD_BUILD_LOCATION = os.getenv('CLOUD_BUILD_LOCATION', 'us-central1')
+REGIONAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
+    api_endpoint=f'https://{CLOUD_BUILD_LOCATION}-cloudbuild.googleapis.com/')
 
 DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 
@@ -120,7 +140,10 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def dockerify_run_step(step, build, use_architecture_image_name=False):
+def dockerify_run_step(step,
+                       build,
+                       use_architecture_image_name=False,
+                       container_name=None):
   """Modify a docker run step to run using gcr.io/cloud-builders/docker. This
   allows us to specify which architecture to run the image on."""
   image = step['name']
@@ -135,8 +158,13 @@ def dockerify_run_step(step, build, use_architecture_image_name=False):
       'run', '--platform', platform, '-v', '/workspace:/workspace',
       '--privileged', '--cap-add=all'
   ]
-  for env_var in step.get('env', {}):
-    new_args.extend(['-e', env_var])
+
+  if container_name:
+    new_args.extend(['--name', container_name])
+
+  if 'env' in step:
+    for env_var in step.get('env', {}):
+      new_args.extend(['-e', env_var])
   new_args += ['-t', image]
   new_args += step['args']
   step['args'] = new_args
@@ -174,12 +202,19 @@ def _get_targets_list(project_name):
   return response.text.split()
 
 
-# pylint: disable=no-member
-def get_signed_url(path, method='PUT', content_type=''):
-  """Returns signed url."""
-  timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = f'{method}\n\n{content_type}\n{timestamp}\n{path}'
+def _sign_client_id():
+  service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+  if service_account_path:
+    creds = (
+        service_account_lib.ServiceAccountCredentials.from_json_keyfile_name(
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS']))
+    return creds.service_account_email
+  else:
+    _, project = google.auth.default()
+    return project + '@appspot.gserviceaccount.com'
 
+
+def _sign_blob(blob):
   service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
   if service_account_path:
     creds = (
@@ -203,6 +238,57 @@ def get_signed_url(path, method='PUT', content_type=''):
         }).execute()
     signature = response['signedBlob']
 
+  return client_id, signature
+
+
+# TODO(ochang): Migrate older signed URLs to V4 signatures.
+def get_signed_policy_document_upload_prefix(bucket, path_prefix):
+  now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+  timestamp = now.strftime('%Y%m%dT%H%M%SZ')
+  datestamp = now.date().strftime('%Y%m%d')
+  expiry = now + datetime.timedelta(hours=24)
+
+  client_id = _sign_client_id()
+  x_goog_credential = f'{client_id}/{datestamp}/auto/storage/goog4_request'
+
+  doc = {
+      'expiration':
+          expiry.isoformat() + 'Z',
+      'conditions': [[
+          'starts-with',
+          '$key',
+          path_prefix,
+      ], {
+          'bucket': bucket,
+      }, {
+          'x-goog-algorithm': 'GOOG4-RSA-SHA256'
+      }, {
+          'x-goog-credential': x_goog_credential
+      }, {
+          'x-goog-date': timestamp
+      }]
+  }
+
+  encoded = base64.b64encode(json.dumps(doc).encode()).decode()
+  client_id, signature = _sign_blob(encoded)
+
+  return SignedPolicyDocument(
+      bucket=bucket,
+      policy=encoded,
+      x_goog_algorithm='GOOG4-RSA-SHA256',
+      x_goog_credential=x_goog_credential,
+      x_goog_date=timestamp,
+      x_goog_signature=binascii.hexlify(base64.b64decode(signature)).decode(),
+  )
+
+
+# pylint: disable=no-member
+def get_signed_url(path, method='PUT', content_type=''):
+  """Returns signed url."""
+  timestamp = int(time.time() + BUILD_TIMEOUT)
+  blob = f'{method}\n\n{content_type}\n{timestamp}\n{path}'
+
+  client_id, signature = _sign_blob(blob)
   values = {
       'GoogleAccessId': client_id,
       'Expires': timestamp,
@@ -223,8 +309,7 @@ def download_corpora_steps(project_name, test_image_suffix):
   """
   fuzz_targets = _get_targets_list(project_name)
   if not fuzz_targets:
-    sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
-    return None
+    return None, f'No fuzz targets found for project "{project_name}".'
 
   steps = []
   # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
@@ -256,7 +341,7 @@ def download_corpora_steps(project_name, test_image_suffix):
         }],
     })
 
-  return steps
+  return steps, None
 
 
 def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
@@ -276,11 +361,13 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
   bucket_url = f'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'
   steps.append({
       'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path]
+      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path],
+      'allowFailure': True
   })
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
-      'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports']
+      'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports'],
+      'allowFailure': True
   })
 
   return steps
@@ -300,6 +387,40 @@ def http_upload_step(data, signed_url, content_type):
           data,
           signed_url,
       ],
+  }
+  return step
+
+
+def signed_policy_document_curl_args(doc: SignedPolicyDocument):
+  """Signed policy document curl args."""
+  return [
+      '-F',
+      'policy=' + doc.policy,
+      '-F',
+      'x-goog-algorithm=' + doc.x_goog_algorithm,
+      '-F',
+      'x-goog-date=' + doc.x_goog_date,
+      '-F',
+      'x-goog-credential=' + doc.x_goog_credential,
+      '-F',
+      'x-goog-signature=' + doc.x_goog_signature,
+  ]
+
+
+def upload_using_signed_policy_document(file_path, upload_path,
+                                        doc: SignedPolicyDocument):
+  """Upload using signed policy document."""
+  step = {
+      'name':
+          'gcr.io/cloud-builders/curl',
+      'args':
+          signed_policy_document_curl_args(doc) + [
+              '-F',
+              f'key={upload_path}',
+              '-F',
+              f'file=@{file_path}',
+              f'https://{doc.bucket}.storage.googleapis.com',
+          ]
   }
   return step
 
@@ -327,6 +448,7 @@ def get_pull_test_images_steps(test_image_suffix):
       'gcr.io/oss-fuzz-base/base-builder-jvm',
       'gcr.io/oss-fuzz-base/base-builder-go',
       'gcr.io/oss-fuzz-base/base-builder-python',
+      'gcr.io/oss-fuzz-base/base-builder-ruby',
       'gcr.io/oss-fuzz-base/base-builder-rust',
       'gcr.io/oss-fuzz-base/base-runner',
   ]
@@ -382,11 +504,19 @@ def _make_image_name_architecture_specific(image_name, architecture):
   return f'{image_name}-{architecture.lower()}'
 
 
+def get_unique_build_step_image_id():
+  return uuid.uuid4()
+
+
 def get_docker_build_step(image_names,
                           directory,
                           use_buildkit_cache=False,
                           src_root='oss-fuzz',
-                          architecture='x86_64'):
+                          architecture='x86_64',
+                          cache_image='',
+                          build_args: Sequence[str] | None = None,
+                          dockerfile_path: str | None = None,
+                          additional_cache_from_tags: list | None = None):
   """Returns the docker build step."""
   assert len(image_names) >= 1
   directory = os.path.join(src_root, directory)
@@ -403,13 +533,23 @@ def get_docker_build_step(image_names,
         _make_image_name_architecture_specific(image_name, architecture)
         for image_name in image_names
     ]
-  for image_name in image_names:
+  if cache_image:
+    args.extend(['--build-arg', f'CACHE_IMAGE={cache_image}'])
+
+  for image_name in sorted(image_names):
     args.extend(['--tag', image_name])
+
+  if build_args:
+    for build_arg in build_args:
+      args.extend(['--build-arg', build_arg])
+
+  if dockerfile_path:
+    args.extend(['-f', dockerfile_path])
 
   step = {
       'name': DOCKER_TOOL_IMAGE,
       'args': args,
-      'dir': directory,
+      'id': f'build-{get_unique_build_step_image_id()}',
   }
   # Handle buildkit args
   # Note that we mutate "args" after making it a value in step.
@@ -417,10 +557,15 @@ def get_docker_build_step(image_names,
     env = ['DOCKER_BUILDKIT=1']
     step['env'] = env
     args.extend(['--build-arg', 'BUILDKIT_INLINE_CACHE=1'])
-    for image in image_names:
+
+    all_cache_tags = set(image_names)
+    if additional_cache_from_tags:
+      all_cache_tags.update(additional_cache_from_tags)
+
+    for image in sorted(list(all_cache_tags)):
       args.extend(['--cache-from', image])
 
-  args.append('.')
+  args.append(directory)
 
   return step
 
@@ -430,13 +575,31 @@ def has_arm_build(architectures):
   return 'aarch64' in architectures
 
 
+def get_srcmap_steps(image, language, directory='/workspace'):
+  srcmap_step_id = get_srcmap_step_id()
+  return [{
+      'name': image,
+      'args': [
+          'bash', '-c',
+          f'srcmap > {directory}/srcmap.json && cat {directory}/srcmap.json'
+      ],
+      'env': [
+          'OSSFUZZ_REVISION=$REVISION_ID',
+          f'FUZZING_LANGUAGE={language}',
+      ],
+      'id': srcmap_step_id
+  }]
+
+
 def get_project_image_steps(  # pylint: disable=too-many-arguments
     name,
     image,
     language,
     config,
     architectures=None,
-    experiment=False):
+    experiment=False,
+    cache_image=None,
+    srcmap=True):
   """Returns GCB steps to build OSS-Fuzz project image."""
   if architectures is None:
     architectures = []
@@ -452,23 +615,15 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
   if config.test_image_suffix:
     steps.extend(get_pull_test_images_steps(config.test_image_suffix))
   src_root = 'oss-fuzz' if not experiment else '.'
-  docker_build_step = get_docker_build_step([image],
-                                            os.path.join('projects', name),
-                                            src_root=src_root)
+
+  docker_build_step = get_docker_build_step(
+      [image, _get_unsafe_name(name)],
+      os.path.join('projects', name),
+      src_root=src_root,
+      cache_image=cache_image)
   steps.append(docker_build_step)
-  srcmap_step_id = get_srcmap_step_id()
-  steps.extend([{
-      'name': image,
-      'args': [
-          'bash', '-c',
-          'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-      ],
-      'env': [
-          'OSSFUZZ_REVISION=$REVISION_ID',
-          'FUZZING_LANGUAGE=%s' % language,
-      ],
-      'id': srcmap_step_id
-  }])
+  if srcmap:
+    steps.extend(get_srcmap_steps(image, language))
 
   if has_arm_build(architectures):
     builder_name = 'buildxbuilder'
@@ -486,13 +641,30 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
             'args': ['buildx', 'use', builder_name]
         },
     ])
-    docker_build_arm_step = get_docker_build_step([image],
-                                                  os.path.join(
-                                                      'projects', name),
-                                                  architecture=_ARM64)
+    docker_build_arm_step = get_docker_build_step(
+        [image, _get_unsafe_name(name)],
+        os.path.join('projects', name),
+        architecture=_ARM64)
     steps.append(docker_build_arm_step)
 
+  if (config.build_type == 'fuzzing' and language in ('c', 'c++') and
+      not not config.testing and not config.experiment and config.upload):
+    logging.info('Pushing.')
+    # Push so that historical bugs are reproducible.
+    push_step = {
+        'name': 'gcr.io/cloud-builders/docker',
+        'args': ['push', _get_unsafe_name(name)],
+        'id': 'push-image',
+        'waitFor': [docker_build_step['id']],
+        'allowFailure': True
+    }
+    steps.append(push_step)
+
   return steps
+
+
+def _get_unsafe_name(name):
+  return f'us-central1-docker.pkg.dev/oss-fuzz/unsafe/{name}'
 
 
 def get_logs_url(build_id):
@@ -508,21 +680,45 @@ def get_gcb_url(build_id, cloud_project='oss-fuzz'):
       f'{build_id}?project={cloud_project}')
 
 
-def get_runner_image_name(test_image_suffix):
-  """Returns the runner image that should be used. Returns the testing image if
-  |test_image_suffix|."""
+def get_build_info_lines(build_id, cloud_project='oss-fuzz'):
+  """Returns a list of strings with build information."""
+  gcb_url = get_gcb_url(build_id, cloud_project)
+  log_url = get_logs_url(build_id)
+  return [
+      f'GCB Build ID: {build_id}',
+      f'GCB Build URL: {gcb_url}',
+      f'Log URL: {log_url}',
+  ]
+
+
+def get_runner_image_name(test_image_suffix, base_image_tag=None):
+  """Returns the runner image that should be used.
+
+  Returns the testing image if |test_image_suffix|.
+  """
   image = f'gcr.io/{BASE_IMAGES_PROJECT}/base-runner'
+
+  # For trial builds, the version is embedded in the suffix.
   if test_image_suffix:
     image += '-' + test_image_suffix
+    return image
+
+  # For local/manual runs, the version is passed as a tag.
+  # Only add a tag if it's specified and not 'legacy', as 'legacy' implies
+  # 'latest', which is the default behavior.
+  if base_image_tag and base_image_tag != 'legacy':
+    image += ':' + base_image_tag
+
   return image
 
 
-def get_build_body(steps,
-                   timeout,
-                   body_overrides,
-                   build_tags,
-                   use_build_pool=True,
-                   experiment=False):
+def get_build_body(  # pylint: disable=too-many-arguments
+    steps,
+    timeout,
+    body_overrides,
+    tags,
+    use_build_pool=True,
+    experiment=False):
   """Helper function to create a build from |steps|."""
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -532,6 +728,9 @@ def get_build_body(steps,
   if use_build_pool:
     if experiment:
       options['pool'] = {'name': OSS_FUZZ_EXPERIMENTS_BUILDPOOL_NAME}
+    # TODO: refactor all of this to make this less ugly.
+    elif 'indexer' in tags:
+      options['pool'] = {'name': OSS_FUZZ_INDEXER_BUILDPOOL_NAME}
     else:
       options['pool'] = {'name': OSS_FUZZ_BUILDPOOL_NAME}
 
@@ -539,9 +738,10 @@ def get_build_body(steps,
       'steps': steps,
       'timeout': str(timeout) + 's',
       'options': options,
+      'logsBucket': 'gs://oss-fuzz-gcb-logs',
   }
-  if build_tags:
-    build_body['tags'] = build_tags
+  if tags:
+    build_body['tags'] = tags
 
   if body_overrides is None:
     body_overrides = {}
@@ -551,7 +751,8 @@ def get_build_body(steps,
 
 
 def _tgz_local_build(oss_fuzz_project, temp_tgz_path):
-  """Prepare a .tgz containing the files required to build `oss_fuzz_project`."""
+  """Prepare a .tgz containing the files required to build
+  `oss_fuzz_project`."""
   # Just the projects/<project> dir should be sufficient.
   project_rel_path = os.path.join('projects', oss_fuzz_project)
   with tarfile.open(temp_tgz_path, 'w:gz') as tar:
@@ -559,7 +760,7 @@ def _tgz_local_build(oss_fuzz_project, temp_tgz_path):
             arcname=project_rel_path)
 
 
-def run_build(  # pylint: disable=too-many-arguments
+def run_build(  # pylint: disable=too-many-arguments, too-many-locals
     oss_fuzz_project,
     steps,
     credentials,
@@ -601,16 +802,11 @@ def run_build(  # pylint: disable=too-many-arguments
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
-                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+                           client_options=REGIONAL_CLIENT_OPTIONS)
 
   build_info = cloudbuild.projects().builds().create(projectId=cloud_project,
                                                      body=build_body).execute()
-
-  build_id = build_info['metadata']['build']['id']
-
-  logging.info(f'{oss_fuzz_project}. logs: {get_logs_url(build_id)}. '
-               f'GCB page: {get_gcb_url(build_id, cloud_project)}')
-  return build_id
+  return build_info['metadata']['build']
 
 
 def wait_for_build(build_id, credentials, cloud_project):
@@ -619,7 +815,7 @@ def wait_for_build(build_id, credentials, cloud_project):
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
-                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+                           client_options=REGIONAL_CLIENT_OPTIONS)
 
   while True:
     try:
@@ -641,6 +837,6 @@ def cancel_build(build_id, credentials, cloud_project):
                            'v1',
                            credentials=credentials,
                            cache_discovery=False,
-                           client_options=US_CENTRAL_CLIENT_OPTIONS)
+                           client_options=REGIONAL_CLIENT_OPTIONS)
   cloudbuild.projects().builds().cancel(projectId=cloud_project,
                                         id=build_id).execute()

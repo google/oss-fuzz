@@ -17,5 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
 RUN git clone https://github.com/gohugoio/hugo
-COPY build.sh fuzz.go $SRC/
+COPY build.sh fuzz_pageparser.go $SRC/
 WORKDIR $SRC/hugo

@@ -19,8 +19,5 @@ RUN apt-get update && apt-get install -y build-essential cmake
 RUN git clone --depth 1 https://github.com/google/jsonnet.git jsonnet
 WORKDIR $SRC/
 
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
 COPY *.cc $SRC/
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1

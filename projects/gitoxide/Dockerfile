@@ -16,6 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN git clone --depth 1 https://github.com/Byron/gitoxide.git gitoxide
+RUN rustup update nightly
 WORKDIR gitoxide
 RUN rustup component add rust-src
 COPY build.sh $SRC/

@@ -15,7 +15,16 @@
 #
 ################################################################################
 
-GRPC_PYTHON_CFLAGS="${CFLAGS}" GRPC_PYTHON_BUILD_SYSTEM_RE2=true GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true GRPC_PYTHON_BUILD_SYSTEM_ZLIB=true pip3 install .
+# Reinstall grpcio to fix potential build issues
+python3 -m pip install --force-reinstall --upgrade grpcio
+
+GRPC_PYTHON_CFLAGS="${CFLAGS}" \
+GRPC_PYTHON_BUILD_SYSTEM_RE2=true \
+GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true \
+GRPC_PYTHON_BUILD_SYSTEM_ZLIB=true \
+MAX_JOBS=$(nproc) \
+python3 -m pip install -v . --no-binary :all:
+
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done

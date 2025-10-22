@@ -17,7 +17,6 @@ limitations under the License.
 
 #include "core.h"
 #include "graph.h"
-#include "topo.h"
 #include "xml.h"
 #include <fcntl.h>
 #include <sys/stat.h>

@@ -3,9 +3,6 @@ language: c++
 primary_contact: "jzern@google.com"
 fuzzing_engines:
   - libfuzzer
-  - afl
-  - honggfuzz
-  - centipede
 sanitizers:
   - address
   - undefined

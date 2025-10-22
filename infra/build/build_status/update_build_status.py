@@ -139,7 +139,7 @@ class BuildGetter:  # pylint: disable=too-few-public-methods
         'v1',
         credentials=self._credentials,
         cache_discovery=False,
-        client_options=build_lib.US_CENTRAL_CLIENT_OPTIONS)
+        client_options=build_lib.REGIONAL_CLIENT_OPTIONS)
     self._cloudbuilds = [self._global_cloudbuild, self._central_cloudbuild]
     self._swapped = False
 

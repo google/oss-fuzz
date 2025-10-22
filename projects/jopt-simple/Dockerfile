@@ -28,6 +28,9 @@ WORKDIR ${SRC}
 #
 RUN git clone "https://github.com/jopt-simple/jopt-simple.git"
 
-ADD pom.xml build.sh ${SRC}/
+# Add pom.xml before copying
+ADD pom.xml ${SRC}/jopt-simple/
+
+ADD build.sh ${SRC}/
 ADD src/ ${SRC}/src/
 WORKDIR ${SRC}/jopt-simple

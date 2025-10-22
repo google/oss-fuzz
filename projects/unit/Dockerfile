@@ -14,9 +14,6 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf
-RUN git clone --depth 1 https://github.com/nginx/unit
-RUN git clone https://github.com/pkillarjun/oss-fuzz-bloat
-COPY build.sh $SRC/
-COPY fuzzer/ $SRC/unit/fuzzer/
+RUN git clone --depth 1 https://github.com/nginx/unit.git
+RUN cp $SRC/unit/fuzzing/oss-fuzz.sh $SRC/build.sh
 WORKDIR $SRC/unit/

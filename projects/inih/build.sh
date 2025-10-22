@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
-pushd fuzzing/
-bash oss-fuzz.sh
-cp inihfuzz $OUT/
-popd
 
+# Compile the fuzzer binary for oss-fuzz infrastructure.
+$CC $CFLAGS -c ini.c
+$CC $CFLAGS -c inihfuzz.c
+$CXX $CFLAGS $LIB_FUZZING_ENGINE inihfuzz.o ini.o -o inihfuzz
+
+# Setup for oss-fuzz infrastructure.
+cp inihfuzz $OUT/
 zip -r inihfuzz_seed_corpus.zip tests/*.ini
 mv inihfuzz_seed_corpus.zip $OUT/

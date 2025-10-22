@@ -15,12 +15,17 @@
 #
 ################################################################################
 
+export CXXFLAGS="${CXXFLAGS} -pthread"
+export CFLAGS="${CFLAGS} -pthread"
+
 #builds project
 cd keystone
 mkdir build
 cd build
 cmake ..
-make
+make -j$(nproc)
+make install -j$(nproc)
+ldconfig
 
 # build fuzz target
 cd ../suite/fuzz

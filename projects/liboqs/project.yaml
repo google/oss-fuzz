@@ -1,0 +1,10 @@
+homepage: "https://openquantumsafe.org/"
+language: c
+primary_contact: "security@openquantumsafe.org"
+auto_ccs:
+  - nathaniel.brough@gmail.com
+main_repo: "https://github.com/open-quantum-safe/liboqs.git"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz

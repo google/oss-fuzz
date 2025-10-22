@@ -1,0 +1,10 @@
+homepage: https://git.gavinhoward.com/gavin/bc
+main_repo: https://github.com/gavinhoward/bc
+language: c
+primary_contact: gavin.d.howard@gmail.com
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - centipede
+disabled: true

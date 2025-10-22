@@ -32,7 +32,7 @@ make -j$(nproc)
 make install
 
 GNUTLS_CONFIGURE_FLAGS=""
-NETTLE_CONFIGURE_FLAGS=""
+NETTLE_CONFIGURE_FLAGS="--disable-assembler"  # Temporarily disalbe asm to work around error "Libnettle 3.6 was not found."
 if [[ $CFLAGS = *sanitize=memory* ]]; then
   GNUTLS_CONFIGURE_FLAGS="--disable-hardware-acceleration"
   NETTLE_CONFIGURE_FLAGS="--disable-assembler --disable-fat"

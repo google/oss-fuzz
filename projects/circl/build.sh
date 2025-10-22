@@ -84,11 +84,11 @@ cd $SRC/cryptofuzz/modules/blst/
 make -j $(nproc)
 
 cd $SRC/cryptofuzz/modules/circl/
+go mod init cryptofuzz/circl
+go mod tidy
 make -j $(nproc)
 
 cd $SRC/cryptofuzz/
 make -j $(nproc)
 
 cp cryptofuzz $OUT/
-
-cp $SRC/cryptofuzz_seed_corpus.zip $OUT/

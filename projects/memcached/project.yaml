@@ -4,6 +4,7 @@ main_repo: "https://github.com/memcached/memcached"
 primary_contact: "alan@cacheforge.com"
 auto_ccs:
   - "bxa@stripe.com"
+  - "shodivine@gmail.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:

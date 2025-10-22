@@ -90,7 +90,7 @@ jobs:
        fuzz-seconds: 600
        output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
@@ -135,6 +135,10 @@ and the `Run Fuzzers` sanitizer field needs to be the same. To specify a list of
 a [matrix](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix)
 can be used. To use a sanitizer add it to the list of sanitizers in the matrix field below:
 
+`report-timeouts`: Determines whether to report fails due to timeouts.
+
+`report-ooms`: Determines whether to report fails due to OOM.
+
 ```yaml
 {% raw %}
 name: CIFuzz
@@ -166,7 +170,7 @@ jobs:
        sanitizer: ${{ matrix.sanitizer }}
        output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: steps.build.outcome == 'success'
      with:
        name: ${{ matrix.sanitizer }}-artifacts
@@ -219,7 +223,7 @@ jobs:
        language: c++
        fuzz-seconds: 600
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
@@ -259,8 +263,8 @@ To download the artifact, do the following steps:
 
 ![github-actions-download-crash]
 
-[github-actions-summary]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-summary.png
-[github-actions-download-crash]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-download-crash.png
+[github-actions-summary]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-summary.png)
+[github-actions-download-crash]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-download-crash.png)
 
 ## Feedback/Questions/Issues
 

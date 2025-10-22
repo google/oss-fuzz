@@ -15,8 +15,8 @@
 
 package pki
 
-func FuzzParseSubjectStringToRawDERBytes(data []byte) int {
-	ParseSubjectStringToRawDERBytes(string(data))
+func FuzzUnmarshalSubjectStringToRDNSequence(data []byte) int {
+	UnmarshalSubjectStringToRDNSequence(string(data))
 	return 1
 }
 

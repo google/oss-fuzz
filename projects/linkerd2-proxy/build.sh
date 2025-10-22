@@ -23,7 +23,7 @@ then
   export CFLAGS=""
 fi
 
-BUILD_FUZZER="cargo +nightly-2023-12-28 fuzz build "
+BUILD_FUZZER="cargo fuzz build "
 TARGET_PATH="./fuzz/target/x86_64-unknown-linux-gnu/release"
 BASE="$SRC/linkerd2-proxy/linkerd"
 

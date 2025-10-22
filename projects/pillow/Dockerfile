@@ -29,10 +29,7 @@ RUN $SRC/Pillow/Tests/oss-fuzz/build_dictionaries.sh
 
 COPY build_depends.sh $SRC
 
-RUN ln -s /usr/local/bin/python3 /usr/local/bin/python \
-    && ln -s /bin/true /usr/local/bin/yum_install \
-    && ln -s /bin/true /usr/local/bin/yum \
-    && cd $SRC/Pillow \
+RUN cd $SRC/Pillow \
     && git submodule update --init wheels/multibuild \
     && bash $SRC/build_depends.sh
 
@@ -44,7 +41,8 @@ RUN python3 -m pip install --upgrade pip
 COPY build.sh $SRC/
 
 # pillow optional runtime dependencies
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
      python3-tk \
      tcl8.6-dev \
      tk8.6-dev

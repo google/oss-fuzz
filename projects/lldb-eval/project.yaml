@@ -8,3 +8,5 @@ sanitizers:
   - address
   - undefined
 file_github_issue: True
+fuzzing_engines:
+  - libfuzzer

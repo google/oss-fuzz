@@ -67,7 +67,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	/*
 	 *  Initialize the repository
 	 */
-	initialize_the_repository();
+	initialize_repository(the_repository);
 	if (repo_init(the_repository, basedir, "."))
 	{
 		return 0;

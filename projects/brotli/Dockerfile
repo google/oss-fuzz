@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y cmake libtool make
 
 RUN git clone --depth 1 https://github.com/google/brotli.git
 WORKDIR brotli
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
