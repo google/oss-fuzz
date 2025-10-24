@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-# Wrong naming in this fuzzer breaks the coverage build
-rm promql/fuzz_test.go
 
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseMetric fuzzParseMetric
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseOpenMetric fuzzParseOpenMetric
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseMetricSelector fuzzParseMetricSelector
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseExpr fuzzParseExpr
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseMetricText fuzzParseMetricText
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseOpenMetric fuzzParseOpenMetric
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseMetricSelector fuzzParseMetricSelector
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseExpr fuzzParseExpr
+
+/root/.go/bin/go generate -tags fuzzing ./util/fuzzing/corpus_gen
+mv util/fuzzing/*.zip $OUT/
