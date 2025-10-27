@@ -188,11 +188,10 @@ def get_base_image_steps(images: Sequence[ImageConfig]) -> list[dict]:
       tags.append(f'{IMAGE_NAME_PREFIX}{image_config.name}:latest')
 
     dockerfile_path = os.path.join('oss-fuzz', image_config.dockerfile_path)
-    step = build_lib.get_docker_build_step(
-        tags,
-        image_config.path,
-        dockerfile_path=dockerfile_path,
-        build_args=image_config.build_args)
+    step = build_lib.get_docker_build_step(tags,
+                                           image_config.path,
+                                           dockerfile_path=dockerfile_path,
+                                           build_args=image_config.build_args)
 
     # Check for dependencies and add 'waitFor' if necessary.
     dependencies = IMAGE_DEPENDENCIES.get(image_config.name, [])
