@@ -26,6 +26,7 @@ import logic_error_patch
 
 logger = logging.getLogger(__name__)
 
+
 def _get_project_cached_named(project, sanitizer='address'):
   """Gets the name of the cached project image."""
   return f'us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/{project}-ofg-cached-{sanitizer}'
@@ -358,6 +359,7 @@ def check_run_tests_script(project,
     logger.info(
         'Error: %s run_test.sh does alter files or directories content.',
         project)
+
 
 def extract_test_coverage(project):
   """Extract code coverage report from run_tests.sh script."""
