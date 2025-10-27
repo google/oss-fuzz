@@ -1665,7 +1665,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
       fuzzer_name,
       '-runs=100',
   ] + fuzzer_args
-  return run_function(run_args, err_result)
+  return run_function(run_args, architecture=architecture)
 
 
 def _validate_project_name(project_name):
