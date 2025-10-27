@@ -164,7 +164,7 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
   return True
 
 
-def check_cached_replay(project, sanitizer='address', integrity_test=False):
+def check_cached_replay(project, sanitizer='address', integrity_check=False):
   """Checks if a cache build succeeds and times is."""
   build_project_image(project)
   if not build_cached_project(project, sanitizer=sanitizer):
@@ -190,7 +190,7 @@ def check_cached_replay(project, sanitizer='address', integrity_test=False):
       '-c',
   ]
 
-  if integrity_test:
+  if integrity_check:
     # Use different bad patches to test the cached replay build
     failed = []
     for bad_patch_name, bad_patch_map in bad_patch.BAD_PATCH_GENERATOR.items():
@@ -238,7 +238,7 @@ def check_cached_replay(project, sanitizer='address', integrity_test=False):
 def check_test(project,
                sanitizer='address',
                run_full_cache_replay=False,
-               integrity_test=False,
+               integrity_check=False,
                stop_on_failure=False):
   """Run the `run_tests.sh` script for a specific project. Will
     build a cached container first."""
@@ -276,7 +276,7 @@ def check_test(project,
       '/bin/bash',
       '-c',
   ]
-  if integrity_test:
+  if integrity_check:
     integrity_checks = []
 
     # Patch the code with some logic error and see if build_test able to detect
@@ -556,13 +556,13 @@ def extract_test_coverage(project):
 
 def _cmd_dispatcher_check_test(args):
   check_test(args.project, args.sanitizer, args.run_full_cache_replay,
-             args.check_patch_integrity, args.stop_on_failure)
+             args.integrity_check, args.stop_on_failure)
 
 
 def _cmd_dispatcher_check_replay(args):
   check_cached_replay(args.project,
                       args.sanitizer,
-                      integrity_test=args.integrity_test)
+                      integrity_check=args.integrity_check)
 
 
 def _cmd_dispatcher_build_cached_image(args):
@@ -625,24 +625,24 @@ def parse_args():
       'If set, will run the full cache replay instead of just checking the script.'
   )
   check_test_parser.add_argument(
-      '--check-patch-integrity',
+      '--integrity-check',
       action='store_true',
       help=
       'If set, will patch and test with logic errors to ensure build integrity.'
   )
 
-  check_replay_script_parser = subparsers.add_parser(
-      'check-replay-script',
+  check_replay_parser = subparsers.add_parser(
+      'check-replay',
       help='Checks if the replay script works for a specific project.')
 
-  check_replay_script_parser.add_argument(
-      'project', help='The name of the project to check.')
-  check_replay_script_parser.add_argument(
+  check_replay_parser.add_argument('project',
+                                   help='The name of the project to check.')
+  check_replay_parser.add_argument(
       '--sanitizer',
       default='address',
       help='The sanitizer to use for the cached build (default: address).')
-  check_replay_script_parser.add_argument(
-      '--integrity-test',
+  check_replay_parser.add_argument(
+      '--integrity-check',
       action='store_true',
       help='If set, will test the integrity of the replay script.')
 
@@ -737,7 +737,7 @@ def main():
 
   dispatch_map = {
       'check-test': _cmd_dispatcher_check_test,
-      'check-replay-script': _cmd_dispatcher_check_replay,
+      'check-replay': _cmd_dispatcher_check_replay,
       'build-cached-image': _cmd_dispatcher_build_cached_image,
       'autogen-tests': _cmd_dispatcher_autogen_tests,
       'build-many-caches': _cmd_dispatcher_build_many_caches,
