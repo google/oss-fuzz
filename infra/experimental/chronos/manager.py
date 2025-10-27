@@ -574,12 +574,6 @@ def _cmd_dispatcher_autogen_tests(args):
                    args.projects)
 
 
-def _cmd_dispatcher_build_many_caches(args):
-  for project in args.projects:
-    logger.info('Building cached project: %s', project)
-    check_cached_replay(project, sanitizer=args.sanitizer)
-
-
 def _cmd_dispatcher_extract_coverage(args):
   extract_test_coverage(args.project)
 
@@ -701,25 +695,6 @@ def parse_args():
       help=('The name of the projects to autogenerate tests for. '
             'If not specified, all projects will be considered.'))
 
-  build_many_caches = subparsers.add_parser(
-      'build-many-caches',
-      help='Builds cached images for multiple projects in parallel.')
-  build_many_caches.add_argument(
-      '--projects',
-      nargs='+',
-      required=True,
-      help='List of projects to build cached images for.')
-  build_many_caches.add_argument(
-      '--sanitizer',
-      default='address',
-      help='The sanitizer to use for the cached build (default: address).')
-  build_many_caches.add_argument(
-      '--container-output',
-      choices=['silent', 'file', 'stdout'],
-      default='stdout',
-      help='How to handle output from the container. ')
-  build_many_caches.add_argument('--silent-replays', action='store_true')
-
   extract_coverage_parser = subparsers.add_parser(
       'extract-test-coverage',
       help='Extract code coverage reports from run_tests.sh script')
@@ -740,7 +715,6 @@ def main():
       'check-replay': _cmd_dispatcher_check_replay,
       'build-cached-image': _cmd_dispatcher_build_cached_image,
       'autogen-tests': _cmd_dispatcher_autogen_tests,
-      'build-many-caches': _cmd_dispatcher_build_many_caches,
       'extract-test-coverage': _cmd_dispatcher_extract_coverage,
       'check-run-tests-script': _cmd_check_run_tests_script
   }
