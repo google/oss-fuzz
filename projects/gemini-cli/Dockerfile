@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
-RUN git clone --depth 1 --no-tags https://github.com/xmldom/xmldom.git xmldom     # or use other version control
-WORKDIR /src/xmldom
-COPY build.sh $SRC/
+RUN git clone --depth 1 https://github.com/google-gemini/gemini-cli.git
+WORKDIR $SRC/gemini-cli
+COPY build.sh /src/
+COPY fuzzers/ $SRC/gemini-cli/fuzzers/
+COPY seeds/ $SRC/gemini-cli/seeds/
