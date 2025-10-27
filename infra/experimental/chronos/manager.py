@@ -21,45 +21,10 @@ import time
 import json
 import subprocess
 
-import requests
-
 import bad_patch
 import logic_error_patch
 
 logger = logging.getLogger(__name__)
-
-OSS_FUZZ_BUILD_HISTORY_URL = (
-    'https://oss-fuzz-build-logs.storage.googleapis.com/status.json')
-OSS_FUZZ_BUILD_HISTORY = []
-
-RUN_TEST_HEURISTIC_0 = 'make test'
-RUN_TEST_HEURISTIC_1 = 'make tests'
-RUN_TEST_HEURISTIC_2 = 'make check'
-
-RUN_TESTS_TO_TRY = [
-    RUN_TEST_HEURISTIC_0, RUN_TEST_HEURISTIC_1, RUN_TEST_HEURISTIC_2
-]
-
-
-def _get_oss_fuzz_build_status(project):
-  """Returns the build status of a project in OSS-Fuzz."""
-  if not OSS_FUZZ_BUILD_HISTORY:
-    # Load the build history from a file or other source.
-    # This is a placeholder for actual implementation.
-    build_status = requests.get(OSS_FUZZ_BUILD_HISTORY_URL, timeout=30)
-    OSS_FUZZ_BUILD_HISTORY.extend(
-        json.loads(build_status.text).get('projects', []))
-
-  for project_data in OSS_FUZZ_BUILD_HISTORY:
-    if project_data['name'] == project:
-      logger.info('Found project %s in OSS-Fuzz build history.', project)
-      return project_data.get('history', [{
-          'success': False
-      }])[0].get('success', False)
-
-  logger.info('Project %s not found in OSS-Fuzz build history.', project)
-  return False
-
 
 def _get_project_cached_named(project, sanitizer='address'):
   """Gets the name of the cached project image."""
@@ -393,25 +358,6 @@ def check_run_tests_script(project,
     logger.info(
         'Error: %s run_test.sh does alter files or directories content.',
         project)
-
-
-def _get_project_language(project):
-  """Returns the language of the project."""
-  project_path = os.path.join('projects', project)
-  if not os.path.isdir(project_path):
-    return ''
-
-  # Check for a .lang file or similar to determine the language
-  project_yaml = os.path.join(project_path, 'project.yaml')
-  if os.path.exists(project_yaml):
-    with open(project_yaml, 'r', encoding='utf-8') as f:
-      for line in f:
-        if 'language' in line:
-          return line.split(':')[1].strip()
-
-  # Default to C++ if no specific language file is found
-  return ''
-
 
 def extract_test_coverage(project):
   """Extract code coverage report from run_tests.sh script."""
