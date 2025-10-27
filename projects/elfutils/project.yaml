@@ -16,4 +16,5 @@ architectures:
   - i386
 view_restrictions: none
 auto_ccs:
+  - amerey@redhat.com
   - izzeem@google.com
