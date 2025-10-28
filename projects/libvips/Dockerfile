@@ -48,6 +48,7 @@ RUN git clone --depth 1 https://github.com/strukturag/libheif.git
 RUN git clone --depth 1 https://github.com/lovell/libimagequant.git
 RUN git clone --depth 1 https://github.com/dloebl/cgif.git
 RUN git clone --depth 1 https://github.com/google/highway.git
+RUN git clone --depth 1 https://github.com/google/libultrahdr.git
 
 WORKDIR libvips
 COPY build.sh $SRC/

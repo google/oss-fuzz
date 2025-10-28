@@ -434,6 +434,7 @@ def run_nonbuild_tests(parallel):
       '--ignore-glob=infra/base-images/base-builder/indexer/*',
       '--ignore-glob=infra/build/*',
       '--ignore-glob=projects/*',
+      '--ignore-glob=infra/experimental/contrib/*',
   ]
   if parallel:
     command.extend(['-n', 'auto'])
