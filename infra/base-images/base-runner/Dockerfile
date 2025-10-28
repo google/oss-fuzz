@@ -118,6 +118,8 @@ ENV PATH="$PATH:/usr/local/rvm/rubies/ruby-3.3.1/bin"
 ENV GEM_HOME="$OUT/fuzz-gem"
 ENV GEM_PATH="/install/ruzzy"
 
+RUN apt-get update && apt-get install -y luarocks
+
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
     coverage \
