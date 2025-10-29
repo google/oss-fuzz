@@ -3,8 +3,7 @@ language: c++
 primary_contact: "twodeecoda@gmail.com"
 auto_ccs:
   - "cary@ilm.com"
-  - "cbpilm@gmail.com"
-  - "security@openexr.org"
+  - "twodeecoda@gmail.com"
   - "kdt3rd@gmail.com"
 main_repo: 'https://github.com/AcademySoftwareFoundation/openexr'
 
