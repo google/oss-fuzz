@@ -86,14 +86,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   """Returns build steps for project."""
   project = build_project.Project(project_name, project_yaml, dockerfile_lines)
   if project.disabled:
-    logging.info('Project "%s" is disabled.', project.name)
-    return []
+    return [], f'Project "{project.name}" is disabled.'
 
   if project.fuzzing_language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
-    logging.info(
-        'Project "%s" is written in "%s", coverage is not supported yet.',
-        project.name, project.fuzzing_language)
-    return []
+    return [], (f'Project "{project.name}" is written in '
+                f'"{project.fuzzing_language}", coverage is not supported yet.')
 
   report_date = build_project.get_datetime_now().strftime('%Y%m%d')
   bucket = CoverageBucket(project.name, report_date, PLATFORM, config.testing)
@@ -110,8 +107,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   download_corpora_steps = build_lib.download_corpora_steps(
       project.name, test_image_suffix=config.test_image_suffix)
   if not download_corpora_steps:
-    logging.info('Skipping code coverage build for %s.', project.name)
-    return []
+    return [], f'Failed to get corpora for project "{project.name}".'
 
   build_steps.extend(download_corpora_steps)
 
@@ -264,8 +260,7 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       build_lib.http_upload_step(latest_report_info_body,
                                  latest_report_info_url,
                                  LATEST_REPORT_INFO_CONTENT_TYPE))
-
-  return build_steps
+  return build_steps, None
 
 
 def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-arguments, unused-argument
@@ -274,14 +269,12 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
 
   project = build_project.Project(project_name, project_yaml, dockerfile_lines)
   if project.disabled:
-    logging.info('Project "%s" is disabled.', project.name)
-    return []
+    return [], f'Project "{project.name}" is disabled.'
 
   if project.fuzzing_language not in LANGUAGES_WITH_INTROSPECTOR_SUPPORT:
-    logging.info(('Project "%s" is written in "%s", '
-                  'Fuzz Introspector is not supported yet.'), project.name,
-                 project.fuzzing_language)
-    return []
+    return [], (f'Project "{project.name}" is written in '
+                f'"{project.fuzzing_language}", Fuzz Introspector is not '
+                'supported yet.')
 
   build_steps = []
   build = build_project.Build(FUZZING_ENGINE, 'introspector', ARCHITECTURE)
@@ -300,10 +293,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
   download_coverage_steps = build_lib.download_coverage_data_steps(
       project.name, coverage_report_latest, bucket_name, build.out)
   if not download_coverage_steps:
-    logging.warning(
-        'Skipping introspector build for %s. No coverage data found.',
-        project.name)
-    return []
+    return [], f'Skipping introspector build for {project.name}. No coverage data found.'
   build_steps.extend(download_coverage_steps)
   build_steps.extend(
       build_lib.get_project_image_steps(project.name,
@@ -339,8 +329,7 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
           upload_report_url,
       ],
   })
-
-  return build_steps
+  return build_steps, None
 
 
 def main():

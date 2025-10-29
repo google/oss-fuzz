@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cmake . -DSTATIC_ONLY=ON -DLIBICAL_GLIB=False -DLIBICAL_GLIB_BUILD_DOCS=False -DLIBICAL_GOBJECT_INTROSPECTION=False
+cmake . -DSTATIC_ONLY=ON -DLIBICAL_GLIB=False -DLIBICAL_GLIB_BUILD_DOCS=False -DLIBICAL_GOBJECT_INTROSPECTION=False -DLIBICAL_JAVA_BINDINGS=False
 make install -j$(nproc)
 
 

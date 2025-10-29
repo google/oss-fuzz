@@ -432,6 +432,10 @@ class Manifest:
                 # Don't copy over the seed corpus -- it's not necessary.
                 continue
 
+              if "/.git/" in root or root.endswith("/.git"):
+                # Skip the .git directory -- it can be large.
+                continue
+
               file = pathlib.Path(root, file)
               if exclude_build_artifacts and _is_elf(file):
                 continue
@@ -471,8 +475,8 @@ class Manifest:
             ),
         )
 
-        # Make sure the index database (the only file directly in `INDEX_DIR`)
-        # is early in the archive for the same reason.
+        # Make sure the index databases (the only files directly in `INDEX_DIR`)
+        # are early in the archive for the same reason.
         _save_dir(index_dir, INDEX_DIR)
 
         if source_dir:

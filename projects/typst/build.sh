@@ -20,7 +20,7 @@ cd tests/fuzz
 cargo +nightly fuzz build -O --debug-assertions
 
 FUZZ_TARGET_OUTPUT_DIR=$SRC/typst/target/x86_64-unknown-linux-gnu/release 
-for f in src/*.rs
+for f in src/bin/*.rs
 do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/

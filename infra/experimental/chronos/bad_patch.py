@@ -19,7 +19,7 @@ import random
 import sys
 
 import tree_sitter_cpp
-from tree_sitter import Language, Node, Parser, Query, QueryCursor
+from tree_sitter import Language, Parser, Query, QueryCursor
 
 LANGUAGE = Language(tree_sitter_cpp.language())
 PARSER = Parser(LANGUAGE)
@@ -30,7 +30,27 @@ MAX_COUNT = 50
 
 def normal_compile():
   """Do nothing and act as a control test that should always success."""
-  pass
+
+
+def source_code_white_noise():
+  """Insert white noise. This is a control test which forces
+  recompilation of good code. We need this to make sure that
+  the system is able to rebuild full source code under the
+  Chronos environment."""
+  exts = ['.c', '.cc', '.cpp', '.cxx', '.h', '.hpp']
+  payload = '\n\n\n\n\n\n'
+
+  # Walk and insert garbage code
+  for cur, dirs, files in os.walk(ROOT_PATH):
+    dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+    for file in files:
+      if any(file.endswith(ext) for ext in exts):
+        path = os.path.join(cur, file)
+        try:
+          with open(path, 'a', encoding='utf-8') as f:
+            f.write(payload)
+        except Exception:
+          pass
 
 
 def source_code_compile_error():
@@ -45,7 +65,7 @@ def source_code_compile_error():
       if any(file.endswith(ext) for ext in exts):
         path = os.path.join(cur, file)
         try:
-          with open(path, 'a') as f:
+          with open(path, 'a', encoding='utf-8') as f:
             f.write(payload)
         except Exception:
           pass
@@ -63,7 +83,7 @@ def macro_compile_error():
       if any(file.endswith(ext) for ext in exts):
         path = os.path.join(cur, file)
         try:
-          with open(path, 'a') as f:
+          with open(path, 'a', encoding='utf-8') as f:
             f.write(payload)
         except Exception:
           pass
@@ -92,13 +112,13 @@ def missing_header_error():
         try:
           # Read source file
           source = ''
-          with open(path, 'r') as f:
+          with open(path, 'r', encoding='utf-8') as f:
             source = f.read()
           if not source:
             continue
 
           # Append a wrong header inclusion at the beginning
-          with open(path, 'w') as f:
+          with open(path, 'w', encoding='utf-8') as f:
             f.write(payload)
             f.write(source)
           count += 1
@@ -126,11 +146,11 @@ def duplicate_symbol_error():
         try:
           # Try read and parse the source with tree-sitter
           source = ''
-          with open(path, 'r') as f:
+          with open(path, 'r', encoding='utf-8') as f:
             source = f.read()
           if source:
             node = PARSER.parse(source.encode()).root_node
-        except:
+        except Exception:
           pass
 
         if not node:
@@ -147,10 +167,10 @@ def duplicate_symbol_error():
         # Add source code with duplicated declaration randomly
         if new_source and random.choice([True, False]):
           try:
-            with open(path, 'w') as f:
+            with open(path, 'w', encoding='utf-8') as f:
               f.write(new_source)
             count += 1
-          except:
+          except Exception:
             pass
 
 
@@ -174,24 +194,28 @@ def function_linker_error():
         try:
           # Read source file
           source = ''
-          with open(path, 'r') as f:
+          with open(path, 'r', encoding='utf-8') as f:
             source = f.read()
           if not source:
             continue
 
           # Append a wrong header inclusion at the beginning
-          with open(path, 'w') as f:
+          with open(path, 'w', encoding='utf-8') as f:
             f.write(payload)
             f.write(source)
             f.write(payload_call.replace('{COUNT}', str(count)))
           count += 1
-        except:
+        except Exception:
           pass
 
 
 BAD_PATCH_GENERATOR = {
     'control_test': {
         'func': normal_compile,
+        'rc': [0],
+    },
+    'white_noise': {
+        'func': source_code_white_noise,
         'rc': [0],
     },
     'compile_error': {
@@ -218,6 +242,7 @@ BAD_PATCH_GENERATOR = {
 
 
 def main():
+  """Main entrypoint."""
   target = sys.argv[1]
   BAD_PATCH_GENERATOR[target]['func']()
 
