@@ -65,7 +65,7 @@ export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
  -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -DSK_BUILD_FOR_FUZZER"
 export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
  -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -D SK_BUILD_FOR_FUZZER"
-export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
+export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH -fuse-ld=lld"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
 export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
@@ -118,7 +118,6 @@ $SRC/skia/bin/gn gen out/FuzzDebug\
       extra_ldflags=["'"$LDFLAGS_ARR"'"]'
 
 $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
-  android_codec \
   animated_image_decode \
   api_create_ddl \
   api_ddl_threading \
@@ -247,12 +246,9 @@ mv ../skia_data/api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corp
 mv out/Fuzz/api_polyutils $OUT/api_polyutils
 mv ../skia_data/api_polyutils_seed_corpus.zip $OUT/api_polyutils_seed_corpus.zip
 
-# These 3 use the same corpus.
+# These 2 use the same corpus.
 mv out/Fuzz/image_decode $OUT/image_decode
 cp ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
-
-mv out/Fuzz/android_codec $OUT/android_codec
-cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
 
 mv out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
 mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
