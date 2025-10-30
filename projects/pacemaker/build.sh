@@ -17,7 +17,20 @@
 
 export CFLAGS="$CFLAGS -Wno-deprecated-declarations"
 export CXXFLAGS="$CXXFLAGS -Wno-deprecated-declarations"
-make -j$(nproc) build
+# Run autogen first
+cd $SRC/pacemaker
+test -e configure && test -e libltdl || ./autogen.sh
+
+# Patch configure to skip the strerror AC_RUN_IFELSE check that fails with sanitizers
+# This check tries to run a test program which doesn't work with ASAN
+if [ -f configure ]; then
+  sed -i 's/as_fn_error $? "strerror() is not C99-compliant" "$LINENO" 5/echo "Assuming strerror is C99-compliant for fuzzing build"/g' configure
+fi
+
+# Now run configure if needed, then build
+test -e Makefile || ./configure
+
+make -j$(nproc) core
 
 for FUZZER_SOURCE in lib/*/fuzzers/*.c; do
   FUZZER="$(basename "$FUZZER_SOURCE" .c)"
