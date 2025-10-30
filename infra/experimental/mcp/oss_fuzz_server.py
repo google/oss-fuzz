@@ -16,8 +16,8 @@
 """MCP server for OSS-Fuzz."""
 
 import logging
-import asyncio
 import os
+import shutil
 import sys
 import json
 import time
@@ -25,6 +25,9 @@ import subprocess
 from mcp.server.fastmcp import FastMCP
 
 import config as oss_fuzz_mcp_config
+
+
+TARGET_PROJECT=''
 
 # Configure logging
 logging.basicConfig(
@@ -71,18 +74,32 @@ def clone_oss_fuzz_if_it_does_not_exist():
     logger.info('Error cloning OSS-Fuzz')
 
 
+def _prepare_target_project():
+  """Prepares the target OSS-Fuzz project by copying it to the OSS-Fuzz projects directory."""
+  global TARGET_PROJECT
+
+  clone_oss_fuzz_if_it_does_not_exist()
+  project_name = os.path.basename(TARGET_PROJECT)
+  # Copy over the project files if needed.
+  if os.path.isdir(os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
+                                project_name)):
+    shutil.rmtree(os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR,
+                               'projects', project_name))
+  shutil.copytree(TARGET_PROJECT,
+                  os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
+                               project_name))
+  return project_name
+
 @mcp.tool()
-async def check_if_oss_fuzz_project_builds(project_name: str) -> bool:
+async def check_if_oss_fuzz_project_builds() -> bool:
   """
-    Checks if an OSS-Fuzz project builds successfully.
-    
-    Args:
-        project_name: Name of the OSS-Fuzz project to check
+    Checks if the OSS-Fuzz project being worked on builds successfully.
     
     Returns:
         True if the project builds successfully, False otherwise
     """
-  clone_oss_fuzz_if_it_does_not_exist()
+  project_name = _prepare_target_project()
+
   logger.info("Checking if OSS-Fuzz project '%s' builds successfully...",
               project_name)
 
@@ -121,17 +138,15 @@ def shorten_logs_if_needed(log_string: str) -> str:
 
 
 @mcp.tool()
-async def get_build_logs_from_oss_fuzz(project_name: str) -> str:
+async def build_and_get_build_logs_from_oss_fuzz() -> str:
   """
-    Retrieves build logs for an OSS-Fuzz project.
-    
-    Args:
-        project_name: Name of the OSS-Fuzz project to get logs for
+    Retrieves build logs for an OSS-Fuzz project. This is useful when changes
+    have been made to the project and you want to see the build output.
     
     Returns:
         A string containing the build logs for the project
     """
-  clone_oss_fuzz_if_it_does_not_exist()
+  project_name = _prepare_target_project()
   logger.info("Retrieving build logs for OSS-Fuzz project '%s'...",
               project_name)
 
@@ -163,7 +178,7 @@ async def get_build_logs_from_oss_fuzz(project_name: str) -> str:
   return logs_to_return
 
 
-@mcp.tool()
+#@mcp.tool()
 async def get_sample_artifacts_from_oss_fuzz_project(
     language: str) -> dict[str, str]:
   """
@@ -209,7 +224,7 @@ async def get_sample_artifacts_from_oss_fuzz_project(
   return artifacts
 
 
-@mcp.tool()
+#@mcp.tool()
 async def check_run_tests(
     project_name) -> str:  #, build_sh, dockerfile) -> str:
   """
@@ -264,23 +279,17 @@ async def check_run_tests(
 
 
 @mcp.tool()
-async def check_oss_fuzz_fuzzers(
-    project_name) -> str:  #, build_sh, dockerfile) -> str:
+async def check_oss_fuzz_fuzzers() -> str:
   """
     Performs "fuzzer-check" on an OSS-Fuzz project with custom artifacts.
-    Checks if an OSS-Fuzz project's fuzzers run correctly with custom artifacts.
+    Checks if the OSS-Fuzz project's fuzzers run correctly with custom artifacts.
     This check should only be applied after the project builds successfully.
     This check is needed for an OSS-Fuzz project to be in a good state.
-    
-    Args:
-        project_name: Name of the OSS-Fuzz project to check
-        build_sh: Custom build script content
-        dockerfile: Custom Dockerfile content
     
     Returns:
         The build logs from building the project with custom artifacts.
     """
-  clone_oss_fuzz_if_it_does_not_exist()
+  project_name = _prepare_target_project()
   logger.info(
       "Checking if OSS-Fuzz project '%s' builds and fuzzers pass check_build",
       project_name)
@@ -335,7 +344,7 @@ async def check_oss_fuzz_fuzzers(
 
 
 # File operating utilities
-@mcp.tool()
+#@mcp.tool()
 async def list_files(path: str = "") -> str:
   """List all files in the specified directory.
     
@@ -366,7 +375,7 @@ async def list_files(path: str = "") -> str:
     return f"Error listing files: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def get_file_size(file_path) -> str:
   """Get the size of a file.
     
@@ -392,7 +401,7 @@ async def get_file_size(file_path) -> str:
     return f"Error getting file size: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def read_file(file_path: str, start_idx: int, end_idx: int) -> str:
   """Read the contents of a file. Will read a maximum of 3000 characters
      to control size of content. Use arguments to control which part of file
@@ -439,7 +448,7 @@ async def read_file(file_path: str, start_idx: int, end_idx: int) -> str:
     return f"Error extracting content: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def write_file(file_path: str, content: str) -> str:
   """Write content to a file.
     
@@ -466,7 +475,7 @@ async def write_file(file_path: str, content: str) -> str:
     return f"Error writing to file: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def delete_file(file_path: str) -> str:
   """Delete a file.
     
@@ -494,7 +503,7 @@ async def delete_file(file_path: str) -> str:
     return f"Error deleting file: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def search_project_filename(project_name: str, filename: str) -> str:
   """
     Searches for a filename inside the project directory.
@@ -527,7 +536,7 @@ async def search_project_filename(project_name: str, filename: str) -> str:
   ) if files_found else f'No files named "{filename}" found in project "{project_name}".'
 
 
-@mcp.tool()
+#@mcp.tool()
 async def search_project_file_content(project_name: str,
                                       search_term: str) -> str:
   """
@@ -563,7 +572,7 @@ async def search_project_file_content(project_name: str,
   ) if files_found else f'No files containing "{search_term}" found in project "{project_name}".'
 
 
-@mcp.tool()
+#@mcp.tool()
 async def get_coverage_of_oss_fuzz_project(project_name):
   """
     Gets the code coverage information for an OSS-Fuzz project.
@@ -656,6 +665,13 @@ async def get_coverage_of_oss_fuzz_project(project_name):
 
 def start_mcp_server():
   """Starts the MCP server."""
+  global TARGET_PROJECT
+
+  oss_fuzz_target = sys.argv[1]
+
+  TARGET_PROJECT = oss_fuzz_target
+  logger.info('OSS-Fuzz MCP server target: %s', oss_fuzz_target)
+
   try:
     logger.info("Starting MCP server.")
     mcp.run(transport="stdio")
