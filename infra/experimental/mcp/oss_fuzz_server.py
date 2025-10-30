@@ -16,6 +16,7 @@
 """MCP server for OSS-Fuzz."""
 
 import logging
+
 import os
 import shutil
 import sys
@@ -26,8 +27,7 @@ from mcp.server.fastmcp import FastMCP
 
 import config as oss_fuzz_mcp_config
 
-
-TARGET_PROJECT=''
+TARGET_PROJECT = ''
 
 # Configure logging
 logging.basicConfig(
@@ -81,14 +81,18 @@ def _prepare_target_project():
   clone_oss_fuzz_if_it_does_not_exist()
   project_name = os.path.basename(TARGET_PROJECT)
   # Copy over the project files if needed.
-  if os.path.isdir(os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
-                                project_name)):
-    shutil.rmtree(os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR,
-                               'projects', project_name))
-  shutil.copytree(TARGET_PROJECT,
-                  os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
-                               project_name))
+  if os.path.isdir(
+      os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
+                   project_name)):
+    shutil.rmtree(
+        os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
+                     project_name))
+  shutil.copytree(
+      TARGET_PROJECT,
+      os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
+                   project_name))
   return project_name
+
 
 @mcp.tool()
 async def check_if_oss_fuzz_project_builds() -> bool:
