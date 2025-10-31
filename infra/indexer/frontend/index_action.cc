@@ -20,11 +20,9 @@
 #include <vector>
 
 #include "indexer/frontend/ast_visitor.h"
-#include "indexer/frontend/common.h"
 #include "indexer/frontend/pp_callbacks.h"
 #include "indexer/index/file_copier.h"
 #include "indexer/index/in_memory_index.h"
-#include "indexer/index/types.h"
 #include "indexer/merge_queue.h"
 #include "absl/flags/flag.h"
 #include "absl/log/check.h"
@@ -32,7 +30,6 @@
 #include "absl/strings/string_view.h"
 #include "clang/AST/ASTConsumer.h"
 #include "clang/Frontend/CompilerInstance.h"
-#include "clang/Frontend/Utils.h"
 #include "clang/Lex/Pragma.h"
 #include "clang/Lex/Preprocessor.h"
 #include "llvm/ADT/StringRef.h"
@@ -65,10 +62,7 @@ IndexAction::IndexAction(FileCopier& file_copier, MergeQueue& merge_queue)
 bool IndexAction::BeginSourceFileAction(clang::CompilerInstance& compiler) {
   CHECK(index_);
 
-  dependencies_collector_ = std::make_unique<AllDependenciesCollector>();
-
   clang::Preprocessor& preprocessor = compiler.getPreprocessor();
-  dependencies_collector_->attachToPreprocessor(preprocessor);
   preprocessor.addPPCallbacks(
       std::make_unique<PpCallbacks>(*index_, compiler.getSourceManager()));
   for (const std::string& ignored_pragma :
@@ -81,24 +75,7 @@ bool IndexAction::BeginSourceFileAction(clang::CompilerInstance& compiler) {
   return !absl::EndsWith(compiler.getFrontendOpts().Inputs[0].getFile(), ".S");
 }
 
-void IndexAction::EndSourceFileAction() {
-  const clang::SourceManager& source_manager =
-      getCompilerInstance().getSourceManager();
-  for (const std::string& filename :
-       dependencies_collector_->getDependencies()) {
-    if (!IsRealPath(filename)) {
-      continue;
-    }
-    const auto absolute_path =
-        ToNormalizedAbsolutePath(filename, source_manager);
-    // Create a "whole file" location per filename to make sure files without
-    // indexed symbols are still copied and e.g. accounted for in deltas.
-    index_->GetLocationId(Location::WholeFile(absolute_path));
-  }
-  dependencies_collector_.reset();
-
-  merge_queue_.Add(std::move(index_));
-}
+void IndexAction::EndSourceFileAction() { merge_queue_.Add(std::move(index_)); }
 
 std::unique_ptr<clang::ASTConsumer> IndexAction::CreateASTConsumer(
     clang::CompilerInstance& compiler, llvm::StringRef path) {
