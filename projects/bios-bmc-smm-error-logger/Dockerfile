@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-testing-ubuntu-24-04-fix-base-image-race-condition:latest
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install --reinstall -y libboost-all-dev git python3-pip python3-venv libmount-dev libcap-dev gperf vim clang-18 libc++-18-dev lsb-release wget software-properties-common gnupg systemd make pkg-config libsystemd-dev libfmt-dev cmake ninja-build
 
