@@ -15,12 +15,13 @@
 #include "indexer/frontend/common.h"
 
 #include <cstdint>
+#include <cstdlib>
 #include <filesystem>  // NOLINT
+#include <iostream>
 #include <string>
 
 #include "indexer/index/in_memory_index.h"
 #include "indexer/index/types.h"
-#include "absl/log/check.h"
 #include "absl/strings/string_view.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
@@ -29,15 +30,10 @@
 namespace oss_fuzz {
 namespace indexer {
 
-std::string ToNormalizedAbsolutePath(
-    absl::string_view path, const clang::SourceManager& source_manager) {
+std::string CleanPath(absl::string_view path, absl::string_view cwd) {
   std::filesystem::path native_path = std::filesystem::path(path);
   if (!native_path.is_absolute()) {
-    llvm::ErrorOr<std::string> cwd = source_manager.getFileManager()
-                                         .getVirtualFileSystem()
-                                         .getCurrentWorkingDirectory();
-    QCHECK(cwd) << "unable to get cwd";
-    native_path = std::filesystem::path(*cwd);
+    native_path = std::filesystem::path(cwd);
     native_path.append(path);
   }
   return native_path.lexically_normal();
@@ -87,9 +83,17 @@ LocationId GetLocationId(InMemoryIndex& index,
     end_line = start_line;
   }
 
+  llvm::ErrorOr<std::string> cwd = source_manager.getFileManager()
+                                       .getVirtualFileSystem()
+                                       .getCurrentWorkingDirectory();
+  if (!cwd) {
+    std::cerr << "unable to get cwd\n";
+    exit(1);
+  }
+
   if (IsRealPath(path)) {
     // This is a real file path, so normalize it.
-    path = ToNormalizedAbsolutePath(path, source_manager);
+    path = CleanPath(path, *cwd);
   }
   return index.GetLocationId({path, start_line, end_line});
 }

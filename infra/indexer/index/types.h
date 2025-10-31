@@ -53,18 +53,11 @@ class Location {
  public:
   Location(absl::string_view path, uint32_t start_line, uint32_t end_line);
 
-  static Location WholeFile(absl::string_view path) {
-    return Location(path, /*start_line=*/0, /*end_line=*/0);
-  }
-
   inline const std::string& path() const { return path_; }
   inline uint32_t start_line() const { return start_line_; }
   inline uint32_t end_line() const { return end_line_; }
 
   inline bool is_real() const { return IsRealPath(path()); }
-  inline bool is_whole_file() const {
-    return start_line_ == 0 && end_line_ == 0;
-  }
 
  private:
   friend class InMemoryIndex;
