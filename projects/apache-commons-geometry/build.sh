@@ -16,7 +16,7 @@
 ################################################################################
 
 pushd "$SRC/commons-geometry"
-  MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=8 -Djavac.target.version=8"
+  MAVEN_ARGS="-DskipTests=true -Djavac.src.version=8 -Djavac.target.version=8"
   $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
   CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
    -Dexpression=project.version -q -DforceStdout)
