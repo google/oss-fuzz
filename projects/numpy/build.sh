@@ -22,7 +22,8 @@ unset CXXFLAGS
 unset LIB_FUZZING_ENGINE
 
 python3 -m pip install .
-python3 setup.py install
+
+cp $SRC/*.options $OUT/
 
 mkdir -p $SRC/numpy-fuzzers
 cd $SRC/numpy-fuzzers

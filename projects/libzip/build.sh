@@ -15,4 +15,4 @@
 #
 ################################################################################
 # Run the OSS-Fuzz script in the project
-$SRC/libzip/regress/ossfuzz.sh
+$SRC/libzip/ossfuzz/ossfuzz.sh

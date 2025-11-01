@@ -71,7 +71,7 @@ class CalciteFuzzer {
         try {
             connection.close();
             calciteConnection.close();
-        } catch (SQLException e) {
+        } catch (Exception e) {
         }
     }
 

@@ -42,7 +42,9 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('build_project.get_datetime_now',
               return_value=test_utils.FAKE_DATETIME)
-  def test_get_build_steps(self, mock_url, mock_get_datetime_now):
+  @mock.patch('build_lib.get_unique_build_step_image_id',
+              return_value='UNIQUE_ID')
+  def test_get_build_steps(self, mock_url, mock_get_datetime_now, mock_get_id):
     """Test for get_build_steps."""
     del mock_url, mock_get_datetime_now
     project_yaml_contents = (
@@ -68,15 +70,18 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
     config = build_project.Config(upload=True)
     project_yaml, dockerfile = build_project.get_project_data(
         test_utils.PROJECT)
-    build_steps = build_project.get_build_steps(test_utils.PROJECT,
-                                                project_yaml, dockerfile,
-                                                config)
+    build_steps, _ = build_project.get_build_steps(test_utils.PROJECT,
+                                                   project_yaml, dockerfile,
+                                                   config)
     self.assertEqual(build_steps, expected_build_steps)
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('build_project.get_datetime_now',
               return_value=test_utils.FAKE_DATETIME)
-  def test_get_centipede_build_steps(self, mock_url, mock_get_datetime_now):
+  @mock.patch('build_lib.get_unique_build_step_image_id',
+              return_value='UNIQUE_ID')
+  def test_get_centipede_build_steps(self, mock_url, mock_get_datetime_now,
+                                     mock_get_id):
     """Test for get_build_steps of centipede."""
     del mock_url, mock_get_datetime_now
     # The none sanitizer should be added automatically when other sanitizers are
@@ -102,9 +107,9 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
     config = build_project.Config(upload=True)
     project_yaml, dockerfile = build_project.get_project_data(
         test_utils.PROJECT)
-    build_steps = build_project.get_build_steps(test_utils.PROJECT,
-                                                project_yaml, dockerfile,
-                                                config)
+    build_steps, _ = build_project.get_build_steps(test_utils.PROJECT,
+                                                   project_yaml, dockerfile,
+                                                   config)
     self.assertEqual(build_steps, expected_build_steps)
 
 

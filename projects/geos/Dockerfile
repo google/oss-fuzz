@@ -21,3 +21,4 @@ RUN git clone --depth 1 https://git.osgeo.org/gitea/geos/geos.git || git clone -
 COPY build.sh $SRC
 COPY patch.diff $SRC
 WORKDIR $SRC/geos
+RUN git apply ../patch.diff

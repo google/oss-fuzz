@@ -23,7 +23,6 @@ mkdir -p $XMLSEC_DEPS_PATH
 cd $SRC/libxml2
 ./autogen.sh \
     --without-legacy \
-    --without-push \
     --without-python \
     --without-zlib \
     --without-lzma \
@@ -47,6 +46,9 @@ make -j$(nproc)
 make install
 
 cd $SRC/xmlsec
+git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
+sed -i 's/-pedantic-errors//g' configure.ac
+sed -i 's/-pedantic//g' configure.ac
 autoreconf -vfi
 ./configure \
   --enable-static-linking \
@@ -54,7 +56,7 @@ autoreconf -vfi
   --with-libxml="$XMLSEC_DEPS_PATH" \
   --with-libxslt="$XMLSEC_DEPS_PATH"
 make -j$(nproc) clean
-make -j$(nproc) all
+make -j$(nproc) all V=1
 
 for file in $SRC/xmlsec/tests/oss-fuzz/*_target.c; do
     b=$(basename $file _target.c)

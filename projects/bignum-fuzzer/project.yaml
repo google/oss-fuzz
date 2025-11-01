@@ -13,7 +13,7 @@ auto_ccs:
     - "davidben@google.com"
     - "svaldez@google.com"
     - "mbed-tls-security@lists.trustedfirmware.org"
-    - "libmpdec@gmail.com"
+    - "libmpdec4@gmail.com"
     - "richard@levitte.org"
 main_repo: 'https://github.com/guidovranken/bignum-fuzzer'
 fuzzing_engines:

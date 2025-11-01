@@ -15,6 +15,13 @@
 #
 ################################################################################
 
+
+# workaround to get Fuzz Introspector to build; making it link with lld instead of the environment's gold linker which gives an error
+if [ "$SANITIZER" == "introspector" ]; then
+  export CFLAGS=$(echo "$CFLAGS" | sed 's/gold/lld/g')
+  export CXXFLAGS=$(echo "$CXXFLAGS" | sed 's/gold/lld/g')
+fi
+
 cd $SRC/connectedhomeip
 
 # Activate Pigweed environment
@@ -22,12 +29,19 @@ set +u
 PW_ENVSETUP_QUIET=1 source scripts/activate.sh
 set -u
 
+#This adds zap-cli to PATH, needed for fuzzing all-clusters-app
+export PATH="/src/connectedhomeip/.environment/cipd/packages/zap/:$PATH"
+
 # Create a build directory with the following options:
 # - `oss_fuzz` enables OSS-Fuzz build
 # - `is_clang` selects clang toolchains (does not support AFL fuzzing engine)
 # - `enable_rrti` enables RTTI to support UBSan build
 # - `chip_enable_thread_safety_checks` disabled since OSS-Fuzz clang does not
 #   seem to currently support or need this analysis
+# - `chip_enable_openthread` disabled since OSS-Fuzz clang issues a compile
+#   error on GenericConnectivityManagerImpl_Thread.ipp and current fuzzing
+#   does not differentiate between thread/Wifi/TCP/UDP/BLE connectivity
+#   implementations.
 # - `target_ldflags` forces compiler to use LLVM's linker
 gn gen out/fuzz_targets \
   --args="
@@ -35,6 +49,7 @@ gn gen out/fuzz_targets \
     is_clang=true \
     enable_rtti=true \
     chip_enable_thread_safety_checks=false \
+    chip_enable_openthread=false \
     target_ldflags=[\"-fuse-ld=lld\"]"
 
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains

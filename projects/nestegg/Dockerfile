@@ -15,11 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y subversion wget
-RUN git clone https://github.com/kinetiknz/nestegg.git
+RUN git clone --depth 1 https://github.com/kinetiknz/nestegg.git
 
-# collect corpus
-RUN svn export https://github.com/webmproject/libwebm.git/trunk/testing/testdata/
+# clone libwebm for corpus data
+RUN git clone --depth 1 https://github.com/webmproject/libwebm.git
 
 WORKDIR nestegg
 COPY build.sh $SRC/

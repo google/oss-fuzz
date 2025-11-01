@@ -19,6 +19,7 @@ import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.Principal;
 
 import javax.lang.model.util.SimpleAnnotationValueVisitor9;
 import javax.naming.NamingException;
@@ -79,6 +80,10 @@ public class JNDIRealmFuzzer {
 
         void release() {
             super.release(connection);
+        }
+
+        public Principal authenticate(JNDIConnection connection, String username, String credentials) throws NamingException {
+            return super.authenticate(connection, username, credentials);
         }
     }
 

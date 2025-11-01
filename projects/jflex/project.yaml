@@ -1,0 +1,11 @@
+homepage: https://github.com/jflex-de/jflex
+main_repo: https://github.com/jflex-de/jflex
+language: jvm
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- arthur.chan@adalogics.com

@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+find /usr/ -name "libyaml*.so" -exec rm {} \;
+find /usr/ -name "libyaml-0*" -exec rm {} \;
+
 # For fuzz-introspector, cxclude all functions in the fluent-bit/lib/ directory
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
@@ -110,7 +113,7 @@ EXTRA_FLAGS="-DFLB_BINARY=OFF \
   -DFLB_METRICS=ON   \
   -DFLB_DEBUG=ON     \
   -DMBEDTLS_FATAL_WARNINGS=OFF \
-  -DFLB_CONFIG_YAML=OFF"
+  -DFLB_CONFIG_YAML=ON"
 
 cmake -DFLB_TESTS_INTERNAL=ON \
       -DFLB_TESTS_INTERNAL_FUZZ=ON \
@@ -129,3 +132,9 @@ else
 fi
 
 cp $SRC/fluent-bit/build/bin/*OSSFUZZ ${OUT}/
+
+# Add seeds to config-yaml fuzzer
+mkdir -p $SRC/config_yaml_seeds
+cd $SRC/config_yaml_seeds
+find $SRC/fluent-bit/tests/internal/data/config_format/yaml -name "*.yaml" -exec cp {} . \;
+zip -rj $OUT/flb-it-fuzz-config_yaml_fuzzer_OSSFUZZ_seed_corpus.zip $SRC/config_yaml_seeds/*

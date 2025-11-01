@@ -17,8 +17,8 @@
 
 mkdir build
 cd build
-cmake ..
-make -j$(nproc) h3
+cmake -DBUILD_TESTING=ON ..
+make -j$(nproc) all
 
 H3_BASE=/src/h3/
 

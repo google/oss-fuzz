@@ -27,14 +27,15 @@ init_dlltool_global_state() {
   imp_name = NULL;
   delayimp_name = NULL;
   identify_imp_name = NULL;
-  identify_strict = NULL;
+  identify_strict = false;
   head_label = NULL;
   imp_name_lab = NULL;
   dll_name = NULL;
+  dll_name_set_by_exp_name = 0;
   add_indirect = 0;
   add_underscore = 0;
   add_stdcall_underscore = 0;
-  leading_underscore = -1;
+  leading_underscore = "_";
   dontdeltemps = 0;
   do_default_excludes = true;
   use_nul_prefixed_import_tables = false;

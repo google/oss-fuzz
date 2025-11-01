@@ -19,4 +19,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/akheron/jansson.git /src/jansson
 
 WORKDIR $SRC/jansson
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

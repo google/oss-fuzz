@@ -20,28 +20,24 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 # install maven configuration, which is also used by gradles's publishToMavenLocal
 #
 ADD maven-settings.xml ${SRC}/
-RUN apt-get install -y xmlstarlet
-RUN mkdir -p ~/.m2 && \
-	xmlstarlet ed \
-		-u "settings/localRepository" -v "${OUT}/m2/repository" \
-	< ${SRC}/maven-settings.xml > ~/.m2/settings.xml
+RUN apt-get update && apt-get install -y xmlstarlet curl unzip zip \
+    && mkdir -p ~/.m2 \
+    && xmlstarlet ed -u "settings/localRepository" -v "${OUT}/m2/repository" "${SRC}/maven-settings.xml" > ~/.m2/settings.xml
 
 #
 # install maven and gradle
 #
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
-	unzip maven.zip -d $SRC/maven-3.8.7 && \
-	rm -rf maven.zip
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip \
+	&& unzip maven.zip -d $SRC/maven-3.9.11 \
+	&& rm -rf maven.zip
+ENV MVN=$SRC/maven-3.9.11/apache-maven-3.9.11/bin/mvn
 
-ENV MVN $SRC/maven-3.8.7/apache-maven-3.8.7/bin/mvn
+RUN curl -L https://services.gradle.org/distributions/gradle-7.6-bin.zip -o gradle.zip \
+    && unzip gradle.zip -d $SRC/gradle \
+    && rm -rf gradle.zip
+ENV GRADLE=$SRC/gradle/gradle-7.6/bin/gradle
 
-RUN curl -L https://services.gradle.org/distributions/gradle-7.6-bin.zip -o gradle.zip && \
-    unzip gradle.zip -d $SRC/gradle && \
-    rm -rf gradle.zip
-
-ENV GRADLE $SRC/gradle/gradle-7.6/bin/gradle
-
-ENV LIBRARY_NAME jsch
+ENV LIBRARY_NAME=jsch
 WORKDIR ${SRC}
 #
 # clone repository
@@ -49,10 +45,15 @@ WORKDIR ${SRC}
 RUN git clone https://github.com/mwiede/jsch ${LIBRARY_NAME}
 
 #
-# jsch needs a more recent jdk
+# Install SDKMAN! and use it to install the required JDK version
 #
-RUN apt install -y openjdk-17-jdk-headless
-ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64
+RUN curl -s "https://get.sdkman.io" | bash && \
+    /bin/bash -c "source /root/.sdkman/bin/sdkman-init.sh && \
+    sdk install java 24.0.1-open && \
+    sdk use java 24.0.1-open"
+
+ENV JAVA_HOME=/root/.sdkman/candidates/java/current
+ENV PATH="$JAVA_HOME/bin:$PATH"
 
 ADD build.sh ${SRC}/
 ADD ${LIBRARY_NAME}-fuzzer ${SRC}/${LIBRARY_NAME}-fuzzer/

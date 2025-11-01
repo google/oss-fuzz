@@ -23,4 +23,4 @@ RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
 RUN $SRC/curl_fuzzer/scripts/ossfuzzdeps.sh
 
 WORKDIR $SRC/curl_fuzzer
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

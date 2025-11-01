@@ -1,0 +1,14 @@
+homepage: https://libproxy.github.io/libproxy/
+main_repo: https://github.com/libproxy/libproxy
+language: c
+vendor_ccs: []
+primary_contact: "jan.brummer@tabos.org"
+auto_ccs:
+  - "dimstar@opensuse.org"
+  - "herrvorragend81@gmail.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+  

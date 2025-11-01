@@ -32,7 +32,7 @@ ALL_JARS="gson.jar"
 BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):.:\$this_dir
 
-for fuzzer in $(find $SRC -name 'Fuzz*.java'); do
+for fuzzer in $(find $SRC -maxdepth 1 -name 'Fuzz*.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/

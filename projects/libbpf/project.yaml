@@ -13,6 +13,7 @@ auto_ccs:
   - yulia.kartseva@gmail.com
   - evverx@gmail.com
   - shunghsiyu@gmail.com
+  - eddyz87@gmail.com
 main_repo: "https://github.com/libbpf/libbpf"
 builds_per_day: 4
 view_restrictions: none

@@ -12,6 +12,8 @@ limitations under the License.
 
 #include "hdf5.h"
 
+#include <unistd.h>
+
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     char filename[256];

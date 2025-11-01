@@ -1,0 +1,10 @@
+homepage: "https://github.com/go-git/go-git"
+language: go
+primary_contact: "go-git-security@googlegroups.com"
+auto_ccs:
+  - "paulo.gomes.uk@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/go-git/go-git"

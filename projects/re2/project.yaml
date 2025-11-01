@@ -1,6 +1,7 @@
-homepage: "https://code.googlesource.com/re2"
-language: c++
+homepage: "https://github.com/google/re2"
+main_repo: "https://github.com/google/re2"
 primary_contact: "junyer@google.com"
+language: c++
 sanitizers:
   - address
   - memory
@@ -8,10 +9,7 @@ sanitizers:
 architectures:
   - x86_64
   - i386
-main_repo: 'https://code.googlesource.com/re2'
-
 fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-

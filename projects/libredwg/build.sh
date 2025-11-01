@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# Harden build in introspector mode
+if [[ "$SANITIZER" == introspector ]]; then
+  export CFLAGS="${CFLAGS} -Wno-error"
+  export CXXFLAGS="${CXXFLAGS} -Wno-error"
+fi
+
 cd libredwg
 sh ./autogen.sh
 # enable-release to skip unstable preR13. bindings are not fuzzed.

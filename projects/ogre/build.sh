@@ -43,6 +43,6 @@ for fuzzer in image_fuzz stream_fuzz; do
 	./lib/libOgreBitesStatic.a \
 	./lib/libPlugin_DotSceneStatic.a \
 	./lib/libPlugin_ParticleFXStatic.a \
-	./pugixml-1.13/libpugixml.a \
+	./pugixml-1.14/libpugixml.a \
       -Wl,--end-group
 done

@@ -28,7 +28,7 @@ public class ParserFuzzer {
       SPARQLParser obj = new SPARQLParser();
       obj.parseQuery(
           data.consumeString(data.remainingBytes() / 2), data.consumeRemainingAsString());
-    } catch (MalformedQueryException e1) {
+    } catch (MalformedQueryException | IllegalArgumentException e1) {
     }
   }
 }

@@ -16,15 +16,18 @@
 #
 ################################################################################
 
+if [ -f /usr/local/bin/clang-22 ]; then
+  export CFLAGS="${CFLAGS} -Wno-error=unterminated-string-initialization"
+fi
+
 MBEDTLS_BUILD=$WORK/mbedtls
 EXPAT_BUILD=$WORK/expat
 S2OPC_BUILD=$WORK/s2opc
 SAMPLES=$SRC/S2OPC-fuzzing-data
 
 # Build the dependencies
-
 ## Configure mbedtls to disable support of the AES-NI instructions, known to cause error with some sanitizers
-tar xzf $SRC/mbedtls.tgz -C $WORK
+tar xjf $SRC/mbedtls.tbz2 -C $WORK
 sed 's,#define MBEDTLS_AESNI_C,//#define MBEDTLS_AESNI_C,' -i $WORK/mbedtls-2.*/include/mbedtls/config.h
 
 mkdir -p $MBEDTLS_BUILD

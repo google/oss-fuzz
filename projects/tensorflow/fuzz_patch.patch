@@ -1,5 +1,5 @@
 diff --git a/tensorflow/security/fuzzing/cc/BUILD b/tensorflow/security/fuzzing/cc/BUILD
-index 231a40bf..7330af85 100644
+index de0898ea..ec3e3c46 100644
 --- a/tensorflow/security/fuzzing/cc/BUILD
 +++ b/tensorflow/security/fuzzing/cc/BUILD
 @@ -55,23 +55,23 @@ tf_cc_fuzz_test(
@@ -14,7 +14,7 @@ index 231a40bf..7330af85 100644
 -    deps = [
 -        ":checkpoint_reader_fuzz_input_proto_cc",
 -        "//tensorflow/c:checkpoint_reader",
--        "//tensorflow/c:tf_status_headers",
+-        "//tensorflow/c:tf_status",
 -        "//tensorflow/c:tf_status_helper",
 -        "//tensorflow/core:framework",
 -        "//tensorflow/core:lib",
@@ -31,7 +31,7 @@ index 231a40bf..7330af85 100644
 +#    deps = [
 +#        ":checkpoint_reader_fuzz_input_proto_cc",
 +#        "//tensorflow/c:checkpoint_reader",
-+#        "//tensorflow/c:tf_status_headers",
++#        "//tensorflow/c:tf_status",
 +#        "//tensorflow/c:tf_status_helper",
 +#        "//tensorflow/core:framework",
 +#        "//tensorflow/core:lib",

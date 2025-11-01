@@ -96,7 +96,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
                 xfa.free();
             }
 
-            for (size_t i = 0; i < doc.getNumPages(); i++) {
+            for (size_t i = 1; i <= doc.getNumPages(); i++) {
               doc.getLinks(i);
               auto page = doc.getCatalog()->getPage(i);
               if (!page->isOk()) {
@@ -111,7 +111,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
             SplashOutputDev *splashOut = new SplashOutputDev(splashModeRGB8, 1, gFalse, paperColor);
             splashOut->setNoComposite(gTrue);
             splashOut->startDoc(doc.getXRef());
-            for (size_t i = 0; i <= doc.getNumPages(); ++i) {
+            for (size_t i = 1; i <= doc.getNumPages(); ++i) {
               doc.displayPage(splashOut, i, hdpi, vdpi, rotate, useMediaBox, crop, printing);
             }
             (void)splashOut->getBitmap();

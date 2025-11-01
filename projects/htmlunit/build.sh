@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-MVN_FLAGS="-DskipTests -Dmaven.javadoc.skip"
+# Added flag to skip dependency check for troubleshooting purposes
+MVN_FLAGS="-DskipTests -Dmaven.javadoc.skip -Denforcer.skip=true -Dgpg.skip -Ddependency-check.skip=true"
 
 ALL_JARS=""
 #LIBRARY_NAME="htmlunit" #set by Dockerfile

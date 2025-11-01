@@ -33,7 +33,7 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac --enable-preview --release 15 -cp $BUILD_CLASSPATH $fuzzer
+  javac --enable-preview --release 17 -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
   cp $SRC/${fuzzer_basename}\$SomeClass.class $OUT/
 

@@ -3,7 +3,7 @@ main_repo: "https://code.launchpad.net/~leonardr/beautifulsoup/bs4"
 language: python
 primary_contact: "leonard.richardson@gmail.com"
 auto_ccs:
-  - "jvoisin@google.com"
+  - "julien.voisin@dustri.org"
   - "ipudney@google.com"
   - "security@tidelift.com"
 fuzzing_engines:

@@ -21,11 +21,18 @@
 #include "opus_types.h"
 #include "opus_defines.h"
 
+#include "opus_ossfuzz_utils.h"
+
 #define MAX_PACKET (1500)
+#if defined(ENABLE_QEXT)
+#define SAMPLES (96000 * 10)
+#else
 #define SAMPLES (48000 * 10)
+#endif
 #define MAX_FRAME_SAMP (5760)
 
-static const int sampling_rates[] = {8000, 12000, 16000, 24000, 48000};
+static const int sampling_rates[] = {8000, 12000, 16000, 24000, 48000
+                                     ARG_QEXT(96000)};
 static const int channels[] = {1, 2};
 static const int applications[] = {OPUS_APPLICATION_AUDIO,
                                    OPUS_APPLICATION_VOIP,
@@ -73,6 +80,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
                        {OPUS_AUTO, OPUS_SIGNAL_VOICE, OPUS_SIGNAL_MUSIC})));
   opus_encoder_ctl(enc,
                    OPUS_SET_PHASE_INVERSION_DISABLED(((fdp.ConsumeBool()))));
+#ifdef ENABLE_QEXT
+  opus_encoder_ctl(enc, OPUS_SET_QEXT(fdp.PickValueInArray({0, 1})));
+#endif
 
   fdp.ConsumeData(inbuf, sizeof(inbuf));
 

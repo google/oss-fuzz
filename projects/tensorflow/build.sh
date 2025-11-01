@@ -46,7 +46,7 @@ synchronize_coverage_directories() {
     # Synchronize the folder bazel-BAZEL_OUT_PROJECT.
     declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
       "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
-      "--exclude" "*")
+      "--include" "*.def" "--exclude" "*")
 
     # Sync existing code.
     ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" tensorflow/ ${REMAP_PATH}
@@ -118,7 +118,7 @@ if [ -n "${OSS_FUZZ_CI-}" ]
 then
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
 else
-  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.2 --strip=never"
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.15 --strip=never"
 fi
 
 # Do not use compile_fuzztests.sh to synchronize coverage folders as we use

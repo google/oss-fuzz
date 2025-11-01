@@ -21,6 +21,7 @@ unzip maven.zip -d $SRC/maven && \
 rm -rf maven.zip
 
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+ENV TARGET_PACKAGE_PREFIX org.aspectj.*
 
 WORKDIR ${SRC}
 #

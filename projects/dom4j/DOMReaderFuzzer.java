@@ -14,6 +14,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+import com.code_intelligence.jazzer.api.BugDetectors;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 import org.dom4j.io.DOMReader;
@@ -29,31 +30,33 @@ import java.util.List;
 
 public class DOMReaderFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-    
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder builder;
-    org.w3c.dom.Document doc;
 
-    try{
-      builder = factory.newDocumentBuilder();
-    }
-    catch (ParserConfigurationException e){
-      return;
-    }
+    try (AutoCloseable ignored = BugDetectors.allowNetworkConnections()) {
 
-    try{
-      doc = builder.parse(new ByteArrayInputStream(data.consumeRemainingAsBytes()));
-    }
-    catch (SAXException | IOException e){
-      return;
-    }
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder builder;
+      org.w3c.dom.Document doc;
 
-    DOMReader reader = new DOMReader();
+      try {
+        builder = factory.newDocumentBuilder();
+      } catch (ParserConfigurationException e) {
+        return;
+      }
 
-    try{
-      reader.read(doc);
-    }
-    catch (IllegalArgumentException e){
+      try {
+        doc = builder.parse(new ByteArrayInputStream(data.consumeRemainingAsBytes()));
+      } catch (SAXException | IOException e) {
+        return;
+      }
+
+      DOMReader reader = new DOMReader();
+
+      try {
+        reader.read(doc);
+      } catch (IllegalArgumentException e) {
+        return;
+      }
+    } catch (Exception e) {
       return;
     }
   }

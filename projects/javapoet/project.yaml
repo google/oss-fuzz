@@ -1,0 +1,12 @@
+homepage: "https://github.com/square/javapoet"
+language: jvm
+primary_contact: "irali@google.com"
+main_repo: "https://github.com/square/javapoet.git"
+auto_ccs:
+  - "himkhurana@google.com"
+  - "atulag@google.com"
+  - "rashmivirdy@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

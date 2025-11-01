@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# required by Go 1.20
-export CXX="${CXX} -lresolv"
-
 cd pkg
 cp $SRC/schema_fuzzer.go $SRC/pulumi/pkg/codegen/schema/ 
 cp $SRC/config_fuzzer.go $SRC/pulumi/sdk/go/common/resource/config/

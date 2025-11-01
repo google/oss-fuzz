@@ -18,10 +18,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
- gettext \
  autogen \
  autopoint \
- autoconf \
  automake \
  libtool \
  texinfo \
@@ -40,17 +38,26 @@ RUN apt-get update && apt-get install -y \
  libtasn1-bin \
  libz-dev
 
+
+RUN cd /usr/src && \
+        curl -oautoconf-2.71.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz && \
+    tar xf autoconf-2.71.tar.gz && \
+    cd autoconf-2.71 && \
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var && \
+    make install
+
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 ENV GNULIB_SRCDIR $SRC/gnulib
-RUN git clone git://git.savannah.gnu.org/gnulib.git
-RUN wget -qO- https://ftp.gnu.org/gnu/libunistring/libunistring-latest.tar.gz | tar -xz && mv libunistring-* libunistring
-RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar -xz && mv libidn2-* libidn2
+RUN git clone https://gitlab.com/gnuwget/gnulib-mirror.git gnulib
+RUN wget -qO- https://ftp.gnu.org/gnu/libunistring/libunistring-latest.tar.gz | tar xz && mv libunistring-* libunistring
+RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar xz && mv libidn2-* libidn2
+RUN wget -qO- https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.gz | tar xz && mv gmp-* gmp
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
-RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git --branch=nettle_3.9.1_release_20230601
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN wget -O- https://ftp.gnu.org/pub/gnu/libmicrohttpd/libmicrohttpd-latest.tar.gz | tar xz
 
 RUN git clone --recursive https://gitlab.com/gnuwget/wget2.git
 
 WORKDIR wget2
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

@@ -20,10 +20,9 @@ sed -i 's/python/python3/g' Makefile
 
 # Compile native code with sanitizer flags
 make cythonize
-python3 -m pip install -r requirements/dev.txt
 
 # Install yarl
-python3 setup.py install
+python3 -m pip install .
 
 if [ "$SANITIZER" = "address" ]
 then

@@ -5,6 +5,7 @@ primary_contact: "vincent.ulitzsch@live.de"
 auto_ccs:
   - "vincent.ulitzsch@live.de"
   - "bshas3@gmail.com"
+coverage_extra_args: -ignore-filename-regex=.*/LPM/.*
 sanitizers:
  - address
  - memory

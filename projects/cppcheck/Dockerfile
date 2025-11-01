@@ -16,11 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone https://github.com/danmar/cppcheck.git
+RUN git clone --depth=1 https://github.com/danmar/cppcheck.git
 
 WORKDIR cppcheck
 COPY build.sh $SRC/
-
-# This is to fix Fuzz Introspector build by using LLVM old pass manager
-# re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1

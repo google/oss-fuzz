@@ -16,17 +16,15 @@
 ################################################################################
 
 
-pushd $SRC/dropbear
-autoconf
-autoheader
-popd
-
 $SRC/dropbear/configure --enable-fuzz --disable-harden --disable-zlib
 
 make -j$(nproc) fuzz-targets FUZZLIB=$LIB_FUZZING_ENGINE
 
 TARGETS="$(make list-fuzz-targets)"
 
+make -C $SRC/dropbear-corpus
 
 cp -v $TARGETS $OUT/
 cp -v *.options $OUT/
+cp -v $SRC/dropbear-corpus/*.zip $OUT/
+cp -v $SRC/dropbear-corpus/*.dict $OUT/

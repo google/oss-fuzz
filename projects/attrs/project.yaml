@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://www.attrs.org
+language: python
+main_repo: https://github.com/python-attrs/attrs.git
+sanitizers:
+- address
+vendor_ccs:
+- sergesanspaille@free.fr

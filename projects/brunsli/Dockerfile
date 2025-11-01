@@ -21,4 +21,4 @@ RUN git clone --depth 1 https://github.com/google/brunsli.git && \
     cd brunsli && \
     git submodule update --init --depth 1
 WORKDIR brunsli
-COPY build.sh $SRC/
+COPY *.sh $SRC/

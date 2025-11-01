@@ -16,17 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-ENV GO111MODULE off
-
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
-RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
-RUN git clone --depth 1 https://github.com/randombit/botan.git
+RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
+RUN git clone --depth 1 --branch 3.9.0 --single-branch https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/supranational/blst.git
-RUN cd $SRC/cryptofuzz/modules/circl && go get ./... || true
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
-RUN wget https://storage.googleapis.com/pub/gsutil.tar.gz -O $SRC/gsutil.tar.gz
-RUN tar zxf $SRC/gsutil.tar.gz
-ENV PATH="${PATH}:$SRC/gsutil"
-RUN gsutil cp gs://bls-signatures-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bls-signatures_cryptofuzz-bls-signatures/public.zip $SRC/cryptofuzz_seed_corpus.zip
+RUN wget -nv https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 
 COPY build.sh $SRC/

@@ -15,6 +15,7 @@
 
 import sys
 import atheris
+
 with atheris.instrument_imports():
     import google.cloud.iam_credentials_v1.services.iam_credentials as iam
 
@@ -70,7 +71,7 @@ def TestOneInput(data):
     )
 
 def main():
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()
 
 if __name__ == "__main__":

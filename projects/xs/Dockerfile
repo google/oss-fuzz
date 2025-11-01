@@ -25,7 +25,10 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
 
 # install npm tool to strip comments
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -yqq npm 
+# Fuzz Introspector used by OSS-Fuzz depends on installing libjpeg-dev zlib1g-dev
+# later in the build process, and because we remoy /var/lib/apt/lists/* below we
+# need to install them here.
+RUN apt update && apt install -yqq npm libjpeg-dev zlib1g-dev libyaml-dev
 # && rm -rf /var/lib/apt/lists/*
 RUN npm i -g @prasadrajandran/strip-comments-cli
 
@@ -36,6 +39,8 @@ RUN git clone --depth 1 https://github.com/tc39/test262 && \
     find test262/test/built-ins -iname '*.js' -exec stripcomments --write --confirm-overwrite '{}' \+ && \
     # strip empty lines
     find test262/test/built-ins -iname '*.js' -exec sed -i '/^[[:space:]]*$/d' '{}' \+ && \
+    # strip functions that sleep
+    find test262/test/built-ins -iname '*.js' -exec grep -l 'Atomics\.wait' {} \; -exec rm -f {} \; && \
     find test262/test/built-ins -iname '*.js' | zip -@ -q $SRC/xst_seed_corpus.zip
 
 RUN git clone --depth=1 https://github.com/Moddable-OpenSource/moddable moddable && \
