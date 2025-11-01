@@ -23,6 +23,7 @@ RUN apt-get update && \
         perl-modules libyaml-perl libz-dev python subversion tcl unzip \
         asciidoc docbook-xsl xmlto libssl-dev zip
 RUN git clone https://github.com/git/git git
+RUN git clone --depth 1 https://github.com/madler/zlib
 WORKDIR git
 RUN git checkout origin/next
 RUN git pull origin next

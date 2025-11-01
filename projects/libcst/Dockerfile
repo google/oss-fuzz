@@ -15,12 +15,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/instagram/libcst libcst
-RUN apt-get install build-essential libssl-dev libffi-dev python3-dev cargo -y
+RUN apt-get install build-essential libssl-dev libffi-dev pkg-config python3-dev cargo -y
 RUN pip3 install --upgrade pip
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install nightly
-RUN rustup default nightly
+RUN rustup default stable
 
 COPY *.sh *py $SRC/
 WORKDIR $SRC/libcst

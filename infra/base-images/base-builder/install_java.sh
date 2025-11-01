@@ -15,24 +15,17 @@
 #
 ################################################################################
 
-# Install OpenJDK 15 and trim its size by removing unused components.
+# Install OpenJDK 17 and trim its size by removing unused components. This enables using Jazzer's mutation framework.
 cd /tmp
-curl --silent -L -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz && \
+curl --silent -L -O https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.16+8/OpenJDK17U-jdk_x64_linux_hotspot_17.0.16_8.tar.gz && \
 mkdir -p $JAVA_HOME
-tar -xz --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
-rm -f openjdk-15.0.2_linux-x64_bin.tar.gz
+tar -xz --strip-components=1 -f OpenJDK17U-jdk_x64_linux_hotspot_17.0.16_8.tar.gz --directory $JAVA_HOME && \
+rm -f OpenJDK17U-jdk_x64_linux_hotspot_17.0.16_8.tar.gz
 rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 
-# Install the latest Jazzer in $OUT.
-# jazzer_api_deploy.jar is required only at build-time, the agent and the
-# drivers are copied to $OUT as they need to be present on the runners.
-cd $SRC/
-git clone https://github.com/CodeIntelligenceTesting/jazzer && \
-cd jazzer && \
-git checkout c9f9347b7a72a4e65441d0442c7381790aa4c538
-bazel build --java_runtime_version=local_jdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
-  //agent:jazzer_agent_deploy.jar //driver:jazzer_driver //driver:jazzer_driver_asan //driver:jazzer_driver_ubsan //agent:jazzer_api_deploy.jar
-cp bazel-bin/agent/jazzer_agent_deploy.jar bazel-bin/driver/jazzer_driver bazel-bin/driver/jazzer_driver_asan bazel-bin/driver/jazzer_driver_ubsan /usr/local/bin/
-cp bazel-bin/agent/jazzer_api_deploy.jar $JAZZER_API_PATH
-rm -rf ~/.cache/bazel ~/.cache/bazelisk
-rm -rf $SRC/jazzer
+# Install OpenJDK 15 and trim its size by removing unused components. Some projects only run with Java 15.
+curl --silent -L -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz && \
+mkdir -p $JAVA_15_HOME
+tar -xz --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_15_HOME && \
+rm -f openjdk-15.0.2_linux-x64_bin.tar.gz
+rm -rf $JAVA_15_HOME/jmods $JAVA_15_HOME/lib/src.zip

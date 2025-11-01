@@ -82,6 +82,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     disasm_info.stream = &s;
     disasm_info.bytes_per_line = 0;
 
+    disasm_info.flags |= USER_SPECIFIED_MACHINE_TYPE;
     disasm_info.arch = Data[Size-1];
     disasm_info.mach = bfd_getl64(&Data[Size-9]);
     disasm_info.flavour = Data[Size-10];

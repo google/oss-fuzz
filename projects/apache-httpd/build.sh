@@ -26,7 +26,7 @@ svn checkout https://svn.apache.org/repos/asf/apr/apr/trunk/ srclib/apr
 # Build httpd
 ./buildconf
 ./configure --with-included-apr --enable-pool-debug
-make
+make -j$( nproc )
 
 static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
 

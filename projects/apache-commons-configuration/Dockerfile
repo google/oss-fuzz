@@ -22,6 +22,7 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-
     rm -f maven.zip
 
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+ENV TARGET_PACKAGE_PREFIX org.apache.commons.configuration2.*
 
 # Clone the commons-configuration library source code
 RUN git clone --depth=1 "https://gitbox.apache.org/repos/asf/commons-configuration.git" commons-configuration

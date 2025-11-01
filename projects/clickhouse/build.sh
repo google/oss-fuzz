@@ -61,7 +61,6 @@ CLICKHOUSE_CMAKE_FLAGS=(
     "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
     "-DLIB_FUZZING_ENGINE:STRING=$LIB_FUZZING_ENGINE"
     "-DENABLE_FUZZING=1"
-    "-DWITH_COVERAGE=1"
     "-DENABLE_PROTOBUF=1"
     "-DPARALLEL_COMPILE_JOBS=$NUM_JOBS"
 )
@@ -69,10 +68,15 @@ CLICKHOUSE_CMAKE_FLAGS=(
 if [ "$SANITIZER" = "coverage" ]; then
     cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1
 else
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1 -DSANITIZE=$SANITIZER
+    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DSANITIZE=$SANITIZER
 fi
 
-TARGETS=$(find $SRC/ClickHouse/src $SRC/ClickHouse/programs -name '*_fuzzer.cpp' -execdir basename {} .cpp ';' | tr '\n' ' ')
+TARGETS=$(find $SRC/ClickHouse/src $SRC/ClickHouse/programs -name '*_fuzzer.cpp' -\! -name '*gtest_*' -prune -execdir basename {} .cpp ';' | tr '\n' ' ')
+
+if [ -n "${OSS_FUZZ_CI-}" ]; then
+  # When running in CI, check the first targets only to save time and disk space
+  TARGETS=( ${TARGETS[@]:0:2} )
+fi
 
 for FUZZER_TARGET in $TARGETS
 do
@@ -83,7 +87,11 @@ do
     ninja -j $NUM_JOBS $FUZZER_TARGET
     # Find this binary in build directory and strip it
     TEMP=$(find $SRC/ClickHouse/build -name $FUZZER_TARGET)
-    strip --strip-unneeded $TEMP
+    # We have to preserve certain symbols e.g. LLVMFuzzerTestOneInput and some sanitizer-related once to not fail build checks:
+    # https://github.com/google/oss-fuzz/blob/860447a7121e344cc1627f492f67f3a23e86e6c5/infra/base-images/base-runner/bad_build_check#L173
+    # https://github.com/google/oss-fuzz/blob/860447a7121e344cc1627f492f67f3a23e86e6c5/infra/base-images/base-runner/test_all.py#L92-L96
+    # because of that we strip only debug symbols
+    strip --strip-debug $TEMP
 done
 
 # copy out fuzzer binaries

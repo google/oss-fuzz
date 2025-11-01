@@ -18,8 +18,8 @@
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_74_0.tar.bz2
-cd boost_1_74_0/
+tar jxf boost_1_84_0.tar.bz2
+cd boost_1_84_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
@@ -130,5 +130,3 @@ LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBRESSL -
 cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz
 # Copy dictionary
 cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz.dict
-# Copy seed corpus
-cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz_seed_corpus.zip

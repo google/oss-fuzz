@@ -24,12 +24,10 @@ ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
     cp fuzzing/dictionaries/xml.dict $SRC/XMLStreamReadersFuzzer.dict && \
-    cp fuzzing/dictionaries/xml.dict $SRC/W3CDOMStreamReaderFuzzer.dict && \
     rm -rf fuzzing
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -j $SRC/XMLStreamReadersFuzzer_seed_corpus.zip go-fuzz-corpus/xml/corpus/* && \
-    zip -j $SRC/W3CDOMStreamReaderFuzzer_seed_corpus.zip go-fuzz-corpus/xml/corpus/* && \
     rm -rf go-fuzz-corpus
 
 COPY project-parent $SRC/project-parent/

@@ -18,6 +18,9 @@ limitations under the License.
 
 const char *progname = "ntpsecfuzz";
 
+/* Hack to keep linker happy */
+uint16_t extra_port = 0;
+
 void dns_take_server(struct peer *a, sockaddr_u *b);
 void dns_take_status(struct peer *a, DNS_Status b);
 

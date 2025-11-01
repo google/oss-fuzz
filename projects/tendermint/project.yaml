@@ -1,4 +1,4 @@
-homepage: "https://github.com/tendermint/tendermint"
+homepage: "https://github.com/cometbft/cometbft"
 primary_contact: "security@interchain.io"
 auto_ccs:
   - fuzzing@orijtech.com
@@ -12,4 +12,4 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-main_repo: "https://github.com/tendermint/tendermint"
+main_repo: "https://github.com/cometbft/cometbft"

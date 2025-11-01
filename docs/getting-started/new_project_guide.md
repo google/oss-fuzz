@@ -64,7 +64,7 @@ by running the following commands:
 $ cd /path/to/oss-fuzz
 $ export PROJECT_NAME=<project_name>
 $ export LANGUAGE=<project_language>
-$ python infra/helper.py generate $PROJECT_NAME --language=$LANGUAGE
+$ python3 infra/helper.py generate $PROJECT_NAME --language=$LANGUAGE
 ```
 
 Once the template configuration files are created, you can modify them to fit your project.
@@ -100,7 +100,8 @@ Programming language the project is written in. Values you can specify include:
 * [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
 * [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
-* [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift/)
+* [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift-lang/)
+* [`javascript`]({{ site.baseurl }}//getting-started/new-project-guide/javascript-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -364,8 +365,8 @@ You can build your docker image and fuzz targets locally, so you can test them b
 
     ```bash
     $ cd /path/to/oss-fuzz
-    $ python infra/helper.py build_image $PROJECT_NAME
-    $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
+    $ python3 infra/helper.py build_image $PROJECT_NAME
+    $ python3 infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
     ```
 
     The built binaries appear in the `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
@@ -377,13 +378,13 @@ You can build your docker image and fuzz targets locally, so you can test them b
 2. Find failures to fix by running the `check_build` command:
 
     ```bash
-    $ python infra/helper.py check_build $PROJECT_NAME
+    $ python3 infra/helper.py check_build $PROJECT_NAME
     ```
 
 3. If you want to test changes against a particular fuzz target, run the following command:
 
     ```bash
-    $ python infra/helper.py run_fuzzer --corpus-dir=<path-to-temp-corpus-dir> $PROJECT_NAME <fuzz_target>
+    $ python3 infra/helper.py run_fuzzer --corpus-dir=<path-to-temp-corpus-dir> $PROJECT_NAME <fuzz_target>
     ```
 
 4. We recommend taking a look at your code coverage as a test to ensure that
@@ -391,11 +392,11 @@ your fuzz targets get to the code you expect. This would use the corpus
 generated from the previous `run_fuzzer` step in your local corpus directory.
 
     ```bash
-    $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
-    $ python infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
+    $ python3 infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
+    $ python3 infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
     ```
 
-You may need to run `python infra/helper.py pull_images` to use the latest
+You may need to run `python3 infra/helper.py pull_images` to use the latest
 coverage tools. Please refer to
 [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
 information on code coverage generation.

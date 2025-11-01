@@ -1,0 +1,13 @@
+homepage: "https://micronaut.io/"
+main_repo: "https://github.com/micronaut-projects/micronaut-core"
+language: jvm
+primary_contact: "jonas.konrad@oracle.com"
+auto_ccs:
+  - "me@yawk.at"
+  - "sergiodelamocaballero@gmail.com"
+  - "graeme.rocher@oracle.com"
+  - "denis.s.stepanov@oracle.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

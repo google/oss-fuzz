@@ -26,7 +26,9 @@ cmake \
 
 make -j$(nproc)
 
-cp fuzz/fuzz_url $OUT/fuzz_url
+if [ "$SANITIZER" != "undefined" ]; then
+    cp fuzz/fuzz_url $OUT/fuzz_url
+fi
 cp fuzz/fuzz_table $OUT/fuzz_table
 cp fuzz/fuzz_server $OUT/fuzz_server
 popd

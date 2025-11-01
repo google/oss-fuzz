@@ -8,3 +8,6 @@ sanitizers:
 - address
 - memory
 main_repo: 'https://github.com/census-instrumentation/opencensus-cpp'
+
+# opencensus is being archived cf https://opentelemetry.io/blog/2023/sunsetting-opencensus/
+disabled: true

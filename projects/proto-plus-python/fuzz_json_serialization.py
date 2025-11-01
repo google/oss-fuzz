@@ -18,32 +18,29 @@ import atheris
 import proto
 from google.protobuf.json_format import ParseError
 
+
+class FuzzMsg(proto.Message):
+  val1 = proto.Field(proto.FLOAT, number=1)
+  val2 = proto.Field(proto.INT32, number=2)
+  val3 = proto.Field(proto.BOOL, number=3)
+  val4 = proto.Field(proto.STRING, number=4)
+
+
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
-
-  class FuzzMsg(proto.Message):
-    val1 = proto.Field(proto.FLOAT, number=1)
-    val2 = proto.Field(proto.INT32, number=2)
-    val3 = proto.Field(proto.BOOL, number=3)
-    val4 = proto.Field(proto.STRING, number=4)
 
   try:
     s = FuzzMsg.from_json(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
     FuzzMsg.to_json(s)
-  except ParseError:
-    pass
-  except TypeError:
-    pass
-  except RecursionError:
-    pass
+  except (ParseError, TypeError, RecursionError):
+    return
 
 
 def main():
   atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 
 
 if __name__ == "__main__":
   main()
-

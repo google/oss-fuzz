@@ -88,22 +88,20 @@ jobs:
        oss-fuzz-project-name: 'example'
        language: c++
        fuzz-seconds: 600
-       # Uncomment this to get results in the GitHub security dashboard.
-       # output-sarif: true
+       output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
        path: ./out/artifacts
-   # Uncomment this to get results in the GitHub security dashboard.
-   # - name: Upload Sarif
-   #  if: always() && steps.build.outcome == 'success'
-   #  uses: github/codeql-action/upload-sarif@v2
-   #  with:
-   #    # Path to SARIF file relative to the root of the repository
-   #    sarif_file: cifuzz-sarif/results.sarif
-   #    checkout_path: cifuzz-sarif
+   - name: Upload Sarif
+     if: always() && steps.build.outcome == 'success'
+     uses: github/codeql-action/upload-sarif@v2
+     with:
+      # Path to SARIF file relative to the root of the repository
+      sarif_file: cifuzz-sarif/results.sarif
+      checkout_path: cifuzz-sarif
 ```
 
 
@@ -137,6 +135,10 @@ and the `Run Fuzzers` sanitizer field needs to be the same. To specify a list of
 a [matrix](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix)
 can be used. To use a sanitizer add it to the list of sanitizers in the matrix field below:
 
+`report-timeouts`: Determines whether to report fails due to timeouts.
+
+`report-ooms`: Determines whether to report fails due to OOM.
+
 ```yaml
 {% raw %}
 name: CIFuzz
@@ -145,7 +147,6 @@ permissions: {}
 jobs:
  Fuzzing:
    runs-on: ubuntu-latest
-   # Uncomment this to get results in the GitHub security dashboard.
    permissions:
      security-events: write
    strategy:
@@ -167,22 +168,20 @@ jobs:
        language: c++
        fuzz-seconds: 600
        sanitizer: ${{ matrix.sanitizer }}
-       # Uncomment this to get results in the GitHub security dashboard.
-       # output-sarif: true
+       output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: steps.build.outcome == 'success'
      with:
        name: ${{ matrix.sanitizer }}-artifacts
        path: ./out/artifacts
-   # Uncomment this to get results in the GitHub security dashboard.
-   # - name: Upload Sarif
-   #  if: always() && steps.build.outcome == 'success'
-   #  uses: github/codeql-action/upload-sarif@v2
-   #  with:
-   #    # Path to SARIF file relative to the root of the repository
-   #    sarif_file: cifuzz-sarif/results.sarif
-   #    checkout_path: cifuzz-sarif
+   - name: Upload Sarif
+    if: always() && steps.build.outcome == 'success'
+    uses: github/codeql-action/upload-sarif@v2
+    with:
+      # Path to SARIF file relative to the root of the repository
+      sarif_file: cifuzz-sarif/results.sarif
+      checkout_path: cifuzz-sarif
 {% endraw %}
 ```
 
@@ -224,7 +223,7 @@ jobs:
        language: c++
        fuzz-seconds: 600
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
@@ -264,8 +263,8 @@ To download the artifact, do the following steps:
 
 ![github-actions-download-crash]
 
-[github-actions-summary]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-summary.png
-[github-actions-download-crash]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-download-crash.png
+[github-actions-summary]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-summary.png)
+[github-actions-download-crash]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-download-crash.png)
 
 ## Feedback/Questions/Issues
 

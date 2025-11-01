@@ -19,3 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-bu
 RUN git clone --filter=tree:0 https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
 WORKDIR spirv-tools
 COPY build.sh $SRC/
+COPY generate_spirv_corpus.py $SRC/

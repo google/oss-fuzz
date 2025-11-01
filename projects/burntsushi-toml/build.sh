@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-compile_go_fuzzer . FuzzToml fuzz_toml gofuzz
+compile_go_fuzzer  github.com/BurntSushi/toml/ossfuzz FuzzToml fuzz_toml gofuzz

@@ -16,4 +16,10 @@
 ################################################################################
 
 # Run the OSS-Fuzz script in the curl-fuzzer project.
+
+if [[ ! -z "${REPLAY_ENABLED-}" ]]; then
+  # If we don't do this, the curl library won't rebuild.
+  rm -f /src/curl_fuzzer/build/curl-install/lib/libcurl.a
+fi
+
 ./ossfuzz.sh

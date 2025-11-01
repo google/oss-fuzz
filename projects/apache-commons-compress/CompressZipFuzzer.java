@@ -14,20 +14,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 
+import java.io.InputStream;
 import java.io.IOException;
-import java.util.logging.LogManager;
+import java.util.Enumeration;
 
-public class CompressZipFuzzer {
-    public static void fuzzerInitialize() {
-        LogManager.getLogManager().reset();
-    }
-
+// Keeping class name the same so corpus doesn't change
+// See: https://google.github.io/oss-fuzz/faq/#what-happens-when-i-rename-a-fuzz-target-
+public class CompressZipFuzzer extends BaseTests {
     public static void fuzzerTestOneInput(byte[] data) {
         try {
-            new ZipFile(new SeekableInMemoryByteChannel(data)).close();
+            ZipFile zf = new ZipFile(new SeekableInMemoryByteChannel(data));
+            Enumeration<? extends ZipArchiveEntry> entries = zf.getEntries();
+            while(entries.hasMoreElements()) {
+                ZipArchiveEntry entry = entries.nextElement();
+                InputStream is = zf.getInputStream(entry);
+                is.read(new byte[1024]);
+            }
+            zf.close();
         } catch (IOException ignored) {
         }
     }

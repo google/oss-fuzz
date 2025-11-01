@@ -35,9 +35,10 @@ cd -
 rm -rf $OUT/tmp
 
 # need lombok for fuzz test
-find $WORK -name "lombok*.jar" -exec cp {} $OUT/lombok.jar \;
+find $WORK -name "spring-tx*.jar" -exec cp {} $OUT/spring-tx.jar \;
+wget -O "$OUT/lombok.jar" "https://repo.maven.apache.org/maven2/org/projectlombok/lombok/1.18.28/lombok-1.18.28.jar"
 
-ALL_JARS="spring-data-keyvalue.jar lombok.jar"
+ALL_JARS="spring-data-keyvalue.jar lombok.jar spring-tx.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.

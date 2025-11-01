@@ -17,20 +17,21 @@
 
 mkdir build
 cd build
-cmake -DENABLE_LIB_ONLY=ON -DENABLE_STATIC_LIB=ON -DHAVE_CUNIT=ON ../
+cmake -DENABLE_LIB_ONLY=ON -DBUILD_STATIC_LIBS=ON ../
 make
 make check
 
-$CXX $CXXFLAGS -std=c++11 -I../lib/includes -Ilib/includes -I../lib/ -I../tests/ \
+export CXXFLAGS="${CXXFLAGS} -std=c++17"
+$CXX $CXXFLAGS -I../lib/includes -Ilib/includes -I../lib/ -I../tests/ \
     ../fuzz/fuzz_frames.cc -o $OUT/nghttp2_fuzzer_frames \
     tests/CMakeFiles/main.dir/nghttp2_test_helper.c.o \
     $LIB_FUZZING_ENGINE lib/libnghttp2.a
 
-$CXX $CXXFLAGS -std=c++11 -I../lib/includes -Ilib/includes -I../lib/ \
+$CXX $CXXFLAGS -I../lib/includes -Ilib/includes -I../lib/ \
     ../fuzz/fuzz_target.cc -o $OUT/nghttp2_fuzzer \
     $LIB_FUZZING_ENGINE lib/libnghttp2.a
 
-$CXX $CXXFLAGS -std=c++11 -I../lib/includes -Ilib/includes -I../lib/ \
+$CXX $CXXFLAGS -I../lib/includes -Ilib/includes -I../lib/ \
     ../fuzz/fuzz_target_fdp.cc -o $OUT/nghttp2_fuzzer_fdp \
     $LIB_FUZZING_ENGINE lib/libnghttp2.a
 

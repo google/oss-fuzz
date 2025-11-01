@@ -34,7 +34,7 @@ class JsonObjectParserFuzzer {
   static String [] charsetArray = {"ISO-8859-1", "US-ASCII", "UTF-16", "UTF-16BE", "UTF-16LE", "UTF-8"};
 
   @FuzzTest
-  void myFuzzTest(FuzzedDataProvider data) {  
+  void myFuzzTest(FuzzedDataProvider data) {
     Charset charset = Charset.forName(data.pickValue(charsetArray));
     boolean readLeniency = data.consumeBoolean();
     String input = data.consumeRemainingAsString();

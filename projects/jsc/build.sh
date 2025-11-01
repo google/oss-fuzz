@@ -43,4 +43,4 @@ Tools/Scripts/build-jsc \
   --cmakeargs="-DENABLE_STATIC_JSC=ON -DUSE_THIN_ARCHIVES=OFF -DWEBKIT_LIBRARIES_DIR=$DEPS_PATH -DWEBKIT_LIBRARIES_INCLUDE_DIR=$DEPS_PATH/include -DWEBKIT_LIBRARIES_LINK_DIR=$DEPS_PATH/lib" \
   --makeargs='-v'
 
-cp WebKitBuild/Debug/bin/jsc $OUT
+cp WebKitBuild/JSCOnly/Debug/bin/jsc $OUT

@@ -40,7 +40,7 @@ class AutoDbDeleter {
   AutoDbDeleter& operator=(const AutoDbDeleter&) = delete;
 
   ~AutoDbDeleter() {
-    std::__fs::filesystem::remove_all(kDbPath);
+    std::filesystem::remove_all(kDbPath);
   }
 };
 

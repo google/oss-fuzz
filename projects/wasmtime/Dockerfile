@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool curl \
   cmake python llvm-dev libclang-dev clang \
-  libgmp-dev
+  libgmp-dev pkg-config
 
 # Install a newer version of OCaml than provided by Ubuntu 16.04 (base version for this image)
 RUN curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh -o install.sh && \
@@ -35,5 +35,9 @@ WORKDIR wasmtime
 #RUN git submodule update --init --recursive
 
 #RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
+
+# The default toolchain used by OSS-Fuzz is too old to build Wasmtime at this
+# time.
+ENV RUSTUP_TOOLCHAIN nightly-2025-07-16
 
 COPY build.sh *.options $SRC/

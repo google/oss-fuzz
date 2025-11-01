@@ -1,5 +1,6 @@
 homepage: "https://github.com/wnameless/json-flattener/"
 language: jvm
+primary_contact: "wnameless@gmail.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/wnameless/json-flattener/"

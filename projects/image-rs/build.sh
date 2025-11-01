@@ -15,6 +15,28 @@
 #
 ################################################################################
 
+
+# ---- Build fuzz corpuses ---- #
+function zip_files() {
+   # Get the arguments
+   directory=$1
+   extension=$2
+   zipfile=$3
+
+   # Find all files with the given extension in the given directory and its subdirectories
+   # and add them to the zip file
+   find "$directory" -type f -name "*.$extension" -exec zip -r -j "$zipfile" {} +
+}
+
+FORMATS=("bmp" "exr" "gif" "hdr" "ico" "jpeg" "png" "pnm" "tga" "tiff" "webp")
+
+for FORMAT in "${FORMATS[@]}"
+do
+     zip_files . $FORMAT "$OUT/fuzzer_script_${FORMAT}_seed_corpus.zip"
+done
+
+# ---- Build fuzz harnesses ----
+
 cargo fuzz build -O
 cargo fuzz list | while read i; do
     cp fuzz/target/x86_64-unknown-linux-gnu/release/$i $OUT/

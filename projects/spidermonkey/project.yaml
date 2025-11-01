@@ -3,6 +3,7 @@ language: c++
 main_repo: https://hg.mozilla.org/mozilla-central/
 primary_contact: "choller@mozilla.com"
 auto_ccs:
+  - jdemooij@mozilla.com
   - sledru@mozilla.com
   - twsmith@mozilla.com
 vendor_ccs:

@@ -1,0 +1,5 @@
+homepage: "https://upx.github.io/"
+language: c++
+primary_contact: "reiser.john@gmail.com"
+main_repo: "https://github.com/upx/upx.git"
+coverage_extra_args: -ignore-filename-regex=.*vendor/.*

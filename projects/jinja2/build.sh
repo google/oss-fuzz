@@ -17,7 +17,7 @@
 
 cd $SRC/jinja
 python3 -m build
-pip3 install ./dist/Jinja*.whl
+pip3 install ./dist/jinja*.whl
 
 # Build jinja2 fuzzers
 # Build fuzzers in $OUT.

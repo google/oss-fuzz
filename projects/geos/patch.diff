@@ -1,16 +1,15 @@
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
-index 14506516..2e236476 100644
+index 3401775c8..70af383b4 100644
 --- a/tests/CMakeLists.txt
 +++ b/tests/CMakeLists.txt
-@@ -11,4 +11,5 @@
+@@ -10,3 +10,4 @@
+ ################################################################################
  add_subdirectory(unit)
  add_subdirectory(xmltester)
- add_subdirectory(bigtest)
 +add_subdirectory(fuzz)
- 
 diff --git a/tests/fuzz/CMakeLists.txt b/tests/fuzz/CMakeLists.txt
 new file mode 100644
-index 00000000..d0bd7a02
+index 000000000..d0bd7a020
 --- /dev/null
 +++ b/tests/fuzz/CMakeLists.txt
 @@ -0,0 +1,15 @@
@@ -31,7 +30,7 @@ index 00000000..d0bd7a02
 +endif()
 diff --git a/tests/fuzz/fuzz_geo2.c b/tests/fuzz/fuzz_geo2.c
 new file mode 100644
-index 00000000..ceee7ea6
+index 000000000..ceee7ea6b
 --- /dev/null
 +++ b/tests/fuzz/fuzz_geo2.c
 @@ -0,0 +1,69 @@

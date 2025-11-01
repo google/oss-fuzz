@@ -18,30 +18,31 @@
 # Clean up potentially persistent build directory.
 [[ -e $SRC/tarantool/build ]] && rm -rf $SRC/tarantool/build
 
-# Build ICU for linking statically.
-mkdir -p $SRC/tarantool/build/icu && cd $SRC/tarantool/build/icu
-
-[ ! -e config.status ] && LDFLAGS="-lpthread" CXXFLAGS="$CXXFLAGS -lpthread" \
-  $SRC/icu/source/configure --disable-shared --enable-static --disable-layoutex \
-  --disable-tests --disable-samples --with-data-packaging=static
-make install -j$(nproc)
+# For fuzz-introspector, exclude all functions in the tests directory,
+# libprotobuf-mutator and protobuf source code.
+# See https://github.com/ossf/fuzz-introspector/blob/main/doc/Config.md#code-exclusion-from-the-report
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
+cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
+FILES_TO_AVOID
+tarantool/build/test
+tarantool/build/icu-prefix
+EOF
 
 cd $SRC/tarantool
-
-# Avoid compilation issue due to some undefined references. They are defined in
-# libc++ and used by Centipede so -lc++ needs to come after centipede's lib.
-if [[ $FUZZING_ENGINE == centipede ]]
-then
-    sed -i \
-        '/$ENV{LIB_FUZZING_ENGINE}/a \ \ \ \ \ \ \ \ -lc++' \
-        test/fuzz/CMakeLists.txt
-fi
 
 case $SANITIZER in
   address) SANITIZERS_ARGS="-DENABLE_ASAN=ON" ;;
   undefined) SANITIZERS_ARGS="-DENABLE_UB_SANITIZER=ON" ;;
   *) SANITIZERS_ARGS="" ;;
 esac
+
+export LSAN_OPTIONS="verbosity=1:log_threads=1"
+
+# Workaround for a LeakSanitizer crashes,
+# see https://github.com/google/oss-fuzz/issues/11798.
+if [ "$ARCHITECTURE" = "aarch64" ]; then
+    export ASAN_OPTIONS=detect_leaks=0
+fi
 
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
@@ -53,15 +54,19 @@ cmake_args=(
     -DOSS_FUZZ=ON
     -DLUA_USE_APICHECK=ON
     -DLUA_USE_ASSERT=ON
+    -DLUAJIT_USE_SYSMALLOC=ON
+    -DLUAJIT_ENABLE_GC64=ON
     $SANITIZERS_ARGS
+
+    -DCMAKE_BUILD_TYPE=Debug
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
-    -DCMAKE_C_FLAGS="${CFLAGS}"
+    -DCMAKE_C_FLAGS="${CFLAGS} -Wno-error=unused-command-line-argument -fno-sanitize=unsigned-integer-overflow"
 
     # C++ compiler
     -DCMAKE_CXX_COMPILER="${CXX}"
-    -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Wno-error=unused-command-line-argument -fno-sanitize=unsigned-integer-overflow"
 
     # Linker
     -DCMAKE_LINKER="${LD}"
@@ -70,7 +75,7 @@ cmake_args=(
     -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
 
     # Dependencies
-    -DENABLE_BUNDLED_LIBCURL=OFF
+    -DENABLE_BUNDLED_ICU=ON
     -DENABLE_BUNDLED_LIBUNWIND=OFF
     -DENABLE_BUNDLED_ZSTD=OFF
 )
@@ -80,22 +85,23 @@ git config --global --add safe.directory '*'
 
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
-cmake "${cmake_args[@]}" -S . -B build -G Ninja
-cmake --build build --target fuzzers --parallel
+cmake "${cmake_args[@]}" -S . -B build
+cmake --build build --target fuzzers --parallel --verbose
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
-for f in $(find build/test/fuzz/ -name '*_fuzzer' -type f);
+# Postfix `_fuzzer` is used in Tarantool, postfix `_test` is
+# used in Lua C API tests [1].
+#
+# 1. https://github.com/ligurio/lua-c-api-tests/
+cp test/static/*.dict test/static/*.options $OUT/
+for f in $(find build/test/fuzz/ \( -name '*_fuzzer' -o -name '*_test' \) -type f);
 do
   name=$(basename $f);
-  module=$(echo $name | sed 's/_fuzzer//')
+  module=$(echo $name | sed 's/_fuzzer//' | sed 's/_test//' )
   corpus_dir="test/static/corpus/$module"
   echo "Copying for $module";
   cp $f $OUT/
-  dict_path="test/static/$name.dict"
-  if [ -e "$dict_path" ]; then
-    cp $dict_path $OUT/
-  fi
   if [ -e "$corpus_dir" ]; then
-    zip -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
+    zip --quiet -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
   fi
 done

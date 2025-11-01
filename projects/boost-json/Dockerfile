@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-#RUN apt-get update && apt-get install -y g++
 
 RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
 RUN pwd
@@ -30,6 +29,7 @@ libs/container \
 libs/container_hash/ \
 libs/core \
 libs/describe \
+libs/endian \
 libs/headers/ \
 libs/intrusive/ \
 libs/move/ \

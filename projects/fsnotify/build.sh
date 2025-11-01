@@ -15,9 +15,7 @@
 #
 ################################################################################
 
+cd $SRC/fsnotify
+
 cp $SRC/fuzz_test.go ./
-go mod tidy
-printf "package fsnotify\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > register.go
-go mod tidy
-echo building
-compile_native_go_fuzzer github.com/fsnotify/fsnotify FuzzInotify FuzzInotify
+compile_native_go_fuzzer_v2 github.com/fsnotify/fsnotify FuzzInotify FuzzInotify

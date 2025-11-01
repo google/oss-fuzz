@@ -15,6 +15,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+import com.code_intelligence.jazzer.api.BugDetectors;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 import com.thoughtworks.xstream.XStream;
@@ -35,20 +36,24 @@ class FuzzObj {
 
 public class XmlFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-    XStream xstream;
-		switch(data.consumeInt(1,3)){
-			case 1: xstream = new XStream(new DomDriver());
-			break;
-   		case 2: xstream = new XStream(new StaxDriver());
-			break;
-      case 3: xstream = new XStream();
-      break;
-			default: return;
-		}
-    try{
-      FuzzObj fo = (FuzzObj) xstream.fromXML(data.consumeRemainingAsString());
-    }
-    catch (StreamException | CannotResolveClassException | ConversionException e){
+    try (AutoCloseable ignored = BugDetectors.allowNetworkConnections()) {
+      XStream xstream;
+      switch(data.consumeInt(1,3)){
+          case 1: xstream = new XStream(new DomDriver());
+              break;
+          case 2: xstream = new XStream(new StaxDriver());
+              break;
+          case 3: xstream = new XStream();
+              break;
+          default: return;
+      }
+      try{
+          FuzzObj fo = (FuzzObj) xstream.fromXML(data.consumeRemainingAsString());
+      }
+      catch (StreamException | CannotResolveClassException | ConversionException e){
+          return;
+      }
+    } catch (Exception e) {
       return;
     }
   }

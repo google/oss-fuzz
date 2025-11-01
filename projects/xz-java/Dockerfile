@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN apt-get install ant -y
+RUN apt-get update && apt-get install ant -y
 RUN git clone --depth 1 https://github.com/tukaani-project/xz-java $SRC/xz-java
 
 COPY build.sh $SRC/

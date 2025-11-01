@@ -19,12 +19,13 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y git autoconf automake libtool make \
    libreadline-dev texinfo libjson-c-dev pkg-config bison flex python3-pip \
    libc-ares-dev python3-dev python3-sphinx build-essential libsystemd-dev \
-   libsnmp-dev libcap-dev libelf-dev libpcre3-dev libpcre2-dev
-RUN pip3 install pytest
-RUN git clone https://github.com/CESNET/libyang.git
+   libsnmp-dev libcap-dev libelf-dev libpcre3-dev libpcre2-dev \
+   protobuf-c-compiler libprotobuf-c-dev
+RUN git clone -b v2.0.0 https://github.com/CESNET/libyang.git
 
 RUN git clone --depth 1 --branch fuzz https://github.com/FRRouting/frr
 
 RUN git clone --depth 1 https://github.com/qlyoung/corpi
-COPY build.sh $SRC
+RUN git clone --depth 1 https://github.com/pytest-dev/pytest
+COPY build.sh run_tests.sh $SRC/
 WORKDIR $SRC/frr

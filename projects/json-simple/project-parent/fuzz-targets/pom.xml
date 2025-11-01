@@ -17,20 +17,19 @@
 
     <dependencies>
 
-        <dependency>
+	<dependency>
             <groupId>com.code-intelligence</groupId>
             <artifactId>jazzer-junit</artifactId>
-            <version>0.16.0</version>
+            <version>0.19.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.9.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
+	    <scope>test</scope>
+	</dependency>
+	<dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>Fuzzing-SNAPSHOT</version>

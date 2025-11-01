@@ -168,6 +168,8 @@ def get_error_frame(crash_info):
   for crash_frames in crash_info.frames:
     for frame in crash_frames:
       # TODO(metzman): Do something less fragile here.
+      if frame.function_name is None:
+        continue
       if state in frame.function_name:
         return frame
   return None
@@ -178,7 +180,10 @@ def get_error_source_info(crash_info):
   frame = get_error_frame(crash_info)
   if not frame:
     return (None, 1)
-  return redact_src_path(frame.filename), int(frame.fileline or 1)
+  try:
+    return redact_src_path(frame.filename), int(frame.fileline or 1)
+  except TypeError:
+    return (None, 1)
 
 
 def get_rule_index(crash_type):
@@ -240,5 +245,7 @@ def get_sarif_data(stacktrace, target_path):
 def write_stacktrace_to_sarif(stacktrace, target_path, workspace):
   """Writes a description of the crash in stacktrace to a SARIF file."""
   data = get_sarif_data(stacktrace, target_path)
+  if not os.path.exists(workspace.sarif):
+    os.makedirs(workspace.sarif)
   with open(os.path.join(workspace.sarif, 'results.sarif'), 'w') as file_handle:
     file_handle.write(json.dumps(data))

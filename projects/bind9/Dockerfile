@@ -31,7 +31,10 @@ RUN apt-get -y install		\
 	liburcu-dev		\
 	libuv1-dev		\
 	pkg-config		\
-	zip
+	zip \
+    libcmocka-dev && \
+    python3 -m pip install  -U meson ninja
+
 RUN git clone --depth 1 https://gitlab.isc.org/isc-projects/bind9.git
 WORKDIR bind9
-COPY build.sh $SRC/
+COPY *.sh *.diff $SRC/

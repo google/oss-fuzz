@@ -23,16 +23,20 @@ zip "${OUT}/FuzzED25529SignerVerfier_seed_corpus.zip" corpus/ed25519/*
 rm go.mod
 rm go.sum
 cd $SRC/sigstore
+go get github.com/AdaLogics/go-fuzz-headers
 
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
-
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz FuzzGetPassword FuzzGetPassword
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzLoadCertificates FuzzLoadCertificates
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalCertificatesFromPEM FuzzUnmarshalCertificatesFromPEM
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalPEMToPublicKey FuzzUnmarshalPEMToPublicKey
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzECDSASigner FuzzECDSASigner
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeDigest FuzzComputeDigest
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeVerifying FuzzComputeVerifying
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzED25529SignerVerfier FuzzED25529SignerVerfier
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzRSAPKCS1v15SignerVerfier FuzzRSAPKCS1v15SignerVerfier
-compile_native_go_fuzzer github.com/sigstore/sigstore/test/fuzz/signature FuzzRSAPSSSignerVerfier FuzzRSAPSSSignerVerfier
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz FuzzGetPassword FuzzGetPassword
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzLoadCertificates FuzzLoadCertificates
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalCertificatesFromPEM FuzzUnmarshalCertificatesFromPEM
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalPEMToPublicKey FuzzUnmarshalPEMToPublicKey
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzCertificate FuzzCertificate
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzPrivateKey FuzzPrivateKey
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzPublicKey FuzzPublicKey
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalOtherNameSAN FuzzUnmarshalOtherNameSAN
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzMarshalUnmarshalOtherNameSAN FuzzMarshalUnmarshalOtherNameSAN
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/signature FuzzECDSASigner FuzzECDSASigner
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeDigest FuzzComputeDigest
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/signature FuzzComputeVerifying FuzzComputeVerifying
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/signature FuzzED25529SignerVerfier FuzzED25529SignerVerfier
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/signature FuzzRSAPKCS1v15SignerVerfier FuzzRSAPKCS1v15SignerVerfier
+compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/signature FuzzRSAPSSSignerVerfier FuzzRSAPSSSignerVerfier

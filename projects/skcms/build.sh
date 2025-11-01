@@ -15,19 +15,19 @@
 #
 ################################################################################
 
-$CXX -c $CXXFLAGS skcms.cc -DIS_FUZZING_WITH_LIBFUZZER
-$CC -c $CFLAGS fuzz/fuzz_iccprofile_info.c fuzz/fuzz_iccprofile_atf.c fuzz/fuzz_iccprofile_transform.c -DIS_FUZZING_WITH_LIBFUZZER
-$CXX $CXXFLAGS skcms.o fuzz_iccprofile_info.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_info
-$CXX $CXXFLAGS skcms.o fuzz_iccprofile_atf.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_atf
-$CXX $CXXFLAGS skcms.o fuzz_iccprofile_transform.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_transform
+$CXX -c $CXXFLAGS skcms.cc src/skcms_TransformBaseline.cc -DIS_FUZZING_WITH_LIBFUZZER -DSKCMS_DISABLE_HSW -DSKCMS_DISABLE_SKX
+$CC -c $CFLAGS fuzz/fuzz_iccprofile_info.c fuzz/fuzz_iccprofile_atf.c fuzz/fuzz_iccprofile_transform.c -DIS_FUZZING_WITH_LIBFUZZER -DSKCMS_DISABLE_HSW -DSKCMS_DISABLE_SKX
+$CXX $CXXFLAGS skcms.o skcms_TransformBaseline.o fuzz_iccprofile_info.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_info
+$CXX $CXXFLAGS skcms.o skcms_TransformBaseline.o fuzz_iccprofile_atf.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_atf
+$CXX $CXXFLAGS skcms.o skcms_TransformBaseline.o fuzz_iccprofile_transform.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_transform
 
 # They share the same options
 cp iccprofile.options $OUT/iccprofile_info.options
 cp iccprofile.options $OUT/iccprofile_atf.options
 cp iccprofile.options $OUT/fuzz_iccprofile_transform.options
 # They all share the same seed corpus of icc profiles
-cp iccprofile_seed_corpus.zip $OUT/iccprofile_info_seed_corpus.zip
-cp iccprofile_seed_corpus.zip $OUT/iccprofile_atf_seed_corpus.zip
-cp iccprofile_seed_corpus.zip $OUT/iccprofile_transform_seed_corpus.zip
+#cp iccprofile_seed_corpus.zip $OUT/iccprofile_info_seed_corpus.zip
+#cp iccprofile_seed_corpus.zip $OUT/iccprofile_atf_seed_corpus.zip
+#cp iccprofile_seed_corpus.zip $OUT/iccprofile_transform_seed_corpus.zip
 # They all use the same dictionary file.
 cp iccprofile.dict $OUT/iccprofile.dict

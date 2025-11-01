@@ -15,8 +15,8 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update
-RUN apt-get install -y build-essential libncursesw5-dev \
+RUN apt-get update && \
+    apt-get install -y build-essential libncursesw5-dev \
 	libreadline-dev libssl-dev libgdbm-dev \
 	libc6-dev libsqlite3-dev tk-dev libbz2-dev \
 	zlib1g-dev libffi-dev

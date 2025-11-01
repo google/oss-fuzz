@@ -1,4 +1,4 @@
-homepage: "https://github.com/lua/lua"
+homepage: "https://www.lua.org/"
 language: c
 primary_contact: "roberto@inf.puc-rio.br"
 auto_ccs:
@@ -6,3 +6,6 @@ auto_ccs:
   - "david@adalogics.com"
   - "estetus@gmail.com"
 main_repo: 'https://github.com/lua/lua'
+architectures:
+  - i386
+  - x86_64

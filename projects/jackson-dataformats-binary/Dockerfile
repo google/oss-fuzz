@@ -17,13 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 RUN apt-get update && apt-get install -y maven
 
-ENV JACKSON_BRANCH=2.15
-
-RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-dataformats-binary
-RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-databind
-RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-core
-RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-annotations
+RUN git clone --depth 1 https://github.com/FasterXML/jackson-dataformats-binary
 
 COPY build.sh $SRC/
-COPY CborFuzzer.java SmileFuzzer.java $SRC/
-WORKDIR $SRC/
+COPY *Fuzzer.java $SRC/
+WORKDIR $SRC/jackson-dataformats-binary

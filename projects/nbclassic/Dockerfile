@@ -14,7 +14,13 @@
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y npm libffi-dev
-RUN pip3 install --upgrade pip cython notebook
+RUN python3 -m pip install --upgrade pip
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup install nightly
+RUN rustup default nightly
+RUN python3 -m pip install --upgrade pip cython notebook
+RUN git clone --depth=1 https://github.com/python-jsonschema/jsonschema-specifications jsonschema_specifications
 RUN git clone https://github.com/jupyter/nbclassic nbclassic
 COPY *.sh *py $SRC/
 WORKDIR $SRC/nbclassic

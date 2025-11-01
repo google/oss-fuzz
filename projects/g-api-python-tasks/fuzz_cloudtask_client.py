@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import sys
 import mock
 import atheris
 
-from google.auth import credentials as ga_credentials
-from google.cloud.tasks_v2.services.cloud_tasks import CloudTasksClient
-from google.cloud.tasks_v2.types import queue
-from google.cloud.tasks_v2.types import cloudtasks
+with atheris.instrument_imports():
+    from google.auth import credentials as ga_credentials
+    from google.cloud.tasks_v2.services.cloud_tasks import CloudTasksClient
+    from google.cloud.tasks_v2.types import queue
+    from google.cloud.tasks_v2.types import cloudtasks
 
 
 def get_request_queue(fdp, client):
@@ -68,8 +68,7 @@ def TestOneInput(data):
 
 
 def main():
-    atheris.instrument_all()
-    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()
 
 

@@ -14,16 +14,23 @@
 # limitations under the License.
 #
 ################################################################################
-cd lib
+cd crates
 
 # Copy dictionaries, but don't fail if there aren't any.
 cp fuzz/fuzz_targets/*.dict $OUT/ || true
 
-cargo fuzz build -O --debug-assertions
+# Add additional compiler flags required for a successful build.
+export RUSTFLAGS="$RUSTFLAGS --cfg surrealdb_unstable"
 
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
+cargo fuzz build -O --debug-assertions --fuzz-dir fuzz
+
+FUZZ_TARGET_OUTPUT_DIR="fuzz/target/x86_64-unknown-linux-gnu/release"
 for f in fuzz/fuzz_targets/*.rs
 do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
+    # Create fuzz corpus, but don't fail if there aren't any.
+    zip $OUT/${FUZZ_TARGET_NAME}_seed_corpus.zip fuzz/fuzz_targets/${FUZZ_TARGET_NAME}_seed_corpus/* || true
 done
+
+find $SRC/surrealdb_website -name '*.surql' -exec zip -r $OUT/fuzz_executor_seed_corpus.zip {} \;

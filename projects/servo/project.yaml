@@ -9,4 +9,6 @@ auto_ccs:
   - "mrlachatte@gmail.com"
   - "vgosu@mozilla.com"
   - "david@adalogics.com"
+  - "ealvarez@mozilla.com"
+  - "fuzzing@fuchsia.dev"
 main_repo: 'https://github.com/servo/servo'

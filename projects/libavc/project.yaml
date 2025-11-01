@@ -4,14 +4,15 @@ primary_contact: "harish.mahendrakar@ittiam.com"
 sanitizers:
   - address
   - memory
-  - undefined:
-     experimental: True
+  - undefined
 auto_ccs:
   - aadithya.kamath@ittiam.com
-  - ashwin.natesan@ittiam.com
   - harish.mahendrakar@ittiam.com
+  - mallikarjun.kamble@ittiam.com  
   - ram.mohan@ittiam.com
+  - saurabh.agrawal@ittiam.com
   - umang.saini@ittiam.com
+  - vaibhav.valvaiker@ittiam.com
   - vijayakumar.gr@ittiam.com
   - essick@google.com
   - lajos@google.com

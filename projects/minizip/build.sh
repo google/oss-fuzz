@@ -19,6 +19,9 @@
 if [ "$ARCHITECTURE" = 'i386' ]; then
   rm /usr/lib/i386-linux-gnu/libssl.so*
   rm /usr/lib/i386-linux-gnu/libcrypto.so*
+  rm /usr/lib/i386-linux-gnu/libz.so*
+  rm /usr/lib/i386-linux-gnu/libbz2.so*
+  rm /usr/lib/i386-linux-gnu/liblzma.so*
 fi
 
 # Build project

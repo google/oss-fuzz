@@ -1,12 +1,13 @@
 homepage: "https://aomedia.org/av1-features/get-started/"
 language: c++
-primary_contact: "urvang@google.com"
+primary_contact: "wtc@google.com"
 sanitizers:
 - address
 - memory
 - undefined
 auto_ccs:
-- jhuoponen@google.com
+- jianj@google.com
+- jingning@google.com
 - jzern@google.com
 - wtc@google.com
 - yunqingwang@google.com

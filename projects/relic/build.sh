@@ -15,13 +15,13 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL"
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -Wno-deprecated-literal-operator"
 export LIBFUZZER_LINK="$LIB_FUZZING_ENGINE"
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_74_0.tar.bz2
-cd boost_1_74_0/
+tar jxf boost_1_84_0.tar.bz2
+cd boost_1_84_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/

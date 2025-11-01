@@ -1,0 +1,11 @@
+homepage: https://github.com/mybatis/mybatis-3
+main_repo: https://github.com/mybatis/mybatis-3
+language: jvm
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- arthur.chan@adalogics.com

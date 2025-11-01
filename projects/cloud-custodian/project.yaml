@@ -1,0 +1,13 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/cloud-custodian/cloud-custodian
+language: python
+main_repo: https://github.com/cloud-custodian/cloud-custodian
+sanitizers:
+- address
+- undefined
+primary_contact: "kapil@stacklet.io"
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- arthur.chan@adalogics.com

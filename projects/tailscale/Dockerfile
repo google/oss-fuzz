@@ -17,10 +17,10 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y wget
 RUN git clone --depth 1 https://github.com/tailscale/tailscale
-RUN wget https://go.dev/dl/go1.20.1.linux-amd64.tar.gz \
+RUN wget https://go.dev/dl/go1.23.1.linux-amd64.tar.gz \
     && mkdir temp-go \
     && rm -rf /root/.go/* \
-    && tar -C temp-go/ -xzf go1.20.1.linux-amd64.tar.gz \
+    && tar -C temp-go/ -xzf go1.23.1.linux-amd64.tar.gz \
     && mv temp-go/go/* /root/.go/
 
 COPY build.sh $SRC/

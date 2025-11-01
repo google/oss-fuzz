@@ -62,6 +62,18 @@ run_test(const uint8_t *data,
     dstProfile = cmsCreateLab4Profile(NULL);
     dstFormat = TYPE_Lab_DBL;
   }
+  else if (dstVal == 8){
+    dstProfile = cmsCreate_OkLabProfile(NULL);
+    dstFormat = (FLOAT_SH(1)|COLORSPACE_SH(PT_MCH3)|CHANNELS_SH(3)|BYTES_SH(0));
+  }
+  else if (dstVal == 9){
+    dstProfile = cmsCreateNULLProfile();
+    dstFormat = 0;
+  }
+  else if (dstVal == 10){
+    dstProfile = cmsCreateBCHSWabstractProfile(17, 0, 1.2, 0, 3, 5000, 5000);
+    dstFormat = TYPE_Lab_DBL;
+  }
   else {
     dstProfile = cmsCreate_sRGBProfile();
     dstFormat = TYPE_RGB_8;
@@ -128,7 +140,7 @@ run_test(const uint8_t *data,
       cmsCIEXYZTRIPLE out[4];
       cmsDoTransform(hTransform, input, out, 1);
     }
-    else if (dstFormat == TYPE_Lab_DBL) {
+    else if (dstFormat == TYPE_Lab_DBL || dstFormat == (FLOAT_SH(1)|COLORSPACE_SH(PT_MCH3)|CHANNELS_SH(3)|BYTES_SH(0))) {
       cmsCIELab Lab1;
       cmsDoTransform(hTransform, input, &Lab1, 1);
     }
@@ -148,7 +160,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   uint32_t flags         = *((const uint32_t *)data+0);
   uint32_t intent        = *((const uint32_t *)data+1) % 16;
-  int decider = *((int*)data+2) % 10;
+  int decider = *((int*)data+2) % 11;
   data += 12;
   size -= 12;
 

@@ -14,17 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install --yes cmake make autoconf automake autopoint libtool wget po4a
-RUN git clone --depth 1 https://github.com/madler/zlib.git
-RUN git clone --depth 1 https://github.com/nih-at/libzip.git
-RUN wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
-RUN git clone https://git.tukaani.org/xz.git
-RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
-RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/extra-cmake-modules.git
-RUN git clone --depth 1 -b kf5 https://invent.kde.org/frameworks/karchive.git
-COPY build.sh $SRC
-COPY karchive_fuzzer.cc $SRC
-WORKDIR karchive
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
 
+RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/karchive.git
+RUN $SRC/karchive/autotests/ossfuzz/prepare_build.sh
+RUN cp $SRC/karchive/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
 
+WORKDIR $SRC/karchive

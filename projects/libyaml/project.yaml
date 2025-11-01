@@ -1,19 +1,17 @@
 homepage: https://github.com/yaml/libyaml
 language: c++
-primary_contact: "sigmavirus24@gmail.com"
+primary_contact: ingy@ingy.net
 auto_ccs:
-  - "alex.gaynor@gmail.com"
-  - "perlpunks@googlemail.com"
-  - "ingy@ingy.net"
+- perlpunks@googlemail.com
 fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
+- libfuzzer
+- afl
+- honggfuzz
 sanitizers:
-  - address
-  - memory
-  - undefined
+- address
+- memory
+- undefined
 architectures:
-  - x86_64
-  - i386
-main_repo: 'https://github.com/yaml/libyaml'
+- x86_64
+- i386
+main_repo: https://github.com/yaml/libyaml

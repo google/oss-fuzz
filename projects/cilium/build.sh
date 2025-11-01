@@ -15,5 +15,8 @@
 #
 ################################################################################
 
+
 $SRC/cilium/test/fuzzing/oss-fuzz-build.sh
 $SRC/cncf-fuzzing/projects/cilium/build.sh
+
+zip "$OUT/fuzz_seed_corpus.zip" "$SRC"/go-fuzz-corpus/json/corpus/*
