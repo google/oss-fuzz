@@ -16,10 +16,15 @@
 ################################################################################
 
 cd /tmp
-curl --silent -O https://storage.googleapis.com/golang/getgo/installer_linux
-chmod +x ./installer_linux
-SHELL="bash" ./installer_linux -version=1.19
-rm -rf ./installer_linux
+
+export GOROOT=/root/.go
+wget https://go.dev/dl/go1.25.0.linux-amd64.tar.gz
+mkdir temp-go
+tar -C temp-go/ -xzf go1.25.0.linux-amd64.tar.gz
+
+mkdir /root/.go/
+mv temp-go/go/* /root/.go/
+rm -rf temp-go
 
 echo 'Set "GOPATH=/root/go"'
 echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
@@ -37,3 +42,14 @@ git clone https://github.com/AdamKorcz/go-118-fuzz-build
 cd go-118-fuzz-build
 go build
 mv go-118-fuzz-build $GOPATH/bin/
+
+# Build v2 binaries
+git checkout v2
+go build .
+mv go-118-fuzz-build $GOPATH/bin/go-118-fuzz-build_v2
+pushd cmd/convertLibFuzzerTestcaseToStdLibGo
+  go build . && mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
+popd
+pushd cmd/addStdLibCorpusToFuzzer
+  go build . && mv addStdLibCorpusToFuzzer $GOPATH/bin/
+popd

@@ -15,9 +15,9 @@
 ################################################################################
 cd $SRC/pest/meta
 RUSTFLAGS="" cargo bootstrap
-cargo +nightly fuzz build
+cargo fuzz build
 cd $SRC/pest/grammars
-cargo +nightly fuzz build
+cargo fuzz build
 cp $SRC/pest/meta/fuzz/target/x86_64-unknown-linux-gnu/release/parser $OUT/
 cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/toml $OUT/
 cp $SRC/pest/grammars/fuzz/target/x86_64-unknown-linux-gnu/release/json $OUT/

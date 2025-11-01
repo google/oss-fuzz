@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 const { FuzzedDataProvider } = require("@jazzer.js/core");
+const { getCompilerOptions } = require("./fuzz_util");
 const ts = require("typescript");
 
 module.exports.fuzz = function(data) {
@@ -22,41 +23,24 @@ module.exports.fuzz = function(data) {
 
   try {
     const fileName = provider.consumeString(10) + ".ts";
-    const filePath = provider.consumeString(10) + "/" + fileName;
-    const fileContent = provider.consumeString(100);
+    const fileContent = provider.consumeString(provider.consumeIntegralInRange(1, 10000));
 
     const sourceFile = ts.createSourceFile(fileName, fileContent, ts.ScriptTarget.Latest);
+    const compilerOptions = getCompilerOptions(provider);
 
-    const result = ts.parseSourceFile(sourceFile, ts.ScriptTarget.Latest, true);
-    const _diagnostics = result.diagnostics.map(diagnostic => {
-      return {
-        message: diagnostic.messageText,
-        start: diagnostic.start,
-        length: diagnostic.length,
-        file: diagnostic.file.fileName
-      };
-    });
-
-
-    const program = ts.createProgram([fileName], { allowJs: true });
+    const program = ts.createProgram([fileName], compilerOptions);
     const printer = ts.createPrinter();
-    const nodes = ts.createNodeArray([sourceFile]);
-    const transformers = [() => node => node];
-    const identifier = ts.createIdentifier(provider.consumeString(10));
-    const typeNode = ts.createTypeReferenceNode(identifier, []);
 
-    ts.createSourceMapFile(sourceFile.fileName, filePath, fileContent, [], [], [], program.getCompilerOptions());
+    ts.createSourceMapSource(sourceFile.fileName, fileContent, provider.consumeBoolean());
     printer.printFile(sourceFile);
+    const watchOptions = getWatchOptions(provider);
 
-    ts.transform(nodes, transformers);
-    ts.createSymbol(ts.SymbolFlags.Type, identifier);
-    ts.createType(typeNode);
-
-    const watchCompilerHost = ts.createWatchCompilerHost([fileName], { allowJs: true }, ts.sys, ts.createSemanticDiagnosticsBuilderProgram, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
+    ts.createWatchCompilerHost([fileName] /* rootFiles */, compilerOptions /* compilerOptions */,
+      ts.sys /* System */, ts.createSemanticDiagnosticsBuilderProgram /* createProgram */,
+      undefined /* DiagnosticReporter */, undefined, undefined, watchOptions /* watchOptions */);
 
     program.getTypeChecker();
     program.emit();
-    program.getTypeRoots();
     ts.getParsedCommandLineOfConfigFile(fileName, {}, ts.sys).errors;
     program.getDeclarationDiagnostics();
   }
@@ -68,10 +52,55 @@ module.exports.fuzz = function(data) {
 };
 
 function ignoredError(error) {
-  return !!ignored.find((message) => error.message.indexOf(message) !== -1);
+  return !!ignored.find((message) => error.message.toLowerCase().indexOf(message) !== -1);
 }
 
 const ignored = [
-  "is not a function"
+  // TypeScript not interested: https://github.com/microsoft/TypeScript/issues/55480
+  "maximum call stack size exceeded",
+  "host.onunrecoverableconfigfilediagnostic is not a function", // weird bug
 ];
+
+function getWatchOptions(provider) {
+  return {
+    watchFile: getWatchFileKind(provider),
+    watchDirectory: getWatchDirectoryKind(provider),
+    fallbackPolling: getFallbackPollingKind(provider),
+    synchronousWatchDirectory: provider.consumeBoolean(),
+    excludeDirectories: [],
+    excludeFiles: [],
+  }
+}
+
+function getWatchFileKind(provider) {
+  switch (provider.consumeIntegralInRange(0, 6)) {
+    case 0: return ts.WatchFileKind.FixedPollingInterval;
+    case 1: return ts.WatchFileKind.PriorityPollingInterval;
+    case 2: return ts.WatchFileKind.DynamicPriorityPolling;
+    case 3: return ts.WatchFileKind.UseFsEvents;
+    case 4: return ts.WatchFileKind.UseFsEventsOnParentDirectory;
+    case 5: return ts.WatchFileKind.FixedChunkSizePolling;
+    case 6: return provider.consumeString(provider.consumeIntegralInRange(0, 100));
+  }
+}
+
+function getWatchDirectoryKind(provider) {
+  switch (provider.consumeIntegralInRange(0, 4)) {
+    case 0: return ts.WatchDirectoryKind.UseFsEvents;
+    case 1: return ts.WatchDirectoryKind.FixedChunkSizePolling;
+    case 2: return ts.WatchDirectoryKind.DynamicPriorityPolling;
+    case 3: return ts.WatchDirectoryKind.FixedPollingInterval;
+    case 4: return provider.consumeString(provider.consumeIntegralInRange(0, 100));
+  }
+}
+
+function getFallbackPollingKind(provider) {
+  switch (provider.consumeIntegralInRange(0, 4)) {
+    case 0: return ts.PollingWatchKind.FixedInterval;
+    case 1: return ts.PollingWatchKind.PriorityInterval;
+    case 2: return ts.PollingWatchKind.DynamicPriority;
+    case 3: return ts.PollingWatchKind.FixedChunkSize;
+    case 4: return provider.consumeString(provider.consumeIntegralInRange(0, 100));
+  }
+}
 

@@ -36,6 +36,8 @@ cd $SRC/fuzzing-headers/
 ./install.sh
 
 cd $SRC/libtheora/
+# patch configure since the baseimage is using an older autoconf
+sed -i 's/AC_PREREQ(\[[^]]*\])/AC_PREREQ([2.60])/' configure.ac
 ./autogen.sh
 
 if [[ $CFLAGS = *sanitize=memory* || $CFLAGS = *-m32* ]]

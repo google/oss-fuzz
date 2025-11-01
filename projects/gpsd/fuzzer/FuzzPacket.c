@@ -30,9 +30,10 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     }
 
     {
+        struct gpsd_errout_t errout;
         struct gps_lexer_t lexer;
 
-        lexer_init(&lexer);
+        lexer_init(&lexer, &errout);
         lexer.errout.debug = 0;
 
         memcpy(lexer.inbufptr = lexer.inbuffer, Data, Size);
@@ -41,11 +42,12 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
         packet_parse(&lexer);
     }
     {
+        struct gpsd_errout_t errout;
         struct gps_lexer_t lexer;
         int nullfd = open("/dev/null", O_RDONLY);
         ssize_t st;
 
-        lexer_init(&lexer);
+        lexer_init(&lexer, &errout);
         lexer.errout.debug = 0;
 
         memcpy(lexer.inbufptr = lexer.inbuffer, Data, Size);

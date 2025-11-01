@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 # Fuzzer runner. Appends .options arguments and seed corpus to users args.
 # Usage: $0 <fuzzer_name> <fuzzer_args>
+
+sysctl -w vm.mmap_rnd_bits=28
 
 export PATH=$OUT:$PATH
 cd $OUT
@@ -193,7 +195,7 @@ elif [[ "$FUZZING_ENGINE" = centipede ]]; then
   CMD_LINE="$OUT/centipede --workdir=$CENTIPEDE_WORKDIR --corpus_dir=\"$CORPUS_DIR\" --fork_server=1 --exit_on_crash=1 --timeout=1200 --rss_limit_mb=4096 --address_space_limit_mb=5120 $(get_dictionary) --binary=\"$OUT/${FUZZER}\" $(get_extra_binaries) $*"
 else
 
-  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"
+  CMD_LINE="$OUT/$FUZZER -- $FUZZER_ARGS $*"
 
   if [ -z ${SKIP_SEED_CORPUS:-} ]; then
     CMD_LINE="$CMD_LINE $CORPUS_DIR"

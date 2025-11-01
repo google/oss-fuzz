@@ -6,5 +6,9 @@ main_repo: "https://github.com/itext/itext7"
 sanitizers:
   - address
 vendor_ccs:
+  - "wagner@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "hlin@code-intelligence.com"
   - "bug-disclosure@code-intelligence.com"
   - "michael.nothhard@code-intelligence.com"

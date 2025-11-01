@@ -69,7 +69,9 @@ TIMEOUT=1h
 objects=""
 
 # Number of CPUs available, this is needed for running tests in parallel.
+# Set the max number of parallel jobs to be the CPU count and a max of 10.
 NPROC=$(nproc)
+MAX_PARALLEL_COUNT=10
 
 CORPUS_DIR=${CORPUS_DIR:-"/corpus"}
 
@@ -97,8 +99,15 @@ function run_fuzz_target {
 
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
-  if (( $? != 0 )); then
+  cov_retcode=$?
+
+  target_error_log="$LOGS_DIR/${target}_error.log"
+  grep -E "^==[0-9]+== ERROR: libFuzzer:" "$LOGS_DIR/$target.log" > "$target_error_log"
+  grep_retcode=$?
+
+  if (( $cov_retcode != 0 || $grep_retcode == 0 )); then
     echo "Error occured while running $target:"
+    echo "Cov returncode: $cov_retcode, grep returncode: $grep_retcode"
     cat $LOGS_DIR/$target.log
   fi
 
@@ -113,7 +122,7 @@ function run_fuzz_target {
     # Extract fuzztest binary name from fuzztest wrapper script.
     target=(${target//@/ }[0])
   fi
-  profraw_update.py $OUT/$target $profraw_file_mask $profraw_file_mask
+  profraw_update.py $OUT/$target -i $profraw_file_mask
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
@@ -124,8 +133,79 @@ function run_fuzz_target {
   llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 
+  # If grep returned zero an error was matched.
+  echo "Coverage error, creating log file: $FUZZER_STATS_DIR/${target}_error.log"
+  if (( $cov_retcode != 0 || $grep_retcode == 0 )); then
+    mv "$target_error_log" "$FUZZER_STATS_DIR/${target}_error.log";
+  fi
+
   # For introspector.
   llvm-cov show -instr-profile=$profdata_file -object=$target -line-coverage-gt=0 $shared_libraries $BRANCH_COV_ARGS $LLVM_COV_COMMON_ARGS > ${TEXTCOV_REPORT_DIR}/$target.covreport
+}
+
+# The native_go_fuzzers.json file contains a list of
+# fuzzers that are std lib harnesses. This function
+# reads that json list to see if the name of a fuzzer
+# exists in that list.
+is_std_lib_fuzzer() {
+  local element="$1"
+  local file="$OUT/native_go_fuzzers.json"
+
+  if [ -z "$element" ]; then
+    echo "Usage: check_in_list \"element to check\""
+    return 1
+  fi
+
+  if [ ! -s "$file" ]; then
+    echo "false"
+    return 0
+  fi
+
+  if jq -e --arg item "$element" 'index($item) != null' "$file" > /dev/null; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
+# get_function_name reads a value from a simple json format:
+# 
+# {
+#  "fuzzerBinaryName1": "FuzzFunctionName1",
+#  "fuzzerBinaryName2": "FuzzFunctionName2"
+# }
+# 
+# In this case, we call `get_function_name fuzzerBinaryName1
+# $OUT/fuzzer_function_names.json` to get "FuzzFunctionName1".
+# We need this when setting up a temporary directory for
+# getting the coverage.
+# Go reads corpus files from `testdata/fuzz/FuzzFunctionName1`,
+# so we need the function name instead of the executable binary name.
+get_function_name() {
+  local key="$1"
+  local file="$2"
+
+  if [ -z "$key" ] || [ -z "$file" ]; then
+    echo "Usage: get_function_name <key> <file>"
+    return 1
+  fi
+
+  # If file doesn't exist or is empty
+  if [ ! -s "$file" ]; then
+    echo "Error: File '$file' does not exist or is empty."
+    return 1
+  fi
+
+  # Use jq to extract the value
+  local result
+  result=$(jq -r --arg k "$key" '.[$k] // empty' "$file")
+
+  if [ -z "$result" ]; then
+    echo "Error: Key '$key' not found in '$file'."
+    return 1
+  else
+    echo "$result"
+  fi
 }
 
 function run_go_fuzz_target {
@@ -135,30 +215,68 @@ function run_go_fuzz_target {
   export FUZZ_CORPUS_DIR="$CORPUS_DIR/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
 
-  # setup for native go fuzzers
-  cd $OUT
-  mkdir -p "testdata/fuzz/${target}"
-  cp -r "${FUZZ_CORPUS_DIR}" "testdata/fuzz/"
+  # "NAME" in testdata/fuzz/NAME needs to be the function
+  # name of the fuzz test in the compiled binary. We have
+  # stored that name in $OUT/fuzzer_function_names.json.
+  # We also need this parameter for go-fuzz fuzzers, to
+  # run only the single function. Otherwise, the test may
+  # run other tests that are included in the binary
+  function_names_file="$OUT/fuzzer_function_names.json"
+  function_name=$(get_function_name "$target" "$function_names_file")
 
-  # rewrite libFuzzer corpus to Std Go corpus if native fuzzing
-  grep "TestFuzzCorpus" $target > /dev/null 2>&1 && $SYSGOPATH/bin/convertcorpus $target "testdata/fuzz/${target}"
-  cd -
+  if [[ "$(is_std_lib_fuzzer "${target}")" == "true" ]]; then
 
-  timeout $TIMEOUT $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
-  if (( $? != 0 )); then
-    echo "Error occured while running $target:"
-    cat $LOGS_DIR/$target.log
+    # Create the corpus dir testdata/fuzz/NAME
+    mkdir -p "${OUT}/testdata/fuzz/${function_name}"
+
+    # Now we copy the corpus generated at runtime into FUZZ_CORPUS_DIR.
+    # In the process, we convert it from a raw byte slice to files of
+    # the std lib Go corpus file format, eg:
+    # 
+    # go test fuzz v1
+    # int8(42)
+    # string("hello")
+    # 
+    # The convertLibFuzzerTestcaseToStdLibGo binary handles the entire
+    # process for that.
+    convertLibFuzzerTestcaseToStdLibGo -convert-seeds \
+      -params-json $OUT/fuzzer-parameters.json \
+      -fuzzer-func "${target}" \
+      -fuzzerBinaryName $target \
+      -seeds-dir "${FUZZ_CORPUS_DIR}" \
+      -out-dir "${OUT}/testdata/fuzz/${function_name}"
+
+    pushd $OUT
+      timeout "$TIMEOUT" \
+        "$OUT/$target" \
+        -test.run="^${function_name}\$" \
+        -test.coverprofile "$DUMPS_DIR/$target.profdata" \
+        &> "$LOGS_DIR/$target.log"
+      if (( $? != 0 )); then
+        echo "Error occured while running std lib fuzzer $target:"
+        cat $LOGS_DIR/$target.log
+      fi
+    popd
+    # cleanup after native go fuzzers
+    rm -r "${OUT}/testdata/fuzz/${function_name}"
+    # The std lib fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
+    # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
+    # Since the copies named "*_fuzz_.go" do not exist in the file tree during
+    # the coverage build, we change the references in the .profdata files
+    # to the original file names.
+    sed -i "s/_libFuzzer.go/_test.go/g" $DUMPS_DIR/$target.profdata
+  else
+    timeout "$TIMEOUT" \
+      "$OUT/$target" \
+      -test.run="^${function_name}\$" \
+      -test.coverprofile "$DUMPS_DIR/$target.profdata" \
+      &> "$LOGS_DIR/$target.log"
+    if (( $? != 0 )); then
+      echo "Error occured while running $target:"
+      cat $LOGS_DIR/$target.log
+    fi
   fi
 
-  # cleanup after native go fuzzers
-  rm -r "${OUT}/testdata/fuzz/${target}"
-
-  # The Go 1.18 fuzzers are renamed to "*_fuzz_.go" during "infra/helper.py build_fuzzers".
-  # They are are therefore refered to as "*_fuzz_.go" in the profdata files.
-  # Since the copies named "*_fuzz_.go" do not exist in the file tree during
-  # the coverage build, we change the references in the .profdata files
-  # to the original file names.
-  #sed -i "s/_test.go_fuzz_.go/_test.go/g" $DUMPS_DIR/$target.profdata
   # translate from golangish paths to current absolute paths
   cat $OUT/$target.gocovpath | while read i; do sed -i $i $DUMPS_DIR/$target.profdata; done
   # cf PATH_EQUIVALENCE_ARGS
@@ -178,6 +296,7 @@ function run_python_fuzz_target {
   if (( $? != 0 )); then
     echo "Error happened getting coverage of $target"
     echo "This is likely because Atheris did not exit gracefully"
+    cat $LOGS_DIR/$target.log
     return 0
   fi
   mv .coverage $OUT/.coverage_$target
@@ -364,9 +483,9 @@ for fuzz_target in $FUZZ_TARGETS; do
   fi
 
 
-  # Do not spawn more processes than the number of CPUs available.
+  # Limit the number of processes to be spawned.
   n_child_proc=$(jobs -rp | wc -l)
-  while [ "$n_child_proc" -eq "$NPROC" ]; do
+  while [[ "$n_child_proc" -eq "$NPROC" || "$n_child_proc" -gt "$MAX_PARALLEL_COUNT" ]]; do
     sleep 4
     n_child_proc=$(jobs -rp | wc -l)
   done
@@ -431,45 +550,26 @@ elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
   java -jar /opt/jacoco-cli.jar merge $DUMPS_DIR/*.exec \
       --destfile $jacoco_merged_exec
 
-  # Merge .class files from the individual targets.
+  # Prepare classes directory for jacoco process
   classes_dir=$DUMPS_DIR/classes
   mkdir $classes_dir
-  for fuzz_target in $FUZZ_TARGETS; do
-    # Continue if not a fuzz target.
-    if [[ $FUZZING_ENGINE != "none" ]]; then
-      grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
-    fi
-    cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
-  done
 
-  # Dump classes in jar file to dump directory. This action includes all
-  # the classes of the project that are not executed by the fuzzers to
-  # the dump directory. Duplicate classes in the dump directory will be
-  # overwritten. We need to do this to include all possible classes in
-  # the coverage report and avoid duplicate classes from different jar
-  # files which jacoco fails to handle.
-  for jar_file in $(ls $OUT/*.jar)
-  do
-    if [[ $jar_file != $OUT/jazzer* ]]
-    then
-      tempdir=$(mktemp -d)
-      cd $tempdir && jar xvf $jar_file && cd -
-      cp -r $tempdir/* $classes_dir/
-      rm -r $tempdir
+  # Only copy class files found in $OUT/$SRC to ensure they are
+  # lively compiled from the project, avoiding inclusion of
+  # dependency classes. This also includes the fuzzer classes.
+  find "$OUT/$SRC" -type f -name "*.class" | while read -r class_file; do
+    # Skip module-info.class
+    if [[ "$(basename "$class_file")" == "module-info.class" ]]; then
+        continue
+    fi
+
+    # Use javap to extract the fully qualified name of the class and copy it to $classes_dir
+    fqn=$(javap -verbose "$class_file" 2>/dev/null | grep "this_class:" | grep -oP '(?<=// ).*')
+    if [ -n "$fqn" ]; then
+      mkdir -p $classes_dir/$(dirname $fqn)
+      cp $class_file $classes_dir/$fqn.class
     fi
   done
-
-  # Clean up files that can create duplicate class names which breaks Jacoco.
-  # Remove META-INF folder because some jar may store duplications of the same
-  # class file in the META-INF for other java versions.
-  find $classes_dir -name "META-INF" | xargs rm -rf
-  # Remove all files that are not a java class because some jar may contain
-  # Kotlin class which has the same name as a java class and Jacoco fail to
-  # distinguish them.
-  find $classes_dir -type f -not -name "*.class" | xargs rm -f
-  # Remove all class files which have a dot in their file name which are normally
-  # used to name a duplication of the legitimate class file.
-  find $classes_dir -type f -name "*.*.class" | xargs rm -f
 
   # Heuristically determine source directories based on Maven structure.
   # Always include the $SRC root as it likely contains the fuzzer sources.

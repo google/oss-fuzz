@@ -21,12 +21,27 @@ RUN apt-get -qq update && \
       git\
       autopoint\
       automake\
-      autoconf\
       bison\
       flex\
       libtool\
       texinfo\
       gettext
+RUN set -- $(apt-cache policy autoconf | \
+             sed -n -r -e '/^[[:space:]]+Candidate:[[:space:]]+/{' \
+	            -e s/// \
+		    -e 's/-.*//' \
+		    -e 's/\./ /g' \
+		    -e 'p}'); \
+    if [ "$2" -ge 71 ]; then \
+       apt-get install -qq autoconf; \
+    else \
+       (cd /usr/src && \
+        curl -oautoconf-2.71.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz && \
+	tar xf autoconf-2.71.tar.gz && \
+	cd autoconf-2.71 && \
+	./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var && \
+	make install); \
+    fi
 RUN git clone --depth 1 https://git.gnu.org.ua/gdbm.git
 WORKDIR gdbm
 COPY build.sh $SRC/

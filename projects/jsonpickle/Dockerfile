@@ -14,7 +14,8 @@
 #
 ##########################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install --upgrade pip simplejson
-RUN git clone https://github.com/jsonpickle/jsonpickle jsonpickle
-COPY *.sh *py $SRC/
-WORKDIR $SRC/jsonpickle
+RUN git clone --depth 1 https://github.com/jsonpickle/jsonpickle $SRC/jsonpickle
+RUN $SRC/jsonpickle/fuzzing/oss-fuzz-scripts/container-environment-bootstrap.sh
+
+COPY build.sh $SRC/
+WORKDIR $SRC/jsonpickle/

@@ -34,7 +34,7 @@ RUN apt-get update && \
 
 # install Firefox deps
 # built using https://packages.ubuntu.com/focal/firefox as a reference
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libasound2 \
     libatk1.0-0 \
     libc6 \
@@ -83,7 +83,6 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > $SRC/rustbuild.s
     $SRC/rustbuild.sh -y
 
 RUN git clone --depth 1 https://github.com/mozilla/gecko-dev mozilla-central
-RUN git clone --depth 1 https://github.com/mozillasecurity/fuzzdata
 WORKDIR mozilla-central
 # Install OS dependencies.
 # Will be re-run in build.sh to install missing dependencies.

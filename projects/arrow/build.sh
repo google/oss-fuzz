@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,11 @@
 #
 ################################################################################
 
-set -ex
-
 ARROW=${SRC}/arrow/cpp
 
-cd ${WORK}
+BUILD_DIR=${SRC}/build-dir
+mkdir -p ${BUILD_DIR}
+cd ${BUILD_DIR}
 
 # The CMake build setup compiles and runs the Thrift compiler, but ASAN
 # would report leaks and error out.
@@ -29,38 +29,43 @@ cmake ${ARROW} -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DARROW_DEPENDENCY_SOURCE=BUNDLED \
     -DBOOST_SOURCE=SYSTEM \
+    -DBoost_USE_STATIC_RUNTIME=on \
+    -DARROW_BOOST_USE_SHARED=off \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
     -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
     -DARROW_EXTRA_ERROR_CONTEXT=off \
-    -DARROW_JEMALLOC=off \
-    -DARROW_MIMALLOC=off \
-    -DARROW_FILESYSTEM=off \
-    -DARROW_PARQUET=on \
+    \
     -DARROW_BUILD_SHARED=off \
     -DARROW_BUILD_STATIC=on \
-    -DARROW_BUILD_TESTS=off \
-    -DARROW_BUILD_INTEGRATION=off \
     -DARROW_BUILD_BENCHMARKS=off \
     -DARROW_BUILD_EXAMPLES=off \
+    -DARROW_BUILD_INTEGRATION=off \
+    -DARROW_BUILD_TESTS=on \
     -DARROW_BUILD_UTILITIES=off \
     -DARROW_TEST_LINKAGE=static \
     -DPARQUET_BUILD_EXAMPLES=off \
     -DPARQUET_BUILD_EXECUTABLES=off \
     -DPARQUET_REQUIRE_ENCRYPTION=off \
+    \
+    -DARROW_CSV=on \
+    -DARROW_JEMALLOC=off \
+    -DARROW_MIMALLOC=off \
+    -DARROW_PARQUET=on \
     -DARROW_WITH_BROTLI=on \
     -DARROW_WITH_BZ2=off \
-    -DARROW_WITH_LZ4=off \
-    -DARROW_WITH_SNAPPY=off \
-    -DARROW_WITH_ZLIB=off \
-    -DARROW_WITH_ZSTD=off \
-    -DARROW_USE_GLOG=off \
+    -DARROW_WITH_LZ4=on \
+    -DARROW_WITH_SNAPPY=on \
+    -DARROW_WITH_ZLIB=on \
+    -DARROW_WITH_ZSTD=on \
+    \
     -DARROW_USE_ASAN=off \
     -DARROW_USE_UBSAN=off \
     -DARROW_USE_TSAN=off \
     -DARROW_FUZZING=on \
 
-cmake --build .
+cmake --build . -j$(nproc)
 
-cp -a release/* ${OUT}
+# Copy fuzz targets
+find . -executable -name "*-fuzz" -exec cp -a -v '{}' ${OUT} \;
 
-${ARROW}/build-support/fuzzing/generate_corpuses.sh ${OUT}
+${ARROW}/build-support/fuzzing/generate_corpuses.sh ${BUILD_DIR}/release

@@ -1,0 +1,11 @@
+homepage: https://github.com/mariadb-corporation/mariadb-connector-j
+main_repo: https://github.com/mariadb-corporation/mariadb-connector-j
+language: jvm
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- arthur.chan@adalogics.com

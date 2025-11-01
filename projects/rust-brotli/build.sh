@@ -13,6 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
+
+# checks for integer overflows
+export RUSTFLAGS="$RUSTFLAGS -Cdebug-assertions=yes"
+
 cd $SRC/rust-brotli/fuzz
 cargo fuzz build
 cp $SRC/rust-brotli/fuzz/target/x86_64-unknown-linux-gnu/release/decompress $OUT/

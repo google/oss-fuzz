@@ -12,3 +12,6 @@ vendor_ccs:
   - "patrice.salathe@code-intelligence.com"
   - "hlin@code-intelligence.com"
   - "bug-disclosure@code-intelligence.com"
+
+# opencensus is being archived cf https://opentelemetry.io/blog/2023/sunsetting-opencensus/
+disabled: true

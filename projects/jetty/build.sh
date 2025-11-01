@@ -20,7 +20,7 @@ PROJECT_GROUP_ID=org.eclipse.jetty
 PROJECT_ARTIFACT_ID=jetty-project
 MAIN_REPOSITORY=https://github.com/eclipse/jetty.project
 
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Denforcer.skip=true -DskipTests"
+MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=11 -Djavac.target.version=11 -Denforcer.skip=true -DskipTests"
 
 mv $SRC/{*.zip,*.dict} $OUT
 
@@ -73,15 +73,16 @@ else
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
   this_dir=\$(dirname \"\$0\")
   if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-    mem_settings='-Xmx1900m -Xss900k'
+    mem_settings='-Xmx1900m:-Xss900k'
   else
-    mem_settings='-Xmx2048m -Xss1024k'
+    mem_settings='-Xmx2048m:-Xss1024k'
   fi
-  java -cp $RUNTIME_CLASSPATH \
-  \$mem_settings \
-  com.code_intelligence.jazzer.Jazzer \
-  --target_class=com.example.$fuzzer_basename \
-  \$@" > $OUT/$fuzzer_basename
+  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
+--cp=$RUNTIME_CLASSPATH \
+--target_class=com.example.$fuzzer_basename \
+--jvm_args=\"\$mem_settings\" \
+\$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
   done
 
@@ -89,16 +90,17 @@ else
   echo "#!/bin/bash
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
   if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-    mem_settings='-Xmx1900m -Xss900k'
+    mem_settings='-Xmx1900m:-Xss900k'
   else
-    mem_settings='-Xmx2048m -Xss1024k'
+    mem_settings='-Xmx2048m:-Xss1024k'
   fi
-  java -cp $RUNTIME_CLASSPATH \
-  \$mem_settings \
-  com.code_intelligence.jazzer.Jazzer \
-  --target_class=com.example.WebAppDefaultServletFuzzer \
-  --disabled_hooks=com.code_intelligence.jazzer.sanitizers.NamingContextLookup \
-  \$@" > $OUT/WebAppDefaultServletFuzzer
+  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
+--cp=$RUNTIME_CLASSPATH \
+--target_class=com.example.WebAppDefaultServletFuzzer \
+--disabled_hooks=com.code_intelligence.jazzer.sanitizers.NamingContextLookup \
+--jvm_args=\"\$mem_settings\" \
+\$@" > $OUT/WebAppDefaultServletFuzzer
   chmod u+x $OUT/WebAppDefaultServletFuzzer
 
   # add keystore to location required by SslConnectionFuzzer

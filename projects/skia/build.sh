@@ -65,7 +65,7 @@ export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
  -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -DSK_BUILD_FOR_FUZZER"
 export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
  -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -D SK_BUILD_FOR_FUZZER"
-export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
+export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH -fuse-ld=lld"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
 export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
@@ -118,7 +118,6 @@ $SRC/skia/bin/gn gen out/FuzzDebug\
       extra_ldflags=["'"$LDFLAGS_ARR"'"]'
 
 $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
-  android_codec \
   animated_image_decode \
   api_create_ddl \
   api_ddl_threading \
@@ -155,13 +154,18 @@ $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
 
 $SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
   cubic_roots \
+  parse_path \
   quad_roots \
   skmeshspecification \
+  skruntimeblender \
+  skruntimecolorfilter \
   skruntimeeffect \
   sksl2glsl \
   sksl2metal \
   sksl2pipeline \
   sksl2spirv \
+  sksl2wgsl \
+  skcolorspace
 
 rm -rf $OUT/data
 mkdir $OUT/data
@@ -242,12 +246,9 @@ mv ../skia_data/api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corp
 mv out/Fuzz/api_polyutils $OUT/api_polyutils
 mv ../skia_data/api_polyutils_seed_corpus.zip $OUT/api_polyutils_seed_corpus.zip
 
-# These 3 use the same corpus.
+# These 2 use the same corpus.
 mv out/Fuzz/image_decode $OUT/image_decode
 cp ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
-
-mv out/Fuzz/android_codec $OUT/android_codec
-cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
 
 mv out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
 mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
@@ -257,14 +258,10 @@ mv out/FuzzDebug/skmeshspecification $OUT/skmeshspecification
 cp ../skia_data/sksl.dict $OUT/skmeshspecification.dict
 mv ../skia_data/skmeshspecification_seed_corpus.zip $OUT/skmeshspecification_seed_corpus.zip
 
-# All five SkSL tests share the same sksl_seed_corpus and dictionary.
+# All eight SkSL tests share the same sksl_seed_corpus and dictionary.
 mv out/FuzzDebug/sksl2glsl $OUT/sksl2glsl
 cp ../skia_data/sksl.dict $OUT/sksl2glsl.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2glsl_seed_corpus.zip
-
-mv out/FuzzDebug/sksl2spirv $OUT/sksl2spirv
-cp ../skia_data/sksl.dict $OUT/sksl2spirv.dict
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
 
 mv out/FuzzDebug/sksl2metal $OUT/sksl2metal
 cp ../skia_data/sksl.dict $OUT/sksl2metal.dict
@@ -274,10 +271,27 @@ mv out/FuzzDebug/sksl2pipeline $OUT/sksl2pipeline
 cp ../skia_data/sksl.dict $OUT/sksl2pipeline.dict
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
 
+mv out/FuzzDebug/sksl2spirv $OUT/sksl2spirv
+cp ../skia_data/sksl.dict $OUT/sksl2spirv.dict
+cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
+
+mv out/FuzzDebug/sksl2wgsl $OUT/sksl2wgsl
+cp ../skia_data/sksl.dict $OUT/sksl2wgsl.dict
+cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2wgsl_seed_corpus.zip
+
+mv out/FuzzDebug/skruntimeblender $OUT/skruntimeblender
+cp ../skia_data/sksl.dict $OUT/skruntimeblender.dict
+cp ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeblender_seed_corpus.zip
+
+mv out/FuzzDebug/skruntimecolorfilter $OUT/skruntimecolorfilter
+cp ../skia_data/sksl.dict $OUT/skruntimecolorfilter.dict
+cp ../skia_data/sksl_seed_corpus.zip $OUT/skruntimecolorfilter_seed_corpus.zip
+
 mv out/FuzzDebug/skruntimeeffect $OUT/skruntimeeffect
 mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
 mv ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
+#
 mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
 mv ../skia_data/skdescriptor_deserialize_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
@@ -301,6 +315,12 @@ mv out/Fuzz/api_triangulation $OUT/api_triangulation
 
 mv out/Fuzz/colrv1 $OUT/colrv1
 mv ../skia_data/colrv1_seed_corpus.zip $OUT/colrv1_seed_corpus.zip
+
+mv out/FuzzDebug/skcolorspace $OUT/skcolorspace
+mv ../skia_data/skcolorspace_seed_corpus.zip $OUT/skcolorspace_seed_corpus.zip
+
+mv out/FuzzDebug/parse_path $OUT/parse_path
+mv ../skia_data/parse_path_seed_corpus.zip $OUT/parse_path_seed_corpus.zip
 
 # These only take a few floats - no seed corpus necessary
 mv out/FuzzDebug/quad_roots $OUT/quad_roots

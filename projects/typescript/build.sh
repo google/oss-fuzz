@@ -23,3 +23,6 @@ npm install --save-dev @jazzer.js/core
 # Fuzzing TS is a resource hog so we have to adjust the rss limit a bit
 compile_javascript_fuzzer TypeScript fuzz_ast -i typescript -- -rss_limit_mb=4096
 compile_javascript_fuzzer TypeScript fuzz_compiler -i typescript --sync -- -rss_limit_mb=4096
+compile_javascript_fuzzer TypeScript fuzz_scanner -i typescript --sync -- -rss_limit_mb=4096
+compile_javascript_fuzzer TypeScript fuzz_json_parser -i typescript --sync -- -rss_limit_mb=4096
+compile_javascript_fuzzer TypeScript fuzz_transpile_module -i typescript --sync -- -rss_limit_mb=4096

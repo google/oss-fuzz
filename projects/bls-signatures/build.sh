@@ -25,8 +25,8 @@ export LINK_FLAGS=""
 
 # Install Boost headers
 cd $SRC/
-tar jxf boost_1_74_0.tar.bz2
-cd boost_1_74_0/
+tar jxf boost_1_84_0.tar.bz2
+cd boost_1_84_0/
 CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
@@ -97,11 +97,11 @@ then
     cd $SRC/
     if [[ $CFLAGS != *-m32* ]]
     then
-        tar Jxf nim-1.6.12-linux_x64.tar.xz
+        tar Jxf nim-2.0.8-linux_x64.tar.xz
     else
-        tar Jxf nim-1.6.12-linux_x32.tar.xz
+        tar Jxf nim-2.0.8-linux_x32.tar.xz
     fi
-    export NIM_PATH=$(realpath nim-1.6.12)
+    export NIM_PATH=$(realpath nim-2.0.8)
 
     export CONSTANTINE_PATH=$SRC/constantine/
 

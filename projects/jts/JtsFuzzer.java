@@ -17,6 +17,7 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.util.AssertionFailedException;
@@ -85,7 +86,7 @@ public class JtsFuzzer {
             break;
         }
       }
-    } catch (ParseException | AssertionFailedException | IllegalArgumentException e) {
+    } catch (ParseException | TopologyException | AssertionFailedException | IllegalArgumentException e) {
       // Known exception
     }
   }

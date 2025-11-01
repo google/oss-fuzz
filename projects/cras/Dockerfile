@@ -28,13 +28,11 @@ RUN apt-get -y update && \
       cmake \
       g++ \
       git \
-      ladspa-sdk \
       libasound-dev \
       libdbus-1-dev \
       libgtest-dev \
       libncurses5-dev \
       libsbc-dev \
-      libsndfile-dev \
       libspeexdsp-dev \
       libsystemd-dev \
       libclang1 \

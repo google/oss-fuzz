@@ -19,6 +19,7 @@
 export LDFLAGS="$CXXFLAGS"
 ./configure
 make -j$(nproc)
+make unittests/unittest
 cp t/fuzz/fuzz_parseini $OUT/
 
 # builds corpus

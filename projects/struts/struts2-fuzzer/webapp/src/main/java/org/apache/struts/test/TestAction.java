@@ -16,8 +16,7 @@
 
 package org.apache.struts.test;
 
-
-import com.opensymphony.xwork2.ActionSupport;
+import org.apache.struts2.ActionSupport;
 
 public class TestAction extends ActionSupport {
     private String subject = "World (from Java)";

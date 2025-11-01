@@ -20,7 +20,8 @@ mkdir build
 cd build
 cmake .. \
       -DBOEHM_GC_INCLUDE_DIR=/usr/include \
-      -DBOEHM_GC_LIBRARIES=/usr/lib/x86_64-linux-gnu/libgc.a
+      -DBOEHM_GC_LIBRARIES=/usr/lib/x86_64-linux-gnu/libgc.a \
+      -Dimmer_BUILD_TESTS=OFF
 make -j$(nproc) fuzzers
 
 for fuzzer in extra/fuzzer/*; do

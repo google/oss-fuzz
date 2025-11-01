@@ -17,8 +17,8 @@ export ORIG_CFLAGS=${CFLAGS}
 cd haproxy
 
 # Fix some things in the Makefile where there are no options available
-sed 's/CFLAGS = $(ARCH_FLAGS) $(CPU_CFLAGS) $(DEBUG_CFLAGS) $(SPEC_CFLAGS)/CFLAGS = $(ARCH_FLAGS) $(CPU_CFLAGS) $(DEBUG_CFLAGS) $(SPEC_CFLAGS) ${ORIG_CFLAGS}/g' -i Makefile
-sed 's/LDFLAGS = $(ARCH_FLAGS) -g/LDFLAGS = $(ARCH_FLAGS) -g ${CXXFLAGS}/g' -i Makefile
+sed 's/COPTS += $(DEBUG) $(OPTIONS_CFLAGS) $(CFLAGS) $(ADDINC)/COPTS += $(DEBUG) $(OPTIONS_CFLAGS) $(CFLAGS) $(ADDINC) ${ORIG_CFLAGS}/g' -i Makefile
+sed 's/LDOPTS = $(TARGET_LDFLAGS) $(OPTIONS_LDFLAGS) $(ADDLIB)/LDOPTS = $(TARGET_LDFLAGS) $(OPTIONS_LDFLAGS) $(ADDLIB) ${CXXFLAGS}/g' -i Makefile
 make TARGET=generic CC=${CC} LD=${CXX} 
 
 # Make a copy of the main file since it has many global functions we need to declare
@@ -39,3 +39,8 @@ for fuzzer in hpack_decode cfg_parser; do
   $CC $CFLAGS $SETTINGS -c fuzz_${fuzzer}.c  -o fuzz_${fuzzer}.o
   $CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_${fuzzer}.o libhaproxy.a -o $OUT/fuzz_${fuzzer}
 done
+
+# build vtest for run_tests.sh
+cd $SRC/VTest2
+make vtest
+# vtest binary is in $SRC/VTest2/vtest

@@ -16,8 +16,30 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN git clone --depth 1 https://github.com/apache/logging-log4j2
+# Install Java 17 using Azul Zulu distribution, because
+#
+# 1. Log4j build requires Java 17, `base-builder-jvm` provides Java 15 (as of 2024-07-10)
+# 2. Apache Logging Services uses Zulu[1] as the OpenJDK distribution in CI
+#
+# [1] https://github.com/apache/logging-parent/blob/main/.github/workflows/build-reusable.yaml#L54
+
+# Add the Zulu APT repository
+RUN apt-get update && \
+    apt-get install -y gnupg ca-certificates && \
+    wget -q -O - https://repos.azul.com/azul-repo.key | \
+    gpg --dearmor -o /usr/share/keyrings/azul.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | \
+    tee /etc/apt/sources.list.d/zulu.list
+
+
+# Install Zulu 17
+RUN apt-get update && \
+    apt-get install -y zulu17-jdk
+
+# Update Java-related environment variables
+ENV JAVA_HOME /usr/lib/jvm/zulu17
+ENV JVM_LD_LIBRARY_PATH /usr/lib/jvm/zulu17/lib/server
+ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/out:/usr/lib/jvm/zulu17/bin
 
 COPY build.sh $SRC/
-COPY *.java *.xml $SRC/
-WORKDIR $SRC/logging-log4j2
+WORKDIR $SRC

@@ -108,7 +108,7 @@ public class OhcFuzzer {
       wbc.close();
       ohCache.close();
     } catch (IllegalArgumentException | UnsupportedOperationException | IOException
-        | InterruptedException | ExecutionException e) {
+        | InterruptedException | ExecutionException | IllegalStateException e) {
       // Known exception
     }
   }
@@ -155,8 +155,16 @@ public class OhcFuzzer {
 
     @Override
     public int read(ByteBuffer dst) throws IOException {
-      dst.put(bytes);
-      return bytes.length;
+      if (dst.remaining() <= 0) {
+        return -1;
+      }
+
+      int length = (bytes.length > dst.remaining())? dst.remaining() : bytes.length;
+      for (int i = 0; i < length; i++) {
+        dst.put(bytes[i]);
+      }
+
+      return length;
     }
 
     @Override

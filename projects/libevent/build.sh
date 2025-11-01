@@ -24,13 +24,13 @@ cmake -DEVENT__DISABLE_MBEDTLS=ON \
       -DEVENT__DISABLE_TESTS=ON \
       -DEVENT__DISABLE_SAMPLES=ON \
       ../
-make
+make -j$(nproc)
 make install
 
 # build fuzzer
 for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
   fuzz_basename=$(basename -s .cc $fuzzers)
-  $CXX $CXXFLAGS -std=c++11 -I../ -Iinclude \
+  $CXX $CXXFLAGS -std=c++17 -I../ -Iinclude \
       $fuzzers $LIB_FUZZING_ENGINE ./lib/libevent.a ./lib/libevent_core.a  \
       ./lib/libevent_pthreads.a ./lib/libevent_extra.a \
       -o $OUT/$fuzz_basename
@@ -43,4 +43,9 @@ then
       $SRC/fuzz_request_cb.c $LIB_FUZZING_ENGINE ./lib/libevent.a ./lib/libevent_core.a  \
       ./lib/libevent_pthreads.a ./lib/libevent_extra.a \
       -o $OUT/fuzz_request
+fi
+
+# The dictionary is not compatible with AFL
+if [ "$FUZZING_ENGINE" != 'afl' ]; then
+  cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer.dict
 fi

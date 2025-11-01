@@ -15,10 +15,14 @@
 # limitations under the License.
 #
 ################################################################################
+
 mkdir -p build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_CTEST=ON -DCMAKE_VERBOSE_MAKEFILE=ON ../
-make V=1 -j4 install
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DGLSLANG_TESTS=ON \
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -DENABLE_OPT=0 ../
+make V=1 -j$(nproc) install
 
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/compile_fuzzer.cc \
@@ -26,9 +30,8 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/compile_fuzzer.cc \
 	-I/src/glslang/glslang/Include/ -I/src/glslang/glslang/.. \
 	-I/src/glslang/build/include -I/src/glslang/SPIRV/.. \
 	./glslang/libglslang.a ./SPIRV/libSPIRV.a \
-	./hlsl/libHLSL.a \
-	./glslang/libglslang-default-resource-limits.a ./SPIRV/libSPVRemapper.a \
+	./glslang/libglslang-default-resource-limits.a \
 	-lpthread ./glslang/libMachineIndependent.a \
-	./OGLCompilersDLL/libOGLCompiler.a ./glslang/OSDependent/Unix/libOSDependent.a \
+	./glslang/OSDependent/Unix/libOSDependent.a \
 	./glslang/libGenericCodeGen.a \
 	-o $OUT/compile_fuzzer

@@ -35,6 +35,7 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
 COPY project-parent $SRC/project-parent/
 
 RUN rm -rf $SRC/project-parent/jsqlparser
+RUN apt update && apt install -y openjdk-11-jdk
 RUN git clone --depth 1 https://github.com/JSQLParser/JSqlParser/ $SRC/project-parent/jsqlparser
 
 COPY build.sh $SRC/

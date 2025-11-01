@@ -15,19 +15,23 @@
 #
 ################################################################################
 
-cmake . -DBUILD_TESTING=OFF
+# Bump gtest to work with llvm21: https://github.com/google/oss-fuzz/pull/13915
+sed -i 's/e2239ee6043f73722e7aa812a459f54a28552929/6910c9d9165801d8827d628cb72eb7ea9dd538c5/g' CMakeLists.txt
+cmake . -DBUILD_TESTING=ON
 make clean
-make -j$(nproc) brunslidec-static
+make -j$(nproc) all
 
 # TODO(eustas): add seed corpus
 
 $CXX $CXXFLAGS -std=c++11 -I./c/include c/tests/fuzz_decode.cc \
+    ./CMakeFiles/build_huffman_table_test.dir/c/tests/test_utils.cc.o \
     -o $OUT/fuzz_decode $LIB_FUZZING_ENGINE \
     ./artifacts/libbrunslidec-static.a ./artifacts/libbrunslicommon-static.a \
     ./_deps/brotli-build/libbrotlidec-static.a \
     ./_deps/brotli-build/libbrotlicommon-static.a
 
 $CXX $CXXFLAGS -std=c++11 -I./c/include c/tests/fuzz_decode_streaming.cc \
+    ./CMakeFiles/build_huffman_table_test.dir/c/tests/test_utils.cc.o \
     -o $OUT/fuzz_decode_streaming $LIB_FUZZING_ENGINE \
     ./artifacts/libbrunslidec-static.a ./artifacts/libbrunslicommon-static.a \
     ./_deps/brotli-build/libbrotlidec-static.a \

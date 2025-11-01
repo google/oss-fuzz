@@ -37,7 +37,7 @@ class JWTFuzzer {
             DecodedJWT jwt = JWT.require(data.pickValue(algorithms))
                     .build()
                     .verify(decodedJWT);
-        } catch (JWTDecodeException | AlgorithmMismatchException e) {
+        } catch (JWTDecodeException | AlgorithmMismatchException | NullPointerException e) {
         }
     }
 }

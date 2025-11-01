@@ -1,4 +1,4 @@
-homepage: "https://suricata-ids.org"
+homepage: "https://suricata.io"
 language: rust
 primary_contact: "vjulien@openinfosecfoundation.org"
 auto_ccs:

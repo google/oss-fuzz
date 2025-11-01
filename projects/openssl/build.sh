@@ -15,7 +15,9 @@
 #
 ################################################################################
 
-CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-ssl3 enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment"
+export FUZZ_INTROSPECTOR_CONFIG=$SRC/openssl/fuzz/fuzz_introspector_exclusion.config
+
+CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment enable-unit-test"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
   CONFIGURE_FLAGS="$CONFIGURE_FLAGS no-asm"
@@ -60,11 +62,39 @@ function build_fuzzers() {
     done
     cp fuzz/oids.txt $OUT/asn1${SUFFIX}.dict
     cp fuzz/oids.txt $OUT/x509${SUFFIX}.dict
+    if [ "$SANITIZER" == coverage ]; then
+      DESTDIR=$OUT/src/openssl${SUFFIX#_}
+      SOURCES="include crypto ssl providers engines fuzz"
+      mkdir -p $DESTDIR
+      if [ -f e_os.h ]; then
+        cp e_os.h $DESTDIR/
+      fi
+      find $SOURCES -type f -a \( -name '*.[ch]' -o -name '*.inc' \) -exec cp --parents '{}' $DESTDIR/ \;
+    fi
+
+    if [[ -z "${INDEXER_BUILD:-}" && -z "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
+      df
+      rm -rf * .git*
+      df
+    fi
 }
 
 cd $SRC/openssl/
 build_fuzzers ""
-cd $SRC/openssl111/
-build_fuzzers "_111"
+
+# In introspector, indexer builds and when capturing replay builds, only build
+# the master branch
+if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" || -n "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
+  exit 0
+fi
+
 cd $SRC/openssl30/
 build_fuzzers "_30"
+cd $SRC/openssl32/
+build_fuzzers "_32"
+cd $SRC/openssl33/
+build_fuzzers "_33"
+cd $SRC/openssl34/
+build_fuzzers "_34"
+cd $SRC/openssl35/
+build_fuzzers "_35"

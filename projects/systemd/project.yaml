@@ -7,17 +7,13 @@ sanitizers:
   - undefined
   - memory
 fuzzing_engines:
-  - afl
   - honggfuzz
   - libfuzzer
 auto_ccs:
   - jonathan@titanous.com
   - zbyszek@in.waw.pl
-  - dimitri.ledkov@canonical.com
   - poettering@gmail.com
   - watanabe.yu@gmail.com
-  - evvers@ya.ru
-  - evverx@gmail.com
   - Tixxdz@gmail.com
   - fsumsal@redhat.com
   - johannbg@gmail.com
@@ -26,6 +22,7 @@ auto_ccs:
   - the.anitazha@gmail.com
   - daan.j.demeyer@gmail.com
   - luca.boccassi@gmail.com
+  - rpigott314@gmail.com
 main_repo: 'https://github.com/systemd/systemd'
 architectures:
   - x86_64

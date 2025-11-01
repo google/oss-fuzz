@@ -1,0 +1,8 @@
+homepage: "https://github.com/PSeitz/lz4_flex"
+main_repo: "https://github.com/PSeitz/lz4_flex.git"
+language: rust
+primary_contact: "pascal.seitz@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

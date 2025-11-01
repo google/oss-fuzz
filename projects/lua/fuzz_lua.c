@@ -69,15 +69,13 @@ static void laction (int i) {
   lua_sethook(globalL, lstop, flag, 1);
 }
 
-
-
 /*
 ** Prints an error message, adding the program name in front of it
 ** (if present)
 */
 static void l_message (const char *pname, const char *msg) {
-  if (pname) lua_writestringerror("%s: ", pname);
-  lua_writestringerror("%s\n", msg);
+  if (pname) fprintf(stderr, "%s: ", pname);
+  fprintf(stderr, "%s\n", msg);
 }
 
 
@@ -147,7 +145,8 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (L == NULL) {
         return 0;
     }
-    dochunk(L, luaL_loadbufferx(L, data, size, "test", "t"));
+    dochunk(L, luaL_loadbufferx(L, (const char *)data, size, "test", "t"));
+
 
     lua_close(L);
     return 0;

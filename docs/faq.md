@@ -185,7 +185,7 @@ This may happen if the Docker images fetched locally become out of sync. Make
 sure you run the following command to pull the most recent images:
 
 ```bash
-$ python infra/helper.py pull_images
+$ python3 infra/helper.py pull_images
 ```
 
 Please refer to

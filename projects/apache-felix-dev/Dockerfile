@@ -15,6 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
+
+ENV JAVA_HOME $JAVA_15_HOME
+ENV JVM_LD_LIBRARY_PATH $JAVA_HOME/lib/server
+ENV PATH $JAVA_HOME/bin:$PATH
+
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/apache/felix-dev.git apache-felix-dev     # or use other version control
 

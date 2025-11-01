@@ -26,6 +26,7 @@ import build_project
 
 
 def run_experiment(project_name, command, output_path, experiment_name):
+  """Runs the experiment specified on GCB."""
   config = build_project.Config(testing=True,
                                 test_image_suffix='',
                                 repo=build_project.DEFAULT_OSS_FUZZ_REPO,
@@ -40,7 +41,7 @@ def run_experiment(project_name, command, output_path, experiment_name):
         build_project.get_project_data(project_name))
   except FileNotFoundError:
     logging.error('Couldn\'t get project data. Skipping %s.', project_name)
-    return
+    return None
 
   project = build_project.Project(project_name, project_yaml,
                                   dockerfile_contents)
@@ -72,11 +73,12 @@ def run_experiment(project_name, command, output_path, experiment_name):
           ]
       },
       {
-          'name': project.image,
+          'name':
+              project.image,
           'args': [
               'bash',
               '-c',
-              command,
+              f'(cd "/src"; cd {project.workdir}; {command})',
           ]
       },
       {
@@ -84,6 +86,7 @@ def run_experiment(project_name, command, output_path, experiment_name):
           'args': [
               '-m',
               'cp',
+              '-r',
               '/workspace/out/*',
               output_path,
           ]
@@ -100,6 +103,7 @@ def run_experiment(project_name, command, output_path, experiment_name):
 
 
 def main():
+  """Runs run target experiments on GCB."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('--project', required=True, help='Project name')
   parser.add_argument('--command',

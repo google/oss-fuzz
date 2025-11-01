@@ -17,18 +17,17 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-   zlib1g-dev libffi-dev build-essential libxml2-dev
-
-# until clang 16 is used for C cf https://github.com/rust-lang/rust/issues/107149#issuecomment-1492637779
-RUN rustup install nightly-2023-03-24
-RUN rustup component add rust-src --toolchain nightly-2023-03-24-x86_64-unknown-linux-gnu
+	zlib1g-dev libffi-dev build-essential libxml2-dev
 
 RUN git clone --depth 1 https://github.com/wasmerio/wasmer wasmer
 
 RUN mkdir -p $SRC/.llvm && curl --proto '=https' --tlsv1.2 -sSf \
-    https://github.com/wasmerio/llvm-custom-builds/releases/download/14.x/llvm-linux-amd64.tar.xz -L -o - | \
+    https://github.com/wasmerio/llvm-custom-builds/releases/download/18.x/llvm-linux-amd64.tar.xz -L -o -| \
     tar xJv -C $SRC/.llvm
 
 WORKDIR wasmer
+
+# dead code warnings with nightly-2024-07-12
+ENV RUSTUP_TOOLCHAIN nightly-2024-10-10
 
 COPY build.sh default.options $SRC/

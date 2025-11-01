@@ -64,9 +64,6 @@ static int objdump_sprintf (void *vf, const char *format, ...)
 }
 
 char options[100]; // Enable the disassemblers to have random options.
-char private_data[100]; // This is used for some targets. Watch out when
-                        // using it as some disassemblers have pointers
-                        // within their private_data.
 
 void
 disassemble_architecture(int arch, const uint8_t *Data, size_t Size, int big) {
@@ -78,26 +75,22 @@ disassemble_architecture(int arch, const uint8_t *Data, size_t Size, int big) {
   disasm_info.fprintf_func = objdump_sprintf;
   disasm_info.print_address_func = generic_print_address;
   disasm_info.display_endian = disasm_info.endian = BFD_ENDIAN_LITTLE;
-  disasm_info.buffer = (bfd_byte *) Data+10;
+  disasm_info.buffer = (bfd_byte *) Data;
   disasm_info.buffer_vma = 0x1000;
   disasm_info.buffer_length = Size-10;
   disasm_info.insn_info_valid = 0;
   disasm_info.disassembler_options = options;
   disasm_info.created_styled_output = false;
 
-  if (arch == bfd_arch_arm) {
-    disasm_info.private_data = private_data;
-  }
-
   s.buffer = AssemblyText;
   s.pos = 0;
   disasm_info.stream = &s;
   disasm_info.bytes_per_line = 0;
 
+  disasm_info.flags |= USER_SPECIFIED_MACHINE_TYPE;
   disasm_info.arch = arch;
   disasm_info.mach = bfd_getl64(&Data[Size-9]);
   disasm_info.flavour = Data[Size-10];
-  disasm_info.bytes_per_chunk = Data[Size-9];
 
   if (bfd_lookup_arch (disasm_info.arch, disasm_info.mach) != NULL) {
     disassembler_ftype disasfunc = disassembler(disasm_info.arch, big, disasm_info.mach, NULL);
@@ -120,8 +113,8 @@ disassemble_architecture(int arch, const uint8_t *Data, size_t Size, int big) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  if (Size < 210 || Size > 16394) {
-    // 10 bytes for options
+  if (Size < 110 || Size > 16394) {
+    // 110 bytes for options
     // 16394 limit code to prevent timeouts
     return 0;
   }
@@ -129,13 +122,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
   // Create a random options string
   memcpy(options, Data, 100);
-  options[99] = '\0';
-  Data += 100;
-  Size -= 100;
-
-  // The private data may or may not be used in the disassemble_architecture
-  // depending on the the target.
-  memcpy(private_data, Data, 100);
   options[99] = '\0';
   Data += 100;
   Size -= 100;

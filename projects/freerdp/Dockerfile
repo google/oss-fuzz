@@ -15,13 +15,17 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
-	build-essential git-core cmake ninja-build pkg-config zlib1g-dev \
-	libx11-dev libxext-dev libxinerama-dev libxcursor-dev libxkbfile-dev \
-	libxv-dev libxi-dev libxdamage-dev libxrender-dev libxrandr-dev \
-	libssl-dev libasound2-dev libcups2-dev libpulse-dev libcairo2-dev \
-	libavutil-dev libavcodec-dev libusb-1.0-0-dev libicu-dev
+
+# See https://github.com/FreeRDP/FreeRDP/wiki/Compilation
+# Install Git and base dependences.
+RUN apt-get update && apt-get install -y devscripts equivs \
+	build-essential git-core cmake ninja-build pkg-config ccache
+
 RUN git clone --depth 1 https://github.com/FreeRDP/FreeRDP.git
 
 WORKDIR FreeRDP
+
+# Install all dependencies required by the nightly package.
+RUN mk-build-deps --install --tool 'apt-get --yes --no-remove --no-install-recommends' packaging/deb/freerdp-nightly/control
+
 COPY build.sh $SRC/

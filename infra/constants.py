@@ -30,9 +30,10 @@ LANGUAGES = [
     'python',
     'rust',
     'swift',
+    'ruby',
 ]
 LANGUAGES_WITH_COVERAGE_SUPPORT = [
-    'c', 'c++', 'go', 'jvm', 'python', 'rust', 'swift', 'javascript'
+    'c', 'c++', 'go', 'jvm', 'python', 'rust', 'swift', 'javascript', 'ruby'
 ]
 SANITIZERS = [
     'address',

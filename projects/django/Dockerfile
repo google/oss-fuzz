@@ -16,8 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-RUN apt-get update && apt-get install -y libgdal26
-
+RUN python3 -m pip install cython
 RUN git clone --depth 1 https://github.com/django/django.git
 RUN git clone --depth 1 https://github.com/django/django-fuzzers.git
 

@@ -98,7 +98,7 @@ def hook_pre_exec_os_system(cmd):
                             'Command injection')
 
 
-def hook_pre_exec_eval(cmd):
+def hook_pre_exec_eval(cmd, *args, **kwargs):
   """Hook for eval. Experimental atm."""
   res = check_code_injection_match(cmd, check_unquoted=True)
   if res is not None:

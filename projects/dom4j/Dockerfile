@@ -16,6 +16,15 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
+# Ensure Java 11 is installed
+RUN apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
+ENV JVM_LD_LIBRARY_PATH $JAVA_HOME/lib/server
+ENV PATH $JAVA_HOME/bin:$PATH
+
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
     mv fuzzing/dictionaries/xml.dict $SRC/xml.dict && \
     rm -rf fuzzing

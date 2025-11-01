@@ -2,7 +2,7 @@ homepage: "https://web.mit.edu/kerberos/"
 language: c
 primary_contact: "krbcore-security@mit.edu"
 auto_ccs:
-  - "ajsinghyadav00@gmail.com"
+  - "pkillarjun@protonmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl

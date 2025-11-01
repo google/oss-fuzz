@@ -7,14 +7,19 @@ architectures:
 auto_ccs:
  - "michaelni@gmx.at"
  - "michael@niedermayer.cc"
- - "jrummell@google.com"
  - "tfoucu@google.com"
  - "twsmith@mozilla.com"
  - "kempfjb@gmail.com"
  - "jordyzomer@google.com"
+ - "epirat07@gmail.com"
+ - "kasper93@gmail.com"
 fuzzing_engines:
-  - afl
-  - honggfuzz
-  - libfuzzer
+ - afl
+ - honggfuzz
+ - libfuzzer
+sanitizers:
+ - address
+ - memory
+ - undefined
 selective_unpack: true
-main_repo: 'https://git.ffmpeg.org/ffmpeg.git'
+main_repo: 'https://github.com/FFmpeg/FFmpeg'
