@@ -16,11 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN apt-get update && apt-get install --reinstall -y libboost-all-dev git python3-pip python3-venv libmount-dev libcap-dev gperf vim clang-18 libc++-18-dev lsb-release wget software-properties-common gnupg systemd make pkg-config libsystemd-dev libfmt-dev cmake ninja-build
-
+RUN apt-get update && apt-get install --reinstall -y patchelf libboost-all-dev git python3-pip python3-venv libmount-dev libcap-dev gperf vim clang-18 libc++-18-dev lsb-release wget software-properties-common gnupg systemd make pkg-config libsystemd-dev libfmt-dev cmake ninja-build
 RUN python3 -m venv /env && . /env/bin/activate && pip install meson mako inflection pyyaml jinja2 jsonschema
 
-# RUN git clone https://github.com/systemd/systemd.git && cd systemd && git checkout v255 && meson build && ninja -C build && ninja -C build install
 ENV CC=clang-18 
 ENV CXX=clang++-18
 

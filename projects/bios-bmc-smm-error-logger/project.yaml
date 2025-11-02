@@ -11,4 +11,4 @@ sanitizers:
   - address
   - undefined
 
-os_base_version: ubuntu-24-04
+base_os_version: ubuntu-24-04
