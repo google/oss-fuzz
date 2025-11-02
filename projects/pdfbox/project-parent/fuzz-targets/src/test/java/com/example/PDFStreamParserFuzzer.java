@@ -34,7 +34,7 @@ class PDFStreamParserFuzzer {
     }
 
     @FuzzTest
-    void myFuzzTest(FuzzedDataProvider data) {
+    void myFuzzTest(FuzzedDataProvider data) throws IOException {
         byte [] bytes = data.consumeRemainingAsBytes();
         PDFStreamParser pdfStreamParser = new PDFStreamParser(bytes);
 
