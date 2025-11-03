@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake
+RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/RoaringBitmap/CRoaring croaring
 RUN mv croaring/fuzz/* $SRC/
-COPY build.sh $SRC/
-WORKDIR $SRC
+WORKDIR $SRC/croaring
