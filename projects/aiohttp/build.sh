@@ -18,6 +18,7 @@
 git submodule update --init --recursive
 pushd "$SRC/aiohttp/vendor/llhttp/"
 npm ci
+npm install -g ts-node@10.9.2 && npx ts-node bin/generate.ts
 make
 popd # "$SRC/aiohttp/vendor/llhttp/"
 
