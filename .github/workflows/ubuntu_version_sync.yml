@@ -22,7 +22,11 @@ on:
 
 jobs:
   check-sync:
+    name: Ubuntu File Synchronization Check
     runs-on: ubuntu-latest
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
     - name: 'Checkout code'
       uses: actions/checkout@v4
@@ -34,7 +38,7 @@ jobs:
       run: |
         set -e
         
-        MODIFIED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }})
+        MODIFIED_FILES=$(git diff --name-only $BASE_SHA...$HEAD_SHA)
         echo "Checking for synchronized file changes..."
         echo "Modified files in this PR:"
         echo "$MODIFIED_FILES"
