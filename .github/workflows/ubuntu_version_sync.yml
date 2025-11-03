@@ -22,6 +22,7 @@ on:
 
 jobs:
   check-sync:
+    name: Ubuntu File Synchronization Check
     runs-on: ubuntu-latest
     steps:
     - name: 'Checkout code'
