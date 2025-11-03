@@ -15,7 +15,14 @@
 #
 ################################################################################
 
-pushd otelconf/v0.3.0
-compile_native_go_fuzzer_v2 $(go list) FuzzJSON FuzzJSON
-compile_native_go_fuzzer_v2 $(go list) FuzzYAML FuzzYAML
-popd
+unset CFLAGS
+unset CXXFLAGS
+unset RUSTFLAGS
+
+rm -rf $OUT/*
+
+source /env/bin/activate
+meson setup build -Ddefault_library=static -Dtests=disabled -Dcpp_std=c++23 -Dread-interval-ms=10000 -Dmemory-region-size=1048576 -Dmemory-region-offset=3220176896 -Dbmc-interface-version=3 -Dqueue-region-size=16384 -Due-region-size=768 -Dmagic-number-byte1=2319403398 -Dmagic-number-byte2=1343703436 -Dmagic-number-byte3=2173375339 -Dmagic-number-byte4=3360702380 --buildtype=debug -Dfuzzing=true -Dcpp_args="-stdlib=libstdc++"
+ninja -C build
+
+cp build/src/bios-bmc-smm-error-logger_fuzzer $OUT
