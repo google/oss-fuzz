@@ -29,13 +29,15 @@ with atheris.instrument_imports():
     import aiohttp
     from aiohttp.base_protocol import BaseProtocol
     from aiohttp import http_exceptions, streams
+    from aiohttp import http_parser 
 
 @atheris.instrument_func
 def TestOneInput(data):
     loop = asyncio.get_event_loop()
     pr = BaseProtocol(loop)
     out = aiohttp.StreamReader(pr, 2**16, loop=None)
-    h_p = aiohttp.http_parser.HttpPayloadParser(out, loop, 32768)
+    headers_parser = http_parser.HeadersParser()
+    h_p = http_parser.HttpPayloadParser(out, loop, 32768, headers_parser=headers_parser)
     try:
         h_p.feed_data(data)
     except aiohttp.http_exceptions.HttpProcessingError:
