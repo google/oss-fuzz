@@ -14,9 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake
-RUN git clone --depth 1 https://github.com/RoaringBitmap/CRoaring croaring
-RUN mv croaring/fuzz/* $SRC/
-COPY build.sh $SRC/
-WORKDIR $SRC
+mkdir -p build-dir
+cd build-dir
+cmake -DENABLE_ROARING_TESTS=OFF -DBUILD_SHARED_LIBS=ON ../croaring
+make -j$(nproc)
+cd ..
+$CC $CFLAGS -I./croaring/include -c ./croaring_fuzzer.c -o fuzzer.o
+$CC $CFLAGS -fsanitize=fuzzer fuzzer.o -o $OUT/croaring_fuzzer -L./build-dir -lroaring -Wl,-rpath,./build-dir
