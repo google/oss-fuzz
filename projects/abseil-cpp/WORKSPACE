@@ -54,3 +54,11 @@ rules_fuzzing_init()
 load("@fuzzing_py_deps//:requirements.bzl", "install_deps")
 
 install_deps()
+
+http_archive(
+    name = "rules_cc",
+    sha256 = "1a337c60b123ab283b7647f1a5b7585a6a4e086a1033e2a71f03f4f1e1f81853",
+    strip_prefix = "rules_cc-0.0.9",
+    urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.9/rules_cc-0.0.9.tar.gz"],
+)
+
