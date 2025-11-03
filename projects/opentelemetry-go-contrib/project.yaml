@@ -4,6 +4,7 @@ primary_contact: "cncf-opentelemetry-tc@lists.cncf.io"
 main_repo: "https://github.com/open-telemetry/opentelemetry-go-contrib/"
 auto_ccs:
   - "pellared@gmail.com"
+  - "dashpole@google.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
