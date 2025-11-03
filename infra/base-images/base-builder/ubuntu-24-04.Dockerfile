@@ -230,3 +230,4 @@ RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
     rm -rf /tmp/patchelf && apt-get remove -y autoconf
 
 CMD ["compile"]
+# Test comment
