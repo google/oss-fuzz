@@ -230,4 +230,3 @@ COPY --from=gcr.io/oss-fuzz-base/indexer /indexer/build/indexer /opt/indexer/ind
 RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 
 CMD ["compile"]
-# Test comment to trigger CI
