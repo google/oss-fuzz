@@ -18,8 +18,8 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone https://github.com/trailofbits/ruzzy.git $SRC/ruzzy
 
-RUN install_ruby.sh
-ENV PATH="$PATH:/usr/local/rvm/rubies/ruby-3.3.1/bin"
+RUN /usr/local/bin/install_ruby.sh
+RUN /usr/local/bin/gem update --system 3.5.11
 
 RUN gem update --system 3.5.11
 
