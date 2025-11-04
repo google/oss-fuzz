@@ -5,6 +5,7 @@ main_repo: "https://github.com/open-telemetry/opentelemetry-go/"
 auto_ccs:
   - "pellared@gmail.com"
   - "dashpole@google.com"
+  - "damien@famillemathi.eu"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
