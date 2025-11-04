@@ -18,3 +18,4 @@ view_restrictions: none
 auto_ccs:
   - amerey@redhat.com
   - izzeem@google.com
+base_os_version: ubuntu-24-04
