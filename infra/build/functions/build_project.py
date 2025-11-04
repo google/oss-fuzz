@@ -348,22 +348,15 @@ def get_id(step_type, build):
           f'-{build.architecture}')
 
 
-def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
-    project_name,
-    project_yaml,
-    dockerfile,
-    config,
-    additional_env=None,
-    use_caching=False,
-    timestamp=None):
-  """Returns build steps for project."""
+def get_build_steps(project_name, project_yaml, dockerfile_contents, config):
+  """Returns the build steps for a project."""
 
-  project = Project(project_name, project_yaml, dockerfile)
+  project = Project(project_name, project_yaml, dockerfile_contents)
   return get_build_steps_for_project(project,
                                      config,
-                                     additional_env=additional_env,
-                                     use_caching=use_caching,
-                                     timestamp=timestamp), None
+                                     additional_env=None,
+                                     use_caching=False,
+                                     timestamp=None), None
 
 
 def get_build_steps_for_project(project,
@@ -489,7 +482,8 @@ def get_build_steps_for_project(project,
             # Generate targets list.
             {
                 'name':
-                    build_lib.get_runner_image_name(config.test_image_suffix, config.base_image_tag),
+                    build_lib.get_runner_image_name(config.test_image_suffix,
+                                                    config.base_image_tag),
                 'env':
                     env,
                 'args': [
@@ -865,11 +859,13 @@ def build_script_main(script_description,
       error = True
       continue
 
-    ubuntu_version = project_yaml.get('ubuntu_version', 'legacy')
-    config = create_config(args, build_type, base_image_tag=ubuntu_version)
+    base_image_tag = project_yaml.get('ubuntu_version')
+    if base_image_tag == 'legacy':
+      base_image_tag = None
+    config = create_config(args, build_type, base_image_tag=base_image_tag)
 
-    steps = get_build_steps_func(project_name, project_yaml,
-                                 dockerfile_contents, config)
+    steps, _ = get_build_steps_func(project_name, project_yaml,
+                                    dockerfile_contents, config)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       error = True
