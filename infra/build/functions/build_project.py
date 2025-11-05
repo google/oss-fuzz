@@ -348,15 +348,22 @@ def get_id(step_type, build):
           f'-{build.architecture}')
 
 
-def get_build_steps(project_name, project_yaml, dockerfile_contents, config):
-  """Returns the build steps for a project."""
+def get_build_steps(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-arguments
+    project_name,
+    project_yaml,
+    dockerfile,
+    config,
+    additional_env=None,
+    use_caching=False,
+    timestamp=None):
+  """Returns build steps for project."""
 
-  project = Project(project_name, project_yaml, dockerfile_contents)
+  project = Project(project_name, project_yaml, dockerfile)
   return get_build_steps_for_project(project,
                                      config,
-                                     additional_env=None,
-                                     use_caching=False,
-                                     timestamp=None), None
+                                     additional_env=additional_env,
+                                     use_caching=use_caching,
+                                     timestamp=timestamp), None
 
 
 def get_build_steps_for_project(project,
