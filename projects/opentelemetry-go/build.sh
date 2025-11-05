@@ -17,5 +17,12 @@
 
 REPO=$PWD
 
+cd $REPO/attribute
+compile_native_go_fuzzer_v2 $(go list) FuzzHashKVs sdk_attribute_FuzzHashKVs
+
 cd $REPO/sdk/metric/internal/aggregate
 compile_native_go_fuzzer_v2 $(go list) FuzzGetBin sdk_metric_internal_aggregate_FuzzGetBin
+
+cd $REPO/trace
+compile_native_go_fuzzer_v2 $(go list) FuzzTraceIDFromHex trace_FuzzTraceIDFromHex
+compile_native_go_fuzzer_v2 $(go list) FuzzSpanIDFromHex trace_FuzzSpanIDFromHex

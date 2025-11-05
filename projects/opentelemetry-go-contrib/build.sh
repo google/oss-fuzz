@@ -19,3 +19,4 @@ REPO=$PWD
 cd $REPO/otelconf/v0.3.0
 compile_native_go_fuzzer_v2 $(go list) FuzzJSON otelconf_v0.3.0_FuzzJSON
 compile_native_go_fuzzer_v2 $(go list) FuzzYAML otelconf_v0.3.0_FuzzYAML
+compile_native_go_fuzzer_v2 $(go list) FuzzYAMLWithEnvVars otelconf_v0.3.0_FuzzYAMLWithEnvVars
