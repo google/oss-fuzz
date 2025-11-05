@@ -18,6 +18,9 @@
 REPO=$PWD
 
 cd $REPO/attribute
+# Mitigate the error: found packages attribute_test and attribute in /src/opentelemetry-go/attribute.
+# Remove all Go files with *_test package before building the fuzzer.
+grep -rl --include="*.go" '^package .*_test' . | xargs rm -f 
 compile_native_go_fuzzer_v2 $(go list) FuzzHashKVs sdk_attribute_FuzzHashKVs
 
 cd $REPO/sdk/metric/internal/aggregate
