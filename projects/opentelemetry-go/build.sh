@@ -15,6 +15,7 @@
 #
 ################################################################################
 
-pushd sdk/metric/internal/aggregate
-compile_native_go_fuzzer_v2 $(go list) FuzzGetBin FuzzGetBin
-popd
+REPO=$PWD
+
+cd $REPO/sdk/metric/internal/aggregate
+compile_native_go_fuzzer_v2 $(go list) FuzzGetBin sdk_metric_internal_aggregate_FuzzGetBin
