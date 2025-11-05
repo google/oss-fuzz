@@ -169,22 +169,6 @@
     ]
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04",
-    "env": [
-      "ARCHITECTURE=x86_64",
-      "FUZZING_ENGINE=afl",
-      "FUZZING_LANGUAGE=c++",
-      "HOME=/root",
-      "OUT=/workspace/out/afl-address-x86_64-ubuntu-24-04",
-      "SANITIZER=address"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.address"
-    ]
-  },
-  {
     "name": "gcr.io/oss-fuzz/test-project",
     "args": [
       "bash",
@@ -317,22 +301,6 @@
       "FUZZING_LANGUAGE=c++",
       "HOME=/root",
       "OUT=/workspace/out/centipede-address-x86_64",
-      "SANITIZER=address"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.address"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04",
-    "env": [
-      "ARCHITECTURE=x86_64",
-      "FUZZING_ENGINE=centipede",
-      "FUZZING_LANGUAGE=c++",
-      "HOME=/root",
-      "OUT=/workspace/out/centipede-address-x86_64-ubuntu-24-04",
       "SANITIZER=address"
     ],
     "args": [
@@ -483,22 +451,6 @@
     ]
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04",
-    "env": [
-      "ARCHITECTURE=x86_64",
-      "FUZZING_ENGINE=centipede",
-      "FUZZING_LANGUAGE=c++",
-      "HOME=/root",
-      "OUT=/workspace/out/centipede-none-x86_64-ubuntu-24-04",
-      "SANITIZER=none"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.none"
-    ]
-  },
-  {
     "name": "gcr.io/oss-fuzz/test-project",
     "args": [
       "bash",
@@ -631,22 +583,6 @@
       "FUZZING_LANGUAGE=c++",
       "HOME=/root",
       "OUT=/workspace/out/honggfuzz-address-x86_64",
-      "SANITIZER=address"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.address"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04",
-    "env": [
-      "ARCHITECTURE=x86_64",
-      "FUZZING_ENGINE=honggfuzz",
-      "FUZZING_LANGUAGE=c++",
-      "HOME=/root",
-      "OUT=/workspace/out/honggfuzz-address-x86_64-ubuntu-24-04",
       "SANITIZER=address"
     ],
     "args": [
@@ -797,22 +733,6 @@
     ]
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04",
-    "env": [
-      "ARCHITECTURE=x86_64",
-      "FUZZING_ENGINE=libfuzzer",
-      "FUZZING_LANGUAGE=c++",
-      "HOME=/root",
-      "OUT=/workspace/out/libfuzzer-address-x86_64-ubuntu-24-04",
-      "SANITIZER=address"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.address"
-    ]
-  },
-  {
     "name": "gcr.io/oss-fuzz/test-project",
     "args": [
       "bash",
@@ -939,22 +859,6 @@
   },
   {
     "name": "gcr.io/oss-fuzz-base/base-runner",
-    "env": [
-      "ARCHITECTURE=i386",
-      "FUZZING_ENGINE=libfuzzer",
-      "FUZZING_LANGUAGE=c++",
-      "HOME=/root",
-      "OUT=/workspace/out/libfuzzer-address-i386",
-      "SANITIZER=address"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.address"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04",
     "env": [
       "ARCHITECTURE=i386",
       "FUZZING_ENGINE=libfuzzer",
@@ -1111,22 +1015,6 @@
     ]
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04",
-    "env": [
-      "ARCHITECTURE=aarch64",
-      "FUZZING_ENGINE=libfuzzer",
-      "FUZZING_LANGUAGE=c++",
-      "HOME=/root",
-      "OUT=/workspace/out/libfuzzer-address-aarch64",
-      "SANITIZER=address"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.address"
-    ]
-  },
-  {
     "name": "gcr.io/oss-fuzz/test-project",
     "args": [
       "bash",
@@ -1268,22 +1156,6 @@
     ]
   },
   {
-    "name": "gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04",
-    "env": [
-      "ARCHITECTURE=x86_64",
-      "FUZZING_ENGINE=libfuzzer",
-      "FUZZING_LANGUAGE=c++",
-      "HOME=/root",
-      "OUT=/workspace/out/libfuzzer-memory-x86_64-ubuntu-24-04",
-      "SANITIZER=memory"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.memory"
-    ]
-  },
-  {
     "name": "gcr.io/oss-fuzz/test-project",
     "args": [
       "bash",
@@ -1416,22 +1288,6 @@
       "FUZZING_LANGUAGE=c++",
       "HOME=/root",
       "OUT=/workspace/out/libfuzzer-undefined-x86_64",
-      "SANITIZER=undefined"
-    ],
-    "args": [
-      "bash",
-      "-c",
-      "targets_list > /workspace/targets.list.undefined"
-    ]
-  },
-  {
-    "name": "gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04",
-    "env": [
-      "ARCHITECTURE=x86_64",
-      "FUZZING_ENGINE=libfuzzer",
-      "FUZZING_LANGUAGE=c++",
-      "HOME=/root",
-      "OUT=/workspace/out/libfuzzer-undefined-x86_64-ubuntu-24-04",
       "SANITIZER=undefined"
     ],
     "args": [
