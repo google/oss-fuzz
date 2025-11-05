@@ -151,5 +151,6 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
                                                    config)
     self.assertEqual(build_steps, expected_build_steps)
 
+
 if __name__ == '__main__':
   unittest.main(exit=False)
