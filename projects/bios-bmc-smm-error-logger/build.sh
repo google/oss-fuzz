@@ -14,9 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-REPO=$PWD
 
-cd $REPO/otelconf/v0.3.0
-compile_native_go_fuzzer_v2 $(go list) FuzzJSON otelconf_v0.3.0_FuzzJSON
-compile_native_go_fuzzer_v2 $(go list) FuzzYAML otelconf_v0.3.0_FuzzYAML
-compile_native_go_fuzzer_v2 $(go list) FuzzYAMLWithEnvVars otelconf_v0.3.0_FuzzYAMLWithEnvVars
+unset CFLAGS
+unset CXXFLAGS
+unset RUSTFLAGS
+
+rm -rf $OUT/*
+
+source /env/bin/activate
+meson setup build -Ddefault_library=static -Dtests=disabled -Dcpp_std=c++23 -Dread-interval-ms=10000 -Dmemory-region-size=1048576 -Dmemory-region-offset=3220176896 -Dbmc-interface-version=3 -Dqueue-region-size=16384 -Due-region-size=768 -Dmagic-number-byte1=2319403398 -Dmagic-number-byte2=1343703436 -Dmagic-number-byte3=2173375339 -Dmagic-number-byte4=3360702380 --buildtype=debug -Dfuzzing=true -Dcpp_args="-stdlib=libstdc++"
+ninja -C build
+
+cp build/src/bios-bmc-smm-error-logger_fuzzer $OUT

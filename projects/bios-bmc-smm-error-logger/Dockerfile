@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/open-telemetry/opentelemetry-go-contrib
-WORKDIR $SRC/opentelemetry-go-contrib
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+
+RUN apt-get update && apt-get install --reinstall -y patchelf libboost-all-dev git python3-pip python3-venv libmount-dev libcap-dev gperf vim clang-18 libc++-18-dev lsb-release wget software-properties-common gnupg systemd make pkg-config libsystemd-dev libfmt-dev cmake ninja-build
+RUN python3 -m venv /env && . /env/bin/activate && pip install meson mako inflection pyyaml jinja2 jsonschema
+
+ENV CC=clang-18 
+ENV CXX=clang++-18
+
+RUN git clone --branch fuzzing https://github.com/javanlacerda/bios-bmc-smm-error-logger
 COPY build.sh $SRC/
+WORKDIR $SRC/bios-bmc-smm-error-logger

@@ -21,8 +21,8 @@ import time
 import json
 import subprocess
 
-import bad_patch
-import logic_error_patch
+import integrity_validator_check_replay
+import integrity_validator_run_tests
 
 logger = logging.getLogger(__name__)
 
@@ -159,10 +159,13 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
   if integrity_check:
     # Use different bad patches to test the cached replay build
     failed = []
-    for bad_patch_name, bad_patch_map in bad_patch.BAD_PATCH_GENERATOR.items():
+    for bad_patch_name, bad_patch_map in integrity_validator_check_replay.BAD_PATCH_GENERATOR.items(
+    ):
       # Generate bad patch command using different approaches
       expected_rc = bad_patch_map['rc']
-      bad_patch_command = (f'python3 /chronos/bad_patch.py {bad_patch_name}')
+      bad_patch_command = (
+          f'python3 /chronos/integrity_validator_check_replay.py {bad_patch_name}'
+      )
       cmd_to_run = cmd[:]
       cmd_to_run.append(
           f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
@@ -201,11 +204,11 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
               (end - start))
 
 
-def check_test(project,
-               sanitizer='address',
-               run_full_cache_replay=False,
-               integrity_check=False,
-               stop_on_failure=False):
+def check_tests(project,
+                sanitizer='address',
+                run_full_cache_replay=False,
+                integrity_check=False,
+                stop_on_failure=False):
   """Run the `run_tests.sh` script for a specific project. Will
     build a cached container first."""
 
@@ -242,16 +245,49 @@ def check_test(project,
       '/bin/bash',
       '-c',
   ]
+
   if integrity_check:
+    # First check diffing patch. The approach here is to capture a diff before
+    # and after applying the patch, and see if there are any changes to e.g. git diff.
+    logger.info('Checking diffing patch for project: %s', project)
+    patch_command = (
+        'python3 -m pip install -r /chronos/requirements.txt &&'
+        'python3 /chronos/integrity_validator_run_tests.py diff-patch before')
+    cmd_to_run = docker_cmd[:]
+
+    # Capture the patch after.
+    cmd_to_run.append(
+        f'"set -euo pipefail && {patch_command} && {run_tests_cmd} && python3 /chronos/integrity_validator_run_tests.py diff-patch after"'
+    )
+    ret_code = 0
+    try:
+      subprocess.check_call(' '.join(cmd_to_run), shell=True)
+    except subprocess.CalledProcessError as exc:
+      ret_code = exc.returncode
+
+    succeeded_patch = ret_code == 0
+    if ret_code == 0:
+      patch_msg = 'run_tests.sh does not patch source control'
+    elif ret_code == 1:
+      patch_msg = 'run_tests.sh patches source control'
+    else:
+      patch_msg = 'unable to tell if run_tests.sh patches source control'
+    patch_details = {
+        'check-name': 'run_tests_patches_diff',
+        'patch-message': patch_msg
+    }
+
+    # Second, check semantic patching tests. This is a best effort and won't work on some
+    # projects.
     integrity_checks = []
 
     # Patch the code with some logic error and see if build_test able to detect
     # them.
-    for logic_patch in logic_error_patch.LOGIC_ERROR_PATCHES:
+    for logic_patch in integrity_validator_run_tests.LOGIC_ERROR_PATCHES:
       logger.info('Checking logic patch: %s', logic_patch.name)
       patch_command = (
           'python3 -m pip install -r /chronos/requirements.txt &&'
-          f'python3 /chronos/logic_error_patch.py {logic_patch.name} && '
+          f'python3 /chronos/integrity_validator_run_tests.py semantic-patch {logic_patch.name} && '
           'compile')
       cmd_to_run = docker_cmd[:]
 
@@ -306,59 +342,27 @@ def check_test(project,
       logger.info('%s integrity check patch %s result: %s', project,
                   check['patch'], check['result'])
     succeeded = any([chk['result'] == 'Success' for chk in integrity_checks])
+
+    # Print patching results as well.
+    logger.info('run_tests.sh patches version control: %s',
+                patch_details['patch-message'])
   else:
     # Run normal build_test
     docker_cmd.append(f'"{run_tests_cmd}"')
     try:
       subprocess.check_call(' '.join(docker_cmd), shell=True)
       succeeded = True
+      succeeded_patch = True
     except subprocess.CalledProcessError:
       succeeded = False
+      succeeded_patch = False
 
   end = time.time()
   logger.info('%s test completion %s: Duration of run_tests.sh: %.2f seconds',
               project, 'failed' if not succeeded else 'succeeded',
               (end - start))
 
-  return succeeded
-
-
-def check_run_tests_script(project,
-                           sanitizer='address',
-                           ignore_new_files=False):
-  """Checks if the run_tests.sh changes the source files in the current directory."""
-
-  build_project_image(project)
-  build_cached_project(project, sanitizer=sanitizer)
-
-  ignore = ''
-  if ignore_new_files:
-    ignore = '--ignore-new-files'
-
-  start = time.time()
-  cmd = [
-      'docker', 'run', '--rm',
-      '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
-      ':/chronos',
-      '--name=' + project + '-origin-' + sanitizer + '-run-tests-check',
-      _get_project_cached_named(project, sanitizer), '/bin/bash', '-c',
-      f'"python3 -m pip install -r /chronos/requirements.txt && python3 /chronos/run_tests_check.py {ignore}"'
-  ]
-  # Normal run with no integrity check
-  result = subprocess.run(' '.join(cmd), shell=True, check=False)
-
-  end = time.time()
-  logger.info('%s run_test.sh check completion time: %.2f seconds', project,
-              (end - start))
-
-  if not result.returncode:
-    logger.info(
-        '%s run_test.sh does not alter any files or directories content.',
-        project)
-  else:
-    logger.info(
-        'Error: %s run_test.sh does alter files or directories content.',
-        project)
+  return succeeded and succeeded_patch
 
 
 def extract_test_coverage(project):
@@ -399,9 +403,9 @@ def extract_test_coverage(project):
   return True
 
 
-def _cmd_dispatcher_check_test(args):
-  check_test(args.project, args.sanitizer, args.run_full_cache_replay,
-             args.integrity_check, args.stop_on_failure)
+def _cmd_dispatcher_check_tests(args):
+  check_tests(args.project, args.sanitizer, args.run_full_cache_replay,
+              args.integrity_check, args.stop_on_failure)
 
 
 def _cmd_dispatcher_check_replay(args):
@@ -418,12 +422,6 @@ def _cmd_dispatcher_extract_coverage(args):
   extract_test_coverage(args.project)
 
 
-def _cmd_check_run_tests_script(args):
-  check_run_tests_script(args.project,
-                         sanitizer=args.sanitizer,
-                         ignore_new_files=args.ignore_new_files)
-
-
 def parse_args():
   """Parses command line arguments for the manager script."""
   parser = argparse.ArgumentParser(
@@ -432,33 +430,33 @@ def parse_args():
   )
   subparsers = parser.add_subparsers(dest='command')
 
-  check_test_parser = subparsers.add_parser(
-      'check-test', help='Checks run_test.sh for specific project.')
-  check_test_parser.add_argument(
+  checks_test_parser = subparsers.add_parser(
+      'check-tests', help='Checks run_test.sh for specific project.')
+  checks_test_parser.add_argument(
       'project',
       type=str,
       help='The name of the project to check (e.g., "libpng").',
   )
-  check_test_parser.add_argument(
+  checks_test_parser.add_argument(
       '--stop-on-failure',
       action='store_true',
       help='If set, will stop integrity checks on first failure.')
-  check_test_parser.add_argument(
+  checks_test_parser.add_argument(
       '--sanitizer',
       default='address',
       help='The sanitizer to use (default: address).')
-  check_test_parser.add_argument(
+  checks_test_parser.add_argument(
       '--container-output',
       choices=['silent', 'file', 'stdout'],
       default='stdout',
       help='How to handle output from the container. ')
-  check_test_parser.add_argument(
+  checks_test_parser.add_argument(
       '--run-full-cache-replay',
       action='store_true',
       help=
       'If set, will run the full cache replay instead of just checking the script.'
   )
-  check_test_parser.add_argument(
+  checks_test_parser.add_argument(
       '--integrity-check',
       action='store_true',
       help=
@@ -479,21 +477,6 @@ def parse_args():
       '--integrity-check',
       action='store_true',
       help='If set, will test the integrity of the replay script.')
-
-  check_run_tests_script_parser = subparsers.add_parser(
-      'check-run-tests-script',
-      help=
-      'Checks if the run_tests.sh alter files in the current WORKDIR after execution'
-  )
-
-  check_run_tests_script_parser.add_argument(
-      'project', help='The name of the project to check.')
-  check_run_tests_script_parser.add_argument('--ignore-new-files',
-                                             action='store_true')
-  check_run_tests_script_parser.add_argument(
-      '--sanitizer',
-      default='address',
-      help='The sanitizer to use for the cached build (default: address).')
 
   build_cached_image_parser = subparsers.add_parser(
       'build-cached-image',
@@ -526,11 +509,10 @@ def main():
   args = parse_args()
 
   dispatch_map = {
-      'check-test': _cmd_dispatcher_check_test,
+      'check-tests': _cmd_dispatcher_check_tests,
       'check-replay': _cmd_dispatcher_check_replay,
       'build-cached-image': _cmd_dispatcher_build_cached_image,
-      'extract-test-coverage': _cmd_dispatcher_extract_coverage,
-      'check-run-tests-script': _cmd_check_run_tests_script
+      'extract-test-coverage': _cmd_dispatcher_extract_coverage
   }
 
   dispatch_cmd = dispatch_map.get(args.command, None)

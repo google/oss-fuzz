@@ -105,6 +105,7 @@ class ProjectYamlChecker:
       'view_restrictions',
       'file_github_issue',
       'indexer',  # Flags specific to infra/indexer.
+      'base_os_version',
   ]
 
   REQUIRED_SECTIONS = ['main_repo']
