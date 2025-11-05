@@ -707,7 +707,7 @@ def get_runner_image_name(test_image_suffix, base_image_tag=None):
   # Only add a tag if it's specified and not 'legacy', as 'legacy' implies
   # 'latest', which is the default behavior.
   if base_image_tag and base_image_tag != 'legacy':
-    image += ':' + base_image_tag
+    image += f":{base_image_tag}"
 
   return image
 
