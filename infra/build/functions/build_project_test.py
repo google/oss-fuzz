@@ -112,6 +112,41 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
                                                    config)
     self.assertEqual(build_steps, expected_build_steps)
 
+  # @mock.patch('build_lib.get_signed_url', return_value='test_url')
+  # @mock.patch('build_project.get_datetime_now',
+  #             return_value=test_utils.FAKE_DATETIME)
+  # @mock.patch('build_lib.get_unique_build_step_image_id',
+  #             return_value='UNIQUE_ID')
+  # def test_get_build_steps_ubuntu_24_04(self, mock_url, mock_get_datetime_now,
+  #                                       mock_get_id):
+  #   """Test for get_build_steps with ubuntu-24-04."""
+  #   del mock_url, mock_get_datetime_now
+  #   project_name = 'test-project-ubuntu'
+  #   project_yaml_contents = (
+  #       'language: c++\n'
+  #       'ubuntu_version: ubuntu-24-04\n'
+  #       'sanitizers:\n'
+  #       '  - address\n'
+  #       'architectures:\n'
+  #       '  - x86_64\n'
+  #       'main_repo: https://github.com/google/oss-fuzz.git\n')
+  #   self.fs.create_dir(os.path.join(test_utils.PROJECTS_DIR, project_name))
+  #   test_utils.create_project_data(project_name, project_yaml_contents)
+
+  #   expected_build_steps_file_path = test_utils.get_test_data_file_path(
+  #       'expected_build_steps_ubuntu_24_04.json')
+  #   self.fs.add_real_file(expected_build_steps_file_path)
+  #   with open(expected_build_steps_file_path) as expected_build_steps_file:
+  #     expected_build_steps = json.load(expected_build_steps_file)
+
+  #   config = build_project.Config(upload=True)
+
+  #   project_yaml, dockerfile = build_project.get_project_data(project_name)
+  #   config.base_image_tag = project_yaml.get('ubuntu_version')
+  #   build_steps, _ = build_project.get_build_steps(project_name,
+  #                                                  project_yaml, dockerfile,
+  #                                                  config)
+  #   self.assertEqual(build_steps, expected_build_steps)
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('build_project.get_datetime_now',
@@ -122,17 +157,19 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
                                         mock_get_id):
     """Test for get_build_steps with ubuntu-24-04."""
     del mock_url, mock_get_datetime_now
-    project_name = 'test-project-ubuntu'
     project_yaml_contents = (
         'language: c++\n'
-        'ubuntu_version: ubuntu-24-04\n'
         'sanitizers:\n'
         '  - address\n'
+        '  - memory\n'
+        '  - undefined\n'
         'architectures:\n'
         '  - x86_64\n'
+        '  - i386\n'
+        '  - aarch64\n'
         'main_repo: https://github.com/google/oss-fuzz.git\n')
-    self.fs.create_dir(os.path.join(test_utils.PROJECTS_DIR, project_name))
-    test_utils.create_project_data(project_name, project_yaml_contents)
+    self.fs.create_dir(test_utils.PROJECT_DIR)
+    test_utils.create_project_data(test_utils.PROJECT, project_yaml_contents)
 
     expected_build_steps_file_path = test_utils.get_test_data_file_path(
         'expected_build_steps_ubuntu_24_04.json')
@@ -141,12 +178,10 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
       expected_build_steps = json.load(expected_build_steps_file)
 
     config = build_project.Config(upload=True)
-
-    project_yaml, dockerfile = build_project.get_project_data(project_name)
-    config.base_image_tag = project_yaml.get('ubuntu_version')
-    build_steps, _ = build_project.get_build_steps(project_name,
+    project_yaml, dockerfile = build_project.get_project_data(
+        test_utils.PROJECT)
+    config.base_image_tag = "ubuntu-24-04"
+    build_steps, _ = build_project.get_build_steps(test_utils.PROJECT,
                                                    project_yaml, dockerfile,
                                                    config)
     self.assertEqual(build_steps, expected_build_steps)
-
-
