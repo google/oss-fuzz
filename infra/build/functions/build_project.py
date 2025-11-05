@@ -179,7 +179,7 @@ class Project:  # pylint: disable=too-many-instance-attributes
     self.labels = project_yaml['labels']
     self.fuzzing_language = project_yaml['language']
     self.run_tests = project_yaml['run_tests']
-    self.ubuntu_version = project_yaml.get('ubuntu_version', 'legacy')
+    self.base_os_version = project_yaml.get('base_os_version', 'legacy')
     if 'main_repo' in project_yaml:
       self.main_repo = project_yaml['main_repo']
     else:
@@ -859,7 +859,7 @@ def build_script_main(script_description,
       error = True
       continue
 
-    base_image_tag = project_yaml.get('ubuntu_version')
+    base_image_tag = project_yaml.get('base_os_version', 'legacy')
     if base_image_tag == 'legacy':
       base_image_tag = None
     config = create_config(args, build_type, base_image_tag=base_image_tag)
