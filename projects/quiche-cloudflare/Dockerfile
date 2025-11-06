@@ -17,6 +17,4 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN git clone --recursive --depth 1 https://github.com/cloudflare/quiche quiche
 COPY build.sh $SRC/
-ENV RUSTUP_TOOLCHAIN nightly-2025-01-10
-RUN rustup update
 WORKDIR $SRC/quiche
