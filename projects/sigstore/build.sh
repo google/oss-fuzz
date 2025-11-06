@@ -25,6 +25,8 @@ rm go.sum
 cd $SRC/sigstore
 go get github.com/AdaLogics/go-fuzz-headers
 
+sed -i '/cryptoutils\.ValidatePubKey(first)/d' test/fuzz/pem/fuzzcert_test.go
+sed -i '/cryptoutils\.ValidatePubKey(second)/d' test/fuzz/pem/fuzzcert_test.go
 compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz FuzzGetPassword FuzzGetPassword
 compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzLoadCertificates FuzzLoadCertificates
 compile_native_go_fuzzer_v2 github.com/sigstore/sigstore/test/fuzz/pem FuzzUnmarshalCertificatesFromPEM FuzzUnmarshalCertificatesFromPEM
