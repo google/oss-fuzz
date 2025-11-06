@@ -90,7 +90,7 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_use_freetype=true
            skia_use_system_freetype2=false
            skia_use_wuffs=true
-           skia_use_libfuzzer_defaults=false"
+           skia_provide_default_fuzz_engine=false"
 
 # Even though GPU is "enabled" for all these builds, none really
 # uses the gpu except for api_mock_gpu_canvas.
