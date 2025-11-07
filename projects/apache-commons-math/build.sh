@@ -16,11 +16,18 @@
 ################################################################################
 
 pushd "$SRC/commons-math"
-  MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
+  MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Dmoditect.skip=true -pl commons-math-core,commons-math-neuralnet,commons-math-transform,commons-math-legacy-exception,commons-math-legacy-core,commons-math-legacy"
   $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
   CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
    -Dexpression=project.version -q -DforceStdout)
-  cp "commons-math-legacy/target/commons-math4-legacy-$CURRENT_VERSION.jar" $OUT/commons-math.jar
+  if [ -f "commons-math-legacy/target/commons-math4-legacy-$CURRENT_VERSION-shaded.jar" ]; then
+    cp "commons-math-legacy/target/commons-math4-legacy-$CURRENT_VERSION-shaded.jar" $OUT/commons-math.jar
+  elif [ -f "commons-math-legacy/target/commons-math4-legacy-$CURRENT_VERSION.jar" ]; then
+    cp "commons-math-legacy/target/commons-math4-legacy-$CURRENT_VERSION.jar" $OUT/commons-math.jar
+  else
+    echo "ERROR: Could not find commons-math4-legacy jar to copy!" >&2
+    exit 1
+  fi
 popd
 
 ALL_JARS="commons-math.jar"
