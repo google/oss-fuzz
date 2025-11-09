@@ -118,6 +118,8 @@ CLUSTERFUZZLITE_DOCKER_IMAGE = 'gcr.io/oss-fuzz-base/cifuzz-run-fuzzers'
 INDEXER_PREBUILT_URL = ('https://clusterfuzz-builds.storage.googleapis.com/'
                         'oss-fuzz-artifacts/indexer')
 
+CONTAINER_TOOL = os.getenv('OSS_FUZZ_CONTAINER_TOOL', 'docker')
+
 logger = logging.getLogger(__name__)
 
 if sys.version_info[0] >= 3:
@@ -256,6 +258,11 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
       args.sanitizer = 'none'
     else:
       args.sanitizer = constants.DEFAULT_SANITIZER
+
+  if (hasattr(args, 'architecture') and
+      args.architecture != constants.DEFAULT_ARCHITECTURE and
+      CONTAINER_TOOL != 'docker'):
+    raise RuntimeError('Non-default architectures require Docker.')
 
   if args.command == 'generate':
     result = generate(args)
@@ -625,7 +632,13 @@ def check_project_exists(project):
 def _check_fuzzer_exists(project, fuzzer_name, args, architecture='x86_64'):
   """Checks if a fuzzer exists."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
-  command = ['docker', 'run', '--rm', '--platform', platform]
+  command = [
+      CONTAINER_TOOL,
+      'run',
+      '--rm',
+      '--platform',
+      platform,
+  ]
   command.extend(['-v', '%s:/out' % project.out])
   command.append(_get_base_runner_image(args))
 
@@ -796,10 +809,11 @@ def prepare_aarch64_emulation():
 
 
 def docker_run(run_args, print_output=True, architecture='x86_64'):
-  """Calls `docker run`."""
+  """Calls `CONTAINER_TOOL run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = [
-      'docker', 'run', '--privileged', '--shm-size=2g', '--platform', platform
+      CONTAINER_TOOL, 'run', '--privileged', '--shm-size=2g', '--platform',
+      platform
   ]
   if os.getenv('OSS_FUZZ_SAVE_CONTAINERS_NAME'):
     command.append('--name')
@@ -827,8 +841,8 @@ def docker_run(run_args, print_output=True, architecture='x86_64'):
 
 
 def docker_build(build_args):
-  """Calls `docker build`."""
-  command = ['docker', 'build']
+  """Calls `CONTAINER_TOOL build`."""
+  command = [CONTAINER_TOOL, 'build']
   command.extend(build_args)
   logger.info('Running: %s.', _get_command_string(command))
 
@@ -842,8 +856,8 @@ def docker_build(build_args):
 
 
 def docker_pull(image):
-  """Call `docker pull`."""
-  command = ['docker', 'pull', image]
+  """Call `CONTAINER_TOOL pull`."""
+  command = [CONTAINER_TOOL, 'pull', image]
   logger.info('Running: %s', _get_command_string(command))
 
   try:
@@ -1078,7 +1092,7 @@ def fuzzbench_build_fuzzers(args):
     ]
     tag = f'gcr.io/oss-fuzz/{args.project.name}'
     subprocess.run([
-        'docker', 'tag', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench',
+        CONTAINER_TOOL, 'tag', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench',
         'gcr.io/oss-fuzz-base/base-builder'
     ],
                    check=True)
