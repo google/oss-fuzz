@@ -1,4 +1,5 @@
 homepage: "https://freedesktop.org/wiki/Software/systemd/"
+base_os_version: ubuntu-24-04
 language: c++
 primary_contact: "lennart@poettering.net"
 builds_per_day: 4
