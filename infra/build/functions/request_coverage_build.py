@@ -30,6 +30,11 @@ def get_build_steps(project_name):
   build_config = request_build.get_empty_config()
   project_yaml_contents, dockerfile_lines = request_build.get_project_data(
       project_name)
+
+  base_os_version = project_yaml_contents.get('base_os_version')
+  if base_os_version:
+    build_config.base_image_tag = base_os_version
+
   return build_and_run_coverage.get_build_steps(project_name,
                                                 project_yaml_contents,
                                                 dockerfile_lines, build_config)
