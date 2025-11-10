@@ -104,6 +104,7 @@ class ProjectYamlChecker:
       'view_restrictions',
       'file_github_issue',
       'indexer',  # Flags specific to infra/indexer.
+      'base_os_version',
   ]
 
   REQUIRED_SECTIONS = ['main_repo']
@@ -436,6 +437,7 @@ def run_nonbuild_tests(parallel):
       '--ignore-glob=projects/*',
       '--ignore-glob=infra/experimental/contrib/*',
       '--ignore-glob=infra/experimental/chronos/*',
+      '--ignore-glob=infra/experimental/mcp/*',
   ]
   if parallel:
     command.extend(['-n', 'auto'])
