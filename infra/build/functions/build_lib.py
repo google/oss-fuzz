@@ -344,7 +344,11 @@ def download_corpora_steps(project_name, test_image_suffix):
   return steps, None
 
 
-def download_coverage_data_steps(project_name, latest, bucket_name, out_dir, base_image_tag=None):
+def download_coverage_data_steps(project_name,
+                                 latest,
+                                 bucket_name,
+                                 out_dir,
+                                 base_image_tag=None):
   """Returns GCB steps to download coverage data for the given project"""
   steps = []
   fuzz_targets = _get_targets_list(project_name)
