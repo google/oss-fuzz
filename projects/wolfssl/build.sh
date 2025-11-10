@@ -61,7 +61,7 @@ then
         ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-opensslall --enable-opensslextra
     fi
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT_OPENSSL"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT_OPENSSL -Wno-deprecated-literal-operator"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-openssl-api/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-openssl-api/"
     cd $SRC/cryptofuzz-openssl-api/modules/wolfcrypt-openssl
@@ -118,7 +118,7 @@ then
         ./configure $WOLFCRYPT_CONFIGURE_PARAMS --disable-asm
     fi
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -Wno-deprecated-literal-operator"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-normal-math/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-normal-math/"
     cd $SRC/cryptofuzz-normal-math/modules/wolfcrypt
@@ -139,7 +139,7 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DWOLFSSL_SP_INT_NEGATIVE"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-sp-math-all
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -Wno-deprecated-literal-operator"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-sp-math-all/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-sp-math-all/"
     cd $SRC/cryptofuzz-sp-math-all/modules/wolfcrypt
@@ -160,7 +160,7 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DSP_WORD_SIZE=8 -DWOLFSSL_SP_INT_NEGATIVE"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-sp-math-all
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -Wno-deprecated-literal-operator"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-sp-math-all-8bit/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-sp-math-all-8bit/"
     cd $SRC/cryptofuzz-sp-math-all-8bit/modules/wolfcrypt
@@ -192,7 +192,7 @@ then
         ./configure $WOLFCRYPT_CONFIGURE_PARAMS_SP_MATH --enable-sp --enable-sp-math
     fi
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -Wno-deprecated-literal-operator"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-sp-math/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-sp-math/"
     cd $SRC/cryptofuzz-sp-math/modules/wolfcrypt
@@ -213,7 +213,7 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-fastmath
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -Wno-deprecated-literal-operator"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-fastmath/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-fastmath/"
     cd $SRC/cryptofuzz-fastmath/modules/wolfcrypt
@@ -234,7 +234,7 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-heapmath
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -Wno-deprecated-literal-operator"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-heapmath/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-heapmath/"
     cd $SRC/cryptofuzz-heapmath/modules/wolfcrypt
@@ -250,8 +250,8 @@ then
     mkdir $SRC/cryptofuzz-seed-corpus/
 
     # Convert Wycheproof test vectors to Cryptofuzz corpus format
-    find $SRC/wycheproof/testvectors/ -type f -name 'ecdsa_*' -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
-    find $SRC/wycheproof/testvectors/ -type f -name 'ecdh_*' -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
+    find $SRC/wycheproof/testvectors_v1/ -type f -name 'ecdsa_*' -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
+    find $SRC/wycheproof/testvectors_v1/ -type f -name 'ecdh_*' -exec $SRC/cryptofuzz-fastmath/cryptofuzz --from-wycheproof={},$SRC/cryptofuzz-seed-corpus/ \;
 
     # Unpack corpora from other projects
     unzip -n $SRC/corpus_bearssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null

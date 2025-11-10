@@ -18,11 +18,6 @@ import pathlib
 import random
 import sys
 
-import tree_sitter_cpp
-from tree_sitter import Language, Parser, Query, QueryCursor
-
-LANGUAGE = Language(tree_sitter_cpp.language())
-PARSER = Parser(LANGUAGE)
 EXCLUDE_DIRS = ['tests', 'test', 'examples', 'example', 'build']
 ROOT_PATH = os.path.abspath(pathlib.Path.cwd().resolve())
 MAX_COUNT = 50
@@ -128,8 +123,14 @@ def missing_header_error():
 
 def duplicate_symbol_error():
   """Insert duplicate symbol to all found source files in the /src/ directory."""
+  import tree_sitter_cpp
+  from tree_sitter import Language, Parser, Query, QueryCursor
+
   exts = ['.c', '.cc', '.cpp', '.cxx']
   count = 0
+
+  treesitter_lang = Language(tree_sitter_cpp.language())
+  treesitter_parser = Parser(treesitter_lang)
 
   # Walk and insert missing header inclusion
   for cur, dirs, files in os.walk(ROOT_PATH):
@@ -149,7 +150,7 @@ def duplicate_symbol_error():
           with open(path, 'r', encoding='utf-8') as f:
             source = f.read()
           if source:
-            node = PARSER.parse(source.encode()).root_node
+            node = treesitter_parser.parse(source.encode()).root_node
         except Exception:
           pass
 
@@ -157,7 +158,7 @@ def duplicate_symbol_error():
           continue
 
         # Found random declaration and duplicate it
-        cursor = QueryCursor(Query(LANGUAGE, '( declaration ) @decl'))
+        cursor = QueryCursor(Query(treesitter_lang, '( declaration ) @decl'))
         for declaration in cursor.captures(node).get('decl', []):
           if declaration.text:
             target = declaration.text.decode()

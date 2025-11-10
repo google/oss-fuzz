@@ -21,7 +21,9 @@ cd $SRC/mruby
 export LD=$CC
 export LDFLAGS="$CFLAGS"
 rake all
-rake test
+
+# This should be allowed to fail. So long as it does not fail in `run_tests.sh`
+rake test || true
 
 # build fuzzers
 FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_fuzzer.c
