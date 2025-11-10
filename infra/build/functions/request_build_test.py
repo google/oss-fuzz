@@ -23,7 +23,6 @@ from unittest import mock
 
 from google.cloud import ndb
 
-sys.path.append(os.path.dirname(__file__))
 # pylint: disable=wrong-import-position
 
 import datastore_entities
@@ -48,7 +47,6 @@ class TestRequestBuilds(unittest.TestCase):
   def setUp(self):
     test_utils.reset_ds_emulator()
     self.maxDiff = None  # pylint: disable=invalid-name
-    # Mocks globais para evitar chamadas de API reais
     self.mock_get_signed_url = mock.patch(
         'build_lib.get_signed_url',
         return_value='https://example.com/signed-url').start()
@@ -119,14 +117,11 @@ COPY build.sh $SRC/
     with mock.patch('google.auth.default', return_value=(None, 'oss-fuzz')):
       request_build.request_build(event, None)
 
-    # Check that run_build was called.
     self.assertTrue(mock_run_build.called)
 
-    # Get the build_steps from the first call to run_build.
     self.assertEqual(2, mock_run_build.call_count)
     build_steps = mock_run_build.call_args_list[0][0][1]
 
-    # Find the 'build-check' step and assert the runner image is correct.
     found_build_check_step = False
     for inner_step in build_steps[0]:
       if isinstance(

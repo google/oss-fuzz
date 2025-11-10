@@ -21,22 +21,18 @@ from google.cloud import ndb
 
 import build_and_run_coverage
 import request_build
+import build_project
 
 BASE_PROJECT = 'oss-fuzz-base'
 
 
 def get_build_steps(project_name):
   """Retrieve build steps."""
-  build_config = request_build.get_empty_config()
-  project_yaml_contents, dockerfile_lines = request_build.get_project_data(
-      project_name)
+  project_yaml, dockerfile_lines = request_build.get_project_data(project_name)
+  build_config = build_project.Config(
+      base_image_tag=project_yaml.get('base_os_version', None))
 
-  base_os_version = project_yaml_contents.get('base_os_version')
-  if base_os_version:
-    build_config.base_image_tag = base_os_version
-
-  return build_and_run_coverage.get_build_steps(project_name,
-                                                project_yaml_contents,
+  return build_and_run_coverage.get_build_steps(project_name, project_yaml,
                                                 dockerfile_lines, build_config)
 
 

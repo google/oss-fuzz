@@ -356,7 +356,7 @@ def download_coverage_data_steps(project_name,
     sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
     return None
 
-  runner_image_name = get_runner_image_name(None, base_image_tag)
+  runner_image_name = get_runner_image_name(base_image_tag=base_image_tag)
 
   steps.append({
       'name': runner_image_name,
@@ -697,7 +697,7 @@ def get_build_info_lines(build_id, cloud_project='oss-fuzz'):
   ]
 
 
-def get_runner_image_name(test_image_suffix, base_image_tag=None):
+def get_runner_image_name(test_image_suffix=None, base_image_tag=None):
   """Returns the runner image that should be used.
 
   Returns the testing image if |test_image_suffix|.
