@@ -1,33 +1,18 @@
-# Copyright 2022 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder-java
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+# Install Gradle (wrapper usable too, but install for convenience)
+RUN apt-get update && apt-get install -y curl unzip && rm -rf /var/lib/apt/lists/*
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven-3.6.3 && \
-rm -rf maven.zip
+# Copy OkHttp source and fuzz module into image at /src/okhttp
+# In OSS-Fuzz production, the infra clones the main repo based on project.yaml.
+# For local testing you can COPY your fork or let build.sh fetch it.
+WORKDIR /src/okhttp
 
-ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
+# Copy build scripts and fuzzers (adjust if you vendor fuzz module in the repo)
+COPY build.sh /src/okhttp/build.sh
+COPY fuzz /src/okhttp/fuzz
 
-WORKDIR ${SRC}
-#
-# clone repository
-#
-RUN git clone https://github.com/square/okhttp.git
+ENV MAVEN_OPTS=-Xmx2g
 
-ADD pom.xml build.sh ${SRC}/
-ADD src/ ${SRC}/src/
-WORKDIR ${SRC}/okhttp
+RUN chmod +x /src/okhttp/build.sh
+
