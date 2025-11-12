@@ -266,6 +266,7 @@ def check_tests(project,
       ret_code = exc.returncode
 
     succeeded_patch = ret_code == 0
+    logger.info('succeeded patch: %s', succeeded_patch)
     if ret_code == 0:
       patch_msg = 'run_tests.sh does not patch source control'
     elif ret_code == 1:
@@ -358,11 +359,13 @@ def check_tests(project,
       succeeded_patch = False
 
   end = time.time()
+
+  result = succeeded and succeeded_patch
   logger.info('%s test completion %s: Duration of run_tests.sh: %.2f seconds',
-              project, 'failed' if not succeeded else 'succeeded',
+              project, 'failed' if not result else 'succeeded',
               (end - start))
 
-  return succeeded and succeeded_patch
+  return result
 
 
 def extract_test_coverage(project):
