@@ -59,7 +59,7 @@ IMAGE_DEPENDENCIES = {
     'base-builder-ruby': ['base-builder'],
     'base-builder-rust': ['base-builder'],
     'base-builder-swift': ['base-builder'],
-    'base-runner': ['base-image', 'base-builder'],
+    'base-runner': ['base-image', 'base-builder', 'base-builder-ruby'],
     'base-runner-debug': ['base-runner'],
     'indexer': ['base-clang-full'],
 }
