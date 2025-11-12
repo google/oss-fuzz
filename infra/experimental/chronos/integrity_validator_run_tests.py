@@ -23,7 +23,7 @@ import sys
 try:
   import tree_sitter_cpp
   from tree_sitter import Language, Parser, Query, QueryCursor
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
   # pass. Allow this module to be imported even when tree-sitter
   # is not available.
   pass
