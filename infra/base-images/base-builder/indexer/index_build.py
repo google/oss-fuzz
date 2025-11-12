@@ -61,6 +61,13 @@ INDEXER_DIR = Path(__file__).parent
 # wrapper. Get around this by writing to a file instead.
 COMPILE_SETTINGS_PATH = INDEXER_DIR / 'compile_settings.json'
 
+CLANG_TOOLCHAIN_BINARY_PREFIXES = (
+    'clang-',
+    'ld',
+    'lld',
+    'llvm-',
+)
+
 EXTRA_CFLAGS = (
     '-fno-omit-frame-pointer '
     '-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION '
@@ -125,11 +132,15 @@ def set_up_wrapper_dir():
     shutil.rmtree(_TOOLCHAIN_WITH_WRAPPER)
   _TOOLCHAIN_WITH_WRAPPER.mkdir(parents=True)
 
-  # Set up symlinks to every binary except for clang.
+  # Set up symlinks to toolchain binaries.
   wrapper_bin_dir = _TOOLCHAIN_WITH_WRAPPER / 'bin'
   wrapper_bin_dir.mkdir()
   for name in os.listdir(_CLANG_TOOLCHAIN / 'bin'):
-    if name in ('clang', 'clang++'):
+    # Symlink clang/llvm toolchain binaries, except for clang itself.
+    # We have to be careful not to symlink other unrelated binaries, since other
+    # parts of the build process may wrap those binaries (e.g.
+    # make_build_replayable.py in OSS-Fuzz).
+    if not name.startswith(CLANG_TOOLCHAIN_BINARY_PREFIXES):
       continue
 
     os.symlink(_CLANG_TOOLCHAIN / 'bin' / name, wrapper_bin_dir / name)
