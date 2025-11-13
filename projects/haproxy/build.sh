@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 export ORIG_CFLAGS=${CFLAGS}
-cd haproxy
+cd $SRC/haproxy
 
 # Fix some things in the Makefile where there are no options available
 sed 's/COPTS += $(DEBUG) $(OPTIONS_CFLAGS) $(CFLAGS) $(ADDINC)/COPTS += $(DEBUG) $(OPTIONS_CFLAGS) $(CFLAGS) $(ADDINC) ${ORIG_CFLAGS}/g' -i Makefile

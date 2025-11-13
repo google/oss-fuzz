@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y make libpcre2-dev zlib1g-dev
 RUN git clone https://github.com/haproxy/haproxy
 RUN git clone https://github.com/vtest/VTest2 --depth=1
 
-WORKDIR $SRC
+WORKDIR $SRC/haproxy
 
 COPY build.sh run_tests.sh $SRC/
 COPY fuzz* $SRC/
