@@ -19,3 +19,4 @@ RUN apt-get update && apt-get install -y sudo autoconf build-essential libssl-de
 
 RUN git clone --depth 1 https://github.com/cisco/libsrtp
 COPY build.sh run_tests.sh $SRC/
+WORKDIR $SRC/libsrtp
