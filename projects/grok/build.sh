@@ -17,7 +17,7 @@
 
 mkdir build
 cd build
-cmake .. -DGRK_BUILD_CODEC=OFF -DBUILD_SHARED_LIBS=OFF -DGRK_BUILD_THIRDPARY=ON
+cmake .. -DGRK_BUILD_CODEC=OFF -DBUILD_SHARED_LIBS=OFF
 make clean -s
 make -j$(nproc) -s
 cd ..
