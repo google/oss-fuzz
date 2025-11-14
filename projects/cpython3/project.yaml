@@ -1,6 +1,6 @@
 homepage: "https://python.org/"
 language: c++
-primary_contact: "seth@python.org"
+primary_contact: "seth.larson@pyfound.org"
 main_repo: "https://github.com/python/cpython"
 auto_ccs:
  - "alex.gaynor@gmail.com"
