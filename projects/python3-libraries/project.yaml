@@ -1,7 +1,7 @@
 homepage: "https://www.python.org/"
 main_repo: "https://github.com/python/cpython"
 language: c
-primary_contact: "seth@python.org"
+primary_contact: "seth.larson@pyfound.org"
 auto_ccs:
  - "greg@krypto.org"
  - "alex.gaynor@gmail.com"
