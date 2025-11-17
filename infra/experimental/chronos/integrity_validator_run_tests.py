@@ -23,7 +23,7 @@ import sys
 try:
   import tree_sitter_cpp
   from tree_sitter import Language, Parser, Query, QueryCursor
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
   # pass. Allow this module to be imported even when tree-sitter
   # is not available.
   pass
@@ -218,6 +218,33 @@ LOGIC_ERROR_PATCHES: list[LogicErrorPatch] = [
 ]
 
 
+def _capture_source_control():
+  """Capture the source directory where source control is located."""
+
+  # List all directories under /src/
+  oss_fuzz_dirs = [
+      'aflplusplus', 'fuzztest', 'honggfuzz', 'libfuzzer', 'googletest'
+  ]
+  project_dirs = []
+  for dir_name in os.listdir('/src/'):
+    if dir_name in oss_fuzz_dirs:
+      continue
+    if os.path.isdir(os.path.join('/src/', dir_name)):
+      project_dirs.append(dir_name)
+
+  # If there is only a single new project directory, then we are
+  # almost certain this is the right directory.
+  if len(project_dirs) == 1:
+    # Check if there is a .git directory
+    if os.path.isdir(os.path.join('/src/', project_dirs[0], '.git')):
+      return os.path.join('/src/', project_dirs[0])
+  else:
+    print('Wrong number of directories found under /src/')
+    print(project_dirs)
+
+  return None
+
+
 def diff_patch_analysis(stage: str) -> int:
   """Check if run_tests.sh generates patches that affect
   source control versioning.
@@ -231,49 +258,59 @@ def diff_patch_analysis(stage: str) -> int:
       f'Diff patch analysis begin. Stage: {stage}, Current working dir: {os.getcwd()}'
   )
   if stage == 'before':
-    if os.path.isdir('.git'):
-      print('Git repo found.')
-      try:
-        subprocess.check_call('git diff ./ >> /tmp/chronos-before.diff',
-                              shell=True)
-      except subprocess.CalledProcessError:
-        pass
-      return 0
-    print('Unknown version control system.')
-    return -1
-  elif stage == 'after':
-    if os.path.isdir('.git'):
-      print('Git repo found.')
-      subprocess.check_call('git diff ./ >> /tmp/chronos-after.diff',
-                            shell=True)
-      try:
-        subprocess.check_call(
-            'diff /tmp/chronos-before.diff /tmp/chronos-after.diff > /tmp/chronos-diff.patch',
-            shell=True)
-      except subprocess.CalledProcessError:
-        pass
-      print('Diff patch generated at /tmp/chronos-diff.patch')
-      print('Difference between diffs:')
-      with open('/tmp/chronos-diff.patch', 'r', encoding='utf-8') as f:
-        diff_content = f.read()
-      if diff_content.strip():
-        patch_found = True
-        print(diff_content)
-      else:
-        patch_found = False
+    print('Diff patch analysis before stage.')
+    project_dir = _capture_source_control()
+    if not project_dir:
+      print('Uknown version control system.')
+      return -1
 
-      if patch_found:
-        print(
-            'Patch result: failed. Patch found that affects source control versioning.'
-        )
-        return 1
-      else:
-        print(
-            'Patch result: success. No patch found that affects source control versioning.'
-        )
-        return 0
-    print('Patch result: failed. Unknown version control system.')
-    return -1
+    print('Git repo found: %s' % project_dir)
+    try:
+      subprocess.check_call('cd %s && git diff ./ >> /tmp/chronos-before.diff' %
+                            project_dir,
+                            shell=True)
+    except subprocess.CalledProcessError:
+      pass
+    return 0
+
+  elif stage == 'after':
+    print('Diff patch analysis after stage.')
+    project_dir = _capture_source_control()
+    if not project_dir:
+      print('Uknown version control system.')
+      return -1
+
+    print('Git repo found: %s' % project_dir)
+    subprocess.check_call('cd %s && git diff ./ >> /tmp/chronos-after.diff' %
+                          project_dir,
+                          shell=True)
+
+    try:
+      subprocess.check_call(
+          'diff /tmp/chronos-before.diff /tmp/chronos-after.diff > /tmp/chronos-diff.patch',
+          shell=True)
+    except subprocess.CalledProcessError:
+      pass
+    print('Diff patch generated at /tmp/chronos-diff.patch')
+    print('Difference between diffs:')
+    with open('/tmp/chronos-diff.patch', 'r', encoding='utf-8') as f:
+      diff_content = f.read()
+    if diff_content.strip():
+      patch_found = True
+      print(diff_content)
+    else:
+      patch_found = False
+
+    if patch_found:
+      print(
+          'Patch result: failed. Patch found that affects source control versioning.'
+      )
+      return 1
+    else:
+      print(
+          'Patch result: success. No patch found that affects source control versioning.'
+      )
+      return 0
 
   else:
     print(
@@ -290,7 +327,7 @@ def main():
       if logic_error_patch.name == target_patch:
         logic_error_patch.func()
   elif command == 'diff-patch':
-    print(f'Diff patch not implemented yet {sys.argv[2]}.')
+    print(f'Diff patching for stage %s.' % sys.argv[2])
     result = diff_patch_analysis(sys.argv[2])
     sys.exit(result)
 

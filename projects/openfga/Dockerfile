@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN git clone --recursive --depth 1 https://github.com/GrokImageCompression/grok.git grok
-RUN git clone --depth 1 https://github.com/GrokImageCompression/grok-test-data.git grok-data
-WORKDIR grok
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/openfga/openfga
+RUN git clone --depth 1 https://github.com/AdamKorcz/cncf-fuzzing --branch=openfga
+RUN git clone --depth 1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2_2
 COPY build.sh $SRC/
+WORKDIR $SRC/openfga

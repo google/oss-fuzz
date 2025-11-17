@@ -208,7 +208,8 @@ def check_tests(project,
                 sanitizer='address',
                 run_full_cache_replay=False,
                 integrity_check=False,
-                stop_on_failure=False):
+                stop_on_failure=False,
+                semantic_test=False):
   """Run the `run_tests.sh` script for a specific project. Will
     build a cached container first."""
 
@@ -246,7 +247,7 @@ def check_tests(project,
       '-c',
   ]
 
-  if integrity_check:
+  if integrity_check or semantic_test:
     # First check diffing patch. The approach here is to capture a diff before
     # and after applying the patch, and see if there are any changes to e.g. git diff.
     logger.info('Checking diffing patch for project: %s', project)
@@ -266,6 +267,7 @@ def check_tests(project,
       ret_code = exc.returncode
 
     succeeded_patch = ret_code == 0
+    logger.info('succeeded patch: %s', succeeded_patch)
     if ret_code == 0:
       patch_msg = 'run_tests.sh does not patch source control'
     elif ret_code == 1:
@@ -276,76 +278,79 @@ def check_tests(project,
         'check-name': 'run_tests_patches_diff',
         'patch-message': patch_msg
     }
+    succeeded = succeeded_patch
+    if semantic_test:
+      # Second, check semantic patching tests. This is a best effort and won't work on some
+      # projects.
+      integrity_checks = []
+      # Patch the code with some logic error and see if build_test able to detect
+      # them.
+      for logic_patch in integrity_validator_run_tests.LOGIC_ERROR_PATCHES:
+        logger.info('Checking logic patch: %s', logic_patch.name)
+        patch_command = (
+            'python3 -m pip install -r /chronos/requirements.txt &&'
+            f'python3 /chronos/integrity_validator_run_tests.py semantic-patch {logic_patch.name} && '
+            'compile')
+        cmd_to_run = docker_cmd[:]
 
-    # Second, check semantic patching tests. This is a best effort and won't work on some
-    # projects.
-    integrity_checks = []
+        # In the below, we will apply a set of changes in the source code, rebuild
+        # the target and then run the run_tests.sh script.
+        # The patches are meant to check the semantics of the code, but they are
+        # not bulletproof, which means they may break the build in exceptional
+        # circumstances. So, we first try to compile the code after having applied
+        # the patches, but without running the tests, and if this step fails, then
+        # we skip running the tests for this patch as well.
+        # Patch and build first.
+        cmd_to_run.append(f'"set -euo pipefail && {patch_command}"')
+        try:
+          subprocess.check_call(' '.join(cmd_to_run), shell=True)
+        except subprocess.CalledProcessError:
+          logger.info('%s skipping logic patch %s that failed to compile.',
+                      project, logic_patch.name)
+          integrity_checks.append({
+              'patch': logic_patch.name,
+              'result': 'compile_fail'
+          })
+          continue
 
-    # Patch the code with some logic error and see if build_test able to detect
-    # them.
-    for logic_patch in integrity_validator_run_tests.LOGIC_ERROR_PATCHES:
-      logger.info('Checking logic patch: %s', logic_patch.name)
-      patch_command = (
-          'python3 -m pip install -r /chronos/requirements.txt &&'
-          f'python3 /chronos/integrity_validator_run_tests.py semantic-patch {logic_patch.name} && '
-          'compile')
-      cmd_to_run = docker_cmd[:]
+        # Patch and build succeeded, now proceed to patch, build and run tests in
+        # one go. This will indicate if the patch was detected by the tests or
+        # not.
+        cmd_to_run[
+            -1] = f'"set -euo pipefail && {patch_command} && {run_tests_cmd}"'
+        try:
+          subprocess.check_call(' '.join(cmd_to_run), shell=True)
+          exception_thrown = False
+        except subprocess.CalledProcessError:
+          exception_thrown = True
 
-      # In the below, we will apply a set of changes in the source code, rebuild
-      # the target and then run the run_tests.sh script.
-      # The patches are meant to check the semantics of the code, but they are
-      # not bulletproof, which means they may break the build in exceptional
-      # circumstances. So, we first try to compile the code after having applied
-      # the patches, but without running the tests, and if this step fails, then
-      # we skip running the tests for this patch as well.
-      # Patch and build first.
-      cmd_to_run.append(f'"set -euo pipefail && {patch_command}"')
-      try:
-        subprocess.check_call(' '.join(cmd_to_run), shell=True)
-      except subprocess.CalledProcessError:
-        logger.info('%s skipping logic patch %s that failed to compile.',
-                    project, logic_patch.name)
-        integrity_checks.append({
-            'patch': logic_patch.name,
-            'result': 'compile_fail'
-        })
-        continue
+        if ((exception_thrown and not logic_patch.expected_result) or
+            (not exception_thrown and logic_patch.expected_result)):
+          # The patch was detected by the tests as it should have been.
+          integrity_checks.append({
+              'patch': logic_patch.name,
+              'result': 'Success'
+          })
+        else:
+          if stop_on_failure:
+            logger.info(
+                '%s integrity check failed on patch %s, stopping as requested.',
+                project, logic_patch.name)
+            return False
+          integrity_checks.append({
+              'patch': logic_patch.name,
+              'result': 'Failed'
+          })
 
-      # Patch and build succeeded, now proceed to patch, build and run tests in
-      # one go. This will indicate if the patch was detected by the tests or
-      # not.
-      cmd_to_run[
-          -1] = f'"set -euo pipefail && {patch_command} && {run_tests_cmd}"'
-      try:
-        subprocess.check_call(' '.join(cmd_to_run), shell=True)
-        exception_thrown = False
-      except subprocess.CalledProcessError:
-        exception_thrown = True
+      logger.info('%s integrity check results:', project)
+      for check in integrity_checks:
+        logger.info('%s integrity check patch %s result: %s', project,
+                    check['patch'], check['result'])
+      succeeded = any([chk['result'] == 'Success' for chk in integrity_checks])
 
-      if ((exception_thrown and not logic_patch.expected_result) or
-          (not exception_thrown and logic_patch.expected_result)):
-        # The patch was detected by the tests as it should have been.
-        integrity_checks.append({
-            'patch': logic_patch.name,
-            'result': 'Success'
-        })
-      else:
-        if stop_on_failure:
-          logger.info(
-              '%s integrity check failed on patch %s, stopping as requested.',
-              project, logic_patch.name)
-          return False
-        integrity_checks.append({'patch': logic_patch.name, 'result': 'Failed'})
-
-    logger.info('%s integrity check results:', project)
-    for check in integrity_checks:
-      logger.info('%s integrity check patch %s result: %s', project,
-                  check['patch'], check['result'])
-    succeeded = any([chk['result'] == 'Success' for chk in integrity_checks])
-
-    # Print patching results as well.
-    logger.info('run_tests.sh patches version control: %s',
-                patch_details['patch-message'])
+      # Print patching results as well.
+      logger.info('run_tests.sh patches version control: %s',
+                  patch_details['patch-message'])
   else:
     # Run normal build_test
     docker_cmd.append(f'"{run_tests_cmd}"')
@@ -358,11 +363,12 @@ def check_tests(project,
       succeeded_patch = False
 
   end = time.time()
-  logger.info('%s test completion %s: Duration of run_tests.sh: %.2f seconds',
-              project, 'failed' if not succeeded else 'succeeded',
-              (end - start))
 
-  return succeeded and succeeded_patch
+  result = succeeded and succeeded_patch
+  logger.info('%s test completion %s: Duration of run_tests.sh: %.2f seconds',
+              project, 'failed' if not result else 'succeeded', (end - start))
+
+  return result
 
 
 def extract_test_coverage(project):
@@ -405,7 +411,7 @@ def extract_test_coverage(project):
 
 def _cmd_dispatcher_check_tests(args):
   check_tests(args.project, args.sanitizer, args.run_full_cache_replay,
-              args.integrity_check, args.stop_on_failure)
+              args.integrity_check, args.stop_on_failure, args.semantic_test)
 
 
 def _cmd_dispatcher_check_replay(args):
@@ -462,6 +468,11 @@ def parse_args():
       help=
       'If set, will patch and test with logic errors to ensure build integrity.'
   )
+  checks_test_parser.add_argument(
+      '--semantic-test',
+      help=
+      'If set, will try and validate semantic correctness of run_tests.sh. This is beta for now.',
+      action='store_true')
 
   check_replay_parser = subparsers.add_parser(
       'check-replay',
