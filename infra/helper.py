@@ -795,7 +795,7 @@ def prepare_aarch64_emulation():
   subprocess.check_call(['docker', 'buildx', 'use', ARM_BUILDER_NAME])
 
 
-def docker_run(run_args, print_output=True, architecture='x86_64'):
+def docker_run(run_args, *, print_output=True, architecture='x86_64'):
   """Calls `docker run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = [
@@ -1612,7 +1612,7 @@ def fuzzbench_measure(args):
         f'gcr.io/oss-fuzz/{args.project.name}', 'fuzzbench_measure'
     ]
 
-    return docker_run(run_args, 'x86_64')
+    return docker_run(run_args, architecture='x86_64')
 
 
 def reproduce(args):
@@ -1631,14 +1631,13 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     testcase_path,
     args,
     architecture='x86_64',
-    run_function=docker_run,
-    err_result=False):
+    run_function=docker_run):
   """Reproduces a specific test case."""
   if not check_project_exists(project):
-    return err_result
+    return False
 
   if not _check_fuzzer_exists(project, fuzzer_name, args, architecture):
-    return err_result
+    return False
 
   debugger = ''
   env = ['HELPER=True', 'ARCHITECTURE=' + architecture]
@@ -1665,7 +1664,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
       fuzzer_name,
       '-runs=100',
   ] + fuzzer_args
-  return run_function(run_args, err_result)
+  return run_function(run_args)
 
 
 def _validate_project_name(project_name):
