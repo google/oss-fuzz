@@ -73,6 +73,7 @@ _TRACING_CONTAINER_NAME = 'tracing-container'
 class Config:
   testing: bool = False
   test_image_suffix: Optional[str] = None
+  base_image_tag: Optional[str] = None
   repo: Optional[str] = DEFAULT_OSS_FUZZ_REPO
   branch: Optional[str] = None
   parallel: bool = False
@@ -178,6 +179,7 @@ class Project:  # pylint: disable=too-many-instance-attributes
     self.labels = project_yaml['labels']
     self.fuzzing_language = project_yaml['language']
     self.run_tests = project_yaml['run_tests']
+    self.base_os_version = project_yaml.get('base_os_version', 'legacy')
     if 'main_repo' in project_yaml:
       self.main_repo = project_yaml['main_repo']
     else:
@@ -453,8 +455,10 @@ def get_build_steps_for_project(project,
               f'--architecture {build.architecture} {project.name}\\n' +
               '*' * 80)
           # Test fuzz targets.
+          runner_image_name = build_lib.get_runner_image_name(
+              config.test_image_suffix, config.base_image_tag)
           test_step = {
-              'name': build_lib.get_runner_image_name(config.test_image_suffix),
+              'name': runner_image_name,
               'env': env,
               'args': [
                   'bash', '-c',
@@ -485,7 +489,8 @@ def get_build_steps_for_project(project,
             # Generate targets list.
             {
                 'name':
-                    build_lib.get_runner_image_name(config.test_image_suffix),
+                    build_lib.get_runner_image_name(config.test_image_suffix,
+                                                    config.base_image_tag),
                 'env':
                     env,
                 'args': [
@@ -825,11 +830,12 @@ def parse_args(description, args):
   return parser.parse_args(args)
 
 
-def create_config(args, build_type):
+def create_config(args, build_type, base_image_tag=None):
   """Create a Config object from parsed command line |args|."""
   upload = not args.experiment
   return Config(testing=args.testing,
                 test_image_suffix=args.test_image_suffix,
+                base_image_tag=base_image_tag,
                 branch=args.branch,
                 parallel=args.parallel,
                 upload=upload,
@@ -852,7 +858,6 @@ def build_script_main(script_description,
 
   credentials = oauth2client.client.GoogleCredentials.get_application_default()
   error = False
-  config = create_config(args, build_type)
   for project_name in args.projects:
     try:
       project_yaml, dockerfile_contents = get_project_data(project_name)
@@ -861,8 +866,13 @@ def build_script_main(script_description,
       error = True
       continue
 
-    steps = get_build_steps_func(project_name, project_yaml,
-                                 dockerfile_contents, config)
+    base_image_tag = project_yaml.get('base_os_version', 'legacy')
+    if base_image_tag == 'legacy':
+      base_image_tag = None
+    config = create_config(args, build_type, base_image_tag=base_image_tag)
+
+    steps, _ = get_build_steps_func(project_name, project_yaml,
+                                    dockerfile_contents, config)
     if not steps:
       logging.error('No steps. Skipping %s.', project_name)
       error = True

@@ -104,14 +104,13 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
                            client_options=build_lib.REGIONAL_CLIENT_OPTIONS)
   cloudbuild_api = cloudbuild.projects().builds()
 
-  logs_url = build_lib.get_gcb_url(build_id, cloud_project)
   logging.info(
       '================================================================')
   logging.info('            PHASE 1: STARTED BASE IMAGE BUILD')
   logging.info(
       '----------------------------------------------------------------')
-  logging.info('GCB Build ID: %s', build_id)
-  logging.info('GCB Build URL: %s', logs_url)
+  for line in build_lib.get_build_info_lines(build_id, cloud_project):
+    logging.info(line)
   logging.info(
       '================================================================')
 
@@ -128,14 +127,13 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
       logging.error('Error checking build status: %s', e)
     time.sleep(15)
 
-  logs_url = build_lib.get_gcb_url(build_id, cloud_project)
   logging.info(
       '================================================================')
   logging.info('            PHASE 1: BASE IMAGE BUILD REPORT')
   logging.info(
       '----------------------------------------------------------------')
-  logging.info('GCB Build ID: %s', build_id)
-  logging.info('GCB Build URL: %s', logs_url)
+  for line in build_lib.get_build_info_lines(build_id, cloud_project):
+    logging.info(line)
   logging.info(
       '================================================================')
 
@@ -217,7 +215,8 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   test_image_names = []
   versions = [version_tag] if version_tag else BASE_IMAGE_VERSIONS
   for version in versions:
-    for base_image in base_images.BASE_IMAGES:
+    for base_image_def in base_images.BASE_IMAGE_DEFS:
+      base_image = base_images.ImageConfig(version=version, **base_image_def)
       main_image_name, test_image_name = get_image_tags(base_image.name,
                                                         test_image_tag, version)
       test_image_names.append(test_image_name)

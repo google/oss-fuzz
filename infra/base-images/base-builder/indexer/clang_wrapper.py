@@ -68,6 +68,8 @@ _IGNORED_FILES = (
 _INDEXER_THREADS_PER_MERGE_QUEUE = 16
 _INDEXER_PER_THREAD_MEMORY = 2 * 1024**3  # 2 GiB
 
+_CDB_FRAGMENT_DELIMITER = ",\n"
+
 SRC = Path(os.getenv("SRC", "/src"))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv("OUT", "/out"))
@@ -177,13 +179,13 @@ def files_by_creation_time(folder_path: Path) -> Sequence[Path]:
   return files
 
 
-def _wait_for_cdb_fragment(file: Path) -> str | None:
+def _wait_for_cdb_fragment(file: Path) -> Sequence[str]:
   """Returns the CDB fragment from the given file, waiting if needed."""
   num_retries = 3
   for i in range(1 + num_retries):
     data = file.read_text()
-    if data.endswith(",\n"):
-      return data.rstrip().rstrip(",")
+    if data.endswith(_CDB_FRAGMENT_DELIMITER):
+      return data.split(_CDB_FRAGMENT_DELIMITER)[:-1]
 
     if i < num_retries:
       print(
@@ -202,7 +204,7 @@ def _wait_for_cdb_fragment(file: Path) -> str | None:
       else:
         raise RuntimeError(error)
 
-  return None
+  return ()
 
 
 def read_cdb_fragments(cdb_path: Path) -> Any:
@@ -216,11 +218,10 @@ def read_cdb_fragments(cdb_path: Path) -> Any:
     if not file.name.endswith(".json"):
       continue
 
-    fragment = _wait_for_cdb_fragment(file)
-    if fragment:
-      contents.append(fragment)
+    fragments = _wait_for_cdb_fragment(file)
+    contents.extend(fragments)
 
-  contents = ",\n".join(contents)
+  contents = _CDB_FRAGMENT_DELIMITER.join(contents)
   contents = "[" + contents + "]"
   return json.loads(contents)
 
@@ -341,7 +342,6 @@ def check_fuzzing_engine_and_fix_argv(argv: MutableSequence[str]) -> bool:
       elif "fuzzer-no-link" in sanitize_vals:
         sanitize_vals.remove("fuzzer-no-link")
         arg = "-fsanitize=" + ",".join(sanitize_vals)
-
       argv[idx] = arg
 
       if fuzzing_engine_in_argv:
@@ -477,8 +477,11 @@ def fix_coverage_flags(
     # Some projects use -fsanitize-coverage-allowlist/ignorelist to optimize
     # fuzzing feedback. For the indexer case, we would prefer to have all code
     # instrumented, so we remove these flags.
+    # Some projects hardcode -fsanitize-coverage= options that cause conflicts
+    # with our indexer / tracer options.
     if (arg.startswith("-fsanitize-coverage-allowlist=") or
-        arg.startswith("-fsanitize-coverage-ignorelist=")):
+        arg.startswith("-fsanitize-coverage-ignorelist=") or
+        arg.startswith("-fsanitize-coverage=")):
       continue
 
     args.append(arg)
@@ -514,15 +517,13 @@ def merge_incremental_cdb(cdb_path: Path, merged_cdb_path: Path) -> None:
       if file.name.endswith("_linker_commands.json"):
         continue
 
-      fragment_data = _wait_for_cdb_fragment(file)
-      if not fragment_data:
-        continue
+      fragments_data = _wait_for_cdb_fragment(file)
+      for fragment_data in fragments_data:
+        fragment = json.loads(fragment_data)
+        if "output" not in fragment:
+          continue
 
-      fragment = json.loads(fragment_data)
-      if "output" not in fragment:
-        continue
-
-      yield file, fragment
+        yield file, fragment
 
   # We could be running multiple linking steps in parallel, so serialize merges.
   with _file_lock(merged_cdb_path / ".lock"):

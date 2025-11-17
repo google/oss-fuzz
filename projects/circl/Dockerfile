@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
-RUN git clone --depth 1 --branch makeBotanCompile_v3.9.0 https://github.com/armfazh/cryptofuzz
+RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
 RUN git clone --depth 1 --branch 3.9.0 --single-branch https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/supranational/blst.git
 RUN wget -nv https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
