@@ -34,6 +34,7 @@ import urllib.request
 
 import constants
 import templates
+import chronos.manager
 
 OSS_FUZZ_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
@@ -289,6 +290,12 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     result = index(args)
   elif args.command == 'run_clusterfuzzlite':
     result = run_clusterfuzzlite(args)
+  elif args.command == 'chronos-check-tests':
+    chronos.manager.cmd_dispatcher_check_tests(args)
+    result = 0
+  elif args.command == 'chronos-check-replay':
+    chronos.manager.cmd_dispatcher_check_replay(args)
+    result = 0
   else:
     # Print help string if no arguments provided.
     parser.print_help()
@@ -600,6 +607,61 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   run_clusterfuzzlite_parser.set_defaults(clean=False)
 
   subparsers.add_parser('pull_images', help='Pull base images.')
+
+  checks_test_parser = subparsers.add_parser(
+      'chronos-check-tests', help='Checks run_test.sh for specific project.')
+  checks_test_parser.add_argument(
+      'project_name',
+      type=str,
+      help='The name of the project to check (e.g., "libpng").',
+  )
+  checks_test_parser.add_argument(
+      '--stop-on-failure',
+      action='store_true',
+      help='If set, will stop integrity checks on first failure.')
+  checks_test_parser.add_argument(
+      '--sanitizer',
+      default='address',
+      help='The sanitizer to use (default: address).')
+  checks_test_parser.add_argument(
+      '--container-output',
+      choices=['silent', 'file', 'stdout'],
+      default='stdout',
+      help='How to handle output from the container. ')
+  checks_test_parser.add_argument(
+      '--run-full-cache-replay',
+      action='store_true',
+      help=
+      'If set, will run the full cache replay instead of just checking the script.'
+  )
+  checks_test_parser.add_argument(
+      '--integrity-check',
+      action='store_true',
+      help=
+      'If set, will patch and test with logic errors to ensure build integrity.'
+  )
+  checks_test_parser.add_argument(
+      '--semantic-test',
+      help=
+      'If set, will try and validate semantic correctness of run_tests.sh. This is beta for now.',
+      action='store_true')
+
+  check_replay_parser = subparsers.add_parser(
+      'chronos-check-replay',
+      help='Checks if the replay script works for a specific project.')
+
+  check_replay_parser.add_argument('project_name',
+                                   help='The name of the project to check.')
+  check_replay_parser.add_argument(
+      '--sanitizer',
+      default='address',
+      help='The sanitizer to use for the cached build (default: address).')
+  check_replay_parser.add_argument(
+      '--integrity-check',
+      action='store_true',
+      help='If set, will test the integrity of the replay script.')
+
+
   return parser
 
 
