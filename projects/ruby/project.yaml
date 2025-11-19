@@ -3,6 +3,7 @@ language: c
 primary_contact: "kateinoigakukun@gmail.com"
 auto_ccs:
   - "adam@adalogics.com"
+  - "david@adalogics.com"
 sanitizers:
   - address
   - undefined

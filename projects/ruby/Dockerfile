@@ -27,16 +27,5 @@ RUN apt-get update && apt-get install -y \
     bison \
     wget
 RUN git clone --depth=1 --single-branch https://github.com/ruby/ruby $SRC/ruby
-COPY build.sh $SRC/build.sh
-COPY fuzz_regex.cpp $SRC/fuzz_regex.cpp
-COPY fuzz_string.cpp $SRC/fuzz_string.cpp
-COPY fuzz_hash.cpp $SRC/fuzz_hash.cpp
-COPY fuzz_bignum.cpp $SRC/fuzz_bignum.cpp
-COPY fuzz_array.cpp $SRC/fuzz_array.cpp
-COPY fuzz_iseq.cpp $SRC/fuzz_iseq.cpp
-COPY fuzz_pack.cpp $SRC/fuzz_pack.cpp
-COPY fuzz_json.c $SRC/fuzz_json.c
-COPY fuzz_prism.cpp $SRC/fuzz_prism.cpp
-COPY fuzz_prism.options $SRC/fuzz_prism.options
-COPY fuzz_ruby_parser.cpp $SRC/fuzz_ruby_parser.cpp
+COPY *.sh *.cpp *.c $SRC/
 WORKDIR $SRC
