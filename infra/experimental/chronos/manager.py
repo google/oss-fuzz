@@ -250,6 +250,20 @@ def check_tests(project,
   ]
 
   if integrity_check or semantic_test:
+
+    # Run normal build_test
+    logger.info('Running normal run_tests.sh for project: %s', project)
+    docker_cmd_vanilla = docker_cmd[:]
+    docker_cmd_vanilla.append(f'"{run_tests_cmd}"')
+    try:
+      subprocess.check_call(' '.join(docker_cmd_vanilla), shell=True)
+      logger.info('Successfully ran run_tests.sh for project: %s', project)
+    except subprocess.CalledProcessError:
+      logger.info(
+          'run_tests.sh result failed: Failed to run vanilla run_tests.sh for project: %s',
+          project)
+      sys.exit(0)
+
     # First check diffing patch. The approach here is to capture a diff before
     # and after applying the patch, and see if there are any changes to e.g. git diff.
     logger.info('Checking diffing patch for project: %s', project)
@@ -271,11 +285,12 @@ def check_tests(project,
     succeeded_patch = ret_code == 0
     logger.info('succeeded patch: %s', succeeded_patch)
     if ret_code == 0:
-      patch_msg = 'run_tests.sh does not patch source control'
+      patch_msg = 'run_tests.sh result succeeded: does not patch source control'
     elif ret_code == 1:
-      patch_msg = 'run_tests.sh patches source control'
+      patch_msg = 'run_tests.sh result failed: patches source control'
     else:
-      patch_msg = 'unable to tell if run_tests.sh patches source control'
+      patch_msg = 'run_tests.sh result uknown: unable to tell if run_tests.sh patches source control'
+    logger.info('%s', patch_msg)
     patch_details = {
         'check-name': 'run_tests_patches_diff',
         'patch-message': patch_msg
