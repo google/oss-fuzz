@@ -1,5 +1,5 @@
 homepage: "https://www.ruby-lang.org/en/"
-language: c
+language: c++
 primary_contact: "kateinoigakukun@gmail.com"
 auto_ccs:
   - "adam@adalogics.com"
