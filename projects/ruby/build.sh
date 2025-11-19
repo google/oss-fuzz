@@ -128,41 +128,32 @@ echo "Ruby static library: $LIBS_RUBY"
 echo ""
 
 
-echo "Building fuzz_regex..."
-$CXX $CXXFLAGS $INC_RUBY -c "$SRC/fuzz_regex.cpp" -o "$SRC/fuzz_regex.o"
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$SRC/fuzz_regex.o" \
-    $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_regex"
+# Standard C++ fuzzers with common build pattern
+STANDARD_FUZZERS="fuzz_regex
+                  fuzz_string
+                  fuzz_hash
+                  fuzz_bignum
+                  fuzz_array
+                  fuzz_iseq
+                  fuzz_pack
+                  fuzz_ruby_parser
+                  fuzz_prism"
 
-echo "Building fuzz_string..."
-$CXX $CXXFLAGS $INC_RUBY -c "$SRC/fuzz_string.cpp" -o "$SRC/fuzz_string.o"
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$SRC/fuzz_string.o" \
-    $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_string"
+for fuzzer in $STANDARD_FUZZERS; do
+    echo "Building ${fuzzer}..."
+    
+    # Add Prism include path for fuzz_prism
+    EXTRA_INCLUDES=""
+    if [ "$fuzzer" = "fuzz_prism" ]; then
+        EXTRA_INCLUDES="-I$RUBY_BUILD_DIR/prism"
+    fi
+    
+    $CXX $CXXFLAGS $INC_RUBY $EXTRA_INCLUDES -c "$SRC/${fuzzer}.cpp" -o "$WORK/${fuzzer}.o"
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$WORK/${fuzzer}.o" \
+        $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/${fuzzer}"
+done
 
-echo "Building fuzz_hash..."
-$CXX $CXXFLAGS $INC_RUBY -c "$SRC/fuzz_hash.cpp" -o "$SRC/fuzz_hash.o"
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$SRC/fuzz_hash.o" \
-    $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_hash"
-
-echo "Building fuzz_bignum..."
-$CXX $CXXFLAGS $INC_RUBY -c "$SRC/fuzz_bignum.cpp" -o "$SRC/fuzz_bignum.o"
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$SRC/fuzz_bignum.o" \
-    $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_bignum"
-
-echo "Building fuzz_array..."
-$CXX $CXXFLAGS $INC_RUBY -c "$SRC/fuzz_array.cpp" -o "$SRC/fuzz_array.o"
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$SRC/fuzz_array.o" \
-    $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_array"
-
-echo "Building fuzz_iseq..."
-$CXX $CXXFLAGS $INC_RUBY -c "$SRC/fuzz_iseq.cpp" -o "$SRC/fuzz_iseq.o"
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$SRC/fuzz_iseq.o" \
-    $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_iseq"
-
-echo "Building fuzz_pack..."
-$CXX $CXXFLAGS $INC_RUBY -c "$SRC/fuzz_pack.cpp" -o "$SRC/fuzz_pack.o"
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$SRC/fuzz_pack.o" \
-    $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_pack"
-
+# Build json fuzzer seperately because it needs additional steps
 echo "Building fuzz_json..."
 JSON_DIR="$RUBY_BUILD_DIR/ext/json"
 
@@ -179,18 +170,6 @@ $CC $CFLAGS $INC_RUBY -I"$JSON_DIR" -I"$JSON_DIR/vendor" -I"$JSON_DIR/simd" \
 # Link json assets together
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$WORK/fuzz_json.o" "$WORK/json_fpconv.o" \
     $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_json"
-
-# ==================== Ruby Parser Fuzzer ====================
-echo "Building fuzz_ruby_parser..."
-$CXX $CXXFLAGS $INC_RUBY -c "$SRC/fuzz_ruby_parser.cpp" -o "$WORK/fuzz_ruby_parser.o"
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$WORK/fuzz_ruby_parser.o" \
-    $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_ruby_parser"
-    
-# ==================== Prism Compiler Fuzzer ====================
-echo "Building fuzz_prism..."
-$CXX $CXXFLAGS $INC_RUBY -I"$RUBY_BUILD_DIR/prism" -c "$SRC/fuzz_prism.cpp" -o "$WORK/fuzz_prism.o"
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$WORK/fuzz_prism.o" \
-    $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_prism"
 
 # create seeds
 if [ -n "${OSS_FUZZ_CI-}" ]
