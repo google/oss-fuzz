@@ -661,7 +661,6 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
       action='store_true',
       help='If set, will test the integrity of the replay script.')
 
-
   return parser
 
 
