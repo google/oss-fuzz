@@ -40,6 +40,23 @@ BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
 BASE_RUNNER_IMAGE = 'gcr.io/oss-fuzz-base/base-runner'
 
+
+def _get_base_runner_image(args, debug=False):
+  """Returns the base runner image to use."""
+  image = BASE_RUNNER_IMAGE
+  if debug:
+    image += '-debug'
+
+  tag = 'latest'
+  if hasattr(args, 'base_image_tag') and args.base_image_tag:
+    tag = args.base_image_tag
+  elif hasattr(args, 'project') and args.project:
+    if args.project.base_os_version != 'legacy':
+      tag = args.project.base_os_version
+
+  return f'{image}:{tag}'
+
+
 BASE_IMAGES = {
     'generic': [
         'gcr.io/oss-fuzz-base/base-image',
@@ -73,6 +90,7 @@ HTTPS_CORPUS_BACKUP_URL_FORMAT = (
 
 LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
+BASE_OS_VERSION_REGEX = re.compile(r'\s*base_os_version\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -151,6 +169,23 @@ class Project:
 
     logger.warning('Language not specified in project.yaml. Assuming c++.')
     return constants.DEFAULT_LANGUAGE
+
+  @property
+  def base_os_version(self):
+    """Returns the project's base OS version."""
+    project_yaml_path = os.path.join(self.build_integration_path,
+                                     'project.yaml')
+    if not os.path.exists(project_yaml_path):
+      return 'legacy'
+
+    with open(project_yaml_path) as file_handle:
+      content = file_handle.read()
+      for line in content.splitlines():
+        match = BASE_OS_VERSION_REGEX.match(line)
+        if match:
+          return match.group(1)
+
+    return 'legacy'
 
   @property
   def coverage_extra_args(self):
@@ -364,6 +399,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   _add_engine_args(check_build_parser, choices=constants.ENGINES)
   _add_sanitizer_args(check_build_parser, choices=constants.SANITIZERS)
   _add_environment_args(check_build_parser)
+  _add_base_image_tag_args(check_build_parser)
   check_build_parser.add_argument('project',
                                   help='name of the project or path (external)')
   check_build_parser.add_argument('fuzzer_name',
@@ -399,6 +435,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   _add_engine_args(run_fuzzer_parser)
   _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
+  _add_base_image_tag_args(run_fuzzer_parser)
   _add_external_project_args(run_fuzzer_parser)
   run_fuzzer_parser.add_argument(
       '--corpus-dir', help='directory to store corpus for the fuzz target')
@@ -465,6 +502,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
                                nargs='*')
   _add_external_project_args(coverage_parser)
   _add_architecture_args(coverage_parser)
+  _add_base_image_tag_args(coverage_parser)
 
   introspector_parser = subparsers.add_parser(
       'introspector',
@@ -524,6 +562,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   _add_environment_args(reproduce_parser)
   _add_external_project_args(reproduce_parser)
   _add_architecture_args(reproduce_parser)
+  _add_base_image_tag_args(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
@@ -537,6 +576,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
   _add_external_project_args(shell_parser)
+  _add_base_image_tag_args(shell_parser)
 
   run_clusterfuzzlite_parser = subparsers.add_parser(
       'run_clusterfuzzlite', help='Run ClusterFuzzLite on a project.')
@@ -582,12 +622,12 @@ def check_project_exists(project):
   return False
 
 
-def _check_fuzzer_exists(project, fuzzer_name, architecture='x86_64'):
+def _check_fuzzer_exists(project, fuzzer_name, args, architecture='x86_64'):
   """Checks if a fuzzer exists."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = ['docker', 'run', '--rm', '--platform', platform]
   command.extend(['-v', '%s:/out' % project.out])
-  command.append(BASE_RUNNER_IMAGE)
+  command.append(_get_base_runner_image(args))
 
   command.extend(['/bin/bash', '-c', 'test -f /out/%s' % fuzzer_name])
 
@@ -666,6 +706,12 @@ def _add_environment_args(parser):
   parser.add_argument('-e',
                       action='append',
                       help="set environment variable e.g. VAR=value")
+
+
+def _add_base_image_tag_args(parser):
+  """Adds base image tag arg."""
+  parser.add_argument('--base-image-tag',
+                      help='The tag of the base-runner image to use.')
 
 
 def build_image_impl(project, cache=True, pull=False, architecture='x86_64'):
@@ -1064,11 +1110,13 @@ def _add_oss_fuzz_ci_if_needed(env):
 
 def check_build(args):
   """Checks that fuzzers in the container execute without errors."""
+  # Access the property to trigger validation early.
+  _ = args.project.base_os_version
   if not check_project_exists(args.project):
     return False
 
   if (args.fuzzer_name and not _check_fuzzer_exists(
-      args.project, args.fuzzer_name, args.architecture)):
+      args.project, args.fuzzer_name, args, args.architecture)):
     return False
 
   env = [
@@ -1083,7 +1131,8 @@ def check_build(args):
     env += args.e
 
   run_args = _env_to_docker_args(env) + [
-      '-v', f'{args.project.out}:/out', '-t', BASE_RUNNER_IMAGE
+      '-v', f'{args.project.out}:/out', '-t',
+      _get_base_runner_image(args)
   ]
 
   if args.fuzzer_name:
@@ -1319,7 +1368,7 @@ def coverage(args):  # pylint: disable=too-many-branches
       '-v',
       '%s:/out' % args.project.out,
       '-t',
-      BASE_RUNNER_IMAGE,
+      _get_base_runner_image(args),
   ])
 
   run_args.append('coverage')
@@ -1447,7 +1496,7 @@ def run_fuzzer(args):
   if not check_project_exists(args.project):
     return False
 
-  if not _check_fuzzer_exists(args.project, args.fuzzer_name,
+  if not _check_fuzzer_exists(args.project, args.fuzzer_name, args,
                               args.architecture):
     return False
 
@@ -1478,7 +1527,7 @@ def run_fuzzer(args):
       '-v',
       '%s:/out' % args.project.out,
       '-t',
-      BASE_RUNNER_IMAGE,
+      _get_base_runner_image(args),
       'run_fuzzer',
       args.fuzzer_name,
   ] + args.fuzzer_args)
@@ -1569,7 +1618,8 @@ def fuzzbench_measure(args):
 def reproduce(args):
   """Reproduces a specific test case from a specific project."""
   return reproduce_impl(args.project, args.fuzzer_name, args.valgrind, args.e,
-                        args.fuzzer_args, args.testcase_path, args.architecture)
+                        args.fuzzer_args, args.testcase_path, args,
+                        args.architecture)
 
 
 def reproduce_impl(  # pylint: disable=too-many-arguments
@@ -1579,29 +1629,30 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     env_to_add,
     fuzzer_args,
     testcase_path,
+    args,
     architecture='x86_64',
     run_function=docker_run,
     err_result=False):
-  """Reproduces a testcase in the container."""
+  """Reproduces a specific test case."""
   if not check_project_exists(project):
     return err_result
 
-  if not _check_fuzzer_exists(project, fuzzer_name, architecture):
+  if not _check_fuzzer_exists(project, fuzzer_name, args, architecture):
     return err_result
 
   debugger = ''
   env = ['HELPER=True', 'ARCHITECTURE=' + architecture]
-  image_name = 'base-runner'
+  use_debug_image = bool(valgrind)
+  image_name = _get_base_runner_image(args, debug=use_debug_image)
 
   if valgrind:
     debugger = 'valgrind --tool=memcheck --track-origins=yes --leak-check=full'
 
   if debugger:
-    image_name = 'base-runner-debug'
     env += ['DEBUGGER=' + debugger]
 
   if env_to_add:
-    env += env_to_add
+    env.extend(env_to_add)
 
   run_args = _env_to_docker_args(env) + [
       '-v',
@@ -1609,13 +1660,12 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
       '-v',
       '%s:/testcase' % _get_absolute_path(testcase_path),
       '-t',
-      'gcr.io/oss-fuzz-base/%s' % image_name,
+      image_name,
       'reproduce',
       fuzzer_name,
       '-runs=100',
   ] + fuzzer_args
-
-  return run_function(run_args, architecture=architecture)
+  return run_function(run_args, err_result)
 
 
 def _validate_project_name(project_name):
@@ -1779,6 +1829,8 @@ def index(args):
 
 def shell(args):
   """Runs a shell within a docker image."""
+  # Access the property to trigger validation early.
+  _ = args.project.base_os_version
   if not build_image_impl(args.project):
     return False
 

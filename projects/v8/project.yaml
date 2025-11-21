@@ -5,3 +5,7 @@ fuzzing_engines:
   - none
 sanitizers:
   - address
+
+indexer:
+  targets:
+    - d8

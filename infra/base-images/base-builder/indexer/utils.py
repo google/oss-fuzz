@@ -22,8 +22,14 @@ import re
 import subprocess
 from typing import Final, Sequence
 
-_LD_PATH = "/usr/bin/ld.so.2"
-_LD_PATH: Final[pathlib.Path] = pathlib.Path("/lib64/ld-linux-x86-64.so.2")
+from absl import logging
+
+from google3.pyglib import gfile
+import pathlib
+
+
+LD_BINARY_NAME: Final[str] = "ld-linux-x86-64.so.2"
+_LD_BINARY_PATH: Final[pathlib.Path] = pathlib.Path("/lib64") / LD_BINARY_NAME
 
 
 @dataclasses.dataclass(frozen=True)
@@ -45,14 +51,19 @@ def _parse_ld_trace_output(output: str) -> Sequence[SharedLibrary]:
   #       lib foo.so => /tmp/sharedlib/lib foo.so (0x00007f76b9367000)
   #       libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f76b9157000)
   #       /lib64/ld-linux-x86-64.so.2 (0x00007f76b9379000)
+  # The last line can also be:
+  #       /grte/lib64/lib64/ld-linux-x86-64.so.2 => /lib64/ld-linux-x86-64.so.2
+  # (0x00007f76b9379000)
   #
   # The lines that do not have a => should be skipped.
-  # The dynamic linker should always be copied.
+  # The dynamic linker should always be copied AND have its executable bit set.
   # The lines that have a => could contain a space, but we copy whatever is on
   # the right side of the =>, removing the load address.
-  shared_libraries = [SharedLibrary(name="ld.so", path=_LD_PATH)]
+  shared_libraries = [SharedLibrary(name=LD_BINARY_NAME, path=_LD_BINARY_PATH)]
   for lib_name, lib_path in re.findall(r"(\S+) => .*?(\S+) \(", output):
     lib_path = pathlib.Path(lib_path)
+    if lib_path == _LD_BINARY_PATH:
+      continue
     shared_libraries.append(SharedLibrary(name=lib_name, path=lib_path))
 
   return shared_libraries
@@ -67,10 +78,59 @@ def get_shared_libraries(
   env["LD_BIND_NOW"] = "1"
 
   result = subprocess.run(
-      [_LD_PATH, binary_path],
+      [_LD_BINARY_PATH, binary_path],
       capture_output=True,
       env=env,
       check=True,
   )
 
   return _parse_ld_trace_output(result.stdout.decode())
+
+
+def copy_shared_libraries(
+    libraries: Sequence[SharedLibrary], dst_path: pathlib.Path
+) -> None:
+  """Copies the shared libraries to the shared directory."""
+  for lib in libraries:
+    try:
+      logging.info("Copying %s => %s", lib.name, lib.path)
+      gfile.Copy(lib.path, dst_path / lib.path.name, overwrite=True, mode=0o755)
+    except gfile.GOSError:
+      logging.exception("Could not copy %s to %s", lib.path, dst_path)
+      raise
+
+
+def patch_binary_rpath_and_interpreter(
+    binary_path: os.PathLike[str],
+    lib_mount_path: pathlib.Path,
+):
+  """Patches the binary rpath and interpreter."""
+  subprocess.run(
+      [
+          "patchelf",
+          "--set-rpath",
+          lib_mount_path.as_posix(),
+          "--force-rpath",
+          binary_path,
+      ],
+      check=True,
+  )
+
+  subprocess.run(
+      [
+          "patchelf",
+          "--set-interpreter",
+          (lib_mount_path / LD_BINARY_NAME).as_posix(),
+          binary_path,
+      ],
+      check=True,
+  )
+
+
+def get_library_mount_path(binary_id: str) -> pathlib.Path:
+  return pathlib.Path("/tmp") / (binary_id + "_lib")
+
+
+def report_progress(stage: str, is_done: bool = False) -> None:
+  """Reports progress of a stage of the snapshotting process."""
+  logging.info("%s%s", stage, "..." if not is_done else "")

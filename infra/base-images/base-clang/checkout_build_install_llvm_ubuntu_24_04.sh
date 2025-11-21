@@ -60,14 +60,14 @@ apt-get update && apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 # languages, projects, ...) is needed.
 # Check CMAKE_VERSION infra/base-images/base-clang/Dockerfile was released 
 # recently enough to fully support this clang version.
-OUR_LLVM_REVISION=llvmorg-18.1.8
+OUR_LLVM_REVISION=cb2f0d0a5f14
 
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 # Pin clang script due to https://github.com/google/oss-fuzz/issues/7617
-git checkout 9eb79319239629c1b23cf7a59e5ebb2bab319a34
+git checkout 063d3766486a820c708e888d737b004d11543410
 
 LLVM_SRC=$SRC/llvm-project
 # Checkout
@@ -79,8 +79,7 @@ function clone_with_retries {
 
   # Disable exit on error since we might encounter some failures while retrying.
   set +e
-  for i in $(seq 1 $CHECKOUT_RETRIES);
-  do
+  for i in $(seq 1 $CHECKOUT_RETRIES); do
     rm -rf $LOCAL_PATH
     git clone $REPOSITORY $LOCAL_PATH
     CHECKOUT_RETURN_CODE=$?
@@ -97,6 +96,16 @@ clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
 git -C $LLVM_SRC checkout $OUR_LLVM_REVISION
 echo "Using LLVM revision: $OUR_LLVM_REVISION"
+
+# Prepare fuzz introspector.
+echo "Installing fuzz introspector"
+FUZZ_INTROSPECTOR_CHECKOUT=341ebbd72bc9116733bcfcfab5adfd7f9b633e07
+
+git clone https://github.com/ossf/fuzz-introspector.git /fuzz-introspector
+cd /fuzz-introspector
+git checkout $FUZZ_INTROSPECTOR_CHECKOUT
+git submodule init
+git submodule update
 
 # For fuzz introspector.
 echo "Applying introspector changes"

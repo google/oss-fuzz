@@ -40,6 +40,7 @@ SRC = Path(os.getenv('SRC', '/src'))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv('OUT', '/out'))
 INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
+INCREMENTAL_CDB_PATH = Path('/incremental_cdb')
 
 _LD_BINARY = 'ld-linux-x86-64.so.2'
 _LD_PATH = Path('/lib64') / _LD_BINARY
@@ -59,6 +60,13 @@ INDEXER_DIR = Path(__file__).parent
 # so we can't always rely on using environment variables to pass settings to the
 # wrapper. Get around this by writing to a file instead.
 COMPILE_SETTINGS_PATH = INDEXER_DIR / 'compile_settings.json'
+
+CLANG_TOOLCHAIN_BINARY_PREFIXES = (
+    'clang-',
+    'ld',
+    'lld',
+    'llvm-',
+)
 
 EXTRA_CFLAGS = (
     '-fno-omit-frame-pointer '
@@ -124,11 +132,15 @@ def set_up_wrapper_dir():
     shutil.rmtree(_TOOLCHAIN_WITH_WRAPPER)
   _TOOLCHAIN_WITH_WRAPPER.mkdir(parents=True)
 
-  # Set up symlinks to every binary except for clang.
+  # Set up symlinks to toolchain binaries.
   wrapper_bin_dir = _TOOLCHAIN_WITH_WRAPPER / 'bin'
   wrapper_bin_dir.mkdir()
   for name in os.listdir(_CLANG_TOOLCHAIN / 'bin'):
-    if name in ('clang', 'clang++'):
+    # Symlink clang/llvm toolchain binaries, except for clang itself.
+    # We have to be careful not to symlink other unrelated binaries, since other
+    # parts of the build process may wrap those binaries (e.g.
+    # make_build_replayable.py in OSS-Fuzz).
+    if not name.startswith(CLANG_TOOLCHAIN_BINARY_PREFIXES):
       continue
 
     os.symlink(_CLANG_TOOLCHAIN / 'bin' / name, wrapper_bin_dir / name)
@@ -439,6 +451,8 @@ def build_project(
 
   build_cov_instrumentation_command = [
       f'{_CLANG_TOOLCHAIN}/bin/clang++',
+      '-fno-rtti',
+      '-fno-exceptions',
       '-c',
       '/opt/indexer/coverage.cc',
   ]
@@ -791,6 +805,7 @@ def main():
   args = parser.parse_args()
 
   INDEXES_PATH.mkdir(exist_ok=True)
+  INCREMENTAL_CDB_PATH.mkdir(exist_ok=True)
 
   # Clean up the existing OUT by default, otherwise we may run into various
   # build errors.

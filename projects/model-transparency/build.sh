@@ -19,3 +19,5 @@ python3 -m pip install .
 for fuzzer in $(find $SRC/model-transparency/tests/fuzzing -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
+
+cp $SRC/model-transparency/tests/fuzzing/dicts/* $OUT/

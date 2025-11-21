@@ -54,7 +54,7 @@ RUN ldconfig && \
     ln -s /usr/local/bin/python3.11 /usr/local/bin/python
 
 COPY install_deps_ubuntu_20_04.sh /
-RUN /install_deps_ubuntu_20_04.sh && rm /install_deps.sh
+RUN /install_deps_ubuntu_20_04.sh && rm /install_deps_ubuntu_20_04.sh
 
 ENV CODE_COVERAGE_SRC=/opt/code_coverage
 # Pin coverage to the same as in the base builder:
@@ -109,14 +109,13 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
 COPY install_javascript.sh /
 RUN /install_javascript.sh && rm /install_javascript.sh
 
-# Copy built ruby and ruzzy from builder
-COPY --from=base-ruby /usr/local/rvm /usr/local/rvm
-COPY --from=base-ruby /install/ruzzy /install/ruzzy
-COPY ruzzy /usr/bin/ruzzy
-ENV PATH="$PATH:/usr/local/rvm/rubies/ruby-3.3.1/bin"
-# RubyGems installation directory
-ENV GEM_HOME="$OUT/fuzz-gem"
-ENV GEM_PATH="/install/ruzzy"
+# Copy built ruby. It is up to the fuzzing harnesses
+# themselves to set GEM_HOME and GEM_PATH appropriately, as this depends
+# on how the harnesses are packaged.
+COPY --from=base-ruby /usr/local/bin/ruby /usr/local/bin/ruby
+COPY --from=base-ruby /usr/local/bin/gem /usr/local/bin/gem
+COPY --from=base-ruby /usr/local/lib/ruby /usr/local/lib/ruby
+COPY --from=base-ruby /usr/local/include/ruby-3.3.0 /usr/local/include/ruby-3.3.0
 
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \

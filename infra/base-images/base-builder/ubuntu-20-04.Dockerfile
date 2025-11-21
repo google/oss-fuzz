@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-clang:ubuntu-20-04
 
-COPY install_deps.sh /
-RUN /install_deps.sh && rm /install_deps.sh
+COPY install_deps_ubuntu-20-04.sh install_swift_ubuntu_20_04.sh /
+RUN /install_deps_ubuntu-20-04.sh
 
 # Build and install latest Python 3.11.
 ENV PYTHON_VERSION 3.11.13
@@ -122,10 +122,12 @@ ENV FUZZER_LDFLAGS ""
 
 WORKDIR $SRC
 
+COPY afl_llvm22_patch.diff $SRC/
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout daaefcddc063b356018c29027494a00bcfc3e240 && \
+    git checkout eadc8a2a7e0fa0338802ee6254bf296489ce4fd7 && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
+    git apply $SRC/afl_llvm22_patch.diff && \
     rm -rf .git && \
     chmod 755 oss.sh
 

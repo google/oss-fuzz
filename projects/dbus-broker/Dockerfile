@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN git clone --depth 1 https://github.com/bus1/dbus-broker
+RUN cargo install bindgen-cli
 WORKDIR dbus-broker
 COPY *.c build.sh $SRC/

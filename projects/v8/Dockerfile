@@ -20,7 +20,7 @@ RUN apt-get update && \
         lsb-release sudo pkg-config file libc++-18-dev libc++abi-18-dev
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH=/src/depot_tools:$PATH
-RUN fetch v8
+RUN fetch v8 && cd v8 && git checkout HEAD && gclient sync -D
 WORKDIR v8
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections

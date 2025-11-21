@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-20-04
 
-COPY llvmsymbol.diff /src/
 RUN install_swift_ubuntu_20_04.sh
 
 COPY precompile_swift /usr/local/bin/
