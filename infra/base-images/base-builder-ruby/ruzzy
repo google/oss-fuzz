@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+#!/usr/bin/env bash
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +15,6 @@
 #
 ################################################################################
 
-require 'ossfuzz_helper'
-require 'ox'
-
-test_one_input = lambda do |data|
-  if data.length < 100
-    return 0
-  end
-  begin
-    Ox.parse(data)
-  rescue Ox::ParseError, Ox::SyntaxError, EncodingError
-    # pass
-  end
-  return 0
-end
-
-OSSFuzz.fuzz(test_one_input)
+ASAN_OPTIONS="allocator_may_return_null=1:detect_leaks=0:use_sigaltstack=0" \
+LD_PRELOAD=$(ruby -e 'require "ruzzy"; print Ruzzy::ASAN_PATH') \
+ruby $@

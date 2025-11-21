@@ -30,4 +30,7 @@ cd ../
 # Clean up the sources.
 rm -rf ./ruby-$RUBY_VERSION ruby-$RUBY_VERSION.tar.gz
 
+# Install simplecov for coverage builds
+gem install simplecov
+
 echo "Finished installing ruby"
