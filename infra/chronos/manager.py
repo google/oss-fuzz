@@ -238,7 +238,8 @@ def check_tests(project: str,
     build_project_image(project)
     # build a cached version of the project
     if not build_cached_project(project, sanitizer=sanitizer):
-      return False
+      logger.info('Failed to build cached image for project: %s', project)
+      sys.exit(1)
 
   # Run the test script
   start = time.time()
@@ -282,9 +283,7 @@ def check_tests(project: str,
     cmd_to_run = docker_cmd[:]
 
     # Capture the patch after.
-    cmd_to_run.append(
-        f'"set -euo pipefail && {patch_command} && {run_tests_cmd} && python3 /chronos/integrity_validator_run_tests.py diff-patch after"'
-    )
+    cmd_to_run.append('/chronos/container_patch_tests_test.sh')
     ret_code = 0
     try:
       subprocess.check_call(' '.join(cmd_to_run), shell=True)
