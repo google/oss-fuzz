@@ -44,7 +44,6 @@ make -j$(nproc)
 make install
 
 cd $SRC/nettle
-bash .bootstrap
 ./configure --enable-static --disable-shared --disable-documentation --disable-openssl --disable-assembler --disable-fat --prefix=$WGET2_DEPS_PATH
 ( make -j$(nproc) || make -j$(nproc) ) && make install
 if test $? != 0;then
@@ -61,6 +60,7 @@ CFLAGS="$GNUTLS_CFLAGS" \
 ./configure --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
     --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite --disable-guile \
+    --disable-hardware-acceleration \
     --prefix=$WGET2_DEPS_PATH
 make -j$(nproc)
 make install
@@ -70,6 +70,9 @@ export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget2
 sed -i 's/0\.21/0\.19\.8/g' configure.ac
+# Patch Makefile.am to fix linking and output directory
+sed -i 's/-Wl,-Bdynamic -lgnutls/-Wl,-Bdynamic/g' fuzz/Makefile.am
+sed -i 's/-o "\$\${fuzzer}"/-o "$$OUT\/\$\${fuzzer}"/g' fuzz/Makefile.am
 ./bootstrap
 
 LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
@@ -98,7 +101,6 @@ cd fuzz
 
 CXXFLAGS="$CXXFLAGS -L$WGET2_DEPS_PATH/lib/" make oss-fuzz
 
-find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
