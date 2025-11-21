@@ -29,6 +29,7 @@ else
 fi
 
 COVERAGE_OUTPUT_DIR=${COVERAGE_OUTPUT_DIR:-$OUT}
+COVERAGE_EXTRA_ARGS=${COVERAGE_EXTRA_ARGS:-}
 
 DUMPS_DIR="$COVERAGE_OUTPUT_DIR/dumps"
 FUZZERS_COVERAGE_DUMPS_DIR="$DUMPS_DIR/fuzzers_coverage"
@@ -389,6 +390,34 @@ function run_javascript_fuzz_target {
   nyc_report_converter.py $nyc_json_summary_file $summary_file
 }
 
+function run_ruby_fuzz_target {
+  local target=$1
+  local corpus_real="$CORPUS_DIR/${target}"
+  
+  # Write dummy stats file for now
+  echo "{}" > "$FUZZER_STATS_DIR/$target.json"
+  
+  # Set environment for coverage collection
+  export FUZZ_CORPUS_DIR="$corpus_real"
+  export COVERAGE_DIR="$DUMPS_DIR/coverage_${target}"
+  export FUZZER_NAME="$target"
+  
+  # Run the wrapper which will iterate over corpus and collect coverage
+  timeout $TIMEOUT $OUT/$target > $LOGS_DIR/$target.log 2>&1
+  if (( $? != 0 )); then
+    echo "Error occurred while running Ruby target $target:"
+    cat $LOGS_DIR/$target.log
+    return 0
+  fi
+  
+  # SimpleCov creates coverage data in .resultset.json
+  if [ -f "$COVERAGE_DIR/.resultset.json" ]; then
+    cp "$COVERAGE_DIR/.resultset.json" "$DUMPS_DIR/${target}.resultset.json"
+  else
+    echo "Warning: No coverage data generated for $target"
+  fi
+}
+
 function generate_html {
   local profdata=$1
   local shared_libraries=$2
@@ -414,6 +443,8 @@ export SYSGOPATH=$GOPATH
 export GOPATH=$OUT/$GOPATH
 # Run each fuzz target, generate raw coverage dumps.
 for fuzz_target in $FUZZ_TARGETS; do
+  # TODO: Remove after this has proven to run in cloud.
+  echo "DEBUG: Processing fuzz_target=$fuzz_target"
   # Test if fuzz target is a golang one.
   if [[ $FUZZING_LANGUAGE == "go" ]]; then
     # Continue if not a fuzz target.
@@ -456,6 +487,18 @@ for fuzz_target in $FUZZ_TARGETS; do
 
     # Run the coverage collection.
     run_javascript_fuzz_target $fuzz_target &
+  elif [[ $FUZZING_LANGUAGE == "ruby" ]]; then
+    # Continue if not a fuzz target (check for Ruzzy.fuzz pattern)
+    if [[ $FUZZING_ENGINE != "none" ]]; then
+      grep -E "(OSSFuzz\.fuzz|Ruzzy\.fuzz|LLVMFuzzerTestOneInput)" $fuzz_target > /dev/null 2>&1 || continue
+    fi
+
+    echo "Running Ruby target $fuzz_target"
+    # Log the target in the targets file.
+    echo ${fuzz_target} >> $COVERAGE_TARGET_FILE
+
+    # Run the coverage collection.
+    run_ruby_fuzz_target $fuzz_target &
   else
     # Continue if not a fuzz target.
     if [[ $FUZZING_ENGINE != "none" ]]; then
@@ -613,6 +656,84 @@ elif [[ $FUZZING_LANGUAGE == "javascript" ]]; then
   nyc_report_converter.py $nyc_json_summary_file $SUMMARY_FILE
 
   set +e
+elif [[ $FUZZING_LANGUAGE == "ruby" ]]; then
+  echo "Generating Ruby coverage report..."
+  
+  # From this point on the script does not tolerate any errors.
+  set -e
+
+  # Create a Ruby script to merge and generate coverage reports
+  cat > /tmp/merge_coverage.rb << 'RUBY_SCRIPT'
+require 'simplecov'
+require 'json'
+
+# Get parameters from environment
+dumps_dir = ENV['DUMPS_DIR']
+report_dir = ENV['REPORT_PLATFORM_DIR']
+summary_file = ENV['SUMMARY_FILE']
+
+# Find all resultset files
+resultset_files = Dir.glob("#{dumps_dir}/*.resultset.json")
+
+puts "Found #{resultset_files.length} resultset files"
+
+if resultset_files.empty?
+  puts "No coverage data found"
+  exit 0
+end
+
+# Set up SimpleCov root
+SimpleCov.root "/out"
+
+# Configure SimpleCov
+SimpleCov.configure do
+  coverage_dir report_dir
+  formatter SimpleCov::Formatter::HTMLFormatter
+  enable_coverage :branch
+  track_files '{/out,/usr/local/lib}/**/*.rb'
+end
+
+# Collate generates the report and returns nil
+# We need to access the result through SimpleCov.result after collate
+SimpleCov.collate(resultset_files)
+
+# Get the result
+result = SimpleCov.result
+
+puts "Coverage result type: #{result.class}"
+puts "Files covered: #{result.files.length}"
+
+# Generate summary
+summary = {
+  "totals" => {
+    "lines" => {
+      "count" => result.total_lines.to_i,
+      "covered" => result.covered_lines.to_i,
+      "percent" => result.covered_percent.round(2)
+    }
+  }
+}
+
+# Write summary
+File.write(summary_file, JSON.pretty_generate(summary))
+
+puts "Coverage report generated at #{report_dir}"
+puts "Lines: #{result.covered_lines}/#{result.total_lines} (#{result.covered_percent.round(2)}%)"
+RUBY_SCRIPT
+
+  # Run the merge script
+  DUMPS_DIR="$DUMPS_DIR" \
+  REPORT_PLATFORM_DIR="$REPORT_PLATFORM_DIR" \
+  SUMMARY_FILE="$SUMMARY_FILE" \
+  ruby /tmp/merge_coverage.rb
+
+  echo "Finished generating code coverage report for Ruby fuzz targets."
+  
+  # Consolidate Ruby coverage reports and merge with C coverage
+  export REPORT_PLATFORM_DIR
+  bash /usr/local/bin/consolidate_ruby_coverage.sh
+  
+  set +e
 else
 
   # From this point on the script does not tolerate any errors.
@@ -657,9 +778,12 @@ find $REPORT_ROOT_DIR $REPORT_BY_TARGET_ROOT_DIR -type d -exec chmod +x {} +
 
 # HTTP_PORT is optional.
 set +u
+HTTP_PORT=${HTTP_PORT:-8008}
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
   echo "Serving the report on http://127.0.0.1:$HTTP_PORT/linux/index.html"
   cd $REPORT_ROOT_DIR
   python3 -m http.server $HTTP_PORT
+else
+  echo "Coverage report generated at $REPORT_ROOT_DIR/linux/index.html"
 fi

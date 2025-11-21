@@ -21,6 +21,9 @@ RUN git clone https://github.com/trailofbits/ruzzy.git $SRC/ruzzy
 RUN /usr/local/bin/install_ruby.sh
 RUN /usr/local/bin/gem update --system 3.5.11
 
+# Install simplecov for coverage builds
+RUN gem install simplecov
+
 # Install ruzzy
 WORKDIR $SRC/ruzzy
 
@@ -51,3 +54,8 @@ ENV GEM_HOME="$OUT/fuzz-gem"
 ENV GEM_PATH="/install/ruzzy"
 
 COPY ruzzy-build /usr/bin/ruzzy-build
+COPY ruzzy-build-coverage /usr/bin/ruzzy-build-coverage
+COPY build_ruby_fuzzer /usr/bin/build_ruby_fuzzer
+COPY ruzzy /usr/bin/ruzzy
+COPY coverage_helper.rb /usr/local/lib/coverage_helper.rb
+COPY ossfuzz_helper.rb /usr/local/lib/ossfuzz_helper.rb
