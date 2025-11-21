@@ -27,25 +27,37 @@ from chronos import integrity_validator_run_tests
 logger = logging.getLogger(__name__)
 
 
+def _get_oss_fuzz_root():
+  """Gets the root directory of the OSS-Fuzz repository."""
+  return os.path.abspath(
+      os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+
+
 def _get_project_cached_named(project, sanitizer='address'):
   """Gets the name of the cached project image."""
-  return f'us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/{project}-ofg-cached-{sanitizer}'
+  base_name = 'us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen'
+  return f'{base_name}/{project}-ofg-cached-{sanitizer}'
 
 
 def _get_project_cached_named_local(project, sanitizer='address'):
   return f'{project}-origin-{sanitizer}'
 
 
-def build_project_image(project):
-  """Build OSS-Fuzz base image for a project."""
+def build_project_image(project) -> None:
+  """Build OSS-Fuzz base image for a project.
 
+  Returns None. Upon failure, will call sys.exit(1).
+  """
+
+  logger.info('Building OSS-Fuzz image for project: %s', project)
   cmd = ['docker', 'build', '-t', 'gcr.io/oss-fuzz/' + project, '.']
   try:
-    subprocess.check_call(' '.join(cmd),
-                          shell=True,
-                          cwd=os.path.join('projects', project))
-  except subprocess.CalledProcessError:
-    pass
+    subprocess.run(cmd,
+                   cwd=os.path.join(_get_oss_fuzz_root(), 'projects', project),
+                   check=True)
+  except subprocess.CalledProcessError as e:
+    logger.info('Failed to build OSS-Fuzz image for project %s: %s', project, e)
+    sys.exit(1)
 
 
 def build_cached_project(project, cleanup=True, sanitizer='address'):
@@ -54,35 +66,32 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
   logger.info('Building cached image for project: %s', project)
   # Clean up the container if it exists.
   if cleanup:
-    try:
-      subprocess.check_call(['docker', 'container', 'rm', '-f', container_name],
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL)
-    except subprocess.CalledProcessError:
-      pass
+    logger.info('Cleaning up existing container: %s', container_name)
+    cmd = ['docker', 'container', 'rm', '-f', container_name]
+    subprocess.run(cmd, check=False)
 
   project_language = 'c++'
-  cwd = os.getcwd()
+  oss_fuzz_root = _get_oss_fuzz_root()
   # Build the cached image.
   cmd = [
       'docker', 'run', '--env=SANITIZER=' + sanitizer,
       '--env=CCACHE_DIR=/workspace/ccache',
       f'--env=FUZZING_LANGUAGE={project_language}',
       '--env=CAPTURE_REPLAY_SCRIPT=1', f'--name={container_name}',
-      f'-v={cwd}/ccaches/{project}/ccache:/workspace/ccache',
-      f'-v={cwd}/build/out/{project}/:/out/',
-      '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
-      ':/chronos/', f'gcr.io/oss-fuzz/{project}', 'bash', '-c',
-      ('"export PATH=/ccache/bin:\$PATH && python3.11 -m pip install -r /chronos/requirements.txt && '
-       'rm -rf /out/* && compile && cp -n /usr/local/bin/replay_build.sh \$SRC/"'
-      )
+      f'-v={oss_fuzz_root}/ccaches/{project}/ccache:/workspace/ccache',
+      f'-v={oss_fuzz_root}/build/out/{project}/:/out/',
+      '-v=' + os.path.join(oss_fuzz_root, 'infra', 'chronos') + ':/chronos/',
+      f'gcr.io/oss-fuzz/{project}', '/bin/bash', '-c',
+      '/chronos/container_cache_build.sh'
   ]
 
   logger.info('Command: %s', ' '.join(cmd))
+  logger.info(cmd)
 
   start = time.time()
   try:
-    subprocess.check_call(' '.join(cmd), shell=True)
+    logger.info('Building cached container for project: %s', project)
+    subprocess.check_call(cmd, cwd=oss_fuzz_root)
     end = time.time()
     logger.info('%s vanilla build Succeeded: Duration: %.2f seconds', project,
                 end - start)
@@ -94,7 +103,7 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
 
   # Copy the coverage script into the container.
   # Ensure we're are the right cwd.
-  coverage_host_script = os.path.join('infra', 'experimental', 'chronos',
+  coverage_host_script = os.path.join('infra', 'chronos',
                                       'coverage_test_collection.py')
   if not os.path.exists(coverage_host_script):
     logger.info('Coverage script does not exist at %s', coverage_host_script)
@@ -147,8 +156,9 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
       'none',
       '--env=SANITIZER=' + sanitizer,
       '--env=FUZZING_LANGUAGE=c++',
-      '-v=' + os.path.join(os.getcwd(), 'build', 'out', project) + ':/out',
-      '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
+      '-v=' + os.path.join(_get_oss_fuzz_root(), 'build', 'out', project) +
+      ':/out',
+      '-v=' + os.path.join(_get_oss_fuzz_root(), 'infra', 'chronos') +
       ':/chronos',
       '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
       _get_project_cached_named(project, sanitizer),
@@ -237,12 +247,11 @@ def check_tests(project: str,
       'docker',
       'run',
       '--rm',
-      '-ti',
       '--network',
       'none',
       '-e',
       'PROJECT_NAME=' + project,
-      '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
+      '-v=' + os.path.join(_get_oss_fuzz_root(), 'infra', 'chronos') +
       ':/chronos',
       _get_project_cached_named(project, sanitizer),
       '/bin/bash',
@@ -395,10 +404,10 @@ def extract_test_coverage(project):
 
   os.makedirs(os.path.join('build', 'out', project), exist_ok=True)
 
-  shared_folder = os.path.join(os.getcwd(), 'build', 'out', project)
+  shared_folder = os.path.join(_get_oss_fuzz_root(), 'build', 'out', project)
   cmd = [
       'docker', 'run', '--rm', '--network', 'none', '-v',
-      f'{shared_folder}:/out', '-ti',
+      f'{shared_folder}:/out',
       _get_project_cached_named(project, 'coverage'), '/bin/bash', '-c',
       ('"chmod +x /src/run_tests.sh && '
        'find /src/ -name "*.profraw" -exec rm -f {} \\; && '
