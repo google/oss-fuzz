@@ -21,8 +21,12 @@ import time
 import json
 import subprocess
 
-from chronos import integrity_validator_check_replay
-from chronos import integrity_validator_run_tests
+try:
+  from chronos import integrity_validator_check_replay
+  from chronos import integrity_validator_run_tests
+except ImportError:
+  import integrity_validator_check_replay
+  import integrity_validator_run_tests
 
 logger = logging.getLogger(__name__)
 
@@ -101,40 +105,18 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
                 end - start)
     return False
 
-  # Copy the coverage script into the container.
-  # Ensure we're are the right cwd.
-  coverage_host_script = os.path.join('infra', 'chronos',
-                                      'coverage_test_collection.py')
-  if not os.path.exists(coverage_host_script):
-    logger.info('Coverage script does not exist at %s', coverage_host_script)
-  else:
-    # Copy the coverage script into the container.
-    logger.info('Copying coverage script to container: %s', container_name)
-    cmd = [
-        'docker', 'container', 'cp', coverage_host_script,
-        f'{container_name}:/usr/local/bin/coverage_test_collection.py'
-    ]
-    subprocess.check_call(' '.join(cmd),
-                          shell=True,
-                          stdout=subprocess.DEVNULL,
-                          stderr=subprocess.DEVNULL)
-
   # Save the container.
   cmd = [
-      'docker', 'container', 'commit', '-c', '"ENV REPLAY_ENABLED=1"', '-c',
-      '"ENV CAPTURE_REPLAY_SCRIPT=1"', container_name,
+      'docker', 'container', 'commit', '-c', "ENV REPLAY_ENABLED=1", '-c',
+      "ENV CAPTURE_REPLAY_SCRIPT=1", container_name,
       _get_project_cached_named(project, sanitizer)
   ]
   logger.info('Saving image: [%s]', ' '.join(cmd))
   try:
-    subprocess.check_call(' '.join(cmd),
-                          shell=True,
-                          stdout=subprocess.DEVNULL,
-                          stderr=subprocess.DEVNULL)
+    subprocess.check_call(cmd)
 
   except subprocess.CalledProcessError as e:
     logger.error('Failed to save cached image: %s', e)
-
     return False
   return True
 
@@ -198,10 +180,13 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
                   project)
   else:
     # Normal run with no integrity check
-    cmd.append(f'"{base_cmd}"')
+    logger.info('Running cached replay with no integrity check for project: %s',
+                project)
+    base_cmd = 'export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile'
+    cmd.append(base_cmd)
     replay_success = False
     try:
-      subprocess.run(' '.join(cmd), shell=True, check=True)
+      subprocess.run(cmd, check=True)
       replay_success = True
     except subprocess.CalledProcessError as e:
       logger.error('Failed to run cached replay: %s', e)
@@ -264,9 +249,9 @@ def check_tests(project: str,
     # Run normal build_test
     logger.info('Running normal run_tests.sh for project: %s', project)
     docker_cmd_vanilla = docker_cmd[:]
-    docker_cmd_vanilla.append(f'"{run_tests_cmd}"')
+    docker_cmd_vanilla.append(run_tests_cmd)
     try:
-      subprocess.check_call(' '.join(docker_cmd_vanilla), shell=True)
+      subprocess.check_call(docker_cmd_vanilla)
       logger.info('Successfully ran run_tests.sh for project: %s', project)
     except subprocess.CalledProcessError:
       logger.info(
@@ -286,7 +271,7 @@ def check_tests(project: str,
     cmd_to_run.append('/chronos/container_patch_tests_test.sh')
     ret_code = 0
     try:
-      subprocess.check_call(' '.join(cmd_to_run), shell=True)
+      subprocess.check_call(cmd_to_run)
     except subprocess.CalledProcessError as exc:
       ret_code = exc.returncode
 
@@ -378,9 +363,9 @@ def check_tests(project: str,
                   patch_details['patch-message'])
   else:
     # Run normal build_test
-    docker_cmd.append(f'"{run_tests_cmd}"')
+    docker_cmd.append(run_tests_cmd)
     try:
-      subprocess.check_call(' '.join(docker_cmd), shell=True)
+      subprocess.check_call(docker_cmd)
       succeeded = True
       succeeded_patch = True
     except subprocess.CalledProcessError:
@@ -406,16 +391,13 @@ def extract_test_coverage(project):
   shared_folder = os.path.join(_get_oss_fuzz_root(), 'build', 'out', project)
   cmd = [
       'docker', 'run', '--rm', '--network', 'none', '-v',
-      f'{shared_folder}:/out',
+      f'{shared_folder}:/out', '-v=' +
+      os.path.join(_get_oss_fuzz_root(), 'infra', 'chronos') + ':/chronos/',
       _get_project_cached_named(project, 'coverage'), '/bin/bash', '-c',
-      ('"chmod +x /src/run_tests.sh && '
-       'find /src/ -name "*.profraw" -exec rm -f {} \\; && '
-       '/src/run_tests.sh && '
-       'python3 /usr/local/bin/coverage_test_collection.py && '
-       'chmod -R 755 /out/test-html-generation/"')
+      '/chronos/container_coverage_collection.sh'
   ]
   try:
-    subprocess.check_call(' '.join(cmd), shell=True)
+    subprocess.check_call(cmd)
   except subprocess.CalledProcessError as e:
     logger.error('Error occurred while running coverage collection: %s', e)
     return False
