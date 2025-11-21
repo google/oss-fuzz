@@ -428,6 +428,8 @@ def extract_test_coverage(project):
 
 def cmd_dispatcher_check_tests(args):
   """Dispatcher for chronos-check-tests command."""
+  # This argument is not enabled by default in helper.py, so we set it here.
+  args.semantic_test = getattr(args, 'semantic_test', False)
   check_tests(args.project_name, args.sanitizer, args.run_full_cache_replay,
               args.integrity_check, args.stop_on_failure, args.semantic_test)
 

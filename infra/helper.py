@@ -290,10 +290,10 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
     result = index(args)
   elif args.command == 'run_clusterfuzzlite':
     result = run_clusterfuzzlite(args)
-  elif args.command == 'chronos-check-tests':
+  elif args.command == 'check-tests':
     chronos.manager.cmd_dispatcher_check_tests(args)
     result = 0
-  elif args.command == 'chronos-check-replay':
+  elif args.command == 'check-replay':
     chronos.manager.cmd_dispatcher_check_replay(args)
     result = 0
   else:
@@ -609,7 +609,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   subparsers.add_parser('pull_images', help='Pull base images.')
 
   checks_test_parser = subparsers.add_parser(
-      'chronos-check-tests', help='Checks run_test.sh for specific project.')
+      'check-tests', help='Checks run_test.sh for specific project.')
   checks_test_parser.add_argument(
       'project_name',
       type=str,
@@ -640,16 +640,10 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
       help=
       'If set, will patch and test with logic errors to ensure build integrity.'
   )
-  checks_test_parser.add_argument(
-      '--semantic-test',
-      help=
-      'If set, will try and validate semantic correctness of run_tests.sh. This is beta for now.',
-      action='store_true')
 
   check_replay_parser = subparsers.add_parser(
-      'chronos-check-replay',
+      'check-replay',
       help='Checks if the replay script works for a specific project.')
-
   check_replay_parser.add_argument('project_name',
                                    help='The name of the project to check.')
   check_replay_parser.add_argument(
