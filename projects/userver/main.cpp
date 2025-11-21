@@ -23,19 +23,14 @@
 #include <hello.hpp>
 #include <generated/static_config.yaml.hpp>
 
-#define HFND_FUZZING_ENTRY_FUNCTION_CXX(x,y) extern const char* LIBHFNETDRIVER_module_netdriver;const char** LIBHFNETDRIVER_tmp1 = &LIBHFNETDRIVER_module_netdriver;extern "C" int HonggfuzzNetDriver_main(x,y);int HonggfuzzNetDriver_main(x,y)
-
 // Suppress LSAN for rapidjson
 extern "C" const char* __lsan_default_suppressions() {
-    return "leak:userver::v2_::components::DynamicConfig::Impl::ReadFallback\n";
-  }
+    return "leak:userver::v2_*::components::DynamicConfig::Impl::ReadFallback\n";
+}
 
-#ifdef HFND_FUZZING_ENTRY_FUNCTION_CXX
-HFND_FUZZING_ENTRY_FUNCTION_CXX(int argc, char* argv[]) {
-#else
-int main(int argc, char* argv[]) {
-#endif
+namespace {
 
+int StartService(int argc, char* argv[]) {
     auto component_list = userver::components::MinimalServerComponentList()
                               .Append<userver::server::handlers::Ping>()
                               .Append<fuzzservice::Hello>();
@@ -44,8 +39,31 @@ int main(int argc, char* argv[]) {
     return userver::utils::DaemonMain(config, component_list);
 }
 
-#ifndef LIB_FUZZING_ENGINE
-int main(int argc, char* argv[]) {
-    return HonggfuzzNetDriver_main(argc, argv);
+}  // namespace
+
+#if defined(FUZZING_ENGINE_HONGGFUZZ)
+
+#define HFND_FUZZING_ENTRY_FUNCTION_CXX(x, y)                                \
+    extern const char* LIBHFNETDRIVER_module_netdriver;                      \
+    const char** LIBHFNETDRIVER_tmp1 = &LIBHFNETDRIVER_module_netdriver;     \
+    extern "C" int HonggfuzzNetDriver_main(x, y);                            \
+    int HonggfuzzNetDriver_main(x, y)
+
+HFND_FUZZING_ENTRY_FUNCTION_CXX(int argc, char* argv[]) {
+    return StartService(argc, argv);
 }
+
+#elif defined(LIB_FUZZING_ENGINE)
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size) {
+    // TODO: Implement fuzzing logic later for libfuzzer now working on honggfuzz.
+    return 0;
+}
+
+#else
+
+int main(int argc, char* argv[]) {
+    return StartService(argc, argv);
+}
+
 #endif

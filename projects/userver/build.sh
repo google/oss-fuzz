@@ -24,11 +24,7 @@ jq '.configurePresets[0].cacheVariables += {"USERVER_FEATURE_STACKTRACE":"OFF", 
 
 printenv
 
-if [[ "$FUZZING_ENGINE" == "honggfuzz" ]]
-then
-    # cp $SRC/CMakeLists.txt $SRC/fuzzservice/CMakeLists.txt
-    cp $SRC/main.cpp $SRC/fuzzservice/src/main.cpp
-fi
+cp $SRC/main.cpp $SRC/fuzzservice/src/main.cpp
 
 cp $SRC/CMakeLists.txt $SRC/fuzzservice/CMakeLists.txt
 
