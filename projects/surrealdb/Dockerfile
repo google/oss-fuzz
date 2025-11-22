@@ -15,6 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
+# Aligned with the MSRV used by SurrealDB
+RUN rustup toolchain install 1.85.0 && rustup default 1.85.0 && rustup component add rust-src
 RUN git clone --depth 1 https://github.com/surrealdb/surrealdb surrealdb
 RUN git clone --depth 1 https://github.com/surrealdb/docs.surrealdb.com.git surrealdb_website
 WORKDIR surrealdb
