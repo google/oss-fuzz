@@ -160,10 +160,10 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
       )
       cmd_to_run = cmd[:]
       cmd_to_run.append(
-          f'"set -euo pipefail && {bad_patch_command} && {base_cmd}"')
+          f'set -euo pipefail && {bad_patch_command} && {base_cmd}')
 
       # Run the cached replay script with bad patches
-      result = subprocess.run(' '.join(cmd_to_run), shell=True, check=False)
+      result = subprocess.run(cmd_to_run, check=False)
 
       if result.returncode not in expected_rc:
         failed.append(bad_patch_name)
@@ -311,9 +311,9 @@ def check_tests(project: str,
         # the patches, but without running the tests, and if this step fails, then
         # we skip running the tests for this patch as well.
         # Patch and build first.
-        cmd_to_run.append(f'"set -euo pipefail && {patch_command}"')
+        cmd_to_run.append(f'set -euo pipefail && {patch_command}')
         try:
-          subprocess.check_call(' '.join(cmd_to_run), shell=True)
+          subprocess.check_call(cmd_to_run)
         except subprocess.CalledProcessError:
           logger.info('%s skipping logic patch %s that failed to compile.',
                       project, logic_patch.name)
@@ -327,9 +327,9 @@ def check_tests(project: str,
         # one go. This will indicate if the patch was detected by the tests or
         # not.
         cmd_to_run[
-            -1] = f'"set -euo pipefail && {patch_command} && {run_tests_cmd}"'
+            -1] = f'set -euo pipefail && {patch_command} && {run_tests_cmd}'
         try:
-          subprocess.check_call(' '.join(cmd_to_run), shell=True)
+          subprocess.check_call(cmd_to_run)
           exception_thrown = False
         except subprocess.CalledProcessError:
           exception_thrown = True
@@ -417,7 +417,7 @@ def extract_test_coverage(project):
 
 
 def cmd_dispatcher_check_tests(args):
-  """Dispatcher for chronos-check-tests command."""
+  """Dispatcher for check-tests command."""
   # This argument is not enabled by default in helper.py, so we set it here.
   args.semantic_test = getattr(args, 'semantic_test', False)
   check_tests(args.project_name, args.sanitizer, args.run_full_cache_replay,
@@ -425,7 +425,7 @@ def cmd_dispatcher_check_tests(args):
 
 
 def cmd_dispatcher_check_replay(args):
-  """Dispatcher for chronos-check-replay command."""
+  """Dispatcher for check-replay command."""
   check_cached_replay(args.project_name,
                       args.sanitizer,
                       integrity_check=args.integrity_check)
@@ -450,9 +450,9 @@ def parse_args():
   subparsers = parser.add_subparsers(dest='command')
 
   checks_test_parser = subparsers.add_parser(
-      'chronos-check-tests', help='Checks run_test.sh for specific project.')
+      'check-tests', help='Checks run_test.sh for specific project.')
   checks_test_parser.add_argument(
-      'project-name',
+      'project_name',
       type=str,
       help='The name of the project to check (e.g., "libpng").',
   )
@@ -533,8 +533,8 @@ def main():
   args = parse_args()
 
   dispatch_map = {
-      'chronos-check-tests': cmd_dispatcher_check_tests,
-      'chronos-check-replay': cmd_dispatcher_check_replay,
+      'check-tests': cmd_dispatcher_check_tests,
+      'check-replay': cmd_dispatcher_check_replay,
       'build-cached-image': cmd_dispatcher_build_cached_image,
       'extract-test-coverage': cmd_dispatcher_extract_coverage
   }
