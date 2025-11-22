@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y build-essential make cmake ninja-build
-
-
-RUN git clone https://github.com/KhronosGroup/glslang && \
-    mkdir -p $SRC/glsl_seed && \
-    cp $SRC/glslang/Test/*.frag $SRC/glsl_seed
-RUN git clone https://github.com/google/shaderc shaderc
-WORKDIR $SRC/shaderc
-
-COPY *.cc *.sh *.diff $SRC/
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libyaml-dev \
+    zlib1g-dev \
+    ruby \
+    ruby-dev \
+    autoconf \
+    automake \
+    libtool \
+    bison \
+    wget
+RUN git clone --depth=1 --single-branch https://github.com/ruby/ruby $SRC/ruby
+COPY *.sh *.cpp *.c fuzz_prism.options $SRC/
