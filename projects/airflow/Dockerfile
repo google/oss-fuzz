@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y sqlite3
 RUN pip3 install --upgrade pip
 
 RUN git clone --depth 1 https://github.com/apache/airflow $SRC/airflow
+
 WORKDIR airflow
 
 COPY build.sh dag_fuzz.py $SRC/
