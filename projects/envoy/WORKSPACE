@@ -20,7 +20,7 @@ load("//bazel:repo.bzl", "envoy_repo")
 
 envoy_repo()
 
-oad("//bazel:toolchains.bzl", "envoy_toolchains")
+load("//bazel:toolchains.bzl", "envoy_toolchains")
 
 envoy_toolchains()
 
