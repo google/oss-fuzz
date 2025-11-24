@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +14,17 @@
 #
 ################################################################################
 
-# Force the use of Clang for C++ builds.
-build --action_env=CC=clang
-build --action_env=CXX=clang++
-
-build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:oss_fuzz
-build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz
-build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_sanitizer=none
-build:oss-fuzz --cxxopt=-stdlib=libc++
-build:oss-fuzz --linkopt=-lc++
-build:oss-fuzz --verbose_failures
-build:oss-fuzz --spawn_strategy=standalone
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libyaml-dev \
+    zlib1g-dev \
+    ruby \
+    ruby-dev \
+    autoconf \
+    automake \
+    libtool \
+    bison \
+    wget
+RUN git clone --depth=1 --single-branch https://github.com/ruby/ruby $SRC/ruby
+COPY *.sh *.cpp *.c fuzz_prism.options $SRC/
