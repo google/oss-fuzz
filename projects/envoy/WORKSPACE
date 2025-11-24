@@ -16,6 +16,14 @@ load("//bazel:bazel_deps.bzl", "envoy_bazel_dependencies")
 
 envoy_bazel_dependencies()
 
+load("//bazel:repo.bzl", "envoy_repo")
+
+envoy_repo()
+
+oad("//bazel:toolchains.bzl", "envoy_toolchains")
+
+envoy_toolchains()
+
 load("//bazel:repositories_extra.bzl", "envoy_dependencies_extra")
 
 envoy_dependencies_extra(ignore_root_user_error=True)
