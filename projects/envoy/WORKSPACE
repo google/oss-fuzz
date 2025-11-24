@@ -16,14 +16,6 @@ load("//bazel:bazel_deps.bzl", "envoy_bazel_dependencies")
 
 envoy_bazel_dependencies()
 
-load("//bazel:repo.bzl", "envoy_repo")
-
-envoy_repo()
-
-load("//bazel:toolchains.bzl", "envoy_toolchains")
-
-envoy_toolchains()
-
 load("//bazel:repositories_extra.bzl", "envoy_dependencies_extra")
 
 envoy_dependencies_extra(ignore_root_user_error=True)
@@ -35,3 +27,11 @@ envoy_python_dependencies()
 load("//bazel:dependency_imports.bzl", "envoy_dependency_imports")
 
 envoy_dependency_imports()
+
+load("//bazel:repo.bzl", "envoy_repo")
+
+envoy_repo()
+
+load("//bazel:toolchains.bzl", "envoy_toolchains")
+
+envoy_toolchains()
