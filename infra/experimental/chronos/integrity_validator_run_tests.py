@@ -242,6 +242,13 @@ def _capture_source_control():
     print('Wrong number of directories found under /src/')
     print(project_dirs)
 
+  if len(project_dirs) > 1:
+    print('Multiple project directories found under /src/')
+    # If we have a project name, try to use this
+    project_name = os.getenv('PROJECT_NAME', 'unknown_project')
+    if project_name in project_dirs:
+      if os.path.isdir(os.path.join('/src/', project_name, '.git')):
+        return os.path.join('/src/', project_name)
   return None
 
 
@@ -320,6 +327,9 @@ def diff_patch_analysis(stage: str) -> int:
 
 def main():
   """Main entrypoint."""
+
+  project_name = os.getenv('PROJECT_NAME', 'unknown_project')
+  print(f'Integrity validator run tests for project: {project_name}')
   command = sys.argv[1]
   if command == 'semantic-patch':
     target_patch = sys.argv[2]

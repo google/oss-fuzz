@@ -15,37 +15,5 @@
 #
 ################################################################################
 
-cd /tmp
-export GOROOT=/root/.go
-wget https://go.dev/dl/go1.25.3.linux-amd64.tar.gz
+$SRC/cncf-fuzzing/projects/openfga/build.sh
 
-mkdir temp-go
-tar -C temp-go/ -xzf go1.25.3.linux-amd64.tar.gz
-
-rm -r /root/.go
-mkdir /root/.go/
-mv temp-go/go/* /root/.go/
-rm -rf temp-go
-
-
-cd $SRC/go-118-fuzz-build
-go build
-mv go-118-fuzz-build $GOPATH/bin/go-118-fuzz-build_v2
-pushd cmd/convertLibFuzzerTestcaseToStdLibGo
-  go build . && mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
-popd
-pushd cmd/addStdLibCorpusToFuzzer
-  go build . && mv addStdLibCorpusToFuzzer $GOPATH/bin/
-popd
-cd $SRC/openfga
-
-
-cp $SRC/cncf-fuzzing/projects/openfga/authorization_models_advanced_fuzz_test.go $SRC/openfga/tests/
-
-compile_native_go_fuzzer_v2 github.com/openfga/openfga/tests FuzzCheckWithExclusion FuzzCheckWithExclusion
-compile_native_go_fuzzer_v2 github.com/openfga/openfga/tests FuzzCheckWithIntersection FuzzCheckWithIntersection
-compile_native_go_fuzzer_v2 github.com/openfga/openfga/tests FuzzCheckWithComputedUserset FuzzCheckWithComputedUserset
-compile_native_go_fuzzer_v2 github.com/openfga/openfga/tests FuzzCheckWithPublicAccess FuzzCheckWithPublicAccess
-compile_native_go_fuzzer_v2 github.com/openfga/openfga/tests FuzzCheckWithMultipleRestrictions FuzzCheckWithMultipleRestrictions
-compile_native_go_fuzzer_v2 github.com/openfga/openfga/tests FuzzCheckWithConditions FuzzCheckWithConditions
-compile_native_go_fuzzer_v2 github.com/openfga/openfga/tests FuzzCheckWithParentChild FuzzCheckWithParentChild

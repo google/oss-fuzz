@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/openfga/openfga
-RUN git clone --depth 1 https://github.com/AdamKorcz/cncf-fuzzing --branch=openfga
+RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
 RUN git clone --depth 1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2_2
 COPY build.sh $SRC/
 WORKDIR $SRC/openfga
