@@ -35,8 +35,7 @@ apt-get update && \
         patchelf \
         rsync \
         subversion \
-        zip \
-        libunwind-dev libblocksruntime-dev # needed for Honggfuzz
+        zip
 
 case $(uname -m) in
     x86_64)
