@@ -132,11 +132,12 @@ class BinaryConfig:
 
   Attributes:
     kind: The kind of binary configuration.
-    binary_args: The arguments to pass to the binary, for example
-      "<input_file>".
+    binary_name: The name of the executable file.
   """
 
   kind: BinaryConfigKind
+
+  binary_name: str
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
@@ -176,7 +177,6 @@ class HarnessKind(enum.StrEnum):
 class CommandLineBinaryConfig(BinaryConfig):
   """Configuration for a command-line userspace binary."""
 
-  binary_name: str
   binary_args: list[str]
   # Additional environment variables to pass to the binary. They will overwrite
   # any existing environment variables with the same name.
@@ -399,12 +399,6 @@ class Manifest:
 
     self.validate()
 
-    if not hasattr(self.binary_config, "binary_name"):
-      raise RuntimeError(
-          "Attempting to save a binary config type without binary_name."
-          " This is not yet supported. Kind: {self.binary_config.kind}."
-      )
-
     with tempfile.NamedTemporaryFile() as tmp:
       mode = "w:gz" if archive_path.suffix.endswith("gz") else "w"
       with tarfile.open(tmp.name, mode) as tar:
@@ -449,7 +443,9 @@ class Manifest:
 
         dumped_self = self
         if self.index_db_version is None:
-          index_db_version = _get_sqlite_db_user_version(index_dir / INDEX_DB)
+          index_db_version = _get_sqlite_db_user_version(
+              pathlib.Path(index_dir) / INDEX_DB
+          )
           dumped_self = dataclasses.replace(
               self, index_db_version=index_db_version
           )
