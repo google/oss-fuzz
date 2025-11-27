@@ -230,21 +230,24 @@ def pivot_to_ubuntu_24_04(image_suffix, script_path, check_result=True):
   """Pivots execution to an Ubuntu 24.04 container if needed."""
   with open('/etc/os-release') as file_handle:
     if 'Noble Numbat' not in file_handle.read():
-      logging.info('Base OS version is Ubuntu 24.04, but running in a different OS. Pivoting to Ubuntu 24.04 container.')
+      logging.info(
+          'Base OS version is Ubuntu 24.04, but running in a different OS. Pivoting to Ubuntu 24.04 container.'
+      )
       env = os.environ.copy()
       # Ensure we don't loop indefinitely.
       env['CIFUZZ_PIVOTED'] = '1'
       command = [
-          'docker', 'run', '--rm', '--privileged',
-          '--volumes-from', os.environ.get('HOSTNAME', ''),
-          '-e', 'CIFUZZ_PIVOTED=1'
+          'docker', 'run', '--rm', '--privileged', '--volumes-from',
+          os.environ.get('HOSTNAME', ''), '-e', 'CIFUZZ_PIVOTED=1'
       ]
       # Propagate environment variables.
       for key, value in os.environ.items():
         command.extend(['-e', f'{key}={value}'])
 
       # Use the ubuntu-24-04 version of the image.
-      command.append(f'gcr.io/oss-fuzz-base/clusterfuzzlite-{image_suffix}:v1-ubuntu-24-04')
+      command.append(
+          f'gcr.io/oss-fuzz-base/clusterfuzzlite-{image_suffix}:v1-ubuntu-24-04'
+      )
 
       # Run the same command.
       command.append('python3')

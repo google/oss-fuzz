@@ -55,7 +55,8 @@ def run_fuzzers_entrypoint():
 
   if config.base_os_version == 'ubuntu-24-04':
     result = config_utils.pivot_to_ubuntu_24_04(
-        'run-fuzzers', '/opt/oss-fuzz/infra/cifuzz/run_fuzzers_entrypoint.py',
+        'run-fuzzers',
+        '/opt/oss-fuzz/infra/cifuzz/run_fuzzers_entrypoint.py',
         check_result=not config.dry_run)
     if result is not None:
       return result
