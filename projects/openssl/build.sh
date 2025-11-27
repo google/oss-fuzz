@@ -102,3 +102,7 @@ make clean
 cd $SRC/openssl35/
 build_fuzzers "_35"
 make clean
+
+cd $SRC/openssl36/
+build_fuzzers "_36"
+make clean
