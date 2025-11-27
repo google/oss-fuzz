@@ -245,12 +245,13 @@ def pivot_to_ubuntu_24_04(image_suffix, script_path, check_result=True):
         command.extend(['-e', f'{key}={value}'])
 
       # Use the ubuntu-24-04 version of the image.
+      command.append('--entrypoint')
+      command.append('python3')
       command.append(
           f'gcr.io/oss-fuzz-base/clusterfuzzlite-{image_suffix}:v1-ubuntu-24-04'
       )
 
       # Run the same command.
-      command.append('python3')
       command.append(script_path)
 
       if check_result:
