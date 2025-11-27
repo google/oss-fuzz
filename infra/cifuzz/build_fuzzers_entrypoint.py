@@ -15,6 +15,7 @@
 import logging
 import sys
 
+import sys
 import build_fuzzers
 import logs
 import config_utils
@@ -28,6 +29,13 @@ logs.init()
 def build_fuzzers_entrypoint():
   """Builds OSS-Fuzz project's fuzzers for CI tools."""
   config = config_utils.BuildFuzzersConfig()
+
+  if config.base_os_version == 'ubuntu-24-04':
+    result = config_utils.pivot_to_ubuntu_24_04(
+        'build-fuzzers',
+        '/opt/oss-fuzz/infra/cifuzz/build_fuzzers_entrypoint.py')
+    if result is not None:
+      return result
 
   if config.dry_run:
     # Sets the default return code on error to success.
