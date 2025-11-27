@@ -26,8 +26,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import platform_config
 import constants
+import re
 
 SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
+BASE_OS_VERSION_REGEX = re.compile(r'\s*base_os_version\s*:\s*([^\s]+)')
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
 DEFAULT_ENGINE = 'libfuzzer'
@@ -195,6 +197,32 @@ class BaseConfig:
     """Returns True if this CIFuzz run (building fuzzers and running them) for
     generating a coverage report."""
     return self.sanitizer == 'coverage'
+
+  @property
+  def base_os_version(self):
+    """Returns the project's base OS version."""
+    if self.oss_fuzz_project_name:
+      # Internal/OSS-Fuzz project.
+      project_yaml_path = os.path.join('/opt/oss-fuzz/projects',
+                                       self.oss_fuzz_project_name,
+                                       'project.yaml')
+    else:
+      # External project.
+      project_yaml_path = os.path.join(self.project_src_path,
+                                       self.build_integration_path,
+                                       'project.yaml')
+
+    if not os.path.exists(project_yaml_path):
+      return 'legacy'
+
+    with open(project_yaml_path) as file_handle:
+      content = file_handle.read()
+      for line in content.splitlines():
+        match = BASE_OS_VERSION_REGEX.match(line)
+        if match:
+          return match.group(1)
+
+    return 'legacy'
 
 
 def _get_platform_config(cfl_platform):
