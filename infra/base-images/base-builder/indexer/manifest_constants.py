@@ -32,6 +32,10 @@ SRC_DIR = Path("src")
 OBJ_DIR = Path("obj")
 # Directory for indexer data.
 INDEX_DIR = Path("idx")
+# Relative source file root in the index.
+INDEX_RELATIVE_SOURCES = INDEX_DIR / "relative"
+# Absolute source file root in the index.
+INDEX_ABSOLUTE_SOURCES = INDEX_DIR / "absolute"
 # The index database filename.
 INDEX_DB = Path("db.sqlite")
 # Library directory, where shared libraries are copied - inside obj.
