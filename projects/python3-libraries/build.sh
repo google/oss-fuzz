@@ -97,3 +97,22 @@ cp $SRC/python-library-fuzzers/fuzzer-ast.dict $OUT/
 mkdir corp-ast/
 find $SRC/cpython -type f -name '*.py' -size -4097c -exec cp {} corp-ast/ \;
 zip -j $OUT/fuzzer-ast_seed_corpus.zip corp-ast/*
+
+cp $SRC/python-library-fuzzers/fuzzer-re $OUT/
+cp $SRC/python-library-fuzzers/re.py $OUT/
+
+cp $SRC/python-library-fuzzers/fuzzer-zipfile $OUT/
+cp $SRC/python-library-fuzzers/zipfile.py $OUT/
+
+cp $SRC/python-library-fuzzers/fuzzer-tarfile $OUT/
+cp $SRC/python-library-fuzzers/tarfile.py $OUT/
+
+cp $SRC/python-library-fuzzers/fuzzer-configparser $OUT/
+cp $SRC/python-library-fuzzers/configparser.py $OUT/
+
+cp $SRC/python-library-fuzzers/fuzzer-tomllib $OUT/
+cp $SRC/python-library-fuzzers/tomllib.py $OUT/
+
+cp $SRC/python-library-fuzzers/fuzzer-plistlib $OUT/
+cp $SRC/python-library-fuzzers/plist.py $OUT/
+

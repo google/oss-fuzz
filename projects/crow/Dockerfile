@@ -19,5 +19,6 @@ RUN apt-get update && apt-get install -y cmake make libasio-dev
 
 RUN git clone --depth 1 https://github.com/CrowCpp/Crow.git crow
 RUN cp $SRC/crow/tests/fuzz/build.sh $SRC/
+COPY run_tests.sh $SRC/run_tests.sh
 WORKDIR crow
 

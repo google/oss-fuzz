@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake xxd
 RUN git clone https://github.com/ggerganov/llama.cpp
-WORKDIR llama.cpp
+WORKDIR $SRC/llama.cpp
 COPY build.sh $SRC/
-COPY fuzzers fuzzers
+COPY fuzzers $SRC/llama.cpp/fuzzers

@@ -344,7 +344,11 @@ def download_corpora_steps(project_name, test_image_suffix):
   return steps, None
 
 
-def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
+def download_coverage_data_steps(project_name,
+                                 latest,
+                                 bucket_name,
+                                 out_dir,
+                                 base_image_tag=None):
   """Returns GCB steps to download coverage data for the given project"""
   steps = []
   fuzz_targets = _get_targets_list(project_name)
@@ -352,8 +356,10 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
     sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
     return None
 
+  runner_image_name = get_runner_image_name(base_image_tag=base_image_tag)
+
   steps.append({
-      'name': 'gcr.io/oss-fuzz-base/base-runner',
+      'name': runner_image_name,
       'args': ['bash', '-c', (f'mkdir -p {out_dir}/textcov_reports')]
   })
 
@@ -365,7 +371,7 @@ def download_coverage_data_steps(project_name, latest, bucket_name, out_dir):
       'allowFailure': True
   })
   steps.append({
-      'name': 'gcr.io/oss-fuzz-base/base-runner',
+      'name': runner_image_name,
       'args': ['bash', '-c', f'ls -lrt {out_dir}/textcov_reports'],
       'allowFailure': True
   })
@@ -691,7 +697,7 @@ def get_build_info_lines(build_id, cloud_project='oss-fuzz'):
   ]
 
 
-def get_runner_image_name(test_image_suffix, base_image_tag=None):
+def get_runner_image_name(test_image_suffix=None, base_image_tag=None):
   """Returns the runner image that should be used.
 
   Returns the testing image if |test_image_suffix|.
@@ -707,7 +713,7 @@ def get_runner_image_name(test_image_suffix, base_image_tag=None):
   # Only add a tag if it's specified and not 'legacy', as 'legacy' implies
   # 'latest', which is the default behavior.
   if base_image_tag and base_image_tag != 'legacy':
-    image += ':' + base_image_tag
+    image += f":{base_image_tag}"
 
   return image
 
