@@ -95,6 +95,40 @@ class BaseConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertTrue(config.validate())
 
+  def test_base_os_version_external(self):
+    """Tests that base_os_version is read correctly for external projects."""
+    os.environ['PROJECT_SRC_PATH'] = '/src'
+    # Use patch to mock os.path.exists and open for the project.yaml
+    with mock.patch('os.path.exists', return_value=True) as mock_exists:
+      with mock.patch(
+          'builtins.open',
+          mock.mock_open(
+              read_data='base_os_version: ubuntu-24-04')) as mock_open:
+        config = self._create_config()
+        self.assertEqual(config.base_os_version, 'ubuntu-24-04')
+        # Verify it looked in the right place (PROJECT_SRC_PATH + .clusterfuzzlite)
+        expected_path = os.path.join('/src', '.clusterfuzzlite', 'project.yaml')
+        mock_open.assert_called_with(expected_path)
+
+  def test_base_os_version_external_quoted(self):
+    """Tests that base_os_version handles quoted values for external projects."""
+    os.environ['PROJECT_SRC_PATH'] = '/src'
+    # Use patch to mock os.path.exists and open for the project.yaml
+    with mock.patch('os.path.exists', return_value=True) as mock_exists:
+      with mock.patch(
+          'builtins.open',
+          mock.mock_open(
+              read_data='base_os_version: "ubuntu-24-04"')) as mock_open:
+        config = self._create_config()
+        self.assertEqual(config.base_os_version, 'ubuntu-24-04')
+
+  def test_base_os_version_default(self):
+    """Tests that base_os_version defaults to legacy if not present."""
+    os.environ['PROJECT_SRC_PATH'] = '/src'
+    with mock.patch('os.path.exists', return_value=False):
+      config = self._create_config()
+      self.assertEqual(config.base_os_version, 'legacy')
+
 
 class BuildFuzzersConfigTest(unittest.TestCase):
   """Tests for BuildFuzzersConfig."""

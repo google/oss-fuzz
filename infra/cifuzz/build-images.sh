@@ -22,6 +22,7 @@ OSS_FUZZ_ROOT=$(realpath $INFRA_DIR/..)
 
 # Build cifuzz-base.
 docker build --tag gcr.io/oss-fuzz-base/cifuzz-base --file $CIFUZZ_DIR/cifuzz-base/Dockerfile $OSS_FUZZ_ROOT
+docker build --tag gcr.io/oss-fuzz-base/cifuzz-base:ubuntu-24-04 --file $CIFUZZ_DIR/cifuzz-base/ubuntu-24-04.Dockerfile $OSS_FUZZ_ROOT
 
 # Build run-fuzzers and build-fuzzers images.
 docker build \
@@ -29,6 +30,14 @@ docker build \
   --tag gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1 \
   --file $INFRA_DIR/build_fuzzers.Dockerfile $INFRA_DIR
 docker build \
+  --tag gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers-test:v1-ubuntu-24-04 \
+  --tag gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1-ubuntu-24-04 \
+  --file $INFRA_DIR/build_fuzzers.ubuntu-24-04.Dockerfile $INFRA_DIR
+docker build \
   --tag gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1 \
   --tag gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers-test:v1 \
   --file $INFRA_DIR/run_fuzzers.Dockerfile $INFRA_DIR
+docker build \
+  --tag gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1-ubuntu-24-04 \
+  --tag gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers-test:v1-ubuntu-24-04 \
+  --file $INFRA_DIR/run_fuzzers.ubuntu-24-04.Dockerfile $INFRA_DIR
