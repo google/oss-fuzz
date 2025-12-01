@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04-go
 RUN git clone https://github.com/google/gopacket.git
 
 COPY build.sh $SRC/
