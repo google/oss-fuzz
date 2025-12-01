@@ -23,12 +23,10 @@ RUN git clone --depth 1 --branch openssl-3.2 https://github.com/openssl/openssl.
 RUN git clone --depth 1 --branch openssl-3.3 https://github.com/openssl/openssl.git openssl33
 RUN git clone --depth 1 --branch openssl-3.4 https://github.com/openssl/openssl.git openssl34
 RUN git clone --depth 1 --branch openssl-3.5 https://github.com/openssl/openssl.git openssl35
-RUN git clone --depth 1 --branch openssl-3.6 https://github.com/openssl/openssl.git openssl36
 RUN cd $SRC/openssl32/ && git submodule update --init fuzz/corpora
 RUN cd $SRC/openssl33/ && git submodule update --init fuzz/corpora
 RUN cd $SRC/openssl34/ && git submodule update --init fuzz/corpora
 RUN cd $SRC/openssl35/ && git submodule update --init fuzz/corpora
-RUN cd $SRC/openssl36/ && git submodule update --init fuzz/corpora
 WORKDIR openssl
 COPY build.sh *.options replay_build.sh run_tests.sh $SRC/
 ENV AFL_SKIP_OSSFUZZ=1
