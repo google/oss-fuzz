@@ -21,10 +21,6 @@ BUILD_DIR=${SRC}/build-dir
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
 
-# The CMake build setup compiles and runs the Thrift compiler, but ASAN
-# would report leaks and error out.
-export ASAN_OPTIONS="detect_leaks=0"
-
 cmake ${ARROW} -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DARROW_DEPENDENCY_SOURCE=BUNDLED \
