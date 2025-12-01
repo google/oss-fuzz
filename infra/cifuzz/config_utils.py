@@ -229,7 +229,7 @@ class BaseConfig:
 def pivot_to_ubuntu_24_04(image_suffix, script_path, check_result=True):
   """Pivots execution to an Ubuntu 24.04 container if needed."""
   with open('/etc/os-release') as file_handle:
-    if 'Noble Numbat' not in file_handle.read():
+    if '24.04' not in file_handle.read():
       logging.info(
           'Base OS version is Ubuntu 24.04, but running in a different OS. Pivoting to Ubuntu 24.04 container.'
       )
