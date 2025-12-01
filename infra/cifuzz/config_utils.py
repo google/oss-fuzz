@@ -248,7 +248,7 @@ def pivot_to_ubuntu_24_04(image_suffix, script_path, check_result=True):
       command.append('--entrypoint')
       command.append('python3')
       command.append(
-          f'gcr.io/oss-fuzz-base/clusterfuzzlite-{image_suffix}:v1-ubuntu-24-04'
+          f'gcr.io/oss-fuzz-base/clusterfuzzlite-{image_suffix}:ubuntu-24-04-v1'
       )
 
       # Run the same command.
