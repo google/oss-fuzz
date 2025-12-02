@@ -35,14 +35,6 @@ RUN wget https://github.com/boostorg/boost/releases/download/boost-${boost_versi
     cmake .. -GNinja -DBOOST_INCLUDE_LIBRARIES="${boost_components}" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF && \
     cmake --build . --target install
 
-ARG openssl_version=3.5.4
-
-RUN wget https://github.com/openssl/openssl/releases/download/openssl-${openssl_version}/openssl-${openssl_version}.tar.gz && \
-    tar -xf openssl-${openssl_version}.tar.gz && \
-    cd openssl-${openssl_version} && \
-    ./Configure no-apps no-docs no-tests no-shared && \
-    make -j && make install
-
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow
 

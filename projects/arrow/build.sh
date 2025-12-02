@@ -15,6 +15,20 @@
 #
 ################################################################################
 
+# 1. Build instrumented OpenSSL
+
+OPENSSL_VERSION=3.5.4
+
+cd /root
+wget https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz
+tar -xf openssl-${OPENSSL_VERSION}.tar.gz
+cd openssl-${OPENSSL_VERSION}
+./Configure no-apps no-docs no-tests no-shared
+make -j
+make install
+
+# 2. Build Arrow C++ proper
+
 ARROW=${SRC}/arrow/cpp
 
 BUILD_DIR=${SRC}/build-dir
@@ -67,4 +81,3 @@ ${ARROW}/build-support/fuzzing/generate_corpuses.sh ${BUILD_DIR}/release
 find . -executable -name "*-fuzz" -exec cp -a -v '{}' ${OUT} \;
 # Copy seed corpuses
 find . -name "*-fuzz_seed_corpus.zip" -exec cp -a -v '{}' ${OUT} \;
-
