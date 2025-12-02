@@ -209,7 +209,13 @@ class BaseConfig:
                                        'project.yaml')
     else:
       # External project.
-      project_yaml_path = os.path.join(self.project_src_path,
+      project_src_path = self.project_src_path
+      if project_src_path is None:
+        logging.warning('PROJECT_SRC_PATH not set. Using workspace: %s',
+                        self.workspace)
+        project_src_path = self.workspace
+
+      project_yaml_path = os.path.join(project_src_path,
                                        self.build_integration_path,
                                        'project.yaml')
 
