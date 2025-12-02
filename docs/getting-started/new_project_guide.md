@@ -237,6 +237,10 @@ For an example, see
 [ecc-diff-fuzzer/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/ecc-diff-fuzzer/Dockerfile).
 where we use `base-builder-rust`and install golang
 
+Runtime dependencies of your project, such as third-party static libraries, will
+not be instrumented if you build them in the Dockerfile. In most cases, you will
+want to build them in `build.sh` instead.
+
 ## build.sh {#buildsh}
 
 This file defines how to build binaries for [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your project.
