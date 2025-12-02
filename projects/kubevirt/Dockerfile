@@ -19,6 +19,6 @@ RUN apt update && apt install -y qemu-kvm libvirt-daemon-system
 RUN git clone --depth 1 https://github.com/kubevirt/kubevirt
 RUN git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2_2 $SRC/go-118-fuzz-build
 RUN git clone --depth=1 --branch=2025-work https://github.com/AdamKorcz/go-fuzz-headers-1 $SRC/go-fuzz-headers
-ADD cncf-fuzzing $SRC/cncf-fuzzing
+RUN git clone --depth=1 https://github.com/cncf/cncf-fuzzing
 COPY build.sh  $SRC/
 WORKDIR $SRC
