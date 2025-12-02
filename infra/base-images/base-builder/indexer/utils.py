@@ -15,12 +15,13 @@
 
 """Utils for snapshotting shared libraries."""
 
+from collections.abc import Mapping, Sequence
 import dataclasses
 import os
 import pathlib
 import re
 import subprocess
-from typing import Final, Sequence
+from typing import Final, Protocol
 
 from absl import logging
 
@@ -69,22 +70,40 @@ def _parse_ld_trace_output(output: str) -> Sequence[SharedLibrary]:
   return shared_libraries
 
 
-def get_shared_libraries(
-    binary_path: os.PathLike[str],
-) -> Sequence[SharedLibrary]:
-  """Copies the shared libraries to the shared directory."""
-  env = os.environ.copy()
-  env["LD_TRACE_LOADED_OBJECTS"] = "1"
-  env["LD_BIND_NOW"] = "1"
+class CommandRunner(Protocol):
+  """Runs `command` with environment `env` and returns its stdout."""
 
-  result = subprocess.run(
-      [_LD_BINARY_PATH, binary_path],
+  def __call__(
+      self,
+      command: Sequence[str | os.PathLike[str]],
+      env: Mapping[str, str] | None = None,
+  ) -> bytes:
+    pass
+
+
+def run_subprocess(
+    command: Sequence[str | os.PathLike[str]],
+    env: Mapping[str, str] | None = None,
+) -> bytes:
+  return subprocess.run(
+      command,
       capture_output=True,
       env=env,
       check=True,
-  )
+  ).stdout
 
-  return _parse_ld_trace_output(result.stdout.decode())
+
+def get_shared_libraries(
+    binary_path: os.PathLike[str],
+    command_runner: CommandRunner = run_subprocess,
+) -> Sequence[SharedLibrary]:
+  """Copies the shared libraries to the shared directory."""
+  env = os.environ | {
+      "LD_TRACE_LOADED_OBJECTS": "1",
+      "LD_BIND_NOW": "1",
+  }
+  stdout_bytes = command_runner([_LD_BINARY_PATH, binary_path], env=env)
+  return _parse_ld_trace_output(stdout_bytes.decode())
 
 
 def copy_shared_libraries(

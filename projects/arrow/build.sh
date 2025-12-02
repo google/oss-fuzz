@@ -65,7 +65,10 @@ cmake ${ARROW} -GNinja \
 
 cmake --build . -j$(nproc)
 
+${ARROW}/build-support/fuzzing/generate_corpuses.sh ${BUILD_DIR}/release
+
 # Copy fuzz targets
 find . -executable -name "*-fuzz" -exec cp -a -v '{}' ${OUT} \;
+# Copy seed corpuses
+find . -name "*-fuzz_seed_corpus.zip" -exec cp -a -v '{}' ${OUT} \;
 
-${ARROW}/build-support/fuzzing/generate_corpuses.sh ${BUILD_DIR}/release

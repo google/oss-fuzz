@@ -22,6 +22,8 @@ MAIN_REPOSITORY=https://github.com/apache/pdfbox/
 
 MAVEN_ARGS="-Djavac.src.version=11 -Djavac.target.version=11 -DskipTests"
 
+sed -i 's/<proc>full<\/proc>/<!-- asd -->/g' $SRC/project-parent/pdfbox/debugger/pom.xml
+
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
   # set dependency project version in fuzz-targets
