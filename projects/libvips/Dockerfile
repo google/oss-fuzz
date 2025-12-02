@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y \
-  autoconf-archive \
   automake \
   autopoint \
   cmake \
@@ -25,9 +24,7 @@ RUN apt-get update && apt-get install -y \
   glib2.0-dev \
   libbrotli-dev \
   libexpat1-dev \
-  libffi-dev \
   libfftw3-dev \
-  libselinux1-dev \
   libtool \
   nasm \
   python3-pip
