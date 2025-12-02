@@ -211,23 +211,29 @@ class BaseConfig:
       # External project.
       project_src_path = self.project_src_path
       if project_src_path is None:
-        logging.warning('PROJECT_SRC_PATH not set. Using workspace: %s',
-                        self.workspace)
+        logging.info('PROJECT_SRC_PATH not set. Using workspace: %s',
+                     self.workspace)
         project_src_path = self.workspace
 
       project_yaml_path = os.path.join(project_src_path,
                                        self.build_integration_path,
                                        'project.yaml')
 
-    if not os.path.exists(project_yaml_path):
-      return 'legacy'
+    try:
+      if not os.path.exists(project_yaml_path):
+        return 'legacy'
 
-    with open(project_yaml_path) as file_handle:
-      content = file_handle.read()
-      for line in content.splitlines():
-        match = BASE_OS_VERSION_REGEX.match(line)
-        if match:
-          return match.group(1).strip('\'"')
+      with open(project_yaml_path) as file_handle:
+        content = file_handle.read()
+        for line in content.splitlines():
+          match = BASE_OS_VERSION_REGEX.match(line)
+          if match:
+            return match.group(1).strip('\'"')
+    except Exception:  # pylint: disable=broad-except
+      logging.warning(
+          'Failed to read project.yaml at %s. Falling back to legacy.',
+          project_yaml_path)
+      return 'legacy'
 
     return 'legacy'
 
