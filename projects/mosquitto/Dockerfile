@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # Main repo
 RUN git clone --depth 1 -b develop https://github.com/eclipse/mosquitto ${SRC}/mosquitto

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://linkerd.io/"
 main_repo: "https://github.com/linkerd/linkerd2-proxy"
 primary_contact: "ver@buoyant.io"
