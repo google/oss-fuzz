@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt install -y autoconf automake pkg-config
 RUN git clone --depth 1 https://github.com/leethomason/tinyxml2
 RUN git clone --depth 1 --branch asio-1-18-1 https://github.com/chriskohlhoff/asio/

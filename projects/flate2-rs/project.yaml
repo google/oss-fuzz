@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/rust-lang/flate2-rs"
 main_repo: "https://github.com/rust-lang/flate2-rs"
 primary_contact: "david@adalogics.com"

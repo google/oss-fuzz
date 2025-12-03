@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.mozilla.org/firefox/"
 language: c++
 main_repo: https://hg.mozilla.org/mozilla-central/

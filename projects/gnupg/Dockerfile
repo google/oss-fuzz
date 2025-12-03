@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool bzip2 gnupg bison flex gettext
 
 # Install automake 1.16.3 from future. See:

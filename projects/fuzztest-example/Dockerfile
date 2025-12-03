@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone --depth=1 https://github.com/google/fuzztest
 COPY build.sh $SRC/
 COPY fuzztest-enable-fuzzers.diff $SRC/
