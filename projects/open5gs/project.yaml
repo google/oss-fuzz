@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://open5gs.org"
 language: c
 primary_contact: "acetcom@gmail.com"

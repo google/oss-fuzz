@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 # Numpy requires python3.11+
 RUN apt-get update && \
     apt-get install -y software-properties-common && \

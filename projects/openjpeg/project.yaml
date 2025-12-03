@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://www.openjpeg.org/"
 language: c++
 primary_contact: "antonin@gmail.com"

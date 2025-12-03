@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/openthread/openthread"
 language: c++
 primary_contact: "jonhui@google.com"
