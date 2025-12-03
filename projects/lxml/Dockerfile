@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/lxml/lxml $SRC/lxml
 RUN apt-get update && apt-get install -y zlib1g-dev make autoconf automake libtool pkg-config rsync
 RUN python3 -m pip install --upgrade pip \

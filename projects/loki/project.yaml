@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/grafana/loki"
 primary_contact: "cyril.tovena@grafana.com"
 auto_ccs :

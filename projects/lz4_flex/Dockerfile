@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 
 RUN git clone --depth 1 https://github.com/PSeitz/lz4_flex lz4_flex
 WORKDIR $SRC

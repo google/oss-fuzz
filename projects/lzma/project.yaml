@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.7-zip.org/sdk.html"
 main_repo: 'https://github.com/fancycode/lzma-fuzz.git'
 language: c++

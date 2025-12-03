@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 main_repo: git://git.ghostscript.com/mupdf.git
 homepage: "https://www.mupdf.com"
 language: c++

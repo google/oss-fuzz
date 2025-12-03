@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y libpcre3-dev zlib1g-dev mercurial ninja-build cmake liblzma-dev libz-dev binutils libtool
 RUN hg clone http://hg.nginx.org/nginx/

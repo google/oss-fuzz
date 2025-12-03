@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://dev.mysql.com/doc/connector-j/8.0/en/"
 language: jvm
 main_repo: "https://github.com/mysql/mysql-connector-j"

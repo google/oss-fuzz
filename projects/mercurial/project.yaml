@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.mercurial-scm.org/"
 language: c++
 primary_contact: "durin42@gmail.com"

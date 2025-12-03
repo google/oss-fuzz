@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y python3-pip git wget
 RUN python3 -m pip install --upgrade pip
 RUN pip3 install protobuf grpcio-tools scons

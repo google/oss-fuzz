@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://mosh.org"
 primary_contact: "keithw@cs.stanford.edu"
 auto_ccs:

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://logging.apache.org/log4j/2.x"
 main_repo: "https://github.com/apache/logging-log4j2"
 language: jvm

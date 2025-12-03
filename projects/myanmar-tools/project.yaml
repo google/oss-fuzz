@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/googlei18n/myanmar-tools/"
 language: c++
 primary_contact: "sffc@google.com"
