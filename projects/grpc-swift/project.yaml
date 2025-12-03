@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/grpc/grpc-swift"
 language: swift
 primary_contact: "gbarnett@apple.com"

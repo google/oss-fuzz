@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/go-ldap/ldap"
 language: go
 primary_contact: "cp@lumen.sh"

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://helm.sh"
 main_repo: "https://github.com/helm/helm"
 primary_contact: "cncf-helm-core-maintainers@lists.cncf.io"

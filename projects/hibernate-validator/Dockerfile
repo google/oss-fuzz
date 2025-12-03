@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget openjdk-17-jdk
 
 RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.zip -o maven.zip && \

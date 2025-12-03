@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/facebook/hermes"
 language: c++
 primary_contact: "neildhar@meta.com"

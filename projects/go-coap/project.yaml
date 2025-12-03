@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://plgd.dev"
 language: go
 primary_contact: "daniel.adam@plgd.dev"
