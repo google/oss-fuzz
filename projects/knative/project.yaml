@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://knative.dev/"
 language: go
 primary_contact: "security@knative.team"

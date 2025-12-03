@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://aomedia.org/av1-features/get-started/"
 language: c++
 primary_contact: "wtc@google.com"

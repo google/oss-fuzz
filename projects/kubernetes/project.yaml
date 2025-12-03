@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://kubernetes.io"
 primary_contact: "security@kubernetes.io"
 auto_ccs :

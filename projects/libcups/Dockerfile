@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool build-essential libavahi-client-dev libgnutls28-dev libnss-mdns zlib1g-dev libsystemd-dev
 RUN git clone --depth 1 https://github.com/OpenPrinting/libcups.git
 RUN git clone --depth 1 https://github.com/OpenPrinting/fuzzing.git
