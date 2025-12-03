@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://projects.spring.io/spring-shell/"
 language: jvm
 main_repo: "https://github.com/spring-projects/spring-shell.git"

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: https://github.com/Textualize/rich
 main_repo: https://github.com/Textualize/rich
 language: python

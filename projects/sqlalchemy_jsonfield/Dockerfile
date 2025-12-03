@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 
 RUN git clone https://github.com/sqlalchemy/sqlalchemy
 RUN git clone https://github.com/penguinolog/sqlalchemy_jsonfield

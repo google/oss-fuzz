@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 
 RUN git clone https://fuchsia.googlesource.com/fuchsia
 WORKDIR $SRC/fuchsia/src/starnix/lib/third_party/rust_netlink
