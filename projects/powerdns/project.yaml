@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.powerdns.com/"
 language: c++
 primary_contact: "remi.gacogne@powerdns.com"

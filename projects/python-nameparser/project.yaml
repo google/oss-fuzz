@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 main_repo: https://github.com/derek73/python-nameparser
 homepage: https://github.com/derek73/python-nameparser
 language: python

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN pip3 install meson==0.53.0 ninja
 RUN git clone --depth 1 https://github.com/pistacheio/pistache pistache

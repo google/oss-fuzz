@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN apt-get install -y pkg-config libblosc-dev libbz2-dev liblzo2-dev \
                        liblzma-dev liblz4-dev libz-dev
 RUN pip3 install --upgrade pip && pip3 install cython packaging python-lzo blosc2

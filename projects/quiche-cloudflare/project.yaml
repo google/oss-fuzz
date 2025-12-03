@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://docs.quic.tech/quiche/"
 primary_contact: "alessandro@cloudflare.com"
 main_repo: "https://github.com/cloudflare/quiche"

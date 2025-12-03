@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/google/re2"
 main_repo: "https://github.com/google/re2"
 primary_contact: "junyer@google.com"

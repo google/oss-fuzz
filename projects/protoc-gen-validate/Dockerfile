@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN apt-get update && apt-get install -y protobuf-compiler
 RUN git clone --depth 1 https://github.com/bufbuild/protoc-gen-validate
 WORKDIR $SRC/protoc-gen-validate

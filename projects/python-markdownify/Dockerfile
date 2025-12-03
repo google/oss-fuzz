@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN pip3 install --upgrade pip
 RUN git clone http://github.com/matthewwithanm/python-markdownify python-markdownify
 COPY *.sh *py $SRC/
