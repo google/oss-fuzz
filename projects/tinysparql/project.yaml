@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://tinysparql.org"
 language: c
 primary_contact: "mrgarnacho@gmail.com"

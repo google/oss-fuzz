@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/tpm2-software/tpm2-tss"
 language: c++
 primary_contact: "william.c.roberts@intel.com"

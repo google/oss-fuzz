@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 
 RUN git clone --depth 1 https://github.com/holiman/uint256.git uint256
 RUN cp uint256/oss-fuzz.sh $SRC/build.sh
