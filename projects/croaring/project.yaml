@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://roaringbitmap.org"
 language: c
 primary_contact: "lemire@gmail.com"

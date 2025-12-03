@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/jarro2783/cxxopts"
 language: c++
 primary_contact: "jarro.2783@gmail.com"

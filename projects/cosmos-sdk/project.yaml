@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/cosmos/cosmos-sdk"
 primary_contact: "fuzzing@orijtech.com"
 auto_ccs:

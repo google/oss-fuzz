@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/typetools/checker-framework"
 language: jvm
 main_repo: "git@github.com:typetools/checker-framework.git"

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://code.videolan.org/videolan/dav1d"
 language: c++
 primary_contact: "janne.grunau@gmail.com"

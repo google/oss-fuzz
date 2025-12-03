@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt install -y automake autoconf libtool pkg-config
 RUN git clone --depth 1 https://github.com/espeak-ng/espeak-ng
 COPY build.sh $SRC
