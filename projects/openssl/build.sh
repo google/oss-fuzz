@@ -83,14 +83,6 @@ if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" || -n "${CAPTURE_R
   exit 0
 fi
 
-cd $SRC/openssl30/
-build_fuzzers "_30"
-make clean
-
-cd $SRC/openssl32/
-build_fuzzers "_32"
-make clean
-
 cd $SRC/openssl33/
 build_fuzzers "_33"
 make clean
