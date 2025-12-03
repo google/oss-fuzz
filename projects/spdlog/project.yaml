@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/gabime/spdlog"
 language: c++
 primary_contact: "gmelman1@gmail.com"

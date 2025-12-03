@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://developers.cloudflare.com/time-services/roughtime"
 language: go
 primary_contact: "armfazh@cloudflare.com"

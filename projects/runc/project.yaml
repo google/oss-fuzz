@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/opencontainers/runc"
 main_repo: "https://github.com/opencontainers/runc"
 primary_contact: "cyphar@cyphar.com"

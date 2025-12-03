@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/Alexhuszagh/rust-lexical"
 language: rust
 primary_contact: "ahuszagh@gmail.com"

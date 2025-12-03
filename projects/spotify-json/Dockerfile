@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone https://github.com/spotify/spotify-json
 
 WORKDIR $SRC/spotify-json

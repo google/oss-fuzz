@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://sqlite.org/"
 main_repo: "https://sqlite.org/src/dir"
 language: c++

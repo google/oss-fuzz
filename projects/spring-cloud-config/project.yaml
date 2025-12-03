@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://docs.spring.io/spring-cloud-config/docs/current/reference/html/"
 language: jvm
 main_repo: "https://github.com/spring-cloud/spring-cloud-config.git"

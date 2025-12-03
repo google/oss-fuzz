@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/dtolnay/serde-yaml"
 primary_contact: "dtolnay@gmail.com"
 sanitizers:
