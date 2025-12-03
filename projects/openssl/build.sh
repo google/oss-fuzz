@@ -17,7 +17,7 @@
 
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/openssl/fuzz/fuzz_introspector_exclusion.config
 
-CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment enable-unit-test"
+CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment enable-unit-test no-apps no-tests"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
   CONFIGURE_FLAGS="$CONFIGURE_FLAGS no-asm"
@@ -45,6 +45,8 @@ function build_fuzzers() {
         ./config $CONFIGURE_FLAGS
     fi
 
+    df -h
+
     make -j$(nproc) LDCMD="$CXX $CXXFLAGS"
 
     fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test '!' -name \*.pl '!' -name \*.sh)
@@ -71,11 +73,14 @@ function build_fuzzers() {
       fi
       find $SOURCES -type f -a \( -name '*.[ch]' -o -name '*.inc' \) -exec cp --parents '{}' $DESTDIR/ \;
     fi
+
+    df -h
+    git clean -dfx
+    df -h
 }
 
 cd $SRC/openssl/
 build_fuzzers ""
-make clean
 
 # In introspector, indexer builds and when capturing replay builds, only build
 # the master branch
@@ -85,16 +90,9 @@ fi
 
 cd $SRC/openssl33/
 build_fuzzers "_33"
-make clean
-
 cd $SRC/openssl34/
 build_fuzzers "_34"
-make clean
-
 cd $SRC/openssl35/
 build_fuzzers "_35"
-make clean
-
 cd $SRC/openssl36/
 build_fuzzers "_36"
-make clean
