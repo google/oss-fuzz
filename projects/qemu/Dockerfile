@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 ARG glib_tag=2.78.4
 RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build  \
     libfdt-dev libpixman-1-dev zlib1g-dev libslirp-dev patchelf wget \
