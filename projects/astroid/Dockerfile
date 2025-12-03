@@ -14,7 +14,7 @@
 #
 ##########################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 
 RUN pip3 install --disable-pip-version-check --no-cache-dir pip==25.1.1
 

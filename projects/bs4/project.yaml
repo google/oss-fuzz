@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.crummy.com/software/BeautifulSoup/"
 main_repo: "https://code.launchpad.net/~leonardr/beautifulsoup/bs4"
 language: python
