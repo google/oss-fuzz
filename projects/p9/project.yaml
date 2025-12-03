@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/hugelgupf/p9"
 language: go
 primary_contact: "harvey@googlegroups.com"

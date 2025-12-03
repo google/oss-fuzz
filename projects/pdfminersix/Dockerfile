@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN pip3 install --upgrade pip
 RUN mkdir $SRC/corpus
 RUN git clone --depth 1 https://github.com/pdfminer/pdfminer.six.git pdfminer.six \

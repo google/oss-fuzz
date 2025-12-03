@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 ##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN pip3 install --upgrade pip && pip3 install cython
 RUN git clone https://github.com/pydata/numexpr numexpr
 COPY *.sh *py $SRC/

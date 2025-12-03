@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN apt-get install -y libz-dev libssl1.1 libssl-dev libedit-dev zip
 RUN git clone --depth 1 https://github.com/openssh/openssh-portable openssh

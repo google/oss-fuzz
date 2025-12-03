@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://oatpp.io/"
 language: c++
 primary_contact: "bugs@oatpp.io"

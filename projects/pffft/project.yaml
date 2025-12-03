@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://bitbucket.org/jpommier/pffft"
 main_repo: "https://bitbucket.org/jpommier/pffft.git"
 language: c++

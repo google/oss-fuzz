@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool bison flex rsync lynx
 ADD https://www.bitkeeper.org/downloads/7.3.3/bk-7.3.3-x86_64-glibc213-linux.bin bk-7.3.3-x86_64-glibc213-linux.bin
 RUN chmod +x bk-7.3.3-x86_64-glibc213-linux.bin

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y autoconf automake git libogg0 libogg-dev libopus0 libopus-dev libssl-dev libtool make pkg-config
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/opusfile
 WORKDIR opusfile

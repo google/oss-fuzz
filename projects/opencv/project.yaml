@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://opencv.org/"
 language: c++
 primary_contact: "garybradski@gmail.com"

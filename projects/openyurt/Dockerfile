@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 
 ENV PROJECT_ROOT="${GOPATH:-/root/go}/src/github.com/openyurtio"
 
