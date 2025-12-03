@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/aaugustin/websockets
 WORKDIR websockets
 COPY build.sh $SRC/

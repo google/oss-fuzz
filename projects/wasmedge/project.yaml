@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/WasmEdge/WasmEdge"
 language: c++
 primary_contact: "beststeve@secondstate.io"
