@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN	apt-get update && \
-	apt-get install -y libncursesw5-dev libtinfo5 libtool make pkgconf libidn2-0-dev libsqlite3-dev
+	apt-get install -y libncurses-dev libtinfo6 libtool make pkgconf libidn2-0-dev libsqlite3-dev
 
 RUN git clone --depth 1 https://github.com/neomutt/neomutt
 RUN git clone --depth 1 https://github.com/neomutt/corpus-address
