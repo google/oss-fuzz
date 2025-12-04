@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://tokio.rs/"
 language: rust
 primary_contact: aliceryhl@google.com

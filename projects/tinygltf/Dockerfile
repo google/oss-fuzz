@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN pip3 install meson ninja
 RUN git clone --depth 1 https://github.com/syoyo/tinygltf.git
 WORKDIR $SRC/tinygltf

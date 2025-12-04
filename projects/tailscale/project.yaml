@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://tailscale.com/"
 main_repo: "https://github.com/tailscale/tailscale"
 primary_contact: "Adam@adalogics.com"

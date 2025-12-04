@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: https://github.com/scrapy/w3lib
 main_repo: https://github.com/scrapy/w3lib
 language: python

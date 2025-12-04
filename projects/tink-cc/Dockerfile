@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN apt-get update && apt-get install -y make pkg-config
 RUN git clone --depth 1 https://github.com/tink-crypto/tink-cc
 

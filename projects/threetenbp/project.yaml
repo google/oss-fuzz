@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: https://github.com/ThreeTen/threetenbp
 main_repo: https://github.com/ThreeTen/threetenbp
 language: jvm

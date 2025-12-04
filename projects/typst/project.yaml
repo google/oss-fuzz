@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://typst.app/"
 language: rust
 primary_contact: "laurmaedje@googlemail.com"

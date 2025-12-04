@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
 RUN curl -L https://archive.apache.org/dist/ant/binaries/apache-ant-1.10.15-bin.tar.gz -o ant.tar.gz && \
     mkdir -p $SRC/ant && \

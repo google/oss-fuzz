@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 
 # Clone ttf-parser project
 RUN git clone https://github.com/RazrFalcon/ttf-parser ttf-parser
