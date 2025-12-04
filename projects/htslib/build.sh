@@ -18,8 +18,18 @@
 # build project
 autoconf
 autoheader
-./configure
-make -j$(nproc) libhts.a test/fuzz/hts_open_fuzzer.o
+export LDFLAGS="$CFLAGS"
+./configure LIBS="-lz -lm -lbz2 -llzma -lcurl -lcrypto -lpthread"
+make -j$(nproc) libhts.a bgzip htsfile tabix annot-tsv test/fuzz/hts_open_fuzzer.o
+
+# Build tests
+make -j$(nproc) test/hts_endian test/fieldarith test/hfile test/pileup test/pileup_mod \
+    test/sam test/test_bgzf test/test_expr test/test_faidx test/test_kfunc \
+    test/test_khash test/test_kstring test/test_mod test/test_nibbles test/test_realn \
+    test/test-regidx test/test_str2int test/test_time_funcs test/test_view \
+    test/test_index test/test-vcf-api test/test-vcf-sweep test/test-bcf-sr \
+    test/test-bcf-translate test/test-parse-reg test/test_introspection \
+    test/test-bcf_set_variant_type
 
 # build fuzzers
 $CXX $CXXFLAGS -o "$OUT/hts_open_fuzzer" test/fuzz/hts_open_fuzzer.o $LIB_FUZZING_ENGINE libhts.a -lz -lbz2 -llzma -lcurl -lcrypto -lpthread

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/facebookexperimental/starlark-rust.git starlark-rust
 RUN rustup update nightly
 WORKDIR starlark-rust

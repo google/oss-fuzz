@@ -15,7 +15,7 @@
 ################################################################################
 
 # Setup the builder for Istio. The standard Go builder is sufficient.
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/istio/istio
 RUN git clone --depth 1 --branch oss-fuzz-build-ref https://github.com/AdamKorcz/istio $SRC/temp-istio
 RUN git clone --depth 1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2_2

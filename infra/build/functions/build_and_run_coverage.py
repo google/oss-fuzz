@@ -125,8 +125,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   ]
 
   build_steps.append({
-      'name': build_lib.get_runner_image_name(config.test_image_suffix),
-      'env': coverage_env,
+      'name':
+          build_lib.get_runner_image_name(config.test_image_suffix,
+                                          config.base_image_tag),
+      'env':
+          coverage_env,
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%.*} || ('
@@ -291,7 +294,8 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
                   f'/reports/{coverage_report_latest}/linux')
 
   download_coverage_steps = build_lib.download_coverage_data_steps(
-      project.name, coverage_report_latest, bucket_name, build.out)
+      project.name, coverage_report_latest, bucket_name, build.out,
+      config.base_image_tag)
   if not download_coverage_steps:
     return [], f'Skipping introspector build for {project.name}. No coverage data found.'
   build_steps.extend(download_coverage_steps)

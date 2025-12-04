@@ -15,8 +15,10 @@
 #
 ################################################################################
 
-rm -rf contrib/googletest
-git clone https://github.com/google/googletest contrib/googletest
+if [[ -z "${REPLAY_ENABLED-}" ]]; then
+	rm -rf contrib/googletest
+	git clone https://github.com/google/googletest contrib/googletest
+fi
 
 # generate build env and build assimp
 cmake CMakeLists.txt -G "Ninja" -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON \

@@ -59,7 +59,7 @@ IMAGE_DEPENDENCIES = {
     'base-builder-ruby': ['base-builder'],
     'base-builder-rust': ['base-builder'],
     'base-builder-swift': ['base-builder'],
-    'base-runner': ['base-image', 'base-builder'],
+    'base-runner': ['base-image', 'base-builder', 'base-builder-ruby'],
     'base-runner-debug': ['base-runner'],
     'indexer': ['base-clang-full'],
 }
@@ -99,11 +99,8 @@ class ImageConfig:
     if self.version != 'legacy':
       versioned_dockerfile = os.path.join(self.path,
                                           f'{self.version}.Dockerfile')
-      if os.path.exists(versioned_dockerfile):
-        logging.info('Using versioned Dockerfile: %s', versioned_dockerfile)
-        return versioned_dockerfile
-      raise FileNotFoundError(
-          f'Versioned Dockerfile not found for {self.name}:{self.version}')
+      logging.info('Using versioned Dockerfile: %s', versioned_dockerfile)
+      return versioned_dockerfile
 
     legacy_dockerfile = os.path.join(self.path, 'Dockerfile')
     logging.info('Using legacy Dockerfile: %s', legacy_dockerfile)

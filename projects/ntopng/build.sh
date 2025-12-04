@@ -62,6 +62,7 @@ make install
 # Build nDPI
 cd $NDPI_HOME
 ./autogen.sh
+./configure
 make -j$(nproc)
 
 # Build LUA

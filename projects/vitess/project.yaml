@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/vitessio/vitess" 
 primary_contact: "andres@planetscale.com"
 auto_ccs :

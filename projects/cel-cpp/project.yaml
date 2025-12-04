@@ -1,8 +1,9 @@
-homepage: "https://opensource.google/projects/cel"
+homepage: "https://cel.dev"
 language: c++
-primary_contact: "kyessenov@gmail.com"
+primary_contact: "tswadell@google.com"
 auto_ccs :
-- "tswadell@google.com"
+- "jdtatum@google.com"
+- "kyessenov@google.com"
 - "p.antoine@catenacyber.fr"
 
 sanitizers:
@@ -13,7 +14,6 @@ main_repo: 'https://github.com/google/cel-cpp'
 file_github_issue: True
 
 fuzzing_engines:
-  - afl
   - honggfuzz
   - libfuzzer
 

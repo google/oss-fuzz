@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/wnameless/json-flattener/"
 language: jvm
 primary_contact: "wnameless@gmail.com"

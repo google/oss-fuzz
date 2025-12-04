@@ -8,6 +8,7 @@ auto_ccs:
   - "cbrokaw@google.com"
   - "clupo@google.com"
   - "behdad.esfahbod@gmail.com"
+  - "qxliu@google.com"
 sanitizers:
   - address
 fuzzing_engines:

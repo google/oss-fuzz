@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +14,17 @@
 #
 ################################################################################
 
-bazel build BouncyCastleAllTests
-rsync -aLkR bazel-bin/* $OUT
-# Add dummy fuzzer to fool bad build check.
-printf "#!/bin/bash\n#LLVMFuzzerTestOneInput shell script\n./bazel-bin/BouncyCastleAllTests" > $OUT/WycheproofTarget.bash
-chmod +x $OUT/WycheproofTarget.bash
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libyaml-dev \
+    zlib1g-dev \
+    ruby \
+    ruby-dev \
+    autoconf \
+    automake \
+    libtool \
+    bison \
+    wget
+RUN git clone --depth=1 --single-branch https://github.com/ruby/ruby $SRC/ruby
+COPY *.sh *.cpp *.c fuzz_prism.options $SRC/

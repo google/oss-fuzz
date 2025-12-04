@@ -28,7 +28,11 @@ apt-get update && apt-get install -y \
     unzip \
     jq \
     wget \
+    libunwind-dev \
+    libblocksruntime-dev \
     zip --no-install-recommends
+
+# libunwind-dev libblocksruntime-dev are needed for Honggfuzz
 
 case $(uname -m) in
   x86_64)

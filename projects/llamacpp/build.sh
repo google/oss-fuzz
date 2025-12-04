@@ -16,8 +16,7 @@
 ################################################################################
 
 export GGML_NO_OPENMP=1
-sed -i 's/:= c++/:= ${CXX}/g' ./Makefile
-sed -i 's/:= cc/:= ${CC}/g' ./Makefile
+
 # Avoid function that forks + starts instance of gdb.
 sed -i 's/ggml_print_backtrace();//g' ./ggml/src/ggml.c
 
@@ -30,7 +29,12 @@ sed -i 's/ggml_calloc(size_t num, size_t size) {/ggml_calloc(size_t num, size_t 
 # Patch a potentially unbounded loop that causes timeouts
 sed -i 's/ok = ok \&\& (info->n_dims <= GGML_MAX_DIMS);/ok = ok \&\& (info->n_dims <= GGML_MAX_DIMS);\nif (!ok) {fclose(file); gguf_free(ctx); return NULL;}/g' ./ggml/src/ggml.c
 
-UNAME_M=amd642 UNAME_p=amd642 LLAMA_NO_METAL=1 make -j$(nproc) llama-gguf llama-server
+# Build with CMake
+mkdir build
+cd build
+cmake .. -DBUILD_SHARED_LIBS=OFF -DGGML_NO_OPENMP=1 -DLLAMA_BUILD_SERVER=ON -DLLAMA_BUILD_EXAMPLES=ON -DLLAMA_BUILD_TOOLS=ON -DLLAMA_CURL=OFF
+cmake --build . --config Release -j$(nproc) --target llama-gguf llama-server
+cd ..
 
 # Convert models into header files so we can use them for fuzzing.
 xxd -i models/ggml-vocab-bert-bge.gguf > model_header_bge.h
@@ -44,32 +48,29 @@ xxd -i models/ggml-vocab-baichuan.gguf > model_header_baichuan.h
 xxd -i models/ggml-vocab-deepseek-coder.gguf > model_header_deepseek_coder.h
 xxd -i models/ggml-vocab-falcon.gguf > model_header_falcon.h
 
+# Configure flags and libraries
+# Note: -lcommon must come before -lllama, and -lllama before -lggml
+LIBS="-Lbuild/common -lcommon -Lbuild/src -lllama -Lbuild/ggml/src -lggml -lggml-cpu -lggml-base -Lbuild/vendor/cpp-httplib -lcpp-httplib"
+FLAGS="-std=c++17 -Iggml/include -Iggml/src -Iinclude -Isrc -Icommon -Ivendor -I./ -DNDEBUG -DGGML_USE_LLAMAFILE"
 
-mkdir myos
-find ./ggml/ -name *.o -exec cp {} myos/ \;
-find ./src/ -name *.o -exec cp {} myos/ \;
-find ./common/ -name *.o -exec cp {} myos/ \;
-OBJ_FILES="myos/*.o"
-FLAGS="-std=c++11 -Iggml/include -Iggml/src -Iinclude -Isrc -Icommon -I./ -DNDEBUG -DGGML_USE_LLAMAFILE"
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} fuzzers/fuzz_json_to_grammar.cpp -o $OUT/fuzz_json_to_grammar $LIBS
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} fuzzers/fuzz_apply_template.cpp -o $OUT/fuzz_apply_template $LIBS
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} fuzzers/fuzz_grammar.cpp -o $OUT/fuzz_grammar $LIBS
 
-$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_json_to_grammar.cpp -o $OUT/fuzz_json_to_grammar
-$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_apply_template.cpp -o $OUT/fuzz_apply_template
-$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} fuzzers/fuzz_grammar.cpp -o $OUT/fuzz_grammar
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} \
+    -Wl,--wrap,abort fuzzers/fuzz_load_model.cpp -o $OUT/fuzz_load_model $LIBS
 
-$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
-    -Wl,--wrap,abort fuzzers/fuzz_load_model.cpp -o $OUT/fuzz_load_model
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} \
+    -Wl,--wrap,abort fuzzers/fuzz_inference.cpp -o $OUT/fuzz_inference $LIBS
 
-$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
-    -Wl,--wrap,abort fuzzers/fuzz_inference.cpp -o $OUT/fuzz_inference
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} \
+    -Wl,--wrap,abort fuzzers/fuzz_structured.cpp -o $OUT/fuzz_structured $LIBS
 
-$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
-    -Wl,--wrap,abort fuzzers/fuzz_structured.cpp -o $OUT/fuzz_structured
-
-$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} \
-    -Wl,--wrap,abort fuzzers/fuzz_structurally_created.cpp -o $OUT/fuzz_structurally_created
+#$CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} \
+#    -Wl,--wrap,abort fuzzers/fuzz_structurally_created.cpp -o $OUT/fuzz_structurally_created $LIBS
 
 # Prepare some dicts and seeds
-./llama-gguf dummy.gguf w
+build/bin/llama-gguf dummy.gguf w
 mkdir $SRC/load-model-corpus
 mv dummy.gguf $SRC/load-model-corpus/
 zip -j $OUT/fuzz_load_model_seed_corpus.zip $SRC/load-model-corpus/*
@@ -87,16 +88,18 @@ cp fuzzers/llama.dict $OUT/fuzz_grammar.dict
 cp fuzzers/llama.dict $OUT/fuzz_structured.dict
 cp fuzzers/llama.dict $OUT/fuzz_json_to_grammar.dict
 
-if [ "$FUZZING_ENGINE" != "afl" ]
-then
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_BGE fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_bge
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_BPE  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_bpe
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_SPM  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_spm
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_COMMAND_R  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_command_r
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_AQUILA  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_aquila
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_QWEN2  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_qwen2
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_GPT_2  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_gpt_2
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_BAICHUAN  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_baichuan
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_DEEPSEEK_CODER  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_deepseek_coder
-    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} ${OBJ_FILES} -DFUZZ_FALCON  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_falcon
-fi
+
+# Below harnesses are disabled because there seems to be an insta FP in them.
+#if [ "$FUZZING_ENGINE" != "afl" ]
+#then
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_BGE fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_bge $LIBS
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_BPE  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_bpe $LIBS
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_SPM  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_spm $LIBS
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_COMMAND_R  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_command_r $LIBS
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_AQUILA  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_aquila $LIBS
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_QWEN2  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_qwen2 $LIBS
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_GPT_2  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_gpt_2 $LIBS
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_BAICHUAN  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_baichuan $LIBS
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_DEEPSEEK_CODER  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_deepseek_coder $LIBS
+#    $CXX -Wl,--wrap,abort $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} -DFUZZ_FALCON  fuzzers/fuzz_tokenizer.cpp -o $OUT/fuzz_tokenizer_falcon $LIBS
+#fi

@@ -20,7 +20,8 @@ RUN apt-get update && \
 
 RUN git clone --depth 1 https://github.com/OSGeo/PROJ PROJ
 
-RUN git clone --depth 1 https://github.com/curl/curl.git PROJ/curl
+# Pin to 8.17.0 as later versions require openssl 3.0 that Ubuntu 20.04 doesn't provide
+RUN git clone --depth 1 --branch curl-8_17_0 https://github.com/curl/curl.git PROJ/curl
 
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git PROJ/libtiff
 

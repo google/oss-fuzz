@@ -31,6 +31,8 @@ ARGS='is_asan = true
  treat_warnings_as_errors = false
  libcxx_is_shared = false
  v8_enable_backtrace = true
+ v8_enable_slow_dchecks = true
+ v8_enable_test_features = true
  v8_enable_fast_mksnapshot = false'
 
 if [[ -n "${INDEXER_BUILD:-}" ]]; then
