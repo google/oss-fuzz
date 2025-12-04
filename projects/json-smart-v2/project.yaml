@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/netplex/json-smart-v2"
 language: jvm
 primary_contact: "uchemouni@gmail.com"

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://jopt-simple.github.io/jopt-simple/"
 language: jvm
 main_repo: "https://github.com/jopt-simple/jopt-simple.git"

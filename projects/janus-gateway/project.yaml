@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/meetecho/janus-gateway"
 language: c++
 primary_contact: "lminiero@gmail.com"

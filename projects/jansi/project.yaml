@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: https://github.com/fusesource/jansi
 main_repo: https://github.com/fusesource/jansi
 language: jvm

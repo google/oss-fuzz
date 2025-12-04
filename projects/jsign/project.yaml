@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://ebourg.github.io/jsign/"
 language: jvm
 primary_contact: "ebourg@apache.org"
