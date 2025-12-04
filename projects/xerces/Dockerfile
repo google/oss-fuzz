@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y make autoconf automake libtool openjdk-8-jdk
 #RUN git clone --depth 1 https://github.com/apache/xerces2-j.git xerces     # or use other version control

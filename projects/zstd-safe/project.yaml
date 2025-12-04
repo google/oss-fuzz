@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/gyscos/zstd-rs"
 main_repo: "https://github.com/gyscos/zstd-rs.git"
 primary_contact: "alexandre.bury@gmail.com"
