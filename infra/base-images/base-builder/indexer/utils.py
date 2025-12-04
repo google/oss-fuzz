@@ -109,7 +109,7 @@ def get_shared_libraries(
     command_runner: CommandRunner = run_subprocess,
     ld_binary_path: pathlib.Path = LD_BINARY_PATH_X86_64,
 ) -> Sequence[SharedLibrary]:
-  """Copies the shared libraries to the shared directory."""
+  """Enumerates the shared libraries required by the given binary."""
   env = os.environ | {
       "LD_TRACE_LOADED_OBJECTS": "1",
       "LD_BIND_NOW": "1",
