@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://git.kernel.dk/fio.git"
 language: c++
 primary_contact: "axboe@kernel.dk"

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # See https://github.com/FreeRDP/FreeRDP/wiki/Compilation
 # Install Git and base dependences.

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://frrouting.org"
 language: c++
 primary_contact: "security@lists.frrouting.org"

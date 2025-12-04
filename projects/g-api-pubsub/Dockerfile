@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN pip3 install --upgrade pip && pip install google-api-core google-cloud-core
 RUN git clone https://github.com/googleapis/python-pubsub
 COPY build.sh *.py $SRC/

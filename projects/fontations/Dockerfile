@@ -16,7 +16,7 @@
 
 # Based on https://google.github.io/oss-fuzz/getting-started/new-project-guide/rust-lang/
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 
 RUN git clone --depth 1 https://github.com/googlefonts/fontations
 WORKDIR $SRC/fontations

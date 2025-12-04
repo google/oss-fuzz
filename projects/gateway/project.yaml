@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://gateway.envoyproxy.io/"
 main_repo: "https://github.com/envoyproxy/gateway.git"
 primary_contact: "envoy-gateway-security@googlegroups.com"

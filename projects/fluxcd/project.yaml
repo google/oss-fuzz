@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://fluxcd.io/"
 main_repo: "https://github.com/fluxcd/flux2"
 primary_contact: "cncf-flux-security@lists.cncf.io"

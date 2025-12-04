@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN pip3 install --upgrade pip && pip3 install mock
 RUN git clone https://github.com/googleapis/python-firestore
 COPY build.sh *.py $SRC/

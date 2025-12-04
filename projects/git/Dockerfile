@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         cvs cvsps gettext libcgi-pm-perl libcurl4-gnutls-dev \

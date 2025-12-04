@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/fwupd/fwupd"
 language: c
 primary_contact: "hughsient@gmail.com"
