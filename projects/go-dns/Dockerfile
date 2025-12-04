@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-#FROM gcr.io/oss-fuzz-base/base-builder-go
-FROM gcr.io/oss-fuzz-base/base-builder-go
+#FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN git clone https://github.com/miekg/dns.git
 RUN wget https://go.dev/dl/go1.24.6.linux-amd64.tar.gz \
     && mkdir temp-go \

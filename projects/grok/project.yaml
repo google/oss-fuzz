@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/GrokImageCompression/grok"
 primary_contact: "boxerab@gmail.com"
 language: c++

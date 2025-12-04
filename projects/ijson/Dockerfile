@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN apt-get update && apt-get install -y libffi-dev ruby mercurial
 RUN pip3 install --upgrade pip cffi
 RUN git clone https://github.com/ICRAR/ijson ijson

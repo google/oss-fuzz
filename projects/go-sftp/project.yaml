@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/pkg/sftp"
 primary_contact: "nicola.murino@gmail.com"
 auto_ccs:

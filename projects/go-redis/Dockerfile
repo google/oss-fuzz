@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN git clone https://github.com/redis/go-redis redis
 COPY build.sh $SRC/
 WORKDIR $SRC/redis
