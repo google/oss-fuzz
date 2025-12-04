@@ -29,6 +29,7 @@ If you need these dependencies in the runtime environment, you can either:
 - (recommended) Build the dependencies statically in
 [build.sh]({{ site.baseurl }}/getting-started/new-project-guide/#buildsh)
 ([example](https://github.com/google/oss-fuzz/blob/64f8b6593da141b97c98c7bc6f07df92c42ee010/projects/ffmpeg/build.sh#L26)).
+Their source code should be inside the `$SRC` directory so that coverage can find it.
 
 - Or install the packages via Dockerfile
 ([example](https://github.com/google/oss-fuzz/blob/2d5e2ef84f281e6ab789055aa735606d3122fda9/projects/tor/Dockerfile#L19))
