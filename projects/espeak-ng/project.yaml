@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/espeak-ng/espeak-ng"
 language: c++
 primary_contact: "msclrhd@googlemail.com"

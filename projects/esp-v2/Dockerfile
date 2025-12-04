@@ -16,7 +16,7 @@
 
 ## This file was copied from envoy (with minor changes).
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get -y install  \
     build-essential \

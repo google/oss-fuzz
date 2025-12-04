@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://cri-o.io/"
 main_repo: "https://github.com/cri-o/cri-o"
 primary_contact: "cncf-crio-security@lists.cncf.io"

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://cert-manager.io"
 # Send reports to the cert-manager-security distribution list.
 # - https://cert-manager.io/docs/contributing/security/

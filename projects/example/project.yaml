@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 disabled: true
 homepage: https://my-api.example.com
 main_repo: https://github.com/example/my-api

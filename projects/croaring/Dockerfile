@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/RoaringBitmap/CRoaring croaring
 RUN mv croaring/fuzz/* $SRC/

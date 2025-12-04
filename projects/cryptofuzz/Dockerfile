@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust@sha256:c5216a9896a598dced7ce6708bb3226e443473f567045b4f282595776cc641f1
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04@sha256:c5216a9896a598dced7ce6708bb3226e443473f567045b4f282595776cc641f1
 # ! Project pinned after a clang update and an afl link error. Log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-8bc8a5ea-9bfb-421d-bfe9-911828e88741.txt
 
 RUN apt-get update && \
