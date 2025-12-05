@@ -391,6 +391,27 @@ def copy_fuzzing_engine(fuzzing_engine: str) -> Path:
   return fuzzing_engine_dir
 
 
+def _get_latest_gcc_version() -> str:
+  """Finds the latest GCC version installed.
+
+  Defaults to '9' for backward compatibility if detection fails.
+
+  Returns:
+    The latest GCC version found, or the default.
+  """
+  gcc_base = Path('/usr/lib/gcc/x86_64-linux-gnu')
+  if gcc_base.exists():
+    versions = []
+    for d in gcc_base.iterdir():
+      if d.is_dir() and d.name.isdigit():
+        versions.append(int(d.name))
+
+    if versions:
+      return str(max(versions))
+
+  return '9'
+
+
 def build_project(
     targets_to_index: Sequence[str] | None = None,
     compile_args: Sequence[str] | None = None,
@@ -415,6 +436,7 @@ def build_project(
   )
 
   fuzzing_engine_dir = copy_fuzzing_engine(DEFAULT_FUZZING_ENGINE)
+  gcc_version = _get_latest_gcc_version()
   build_fuzzing_engine_command = [
       f'{_CLANG_TOOLCHAIN}/bin/clang++',
       '-c',
@@ -433,11 +455,11 @@ def build_project(
       f'{OUT}/cdb',
       '-Qunused-arguments',
       f'-isystem {_CLANG_TOOLCHAIN}/lib/clang/{clang_version}',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/c++/{gcc_version}',
       '-I',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/x86_64-linux-gnu/c++/{gcc_version}',
       '-I',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/c++/{gcc_version}/backward',
       '-I',
       f'{_CLANG_TOOLCHAIN}/lib/clang/{clang_version}/include',
       '-I',
