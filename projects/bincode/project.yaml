@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://git.sr.ht/~stygianentity/bincode"
 language: rust
 primary_contact: "nathan@mccarty.io"

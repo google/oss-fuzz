@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: https://bitbucket.org/nielsenb/aniso8601
 main_repo: https://bitbucket.org/nielsenb/aniso8601
 language: python

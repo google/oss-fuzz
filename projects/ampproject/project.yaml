@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/ampproject/amphtml"
 language: c++
 main_repo: "https://github.com/ampproject/amphtml"

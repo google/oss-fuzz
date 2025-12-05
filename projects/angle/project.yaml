@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://chromium.googlesource.com/angle/angle"
 language: c++
 primary_contact: "arthur.chan@adalogics.com"

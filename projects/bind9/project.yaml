@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://gitlab.isc.org/isc-projects/bind9"
 language: c
 primary_contact: "ondrej@isc.org"
