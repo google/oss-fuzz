@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://libspng.org"
 language: c++
 primary_contact: "randy408@protonmail.com"

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN git clone https://github.com/instagram/libcst libcst
 RUN apt-get install build-essential libssl-dev libffi-dev pkg-config python3-dev cargo -y
 RUN pip3 install --upgrade pip

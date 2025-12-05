@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 ARG TARGETPLATFORM
 
 RUN apt-get update && \

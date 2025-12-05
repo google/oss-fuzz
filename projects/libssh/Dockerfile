@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y cmake zlib1g-dev libssl-dev libcmocka0 libcmocka-dev
 
 RUN git clone --depth=1 https://git.libssh.org/projects/libssh.git

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/mz-automation/libiec61850"
 primary_contact: "support@mz-automation.de"
 auto_ccs:

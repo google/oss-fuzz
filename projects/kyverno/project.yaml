@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.kyverno.io"
 main_repo: "https://github.com/kyverno/kyverno"
 primary_contact: "chipzoller@gmail.com"

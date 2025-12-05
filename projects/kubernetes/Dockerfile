@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 
 RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git
 RUN git clone --depth 1 https://github.com/google/AFL

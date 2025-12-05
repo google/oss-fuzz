@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://libjpeg-turbo.org"
 language: c
 primary_contact: "drc@virtualgl.org"

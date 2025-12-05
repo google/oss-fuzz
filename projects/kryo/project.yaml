@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://esotericsoftware.com/"
 language: jvm
 primary_contact: "thomas@umschalt.com"
