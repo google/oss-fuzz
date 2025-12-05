@@ -5,6 +5,10 @@ primary_contact: "david@adalogics.com"
 auto_ccs:
   - "adam@adalogics.com"
   - "arthur.chan@adalogics.com"
+  - "tomek@isc.org"
+  - "razvan@isc.org"
+  - "andrei@isc.org"
+  - "wlodek.wencel@gmail.com"
 main_repo: 'https://gitlab.isc.org/isc-projects/kea'
 fuzzing_engines:
   - libfuzzer
