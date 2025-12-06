@@ -1,5 +1,6 @@
 homepage: "https://github.com/libvips/libvips"
 language: c++
+base_os_version: ubuntu-24-04
 primary_contact: "jcupitt@gmail.com"
 auto_ccs:
   - "kleisauke@gmail.com"
