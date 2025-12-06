@@ -1,8 +1,21 @@
-#!/bin/bash
-# Phase 9.3: OSS-Fuzz build script for Dilithion
-# This file should be placed in google/oss-fuzz/projects/dilithion/build.sh
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
 
-set -eux
+# OSS-Fuzz build script for Dilithion
 
 # Set compiler flags for fuzzing
 export CC=clang
@@ -32,10 +45,6 @@ cd /src/dilithion
 export RANDOMX_BUILD_DIR=/randomx/build
 export DILITHIUM_DIR=/dilithium/ref
 
-# Build fuzz targets
-# OSS-Fuzz will look for binaries in $OUT directory
-export OUT=$OUT
-
 # Build individual fuzz targets
 make fuzz_sha3
 cp fuzz_sha3 $OUT/
@@ -58,6 +67,5 @@ cp fuzz_rpc $OUT/
 make fuzz_p2p_validation
 cp fuzz_p2p_validation $OUT/
 
-echo "✅ All fuzz targets built successfully"
+echo "All fuzz targets built successfully"
 ls -lh $OUT/
-
