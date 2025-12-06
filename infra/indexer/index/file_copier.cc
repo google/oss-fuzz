@@ -42,11 +42,12 @@ void PreparePath(std::string& path) {
 FileCopier::FileCopier(absl::string_view base_path,
                        absl::string_view index_path,
                        const std::vector<std::string>& extra_paths,
-                       Behavior behavior)
+                       Behavior behavior, bool skip_missing_files)
     : base_path_(base_path),
       extra_paths_(extra_paths),
       index_path_(index_path),
-      behavior_(behavior) {
+      behavior_(behavior),
+      skip_missing_files_(skip_missing_files) {
   if (behavior_ == Behavior::kNoOp) {
     return;
   }
@@ -102,10 +103,17 @@ void FileCopier::CopyIndexedFiles() {
       dst_path = std::filesystem::path(index_path_) / "relative" / indexed_path;
     }
 
-    DLOG(INFO) << "\nFrom: " << src_path << "\n  To: " << dst_path << "\n";
+    if (!std::filesystem::exists(src_path)) {
+      if (!skip_missing_files_) {
+        LOG(QFATAL) << "Source file " << src_path
+                   << " does not exist and skip_missing_files is false.";
+      } else {
+        LOG(WARNING) << "Skipping non-existent source file: " << src_path;
+        continue;
+      }
+    }
 
-    QCHECK(std::filesystem::exists(src_path))
-        << "Source file does not exist: " << src_path;
+    DLOG(INFO) << "\nFrom: " << src_path << "\n  To: " << dst_path << "\n";
 
     std::error_code error_code;
     // The destination directory may already exist, but report other errors.
