@@ -197,7 +197,7 @@ ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc2
 RUN chmod +x /usr/local/bin/clang-jcc /usr/local/bin/clang++-jcc /usr/local/bin/clang-jcc2 /usr/local/bin/clang++-jcc2
 
 COPY indexer /opt/indexer
-COPY --from=gcr.io/oss-fuzz-base/indexer:ubuntu-24 /indexer/build/indexer /opt/indexer/indexer
+COPY --from=gcr.io/oss-fuzz-base/indexer:ubuntu-24-04 /indexer/build/indexer /opt/indexer/indexer
 RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 
 COPY llvmsymbol.diff $SRC
