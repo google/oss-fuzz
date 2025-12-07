@@ -227,6 +227,7 @@ RUN cd /tmp && git clone https://github.com/NixOS/patchelf && \
 
 COPY indexer /opt/indexer
 COPY --from=gcr.io/oss-fuzz-base/indexer /indexer/build/indexer /opt/indexer/indexer
+COPY --from=gcr.io/oss-fuzz-base/indexer:ubuntu-24 /indexer/build/indexer /opt/indexer/indexer
 RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 
 CMD ["compile"]
