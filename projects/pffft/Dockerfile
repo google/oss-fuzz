@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y mercurial
 RUN python -m pip install numpy
 RUN git clone https://bitbucket.org/jpommier/pffft $SRC/pffft
