@@ -8,9 +8,9 @@ valuation processes during fuzzing harness generation.
 At the core, Chronos relies on caching containers after project build, in order
 to enable fast rebuilding of a project following minor patches, and also enable
 running of the tests in a given project. To support this, Chronos creates a snapshot
-of a the docker container given project post build completion. This means that all `.o` files, generated
-configuations etc. persist in the docker container. These artifacts are then
-leverage for future "replay builds" where only a minor part of the project has changed,
+of a the Docker container given project post build completion. This means that all `.o` files, generated
+configuations etc. persist in the Docker container. These artifacts are then
+leveraged for future "replay builds" where only a minor part of the project has changed,
 e.g. due to some patching on the project. This patching could be e.g. minor adjustments
 to the fuzzing harness source code e.g. by [oss-fuzz-gen](https://github.com/google/oss-fuzz-gen).
 
@@ -46,7 +46,7 @@ Chronos support automated rebuilding. This is meant as a generic mechanism to en
 3. `make_build_replayable.py` adjusts the build environment to wrap around common commands, to avoid performing a complete run of `build.sh`: [here](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/make_build_replayable.py).
 
 The automated rebuilding works in combination with [Ccache](https://ccache.dev/), in order to facilitate cachine of e.g. `.o` files.
-This means that during rebuild mode as long as we have a cacche, we don't need to e.g. run `configure` again and will only have to
+This means that during rebuild mode as long as we have a cache, we don't need to e.g. run `configure` again and will only have to
 rebuild the changed source code.
 
 #### Option 2: Manually provided replay builds
