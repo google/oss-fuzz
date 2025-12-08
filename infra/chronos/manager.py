@@ -36,17 +36,20 @@ def _get_oss_fuzz_root():
       os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 
-def _get_project_cached_named(project, sanitizer='address'):
+def _get_project_cached_named(project: helper.Project, sanitizer='address'):
   """Gets the name of the cached project image."""
   base_name = 'us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen'
-  return f'{base_name}/{project}-ofg-cached-{sanitizer}'
+  return f'{base_name}/{project.name}-ofg-cached-{sanitizer}'
 
 
-def _get_project_cached_named_local(project, sanitizer='address'):
-  return f'{project}-origin-{sanitizer}'
+def _get_project_cached_named_local(project: helper.Project,
+                                    sanitizer='address'):
+  return f'{project.name}-origin-{sanitizer}'
 
 
-def build_cached_project(project, cleanup=True, sanitizer='address'):
+def build_cached_project(project: helper.Project,
+                         cleanup=True,
+                         sanitizer='address'):
   """Build cached image for a project."""
   container_name = _get_project_cached_named_local(project, sanitizer)
   logger.info('Building cached image for project: %s', project)
@@ -64,10 +67,10 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
       '--env=CCACHE_DIR=/workspace/ccache',
       f'--env=FUZZING_LANGUAGE={project_language}',
       '--env=CAPTURE_REPLAY_SCRIPT=1', f'--name={container_name}',
-      f'-v={oss_fuzz_root}/ccaches/{project}/ccache:/workspace/ccache',
-      f'-v={oss_fuzz_root}/build/out/{project}/:/out/',
+      f'-v={oss_fuzz_root}/ccaches/{project.name}/ccache:/workspace/ccache',
+      f'-v={oss_fuzz_root}/build/out/{project.name}/:/out/',
       '-v=' + os.path.join(oss_fuzz_root, 'infra', 'chronos') + ':/chronos/',
-      f'gcr.io/oss-fuzz/{project}', '/bin/bash', '-c',
+      f'gcr.io/oss-fuzz/{project.name}', '/bin/bash', '-c',
       '/chronos/container_cache_build.sh'
   ]
 
@@ -76,14 +79,14 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
 
   start = time.time()
   try:
-    logger.info('Building cached container for project: %s', project)
+    logger.info('Building cached container for project: %s', project.name)
     subprocess.check_call(cmd, cwd=oss_fuzz_root)
     end = time.time()
     logger.info('%s vanilla build Succeeded: Duration: %.2f seconds', project,
                 end - start)
   except subprocess.CalledProcessError:
     end = time.time()
-    logger.info('%s vanilla build Failed: Duration: %.2f seconds', project,
+    logger.info('%s vanilla build Failed: Duration: %.2f seconds', project.name,
                 end - start)
     return False
 
@@ -117,7 +120,7 @@ def check_cached_replay(project: helper.Project,
   """
   helper.build_image_impl(project)
 
-  if not build_cached_project(project.name, sanitizer=sanitizer):
+  if not build_cached_project(project, sanitizer=sanitizer):
     logger.info('Failed to build cached image for project: %s', project.name)
     return
 
@@ -135,7 +138,7 @@ def check_cached_replay(project: helper.Project,
       '-v=' + os.path.join(_get_oss_fuzz_root(), 'infra', 'chronos') +
       ':/chronos',
       '--name=' + project.name + '-origin-' + sanitizer + '-replay-recached',
-      _get_project_cached_named(project.name, sanitizer),
+      _get_project_cached_named(project, sanitizer),
       '/bin/bash',
       '-c',
   ]
@@ -221,7 +224,7 @@ def check_tests(project: helper.Project,
     helper.build_image_impl(project)
 
     # build a cached version of the project
-    if not build_cached_project(project.name, sanitizer=sanitizer):
+    if not build_cached_project(project, sanitizer=sanitizer):
       logger.info('Failed to build cached image for project: %s', project.name)
       sys.exit(1)
 
@@ -238,7 +241,7 @@ def check_tests(project: helper.Project,
       'PROJECT_NAME=' + project.name,
       '-v=' + os.path.join(_get_oss_fuzz_root(), 'infra', 'chronos') +
       ':/chronos',
-      _get_project_cached_named(project.name, sanitizer),
+      _get_project_cached_named(project, sanitizer),
       '/bin/bash',
       '-c',
   ]
