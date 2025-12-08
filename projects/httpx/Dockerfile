@@ -15,7 +15,7 @@
 # Held back because of github.com/google/oss-fuzz/pull/13407
 # Please fix the build failure + upgrade.
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04@sha256:d223a882810372830fd7968eb3e64533f3a2318c90be43ac753a46a15946faec
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN git clone https://github.com/encode/httpx httpx
 COPY *.sh *py $SRC/
 WORKDIR $SRC/httpx
