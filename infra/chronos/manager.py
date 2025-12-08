@@ -21,12 +21,11 @@ import time
 import json
 import subprocess
 
-try:
-  from chronos import integrity_validator_check_replay
-  from chronos import integrity_validator_run_tests
-except ImportError:
-  import integrity_validator_check_replay
-  import integrity_validator_run_tests
+# Call from the core OSS-Fuzz repository:
+# PYTHONPATH=$PYTHONPATH:$PWD/infra python3 -m chronos.manager check-tests json-c
+from chronos import integrity_validator_check_replay
+from chronos import integrity_validator_run_tests
+import helper
 
 logger = logging.getLogger(__name__)
 
@@ -45,23 +44,6 @@ def _get_project_cached_named(project, sanitizer='address'):
 
 def _get_project_cached_named_local(project, sanitizer='address'):
   return f'{project}-origin-{sanitizer}'
-
-
-def build_project_image(project) -> None:
-  """Build OSS-Fuzz base image for a project.
-
-  Returns None. Upon failure, will call sys.exit(1).
-  """
-
-  logger.info('Building OSS-Fuzz image for project: %s', project)
-  cmd = ['docker', 'build', '-t', 'gcr.io/oss-fuzz/' + project, '.']
-  try:
-    subprocess.run(cmd,
-                   cwd=os.path.join(_get_oss_fuzz_root(), 'projects', project),
-                   check=True)
-  except subprocess.CalledProcessError as e:
-    logger.info('Failed to build OSS-Fuzz image for project %s: %s', project, e)
-    sys.exit(1)
 
 
 def build_cached_project(project, cleanup=True, sanitizer='address'):
@@ -121,7 +103,9 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
   return True
 
 
-def check_cached_replay(project, sanitizer='address', integrity_check=False):
+def check_cached_replay(project: helper.Project,
+                        sanitizer='address',
+                        integrity_check=False):
   """Checks if a cache build succeeds and times is.
 
   If integrity_check is True, will run with bad patches to validate
@@ -131,9 +115,10 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
     2) A control test to check that we rebuild when white noise is included.
     3) A set of bad patches that should cause the build to fail.
   """
-  build_project_image(project)
-  if not build_cached_project(project, sanitizer=sanitizer):
-    logger.info('Failed to build cached image for project: %s', project)
+  helper.build_image_impl(project)
+
+  if not build_cached_project(project.name, sanitizer=sanitizer):
+    logger.info('Failed to build cached image for project: %s', project.name)
     return
 
   start = time.time()
@@ -145,12 +130,12 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
       'none',
       '--env=SANITIZER=' + sanitizer,
       '--env=FUZZING_LANGUAGE=c++',
-      '-v=' + os.path.join(_get_oss_fuzz_root(), 'build', 'out', project) +
+      '-v=' + os.path.join(_get_oss_fuzz_root(), 'build', 'out', project.name) +
       ':/out',
       '-v=' + os.path.join(_get_oss_fuzz_root(), 'infra', 'chronos') +
       ':/chronos',
-      '--name=' + project + '-origin-' + sanitizer + '-replay-recached',
-      _get_project_cached_named(project, sanitizer),
+      '--name=' + project.name + '-origin-' + sanitizer + '-replay-recached',
+      _get_project_cached_named(project.name, sanitizer),
       '/bin/bash',
       '-c',
   ]
@@ -172,20 +157,20 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
       if result.returncode not in expected_rc:
         failed.append(bad_patch_name)
         logger.info(('%s check cached replay failed on bad patches %s. '
-                     'Return code: %d. Expected return code: %s'), project,
+                     'Return code: %d. Expected return code: %s'), project.name,
                     bad_patch_name, result.returncode, str(expected_rc))
 
     if failed:
       logger.info(
           '%s check cached replay failed to detect these bad patches: %s',
-          project, ' '.join(failed))
+          project.name, ' '.join(failed))
     else:
       logger.info('%s check cached replay success to detect all bad patches.',
-                  project)
+                  project.name)
   else:
     # Normal run with no integrity check
     logger.info('Running cached replay with no integrity check for project: %s',
-                project)
+                project.name)
     base_cmd = 'export PATH=/ccache/bin:$PATH && rm -rf /out/* && compile'
     cmd.append(base_cmd)
     replay_success = False
@@ -195,15 +180,15 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
     except subprocess.CalledProcessError as e:
       logger.error('Failed to run cached replay: %s', e)
       replay_success = False
-    logger.info('%s check cached replay: %s.', project,
+    logger.info('%s check cached replay: %s.', project.name,
                 'succeeded' if replay_success else 'failed')
 
   end = time.time()
-  logger.info('%s check cached replay completion time: %.2f seconds', project,
-              (end - start))
+  logger.info('%s check cached replay completion time: %.2f seconds',
+              project.name, (end - start))
 
 
-def check_tests(project: str,
+def check_tests(project: helper.Project,
                 sanitizer='address',
                 run_full_cache_replay=False,
                 integrity_check=False,
@@ -220,22 +205,24 @@ def check_tests(project: str,
   to validate if the `run_tests.sh` is able to detect them.
   """
 
-  script_path = os.path.join('projects', project, 'run_tests.sh')
+  script_path = os.path.join('projects', project.name, 'run_tests.sh')
 
   if not os.path.exists(script_path):
     logger.info('Error: The script for project "%s" does not exist at %s',
-                project, script_path)
+                project.name, script_path)
     sys.exit(1)
 
-  logger.info('Building image for project for use in check-tests: %s', project)
+  logger.info('Building image for project for use in check-tests: %s',
+              project.name)
   # Build an OSS-Fuzz image of the project
   if run_full_cache_replay:
-    check_cached_replay(project, sanitizer)
+    check_cached_replay(project.name, sanitizer)
   else:
-    build_project_image(project)
+    helper.build_image_impl(project)
+
     # build a cached version of the project
-    if not build_cached_project(project, sanitizer=sanitizer):
-      logger.info('Failed to build cached image for project: %s', project)
+    if not build_cached_project(project.name, sanitizer=sanitizer):
+      logger.info('Failed to build cached image for project: %s', project.name)
       sys.exit(1)
 
   # Run the test script
@@ -248,10 +235,10 @@ def check_tests(project: str,
       '--network',
       'none',
       '-e',
-      'PROJECT_NAME=' + project,
+      'PROJECT_NAME=' + project.name,
       '-v=' + os.path.join(_get_oss_fuzz_root(), 'infra', 'chronos') +
       ':/chronos',
-      _get_project_cached_named(project, sanitizer),
+      _get_project_cached_named(project.name, sanitizer),
       '/bin/bash',
       '-c',
   ]
@@ -259,7 +246,7 @@ def check_tests(project: str,
   if integrity_check or semantic_test:
 
     # Run normal build_test
-    logger.info('Running normal run_tests.sh for project: %s', project)
+    logger.info('Running normal run_tests.sh for project: %s', project.name)
     docker_cmd_vanilla = docker_cmd[:]
     docker_cmd_vanilla.append(run_tests_cmd)
     try:
@@ -268,12 +255,12 @@ def check_tests(project: str,
     except subprocess.CalledProcessError:
       logger.info(
           'run_tests.sh result failed: Failed to run vanilla run_tests.sh for project: %s',
-          project)
+          project.name)
       sys.exit(0)
 
     # First check diffing patch. The approach here is to capture a diff before
     # and after applying the patch, and see if there are any changes to e.g. git diff.
-    logger.info('Checking diffing patch for project: %s', project)
+    logger.info('Checking diffing patch for project: %s', project.name)
     patch_command = (
         'python3 -m pip install -r /chronos/requirements.txt &&'
         'python3 /chronos/integrity_validator_run_tests.py diff-patch before')
@@ -328,7 +315,7 @@ def check_tests(project: str,
           subprocess.check_call(cmd_to_run)
         except subprocess.CalledProcessError:
           logger.info('%s skipping logic patch %s that failed to compile.',
-                      project, logic_patch.name)
+                      project.name, logic_patch.name)
           integrity_checks.append({
               'patch': logic_patch.name,
               'result': 'compile_fail'
@@ -357,16 +344,16 @@ def check_tests(project: str,
           if stop_on_failure:
             logger.info(
                 '%s integrity check failed on patch %s, stopping as requested.',
-                project, logic_patch.name)
+                project.name, logic_patch.name)
             return False
           integrity_checks.append({
               'patch': logic_patch.name,
               'result': 'Failed'
           })
 
-      logger.info('%s integrity check results:', project)
+      logger.info('%s integrity check results:', project.name)
       for check in integrity_checks:
-        logger.info('%s integrity check patch %s result: %s', project,
+        logger.info('%s integrity check patch %s result: %s', project.name,
                     check['patch'], check['result'])
       succeeded = any([chk['result'] == 'Success' for chk in integrity_checks])
 
@@ -388,14 +375,15 @@ def check_tests(project: str,
 
   result = succeeded and succeeded_patch
   logger.info('%s test completion %s: Duration of run_tests.sh: %.2f seconds',
-              project, 'failed' if not result else 'succeeded', (end - start))
+              project.name, 'failed' if not result else 'succeeded',
+              (end - start))
 
   return result
 
 
 def extract_test_coverage(project):
   """Extract code coverage report from run_tests.sh script."""
-  build_project_image(project)
+
   build_cached_project(project, sanitizer='coverage')
 
   os.makedirs(os.path.join('build', 'out', project), exist_ok=True)
@@ -428,32 +416,17 @@ def extract_test_coverage(project):
   return True
 
 
-def helper_cmd_dispatcher_check_tests(args):
-  """Dispatcher for check-tests command."""
-  # This argument is not enabled by default in helper.py, so we set it here.
-  args.semantic_test = getattr(args, 'semantic_test', False)
-  check_tests(args.project.name, args.sanitizer, args.run_full_cache_replay,
-              args.integrity_check, args.stop_on_failure, args.semantic_test)
-
-
 def cmd_dispatcher_check_tests(args):
   """Dispatcher for check-tests command."""
   # This argument is not enabled by default in helper.py, so we set it here.
   args.semantic_test = getattr(args, 'semantic_test', False)
-  check_tests(args.project_name, args.sanitizer, args.run_full_cache_replay,
+  check_tests(args.project, args.sanitizer, args.run_full_cache_replay,
               args.integrity_check, args.stop_on_failure, args.semantic_test)
-
-
-def helper_cmd_dispatcher_check_replay(args):
-  """Dispatcher for check-replay command."""
-  check_cached_replay(args.project.name,
-                      args.sanitizer,
-                      integrity_check=args.integrity_check)
 
 
 def cmd_dispatcher_check_replay(args):
   """Dispatcher for check-replay command."""
-  check_cached_replay(args.project_name,
+  check_cached_replay(args.project,
                       args.sanitizer,
                       integrity_check=args.integrity_check)
 
@@ -479,7 +452,7 @@ def parse_args():
   checks_test_parser = subparsers.add_parser(
       'check-tests', help='Checks run_test.sh for specific project.')
   checks_test_parser.add_argument(
-      'project_name',
+      'project',
       type=str,
       help='The name of the project to check (e.g., "libpng").',
   )
@@ -558,6 +531,8 @@ def main():
   logging.basicConfig(level=logging.INFO)
 
   args = parse_args()
+
+  args.project = helper.Project(args.project, False)
 
   dispatch_map = {
       'check-tests': cmd_dispatcher_check_tests,

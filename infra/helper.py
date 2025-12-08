@@ -291,10 +291,10 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   elif args.command == 'run_clusterfuzzlite':
     result = run_clusterfuzzlite(args)
   elif args.command == 'check-tests':
-    chronos.manager.helper_cmd_dispatcher_check_tests(args)
+    chronos.manager.cmd_dispatcher_check_tests(args)
     result = 0
   elif args.command == 'check-replay':
-    chronos.manager.helper_cmd_dispatcher_check_replay(args)
+    chronos.manager.cmd_dispatcher_check_replay(args)
     result = 0
   else:
     # Print help string if no arguments provided.
