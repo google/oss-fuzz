@@ -137,7 +137,6 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
     return
 
   start = time.time()
-  base_cmd = 'export PATH=/ccache/bin:\\$PATH && rm -rf /out/* && compile'
   cmd = [
       'docker',
       'run',
@@ -163,12 +162,9 @@ def check_cached_replay(project, sanitizer='address', integrity_check=False):
     ):
       # Generate bad patch command using different approaches
       expected_rc = bad_patch_map['rc']
-      bad_patch_command = (
-          f'python3 /chronos/integrity_validator_check_replay.py {bad_patch_name}'
-      )
       cmd_to_run = cmd[:]
       cmd_to_run.append(
-          f'set -euo pipefail && {bad_patch_command} && {base_cmd}')
+          f'/chronos/container_patch_replay_test.sh {bad_patch_name}')
 
       # Run the cached replay script with bad patches
       result = subprocess.run(cmd_to_run, check=False)
@@ -432,12 +428,27 @@ def extract_test_coverage(project):
   return True
 
 
+def helper_cmd_dispatcher_check_tests(args):
+  """Dispatcher for check-tests command."""
+  # This argument is not enabled by default in helper.py, so we set it here.
+  args.semantic_test = getattr(args, 'semantic_test', False)
+  check_tests(args.project.name, args.sanitizer, args.run_full_cache_replay,
+              args.integrity_check, args.stop_on_failure, args.semantic_test)
+
+
 def cmd_dispatcher_check_tests(args):
   """Dispatcher for check-tests command."""
   # This argument is not enabled by default in helper.py, so we set it here.
   args.semantic_test = getattr(args, 'semantic_test', False)
   check_tests(args.project_name, args.sanitizer, args.run_full_cache_replay,
               args.integrity_check, args.stop_on_failure, args.semantic_test)
+
+
+def helper_cmd_dispatcher_check_replay(args):
+  """Dispatcher for check-replay command."""
+  check_cached_replay(args.project.name,
+                      args.sanitizer,
+                      integrity_check=args.integrity_check)
 
 
 def cmd_dispatcher_check_replay(args):

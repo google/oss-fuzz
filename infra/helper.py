@@ -291,10 +291,10 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   elif args.command == 'run_clusterfuzzlite':
     result = run_clusterfuzzlite(args)
   elif args.command == 'check-tests':
-    chronos.manager.cmd_dispatcher_check_tests(args)
+    chronos.manager.helper_cmd_dispatcher_check_tests(args)
     result = 0
   elif args.command == 'check-replay':
-    chronos.manager.cmd_dispatcher_check_replay(args)
+    chronos.manager.helper_cmd_dispatcher_check_replay(args)
     result = 0
   else:
     # Print help string if no arguments provided.
@@ -608,33 +608,30 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
 
   subparsers.add_parser('pull_images', help='Pull base images.')
 
-  checks_test_parser = subparsers.add_parser(
+  check_test_parser = subparsers.add_parser(
       'check-tests', help='Checks run_test.sh for specific project.')
-  checks_test_parser.add_argument(
-      'project_name',
+  check_test_parser.add_argument(
+      'project',
       type=str,
       help='The name of the project to check (e.g., "libpng").',
   )
-  checks_test_parser.add_argument(
+  check_test_parser.add_argument(
       '--stop-on-failure',
       action='store_true',
       help='If set, will stop integrity checks on first failure.')
-  checks_test_parser.add_argument(
-      '--sanitizer',
-      default='address',
-      help='The sanitizer to use (default: address).')
-  checks_test_parser.add_argument(
+  _add_sanitizer_args(check_test_parser)
+  check_test_parser.add_argument(
       '--container-output',
       choices=['silent', 'file', 'stdout'],
       default='stdout',
       help='How to handle output from the container. ')
-  checks_test_parser.add_argument(
+  check_test_parser.add_argument(
       '--run-full-cache-replay',
       action='store_true',
       help=
       'If set, will run the full cache replay instead of just checking the script.'
   )
-  checks_test_parser.add_argument(
+  check_test_parser.add_argument(
       '--integrity-check',
       action='store_true',
       help=
@@ -648,12 +645,9 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   check_replay_parser = subparsers.add_parser(
       'check-replay',
       help='Checks if the replay script works for a specific project.')
-  check_replay_parser.add_argument('project_name',
+  check_replay_parser.add_argument('project',
                                    help='The name of the project to check.')
-  check_replay_parser.add_argument(
-      '--sanitizer',
-      default='address',
-      help='The sanitizer to use for the cached build (default: address).')
+  _add_sanitizer_args(check_replay_parser)
   check_replay_parser.add_argument(
       '--integrity-check',
       action='store_true',
