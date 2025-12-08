@@ -48,8 +48,8 @@ def _get_project_cached_named_local(project: helper.Project,
 
 
 def build_cached_project(project: helper.Project,
-                         cleanup=True,
-                         sanitizer='address'):
+                         cleanup: bool = True,
+                         sanitizer: str = 'address'):
   """Build cached image for a project."""
   container_name = _get_project_cached_named_local(project, sanitizer)
   logger.info('Building cached image for project: %s', project)
@@ -107,8 +107,8 @@ def build_cached_project(project: helper.Project,
 
 
 def check_cached_replay(project: helper.Project,
-                        sanitizer='address',
-                        integrity_check=False):
+                        sanitizer: str = 'address',
+                        integrity_check: bool = False):
   """Checks if a cache build succeeds and times is.
 
   If integrity_check is True, will run with bad patches to validate
@@ -192,11 +192,11 @@ def check_cached_replay(project: helper.Project,
 
 
 def check_tests(project: helper.Project,
-                sanitizer='address',
-                run_full_cache_replay=False,
-                integrity_check=False,
-                stop_on_failure=False,
-                semantic_test=False):
+                sanitizer: str = 'address',
+                run_full_cache_replay: bool = False,
+                integrity_check: bool = False,
+                stop_on_failure: bool = False,
+                semantic_test: bool = False):
   """Run the `run_tests.sh` script for a specific project. Will
     build a cached container first.
 
@@ -384,14 +384,15 @@ def check_tests(project: helper.Project,
   return result
 
 
-def extract_test_coverage(project):
+def extract_test_coverage(project: helper.Project):
   """Extract code coverage report from run_tests.sh script."""
 
   build_cached_project(project, sanitizer='coverage')
 
-  os.makedirs(os.path.join('build', 'out', project), exist_ok=True)
+  os.makedirs(os.path.join('build', 'out', project.name), exist_ok=True)
 
-  shared_folder = os.path.join(_get_oss_fuzz_root(), 'build', 'out', project)
+  shared_folder = os.path.join(_get_oss_fuzz_root(), 'build', 'out',
+                               project.name)
   cmd = [
       'docker', 'run', '--rm', '--network', 'none', '-v',
       f'{shared_folder}:/out', '-v=' +
