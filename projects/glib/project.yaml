@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://gitlab.gnome.org/GNOME/glib/"
 language: c++
 primary_contact: "bugzilla@tecnocode.co.uk"
