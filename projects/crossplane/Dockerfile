@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/crossplane/crossplane-runtime $SRC/crossplane-runtime
 RUN git clone --depth 1 https://github.com/crossplane/crossplane $SRC/crossplane
 COPY build.sh $SRC/
