@@ -122,7 +122,15 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
 
 
 def check_cached_replay(project, sanitizer='address', integrity_check=False):
-  """Checks if a cache build succeeds and times is."""
+  """Checks if a cache build succeeds and times is.
+
+  If integrity_check is True, will run with bad patches to validate
+  the integrity of the cached replay build. The patches will perform three
+  main tasks:
+    1) A control test to ensure it's working as is.
+    2) A control test to check that we rebuild when white noise is included.
+    3) A set of bad patches that should cause the build to fail.
+  """
   build_project_image(project)
   if not build_cached_project(project, sanitizer=sanitizer):
     logger.info('Failed to build cached image for project: %s', project)
@@ -206,7 +214,15 @@ def check_tests(project: str,
                 stop_on_failure=False,
                 semantic_test=False):
   """Run the `run_tests.sh` script for a specific project. Will
-    build a cached container first."""
+    build a cached container first.
+
+  When `integrity_check` is True, a check that validates if the `run_test.sh` changes
+  the source control of the project will be performed. That is, we want to ensure,
+  e.g. `git diff ./` has the same output before and after `run_tests.sh`.
+  Additionally, if `semantic_test` is
+  True, a set of semantic patches will be applied to the source code of the project
+  to validate if the `run_tests.sh` is able to detect them.
+  """
 
   script_path = os.path.join('projects', project, 'run_tests.sh')
 

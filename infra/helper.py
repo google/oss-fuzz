@@ -638,7 +638,11 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
       '--integrity-check',
       action='store_true',
       help=
-      'If set, will patch and test with logic errors to ensure build integrity.'
+      'Setting `integrity_check` enables a check that validates if the `run_test.sh` modifies '\
+      'the source control of the project will be performed. That is we want to ensure '\
+      'e.g. `git diff ./` has the same output before and after `run_tests.sh`. The `run_test.sh` '\
+      'must not change the underlying project source, and if it does it should reset the changes ' \
+      'before exiting.'
   )
 
   check_replay_parser = subparsers.add_parser(
@@ -653,7 +657,14 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   check_replay_parser.add_argument(
       '--integrity-check',
       action='store_true',
-      help='If set, will test the integrity of the replay script.')
+      help='If set, will test the integrity of the replay script. The integrity check' \
+            'will run the build a number of times where each time the source code of the ' \
+            'project is patched with a different patch to validate. The goal is to ensure ' \
+            'the replay script correctly builds the target source code when code modifications ' \
+            'are made. The patches will perform three main tasks:\n' \
+            '1) A control test to ensure it is working as is.\n' \
+            '2) A control test to check that we rebuild when white noise is included.\n' \
+            '3) A set of bad patches that should cause the build to fail.')
 
   return parser
 
