@@ -26,7 +26,7 @@ $CXX $CXXFLAGS -std=c++11 -Iinclude \
     $SRC/pdf_fuzzer.cc -o $OUT/$fuzz_target \
     $LIB_FUZZING_ENGINE $WORK/libmupdf.a $WORK/libmupdf-third.a
 
-mv $SRC/{*.zip,*.dict,*.options} $OUT
+cp $SRC/{*.zip,*.dict,*.options} $OUT
 
 if [ ! -f "${OUT}/${fuzz_target}_seed_corpus.zip" ]; then
   echo "missing seed corpus"

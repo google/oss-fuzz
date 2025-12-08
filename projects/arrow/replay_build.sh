@@ -20,10 +20,6 @@ ARROW=${SRC}/arrow/cpp
 BUILD_DIR=${SRC}/build-dir
 cd ${BUILD_DIR}
 
-# The CMake build setup compiles and runs the Thrift compiler, but ASAN
-# would report leaks and error out.
-export ASAN_OPTIONS="detect_leaks=0"
-
 cmake --build . -j$(nproc)
 
 # Copy fuzz targets
