@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y \
   build-essential libpcre2-dev libtool autoconf automake bison flex libssl-dev \
   libbison-dev libacl1 libacl1-dev lmdb-utils liblmdb-dev libpam0g-dev libtool \
