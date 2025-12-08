@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/edenhill/librdkafka"
 primary_contact: "magnus@edenhill.se"
 language: c++

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN apt install -y nodejs
 RUN pip3 install --upgrade pip
 RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh

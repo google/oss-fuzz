@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://firebase.google.com/docs/firestore/"
 language: c++
 primary_contact: "varconst@google.com"

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://chromium.googlesource.com/chromiumos/third_party/tpm2"
 language: c++
 # todo: delete Dockerfile from tpm2 repo.

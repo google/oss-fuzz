@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 ##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN git clone https://github.com/python-attrs/attrs.git
 COPY *.sh *py $SRC/
 WORKDIR $SRC/attrs

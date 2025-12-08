@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04 as builder
 
 ## Install build dependencies.
 RUN apt-get update

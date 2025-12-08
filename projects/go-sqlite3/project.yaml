@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://mattn.github.io/go-sqlite3/"
 primary_contact: "mattn.jp@gmail.com"
 auto_ccs:

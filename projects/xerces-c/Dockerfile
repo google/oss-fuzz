@@ -12,7 +12,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update -y && \
     apt-get install -y make autoconf automake libtool wget zlib1g-dev \
     binutils cmake subversion ninja-build liblzma-dev libz-dev pkg-config

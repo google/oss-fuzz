@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://sigstore.dev"
 main_repo: "https://github.com/sigstore/rekor"
 primary_contact: "bcallaway@sigstore.dev"

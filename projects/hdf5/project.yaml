@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.hdfgroup.org/solutions/hdf5/"
 main_repo: "https://github.com/HDFGroup/hdf5"
 language: c

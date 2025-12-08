@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/alexcrichton/tar-rs"
 main_repo: "https://github.com/alexcrichton/tar-rs.git"
 primary_contact: "cgwalters@gmail.com"

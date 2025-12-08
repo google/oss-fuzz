@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://www.automatak.com/opendnp3/"
 language: c++
 primary_contact: "jadamcrain@gmail.com"
