@@ -36,18 +36,17 @@ def _get_oss_fuzz_root():
       os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 
-def _get_project_cached_named(project: helper.Project, sanitizer='address'):
+def _get_project_cached_named(project, sanitizer='address'):
   """Gets the name of the cached project image."""
   base_name = 'us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen'
   return f'{base_name}/{project.name}-ofg-cached-{sanitizer}'
 
 
-def _get_project_cached_named_local(project: helper.Project,
-                                    sanitizer='address'):
+def _get_project_cached_named_local(project, sanitizer='address'):
   return f'{project.name}-origin-{sanitizer}'
 
 
-def build_cached_project(project: helper.Project,
+def build_cached_project(project,
                          cleanup: bool = True,
                          sanitizer: str = 'address'):
   """Build cached image for a project."""
@@ -106,7 +105,7 @@ def build_cached_project(project: helper.Project,
   return True
 
 
-def check_cached_replay(project: helper.Project,
+def check_cached_replay(project,
                         sanitizer: str = 'address',
                         integrity_check: bool = False):
   """Checks if a cache build succeeds and times is.
@@ -191,7 +190,7 @@ def check_cached_replay(project: helper.Project,
               project.name, (end - start))
 
 
-def check_tests(project: helper.Project,
+def check_tests(project,
                 sanitizer: str = 'address',
                 run_full_cache_replay: bool = False,
                 integrity_check: bool = False,
@@ -384,7 +383,7 @@ def check_tests(project: helper.Project,
   return result
 
 
-def extract_test_coverage(project: helper.Project):
+def extract_test_coverage(project):
   """Extract code coverage report from run_tests.sh script."""
 
   build_cached_project(project, sanitizer='coverage')
