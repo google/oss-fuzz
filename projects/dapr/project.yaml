@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://dapr.io/"
 language: go
 primary_contact: "schneideryaron@gmail.com"

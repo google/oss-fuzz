@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-./configure --fuzzing --disable-doc --disable-nls --disable-idn
+./configure --fuzzing --disable-doc --disable-nls
 make fuzz -j$(nproc)
 cp fuzz/address-fuzz $OUT/
 

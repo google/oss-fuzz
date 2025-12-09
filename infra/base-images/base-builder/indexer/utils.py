@@ -29,8 +29,11 @@ from google3.pyglib import gfile
 import pathlib
 
 
-LD_BINARY_NAME: Final[str] = "ld-linux-x86-64.so.2"
-_LD_BINARY_PATH: Final[pathlib.Path] = pathlib.Path("/lib64") / LD_BINARY_NAME
+LD_BINARY_PATH_X86_64: Final[pathlib.Path] = (
+    pathlib.Path("/lib64/ld-linux-x86-64.so.2")
+)
+
+LD_BINARY_PATH_X86: Final[pathlib.Path] = pathlib.Path("/lib32/ld-linux.so.2")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -41,7 +44,9 @@ class SharedLibrary:
   path: pathlib.Path
 
 
-def _parse_ld_trace_output(output: str) -> Sequence[SharedLibrary]:
+def _parse_ld_trace_output(
+    output: str, ld_binary_path: pathlib.Path
+) -> Sequence[SharedLibrary]:
   """Parses the output of `LD_TRACE_LOADED_OBJECTS=1 ld.so`."""
   if "statically linked" in output:
     return []
@@ -60,10 +65,12 @@ def _parse_ld_trace_output(output: str) -> Sequence[SharedLibrary]:
   # The dynamic linker should always be copied AND have its executable bit set.
   # The lines that have a => could contain a space, but we copy whatever is on
   # the right side of the =>, removing the load address.
-  shared_libraries = [SharedLibrary(name=LD_BINARY_NAME, path=_LD_BINARY_PATH)]
+  shared_libraries = [
+      SharedLibrary(name=ld_binary_path.name, path=ld_binary_path)
+  ]
   for lib_name, lib_path in re.findall(r"(\S+) => .*?(\S+) \(", output):
     lib_path = pathlib.Path(lib_path)
-    if lib_path == _LD_BINARY_PATH:
+    if lib_path == ld_binary_path:
       continue
     shared_libraries.append(SharedLibrary(name=lib_name, path=lib_path))
 
@@ -96,14 +103,15 @@ def run_subprocess(
 def get_shared_libraries(
     binary_path: os.PathLike[str],
     command_runner: CommandRunner = run_subprocess,
+    ld_binary_path: pathlib.Path = LD_BINARY_PATH_X86_64,
 ) -> Sequence[SharedLibrary]:
-  """Copies the shared libraries to the shared directory."""
+  """Enumerates the shared libraries required by the given binary."""
   env = os.environ | {
       "LD_TRACE_LOADED_OBJECTS": "1",
       "LD_BIND_NOW": "1",
   }
-  stdout_bytes = command_runner([_LD_BINARY_PATH, binary_path], env=env)
-  return _parse_ld_trace_output(stdout_bytes.decode())
+  stdout_bytes = command_runner([ld_binary_path, binary_path], env=env)
+  return _parse_ld_trace_output(stdout_bytes.decode(), ld_binary_path)
 
 
 def copy_shared_libraries(
@@ -122,6 +130,7 @@ def copy_shared_libraries(
 def patch_binary_rpath_and_interpreter(
     binary_path: os.PathLike[str],
     lib_mount_path: pathlib.Path,
+    ld_binary_path: pathlib.Path = LD_BINARY_PATH_X86_64,
 ):
   """Patches the binary rpath and interpreter."""
   subprocess.run(
@@ -139,7 +148,7 @@ def patch_binary_rpath_and_interpreter(
       [
           "patchelf",
           "--set-interpreter",
-          (lib_mount_path / LD_BINARY_NAME).as_posix(),
+          (lib_mount_path / ld_binary_path.name).as_posix(),
           binary_path,
       ],
       check=True,

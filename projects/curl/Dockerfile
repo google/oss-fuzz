@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone --depth 1 https://github.com/curl/curl.git /src/curl
 RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
