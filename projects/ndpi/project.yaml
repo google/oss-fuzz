@@ -10,7 +10,14 @@ sanitizers:
   - memory
 main_repo: 'https://github.com/ntop/nDPI.git'
 
-#Coverage report doesn't analyze custom mutator code (see https://github.com/google/oss-fuzz/issues/12143)
-# -> exclude it. Note that we keep including all the other third-parties code
+#As a general rule, we want coverage for all the third party code that we have
+#in our repository. Two exceptions:
+# 1) Coverage report doesn't analyze custom mutator code
+#    (see https://github.com/google/oss-fuzz/issues/12143) --> exclude it
+# 2) croaring is HUGE (its size is comparable to the entire nDPI codebase!)
+#    and we are using only a tiny part of it.
+#    Note that we do fuzz that part (also) via the specific fuzz_ds_bitmap fuzzer
 coverage_extra_args: >
   -ignore-filename-regex=src/lib/third_party/src/fuzz/.*
+  -ignore-filename-regex=src/lib/third_party/src/roaring.c
+  -ignore-filename-regex=src/lib/third_party/include/roaring.h
