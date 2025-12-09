@@ -75,8 +75,6 @@ def build_cached_project(project: common_utils.Project,
   ]
 
   logger.info('Command: %s', ' '.join(cmd))
-  logger.info(cmd)
-
   start = time.time()
   try:
     logger.info('Building cached container for project: %s', project.name)
