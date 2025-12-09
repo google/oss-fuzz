@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 # Main repo
-RUN git clone --depth 1 -b develop https://github.com/eclipse/mosquitto ${SRC}/mosquitto
+RUN git clone --depth 1 -b develop https://github.com/eclipse-mosquitto/mosquitto ${SRC}/mosquitto
 
 # Get dependencies
 RUN $SRC/mosquitto/fuzzing/scripts/oss-fuzz-dependencies.sh
