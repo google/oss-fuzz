@@ -43,7 +43,8 @@ def _get_project_cached_named(project: common_utils.Project,
   return f'{base_name}/{project.name}-ofg-cached-{sanitizer}'
 
 
-def _get_project_cached_named_local(project: common_utils.Project, sanitizer='address'):
+def _get_project_cached_named_local(project: common_utils.Project,
+                                    sanitizer='address'):
   return f'{project.name}-origin-{sanitizer}'
 
 
