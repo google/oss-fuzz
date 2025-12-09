@@ -29,15 +29,11 @@ from google3.pyglib import gfile
 import pathlib
 
 
-_LD_BINARY_NAME_X86_64: Final[str] = "ld-linux-x86-64.so.2"
 LD_BINARY_PATH_X86_64: Final[pathlib.Path] = (
-    pathlib.Path("/lib64") / _LD_BINARY_NAME_X86_64
+    pathlib.Path("/lib64/ld-linux-x86-64.so.2")
 )
 
-_LD_BINARY_NAME_X86: Final[str] = "ld-linux.so.2"
-LD_BINARY_PATH_X86: Final[pathlib.Path] = (
-    pathlib.Path("/lib32") / _LD_BINARY_NAME_X86
-)
+LD_BINARY_PATH_X86: Final[pathlib.Path] = pathlib.Path("/lib32/ld-linux.so.2")
 
 
 @dataclasses.dataclass(frozen=True)
