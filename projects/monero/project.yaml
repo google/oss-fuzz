@@ -5,6 +5,9 @@ auto_ccs:
   - luigi1111w@gmail.com
   - ric@ts.org
   - moneromooo@protonmail.com
+  - arthur.chan@adalogics.com
+  - david@adalogics.com
+  - adam@adalogics.com
 sanitizers:
   - address
 fuzzing_engines:

@@ -21,7 +21,8 @@
 
 namespace oss_fuzz {
 namespace indexer {
-bool SaveAsSqlite(const FlatIndex& index, const std::string& path);
+bool SaveAsSqlite(const FlatIndex& index, const std::string& path,
+                  bool enable_expensive_checks = false);
 }  // namespace indexer
 }  // namespace oss_fuzz
 

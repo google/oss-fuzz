@@ -15,9 +15,20 @@
 #
 ################################################################################
 
+# Install google test to be compatible with LLVM 21
+git clone --depth 1 https://github.com/google/googletest
+cd $SRC/googletest
+mkdir build
+cd build
+cmake ..
+make -j$(nproc)
+make install
+
+
+cd $SRC/
 mkdir jsonnet/build
 pushd jsonnet/build
-cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
+cmake -DUSE_SYSTEM_GTEST=ON -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
   -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DBUILD_TESTS=ON ..
 make -j$(nproc) all
 popd

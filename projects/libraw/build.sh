@@ -27,18 +27,19 @@ autoreconf --install
 make
 
 # build fuzzers
-$CXX $CXXFLAGS -std=c++11 -Ilibraw \
+export CXXFLAGS="${CXXFLAGS} -std=c++17"
+$CXX $CXXFLAGS -Ilibraw \
     $SRC/libraw_fuzzer.cc -o $OUT/libraw_fuzzer \
     $LIB_FUZZING_ENGINE -lz lib/.libs/libraw.a
 
-$CXX $CXXFLAGS -std=c++11 -Ilibraw \
+$CXX $CXXFLAGS -Ilibraw \
     $SRC/libraw_fuzzer.cc -o $OUT/libraw_cr2_fuzzer \
     $LIB_FUZZING_ENGINE -lz lib/.libs/libraw.a
 
-$CXX $CXXFLAGS -std=c++11 -Ilibraw \
+$CXX $CXXFLAGS -Ilibraw \
     $SRC/libraw_fuzzer.cc -o $OUT/libraw_nef_fuzzer \
     $LIB_FUZZING_ENGINE -lz lib/.libs/libraw.a
 
-$CXX $CXXFLAGS -std=c++11 -Ilibraw \
+$CXX $CXXFLAGS -Ilibraw \
     $SRC/libraw_fuzzer.cc -o $OUT/libraw_raf_fuzzer \
     $LIB_FUZZING_ENGINE -lz lib/.libs/libraw.a

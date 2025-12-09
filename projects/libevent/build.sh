@@ -30,7 +30,7 @@ make install
 # build fuzzer
 for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
   fuzz_basename=$(basename -s .cc $fuzzers)
-  $CXX $CXXFLAGS -std=c++11 -I../ -Iinclude \
+  $CXX $CXXFLAGS -std=c++17 -I../ -Iinclude \
       $fuzzers $LIB_FUZZING_ENGINE ./lib/libevent.a ./lib/libevent_core.a  \
       ./lib/libevent_pthreads.a ./lib/libevent_extra.a \
       -o $OUT/$fuzz_basename

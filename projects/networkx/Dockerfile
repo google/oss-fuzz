@@ -14,11 +14,25 @@
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-# Ensure we work from right python version
-RUN apt-get install -y python3.9 python3.9-dev && \
-    ln --force -s /usr/bin/python3.9 /usr/local/bin/python3 && \
-    apt-get install -y python3-pip && \
-    python3 -m pip install cython "atheris>=2.1.1" "pyinstaller==5.0.1" "coverage==6.3.2"
+# Install necessary packages
+RUN apt-get update && \
+    apt-get install -y wget build-essential checkinstall && \
+    apt-get install -y libreadline-gplv2-dev libncursesw5-dev libssl-dev \
+                       libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev
+
+# Download and install Python 3.11
+RUN cd /usr/src && \
+    wget https://www.python.org/ftp/python/3.11.0/Python-3.11.0.tgz && \
+    tar xzf Python-3.11.0.tgz && \
+    cd Python-3.11.0 && \
+    ./configure --enable-optimizations && \
+    make install && \
+    ln --force -s /usr/local/bin/python3.11 /usr/local/bin/python3
+
+# Install pip and Python dependencies
+RUN python3 -m ensurepip && \
+    python3 -m pip install --upgrade pip && \
+    python3 -m pip install cython "atheris>=2.1.1" "pyinstaller==6.15.0" "coverage==6.3.2"
 
 RUN git clone https://github.com/networkx/networkx networkx
 RUN git clone --depth=1 https://github.com/prefuse/Prefuse prefuse

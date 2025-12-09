@@ -15,13 +15,12 @@
 #include "indexer/frontend/common.h"
 
 #include <cstdint>
-#include <cstdlib>
 #include <filesystem>  // NOLINT
-#include <iostream>
 #include <string>
 
 #include "indexer/index/in_memory_index.h"
 #include "indexer/index/types.h"
+#include "absl/log/check.h"
 #include "absl/strings/string_view.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
@@ -30,10 +29,15 @@
 namespace oss_fuzz {
 namespace indexer {
 
-std::string CleanPath(absl::string_view path, absl::string_view cwd) {
+std::string ToNormalizedAbsolutePath(
+    absl::string_view path, const clang::SourceManager& source_manager) {
   std::filesystem::path native_path = std::filesystem::path(path);
   if (!native_path.is_absolute()) {
-    native_path = std::filesystem::path(cwd);
+    llvm::ErrorOr<std::string> cwd = source_manager.getFileManager()
+                                         .getVirtualFileSystem()
+                                         .getCurrentWorkingDirectory();
+    QCHECK(cwd) << "unable to get cwd";
+    native_path = std::filesystem::path(*cwd);
     native_path.append(path);
   }
   return native_path.lexically_normal();
@@ -46,7 +50,7 @@ LocationId GetLocationId(InMemoryIndex& index,
                          clang::SourceLocation start,
                          clang::SourceLocation end) {
   std::string path = "";
-  uint32_t start_line = 0, end_line = 0, start_column = 0, end_column = 0;
+  uint32_t start_line = 0, end_line = 0;
 
   // If the location is inside a macro expansion, we want to first resolve it to
   // the source location (of the expansion). For example:
@@ -71,36 +75,23 @@ LocationId GetLocationId(InMemoryIndex& index,
   if (!presumed_start.isInvalid()) {
     path = presumed_start.getFilename();
     start_line = presumed_start.getLine();
-    start_column = presumed_start.getColumn();
     end_line = presumed_start.getLine();
-    end_column = presumed_start.getColumn();
   }
 
   clang::PresumedLoc presumed_end = source_manager.getPresumedLoc(end, false);
   if (!presumed_end.isInvalid()) {
     end_line = presumed_end.getLine();
-    end_column = presumed_end.getColumn();
   }
 
   if (end_line < start_line) {
     end_line = start_line;
-    end_column = start_column;
-  }
-
-  llvm::ErrorOr<std::string> cwd = source_manager.getFileManager()
-                                       .getVirtualFileSystem()
-                                       .getCurrentWorkingDirectory();
-  if (!cwd) {
-    std::cerr << "unable to get cwd\n";
-    exit(1);
   }
 
   if (IsRealPath(path)) {
     // This is a real file path, so normalize it.
-    path = CleanPath(path, *cwd);
+    path = ToNormalizedAbsolutePath(path, source_manager);
   }
-  return index.GetLocationId(
-      {path, start_line, start_column, end_line, end_column});
+  return index.GetLocationId({path, start_line, end_line});
 }
 
 }  // namespace indexer

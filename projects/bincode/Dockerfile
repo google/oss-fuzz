@@ -15,6 +15,6 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 RUN apt-get update
-RUN git clone --depth 1 https://github.com/bincode-org/bincode.git
+RUN git clone --depth 1 https://git.sr.ht/~stygianentity/bincode
 ENV RUSTUP_TOOLCHAIN nightly-2025-01-10
 COPY build.sh $SRC/
