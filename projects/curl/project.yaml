@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://curl.haxx.se/"
 language: c++
 primary_contact: "daniel@haxx.se"

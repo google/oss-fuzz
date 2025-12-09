@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +13,19 @@
 # limitations under the License.
 #
 ################################################################################
+# Docker image for running fuzzers on CIFuzz (the run_fuzzers action on GitHub
+# actions).
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/cifuzz-base:ubuntu-24-04
 
-RUN git clone https://github.com/google/wycheproof --depth 1
-WORKDIR wycheproof
-COPY build.sh $SRC/
+# Python file to execute when the docker container starts up.
+# We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,
+# just expand to '/opt/oss-fuzz'.
+ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/run_fuzzers_entrypoint.py"]
+
+WORKDIR ${OSS_FUZZ_ROOT}/infra
+
+# Copy infra source code.
+ADD . ${OSS_FUZZ_ROOT}/infra
+
+RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt

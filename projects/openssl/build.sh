@@ -17,7 +17,7 @@
 
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/openssl/fuzz/fuzz_introspector_exclusion.config
 
-CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment enable-unit-test"
+CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment enable-unit-test no-apps no-tests"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
   CONFIGURE_FLAGS="$CONFIGURE_FLAGS no-asm"
@@ -44,6 +44,8 @@ function build_fuzzers() {
     else
         ./config $CONFIGURE_FLAGS
     fi
+
+    df -h
 
     make -j$(nproc) LDCMD="$CXX $CXXFLAGS"
 
@@ -72,11 +74,9 @@ function build_fuzzers() {
       find $SOURCES -type f -a \( -name '*.[ch]' -o -name '*.inc' \) -exec cp --parents '{}' $DESTDIR/ \;
     fi
 
-    if [[ -z "${INDEXER_BUILD:-}" && -z "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
-      df
-      rm -rf * .git*
-      df
-    fi
+    df -h
+    git clean -dfx
+    df -h
 }
 
 cd $SRC/openssl/
@@ -88,13 +88,11 @@ if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" || -n "${CAPTURE_R
   exit 0
 fi
 
-cd $SRC/openssl30/
-build_fuzzers "_30"
-cd $SRC/openssl32/
-build_fuzzers "_32"
 cd $SRC/openssl33/
 build_fuzzers "_33"
 cd $SRC/openssl34/
 build_fuzzers "_34"
 cd $SRC/openssl35/
 build_fuzzers "_35"
+cd $SRC/openssl36/
+build_fuzzers "_36"

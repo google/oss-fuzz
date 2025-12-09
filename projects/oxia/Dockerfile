@@ -14,11 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang-full:ubuntu-20-04
-
-RUN mkdir /indexer
-WORKDIR /indexer
-COPY . /indexer
-
-RUN apt-get update && apt-get install -y libsqlite3-dev make zlib1g-dev
-RUN mkdir build && cd build && cmake .. && cmake --build . -j -v
+FROM gcr.io/oss-fuzz-base/base-builder-go
+RUN git clone --depth 1 https://github.com/oxia-db/oxia
+RUN git clone --depth 1 https://github.com/AdamKorcz/cncf-fuzzing
+RUN git clone --depth 1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2_2
+COPY build.sh $SRC/
+WORKDIR $SRC/oxia

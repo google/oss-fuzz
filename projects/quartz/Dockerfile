@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
 RUN curl -L https://download.java.net/openjdk/jdk11.0.0.1/ri/openjdk-11.0.0.1_linux-x64_bin.tar.gz -o jdk.tar.gz && \
     tar zxf jdk.tar.gz && \
