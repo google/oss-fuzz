@@ -25,7 +25,7 @@ import subprocess
 # PYTHONPATH=$PYTHONPATH:$PWD/infra python3 -m chronos.manager check-tests json-c
 from chronos import integrity_validator_check_replay
 from chronos import integrity_validator_run_tests
-import helper
+import common_utils
 
 logger = logging.getLogger(__name__)
 
@@ -36,17 +36,18 @@ def _get_oss_fuzz_root():
       os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 
-def _get_project_cached_named(project, sanitizer='address'):
+def _get_project_cached_named(project: common_utils.Project,
+                              sanitizer='address'):
   """Gets the name of the cached project image."""
   base_name = 'us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen'
   return f'{base_name}/{project.name}-ofg-cached-{sanitizer}'
 
 
-def _get_project_cached_named_local(project, sanitizer='address'):
+def _get_project_cached_named_local(project: common_utils.Project, sanitizer='address'):
   return f'{project.name}-origin-{sanitizer}'
 
 
-def build_cached_project(project,
+def build_cached_project(project: common_utils.Project,
                          cleanup: bool = True,
                          sanitizer: str = 'address'):
   """Build cached image for a project."""
@@ -105,7 +106,7 @@ def build_cached_project(project,
   return True
 
 
-def check_cached_replay(project,
+def check_cached_replay(project: common_utils.Project,
                         sanitizer: str = 'address',
                         integrity_check: bool = False):
   """Checks if a cache build succeeds and times is.
@@ -117,7 +118,7 @@ def check_cached_replay(project,
     2) A control test to check that we rebuild when white noise is included.
     3) A set of bad patches that should cause the build to fail.
   """
-  helper.build_image_impl(project)
+  common_utils.build_image_impl(project)
 
   if not build_cached_project(project, sanitizer=sanitizer):
     logger.info('Failed to build cached image for project: %s', project.name)
@@ -190,7 +191,7 @@ def check_cached_replay(project,
               project.name, (end - start))
 
 
-def check_tests(project,
+def check_tests(project: common_utils.Project,
                 sanitizer: str = 'address',
                 run_full_cache_replay: bool = False,
                 integrity_check: bool = False,
@@ -220,7 +221,7 @@ def check_tests(project,
   if run_full_cache_replay:
     check_cached_replay(project.name, sanitizer)
   else:
-    helper.build_image_impl(project)
+    common_utils.build_image_impl(project)
 
     # build a cached version of the project
     if not build_cached_project(project, sanitizer=sanitizer):
@@ -535,7 +536,7 @@ def main():
 
   args = parse_args()
 
-  args.project = helper.Project(args.project, False)
+  args.project = common_utils.Project(args.project, False)
 
   dispatch_map = {
       'check-tests': cmd_dispatcher_check_tests,
