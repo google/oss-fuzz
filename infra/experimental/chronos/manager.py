@@ -73,8 +73,8 @@ def build_cached_project(project, cleanup=True, sanitizer='address'):
       f'-v={cwd}/build/out/{project}/:/out/',
       '-v=' + os.path.join(os.getcwd(), 'infra', 'experimental', 'chronos') +
       ':/chronos/', f'gcr.io/oss-fuzz/{project}', 'bash', '-c',
-      ('"export PATH=/ccache/bin:\$PATH && python3.11 -m pip install -r /chronos/requirements.txt && '
-       'rm -rf /out/* && compile && cp -n /usr/local/bin/replay_build.sh \$SRC/"'
+      (r'"export PATH=/ccache/bin:\$PATH && python3.11 -m pip install -r /chronos/requirements.txt && '
+       r'rm -rf /out/* && compile && cp -n /usr/local/bin/replay_build.sh \$SRC/"'
       )
   ]
 
