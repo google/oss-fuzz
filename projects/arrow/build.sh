@@ -19,11 +19,12 @@
 
 OPENSSL_VERSION=3.5.4
 
-cd /root
+cd ${SRC}
 wget https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz
 tar -xf openssl-${OPENSSL_VERSION}.tar.gz
 cd openssl-${OPENSSL_VERSION}
-./Configure no-apps no-docs no-tests no-shared
+# Assembler snippets would not be instrumented, disable them
+./Configure no-apps no-docs no-tests no-shared no-asm
 make -j
 make install
 

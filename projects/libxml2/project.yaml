@@ -1,6 +1,5 @@
 homepage: "https://gitlab.gnome.org/GNOME/libxml2"
 language: c++
-primary_contact: "wellnhofer@aevum.de"
 vendor_ccs:
   - "ddkilzer@apple.com"
   - "benl@google.com"
@@ -28,4 +27,3 @@ fuzzing_engines:
   - honggfuzz
   - afl
 main_repo: 'https://gitlab.gnome.org/GNOME/libxml2.git'
-view_restrictions: none
