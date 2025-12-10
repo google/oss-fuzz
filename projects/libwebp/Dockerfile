@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y autoconf make libgif-dev libjpeg-dev libpng-dev libtool zip
 RUN git clone https://chromium.googlesource.com/webm/libwebp
 RUN git clone https://chromium.googlesource.com/webm/libwebp-test-data

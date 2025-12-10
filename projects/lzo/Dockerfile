@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 RUN wget -O lzo.tar.gz \
     http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz

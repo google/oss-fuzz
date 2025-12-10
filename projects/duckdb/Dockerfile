@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone --depth=1 https://github.com/duckdb/duckdb duckdb
 WORKDIR duckdb
 COPY build.sh $SRC/

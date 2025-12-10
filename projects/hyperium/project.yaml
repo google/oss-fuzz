@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/hyperium/"
 main_repo: "https://github.com/hyperium/"
 primary_contact: "sean.monstar@gmail.com"

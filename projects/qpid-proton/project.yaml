@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://qpid.apache.org/proton/"
 language: c++
 primary_contact: "jross@apache.org"

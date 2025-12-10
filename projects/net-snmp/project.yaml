@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://www.net-snmp.org/"
 language: c++
 primary_contact: "hardaker@users.sourceforge.net"

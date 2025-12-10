@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --upgrade build
 RUN git clone https://github.com/pallets/jinja

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://opentelemetry.io/"
 language: go
 primary_contact: "cncf-opentelemetry-tc@lists.cncf.io"

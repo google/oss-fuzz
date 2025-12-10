@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.gnutls.org"
 language: c++
 primary_contact: "daiki.ueno@gmail.com"

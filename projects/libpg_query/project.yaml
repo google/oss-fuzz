@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://pganalyze.com/"
 language: c
 primary_contact: "team@pganalyze.com"

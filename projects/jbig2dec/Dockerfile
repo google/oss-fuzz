@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make libtool pkg-config vim libreadline-dev wget autoconf
 RUN git clone --recursive --depth 1 git://git.ghostscript.com/jbig2dec.git jbig2dec
 RUN mkdir tests

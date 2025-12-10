@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/google/oss-fuzz/pull/8244"
 language: python
 primary_contact: "gaborjbernat@gmail.com"
