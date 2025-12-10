@@ -19,9 +19,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 
-RUN apt-get install -y bzr python-lxml python-html5lib libxslt-dev libxml2-dev zlib1g-dev
+RUN apt-get update && apt-get install -y bzr git libxslt-dev libxml2-dev zlib1g-dev
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install soupsieve html5lib lxml
-RUN python3 -m pip install bzr+lp:beautifulsoup
+RUN python3 -m pip install git+https://git.launchpad.net/beautifulsoup
 
 COPY build.sh bs4_fuzzer.py $SRC/

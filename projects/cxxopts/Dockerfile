@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt update && apt install -y python3
+RUN apt-get update && apt-get install -y python3
 RUN git clone --depth 1 https://github.com/jarro2783/cxxopts.git cxxopts
 WORKDIR cxxopts
 COPY build.sh $SRC/
