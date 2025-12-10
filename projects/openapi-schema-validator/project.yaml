@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: https://github.com/p1c2u/openapi-schema-validator
 main_repo: https://github.com/p1c2u/openapi-schema-validator
 language: python

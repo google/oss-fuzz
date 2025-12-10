@@ -4,7 +4,7 @@
 #
 # Defines a docker image that can build fuzzers.
 #
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make libssl-dev binutils libgcc-9-dev
 RUN git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/tpm2
 WORKDIR tpm2

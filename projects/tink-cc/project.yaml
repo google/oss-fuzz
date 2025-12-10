@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://developers.google.com/tink"
 language: c++
 primary_contact: "thaidn@google.com"

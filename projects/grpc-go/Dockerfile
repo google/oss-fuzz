@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN git clone https://github.com/grpc/grpc-go
 
 RUN git clone --depth 1 https://github.com/grpc/grpc-go $GOPATH/src/google.golang.org/grpc

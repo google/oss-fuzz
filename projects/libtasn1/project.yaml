@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://gitlab.com/gnutls/libtasn1"
 language: c++
 primary_contact: "rockdaboot@gmail.com"

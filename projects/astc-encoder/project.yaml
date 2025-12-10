@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/ARM-software/astc-encoder"
 language: c++
 primary_contact: "peter.harris@arm.com"

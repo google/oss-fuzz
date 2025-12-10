@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 
 RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
 
