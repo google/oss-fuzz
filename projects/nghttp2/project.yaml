@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://nghttp2.org/"
 language: c++
 primary_contact: "tatsuhiro.t@gmail.com"

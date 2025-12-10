@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 
 RUN git clone --recursive --depth 1 https://github.com/cloudflare/quiche quiche
 COPY build.sh $SRC/

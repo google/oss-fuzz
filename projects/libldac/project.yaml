@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://android.googlesource.com/platform/external/libldac"
 language: c++
 primary_contact: "Chisato.Kenmochi@sony.com"

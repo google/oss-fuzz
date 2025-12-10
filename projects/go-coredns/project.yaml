@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://coredns.io"
 primary_contact: "security@coredns.io"
 main_repo: 'https://github.com/coredns/coredns.git'

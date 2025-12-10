@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/agronholm/cbor2.git
 WORKDIR cbor2
 COPY build.sh *.py $SRC/

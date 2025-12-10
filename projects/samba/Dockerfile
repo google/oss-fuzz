@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone https://gitlab.com/samba-team/samba samba
 RUN samba/lib/fuzzing/oss-fuzz/build_image.sh

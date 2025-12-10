@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://www.leptonica.com"
 language: c++
 primary_contact: "taking@google.com"

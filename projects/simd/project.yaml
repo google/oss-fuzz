@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://ermig1979.github.io/Simd"
 language: c++
 primary_contact: "ermig@tut.by"
