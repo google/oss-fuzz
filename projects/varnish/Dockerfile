@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt install -y automake autoconf libtool pkg-config python3-docutils python3-sphinx libedit-dev libpcre2-dev libncurses-dev
 RUN git clone --depth 1 --recursive https://github.com/varnishcache/varnish-cache
 COPY build.sh $SRC

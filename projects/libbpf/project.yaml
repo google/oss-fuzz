@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/libbpf/libbpf"
 language: c
 primary_contact: "andrii.nakryiko@gmail.com"

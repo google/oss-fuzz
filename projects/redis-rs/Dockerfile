@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04 as builder
 
 RUN git clone --depth 1 https://github.com/redis-rs/redis-rs.git
 COPY build.sh $SRC/

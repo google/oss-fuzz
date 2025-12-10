@@ -18,7 +18,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # Base packages
 RUN apt-get -y update && apt-get -y install \

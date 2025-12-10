@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/go-ole/go-ole
 WORKDIR $SRC/go-ole
 COPY build.sh fuzz_test.go $SRC/
