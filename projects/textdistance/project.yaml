@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/life4/textdistance"
 language: python
 primary_contact: "gram@orsinium.dev"

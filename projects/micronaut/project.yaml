@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://micronaut.io/"
 main_repo: "https://github.com/micronaut-projects/micronaut-core"
 language: jvm

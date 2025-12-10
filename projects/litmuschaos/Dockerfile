@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone https://github.com/litmuschaos/litmus.git
 RUN git clone https://github.com/litmuschaos/chaos-exporter.git
 RUN git clone https://github.com/litmuschaos/litmus-go.git

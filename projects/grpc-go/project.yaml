@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://grpc.io/"
 primary_contact: "menghanl@google.com"
 auto_ccs:

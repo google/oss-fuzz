@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://znc.in"
 language: c++
 primary_contact: "alexey+znc@asokolov.org"

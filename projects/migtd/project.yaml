@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/intel/MigTD"
 language: rust
 primary_contact: "wei3.liu@intel.com"

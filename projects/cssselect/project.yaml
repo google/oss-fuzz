@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: https://github.com/scrapy/cssselect
 main_repo: https://github.com/scrapy/cssselect
 language: python

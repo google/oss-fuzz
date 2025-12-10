@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 fuzzing_engines:
 - libfuzzer
 homepage: https://github.com/AzureAD/microsoft-authentication-library-for-python

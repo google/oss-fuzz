@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://matt.ucc.asn.au/dropbear/dropbear.html"
 language: c++
 primary_contact: "matt@ucc.asn.au"

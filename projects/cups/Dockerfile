@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y zlib1g-dev libavahi-client-dev libsystemd-dev
 RUN git clone --depth 1 https://github.com/OpenPrinting/cups
 RUN git clone --depth 1 https://github.com/OpenPrinting/fuzzing.git

@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "http://www.rarlab.com/"
 language: c++
 primary_contact: "roshal@rarlab.com"

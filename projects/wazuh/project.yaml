@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://wazuh.com/"
 main_repo: 'https://github.com/wazuh/wazuh'
 primary_contact: "devel@wazuh.com"

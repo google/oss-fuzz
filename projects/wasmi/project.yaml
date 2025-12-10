@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://wasmi-labs.github.io/blog/"
 main_repo: "https://github.com/wasmi-labs/wasmi"
 primary_contact: "robin.freyler@gmail.com"

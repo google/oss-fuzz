@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/dom4j/dom4j"
 language: jvm
 main_repo: "https://github.com/dom4j/dom4j.git"

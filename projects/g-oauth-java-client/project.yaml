@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: https://github.com/googleapis/google-oauth-java-client
 main_repo: https://github.com/googleapis/google-oauth-java-client
 language: jvm

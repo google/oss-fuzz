@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder:v1
 
 RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
 WORKDIR boost

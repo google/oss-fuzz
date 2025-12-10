@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://icalendar.readthedocs.io/en/latest/"
 language: python
 primary_contact: "johannes@raggam.co.at"

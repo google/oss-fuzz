@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/dloebl/cgif"
 language: c
 primary_contact: "dloebl.2000@gmail.com"

@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://jtablesaw.github.io/tablesaw/"
 language: jvm
 fuzzing_engines:

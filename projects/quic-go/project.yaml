@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/quic-go/quic-go"
 primary_contact: "martenseemann@gmail.com"
 language: go

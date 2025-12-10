@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool libtool-bin pkg-config gettext sudo default-jdk
 RUN git clone --depth 1 https://github.com/xiph/flac.git
 RUN git clone --depth 1 https://github.com/xiph/ogg.git

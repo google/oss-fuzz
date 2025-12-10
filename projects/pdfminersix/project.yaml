@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://pdfminersix.readthedocs.io/en/latest/"
 language: python
 primary_contact: "pietermarsman@gmail.com"

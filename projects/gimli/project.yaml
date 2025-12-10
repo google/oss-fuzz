@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/gimli-rs/gimli"
 language: rust
 primary_contact: "philipjcraig@gmail.com"

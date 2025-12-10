@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install dictgen numpy
 RUN git clone --depth 1 https://github.com/uiri/toml toml
 COPY build.sh fuzz_*.py $SRC/

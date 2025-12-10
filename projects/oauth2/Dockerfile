@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 
 RUN git clone --depth=1 https://github.com/googleapis/oauth2client oauth2
 WORKDIR oauth2

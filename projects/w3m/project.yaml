@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://tracker.debian.org/pkg/w3m"
 primary_contact: "tats@debian.org"
 language: c

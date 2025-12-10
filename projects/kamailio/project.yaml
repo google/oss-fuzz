@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "www.kamailio.org"
 main_repo: "https://github.com/kamailio/kamailio"
 primary_contact: "ossfuzz@kamailio.org"

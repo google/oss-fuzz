@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/xmldom/xmldom"
 language: javascript
 primary_contact: "coder@karfau.de"

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y git autoconf automake libtool make \
    libreadline-dev texinfo libjson-c-dev pkg-config bison flex python3-pip \

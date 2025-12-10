@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update -y && apt-get install -y cmake make pkg-config
 
 # https://github.com/abseil/abseil-cpp/issues/1524#issuecomment-1739364093

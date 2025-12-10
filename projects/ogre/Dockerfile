@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update -y && apt-get install -y curl libgtest-dev libx11-dev
 RUN git clone --depth 1 https://github.com/OGRECave/ogre
 COPY build.sh *.cpp $SRC/

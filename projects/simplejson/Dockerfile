@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/simplejson/simplejson simplejson
 COPY *.sh *py $SRC/
 WORKDIR $SRC/simplejson

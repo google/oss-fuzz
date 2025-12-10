@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y python3-pip libdbus-1-dev libnghttp2-dev libpsl-dev asciidoc-base libunistring-dev libffi-dev libpcre2-dev
 RUN unset CFLAGS CXXFLAGS && pip3 install -U meson ninja packaging
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/tinysparql.git

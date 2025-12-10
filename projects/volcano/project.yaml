@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://volcano.sh/"
 language: go
 primary_contact: "cxz2536818783@gmail.com"

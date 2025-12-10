@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: https://github.com/python/typing_extensions
 language: python
 main_repo: https://github.com/python/typing_extensions

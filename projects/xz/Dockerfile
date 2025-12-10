@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf autopoint libtool zip
 RUN git clone https://github.com/tukaani-project/xz.git
 COPY build.sh $SRC/

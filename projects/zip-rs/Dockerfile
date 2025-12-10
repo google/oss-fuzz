@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 ENV RUSTUP_TOOLCHAIN nightly-2025-07-16
 RUN git clone --depth 1 https://github.com/zip-rs/zip
 COPY fuzz $SRC/zip/fuzz

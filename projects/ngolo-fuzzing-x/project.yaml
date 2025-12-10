@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "'https://github.com/catenacyber/ngolo-fuzzing"
 primary_contact: "p.antoine@catenacyber.fr"
 language: go

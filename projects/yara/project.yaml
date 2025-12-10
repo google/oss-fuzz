@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "http://virustotal.github.io/yara/"
 language: c++
 primary_contact: "vmalvarez@google.com"

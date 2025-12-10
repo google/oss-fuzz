@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN git clone --depth=1 https://github.com/wasmi-labs/wasmi wasmi
 WORKDIR wasmi
 COPY build.sh $SRC/

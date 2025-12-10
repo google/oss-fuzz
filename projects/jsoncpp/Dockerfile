@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update -y && apt-get install -y curl wget \
     binutils cmake ninja-build liblzma-dev libz-dev pkg-config autoconf libtool
 RUN git clone --depth 1 https://github.com/open-source-parsers/jsoncpp

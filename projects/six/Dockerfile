@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 ##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install --upgrade pip HTMLParser
 RUN git clone https://github.com/benjaminp/six six
 COPY *.sh *py $SRC/

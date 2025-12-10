@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-swift:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-swift
 
 RUN git clone --depth 1 https://github.com/apple/swift-protobuf.git
 COPY build.sh $SRC

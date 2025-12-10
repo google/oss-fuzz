@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "http://libusb.info/"
 language: c++
 primary_contact: "christopher.a.dickens@gmail.com"

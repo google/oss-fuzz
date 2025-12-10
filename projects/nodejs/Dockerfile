@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make flex bison build-essential
 RUN git clone --recursive --depth 1 https://github.com/nodejs/node
 RUN wget https://go.dev/dl/go1.24.5.linux-amd64.tar.gz \

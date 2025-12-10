@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://www.ntop.org/products/deep-packet-inspection/ndpi/"
 language: c++
 primary_contact: "luca.deri@gmail.com"

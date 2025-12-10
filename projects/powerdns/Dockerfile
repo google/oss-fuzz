@@ -15,7 +15,7 @@
 ################################################################################
 
 # base image with clang toolchain
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 
 # install required packages to build your project
 RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel

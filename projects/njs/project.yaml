@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://nginx.org/en/docs/njs/"
 language: c++
 primary_contact: "xeioexception@gmail.com"
