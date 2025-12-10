@@ -1631,8 +1631,10 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     testcase_path,
     args,
     architecture='x86_64',
-    run_function=docker_run):
+    run_function=None):
   """Reproduces a specific test case."""
+  if run_function is None:
+    run_function = docker_run
   if not check_project_exists(project):
     return False
 
