@@ -17,7 +17,7 @@
 
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/openssl/fuzz/fuzz_introspector_exclusion.config
 
-CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment enable-unit-test no-apps no-tests"
+CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment enable-unit-test no-tests"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
   CONFIGURE_FLAGS="$CONFIGURE_FLAGS no-asm"
@@ -38,11 +38,13 @@ fi
 
 function build_fuzzers() {
     SUFFIX=$1
+    local EXTRA_CONFIGURE_FLAGS="$2"
+
     if [[ $CFLAGS = *-m32* ]]
     then
         setarch i386 ./config $CONFIGURE_FLAGS
     else
-        ./config $CONFIGURE_FLAGS
+        ./config $CONFIGURE_FLAGS $EXTRA_CONFIGURE_FLAGS
     fi
 
     df -h
@@ -80,7 +82,7 @@ function build_fuzzers() {
 }
 
 cd $SRC/openssl/
-build_fuzzers ""
+build_fuzzers "" "no-apps"
 
 # In introspector, indexer builds and when capturing replay builds, only build
 # the master branch
@@ -88,11 +90,13 @@ if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" || -n "${CAPTURE_R
   exit 0
 fi
 
+cd $SRC/openssl30/
+build_fuzzers "_30" ""
 cd $SRC/openssl33/
-build_fuzzers "_33"
+build_fuzzers "_33" "no-apps"
 cd $SRC/openssl34/
-build_fuzzers "_34"
+build_fuzzers "_34" "no-apps"
 cd $SRC/openssl35/
-build_fuzzers "_35"
+build_fuzzers "_35" "no-apps"
 cd $SRC/openssl36/
-build_fuzzers "_36"
+build_fuzzers "_36" "no-apps"
