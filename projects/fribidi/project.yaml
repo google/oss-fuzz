@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/fribidi/fribidi"
 language: c
 primary_contact: "dov.grobgeld@gmail.com"

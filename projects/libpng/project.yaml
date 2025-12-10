@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "http://www.libpng.org/pub/png/libpng.html"
 language: c++
 primary_contact: "ctruta@gmail.com"

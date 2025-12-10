@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone https://github.com/Exiv2/exiv2 exiv2
 RUN ./exiv2/ci/install_dependencies.sh

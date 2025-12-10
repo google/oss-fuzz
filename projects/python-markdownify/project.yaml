@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: http://github.com/matthewwithanm/python-markdownify
 main_repo: http://github.com/matthewwithanm/python-markdownify
 language: python

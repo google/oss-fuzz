@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update 
 RUN git clone https://github.com/cesanta/mongoose
 WORKDIR $SRC

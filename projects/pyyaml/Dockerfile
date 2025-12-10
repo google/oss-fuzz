@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/yaml/pyyaml
 RUN python3 -m pip install --upgrade pip
 WORKDIR $SRC

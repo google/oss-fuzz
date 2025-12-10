@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 
 RUN apt-get install libpq-dev postgresql -y
 

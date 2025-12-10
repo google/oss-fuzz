@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: https://github.com/apache/calcite-avatica
 main_repo: https://github.com/apache/calcite-avatica
 language: jvm

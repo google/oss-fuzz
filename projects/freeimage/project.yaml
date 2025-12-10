@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "http://freeimage.sourceforge.net/"
 main_repo: 'https://svn.code.sf.net/p/freeimage/svn/'
 language: c++

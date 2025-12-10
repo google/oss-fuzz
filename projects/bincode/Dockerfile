@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04 as builder
+FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 RUN apt-get update
 RUN git clone --depth 1 https://git.sr.ht/~stygianentity/bincode
 ENV RUSTUP_TOOLCHAIN nightly-2025-01-10

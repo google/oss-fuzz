@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/clbanning/mxj mxj
 RUN wget https://go.dev/dl/go1.24.6.linux-amd64.tar.gz \

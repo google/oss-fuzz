@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ASAN_OPTIONS=detect_leaks=0
 RUN apt update && apt install -y cmake make

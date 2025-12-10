@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 
 # library build dependencies
 RUN apt-get update && \

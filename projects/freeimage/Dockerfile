@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget dos2unix
 RUN svn checkout https://svn.code.sf.net/p/freeimage/svn/ freeimage-svn
 WORKDIR $SRC/freeimage-svn/FreeImage/trunk/

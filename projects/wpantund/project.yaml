@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/openthread/wpantund"
 language: c++
 primary_contact: "rquattle@google.com"

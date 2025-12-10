@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "http://www.boost.org/"
 language: c++
 primary_contact: "pauldreikossfuzz@gmail.com"

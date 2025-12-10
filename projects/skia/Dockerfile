@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 
 # Mesa,libz/zlib, and xcb needed to build swiftshader
 RUN apt-get update && apt-get install -y python3 wget libglu1-mesa-dev cmake zlib1g-dev libxext-dev libxcb-shm0-dev

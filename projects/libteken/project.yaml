@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "http://svn.freebsd.org/base/head/sys/teken/"
 language: c++
 primary_contact: "ed@nuxi.nl"

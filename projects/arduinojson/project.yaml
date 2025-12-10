@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/bblanchon/ArduinoJson"
 language: c++
 primary_contact: "benoit.blanchon@gmail.com"

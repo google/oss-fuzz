@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-javascript:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf-js
 WORKDIR pdf-js

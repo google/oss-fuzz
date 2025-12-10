@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y python3-distutils libpq-dev python3-wheel
 RUN git clone https://github.com/stub42/pytz
 RUN pip3 install wheel

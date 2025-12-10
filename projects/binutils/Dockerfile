@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make texinfo libgmp-dev libmpfr-dev
 RUN apt-get install -y flex bison
 RUN git clone --depth=1 https://github.com/DavidKorczynski/binary-samples binary-samples

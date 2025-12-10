@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
 RUN pwd

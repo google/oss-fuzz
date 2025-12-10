@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://speex.org/"
 language: c++
 primary_contact: "tmatth@videolan.org"

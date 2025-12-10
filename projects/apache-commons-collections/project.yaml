@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 fuzzing_engines:
 - libfuzzer
 homepage: https://commons.apache.org/proper/commons-collections/

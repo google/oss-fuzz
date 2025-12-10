@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/ittiam-systems/libxaac"
 language: c++
 primary_contact: "harish.mahendrakar@ittiam.com"

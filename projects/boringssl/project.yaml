@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://boringssl.googlesource.com/boringssl/"
 language: c++
 primary_contact: "agl@google.com"

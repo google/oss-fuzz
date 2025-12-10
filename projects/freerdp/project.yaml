@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://www.freerdp.com/"
 main_repo: "https://github.com/FreeRDP/FreeRDP"
 language: c

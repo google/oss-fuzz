@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://eclipse-ee4j.github.io/mail"
 language: jvm
 primary_contact: ""

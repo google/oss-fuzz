@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf autoconf-archive automake gettext libtool pkg-config
 
 RUN git clone --depth 1 --branch master https://github.com/mdbtools/mdbtools mdbtools

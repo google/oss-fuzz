@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: https://github.com/atteo/evo-inflector
 main_repo: https://github.com/atteo/evo-inflector
 language: jvm

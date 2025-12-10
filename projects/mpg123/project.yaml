@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://www.mpg123.de"
 language: c++
 primary_contact: "maintainer@mpg123.org"

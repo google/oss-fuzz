@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "http://giflib.sourceforge.net/"
 main_repo: "https://git.code.sf.net/p/giflib/code"
 language: c++

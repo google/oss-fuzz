@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 RUN git clone --depth 1 https://github.com/apache/calcite-avatica calcite-avatica
 COPY *.sh *.java $SRC/
 WORKDIR $SRC/calcite-avatica

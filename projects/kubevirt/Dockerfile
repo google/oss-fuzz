@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt update && apt install -y qemu-kvm libvirt-daemon-system
 RUN git clone --depth 1 https://github.com/kubevirt/kubevirt
 RUN git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2_2 $SRC/go-118-fuzz-build

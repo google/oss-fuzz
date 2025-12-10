@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/lz4/lz4"
 language: python
 primary_contact: "jonathan.underwood@gmail.com"

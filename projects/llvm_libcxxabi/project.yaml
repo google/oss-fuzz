@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://libcxxabi.llvm.org/"
 language: c++
 primary_contact: "kcc@google.com"

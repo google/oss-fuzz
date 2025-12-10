@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/civetweb/civetweb"
 primary_contact: "bel2125@gmail.com"
 language: c

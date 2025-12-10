@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/seanmonstar/httparse"
 main_repo: "https://github.com/seanmonstar/httparse"
 primary_contact: "seanmonstar@gmail.com"

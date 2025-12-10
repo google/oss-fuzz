@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://proj.org/"
 language: c++
 main_repo: "https://github.com/OSGeo/PROJ"

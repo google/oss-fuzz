@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN git clone --depth 1 --recursive https://github.com/ccc-spdm-tools/spdm-rs.git
 COPY build.sh $SRC/
 WORKDIR $SRC/spdm-rs

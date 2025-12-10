@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-go
 LABEL maintainer="codyoss@google.com"
 RUN git clone https://github.com/googleapis/google-cloud-go
 COPY build.sh $SRC/

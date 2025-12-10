@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://marzer.github.io/tomlplusplus/"
 language: c++
 primary_contact: "mark.gillard@outlook.com.au"

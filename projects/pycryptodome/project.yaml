@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: https://www.pycryptodome.org/
 language: c
 main_repo: https://github.com/Legrandin/pycryptodome.git

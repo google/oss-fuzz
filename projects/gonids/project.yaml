@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/google/gonids"
 primary_contact: "duane.security@gmail.com"
 auto_ccs:

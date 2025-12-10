@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://docs.tinyusb.org/en/latest/"
 language: c++
 primary_contact: "Ha Thach"

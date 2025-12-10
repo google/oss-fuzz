@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://opensource.google/projects/cel"
 primary_contact: "tswadell@google.com"
 auto_ccs:

@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/OWASP/json-sanitizer"
 language: jvm
 primary_contact: "mikesamuel@gmail.com"

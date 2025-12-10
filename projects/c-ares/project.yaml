@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://c-ares.haxx.se/"
 language: c++
 primary_contact: "drysdale@google.com"

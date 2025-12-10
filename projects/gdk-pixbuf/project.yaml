@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: https://gitlab.gnome.org/GNOME/gdk-pixbuf/
 language: c
 primary_contact: ebassi@gnome.org

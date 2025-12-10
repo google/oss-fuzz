@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://github.com/yhirose/cpp-httplib"
 language: c++
 primary_contact: "yuji.hirose.bug@gmail.com"

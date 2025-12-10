@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: "https://crates.io/crates/tungstenite"
 language: rust
 primary_contact: "venkatamaturi98@gmail.com"

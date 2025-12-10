@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf libtool-bin pkg-config libssl-dev zlib1g-dev
 RUN git clone https://github.com/pjsip/pjproject pjsip
 COPY build.sh $SRC/
