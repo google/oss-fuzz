@@ -8,6 +8,7 @@ auto_ccs:
   - "apodtele@gmail.com"
   - "prince.cherusker@gmail.com"
   - "bungeman@chromium.org"
+  - "thestig@chromium.org"
 vendor_ccs:
   - "jkew@mozilla.com"
   - "jmuizelaar@mozilla.com"

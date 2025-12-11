@@ -162,7 +162,7 @@ if [[ "$ARCHITECTURE" == i386 ]]; then
 
       FFMPEG_BUILD_ARGS='--arch="i386" --cpu="i386" --disable-inline-asm --disable-asm'
 else
-      FFMPEG_BUILD_ARGS=''
+      FFMPEG_BUILD_ARGS='--disable-asm'
 fi
 
 if [ "$SANITIZER" = "memory" ] || [ "$FUZZING_ENGINE" = "centipede" ]; then

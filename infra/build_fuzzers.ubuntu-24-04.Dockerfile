@@ -13,12 +13,19 @@
 # limitations under the License.
 #
 ################################################################################
+# Docker image to run fuzzers for CIFuzz (the run_fuzzers action on GitHub
+# actions).
 
-FROM gcr.io/oss-fuzz-base/base-clang-full:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/cifuzz-base:ubuntu-24-04
 
-RUN mkdir /indexer
-WORKDIR /indexer
-COPY . /indexer
+# Python file to execute when the docker container starts up
+# We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,
+# just expand to '/opt/oss-fuzz'.
+ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/build_fuzzers_entrypoint.py"]
 
-RUN apt-get update && apt-get install -y libsqlite3-dev make zlib1g-dev
-RUN mkdir build && cd build && cmake .. && cmake --build . -j -v
+WORKDIR ${OSS_FUZZ_ROOT}/infra
+
+# Update infra source code.
+ADD . ${OSS_FUZZ_ROOT}/infra
+
+RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt

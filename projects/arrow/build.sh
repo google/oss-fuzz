@@ -15,21 +15,32 @@
 #
 ################################################################################
 
+# 1. Build instrumented OpenSSL
+
+OPENSSL_VERSION=3.5.4
+
+cd ${SRC}
+wget https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz
+tar -xf openssl-${OPENSSL_VERSION}.tar.gz
+cd openssl-${OPENSSL_VERSION}
+# Assembler snippets would not be instrumented, disable them
+./Configure no-apps no-docs no-tests no-shared no-asm
+make -j
+make install
+
+# 2. Build Arrow C++ proper
+
 ARROW=${SRC}/arrow/cpp
 
 BUILD_DIR=${SRC}/build-dir
 mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
 
-# The CMake build setup compiles and runs the Thrift compiler, but ASAN
-# would report leaks and error out.
-export ASAN_OPTIONS="detect_leaks=0"
-
 cmake ${ARROW} -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DARROW_DEPENDENCY_SOURCE=BUNDLED \
+    -DARROW_OPENSSL_USE_SHARED=off \
     -DBOOST_SOURCE=SYSTEM \
-    -DBoost_USE_STATIC_RUNTIME=on \
     -DARROW_BOOST_USE_SHARED=off \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
     -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
@@ -45,7 +56,7 @@ cmake ${ARROW} -GNinja \
     -DARROW_TEST_LINKAGE=static \
     -DPARQUET_BUILD_EXAMPLES=off \
     -DPARQUET_BUILD_EXECUTABLES=off \
-    -DPARQUET_REQUIRE_ENCRYPTION=off \
+    -DPARQUET_REQUIRE_ENCRYPTION=on \
     \
     -DARROW_CSV=on \
     -DARROW_JEMALLOC=off \
@@ -65,7 +76,9 @@ cmake ${ARROW} -GNinja \
 
 cmake --build . -j$(nproc)
 
+${ARROW}/build-support/fuzzing/generate_corpuses.sh ${BUILD_DIR}/release
+
 # Copy fuzz targets
 find . -executable -name "*-fuzz" -exec cp -a -v '{}' ${OUT} \;
-
-${ARROW}/build-support/fuzzing/generate_corpuses.sh ${BUILD_DIR}/release
+# Copy seed corpuses
+find . -name "*-fuzz_seed_corpus.zip" -exec cp -a -v '{}' ${OUT} \;

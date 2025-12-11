@@ -58,6 +58,12 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
     
+    // Limit input size to avoid pathologically slow parsing
+    // Ruby parser can be exponentially slow with deeply nested
+    // structures resulting in timeouts.
+    if (size > 50000) {
+        return 0;
+    }
     // Use FuzzedDataProvider for structured data consumption
     FuzzedDataProvider fdp(data, size);
     

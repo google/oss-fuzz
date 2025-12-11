@@ -41,9 +41,11 @@ SRC = Path(os.getenv('SRC', '/src'))
 OUT = Path(os.getenv('OUT', '/out'))
 INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
 INCREMENTAL_CDB_PATH = Path('/incremental_cdb')
+_GCC_BASE_PATH = Path('/usr/lib/gcc/x86_64-linux-gnu')
 
 _LD_BINARY = 'ld-linux-x86-64.so.2'
 _LD_PATH = Path('/lib64') / _LD_BINARY
+_DEFAULT_GCC_VERSION = '9'
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 
 DEFAULT_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
@@ -391,6 +393,26 @@ def copy_fuzzing_engine(fuzzing_engine: str) -> Path:
   return fuzzing_engine_dir
 
 
+def _get_latest_gcc_version() -> str:
+  """Finds the latest GCC version installed.
+
+  Defaults to '9' for backward compatibility if detection fails.
+
+  Returns:
+    The latest GCC version found, or the default.
+  """
+  if _GCC_BASE_PATH.exists():
+    versions = []
+    for d in _GCC_BASE_PATH.iterdir():
+      if d.is_dir() and d.name.isdigit():
+        versions.append(int(d.name))
+
+    if versions:
+      return str(max(versions))
+
+  return _DEFAULT_GCC_VERSION
+
+
 def build_project(
     targets_to_index: Sequence[str] | None = None,
     compile_args: Sequence[str] | None = None,
@@ -415,6 +437,7 @@ def build_project(
   )
 
   fuzzing_engine_dir = copy_fuzzing_engine(DEFAULT_FUZZING_ENGINE)
+  gcc_version = _get_latest_gcc_version()
   build_fuzzing_engine_command = [
       f'{_CLANG_TOOLCHAIN}/bin/clang++',
       '-c',
@@ -433,11 +456,11 @@ def build_project(
       f'{OUT}/cdb',
       '-Qunused-arguments',
       f'-isystem {_CLANG_TOOLCHAIN}/lib/clang/{clang_version}',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/c++/{gcc_version}',
       '-I',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/x86_64-linux-gnu/c++/{gcc_version}',
       '-I',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/c++/{gcc_version}/backward',
       '-I',
       f'{_CLANG_TOOLCHAIN}/lib/clang/{clang_version}/include',
       '-I',

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://jsoniter.com"
 main_repo: "https://github.com/json-iterator/go"
 primary_contact: "taowen@gmail.com"

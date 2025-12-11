@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://git.gnunet.org/libmicrohttpd2.git"
 main_repo: "https://git.gnunet.org/libmicrohttpd2.git"
 primary_contact: "christian@grothoff.org"

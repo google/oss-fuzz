@@ -16,7 +16,7 @@
 ################################################################################
 
 # Not using OpenSSL
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -Wno-deprecated-literal-operator"
 
 # Install Boost headers
     cd $SRC/

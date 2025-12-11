@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN curl -L -O https://raw.githubusercontent.com/protobuf-c/protobuf-c/39cd58f5ff06048574ed5ce17ee602dc84006162/t/test-full.proto
 RUN git clone https://github.com/protocolbuffers/protobuf.git
 RUN cd protobuf && bazel build --nobuild //:protoc //python/dist:binary_wheel --noenable_bzlmod

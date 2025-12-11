@@ -194,7 +194,7 @@ def get_projects_to_build(specified_projects, build_type, force_build):
   buildable_projects = []
   project_statuses = _get_production_build_statuses(build_type)
   for project in specified_projects:
-    if (project not in project_statuses or not project_statuses[project] or
+    if (project not in project_statuses or project_statuses[project] or
         force_build):
       buildable_projects.append(project)
   return buildable_projects
@@ -308,7 +308,7 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
 
       logging.info('Build type: %s', build_type.type_name)
       logging.info(
-          '  - Selected projects: %d / %d (due to failed production builds)',
+          '  - Selected projects: %d / %d (due to successful production builds)',
           len(projects_to_build), len(args.projects))
       logging.info('  - To build all projects, use the --force-build flag.')
     else:
