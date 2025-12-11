@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y --no-install-recommends python3 bison flex make wget xz-utils libunwind-dev lsb-release build-essential libssl-dev
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
+RUN apt-get update && apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev lsb-release build-essential libssl-dev
 
 # osquery now needs at least version 3.21.4.
 ENV cmakeVer 3.21.4
