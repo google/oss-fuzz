@@ -64,7 +64,7 @@ The Chronos manager can use the `manager.py` to validate the validity of a
 replay build for a given project:
 
 ```sh
-python3 infra/experimental/chronos/manager.py check-test tinyobjloader
+python3 infra/experimental/chronos/manager.py check-replay tinyobjloader
 ```
 
 If the above command fails for the relevant project, then the replay build feature

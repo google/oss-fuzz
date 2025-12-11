@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cert
+#include <stdint.h>
+#include <stddef.h>
+#include <nettle/rsa.h>
+#include <nettle/bignum.h>
 
-import (
-	"testing"
-)
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    struct rsa_public_key pub;
+    struct rsa_private_key priv;
 
-func FuzzKeyParsers(f *testing.F) {
-	f.Fuzz(func(t *testing.T, parser uint8, keyData []byte) {
-		switch int(parser) % 3 {
-		case 0:
-			ParsePrivateKeyPEM(keyData)
-		case 1:
-			ParsePublicKeysPEM(keyData)
-		case 2:
-			ParseCertsPEM(keyData)
-		}
-	})
+    rsa_public_key_init(&pub);
+    rsa_private_key_init(&priv);
+
+    rsa_keypair_from_der(&pub, &priv, 0, size, data);
+
+    rsa_private_key_clear(&priv);
+    rsa_public_key_clear(&pub);
+    return 0;
 }
+

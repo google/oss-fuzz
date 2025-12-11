@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://reactivex.io/"
 language: jvm
 main_repo: "https://github.com/ReactiveX/RxJava.git"

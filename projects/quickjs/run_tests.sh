@@ -22,3 +22,4 @@
 # upstream and enable all tests.
 git apply $SRC/run_tests_patch.diff
 CONFIG_CLANG=y make test
+git apply -R $SRC/run_tests_patch.diff

@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package install
+#include <stdint.h>
+#include <stddef.h>
+#include <nettle/rsa.h>
+#include <nettle/asn1.h>
+#include <nettle/bignum.h>
 
-import (
-	"testing"
-)
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    struct rsa_public_key pub;
+    struct asn1_der_iterator iter;
 
-func FuzzLoadInstallStrategyFromBytes(f *testing.F) {
-	f.Fuzz(func(t *testing.T, data string) {
-		_, _ = loadInstallStrategyFromBytes(data)
-	})
+    rsa_public_key_init(&pub);
+
+    if (asn1_der_iterator_first(&iter, size, data) == ASN1_ITERATOR_CONSTRUCTED) {
+        rsa_public_key_from_der_iterator(&pub, 0, &iter);
+    }
+
+    rsa_public_key_clear(&pub);
+    return 0;
 }
+

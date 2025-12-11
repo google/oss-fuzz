@@ -1,4 +1,5 @@
-# Copyright 2025 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang-full:ubuntu-24-04
+$SRC/cncf-fuzzing/projects/oxia/build.sh
 
-RUN mkdir /indexer
-WORKDIR /indexer
-COPY . /indexer
-
-RUN apt-get update && apt-get install -y libsqlite3-dev make zlib1g-dev
-RUN mkdir build && cd build && cmake .. && cmake --build . -j -v
