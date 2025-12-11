@@ -20,10 +20,9 @@ RUN apt-get --yes update \
    && apt-get install --no-install-recommends --yes \
    libssl-dev \
    pkg-config \
-   python \
    && apt-get clean \
    && rm --recursive --force /var/lib/apt/lists/*
-
+ENV RUSTUP_TOOLCHAIN nightly-2025-07-16
 RUN git clone https://github.com/ctz/rustls
 RUN git clone --depth 1 https://github.com/rustls/rustls-fuzzing-corpora
 
