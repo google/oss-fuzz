@@ -5,3 +5,4 @@ auto_ccs:
   - "tobias@strongswan.org"
   - "andreas.steffen@strongswan.org"
 main_repo: 'https://github.com/strongswan/strongswan.git'
+base_os_version: ubuntu-24-04
