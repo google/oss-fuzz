@@ -39,6 +39,7 @@ fi
 function build_fuzzers() {
     SUFFIX=$1
     local EXTRA_CONFIGURE_FLAGS="$2"
+    local EXTRA_SOURCES="$3"
 
     if [[ $CFLAGS = *-m32* ]]
     then
@@ -68,7 +69,7 @@ function build_fuzzers() {
     cp fuzz/oids.txt $OUT/x509${SUFFIX}.dict
     if [ "$SANITIZER" == coverage ]; then
       DESTDIR=$OUT/src/openssl${SUFFIX#_}
-      SOURCES="include crypto ssl providers engines fuzz"
+      SOURCES="include crypto ssl providers fuzz $EXTRA_SOURCES"
       mkdir -p $DESTDIR
       if [ -f e_os.h ]; then
         cp e_os.h $DESTDIR/
@@ -82,7 +83,7 @@ function build_fuzzers() {
 }
 
 cd $SRC/openssl/
-build_fuzzers "" "no-apps"
+build_fuzzers "" "no-apps" ""
 
 # In introspector, indexer builds and when capturing replay builds, only build
 # the master branch
@@ -91,12 +92,12 @@ if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" || -n "${CAPTURE_R
 fi
 
 cd $SRC/openssl30/
-build_fuzzers "_30" ""
+build_fuzzers "_30" "" "engines"
 cd $SRC/openssl33/
-build_fuzzers "_33" "no-apps"
+build_fuzzers "_33" "no-apps" "engines"
 cd $SRC/openssl34/
-build_fuzzers "_34" "no-apps"
+build_fuzzers "_34" "no-apps" "engines"
 cd $SRC/openssl35/
-build_fuzzers "_35" "no-apps"
+build_fuzzers "_35" "no-apps" "engines"
 cd $SRC/openssl36/
-build_fuzzers "_36" "no-apps"
+build_fuzzers "_36" "no-apps" "engines"
