@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y --no-install-recommends python3 bison flex make wget xz-utils libunwind-dev lsb-release build-essential libssl-dev
 
 # osquery now needs at least version 3.21.4.

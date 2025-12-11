@@ -16,4 +16,3 @@ fuzzing_engines:
  - afl
 main_repo: 'https://github.com/osquery/osquery'
 coverage_extra_args: -ignore-filename-regex=.*/libraries/.* -ignore-filename-regex=.*/build/libs/.* -ignore-filename-regex=.*/build/openssl/.* -ignore-filename-regex=.*/build/installed_formulas/.*
-base_os_version: ubuntu-24-04
