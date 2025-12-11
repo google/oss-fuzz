@@ -46,7 +46,6 @@ make -j$(nproc)
 make install
 
 cd $SRC/xmlsec
-git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
 sed -i 's/-pedantic-errors//g' configure.ac
 sed -i 's/-pedantic//g' configure.ac
 autoreconf -vfi
