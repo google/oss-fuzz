@@ -28,19 +28,20 @@ fi
 cmake .. -DBUILD_SHARED_LIBS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -DWITH_SSL=system -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_LD=lld $MY_SANITIZER -DCMAKE_VERBOSE_MAKEFILE=ON
 make -j$(nproc)
 mkdir -p $OUT/lib/
+
+# Copy all shared libraries that fuzzers may need
 cp library_output_directory/libmysql*.so.* $OUT/lib/
-(
-cd runtime_output_directory/
-ls *fuzz* | while read i; do
-    cp $i $OUT/
-    chrpath -r '$ORIGIN/lib' $OUT/$i
+# Copy harness and router libraries for router/http fuzzers
+cp library_output_directory/libmysqlharness*.so.* $OUT/lib/ 2>/dev/null || true
+cp library_output_directory/libmysqlrouter*.so.* $OUT/lib/ 2>/dev/null || true
+
+# Copy all fuzzer binaries from anywhere in the build directory
+find . -name "routertest_fuzz_*" -type f -executable | while read fuzzer; do
+    fuzzer_name=$(basename "$fuzzer")
+    cp "$fuzzer" $OUT/
+    # Only run chrpath if the binary has an rpath/runpath
+    if chrpath -l $OUT/$fuzzer_name 2>/dev/null | grep -q "R.*PATH"; then
+        chrpath -r '$ORIGIN/lib' $OUT/$fuzzer_name
+    fi
 done
-)
 
-#TODO merge custom targets upstream
-#cp ../fuzz/fuzz*.options $OUT/
-#cp ../fuzz/fuzz*.dict $OUT/
-#cp ../fuzz/init*.sql $OUT/
-
-#rm -Rf $OUT/mysql/data
-#$OUT/mysql/bin/mysqld --user=root --initialize-insecure --log-error-verbosity=5 --skip-ssl --datadir=$OUT/mysql/data --basedir=$OUT/mysql/
