@@ -16,10 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN echo "deb http://packages.networkradius.com/extras/ubuntu/focal focal  main" > /etc/apt/sources.list.d/networkradius-extras.list
-RUN apt-get install -y gnupg
+RUN apt-get update && apt-get install -y gnupg
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BE18FC5A41382202
-RUN apt-get update
-RUN apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev
+RUN apt-get update && apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev
 
 # OpenSSL 3.0
 ARG OPENSSL_VERSION=3.0.15
