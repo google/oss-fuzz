@@ -32,7 +32,6 @@ RUN apt-get update && apt-get install -y \
  curl \
  gperf \
  wget \
- python \
  rsync \
  gtk-doc-tools \
  libtasn1-bin \
