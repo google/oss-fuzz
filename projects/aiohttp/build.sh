@@ -18,7 +18,7 @@
 git submodule update --init --recursive
 pushd "$SRC/aiohttp/vendor/llhttp/"
 npm ci
-make
+npm run build
 popd # "$SRC/aiohttp/vendor/llhttp/"
 
 # Build & install aiohttp
