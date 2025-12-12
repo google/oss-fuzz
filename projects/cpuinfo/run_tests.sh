@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +15,25 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/pytorch/cpuinfo
-WORKDIR cpuinfo
-COPY run_tests.sh build.sh *.c $SRC/
+cd $SRC/cpuinfo
+
+# Build cpuinfo without fuzzing instrumentation
+unset CFLAGS CXXFLAGS
+export CC=clang
+export CXX=clang++
+
+# Create build directory for testing
+mkdir -p build-test
+cd build-test
+
+# Configure with tests enabled
+cmake .. \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DCPUINFO_BUILD_UNIT_TESTS=ON \
+    -DCPUINFO_BUILD_MOCK_TESTS=ON
+
+# Build
+make -j$(nproc)
+
+# Run tests
+ctest --output-on-failure
