@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+
 SRC_DIR="$SRC/zxc_project"
 
 $CC $CFLAGS -I"$SRC_DIR/include" -I"$SRC_DIR/src/lib" -c "$SRC_DIR/src/lib/zxc_common.c" -o zxc_common.o

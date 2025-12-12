@@ -9,4 +9,6 @@ sanitizers:
   - address
   - memory
   - undefined
+architectures:
+  - x86_64
 main_repo: "https://github.com/hellobertrand/zxc"
