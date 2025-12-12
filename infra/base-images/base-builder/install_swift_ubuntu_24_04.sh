@@ -35,8 +35,8 @@ if [[ "$VERSION_ID" == "20.04" ]]; then
             pkg-config \
             tzdata \
             zlib1g-dev"
-  SWIFT_URL="https://download.swift.org/swift-5.10.1-release/ubuntu2004/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu_20_04.tar.gz"
-  SWIFT_DIR="swift-5.10.1-RELEASE-ubuntu_20_04"
+  SWIFT_URL="https://download.swift.org/swift-6.1.3-release/ubuntu2004/swift-6.1.3-RELEASE/swift-6.1.3-RELEASE-ubuntu20.04.tar.gz"
+  SWIFT_DIR="swift-6.1.3-RELEASE-ubuntu20_04"
 elif [[ "$VERSION_ID" == "24.04" ]]; then
   SWIFT_PACKAGES="wget \
             binutils \
@@ -53,8 +53,8 @@ elif [[ "$VERSION_ID" == "24.04" ]]; then
             pkg-config \
             tzdata \
             zlib1g-dev"
-  SWIFT_URL="https://download.swift.org/swift-5.10.1-release/ubuntu2404/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu24.04.tar.gz"
-  SWIFT_DIR="swift-5.10.1-RELEASE-ubuntu24.04"
+  SWIFT_URL="https://download.swift.org/swift-6.1.3-release/ubuntu2404/swift-6.1.3-RELEASE/swift-6.1.3-RELEASE-ubuntu24.04.tar.gz"
+  SWIFT_DIR="swift-6.1.3-RELEASE-ubuntu24.04"
 else
   echo "Unsupported Ubuntu version: $VERSION_ID"
   exit 1
