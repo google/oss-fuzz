@@ -31,16 +31,17 @@ SWIFT_PACKAGES="wget \
           libz3-dev \
           pkg-config \
           tzdata \
+          uuid-dev \
           zlib1g-dev"
 SWIFT_SYMBOLIZER_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev"
 apt-get update && apt install -y $SWIFT_PACKAGES && \
   apt install -y $SWIFT_SYMBOLIZER_PACKAGES --no-install-recommends
 
 
-wget -q https://download.swift.org/swift-5.10.1-release/ubuntu2004/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu20.04.tar.gz
-tar xzf swift-5.10.1-RELEASE-ubuntu20.04.tar.gz
-cp -r swift-5.10.1-RELEASE-ubuntu20.04/usr/* /usr/
-rm -rf swift-5.10.1-RELEASE-ubuntu20.04.tar.gz swift-5.10.1-RELEASE-ubuntu20.04/
+wget -q https://download.swift.org/swift-6.1.3-release/ubuntu2004/swift-6.1.3-RELEASE/swift-6.1.3-RELEASE-ubuntu20.04.tar.gz
+tar xzf swift-6.1.3-RELEASE-ubuntu20.04.tar.gz
+cp -r swift-6.1.3-RELEASE-ubuntu20.04/usr/* /usr/
+rm -rf swift-6.1.3-RELEASE-ubuntu20.04.tar.gz swift-6.1.3-RELEASE-ubuntu20.04/
 # TODO: Move to a seperate work dir
 git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
@@ -63,5 +64,5 @@ cd $SRC
 rm -rf llvm-project llvmsymbol.diff
 
 # TODO: Cleanup packages
-apt-get remove --purge -y wget zlib1g-dev
+apt-get remove --purge -y wget
 apt-get autoremove -y
