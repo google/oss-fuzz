@@ -34,27 +34,32 @@ if [[ "$VERSION_ID" == "20.04" ]]; then
             libz3-dev \
             pkg-config \
             tzdata \
+            uuid-dev \
             zlib1g-dev"
-  SWIFT_URL="https://download.swift.org/swift-5.10.1-release/ubuntu2004/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu_20_04.tar.gz"
-  SWIFT_DIR="swift-5.10.1-RELEASE-ubuntu_20_04"
+  SWIFT_URL="https://download.swift.org/swift-6.1.3-release/ubuntu2004/swift-6.1.3-RELEASE/swift-6.1.3-RELEASE-ubuntu20.04.tar.gz"
+  SWIFT_DIR="swift-6.1.3-RELEASE-ubuntu20_04"
 elif [[ "$VERSION_ID" == "24.04" ]]; then
   SWIFT_PACKAGES="wget \
             binutils \
             git \
             gnupg2 \
             libc6-dev \
-            libcurl4 \
+            libcurl4-openssl-dev \
             libedit2 \
             libgcc-13-dev \
+            libncurses-dev \
+            libpython3-dev \
             libsqlite3-0 \
             libstdc++-13-dev \
-            libxml2 \
+            libxml2-dev \
             libz3-dev \
             pkg-config \
             tzdata \
+            zip \
+            unzip \
             zlib1g-dev"
-  SWIFT_URL="https://download.swift.org/swift-5.10.1-release/ubuntu2404/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu24.04.tar.gz"
-  SWIFT_DIR="swift-5.10.1-RELEASE-ubuntu24.04"
+  SWIFT_URL="https://download.swift.org/swift-6.1.3-release/ubuntu2404/swift-6.1.3-RELEASE/swift-6.1.3-RELEASE-ubuntu24.04.tar.gz"
+  SWIFT_DIR="swift-6.1.3-RELEASE-ubuntu24.04"
 else
   echo "Unsupported Ubuntu version: $VERSION_ID"
   exit 1
@@ -92,5 +97,5 @@ cd $SRC
 rm -rf llvm-project llvmsymbol.diff
 
 # TODO: Cleanup packages
-apt-get remove --purge -y wget zlib1g-dev
+apt-get remove --purge -y wget
 apt-get autoremove -y
