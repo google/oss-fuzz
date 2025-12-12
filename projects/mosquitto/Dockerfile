@@ -19,6 +19,21 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # Main repo
 RUN git clone --depth 1 -b develop https://github.com/eclipse-mosquitto/mosquitto ${SRC}/mosquitto
 
+# Build LPM separately to other deps to allow better caching
+RUN apt-get update && apt-get install -y \
+	autoconf \
+	binutils \
+	cmake \
+	liblzma-dev \
+	libtool \
+	libz-dev \
+	make  \
+	ninja-build \
+	pkg-config
+RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
+RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON \
+    -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
+
 # Get dependencies
 RUN $SRC/mosquitto/fuzzing/scripts/oss-fuzz-dependencies.sh
 
