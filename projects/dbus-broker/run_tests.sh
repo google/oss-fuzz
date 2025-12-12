@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +15,21 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
-RUN git clone --depth 1 https://github.com/bus1/dbus-broker
+cd $SRC/dbus-broker
 
-# RUSTUP_TOOLCHAIN is set explicitly to match the latest images
-# to get around https://github.com/google/oss-fuzz/issues/14220.
-# It should be removed once that issue is resolved.
-ENV RUSTUP_TOOLCHAIN nightly-2025-09-05
+# Build without fuzzing instrumentation
+unset CFLAGS CXXFLAGS RUSTFLAGS
+export CC=clang
+export CXX=clang++
 
-RUN cargo install bindgen-cli
-WORKDIR dbus-broker
-COPY *.c build.sh run_tests.sh $SRC/
+# Configure with meson (minimal build for testing)
+meson setup build \
+    --buildtype=debug \
+    -Dtests=true \
+    -Dreference-test=false
+
+# Build
+meson compile -C build
+
+# Run tests
+meson test -C build --print-errorlogs
