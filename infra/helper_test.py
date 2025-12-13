@@ -237,3 +237,68 @@ class ProjectTest(fake_filesystem_unittest.TestCase):
   def test_language_external_project(self):
     """Tests that language works as intended for an external project."""
     self.assertEqual(self.external_project.language, 'c++')
+
+
+class ReproduceTest(fake_filesystem_unittest.TestCase):
+  """Tests 'reproduce' command."""
+
+  def setUp(self):
+    self.setUpPyfakefs()
+    self.fs.add_real_directory(helper.OSS_FUZZ_DIR)
+    self.parser = helper.get_parser()
+
+  @mock.patch('helper.docker_run')
+  @mock.patch('helper._check_fuzzer_exists', return_value=True)
+  @mock.patch('helper.check_project_exists', return_value=True)
+  def test_reproduce_vanilla(self, _, __, mock_docker_run):
+    """Tests that reproduce works as intended."""
+    project_name = 'test_project'
+    fuzzer_name = 'test_fuzzer'
+    testcase_path = 'testcase_path'
+    args = helper.parse_args(self.parser, [
+        'reproduce', project_name, fuzzer_name, testcase_path])
+    args.project = helper.Project(project_name)
+
+    result = helper.reproduce(args)
+    self.assertTrue(result)
+    self.assertTrue(mock_docker_run.called)
+    call_args = mock_docker_run.call_args[0][0]
+    self.assertIn('reproduce', call_args)
+    self.assertIn(fuzzer_name, call_args)
+    self.assertIn(helper.BASE_RUNNER_IMAGE + ':latest', call_args)
+
+  @mock.patch('helper.docker_run')
+  @mock.patch('helper._check_fuzzer_exists', return_value=True)
+  @mock.patch('helper.check_project_exists', return_value=True)
+  def test_reproduce_valgrind(self, _, __, mock_docker_run):
+    """Tests that reproduce with --valgrind works as intended."""
+    project_name = 'test_project'
+    fuzzer_name = 'test_fuzzer'
+    testcase_path = 'testcase_path'
+    args = helper.parse_args(self.parser, [
+        'reproduce', '--valgrind', project_name, fuzzer_name, testcase_path])
+    args.project = helper.Project(project_name)
+
+    result = helper.reproduce(args)
+    self.assertTrue(result)
+    call_args = mock_docker_run.call_args[0][0]
+    self.assertIn(helper.BASE_RUNNER_IMAGE + '-debug:latest', call_args)
+
+  @mock.patch('helper.check_project_exists', return_value=False)
+  def test_reproduce_project_not_found(self, _):
+    """Tests that reproduce returns False when project doesn't exist."""
+    args = helper.parse_args(self.parser, [
+        'reproduce', 'test_project', 'test_fuzzer', 'testcase_path'])
+    args.project = helper.Project('test_project')
+    result = helper.reproduce(args)
+    self.assertFalse(result)
+
+  @mock.patch('helper._check_fuzzer_exists', return_value=False)
+  @mock.patch('helper.check_project_exists', return_value=True)
+  def test_reproduce_fuzzer_not_found(self, _, __):
+    """Tests that reproduce returns False when fuzzer doesn't exist."""
+    args = helper.parse_args(self.parser, [
+        'reproduce', 'test_project', 'test_fuzzer', 'testcase_path'])
+    args.project = helper.Project('test_project')
+    result = helper.reproduce(args)
+    self.assertFalse(result)
