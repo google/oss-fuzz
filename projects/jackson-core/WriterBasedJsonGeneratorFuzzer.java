@@ -16,22 +16,19 @@
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
-import com.fasterxml.jackson.core.json.*;
-import com.fasterxml.jackson.core.io.ContentReference;
-import com.fasterxml.jackson.core.io.IOContext;
-import com.fasterxml.jackson.core.util.BufferRecycler;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonFactory;
+import tools.jackson.core.json.*;
+import tools.jackson.core.io.ContentReference;
+import tools.jackson.core.io.IOContext;
+import tools.jackson.core.util.BufferRecycler;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.json.JsonFactory;
 
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
 import java.io.*;
-import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.core.SerializableString;
+import tools.jackson.core.io.SerializedString;
+import tools.jackson.core.SerializableString;
 
 public class WriterBasedJsonGeneratorFuzzer {
-  private IOContext getIOContext() {
-    return new IOContext(new BufferRecycler(), ContentReference.unknown(), false);
-  }
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     JsonFactory jf = new JsonFactory();
     StringWriter w;
@@ -40,7 +37,7 @@ public class WriterBasedJsonGeneratorFuzzer {
     try {
       w = new StringWriter();
       jg = jf.createGenerator(w);
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       return;
     }
 
@@ -51,17 +48,17 @@ public class WriterBasedJsonGeneratorFuzzer {
         switch (opType%5) {
         case 0:
           jg.writeStartObject();
-          jg.writeFieldName(data.consumeString(100000));
+          jg.writeName(data.consumeString(100000));
           jg.writeString(data.consumeString(100000));
           jg.writeEndObject();
         case 1:
           jg.writeStartObject();
-          jg.writeStringField(data.consumeString(100000), data.consumeString(100000));
+          jg.writeStringProperty(data.consumeString(100000), data.consumeString(100000));
           jg.writeEndObject();
         case 2:
           jg.writeStartObject();
           SerializableString NAME = new SerializedString(data.consumeString(100000));
-          jg.writeFieldName(NAME);
+          jg.writeName(NAME);
           jg.writeString(data.consumeString(100000));
           jg.writeEndObject();
         case 3:
@@ -74,11 +71,11 @@ public class WriterBasedJsonGeneratorFuzzer {
           jg.writeEndArray();
         }
       }      
-    } catch (IOException e) { }
+    } catch (JacksonException e) { }
 
     try {
       jg.close();
-    } catch (IOException e) { }
+    } catch (JacksonException e) { }
     
   }
 }
