@@ -29,4 +29,4 @@ ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/svg.dic
 
 WORKDIR $SRC/cairo
 COPY targets $SRC/fuzz
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
