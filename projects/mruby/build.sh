@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,10 @@
 cd $SRC/mruby
 export LD=$CC
 export LDFLAGS="$CFLAGS"
-rake -m test
+rake all
+
+# This should be allowed to fail. So long as it does not fail in `run_tests.sh`
+rake test || true
 
 # build fuzzers
 FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_fuzzer.c
