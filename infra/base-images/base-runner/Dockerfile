@@ -119,8 +119,7 @@ COPY --from=base-ruby /usr/local/include/ruby-3.3.0 /usr/local/include/ruby-3.3.
 
 # Install libyaml and simplecov for Ruby coverage reporting
 RUN apt-get update && apt-get install -y libyaml-0-2 && \
-    gem install simplecov && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    gem install simplecov
 
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
