@@ -51,3 +51,10 @@ for fuzzFile in $FUZZER_DIR/fuzz*.c; do
   $CC $CFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \
     "$FUZZER_DIR/${fuzzName}.c" -o "$OUT/${fuzzName}" ./src/lib/libdwarf/libdwarf.a -lz
 done
+
+# Build tests
+cd $SRC/libdwarf
+mkdir build-test
+cd build-test
+cmake .. -DDO_TESTING=ON
+cmake --build . --config Release
