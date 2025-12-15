@@ -18,9 +18,9 @@
 ./bootstrap
 autoreconf -f
 ./configure --disable-systemd
-make
+make -j$(nproc)
 
-INCLUDES="-I. -I./src -I./lib -I./gobex -I/usr/local/include/glib-2.0/ -I/src/glib/_build/glib/"
+INCLUDES="-I. -I./src -I./lib -I./gobex -I/usr/local/include/glib-2.0/ -I/src/glib/_build/glib/ -I/usr/include/bluetooth"
 STATIC_LIBS="./src/.libs/libshared-glib.a ./lib/.libs/libbluetooth-internal.a  -l:libical.a -l:libicalss.a -l:libicalvcal.a -l:libdbus-1.a /src/glib/_build/glib/libglib-2.0.a"
 
 $CC $CFLAGS $INCLUDES $SRC/fuzz_xml.c -c

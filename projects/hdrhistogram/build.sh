@@ -15,45 +15,7 @@
 #
 ################################################################################
 
-
-#pathc internal error with JDK 15 java.util.ConcurrentModificationException in maven-bundle-plugin
-cat > patch.diff <<- EOM
-diff --git a/pom.xml b/pom.xml
-index 5a49778..35391b1 100644
---- a/pom.xml
-+++ b/pom.xml
-@@ -79,7 +79,7 @@
-             <plugin>
-                 <groupId>org.apache.felix</groupId>
-                 <artifactId>maven-bundle-plugin</artifactId>
--                <version>4.2.1</version>
-+                <version>5.1.1</version>
-                 <extensions>true</extensions>
-             </plugin>
-             <plugin>
-@@ -97,19 +97,6 @@
-                     </archive>
-                 </configuration>
-             </plugin>
--            <plugin>
--                <groupId>org.apache.maven.plugins</groupId>
--                <artifactId>maven-javadoc-plugin</artifactId>
--                <version>3.3.1</version>
--                <executions>
--                    <execution>
--                        <id>attach-javadocs</id>
--                        <goals>
--                            <goal>jar</goal>
--                        </goals>
--                    </execution>
--                </executions>
--            </plugin>
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-source-plugin</artifactId>
-EOM
-
-git apply patch.diff
+# Skip the patch that was failing
 
 MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
 $MVN package $MAVEN_ARGS

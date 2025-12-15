@@ -14,8 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make cmake
 RUN git clone --depth 1 https://github.com/keystone-engine/keystone.git
+# Prepare tests
+RUN export CFLAGS="-pthread" && \
+    export CXXFLAGS="-pthread" && \
+    cd keystone/bindings/python && \
+    make install -j$(nproc) && \
+    python3 -m pip install .
 WORKDIR $SRC
 COPY *.sh $SRC/

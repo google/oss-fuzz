@@ -9,3 +9,5 @@ vendor_ccs:
 - david@adalogics.com
 - adam@adalogics.com
 - sean@compactcloud.co.uk
+
+base_os_version: ubuntu-24-04

@@ -36,23 +36,22 @@ import tempfile
 from typing import Any, Callable, Mapping, Self, Sequence
 import urllib.request
 
+import manifest_constants
 import pathlib
 
 
-# Source directory.
-SRC_DIR = pathlib.Path("src")
-# Object directory.
-OBJ_DIR = pathlib.Path("obj")
-# Directory for indexer data.
-INDEX_DIR = pathlib.Path("idx")
-# The index database filename.
-INDEX_DB = pathlib.Path("db.sqlite")
-# Library directory, where shared libraries are copied - inside obj.
-LIB_DIR = OBJ_DIR / "lib"
-# Manifest location
-MANIFEST_PATH = pathlib.Path("manifest.json")
-# Where archive version 1 expects the lib directory to be mounted.
-_LIB_MOUNT_PATH_V1 = pathlib.Path("/ossfuzzlib")
+SRC_DIR = manifest_constants.SRC_DIR
+OBJ_DIR = manifest_constants.OBJ_DIR
+INDEX_DIR = manifest_constants.INDEX_DIR
+INDEX_DB = manifest_constants.INDEX_DB
+LIB_DIR = manifest_constants.LIB_DIR
+MANIFEST_PATH = manifest_constants.MANIFEST_PATH
+LIB_MOUNT_PATH_V1 = manifest_constants.LIB_MOUNT_PATH_V1
+
+INPUT_FILE = manifest_constants.INPUT_FILE
+OUTPUT_FILE = manifest_constants.OUTPUT_FILE
+DYNAMIC_ARGS = manifest_constants.DYNAMIC_ARGS
+
 # Min archive version we currently support.
 _MIN_SUPPORTED_ARCHIVE_VERSION = 1
 # The current version of the build archive format.
@@ -62,13 +61,6 @@ OUT = pathlib.Path(os.getenv("OUT", "/out"))
 # OSS-Fuzz coverage info.
 _COVERAGE_INFO_URL = ("https://storage.googleapis.com/oss-fuzz-coverage/"
                       f"latest_report_info/{os.getenv('PROJECT_NAME')}.json")
-
-
-# Will be replaced with the input file for target execution.
-INPUT_FILE = "<input_file>"
-# A file the target can write output to.
-OUTPUT_FILE = "<output_file>"
-
 
 
 class RepositoryType(enum.StrEnum):
@@ -140,11 +132,12 @@ class BinaryConfig:
 
   Attributes:
     kind: The kind of binary configuration.
-    binary_args: The arguments to pass to the binary, for example
-      "<input_file>".
+    binary_name: The name of the executable file.
   """
 
   kind: BinaryConfigKind
+
+  binary_name: str
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
@@ -176,19 +169,24 @@ class HarnessKind(enum.StrEnum):
 
   LIBFUZZER = enum.auto()
   BINARY = enum.auto()
+  # The target is a JavaScript shell that consumes JavaScript code.
+  JS = enum.auto()
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class CommandLineBinaryConfig(BinaryConfig):
   """Configuration for a command-line userspace binary."""
 
-  binary_name: str
   binary_args: list[str]
   # Additional environment variables to pass to the binary. They will overwrite
   # any existing environment variables with the same name.
   # Input replacement works on these variables as well.
   binary_env: dict[str, str] = dataclasses.field(default_factory=dict)
   harness_kind: HarnessKind
+  # Whether to filter the compile commands to only include object files that
+  # are directly linked into the target binary. Should usually be true but
+  # some targets like V8 require this to be false, see b/433718862.
+  filter_compile_commands: bool = True
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
@@ -205,6 +203,9 @@ class CommandLineBinaryConfig(BinaryConfig):
         binary_name=config_dict["binary_name"],
         binary_args=config_dict["binary_args"],
         binary_env=config_dict.get("binary_env", {}),
+        filter_compile_commands=config_dict.get(
+            "filter_compile_commands", True
+        ),
     )
 
 
@@ -274,7 +275,7 @@ class Manifest:
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Manifest object from a deserialized dict."""
     if data["version"] == 1:
-      lib_mount_path = _LIB_MOUNT_PATH_V1
+      lib_mount_path = LIB_MOUNT_PATH_V1
     else:
       lib_mount_path = _get_mapped(data, "lib_mount_path", pathlib.Path)
     if data["version"] < 3:
@@ -347,7 +348,7 @@ class Manifest:
           f"Build archive version too high: {self.version}. Only supporting"
           f" up to {ARCHIVE_VERSION}."
       )
-    if self.version == 1 and _LIB_MOUNT_PATH_V1 != self.lib_mount_path:
+    if self.version == 1 and LIB_MOUNT_PATH_V1 != self.lib_mount_path:
       raise RuntimeError(
           "Build archive with version 1 has an alternative lib_mount_path set"
           f" ({self.lib_mount_path}). This is not a valid archive."
@@ -398,12 +399,6 @@ class Manifest:
 
     self.validate()
 
-    if not hasattr(self.binary_config, "binary_name"):
-      raise RuntimeError(
-          "Attempting to save a binary config type without binary_name."
-          " This is not yet supported. Kind: {self.binary_config.kind}."
-      )
-
     with tempfile.NamedTemporaryFile() as tmp:
       mode = "w:gz" if archive_path.suffix.endswith("gz") else "w"
       with tarfile.open(tmp.name, mode) as tar:
@@ -419,6 +414,10 @@ class Manifest:
             for file in files:
               if file.endswith("_seed_corpus.zip"):
                 # Don't copy over the seed corpus -- it's not necessary.
+                continue
+
+              if "/.git/" in root or root.endswith("/.git"):
+                # Skip the .git directory -- it can be large.
                 continue
 
               file = pathlib.Path(root, file)
@@ -444,7 +443,9 @@ class Manifest:
 
         dumped_self = self
         if self.index_db_version is None:
-          index_db_version = _get_sqlite_db_user_version(index_dir / INDEX_DB)
+          index_db_version = _get_sqlite_db_user_version(
+              pathlib.Path(index_dir) / INDEX_DB
+          )
           dumped_self = dataclasses.replace(
               self, index_db_version=index_db_version
           )
@@ -460,8 +461,8 @@ class Manifest:
             ),
         )
 
-        # Make sure the index database (the only file directly in `INDEX_DIR`)
-        # is early in the archive for the same reason.
+        # Make sure the index databases (the only files directly in `INDEX_DIR`)
+        # are early in the archive for the same reason.
         _save_dir(index_dir, INDEX_DIR)
 
         if source_dir:
@@ -481,8 +482,8 @@ class Manifest:
             report_missing_source_files(
                 self.binary_config.binary_name, copied_files, tar
             )
-          except Exception:  # pylint: disable=broad-except
-            logging.exception("Failed to report missing source files.")
+          except Exception as e:  # pylint: disable=broad-except
+            logging.warning("Failed to report missing source files: %s", e)
 
       shutil.copyfile(tmp.name, archive_path)
 

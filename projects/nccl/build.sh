@@ -19,16 +19,17 @@
 # target of the fuzzers, however, during build we still need to allow it to
 # compile with the OSS-Fuzz clang version.
 sed -i 's/-std=c++11 --expt-extended-lambda/-allow-unsupported-compiler -std=c++11 --expt-extended-lambda/g' ./makefiles/common.mk
-
+export CXXFLAGS="$CXXFLAGS -stdlib=libstdc++"
 make clean
+# Watch out for exhausting memory
 make -j3 src.build
 
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS $SRC/fuzz_xml.cpp -o $OUT/fuzz_xml \
     -I./src/graph/ -I./src/include -I./build/include/ \
-    -I/usr/local/cuda-11.0/targets/x86_64-linux/include/ \
+    -I/usr/local/cuda-12.9/targets/x86_64-linux/include/ \
     ./build/lib/libnccl_static.a \
-    /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so
+    /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcudart.so
 
-cp /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so.11.0 $OUT/libcudart.so.11.0
-cp /usr/local/cuda-11.0/targets/x86_64-linux/lib/libcudart.so $OUT/libcudart.so
+cp /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcudart.so.12 $OUT/libcudart.so.12
+cp /usr/local/cuda-12.9/targets/x86_64-linux/lib/libcudart.so $OUT/libcudart.so
 patchelf --set-rpath '$ORIGIN/' $OUT/fuzz_xml

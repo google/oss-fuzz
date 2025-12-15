@@ -62,6 +62,11 @@ if [[ "$CXXFLAGS" == *"-fuse-ld=gold"* ]]; then
     export CXX_LD=gold
 fi
 
+# Use `src_root` which should be extracted even with selective_unpack == true
+# https://github.com/google/clusterfuzz/blob/e2e2b9697dd990c4784b7226ff244e099a118a61/src/clusterfuzz/_internal/build_management/build_archive.py#L51
+# https://github.com/google/clusterfuzz/blob/e2e2b9697dd990c4784b7226ff244e099a118a61/src/clusterfuzz/_internal/build_management/build_archive.py#L164-L173
+FC_SYSROOT="src_root/fc_sysroot"
+
 pushd $SRC/mpv
 sed -i -e "/^\s*flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]/d; \
           s|^\s*link_flags += \['-fsanitize=address,undefined,fuzzer', '-fno-omit-frame-pointer'\]| \
@@ -78,12 +83,16 @@ meson setup build --wrap-mode=nodownload -Dbuildtype=plain -Dbackend_max_links=4
                   -Dlibplacebo:lcms=enabled -Dlibplacebo:xxhash=enabled -Dlibplacebo:demos=false \
                   -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled \
                   -Dlibass:fontconfig=enabled -Dlibass:asm=disabled \
-                  -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS" \
+                  -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS -DMPV_FONTCONFIG_SYSROOT=./$FC_SYSROOT" \
                   -Dc_link_args="$CFLAGS" -Dcpp_link_args="$CXXFLAGS" \
                   --libdir $LIBDIR
 meson compile -C build fuzzers
 
 find ./build/fuzzers -maxdepth 1 -type f -name 'fuzzer_*' -exec mv {} "$OUT" \; -exec echo "{} -> $OUT" \;
+
+DESTDIR="$OUT/$FC_SYSROOT" meson install -C build --tags runtime
+mkdir -p $OUT/$FC_SYSROOT/usr/local/share/fonts
+curl -L https://github.com/libass/libass-tests/raw/613d615deaa48863ce6bd731762696a186c6fd17/regression/.fonts/FansubBlock-CFF.otf -o "$OUT/$FC_SYSROOT/usr/local/share/fonts/FansubBlock-CFF.otf"
 
 rsync --no-compress -av rsync://samples.ffmpeg.org/samples/Matroska $SRC/matroska
 zip -0 -r $OUT/fuzzer_loadfile_mkv_seed_corpus.zip $SRC/matroska -i '*.mkv' '*.mka'

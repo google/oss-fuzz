@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+export CFLAGS="${CFLAGS} -Wno-error=unknown-warning-option -Wno-error=character-conversion -Wno-error=deprecated-literal-operator -D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"
+export CXXFLAGS="${CXXFLAGS} -Wno-error=unknown-warning-option -Wno-error=character-conversion -Wno-error=deprecated-literal-operator -D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"
+
+sed -i 's/--disable-tests//g' automation/ossfuzz/build.sh
+
 if [[ -n ${CAPTURE_REPLAY_SCRIPT-} ]]; then
   # Make sure we don't remove cached directory
   sed -i 's/rm -rf/#rm -rf/g' automation/ossfuzz/build.sh

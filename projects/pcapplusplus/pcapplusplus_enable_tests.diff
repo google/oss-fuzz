@@ -1,4 +1,5 @@
-index 6d461ff6..c984c978 100755
+diff --git a/Tests/Fuzzers/ossfuzz.sh b/Tests/Fuzzers/ossfuzz.sh
+index 6d461ff6..ec272b5b 100755
 --- a/Tests/Fuzzers/ossfuzz.sh
 +++ b/Tests/Fuzzers/ossfuzz.sh
 @@ -12,7 +12,13 @@ make -j$(nproc)
@@ -12,7 +13,7 @@ index 6d461ff6..c984c978 100755
 +    PCAPPP_BUILD_TESTS_VALUE="OFF"
 +fi
 +
-+cmake -DPCAPPP_BUILD_FUZZERS=ON -DPCAPPP_BUILD_TESTS=$PCAPPP_BUILD_TESTS_VALUE -DPCAPPP_BUILD_EXAMPLES=OFF -DPCAP_INCLUDE_DIR="${LIBPCAP_PATH}/" -DPCAP_LIBRARY="${LIBPCAP_PATH}/libpcap.a" -S . -B $TARGETS_DIR
++cmake -DCMAKE_CXX_STANDARD=20 -DPCAPPP_BUILD_FUZZERS=ON -DPCAPPP_BUILD_TESTS=$PCAPPP_BUILD_TESTS_VALUE -DPCAPPP_BUILD_EXAMPLES=OFF -DPCAP_INCLUDE_DIR="${LIBPCAP_PATH}/" -DPCAP_LIBRARY="${LIBPCAP_PATH}/libpcap.a" -S . -B $TARGETS_DIR
  cmake --build $TARGETS_DIR -j
  
  # Copy target and options

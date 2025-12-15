@@ -26,10 +26,10 @@ namespace {
 std::vector<Location> GetTestLocations() {
   // This should return a sorted vector of Locations.
   return {
-      Location("/some/file/path.cc", 0, 0, 1, 0),
-      Location("/some/file/path.cc", 0, 0, 99, 0),
-      Location("/some/other/file/path.cc", 0, 0, 1, 0),
-      Location("/some/other/file/path.cc", 0, 0, 99, 0),
+      Location("/some/file/path.cc", 0, 1),
+      Location("/some/file/path.cc", 0, 99),
+      Location("/some/other/file/path.cc", 0, 1),
+      Location("/some/other/file/path.cc", 0, 99),
   };
 }
 
