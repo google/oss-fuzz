@@ -26,7 +26,7 @@ ENV OSSFUZZ_RUSTPATH /rust
 # manually specifying what toolchain to use. Note that this environment variable
 # is additionally used by `install_rust.sh` as the toolchain to install.
 # cf https://rust-lang.github.io/rustup/overrides.html
-ENV RUSTUP_TOOLCHAIN nightly-2024-07-12
+ENV RUSTUP_TOOLCHAIN nightly-2025-09-05
 
 # Configure the linker used by default for x86_64 linux to be `clang` instead of
 # rustc's default of `cc` which is able to find custom-built libraries like

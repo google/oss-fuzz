@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://connect2id.com/products/nimbus-jose-jwt"
 language: jvm
 main_repo: "https://bitbucket.org/connect2id/nimbus-jose-jwt.git"

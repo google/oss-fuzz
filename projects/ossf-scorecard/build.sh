@@ -42,9 +42,9 @@ gofmt -w finding/probe.go
 #############################
 
 mv $SRC/probes_fuzzer.go $SRC/scorecard/probes/
-printf "package probes \nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./probes/fuzz-register.go
+#printf "package probes \nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./probes/fuzz-register.go
 go mod tidy
-compile_native_go_fuzzer github.com/ossf/scorecard/v5/probes FuzzProbes FuzzProbes gofuzz
+compile_native_go_fuzzer_v2 github.com/ossf/scorecard/v5/probes FuzzProbes FuzzProbes gofuzz
 
 mv $SRC/yaml_fuzzer.go $SRC/scorecard/policy/
 compile_go_fuzzer github.com/ossf/scorecard/v5/policy FuzzParseFromYAML fuzz_parse_from_yaml gofuzz

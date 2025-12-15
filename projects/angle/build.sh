@@ -23,21 +23,18 @@ if [ "$SANITIZER" = "coverage" ] || [ "$SANITIZER" = "introspector" ] || [ "$SAN
 fi
 
 # Configure arguments for gn build
+ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_debug=false"
+ARGS+=" use_custom_libcxx=false use_sysroot=true ozone_platform_x11=false"
+ARGS+=" is_clang=true clang_use_chrome_plugins=false clang_base_path=\"/usr/local\""
+
+# Configure arguments for gn build
 if [ "$SANITIZER" = "undefined" ]; then
-    ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_ubsan=true is_debug=false"
-else
-    ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_debug=false"
+    ARGS="$ARGS is_ubsan=true"
 fi
 
-# Add fuzzer profile
-cat $SRC/fuzzer_profile >> $SRC/angle/BUILD.gn
-
 # Prepare fuzzer in gn directory
-mkdir src/fuzz
+mkdir -p src/fuzz
 cp $SRC/*.cc src/fuzz/
-
-# Retrieve and build dependencies
-./build/install-build-deps.sh --no-prompt
 
 # Generate ninja file for build
 gn gen out/fuzz --args="$ARGS"

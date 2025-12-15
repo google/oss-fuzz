@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 
 RUN git clone --depth 1 https://github.com/OpenPrinting/goipp.git $SRC/goipp
 RUN git clone --depth 1 https://github.com/OpenPrinting/fuzzing.git $SRC/fuzzing
