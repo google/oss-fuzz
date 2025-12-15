@@ -49,7 +49,8 @@ class InMemoryIndex {
   // The `GetXxxId` functions return the id of an existing, matching object if
   // there is already one in the index, or allocate a new id if there is not an
   // identical object in the index.
-  // `GetLocationId` expects a location with an absolute path if not built-in.
+  // `GetLocationId` expects a location with an absolute path if not built-in;
+  // use `ToNormalizedAbsolutePath` to obtain one.
   LocationId GetLocationId(Location location);
   EntityId GetEntityId(const Entity& entity);
   const Entity& GetEntityById(EntityId entity_id) const;

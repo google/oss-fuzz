@@ -31,7 +31,6 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
-import yaml
 
 import constants
 import templates
@@ -91,6 +90,7 @@ HTTPS_CORPUS_BACKUP_URL_FORMAT = (
 
 LANGUAGE_REGEX = re.compile(r'[^\s]+')
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
+BASE_OS_VERSION_REGEX = re.compile(r'\s*base_os_version\s*:\s*([^\s]+)')
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -161,9 +161,11 @@ class Project:
       return constants.DEFAULT_LANGUAGE
 
     with open(project_yaml_path) as file_handle:
-      config = yaml.safe_load(file_handle)
-      if config and 'language' in config:
-        return config['language']
+      content = file_handle.read()
+      for line in content.splitlines():
+        match = PROJECT_LANGUAGE_REGEX.match(line)
+        if match:
+          return match.group(1)
 
     logger.warning('Language not specified in project.yaml. Assuming c++.')
     return constants.DEFAULT_LANGUAGE
@@ -177,11 +179,13 @@ class Project:
       return 'legacy'
 
     with open(project_yaml_path) as file_handle:
-      config = yaml.safe_load(file_handle)
-      version = 'legacy'
-      if config and 'base_os_version' in config:
-        version = config['base_os_version']
-      return version
+      content = file_handle.read()
+      for line in content.splitlines():
+        match = BASE_OS_VERSION_REGEX.match(line)
+        if match:
+          return match.group(1)
+
+    return 'legacy'
 
   @property
   def coverage_extra_args(self):
@@ -622,7 +626,7 @@ def _check_fuzzer_exists(project, fuzzer_name, args, architecture='x86_64'):
   """Checks if a fuzzer exists."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = ['docker', 'run', '--rm', '--platform', platform]
-  command.extend(['-v', '%s:/out' % project.out])
+  command.extend(['-v', '%s:/out:z' % project.out])
   command.append(_get_base_runner_image(args))
 
   command.extend(['/bin/bash', '-c', 'test -f /out/%s' % fuzzer_name])
@@ -791,7 +795,7 @@ def prepare_aarch64_emulation():
   subprocess.check_call(['docker', 'buildx', 'use', ARM_BUILDER_NAME])
 
 
-def docker_run(run_args, print_output=True, architecture='x86_64'):
+def docker_run(run_args, *, print_output=True, architecture='x86_64'):
   """Calls `docker run`."""
   platform = 'linux/arm64' if architecture == 'aarch64' else 'linux/amd64'
   command = [
@@ -1608,7 +1612,7 @@ def fuzzbench_measure(args):
         f'gcr.io/oss-fuzz/{args.project.name}', 'fuzzbench_measure'
     ]
 
-    return docker_run(run_args, 'x86_64')
+    return docker_run(run_args, architecture='x86_64')
 
 
 def reproduce(args):
@@ -1627,14 +1631,13 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     testcase_path,
     args,
     architecture='x86_64',
-    run_function=docker_run,
-    err_result=False):
+    run_function=docker_run):
   """Reproduces a specific test case."""
   if not check_project_exists(project):
-    return err_result
+    return False
 
   if not _check_fuzzer_exists(project, fuzzer_name, args, architecture):
-    return err_result
+    return False
 
   debugger = ''
   env = ['HELPER=True', 'ARCHITECTURE=' + architecture]
@@ -1661,7 +1664,8 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
       fuzzer_name,
       '-runs=100',
   ] + fuzzer_args
-  return run_function(run_args, err_result)
+
+  return run_function(run_args, architecture=architecture)
 
 
 def _validate_project_name(project_name):

@@ -15,7 +15,5 @@
 #
 ################################################################################
 
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
-
-compile_native_go_fuzzer github.com/ossf/scorecard-webapp/app/server FuzzVerifyWorkflow FuzzVerifyWorkflow
-compile_native_go_fuzzer github.com/ossf/scorecard-webapp/app/server FuzzExtractCertInfo FuzzLoadCertificates
+compile_native_go_fuzzer_v2 github.com/ossf/scorecard-webapp/app/server FuzzVerifyWorkflow FuzzVerifyWorkflow
+compile_native_go_fuzzer_v2 github.com/ossf/scorecard-webapp/app/server FuzzExtractCertInfo FuzzLoadCertificates

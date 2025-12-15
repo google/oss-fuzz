@@ -16,30 +16,29 @@
 """MCP server for OSS-Fuzz."""
 
 import logging
-import asyncio
+
 import os
+import shutil
+import sys
 import json
 import time
 import subprocess
-
-import httpx
 from mcp.server.fastmcp import FastMCP
 
 import config as oss_fuzz_mcp_config
 
+TARGET_PROJECT = ''
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    format=
+    "[SERVER] %(asctime)s - %(name)s - '%(module)s - %(funcName)s - %(levelname)s - %(message)s",
+    stream=sys.stderr)
 logger = logging.getLogger("mcp-server")
 
-# Create a shared HTTP client for API requests
-http_client = httpx.AsyncClient(timeout=10.0)
-
 # Create an MCP server with a name
-mcp = FastMCP("OSS-Fuzz tools with relevant file system utilities.",
-              host="0.0.0.0",
-              port=8000)
+mcp = FastMCP("OSS-Fuzz tools with relevant file system utilities.")
 
 FILE_ACCESS_ERROR = f"""Error: Cannot access directories outside of the base directory.
 Remember, all paths accessible by you must be prefixed with {oss_fuzz_mcp_config.BASE_DIR}.
@@ -75,18 +74,36 @@ def clone_oss_fuzz_if_it_does_not_exist():
     logger.info('Error cloning OSS-Fuzz')
 
 
+def _prepare_target_project():
+  """Prepares the target OSS-Fuzz project by copying it to the OSS-Fuzz projects directory."""
+  global TARGET_PROJECT
+
+  clone_oss_fuzz_if_it_does_not_exist()
+  project_name = os.path.basename(TARGET_PROJECT)
+  # Copy over the project files if needed.
+  if os.path.isdir(
+      os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
+                   project_name)):
+    shutil.rmtree(
+        os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
+                     project_name))
+  shutil.copytree(
+      TARGET_PROJECT,
+      os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, 'projects',
+                   project_name))
+  return project_name
+
+
 @mcp.tool()
-async def check_if_oss_fuzz_project_builds(project_name: str) -> bool:
+async def check_if_oss_fuzz_project_builds() -> bool:
   """
-    Checks if an OSS-Fuzz project builds successfully.
-    
-    Args:
-        project_name: Name of the OSS-Fuzz project to check
+    Checks if the OSS-Fuzz project being worked on builds successfully.
     
     Returns:
         True if the project builds successfully, False otherwise
     """
-  clone_oss_fuzz_if_it_does_not_exist()
+  project_name = _prepare_target_project()
+
   logger.info("Checking if OSS-Fuzz project '%s' builds successfully...",
               project_name)
 
@@ -96,6 +113,8 @@ async def check_if_oss_fuzz_project_builds(project_name: str) -> bool:
                           project_name,
                           cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
                           shell=True,
+                          stdout=subprocess.DEVNULL,
+                          stderr=subprocess.STDOUT,
                           timeout=60 * 20)
     return True
   except subprocess.CalledProcessError as e:
@@ -103,7 +122,7 @@ async def check_if_oss_fuzz_project_builds(project_name: str) -> bool:
     return False
   except subprocess.TimeoutExpired:
     logger.info(f"Building project {project_name} timed out.")
-    return False
+  return False
 
 
 def shorten_logs_if_needed(log_string: str) -> str:
@@ -123,17 +142,15 @@ def shorten_logs_if_needed(log_string: str) -> str:
 
 
 @mcp.tool()
-async def get_build_logs_from_oss_fuzz(project_name: str) -> str:
+async def build_and_get_build_logs_from_oss_fuzz() -> str:
   """
-    Retrieves build logs for an OSS-Fuzz project.
-    
-    Args:
-        project_name: Name of the OSS-Fuzz project to get logs for
+    Retrieves build logs for an OSS-Fuzz project. This is useful when changes
+    have been made to the project and you want to see the build output.
     
     Returns:
         A string containing the build logs for the project
     """
-  clone_oss_fuzz_if_it_does_not_exist()
+  project_name = _prepare_target_project()
   logger.info("Retrieving build logs for OSS-Fuzz project '%s'...",
               project_name)
 
@@ -165,7 +182,7 @@ async def get_build_logs_from_oss_fuzz(project_name: str) -> str:
   return logs_to_return
 
 
-@mcp.tool()
+#@mcp.tool()
 async def get_sample_artifacts_from_oss_fuzz_project(
     language: str) -> dict[str, str]:
   """
@@ -211,7 +228,7 @@ async def get_sample_artifacts_from_oss_fuzz_project(
   return artifacts
 
 
-@mcp.tool()
+#@mcp.tool()
 async def check_run_tests(
     project_name) -> str:  #, build_sh, dockerfile) -> str:
   """
@@ -227,7 +244,6 @@ async def check_run_tests(
     Returns:
         The logs from building the project with custom artifacts.
     """
-  logger.info('Running test 1')
   clone_oss_fuzz_if_it_does_not_exist()
   logger.info(
       "Checking if OSS-Fuzz project '%s' builds with custom artifacts...",
@@ -236,12 +252,10 @@ async def check_run_tests(
   os.makedirs(oss_fuzz_mcp_config.BASE_TMP_LOGS, exist_ok=True)
   target_logs = os.path.join(oss_fuzz_mcp_config.BASE_TMP_LOGS,
                              'check-fuzz-run-tests-log.txt')
-  logger.info('Running test 2')
   if os.path.isfile(target_logs):
     os.remove(target_logs)
   log_stdout = open(target_logs, 'w', encoding='utf-8')
   try:
-    logger.info('Running test 3')
     subprocess.check_call(
         f'infra/experimental/chronos/check_tests.sh {project_name} c++',
         cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
@@ -251,7 +265,6 @@ async def check_run_tests(
         timeout=60 * 20)
 
   except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-    logger.info('Running test 4')
     logger.info("Build failed for project '%s': {%s}", project_name, str(e))
     log_stdout.write("\n\nrun-tests.sh failed!!\n")
     with open(target_logs, 'r', encoding='utf-8') as f:
@@ -260,35 +273,27 @@ async def check_run_tests(
     logger.info("run-tests.sh logs for project '%s': {%s}", project_name,
                 logs_to_return)
     return logs_to_return
-  logger.info('Running test 5.01')
+
   with open(target_logs, 'r', encoding='utf-8') as f:
     logs = f.read()
   logs_to_return = shorten_logs_if_needed(logs)
-  logger.info('Running test 5')
   logger.info("run-tests.sh for project '%s': {%s}", project_name,
               logs_to_return)
-  logger.info('Running test 6')
   return logs_to_return
 
 
 @mcp.tool()
-async def check_oss_fuzz_fuzzers(
-    project_name) -> str:  #, build_sh, dockerfile) -> str:
+async def check_oss_fuzz_fuzzers() -> str:
   """
     Performs "fuzzer-check" on an OSS-Fuzz project with custom artifacts.
-    Checks if an OSS-Fuzz project's fuzzers run correctly with custom artifacts.
+    Checks if the OSS-Fuzz project's fuzzers run correctly with custom artifacts.
     This check should only be applied after the project builds successfully.
     This check is needed for an OSS-Fuzz project to be in a good state.
-    
-    Args:
-        project_name: Name of the OSS-Fuzz project to check
-        build_sh: Custom build script content
-        dockerfile: Custom Dockerfile content
     
     Returns:
         The build logs from building the project with custom artifacts.
     """
-  clone_oss_fuzz_if_it_does_not_exist()
+  project_name = _prepare_target_project()
   logger.info(
       "Checking if OSS-Fuzz project '%s' builds and fuzzers pass check_build",
       project_name)
@@ -343,7 +348,7 @@ async def check_oss_fuzz_fuzzers(
 
 
 # File operating utilities
-@mcp.tool()
+#@mcp.tool()
 async def list_files(path: str = "") -> str:
   """List all files in the specified directory.
     
@@ -353,7 +358,6 @@ async def list_files(path: str = "") -> str:
   _internal_delay()
   target_dir = os.path.normpath(path)
   if not target_dir.startswith(oss_fuzz_mcp_config.BASE_DIR):
-    # Security check to prevent directory traversal
     return FILE_ACCESS_ERROR
 
   logger.info("Listing files in directory: %s", target_dir)
@@ -375,7 +379,7 @@ async def list_files(path: str = "") -> str:
     return f"Error listing files: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def get_file_size(file_path) -> str:
   """Get the size of a file.
     
@@ -388,7 +392,6 @@ async def get_file_size(file_path) -> str:
   _internal_delay()
   target_file = os.path.normpath(file_path)
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
-    # Security check to prevent directory traversal
     return FILE_ACCESS_ERROR
 
   logger.info("Getting file size: %s", target_file)
@@ -402,7 +405,7 @@ async def get_file_size(file_path) -> str:
     return f"Error getting file size: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def read_file(file_path: str, start_idx: int, end_idx: int) -> str:
   """Read the contents of a file. Will read a maximum of 3000 characters
      to control size of content. Use arguments to control which part of file
@@ -420,7 +423,6 @@ async def read_file(file_path: str, start_idx: int, end_idx: int) -> str:
   _internal_delay()
   target_file = os.path.normpath(file_path)
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
-    # Security check to prevent directory traversal
     return FILE_ACCESS_ERROR
 
   logger.info("Reading file: %s", target_file)
@@ -450,7 +452,7 @@ async def read_file(file_path: str, start_idx: int, end_idx: int) -> str:
     return f"Error extracting content: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def write_file(file_path: str, content: str) -> str:
   """Write content to a file.
     
@@ -462,7 +464,6 @@ async def write_file(file_path: str, content: str) -> str:
   logger.info("Writing to file: %s", file_path)
   target_file = os.path.normpath(file_path)
 
-  # Security check to prevent directory traversal
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
     return FILE_ACCESS_ERROR
 
@@ -478,7 +479,7 @@ async def write_file(file_path: str, content: str) -> str:
     return f"Error writing to file: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def delete_file(file_path: str) -> str:
   """Delete a file.
     
@@ -489,7 +490,6 @@ async def delete_file(file_path: str) -> str:
   logger.info("Deleting file: %s", file_path)
   target_file = os.path.normpath(file_path)
 
-  # Security check to prevent directory traversal
   if not target_file.startswith(oss_fuzz_mcp_config.BASE_DIR):
     return FILE_ACCESS_ERROR
 
@@ -507,7 +507,7 @@ async def delete_file(file_path: str) -> str:
     return f"Error deleting file: {str(e)}"
 
 
-@mcp.tool()
+#@mcp.tool()
 async def search_project_filename(project_name: str, filename: str) -> str:
   """
     Searches for a filename inside the project directory.
@@ -540,7 +540,7 @@ async def search_project_filename(project_name: str, filename: str) -> str:
   ) if files_found else f'No files named "{filename}" found in project "{project_name}".'
 
 
-@mcp.tool()
+#@mcp.tool()
 async def search_project_file_content(project_name: str,
                                       search_term: str) -> str:
   """
@@ -576,7 +576,7 @@ async def search_project_file_content(project_name: str,
   ) if files_found else f'No files containing "{search_term}" found in project "{project_name}".'
 
 
-@mcp.tool()
+#@mcp.tool()
 async def get_coverage_of_oss_fuzz_project(project_name):
   """
     Gets the code coverage information for an OSS-Fuzz project.
@@ -664,19 +664,24 @@ async def get_coverage_of_oss_fuzz_project(project_name):
   logger.info('Refined coverage dict: %s', json.dumps(refined_cov_dict,
                                                       indent=2))
 
-  # Split up the coverage
   return json.dumps(refined_cov_dict, indent=2)
 
 
 def start_mcp_server():
   """Starts the MCP server."""
+  global TARGET_PROJECT
+
+  oss_fuzz_target = sys.argv[1]
+
+  TARGET_PROJECT = oss_fuzz_target
+  logger.info('OSS-Fuzz MCP server target: %s', oss_fuzz_target)
+
   try:
-    logger.info("Starting MCP server on port 8000...")
-    # Close the HTTP client when the server shuts down
-    mcp.run(transport="sse")
+    logger.info("Starting MCP server.")
+    mcp.run(transport="stdio")
   except KeyboardInterrupt:
-    logger.info("Server shutting down...")
-    asyncio.run(http_client.aclose())
+    logger.info("Caught KeyboardInterrupt.")
+  logger.info('Server shut down.')
 
 
 if __name__ == "__main__":

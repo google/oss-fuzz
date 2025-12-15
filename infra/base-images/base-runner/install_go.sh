@@ -20,10 +20,17 @@
 case $(uname -m) in
     x86_64)
       # Download and install Go.
-      wget -q https://storage.googleapis.com/golang/getgo/installer_linux -O $SRC/installer_linux
-      chmod +x $SRC/installer_linux
-      SHELL="bash" $SRC/installer_linux -version 1.25.0
-      rm $SRC/installer_linux
+      export GOROOT=/root/.go
+      wget https://go.dev/dl/go1.25.0.linux-amd64.tar.gz
+      mkdir temp-go
+      tar -C temp-go/ -xzf go1.25.0.linux-amd64.tar.gz
+
+      mkdir $GOROOT
+      mv temp-go/go/* /root/.go/
+      rm -rf temp-go
+
+      echo 'Set "GOPATH=/root/go"'
+      echo 'Set "PATH=$PATH:/root/.go/bin:$GOPATH/bin"'
       # Set up Golang coverage modules.
       printf $(find . -name gocoverage)
       cd $GOPATH/gocoverage && /root/.go/bin/go install ./...

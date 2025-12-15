@@ -47,6 +47,23 @@ SUPPORTED_VERSIONS = ('legacy', 'ubuntu-20-04', 'ubuntu-24-04')
 # This version will receive the ':v1' tag.
 DEFAULT_VERSION = 'legacy'
 
+# Defines the dependency graph for base images.
+IMAGE_DEPENDENCIES = {
+    'base-clang': ['base-image'],
+    'base-clang-full': ['base-clang'],
+    'base-builder': ['base-clang'],
+    'base-builder-go': ['base-builder'],
+    'base-builder-javascript': ['base-builder'],
+    'base-builder-jvm': ['base-builder'],
+    'base-builder-python': ['base-builder'],
+    'base-builder-ruby': ['base-builder'],
+    'base-builder-rust': ['base-builder'],
+    'base-builder-swift': ['base-builder'],
+    'base-runner': ['base-image', 'base-builder', 'base-builder-ruby'],
+    'base-runner-debug': ['base-runner'],
+    'indexer': ['base-clang-full'],
+}
+
 
 class ImageConfig:
   """Configuration for a specific base image version."""
@@ -82,9 +99,8 @@ class ImageConfig:
     if self.version != 'legacy':
       versioned_dockerfile = os.path.join(self.path,
                                           f'{self.version}.Dockerfile')
-      if os.path.exists(versioned_dockerfile):
-        logging.info('Using versioned Dockerfile: %s', versioned_dockerfile)
-        return versioned_dockerfile
+      logging.info('Using versioned Dockerfile: %s', versioned_dockerfile)
+      return versioned_dockerfile
 
     legacy_dockerfile = os.path.join(self.path, 'Dockerfile')
     logging.info('Using legacy Dockerfile: %s', legacy_dockerfile)
@@ -156,6 +172,8 @@ BASE_IMAGE_DEFS = [
 def get_base_image_steps(images: Sequence[ImageConfig]) -> list[dict]:
   """Returns build steps for a given list of image configurations."""
   steps = [build_lib.get_git_clone_step()]
+  build_ids = {}
+
   for image_config in images:
     # The final tag is ':v1' for the default version, or the version name
     # (e.g., ':ubuntu-24-04') for others.
@@ -167,11 +185,20 @@ def get_base_image_steps(images: Sequence[ImageConfig]) -> list[dict]:
       tags.append(f'{IMAGE_NAME_PREFIX}{image_config.name}:latest')
 
     dockerfile_path = os.path.join('oss-fuzz', image_config.dockerfile_path)
-    steps.append(
-        build_lib.get_docker_build_step(tags,
-                                        image_config.path,
-                                        dockerfile_path=dockerfile_path,
-                                        build_args=image_config.build_args))
+    step = build_lib.get_docker_build_step(tags,
+                                           image_config.path,
+                                           dockerfile_path=dockerfile_path,
+                                           build_args=image_config.build_args)
+
+    # Check for dependencies and add 'waitFor' if necessary.
+    dependencies = IMAGE_DEPENDENCIES.get(image_config.name, [])
+    wait_for = [build_ids[dep] for dep in dependencies if dep in build_ids]
+    if wait_for:
+      step['waitFor'] = wait_for
+
+    build_ids[image_config.name] = step['id']
+    steps.append(step)
+
   return steps
 
 
@@ -321,6 +348,11 @@ def base_builder(event, context, dry_run: bool = False, no_push: bool = False):
     ]
     steps = get_base_image_steps(version_images)
     images_to_push = [img.full_image_name_with_tag for img in version_images]
+
+    # Also push the 'latest' tag for the default build.
+    if version == DEFAULT_VERSION:
+      images_to_push.extend(
+          [f'{IMAGE_NAME_PREFIX}{img.name}:latest' for img in version_images])
 
     # Determine the final tag for this build.
     target_tag = MAJOR_TAG if version == DEFAULT_VERSION else version

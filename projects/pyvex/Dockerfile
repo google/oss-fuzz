@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN apt-get update && \
         DEBIAN_FRONTEND=noninteractive apt-get install -y python3.9 python3.9-dev && \
         ln --force -s /usr/bin/python3.9 /usr/local/bin/python3 && \

@@ -104,14 +104,13 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
                            client_options=build_lib.REGIONAL_CLIENT_OPTIONS)
   cloudbuild_api = cloudbuild.projects().builds()
 
-  logs_url = build_lib.get_gcb_url(build_id, cloud_project)
   logging.info(
       '================================================================')
   logging.info('            PHASE 1: STARTED BASE IMAGE BUILD')
   logging.info(
       '----------------------------------------------------------------')
-  logging.info('GCB Build ID: %s', build_id)
-  logging.info('GCB Build URL: %s', logs_url)
+  for line in build_lib.get_build_info_lines(build_id, cloud_project):
+    logging.info(line)
   logging.info(
       '================================================================')
 
@@ -128,14 +127,13 @@ def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
       logging.error('Error checking build status: %s', e)
     time.sleep(15)
 
-  logs_url = build_lib.get_gcb_url(build_id, cloud_project)
   logging.info(
       '================================================================')
   logging.info('            PHASE 1: BASE IMAGE BUILD REPORT')
   logging.info(
       '----------------------------------------------------------------')
-  logging.info('GCB Build ID: %s', build_id)
-  logging.info('GCB Build URL: %s', logs_url)
+  for line in build_lib.get_build_info_lines(build_id, cloud_project):
+    logging.info(line)
   logging.info(
       '================================================================')
 

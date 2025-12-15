@@ -128,6 +128,10 @@ def generate_comparison_table(all_results):
 
 def main():
   """Main function to generate report and determine pipeline status."""
+  if os.path.exists('trial_build_skipped.flag'):
+    print('Skipping report generation because trial build was not invoked.')
+    sys.exit(0)
+
   all_results = {}
   any_failures = False
   any_results_found = False

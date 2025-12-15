@@ -194,7 +194,7 @@ def get_projects_to_build(specified_projects, build_type, force_build):
   buildable_projects = []
   project_statuses = _get_production_build_statuses(build_type)
   for project in specified_projects:
-    if (project not in project_statuses or not project_statuses[project] or
+    if (project not in project_statuses or project_statuses[project] or
         force_build):
       buildable_projects.append(project)
   return buildable_projects
@@ -308,7 +308,7 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
 
       logging.info('Build type: %s', build_type.type_name)
       logging.info(
-          '  - Selected projects: %d / %d (due to failed production builds)',
+          '  - Selected projects: %d / %d (due to successful production builds)',
           len(projects_to_build), len(args.projects))
       logging.info('  - To build all projects, use the --force-build flag.')
     else:
@@ -362,14 +362,15 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
   for project, project_builds in sorted(build_ids.items()):
     logging.info('  - %s:', project)
     for build_id, build_type in project_builds:
-      logging.info('    - Build ID: %s', build_id)
       logging.info('    - Build Type: %s', build_type)
-      logging.info('      GCB URL: %s',
-                   build_lib.get_gcb_url(build_id, build_lib.IMAGE_PROJECT))
+      for line in build_lib.get_build_info_lines(build_id,
+                                                 build_lib.IMAGE_PROJECT):
+        logging.info('      %s', line)
   logging.info('-----------------------')
 
-  wait_result = wait_on_builds(build_ids, credentials, build_lib.IMAGE_PROJECT,
-                               end_time, skipped_projects, version_tag)
+  wait_result = wait_on_builds(args, build_ids, credentials,
+                               build_lib.IMAGE_PROJECT, end_time,
+                               skipped_projects, version_tag)
 
   if failed_to_start_builds:
     logging.error(
@@ -483,7 +484,7 @@ def check_finished(build_id, cloudbuild_api, cloud_project, retries_map):
   return build_status
 
 
-def wait_on_builds(build_ids, credentials, cloud_project, end_time,
+def wait_on_builds(args, build_ids, credentials, cloud_project, end_time,
                    skipped_projects, version_tag):  # pylint: disable=too-many-locals
   """Waits on |builds|. Returns True if all builds succeed."""
   cloudbuild = cloud_build('cloudbuild',
@@ -544,8 +545,10 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
           if status == 'SUCCESS':
             successful_builds[project].append(build_id)
           else:
-            logs_url = build_lib.get_gcb_url(build_id, cloud_project)
-            failed_builds[project].append((status, logs_url, build_type))
+            gcb_url = build_lib.get_gcb_url(build_id, cloud_project)
+            log_url = build_lib.get_logs_url(build_id)
+            failed_builds[project].append(
+                (status, gcb_url, build_type, log_url))
 
           wait_builds[project].remove((build_id, build_type))
           if not wait_builds[project]:
@@ -553,13 +556,16 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
 
         elif retries_map.get(build_id, 0) >= MAX_RETRIES:
           # Max retries reached, mark as failed.
+          logging.error('HttpError for build %s. Max retries reached.',
+                        build_id)
           if build_id in next_retry_time:
             del next_retry_time[build_id]
 
           finished_builds_count += 1
           status = 'UNKNOWN (too many HttpErrors)'
-          logs_url = build_lib.get_gcb_url(build_id, cloud_project)
-          failed_builds[project].append((status, logs_url, build_type))
+          gcb_url = build_lib.get_gcb_url(build_id, cloud_project)
+          log_url = build_lib.get_logs_url(build_id)
+          failed_builds[project].append((status, gcb_url, build_type, log_url))
           wait_builds[project].remove((build_id, build_type))
           if not wait_builds[project]:
             del wait_builds[project]
@@ -570,8 +576,6 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
                           random.uniform(0, 1))
           next_retry_time[build_id] = (datetime.datetime.now() +
                                        datetime.timedelta(seconds=backoff_time))
-          logging.warning('HttpError for build %s. Retrying in %.2f seconds.',
-                          build_id, backoff_time)
 
     if not processed_a_build_in_iteration and wait_builds:
       # All remaining builds are in backoff, sleep to prevent busy-waiting.
@@ -584,9 +588,10 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
   if wait_builds:
     for project, project_builds in list(wait_builds.items()):
       for build_id, build_type in project_builds:
-        logs_url = build_lib.get_gcb_url(build_id, cloud_project)
+        gcb_url = build_lib.get_gcb_url(build_id, cloud_project)
+        log_url = build_lib.get_logs_url(build_id)
         failed_builds[project].append(
-            ('TIMEOUT (Coordinator)', logs_url, build_type))
+            ('TIMEOUT (Coordinator)', gcb_url, build_type, log_url))
 
   # Final Report
   successful_builds_count = sum(
@@ -634,17 +639,19 @@ def wait_on_builds(build_ids, credentials, cloud_project, end_time,
     logging.error('--- FAILED BUILDS ---')
     for project, failures in sorted(failed_builds.items()):
       logging.error('  - %s:', project)
-      for status, gcb_url, build_type in failures:
+      for status, gcb_url, build_type, log_url in failures:
         build_id = gcb_url.split('/')[-1].split('?')[0]
-        logging.error('    - Build ID: %s', build_id)
         logging.error('    - Build Type: %s', build_type)
         logging.error('    - Status: %s', status)
-        logging.error('    - GCB URL: %s', gcb_url)
+        for line in build_lib.get_build_info_lines(build_id, cloud_project):
+          logging.error('    - %s', line)
     logging.info('-----------------------')
     return False
 
   if not finished_builds_count and not skipped_builds_count:
     logging.warning('No builds were run.')
+    if args.skip_build_images:
+      return True
     return False
 
   logging.info('\nAll builds passed successfully!')
