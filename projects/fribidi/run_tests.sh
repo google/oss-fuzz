@@ -15,6 +15,5 @@
 #
 ################################################################################
 
-build=$WORK/build
-meson test -C $build
+meson test -C $WORK/build
 
