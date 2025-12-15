@@ -13,15 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 import atheris
 import colorlog
 from datetime import datetime, timedelta
-with atheris.instrument_imports():
+
+with atheris.instrument_imports(include=['airflow'], enable_loader_override=False):
    import airflow
    from airflow import DAG
    from airflow.exceptions import AirflowException
-   from airflow.operators.dummy_operator import DummyOperator
-   from airflow.operators.python_operator import PythonOperator
+   
+   try:
+      from airflow.providers.standard.operators.empty import EmptyOperator as DummyOperator
+      from airflow.providers.standard.operators.python import PythonOperator
+   except ImportError:
+      try:
+          from airflow.operators.empty import EmptyOperator as DummyOperator
+          from airflow.operators.python import PythonOperator
+      except ImportError:
+          from airflow.operators.dummy_operator import DummyOperator
+          from airflow.operators.python_operator import PythonOperator
 
 def py_func():
    return
@@ -32,7 +43,7 @@ def TestInput(input_bytes):
    default_args = {
       'owner': fdp.ConsumeString(8),
       'depends_on_past': fdp.ConsumeBool(),
-      'start_date': airflow.utils.dates.days_ago(fdp.ConsumeIntInRange(1,5)),
+      'start_date': datetime.now() - timedelta(days=fdp.ConsumeIntInRange(1,5)),
       'email': [fdp.ConsumeString(8)],
       'email_on_failure': fdp.ConsumeBool(),
       'email_on_retry': fdp.ConsumeBool(),
@@ -46,7 +57,7 @@ def TestInput(input_bytes):
          python_task = PythonOperator(task_id=fdp.ConsumeString(8), python_callable=py_func)
 
          dummy_task >> python_task
-   except AirflowException:
+   except (AirflowException, ValueError, TypeError):
       pass
 
 def main():

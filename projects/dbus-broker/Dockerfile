@@ -14,8 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/bus1/dbus-broker
+
+# RUSTUP_TOOLCHAIN is set explicitly to match the latest images
+# to get around https://github.com/google/oss-fuzz/issues/14220.
+# It should be removed once that issue is resolved.
+ENV RUSTUP_TOOLCHAIN nightly-2025-09-05
+
 RUN cargo install bindgen-cli
 WORKDIR dbus-broker
 COPY *.c build.sh $SRC/
