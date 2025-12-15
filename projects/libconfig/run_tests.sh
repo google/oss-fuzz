@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+##!/bin/bash -eu
 #
 # Copyright 2025 Google LLC
 #
@@ -15,5 +15,4 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/libconfig
 ctest --test-dir build
