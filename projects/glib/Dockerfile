@@ -15,8 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip
+RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config python3-pip
 RUN unset CFLAGS CXXFLAGS && pip3 install -U meson ninja packaging
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib
+RUN git clone --depth 1 --branch v1.3.1 --no-tags https://github.com/madler/zlib.git
+RUN git clone --depth 1 --no-tags https://gitlab.gnome.org/GNOME/glib
 WORKDIR glib
 COPY build.sh $SRC/
+COPY 0001-deflate-Zero-initialise-the-prev-and-window-buffers.patch $SRC/

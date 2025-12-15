@@ -17,16 +17,14 @@ import atheris
 import sys
 
 with atheris.instrument_imports():
-  from IPython.core import inputsplitter as isp
+  from IPython.core.splitinput import split_user_input
 
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
 
-  isp2 = isp.InputSplitter()
-  isp2.push(fdp.ConsumeUnicode(sys.maxsize))
-  isp2.push_accepts_more()
-  isp2.get_indent_spaces()
+  user_input = fdp.ConsumeUnicode(sys.maxsize)
+  pre, esc, ifun, rest = split_user_input(user_input)
 
 
 def main():

@@ -17,7 +17,8 @@
 
 mv $SRC/{*.zip,*.dict} $OUT
 
-./gradlew -x test build
+# Set UTF-8 encoding and skip Javadoc
+./gradlew -x test -x javadoc build -Dfile.encoding=UTF-8
 cp "build/libs/dom4j.jar" $OUT/dom4j.jar
 
 ALL_JARS="dom4j.jar"

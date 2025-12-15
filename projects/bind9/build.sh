@@ -20,10 +20,13 @@ export CXXFLAGS="${CXXFLAGS} -fPIC -Wl,--allow-multiple-definition"
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
 
-meson setup build -Dfuzzing=oss-fuzz -Dcmocka=enabled \
-    -Dc_link_args="$CFLAGS" -Dcpp_link_args="$CXXFLAGS" \
-    -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS" \
-    -Ddefault_library=static -Dprefer_static=true
+# Use valid value for -Dfuzzing (enabled/disabled/auto)
+meson setup build -Dfuzzing=enabled -Dcmocka=enabled \
+  -Dc_link_args="$CFLAGS" -Dcpp_link_args="$CXXFLAGS" \
+  -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS" \
+  -Ddefault_library=static -Dprefer_static=true \
+  -Db_lto=false \
+  -Dnamed-lto=disabled
 meson compile -C build fuzz_dns_master_load fuzz_dns_message_checksig fuzz_dns_message_parse fuzz_dns_name_fromtext_target fuzz_dns_name_fromwire fuzz_dns_qp fuzz_dns_qpkey_name fuzz_dns_rdata_fromtext fuzz_dns_rdata_fromwire_text fuzz_isc_lex_getmastertoken fuzz_isc_lex_gettoken --verbose
 
 for fuzzname in fuzz_dns_master_load fuzz_dns_message_checksig fuzz_dns_message_parse fuzz_dns_name_fromtext_target fuzz_dns_name_fromwire fuzz_dns_qp fuzz_dns_qpkey_name fuzz_dns_rdata_fromtext fuzz_dns_rdata_fromwire_text fuzz_isc_lex_getmastertoken fuzz_isc_lex_gettoken; do

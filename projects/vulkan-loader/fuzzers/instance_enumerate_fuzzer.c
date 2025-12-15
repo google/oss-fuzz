@@ -104,11 +104,17 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   //printf("Status: %d\n", (int)ms);
   setenv("VK_LOADER_LAYERS_ENABLE", "all", 1);
 
-  uint32_t pPropertyCount;
-  VkExtensionProperties pProperties = {0};
-
-  vkEnumerateInstanceExtensionProperties("test_auto", &pPropertyCount, &pProperties);
-
+  uint32_t pPropertyCount = 0;
+  VkResult vk_result = vkEnumerateInstanceExtensionProperties("test_auto", &pPropertyCount, NULL);
+  
+  if (vk_result == VK_SUCCESS) {
+  
+    VkExtensionProperties* pProperties = (VkExtensionProperties*)malloc(sizeof(VkExtensionProperties) * pPropertyCount); 
+  
+    vkEnumerateInstanceExtensionProperties("test_auto", &pPropertyCount, pProperties);
+    
+    free(pProperties);
+  }
   // Clean up config files
   remove_config_file(".local/share/vulkan/implicit_layer.d", "complex_layer.json");
   remove_config_file(".local/share/vulkan/loader_settings.d", "vk_loader_settings.json");

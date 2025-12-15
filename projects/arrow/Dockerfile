@@ -16,23 +16,24 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y -q && \
     apt-get install -y -q --no-install-recommends \
         bison \
-        build-essential \
-        cmake \
         flex \
-        ninja-build \
-        python3
+        ninja-build
 
-RUN wget https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.gz && \
-    tar -xvf boost-1.87.0-cmake.tar.gz && \
-    cd boost-1.87.0/ && \
-    CFLAGS="" CXXFLAGS="" ./bootstrap.sh && \
-    CFLAGS="" CXXFLAGS="" ./b2 headers && \
-    CFLAGS="" CXXFLAGS="" ./b2 runtime-link=static link=static variant=release install -j 10 && \
-    cp -R -f boost/ /usr/include/
+ARG boost_version=1.89.0
+# uuid and locale needed for Thrift source build
+ARG boost_components=filesystem;system;process;multiprecision;crc;uuid;locale
+
+RUN wget https://github.com/boostorg/boost/releases/download/boost-${boost_version}/boost-${boost_version}-cmake.tar.gz && \
+    tar -xf boost-${boost_version}-cmake.tar.gz && \
+    cd boost-${boost_version}/ && \
+    mkdir -p build / && \
+    cd build/ && \
+    cmake .. -GNinja -DBOOST_INCLUDE_LIBRARIES="${boost_components}" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF && \
+    cmake --build . --target install
 
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow

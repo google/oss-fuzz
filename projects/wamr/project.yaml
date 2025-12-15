@@ -1,6 +1,6 @@
 homepage: "https://github.com/bytecodealliance/wasm-micro-runtime"
 language: c
-primary_contact: "tianlong.liang@intel.com"
+primary_contact: "liang.he@intel.com"
 auto_ccs:
   - "jia3.liu@intel.com"
   - "tianlong.liang@intel.com"

@@ -15,7 +15,11 @@
 #
 ################################################################################
 
-./configure
+if ! ./configure; then
+    cat configure.log
+    exit 1
+fi
+
 make -j$(nproc) clean
 make -j$(nproc) all
 make -j$(nproc) check

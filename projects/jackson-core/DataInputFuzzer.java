@@ -15,12 +15,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.core.JsonParser.Feature;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.json.JsonFactoryBuilder;
+import tools.jackson.core.Base64Variants;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.core.JacksonException;
 
 import java.io.*;
 
@@ -123,73 +125,86 @@ public class DataInputFuzzer {
 
 
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-    Feature[] features = new Feature[]{
-        Feature.AUTO_CLOSE_SOURCE,
-        Feature.ALLOW_COMMENTS,
-        Feature.ALLOW_YAML_COMMENTS,
-        Feature.ALLOW_UNQUOTED_FIELD_NAMES,
-        Feature.ALLOW_SINGLE_QUOTES,
-        Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
-        Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
-        Feature.ALLOW_NUMERIC_LEADING_ZEROS,
-        Feature.ALLOW_LEADING_PLUS_SIGN_FOR_NUMBERS,
-        Feature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS,
-        Feature.ALLOW_TRAILING_DECIMAL_POINT_FOR_NUMBERS,
-        Feature.ALLOW_NON_NUMERIC_NUMBERS,
-        Feature.ALLOW_MISSING_VALUES,
-        Feature.ALLOW_TRAILING_COMMA,
-        Feature.STRICT_DUPLICATE_DETECTION,
-        Feature.IGNORE_UNDEFINED,
-        Feature.INCLUDE_SOURCE_IN_LOCATION,
-        Feature.USE_FAST_DOUBLE_PARSER,
+    JsonReadFeature[] readFeatures = new JsonReadFeature[]{
+        JsonReadFeature.ALLOW_JAVA_COMMENTS,
+        JsonReadFeature.ALLOW_YAML_COMMENTS,
+        JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES,
+        JsonReadFeature.ALLOW_SINGLE_QUOTES,
+        JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS,
+        JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
+        JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS,
+        JsonReadFeature.ALLOW_LEADING_PLUS_SIGN_FOR_NUMBERS,
+        JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS,
+        JsonReadFeature.ALLOW_TRAILING_DECIMAL_POINT_FOR_NUMBERS,
+        JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS,
+        JsonReadFeature.ALLOW_MISSING_VALUES,
+        JsonReadFeature.ALLOW_TRAILING_COMMA,
     };
-    JsonFactory jf = new JsonFactory();
-    try {
-        for (int i = 0; i < features.length; i++) {
-            if (data.consumeBoolean()) {
-                jf.enable(features[i]);
-            } else {
-                jf.disable(features[i]);
-            }
+    StreamReadFeature[] streamFeatures = new StreamReadFeature[]{
+        StreamReadFeature.AUTO_CLOSE_SOURCE,
+        StreamReadFeature.STRICT_DUPLICATE_DETECTION,
+        StreamReadFeature.IGNORE_UNDEFINED,
+        StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION,
+        StreamReadFeature.USE_FAST_DOUBLE_PARSER,
+    };
+    
+    // Configure features using builder pattern
+    JsonFactoryBuilder builder = JsonFactory.builder();
+    for (int i = 0; i < readFeatures.length; i++) {
+        if (data.consumeBoolean()) {
+            builder.enable(readFeatures[i]);
+        } else {
+            builder.disable(readFeatures[i]);
         }
+    }
+    for (int i = 0; i < streamFeatures.length; i++) {
+        if (data.consumeBoolean()) {
+            builder.enable(streamFeatures[i]);
+        } else {
+            builder.disable(streamFeatures[i]);
+        }
+    }
+    JsonFactory jf = builder.build();
+    
+    try {
       int typeOfNext = data.consumeInt();
-      JsonParser jp = jf.createParser(new MockFuzzDataInput(data.consumeRemainingAsString()));
-      switch (typeOfNext%11) {
+      JsonParser jp = jf.createParser(data.consumeRemainingAsBytes());
+      switch (typeOfNext%8) {
       case 0:
         while (jp.nextToken() != null) {
               ;
         }
+        break;
       case 1:
-        while (jp.nextTextValue() != null) {
+        while (jp.nextValue() != null) {
               ;
         }
+        break;
       case 2:
-        while (jp.nextBooleanValue() != null) {
+        while (jp.nextName() != null) {
               ;
         }
+        break;
       case 3:
-        while (jp.nextFieldName() != null) {
-              ;
-        }
-      case 4:
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         Base64Variants b64vs = new Base64Variants();
         jp.readBinaryValue(b64vs.MIME, outputStream);
-      case 5:
+        break;
+      case 4:
         String outString = jp.getValueAsString();
-      case 6:
+        break;
+      case 5:
         int outInt = jp.getValueAsInt();
-      case 7:
-        Writer writer = new StringWriter();
-        int len = jp.getText(writer);
-      case 8:
+        break;
+      case 6:
         char[] textChars = jp.getTextCharacters();
-      case 9:
+        break;
+      case 7:
         int textLen = jp.getTextLength();
-      case 10:
         int textOffset = jp.getTextOffset();
+        break;
       }      
-    } catch (IOException | IllegalArgumentException ignored) {
+    } catch (JacksonException | IllegalArgumentException ignored) {
     }
   }
 }

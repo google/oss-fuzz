@@ -21,7 +21,7 @@ cmake -DSPDLOG_BUILD_TESTS=ON . && make -j$(nproc)
 # build fuzzers
 for f in $(find $SRC -name '*_fuzzer.cc'); do
     b=$(basename -s .cc $f)
-    $CXX $CXXFLAGS -std=c++11 -Iinclude \
+    $CXX $CXXFLAGS -std=c++17 -Iinclude \
     $f $LIB_FUZZING_ENGINE ./libspdlog.a \
     -o $OUT/$b
 done

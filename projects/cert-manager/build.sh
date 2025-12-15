@@ -21,25 +21,17 @@ cp $SRC/pki_fuzzer.go $SRC/cert-manager/pkg/util/pki/
 rm $SRC/cert-manager/pkg/controller/certificates/trigger/trigger_controller_test.go
 rm $SRC/cert-manager/pkg/controller/certificates/revisionmanager/revisionmanager_controller_test.go
 
-cd $SRC/go-118-fuzz-build
-go build .
-mv go-118-fuzz-build /root/go/bin/
-
 cd $SRC/cert-manager
-mkdir $SRC/cert-manager/pkg/fuzz
-printf "package fuzz \nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./pkg/fuzz/fuzz-register.go
 go mod tidy
-go mod edit -replace github.com/AdamKorcz/go-118-fuzz-build=$SRC/go-118-fuzz-build
-go mod tidy
-compile_native_go_fuzzer github.com/cert-manager/cert-manager/internal/webhook/admission/certificaterequest/approval FuzzValidate FuzzValidate_approval
-compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificates/trigger FuzzProcessItem FuzzProcessItem_trigger
-compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificates/revisionmanager FuzzProcessItem FuzzProcessItem_revisionmanager
-compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificates/issuing FuzzProcessItem FuzzProcessItem_issuing
-compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificates/readiness FuzzProcessItem FuzzProcessItem_readiness
-compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificates/keymanager FuzzProcessItem FuzzProcessItem_keymanager
-compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificates/requestmanager FuzzProcessItem FuzzProcessItem_requestmanager
-compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificaterequests/vault FuzzVaultCRController FuzzVaultCRController
-compile_native_go_fuzzer github.com/cert-manager/cert-manager/pkg/controller/certificaterequests/venafi FuzzVenafiCRController FuzzVenafiCRController
+compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/internal/webhook/admission/certificaterequest/approval FuzzValidate FuzzValidate_approval
+compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/pkg/controller/certificates/trigger FuzzProcessItem FuzzProcessItem_trigger
+compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/pkg/controller/certificates/revisionmanager FuzzProcessItem FuzzProcessItem_revisionmanager
+compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/pkg/controller/certificates/issuing FuzzProcessItem FuzzProcessItem_issuing
+compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/pkg/controller/certificates/readiness FuzzProcessItem FuzzProcessItem_readiness
+compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/pkg/controller/certificates/keymanager FuzzProcessItem FuzzProcessItem_keymanager
+compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/pkg/controller/certificates/requestmanager FuzzProcessItem FuzzProcessItem_requestmanager
+compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/pkg/controller/certificaterequests/vault FuzzVaultCRController FuzzVaultCRController
+compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/pkg/controller/certificaterequests/venafi FuzzVenafiCRController FuzzVenafiCRController
 compile_go_fuzzer github.com/cert-manager/cert-manager/pkg/util/pki FuzzUnmarshalSubjectStringToRDNSequence FuzzUnmarshalSubjectStringToRDNSequence
 compile_go_fuzzer github.com/cert-manager/cert-manager/pkg/util/pki FuzzDecodePrivateKeyBytes FuzzDecodePrivateKeyBytes
 

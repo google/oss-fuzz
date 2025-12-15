@@ -21,8 +21,15 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.2/binaries/apache-
 RUN curl -L https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz -o jdk.tar.gz && \
     tar zxf jdk.tar.gz && \
     rm -rf jdk.tar.gz
-ENV MVN $SRC/maven/apache-maven-3.9.2/bin/mvn
+ENV MVN="$SRC/maven/apache-maven-3.9.2/bin/mvn"
 ENV JAVA_HOME="$SRC/jdk-21.0.2"
 RUN git clone --depth 1 https://github.com/openfeign/feign feign
 COPY *.sh *.java *.xml $SRC/
 WORKDIR $SRC/feign
+# Ensure the ~/.m2 directory exists and copy toolchains.xml there
+RUN mkdir -p ~/.m2 && cp $SRC/toolchains.xml ~/.m2/toolchains.xml
+# Use the Maven settings file to resolve dependencies
+RUN $MVN --settings $SRC/settings.xml clean package -Dmaven.javadoc.skip=true \
+        -DskipTests=true -Dpmd.skip=true -Dencoding=UTF-8 \
+        -Dmaven.antrun.skip=true -Dcheckstyle.skip=true -Denforcer.fail=false \
+        dependency:copy-dependencies

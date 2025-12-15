@@ -14,7 +14,12 @@
 # limitations under the License.
 #
 ##########################################################################
-mkdir ~/.m2
+# Ensure directories exist
+
+if [[ ! -d ~/.m2 ]]; then
+  mkdir ~/.m2
+fi
+
 cp $SRC/toolchains.xml ~/.m2/toolchains.xml
 
 $MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \

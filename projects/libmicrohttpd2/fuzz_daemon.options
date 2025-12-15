@@ -1,8 +1,0 @@
-[libfuzzer]
-detect_leaks = 0
-len_control = 0
-mutate_depth = 15
-max_len = 8192
-use_counters = 1
-entropic = 1
-use_value_profile = 1

@@ -15,5 +15,6 @@
 #
 ################################################################################
 
+export CXXFLAGS="${CXXFLAGS} -std=c++17"
 export USE_BAZEL_VERSION=7.4.0
 bazel_build_fuzz_tests

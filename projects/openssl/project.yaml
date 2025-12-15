@@ -13,6 +13,8 @@ auto_ccs:
  - "sashan@openssl.org"
  - "viktor@openssl.org"
  - "andrewd@openssl.org"
+ - "nikolap@openssl.org"
+ - "milanb@openssl.org"
 sanitizers:
  - address
  - memory:

@@ -24,3 +24,4 @@ fuzzing_engines:
   - libfuzzer
 coverage_extra_args: >
   -ignore-filename-regex=.*/sqlite/.*
+base_os_version: ubuntu-24-04

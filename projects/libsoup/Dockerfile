@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y python3-pip ninja-build libbrotli-dev libkrb5-dev libnghttp2-dev libpsl-dev libidn2-dev libsqlite3-dev
 RUN pip3 install --root-user-action=ignore --break-system-packages meson
 

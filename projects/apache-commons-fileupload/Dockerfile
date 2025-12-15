@@ -34,6 +34,5 @@ COPY project-parent $SRC/project-parent/
 
 RUN rm -rf $SRC/project-parent/apache-commons-fileupload
 RUN git clone --depth 1 https://github.com/apache/commons-fileupload.git $SRC/project-parent/apache-commons-fileupload
-
 COPY build.sh $SRC/
 WORKDIR $SRC/

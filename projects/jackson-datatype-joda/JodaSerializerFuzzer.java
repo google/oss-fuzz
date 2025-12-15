@@ -14,12 +14,13 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.datatype.joda.JodaModule;
+import tools.jackson.datatype.joda.ser.DateTimeSerializer;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.exc.MismatchedInputException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.joda.time.DateTime;
@@ -35,15 +36,20 @@ public class JodaSerializerFuzzer {
   public static void fuzzerInitialize() {
     // Register the JodaModule for the serialization
     plainMapper = new ObjectMapper();
-    mapper = new ObjectMapper().registerModule(new JodaModule());
-    mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    mapper.enable(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS);
+    mapper = tools.jackson.databind.json.JsonMapper.builder()
+            .addModule(new JodaModule())
+            .enable(tools.jackson.databind.cfg.DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .enable(tools.jackson.databind.cfg.DateTimeFeature.WRITE_DURATIONS_AS_TIMESTAMPS)
+            .build();
   }
 
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      // Fuzz the serialize methods for different eclipse collections object
-      mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, data.consumeBoolean());
+      // Fuzz the serialize methods for different joda objects
+      mapper = tools.jackson.databind.json.JsonMapper.builder()
+              .addModule(new JodaModule())
+              .configure(tools.jackson.databind.cfg.DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, data.consumeBoolean())
+              .build();
       DateTime dateTime = new DateTime(data.consumeLong());
       switch (data.consumeInt(1, 11)) {
         case 1:
@@ -55,7 +61,7 @@ public class JodaSerializerFuzzer {
         case 3:
           mapper
               .writer()
-              .without(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+              .without(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
               .writeValueAsString(dateTime);
           break;
         case 4:
@@ -85,7 +91,7 @@ public class JodaSerializerFuzzer {
           mapper.writeValueAsString(new Period(dateTime.getMillis()));
           break;
       }
-    } catch (IllegalArgumentException | ArithmeticException | JsonProcessingException e) {
+    } catch (IllegalArgumentException | ArithmeticException | MismatchedInputException e) {
       // Known exception
     }
   }

@@ -41,7 +41,7 @@ CMAKE_DEFINES="-DBUILD_fuzzshark=ON"
 # compile static version of libs
 # XXX, with static wireshark linking each fuzzer binary is ~346 MB (just libwireshark.a is 761 MB).
 # XXX, wireshark is not ready for including static plugins into binaries.
-CMAKE_DEFINES="$CMAKE_DEFINES -DENABLE_STATIC=ON -DENABLE_PLUGINS=OFF"
+CMAKE_DEFINES="$CMAKE_DEFINES -DBUILD_SHARED_LIBS=OFF -DENABLE_PLUGINS=OFF"
 
 # disable optional dependencies
 CMAKE_DEFINES="$CMAKE_DEFINES -DENABLE_PCAP=OFF -DENABLE_GNUTLS=OFF"
@@ -49,15 +49,15 @@ CMAKE_DEFINES="$CMAKE_DEFINES -DENABLE_PCAP=OFF -DENABLE_GNUTLS=OFF"
 # There is no need to manually disable programs via BUILD_xxx=OFF since the
 # all-fuzzers targets builds the minimum required binaries. However we do have
 # to disable the Qt GUI and sharkd or else the cmake step will fail.
-CMAKE_DEFINES="$CMAKE_DEFINES -DBUILD_wireshark=OFF -DBUILD_logray=OFF -DBUILD_sharkd=OFF"
+CMAKE_DEFINES="$CMAKE_DEFINES -DBUILD_wireshark=OFF -DBUILD_stratoshark=OFF -DBUILD_sharkd=OFF"
 
 cd "$WIRESHARK_BUILD_PATH"
 
 cmake -GNinja \
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
       -DCMAKE_C_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CFLAGS" -DCMAKE_CXX_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CXXFLAGS" \
-      -DDISABLE_WERROR=ON -DOSS_FUZZ=ON $CMAKE_DEFINES \
-      -DUSE_STATIC=ON -DBUILD_SHARED_LIBS=OFF $SRC/wireshark
+      -DENABLE_WERROR=OFF -DOSS_FUZZ=ON $CMAKE_DEFINES \
+      -DUSE_STATIC=ON $SRC/wireshark
 
 ninja all-fuzzers -j$(expr $(nproc) / 2)
 

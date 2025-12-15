@@ -74,14 +74,14 @@ void MaybePrintLinkerMessage(absl::Span<const Entity> entities,
   // Secondly, if we have an incomplete entity that does not have a
   // corresponding complete entity, then linking will be incomplete.
   if (complete_count > 1 && incomplete_count) {
-    stream << "error: multiple definitions for " << entities[0].name_prefix()
-           << entities[0].name() << entities[0].name_suffix() << "\n";
+    stream << "error: multiple definitions for " << entities[0].full_name()
+           << "\n";
   } else if (!complete_count && incomplete_count) {
 #ifndef NDEBUG
     // TODO: Enable this in opt builds once the number of warnings is
     // more reasonable.
-    stream << "warning: no definition found for " << entities[0].name_prefix()
-           << entities[0].name() << entities[0].name_suffix() << "\n";
+    stream << "warning: no definition found for " << entities[0].full_name()
+           << "\n";
 #else
     return;
 #endif  // NDEBUG
@@ -91,7 +91,7 @@ void MaybePrintLinkerMessage(absl::Span<const Entity> entities,
 
   for (const auto& entity : entities) {
     const auto& location = locations[entity.location_id()];
-    stream << "  " << location.path() << ":" << location.start_line() << ":"
+    stream << "  " << location.path() << ":" << location.start_line() << "-"
            << location.end_line()
            << (entity.is_incomplete() ? "" : " [definition]")
            << (entity.is_weak() ? " [weak]" : "") << "\n";

@@ -1,4 +1,3 @@
-#!/usr/bin/env bash -e
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +21,10 @@ harness_sh=${fuzz_target::-3}
 cp $1 $OUT/$fuzz_target
 
 echo """#!/usr/bin/env bash
+# LLVMFuzzerTestOneInput for fuzzer detection.
+this_dir=\$(dirname \"\$0\")
+export GEM_HOME=\$this_dir/fuzz-gem
 
-ruzzy $fuzz_target
+ruzzy \$this_dir/$fuzz_target \$@
 """ > $OUT/$harness_sh
 chmod +x $OUT/$harness_sh

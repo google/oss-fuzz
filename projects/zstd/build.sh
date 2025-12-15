@@ -18,8 +18,8 @@
 
 cd tests/fuzz
 
-# Download the seed corpora
-make -j seedcorpora
+# Download the seed corpora. Do not break on broken URLs.
+make -j seedcorpora || true
 # Build all of the fuzzers
 ./fuzz.py build all
 

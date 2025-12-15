@@ -8,8 +8,8 @@
 	<packaging>jar</packaging>
 	
 	<properties>
-		<maven.compiler.source>15</maven.compiler.source>
-		<maven.compiler.target>15</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<fuzzedLibaryVersion>6.0-alpha-3</fuzzedLibaryVersion>
 		<exec.mainClass>ossfuzz.OptionParserFuzzer</exec.mainClass>
@@ -21,11 +21,11 @@
 		<!--
 			On the CI, install the jazzer file with
 		
-				mvn install:install-file -Dfile=${JAZZER_API_PATH} \
-					-DgroupId="com.code-intelligence" \
-					-DartifactId="jazzer-api" \
-					-Dversion="0.12.0" \
-					-Dpackaging=jar
+			mvn install:install-file -Dfile=${JAZZER_API_PATH} \
+				-DgroupId="com.code-intelligence" \
+				-DartifactId="jazzer-api" \
+				-Dversion="0.12.0" \
+				-Dpackaging=jar
 		
 			in order to avoid mismatching driver/api versions.
 		-->
@@ -38,6 +38,25 @@
 			<groupId>net.sf.jopt-simple</groupId>
 			<artifactId>jopt-simple</artifactId>
 			<version>${fuzzedLibaryVersion}</version>
+		</dependency>
+		<!-- JUnit Jupiter for testing -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<version>5.8.1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

@@ -41,10 +41,17 @@ void PreparePath(std::string& path) {
 
 FileCopier::FileCopier(absl::string_view base_path,
                        absl::string_view index_path,
-                       const std::vector<std::string>& extra_paths)
+                       const std::vector<std::string>& extra_paths,
+                       Behavior behavior, bool skip_missing_files)
     : base_path_(base_path),
       extra_paths_(extra_paths),
-      index_path_(index_path) {
+      index_path_(index_path),
+      behavior_(behavior),
+      skip_missing_files_(skip_missing_files) {
+  if (behavior_ == Behavior::kNoOp) {
+    return;
+  }
+
   PreparePath(base_path_);
   for (std::string& extra_path : extra_paths_) {
     PreparePath(extra_path);
@@ -52,7 +59,7 @@ FileCopier::FileCopier(absl::string_view base_path,
 }
 
 std::string FileCopier::AbsoluteToIndexPath(absl::string_view path) const {
-  CHECK(path.starts_with("/")) << "Absolute path expected";
+  CHECK(path.starts_with("/")) << "Absolute path expected: " << path;
 
   std::string result = std::string(path);
   if (!base_path_.empty() && absl::StartsWith(path, base_path_)) {
@@ -70,12 +77,20 @@ std::string FileCopier::AbsoluteToIndexPath(absl::string_view path) const {
 }
 
 void FileCopier::RegisterIndexedFile(absl::string_view index_path) {
-  absl::MutexLock lock(&mutex_);
+  if (behavior_ == Behavior::kNoOp) {
+    return;
+  }
+
+  absl::MutexLock lock(mutex_);
   indexed_files_.emplace(index_path);
 }
 
 void FileCopier::CopyIndexedFiles() {
-  absl::MutexLock lock(&mutex_);
+  if (behavior_ == Behavior::kNoOp) {
+    return;
+  }
+
+  absl::MutexLock lock(mutex_);
 
   for (const std::string& indexed_path : indexed_files_) {
     std::filesystem::path src_path = indexed_path;
@@ -88,10 +103,17 @@ void FileCopier::CopyIndexedFiles() {
       dst_path = std::filesystem::path(index_path_) / "relative" / indexed_path;
     }
 
-    DLOG(INFO) << "\nFrom: " << src_path << "\n  To: " << dst_path << "\n";
+    if (!std::filesystem::exists(src_path)) {
+      if (!skip_missing_files_) {
+        LOG(QFATAL) << "Source file " << src_path
+                   << " does not exist and skip_missing_files is false.";
+      } else {
+        LOG(WARNING) << "Skipping non-existent source file: " << src_path;
+        continue;
+      }
+    }
 
-    QCHECK(std::filesystem::exists(src_path))
-        << "Source file does not exist: " << src_path;
+    DLOG(INFO) << "\nFrom: " << src_path << "\n  To: " << dst_path << "\n";
 
     std::error_code error_code;
     // The destination directory may already exist, but report other errors.
@@ -101,9 +123,14 @@ void FileCopier::CopyIndexedFiles() {
                         << dst_path.parent_path()
                         << " (error: " << error_code.message() << ")";
 
-    QCHECK(std::filesystem::copy_file(src_path, dst_path, error_code))
-        << "Failed to copy file " << src_path << " to " << dst_path
-        << " (error: " << error_code.message() << ")";
+    using std::filesystem::copy_options;
+    const copy_options options = behavior_ == Behavior::kOverwriteExistingFiles
+                                     ? copy_options::overwrite_existing
+                                     : copy_options::none;
+    std::filesystem::copy_file(src_path, dst_path, options, error_code);
+    QCHECK(!error_code) << "Failed to copy file " << src_path << " to "
+                        << dst_path << " (error: " << error_code.message()
+                        << ")";
   }
 }
 }  // namespace indexer

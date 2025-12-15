@@ -15,6 +15,6 @@
 #
 ################################################################################
 
-$CXX $CXXFLAGS -std=c++17 -I$SRC/magic_enum/include     \
+$CXX $CXXFLAGS -std=c++17 -I$SRC/magic_enum/include/magic_enum  \
     $SRC/magic_enum_fuzzer.cc -o $OUT/magic_enum_fuzzer \
     $LIB_FUZZING_ENGINE -lpthread

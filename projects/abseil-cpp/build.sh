@@ -19,8 +19,10 @@ export USE_BAZEL_VERSION=7.4.0
 # As per https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=63223, it breaks
 # the build. Someone could figure out exactly why it breaks the build, but just
 # disabling it suffices because it doesn't actually matter for our purposes. ;)
-export BAZEL_EXTRA_BUILD_FLAGS='--features=-layering_check'
+# Also use C++17 as required by abseil-cpp.
+export BAZEL_EXTRA_BUILD_FLAGS='--features=-layering_check --cxxopt=-std=c++17'
 # The default query is complex and requires additional dependencies in order to
 # work (due to its use of `//...`) whereas this query is simple and sufficient.
 export BAZEL_FUZZ_TEST_QUERY='filter("_fuzzer$", //:all)'
 exec bazel_build_fuzz_tests
+

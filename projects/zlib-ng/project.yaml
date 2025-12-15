@@ -17,3 +17,5 @@ fuzzing_engines:
   - afl
   # - centipede disabled due to https://github.com/google/oss-fuzz/pull/10248#issuecomment-1579657163
 main_repo: 'https://github.com/zlib-ng/zlib-ng.git'
+
+base_os_version: ubuntu-24-04

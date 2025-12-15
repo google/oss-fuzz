@@ -102,10 +102,17 @@ static void fuzz_conversion(FuzzedDataProvider& fdp) {
   // Fuzz string to uint32 conversion with random payload string
   mhd_strx_to_uint32(payload_str, &u32);
   mhd_strx_to_uint32_n(payload_str, max_len, &u32);
+  mhd_uint32_to_strx((uint_fast32_t)fdp.ConsumeIntegral<uint32_t>(), small, sizeof(small));
+  mhd_uint32_to_strx((uint_fast32_t)fdp.ConsumeIntegral<uint32_t>(), big, sizeof(big));
 
   // Fuzz uint16 to string conversion with random payload
   mhd_uint16_to_str((uint_least16_t)fdp.ConsumeIntegralInRange<unsigned>(0, 65535), small, sizeof(small));
   mhd_uint16_to_str((uint_least16_t)fdp.ConsumeIntegralInRange<unsigned>(0, 65535), big, sizeof(big));
+
+  // Fuzz uint8 to string conversion with random payload
+  uint8_t min_digits = fdp.ConsumeIntegralInRange<uint8_t>(0, 5);
+  mhd_uint8_to_str_pad((uint8_t)fdp.ConsumeIntegral<uint8_t>(), min_digits, small, sizeof(small));
+  mhd_uint8_to_str_pad((uint8_t)fdp.ConsumeIntegral<uint8_t>(), min_digits, big, sizeof(big));
 }
 
 static void fuzz_decode(FuzzedDataProvider& fdp) {
@@ -144,6 +151,9 @@ static void fuzz_quoted(FuzzedDataProvider& fdp) {
 
   // Fuzz mhd_str_equal_quoted_bin_n with random string payload as binary
   mhd_str_equal_quoted_bin_n(payload_str1, payload_size1, payload_str2, payload_size2);
+
+  // Fuzz mhd_str_equal_caseless_quoted_bin_n with random string payload as binary
+  mhd_str_equal_caseless_quoted_bin_n(payload_str1, payload_size1, payload_str2, payload_size2);
 
   // Fuzz mhd_str_quote and mhd_str_unquote with random string payload
   size_t max_out = payload_size1 * 2;
@@ -223,7 +233,7 @@ static void fuzz_hex_conversion(FuzzedDataProvider& fdp) {
   char *hexz_out = (char *) malloc(payload_size * 2 + 1);
   if (hexz_out) {
     if (!payload.empty()) {
-      mhd_bin_to_hex(payload_str, payload_size, hexz_out);
+      mhd_bin_to_hex_z(payload_str, payload_size, hexz_out);
     }
     free(hexz_out);
   }

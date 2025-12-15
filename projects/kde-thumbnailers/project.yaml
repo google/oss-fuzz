@@ -1,0 +1,11 @@
+homepage: "https://invent.kde.org/network/kio-extras.git"
+language: c++
+primary_contact: tsdgeos@gmail.com
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+main_repo: "https://invent.kde.org/network/kio-extras.git"

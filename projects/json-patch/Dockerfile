@@ -16,7 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/evanphx/json-patch
-
+RUN wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.23.4.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/ \
+    && rm -rf temp-go go1.23.4.linux-amd64.tar.gz
 COPY fuzz_*.go $SRC/json-patch/
 
 COPY build.sh $SRC/

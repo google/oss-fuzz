@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
@@ -32,7 +32,6 @@ RUN apt-get update && apt-get install -y \
  curl \
  gperf \
  wget \
- python \
  rsync \
  gtk-doc-tools \
  libtasn1-bin \
@@ -52,7 +51,7 @@ RUN wget -qO- https://ftp.gnu.org/gnu/libunistring/libunistring-latest.tar.gz | 
 RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar xz && mv libidn2-* libidn2
 RUN wget -qO- https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.gz | tar xz && mv gmp-* gmp
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
-RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git --branch=nettle_3.9.1_release_20230601
+RUN git clone --depth=1 --branch nettle_3.10.1_release_20241230 https://git.lysator.liu.se/nettle/nettle.git
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 
 RUN git clone https://git.savannah.gnu.org/git/wget.git

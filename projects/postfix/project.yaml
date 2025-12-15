@@ -6,3 +6,4 @@ auto_ccs:
   - "david@adalogics.com"
 sanitizers:
   - address
+base_os_version: ubuntu-24-04

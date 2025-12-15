@@ -26,9 +26,10 @@ import com.carrotsearch.hppc.LongHashSet;
 import com.carrotsearch.hppc.ShortArrayList;
 import com.carrotsearch.hppc.ShortHashSet;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.hppc.HppcModule;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.hppc.HppcModule;
 
 /** This fuzzer targets the serialization methods of Hppc objects */
 public class HppcSerializerFuzzer {
@@ -36,7 +37,9 @@ public class HppcSerializerFuzzer {
 
   public static void fuzzerInitialize() {
     // Register the HppcModule for the serialization
-    mapper = new ObjectMapper().registerModule(new HppcModule());
+    mapper = JsonMapper.builder()
+        .addModule(new HppcModule())
+        .build();
   }
 
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
@@ -113,7 +116,7 @@ public class HppcSerializerFuzzer {
           mapper.writeValueAsString(bitSet);
           break;
       }
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       // Known exception
     }
   }

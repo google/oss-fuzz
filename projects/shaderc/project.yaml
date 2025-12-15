@@ -5,6 +5,10 @@ language: c++
 sanitizers:
 - address
 auto_ccs:
-- "fuzzing@fuchsia.dev"
-- "arthur.chan@adalogics.com"
 - "adam@adalogics.com"
+- "arthur.chan@adalogics.com"
+- "dneto@google.com"
+- "dsinclair@google.com"
+- "fuzzing@fuchsia.dev"
+- "nathangauer@google.com"
+- "stevenperron@google.com"

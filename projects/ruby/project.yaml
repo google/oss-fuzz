@@ -1,0 +1,15 @@
+homepage: "https://www.ruby-lang.org/en/"
+language: c++
+primary_contact: "kateinoigakukun@gmail.com"
+auto_ccs:
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/ruby/ruby'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

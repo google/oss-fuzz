@@ -1,4 +1,3 @@
-disabled: true
 homepage: "https://github.com/bus1/dbus-broker"
 language: c
 primary_contact: "david.rheinsberg@gmail.com"
@@ -20,4 +19,4 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
+base_os_version: ubuntu-24-04

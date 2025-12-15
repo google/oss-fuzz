@@ -14,13 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven-3.6.3 && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.zip -o maven.zip && \
+unzip maven.zip -d $SRC/maven-3.8.8 && \
 rm -rf maven.zip
 
-ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
+ENV MVN $SRC/maven-3.8.8/apache-maven-3.8.8/bin/mvn
 
 WORKDIR ${SRC}
 #

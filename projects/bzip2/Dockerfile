@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone git://sourceware.org/git/bzip2.git
 RUN git clone git://sourceware.org/git/bzip2-tests.git
 COPY build.sh *.c $SRC/

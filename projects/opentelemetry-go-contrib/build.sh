@@ -14,11 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+REPO=$PWD
 
-cd $SRC/opentelemetry-go-contrib
-
-pushd otelconf/v0.3.0
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
-compile_native_go_fuzzer $(go list) FuzzJSON FuzzJSON
-compile_native_go_fuzzer $(go list) FuzzYAML FuzzYAML
-popd
+cd $REPO/otelconf/v0.3.0
+compile_native_go_fuzzer_v2 $(go list) FuzzJSON otelconf_v0.3.0_FuzzJSON
+compile_native_go_fuzzer_v2 $(go list) FuzzYAML otelconf_v0.3.0_FuzzYAML
+compile_native_go_fuzzer_v2 $(go list) FuzzYAMLWithEnvVars otelconf_v0.3.0_FuzzYAMLWithEnvVars

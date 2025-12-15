@@ -73,7 +73,7 @@ class TrialBuildMainTest(unittest.TestCase):
     del mock_wait_on_builds
     self.maxDiff = None  # pylint: disable=invalid-name
     build_id = 1
-    mock_run_build.return_value = build_id
+    mock_run_build.return_value = {'id': build_id}
     branch_name = 'mybranch'
     project = 'skcms'
     args = [

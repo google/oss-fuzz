@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config zlib1g-dev libpci-dev
 RUN git clone --depth 1 https://github.com/liblouis/liblouis
 WORKDIR liblouis
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

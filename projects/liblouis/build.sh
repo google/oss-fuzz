@@ -15,4 +15,8 @@
 #
 ################################################################################
 
+sed -i 's/main/main2/g' tests/fuzzing/fuzz_backtranslate.c
+sed -i 's/main/main2/g' tests/fuzzing/fuzz_translate_generic.c
+sed -i 's/LLVMFuzzerRunDriver(&argc/\/\/LLVMFuzzerRunDriver(&argc/g' tests/fuzzing/fuzz_backtranslate.c
+sed -i 's/LLVMFuzzerRunDriver(&argc/\/\/LLVMFuzzerRunDriver(&argc/g' tests/fuzzing/fuzz_translate_generic.c
 $SRC/liblouis/tests/fuzzing/build.sh

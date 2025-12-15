@@ -15,14 +15,35 @@
 #
 ################################################################################
 
-BUILD=$WORK/meson
+PREFIX=$WORK/prefix
+mkdir -p $PREFIX
 
+export PKG_CONFIG="`which pkg-config` --static"
+export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
+export PATH=$PREFIX/bin:$PATH
+
+BUILD=$WORK/build
+
+rm -rf $WORK/*
 rm -rf $BUILD
-mkdir $BUILD
+mkdir -p $BUILD
 
+# Build zlib locally so it definitely has fsanitize support
+# Apply some patches from Chromium to fix known msan issues
+# which are not yet fixed upstream.
+pushd $SRC/zlib
+patch -p1 < $SRC/0001-deflate-Zero-initialise-the-prev-and-window-buffers.patch
+mkdir build && cd build
+CFLAGS=-fPIC ../configure --static --prefix=$PREFIX
+make install -j$(nproc)
+popd
+
+# Build GLib itself
 meson $BUILD \
   -Doss_fuzz=enabled \
   -Db_lundef=false \
+  --prefix=$PREFIX \
+  --libdir=lib \
   -Ddefault_library=static \
   -Dlibmount=disabled
 

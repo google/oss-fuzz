@@ -22,11 +22,18 @@
 #include "indexer/merge_queue.h"
 #include "clang/AST/ASTConsumer.h"
 #include "clang/Frontend/FrontendAction.h"
+#include "clang/Frontend/Utils.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/ADT/StringRef.h"
 
 namespace oss_fuzz {
 namespace indexer {
+class AllDependenciesCollector : public clang::DependencyCollector {
+ public:
+  // Also include files from the "system" locations.
+  bool needSystemDependencies() override { return true; }
+};
+
 // IndexAction provides the entry-point for the indexing tooling. This should
 // typically not be used directly, and the functions exposed in
 // indexer/frontend.h should be used instead.
@@ -43,6 +50,7 @@ class IndexAction : public clang::ASTFrontendAction {
  private:
   std::unique_ptr<InMemoryIndex> index_;
   MergeQueue& merge_queue_;
+  std::unique_ptr<AllDependenciesCollector> dependencies_collector_;
 };
 
 class IndexActionFactory : public clang::tooling::FrontendActionFactory {

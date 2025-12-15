@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL"
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -Wno-deprecated-literal-operator"
 export LIBFUZZER_LINK="$LIB_FUZZING_ENGINE"
 
 # Install Boost headers

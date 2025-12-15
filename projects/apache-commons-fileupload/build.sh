@@ -20,12 +20,13 @@ PROJECT_GROUP_ID=org.apache.commons
 PROJECT_ARTIFACT_ID=commons-fileupload2
 MAIN_REPOSITORY=https://github.com/apache/commons-fileupload.git
 
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 -Denforcer.skip=true -DskipTests"
+MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -Denforcer.skip=true -DskipTests"
 
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
   # set dependency project version in fuzz-targets
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:commons-fileupload2-core -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:commons-fileupload2-javax -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
 }
 
 cd project-parent

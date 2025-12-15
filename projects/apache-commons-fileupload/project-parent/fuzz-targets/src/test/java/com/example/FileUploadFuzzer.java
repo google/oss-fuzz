@@ -18,12 +18,12 @@ package com.example;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.junit.FuzzTest;
-import org.apache.commons.fileupload2.FileItem;
-import org.apache.commons.fileupload2.FileUpload;
-import org.apache.commons.fileupload2.FileUploadException;
-import org.apache.commons.fileupload2.MultipartStream;
-import org.apache.commons.fileupload2.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload2.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.AbstractFileUpload;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.core.MultipartInput;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.javax.JavaxServletFileUpload;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,13 +34,14 @@ import java.util.List;
 public class FileUploadFuzzer {
     @FuzzTest
     void myFuzzTest(FuzzedDataProvider data)
-            throws IOException, FileUploadException, MultipartStream.MalformedStreamException {
-        DiskFileItemFactory factory = new DiskFileItemFactory();
-        factory.setRepository(new File("/tmp/abc"));
-        FileUpload upload = new ServletFileUpload(factory);
+            throws IOException, FileUploadException {
+        DiskFileItemFactory factory = DiskFileItemFactory.builder()
+                .setPath(new File("/tmp/abc").toPath())
+                .get();
+        AbstractFileUpload upload = new JavaxServletFileUpload(factory);
 
         // is set to tomcats default to approach CVE-2023-24998
-        upload.setFileCountMax(10000);
+        upload.setMaxFileCount(10000);
 
         String contentType = data.consumeAsciiString(200);
         String multipartData = data.consumeRemainingAsString();

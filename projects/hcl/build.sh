@@ -16,14 +16,13 @@
 ################################################################################
 
 FUZZERS_PACKAGE=github.com/hashicorp/hcl/v2
-go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseTemplate FuzzParseTemplate
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseTraversalAbs FuzzParseTraversalAbs
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseExpression FuzzParseExpression
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseConfig FuzzHclSyntaxParseConfig
-compile_native_go_fuzzer $FUZZERS_PACKAGE/json/fuzz FuzzParse FuzzParse
-compile_native_go_fuzzer $FUZZERS_PACKAGE/hclwrite/fuzz FuzzParseConfig FuzzHclWriteParseConfig
+compile_native_go_fuzzer_v2 $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseTemplate FuzzParseTemplate
+compile_native_go_fuzzer_v2 $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseTraversalAbs FuzzParseTraversalAbs
+compile_native_go_fuzzer_v2 $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseExpression FuzzParseExpression
+compile_native_go_fuzzer_v2 $FUZZERS_PACKAGE/hclsyntax/fuzz FuzzParseConfig FuzzHclSyntaxParseConfig
+compile_native_go_fuzzer_v2 $FUZZERS_PACKAGE/json/fuzz FuzzParse FuzzParse
+compile_native_go_fuzzer_v2 $FUZZERS_PACKAGE/hclwrite/fuzz FuzzParseConfig FuzzHclWriteParseConfig
 
 zip $OUT/FuzzParseTemplate_seed_corpus.zip $SRC/hcl/hclsyntax/fuzz/testdata/fuzz/FuzzParseTemplate/*
 zip $OUT/FuzzParseTraversalAbs_seed_corpus.zip $SRC/hcl/hclsyntax/fuzz/testdata/fuzz/FuzzParseTraversalAbs/*

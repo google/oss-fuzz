@@ -14,3 +14,5 @@ vendor_ccs:
   - "hlin@code-intelligence.com"
   - "jacek.trossen@code-intelligence.com"
   - "bug-disclosure@code-intelligence.com"
+
+base_os_version: ubuntu-24-04
