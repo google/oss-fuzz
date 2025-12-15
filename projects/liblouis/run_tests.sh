@@ -15,5 +15,4 @@
 # limitations under the License.
 #
 ################################################################################
-cd $SRC/liblouis
 make check
