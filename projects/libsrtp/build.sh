@@ -16,7 +16,7 @@
 ################################################################################
 cd $SRC/libsrtp
 autoreconf -ivf
-./configure
+./configure --with-crypto-library=internal
 LIBFUZZER="$LIB_FUZZING_ENGINE" make srtp-fuzzer
 make test
 zip -r srtp-fuzzer_seed_corpus.zip fuzzer/corpus

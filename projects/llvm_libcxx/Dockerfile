@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
 WORKDIR llvm-project
 COPY build.sh $SRC/

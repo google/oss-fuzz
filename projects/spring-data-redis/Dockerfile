@@ -16,13 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+# Added a workaround to get Maven from a different source.
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.1/binaries/apache-maven-3.9.1-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
 RUN apt update && apt install -y openjdk-17-jdk
 
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.9.1/bin/mvn
 
 RUN git clone --depth 1 https://github.com/spring-projects/spring-data-redis.git
 

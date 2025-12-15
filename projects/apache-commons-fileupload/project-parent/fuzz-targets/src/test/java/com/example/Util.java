@@ -16,13 +16,12 @@
 
 package com.example;
 
-import org.apache.commons.fileupload2.FileItem;
-import org.apache.commons.fileupload2.FileUpload;
-import org.apache.commons.fileupload2.FileUploadException;
-import org.apache.commons.fileupload2.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload2.portlet.PortletFileUpload;
-import org.apache.commons.fileupload2.servlet.ServletFileUpload;
-import org.apache.commons.fileupload2.servlet.ServletRequestContext;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.AbstractFileUpload;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.javax.JavaxServletFileUpload;
+import org.apache.commons.fileupload2.javax.JavaxServletRequestContext;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -37,29 +36,29 @@ import java.util.List;
  */
 public class Util {
 
-    public static List<FileItem> parseUpload(final FileUpload upload, final byte[] bytes) throws FileUploadException {
+    public static List<FileItem> parseUpload(final AbstractFileUpload upload, final byte[] bytes) throws FileUploadException {
         return parseUpload(upload, bytes, Constants.CONTENT_TYPE);
     }
 
-    public static List<FileItem> parseUpload(final FileUpload upload, final byte[] bytes, final String contentType)
+    public static List<FileItem> parseUpload(final AbstractFileUpload upload, final byte[] bytes, final String contentType)
             throws FileUploadException {
         final HttpServletRequest request = new MockHttpServletRequest(bytes, contentType);
-        return upload.parseRequest(new ServletRequestContext(request));
+        return upload.parseRequest(new JavaxServletRequestContext(request));
     }
 
-    public static List<FileItem> parseUpload(final FileUpload upload, final String content)
+    public static List<FileItem> parseUpload(final AbstractFileUpload upload, final String content)
         throws UnsupportedEncodingException, FileUploadException {
         final byte[] bytes = content.getBytes(StandardCharsets.US_ASCII);
         return parseUpload(upload, bytes, Constants.CONTENT_TYPE);
     }
 
     /**
-     * Return a list of {@link FileUpload} implementations for parameterized tests.
-     * @return a list of {@link FileUpload} implementations
+     * Return a list of {@link AbstractFileUpload} implementations for parameterized tests.
+     * @return a list of {@link AbstractFileUpload} implementations
      */
-    public static List<FileUpload> fileUploadImplementations() {
+    public static List<AbstractFileUpload> fileUploadImplementations() {
+        DiskFileItemFactory factory = DiskFileItemFactory.builder().get();
         return Arrays.asList(
-                new ServletFileUpload(new DiskFileItemFactory()),
-                new PortletFileUpload(new DiskFileItemFactory()));
+                new JavaxServletFileUpload(factory));
     }
 }

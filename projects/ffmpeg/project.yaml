@@ -12,6 +12,7 @@ auto_ccs:
  - "kempfjb@gmail.com"
  - "jordyzomer@google.com"
  - "epirat07@gmail.com"
+ - "kasper93@gmail.com"
 fuzzing_engines:
  - afl
  - honggfuzz
@@ -21,4 +22,4 @@ sanitizers:
  - memory
  - undefined
 selective_unpack: true
-main_repo: 'https://git.ffmpeg.org/ffmpeg.git'
+main_repo: 'https://github.com/FFmpeg/FFmpeg'

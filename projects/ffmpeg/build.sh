@@ -65,7 +65,6 @@ meson_install() {
   CFLAGS="$MESON_CFLAGS" CXXFLAGS="$MESON_CXXFLAGS" \
   meson setup build -Dprefix="$FFMPEG_DEPS_PATH" -Ddefault_library=static -Dprefer_static=true \
                     --wrap-mode=nofallback --libdir "$LIBDIR" ${2:-}
-  meson compile -C build
   meson install -C build
 }
 
@@ -73,18 +72,13 @@ meson_install bzip2
 
 cd $SRC/zlib
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
-make clean
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 cd $SRC/libxml2
 ./autogen.sh --prefix="$FFMPEG_DEPS_PATH" --enable-static \
       --without-debug --without-ftp --without-http \
       --without-legacy --without-python
-make clean
-make -j$(nproc)
-make install
-
+make -j$(nproc) install
 meson_install freetype "-Dharfbuzz=disabled"
 meson_install fribidi "-Ddocs=false -Dtests=false"
 meson_install harfbuzz "-Ddocs=disabled -Dtests=disabled"
@@ -93,8 +87,7 @@ meson_install fontconfig "-Dtests=disabled -Dtools=disabled"
 cd $SRC/libass
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared --disable-asm
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 cd $SRC
 bzip2 -f -d alsa-lib-*
@@ -102,17 +95,13 @@ tar xf alsa-lib-*
 rm alsa-lib-*.tar
 cd alsa-lib-*
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
-make clean
-make -j$(nproc) all
-make install
+make -j$(nproc) install
 
 cd $SRC/fdk-aac
 autoreconf -fiv
 CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base,signed-integer-overflow" \
 ./configure --prefix="$FFMPEG_DEPS_PATH" --disable-shared
-make clean
-make -j$(nproc) all
-make install
+make -j$(nproc) install
 
 cd $SRC/libvpx
 if [[ "$SANITIZER" == "memory" ]] || [[ "$FUZZING_ENGINE" == "centipede" ]]; then
@@ -130,23 +119,17 @@ LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
         --extra-cflags="-DVPX_MAX_ALLOCABLE_MEMORY=1073741824" \
         $TARGET
 
-make clean
-make -j$(nproc) all
-make install
+make -j$(nproc) install
 
 cd $SRC/ogg
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-crc
-make clean
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 cd $SRC/opus
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
-make clean
-make -j$(nproc) all
-make install
+make -j$(nproc) install
 
 cd $SRC/theora
 if [[ "$ARCHITECTURE" == i386 ]]; then
@@ -162,16 +145,12 @@ CFLAGS="$CFLAGS -fPIC" LDFLAGS="-L$FFMPEG_DEPS_PATH/lib/" \
       ./autogen.sh
 ./configure --with-ogg="$FFMPEG_DEPS_PATH" --prefix="$FFMPEG_DEPS_PATH" \
       --enable-static --disable-examples $THEORA_BUILD_ARGS
-make clean
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 cd $SRC/vorbis
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
-make clean
-make -j$(nproc)
-make install
+make -j$(nproc) install
 
 # Remove shared libraries to avoid accidental linking against them.
 rm $FFMPEG_DEPS_PATH/lib/*.so
@@ -183,7 +162,7 @@ if [[ "$ARCHITECTURE" == i386 ]]; then
 
       FFMPEG_BUILD_ARGS='--arch="i386" --cpu="i386" --disable-inline-asm --disable-asm'
 else
-      FFMPEG_BUILD_ARGS=''
+      FFMPEG_BUILD_ARGS='--disable-asm'
 fi
 
 if [ "$SANITIZER" = "memory" ] || [ "$FUZZING_ENGINE" = "centipede" ]; then
@@ -221,8 +200,6 @@ fi
         --enable-demuxers \
         --samples=fate-suite/ \
         $FFMPEG_BUILD_ARGS
-make clean
-make -j$(nproc) install
 
 # Download test samples, will be used as seed corpus.
 # DISABLED.
@@ -246,6 +223,14 @@ FUZZ_TARGET_SOURCE=$SRC/ffmpeg/tools/target_dec_fuzzer.c
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
 
+declare -a BSF_TARGETS=()
+declare -a BSF_FUZZER_NAMES=()
+declare -a DECODER_TARGETS=()
+declare -a DECODER_FUZZER_NAMES=()
+declare -a ENCODER_TARGETS=()
+declare -a ENCODER_FUZZER_NAMES=()
+
+# Collect bitstream filters targets
 CONDITIONALS=$(grep 'BSF 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_BSF 1/\1/')
 if [ -n "${OSS_FUZZ_CI-}" ]; then
       # When running in CI, check the first targets only to save time and disk space
@@ -254,12 +239,11 @@ fi
 for c in $CONDITIONALS; do
       fuzzer_name=$($SRC/name_mappings.py binary_name bsf ${c})
       symbol=$(echo $c | sed "s/.*/\L\0/")
-      echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
-      make tools/target_bsf_${symbol}_fuzzer
-      mv tools/target_bsf_${symbol}_fuzzer $OUT/${fuzzer_name}
+      BSF_TARGETS+=("tools/target_bsf_${symbol}_fuzzer")
+      BSF_FUZZER_NAMES+=("${fuzzer_name}")
 done
 
-# Build fuzzers for decoders.
+# Collect decoder targets
 CONDITIONALS=$(grep 'DECODER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_DECODER 1/\1/')
 if [ -n "${OSS_FUZZ_CI-}" ]; then
       # When running in CI, check the first targets only to save time and disk space
@@ -268,43 +252,59 @@ fi
 for c in $CONDITIONALS; do
       fuzzer_name=$($SRC/name_mappings.py binary_name decoder ${c})
       symbol=$(echo $c | sed "s/.*/\L\0/")
-      echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
-      make tools/target_dec_${symbol}_fuzzer
-      mv tools/target_dec_${symbol}_fuzzer $OUT/${fuzzer_name}
+      DECODER_TARGETS+=("tools/target_dec_${symbol}_fuzzer")
+      DECODER_FUZZER_NAMES+=("${fuzzer_name}")
 done
 
-# Build fuzzers for encoders
+# Collect encoder targets
 CONDITIONALS=$(grep 'ENCODER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_ENCODER 1/\1/')
 if [ -n "${OSS_FUZZ_CI-}" ]; then
       # When running in CI, check the first targets only to save time and disk space
       CONDITIONALS=(${CONDITIONALS[@]:0:2})
 fi
-
 for c in $CONDITIONALS; do
       fuzzer_name=$($SRC/name_mappings.py binary_name encoder ${c})
       symbol=$(echo $c | sed "s/.*/\L\0/")
-      echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
-      make tools/target_enc_${symbol}_fuzzer
-      mv tools/target_enc_${symbol}_fuzzer $OUT/${fuzzer_name}
+      ENCODER_TARGETS+=("tools/target_enc_${symbol}_fuzzer")
+      ENCODER_FUZZER_NAMES+=("${fuzzer_name}")
 done
 
+OTHER_TARGETS=("tools/target_sws_fuzzer" "tools/target_swr_fuzzer" "tools/target_dem_fuzzer" "tools/target_io_dem_fuzzer")
+ALL_TARGETS=("${BSF_TARGETS[@]}" "${DECODER_TARGETS[@]}" "${ENCODER_TARGETS[@]}" "${OTHER_TARGETS[@]}")
+if [ ${#ALL_TARGETS[@]} -eq 0 ]; then
+      echo "ERROR: No targets found to build!" >&2
+      exit 1
+fi
+make -j$(nproc) "${ALL_TARGETS[@]}"
 
-# Build fuzzer for sws
+for i in "${!BSF_TARGETS[@]}"; do
+      echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${BSF_FUZZER_NAMES[$i]}.options
+      mv ${BSF_TARGETS[$i]} $OUT/${BSF_FUZZER_NAMES[$i]}
+done
+
+for i in "${!DECODER_TARGETS[@]}"; do
+      echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${DECODER_FUZZER_NAMES[$i]}.options
+      mv ${DECODER_TARGETS[$i]} $OUT/${DECODER_FUZZER_NAMES[$i]}
+done
+
+for i in "${!ENCODER_TARGETS[@]}"; do
+      echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${ENCODER_FUZZER_NAMES[$i]}.options
+      mv ${ENCODER_TARGETS[$i]} $OUT/${ENCODER_FUZZER_NAMES[$i]}
+done
+
+# Move fuzzer for sws
 fuzzer_name=$($SRC/name_mappings.py binary_name other SWS)
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
-make tools/target_sws_fuzzer
 mv tools/target_sws_fuzzer $OUT/${fuzzer_name}
 
-# Build fuzzer for swr
+# Move fuzzer for swr
 fuzzer_name=$($SRC/name_mappings.py binary_name other SWR)
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
-make tools/target_swr_fuzzer
 mv tools/target_swr_fuzzer $OUT/${fuzzer_name}
 
-# Build fuzzer for demuxer
+# Move fuzzer for demuxer
 fuzzer_name=$($SRC/name_mappings.py binary_name other DEM)
 echo -en "[libfuzzer]\nmax_len = 1000000\n" >$OUT/${fuzzer_name}.options
-make tools/target_dem_fuzzer
 mv tools/target_dem_fuzzer $OUT/${fuzzer_name}
 
 # We do not need raw reference files for the muxer
@@ -318,8 +318,10 @@ zip -r $OUT/ffmpeg_AV_CODEC_ID_FFV1_fuzzer_seed_corpus.zip ffv1testset
 
 # Build fuzzer for demuxer fed at IO level
 fuzzer_name=$($SRC/name_mappings.py binary_name other IO_DEM)
-make tools/target_io_dem_fuzzer
 mv tools/target_io_dem_fuzzer $OUT/${fuzzer_name}
+
+# Clean before reconfiguring for demuxers
+make distclean
 
 # Reduce size of demuxer fuzzers by disabling various components.
 ./configure \
@@ -355,6 +357,9 @@ mv tools/target_io_dem_fuzzer $OUT/${fuzzer_name}
         --disable-programs \
         $FFMPEG_BUILD_ARGS
 
+declare -a DEMUXER_TARGETS=()
+declare -a DEMUXER_FUZZER_NAMES=()
+
 CONDITIONALS=$(grep 'DEMUXER 1$' config_components.h | sed 's/#define CONFIG_\(.*\)_DEMUXER 1/\1/')
 if [ -n "${OSS_FUZZ_CI-}" ]; then
       # When running in CI, check the first targets only to save time and disk space
@@ -364,8 +369,18 @@ fi
 for c in $CONDITIONALS; do
       fuzzer_name=$($SRC/name_mappings.py binary_name demuxer ${c})
       symbol=$(echo $c | sed "s/.*/\L\0/")
-      make tools/target_dem_${symbol}_fuzzer
-      mv tools/target_dem_${symbol}_fuzzer $OUT/${fuzzer_name}
+      DEMUXER_TARGETS+=("tools/target_dem_${symbol}_fuzzer")
+      DEMUXER_FUZZER_NAMES+=("${fuzzer_name}")
+done
+
+if [ ${#DEMUXER_TARGETS[@]} -eq 0 ]; then
+      echo "ERROR: No demuxer targets found to build!" >&2
+      exit 1
+fi
+make -j$(nproc) "${DEMUXER_TARGETS[@]}"
+
+for i in "${!DEMUXER_TARGETS[@]}"; do
+      mv ${DEMUXER_TARGETS[$i]} $OUT/${DEMUXER_FUZZER_NAMES[$i]}
 done
 
 # Find relevant corpus in test samples and archive them for every fuzzer.

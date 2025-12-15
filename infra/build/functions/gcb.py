@@ -65,15 +65,22 @@ def get_latest_gcbrun_command(comments):
   return None
 
 
-def exec_command_from_github(pull_request_number, repo, branch):
+def exec_command_from_github(args):
   """Executes the gcbrun command for trial_build.py or oss_fuzz_on_demand.py in
   the most recent command on |pull_request_number|. Returns True on success,
   False on failure."""
+  pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
+  branch = os.environ['BRANCH']
+  repo = os.environ['REPO']
+
   comments = get_comments(pull_request_number)
   full_command = get_latest_gcbrun_command(comments)
 
   if full_command is None:
     logging.info('Trial build not requested.')
+    # Create a flag file to indicate that the build was skipped.
+    with open('trial_build_skipped.flag', 'w') as f:
+      pass
     return None
   command_file = full_command[0]
   command = full_command[1:]
@@ -83,7 +90,9 @@ def exec_command_from_github(pull_request_number, repo, branch):
   # Set the branch so that the trial_build builds the projects from the PR
   # branch.
   command.extend(['--branch', branch])
-  logging.info('Command: %s.', command)
+  command.extend(args)
+
+  logging.info('Executing command: %s.', command)
 
   if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
     return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command) == 0
@@ -93,10 +102,11 @@ def exec_command_from_github(pull_request_number, repo, branch):
 def main():
   """Entrypoint for GitHub CI into trial_build.py"""
   logging.basicConfig(level=logging.INFO)
-  pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
-  branch = os.environ['BRANCH']
-  repo = os.environ['REPO']
-  result = exec_command_from_github(pull_request_number, repo, branch)
+  logging.getLogger('oauth2client').setLevel(logging.WARNING)
+
+  args = sys.argv[1:]
+
+  result = exec_command_from_github(args)
   if result or result is None:
     return 0
   return 1
