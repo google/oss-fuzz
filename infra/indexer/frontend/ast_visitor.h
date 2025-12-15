@@ -42,7 +42,6 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
              clang::CompilerInstance& compiler)
       : index_(index),
         context_(context),
-        compiler_(compiler),
         sema_(compiler.getSema()) {}
 
   bool shouldVisitImplicitCode() const { return true; }
@@ -83,6 +82,9 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
       const clang::Decl* template_decl, const clang::Decl* original_decl);
   void SynthesizeInheritedMemberEntities(
       const clang::CXXRecordDecl* class_decl);
+  void AddSyntheticMemberReference(const clang::CXXRecordDecl* child_class,
+                                   const clang::ValueDecl* inherited_member,
+                                   const clang::SourceRange& range);
   void AddTypeReferencesFromLocation(LocationId location_id,
                                      const clang::Type *type,
                                      bool outermost_type = true);
@@ -101,7 +103,6 @@ class AstVisitor : public clang::RecursiveASTVisitor<AstVisitor> {
 
   InMemoryIndex &index_;
   clang::ASTContext &context_;
-  clang::CompilerInstance &compiler_;
   clang::Sema& sema_;
 
   struct CachedEntityId {

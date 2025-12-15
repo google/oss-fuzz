@@ -19,7 +19,6 @@
 ARGS='is_asan = true
  is_component_build = false
  use_clang_modules = false
- is_debug = true
  symbol_level = 2
  forbid_non_component_debug_builds = false
  use_debug_fission = false
@@ -32,12 +31,14 @@ ARGS='is_asan = true
  treat_warnings_as_errors = false
  libcxx_is_shared = false
  v8_enable_backtrace = true
- v8_enable_slow_dchecks = false
- v8_optimized_debug = false
- v8_enable_fast_mksnapshot = true'
+ v8_enable_slow_dchecks = true
+ v8_enable_test_features = true
+ v8_enable_fast_mksnapshot = false'
 
 if [[ -n "${INDEXER_BUILD:-}" ]]; then
-    ARGS="$ARGS clang_base_path=\"/opt/toolchain\""
+  ARGS="$ARGS is_debug=true v8_optimized_debug=false v8_enable_slow_dchecks=true clang_base_path=\"/opt/toolchain\""
+else
+  ARGS="$ARGS is_debug=false v8_enable_slow_dchecks=false"
 fi
 
 # Generate ninja file for build

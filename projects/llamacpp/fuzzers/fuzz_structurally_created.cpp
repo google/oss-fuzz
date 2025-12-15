@@ -11,6 +11,7 @@ limitations under the License.
 */
 
 #include "llama.h"
+#include "gguf.h"
 #include <fstream>
 #include <iostream>
 #include <map>

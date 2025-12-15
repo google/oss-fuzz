@@ -40,16 +40,20 @@ SRC = Path(os.getenv('SRC', '/src'))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv('OUT', '/out'))
 INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
+INCREMENTAL_CDB_PATH = Path('/incremental_cdb')
+_GCC_BASE_PATH = Path('/usr/lib/gcc/x86_64-linux-gnu')
 
 _LD_BINARY = 'ld-linux-x86-64.so.2'
 _LD_PATH = Path('/lib64') / _LD_BINARY
+_DEFAULT_GCC_VERSION = '9'
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 
 DEFAULT_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
+TRACING_COVERAGE_FLAGS = '-fsanitize-coverage=func,trace-pc-guard'
 DEFAULT_FUZZING_ENGINE = 'fuzzing_engine.cc'
 
-_CLANG_VERSION = os.getenv('CLANG_VERSION', '18')
-_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', '/usr/local'))
+DEFAULT_CLANG_TOOLCHAIN = '/usr/local'
+_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', DEFAULT_CLANG_TOOLCHAIN))
 _TOOLCHAIN_WITH_WRAPPER = Path('/opt/toolchain')
 
 INDEXER_DIR = Path(__file__).parent
@@ -58,6 +62,13 @@ INDEXER_DIR = Path(__file__).parent
 # so we can't always rely on using environment variables to pass settings to the
 # wrapper. Get around this by writing to a file instead.
 COMPILE_SETTINGS_PATH = INDEXER_DIR / 'compile_settings.json'
+
+CLANG_TOOLCHAIN_BINARY_PREFIXES = (
+    'clang-',
+    'ld',
+    'lld',
+    'llvm-',
+)
 
 EXTRA_CFLAGS = (
     '-fno-omit-frame-pointer '
@@ -123,11 +134,15 @@ def set_up_wrapper_dir():
     shutil.rmtree(_TOOLCHAIN_WITH_WRAPPER)
   _TOOLCHAIN_WITH_WRAPPER.mkdir(parents=True)
 
-  # Set up symlinks to every binary except for clang.
+  # Set up symlinks to toolchain binaries.
   wrapper_bin_dir = _TOOLCHAIN_WITH_WRAPPER / 'bin'
   wrapper_bin_dir.mkdir()
   for name in os.listdir(_CLANG_TOOLCHAIN / 'bin'):
-    if name in ('clang', 'clang++'):
+    # Symlink clang/llvm toolchain binaries, except for clang itself.
+    # We have to be careful not to symlink other unrelated binaries, since other
+    # parts of the build process may wrap those binaries (e.g.
+    # make_build_replayable.py in OSS-Fuzz).
+    if not name.startswith(CLANG_TOOLCHAIN_BINARY_PREFIXES):
       continue
 
     os.symlink(_CLANG_TOOLCHAIN / 'bin' / name, wrapper_bin_dir / name)
@@ -146,7 +161,7 @@ class BinaryMetadata:
   compile_commands: list[dict[str, Any]]
 
 
-def _get_build_id_from_elf_notes(elf_file: str, contents: bytes) -> str | None:
+def _get_build_id_from_elf_notes(elf_file: Path, contents: bytes) -> str | None:
   """Extracts the build id from the ELF notes of a binary.
 
   The ELF notes are obtained with
@@ -168,68 +183,110 @@ def _get_build_id_from_elf_notes(elf_file: str, contents: bytes) -> str | None:
 
   assert elf_data
 
-  for file_info in elf_data:
-    for note_entry in file_info['Notes']:
-      note_section = note_entry['NoteSection']
-      if note_section['Name'] == '.note.gnu.build-id':
-        note_details = note_section['Note']
-        if 'Build ID' in note_details:
-          return note_details['Build ID']
-  return None
-
-
-def get_build_id(elf_file: str) -> str | None:
-  """This invokes llvm-readelf to get the build ID of the given ELF file."""
-
-  # Note: this format changed in llvm-readelf19.
-  # Example output of llvm-readelf JSON output:
+  # Example output of llvm-readelf JSON output for llvm 19+:
   # [
   #   {
   #     "FileSummary": {
-  #       "File": "/out/iccprofile_info",
+  #       "File": "binary",
   #       "Format": "elf64-x86-64",
   #       "Arch": "x86_64",
   #       "AddressSize": "64bit",
-  #       "LoadName": "<Not found>",
+  #       "LoadName": "<Not found>"
   #     },
-  #     "Notes": [
+  #     "NoteSections": [
   #       {
   #         "NoteSection": {
-  #           "Name": ".note.ABI-tag",
-  #           "Offset": 764,
+  #           "Name": ".note.gnu.property",
+  #           "Offset": 904,
   #           "Size": 32,
-  #           "Note": {
-  #             "Owner": "GNU",
-  #             "Data size": 16,
-  #             "Type": "NT_GNU_ABI_TAG (ABI version tag)",
-  #             "OS": "Linux",
-  #             "ABI": "3.2.0",
-  #           },
+  #           "Notes": [
+  #             {
+  #               "Owner": "GNU",
+  #               "Data size": 16,
+  #               "Type": "NT_GNU_PROPERTY_TYPE_0 (property note)",
+  #               "Property": [
+  #                 "x86 ISA needed: x86-64-baseline"
+  #               ]
+  #             }
+  #           ]
   #         }
   #       },
   #       {
   #         "NoteSection": {
   #           "Name": ".note.gnu.build-id",
-  #           "Offset": 796,
-  #           "Size": 24,
-  #           "Note": {
-  #             "Owner": "GNU",
-  #             "Data size": 8,
-  #             "Type": "NT_GNU_BUILD_ID (unique build ID bitstring)",
-  #             "Build ID": "a03df61c5b0c26f3",
-  #           },
+  #           "Offset": 936,
+  #           "Size": 36,
+  #           "Notes": [
+  #             {
+  #               "Owner": "GNU",
+  #               "Data size": 20,
+  #               "Type": "NT_GNU_BUILD_ID (unique build ID bitstring)",
+  #               "Build ID": "182a06c3dca5ee4d7e9c1d94b432c8bd9279438f"
+  #             }
+  #           ]
   #         }
   #       },
-  #     ],
+  #       {
+  #         "NoteSection": {
+  #           "Name": ".note.ABI-tag",
+  #           "Offset": 1630064,
+  #           "Size": 32,
+  #           "Notes": [
+  #             {
+  #               "Owner": "GNU",
+  #               "Data size": 16,
+  #               "Type": "NT_GNU_ABI_TAG (ABI version tag)",
+  #               "OS": "Linux",
+  #               "ABI": "3.2.0"
+  #             }
+  #           ]
+  #         }
+  #       }
+  #     ]
   #   }
   # ]
 
+  for file_info in elf_data:
+    if 'Notes' in file_info:
+      # llvm < 19
+      for note_entry in file_info['Notes']:
+        note_section = note_entry['NoteSection']
+        if note_section['Name'] == '.note.gnu.build-id':
+          note_details = note_section['Note']
+          if 'Build ID' in note_details:
+            return note_details['Build ID']
+    elif 'NoteSections' in file_info:
+      # llvm 19+
+      for note_entry in file_info['NoteSections']:
+        note_section = note_entry['NoteSection']
+        if note_section['Name'] == '.note.gnu.build-id':
+          note_details = note_section['Notes']
+          for note_detail in note_details:
+            if 'Build ID' in note_detail:
+              return note_detail['Build ID']
+    else:
+      raise ValueError('Unknown ELF notes format.')
+
+  return None
+
+
+def _get_clang_version(toolchain: Path) -> str:
+  """Returns the clang version."""
+  clang = toolchain / 'bin' / 'clang'
+  clang_version = subprocess.run(
+      [clang, '-dumpversion'], capture_output=True, check=True, text=True
+  ).stdout
+  return clang_version.split('.')[0]
+
+
+def get_build_id(elf_file: Path) -> str | None:
+  """This invokes llvm-readelf to get the build ID of the given ELF file."""
   ret = subprocess.run(
       [
           _LLVM_READELF_PATH,
           '--notes',
           '--elf-output-style=JSON',
-          elf_file,
+          elf_file.as_posix(),
       ],
       capture_output=True,
       check=False,
@@ -245,8 +302,9 @@ def find_fuzzer_binaries(out_dir: Path, build_id: str) -> Sequence[Path]:
   binaries = []
   for root, _, files in os.walk(out_dir):
     for file in files:
-      if get_build_id(os.path.join(root, file)) == build_id:
-        binaries.append(Path(root, file))
+      file_path = Path(root, file)
+      if get_build_id(file_path) == build_id:
+        binaries.append(file_path)
 
   return binaries
 
@@ -290,7 +348,7 @@ def enumerate_build_targets(
         ):
           continue
 
-        build_id_matches = build_id == get_build_id(binary_path.as_posix())
+        build_id_matches = build_id == get_build_id(binary_path)
         target_binary_config = manifest_types.CommandLineBinaryConfig(
             **dict(binary_config.to_dict(), binary_name=name)
         )
@@ -335,11 +393,30 @@ def copy_fuzzing_engine(fuzzing_engine: str) -> Path:
   return fuzzing_engine_dir
 
 
+def _get_latest_gcc_version() -> str:
+  """Finds the latest GCC version installed.
+
+  Defaults to '9' for backward compatibility if detection fails.
+
+  Returns:
+    The latest GCC version found, or the default.
+  """
+  if _GCC_BASE_PATH.exists():
+    versions = []
+    for d in _GCC_BASE_PATH.iterdir():
+      if d.is_dir() and d.name.isdigit():
+        versions.append(int(d.name))
+
+    if versions:
+      return str(max(versions))
+
+  return _DEFAULT_GCC_VERSION
+
+
 def build_project(
     targets_to_index: Sequence[str] | None = None,
     compile_args: Sequence[str] | None = None,
     binaries_only: bool = False,
-    fuzzing_engine: str = DEFAULT_FUZZING_ENGINE,
     coverage_flags: str = DEFAULT_COVERAGE_FLAGS,
 ):
   """Build the actual project."""
@@ -350,15 +427,17 @@ def build_project(
   if binaries_only:
     os.environ['INDEXER_BINARIES_ONLY'] = '1'
 
+  clang_version = _get_clang_version(_CLANG_TOOLCHAIN)
   write_compile_settings(
       CompileSettings(
           coverage_flags=coverage_flags,
           clang_toolchain=_CLANG_TOOLCHAIN.as_posix(),
-          clang_version=_CLANG_VERSION,
+          clang_version=clang_version,
       )
   )
 
-  fuzzing_engine_dir = copy_fuzzing_engine(fuzzing_engine)
+  fuzzing_engine_dir = copy_fuzzing_engine(DEFAULT_FUZZING_ENGINE)
+  gcc_version = _get_latest_gcc_version()
   build_fuzzing_engine_command = [
       f'{_CLANG_TOOLCHAIN}/bin/clang++',
       '-c',
@@ -366,22 +445,24 @@ def build_project(
       '-Wextra',
       '-pedantic',
       '-std=c++20',
+      '-fno-rtti',
+      '-fno-exceptions',
       '-glldb',
       '-O0',
-      (fuzzing_engine_dir / fuzzing_engine).as_posix(),
+      (fuzzing_engine_dir / DEFAULT_FUZZING_ENGINE).as_posix(),
       '-o',
       f'{OUT}/fuzzing_engine.o',
       '-gen-cdb-fragment-path',
       f'{OUT}/cdb',
       '-Qunused-arguments',
-      f'-isystem {_CLANG_TOOLCHAIN}/lib/clang/{_CLANG_VERSION}',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9',
+      f'-isystem {_CLANG_TOOLCHAIN}/lib/clang/{clang_version}',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/c++/{gcc_version}',
       '-I',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/x86_64-linux-gnu/c++/{gcc_version}',
       '-I',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/c++/{gcc_version}/backward',
       '-I',
-      f'{_CLANG_TOOLCHAIN}/lib/clang/{_CLANG_VERSION}/include',
+      f'{_CLANG_TOOLCHAIN}/lib/clang/{clang_version}/include',
       '-I',
       f'{_CLANG_TOOLCHAIN}/include',
       '-I',
@@ -390,6 +471,18 @@ def build_project(
       '/usr/include',
   ]
   subprocess.run(build_fuzzing_engine_command, check=True, cwd='/opt/indexer')
+
+  build_cov_instrumentation_command = [
+      f'{_CLANG_TOOLCHAIN}/bin/clang++',
+      '-fno-rtti',
+      '-fno-exceptions',
+      '-c',
+      '/opt/indexer/coverage.cc',
+  ]
+  subprocess.run(
+      build_cov_instrumentation_command, check=True, cwd='/opt/indexer'
+  )
+
   ar_cmd = [
       'ar',
       'rcs',
@@ -728,18 +821,14 @@ def main():
       ),
   )
   parser.add_argument(
-      '--fuzzing-engine',
-      default=DEFAULT_FUZZING_ENGINE,
-      help='Path to the fuzzing engine to use for the fuzz target.',
-  )
-  parser.add_argument(
-      '--coverage-flags',
-      default=DEFAULT_COVERAGE_FLAGS,
-      help='Coverage flags to set for the instrumentation.',
+      '--tracing-instrumentation',
+      action='store_true',
+      help='Enable tracing coverage instrumentation.',
   )
   args = parser.parse_args()
 
   INDEXES_PATH.mkdir(exist_ok=True)
+  INCREMENTAL_CDB_PATH.mkdir(exist_ok=True)
 
   # Clean up the existing OUT by default, otherwise we may run into various
   # build errors.
@@ -831,8 +920,9 @@ def main():
       None if args.targets_all_index else targets_to_index,
       args.compile_arg,
       args.binaries_only,
-      args.fuzzing_engine,
-      args.coverage_flags,
+      TRACING_COVERAGE_FLAGS
+      if args.tracing_instrumentation
+      else DEFAULT_COVERAGE_FLAGS,
   )
 
   if not args.binaries_only:

@@ -15,12 +15,21 @@
 #ifndef OSS_FUZZ_INFRA_INDEXER_FRONTEND_COMMON_H_
 #define OSS_FUZZ_INFRA_INDEXER_FRONTEND_COMMON_H_
 
+#include <string>
+
 #include "indexer/index/in_memory_index.h"
 #include "indexer/index/types.h"
+#include "absl/strings/string_view.h"
 #include "clang/Basic/SourceLocation.h"
+#include "clang/Basic/SourceManager.h"
 
 namespace oss_fuzz {
 namespace indexer {
+// Converts a source-level `path` into a normalized absolute form suitable for
+// passing to the indexer as a location path.
+std::string ToNormalizedAbsolutePath(
+    absl::string_view path, const clang::SourceManager& source_manager);
+
 // Converts a pair of `SourceLocation` to a `LocationId` for a location in the
 // index.
 LocationId GetLocationId(InMemoryIndex& index,

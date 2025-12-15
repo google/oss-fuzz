@@ -195,7 +195,7 @@ elif [[ "$FUZZING_ENGINE" = centipede ]]; then
   CMD_LINE="$OUT/centipede --workdir=$CENTIPEDE_WORKDIR --corpus_dir=\"$CORPUS_DIR\" --fork_server=1 --exit_on_crash=1 --timeout=1200 --rss_limit_mb=4096 --address_space_limit_mb=5120 $(get_dictionary) --binary=\"$OUT/${FUZZER}\" $(get_extra_binaries) $*"
 else
 
-  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"
+  CMD_LINE="$OUT/$FUZZER -- $FUZZER_ARGS $*"
 
   if [ -z ${SKIP_SEED_CORPUS:-} ]; then
     CMD_LINE="$CMD_LINE $CORPUS_DIR"

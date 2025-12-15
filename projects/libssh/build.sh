@@ -37,6 +37,9 @@ for f in $fuzzers; do
 
     if [ -d "$SRC/libssh/tests/fuzz/${fuzzerName}_corpus" ]; then
         zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/libssh/tests/fuzz/${fuzzerName}_corpus/*
+        cp $OUT/${fuzzerName}_seed_corpus.zip $OUT/${fuzzerName}_nalloc_seed_corpus.zip
     fi
+
+    cp $OUT/${fuzzerName} $OUT/${fuzzerName}_nalloc
 done
 popd

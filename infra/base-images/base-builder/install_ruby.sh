@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eux
 # Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,19 @@
 #
 ################################################################################
 
-apt update
-apt install -y lsb-release software-properties-common gnupg2 binutils xz-utils libyaml-dev
-gpg2 --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-curl -sSL https://get.rvm.io | bash
+echo "Starting ruby installation"
+RUBY_VERSION=3.3.1
+RUBY_DEPS="binutils xz-utils libyaml-dev libffi-dev zlib1g-dev"
+apt update && apt install -y $RUBY_DEPS
+curl -O https://cache.ruby-lang.org/pub/ruby/3.3/ruby-$RUBY_VERSION.tar.gz
+tar -xvf ruby-$RUBY_VERSION.tar.gz
+cd ruby-$RUBY_VERSION
+./configure
+make -j$(nproc)
+make install
+cd ../
 
-. /etc/profile.d/rvm.sh
+# Clean up the sources.
+rm -rf ./ruby-$RUBY_VERSION ruby-$RUBY_VERSION.tar.gz
 
-rvm install ruby-3.3.1
+echo "Finished installing ruby"

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.knot-dns.cz/"
 main_repo: "https://gitlab.nic.cz/knot/knot-dns.git"
 language: c++

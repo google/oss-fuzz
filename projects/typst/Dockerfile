@@ -20,5 +20,3 @@ RUN rustup toolchain install nightly
 RUN git clone --depth 1 https://github.com/typst/typst.git typst
 WORKDIR typst
 COPY build.sh $SRC/
-COPY patch_cargo_toml.sh $SRC/
-RUN chmod +x $SRC/patch_cargo_toml.sh && $SRC/patch_cargo_toml.sh

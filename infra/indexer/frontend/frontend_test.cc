@@ -100,9 +100,11 @@ TEST(ParseCommandLineTest, HashInsideDoubleQuotes) {
 }  // namespace frontend_internal
 
 namespace {
+typedef void (*TExtraSourceTreeAction)(const std::filesystem::path&);
+
 std::unique_ptr<InMemoryIndex> GetSnippetIndex(
     std::string code, const std::vector<std::string>& extra_args = {},
-    bool fail_on_error = false) {
+    bool fail_on_error = false, TExtraSourceTreeAction extra_action = nullptr) {
   auto source_dir = std::filesystem::path(::testing::TempDir()) / "src";
   std::filesystem::remove_all(source_dir);
   CHECK(std::filesystem::create_directory(source_dir));
@@ -114,14 +116,16 @@ std::unique_ptr<InMemoryIndex> GetSnippetIndex(
   std::string source_file_path = (source_dir / "snippet.cc").string();
   std::string source_dir_path = source_dir.string();
 
+  if (extra_action != nullptr) {
+    extra_action(source_dir);
+  }
+
   auto index_dir = std::filesystem::path(::testing::TempDir()) / "idx";
   std::filesystem::remove_all(index_dir);
   CHECK(std::filesystem::create_directory(index_dir));
   std::string index_dir_path = index_dir.string();
   std::string sysroot_path = "/";
-
   FileCopier file_copier(source_dir_path, index_dir_path, {sysroot_path});
-
   std::unique_ptr<MergeQueue> merge_queue = MergeQueue::Create(1);
   auto index_action = std::make_unique<IndexAction>(file_copier, *merge_queue);
   const bool result = clang::tooling::runToolOnCodeWithArgs(
@@ -2256,6 +2260,69 @@ TEST(FrontendTest, MoreCursedInheritance) {
 
   // Note that this link skips `C` because it is devoid of `moo(int)`.
   EXPECT_HAS_VIRTUAL_LINK(index, "B::moo(int)", "D::moo(int)");
+
+  // Qualified-name member accesses only create references to the base class
+  // entities...
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "A::", "foo", "()", "snippet.cc", 2, 2,
+      "snippet.cc", 19, 19, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "B::", "foo", "()", "snippet.cc", 7, 7,
+      "snippet.cc", 19, 19, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  // ...whereas an unqualified-name one also creates a reference to the
+  // synthesized inherited entity in the child.
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "C::", "bar", "()", "snippet.cc", 13, 13,
+      "snippet.cc", 21, 21, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "D::", "bar", "()", "snippet.cc", 13, 13,
+      "snippet.cc", 21, 21, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt, /*inherited_from_entity_id=*/
+      RequiredEntityId(
+          index, Entity::Kind::kFunction, "C::", "bar", "()", "snippet.cc", 13,
+          13, /*is_incomplete=*/false,
+          /*template_prototype_entity_id=*/std::nullopt,
+          /*implicitly_defined_for_entity_id=*/std::nullopt,
+          /*enum_value=*/std::nullopt,
+          /*inherited_from_entity_id=*/std::nullopt,
+          /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual),
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
+}
+
+TEST(FrontendTest, Devirtualization) {
+  auto index = IndexSnippet(
+      "struct Foo {\n"                     // 1
+      "  virtual void bar() const {}\n"    // 2
+      "};\n"                               // 3
+      "struct Bar final : public Foo {\n"  // 4
+      "  void bar() const override {}\n"   // 5
+      "};\n"                               // 6
+      "int main(void) {\n"                 // 7
+      "  const auto* bar = new Bar();\n"   // 8
+      "  ((Foo*)bar)->bar();\n"            // 9
+      "}");                                // 10
+  EXPECT_HAS_REFERENCE(
+      index, Entity::Kind::kFunction, "Bar::", "bar", "() const", "snippet.cc",
+      5, 5, "snippet.cc", 9, 9, /*is_incomplete=*/false,
+      /*template_prototype_entity_id=*/std::nullopt,
+      /*implicitly_defined_for_entity_id=*/std::nullopt,
+      /*enum_value=*/std::nullopt,
+      /*inherited_from_entity_id=*/std::nullopt,
+      /*virtual_method_kind=*/Entity::VirtualMethodKind::kNonPureVirtual);
 }
 
 TEST(FrontendTest, InheritanceThroughTemplateInstantiation) {
@@ -3788,6 +3855,52 @@ TEST(FrontendTest, CommandLineMacro) {
     }
   }
   EXPECT_EQ(found, 1);
+}
+
+TEST(FrontendTest, AliasedSymbol) {
+  auto index = IndexSnippet(
+      "extern \"C\" int foo(void) { return 0; }\n"
+      "int bar(void) __attribute__((alias(\"foo\")));\n"
+      "int main(void) { bar(); return 0; }");
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "foo", "()",
+                    "snippet.cc", 1, 1);
+  EXPECT_HAS_ENTITY(index, Entity::Kind::kFunction, "", "bar", "()",
+                    "snippet.cc", 2, 2);
+}
+
+TEST(FrontendTest, GhostFileLocations) {
+  FlatIndex index =
+      std::move(
+          *GetSnippetIndex(
+              /*code=*/"#include \"ghostfile.h\"\n",
+              /*extra_args=*/{},
+              /*fail_on_error=*/true,
+              /*extra_action=*/
+              [](const std::filesystem::path& source_dir) {
+                std::ofstream ghost_file(source_dir / "ghostfile.h");
+                ghost_file
+                    << "// Copyright 2025 Google Inc. All rights reserved.";
+                CHECK(ghost_file.good());
+              }))
+          .Export();
+
+  bool found_self = false;
+  bool found_include = false;
+  bool found_other = false;
+  for (const Location& location : index.locations) {
+    if (location.is_whole_file()) {
+      if (location.path().ends_with("snippet.cc")) {
+        found_self = true;
+      } else if (location.path().ends_with("ghostfile.h")) {
+        found_include = true;
+      }
+    } else if (location.is_real()) {
+      found_other = true;
+    }
+  }
+  EXPECT_TRUE(found_self);
+  EXPECT_TRUE(found_include);
+  EXPECT_FALSE(found_other);
 }
 }  // namespace indexer
 }  // namespace oss_fuzz
