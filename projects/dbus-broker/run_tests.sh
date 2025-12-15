@@ -16,20 +16,4 @@
 ################################################################################
 
 cd $SRC/dbus-broker
-
-# Build without fuzzing instrumentation
-unset CFLAGS CXXFLAGS RUSTFLAGS
-export CC=clang
-export CXX=clang++
-
-# Configure with meson (minimal build for testing)
-meson setup build \
-    --buildtype=debug \
-    -Dtests=true \
-    -Dreference-test=false
-
-# Build
-meson compile -C build
-
-# Run tests
 meson test -C build --print-errorlogs
