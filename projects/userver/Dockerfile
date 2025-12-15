@@ -10,7 +10,7 @@ RUN wget https://archives.boost.io/release/1.81.0/source/boost_1_81_0.tar.gz && 
     ./b2 -j$(nproc) link=static install
 RUN git clone --depth 1 https://github.com/userver-framework/userver userver
 
-RUN python3 userver/scripts/userver-create-service fuzzservice
+RUN python3 userver/scripts/userver-create-service.py fuzzservice
 
 RUN apt remove -y clang-format
 RUN apt install -y clang-format-18
