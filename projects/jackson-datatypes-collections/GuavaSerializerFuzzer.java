@@ -15,9 +15,11 @@
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.guava.GuavaModule;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ArrayListMultimap;
@@ -45,7 +47,9 @@ public class GuavaSerializerFuzzer {
     // Register the GuavaModule for the serialization
     GuavaModule module = new GuavaModule();
     module.configureAbsentsAsNulls(false);
-    mapper = new ObjectMapper().registerModule(module);
+    mapper = JsonMapper.builder()
+        .addModule(module)
+        .build();
   }
 
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
@@ -56,7 +60,7 @@ public class GuavaSerializerFuzzer {
         case 1:
           Cache<String, String> cache = CacheBuilder.newBuilder().build();
           cache.put(data.consumeString(data.remainingBytes()), data.consumeRemainingAsString());
-          mapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+          // Note: ObjectMapper is immutable in Jackson 3.x, cannot dynamically enable features
           mapper.writeValueAsString(cache);
           break;
         case 2:
@@ -130,7 +134,7 @@ public class GuavaSerializerFuzzer {
           ArrayListMultimapContainer container = new ArrayListMultimapContainer(arrayListMultimap);
           mapper.writeValueAsString(container);
       }
-    } catch (IOException | IllegalArgumentException e) {
+    } catch (JacksonException e) {
       // Known exception
     }
   }
