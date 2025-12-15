@@ -22,8 +22,8 @@ apply_sed_changes() {
   sed -i 's/fgets(/fuzz_fgets(/g' ${BASE}/console_builtin.c
   sed -i 's/fgets(/fuzz_fgets(/g' ${BASE}/misc.c
   sed -i 's/#include "forward.h"/#include "fuzz_header.h"\n#include "forward.h"/g' ${BASE}/proxy.c
-  sed -i 's/select(/fuzz_select(/g' ${BASE}/proxy.c
-  sed -i 's/send(/fuzz_send(/g' ${BASE}/proxy.c
+  sed -i 's/openvpn_select(/fuzz_select(/g' ${BASE}/proxy.c
+  sed -i 's/openvpn_send(/fuzz_send(/g' ${BASE}/proxy.c
   sed -i 's/recv(/fuzz_recv(/g' ${BASE}/proxy.c
   sed -i 's/isatty/fuzz_isatty/g' ${BASE}/console_builtin.c
 

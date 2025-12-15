@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://spring.io/projects/spring-cloud-sleuth"
 language: jvm
 main_repo: "https://github.com/spring-cloud/spring-cloud-sleuth"

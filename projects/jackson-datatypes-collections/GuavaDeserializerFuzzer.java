@@ -15,9 +15,11 @@
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.guava.GuavaModule;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
@@ -55,7 +57,9 @@ public class GuavaDeserializerFuzzer {
     // Register the GuavaModule for the deserialization
     GuavaModule module = new GuavaModule();
     module.configureAbsentsAsNulls(false);
-    mapper = new ObjectMapper().registerModule(module);
+    mapper = JsonMapper.builder()
+        .addModule(module)
+        .build();
     initializeClassChoice();
   }
 
@@ -65,7 +69,7 @@ public class GuavaDeserializerFuzzer {
       TypeReference type = data.pickValue(choice);
       String value = data.consumeRemainingAsString();
       mapper.readValue(value, type);
-    } catch (IOException | IllegalArgumentException e) {
+    } catch (JacksonException e) {
       // Known exception
     }
   }

@@ -16,7 +16,6 @@
 ################################################################################
 
 # build project
-cd libhtp
 sh autogen.sh
 ./configure
 make -j$(nproc)
