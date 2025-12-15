@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update
-RUN git clone https://github.com/benhoyt/inih.git
-COPY inihfuzz.c $SRC/inih/inihfuzz.c
-COPY build.sh $SRC/build.sh
-COPY run_tests.sh $SRC/
-WORKDIR $SRC/inih/
+
+cd tests
+./unittest.sh
