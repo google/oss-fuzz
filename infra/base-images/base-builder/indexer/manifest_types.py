@@ -139,6 +139,12 @@ class BinaryConfig:
 
   binary_name: str
 
+  @property
+  def uses_stdin(self) -> bool:
+    """Whether the binary uses stdin."""
+    del self
+    return False
+
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
     """Deserializes the correct `BinaryConfig` subclass from a dict."""
@@ -187,6 +193,11 @@ class CommandLineBinaryConfig(BinaryConfig):
   # are directly linked into the target binary. Should usually be true but
   # some targets like V8 require this to be false, see b/433718862.
   filter_compile_commands: bool = True
+
+  @property
+  def uses_stdin(self) -> bool:
+    """Whether the binary uses stdin."""
+    return manifest_constants.INPUT_FILE not in self.binary_args
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
