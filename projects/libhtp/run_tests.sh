@@ -14,6 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-cd libhtp
 make check
