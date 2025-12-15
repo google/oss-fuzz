@@ -21,9 +21,10 @@ sed -i 's/"\/sys\/devices\/system\/cpu\/kernel_max"/"\/tmp\/libfuzzer.config"/g'
 mkdir build
 cd build
 cmake \
-    -DCPUINFO_BUILD_UNIT_TESTS=OFF \
-    -DCPUINFO_BUILD_MOCK_TESTS=OFF \
-    -DCPUINFO_BUILD_BENCHMARKS=OFF \
+    -DCPUINFO_BUILD_UNIT_TESTS=ON \
+    -DCPUINFO_BUILD_MOCK_TESTS=ON \
+    -DCPUINFO_BUILD_BENCHMARKS=ON \
+    -DCMAKE_BUILD_TYPE=DEBUG \
     ..
 make
 

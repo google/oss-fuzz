@@ -15,25 +15,5 @@
 #
 ################################################################################
 
-cd $SRC/cpuinfo
-
-# Build cpuinfo without fuzzing instrumentation
-unset CFLAGS CXXFLAGS
-export CC=clang
-export CXX=clang++
-
-# Create build directory for testing
-mkdir -p build-test
-cd build-test
-
-# Configure with tests enabled
-cmake .. \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCPUINFO_BUILD_UNIT_TESTS=ON \
-    -DCPUINFO_BUILD_MOCK_TESTS=ON
-
-# Build
-make -j$(nproc)
-
-# Run tests
+cd $SRC/cpuinfo/build
 ctest --output-on-failure
