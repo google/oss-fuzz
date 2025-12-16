@@ -18,10 +18,10 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
 RUN git clone --depth 1 https://github.com/FasterXML/jackson-datatype-joda $SRC/jackson-datatype-joda
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
-ENV MVN $SRC/maven/apache-maven-3.8.7/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.9.9/bin/mvn
 
 COPY build.sh $SRC/
 COPY *Fuzzer.java $SRC/
