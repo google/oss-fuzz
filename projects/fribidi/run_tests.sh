@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip pkg-config && \
-    pip3 install meson==0.54.0 ninja
-RUN git clone --depth 1 https://github.com/fribidi/fribidi.git
-WORKDIR fribidi
-COPY build.sh run_tests.sh $SRC/
+meson test -C $WORK/build
+
