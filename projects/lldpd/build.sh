@@ -27,3 +27,9 @@ zip -r $OUT/fuzz_cdp_seed_corpus.zip    tests/fuzzing_seed_corpus/fuzz_cdp_seed_
 zip -r $OUT/fuzz_edp_seed_corpus.zip    tests/fuzzing_seed_corpus/fuzz_edp_seed_corpus
 zip -r $OUT/fuzz_lldp_seed_corpus.zip   tests/fuzzing_seed_corpus/fuzz_lldp_seed_corpus
 zip -r $OUT/fuzz_sonmp_seed_corpus.zip  tests/fuzzing_seed_corpus/fuzz_sonmp_seed_corpus
+
+# Rebuild for test
+apt install -y check
+./autogen.sh
+./configure --disable-shared --enable-pie --enable-fuzzer=$LIB_FUZZING_ENGINE
+make
