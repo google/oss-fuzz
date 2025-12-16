@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-require 'ruzzy'
+
+require 'ossfuzz_helper'
 require 'ox'
 
 test_one_input = lambda do |data|
@@ -29,4 +30,4 @@ test_one_input = lambda do |data|
   return 0
 end
 
-Ruzzy.fuzz(test_one_input)
+OSSFuzz.fuzz(test_one_input)
