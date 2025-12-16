@@ -15,14 +15,28 @@
 #
 ################################################################################
 
-unset CFLAGS
-unset CXXFLAGS
-unset RUSTFLAGS
+git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz-patch.diff
 
-rm -rf $OUT/*
+# Configure the build
+# -Dtests=enabled: to build the fuzzer defined in test/meson.build
+# -Ddefault_library=static: to build static libraries (good for fuzzing)
+# -Dfuzz_engine: pass the fuzzing engine flags to the fuzzer executable
+rm -rf build
+meson setup build \
+    -Dtests=enabled \
+    -Ddefault_library=static \
+    -Dfuzz_engine="$LIB_FUZZING_ENGINE"
 
-source /env/bin/activate
-meson setup build -Ddefault_library=static -Dtests=disabled -Dcpp_std=c++23 -Dread-interval-ms=10000 -Dmemory-region-size=1048576 -Dmemory-region-offset=3220176896 -Dbmc-interface-version=3 -Dqueue-region-size=16384 -Due-region-size=768 -Dmagic-number-byte1=2319403398 -Dmagic-number-byte2=1343703436 -Dmagic-number-byte3=2173375339 -Dmagic-number-byte4=3360702380 --buildtype=debug -Dfuzzing=true -Dcpp_args="-stdlib=libstdc++"
-ninja -C build
+# Patch stdplus to fix missing includes
+if [ -f subprojects/stdplus/include/stdplus/function_view.hpp ]; then
+    sed -i '1i#include <cstddef>\n#include <concepts>\n#include <type_traits>\n#include <memory>' subprojects/stdplus/include/stdplus/function_view.hpp
+fi
+if [ -f subprojects/stdplus/include/stdplus/debug/lifetime.hpp ]; then
+    sed -i '1i#include <cstddef>' subprojects/stdplus/include/stdplus/debug/lifetime.hpp
+fi
 
-cp build/src/bios-bmc-smm-error-logger_fuzzer $OUT
+# Build everything
+ninja -C build -v
+
+# Copy the fuzzer to $OUT
+cp build/test/rde_fuzz $OUT/
