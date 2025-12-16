@@ -14,6 +14,6 @@
 #
 ################################################################################
 cd $SRC/bincode
-cargo fuzz build -O
+cargo +1.85.0 fuzz build -O
 cp $SRC/bincode/fuzz/target/x86_64-unknown-linux-gnu/release/compat $OUT/
 cp $SRC/bincode/fuzz/target/x86_64-unknown-linux-gnu/release/roundtrip $OUT/
