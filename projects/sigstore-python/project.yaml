@@ -13,3 +13,5 @@ auto_ccs:
   - bcallaway@sigstore.dev
   - adam@adalogics.com
   - david@adalogics.com
+
+base_os_version: ubuntu-24-04
