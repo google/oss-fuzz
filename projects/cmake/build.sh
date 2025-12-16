@@ -111,6 +111,24 @@ build_fuzzer "cmPkgConfigParserFuzzer" "cmPkgConfigParserFuzzer.cxx"
 # 9. JSON Parser Fuzzer
 build_fuzzer "cmJSONParserFuzzer" "cmJSONParserFuzzer.cxx"
 
+# 10. Script Fuzzer (highest coverage - executes CMake scripts)
+build_fuzzer "cmScriptFuzzer" "cmScriptFuzzer.cxx"
+
+# 11. String Algorithms Fuzzer
+build_fuzzer "cmStringAlgorithmsFuzzer" "cmStringAlgorithmsFuzzer.cxx"
+
+# 12. Version Fuzzer
+build_fuzzer "cmVersionFuzzer" "cmVersionFuzzer.cxx"
+
+# 13. CMake Path Fuzzer
+build_fuzzer "cmCMakePathFuzzer" "cmCMakePathFuzzer.cxx"
+
+# 14. GCC Depfile Fuzzer
+build_fuzzer "cmGccDepfileFuzzer" "cmGccDepfileFuzzer.cxx"
+
+# 15. Glob Fuzzer
+build_fuzzer "cmGlobFuzzer" "cmGlobFuzzer.cxx"
+
 # Build seed corpora
 echo "Building seed corpora..."
 
@@ -136,6 +154,11 @@ build_corpus "cmFileLockFuzzer" "corpus/filelock"
 build_corpus "cmExprParserFuzzer" "corpus/expr"
 build_corpus "cmPkgConfigParserFuzzer" "corpus/pkgconfig"
 build_corpus "cmJSONParserFuzzer" "corpus/json"
+build_corpus "cmScriptFuzzer" "corpus/script"
+build_corpus "cmStringAlgorithmsFuzzer" "corpus/string"
+build_corpus "cmVersionFuzzer" "corpus/version"
+build_corpus "cmCMakePathFuzzer" "corpus/path"
+build_corpus "cmGccDepfileFuzzer" "corpus/depfile"
 
 # Copy dictionaries
 echo "Copying dictionaries..."
@@ -151,9 +174,14 @@ for dict in *.dict; do
             cmExprParser) cp "$dict" "$OUT/cmExprParserFuzzer.dict" ;;
             cmPkgConfigParser) cp "$dict" "$OUT/cmPkgConfigParserFuzzer.dict" ;;
             cmJSONParser) cp "$dict" "$OUT/cmJSONParserFuzzer.dict" ;;
+            cmScript) cp "$dict" "$OUT/cmScriptFuzzer.dict" ;;
+            cmStringAlgorithms) cp "$dict" "$OUT/cmStringAlgorithmsFuzzer.dict" ;;
+            cmVersion) cp "$dict" "$OUT/cmVersionFuzzer.dict" ;;
+            cmCMakePath) cp "$dict" "$OUT/cmCMakePathFuzzer.dict" ;;
+            cmGccDepfile) cp "$dict" "$OUT/cmGccDepfileFuzzer.dict" ;;
             *) cp "$dict" "$OUT/" ;;
         esac
     fi
 done
 
-echo "Build complete! Built 9 fuzzers with corpora and dictionaries."
+echo "Build complete! Built 15 fuzzers with corpora and dictionaries."
