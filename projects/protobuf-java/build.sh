@@ -24,9 +24,8 @@ curl --silent --fail -L -o "$SRC/$PROTOC_ZIP" "https://github.com/protocolbuffer
 unzip -o $PROTOC_ZIP -d $SRC/protobuf
 export PROTOC=$SRC/protobuf/bin/protoc
 
-# Get the latest protobuf-java release
-JAVA_VERSION=$(curl -s "https://search.maven.org/solrsearch/select?q=g:com.google.protobuf+AND+a:protobuf-java&rows=1&wt=json" \
-  | jq -r '.response.docs[0].latestVersion')
+# Get the matching protobuf-java release (protobuf-java uses 4.x versioning for protoc vx)
+JAVA_VERSION="4.$VERSION"
 JAR_FILE="protobuf-java-$JAVA_VERSION.jar"
 curl --silent -L -o "$SRC/$JAR_FILE" "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/$JAVA_VERSION/$JAR_FILE"
 cp $JAR_FILE $OUT/protobuf-java.jar
