@@ -68,7 +68,8 @@ class BuildImageImplTest(unittest.TestCase):
   def test_base_image(self, mock_docker_build):
     """Tests that build_image_impl works as intended with a base-image."""
     image_name = 'base-image'
-    self.assertTrue(common_utils.build_image_impl(common_utils.Project(image_name)))
+    self.assertTrue(
+        common_utils.build_image_impl(common_utils.Project(image_name)))
     build_dir = os.path.join(common_utils.OSS_FUZZ_DIR,
                              'infra/base-images/base-image')
     mock_docker_build.assert_called_with([
@@ -81,8 +82,10 @@ class BuildImageImplTest(unittest.TestCase):
     """Tests that build_image_impl works as intended with an OSS-Fuzz
     project."""
     project_name = 'example'
-    self.assertTrue(common_utils.build_image_impl(common_utils.Project(project_name)))
-    build_dir = os.path.join(common_utils.OSS_FUZZ_DIR, 'projects', project_name)
+    self.assertTrue(
+        common_utils.build_image_impl(common_utils.Project(project_name)))
+    build_dir = os.path.join(common_utils.OSS_FUZZ_DIR, 'projects',
+                             project_name)
     mock_docker_build.assert_called_with([
         '-t', 'gcr.io/oss-fuzz/example', '--file',
         os.path.join(build_dir, 'Dockerfile'), build_dir
@@ -96,9 +99,10 @@ class BuildImageImplTest(unittest.TestCase):
       project_src_path = os.path.join(temp_dir, 'example')
       os.mkdir(project_src_path)
       build_integration_path = 'build-integration'
-      project = common_utils.Project(project_src_path,
-                               is_external=True,
-                               build_integration_path=build_integration_path)
+      project = common_utils.Project(
+          project_src_path,
+          is_external=True,
+          build_integration_path=build_integration_path)
       self.assertTrue(common_utils.build_image_impl(project))
       mock_docker_build.assert_called_with([
           '-t', 'gcr.io/oss-fuzz/example', '--file',
