@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake
-RUN git clone https://github.com/pupnp/pupnp
-RUN git clone https://github.com/pkillarjun/oss-fuzz-bloat
-COPY run_tests.sh build.sh $SRC/
-WORKDIR $SRC/pupnp/
+
+# Those two skipped requires network connection which are not possible in run_tests.sh
+ctest --test-dir build -E "test-upnp-init|test-upnp-url"
