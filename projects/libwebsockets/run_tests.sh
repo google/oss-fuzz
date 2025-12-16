@@ -15,4 +15,6 @@
 #
 ################################################################################
 
+# The ss-tf unit test is failing from the latest build thus excluded
+# The other unit tests are excluded because they require network connection which are not possible in run_tests.sh environment
 ctest --test-dir $SRC/libwebsockets/build -E "warmcat|ss-smd|ss-tf|mss-lws-minimal-ss-hello_world|api-test-secure-streams"
