@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eux
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,19 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake libtool libcmocka-dev
-RUN git clone https://github.com/CESNET/libyang
-
-RUN git clone https://github.com/PCRE2Project/pcre2 pcre2 && \
-    cd pcre2 && \
-    ./autogen.sh && \
-    ./configure && \
-    make && \
-    make install
-
-WORKDIR $SRC/libyang
-COPY run_tests.sh build.sh $SRC/
+chmod +x /src/run_tests.sh
+find /src/ -name "*.profraw" -exec rm -f {} \;
+/src/run_tests.sh
+python3 /chronos/coverage_test_collection.py
+chmod -R 755 /out/test-html-generation/
