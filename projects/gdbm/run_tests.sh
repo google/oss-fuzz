@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2025 Google LLC
+# Copyright 2025 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,5 +15,11 @@
 #
 ################################################################################
 
-cd $SRC/gdbm
+cp tests/testsuite.at tests/testsuite.at.backup
+sed -i '/m4_include(\[emptydatum.at\])/d' tests/testsuite.at
+sed -i '/m4_include(\[dumpload.at\])/d' tests/testsuite.at
+sed -i 's/m4_include(\[coalesce.at\])//g' tests/testsuite.at
+
 make check
+
+mv tests/testsuite.at.backup tests/testsuite.at

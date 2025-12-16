@@ -44,4 +44,4 @@ RUN set -- $(apt-cache policy autoconf | \
     fi
 RUN git clone --depth 1 https://git.gnu.org.ua/gdbm.git
 WORKDIR gdbm
-COPY build.sh run_tests.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
