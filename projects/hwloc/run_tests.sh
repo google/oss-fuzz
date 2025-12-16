@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 ################################################################################
-make check
+make -C utils/hwloc check
