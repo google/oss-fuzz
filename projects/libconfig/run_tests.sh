@@ -1,3 +1,5 @@
+##!/bin/bash -eu
+#
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +15,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake make
-
-RUN git clone --depth 1 https://github.com/hyperrealm/libconfig.git libconfig \
-        && cp libconfig/fuzz/build.sh $SRC/
-RUN sed -i 's/-DBUILD_TESTS=Off/-DBUILD_TESTS=On/g' $SRC/build.sh
-COPY run_tests.sh $SRC
-WORKDIR libconfig
+ctest --test-dir build
