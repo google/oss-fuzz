@@ -37,6 +37,15 @@ import templates
 import chronos.manager
 import common_utils
 
+# Forward reference common functions. We do this because they are used
+# throughout the infra and to avoid breakages we declare them here.
+# TODO(David): clean this up.
+OSS_FUZZ_DIR = common_utils.OSS_FUZZ_DIR
+Project = common_utils.Project
+docker_build = common_utils.docker_build
+build_image_impl = common_utils.build_image_impl
+pull_images = common_utils.pull_images
+
 
 def _get_base_runner_image(args, debug=False):
   """Returns the base runner image to use."""
