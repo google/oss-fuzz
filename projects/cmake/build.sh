@@ -184,4 +184,12 @@ for dict in *.dict; do
     fi
 done
 
-echo "Build complete! Built 15 fuzzers with corpora and dictionaries."
+# Copy options files (for timeout/memory limits)
+echo "Copying options files..."
+for opts in *.options; do
+    if [ -f "$opts" ]; then
+        cp "$opts" "$OUT/"
+    fi
+done
+
+echo "Build complete! Built 15 fuzzers with corpora, dictionaries, and options."
