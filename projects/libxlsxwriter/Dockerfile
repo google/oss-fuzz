@@ -22,5 +22,4 @@ RUN git clone --depth 1 https://github.com/jmcnamara/libxlsxwriter.git libxlsxwr
 WORKDIR libxlsxwriter
 COPY run_tests.sh $SRC/
 RUN python3 -m pip install pytest
-RUN echo "mkdir -p build-test && cd build-test && cmake .. -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release" > $SRC/build.sh
-
+RUN echo "mkdir -p build-test && cd build-test && cmake .. -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release" >> $SRC/build.sh
