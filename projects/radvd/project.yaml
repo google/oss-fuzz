@@ -1,4 +1,4 @@
-homepage: "http://www.litech.org/radvd/"
+homepage: "http://www.litech.org/radvd"
 language: c
 sanitizers:
   - address
@@ -6,3 +6,4 @@ sanitizers:
   - memory
 vendor_ccs:
 - "david@adalogics.com"
+main_repo: "http://www.litech.org/radvd"
