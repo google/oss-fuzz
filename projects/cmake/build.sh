@@ -54,6 +54,7 @@ INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_SOURCE}/Utilities/cmlibuv/include"
 INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_SOURCE}/Utilities/cmlibrhash"
 INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_SOURCE}/Utilities/cm3p"
 INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_SOURCE}/Utilities"
+INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_SOURCE}/Source/LexerParser"
 
 # Common libraries to link (order matters for static linking!)
 COMMON_LIBS="${CMAKE_LIB_DIR}/libCMakeLib.a"
@@ -163,6 +164,7 @@ build_corpus "cmStringAlgorithmsFuzzer" "corpus/string"
 build_corpus "cmVersionFuzzer" "corpus/version"
 build_corpus "cmCMakePathFuzzer" "corpus/path"
 build_corpus "cmGccDepfileFuzzer" "corpus/depfile"
+build_corpus "cmGlobFuzzer" "corpus/glob"
 
 # Copy dictionaries
 echo "Copying dictionaries..."
@@ -183,6 +185,8 @@ for dict in *.dict; do
             cmVersion) cp "$dict" "$OUT/cmVersionFuzzer.dict" ;;
             cmCMakePath) cp "$dict" "$OUT/cmCMakePathFuzzer.dict" ;;
             cmGccDepfile) cp "$dict" "$OUT/cmGccDepfileFuzzer.dict" ;;
+            cmGlob) cp "$dict" "$OUT/cmGlobFuzzer.dict" ;;
+            cmFileLock) cp "$dict" "$OUT/cmFileLockFuzzer.dict" ;;
             *) cp "$dict" "$OUT/" ;;
         esac
     fi

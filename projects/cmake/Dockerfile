@@ -26,7 +26,8 @@ RUN apt-get update && apt-get install -y \
     libtool \
     pkg-config
 
-RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake CMake
+# Testing with fork (change back to upstream after fuzzers merged)
+RUN git clone --depth 1 -b feature/fuzzing-suite-v2 https://gitlab.kitware.com/skypher/cmake CMake
 RUN git clone --depth 1 https://github.com/strongcourage/fuzzing-corpus
 
 WORKDIR CMake
