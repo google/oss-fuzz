@@ -48,6 +48,7 @@ UTILITIES_DIR="${CMAKE_BUILD}/Utilities"
 # Common include paths
 INCLUDE_FLAGS="-I${CMAKE_SOURCE}/Source"
 INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_BUILD}/Source"
+INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_BUILD}/Utilities"
 INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_SOURCE}/Utilities/std"
 INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_SOURCE}/Utilities/cmlibuv/include"
 INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_SOURCE}/Utilities/cmlibrhash"
@@ -56,6 +57,9 @@ INCLUDE_FLAGS="${INCLUDE_FLAGS} -I${CMAKE_SOURCE}/Utilities"
 
 # Common libraries to link (order matters for static linking!)
 COMMON_LIBS="${CMAKE_LIB_DIR}/libCMakeLib.a"
+COMMON_LIBS="${COMMON_LIBS} ${CMAKE_LIB_DIR}/kwsys/libcmsys.a"
+COMMON_LIBS="${COMMON_LIBS} ${UTILITIES_DIR}/std/libcmstd.a"
+COMMON_LIBS="${COMMON_LIBS} ${UTILITIES_DIR}/cmcppdap/libcmcppdap.a"
 COMMON_LIBS="${COMMON_LIBS} ${UTILITIES_DIR}/cmexpat/libcmexpat.a"
 COMMON_LIBS="${COMMON_LIBS} ${UTILITIES_DIR}/cmlibarchive/libarchive/libcmlibarchive.a"
 COMMON_LIBS="${COMMON_LIBS} ${UTILITIES_DIR}/cmliblzma/libcmliblzma.a"
