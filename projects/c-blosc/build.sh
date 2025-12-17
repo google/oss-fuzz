@@ -15,10 +15,10 @@
 #
 ################################################################################
 
-# Build project
-cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS"     \
-        -DBUILD_FUZZERS=ON -DBUILD_TESTS=OFF -DBUILD_BENCHMARKS=OFF \
-        -DBUILD_STATIC=ON -DBUILD_SHARED=OFF
+# Build with fuzzer and unit test (Turn on shared build for unit testing only)
+cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+        -DBUILD_FUZZERS=ON -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=OFF \
+        -DBUILD_STATIC=ON -DBUILD_SHARED=ON
 make clean
 make -j$(nproc)
 
