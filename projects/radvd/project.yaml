@@ -1,0 +1,8 @@
+homepage: "http://www.litech.org/radvd/"
+language: c
+sanitizers:
+  - address
+  - undefined
+  - memory
+vendor_ccs:
+- "david@adalogics.com"
