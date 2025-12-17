@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# Link with lld to allow shared build
+export LDSHARED=lld
+
 # Build with fuzzer and unit test (Turn on shared build for unit testing only)
 cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
         -DBUILD_FUZZERS=ON -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=OFF \
