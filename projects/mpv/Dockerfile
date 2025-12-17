@@ -15,7 +15,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y nasm pkgconf gperf zip rsync && \
+    apt-get install --no-install-recommends -y nasm pkgconf gperf zip rsync libuchardet-dev && \
     apt-get clean -y
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -42,4 +42,4 @@ RUN mkdir mpv/subprojects -p && cd mpv && \
     meson subprojects download
 
 WORKDIR $SRC/mpv
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
