@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# Link with lld to allow shared build
-export LDSHARED=lld
-
 # Build with fuzzer and unit test (Turn on shared build for unit testing only)
 # Shared library of local zstd requires x64 architecture, thus disable it
 # in i386 architecture
