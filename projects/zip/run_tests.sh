@@ -1,4 +1,6 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +16,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake make
-
-RUN git clone --depth 1 https://github.com/kuba--/zip.git zip \
-        && cp zip/fuzz/build.sh $SRC/
-WORKDIR zip
-COPY run_tests.sh $SRC/
+ctest --test-dir build
