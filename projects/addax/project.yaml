@@ -1,5 +1,5 @@
 homepage: "https://github.com/wgzhao/addax"
-language: Java
+language: jvm
 primary_contact: "wgzhao@gmail.com"
 auto_ccs:
   - "wgzhao@gmail.com"
