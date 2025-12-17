@@ -17,7 +17,7 @@
 
 ./autogen.sh
 
-export check_LIBS="/usr/lib/x86_64-linux-gnu/libcheck.a /usr/lib/x86_64-linux-gnu/libsubunit.a -lrt -lm -lpthread"
+export check_LIBS="-l:libcheck.a -l:libsubunit.a -lrt -lm -lpthread"
 
 ./configure --disable-shared --enable-pie --enable-fuzzer=$LIB_FUZZING_ENGINE
 make
