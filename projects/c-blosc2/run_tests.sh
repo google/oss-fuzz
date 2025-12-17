@@ -17,4 +17,4 @@
 
 # Disable leak sanitizer and run unit testing
 export ASAN_OPTIONS="detect_leaks=0"
-ctest --test-dir . --output-on-failure
+ctest --test-dir .
