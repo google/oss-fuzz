@@ -16,5 +16,13 @@
 #
 ################################################################################
 
-cd $SRC/jq
-make check
+./tests/setup
+./tests/base64test
+./tests/jq-f-test.sh
+./tests/jqtest
+./tests/manonigtest
+./tests/mantest
+./tests/onigtest
+./tests/optionaltest
+./tests/uritest
+./tests/utf8test
