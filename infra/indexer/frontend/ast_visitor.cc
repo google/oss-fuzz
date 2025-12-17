@@ -863,9 +863,9 @@ const clang::CXXRecordDecl* GetCXXRecordForType(const clang::QualType& type) {
     return nullptr;
   }
   const auto* record_type = derived_type->castAs<clang::RecordType>();
-  CHECK(record_type);
+  CHECK(record_type != nullptr);
   const clang::RecordDecl* decl = record_type->getOriginalDecl();
-  CHECK(decl);
+  CHECK(decl != nullptr);
   return llvm::dyn_cast<clang::CXXRecordDecl>(decl);
 }
 
