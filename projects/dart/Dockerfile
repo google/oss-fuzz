@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt install -y g++-multilib git python curl
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y g++-multilib git python3 curl
 
 RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH="${SRC}/depot_tools:${PATH}"
@@ -25,4 +25,4 @@ COPY patch.diff $SRC
 WORKDIR $SRC/dart-sdk/sdk
 # This is to fix Fuzz Introspector build by using LLVM old pass manager
 # re https://github.com/ossf/fuzz-introspector/issues/305
-ENV OLD_LLVMPASS 1
+ENV OLD_LLVMPASS=1
