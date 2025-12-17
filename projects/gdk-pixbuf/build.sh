@@ -38,7 +38,7 @@ meson setup \
     -Dlibmount=disabled \
     -Dman-pages=disabled \
     -Dsysprof=disabled \
-    -Dtests=false \
+    -Dtests=true \
     _builddir
 ninja -C _builddir
 ninja -C _builddir install
