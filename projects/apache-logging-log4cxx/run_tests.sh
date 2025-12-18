@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,8 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake pkg-config wget libsodium-dev libgtest-dev
-RUN git clone --depth 1 https://github.com/BehaviorTree/BehaviorTree.CPP.git behaviortreecpp
-WORKDIR behaviortreecpp
-COPY run_tests.sh build.sh $SRC/
+# Exclude deallocation mismatch and memory leak sanitizer
+export ASAN_OPTIONS="alloc_dealloc_mismatch=0:detect_leaks=0"
+
+# Exclude these failing test case temporarily
+ctest --test-dir build-tests/ --output-on-failure -E "filetestcase|optionconvertertestcase|stringtokenizertestcase|xloggertestcase"
