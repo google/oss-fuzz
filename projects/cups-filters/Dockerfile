@@ -33,3 +33,4 @@ RUN git clone --depth 1 https://github.com/OpenPrinting/fuzzing.git
 RUN cp $SRC/fuzzing/projects/cups-filters/oss_fuzz_build.sh $SRC/build.sh
 
 WORKDIR $SRC/cups-filters                   
+COPY run_tests.sh $SRC/
