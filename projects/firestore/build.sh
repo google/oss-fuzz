@@ -37,8 +37,9 @@ sed -i 's/-Werror=reorder//g' ./FirebaseFirestore.podspec
 sed -i 's/ReadContext context/\/\/ReadContext/g' ./Firestore/fuzzing/serializer_fuzzer.cc
 sed -i 's/serializer.Dec/\/\/serializer/g' ./Firestore/fuzzing/serializer_fuzzer.cc
 
+# Build firebase-ios-sdk with fuzzers and unit tests
 mkdir build && cd build
-cmake -DFIREBASE_IOS_BUILD_TESTS=OFF -DFIREBASE_IOS_BUILD_BENCHMARKS=OFF -DFUZZING=ON ..
+cmake -DFIREBASE_IOS_BUILD_TESTS=ON -DFIREBASE_IOS_BUILD_BENCHMARKS=OFF -DFUZZING=ON ..
 make -j$(nproc)
 
 # Copy fuzzing targets, dictionaries, and zipped corpora to $OUT.
