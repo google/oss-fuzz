@@ -1,4 +1,6 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +16,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/fastfloat/fast_float.git fast_float
-WORKDIR fast_float
-COPY run_tests.sh build.sh $SRC/
+# Build fuzzers
+sh ./fuzz/build.sh
