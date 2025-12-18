@@ -12,3 +12,5 @@ sanitizers:
 
 # This is a test project.
 disabled: true
+
+base_os_version: ubuntu-24-04
