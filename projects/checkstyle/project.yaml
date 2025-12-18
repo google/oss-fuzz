@@ -10,3 +10,5 @@ vendor_ccs:
 - arthur.chan@adalogics.com
 - david@adalogics.com
 - adam@adalogics.com
+
+base_os_version: ubuntu-24-04
