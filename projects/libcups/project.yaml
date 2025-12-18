@@ -30,4 +30,3 @@ fuzzing_engines:
   # - afl
 
 # builds_per_day: 2
-base_os_version: ubuntu-24-04
