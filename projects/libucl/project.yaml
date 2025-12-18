@@ -4,5 +4,3 @@ auto_ccs:
   - "adam@adalogics.com"
 language: c
 main_repo: 'https://github.com/vstakhov/libucl'
-
-base_os_version: ubuntu-24-04
