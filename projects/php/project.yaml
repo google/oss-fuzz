@@ -20,3 +20,5 @@ architectures:
  - i386
 view_restrictions: none
 main_repo: 'https://github.com/php/php-src.git'
+
+base_os_version: ubuntu-24-04
