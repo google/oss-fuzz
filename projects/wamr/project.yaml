@@ -13,3 +13,5 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 file_github_issue: false
+
+base_os_version: ubuntu-24-04
