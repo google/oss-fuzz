@@ -55,15 +55,14 @@ index 2f8c3d5f918..d9774758413 100644
  	 * Non-error queries loop here.
  	 */
 diff --git a/src/backend/utils/error/elog.c b/src/backend/utils/error/elog.c
-index 47af743990f..476e336d418 100644
 --- a/src/backend/utils/error/elog.c
 +++ b/src/backend/utils/error/elog.c
-@@ -540,7 +540,7 @@ errfinish(const char *filename, int lineno, const char *funcname)
+@@ -540,7 +540,7 @@
  	}
  
  	/* Emit the message to the right places */
 -	EmitErrorReport();
-+ 	//EmitErrorReport();
++	//EmitErrorReport();
  
- 	/* Now free up subsidiary data attached to stack entry, and release it */
- 	FreeErrorDataContents(edata);
+ 	/*
+ 	 * If this is the outermost recursion level, we can clean up by resetting
