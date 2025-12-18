@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 ################################################################################
-ctest --test-dir build-test
+ctest --test-dir build

@@ -16,10 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake make zlib1g-dev
-
-RUN git clone --depth 1 https://github.com/jmcnamara/libxlsxwriter.git libxlsxwriter \
-        && cp libxlsxwriter/dev/fuzzing/build.sh $SRC/
-WORKDIR libxlsxwriter
-COPY run_tests.sh $SRC/
 RUN python3 -m pip install pytest
-RUN echo "mkdir -p build-test && cd build-test && cmake .. -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release && cmake --build . --config Release" >> $SRC/build.sh
+
+RUN git clone --depth 1 https://github.com/jmcnamara/libxlsxwriter.git libxlsxwriter
+WORKDIR libxlsxwriter
+COPY build.sh run_tests.sh $SRC/
