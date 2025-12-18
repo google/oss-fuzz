@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y g++-multilib git python3 curl
 
 RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
