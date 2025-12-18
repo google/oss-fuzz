@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-# Patch the ossfuzz.sh to include unit test build
-sed -i 's/-DENABLE_CJSON_TEST=OFF/-DENABLE_CJSON_TEST=ON/g' $SRC/cjson/fuzzing/ossfuzz.sh
-
-# Run the OSS-Fuzz script in the project
-$SRC/cjson/fuzzing/ossfuzz.sh
+ctest --test-dir build
