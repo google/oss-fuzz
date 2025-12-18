@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && \
-    apt-get install -y build-essential libncursesw5-dev \
-	libreadline-dev libssl-dev libgdbm-dev \
-	libc6-dev libsqlite3-dev tk-dev libbz2-dev \
-	zlib1g-dev libffi-dev
+# Ignore memory leaks from python scripts invoked in the build
+export ASAN_OPTIONS="detect_leaks=0"
 
-RUN git clone https://github.com/python/cpython.git cpython3
-WORKDIR cpython3
-COPY run_tests.sh build.sh $SRC/
+# Skip network related unit test case
+make test TESTOPTS="-u all,-network,-urlfetch"
