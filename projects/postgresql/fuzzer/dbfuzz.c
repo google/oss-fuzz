@@ -69,8 +69,8 @@ static void psql_command(const char *database, const char *query, ...) {
   system(psql_cmd);
 }
 
-PID_TYPE
-spawn_process(const char *cmdline) {
+static PID_TYPE
+dbfuzz_spawn_process(const char *cmdline) {
   pid_t pid;
   pid = fork();
   if (pid == 0) {
@@ -125,7 +125,7 @@ int main() {
            "> \"%s/log/postmaster.log\" 2>&1",
            "", "", temp_instance, "", "", sockdir, outputdir);
 
-  postmaster_pid = spawn_process(buf);
+  postmaster_pid = dbfuzz_spawn_process(buf);
 
   for (i = 0; i < wait_seconds; i++) {
     if (system(buf2) == 0)
