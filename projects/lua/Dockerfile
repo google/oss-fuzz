@@ -22,3 +22,6 @@ COPY build.sh testdir/
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_lua.c $SRC/
+
+COPY compile_lua_fuzzer $SRC/
+COPY luzer-scm-1.rockspec $SRC/
