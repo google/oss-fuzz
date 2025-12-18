@@ -33,6 +33,8 @@ fi
 apt-get update
 apt-get install -y $PACKAGES
 
+apt install -y cmake liblua5.1-0 liblua5.1-0-dev lua5.1 luarocks
+
 # For fuzz-introspector, exclude all functions in the tests directory,
 # libprotobuf-mutator and protobuf source code.
 # See https://github.com/ossf/fuzz-introspector/blob/main/doc/Config.md#code-exclusion-from-the-report
@@ -100,7 +102,8 @@ git config --global --add safe.directory '*'
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
 cmake "${cmake_args[@]}" -S . -B build -G Ninja
-cmake --build build --parallel --verbose
+# cmake --build build --parallel --verbose
+cmake --build build --parallel --verbose --target patched-lua-master
 
 LUALIB_PATH="$SRC/testdir/build/lua-master/source/"
 $CC $CFLAGS -I$LUALIB_PATH -c $SRC/fuzz_lua.c -o fuzz_lua.o
@@ -122,3 +125,17 @@ do
   cp $f $OUT/
   [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$name"_seed_corpus.zip
 done
+
+export OSS_FUZZ=1
+luarocks install --tree=lua_modules $SRC/luzer-scm-1.rockspec
+zip -r lua_modules.zip lua_modules
+
+LUA_RUNTIME_NAME=lua
+
+for fuzzer in $(find $SRC -name '*_test.lua'); do
+  $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME $fuzzer
+  cp $fuzzer "$OUT/"
+done
+
+cp ./build/lua-master/source/lua "$OUT/$LUA_RUNTIME_NAME"
+cp lua_modules.zip "$OUT/"
