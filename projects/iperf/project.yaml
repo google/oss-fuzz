@@ -5,5 +5,7 @@ sanitizers:
   - undefined
   - memory
 main_repo: "https://github.com/esnet/iperf"
-vendor_ccs:
+primary_contact: "javanlacerda@google.com"
+auto_ccs:
+- "pedroysb@google.com"
 - "david@adalogics.com"
