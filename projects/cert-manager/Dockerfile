@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN git clone https://github.com/cert-manager/cert-manager --depth=1
 COPY build.sh pki_fuzzer.go $SRC/
 WORKDIR $SRC/cert-manager
