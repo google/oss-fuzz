@@ -1,0 +1,9 @@
+homepage: "https://github.com/esnet/iperf"
+language: c++
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/esnet/iperf"
+vendor_ccs:
+- "david@adalogics.com"
