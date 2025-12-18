@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,5 @@
 #
 ################################################################################
 
-cp $SRC/*.dict $OUT/
-
-CXXFLAGS="${CXXFLAGS} -O2 -fno-sanitize=integer-divide-by-zero,float-divide-by-zero"
-
-$CXX -std=c++11 $CXXFLAGS -I. -I$SRC/exprtk \
-     $SRC/exprtk_fuzzer.cpp -o $OUT/exprtk_fuzzer \
-     $LIB_FUZZING_ENGINE
-
-# Build all tests
-make
+# Run exprtk unit test
+./exprtk_test
