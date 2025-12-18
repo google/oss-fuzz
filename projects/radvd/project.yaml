@@ -4,6 +4,8 @@ sanitizers:
   - address
   - undefined
   - memory
-vendor_ccs:
+primary_contact: "javanlacerda@google.com"
+auto_ccs:
+- "pedroysb@google.com"
 - "david@adalogics.com"
 main_repo: "http://www.litech.org/radvd"
