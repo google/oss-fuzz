@@ -43,7 +43,7 @@ rm $OUT/fuzz_seed_corpus.zip
 # Build fuzzers
 mkdir build
 cd build
-cmake ../
+cmake ../ -DDO_TESTING=ON
 make
 
 for fuzzFile in $FUZZER_DIR/fuzz*.c; do
@@ -51,10 +51,3 @@ for fuzzFile in $FUZZER_DIR/fuzz*.c; do
   $CC $CFLAGS $LIB_FUZZING_ENGINE -I../src/lib/libdwarf/ \
     "$FUZZER_DIR/${fuzzName}.c" -o "$OUT/${fuzzName}" ./src/lib/libdwarf/libdwarf.a -lz
 done
-
-# Build tests
-cd $SRC/libdwarf
-mkdir build-test
-cd build-test
-cmake .. -DDO_TESTING=ON
-cmake --build . --config Release
