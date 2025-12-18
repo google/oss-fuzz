@@ -1,0 +1,18 @@
+#!/bin/sh
+
+PREFIX=/src/testdir/build/lua-master/source
+
+: ${LUA_PATH=";"}
+: ${LUA_CPATH=";"}
+
+PATH=$PREFIX:$PATH
+
+# Set search paths to user environment settings,
+# followed by system path, and finally rocks_trees.
+save_LUA_PATH=$LUA_PATH
+save_LUA_CPATH=$LUA_PATH
+eval `luarocks path`
+LUA_PATH="$save_LUA_PATH;$LUA_PATH"
+LUA_CPATH="$save_LUA_CPATH;$LUA_CPATH"
+
+exec $PREFIX/lua ${1+"$@"}

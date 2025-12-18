@@ -14,11 +14,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/ligurio/lua-c-api-tests testdir
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN git clone --branch ligurio/bump-luzer https://github.com/ligurio/lua-c-api-tests testdir
 WORKDIR testdir
-RUN git clone --depth 1 --jobs $(nproc) https://github.com/ligurio/lua-c-api-corpus corpus_dir
+# RUN git clone --depth 1 --jobs $(nproc) https://github.com/ligurio/lua-c-api-corpus corpus_dir
 COPY build.sh testdir/
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_lua.c $SRC/
+
+COPY compile_lua_fuzzer $SRC/
+COPY lua $SRC/
+COPY luarocks $SRC/
