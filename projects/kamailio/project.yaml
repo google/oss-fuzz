@@ -7,3 +7,5 @@ auto_ccs:
   - "david@adalogics.com"
   - "mail@gilawa.com"
   - "qxork.droid@gmail.com"
+
+base_os_version: ubuntu-24-04

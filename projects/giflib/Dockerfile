@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update -y && \
     apt-get install -y cmake liblzma-dev libz-dev make ninja-build wget zlib1g-dev
 RUN git clone --depth=1 https://git.code.sf.net/p/giflib/code $SRC/giflib-code
