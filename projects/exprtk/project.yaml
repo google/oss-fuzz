@@ -12,3 +12,5 @@ sanitizers:
     - undefined
     - memory
 main_repo: 'https://github.com/ArashPartow/exprtk.git'
+
+base_os_version: ubuntu-24-04
