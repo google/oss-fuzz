@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y autoconf automake build-essential bison libssl-dev libcap-dev libseccomp-dev libavahi-compat-libdnssd-dev pps-tools python3-dev
-RUN git clone https://gitlab.com/NTPsec/ntpsec
-RUN git clone https://github.com/pkillarjun/oss-fuzz-bloat
-COPY run_tests.sh build.sh $SRC/
-COPY fuzz/ $SRC/ntpsec/fuzz/
-WORKDIR $SRC/ntpsec/
-
+# Run unit tests with bash
+bash tests/python3-tester.sh
+bash tests/option-tester.sh
