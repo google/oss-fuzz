@@ -16,8 +16,5 @@
 #
 ################################################################################
 
-# Patch build script to add unit test build
-sed -i 's/-DBUILD_FUZZERS=ON/-DBUILD_FUZZERS=ON -DBUILD_TESTS=ON/g' dev/fuzzing/build.sh
-
 # Run upstream build script for fuzzers and unit test
 sh ./dev/fuzzing/build.sh
