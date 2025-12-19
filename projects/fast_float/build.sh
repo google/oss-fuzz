@@ -18,7 +18,3 @@
 
 # Build fuzzers
 sh ./fuzz/build.sh
-
-# Build unit tests
-cmake -DFASTFLOAT_TEST=ON -DCMAKE_EXE_LINKER_FLAGS="-lpthread"
-make
