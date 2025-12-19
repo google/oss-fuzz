@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 
-RUN apt-get install mercurial -y
+RUN apt-get update && apt-get install mercurial -y
 RUN pip3 install --upgrade pip
 
 RUN hg clone https://foss.heptapod.net/openpyxl/openpyxl
