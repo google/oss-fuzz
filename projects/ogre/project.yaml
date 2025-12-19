@@ -4,5 +4,3 @@ main_repo: "https://github.com/OGRECave/ogre"
 primary_contact: rojtberg@gmail.com
 vendor_ccs:
 - david@adalogics.com
-
-base_os_version: ubuntu-24-04
