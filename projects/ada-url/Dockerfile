@@ -20,4 +20,3 @@ RUN git clone --depth 1 https://github.com/ada-url/ada ada-url
 RUN cp ada-url/fuzz/build.sh $SRC/
 WORKDIR ada-url
 COPY run_tests.sh $SRC/
-RUN echo "mkdir build-tests && cd build-tests && cmake -DADA_TESTING=True .. && make" >> $SRC/build.sh
