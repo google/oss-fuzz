@@ -33,3 +33,5 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
+
+base_os_version: ubuntu-24-04
