@@ -16,5 +16,4 @@
 ################################################################################
 
 # Run unit tests with bash
-bash tests/python3-tester.sh
-bash tests/option-tester.sh
+bash tests/python3-tester.sh && bash tests/option-tester.sh
