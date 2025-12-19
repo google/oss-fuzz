@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,6 @@
 #
 ################################################################################
 
-# Configure Test Data Path
-export GRK_DATA_ROOT=$SRC/grok-data
-
-# Build grok core code and unit test
-mkdir build
-cd build
-cmake .. -DGRK_BUILD_CODEC=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON
-make clean -s
-make -j$(nproc) -s
-cd ..
-
-./tests/fuzzers/build_google_oss_fuzzers.sh
-./tests/fuzzers/build_seed_corpus.sh
+# Disable allocator problem and leak problem for unit testing
+export ASAN_OPTIONS="detect_leaks=0:allocator_may_return_null=1"
+ctest --test-dir build
