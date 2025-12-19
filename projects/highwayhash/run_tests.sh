@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/google/highwayhash highwayhash
-WORKDIR highwayhash
-COPY run_tests.sh build.sh $SRC/
+# Run built unit test cases
+./build/highwayhash_test && ./build/sip_hash_test && ./build/vector_test
