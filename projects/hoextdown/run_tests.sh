@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +16,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool tidy
-RUN git clone --depth 1 https://github.com/kjdev/hoextdown.git hoextdown
-WORKDIR hoextdown
-COPY run_tests.sh build.sh *.options *.dict $SRC/
+# Only run unit test with sanitizer flag if it is not coverage or introspector run
+if [[ "$SANITIZER" != "coverage" && "$SANITIZER" != "introspector" ]]
+then
+  # Disable leak sanitizer
+  export ASAN_OPTIONS="detect_leaks=0"
+
+  # Run unit test with fuzzer link flag
+  LDFLAGS="-fsanitize=$SANITIZER" make test -j$(nproc)
+fi
