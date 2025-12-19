@@ -1,4 +1,6 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y pkg-config libncurses5-dev libssl-dev python3-pip
-RUN pip3 install -U meson ninja
-RUN git clone https://github.com/irssi/irssi
-
-WORKDIR irssi
-COPY run_tests.sh build.sh *.options *.dict $SRC/
+# Disable leak sanitizer and run unit test
+export ASAN_OPTIONS="detect_leaks=0"
+meson test -C $WORK/Build
