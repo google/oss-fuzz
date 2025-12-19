@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-# Patch the ossfuzz.sh to include unit test build
-sed -i 's/-DENABLE_CJSON_TEST=OFF/-DENABLE_CJSON_TEST=ON/g' $SRC/cjson/fuzzing/ossfuzz.sh
 
 # Run the OSS-Fuzz script in the project
 $SRC/cjson/fuzzing/ossfuzz.sh
