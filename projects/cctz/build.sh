@@ -14,13 +14,6 @@
 #
 ################################################################################
 
-# Build and install GMock and GTest for unit testing
-mkdir gtest-build
-pushd gtest-build
-cmake /usr/src/googletest
-make install
-popd
-
 # Set BUILD_TESTING=ON for unit testing in run_tests.sh
 mkdir build && cd build
 cmake -DBUILD_TESTING=ON -DBUILD_BENCHMARK=OFF ../
