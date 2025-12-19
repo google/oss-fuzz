@@ -24,3 +24,13 @@ for F in $FUZZER_FILES; do
     cp $SRC/fuzzer-parse.options $OUT/$FUZZER.options
 done
 cp $SRC/parse_afl_fuzzer.dict $OUT/
+
+# Build unit tests
+mkdir build-tests
+pushd build-tests
+cmake ..
+make
+popd
+
+# Pre-download test data
+ctest --test-dir build-tests -R download_test_data
