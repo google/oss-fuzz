@@ -6,3 +6,5 @@ fuzzing_engines:
 sanitizers:
 - none
 primary_contact: "lovell.fuller@gmail.com"
+
+base_os_version: ubuntu-24-04
