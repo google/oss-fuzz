@@ -12,3 +12,5 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/richgel999/miniz.git'
+
+base_os_version: ubuntu-24-04
