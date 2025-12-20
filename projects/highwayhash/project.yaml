@@ -3,3 +3,5 @@ language: c++
 main_repo: "https://github.com/google/highwayhash"
 vendor_ccs:
 - david@adalogics.com
+
+base_os_version: ubuntu-24-04
