@@ -14,5 +14,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 COPY solution.seed vulnerable.cc build.sh $SRC/

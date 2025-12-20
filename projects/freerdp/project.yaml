@@ -16,5 +16,3 @@ sanitizers:
   - undefined
 architectures:
   - x86_64
-
-base_os_version: ubuntu-24-04
