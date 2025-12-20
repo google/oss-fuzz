@@ -8,3 +8,5 @@ fuzzing_engines:
 sanitizers:
   - address
 main_repo: "https://github.com/ProtonMail/gluon"
+
+base_os_version: ubuntu-24-04

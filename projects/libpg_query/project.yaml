@@ -6,3 +6,5 @@ auto_ccs:
   - "marko@pganalyze.com"
   - "lukas@pganalyze.com"
   - "david@adalogics.com"
+
+base_os_version: ubuntu-24-04
