@@ -23,3 +23,5 @@ sanitizers:
  - undefined
 selective_unpack: true
 main_repo: 'https://github.com/FFmpeg/FFmpeg'
+
+base_os_version: ubuntu-24-04
