@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y wget cmake
 RUN git clone https://github.com/ittiam-systems/libmpeg2.git
 ADD https://storage.googleapis.com/android_media/external/libmpeg2/fuzzer/mpeg2_dec_fuzzer_seed_corpus.zip $SRC/

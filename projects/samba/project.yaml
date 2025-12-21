@@ -19,5 +19,3 @@ sanitizers:
   - address
   - undefined
 help_url: "https://wiki.samba.org/index.php/Fuzzing"
-
-base_os_version: ubuntu-24-04
