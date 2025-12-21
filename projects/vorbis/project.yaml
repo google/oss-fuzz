@@ -16,3 +16,5 @@ sanitizers:
   - address
   - memory
 main_repo: 'https://gitlab.xiph.org/xiph/vorbis.git'
+
+base_os_version: ubuntu-24-04
