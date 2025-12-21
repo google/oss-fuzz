@@ -9,3 +9,5 @@ auto_ccs:
   - jfinnigan@hashicorp.com
   - kent@hashicorp.com
 main_repo: 'https://github.com/hashicorp/hcl'
+
+base_os_version: ubuntu-24-04
