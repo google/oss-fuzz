@@ -1,4 +1,5 @@
 homepage: "https://hg.mozilla.org/mozilla-central/file/tip/gfx/qcms/"
+main_repo: "https://hg.mozilla.org/mozilla-central/file/tip/gfx/qcms"
 language: rust
 primary_contact: "twsmith@mozilla.com"
 auto_ccs:
