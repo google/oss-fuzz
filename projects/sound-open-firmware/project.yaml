@@ -18,3 +18,5 @@ sanitizers:
 architectures:
   - i386
 main_repo: "https://github.com/thesofproject/sof"
+
+base_os_version: ubuntu-24-04
