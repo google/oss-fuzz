@@ -21,9 +21,9 @@ case $(uname -m) in
     x86_64)
       # Download and install Go.
       export GOROOT=/root/.go
-      wget https://go.dev/dl/go1.25.0.linux-amd64.tar.gz
+      wget https://go.dev/dl/go1.25.5.linux-amd64.tar.gz
       mkdir temp-go
-      tar -C temp-go/ -xzf go1.25.0.linux-amd64.tar.gz
+      tar -C temp-go/ -xzf go1.25.5.linux-amd64.tar.gz
 
       mkdir $GOROOT
       mv temp-go/go/* /root/.go/
@@ -36,9 +36,10 @@ case $(uname -m) in
       cd $GOPATH/gocoverage && /root/.go/bin/go install ./...
       cd /root/.go/src/cmd/cover && /root/.go/bin/go build && mv cover $GOPATH/bin/gotoolcover
       pushd /tmp
-        git clone --depth=1 https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2
+        git clone https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2_2
+        git checkout 65072595fdfb80eaedbc37db3837d82eb95ce7b2
         cd go-118-fuzz-build/cmd/convertLibFuzzerTestcaseToStdLibGo
-        /root/.go/bin/go build .
+        CGO_ENABLED=1 /root/.go/bin/go build .
         mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
       popd
       ;;
