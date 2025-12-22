@@ -45,4 +45,4 @@ RUN gsutil cp gs://libressl-backup.clusterfuzz-external.appspot.com/corpus/libFu
 
 WORKDIR wolfssl
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
