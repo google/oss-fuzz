@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y cmake pkg-config make python3
-RUN git clone -b dev --depth 1 https://github.com/unicorn-engine/unicorn.git
-WORKDIR $SRC
-COPY run_tests.sh build.sh $SRC/
+# Disable leak sanitizer and run unit testing
+export ASAN_OPTIONS="detect_leaks=0"
+ctest --test-dir $SRC/unicorn/build
