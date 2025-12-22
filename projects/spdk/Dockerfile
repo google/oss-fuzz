@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make curl yasm autoconf libtool nasm ninja-build
 RUN pip3 install --upgrade pip meson
 RUN git clone --depth 1 https://github.com/spdk/spdk && \

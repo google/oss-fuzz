@@ -16,3 +16,5 @@ auto_ccs:
   - "ethompson@fastly.com"
 
 main_repo: 'https://github.com/h2o/h2o'
+
+base_os_version: ubuntu-24-04
