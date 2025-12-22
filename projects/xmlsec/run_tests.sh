@@ -1,4 +1,6 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config \
-    libssl-dev wget liblzma-dev python3-dev
-# Build requires automake 1.16.3
-RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
-    apt install ./automake_1.16.5-1.3_all.deb    
-RUN git clone --depth 1 https://github.com/lsh123/xmlsec
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxslt.git
-COPY run_tests.sh build.sh *.diff $SRC/
+# Disable leak sanitizers and run unit test
+export ASAN_OPTIONS="detect_leaks=0"
+make check -C xmlsec
