@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake ffmpeg libtool pkg-config python3 wget
 RUN python3 -m pip install --upgrade pip && python3 -m pip install corpus-replicator
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git
