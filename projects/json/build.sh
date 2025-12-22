@@ -29,7 +29,7 @@ cp $SRC/parse_afl_fuzzer.dict $OUT/
 mkdir build-tests
 pushd build-tests
 cmake ..
-make
+make -C tests
 popd
 
 # Pre-download test data
