@@ -1,4 +1,6 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +16,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake libtool make python
-RUN git clone --recursive https://github.com/WebAssembly/wabt
-WORKDIR wabt
-RUN git submodule init
-RUN git submodule update
-COPY run_tests.sh build.sh *_fuzzer.cc $SRC/
+$SRC/wabt/build/wabt-unittests
