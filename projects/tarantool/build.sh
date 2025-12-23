@@ -48,7 +48,10 @@ fi
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
 cmake_args=(
-    # Specific to Tarantool
+    # Specific to Tarantool.
+    # Tarantool executable binary is needed for running Lua tests,
+    # it should not have any dependencies.
+    -DBUILD_STATIC=ON
     -DENABLE_BACKTRACE=OFF
     -DENABLE_FUZZER=ON
     -DOSS_FUZZ=ON
@@ -82,18 +85,22 @@ cmake_args=(
 
 # To deal with a host filesystem from inside of container.
 git config --global --add safe.directory '*'
+git pull --rebase
+
+# Required by luzer and tarantool.
+export OSS_FUZZ=1
 
 # Build the project and fuzzers.
 [[ -e build ]] && rm -rf build
 cmake "${cmake_args[@]}" -S . -B build
-cmake --build build --target fuzzers --parallel --verbose
+cmake --build build --parallel --verbose --target tarantool --target fuzzers
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 # Postfix `_fuzzer` is used in Tarantool, postfix `_test` is
 # used in Lua C API tests [1].
 #
 # 1. https://github.com/ligurio/lua-c-api-tests/
-cp test/static/*.dict test/static/*.options $OUT/
+# cp test/static/*.dict test/static/*.options $OUT/
 for f in $(find build/test/fuzz/ \( -name '*_fuzzer' -o -name '*_test' \) -type f);
 do
   name=$(basename $f);
@@ -105,3 +112,36 @@ do
     zip --quiet -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
   fi
 done
+
+# Finish execution if libFuzzer is not used, because luzer
+# is libFuzzer-based.
+if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
+  return
+fi
+
+apt install -y cmake luarocks liblua5.1-0 liblua5.1-0-dev liblua5.1-0-dbg lua5.1
+
+luarocks install --lua-version 5.1 --server=https://luarocks.org/dev --tree=lua_modules luzer
+
+LUA_RUNTIME_NAME=tarantool
+TARANTOOL_PATH=build/src/$LUA_RUNTIME_NAME
+
+for f in $(find test/fuzz/lua -name '*_test.lua' -type f);
+do
+  $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME $(basename $f)
+  cp $f "$OUT/"
+done
+
+$SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME test/fuzz/lua/test_engine.lua
+cp test/fuzz/lua/test_engine.lua "$OUT/"
+
+# ./test/fuzz/lua-tests/src/tests/lapi/math_atan_test.lua
+for f in $(find build/test/fuzz -name '*_test.lua' -type f);
+do
+  $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME $(basename $f)
+  cp $f "$OUT/"
+done
+cp build/test/fuzz/lua-tests/src/tests/lapi/lib.lua "$OUT"
+
+cp $TARANTOOL_PATH "$OUT/$LUA_RUNTIME_NAME"
+cp -R lua_modules "$OUT/"
