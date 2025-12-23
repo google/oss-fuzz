@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-make check
+make check -j$(nproc)
