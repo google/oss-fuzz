@@ -16,4 +16,4 @@
 ################################################################################
 
 # The unit test of selftied is failing, thus excluded temporarily
-ctest --test-dir build -C Release -E selftied
+ctest --test-dir build -C Release -E selftied -j$(nproc)
