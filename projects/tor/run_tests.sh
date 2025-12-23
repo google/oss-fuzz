@@ -17,7 +17,7 @@
 ################################################################################
 
 # Run all successful unit testing
-make check TESTS="src/test/test-slow src/test/test-timers \
+make check -j$(nproc) TESTS="src/test/test-slow src/test/test-timers \
     src/test/test_keygen.sh src/test/test_key_expiration.sh \
     src/test/test_zero_length_keys.sh src/test/test_workqueue_cancel.sh \
     src/test/test_workqueue_efd.sh src/test/test_workqueue_efd2.sh \
