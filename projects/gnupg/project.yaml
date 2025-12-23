@@ -5,5 +5,3 @@ main_repo: 'git://git.gnupg.org/gnupg.git'
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
-
-base_os_version: ubuntu-24-04

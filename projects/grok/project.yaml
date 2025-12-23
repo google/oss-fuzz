@@ -10,5 +10,3 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/GrokImageCompression/grok.git'
-
-base_os_version: ubuntu-24-04

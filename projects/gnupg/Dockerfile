@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf libtool bzip2 bison flex gettext pkg-config
 
 RUN wget http://ftp.de.debian.org/debian/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \

@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone --recursive --depth 1 https://github.com/GrokImageCompression/grok.git grok
 RUN git clone --depth 1 https://github.com/GrokImageCompression/grok-test-data.git grok-data
 WORKDIR grok
-COPY run_tests.sh build.sh $SRC/
+COPY build.sh $SRC/

@@ -15,13 +15,9 @@
 #
 ################################################################################
 
-# Configure Test Data Path
-export GRK_DATA_ROOT=$SRC/grok-data
-
-# Build grok core code and unit test
 mkdir build
 cd build
-cmake .. -DGRK_BUILD_CODEC=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON
+cmake .. -DGRK_BUILD_CODEC=OFF -DBUILD_SHARED_LIBS=OFF
 make clean -s
 make -j$(nproc) -s
 cd ..
