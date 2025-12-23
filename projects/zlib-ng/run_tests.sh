@@ -18,4 +18,4 @@
 
 # Fuzzers are not meant to be included in the unit testing since they have no unit testing settings.
 # Exclude them from unit testing run
-ctest --test-dir build -E "fuzzer*"
+ctest --test-dir build -E "fuzzer*" -j$(nproc)
