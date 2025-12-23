@@ -20,5 +20,5 @@
 export ASAN_OPTIONS="detect_leaks=0:allocator_may_return_null=1"
 
 # Run unit test and disable those tests that are failing or not able to run without network connection
-ctest --test-dir libarchive/build2 --output-on-failure -E \
+ctest --test-dir libarchive/build2 -j$(nproc) -E \
     "libarchive_test_compat_zip_4|libarchive_test_read_format_cpio_bin*|libarchive_test_read_pax_truncated|bsdcpio_test_basic|bsdcpio_test_option_0|bsdcpio_test_option_L_upper|bsdcpio_test_option_d|bsdcpio_test_option_f|bsdcpio_test_option_m|bsdcpio_test_option_t"
