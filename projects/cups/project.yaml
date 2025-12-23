@@ -26,4 +26,3 @@ fuzzing_engines:
   - honggfuzz
 
 # builds_per_day: 2
-base_os_version: ubuntu-24-04
