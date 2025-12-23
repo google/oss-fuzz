@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2023 Google LLC
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +16,8 @@
 #
 ################################################################################
 
-sed -i 's/FATAL_ERROR/WARNING/g' ./cmake/OpenMP.cmake
-mkdir build
-cd build
-cmake -DDNNL_LIBRARY_TYPE=STATIC -DDNNL_BUILD_TESTS=ON -DDNNL_BUILD_EXAMPLES=OFF ..
-make -j2
+# Disable leak sanitizer and disable check for allocator null
+export ASAN_OPTIONS="detect_leaks=0:allocator_may_return_null=1"
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_json.cpp \
-	-I/src/oneDNN/include -I/src/oneDNN/build/include \
-	-I/src/oneDNN/examples -I/src/oneDNN/src/../include \
-	-I/src/oneDNN/src/graph/utils/ \
-	-I/src/oneDNN/src/ \
-	-DDNNL_X64=1 -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS \
-	-o $OUT/fuzz_json \
-	./src/libdnnl.a
+# Run unit test, skipping all the benchdnn test which are stress test that takes hrs to run
+ctest --test-dir build -E "test_benchdnn_*"
