@@ -1,6 +1,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build libyaml-cpp-dev libzstd-dev libre2-dev libicu-dev zlib1g-dev libnghttp2-dev libev-dev clang-format
-RUN apt-get install -y ccache cmake git libbenchmark-dev libbson-dev libcctz-dev libcurl4-openssl-dev libev-dev libgmock-dev libc-ares-dev libfmt-dev libgrpc-dev libgrpc++-dev libgrpc++1 libgtest-dev libhiredis-dev libjemalloc-dev libkrb5-dev libldap2-dev libmongoc-dev libnghttp2-dev libpq-dev libprotoc-dev libssl-dev libyaml-cpp-dev ninja-build pkg-config protobuf-compiler-grpc python3-dev python3-jinja2 python3-pip python3-protobuf python3-venv python3-voluptuous zlib1g-dev chrpath libstdc++-10-dev
+RUN apt-get update && apt-get install -y ccache cmake git libbenchmark-dev libbson-dev libcctz-dev libcurl4-openssl-dev libev-dev libgmock-dev libc-ares-dev libfmt-dev libgrpc-dev libgrpc++-dev libgrpc++1 libgtest-dev libhiredis-dev libjemalloc-dev libkrb5-dev libldap2-dev libmongoc-dev libnghttp2-dev libpq-dev libprotoc-dev libssl-dev libyaml-cpp-dev ninja-build pkg-config protobuf-compiler-grpc python3-dev python3-jinja2 python3-pip python3-protobuf python3-venv python3-voluptuous zlib1g-dev chrpath libstdc++-10-dev
 
 #Ubuntu 20.04 contains only boost 1.74.0
 RUN wget https://archives.boost.io/release/1.81.0/source/boost_1_81_0.tar.gz && \
@@ -13,7 +13,7 @@ RUN git clone --depth 1 https://github.com/userver-framework/userver userver
 RUN python3 userver/scripts/userver-create-service.py fuzzservice
 
 RUN apt remove -y clang-format
-RUN apt install -y clang-format-18
+RUN apt-get update && apt install -y clang-format-18
 RUN ln -s /usr/bin/clang-format-18 /usr/bin/clang-format
 
 COPY build.sh $SRC/
