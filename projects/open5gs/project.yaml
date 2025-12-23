@@ -12,3 +12,5 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/open5gs/open5gs'
+
+base_os_version: ubuntu-24-04

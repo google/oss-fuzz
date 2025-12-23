@@ -10,3 +10,5 @@ sanitizers:
   - address
 vendor_ccs:
   - maxnair.dev@gmail.com
+
+base_os_version: ubuntu-24-04

@@ -11,3 +11,5 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/openthread/openthread'
+
+base_os_version: ubuntu-24-04

@@ -7,3 +7,5 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/PowerDNS/pdns.git'
+
+base_os_version: ubuntu-24-04

@@ -10,3 +10,5 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/nanopb/nanopb'
+
+base_os_version: ubuntu-24-04
