@@ -17,5 +17,3 @@ sanitizers:
   - address
   - memory
   - undefined
-
-base_os_version: ubuntu-24-04
