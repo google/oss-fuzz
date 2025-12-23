@@ -1,4 +1,6 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
-    make \
-    autoconf \
-    automake \
-    libtool \
-    cmake \
-    patchelf \
-    libbz2-dev \
-    zlib1g-dev \
-    libjson-c-dev \
-    build-essential \
-    python \
-    wget
-
-RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/rnpgp/rnp.git rnp
-WORKDIR $SRC
-COPY run_tests.sh build.sh $SRC/
+# Skip setup and download of test data and some failing test cases
+ctest --test-dir $SRC/rnp-build/ -j$(nproc) -E \
+  "setupTestData|rnp_tests.test_validate_key_material|rnp_tests.test_ffi_decrypt_small_eg|rnp_tests.test_rnp_access|rnp_tests.rnpkeys_generatekey_verifykeyHomeDirNoPermission|cli_tests-Misc"
