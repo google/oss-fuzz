@@ -8,3 +8,5 @@ sanitizers:
 - undefined
 vendor_ccs:
 - sean@compactcloud.co.uk
+
+base_os_version: ubuntu-24-04

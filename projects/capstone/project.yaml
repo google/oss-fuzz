@@ -14,3 +14,5 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/capstone-engine/capstone.git'
+
+base_os_version: ubuntu-24-04

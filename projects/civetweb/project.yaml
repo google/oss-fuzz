@@ -8,3 +8,5 @@ auto_ccs:
   - "xt4ubq@gmail.com"
   - "david@adalogics.com"
 main_repo: 'https://github.com/civetweb/civetweb'
+
+base_os_version: ubuntu-24-04
