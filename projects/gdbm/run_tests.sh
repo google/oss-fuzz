@@ -23,7 +23,7 @@ sed -i '/m4_include(\[emptydatum.at\])/d' tests/testsuite.at
 sed -i '/m4_include(\[dumpload.at\])/d' tests/testsuite.at
 sed -i '/m4_include(\[coalesce.at\])/d' tests/testsuite.at
 
-make check
+make check -j$(nproc)
 
 # Restore the testsuite.at to pass integrity check of run_tests.sh
 mv tests/testsuite.at.backup tests/testsuite.at
