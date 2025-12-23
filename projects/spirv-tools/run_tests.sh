@@ -19,4 +19,4 @@
 # Skip copyrights check
 # Skip shared symbol check since the fuzzing build only build static tools
 # Run unit testing
-ctest --test-dir build -E "spirv-tools-copyrights|spirv-tools-symbol-exports-SPIRV-Tools-shared"
+ctest --test-dir build -j$(nproc) -E "spirv-tools-copyrights|spirv-tools-symbol-exports-SPIRV-Tools-shared"
