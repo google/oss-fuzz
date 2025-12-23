@@ -1,4 +1,6 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +16,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build
-RUN git clone --filter=tree:0 https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
-WORKDIR spirv-tools
-COPY run_tests.sh build.sh $SRC/
-COPY generate_spirv_corpus.py $SRC/
+# Skip copyrights check
+# Skip shared symbol check since the fuzzing build only build static tools
+# Run unit testing
+ctest --test-dir build -E "spirv-tools-copyrights|spirv-tools-symbol-exports-SPIRV-Tools-shared"
