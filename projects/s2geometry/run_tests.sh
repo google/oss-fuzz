@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,22 +16,4 @@
 #
 ################################################################################
 
-cp $SRC/s2_fuzzer.cc $SRC/s2geometry/src/
-
-cd $SRC/
-git clone --depth=1 https://github.com/abseil/abseil-cpp
-cd abseil-cpp
-mkdir build && cd build
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ../  && make && make install
-
-cd $SRC/s2geometry
-git apply  --ignore-space-change --ignore-whitespace $SRC/project.patch
-mkdir build && cd build
-
-cmake -DBUILD_SHARED_LIBS=OFF \
-      -DABSL_MIN_LOG_LEVEL=4 \
-      -DGOOGLETEST_ROOT=/usr/src/googletest \
-      -DCMAKE_EXE_LINKER_FLAGS="-lssl -lcrypto" \
-      -DBUILD_TESTS=ON ..
-make -j$(nproc)
-find . -name "s2fuzzer" -exec cp {} $OUT/s2_fuzzer \;
+ctest --test-dir build
