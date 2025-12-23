@@ -12,3 +12,5 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/nghttp2/nghttp2.git'
+
+base_os_version: ubuntu-24-04

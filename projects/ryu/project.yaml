@@ -8,3 +8,5 @@ fuzzing_engines:
 language: rust
 auto_ccs:
   - "adetaylor@chromium.org"
+
+base_os_version: ubuntu-24-04

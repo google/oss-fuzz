@@ -9,3 +9,5 @@ fuzzing_engines:
 sanitizers:
   - address
   - undefined
+
+base_os_version: ubuntu-24-04

@@ -14,13 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
 #
 # install maven configuration, which is also used by gradles's publishToMavenLocal
 #
 ADD maven-settings.xml ${SRC}/
-RUN apt-get install -y xmlstarlet
+RUN apt-get update && apt-get install -y xmlstarlet
 RUN mkdir -p ~/.m2 && \
 	xmlstarlet ed \
 		-u "settings/localRepository" -v "${OUT}/m2/repository" \

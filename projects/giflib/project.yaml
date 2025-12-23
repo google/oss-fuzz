@@ -11,3 +11,5 @@ fuzzing_engines:
   - honggfuzz
   - libfuzzer
 coverage_extra_args: -ignore-filename-regex=.*/LPM/.*
+
+base_os_version: ubuntu-24-04

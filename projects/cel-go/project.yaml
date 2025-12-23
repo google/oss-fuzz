@@ -9,3 +9,5 @@ sanitizers:
   - address
 main_repo: 'https://github.com/google/cel-go'
 file_github_issue: True
+
+base_os_version: ubuntu-24-04

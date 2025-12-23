@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool g++ sqlite3 pkg-config wget
 
@@ -23,7 +23,8 @@ RUN git clone --depth 1 https://github.com/OSGeo/PROJ PROJ
 # Pin to 8.17.0 as later versions require openssl 3.0 that Ubuntu 20.04 doesn't provide
 RUN git clone --depth 1 --branch curl-8_17_0 https://github.com/curl/curl.git PROJ/curl
 
-RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git PROJ/libtiff
+# Pin to v4.7.1 as latest libtiff master requires autoconf 2.71
+RUN git clone --depth 1 --branch v4.7.1 https://gitlab.com/libtiff/libtiff.git PROJ/libtiff
 
 WORKDIR PROJ
 

@@ -15,3 +15,5 @@ auto_ccs:
   - julians.artifex@gmail.com
   - ken.sharp@artifex.com
   - robin.watts@artifex.com
+
+base_os_version: ubuntu-24-04

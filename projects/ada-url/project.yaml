@@ -14,3 +14,5 @@ fuzzing_engines:
   - honggfuzz
   - centipede
 file_github_issue: true
+
+base_os_version: ubuntu-24-04

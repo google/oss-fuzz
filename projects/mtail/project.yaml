@@ -7,3 +7,5 @@ sanitizers:
 language: go
 main_repo: 'https://github.com/google/mtail'
 file_github_issue: True
+
+base_os_version: ubuntu-24-04

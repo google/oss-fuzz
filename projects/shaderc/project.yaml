@@ -12,3 +12,5 @@ auto_ccs:
 - "fuzzing@fuchsia.dev"
 - "nathangauer@google.com"
 - "stevenperron@google.com"
+
+base_os_version: ubuntu-24-04

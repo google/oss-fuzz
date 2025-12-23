@@ -8,3 +8,5 @@ sanitizers:
 primary_contact: "will@wbond.net"
 vendor_ccs:
 - david@adalogics.com
+
+base_os_version: ubuntu-24-04

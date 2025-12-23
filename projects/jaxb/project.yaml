@@ -14,3 +14,4 @@ vendor_ccs:
   - "schaich@code-intelligence.com"
   - "bug-disclosure@code-intelligence.com"
 run_tests: False
+base_os_version: ubuntu-24-04

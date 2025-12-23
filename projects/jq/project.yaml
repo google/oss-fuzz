@@ -7,3 +7,5 @@ auto_ccs :
  - "pkoppstein@gmail.com"
  - "david@adalogics.com"
  - "mattias.wadman@gmail.com"
+
+base_os_version: ubuntu-24-04

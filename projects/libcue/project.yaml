@@ -13,3 +13,5 @@ fuzzing_engines:
   - honggfuzz
   - afl
   # - centipede disabled until https://github.com/lipnitsk/libcue/pull/31/
+
+base_os_version: ubuntu-24-04

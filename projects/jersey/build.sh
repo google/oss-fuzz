@@ -16,7 +16,7 @@
 ################################################################################
 
 MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
-$MVN package $MAVEN_ARGS -Pstaging
+$MVN package org.apache.maven.plugins:maven-dependency-plugin:3.6.1:copy -Dartifact=org.osgi:org.osgi.core:6.0.0 -DoutputDirectory=. $MAVEN_ARGS -Pstaging
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 
@@ -24,8 +24,9 @@ cp "core-server/target/jersey-server-$CURRENT_VERSION.jar" "$OUT/jersey-server.j
 cp "core-common/target/jersey-common-$CURRENT_VERSION.jar" "$OUT/jersey-common.jar"
 cp "core-client/target/jersey-client-$CURRENT_VERSION.jar" "$OUT/jersey-client.jar"
 cp "bundles/jaxrs-ri/target/jaxrs-ri.jar" "$OUT/jaxrs-ri.jar"
+cp "org.osgi.core-6.0.0.jar" "$OUT/org.osgi.core.jar"
 
-ALL_JARS="jersey-server.jar jersey-common.jar jersey-client.jar jaxrs-ri.jar"
+ALL_JARS="jersey-server.jar jersey-common.jar jersey-client.jar jaxrs-ri.jar org.osgi.core.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -36,8 +37,7 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer
-  cp $SRC/$fuzzer_basename.class $OUT/
+  javac -cp $BUILD_CLASSPATH -d $OUT -encoding UTF-8 $fuzzer
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash

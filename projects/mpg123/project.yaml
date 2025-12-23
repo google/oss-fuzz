@@ -12,3 +12,5 @@ labels:
     - sundew
   decode_fuzzer:
     - sundew
+
+base_os_version: ubuntu-24-04

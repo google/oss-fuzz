@@ -8,3 +8,5 @@ sanitizers:
   - address
 vendor_ccs:
   - "bug-disclosure@code-intelligence.com"
+
+base_os_version: ubuntu-24-04
