@@ -18,4 +18,4 @@
 
 # Disable leak sanitizer and run unit test with fuzzer link flags
 export ASAN_OPTIONS="detect_leaks=0"
-LDFLAGS="-fsanitize=address" make test
+LDFLAGS="-fsanitize=address" make test -j$(nproc)
