@@ -9,3 +9,5 @@ primary_contact: cneo@google.com
 sanitizers:
 - address
 - undefined
+
+base_os_version: ubuntu-24-04

@@ -9,3 +9,5 @@ sanitizers:
 indexer:
   targets:
     - d8
+
+base_os_version: ubuntu-24-04

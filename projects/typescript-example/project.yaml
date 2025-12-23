@@ -10,3 +10,5 @@ vendor_ccs:
 - norbert.schneider@code-intelligence.com
 - peter.samarin@code-intelligence.com
 - christopher.krah@code-intelligence.com
+
+base_os_version: ubuntu-24-04
