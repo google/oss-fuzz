@@ -18,4 +18,4 @@
 
 # Disable leak sanitizer and run unit test on the source
 export ASAN_OPTIONS="detect_leaks=0"
-make check -C $SRC/strongswan/src
+make check -C $SRC/strongswan/src -j$(nproc)
