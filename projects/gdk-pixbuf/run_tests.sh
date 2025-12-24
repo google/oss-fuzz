@@ -16,5 +16,4 @@
 ################################################################################
 
 # Exclude the test case in the slow suite which are always killed because of timeout
-meson test -C _builddir --no-suite "slow"
-
+meson test -C _builddir --no-suite "slow" -j$(nproc)
