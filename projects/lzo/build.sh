@@ -16,7 +16,6 @@
 ################################################################################
 
 # build project
-cd $SRC
 tar xzf lzo.tar.gz
 cd lzo-*
 ./configure && make -j$(nproc)
@@ -37,3 +36,9 @@ $CXX $CXXFLAGS -std=c++17 -I include -I minilzo -I include/lzo \
 # copy fuzzer options
 cp $SRC/*.options $OUT/
 zip -j $OUT/lzo_decompress_target_seed_corpus.zip $SRC/lzo_decompress_target_seeds/*
+
+# Build unit test
+mkdir build-tests
+cd build-tests
+cmake ..
+make
