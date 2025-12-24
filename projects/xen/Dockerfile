@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get -y install iasl uuid-dev \
     libncurses-dev pkg-config libglib2.0-dev libpixman-1-dev \
