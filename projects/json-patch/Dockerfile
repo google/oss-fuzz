@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/evanphx/json-patch
 RUN wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz \
     && mkdir temp-go \
