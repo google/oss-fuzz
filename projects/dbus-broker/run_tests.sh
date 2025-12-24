@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-meson test -C build --print-errorlogs
+meson test -C build -j$(nproc)
