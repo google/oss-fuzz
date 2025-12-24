@@ -3,5 +3,3 @@ main_repo: "https://github.com/ryanhaining/cppitertools"
 language: c++
 vendor_ccs:
 - david@adalogics.com
-
-base_os_version: ubuntu-24-04
