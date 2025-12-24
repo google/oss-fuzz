@@ -6,5 +6,3 @@ sanitizers:
 fuzzing_engines:
 - libfuzzer
 main_repo: 'https://libwebsockets.org/repo/libwebsockets'
-
-base_os_version: ubuntu-24-04
