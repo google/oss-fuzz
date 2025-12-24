@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2023 Google LLC
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +16,4 @@
 #
 ################################################################################
 
-$CXX $CXXFLAGS -std=c++17 -I$SRC/magic_enum/include/magic_enum  \
-    $SRC/magic_enum_fuzzer.cc -o $OUT/magic_enum_fuzzer \
-    $LIB_FUZZING_ENGINE -lpthread
-
-# Setup meson build
-meson setup build-tests
+meson test -C $SRC/magic_enum/build-tests -j$(nproc)
