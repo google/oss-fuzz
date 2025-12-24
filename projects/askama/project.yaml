@@ -11,5 +11,3 @@ fuzzing_engines:
 coverage_extra_args: >
   -ignore-filename-regex=.*/rustc/.*
   -ignore-filename-regex=.*/rust/.*
-
-base_os_version: ubuntu-24-04
