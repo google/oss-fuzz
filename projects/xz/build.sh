@@ -36,3 +36,9 @@ find $SRC/xz/tests/files -name "*.lzma" \
 -exec zip -ujq $OUT/fuzz_decode_alone_seed_corpus.zip "{}" \;
 find $SRC/xz/tests/files -name "*.xz" \
 -exec zip -ujq $OUT/fuzz_decode_stream_seed_corpus.zip "{}" \;
+
+# Use cmake to build unit tests
+mkdir build-tests
+cd build-tests
+cmake ..
+make
