@@ -20,4 +20,4 @@
 test_list=$(meson test -C $WORK/build --list | awk -F' / ' '{print $2}' | grep -v "test-mount-util" | grep -v "test-execute" | grep -v "test-capability-util" | grep -v "test-hostname-setup")
 
 # Run all unit tests and skip the four failing test cases temporarily
-meson test -C $WORK/build $test_list
+meson test -C $WORK/build $test_list -j$(nproc)
