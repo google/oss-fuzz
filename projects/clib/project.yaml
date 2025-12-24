@@ -5,5 +5,3 @@ auto_ccs:
   - "Adam@adalogics.com"
   - "isty001@gmail.com"
 main_repo: 'https://github.com/clibs/clib'
-
-base_os_version: ubuntu-24-04
