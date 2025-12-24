@@ -14,5 +14,3 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://gitlab.com/gnutls/libtasn1.git'
-
-base_os_version: ubuntu-24-04

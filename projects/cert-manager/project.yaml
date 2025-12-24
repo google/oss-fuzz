@@ -22,5 +22,3 @@ fuzzing_engines:
 sanitizers:
   - address
 main_repo: 'https://github.com/cert-manager/cert-manager'
-
-base_os_version: ubuntu-24-04

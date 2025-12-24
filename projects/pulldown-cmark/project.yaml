@@ -6,5 +6,3 @@ sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
-
-base_os_version: ubuntu-24-04
