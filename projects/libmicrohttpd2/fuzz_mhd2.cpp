@@ -187,7 +187,7 @@ void daemon_configuration(FuzzedDataProvider& fdp, MHD_Daemon* d) {
   auto opt2 = MHD_D_OPTION_BIND_PORT(af, port);
   (void) MHD_daemon_set_option(d, &opt2);
 
-  auto opt3 = MHD_D_OPTION_DEFAULT_TIMEOUT(fdp.ConsumeIntegralInRange<unsigned>(0, 10));
+  auto opt3 = MHD_D_OPTION_DEFAULT_TIMEOUT_MILSEC(fdp.ConsumeIntegralInRange<unsigned>(0, 10000));
   MHD_daemon_set_option(d, &opt3);
 
   auto opt4 = MHD_D_OPTION_CONN_MEMORY_LIMIT(fdp.ConsumeIntegralInRange<size_t>(0, 1<<16));
