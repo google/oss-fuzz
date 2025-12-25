@@ -14,8 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y make texinfo libgmp-dev libmpfr-dev flex bison
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make texinfo libgmp-dev libmpfr-dev
+RUN apt-get install -y flex bison
 RUN git clone --depth=1 https://github.com/DavidKorczynski/binary-samples binary-samples
 RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git binutils-gdb
 WORKDIR $SRC

@@ -8,5 +8,3 @@ sanitizers:
 primary_contact: kaiserquentin@gmail.com
 vendor_ccs:
 - research@onekey.com
-
-base_os_version: ubuntu-24-04

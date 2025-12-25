@@ -10,5 +10,3 @@ sanitizers:
   - memory
   - undefined
 main_repo: "https://github.com/gssapi/gss-ntlmssp"
-
-base_os_version: ubuntu-24-04

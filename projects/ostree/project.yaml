@@ -5,5 +5,3 @@ primary_contact: "walters@verbum.org"
 auto_ccs:
   - "dbn@endlessos.org"
   - "david@adalogics.com"
-
-base_os_version: ubuntu-24-04

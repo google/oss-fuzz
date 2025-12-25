@@ -10,5 +10,3 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'http://svn.freebsd.org/base/head/sys/teken/'
-
-base_os_version: ubuntu-24-04

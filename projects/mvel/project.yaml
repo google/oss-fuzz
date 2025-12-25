@@ -11,4 +11,3 @@ vendor_ccs:
   - "patrice.salathe@code-intelligence.com"
   - "hlin@code-intelligence.com"
   - "bug-disclosure@code-intelligence.com"
-base_os_version: ubuntu-24-04
