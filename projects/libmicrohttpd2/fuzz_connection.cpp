@@ -21,6 +21,7 @@
 
 #include "fuzzer/FuzzedDataProvider.h"
 #include "connection_helper.h"
+#include "conn_timeout.h"
 
 #include "daemon_funcs.h"
 #include "mempool_funcs.h"
