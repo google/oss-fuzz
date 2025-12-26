@@ -20,6 +20,8 @@
 # https://github.com/google/oss-fuzz/pull/12858), to overcome the issue
 # mentioned in https://github.com/bazelbuild/bazel/issues/23681.
 export USE_BAZEL_VERSION=7.4.0
+export GOPROXY=https://goproxy.cn,direct
+export BAZELISK_SKIP_CERT_CHECK=true
 
 declare -r FUZZ_TARGET_QUERY='
   let all_fuzz_tests = attr(tags, "fuzz_target", "test/...") in
@@ -120,6 +122,11 @@ then
 fi
 )"
 
+bazel fetch ${EXTRA_BAZEL_FLAGS} ${OSS_FUZZ_TARGETS[*]} || true
+OUTPUT_BASE=$(bazel info output_base 2>/dev/null || echo "")
+if [ -n "$OUTPUT_BASE" ]; then
+    find "$OUTPUT_BASE/external" -name port_def.inc -exec sed -i 's/#  define PROTOBUF_CONSTINIT constinit/#  define PROTOBUF_CONSTINIT/g' {} + || true
+fi
 
 # Asssuming we have ~32 cores and ~28.8 GiB RAM. By limiting the
 # number of CPUs (--local_cpu_resources) we limit the per-CPU mem-usage.
