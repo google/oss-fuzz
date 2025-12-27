@@ -42,12 +42,9 @@ git clone https://github.com/AdamKorcz/go-118-fuzz-build  --branch=v2_2
 cd go-118-fuzz-build
 git checkout 65072595fdfb80eaedbc37db3837d82eb95ce7b2
 CGO_ENABLED=1 go build .
-mv go-118-fuzz-build $GOPATH/bin/
+mv go-118-fuzz-build $GOPATH/bin/go-118-fuzz-build_v2
 
 # Build v2 binaries
-git checkout v2
-go build .
-mv go-118-fuzz-build $GOPATH/bin/go-118-fuzz-build_v2
 pushd cmd/convertLibFuzzerTestcaseToStdLibGo
   CGO_ENABLED=1 go build . && mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
 popd

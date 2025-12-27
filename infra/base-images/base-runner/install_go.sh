@@ -35,10 +35,10 @@ case $(uname -m) in
       printf $(find . -name gocoverage)
       cd $GOPATH/gocoverage && /root/.go/bin/go install ./...
       cd /root/.go/src/cmd/cover && /root/.go/bin/go build && mv cover $GOPATH/bin/gotoolcover
-      pushd /tmp
-        git clone https://github.com/AdamKorcz/go-118-fuzz-build --branch=v2_2
+      git clone --branch=v2_2 https://github.com/AdamKorcz/go-118-fuzz-build /tmp/go-118-fuzz-build
+      pushd /tmp/go-118-fuzz-build
         git checkout 65072595fdfb80eaedbc37db3837d82eb95ce7b2
-        cd go-118-fuzz-build/cmd/convertLibFuzzerTestcaseToStdLibGo
+        cd cmd/convertLibFuzzerTestcaseToStdLibGo
         CGO_ENABLED=1 /root/.go/bin/go build .
         mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
       popd
