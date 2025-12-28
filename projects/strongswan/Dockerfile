@@ -14,8 +14,8 @@
 #
 ##############################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y automake autoconf libtool pkg-config gettext perl flex bison gperf lcov libgmp3-dev
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y automake autoconf libtool pkg-config gettext perl python flex bison gperf lcov libgmp3-dev
 RUN git clone --depth 1 https://github.com/strongswan/strongswan.git strongswan
 RUN git clone --depth 1 https://github.com/strongswan/fuzzing-corpora.git strongswan/fuzzing-corpora
 WORKDIR strongswan

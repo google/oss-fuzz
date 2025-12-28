@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 ##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install --upgrade pip
 RUN git clone https://github.com/python/importlib_metadata importlib_metadata
 COPY *.sh *py $SRC/

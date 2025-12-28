@@ -9,5 +9,3 @@ sanitizers:
   - address
 main_repo: "https://github.com/pdfminer/pdfminer.six"
 file_github_issue: True
-
-base_os_version: ubuntu-24-04

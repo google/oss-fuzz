@@ -20,5 +20,3 @@ fuzzing_engines:
 architectures:
  - x86_64
  - i386
-
-base_os_version: ubuntu-24-04

@@ -15,5 +15,3 @@ sanitizers:
 primary_contact: volkan@yazi.ci
 auto_ccs:
   - piotr.karwasz@gmail.com
-
-base_os_version: ubuntu-24-04

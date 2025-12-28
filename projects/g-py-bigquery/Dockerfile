@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install --upgrade pip && \
     pip3 install numpy ipython grpcio
 RUN git clone https://github.com/googleapis/python-bigquery

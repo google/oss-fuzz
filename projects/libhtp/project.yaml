@@ -12,5 +12,3 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 main_repo: 'https://github.com/OISF/libhtp.git'
-
-base_os_version: ubuntu-24-04

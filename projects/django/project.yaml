@@ -11,5 +11,3 @@ primary_contact: f.apolloner@gmail.com
 sanitizers:
 - address
 - undefined
-
-base_os_version: ubuntu-24-04
