@@ -108,7 +108,7 @@ create_corpus() {
 }
 
 # Create format-specific corpora
-create_corpus "libarchive_tar_fuzzer" "test_compat_*tar*.uu"
+create_corpus "libarchive_tar_fuzzer" "*tar*.uu"
 create_corpus "libarchive_zip_fuzzer" "test_*zip*.uu"
 create_corpus "libarchive_7zip_fuzzer" "test_read_format_7zip*.uu"
 create_corpus "libarchive_rar_fuzzer" "test_read_format_rar_*.uu"
@@ -117,7 +117,7 @@ create_corpus "libarchive_xar_fuzzer" "test_read_format_xar*.uu"
 create_corpus "libarchive_cab_fuzzer" "test_read_format_cab*.uu"
 create_corpus "libarchive_lha_fuzzer" "test_read_format_lha*.uu"
 create_corpus "libarchive_iso9660_fuzzer" "test_read_format_iso*.uu"
-create_corpus "libarchive_cpio_fuzzer" "test_compat_cpio*.uu"
+create_corpus "libarchive_cpio_fuzzer" "*cpio*.uu"
 create_corpus "libarchive_warc_fuzzer" "test_read_format_warc*.uu"
 create_corpus "libarchive_mtree_fuzzer" "test_read_format_mtree*.uu"
 create_corpus "libarchive_ar_fuzzer" "test_read_format_ar*.uu"
