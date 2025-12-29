@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +16,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget \
-  bzip2
-RUN wget https://www.mpg123.de/snapshot
-RUN tar -xvf snapshot
-RUN mv mpg123* mpg123
-WORKDIR $SRC/mpg123
-COPY read_fuzzer.c decode_fuzzer.cc build.sh run_tests.sh $SRC/
+make check -C $SRC/mpg123 -j$(nproc)
