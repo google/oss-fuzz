@@ -1,4 +1,6 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y cmake ninja-build openssl valgrind
-RUN python3 -m pip install pytest pytest-xdist valgrind pyyaml
-RUN git clone --depth 1 https://github.com/open-quantum-safe/liboqs.git liboqs
-WORKDIR liboqs
-COPY run_tests.sh build.sh $SRC/
+# Disable leak testing and run the remaining unit tests
+export PYTEST_ADDOPTS="--ignore=tests/test_leaks.py"
+ninja -C build run_tests
