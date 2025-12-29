@@ -14,7 +14,12 @@
 # limitations under the License.
 #
 ################################################################################
-cmake -B build -S . -D BUILD_FUZZ_TESTS=ON -Dcxx_no_rtti=OFF -D CMAKE_BUILD_TYPE="Release" -G Ninja
-cmake --build build --target fuzz_layout
+cmake -B build -S . -G Ninja \
+    -D BUILD_FUZZ_TESTS=ON -Dcxx_no_rtti=OFF \
+    -D CMAKE_BUILD_TYPE="Release" \
+    -D CMAKE_CXX_FLAGS="$CXXFLAGS -Wno-error=character-conversion"
+
+# Build fuzz_layout and unit testing
+cmake --build build --target fuzz_layout yogatests
 
 cp ./build/fuzz/fuzz_layout $OUT/

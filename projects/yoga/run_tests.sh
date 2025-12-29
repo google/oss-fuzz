@@ -14,4 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-ASAN_OPTIONS="detect_leaks=0" ./unit_tests
+
+# Disable leak sanitizer and run unit test
+export ASAN_OPTIONS="detect_leaks=0"
+$SRC/yoga/build/tests/yogatests
