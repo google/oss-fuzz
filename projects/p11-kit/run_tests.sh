@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libtasn1-6-dev libffi-dev gettext autopoint python3 ninja-build
-RUN python3 -m pip install meson
-RUN git clone --depth 1 --recurse-submodules https://github.com/p11-glue/p11-kit.git p11-kit
-WORKDIR p11-kit
-COPY run_tests.sh build.sh $SRC/
+# Run unit test with meson
+meson test -C $SRC/p11-kit/build
