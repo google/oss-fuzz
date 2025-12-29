@@ -1,4 +1,6 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +15,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/nginx/unit.git
-RUN cp $SRC/unit/fuzzing/oss-fuzz.sh $SRC/build.sh
-WORKDIR $SRC/unit/
-COPY run_tests.sh $SRC/
 
-# Necessary as upstream repository has been archived
-RUN sed -i 's/--no-regex/--no-regex --tests/g' $SRC/build.sh
-RUN sed -i 's/make fuzz/make fuzz tests/g' $SRC/build.sh
+# Disable leak sanitizer and run unit test
+export ASAN_OPTIONS="detect_leaks=0"
+./build/tests
