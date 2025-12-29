@@ -16,6 +16,5 @@
 #
 ################################################################################
 
-make check -C $SRC/lzo-2.10 -j$(nproc) && \
-make test -C $SRC/lzo-2.10 -j$(nproc) && \
-ctest --test-dir $SRC/lzo-2.10/build-tests -j$(nproc)
+make check -C $SRC/lzo-* -j$(nproc) && \
+make test -C $SRC/lzo-* -j$(nproc)
