@@ -195,6 +195,7 @@ def check_cached_replay(project: common_utils.Project,
 
   return result
 
+
 def check_tests(project: common_utils.Project,
                 sanitizer: str = 'address',
                 run_full_cache_replay: bool = False,
@@ -429,7 +430,8 @@ def cmd_dispatcher_check_tests(args):
   # This argument is not enabled by default in helper.py, so we set it here.
   args.semantic_test = getattr(args, 'semantic_test', False)
   return check_tests(args.project, args.sanitizer, args.run_full_cache_replay,
-              args.integrity_check, args.stop_on_failure, args.semantic_test)
+                     args.integrity_check, args.stop_on_failure,
+                     args.semantic_test)
 
 
 def cmd_dispatcher_check_replay(args):
