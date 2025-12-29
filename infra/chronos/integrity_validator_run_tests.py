@@ -218,8 +218,11 @@ LOGIC_ERROR_PATCHES: list[LogicErrorPatch] = [
 ]
 
 
-def _capture_source_control():
+def _capture_source_control() -> list[tuple[str, str]]:
   """Capture the source directory where source control is located."""
+
+  result = []
+  mapping = {'git': '.git', 'svn': '.svn'}
 
   # List all directories under /src/
   oss_fuzz_dirs = [
@@ -236,24 +239,29 @@ def _capture_source_control():
   # almost certain this is the right directory.
   if len(project_dirs) == 1:
     # Check if there is a .git directory
-    if os.path.isdir(os.path.join('/src/', project_dirs[0], '.git')):
-      return ('git', os.path.join('/src/', project_dirs[0]))
-    elif os.path.isdir(os.path.join('/src/', project_dirs[0], '.svn')):
-      return ('svn', os.path.join('/src/', project_dirs[0]))
-  else:
-    print('Wrong number of directories found under /src/')
-    print(project_dirs)
-
-  if len(project_dirs) > 1:
+    for key, value in mapping.items():
+      if os.path.isdir(os.path.join('/src/', project_dirs[0], value)):
+        result.append((key, os.path.join('/src/', project_dirs[0])))
+        break
+  elif len(project_dirs) > 1:
     print('Multiple project directories found under /src/')
     # If we have a project name, try to use this
     project_name = os.getenv('PROJECT_NAME', 'unknown_project')
     if project_name in project_dirs:
-      if os.path.isdir(os.path.join('/src/', project_name, '.git')):
-        return ('git', os.path.join('/src/', project_name))
-      elif os.path.isdir(os.path.join('/src/', project_name, '.svn')):
-        return ('svn', os.path.join('/src/', project_name))
-  return None, None
+      for key, value in mapping.items():
+        if os.path.isdir(os.path.join('/src/', project_name, value)):
+          result.append((key, os.path.join('/src/', project_name)))
+          break
+    else:
+      # No directory with similar project name found.
+      # Try diff all directory with version control.
+      for project_name in project_dirs:
+        for key, value in mapping.items():
+          if os.path.isdir(os.path.join('/src/', project_name, value)):
+            result.append((key, os.path.join('/src/', project_name)))
+            break
+
+  return result
 
 
 def diff_patch_analysis(stage: str) -> int:
@@ -270,63 +278,72 @@ def diff_patch_analysis(stage: str) -> int:
   )
   if stage == 'before':
     print('Diff patch analysis before stage.')
-    type, project_dir = _capture_source_control()
-    if not type:
+    project_dirs = _capture_source_control()
+    if not project_dirs:
       print('Uknown version control system.')
       return -1
 
-    print('%s repo found: %s' % (type, project_dir))
-    try:
-      subprocess.check_call('cd %s && %s diff ./ >> /tmp/chronos-before.diff' %
-                            (project_dir, type),
-                            shell=True)
-    except subprocess.CalledProcessError:
-      pass
+    count = 0
+    for type, project_dir in project_dirs:
+      try:
+        project = os.path.basename(project_dir)
+        print('%s repo found: %s' % (type, project_dir))
+        subprocess.check_call(
+            'cd %s && %s diff ./ >> /tmp/chronos-before-%s.diff' %
+            (project_dir, type, project),
+            shell=True)
+      except subprocess.CalledProcessError:
+        pass
     return 0
 
   elif stage == 'after':
     print('Diff patch analysis after stage.')
-    type, project_dir = _capture_source_control()
-    if not type:
+    project_dirs = _capture_source_control()
+    if not project_dirs:
       print('Uknown version control system.')
       return -1
 
-    print('%s repo found: %s' % (type, project_dir))
-    subprocess.check_call('cd %s && %s diff ./ >> /tmp/chronos-after.diff' %
-                          (project_dir, type),
-                          shell=True)
-
-    try:
+    for type, project_dir in project_dirs:
+      project = os.path.basename(project_dir)
+      print('%s repo found: %s' % (type, project_dir))
       subprocess.check_call(
-          'diff /tmp/chronos-before.diff /tmp/chronos-after.diff > /tmp/chronos-diff.patch',
+          'cd %s && %s diff ./ >> /tmp/chronos-after-%s.diff' %
+          (project_dir, type, project),
           shell=True)
-    except subprocess.CalledProcessError:
-      pass
-    print('Diff patch generated at /tmp/chronos-diff.patch')
-    print('Difference between diffs:')
-    with open('/tmp/chronos-diff.patch', 'r', encoding='utf-8') as f:
-      diff_content = f.read()
-    if diff_content.strip():
-      patch_found = True
-      print(diff_content)
-    else:
-      patch_found = False
 
-    if patch_found:
-      print(
-          'Patch result: failed. Patch found that affects source control versioning.'
-      )
-      return 1
-    else:
-      print(
-          'Patch result: success. No patch found that affects source control versioning.'
-      )
-      return 0
+      try:
+        subprocess.check_call(
+            'diff /tmp/chronos-before-%s.diff /tmp/chronos-after-%s.diff > /tmp/chronos-diff.patch'
+            % (project, project),
+            shell=True)
+      except subprocess.CalledProcessError:
+        pass
+
+      print('Diff patch generated at /tmp/chronos-diff.patch')
+      print('Difference between diffs:')
+      with open('/tmp/chronos-diff.patch', 'r', encoding='utf-8') as f:
+        diff_content = f.read()
+      if diff_content.strip():
+        patch_found = True
+        print(diff_content)
+      else:
+        patch_found = False
+
+      if patch_found:
+        print(
+            'Patch result: failed. Patch found that affects source control versioning.'
+        )
+        return 1
 
   else:
     print(
         f'Patch result: failed. Unknown stage {stage} for diff patch analysis.')
     return -1
+
+  print(
+      'Patch result: success. No patch found that affects source control versioning.'
+  )
+  return 0
 
 
 def main():
