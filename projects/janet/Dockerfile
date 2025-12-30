@@ -18,5 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make cmake
 RUN git clone https://github.com/janet-lang/janet
 
-WORKDIR $SRC
-COPY build.sh $SRC/
+WORKDIR $SRC/janet
+COPY run_tests.sh build.sh $SRC/

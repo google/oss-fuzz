@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make cmake
 RUN git clone https://github.com/nodejs/http-parser
 
 WORKDIR $SRC
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
