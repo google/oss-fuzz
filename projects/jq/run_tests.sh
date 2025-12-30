@@ -1,4 +1,6 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +16,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
-  make flex bison libtool automake autoconf
-
-RUN git clone --depth 1 https://github.com/jqlang/jq
-WORKDIR $SRC/jq
-COPY run_tests.sh build.sh *.dict $SRC/
+./tests/setup && ./tests/base64test && ./tests/jq-f-test.sh && \
+./tests/jqtest && ./tests/manonigtest && ./tests/mantest && \
+./tests/onigtest && ./tests/optionaltest && ./tests/uritest && \
+./tests/utf8test
