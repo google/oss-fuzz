@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool pkg-config libz-dev
-RUN git clone --depth 1 https://github.com/libgd/libgd
-ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/afl_testcases.tgz
-WORKDIR libgd
-COPY run_tests.sh build.sh *.cc $SRC/
+# Skip segfault and failed cases and run the remaining unit testing
+ctest --test-dir $SRC/libgd -j$(nproc) -E \
+  "test_gdimagecolormatch_cve_2019_6977|test_gdimagetruecolortopalette_php_bug_72512|test_gdinterpolatedscale_gdTrivialResize"

@@ -49,3 +49,7 @@ for format in bmp gif png webp; do
     zip -rj $format.zip $format/
     cp $format.zip "$OUT/${format}_target_seed_corpus.zip"
 done
+
+# Build unit testing by cmake
+cmake . -DBUILD_TEST=ON
+make -C tests -j$(nproc)
