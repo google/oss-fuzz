@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +15,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget golang python python-protobuf python-six
-RUN git clone --depth 1 https://github.com/firebase/firebase-ios-sdk.git
-COPY run_tests.sh build.sh $SRC/
+# Run unit test with leak sanitizer disabled
+export ASAN_OPTIONS="detect_leaks=0"
+ctest --test-dir $SRC/firebase-ios-sdk/build --output-on-failure
