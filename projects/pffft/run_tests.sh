@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +16,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y mercurial
-RUN python -m pip install numpy
-RUN git clone https://bitbucket.org/jpommier/pffft $SRC/pffft
-WORKDIR pffft
-COPY run_tests.sh build.sh $SRC
-# TODO(alessiob): Move the fuzzing source code to pffft upstream.
-COPY generate_seed_corpus.py $SRC/pffft
-COPY pffft_fuzzer.cc $SRC/pffft
+export ASAN_OPTIONS="detect_leaks=0"
+$SRC/test_pffft_real && $SRC/test_pffft_complex
