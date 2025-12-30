@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +16,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone git://sourceware.org/git/bzip2.git
-RUN git clone git://sourceware.org/git/bzip2-tests.git
-COPY run_tests.sh build.sh *.c $SRC/
-WORKDIR $SRC
+$SRC/bzip2-tests/run-tests.sh --tests-dir=bzip2-tests/
