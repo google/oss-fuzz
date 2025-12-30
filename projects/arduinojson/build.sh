@@ -20,8 +20,11 @@ cd extras/fuzzing
 make
 
 # Build unit testing
-mkdir $SRC/arduinojson/build-tests
-cd $SRC/arduinojson/build-tests
-cmake .. -DCMAKE_CXX_FLAGS="-Wno-error=deprecated-literal-operator"
-make -C extras/tests/
-make -C extras/fuzzing/
+if [[ "$SANITIZER" != "coverage" && "$SANITIZER" != "introspector" ]]
+then
+  mkdir $SRC/arduinojson/build-tests
+  cd $SRC/arduinojson/build-tests
+  cmake .. -DCMAKE_CXX_FLAGS="-Wno-error=deprecated-literal-operator" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=$SANITIZER"
+  make -C "extras/tests/"
+  make -C "extras/fuzzing/"
+fi
