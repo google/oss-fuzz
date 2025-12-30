@@ -1,4 +1,6 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +15,6 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make libtool libssl-dev libexpat-dev wget flex bison
-RUN git clone --depth=1 https://github.com/NLnetLabs/unbound unbound
-WORKDIR unbound
-COPY parse_packet_fuzzer.c .
-COPY fuzz_1.c .
-COPY fuzz_2.c .
-COPY fuzz_3.c .
-COPY fuzz_4.c .
-COPY run_tests.sh build.sh $SRC/
+
+# Run unit test
+$SRC/unbound/unittest
