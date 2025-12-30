@@ -29,5 +29,5 @@ fi
 mkdir $SRC/arduinojson/build-tests
 cd $SRC/arduinojson/build-tests
 cmake .. -DCMAKE_CXX_FLAGS="-Wno-error=deprecated-literal-operator"
-make -C "extras/tests/"
-make -C "extras/fuzzing/"
+make -C "extras/tests/" -j$(nproc)
+make -C "extras/fuzzing/" -j$(nproc)
