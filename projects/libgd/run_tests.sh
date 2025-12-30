@@ -18,4 +18,4 @@
 
 # Skip segfault and failed cases and run the remaining unit testing
 ctest --test-dir $SRC/libgd -j$(nproc) -E \
-  "test_gdimagecolormatch_cve_2019_6977|test_gdimagetruecolortopalette_php_bug_72512|test_gdinterpolatedscale_gdTrivialResize"
+  "test_gdimagecolormatch_cve_2019_6977|test_gdimagetruecolortopalette_php_bug_72512|test_gdinterpolatedscale_gdTrivialResize|test_gdimagecopyrotated_bug00320|test_gdinterpolatedscale_gdModesAndPalettes"

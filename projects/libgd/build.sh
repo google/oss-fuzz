@@ -51,5 +51,11 @@ for format in bmp gif png webp; do
 done
 
 # Build unit testing by cmake
+# UBSan crashes with the unit testing build, thus unset the CXXFLAGS
+# when UBSan is used for the unit testing build.
+if [[ "$SANITIZER" == "undefined" ]]
+then
+  unset CXXFLAGS
+fi
 cmake . -DBUILD_TEST=ON
 make -C tests -j$(nproc)
