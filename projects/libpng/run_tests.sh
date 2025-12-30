@@ -1,4 +1,6 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +16,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool zlib1g-dev
-
-RUN git clone --depth 1 https://github.com/madler/zlib.git
-RUN git clone -b master --depth 1 https://github.com/pnggroup/libpng.git
-RUN cp libpng/contrib/oss-fuzz/build.sh $SRC
-WORKDIR libpng
-COPY run_tests.sh $SRC
+make check -j$(nproc)
