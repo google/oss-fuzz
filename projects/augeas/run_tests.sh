@@ -1,4 +1,6 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y libreadline-dev libselinux1-dev \
-    libxml2-dev make autoconf automake libtool pkg-config bison flex
-
-RUN git clone --depth 1 https://github.com/hercules-team/augeas
-WORKDIR augeas
-
-COPY run_tests.sh build.sh $SRC/
-COPY augeas_escape_name_fuzzer.cc $SRC/
-COPY augeas_fa_fuzzer.cc $SRC/
-COPY augeas_api_fuzzer.cc $SRC/
+# Disable leak sanitizer/null return check and run unit testing
+export ASAN_OPTIONS="detect_leaks=0:allocator_may_return_null=1"
+make check -j$(nproc) -C $SRC/augeas/tests
