@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +16,4 @@
 #
 ################################################################################
 
-# Build fuzzers
-cd extras/fuzzing
-make
-
-# Build unit testing
-mkdir $SRC/arduinojson/build-tests
-cd $SRC/arduinojson/build-tests
-cmake .. -DCMAKE_CXX_FLAGS="-Wno-error=deprecated-literal-operator"
-make -C extras/tests/
-make -C extras/fuzzing/
+ctest --test-dir $SRC/arduinojson/build-tests
