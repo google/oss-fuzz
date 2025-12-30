@@ -20,11 +20,14 @@ cd extras/fuzzing
 make
 
 # Build unit testing
-if [[ "$SANITIZER" != "coverage" && "$SANITIZER" != "introspector" ]]
+if [[ "$SANITIZER" == "memory" ]]
 then
-  mkdir $SRC/arduinojson/build-tests
-  cd $SRC/arduinojson/build-tests
-  cmake .. -DCMAKE_CXX_FLAGS="-Wno-error=deprecated-literal-operator" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=$SANITIZER"
-  make -C "extras/tests/"
-  make -C "extras/fuzzing/"
+  # Unit test building with MSAN requires explicit sanitizer flags.
+  export LDFLAGS="-fsanitize=$SANITIZER"
 fi
+
+mkdir $SRC/arduinojson/build-tests
+cd $SRC/arduinojson/build-tests
+cmake .. -DCMAKE_CXX_FLAGS="-Wno-error=deprecated-literal-operator" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=$SANITIZER"
+make -C "extras/tests/"
+make -C "extras/fuzzing/"
