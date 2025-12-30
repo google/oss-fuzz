@@ -1,0 +1,10 @@
+homepage: "https://github.com/ruby/psych"
+language: ruby
+primary_contact: "adam@adalogics.com"
+auto_ccs:
+  - "adam@adalogics.com"
+sanitizers:
+  - address
+main_repo: 'https://github.com/ruby/psych'
+fuzzing_engines:
+  - libfuzzer
