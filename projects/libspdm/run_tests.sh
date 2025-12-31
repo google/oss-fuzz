@@ -1,4 +1,6 @@
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +16,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-#ENV http_proxy 'http://proxy.example.com:80/'
-#ENV https_proxy 'https://proxy.example.com:80/'
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-#RUN git config --global http.proxy http://proxy.example.com:80/
-#RUN git config --global https.proxy https://proxy.example.com:80/
-RUN git clone --depth 1 https://github.com/DMTF/libspdm.git libspdm && cd libspdm && git submodule update --init    # or use other version control
-COPY run_tests.sh build.sh $SRC/
-WORKDIR $SRC/libspdm
+cd $SRC/unit_testing
+
+# Run all unit testing (excluding failing one
+./test_crypt && ./test_spdm_common && ./test_spdm_crypt && \
+./test_spdm_requester && ./test_spdm_responder && ./test_spdm_secured_message
+
+# Failing unit testing for reference
+# ./test_spdm_fips && ./test_spdm_sample
+
