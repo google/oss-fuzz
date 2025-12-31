@@ -1,4 +1,6 @@
-# Copyright 2017 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +16,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-
-RUN git clone --single-branch --branch ossfuzz https://gitlab.xiph.org/xiph/opus.git
-RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
-WORKDIR opus
-COPY run_tests.sh build.sh $SRC/
-COPY *.cc tests/
-COPY *.h tests/
+ make check -j$(nproc)
