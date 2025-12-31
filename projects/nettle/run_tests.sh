@@ -1,4 +1,6 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +16,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-# ! Project pinned after a clang update and an afl link error. Log: https://oss-fuzz-gcb-logs.storage.googleapis.com/log-e701b6fa-f3a0-414e-ad6e-0223e6d42ebd.txt
-RUN apt-get update && apt-get install -y software-properties-common make autoconf build-essential wget lzip libtool
-RUN git clone --depth 1 https://git.lysator.liu.se/nettle/nettle
-COPY fuzz_*.c $SRC/
-COPY run_tests.sh build.sh $SRC/
+make check -C $SRC/nettle/testsuite -j$(nproc)

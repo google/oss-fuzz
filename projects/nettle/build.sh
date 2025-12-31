@@ -19,12 +19,7 @@
 cd $SRC/nettle
 bash .bootstrap
 
-if [[ $CFLAGS != *sanitize=memory* ]]
-then
-    ./configure --enable-mini-gmp --disable-documentation --disable-openssl --prefix=$SRC/nettle-install
-else
-    ./configure --enable-mini-gmp --disable-documentation --disable-openssl --disable-assembler --prefix=$SRC/nettle-install
-fi
+./configure --enable-mini-gmp --disable-documentation --disable-openssl --disable-assembler --prefix=$SRC/nettle-install
 
 make -j$(nproc)
 make install
