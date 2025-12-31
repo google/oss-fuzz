@@ -7,5 +7,3 @@ sanitizers:
 - address
 vendor_ccs:
 - david@adalogics.com
-
-base_os_version: ubuntu-24-04

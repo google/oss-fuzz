@@ -18,5 +18,3 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://gitlab.xiph.org/xiph/opus.git'
-
-base_os_version: ubuntu-24-04

@@ -14,5 +14,3 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/coturn/coturn'
-
-base_os_version: ubuntu-24-04

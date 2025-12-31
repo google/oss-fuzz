@@ -10,5 +10,3 @@ sanitizers:
   - memory:
       experimental: true
 main_repo: 'https://github.com/gnuaspell/aspell.git'
-
-base_os_version: ubuntu-24-04

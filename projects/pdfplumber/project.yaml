@@ -9,5 +9,3 @@ sanitizers:
   - address
   - undefined
 main_repo: "https://github.com/jsvine/pdfplumber.git"
-
-base_os_version: ubuntu-24-04

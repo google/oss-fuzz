@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN git clone https://github.com/ipython/ipython
 WORKDIR $SRC
 COPY build.sh fuzz_* $SRC/

@@ -187,7 +187,7 @@ void daemon_configuration(FuzzedDataProvider& fdp, MHD_Daemon* d) {
   auto opt2 = MHD_D_OPTION_BIND_PORT(af, port);
   (void) MHD_daemon_set_option(d, &opt2);
 
-  auto opt3 = MHD_D_OPTION_DEFAULT_TIMEOUT(fdp.ConsumeIntegralInRange<unsigned>(0, 10));
+  auto opt3 = MHD_D_OPTION_DEFAULT_TIMEOUT_MILSEC(fdp.ConsumeIntegralInRange<unsigned>(0, 10000));
   MHD_daemon_set_option(d, &opt3);
 
   auto opt4 = MHD_D_OPTION_CONN_MEMORY_LIMIT(fdp.ConsumeIntegralInRange<size_t>(0, 1<<16));
@@ -227,7 +227,7 @@ void fuzz_daemon_lifecycle(FuzzedDataProvider& fdp) {
       MHD_DAEMON_INFO_FIXED_BIND_PORT,
       MHD_DAEMON_INFO_FIXED_LISTEN_SOCKET,
       MHD_DAEMON_INFO_FIXED_TLS_BACKEND,
-      MHD_DAEMON_INFO_FIXED_DEFAULT_TIMEOUT,
+      MHD_DAEMON_INFO_FIXED_DEFAULT_TIMEOUT_MILSEC,
       MHD_DAEMON_INFO_FIXED_GLOBAL_CONNECTION_LIMIT,
       MHD_DAEMON_INFO_FIXED_PER_IP_LIMIT,
       MHD_DAEMON_INFO_FIXED_SUPPRESS_DATE_HEADER,

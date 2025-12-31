@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y libpcre2-dev libssl-dev libsystemd-dev autoconf libtool
 RUN git clone https://github.com/wazuh/wazuh
 

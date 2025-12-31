@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 ENV JAVA_HOME $JAVA_15_HOME
 ENV JVM_LD_LIBRARY_PATH $JAVA_HOME/lib/server

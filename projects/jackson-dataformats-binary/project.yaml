@@ -14,5 +14,3 @@ vendor_ccs:
   - "david@adalogics.com"
   - "arthur.chan@adalogics.com"
   - "tyagregg@gmail.com"
-
-base_os_version: ubuntu-24-04

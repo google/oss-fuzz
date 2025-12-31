@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool build-essential 
 
 ### for cups-filters-2.x
@@ -34,3 +34,4 @@ RUN cp $SRC/fuzzing/projects/cups-filters/oss_fuzz_build.sh $SRC/build.sh
 
 WORKDIR $SRC/cups-filters                   
 COPY run_tests.sh $SRC/
+

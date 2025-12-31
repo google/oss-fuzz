@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y build-essential zlib1g-dev zlib1g-dev:i386 make automake
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y build-essential zlib1g-dev zlib1g-dev:i386 python make automake
 
 RUN git clone -b v3.2.1 --depth 1 https://github.com/AcademySoftwareFoundation/imath $SRC/imath && \
     cd $SRC/imath && \
