@@ -18,8 +18,7 @@
 # Keeping the rust toolchain in the image wastes 1 GB.
 FROM gcr.io/oss-fuzz-base/base-image as temp-runner-binary-builder
 
-# gcc is used to enable CGO in Go fuzzing
-RUN apt-get update && apt-get install -y cargo libyaml-dev gcc
+RUN apt-get update && apt-get install -y cargo libyaml-dev
 RUN cargo install rustfilt
 
 # Using multi-stage build to copy some LLVM binaries needed in the runner image.
