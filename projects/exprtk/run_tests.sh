@@ -15,5 +15,8 @@
 #
 ################################################################################
 
+# Build unit tests
+make exprtk_test -j$(nproc)
+
 # Run exprtk unit test
 ./exprtk_test
