@@ -66,12 +66,6 @@ To ensure code quality and consistency, we use `yapf` for formatting and `pylint
     python3 infra/presubmit.py lint
     ```
 
-3.  **Check Licenses:**
-    Verifies license headers on changed files.
-    ```bash
-    python3 infra/presubmit.py license
-    ```
-
 ## CI & Testing
 Workflows are defined in `.github/workflows`.
 
