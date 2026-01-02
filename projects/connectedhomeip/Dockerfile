@@ -29,7 +29,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install nightly
 RUN rustup default nightly
 
-RUN git clone --depth=1 --branch AA/noDiscardlibfuzzer https://github.com/Alami-Amine/connectedhomeip.git connectedhomeip
+RUN git clone --depth=1 --branch AA/stopStaticLibLinkingOSS https://github.com/Alami-Amine/connectedhomeip.git connectedhomeip
 
 # PW_PROJECT_ROOT is used in requirements.build.txt
 ENV PW_PROJECT_ROOT=$SRC/connectedhomeip
