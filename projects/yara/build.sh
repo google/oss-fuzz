@@ -36,3 +36,6 @@ done
 
 find $SRC/yara/tests/oss-fuzz -name \*.dict -exec cp {} $OUT \;
 find $SRC/yara/tests/oss-fuzz -name \*.options -exec cp {} $OUT \;
+
+# Build unit test
+make -j$(nproc) test-alignment test-api test-arena test-async test-atoms test-bitmask test-dex test-dotnet test-elf test-macho test-math test-pe test-re-split test-stack test-string test-version
