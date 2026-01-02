@@ -22,4 +22,4 @@ RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/openssl/openssl.git
 RUN git clone --depth 1 https://github.com/libevent/libevent.git
 WORKDIR tor
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
