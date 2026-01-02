@@ -237,7 +237,9 @@ def _capture_source_control():
   if len(project_dirs) == 1:
     # Check if there is a .git directory
     if os.path.isdir(os.path.join('/src/', project_dirs[0], '.git')):
-      return os.path.join('/src/', project_dirs[0])
+      return ('git', os.path.join('/src/', project_dirs[0]))
+    elif os.path.isdir(os.path.join('/src/', project_dirs[0], '.svn')):
+      return ('svn', os.path.join('/src/', project_dirs[0]))
   else:
     print('Wrong number of directories found under /src/')
     print(project_dirs)
@@ -248,8 +250,10 @@ def _capture_source_control():
     project_name = os.getenv('PROJECT_NAME', 'unknown_project')
     if project_name in project_dirs:
       if os.path.isdir(os.path.join('/src/', project_name, '.git')):
-        return os.path.join('/src/', project_name)
-  return None
+        return ('git', os.path.join('/src/', project_name))
+      elif os.path.isdir(os.path.join('/src/', project_name, '.svn')):
+        return ('svn', os.path.join('/src/', project_name))
+  return None, None
 
 
 def diff_patch_analysis(stage: str) -> int:
@@ -266,15 +270,15 @@ def diff_patch_analysis(stage: str) -> int:
   )
   if stage == 'before':
     print('Diff patch analysis before stage.')
-    project_dir = _capture_source_control()
-    if not project_dir:
+    type, project_dir = _capture_source_control()
+    if not type:
       print('Uknown version control system.')
       return -1
 
-    print('Git repo found: %s' % project_dir)
+    print('%s repo found: %s' % (type, project_dir))
     try:
-      subprocess.check_call('cd %s && git diff ./ >> /tmp/chronos-before.diff' %
-                            project_dir,
+      subprocess.check_call('cd %s && %s diff ./ >> /tmp/chronos-before.diff' %
+                            (project_dir, type),
                             shell=True)
     except subprocess.CalledProcessError:
       pass
@@ -282,14 +286,14 @@ def diff_patch_analysis(stage: str) -> int:
 
   elif stage == 'after':
     print('Diff patch analysis after stage.')
-    project_dir = _capture_source_control()
-    if not project_dir:
+    type, project_dir = _capture_source_control()
+    if not type:
       print('Uknown version control system.')
       return -1
 
-    print('Git repo found: %s' % project_dir)
-    subprocess.check_call('cd %s && git diff ./ >> /tmp/chronos-after.diff' %
-                          project_dir,
+    print('%s repo found: %s' % (type, project_dir))
+    subprocess.check_call('cd %s && %s diff ./ >> /tmp/chronos-after.diff' %
+                          (project_dir, type),
                           shell=True)
 
     try:

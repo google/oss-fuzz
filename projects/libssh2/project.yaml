@@ -7,5 +7,3 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/libssh2/libssh2.git'
-
-base_os_version: ubuntu-24-04

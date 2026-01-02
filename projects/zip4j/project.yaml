@@ -8,5 +8,3 @@ sanitizers:
 vendor_ccs:
 - srikanth.mailbox@gmail.com
 - all.u.ever.know@gmail.com
-
-base_os_version: ubuntu-24-04

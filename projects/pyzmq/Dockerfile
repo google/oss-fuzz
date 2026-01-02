@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y libzmq3-dev
 RUN python -m pip install cython
 RUN git clone --depth 1 --branch main https://github.com/zeromq/pyzmq pyzmq

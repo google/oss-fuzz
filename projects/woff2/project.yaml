@@ -21,5 +21,3 @@ sanitizers:
   - undefined
 main_repo: 'https://github.com/google/woff2'
 file_github_issue: True
-
-base_os_version: ubuntu-24-04

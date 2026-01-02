@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make libtool libssl-dev libexpat-dev wget flex bison
 RUN git clone --depth=1 https://github.com/NLnetLabs/unbound unbound
 WORKDIR unbound
@@ -22,4 +22,4 @@ COPY fuzz_1.c .
 COPY fuzz_2.c .
 COPY fuzz_3.c .
 COPY fuzz_4.c .
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
