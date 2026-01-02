@@ -1,7 +1,7 @@
 # OSS-Fuzz Developer Guide
 
 ## Overview
-OSS-Fuzz is a continuous fuzzing infrastructure for open source software.
+OSS-Fuzz is the build infrastructure for continuous fuzzing of open source software.
 
 ## Key Directories
 - `projects/`: Contains individual project configurations. Each project has:
@@ -48,6 +48,28 @@ All commands assume you are in the root of the OSS-Fuzz repository.
 6.  **Generate New Project Template:**
     ```bash
     python3 infra/helper.py generate $PROJECT_NAME --language=$LANGUAGE
+    ```
+
+## Formatting and Linting
+To ensure code quality and consistency, we use `yapf` for formatting and `pylint` for linting.
+
+1.  **Format Code:**
+    Formats changed files in your branch.
+    ```bash
+    python3 infra/presubmit.py format
+    ```
+    *Option:* `-a` to format all files.
+
+2.  **Lint Code:**
+    Checks `infra/` directory with Pylint.
+    ```bash
+    python3 infra/presubmit.py lint
+    ```
+
+3.  **Check Licenses:**
+    Verifies license headers on changed files.
+    ```bash
+    python3 infra/presubmit.py license
     ```
 
 ## CI & Testing
