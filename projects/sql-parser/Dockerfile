@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y make cmake flex bison
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make cmake
 RUN git clone https://github.com/hyrise/sql-parser
 
 WORKDIR $SRC/sql-parser
