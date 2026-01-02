@@ -16,5 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/fastfloat/fast_float.git fast_float
-RUN cp fast_float/fuzz/build.sh $SRC/
 WORKDIR fast_float
+COPY run_tests.sh build.sh $SRC/
