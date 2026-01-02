@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,22 +16,4 @@
 #
 ################################################################################
 
-git submodule update --init --recursive
-mkdir build && cd build
-cmake -DBUILD_SHARED_LIBS=OFF \
-	  -DWANT_ICU=OFF \
-	  -DWANT_OPENSSL=OFF \
-	  -DWANT_ZLIB=OFF \
-	  -DWANT_IPV6=OFF ..
-make -j$(nproc)
-
-$CXX $CXXFLAGS -DGTEST_HAS_POSIX_RE=0 \
-	-I/src/znc/include -I/src/znc/build/include \
-	-fPIE -include znc/zncconfig.h -std=c++11 \
-	-c $SRC/msg_parse_fuzzer.cpp -o msg_parse_fuzzer.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
-	msg_parse_fuzzer.o -o $OUT/msg_parse_fuzzer \
-	/src/znc/build/src/libznc.a 
-
-# Build unit test
-make unittest_bin -j$(nproc)
+$SRC/znc/build/test/unittest_bin
