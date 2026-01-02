@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get -y install build-essential automake libtool git libsystemd-dev
+RUN apt-get update && apt-get -y install build-essential automake libtool git python libsystemd-dev
 
 WORKDIR qubes-os
 

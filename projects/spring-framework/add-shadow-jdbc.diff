@@ -5,7 +5,7 @@ index 389462f3bb..98a4e93d92 100644
 @@ -1,5 +1,6 @@
  description = "Spring JDBC"
  
-+apply plugin: "com.github.johnrengelman.shadow"
++apply plugin: "com.gradleup.shadow"
  apply plugin: "kotlin"
  
  dependencies {
