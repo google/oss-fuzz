@@ -27,6 +27,7 @@ LANGUAGES = [
     'go',
     'javascript',
     'jvm',
+    'lua',
     'python',
     'rust',
     'swift',
