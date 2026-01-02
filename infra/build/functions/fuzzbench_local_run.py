@@ -31,7 +31,7 @@ import fuzzbench
 
 GCB_WORKSPACE_DIR = fuzzbench.GCB_WORKSPACE_DIR
 FUZZBENCH_PATH = fuzzbench.FUZZBENCH_PATH
-DOCKER_BUILDER_IMAGE = 'gcr.io/cloud-builders/docker'
+DOCKER_BUILDER_IMAGE = 'docker:latest'
 LOG_FILE_PATH = os.path.join(os.path.dirname(__file__),
                              'fuzzbench_local_run_log.txt')
 
@@ -73,7 +73,7 @@ def run_step_locally(temp_dir, local_fuzzbench_path, step, i, log_file):
 
   if image_name == DOCKER_BUILDER_IMAGE:
     docker_command.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
-    # Use docker:latest because gcr.io/cloud-builders/docker has an old client
+    # Use docker:latest because docker:latest has an old client
     # that is incompatible with newer host docker daemons.
     image_name = 'docker:latest'
 

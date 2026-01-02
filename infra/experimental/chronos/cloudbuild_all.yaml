@@ -15,7 +15,7 @@
 ################################################################################
 # CloudBuild for generating Chronos-cached images.
 steps:
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   args:
   - build
   - -t
