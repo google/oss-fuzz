@@ -22,11 +22,12 @@ RUN apt-get update && apt-get install -y \
 	libunwind-dev luajit wget ninja-build \
 	libzstd-dev libyaml-dev libcurl4-openssl-dev
 
-RUN git clone --jobs $(nproc) --recursive https://github.com/tarantool/tarantool
+RUN git clone --branch ligurio/gh-12097-support-oss-fuzz --jobs $(nproc) --recursive https://github.com/ligurio/tarantool
 WORKDIR $SRC/tarantool
 
 # Download a seed corpus.
-RUN rm -rf test/static
-RUN git clone https://github.com/ligurio/tarantool-corpus test/static
+# RUN rm -rf test/static
+# RUN git clone https://github.com/ligurio/tarantool-corpus test/static
 
 COPY build.sh $SRC/
+COPY compile_lua_fuzzer $SRC/
