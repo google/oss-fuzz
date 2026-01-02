@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2023 Google LLC
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +16,4 @@
 #
 ################################################################################
 
-# Disable ccache for chronos check since ccache is not compatible with bazel
-export PATH=$(echo $PATH | tr ':' '\n' | grep -v ccache | tr '\n' ':' | sed 's/:$//')
-
-export CXXFLAGS="${CXXFLAGS} -std=c++17"
-export USE_BAZEL_VERSION=7.4.0
-bazel_build_fuzz_tests
-
-# Build unit test
-$CXX $CXXFLAGS -o unittest -Iinclude -Itest test/main.cpp test/options.cpp
+./unittest
