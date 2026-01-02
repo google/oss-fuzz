@@ -14,6 +14,8 @@ OSS-Fuzz is a continuous fuzzing infrastructure for open source software.
 ## Local Development
 The primary tool for local development is `infra/helper.py`.
 
+**Note:** Dependencies will likely already be installed in `.venv`.
+
 ### Common Commands
 All commands assume you are in the root of the OSS-Fuzz repository.
 
