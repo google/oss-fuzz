@@ -18,6 +18,7 @@
 import logging
 import os
 import requests
+import subprocess
 import sys
 import shutil
 import tempfile
@@ -131,6 +132,10 @@ class FuzzbenchRunsTest(unittest.TestCase):
   def setUp(self):
     """Creates a temporary directory for fuzzbench runs tests."""
     self.temp_dir = tempfile.mkdtemp()
+    self.mock_subprocess_run = mock.patch('fuzzbench_local_run.subprocess.run')
+    self.mock_run = self.mock_subprocess_run.start()
+    self.mock_run.return_value = subprocess.CompletedProcess(
+        args=[], returncode=0, stdout='success', stderr='')
 
   def tearDown(self):
     """Removes temporary directory."""
@@ -138,6 +143,7 @@ class FuzzbenchRunsTest(unittest.TestCase):
       fuzzbench_local_run.remove_temp_dir_content(self.temp_dir, -1, log_file)
       shutil.rmtree(self.temp_dir)
     os.remove(LOG_FILE_PATH)
+    self.mock_subprocess_run.stop()
 
   def _fuzzbench_test_setup(self):
     """Returns necessary variables for fuzzbench runs setup."""

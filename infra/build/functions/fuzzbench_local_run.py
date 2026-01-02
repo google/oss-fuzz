@@ -73,6 +73,9 @@ def run_step_locally(temp_dir, local_fuzzbench_path, step, i, log_file):
 
   if image_name == DOCKER_BUILDER_IMAGE:
     docker_command.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
+    # Use docker:latest because gcr.io/cloud-builders/docker has an old client
+    # that is incompatible with newer host docker daemons.
+    image_name = 'docker:latest'
 
   for env_var in env_list:
     docker_command.extend(['-e', env_var])
