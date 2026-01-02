@@ -54,3 +54,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.cpp'); do
     fuzz_basename=$(basename -s .cpp $fuzzer)
     zip -q $OUT/${fuzz_basename}_seed_corpus.zip $SRC/corpus/*
 done
+
+# build unit test
+cmake --build $SRC/upx/build/debug -j$(nproc)
+

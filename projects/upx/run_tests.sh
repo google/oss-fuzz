@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +15,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake
-RUN git clone https://github.com/upx/upx-testsuite.git testsuite
-RUN git clone https://github.com/upx/upx-testsuite-v2.git testsuite2
-RUN git clone https://github.com/MykolaMykhno/upx-testsuite-v3.git testsuite3
-RUN git clone --depth 1 https://github.com/upx/upx.git upx
-
-WORKDIR /src/upx
-RUN git submodule update --init
-
-COPY run_tests.sh build.sh $SRC/
-COPY fuzzers/ $SRC/upx/fuzzers/
+ctest --test-dir $SRC/upx/build/debug -j$(nproc)
