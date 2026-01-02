@@ -22,13 +22,15 @@ MAIN_REPOSITORY=https://github.com/apache/pdfbox/
 
 MAVEN_ARGS="-Djavac.src.version=11 -Djavac.target.version=11 -DskipTests"
 
+sed -i 's/<proc>full<\/proc>/<!-- asd -->/g' $SRC/project-parent/pdfbox/debugger/pom.xml
+
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
   # set dependency project version in fuzz-targets
   (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
 }
 
-cd project-parent
+cd $SRC/project-parent
 
 # LOCAL_DEV env variable need to be set in local development env
 if [[ -v LOCAL_DEV ]]; then
@@ -44,8 +46,9 @@ if [[ -v LOCAL_DEV ]]; then
   mvn -pl fuzz-targets install
 
 else
-  # Move seed corpus and dictionary.
+  # Move dictionaries and seed corpora.
   mv $SRC/*.dict $OUT
+  mv $SRC/*.zip $OUT
 
   set_project_version_in_fuzz_targets_dependency
 

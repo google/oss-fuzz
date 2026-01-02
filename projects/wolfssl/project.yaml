@@ -9,12 +9,12 @@ auto_ccs:
   - "testing@wolfssl.com"
   - "dgarske80@gmail.com"
   - "douzzer@mega.nu"
-  - "guidovranken@gmail.com"
   - "jordan@wolfssl.com"
   - "jordanjphillips1@gmail.com"
   - "anthony@wolfssl.com"
   - "anthony.hu.76@gmail.com"
   - "kareem@wolfssl.com"
+  - "sean@wolfssl.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

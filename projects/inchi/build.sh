@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cd INCHI-1-SRC
+pushd INCHI-1-SRC
 $CC $CFLAGS -Wno-everything -DTARGET_API_LIB -DCOMPILE_ANSI_ONLY -ansi -c \
     INCHI_BASE/src/*.c INCHI_API/libinchi/src/*.c INCHI_API/libinchi/src/ixa/*.c
 ar rcs $WORK/libinchi.a *.o
@@ -33,3 +33,7 @@ for fuzzer in $SRC/*_fuzzer.c; do
       ${fuzzer_basename}.o -o $OUT/$fuzzer_basename \
       $LIB_FUZZING_ENGINE $WORK/libinchi.a
 done
+popd
+
+# Build test
+INCHI-1-TEST/build_with_cmake.sh all

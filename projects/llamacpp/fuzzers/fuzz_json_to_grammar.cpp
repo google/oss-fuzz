@@ -13,6 +13,7 @@ limitations under the License.
 #include "llama.h"
 #include "llama-grammar.h"
 #include "json-schema-to-grammar.h"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 

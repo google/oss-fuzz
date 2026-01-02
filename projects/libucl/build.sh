@@ -18,7 +18,6 @@
 
 cp $SRC/ucl_add_string_fuzzer.options $OUT/
 
-cd libucl
 ./autogen.sh --force && ./configure
 make
 
