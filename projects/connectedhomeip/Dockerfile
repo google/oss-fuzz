@@ -20,7 +20,7 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 # See connectedhomeip/docs/guides/BUILDING.md#prerequisites
 RUN apt-get update && \
     apt-get install -y --no-install-recommends pkg-config libssl-dev libdbus-1-dev libglib2.0-dev \
-        libavahi-client-dev ninja-build \
+        libavahi-client-dev ninja-build libmount-dev libblkid-dev \
         unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
 
 # Install Rust for building `cryptography` python package when bootstraping pigweed
