@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +16,8 @@
 #
 ################################################################################
 
-mkdir build && cd build
-cmake -DOATPP_BUILD_TESTS=ON ../
-make -j$(nproc)
+# Disable leak sanitizer
+export ASAN_OPTIONS="detect_leaks=0"
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzers/oatpp/json/ObjectMapper.cpp -o $OUT/fuzz_mapper \
-    ./src/liboatpp.a -I../src
+# Run unit test with verbose because it take quite long to complete
+ctest --test-dir build/ -j$(nproc) --parallel -V
