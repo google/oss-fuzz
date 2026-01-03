@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +16,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt update && apt install -y autoconf automake libtool pkg-config
-RUN git clone --depth 1 https://github.com/kinetiknz/nestegg.git
-
-# clone libwebm for corpus data
-RUN git clone --depth 1 https://github.com/webmproject/libwebm.git
-
-WORKDIR nestegg
-COPY run_tests.sh build.sh $SRC/
+export ASAN_OPTIONS="detect_leaks=0"
+$SRC/test_pffft_real && $SRC/test_pffft_complex

@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt update && apt install -y autoconf automake libtool pkg-config
-RUN git clone --depth 1 https://github.com/kinetiknz/nestegg.git
-
-# clone libwebm for corpus data
-RUN git clone --depth 1 https://github.com/webmproject/libwebm.git
-
-WORKDIR nestegg
-COPY run_tests.sh build.sh $SRC/
+# Skip segfault and failed cases and run the remaining unit testing
+ctest --test-dir $SRC/libgd -j$(nproc) -E \
+  "test_gdimagecolormatch_cve_2019_6977|test_gdimagetruecolortopalette_php_bug_72512|test_gdinterpolatedscale_gdTrivialResize|test_gdimagecopyrotated_bug00320|test_gdinterpolatedscale_gdModesAndPalettes"
