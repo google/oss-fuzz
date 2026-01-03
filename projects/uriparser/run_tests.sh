@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2020 Google Inc.
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +16,4 @@
 #
 ################################################################################
 
-# build project
-mkdir -p build
-cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DURIPARSER_OSSFUZZ_BUILD=ON \
-      -DURIPARSER_BUILD_FUZZERS=ON \
-      -DURIPARSER_BUILD_DOCS=OFF \
-      -DURIPARSER_BUILD_TESTS=ON \
-      -DURIPARSER_BUILD_TOOLS=OFF \
-      -DURIPARSER_ENABLE_INSTALL=OFF \
-      ..
-make
-cp fuzz/*_fuzzer "$OUT/"
+ctest --test-dir build -j$(nproc)
