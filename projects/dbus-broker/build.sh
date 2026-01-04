@@ -25,12 +25,12 @@ MESON_CXXFLAGS=${CXXFLAGS:-}
 MESON_LDFLAGS=${LDFLAGS:-}
 
 if [[ "$SANITIZER" == introspector ]]; then
-    MESON_CFLAGS="${MESON_CFLAGS//-fuse-ld=gold/ }"
-    MESON_CXXFLAGS="${MESON_CXXFLAGS//-fuse-ld=gold/ }"
-    MESON_LDFLAGS="${MESON_LDFLAGS//-fuse-ld=gold/ }"
+    MESON_CFLAGS="${MESON_CFLAGS//-fuse-ld=lld/ }"
+    MESON_CXXFLAGS="${MESON_CXXFLAGS//-fuse-ld=lld/ }"
+    MESON_LDFLAGS="${MESON_LDFLAGS//-fuse-ld=lld/ }"
     MESON_LDFLAGS+=" -flto"
-    export CC_LD=gold
-    export CXX_LD=gold
+    export CC_LD=lld
+    export CXX_LD=lld
 fi
 
 apt-get update -y
