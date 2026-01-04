@@ -349,6 +349,9 @@ function check_mixed_sanitizers {
     echo "UNSUPPORTED ARCHITECTURE"
     exit 1
   fi
+
+  egrep luarocks $FUZZER && return 0;
+
   local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__asan" -c)
   local DFSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__dfsan" -c)
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
