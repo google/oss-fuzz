@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +16,5 @@
 #
 ################################################################################
 
-mkdir build && cd build
-cmake -DOATPP_BUILD_TESTS=ON ../
-make -j$(nproc)
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzers/oatpp/json/ObjectMapper.cpp -o $OUT/fuzz_mapper \
-    ./src/liboatpp.a -I../src
+# Run unit tests
+./test-alignment && ./test-api && ./test-arena && ./test-async && ./test-atoms && ./test-bitmask && ./test-dex && ./test-dotnet && ./test-elf && ./test-macho && ./test-math && ./test-pe && ./test-re-split && ./test-stack && ./test-string && ./test-version
