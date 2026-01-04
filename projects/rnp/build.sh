@@ -51,7 +51,7 @@ cmake \
     -DCMAKE_C_LINK_EXECUTABLE="$CXX <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBUILD_SHARED_LIBS=on \
-    -DBUILD_TESTING=off \
+    -DBUILD_TESTING=on \
     -DENABLE_PQC=on \
     -DENABLE_CRYPTO_REFRESH=on \
     -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
@@ -70,3 +70,7 @@ mkdir -p "${OUT}/lib"
 cp src/lib/librnp.so.0 "${OUT}/lib/"
 cp /usr/lib/libbotan-3.so.* "${OUT}/lib/"
 cp /lib/x86_64-linux-gnu/libjson-c.so.* "${OUT}/lib/"
+
+
+# Presetup test data because run_tests.sh don't have network connection
+ctest --test-dir $SRC/rnp-build/ -R setupTestData

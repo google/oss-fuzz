@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y cmake make
 RUN git clone --depth 1 https://github.com/marzer/tomlplusplus.git tomlplusplus \
         && cp tomlplusplus/fuzzing/build.sh $SRC/
 WORKDIR tomlplusplus
-
+COPY run_tests.sh $SRC/
