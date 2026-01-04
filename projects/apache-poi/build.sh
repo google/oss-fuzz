@@ -18,7 +18,7 @@
 MVN_FLAGS="--no-transfer-progress -DskipTests"
 ALL_JARS=""
 LIBRARY_NAME="poi"
-GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8,JAVA_HOME_11 --console=plain"
+GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_11 --console=plain"
 
 echo Copy libraries for java.awt in place
 ls /usr/lib/x86_64-linux-gnu/
@@ -30,13 +30,12 @@ cp /usr/lib/x86_64-linux-gnu/libXext.so.6* \
   /usr/lib/x86_64-linux-gnu/libxcb.so.1* \
   /usr/lib/x86_64-linux-gnu/libXau.so.6* \
   /usr/lib/x86_64-linux-gnu/libXdmcp.so.6* \
+  /usr/lib/x86_64-linux-gnu/libfreetype.so.6* \
+  /usr/lib/x86_64-linux-gnu/libpng16.so.16* \
   ${OUT}/
 
 echo Main Java
 ${JAVA_HOME}/bin/java -version
-
-echo Java 8
-${JAVA_HOME_8}/bin/java -version
 
 echo Java 11
 ${JAVA_HOME_11}/bin/java -version
@@ -46,7 +45,7 @@ pushd "/tmp"
 	${MVN} install:install-file -Dfile=${JAZZER_API_PATH} \
 		-DgroupId="com.code-intelligence" \
 		-DartifactId="jazzer-api" \
-		-Dversion="0.12.0" \
+		-Dversion="0.29.1" \
 		-Dpackaging=jar \
 		 ${MVN_FLAGS}
 popd
