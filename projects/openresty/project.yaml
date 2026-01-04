@@ -1,0 +1,10 @@
+homepage: "https://openresty.org/"
+language: c
+primary_contact: "agentzh@gmail.com"
+auto_ccs:
+  - "estetus@gmail.com"
+main_repo: "https://github.com/openresty/luajit2"
+sanitizers:
+  - address
+architectures:
+  - x86_64
