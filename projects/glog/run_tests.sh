@@ -1,4 +1,6 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +16,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN git clone --depth 1 https://github.com/google/glog
-
-COPY run_tests.sh build.sh $SRC/
-WORKDIR $SRC/glog
+ctest --test-dir build -E "stacktrace|symbolize|includes_logging|includes_vlog_is_on|includes_raw_logging"
