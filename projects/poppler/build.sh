@@ -290,6 +290,9 @@ done
 
 mv $SRC/{*.zip,*.dict} $OUT
 
+# Install poppler-data for fuzzing
+cp -r /usr/share/poppler $OUT/poppler-data
+
 if [ ! -f "${OUT}/poppler_seed_corpus.zip" ]; then
     echo "missing seed corpus"
     exit 1
