@@ -252,7 +252,8 @@ def _capture_source_control() -> list[tuple[str, str]]:
         if os.path.isdir(os.path.join('/src/', project_name, value)):
           result.append((key, os.path.join('/src/', project_name)))
           break
-    else:
+
+    if not result:
       # No directory with similar project name found.
       # Try diff all directory with version control.
       for project_name in project_dirs:
