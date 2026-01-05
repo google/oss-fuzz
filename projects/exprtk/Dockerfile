@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/ArashPartow/exprtk.git exprtk
 WORKDIR exprtk
-COPY run_tests.sh build.sh exprtk_fuzzer.cpp exprtk_test_expressions.dict $SRC/
+COPY build.sh exprtk_fuzzer.cpp exprtk_test_expressions.dict $SRC/

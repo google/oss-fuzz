@@ -19,3 +19,4 @@ RUN apt-get update && apt-get install -y make cmake
 RUN git clone --depth 1 https://github.com/ada-url/ada ada-url
 RUN cp ada-url/fuzz/build.sh $SRC/
 WORKDIR ada-url
+COPY run_tests.sh $SRC/
