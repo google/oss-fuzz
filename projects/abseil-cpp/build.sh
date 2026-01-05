@@ -14,6 +14,17 @@
 #
 ################################################################################
 
+# Grep all unit test targets and only build them
+mkdir $SRC/build-tests
+pushd $SRC/build-tests
+cmake -DABSL_BUILD_TESTING=ON $SRC/abseil-cpp
+tests=$(make help | grep absl_ | grep test | awk '{print $2}')
+make $tests -j$(nproc)
+popd
+
+# Disable ccache for chronos check since ccache is not compatible with bazel
+export PATH=$(echo $PATH | tr ':' '\n' | grep -v ccache | tr '\n' ':' | sed 's/:$//')
+
 export USE_BAZEL_VERSION=7.4.0
 # Disable `layering_check` feature.
 # As per https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=63223, it breaks
@@ -25,4 +36,3 @@ export BAZEL_EXTRA_BUILD_FLAGS='--features=-layering_check --cxxopt=-std=c++17'
 # work (due to its use of `//...`) whereas this query is simple and sufficient.
 export BAZEL_FUZZ_TEST_QUERY='filter("_fuzzer$", //:all)'
 exec bazel_build_fuzz_tests
-
