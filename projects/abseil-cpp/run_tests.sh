@@ -1,4 +1,6 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +16,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y libgtest-dev
-RUN git clone --depth 1 https://github.com/abseil/abseil-cpp.git
-COPY BUILD WORKSPACE run_tests.sh build.sh *_fuzzer.cc $SRC/
+# Disable leak sanitizer
+export ASAN_OPTIONS="detect_leaks=0"
+
+# Run unit test
+ctest --test-dir $SRC/build-tests -j$(nproc)
