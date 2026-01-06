@@ -52,13 +52,21 @@ popd
 
 pushd "${SRC}/${LIBRARY_NAME}"
 	# build and publish current binaries
-	./gradlew publishToMavenLocal ${GRADLE_FLAGS}
+	./gradlew publishToMavenLocal :poi-integration:testJar ${GRADLE_FLAGS}
 
 	# determine current version-tag
 	CURRENT_VERSION=$(./gradlew properties ${GRADLE_FLAGS} | sed -nr "s/^version:\ (.*)/\1/p")
 
+  # additionally publish the testJar to MavenLocal
+  ${MVN}  install:install-file -Dfile=build/dist/maven/poi-integration-tests/poi-integration-${CURRENT_VERSION}-tests.jar \
+      -DgroupId=org.apache.poi \
+      -DartifactId=poi-integration \
+      -Dversion=${CURRENT_VERSION} \
+      -Dpackaging=jar
+
 	# prepare some seed-corpus archives based on the test-data of Apache POI
 	# we cannot do this automatically as there is not a 1:1 match of fuzz targets and formats
+	zip -r $OUT/POIFileHandlerFuzzer_seed_corpus.zip test-data
 	zip -r $OUT/POIFuzzer_seed_corpus.zip test-data
 	zip -jr $OUT/POIHDGFFuzzer_seed_corpus.zip test-data/diagram/*.vsd
 	zip -jr $OUT/POIHMEFFuzzer_seed_corpus.zip test-data/hmef/*
