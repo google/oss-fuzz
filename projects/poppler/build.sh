@@ -290,7 +290,6 @@ done
 
 mv $SRC/{*.zip,*.dict} $OUT
 
-# Install poppler-data for fuzzing using make install
 pushd $SRC/poppler-data
 make install pkgdatadir=$OUT/poppler-data
 popd
