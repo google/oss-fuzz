@@ -1,0 +1,12 @@
+homepage: "https://github.com/filecoin-project/ref-fvm"
+main_repo: "https://github.com/filecoin-project/ref-fvm"
+primary_contact: "security@filecoin.org"
+auto_ccs :
+  - "kubuxu@protocol.ai"
+  - "raul@protocol.ai"
+  - "stebalien@protocol.ai"
+language: rust
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
