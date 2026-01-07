@@ -14,20 +14,25 @@
 # limitations under the License.
 #
 ##########################################################################
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export PATH="$JAVA_HOME/bin:$PATH"
 export TARGET_PACKAGE_PREFIX="com.puppycrawl.tools.checkstyle."
 
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 --update-snapshots"
+MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=21 -Djavac.target.version=21 --update-snapshots"
 $MVN clean package $MAVEN_ARGS
 
 BUILD_CLASSPATH=
 RUNTIME_CLASSPATH=
 
-for JARFILE in $(find ./ -name *.jar)
+for JARFILE in $(find ./ -name "*.jar")
 do
   cp $JARFILE $OUT/
   BUILD_CLASSPATH=$BUILD_CLASSPATH$OUT/$(basename $JARFILE):
   RUNTIME_CLASSPATH=$RUNTIME_CLASSPATH\$this_dir/$(basename $JARFILE):
 done
+
+mkdir -p $OUT/jdk-21
+rsync -aL --exclude=*.zip "$JAVA_HOME/" "$OUT/jdk-21/"
 
 # Build corpus with valid java files
 mkdir $SRC/tmp-corpus
@@ -61,7 +66,9 @@ do
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
 
-  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+  export JAVA_HOME=\$this_dir/jdk-21
+  export PATH=\$JAVA_HOME/bin:\$PATH
+  LD_LIBRARY_PATH=\"\$JAVA_HOME/lib/server\":\$this_dir \
   \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
   --cp=$RUNTIME_CLASSPATH \
   --target_class=$fuzzer_basename \
