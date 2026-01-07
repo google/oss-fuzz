@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y libboost-dev libboost-test-dev \
       libboost-system-dev libboost-chrono-dev
 RUN git clone https://github.com/spotify/spotify-json
