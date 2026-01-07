@@ -21,7 +21,7 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install -y --no-install-recommends pkg-config libssl-dev libdbus-1-dev libglib2.0-dev libglib2.0-0\
         libavahi-client-dev ninja-build libmount-dev libblkid-dev \
-        unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
+        unzip libgirepository1.0-dev libcairo2-dev libreadline-dev patchelf file
 
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
