@@ -299,10 +299,7 @@ def get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict):
 
   ood_image = get_ood_image_name(fuzzing_engine, project)
 
-  push_ood_image_step = {
-      'name': 'docker:latest',
-      'args': ['push', ood_image]
-  }
+  push_ood_image_step = {'name': 'docker:latest', 'args': ['push', ood_image]}
   steps.append(push_ood_image_step)
 
   # This step also copies fuzzing output corpus to $OOD_OUTPUT_CORPUS_DIR
