@@ -16,7 +16,7 @@
 ##########################################################################
 export TARGET_PACKAGE_PREFIX="com.puppycrawl.tools.checkstyle."
 
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 --update-snapshots"
+MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=17 -Djavac.target.version=17 --update-snapshots"
 $MVN clean package $MAVEN_ARGS
 
 BUILD_CLASSPATH=
