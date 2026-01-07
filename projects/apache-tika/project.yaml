@@ -1,9 +1,0 @@
-homepage: "https://tika.apache.org/"
-language: jvm
-fuzzing_engines:
-  - libfuzzer
-main_repo: "https://github.com/apache/tika/"
-sanitizers:
-  - address
-vendor_ccs:
-  - "dev-owner@tika.apache.org"
