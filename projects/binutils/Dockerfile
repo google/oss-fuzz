@@ -15,10 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make texinfo libgmp-dev libmpfr-dev
-RUN apt-get install -y flex bison
-RUN git clone --depth=1 https://github.com/DavidKorczynski/binary-samples binary-samples
+RUN apt-get update && apt-get install -y make texinfo libgmp-dev libmpfr-dev flex bison
 RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git binutils-gdb
-WORKDIR $SRC
-COPY build.sh $SRC/
+RUN git clone --depth=1 https://github.com/DavidKorczynski/binary-samples binutils-gdb/binary-samples
+WORKDIR $SRC/binutils-gdb
+COPY run_tests.sh build.sh $SRC/
 COPY fuzz_*.c $SRC/
