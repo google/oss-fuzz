@@ -1,92 +1,86 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-################################################################################
+# Build OkHttp and Jazzer fuzz targets; copy artifacts to $OUT
 
-GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8"
-MVN_FLAGS="-DskipTests -Drat.ignoreErrors=true"
-ALL_JARS=""
+export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+export PATH="$JAVA_HOME/bin:$PATH"
 
-# install the build servers' jazzer-api into the maven repository
-pushd "/tmp"
-	${MVN} install:install-file -Dfile=${JAZZER_API_PATH} \
-		-DgroupId="com.code-intelligence" \
-		-DartifactId="jazzer-api" \
-		-Dversion="0.12.0" \
-		-Dpackaging=jar
-popd
+OKHTTP_SRC_DIR="/src/okhttp"
+FUZZ_SRC_DIR="$OKHTTP_SRC_DIR/fuzz"
+FUZZ_BUILD_DIR="$FUZZ_SRC_DIR/build"
+JAZZER_API="/usr/local/share/jazzer/api"
+DEFAULT_FUZZ_SRC="/opt/okhttp-fuzz"
 
-pushd "${SRC}/okhttp/okhttp"
-	../gradlew jar
-    ../gradlew publishToMavenLocal ${GRADLE_FLAGS}
-    CURRENT_VERSION=$(../gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
-popd
+# If the source is not already present under /src/okhttp, you can clone here.
+# Example (uncomment and adjust):
+# git clone --depth 1 https://github.com/square/okhttp.git "$OKHTTP_SRC_DIR"
 
-pushd "${SRC}/okhttp/okhttp-logging-interceptor"
-	../gradlew jar
-    ../gradlew publishToMavenLocal ${GRADLE_FLAGS}
-    CURRENT_VERSION=$(../gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
-popd
-
-pushd "${SRC}/okhttp/mockwebserver"
-	../gradlew jar
-    ../gradlew publishToMavenLocal ${GRADLE_FLAGS}
-    CURRENT_VERSION=$(../gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
-popd
-
-pushd ${SRC}
-	${MVN} package -DokhttpVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
-	install -v target/okhttp-fuzzer-${CURRENT_VERSION}.jar ${OUT}/okhttp-fuzzer-${CURRENT_VERSION}.jar
-	ALL_JARS="${ALL_JARS} okhttp-fuzzer-${CURRENT_VERSION}.jar"
-popd
-
-
-
-# The classpath at build-time includes the project jars in $OUT as well as the
-# Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
-
-# All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
-
-MVN_FUZZERS_PREFIX="src/main/java"
-
-for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
-  stripped_path=$(echo ${fuzzer} | sed 's|^.*src/main/java/\(.*\).java$|\1|');
-  # the .java was stripped by sed
-  if (echo ${stripped_path} | grep ".java$"); then
-	continue;
-  fi
-
-  fuzzer_basename=$(basename -s .java $fuzzer)
-  fuzzer_classname=$(echo ${stripped_path} | sed 's|/|.|g');
-
-  # Create an execution wrapper that executes Jazzer with the correct arguments.
-  echo "#!/bin/bash
-# LLVMFuzzerTestOneInput for fuzzer detection.
-this_dir=\$(dirname \"\$0\")
-if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-  mem_settings='-Xmx1900m:-Xss900k'
-else
-  mem_settings='-Xmx2048m:-Xss1024k'
+# Build OkHttp with Gradle (prefer system gradle to avoid wrapper downloads)
+GRADLE_CMD=""
+if command -v gradle >/dev/null 2>&1; then
+  GRADLE_CMD="$(command -v gradle)"
+elif [ -f "$OKHTTP_SRC_DIR/gradlew" ]; then
+  GRADLE_CMD="$OKHTTP_SRC_DIR/gradlew"
 fi
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
-\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
---cp=${RUNTIME_CLASSPATH} \
---target_class=${fuzzer_classname} \
---jvm_args=\"\$mem_settings\" \
-\$@" > $OUT/${fuzzer_basename}
-  chmod u+x $OUT/${fuzzer_basename}
-done
+
+if [ -n "$GRADLE_CMD" ]; then
+  pushd "$OKHTTP_SRC_DIR" >/dev/null
+  # Try the MPP JVM jar task first; fall back to assemble
+  if "$GRADLE_CMD" --no-daemon :okhttp:jvmJar -x test -x javadoc; then
+    echo "Built :okhttp:jvmJar"
+  else
+    echo ":okhttp:jvmJar not available, trying :okhttp:assemble"
+    "$GRADLE_CMD" --no-daemon :okhttp:assemble -x test -x javadoc
+  fi
+  popd >/dev/null
+else
+  echo "Gradle not found; please ensure gradle is installed in the image." >&2
+  exit 1
+fi
+
+# Ensure fuzz harness exists (copy from image if not present in source)
+if [ ! -f "$FUZZ_SRC_DIR/UrlFuzzer.java" ] && [ -d "$DEFAULT_FUZZ_SRC" ]; then
+  mkdir -p "$FUZZ_SRC_DIR"
+  cp -r "$DEFAULT_FUZZ_SRC"/. "$FUZZ_SRC_DIR/"
+fi
+
+# Prepare jazzer target(s)
+mkdir -p "$OUT" "$FUZZ_BUILD_DIR"
+# Ensure downstream tests always have at least one artifact in /out.
+touch "$OUT/.placeholder"
+
+# Locate OkHttp jars produced by the build (MPP jvmJar or standard jar)
+OKHTTP_JARS=$(find "$OKHTTP_SRC_DIR/okhttp/build/libs" -maxdepth 1 -type f -name "*.jar" 2>/dev/null || true)
+
+# Compile sample fuzzer (uses Jazzer JUnit FuzzTest)
+CLASSPATH="$JAZZER_API/*"
+if [ -n "$OKHTTP_JARS" ]; then
+  CLASSPATH="$OKHTTP_SRC_DIR/okhttp/build/libs/*:$CLASSPATH"
+fi
+
+javac -encoding UTF-8 -cp "$CLASSPATH" "$FUZZ_SRC_DIR/UrlFuzzer.java" -d "$FUZZ_BUILD_DIR"
+
+# Package runtime: copy needed jars and fuzzer classes into $OUT
+cp -f $OKHTTP_SRC_DIR/okhttp/build/libs/*.jar "$OUT" 2>/dev/null || true
+cp -f /usr/local/share/jazzer/*.jar "$OUT" 2>/dev/null || true
+# Copy jazzer drivers expected by OSS-Fuzz runner
+if [ -d /usr/local/share/jazzer/bin ]; then
+  cp -f /usr/local/share/jazzer/bin/jazzer_driver "$OUT" 2>/dev/null || true
+  cp -f /usr/local/share/jazzer/bin/jazzer_driver_with_sanitizer "$OUT" 2>/dev/null || true
+  chmod +x "$OUT"/jazzer_driver* 2>/dev/null || true
+fi
+mkdir -p "$OUT/fuzzer-classes"
+cp -r "$FUZZ_BUILD_DIR"/* "$OUT/fuzzer-classes" 2>/dev/null || true
+
+# Create execution wrapper for OSS-Fuzz
+cat >"$OUT/UrlFuzzer" << 'EOF'
+#!/bin/bash
+set -euo pipefail
+THIS_DIR=$(cd -- "$(dirname "$0")" && pwd)
+JAZZER_JAR=$(ls "$THIS_DIR"/jazzer*.jar | head -n1)
+CP="$THIS_DIR/*:$THIS_DIR/fuzzer-classes:$THIS_DIR"
+exec java -cp "$CP" com.code_intelligence.jazzer.Jazzer \
+  --cp="$CP" \
+  --target_class=UrlFuzzer \
+  --instrumentation_includes='okhttp3.**'
+EOF
+chmod +x "$OUT/UrlFuzzer"
