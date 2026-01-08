@@ -1,4 +1,6 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +16,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool libomp-dev libgomp1
-RUN git clone --depth 1 https://github.com/oneapi-src/oneDNN oneDNN
-WORKDIR oneDNN
-COPY run_tests.sh build.sh *.cpp $SRC/
+# Disable leak sanitizer and disable check for allocator null
+export ASAN_OPTIONS="detect_leaks=0:allocator_may_return_null=1"
+
+# Run unit test, skipping all the benchdnn test which are stress test that takes hrs to run
+ctest --test-dir build -E "test_benchdnn_*"
