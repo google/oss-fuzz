@@ -60,7 +60,7 @@ ninja -C out/fuzz_targets fuzz_tests
 
 cp out/fuzz_targets/tests/* $OUT/
 
-# Copy required shared libraries related to libgio to $OUT/lib
+# Copy some GLib and GIO runtime libraries into $OUT so fuzzed all-clusters app can run under OSS-Fuzz base-runner, which does not provide these libraries.
 mkdir -p $OUT/lib
 cp /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0 $OUT/lib/
 cp /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0 $OUT/lib/
