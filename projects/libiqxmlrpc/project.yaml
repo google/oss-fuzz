@@ -1,6 +1,3 @@
-# OSS-Fuzz project configuration for libiqxmlrpc
-# This file should be placed in the OSS-Fuzz projects directory
-
 homepage: "https://github.com/yarikmsu/libiqxmlrpc"
 language: c++
 primary_contact: "ygorbunov@gmail.com"
