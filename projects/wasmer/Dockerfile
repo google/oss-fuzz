@@ -22,12 +22,11 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
 RUN git clone --depth 1 https://github.com/wasmerio/wasmer wasmer
 
 RUN mkdir -p $SRC/.llvm && curl --proto '=https' --tlsv1.2 -sSf \
-    https://github.com/wasmerio/llvm-custom-builds/releases/download/18.x/llvm-linux-amd64.tar.xz -L -o -| \
+    https://github.com/wasmerio/llvm-custom-builds/releases/download/21.x/llvm-linux-amd64.tar.xz -L -o -| \
     tar xJv -C $SRC/.llvm
 
 WORKDIR wasmer
 
-# dead code warnings with nightly-2024-07-12
-ENV RUSTUP_TOOLCHAIN nightly-2024-10-10
+ENV RUSTUP_TOOLCHAIN nightly
 
 COPY build.sh default.options $SRC/
