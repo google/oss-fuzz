@@ -1,4 +1,6 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +15,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
-
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/karchive.git
-RUN $SRC/karchive/autotests/ossfuzz/prepare_build.sh
-RUN cp $SRC/karchive/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
-
-WORKDIR $SRC/karchive
-COPY run_tests.sh $SRC/
+ctest --test-dir .
