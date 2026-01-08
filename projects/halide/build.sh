@@ -16,8 +16,6 @@
 ################################################################################ 
 set euox pipefail
 
-export LDFLAGS="-fuse-ld=lld"
-
 declare -A LLVM_SANITIZER=( ["address"]="Address" ["undefined"]="Undefined" ["memory"]="Memory" )
 
 if [[ -v LLVM_SANITIZER[$SANITIZER] ]]; then

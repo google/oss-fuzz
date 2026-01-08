@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# use a linker that supports Dwarf v5
-export LDFLAGS="-fuse-ld=lld"
-
 # build projects
 #nettle
 (

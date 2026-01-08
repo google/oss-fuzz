@@ -45,19 +45,19 @@ else
   export PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/$LIBDIR/pkgconfig:$FFMPEG_DEPS_PATH/lib/pkgconfig"
 fi
 
-# The option `-fuse-ld=gold` can't be passed via `CFLAGS` or `CXXFLAGS` because
+# The option `-fuse-ld=` can't be passed via `CFLAGS` or `CXXFLAGS` because
 # Meson injects `-Werror=ignored-optimization-argument` during compile tests.
 # Remove the `-fuse-ld=` and let Meson handle it.
 # https://github.com/mesonbuild/meson/issues/6377#issuecomment-575977919
 export MESON_CFLAGS="$CFLAGS"
-if [[ "$CFLAGS" == *"-fuse-ld=gold"* ]]; then
-    export MESON_CFLAGS="${CFLAGS//-fuse-ld=gold/}"
-    export CC_LD=gold
+if [[ "$CFLAGS" == *"-fuse-ld=lld"* ]]; then
+    export MESON_CFLAGS="${CFLAGS//-fuse-ld=lld/}"
+    export CC_LD=lld
 fi
 export MESON_CXXFLAGS="$CXXFLAGS"
-if [[ "$CXXFLAGS" == *"-fuse-ld=gold"* ]]; then
-    export MESON_CXXFLAGS="${CXXFLAGS//-fuse-ld=gold/}"
-    export CXX_LD=gold
+if [[ "$CXXFLAGS" == *"-fuse-ld=lld"* ]]; then
+    export MESON_CXXFLAGS="${CXXFLAGS//-fuse-ld=lld/}"
+    export CXX_LD=lld
 fi
 
 meson_install() {
