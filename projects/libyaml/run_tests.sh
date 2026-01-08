@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2025 Google LLC
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +16,6 @@
 #
 ################################################################################
 
-
-FROM gcr.io/oss-fuzz-base/base-builder-python
-
-RUN apt-get update && apt-get install -y \
-    libcups2-dev \
-    libcupsimage2-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN git clone --depth 1 https://github.com/OpenPrinting/pycups.git $SRC/pycups
-RUN git clone --depth 1 https://github.com/OpenPrinting/fuzzing.git $SRC/fuzzing
-
-COPY build.sh $SRC/
-WORKDIR $SRC/pycups
+# Disable leak sanitizer and run unit testing
+export ASAN_OPTIONS="detect_leaks=0"
+make check -C tests -j$(nproc)

@@ -1,3 +1,5 @@
+#!/bin/bash -eu
+#
 # Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +16,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN git clone --depth 1 --branch master https://github.com/nyx-space/anise anise
-RUN apt-get update && apt-get install -y tcsh libc++-dev libc++abi-dev && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    cd anise && ./dev-env-setup.sh
-ENV RUSTUP_TOOLCHAIN=nightly-2025-07-03
-ENV RUSTFLAGS="-C link-arg=-lc++"
-WORKDIR $SRC
-COPY build.sh $SRC/
+# Enter tests directory and run the two unit test cases
+cd tests && ./tester && ./tester_noexcept

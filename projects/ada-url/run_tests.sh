@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2025 Google LLC
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +16,4 @@
 #
 ################################################################################
 
-cd $SRC/anise/anise
-cargo fuzz build -O
-
-FUZZ_TARGET_OUTPUT_DIR=$SRC/anise/target/x86_64-unknown-linux-gnu/release
-for f in fuzz/fuzz_targets/*.rs
-do
-    FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp "$FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME" "$OUT/"
-done
+ctest --test-dir build-tests
