@@ -23,3 +23,14 @@ for dir in *.in; do
     fuzzer=$(basename $dir .in)_fuzzer
     zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${dir}/"
 done
+
+# The build above only builds the fuzzers using autotools.
+# Unit test definitions are located in meson.build.
+# Build the unit test suite with meson for run_tests.sh.
+# CXXFLAGS must be unset because it contains -stdlib=libc++ which is C++ specific
+# and causes linker errors when building this primarily C project with meson. The
+# sanitizer flags combined with C++ flags also create linking conflicts between C
+# and C++ runtime libraries in the meson build system.
+cd $SRC/p11-kit
+CFLAGS= CXXFLAGS= meson setup build
+ninja -C build
