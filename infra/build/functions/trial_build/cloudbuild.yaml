@@ -16,7 +16,7 @@
 
 steps:
 - id: 'Build the trial-build image'
-  name: 'gcr.io/cloud-builders/docker'
+  name: 'docker:latest'
   args:
   - build
   - '-t'

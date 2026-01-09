@@ -9,7 +9,7 @@
     "name": "gcr.io/cloud-builders/git"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "args": [
       "build",
       "--tag",
@@ -34,7 +34,7 @@
     "id": "srcmap"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "args": [
       "run",
       "--privileged",
@@ -42,7 +42,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "args": [
       "buildx",
       "create",
@@ -51,7 +51,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "args": [
       "buildx",
       "use",
@@ -59,7 +59,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "args": [
       "buildx",
       "build",
@@ -77,7 +77,7 @@
     "id": "build-UNIQUE_ID"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=afl",
@@ -115,7 +115,7 @@
     "id": "compile-afl-address-x86_64"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=afl",
@@ -218,7 +218,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=centipede",
@@ -256,7 +256,7 @@
     "id": "compile-centipede-address-x86_64"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=centipede",
@@ -359,7 +359,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=centipede",
@@ -397,7 +397,7 @@
     "id": "compile-centipede-none-x86_64"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=centipede",
@@ -500,7 +500,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=honggfuzz",
@@ -538,7 +538,7 @@
     "id": "compile-honggfuzz-address-x86_64"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=honggfuzz",
@@ -641,7 +641,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -679,7 +679,7 @@
     "id": "compile-libfuzzer-address-x86_64"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -782,7 +782,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=i386",
       "FUZZING_ENGINE=libfuzzer",
@@ -820,7 +820,7 @@
     "id": "compile-libfuzzer-address-i386"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=i386",
       "FUZZING_ENGINE=libfuzzer",
@@ -923,7 +923,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=aarch64",
       "FUZZING_ENGINE=libfuzzer",
@@ -961,7 +961,7 @@
     "id": "compile-libfuzzer-address-aarch64"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=aarch64",
       "FUZZING_ENGINE=libfuzzer",
@@ -1064,7 +1064,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -1102,7 +1102,7 @@
     "id": "compile-libfuzzer-memory-x86_64"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -1205,7 +1205,7 @@
     ]
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -1243,7 +1243,7 @@
     "id": "compile-libfuzzer-undefined-x86_64"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",

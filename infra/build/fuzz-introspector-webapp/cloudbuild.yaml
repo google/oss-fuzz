@@ -1,6 +1,6 @@
 # Builds and deploys the fuzz introspector webapp.
 steps:
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   args:
   - 'build'
   - '-t'
@@ -8,7 +8,7 @@ steps:
   - 'infra/build/fuzz-introspector-webapp'
 
 # Push the image here so we deploy the latest build.
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   args:
   - 'push'
   - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'

@@ -9,7 +9,7 @@
     "name": "gcr.io/cloud-builders/git"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "args": [
       "build",
       "--tag",
@@ -34,7 +34,7 @@
     "id": "srcmap"
   },
   {
-    "name": "gcr.io/cloud-builders/docker",
+    "name": "docker:latest",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
