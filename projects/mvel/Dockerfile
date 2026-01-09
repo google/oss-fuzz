@@ -27,7 +27,7 @@ ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 COPY project-parent $SRC/project-parent/
 
 RUN rm -rf $SRC/project-parent/mvel
-RUN git clone --depth 1 https://github.com/mvel/mvel/ $SRC/project-parent/mvel
+RUN git clone --depth 1 -b mvel2 https://github.com/mvel/mvel/ $SRC/project-parent/mvel
 
 COPY build.sh $SRC/
 WORKDIR $SRC/
