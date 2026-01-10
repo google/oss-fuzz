@@ -1,0 +1,9 @@
+#!/bin/sh -x
+
+LUAROCKS_CONFIG=/root/.luarocks/config-5.5.lua
+export LUAROCKS_CONFIG
+PREFIX=/src/testdir/build/lua-master/source
+export PATH=$PREFIX:$PATH
+
+/src/testdir/lua `which luarocks` ${1+"$@"}
+exit $?

@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2023-2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,22 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN git clone https://github.com/ligurio/lua-c-api-tests testdir
-WORKDIR testdir
-# RUN git clone --depth 1 --jobs $(nproc) https://github.com/ligurio/lua-c-api-corpus corpus_dir
-COPY build.sh testdir/
-WORKDIR $SRC
-COPY build.sh $SRC/
-COPY fuzz_lua.c $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder
 
+RUN apt-get update && apt-get install -y build-essential make
+
+COPY build.sh $SRC/
 COPY compile_lua_fuzzer $SRC/
-COPY lua $SRC/
-COPY luarocks $SRC/
 COPY luzer-scm-1.rockspec $SRC/
+
+# For real projects, you would clone your repo in the next step.
+RUN mkdir -p $SRC/example
+
+# Ideally, you have already configured fuzz tests in your repo so
+# that they run (in luzer regression mode) as part of unit testing.
+# Keeping the fuzz tests in sync with the source code ensures that
+# they are adjusted continue to work after code changes. Here,
+# we copy them into the example project directory.
+COPY example_basic.lua $SRC/example/fuzz_basic.lua
+
+WORKDIR $SRC/example
