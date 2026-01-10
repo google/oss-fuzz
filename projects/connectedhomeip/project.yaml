@@ -1,6 +1,7 @@
 homepage: "https://buildwithmatter.com/"
 language: c++
 primary_contact: "andreilitvin@google.com"
+base_os_version: ubuntu-24-04
 auto_ccs:
   - "asad_haque@comcast.com"
   - "lalabdulkarim@csa-iot.org"
