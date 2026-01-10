@@ -290,6 +290,10 @@ done
 
 mv $SRC/{*.zip,*.dict} $OUT
 
+pushd $SRC/poppler-data
+make install pkgdatadir=$OUT/poppler-data datadir=$OUT/tmp-datadir
+popd
+
 if [ ! -f "${OUT}/poppler_seed_corpus.zip" ]; then
     echo "missing seed corpus"
     exit 1
