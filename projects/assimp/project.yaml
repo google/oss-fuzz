@@ -1,16 +1,15 @@
 homepage: "https://github.com/assimp/assimp"
+main_repo: "https://github.com/assimp/assimp"
 language: c++
-primary_contact: "kim.kulling@googlemail.com"
+primary_contact: "kim.kulling@assimp.org"
+auto_ccs:
+  - "kim.kulling@googlemail.com"
+  - "realmccoy+ossfuzz@fastmail.com"
 sanitizers:
   - address
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
-#     experimental: True
   - undefined
-main_repo: 'https://github.com/assimp/assimp.git'
-
+  - memory
 fuzzing_engines:
+  - libfuzzer
   - afl
   - honggfuzz
-  - libfuzzer
-
