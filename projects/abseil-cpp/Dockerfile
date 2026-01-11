@@ -15,5 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y libgtest-dev
 RUN git clone --depth 1 https://github.com/abseil/abseil-cpp.git
-COPY BUILD WORKSPACE build.sh *_fuzzer.cc $SRC/
+COPY BUILD WORKSPACE run_tests.sh build.sh *_fuzzer.cc $SRC/
