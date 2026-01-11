@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip
-RUN unset CFLAGS CXXFLAGS && pip3 install -U meson ninja
-RUN git clone --depth 1 https://github.com/rauc/rauc.git rauc
-WORKDIR rauc
-COPY run_tests.sh build.sh $SRC/
+# Disable leak sanitizer
+export ASAN_OPTIONS="detect_leaks=0"
+
+# Run unit test (2 unit tests that required network connection are skipped)
+ctest --test-dir $SRC/cpython -j$(nproc) -E "test_urllib2|test_urllibnet"
