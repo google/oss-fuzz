@@ -1,4 +1,6 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +16,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip
-RUN unset CFLAGS CXXFLAGS && pip3 install -U meson ninja
-RUN git clone --depth 1 https://github.com/rauc/rauc.git rauc
-WORKDIR rauc
-COPY run_tests.sh build.sh $SRC/
+# Disable leak sanitizer
+export ASAN_OPTIONS="detect_leaks=0"
+
+# Run unit testing, skipping some that requires hardware or network configuration
+meson test -C $WORK/build --suite rauc -j$(nproc) artifacts bootchooser checksum config_file context event_log hash_index manifest progress slot stats status_file utils
+
+# Test skipped that requires hardware or network configuration
+# meson test -C $WORK/build --suite rauc -j$(nproc) boot_raw_fallback bundle dm install service signature update_handler
