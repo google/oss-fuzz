@@ -117,6 +117,9 @@ COPY --from=base-ruby /usr/local/bin/gem /usr/local/bin/gem
 COPY --from=base-ruby /usr/local/lib/ruby /usr/local/lib/ruby
 COPY --from=base-ruby /usr/local/include/ruby-3.3.0 /usr/local/include/ruby-3.3.0
 
+RUN apt-get install -y libyaml-0-2 && \
+    gem install simplecov
+
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
     coverage \
@@ -130,9 +133,10 @@ COPY bad_build_check \
     parse_options.py \
     generate_differential_cov_report.py \
     profraw_update.py \
-
     targets_list \
     test_all.py \
     test_one.py \
     python_coverage_runner_help.py \
+    consolidate_ruby_coverage.sh \
+    consolidate_html.py \
     /usr/local/bin/

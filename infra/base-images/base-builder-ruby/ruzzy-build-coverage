@@ -1,0 +1,94 @@
+#!/bin/bash
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+#
+# Generic coverage wrapper generator for Ruby fuzzers.
+# 
+# Usage: ruzzy-build-coverage <fuzzer_harness.rb> <output_dir> <project_name>
+#
+# This script creates a coverage-instrumented wrapper for a Ruby fuzzer harness.
+# It modifies the harness to support both normal fuzzing (via Ruzzy.fuzz) and
+# coverage mode (via direct execution on corpus files).
+#
+# Arguments:
+#   $1 - Path to the Ruby fuzzer harness file (e.g., /src/harnesses/fuzz_memory.rb)
+#   $2 - Output directory where the wrapper will be created (e.g., $OUT)
+#   $3 - Project name for corpus directory creation (e.g., ffi)
+#
+
+fuzz_target_path="$1"
+out_dir="$2"
+project_name="$3"
+
+if [ ! -f "$fuzz_target_path" ]; then
+    echo "Error: Fuzzer harness not found: $fuzz_target_path"
+    exit 1
+fi
+
+fuzzer_name=$(basename "$fuzz_target_path" .rb)
+
+echo "Building coverage wrapper for $fuzzer_name"
+
+# Create corpus directory for this fuzzer
+mkdir -p "../../build/corpus/${project_name}/${fuzzer_name}"
+
+# Copy the harness as-is (no modification needed with OSSFuzz.fuzz())
+cp "$fuzz_target_path" "$out_dir/${fuzzer_name}.rb"
+
+# Ensure ossfuzz_helper.rb and coverage_helper.rb are available
+cp /usr/local/lib/ossfuzz_helper.rb "$out_dir/"
+cp /usr/local/lib/coverage_helper.rb "$out_dir/"
+
+# Create bash wrapper that runs the modified harness with Ruby coverage
+# IMPORTANT: Include OSSFuzz.fuzz comment for fuzzer detection by base-runner coverage script
+cat > "$out_dir/$fuzzer_name" << 'WRAPPER_EOF'
+#!/usr/bin/env bash
+# Coverage wrapper for Ruby fuzzer
+# OSSFuzz.fuzz - This comment is needed for fuzzer detection
+this_dir=$(dirname "$0")
+export GEM_HOME=$this_dir/fuzz-gem
+export GEM_PATH=$this_dir/fuzz-gem:/usr/local/lib/ruby/gems/3.3.0
+
+# If corpus directory provided, run fuzzer on each corpus file with coverage
+if [ -n "$FUZZ_CORPUS_DIR" ] && [ -d "$FUZZ_CORPUS_DIR" ]; then
+    export COVERAGE_MODE=true
+    # COVERAGE_DIR is set by the coverage script
+    mkdir -p "$COVERAGE_DIR"
+    
+    # Iterate over corpus files and run harness with coverage
+    for corpus_file in "$FUZZ_CORPUS_DIR"/*; do
+        if [ -f "$corpus_file" ]; then
+            ruby -I"$this_dir" -I/usr/local/lib -rcoverage_helper "$this_dir/FUZZER_NAME_PLACEHOLDER.rb" "$corpus_file" 2>/dev/null || true
+        fi
+    done
+    
+    # Copy resultset to DUMPS_DIR root for coverage script to find
+    if [ -f "$COVERAGE_DIR/.resultset.json" ]; then
+        cp "$COVERAGE_DIR/.resultset.json" "$(dirname $COVERAGE_DIR)/FUZZER_NAME_PLACEHOLDER.resultset.json"
+    fi
+else
+    # No corpus directory, just exit
+    echo "No corpus directory provided"
+    exit 0
+fi
+WRAPPER_EOF
+
+# Replace placeholder with actual fuzzer name
+sed -i "s/FUZZER_NAME_PLACEHOLDER/${fuzzer_name}/g" "$out_dir/$fuzzer_name"
+
+chmod +x "$out_dir/$fuzzer_name"
+
+echo "Created coverage wrapper: $out_dir/$fuzzer_name"
