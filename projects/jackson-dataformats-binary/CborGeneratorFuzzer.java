@@ -14,13 +14,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
+import tools.jackson.core.io.SerializedString;
+import tools.jackson.dataformat.cbor.CBORFactory;
+import tools.jackson.dataformat.cbor.CBORGenerator;
+import tools.jackson.dataformat.cbor.CBORMapper;
+import tools.jackson.dataformat.cbor.CBORWriteFeature;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.EnumSet;
@@ -29,8 +30,8 @@ import java.util.EnumSet;
 public class CborGeneratorFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      // Retrieve set of CBORGenerator.Feature
-      EnumSet<CBORGenerator.Feature> featureSet = EnumSet.allOf(CBORGenerator.Feature.class);
+      // Retrieve set of CBORWriteFeature
+      EnumSet<CBORWriteFeature> featureSet = EnumSet.allOf(CBORWriteFeature.class);
 
       // Create and configure CBORMapper
       CBORMapper mapper =
@@ -45,18 +46,15 @@ public class CborGeneratorFuzzer {
         return;
       }
 
-      // Create and configure CBORGenerator
+      // Create CBORGenerator
       CBORGenerator generator =
-          ((CBORMapper) mapper).getFactory().createGenerator(new ByteArrayOutputStream());
-      for (CBORGenerator.Feature feature : featureSet) {
-        generator.configure(feature, data.consumeBoolean());
-      }
+          (CBORGenerator) ((CBORMapper) mapper).tokenStreamFactory().createGenerator(new ByteArrayOutputStream());
       generator.writeStartObject();
 
       // Fuzz methods of CBORGenerator
       String value = null;
       byte[] byteArray = null;
-      generator.writeFieldName("OSS-Fuzz");
+      generator.writeName("OSS-Fuzz");
       switch (data.consumeInt(1, 18)) {
         case 1:
           generator.writeBoolean(data.consumeBoolean());
@@ -127,7 +125,7 @@ public class CborGeneratorFuzzer {
       generator.writeEndObject();
       generator.flush();
       generator.close();
-    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

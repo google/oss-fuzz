@@ -46,5 +46,5 @@ for FUZZER_SOURCE in lib/*/fuzzers/*.c; do
    ./lib/cib/.libs/libcib.a ./lib/pengine/.libs/libpe_rules.a              \
    ./lib/common/.libs/libcrmcommon.a -l:libqb.a                            \
    -l:libxslt.a -l:libxml2.a -l:libglib-2.0.a -l:libuuid.a -l:libicuuc.a   \
-   -l:libz.a -lgnutls -lbz2 -lrt -ldl -lc
+   -l:libz.a -lgnutls -lbz2 -lpcre -lrt -ldl -lc
 done

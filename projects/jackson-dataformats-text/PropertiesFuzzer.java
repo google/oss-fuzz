@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.javaprop.JavaPropsMapper;
 
 public class PropertiesFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     ObjectMapper mapper = new JavaPropsMapper();
     try {
       mapper.readTree(input);
-    } catch (IOException ignored) {
+    } catch (JacksonException ignored) {
     }
   }
 }

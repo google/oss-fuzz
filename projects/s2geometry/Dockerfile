@@ -20,7 +20,7 @@ RUN apt-get update && \
     libgflags-dev \
     libgoogle-glog-dev \
     libgtest-dev libssl-dev \
-    make \
+    make libgtest-dev \
     curl pkg-config 
 
 # OpenSSL
@@ -38,7 +38,8 @@ RUN set -ex \
 
 RUN git clone https://github.com/google/s2geometry
 WORKDIR $SRC/s2geometry
-COPY build.sh \
+COPY run_tests.sh \
+     build.sh \
      s2_fuzzer.cc \
      $SRC/
 COPY project.patch $SRC/

@@ -44,14 +44,11 @@ cd $SRC/protobuf-c/
 make -j$(nproc)
 make install
 
-cd $SRC/fuzzing-headers/
-./install.sh
+# Generate C code from proto file
+cd $SRC/protobuf-c/
+protoc --c_out=. -I. -I/usr/local/include t/test-full.proto
 
-cd $SRC/protobuf-c-fuzzers/
-cp $SRC/protobuf-c/t/test-full.proto $SRC/protobuf-c-fuzzers/
-export PATH=$PATH:$SRC/protobuf-c/protoc-c
-protoc --c_out=. -I. -I/usr/local/include test-full.proto
-
-CXXFLAGS="${OLD_CXXFLAGS}"
-$CC $CFLAGS test-full.pb-c.c -I $SRC/protobuf-install -I $SRC/protobuf-c -c -o test-full.pb-c.o
-$CXX $CXXFLAGS fuzzer.cpp -I $SRC/protobuf-install -I $SRC/protobuf-c test-full.pb-c.o $SRC/protobuf-c/protobuf-c/.libs/libprotobuf-c.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer
+# Build the unpack fuzzer
+$CC $CFLAGS -I. -I/usr/local/include -c t/test-full.pb-c.c -o test-full.pb-c.o
+$CC $CFLAGS -I. -I/usr/local/include $SRC/unpack_fuzzer.c test-full.pb-c.o \
+    protobuf-c/.libs/libprotobuf-c.a $LIB_FUZZING_ENGINE -o $OUT/unpack_fuzzer

@@ -18,4 +18,5 @@ RUN apt-get update
 RUN git clone https://github.com/benhoyt/inih.git
 COPY inihfuzz.c $SRC/inih/inihfuzz.c
 COPY build.sh $SRC/build.sh
+COPY run_tests.sh $SRC/
 WORKDIR $SRC/inih/

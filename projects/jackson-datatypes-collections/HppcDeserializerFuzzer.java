@@ -20,9 +20,10 @@ import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntIndexedContainer;
 import com.carrotsearch.hppc.IntSet;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.hppc.HppcModule;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.hppc.HppcModule;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,9 @@ public class HppcDeserializerFuzzer {
 
   public static void fuzzerInitialize() {
     // Register the Hppc for the deserialization
-    mapper = new ObjectMapper().registerModule(new HppcModule());
+    mapper = JsonMapper.builder()
+        .addModule(new HppcModule())
+        .build();
     initializeClassChoice();
   }
 
@@ -43,7 +46,7 @@ public class HppcDeserializerFuzzer {
       Class type = data.pickValue(choice);
       String value = data.consumeRemainingAsString();
       mapper.readValue(value, type);
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       // Known exception
     }
   }

@@ -26,5 +26,5 @@ RUN \
   flex
 
 RUN git clone --depth 1 https://github.com/VirusTotal/yara.git
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 WORKDIR yara

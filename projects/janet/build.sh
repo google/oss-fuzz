@@ -15,7 +15,6 @@
 #
 ################################################################################
 export CFLAGS="$CFLAGS -fPIC"
-cd janet
 make
 
 $CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_dostring.o -c ./test/fuzzers/fuzz_dostring.c

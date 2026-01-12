@@ -24,4 +24,4 @@ ENV GNULIB_SRCDIR=$SRC/gnulib
 RUN git clone https://gitlab.com/gnutls/libtasn1.git
 
 WORKDIR libtasn1
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

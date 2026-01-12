@@ -21,14 +21,14 @@
 
 #include "fuzzer/FuzzedDataProvider.h"
 #include "connection_helper.h"
+#include "conn_timeout.h"
 
-extern "C" {
-  #include "daemon_funcs.h"
-  #include "mempool_funcs.h"
-  #include "post_parser_funcs.h"
-  #include "stream_funcs.h"
-  #include "stream_process_request.h"
-}
+#include "daemon_funcs.h"
+#include "mempool_funcs.h"
+#include "post_parser_funcs.h"
+#include "stream_funcs.h"
+#include "stream_process_request.h"
+
 
 // Helper to fuzz mhd_stream_process_post_finish
 static void fuzz_mhd_stream_process_post_finish(MHD_Connection& connection, MHD_Daemon& daemon, const std::string& body) {

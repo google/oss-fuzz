@@ -13,17 +13,18 @@
 // limitations under the License.
 //
 ///////////////////////////////////////////////////////////////////////////
-import com.amazon.ion.IonException;
+
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
-import com.fasterxml.jackson.dataformat.ion.IonFactoryBuilder;
-import com.fasterxml.jackson.dataformat.ion.IonGenerator;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.io.SerializedString;
+import tools.jackson.dataformat.ion.IonFactory;
+import tools.jackson.dataformat.ion.IonFactoryBuilder;
+import tools.jackson.dataformat.ion.IonGenerator;
+import tools.jackson.dataformat.ion.IonObjectMapper;
+import tools.jackson.dataformat.ion.IonWriteFeature;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+
 import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -33,8 +34,8 @@ import java.util.EnumSet;
 public class IonGeneratorFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      // Retrieve set of IonGenerator.Feature
-      EnumSet<IonGenerator.Feature> featureSet = EnumSet.allOf(IonGenerator.Feature.class);
+      // Retrieve set of IonWriteFeature
+      EnumSet<IonWriteFeature> featureSet = EnumSet.allOf(IonWriteFeature.class);
 
       // Create and configure IonObjectMapper
       IonFactoryBuilder ionFactoryBuilder;
@@ -56,17 +57,17 @@ public class IonGeneratorFuzzer {
         return;
       }
 
-      // Create and configure SmileGenerator
+      // Create and configure IonGenerator
       JsonGenerator generator =
           ((IonObjectMapper) mapper)
-              .getFactory()
+              .tokenStreamFactory()
               .createGenerator(new OutputStreamWriter(new ByteArrayOutputStream()));
       generator.writeStartObject();
 
       // Fuzz methods of ProtobufGenerator
       String value = null;
       byte[] byteArray = null;
-      generator.writeFieldName("OSS-Fuzz");
+      generator.writeName("OSS-Fuzz");
       switch (data.consumeInt(1, 18)) {
         case 1:
           generator.writeBoolean(data.consumeBoolean());
@@ -137,11 +138,7 @@ public class IonGeneratorFuzzer {
       generator.writeEndObject();
       generator.flush();
       generator.close();
-    } catch (IOException
-        | IllegalArgumentException
-        | IllegalStateException
-        | IonException
-        | UnsupportedOperationException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

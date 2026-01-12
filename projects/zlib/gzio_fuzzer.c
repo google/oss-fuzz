@@ -40,8 +40,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
      * operation and their operand are controlled by the fuzzer
      */
     int op_count = 2; //< Number of operations chained.
-    while(op_count--) {
-      switch((--dataLen, (*data)%26)) {
+    while(op_count-- && dataLen > 0) {
+      switch((--dataLen, (*data++)%26)) {
         case 0: {
           char c = dataLen ? (--dataLen, (char)*data++) : 'c';
           if(gzputc(file, c) < 0) {

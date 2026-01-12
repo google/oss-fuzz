@@ -26,4 +26,4 @@ RUN rm -rf tests
 COPY *.dict $SRC/
 WORKDIR jbig2dec
 COPY *.cc $SRC/
-COPY build.sh *.options $SRC/
+COPY run_tests.sh build.sh *.options $SRC/

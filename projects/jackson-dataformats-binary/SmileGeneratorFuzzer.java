@@ -14,13 +14,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
+import tools.jackson.core.io.SerializedString;
+import tools.jackson.dataformat.smile.SmileFactory;
+import tools.jackson.dataformat.smile.SmileGenerator;
+import tools.jackson.dataformat.smile.SmileMapper;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.EnumSet;
@@ -29,8 +30,8 @@ import java.util.EnumSet;
 public class SmileGeneratorFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      // Retrieve set of SmileGenerator.Feature
-      EnumSet<SmileGenerator.Feature> featureSet = EnumSet.allOf(SmileGenerator.Feature.class);
+      // Retrieve set of SmileWriteFeature
+      EnumSet<SmileWriteFeature> featureSet = EnumSet.allOf(SmileWriteFeature.class);
 
       // Create and configure SmileMapper
       SmileMapper mapper =
@@ -44,18 +45,15 @@ public class SmileGeneratorFuzzer {
         return;
       }
 
-      // Create and configure SmileGenerator
+      // Create SmileGenerator
       SmileGenerator generator =
-          ((SmileMapper) mapper).getFactory().createGenerator(new ByteArrayOutputStream());
-      for (SmileGenerator.Feature feature : featureSet) {
-        generator.configure(feature, data.consumeBoolean());
-      }
+          (SmileGenerator) ((SmileMapper) mapper).tokenStreamFactory().createGenerator(new ByteArrayOutputStream());
       generator.writeStartObject();
 
       // Fuzz methods of SmileGenerator
       String value = null;
       byte[] byteArray = null;
-      generator.writeFieldName("OSS-Fuzz");
+      generator.writeName("OSS-Fuzz");
       switch (data.consumeInt(1, 20)) {
         case 1:
           generator.writeRaw(data.consumeByte());
@@ -133,7 +131,7 @@ public class SmileGeneratorFuzzer {
       generator.writeEndObject();
       generator.flush();
       generator.close();
-    } catch (IOException | IllegalArgumentException | IllegalStateException | UnsupportedOperationException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

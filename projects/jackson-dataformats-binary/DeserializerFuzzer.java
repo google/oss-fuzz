@@ -13,34 +13,34 @@
 // limitations under the License.
 //
 ///////////////////////////////////////////////////////////////////////////
-import com.amazon.ion.IonException;
+
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroFactory;
-import com.fasterxml.jackson.dataformat.avro.AvroFactoryBuilder;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroParser;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
-import com.fasterxml.jackson.dataformat.ion.IonFactory;
-import com.fasterxml.jackson.dataformat.ion.IonFactoryBuilder;
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper;
-import com.fasterxml.jackson.dataformat.ion.IonParser;
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufFactory;
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
-import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.avro.AvroFactory;
+import tools.jackson.dataformat.avro.AvroFactoryBuilder;
+import tools.jackson.dataformat.avro.AvroMapper;
+import tools.jackson.dataformat.avro.AvroReadFeature;
+import tools.jackson.dataformat.cbor.CBORFactory;
+import tools.jackson.dataformat.cbor.CBORWriteFeature;
+import tools.jackson.dataformat.cbor.CBORMapper;
+import tools.jackson.dataformat.ion.IonFactory;
+import tools.jackson.dataformat.ion.IonFactoryBuilder;
+import tools.jackson.dataformat.ion.IonObjectMapper;
+import tools.jackson.dataformat.ion.IonReadFeature;
+import tools.jackson.dataformat.protobuf.ProtobufFactory;
+import tools.jackson.dataformat.protobuf.ProtobufMapper;
+import tools.jackson.dataformat.smile.SmileFactory;
+import tools.jackson.dataformat.smile.SmileReadFeature;
+import tools.jackson.dataformat.smile.SmileMapper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public class DeserializerFuzzer {
           mapper =
               AvroMapper.builder(
                       avroFactoryBuilder
-                          .enable(data.pickValue(EnumSet.allOf(AvroParser.Feature.class)))
+                          .enable(data.pickValue(EnumSet.allOf(AvroReadFeature.class)))
                           .build())
                   .build();
           break;
@@ -87,7 +87,7 @@ public class DeserializerFuzzer {
           mapper =
               CBORMapper.builder(
                       CBORFactory.builder()
-                          .enable(data.pickValue(EnumSet.allOf(CBORGenerator.Feature.class)))
+                          .enable(data.pickValue(EnumSet.allOf(CBORWriteFeature.class)))
                           .build())
                   .build();
           break;
@@ -102,7 +102,7 @@ public class DeserializerFuzzer {
           mapper =
               IonObjectMapper.builder(
                       ionFactoryBuilder
-                          .enable(data.pickValue(EnumSet.allOf(IonParser.Feature.class)))
+                          .enable(data.pickValue(EnumSet.allOf(IonReadFeature.class)))
                           .build())
                   .build();
           break;
@@ -113,7 +113,7 @@ public class DeserializerFuzzer {
           mapper =
               SmileMapper.builder(
                       SmileFactory.builder()
-                          .enable(data.pickValue(EnumSet.allOf(SmileParser.Feature.class)))
+                          .enable(data.pickValue(EnumSet.allOf(SmileReadFeature.class)))
                           .build())
                   .build();
           break;
@@ -127,7 +127,7 @@ public class DeserializerFuzzer {
       // Fuzz the deserialize methods for different Avro/Cbor/Ion/Protobuf/Smile objects
       if (data.consumeBoolean()) {
         byte[] output = data.consumeRemainingAsBytes();
-        parser = mapper.getFactory().createParser(new ByteArrayInputStream(output));
+        parser = mapper.tokenStreamFactory().createParser(new ByteArrayInputStream(output));
         mapper.readTree(parser);
       } else {
         Class type = data.pickValue(choice);
@@ -137,20 +137,21 @@ public class DeserializerFuzzer {
         }
         mapper.readValue(value, type);
         if (mapper instanceof AvroMapper) {
-          mapper.readerFor(type).with(((AvroMapper) mapper).schemaFrom(value)).readValue(value);
+          try {
+            mapper.readerFor(type).with(((AvroMapper) mapper).schemaFrom(value)).readValue(value);
+          } catch (java.io.IOException e) {
+            // Schema parsing can throw IOException
+          }
         }
       }
-    } catch (IOException
-        | IllegalArgumentException
-        | UnsupportedOperationException
-        | IonException e) {
+    } catch (RuntimeException e) {
       // Known exception
     } finally {
       try {
         if (parser != null) {
           parser.close();
         }
-      } catch (IOException e) {
+      } catch (RuntimeException e) {
         // Ignore exceptions for closing JsonParser object
       }
     }

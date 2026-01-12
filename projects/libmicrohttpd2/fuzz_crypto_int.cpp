@@ -20,11 +20,11 @@
 #include <algorithm>
 
 #include <fuzzer/FuzzedDataProvider.h>
-extern "C" {
-  #include "md5_int.h"
-  #include "sha256_int.h"
-  #include "sha512_256_int.h"
-}
+
+#include "md5_int.h"
+#include "sha256_int.h"
+#include "sha512_256_int.h"
+
 
 // Fuzzing target function pointer types for the internal hash APIs
 template <typename HashType> using InitFn   = void (*)(HashType*);

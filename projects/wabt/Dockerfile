@@ -20,4 +20,4 @@ RUN git clone --recursive https://github.com/WebAssembly/wabt
 WORKDIR wabt
 RUN git submodule init
 RUN git submodule update
-COPY build.sh *_fuzzer.cc $SRC/
+COPY run_tests.sh build.sh *_fuzzer.cc $SRC/

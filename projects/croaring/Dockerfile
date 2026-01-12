@@ -18,4 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/RoaringBitmap/CRoaring croaring
 RUN mv croaring/fuzz/* $SRC/
+RUN sed -i 's/DENABLE_ROARING_TESTS=OFF/DENABLE_ROARING_TESTS=ON/g' $SRC/build.sh
+COPY run_tests.sh $SRC/
 WORKDIR $SRC/croaring
+

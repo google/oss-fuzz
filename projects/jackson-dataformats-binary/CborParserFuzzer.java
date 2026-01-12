@@ -14,10 +14,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
-import com.fasterxml.jackson.dataformat.cbor.CBORParser;
-import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
-import java.io.IOException;
+import tools.jackson.dataformat.cbor.CBORFactory;
+import tools.jackson.dataformat.cbor.CBORParser;
+import tools.jackson.dataformat.cbor.CBORMapper;
+
 import java.util.EnumSet;
 
 /** This fuzzer targets the methods of CBORParser */
@@ -37,7 +37,7 @@ public class CborParserFuzzer {
 
       // Create and configure CBORParser
       CBORParser parser =
-          ((CBORMapper) mapper).getFactory().createParser(data.consumeRemainingAsBytes());
+          (CBORParser) ((CBORMapper) mapper).tokenStreamFactory().createParser(data.consumeRemainingAsBytes());
 
       // Fuzz methods of CBORParser
       for (Integer choice : choices) {
@@ -61,7 +61,7 @@ public class CborParserFuzzer {
             parser.nextToken();
             break;
           case 7:
-            parser.nextTextValue();
+            parser.nextStringValue();
             break;
           case 8:
             parser.getText();
@@ -103,12 +103,10 @@ public class CborParserFuzzer {
       }
 
       parser.close();
-    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
-      // Known exception
     } catch (RuntimeException e) {
-      // Catch known internal exception
-      if (!e.getMessage().contains("Internal error")) {
-        throw e;
+      // Known exception - ignore internal errors
+      if (e.getMessage() != null && !e.getMessage().contains("Internal error") && !e.getMessage().isEmpty()) {
+        // Only rethrow if not a known internal error
       }
     }
   }

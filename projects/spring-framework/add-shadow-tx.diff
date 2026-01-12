@@ -5,7 +5,7 @@ index 75d1b22a94..84a13262ab 100644
 @@ -1,5 +1,6 @@
  description = "Spring Transaction"
  
-+apply plugin: "com.github.johnrengelman.shadow"
++apply plugin: "com.gradleup.shadow"
  apply plugin: "kotlin"
  
  dependencies {

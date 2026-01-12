@@ -59,8 +59,10 @@ ARCHIVE_VERSION = 5
 # OSS-Fuzz $OUT dir.
 OUT = pathlib.Path(os.getenv("OUT", "/out"))
 # OSS-Fuzz coverage info.
-_COVERAGE_INFO_URL = ("https://storage.googleapis.com/oss-fuzz-coverage/"
-                      f"latest_report_info/{os.getenv('PROJECT_NAME')}.json")
+_COVERAGE_INFO_URL = (
+    "https://storage.googleapis.com/oss-fuzz-coverage/"
+    f"latest_report_info/{os.getenv('PROJECT_NAME')}.json"
+)
 
 
 class RepositoryType(enum.StrEnum):
@@ -139,6 +141,12 @@ class BinaryConfig:
 
   binary_name: str
 
+  @property
+  def uses_stdin(self) -> bool:
+    """Whether the binary uses stdin."""
+    del self
+    return False
+
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
     """Deserializes the correct `BinaryConfig` subclass from a dict."""
@@ -187,6 +195,11 @@ class CommandLineBinaryConfig(BinaryConfig):
   # are directly linked into the target binary. Should usually be true but
   # some targets like V8 require this to be false, see b/433718862.
   filter_compile_commands: bool = True
+
+  @property
+  def uses_stdin(self) -> bool:
+    """Whether the binary uses stdin."""
+    return manifest_constants.INPUT_FILE not in self.binary_args
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
@@ -491,7 +504,8 @@ class Manifest:
 
 
 def report_missing_source_files(
-    binary_name: str, copied_files: list[str], tar: tarfile.TarFile):
+    binary_name: str, copied_files: list[str], tar: tarfile.TarFile
+):
   """Saves a report of missing source files to the snapshot tarball."""
   copied_files = {_get_comparable_path(file) for file in copied_files}
   covered_files = {
@@ -502,9 +516,7 @@ def report_missing_source_files(
   if not missing:
     return
   logging.info("Reporting missing files: %s", missing)
-  missing_report_lines = sorted([
-      covered_files[k] for k in missing
-  ])
+  missing_report_lines = sorted([covered_files[k] for k in missing])
   report_name = f"{binary_name}_missing_files.txt"
   tar_info = tarfile.TarInfo(name=report_name)
   missing_report = " ".join(missing_report_lines)
@@ -524,15 +536,19 @@ def get_covered_files(target: str) -> Sequence[str]:
     latest_info = json.load(resp)
 
   stats_url = latest_info.get("fuzzer_stats_dir").replace(
-      "gs://", "https://storage.googleapis.com/")
+      "gs://", "https://storage.googleapis.com/"
+  )
 
   target_url = f"{stats_url}/{target}.json"
   with urllib.request.urlopen(target_url) as resp:
     target_cov = json.load(resp)
 
   files = target_cov["data"][0]["files"]
-  return [file["filename"]
-          for file in files if file["summary"]["regions"]["covered"]]
+  return [
+      file["filename"]
+      for file in files
+      if file["summary"]["regions"]["covered"]
+  ]
 
 
 def _get_mapped(

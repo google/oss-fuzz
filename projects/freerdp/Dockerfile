@@ -28,4 +28,4 @@ WORKDIR FreeRDP
 # Install all dependencies required by the nightly package.
 RUN mk-build-deps --install --tool 'apt-get --yes --no-remove --no-install-recommends' packaging/deb/freerdp-nightly/control
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

@@ -15,11 +15,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import java.util.*;
 import java.lang.IllegalArgumentException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class ConvertValueFuzzer {
     public static Class[] classes = { DummyClass.class, Integer.class, String.class, Byte.class, List.class, Map.class,
@@ -30,8 +30,12 @@ public class ConvertValueFuzzer {
 
         try {
             int idx = data.consumeInt(0, classes.length - 1);
-            mapper.convertValue(data.consumeRemainingAsString(), classes[idx]);
-        } catch (IllegalArgumentException e) { }
+            String input = data.consumeRemainingAsString();
+            if (input == null || input.isEmpty()) {
+                return;
+            }
+            mapper.convertValue(input, classes[idx]);
+        } catch (IllegalArgumentException | tools.jackson.core.JacksonException e) { }
     }
 
     public static class DummyClass {

@@ -29,6 +29,13 @@ make -j$(nproc)
 make install
 
 cd lib/go/test/fuzz
-thrift -r --gen go:package_prefix=github.com/apache/thrift/lib/go/test/fuzz/gen-go/ ../../../../tutorial/tutorial.thrift
+thrift -r --gen go:thrift_import=github.com/apache/thrift/lib/go/thrift,package_prefix=github.com/apache/thrift/lib/go/test/fuzz/gen-go/ ../../../../tutorial/tutorial.thrift
+thrift -r --gen go:thrift_import=github.com/apache/thrift/lib/go/thrift,package_prefix=github.com/apache/thrift/lib/go/test/fuzz/gen-go/ ../../../../test/FuzzTest.thrift
 go mod tidy || true
-compile_go_fuzzer . Fuzz fuzz_go_tutorial
+compile_go_fuzzer . FuzzTutorial fuzz_go_tutorial
+compile_go_fuzzer . FuzzParseBinary fuzz_parse_binary
+compile_go_fuzzer . FuzzParseCompact fuzz_parse_compact
+compile_go_fuzzer . FuzzParseJson fuzz_parse_json
+compile_go_fuzzer . FuzzRoundtripBinary fuzz_roundtrip_binary
+compile_go_fuzzer . FuzzRoundtripCompact fuzz_roundtrip_compact
+compile_go_fuzzer . FuzzRoundtripJson fuzz_roundtrip_json

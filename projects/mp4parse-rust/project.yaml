@@ -9,4 +9,3 @@ vendor_ccs:
 - "media-alerts@mozilla.com"
 - "twsmith@mozilla.com"
 main_repo: 'https://github.com/mozilla/mp4parse-rust'
-base_os_version: ubuntu-24-04
