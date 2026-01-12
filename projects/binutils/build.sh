@@ -35,6 +35,12 @@ sed -i '/^%%$/i%destructor { free (\$\$); } ID' defparse.y
 
 cd ../
 
+# bfd_sym_read_header_v34 in bfd/xsym.c calls abort() for unimplemented
+# v3.4/v3.5 xSYM format support. Replace with return -1 to avoid killing
+# the fuzzer on malformed xSYM files.
+# See: https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=bfd/xsym.c;hb=c8f306af2f57ca2abf602005e768c37de7649a9e#l209
+sed -i 's/abort ();/return -1;/' bfd/xsym.c
+
 ./configure --disable-gdb --disable-gdbserver --disable-gdbsupport \
 	    --disable-libdecnumber --disable-readline --disable-sim \
 	    --disable-libbacktrace --disable-gas --disable-ld --disable-werror \
