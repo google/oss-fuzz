@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip
-RUN unset CFLAGS CXXFLAGS && pip3 install -U meson ninja
-RUN git clone --depth 1 https://github.com/rauc/rauc.git rauc
-WORKDIR rauc
-COPY run_tests.sh build.sh $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN git clone --depth 1 --branch master https://github.com/nyx-space/anise anise
+RUN apt-get update && apt-get install -y tcsh libc++-dev libc++abi-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    cd anise && ./dev-env-setup.sh
+ENV RUSTUP_TOOLCHAIN=nightly-2025-07-03
+ENV RUSTFLAGS="-C link-arg=-lc++"
+WORKDIR $SRC
+COPY build.sh $SRC/
