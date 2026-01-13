@@ -50,6 +50,7 @@ void __wrap_abort(void) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    fprintf(stderr, "t1\n");
     struct iperf_test *test = NULL;
     int pipefd[2];
 
