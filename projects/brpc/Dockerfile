@@ -18,3 +18,4 @@ RUN apt-get update && apt-get install -y cmake libgflags-dev libprotobuf-dev lib
 RUN git clone --depth 1 https://github.com/apache/brpc.git
 RUN cp $SRC/brpc/test/fuzzing/oss-fuzz.sh $SRC/build.sh
 WORKDIR $SRC/brpc/
+COPY run_tests.sh $SRC/
