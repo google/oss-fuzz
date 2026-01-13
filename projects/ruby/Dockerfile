@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
     libssl-dev \
     libyaml-dev \
@@ -27,4 +27,4 @@ RUN apt-get update && apt-get install -y \
     bison \
     wget
 RUN git clone --depth=1 --single-branch https://github.com/ruby/ruby $SRC/ruby
-COPY *.sh *.cpp *.c fuzz_prism.options $SRC/
+COPY *.sh *.cpp *.c *.options $SRC/

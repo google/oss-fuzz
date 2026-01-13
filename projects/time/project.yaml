@@ -10,5 +10,3 @@ sanitizers:
   - address
 main_repo: "https://github.com/facebook/time"
 file_github_issue: True
-
-base_os_version: ubuntu-24-04

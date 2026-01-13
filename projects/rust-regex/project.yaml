@@ -9,5 +9,3 @@ language: rust
 auto_ccs:
   - "david@adalogics.com"
   - "me@addisoncrump.info"
-
-base_os_version: ubuntu-24-04

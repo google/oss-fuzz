@@ -14,8 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make cmake
 RUN git clone --depth 1 https://github.com/ada-url/ada ada-url
 RUN cp ada-url/fuzz/build.sh $SRC/
 WORKDIR ada-url
+COPY run_tests.sh $SRC/

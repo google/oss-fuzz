@@ -25,5 +25,3 @@ sanitizers:
 architectures:
   - x86_64
 main_repo: 'https://github.com/lz4/lz4.git'
-
-base_os_version: ubuntu-24-04

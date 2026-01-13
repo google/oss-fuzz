@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get -qq update && \
     apt-get install -qq \
       build-essential\
@@ -44,4 +44,4 @@ RUN set -- $(apt-cache policy autoconf | \
     fi
 RUN git clone --depth 1 https://git.gnu.org.ua/gdbm.git
 WORKDIR gdbm
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

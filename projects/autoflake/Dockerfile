@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install --upgrade pip
 RUN git clone https://www.github.com/PyCQA/autoflake autoflake
 COPY *.sh *py $SRC/

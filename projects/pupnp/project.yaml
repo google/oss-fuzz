@@ -14,5 +14,3 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/pupnp/pupnp'
-
-base_os_version: ubuntu-24-04

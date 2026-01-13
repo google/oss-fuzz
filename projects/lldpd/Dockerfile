@@ -13,8 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y autoconf libtool-bin pkg-config
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y autoconf libtool-bin pkg-config check
 RUN git clone --recursive https://github.com/lldpd/lldpd.git
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
 WORKDIR $SRC/lldpd/
