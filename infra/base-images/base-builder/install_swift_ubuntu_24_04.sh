@@ -19,36 +19,39 @@
 source /etc/os-release
 
 if [[ "$VERSION_ID" == "20.04" ]]; then
-  SWIFT_PACKAGES="wget \
-            binutils \
+  SWIFT_PACKAGES="binutils \
             git \
+            unzip \
             gnupg2 \
             libc6-dev \
-            libcurl4 \
+            libcurl4-openssl-dev \
             libedit2 \
-            libgcc-9-dev \
-            libpython2.7 \
+            libgcc-11-dev \
+            libpython3-dev \
             libsqlite3-0 \
-            libstdc++-9-dev \
-            libxml2 \
+            libstdc++-11-dev \
+            libxml2-dev \
             libz3-dev \
             pkg-config \
+            python3-lldb-13 \
             tzdata \
             zlib1g-dev"
   SWIFT_URL="https://download.swift.org/swift-5.10.1-release/ubuntu2004/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu_20_04.tar.gz"
   SWIFT_DIR="swift-5.10.1-RELEASE-ubuntu_20_04"
 elif [[ "$VERSION_ID" == "24.04" ]]; then
-  SWIFT_PACKAGES="wget \
-            binutils \
+  SWIFT_PACKAGES="binutils \
             git \
+            unzip \
             gnupg2 \
             libc6-dev \
-            libcurl4 \
+            libcurl4-openssl-dev \
             libedit2 \
             libgcc-13-dev \
+            libpython3-dev \
             libsqlite3-0 \
             libstdc++-13-dev \
-            libxml2 \
+            libxml2-dev \
+            libncurses-dev \
             libz3-dev \
             pkg-config \
             tzdata \
