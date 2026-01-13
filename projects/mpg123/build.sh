@@ -15,14 +15,12 @@
 #
 ################################################################################
 
-pushd mpg123
 ./configure --prefix=$WORK --enable-static
 make -j$(nproc)
 make install
-popd
 
-$CC $CXXFLAGS read_fuzzer.c -I$WORK/include $WORK/lib/libmpg123.a \
+$CC $CXXFLAGS $SRC/read_fuzzer.c -I$WORK/include $WORK/lib/libmpg123.a \
   $LIB_FUZZING_ENGINE -lc++ -o $OUT/read_fuzzer
 
-$CXX $CXXFLAGS decode_fuzzer.cc -I$WORK/include $WORK/lib/libmpg123.a \
+$CXX $CXXFLAGS $SRC/decode_fuzzer.cc -I$WORK/include $WORK/lib/libmpg123.a \
   $LIB_FUZZING_ENGINE -o $OUT/decode_fuzzer
