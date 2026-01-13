@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf libtool texinfo
-RUN git clone https://github.com/LibreDWG/libredwg
-
-WORKDIR $SRC/libredwg
-COPY run_tests.sh build.sh $SRC/
-COPY llvmfuzz.options $SRC/
+./unit_testing_all.sh
