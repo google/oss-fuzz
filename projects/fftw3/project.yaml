@@ -4,5 +4,3 @@ language: c++
 vendor_ccs:
 - "david@adlogics.com"
 - "arthur.chan@adalogics.com"
-
-base_os_version: ubuntu-24-04

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-python
 
 # Install dependencies for building Python from source
 RUN apt-get update && apt-get install -y \

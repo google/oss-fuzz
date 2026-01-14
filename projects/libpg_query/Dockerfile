@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/pganalyze/libpg_query libpg_query
 WORKDIR libpg_query
 COPY run_tests.sh build.sh $SRC/

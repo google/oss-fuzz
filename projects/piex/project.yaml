@@ -6,5 +6,3 @@ sanitizers:
  - undefined
  - memory
 main_repo: 'https://github.com/guidovranken/piex.git'
-
-base_os_version: ubuntu-24-04

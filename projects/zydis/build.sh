@@ -27,7 +27,8 @@ mkdir build && cd build
 cmake                                       \
     -DZYAN_FORCE_ASSERTS=ON                 \
     -DZYDIS_BUILD_EXAMPLES=OFF              \
-    -DZYDIS_BUILD_TOOLS=OFF                 \
+    -DZYDIS_BUILD_TOOLS=ON                  \
+    -DZYDIS_BUILD_TESTS=ON                  \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo       \
     "-DCMAKE_C_COMPILER=${CC}"              \
     "-DCMAKE_CXX_COMPILER=${CXX}"           \

@@ -14,11 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt update && apt install -y autoconf automake libtool pkg-config
 RUN git clone --depth 1 https://github.com/kinetiknz/nestegg.git
 
 # clone libwebm for corpus data
 RUN git clone --depth 1 https://github.com/webmproject/libwebm.git
 
 WORKDIR nestegg
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

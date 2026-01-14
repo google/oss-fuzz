@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 RUN apt update && apt install -y openjdk-17-jdk
 
