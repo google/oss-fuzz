@@ -31,10 +31,3 @@ $CC $CFLAGS -Isrc -DHAVE_SSL -c $SRC/auth_fuzzer.c -o auth_fuzzer.o
 $CC $CFLAGS -Isrc -DHAVE_SSL -c src/iperf_auth.c -o iperf_auth.o
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE auth_fuzzer.o iperf_auth.o -lssl -lcrypto -o $OUT/auth_fuzzer
-
-# Build the server fuzzer
-$CC $CFLAGS -Isrc -c $SRC/iperf_server_fuzzer.c -o iperf_server_fuzzer.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE iperf_server_fuzzer.o src/.libs/libiperf.a -lssl -lcrypto -Wl,--wrap=iperf_errexit -Wl,--wrap=iperf_exit -Wl,--wrap=exit -Wl,--wrap=abort -o $OUT/iperf_server_fuzzer
-
-
-
