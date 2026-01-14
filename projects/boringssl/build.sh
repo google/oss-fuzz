@@ -19,9 +19,9 @@ mkdir -p $WORK/boringssl
 cd $WORK/boringssl
 
 CFLAGS="$CFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
-CXXFLAGS="$CXXFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
+CXXFLAGS="$CXXFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE -stdlib=libc++"
 
-CMAKE_DEFINES="-DBORINGSSL_ALLOW_CXX_RUNTIME=1"
+CMAKE_DEFINES="-DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DUSE_CUSTOM_LIBCXX=OFF"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
   CMAKE_DEFINES+=" -DOPENSSL_NO_ASM=1"
@@ -42,7 +42,7 @@ for F in $fuzzerFiles; do
   $CXX $CXXFLAGS \
       -D_BORINGSSL_LIBPKI_ -std=c++1z \
       -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
-      -I $SRC/boringssl/include ./libpki.a ./libssl.a  ./libcrypto.a
+      -I $SRC/boringssl/include ./libpki.a ./libssl.a  ./libcrypto.a -lc++
 
   if [ -d "$SRC/boringssl/fuzz/${fuzzerName}_corpus" ]; then
     zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/boringssl/fuzz/${fuzzerName}_corpus/*
