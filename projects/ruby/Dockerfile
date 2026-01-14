@@ -27,4 +27,4 @@ RUN apt-get update && apt-get install -y \
     bison \
     wget
 RUN git clone --depth=1 --single-branch https://github.com/ruby/ruby $SRC/ruby
-COPY *.sh *.cpp *.c fuzz_prism.options $SRC/
+COPY *.sh *.cpp *.c *.options $SRC/

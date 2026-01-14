@@ -9,3 +9,6 @@ primary_contact: "javanlacerda@google.com"
 auto_ccs:
 - "pedroysb@google.com"
 - "david@adalogics.com"
+- "cloud-ti-fuzzing+bugs@google.com"
+
+base_os_version: ubuntu-24-04
