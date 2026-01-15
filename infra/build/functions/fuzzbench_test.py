@@ -18,7 +18,6 @@
 import logging
 import os
 import requests
-import subprocess
 import sys
 import shutil
 import tempfile

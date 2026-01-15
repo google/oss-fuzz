@@ -295,37 +295,37 @@ def get_image_push_architecture_manifest_steps(image: str,
   steps = [
       # Tag and push the AMD64 image.
       {
-          'name': 'docker:latest',
+          'name': 'gcr.io/cloud-builders/docker',
           'args': ['tag', amd64_source_image, amd64_manifest_image],
       },
       {
-          'name': 'docker:latest',
+          'name': 'gcr.io/cloud-builders/docker',
           'args': ['push', amd64_manifest_image],
       },
       # Pull and tag the ARM64 image.
       {
-          'name': 'docker:latest',
+          'name': 'gcr.io/cloud-builders/docker',
           'args': ['pull', arm64_source_image],
       },
       {
-          'name': 'docker:latest',
+          'name': 'gcr.io/cloud-builders/docker',
           'args': ['tag', arm64_source_image, arm64_manifest_image],
       },
       {
-          'name': 'docker:latest',
+          'name': 'gcr.io/cloud-builders/docker',
           'args': ['push', arm64_manifest_image],
       },
       # Create and push the manifest.
       {
           'name':
-              'docker:latest',
+              'gcr.io/cloud-builders/docker',
           'args': [
               'manifest', 'create', manifest_tag, '--amend',
               arm64_manifest_image, '--amend', amd64_manifest_image
           ],
       },
       {
-          'name': 'docker:latest',
+          'name': 'gcr.io/cloud-builders/docker',
           'args': ['manifest', 'push', manifest_tag]
       }
   ]

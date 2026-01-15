@@ -125,12 +125,12 @@ def get_fuzzbench_setup_steps():
           }],
       },
       {
-          'name': 'docker:latest',
+          'name': 'gcr.io/cloud-builders/docker',
           'args': ['pull', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench']
       },
       {  # TODO(metzman): Don't overwrite base-builder
           'name':
-              'docker:latest',
+              'gcr.io/cloud-builders/docker',
           'args': [
               'tag', 'gcr.io/oss-fuzz-base/base-builder-fuzzbench',
               'gcr.io/oss-fuzz-base/base-builder'
@@ -154,7 +154,7 @@ def get_build_fuzzers_steps(fuzzing_engine, project, env):
       os.path.join(FUZZBENCH_PATH, 'fuzzers')
   ]
   engine_step = {
-      'name': 'docker:latest',
+      'name': 'gcr.io/cloud-builders/docker',
       'args': build_args,
       'volumes': [{
           'name': 'fuzzbench_path',
@@ -261,7 +261,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
       'runner.Dockerfile')
   build_runtime_step = {
       'name':
-          'docker:latest',
+          'gcr.io/cloud-builders/docker',
       'args': [
           'build', '--tag', ood_image, '--file', fuzzer_runtime_dockerfile_path,
           os.path.join(GCB_WORKSPACE_DIR + FUZZBENCH_PATH, 'fuzzers')
@@ -273,7 +273,7 @@ def get_build_ood_image_steps(fuzzing_engine, project, env_dict):
   build_out_path_without_workspace = env_dict["OUT"][10:]
   build_ood_image_step = {
       'name':
-          'docker:latest',
+          'gcr.io/cloud-builders/docker',
       'args': [
           'build', '--tag', ood_image, '--file',
           oss_fuzz_on_demand_dockerfile_path, '--build-arg',
@@ -299,13 +299,16 @@ def get_push_and_run_ood_image_steps(fuzzing_engine, project, env_dict):
 
   ood_image = get_ood_image_name(fuzzing_engine, project)
 
-  push_ood_image_step = {'name': 'docker:latest', 'args': ['push', ood_image]}
+  push_ood_image_step = {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': ['push', ood_image]
+  }
   steps.append(push_ood_image_step)
 
   # This step also copies fuzzing output corpus to $OOD_OUTPUT_CORPUS_DIR
   run_ood_image_step = {
       'name':
-          'docker:latest',
+          'gcr.io/cloud-builders/docker',
       'args': [
           'run', '-v', f'{GCB_WORKSPACE_DIR}:{GCB_WORKSPACE_DIR}', ood_image
       ]

@@ -9,7 +9,7 @@
     "name": "gcr.io/cloud-builders/git"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "build",
       "--tag",
@@ -34,7 +34,7 @@
     "id": "srcmap"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=centipede",
@@ -72,7 +72,7 @@
     "id": "compile-centipede-address-x86_64"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=centipede",
@@ -175,7 +175,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=centipede",
@@ -213,7 +213,7 @@
     "id": "compile-centipede-none-x86_64"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=centipede",

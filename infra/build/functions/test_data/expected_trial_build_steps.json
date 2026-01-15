@@ -11,7 +11,7 @@
     "name": "gcr.io/cloud-builders/git"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
       "gcr.io/oss-fuzz-base/base-builder-testing-legacy-mybranch"
@@ -19,7 +19,7 @@
     "waitFor": "-"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
       "gcr.io/oss-fuzz-base/base-builder-testing-legacy-mybranch",
@@ -27,7 +27,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
       "gcr.io/oss-fuzz-base/base-builder-swift-testing-legacy-mybranch"
@@ -35,7 +35,7 @@
     "waitFor": "-"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
       "gcr.io/oss-fuzz-base/base-builder-swift-testing-legacy-mybranch",
@@ -43,7 +43,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
       "gcr.io/oss-fuzz-base/base-builder-javascript-testing-legacy-mybranch"
@@ -51,7 +51,7 @@
     "waitFor": "-"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
       "gcr.io/oss-fuzz-base/base-builder-javascript-testing-legacy-mybranch",
@@ -59,7 +59,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
       "gcr.io/oss-fuzz-base/base-builder-jvm-testing-legacy-mybranch"
@@ -67,7 +67,7 @@
     "waitFor": "-"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
       "gcr.io/oss-fuzz-base/base-builder-jvm-testing-legacy-mybranch",
@@ -75,7 +75,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
       "gcr.io/oss-fuzz-base/base-builder-go-testing-legacy-mybranch"
@@ -83,7 +83,7 @@
     "waitFor": "-"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
       "gcr.io/oss-fuzz-base/base-builder-go-testing-legacy-mybranch",
@@ -91,7 +91,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
       "gcr.io/oss-fuzz-base/base-builder-python-testing-legacy-mybranch"
@@ -99,7 +99,7 @@
     "waitFor": "-"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
       "gcr.io/oss-fuzz-base/base-builder-python-testing-legacy-mybranch",
@@ -107,7 +107,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
       "gcr.io/oss-fuzz-base/base-builder-ruby-testing-legacy-mybranch"
@@ -115,7 +115,7 @@
     "waitFor": "-"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
       "gcr.io/oss-fuzz-base/base-builder-ruby-testing-legacy-mybranch",
@@ -123,7 +123,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
       "gcr.io/oss-fuzz-base/base-builder-rust-testing-legacy-mybranch"
@@ -131,7 +131,7 @@
     "waitFor": "-"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
       "gcr.io/oss-fuzz-base/base-builder-rust-testing-legacy-mybranch",
@@ -139,7 +139,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "pull",
       "gcr.io/oss-fuzz-base/base-runner-testing-legacy-mybranch"
@@ -147,7 +147,7 @@
     "waitFor": "-"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "tag",
       "gcr.io/oss-fuzz-base/base-runner-testing-legacy-mybranch",
@@ -155,7 +155,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "args": [
       "build",
       "--tag",
@@ -180,7 +180,7 @@
     "id": "srcmap"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=afl",
@@ -218,7 +218,7 @@
     "id": "compile-afl-address-x86_64"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=afl",
@@ -272,7 +272,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -310,7 +310,7 @@
     "id": "compile-libfuzzer-address-x86_64"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -364,7 +364,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=i386",
       "FUZZING_ENGINE=libfuzzer",
@@ -402,7 +402,7 @@
     "id": "compile-libfuzzer-address-i386"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=i386",
       "FUZZING_ENGINE=libfuzzer",
@@ -456,7 +456,7 @@
     ]
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",
@@ -494,7 +494,7 @@
     "id": "compile-libfuzzer-undefined-x86_64"
   },
   {
-    "name": "docker:latest",
+    "name": "gcr.io/cloud-builders/docker",
     "env": [
       "ARCHITECTURE=x86_64",
       "FUZZING_ENGINE=libfuzzer",

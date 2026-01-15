@@ -1,6 +1,6 @@
 # TODO(metzman): Get rid of cifuzz-build-fuzzers and cifuzz-run-fuzzers.
 steps:
-- name: 'docker:latest'
+- name: 'gcr.io/cloud-builders/docker'
   args:
   - build
   - '-t'
@@ -10,7 +10,7 @@ steps:
   - '-f'
   - infra/cifuzz/cifuzz-base/Dockerfile
   - .
-- name: 'docker:latest'
+- name: 'gcr.io/cloud-builders/docker'
   args:
   - build
   - '-t'
@@ -24,7 +24,7 @@ steps:
   - '-f'
   - infra/build_fuzzers.Dockerfile
   - infra
-- name: 'docker:latest'
+- name: 'gcr.io/cloud-builders/docker'
   args:
   - build
   - '-t'
@@ -38,7 +38,7 @@ steps:
   - '-f'
   - infra/run_fuzzers.Dockerfile
   - infra
-- name: 'docker:latest'
+- name: 'gcr.io/cloud-builders/docker'
   args:
   - build
   - '-t'
@@ -48,7 +48,7 @@ steps:
   - '-f'
   - infra/cifuzz/cifuzz-base/ubuntu-24-04.Dockerfile
   - .
-- name: 'docker:latest'
+- name: 'gcr.io/cloud-builders/docker'
   args:
   - build
   - '-t'
@@ -62,7 +62,7 @@ steps:
   - '-f'
   - infra/build_fuzzers.ubuntu-24-04.Dockerfile
   - infra
-- name: 'docker:latest'
+- name: 'gcr.io/cloud-builders/docker'
   args:
   - build
   - '-t'

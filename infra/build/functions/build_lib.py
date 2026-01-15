@@ -117,7 +117,7 @@ CLOUD_BUILD_LOCATION = os.getenv('CLOUD_BUILD_LOCATION', 'us-central1')
 REGIONAL_CLIENT_OPTIONS = google.api_core.client_options.ClientOptions(
     api_endpoint=f'https://{CLOUD_BUILD_LOCATION}-cloudbuild.googleapis.com/')
 
-DOCKER_TOOL_IMAGE = 'docker:latest'
+DOCKER_TOOL_IMAGE = 'gcr.io/cloud-builders/docker'
 
 _ARM64 = 'aarch64'
 
@@ -140,7 +140,7 @@ def dockerify_run_step(step,
                        build,
                        use_architecture_image_name=False,
                        container_name=None):
-  """Modify a docker run step to run using docker:latest. This
+  """Modify a docker run step to run using gcr.io/cloud-builders/docker. This
   allows us to specify which architecture to run the image on."""
   image = step['name']
   if use_architecture_image_name:
@@ -631,7 +631,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     builder_name = 'buildxbuilder'
     steps.extend([
         {
-            'name': 'docker:latest',
+            'name': 'gcr.io/cloud-builders/docker',
             'args': ['run', '--privileged', 'linuxkit/binfmt:v0.8']
         },
         {
@@ -654,7 +654,7 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     logging.info('Pushing.')
     # Push so that historical bugs are reproducible.
     push_step = {
-        'name': 'docker:latest',
+        'name': 'gcr.io/cloud-builders/docker',
         'args': ['push', _get_unsafe_name(name)],
         'id': 'push-image',
         'waitFor': [docker_build_step['id']],
