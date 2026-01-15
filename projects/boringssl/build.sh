@@ -21,6 +21,14 @@ cd $WORK/boringssl
 CFLAGS="$CFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
 CXXFLAGS="$CXXFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
 
+# Create a wrapper for CXX to force -stdlib=libc++
+cat <<EOF > $WORK/cxx_wrapper
+#!/bin/sh
+exec $CXX -stdlib=libc++ "\$@"
+EOF
+chmod +x $WORK/cxx_wrapper
+export CXX=$WORK/cxx_wrapper
+
 CMAKE_DEFINES="-DBORINGSSL_ALLOW_CXX_RUNTIME=1"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then

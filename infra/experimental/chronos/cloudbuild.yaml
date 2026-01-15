@@ -25,7 +25,7 @@
 # 7) Build image for project and copy ccache in, storing image as *-ofg-cache-coverage
 # TODO (David): add support for use of dedicated replay_build.sh
 steps:
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   entrypoint: /bin/bash
   args:
   - /workspace/infra/experimental/chronos/build_cache_local.sh
@@ -34,18 +34,18 @@ steps:
   - address
   env:
   - RUN_ALL=1
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   args:
   - push
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-address
   allowFailure: true
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   args:
   - push
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-address
   allowFailure: true
 
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   entrypoint: /bin/bash
   args:
   - /workspace/infra/experimental/chronos/build_cache_local.sh
@@ -55,18 +55,18 @@ steps:
   env:
   - RUN_ALL=1
   allowFailure: true  # MSan is finicky, so let this fail.
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   args:
   - push
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-memory
   allowFailure: true
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   args:
   - push
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-memory
   allowFailure: true
 
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   entrypoint: /bin/bash
   args:
   - /workspace/infra/experimental/chronos/build_cache_local.sh
@@ -75,12 +75,12 @@ steps:
   - coverage
   env:
   - RUN_ALL=1
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   args:
   - push
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-cached-coverage
   allowFailure: true
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'docker:latest'
   args:
   - push
   - us-central1-docker.pkg.dev/oss-fuzz/oss-fuzz-gen/${_PROJECT}-ofg-ccache-coverage
