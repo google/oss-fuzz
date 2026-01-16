@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,23 +15,18 @@
 #
 ################################################################################
 
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
+export ASAN_OPTIONS=detect_leaks=0
 
-build_and_copy() {
-  pushd "$1"
-  cargo fuzz build --release --debug-assertions
-  for f in fuzz/fuzz_targets/*.rs
-  do
-    cp ${FUZZ_TARGET_OUTPUT_DIR}/$(basename ${f%.*}) $OUT/
-  done
-  popd
-}
+# Build and install the compiler (disable other languages to save time)
+./bootstrap.sh
+./configure --enable-static --disable-shared --with-cpp=yes --with-c_glib=no --with-python=no --with-py3=no --with-go=no --with-rs=no --with-java=no --with-nodejs=no --with-dotnet=no --with-kotlin=no
+make -j$(nproc)
+make install
 
-cd OpenSK
-
-# CTAP library fuzzing targets
-build_and_copy libraries/opensk
-
-# CBOR crate
-build_and_copy libraries/cbor
-
+# Build C++ library and fuzzers
+pushd lib/cpp/test/fuzz
+make check
+for i in $(find . -maxdepth 1 -type f -executable -printf "%f\n"); do
+    cp $i $OUT/$i
+done
+popd

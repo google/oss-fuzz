@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,23 +14,22 @@
 #
 ################################################################################
 
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
+FROM gcr.io/oss-fuzz-base/base-builder-go
 
-build_and_copy() {
-  pushd "$1"
-  cargo fuzz build --release --debug-assertions
-  for f in fuzz/fuzz_targets/*.rs
-  do
-    cp ${FUZZ_TARGET_OUTPUT_DIR}/$(basename ${f%.*}) $OUT/
-  done
-  popd
-}
+RUN apt-get update && apt-get install -y libssl-dev pkg-config autoconf automake libtool bison flex wget make
 
-cd OpenSK
+# Install Boost from source
+RUN wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz && \
+    tar xzf boost_1_87_0.tar.gz && \
+    cd boost_1_87_0 && \
+    ./bootstrap.sh --with-toolset=clang && \
+    ./b2 clean && \
+    ./b2 toolset=clang -j$(nproc) install && \
+    cd .. && \
+    rm -rf boost_1_87_0
 
-# CTAP library fuzzing targets
-build_and_copy libraries/opensk
+COPY build.sh $SRC/
 
-# CBOR crate
-build_and_copy libraries/cbor
+RUN git clone --depth 1 https://github.com/apache/thrift.git
 
+WORKDIR $SRC/thrift 
