@@ -1,6 +1,6 @@
-#!/usr/bin/python3
-
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,26 +15,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-import sys
-import atheris
-
-# _cbor2 ensures the C library is imported
-from _cbor2 import loads
-
-
-def test_one_input(data: bytes):
-    try:
-        loads(data)
-    except Exception:
-        # We're searching for memory corruption, not Python exceptions
-        pass
-
-
-def main():
-    atheris.Setup(sys.argv, test_one_input)
-    atheris.Fuzz()
-
-
-if __name__ == "__main__":
-    main()
+ctest --test-dir build -j$(nproc)
