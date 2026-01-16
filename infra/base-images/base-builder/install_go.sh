@@ -18,9 +18,9 @@
 cd /tmp
 
 export GOROOT=/root/.go
-wget https://go.dev/dl/go1.25.0.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.25.5.linux-amd64.tar.gz
 mkdir temp-go
-tar -C temp-go/ -xzf go1.25.0.linux-amd64.tar.gz
+tar -C temp-go/ -xzf go1.25.5.linux-amd64.tar.gz
 
 mkdir /root/.go/
 mv temp-go/go/* /root/.go/
@@ -38,18 +38,16 @@ if [ -f "$GOPATH/gosigfuzz/gosigfuzz.c" ]; then
 fi
 
 cd /tmp
-git clone https://github.com/AdamKorcz/go-118-fuzz-build
+git clone https://github.com/AdamKorcz/go-118-fuzz-build  --branch=v2_2
 cd go-118-fuzz-build
-go build
-mv go-118-fuzz-build $GOPATH/bin/
+git checkout 65072595fdfb80eaedbc37db3837d82eb95ce7b2
+CGO_ENABLED=1 go build .
+mv go-118-fuzz-build $GOPATH/bin/go-118-fuzz-build_v2
 
 # Build v2 binaries
-git checkout v2
-go build .
-mv go-118-fuzz-build $GOPATH/bin/go-118-fuzz-build_v2
 pushd cmd/convertLibFuzzerTestcaseToStdLibGo
-  go build . && mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
+  CGO_ENABLED=1 go build . && mv convertLibFuzzerTestcaseToStdLibGo $GOPATH/bin/
 popd
 pushd cmd/addStdLibCorpusToFuzzer
-  go build . && mv addStdLibCorpusToFuzzer $GOPATH/bin/
+  CGO_ENABLED=1 go build . && mv addStdLibCorpusToFuzzer $GOPATH/bin/
 popd
