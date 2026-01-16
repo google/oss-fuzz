@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +15,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/ArashPartow/exprtk.git exprtk
-WORKDIR exprtk
-COPY run_tests.sh build.sh exprtk_fuzzer.cpp exprtk_test_expressions.dict $SRC/
+# Build unit tests
+make exprtk_test -j$(nproc)
+
+# Run exprtk unit test
+./exprtk_test
