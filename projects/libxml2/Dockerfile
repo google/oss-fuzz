@@ -31,4 +31,4 @@ RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake
     apt install ./automake_1.16.5-1.3_all.deb
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 WORKDIR libxml2
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
