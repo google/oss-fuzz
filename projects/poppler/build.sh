@@ -150,24 +150,14 @@ if [ "$SANITIZER" != "memory" ]; then
     popd
 fi
 
+QT6_LDFLAGS=""
+if [[ $FUZZING_ENGINE == "afl" ]]; then
+    QT6_LDFLAGS="-fuse-ld=lld"
+fi
 pushd $SRC/qtbase
-# add the flags to Qt build too
-# Use ~ as sed delimiters instead of the usual "/" because C(XX)FLAGS may
-# contain paths with slashes.
-sed -i -e "s~QMAKE_CXXFLAGS    += -stdlib=libc++~QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s~QMAKE_LFLAGS      += -stdlib=libc++~QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS~g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s~QMAKE_CXX               = \$\${CROSS_COMPILE}clang++~QMAKE_CXX = $CXX~g" mkspecs/common/clang.conf
-sed -i -e "s~QMAKE_CC                = \$\${CROSS_COMPILE}clang~QMAKE_CC = $CC~g" mkspecs/common/clang.conf
-# disable sanitize=vptr for harfbuzz since it compiles without rtti
-sed -i -e "s~TARGET = qtharfbuzz~TARGET = qtharfbuzz\nQMAKE_CXXFLAGS += -fno-sanitize=vptr~g" src/3rdparty/harfbuzz-ng/harfbuzz-ng.pro
-# make qmake compile faster
-sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
-# Fix memory stuff in qt 5.15 unfixable since branch is closed now
-sed -i -e "s/struct statx statxBuffer/struct statx statxBuffer = {}/g" src/corelib/io/qfilesystemengine_unix.cpp
-sed -i -e "s/if (m_compressAlgo == RCCResourceLibrary::CompressionAlgorithm::Zlib) {/if (false) {/g" src/tools/rcc/rcc.cpp
-./configure --zlib=system --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS -I $PREFIX/include/ -L $PREFIX/lib/
-make -j$(nproc)
-make install
+LDFLAGS="$QT6_LDFLAGS" ./configure -no-glib -no-dbus -qt-harfbuzz -qt-pcre -qt-libpng -opensource -confirm-license -static -no-opengl -no-icu \
+    -platform linux-clang-libc++ -debug -prefix $PREFIX -I $PREFIX/include/ -L $PREFIX/lib/
+ninja install -j$(nproc)
 popd
 
 # Poppler complains when PKG_CONFIG is set to `which pkg-config --static` so
@@ -198,14 +188,14 @@ cmake .. \
   -DENABLE_GLIB=$POPPLER_ENABLE_GLIB \
   -DENABLE_LIBCURL=OFF \
   -DENABLE_GPGME=OFF \
-  -DENABLE_QT6=OFF \
-  -DENABLE_QT5=ON \
+  -DENABLE_QT6=ON \
+  -DENABLE_QT5=OFF \
   -DENABLE_UTILS=OFF \
   -DWITH_Cairo=$POPPLER_ENABLE_GLIB \
   -DCMAKE_INSTALL_PREFIX=$PREFIX
 
 export PKG_CONFIG="`which pkg-config` --static"
-make -j$(nproc) poppler poppler-cpp poppler-qt5
+make -j$(nproc) poppler poppler-cpp poppler-qt6
 if [ "$SANITIZER" != "memory" ]; then
     make -j$(nproc) poppler-glib
 fi
@@ -263,24 +253,26 @@ if [ "$SANITIZER" != "memory" ]; then
 fi
 
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -lz -pthread -lrt -lpthread"
-DEPS="freetype2 lcms2 libopenjp2 Qt5Core Qt5Gui Qt5Xml"
+DEPS="freetype2 lcms2 libopenjp2"
 if [ "$SANITIZER" != "memory" ]; then
-    DEPS="$DEPS fontconfig libpng"
+    DEPS="$DEPS fontconfig"
 fi
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
-BUILD_LDFLAGS="$BUILD_LDFLAGS $NSS_STATIC_LIBS"
+QT6_STATIC_LIBS="$PREFIX/lib/libQt6Gui.a $PREFIX/lib/libQt6Xml.a $PREFIX/lib/libQt6Core.a $PREFIX/lib/libQt6BundledHarfbuzz.a $PREFIX/lib/libQt6BundledLibpng.a $PREFIX/lib/libQt6BundledPcre2.a $PREFIX/lib/libz.a"
+BUILD_LDFLAGS="$BUILD_LDFLAGS $QT6_STATIC_LIBS $NSS_STATIC_LIBS"
 
-fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
+fuzzers=$(find $SRC/poppler/qt6/tests/fuzzing/ -name "*_fuzzer.cc")
 for f in $fuzzers; do
     fuzzer_name=$(basename $f .cc)
 
     $CXX $CXXFLAGS -std=c++23 -fPIC \
-        -I$SRC/poppler/qt5/src -I$SRC/poppler/build/qt5/src \
+        -I$SRC/poppler/qt6/src -I$SRC/poppler/build/qt6/src \
         $BUILD_CFLAGS \
         $f -o $OUT/$fuzzer_name \
         $PREDEPS_LDFLAGS \
-        $SRC/poppler/build/qt5/src/libpoppler-qt5.a \
+        $QT6_LDFLAGS \
+        $SRC/poppler/build/qt6/src/libpoppler-qt6.a \
         $SRC/poppler/build/cpp/libpoppler-cpp.a \
         $SRC/poppler/build/libpoppler.a \
         $BUILD_LDFLAGS \

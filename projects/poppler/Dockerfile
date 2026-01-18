@@ -29,7 +29,7 @@ RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
 RUN git clone https://github.com/glennrp/libpng.git && cd libpng && git checkout b4800bae3379f1abf82359703c28e727b5df4135
 RUN git clone --depth 1 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
 RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git
-RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
+RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
 # Pin libpango to avoid build failure:
 # Header for g_sort_array() was not included in gen_script_for_lang.c
 # https://gitlab.gnome.org/GNOME/pango/-/commits/main/tools/gen-script-for-lang.c?ref_type=heads
