@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 RUN git clone --depth 1 https://github.com/allegro/json-avro-converter/ json2avro
 

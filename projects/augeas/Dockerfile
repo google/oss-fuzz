@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y libreadline-dev libselinux1-dev \
 RUN git clone --depth 1 https://github.com/hercules-team/augeas
 WORKDIR augeas
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 COPY augeas_escape_name_fuzzer.cc $SRC/
 COPY augeas_fa_fuzzer.cc $SRC/
 COPY augeas_api_fuzzer.cc $SRC/

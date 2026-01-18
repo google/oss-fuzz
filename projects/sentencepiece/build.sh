@@ -20,7 +20,7 @@ set -x
 # build project
 mkdir build
 cd build
-cmake ../ -B ./ -DSPM_ENABLE_SHARED=ON -DCMAKE_INSTALL_PREFIX=./root
+cmake ../ -B ./ -DSPM_ENABLE_SHARED=ON -DCMAKE_INSTALL_PREFIX=./root -DSPM_BUILD_TEST=ON
 cmake --build ./ --config Release --target install --parallel $(nproc)
 
 # build fuzzers

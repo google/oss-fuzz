@@ -33,14 +33,15 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE -Ivendor/liburing/src/include \
     memcached-assoc.o memcached-thread.o memcached-daemon.o memcached-stats_prefix.o \
     memcached-util.o memcached-cache.o memcached-bipbuffer.o memcached-base64.o \
     memcached-logger.o memcached-crawler.o memcached-itoa_ljust.o memcached-slab_automove.o \
-    memcached-authfile.o memcached-restart.o memcached-proto_text.o memcached-proto_bin.o \
-    memcached-proto_proxy.o memcached-proxy_xxhash.o memcached-proxy_await.o \
-    memcached-proxy_ustats.o memcached-proxy_jump_hash.o memcached-proxy_request.o \
-    memcached-proxy_network.o memcached-proxy_lua.o memcached-proxy_config.o \
-    memcached-proxy_ring_hash.o memcached-proxy_internal.o memcached-md5.o \
+    memcached-slabs_mover.o memcached-authfile.o memcached-restart.o memcached-proto_text.o \
+    memcached-proto_bin.o memcached-proto_proxy.o memcached-mcmc.o memcached-proxy_xxhash.o \
+    memcached-proxy_ustats.o memcached-proxy_ratelim.o memcached-proxy_jump_hash.o \
+    memcached-proxy_request.o memcached-proxy_result.o memcached-proxy_inspector.o \
+    memcached-proxy_mutator.o memcached-proxy_network.o memcached-proxy_lua.o \
+    memcached-proxy_luafgen.o memcached-proxy_config.o memcached-proxy_ring_hash.o \
+    memcached-proxy_internal.o memcached-proxy_tls.o memcached-md5.o \
     memcached-extstore.o memcached-crc32c.o memcached-storage.o memcached-slab_automove_extstore.o \
-    memcached-proxy_ratelim.o \
-    vendor/lua/src/liblua.a /usr/local/lib/libevent.a vendor/mcmc/mcmc.o -o fuzzer_proxy
+    vendor/lua/src/liblua.a /usr/local/lib/libevent.a -o fuzzer_proxy
 
 python3 $SRC/generate_corpus.py
 

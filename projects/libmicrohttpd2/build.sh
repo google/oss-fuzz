@@ -18,9 +18,25 @@
 BINARY=$SRC/mhd2/src/mhd2/.libs/libmicrohttpd2.a
 
 # Build libmicrohttpd
+git pull
 ./autogen.sh
-./configure --enable-dauth --enable-md5 --enable-sha256 --enable-sha512-256 \
-  --enable-bauth --enable-upgrade --enable-https --enable-messages
+# Compile MHD with the SAME compiler used later.
+export CC=$CXX
+# Enable most features, force specific TLS library, and disable symbol hiding
+./configure \
+    --enable-dauth \
+    --enable-md5=builtin \
+    --enable-sha256=builtin \
+    --enable-sha512-256=builtin \
+    --enable-bauth \
+    --enable-upgrade \
+    --enable-https \
+    --without-openssl \
+    --enable-messages \
+    --disable-examples \
+    mhd_cv_cc_attr_visibility_default="no" \
+    mhd_cv_cc_attr_visibility_internal="no" \
+    mhd_cv_cc_attr_visibility_hidden="no"
 ASAN_OPTIONS=detect_leaks=0 make -j$(nproc)
 make install
 
@@ -47,9 +63,17 @@ for fuzzer in $FUZZERS; do
     $LIB_FUZZING_ENGINE "$BINARY" -lgnutls -o "$OUT/$fuzzer"
 done
 
-# Rebuild the binary for external crypto
+# Rebuild the binary for external crypto with libgcrypt
 ./autogen.sh
-./configure --enable-md5=tlslib --enable-sha256=tlslib --enable-sha512-256=builtin
+./configure \
+    --enable-md5=tlslib \
+    --enable-sha256=tlslib \
+    --enable-sha512-256=builtin \
+    --without-openssl \
+    --disable-examples \
+    mhd_cv_cc_attr_visibility_default="no" \
+    mhd_cv_cc_attr_visibility_internal="no" \
+    mhd_cv_cc_attr_visibility_hidden="no"
 make clean
 make -j$(nproc)
 make install

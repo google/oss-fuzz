@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth=1 https://github.com/census-instrumentation/opencensus-go
 COPY build.sh fuzz_test.go $SRC/
 WORKDIR $SRC/opencensus-go

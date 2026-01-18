@@ -22,9 +22,9 @@ RUN ls
 RUN git -C boost submodule update --init libs/json
 RUN git -C boost/libs/json checkout develop
 RUN git -C boost submodule update --init --depth 1 \
-libs/align/ \
 libs/assert \
 libs/config/ \
+libs/compat \
 libs/container \
 libs/container_hash/ \
 libs/core \
@@ -35,10 +35,8 @@ libs/intrusive/ \
 libs/move/ \
 libs/mp11/ \
 libs/predef/ \
-libs/static_assert \
 libs/system/ \
 libs/throw_exception/ \
-libs/type_traits/ \
 libs/winapi/ \
 libs/variant2/ \
 tools/boost_install \

@@ -16,9 +16,22 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN apt update && apt install -y openjdk-17-jdk
+# Spring Framework main branch requires Java 25
+# Download and install OpenJDK 25 GA
+RUN apt update && apt install -y wget && \
+    wget -q https://download.java.net/java/GA/jdk25.0.1/2fbf10d8c78e40bd87641c434705079d/8/GPL/openjdk-25.0.1_linux-x64_bin.tar.gz -O /tmp/openjdk25.tar.gz && \
+    mkdir -p /usr/lib/jvm && \
+    tar -xzf /tmp/openjdk25.tar.gz -C /usr/lib/jvm && \
+    mv /usr/lib/jvm/jdk-25.0.1 /usr/lib/jvm/java-25-openjdk-amd64 && \
+    rm /tmp/openjdk25.tar.gz && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-25-openjdk-amd64/bin/java 1 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/java-25-openjdk-amd64/bin/javac 1 && \
+    update-alternatives --set java /usr/lib/jvm/java-25-openjdk-amd64/bin/java && \
+    update-alternatives --set javac /usr/lib/jvm/java-25-openjdk-amd64/bin/javac
 
-RUN git clone https://github.com/spring-projects/spring-framework
+ENV JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+
+RUN git clone --depth 1 https://github.com/spring-projects/spring-framework
 
 COPY . $SRC/
 
