@@ -127,22 +127,27 @@ luarocks install --lua-version 5.1 --server=https://luarocks.org/dev --tree=lua_
 LUA_RUNTIME_NAME=tarantool
 TARANTOOL_PATH=build/src/$LUA_RUNTIME_NAME
 
-for f in $(find test/fuzz/lua -name '*_test.lua' -type f);
-do
-  $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME $(basename $f)
-  cp $f "$OUT/"
-done
+# for f in $(find test/fuzz/lua -name '*_test.lua' -type f);
+# do
+#   $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME $(basename $f)
+#   cp $f "$OUT/"
+# done
 
-cp test/fuzz/lua/test_engine.lua "$OUT/"
-$SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME test_engine.lua
+# cp test/fuzz/lua/test_engine.lua "$OUT/"
+# $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME test_engine.lua
 
-# ./test/fuzz/lua-tests/src/tests/lapi/math_atan_test.lua
-for f in $(find build/test/fuzz -name '*_test.lua' -type f);
-do
-  $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME $(basename $f)
-  cp $f "$OUT/"
-done
+# # ./test/fuzz/lua-tests/src/tests/lapi/math_atan_test.lua
+# for f in $(find build/test/fuzz -name '*_test.lua' -type f);
+# do
+#   $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME $(basename $f)
+#   cp $f "$OUT/"
+# done
 cp build/test/fuzz/lua-tests/src/tests/lapi/lib.lua "$OUT"
+for test_file in $(find build/luzer-tests -name "*.lua" -type f);
+do
+  "$SRC/compile_lua_fuzzer" "$LUA_RUNTIME_NAME" $(basename "$test_file")
+  cp "$test_file" "$OUT/"
+done
 
 cp $TARANTOOL_PATH "$OUT/$LUA_RUNTIME_NAME"
 cp -R lua_modules "$OUT/"
