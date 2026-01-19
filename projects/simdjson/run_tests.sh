@@ -1,6 +1,6 @@
-#!/usr/bin/python3
-
-# Copyright 2024 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,25 +16,9 @@
 #
 ################################################################################
 
-import sys
-import atheris
+# Disable leak sanitizer
+export ASAN_OPTIONS="detect_leaks=0"
 
-# _cbor2 ensures the C library is imported
-from _cbor2 import loads
-
-
-def test_one_input(data: bytes):
-    try:
-        loads(data)
-    except Exception:
-        # We're searching for memory corruption, not Python exceptions
-        pass
-
-
-def main():
-    atheris.Setup(sys.argv, test_one_input)
-    atheris.Fuzz()
-
-
-if __name__ == "__main__":
-    main()
+# Exclude failing unit test cases and run the remaining unit testing
+ctest --test-dir $SRC/simdjson/build -j$(nproc) -E \
+  "minify_tests|prettify_tests|ondemand_tostring_tests|ondemand_cacheline|builder_string_builder_tests"

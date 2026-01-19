@@ -59,3 +59,16 @@ deactivate
 ninja -C out/fuzz_targets fuzz_tests
 
 cp out/fuzz_targets/tests/* $OUT/
+
+# Copy some GLib and GIO runtime libraries into $OUT so fuzzed all-clusters app can run under OSS-Fuzz base-runner, which does not provide these libraries.
+mkdir -p $OUT/lib
+cp /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0 $OUT/lib/
+cp /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0 $OUT/lib/
+cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0 $OUT/lib/
+cp /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 $OUT/lib/
+
+for f in $OUT/fuzz-*; do
+    file "$f" | grep -q "ELF" && patchelf --set-rpath '$ORIGIN/lib' "$f"
+done
+patchelf --set-rpath '$ORIGIN' $OUT/lib/*.so* 2>/dev/null
+	

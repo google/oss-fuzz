@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,27 +15,29 @@
 #
 ################################################################################
 
-# build project
 export ASAN_OPTIONS=detect_leaks=0
 
-if [ "$SANITIZER" = "coverage" ]
-then
-    cp /usr/bin/ld.gold /usr/bin/ld
+if [[ ! -z "${CXX:-}" ]]; then
+  export CXX="${CXX//-lresolv/}"
 fi
-./bootstrap.sh
-# rust fails compilation with clippy warnings
-./configure --with-rs=no
-make -j$(nproc)
-make install
 
-cd lib/go/test/fuzz
-thrift -r --gen go:thrift_import=github.com/apache/thrift/lib/go/thrift,package_prefix=github.com/apache/thrift/lib/go/test/fuzz/gen-go/ ../../../../tutorial/tutorial.thrift
-thrift -r --gen go:thrift_import=github.com/apache/thrift/lib/go/thrift,package_prefix=github.com/apache/thrift/lib/go/test/fuzz/gen-go/ ../../../../test/FuzzTest.thrift
-go mod tidy || true
-compile_go_fuzzer . FuzzTutorial fuzz_go_tutorial
+# Build and install the compiler...
+# Disable other languages to save on compile time
+./bootstrap.sh
+# ... this forces go to be downloaded/installed, otherwise the configure script chokes when running go version
+go version
+./configure --enable-static --disable-shared --with-cpp=no --with-c_glib=no --with-python=no --with-py3=no --with-go=yes --with-rs=no --with-java=no --with-nodejs=no --with-dotnet=no --with-kotlin=no
+make -j$(nproc)
+
+pushd lib/go/test/fuzz
+
+make gopathfuzz
+compile_go_fuzzer . FuzzTutorial fuzz_tutorial
 compile_go_fuzzer . FuzzParseBinary fuzz_parse_binary
 compile_go_fuzzer . FuzzParseCompact fuzz_parse_compact
 compile_go_fuzzer . FuzzParseJson fuzz_parse_json
 compile_go_fuzzer . FuzzRoundtripBinary fuzz_roundtrip_binary
 compile_go_fuzzer . FuzzRoundtripCompact fuzz_roundtrip_compact
 compile_go_fuzzer . FuzzRoundtripJson fuzz_roundtrip_json
+
+popd

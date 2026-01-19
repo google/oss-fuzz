@@ -23,7 +23,7 @@ ADD https://zydis.re/fuzzing-corpora/ZydisFuzzEncoder_seed_corpus.zip \
 ADD https://zydis.re/fuzzing-corpora/ZydisFuzzReEncoding_seed_corpus.zip \
     $SRC/ZydisFuzzReEncoding_seed_corpus.zip
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 
 RUN git clone --recursive https://github.com/zyantific/zydis.git
 WORKDIR zydis
