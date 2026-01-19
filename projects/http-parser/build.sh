@@ -15,9 +15,11 @@
 #
 ################################################################################
 
+# Build http-parser and unit test
 cd http-parser
-make http_parser.o
+make http_parser.o test_g test_fast
 
+# Build fuzzers
 $CC $CFLAGS -I. -DHTTP_PARSER_STRICT=0  -Wall -Wextra -Werror -c fuzzers/fuzz_parser.c -o fuzz_parser.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -Wall -Wextra -Werror http_parser.o fuzz_parser.o -o $OUT/fuzz_parser
 

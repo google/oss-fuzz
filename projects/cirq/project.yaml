@@ -1,0 +1,12 @@
+homepage: "https://github.com/quantumlib/Cirq"
+language: python
+primary_contact: "quantum-oss-maintainers@google.com"
+auto_ccs:
+  - "mhucka@google.com"
+  - "mrtoastcheng@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: "https://github.com/quantumlib/Cirq.git"

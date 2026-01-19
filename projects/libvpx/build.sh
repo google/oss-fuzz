@@ -38,8 +38,8 @@ LDFLAGS="$CXXFLAGS" LD=$CXX $SRC/libvpx/configure \
     --extra-cflags="${extra_c_flags}" \
     --disable-webm-io \
     --enable-debug \
-    --disable-vp8-encoder \
-    --disable-vp9-encoder
+    --enable-vp8-encoder \
+    --enable-vp9-encoder
 make -j$(nproc) all
 popd
 
@@ -60,4 +60,22 @@ for decoder in "${fuzzer_decoders[@]}"; do
     -Wl,--end-group
   cp $SRC/vpx_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
   cp $SRC/vpx_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
+  cp $OUT/${fuzzer_name} $OUT/${fuzzer_name}_nalloc
+done
+
+fuzzer_src_name=vpx_enc_fuzzer
+fuzzer_encoders=( 'vp9' 'vp8' )
+for encoder in "${fuzzer_encoders[@]}"; do
+  fuzzer_name=${fuzzer_src_name}"_"${encoder}
+
+  $CXX $CXXFLAGS -std=c++11 \
+    -DENCODER=${encoder} \
+    -I$SRC/libvpx \
+    -I${build_dir} \
+    -Wl,--start-group \
+    $LIB_FUZZING_ENGINE \
+    $SRC/libvpx/examples/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
+    ${build_dir}/libvpx.a \
+    -Wl,--end-group
+  cp $OUT/${fuzzer_name} $OUT/${fuzzer_name}_nalloc
 done

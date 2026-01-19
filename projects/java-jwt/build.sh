@@ -19,7 +19,7 @@ PROJECT=java-jwt
 PROJECT_GROUP_ID=com.auth0
 PROJECT_ARTIFACT_ID=java-jwt
 MAIN_REPOSITORY=https://github.com/auth0/java-jwt/
-GRADLE_ARGS="-x javadoc -x test"
+GRADLE_ARGS="-x javadoc -x test -x sign -PisSnapshot=false"
 
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -49,8 +49,8 @@ else
   # set_project_version_in_fuzz_targets_dependency
 
   #install
-  (cd $PROJECT && ./gradlew build publishToMavenLocal exportVersion $GRADLE_ARGS)
-  export JAVA_JWT_VERSION=$(cat $PROJECT/README.md | awk -F ':' '/implementation '\''com.auth0:java-jwt:*/ {print $3}' | sed "s/'//g")
+  (cd $PROJECT && ./gradlew build publishToMavenLocal $GRADLE_ARGS)
+  export JAVA_JWT_VERSION=$(cat $PROJECT/.version | head -1 | tr -d '[:space:]')
   $MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
 
   # build classpath

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN \
   apt-get update && apt-get install -y \
   automake \
@@ -26,5 +26,5 @@ RUN \
   flex
 
 RUN git clone --depth 1 https://github.com/VirusTotal/yara.git
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 WORKDIR yara

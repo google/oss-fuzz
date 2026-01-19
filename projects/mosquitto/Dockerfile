@@ -18,6 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 # Main repo
 RUN git clone --depth 1 -b develop https://github.com/eclipse/mosquitto ${SRC}/mosquitto
+RUN sed -i 's|/src/libprotobuf-mutator/external.protobuf/bin/protoc|${SRC}/LPM/external.protobuf/bin/protoc|g' ${SRC}/mosquitto/fuzzing/libcommon/Makefile
 
 # Get dependencies
 RUN $SRC/mosquitto/fuzzing/scripts/oss-fuzz-dependencies.sh
