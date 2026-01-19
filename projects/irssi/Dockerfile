@@ -20,4 +20,4 @@ RUN pip3 install -U meson ninja
 RUN git clone https://github.com/irssi/irssi
 
 WORKDIR irssi
-COPY build.sh *.options *.dict $SRC/
+COPY run_tests.sh build.sh *.options *.dict $SRC/

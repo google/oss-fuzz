@@ -1,0 +1,13 @@
+homepage: "https://thrift.apache.org/"
+language: rust
+primary_contact: "mhlakhani@apache.org"
+auto_ccs:
+- "jensg@apache.org"
+- "m.hasnain.lakhani@gmail.com"
+
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+
+main_repo: 'https://github.com/apache/thrift'
