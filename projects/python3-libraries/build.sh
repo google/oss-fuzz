@@ -57,6 +57,7 @@ make -j$(nproc)
 make install
 
 cp -R $CPYTHON_INSTALL_PATH $OUT/
+$OUT/cpython-install/bin/python3 -m pip install hypothesis
 
 cd $SRC/library-fuzzers
 make
@@ -108,8 +109,14 @@ cp $SRC/library-fuzzers/re.py $OUT/
 cp $SRC/library-fuzzers/fuzzer-zipfile $OUT/
 cp $SRC/library-fuzzers/zipfile.py $OUT/
 
+cp $SRC/library-fuzzers/fuzzer-zipfile-hypothesis $OUT/
+cp $SRC/library-fuzzers/zipfile_hypothesis.py $OUT/
+
 cp $SRC/library-fuzzers/fuzzer-tarfile $OUT/
 cp $SRC/library-fuzzers/tarfile.py $OUT/
+
+cp $SRC/library-fuzzers/fuzzer-tarfile-hypothesis $OUT/
+cp $SRC/library-fuzzers/tarfile_hypothesis.py $OUT/
 
 cp $SRC/library-fuzzers/fuzzer-configparser $OUT/
 cp $SRC/library-fuzzers/configparser.py $OUT/
