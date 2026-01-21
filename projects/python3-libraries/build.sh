@@ -65,6 +65,10 @@ cp $SRC/library-fuzzers/fuzzer-html $OUT/
 cp $SRC/library-fuzzers/html.py $OUT/
 zip -j $OUT/fuzzer-html_seed_corpus.zip corp-html/*
 
+cp $SRC/library-fuzzers/fuzzer-xml $OUT/
+cp $SRC/library-fuzzers/xml.py $OUT/
+zip -j $OUT/fuzzer-xml_seed_corpus.zip corp-xml/*
+
 cp $SRC/library-fuzzers/fuzzer-email $OUT/
 cp $SRC/library-fuzzers/email.py $OUT/
 zip -j $OUT/fuzzer-email_seed_corpus.zip corp-email/*

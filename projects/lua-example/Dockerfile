@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2023-2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,19 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone --depth 1 -b master https://invent.kde.org/pim/kmime.git
-RUN $SRC/kmime/autotests/ossfuzz/prepare_build.sh
-RUN cp $SRC/kmime/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
+RUN apt-get update && apt-get install -y build-essential make
 
-WORKDIR $SRC/kmime
+COPY build.sh $SRC/
+COPY compile_lua_fuzzer $SRC/
+
+# For real projects, you would clone your repo in the next step.
+RUN mkdir -p $SRC/example
+
+# Ideally, you have already configured fuzz tests in your repo so
+# that they run (in luzer regression mode) as part of unit testing.
+# Keeping the fuzz tests in sync with the source code ensures that
+# they are adjusted continue to work after code changes. Here,
+# we copy them into the example project directory.
+COPY example_basic.lua $SRC/example/fuzz_basic.lua
+
+WORKDIR $SRC/example

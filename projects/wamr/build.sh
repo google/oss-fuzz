@@ -71,6 +71,7 @@ cmake_args=(
       -DLLVM_DIR=/opt/llvm-18.1.8/lib/cmake/llvm \
       -G Ninja \
       -DWAMR_BUILD_FAST_INTERP=0 \
+      -DWAMR_BUILD_SIMD=0 \
       "${cmake_args[@]}" \
     && cmake --build build-classic-interp
 
