@@ -32,9 +32,6 @@ cd OpenSK
 # CTAP library fuzzing targets
 build_and_copy libraries/opensk
 
-# persistent storage library
-build_and_copy libraries/persistent_store
-
 # CBOR crate
 build_and_copy libraries/cbor
 

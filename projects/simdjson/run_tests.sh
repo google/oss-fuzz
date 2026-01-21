@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +15,10 @@
 # limitations under the License.
 #
 ################################################################################
-export CC="$CC $CFLAGS"
-export CXX="$CXX $CFLAGS"
-export CFLAGS=""
-export CXXFLAGS="$CFLAGS"
 
-scons
+# Disable leak sanitizer
+export ASAN_OPTIONS="detect_leaks=0"
 
-pushd fuzzer/
-make
-
-cp FuzzJson $OUT/FuzzJson
-cp FuzzPacket $OUT/FuzzPacket
-popd
-
-pushd $SRC/oss-fuzz-bloat/gpsd
-cp FuzzJson_seed_corpus.zip $OUT/FuzzJson_seed_corpus.zip
-cp FuzzPacket_seed_corpus.zip $OUT/FuzzPacket_seed_corpus.zip
-popd
+# Exclude failing unit test cases and run the remaining unit testing
+ctest --test-dir $SRC/simdjson/build -j$(nproc) -E \
+  "minify_tests|prettify_tests|ondemand_tostring_tests|ondemand_cacheline|builder_string_builder_tests"

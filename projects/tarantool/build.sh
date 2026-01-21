@@ -92,7 +92,7 @@ cmake --build build --target fuzzers --parallel --verbose
 # Postfix `_fuzzer` is used in Tarantool, postfix `_test` is
 # used in Lua C API tests [1].
 #
-# 1. https://github.com/ligurio/lua-c-api-tests/
+# 1. https://github.com/ligurio/lunapark
 cp test/static/*.dict test/static/*.options $OUT/
 for f in $(find build/test/fuzz/ \( -name '*_fuzzer' -o -name '*_test' \) -type f);
 do
