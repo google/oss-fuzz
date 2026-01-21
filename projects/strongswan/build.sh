@@ -17,7 +17,7 @@
 
 ./autogen.sh
 
-./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE" \
+./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE -DDEBUG_LEVEL=-1" \
 	--enable-imc-test \
 	--enable-tnccs-20 \
 	--enable-fuzzing \
