@@ -1,0 +1,10 @@
+homepage: "https://github.com/u-root/cpu"
+language: go
+primary_contact: "rminnich@gmail.com"
+auto_ccs:
+  - "rminnich@gmail.com"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+main_repo: 'https://github.com/u-root/cpu'
