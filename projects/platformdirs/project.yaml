@@ -1,0 +1,11 @@
+homepage: "https://github.com/platformdirs/platformdirs"
+language: python
+primary_contact: "gaborjbernat@gmail.com"
+main_repo: "https://github.com/platformdirs/platformdirs"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+  - david@adalogics.com
