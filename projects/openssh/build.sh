@@ -75,6 +75,10 @@ $CXX $CXXFLAGS -std=c++11 $EXTRA_CFLAGS -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/kex_fuzz.cc -o $OUT/kex_fuzz \
 	$COMMON_DEPS -lz $SK_NULL $STATIC_CRYPTO \
 	$LIB_FUZZING_ENGINE
+$CXX $CXXFLAGS -std=c++11 $EXTRA_CFLAGS -I. -L. -Lopenbsd-compat -g \
+	regress/misc/fuzz-harness/krl_fuzz.cc -o $OUT/krl_fuzz \
+	krl.o $COMMON_DEPS $SK_NULL $STATIC_CRYPTO -lz \
+	$LIB_FUZZING_ENGINE
 
 $CC $CFLAGS $EXTRA_CFLAGS -I. -g -c \
 	regress/misc/fuzz-harness/agent_fuzz_helper.c -o agent_fuzz_helper.o
