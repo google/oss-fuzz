@@ -58,7 +58,7 @@ RUN git clone --depth 1 https://bitbucket.org/multicoreware/x265_git/src/stable/
     printf "https://bitbucket.org/multicoreware/x265_git/src/stable/ is not available!\n"
 
 # AV1 Codec Library needed by libheif
-RUN git clone --depth 1 --branch master https://aomedia.googlesource.com/aom aom || \
+RUN git clone --depth 1 https://aomedia.googlesource.com/aom aom || \
     printf "https://aomedia.googlesource.com/aom is not available!\n"
 
 # AVC (OpenH264) Codec Library needed by libheif
@@ -124,6 +124,18 @@ RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit # does not support sha
 
 # libwmf
 RUN git clone --depth 1 https://github.com/caolanm/libwmf.git
+
+# vvdec
+RUN git clone --depth 1 https://github.com/fraunhoferhhi/vvdec.git
+
+# vvenc
+RUN git clone --depth 1 https://github.com/fraunhoferhhi/vvenc.git
+
+# x264
+RUN git clone --depth 1 https://code.videolan.org/videolan/x264.git
+
+# OpenJPH
+RUN git clone --depth 1 https://github.com/aous72/OpenJPH.git
 
 # Build!
 WORKDIR $SRC/graphicsmagick
