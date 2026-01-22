@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +13,22 @@
 # limitations under the License.
 #
 ################################################################################
-export CC="$CC $CFLAGS"
-export CXX="$CXX $CFLAGS"
-export CFLAGS=""
-export CXXFLAGS="$CFLAGS"
 
-scons
+FROM gcr.io/oss-fuzz-base/base-builder-javascript
 
-pushd fuzzer/
-make
+RUN apt-get update && apt-get install -y libssl-dev pkg-config autoconf automake libtool bison flex wget make
 
-cp FuzzJson $OUT/FuzzJson
-cp FuzzPacket $OUT/FuzzPacket
-popd
+RUN wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz && \
+    tar xzf boost_1_87_0.tar.gz && \
+    cd boost_1_87_0 && \
+    ./bootstrap.sh --with-toolset=clang && \
+    ./b2 clean && \
+    ./b2 toolset=clang -j$(nproc) install && \
+    cd .. && \
+    rm -rf boost_1_87_0
 
-pushd $SRC/oss-fuzz-bloat/gpsd
-cp FuzzJson_seed_corpus.zip $OUT/FuzzJson_seed_corpus.zip
-cp FuzzPacket_seed_corpus.zip $OUT/FuzzPacket_seed_corpus.zip
-popd
+COPY build.sh $SRC/
+
+RUN git clone --depth 1 https://github.com/apache/thrift.git
+
+WORKDIR $SRC/thrift
