@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make
 
 RUN git clone --depth 1 -b develop https://github.com/zlib-ng/zlib-ng.git
