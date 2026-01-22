@@ -78,7 +78,9 @@ function build_fuzzers() {
     fi
 
     df -h
-    git clean -dfx
+    if [[ -z "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
+      git clean -dfx
+    fi
     df -h
 }
 
