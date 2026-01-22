@@ -22,7 +22,7 @@ RUN set -e; \
         apt-utils git curl wget unzip tar; \
     apt-get -y clean
 
-RUN git clone --depth 1 --single-branch --branch master https://github.com/hyperledger/iroha.git
+RUN git clone --depth 1 --single-branch --branch main https://github.com/hyperledger/iroha.git
 
 WORKDIR iroha
 
