@@ -21,8 +21,7 @@ fi
 
 ./autogen.sh && ./configure --disable-doxygen --disable-manpages \
                             --disable-dtls --enable-tests        \
-                            --with-openssl --enable-oscore       \
-                            --enable-server                      \
+                            --enable-server --enable-oscore      \
     && make -j$(nproc)
 
 # build all fuzzer targets
