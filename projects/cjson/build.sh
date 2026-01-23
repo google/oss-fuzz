@@ -14,5 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
+
 # Run the OSS-Fuzz script in the project
 $SRC/cjson/fuzzing/ossfuzz.sh
