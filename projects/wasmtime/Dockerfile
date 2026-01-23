@@ -38,6 +38,7 @@ WORKDIR wasmtime
 
 # The default toolchain used by OSS-Fuzz is too old to build Wasmtime at this
 # time.
-ENV RUSTUP_TOOLCHAIN nightly-2025-07-16
+ENV RUSTUP_TOOLCHAIN=nightly-2025-07-16
+RUN rustup target add wasm32-unknown-unknown wasm32-wasip1 --toolchain nightly-2025-07-16
 
 COPY build.sh *.options $SRC/
