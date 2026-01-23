@@ -89,6 +89,7 @@ ENV PATH $PATH:$GOPATH/bin
 COPY gocoverage $GOPATH/gocoverage
 
 COPY install_go.sh /
+RUN apt-get install -y gcc # used to enable CGO in Go
 RUN /install_go.sh && rm -rf /install_go.sh /root/.go
 
 # Install OpenJDK 15 and trim its size by removing unused components.
