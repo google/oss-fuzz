@@ -18,6 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y libssl-dev
 
 RUN git clone --depth 1 https://github.com/warmcat/libwebsockets.git
-COPY run_tests.sh build.sh $SRC
+COPY run_tests.sh build.sh $SRC/
 COPY lws_upng_inflate_fuzzer.cpp $SRC/libwebsockets/
 WORKDIR $SRC/libwebsockets

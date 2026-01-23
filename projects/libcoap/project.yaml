@@ -3,4 +3,7 @@ language: c++
 primary_contact: "bergmann@tzi.org"
 auto_ccs:
     - "libcoap@gmail.com"
+    - "arthur.chan@adalogics.com"
+    - "david@adalogics.com"
+    - "adam@adalogics.com"
 main_repo: 'https://github.com/obgm/libcoap.git'

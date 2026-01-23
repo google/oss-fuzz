@@ -2,8 +2,10 @@ homepage: "https://gpsd.io"
 language: c
 primary_contact: "gpsd-dev@nongnu.org"
 auto_ccs:
-  - "ajsinghyadav00@gmail.com"
   - "gem@rellim.com"
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
 fuzzing_engines:
   - libfuzzer
   - afl

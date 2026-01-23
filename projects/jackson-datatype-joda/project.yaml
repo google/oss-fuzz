@@ -8,7 +8,6 @@ sanitizers:
   - address
 primary_contact: "tatu@fasterxml.com"
 vendor_ccs:
-  - "bug-disclosure@code-intelligence.com"
   - "adam@adalogics.com"
   - "david@adalogics.com"
   - "arthur.chan@adalogics.com"

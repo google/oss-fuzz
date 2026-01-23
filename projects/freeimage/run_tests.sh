@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +15,5 @@
 # limitations under the License.
 #
 ################################################################################
-export CC="$CC $CFLAGS"
-export CXX="$CXX $CFLAGS"
-export CFLAGS=""
-export CXXFLAGS="$CFLAGS"
 
-scons
-
-pushd fuzzer/
-make
-
-cp FuzzJson $OUT/FuzzJson
-cp FuzzPacket $OUT/FuzzPacket
-popd
-
-pushd $SRC/oss-fuzz-bloat/gpsd
-cp FuzzJson_seed_corpus.zip $OUT/FuzzJson_seed_corpus.zip
-cp FuzzPacket_seed_corpus.zip $OUT/FuzzPacket_seed_corpus.zip
-popd
+cd $SRC/freeimage-svn/FreeImage/trunk/TestAPI && ./testAPI

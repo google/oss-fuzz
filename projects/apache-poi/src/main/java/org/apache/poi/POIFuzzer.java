@@ -22,6 +22,7 @@ import java.nio.BufferUnderflowException;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.poi.ddf.EscherRecord;
 import org.apache.poi.extractor.ExtractorFactory;
 import org.apache.poi.extractor.POIOLE2TextExtractor;
 import org.apache.poi.extractor.POITextExtractor;
@@ -173,5 +174,6 @@ public class POIFuzzer {
 		// reduce limits so we do not get OOMs with the Xmx settings
 		// that are used for the fuzzing runs
 		RecordFactory.setMaxNumberOfRecords(100_000);
+		EscherRecord.setMaxNumberOfChildren(10_000);
 	}
 }

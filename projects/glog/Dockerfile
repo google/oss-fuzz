@@ -18,5 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone --depth 1 https://github.com/google/glog
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 WORKDIR $SRC/glog
