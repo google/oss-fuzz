@@ -16,12 +16,8 @@
 #
 ################################################################################
 
-# Only run unit test with sanitizer flag if it is not coverage or introspector run
-if [[ "$SANITIZER" != "coverage" && "$SANITIZER" != "introspector" ]]
-then
-  # Disable leak sanitizer
-  export ASAN_OPTIONS="detect_leaks=0"
+# Disable leak sanitizer
+export ASAN_OPTIONS="detect_leaks=0"
 
-  # Run unit test with fuzzer link flag
-  LDFLAGS="-fsanitize=$SANITIZER" make test -j$(nproc)
-fi
+# Run unit test with fuzzer link flag
+LDFLAGS="-fsanitize=$SANITIZER" make test -j$(nproc)
