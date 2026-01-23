@@ -98,10 +98,10 @@ index 000000000..ad31b6cbc
 \ No newline at end of file
 diff --git a/tests/fuzz/fuzz_ntpd_receive.c b/tests/fuzz/fuzz_ntpd_receive.c
 new file mode 100644
-index 000000000..8a93fffb9
+index 000000000..d08560d79
 --- /dev/null
 +++ b/tests/fuzz/fuzz_ntpd_receive.c
-@@ -0,0 +1,98 @@
+@@ -0,0 +1,97 @@
 +#include <stddef.h>
 +#include <stdint.h>
 +#include <sys/types.h>
@@ -171,8 +171,7 @@ index 000000000..8a93fffb9
 +    if (Size < sizeof(sockaddr_u)) {
 +        return 0;
 +    }
-+    memcpy(&rbufp.srcadr, &addr, sizeof(sockaddr_u));
-+    memcpy(&rbufp.recv_srcadr, &rbufp.srcadr, sizeof(sockaddr_u));
++    memcpy(&rbufp.recv_srcadr, &addr, sizeof(struct sockaddr_in));
 +
 +    if (Size < 1) {
 +        return 0;
