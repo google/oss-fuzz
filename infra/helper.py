@@ -397,7 +397,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
       'fuzz introspector. This involves (1) '
       'building the fuzzers with ASAN; (2) '
       'running all fuzzers; (3) building '
-      'fuzzers with coverge; (4) extracting '
+      'fuzzers with coverage; (4) extracting '
       'coverage; (5) building fuzzers using '
       'introspector')
   introspector_parser.add_argument('project', help='name of the project')
@@ -616,7 +616,7 @@ def _add_base_image_tag_args(parser):
 
 
 def _env_to_docker_args(env_list):
-  """Turns envirnoment variable list into docker arguments."""
+  """Turns environment variable list into docker arguments."""
   return sum([['-e', v] for v in env_list], [])
 
 
@@ -978,7 +978,7 @@ def check_build(args):
 
 
 def _get_fuzz_targets(project):
-  """Returns names of fuzz targest build in the project's /out directory."""
+  """Returns names of fuzz target build in the project's /out directory."""
   fuzz_targets = []
   for name in os.listdir(project.out):
     if name.startswith('afl-'):

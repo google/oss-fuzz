@@ -283,7 +283,7 @@ def check_tests(project: common_utils.Project,
     elif ret_code == 1:
       patch_msg = 'run_tests.sh result failed: patches source control'
     else:
-      patch_msg = 'run_tests.sh result uknown: unable to tell if run_tests.sh patches source control'
+      patch_msg = 'run_tests.sh result unknown: unable to tell if run_tests.sh patches source control'
     logger.info('%s', patch_msg)
     patch_details = {
         'check-name': 'run_tests_patches_diff',

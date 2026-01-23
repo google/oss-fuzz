@@ -204,7 +204,7 @@ FUZZ_INTROSPECTOR_HTML_BOTTOM = """</div>
 
 def refine_percentage_string(percentage_string):
   """Shortens a srting to 4 characters and prepends zeros if necessary.
-  We need to prepend the zero to make sorting in the final table accurrate.
+  We need to prepend the zero to make sorting in the final table accurate.
   """
   percentage_string = percentage_string.replace("%", "")
   if len(percentage_string.split(".")[0]) == 1:
@@ -213,7 +213,7 @@ def refine_percentage_string(percentage_string):
   if len(percentage_string) > 5:
     percentage_string = percentage_string[:5]
 
-  # Check if the percentage is withing range of [0.0 : 100.0]
+  # Check if the percentage is within range of [0.0 : 100.0]
   # Some old reports from 2022 have deprecated data, which we do not want to
   # display.
   float_val = float(percentage_string)

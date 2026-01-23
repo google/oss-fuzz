@@ -62,7 +62,7 @@ def _get_language():
   # given to OSS-Fuzz users by not making them specify the language again (and
   # getting it from the project.yaml) is outweighed by the complexity in
   # implementing this. A lot of the complexity comes from our unittests not
-  # setting a proper projet at this point.
+  # setting a proper project at this point.
   return os.getenv('LANGUAGE', constants.DEFAULT_LANGUAGE)
 
 
@@ -183,7 +183,7 @@ class BaseConfig:
 
   @property
   def platform(self):
-    """Returns the platform CIFuzz is runnning on."""
+    """Returns the platform CIFuzz is running on."""
     if not self.is_internal:
       if not self.is_github:
         return self.Platform.EXTERNAL_GENERIC_CI

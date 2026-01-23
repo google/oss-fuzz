@@ -200,7 +200,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     """Tests building fuzzers from an external project on Github."""
     project_repo_name = 'external-project'
     git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
-    # This test is dependant on the state of
+    # This test is dependent on the state of
     # github.com/jonathanmetzman/cifuzz-external-example.
     config = test_helpers.create_build_config(
         project_repo_name=project_repo_name,
@@ -217,7 +217,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     """Tests building fuzzers from an external project not on Github."""
     project_repo_name = 'cifuzz-external-example'
     git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
-    # This test is dependant on the state of
+    # This test is dependent on the state of
     # github.com/jonathanmetzman/cifuzz-external-example.
     manager = repo_manager.clone_repo_and_get_manager(
         'https://github.com/jonathanmetzman/cifuzz-external-example',
