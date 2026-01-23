@@ -50,6 +50,7 @@ import org.apache.poi.stress.XSSFFileHandler;
 import org.apache.poi.stress.XWPFFileHandler;
 import org.apache.poi.util.DocumentFormatException;
 import org.apache.poi.util.RecordFormatException;
+import org.apache.poi.xssf.binary.XSSFBParseException;
 import org.apache.xmlbeans.XmlException;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.opentest4j.AssertionFailedError;
@@ -99,7 +100,7 @@ public class POIFileHandlerFuzzer {
 					 IllegalArgumentException | IllegalStateException | IndexOutOfBoundsException | NoSuchElementException |
 					 UnsupportedOperationException | NegativeArraySizeException | BufferUnderflowException |
 					 ChunkNotFoundException | RecordInputStream.LeftoverDataException | RecordFormatException |
-					 OpenXML4JException | OpenXML4JRuntimeException | DocumentFormatException |
+					 OpenXML4JException | OpenXML4JRuntimeException | DocumentFormatException | XSSFBParseException |
 					 // some FileHandlers perform checks via assertions, so we expect this type of exception as well
 					 AssertionFailedError | TestAbortedException |
 					 NotImplementedException | FormulaParseException | IllegalPathStateException
