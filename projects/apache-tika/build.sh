@@ -45,6 +45,11 @@ cp ${SRC}/seeds/*_seed_corpus.zip ${OUT}/
 for fuzzer in $(find $SRC/project-parent -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
 
+  # skip helper class which is not a fuzz-target
+  if [ "$fuzzer_basename" == "ParserFuzzer"]; then
+    continue;
+  fi
+
   # Create an execution wrapper for every fuzztarget
   # This bumps memory to > 2gb to get around new byte[Integer.MAX_VALUE] single
   # allocation issues that plague audio, video, image and other parsers.
