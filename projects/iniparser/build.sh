@@ -18,7 +18,6 @@
 tree -L 2 $SRC && \
 cmake -B $WORK \
 -DBUILD_FUZZER=ON  \
--DCMAKE_C_COMPILER=clang \
 -DCMAKE_BUILD_TYPE=DEBUG $SRC/iniparser && \
 cmake --build $WORK && \
 tree -L 2 $WORK && \
