@@ -30,3 +30,4 @@ RUN rm -rf test/static
 RUN git clone https://github.com/ligurio/tarantool-corpus test/static
 
 COPY build.sh $SRC/
+COPY compile_lua_fuzzer $SRC/
