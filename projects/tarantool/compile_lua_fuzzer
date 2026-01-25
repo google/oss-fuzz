@@ -26,6 +26,8 @@ fuzzer_basename=$(basename -s .lua "$fuzz_target")
 # arguments.
 echo "#!/bin/bash
 
+set -eu
+
 # LLVMFuzzerTestOneInput so that the wrapper script is recognized
 # as a fuzz target for 'check_build'.
 project_dir=\$(dirname \"\$0\")
