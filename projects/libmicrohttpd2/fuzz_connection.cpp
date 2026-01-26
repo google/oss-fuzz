@@ -130,7 +130,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   for (int selector : selectors) {
     switch (selector) {
       case 0: {
-        mhd_stream_is_timeout_expired(&connection);
+        mhd_conn_is_timeout_expired(&connection);
         break;
       }
       case 1: {
