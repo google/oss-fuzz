@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://gdal.org"
 language: c++
 primary_contact: "even.rouault@gmail.com"
@@ -15,9 +16,3 @@ architectures:
   - x86_64
   - i386
 main_repo: 'https://github.com/OSGeo/gdal'
-
-fuzzing_engines:
-  - afl
-  - honggfuzz
-  - libfuzzer
-
