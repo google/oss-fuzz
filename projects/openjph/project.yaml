@@ -1,0 +1,8 @@
+homepage: "https://github.com/aous72/OpenJPH"
+language: c++
+primary_contact: "aous72@gmail.com"
+auto_ccs:
+  - "pal@sandflow.com"
+  - "miksmith@gmail.com"
+  - "aous@unsw.edu.au"
+main_repo: "https://github.com/aous72/OpenJPH"
