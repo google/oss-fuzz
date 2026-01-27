@@ -19,6 +19,6 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-
   unzip maven.zip -d $SRC/maven && \
   rm maven.zip
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
-RUN git clone --depth 1 https://github.com/checkstyle/checkstyle checkstyle
+RUN git clone --depth 1 --branch checkstyle-10.17.0 https://github.com/checkstyle/checkstyle checkstyle
 COPY *.sh *Fuzzer.java $SRC/
 WORKDIR $SRC/checkstyle
