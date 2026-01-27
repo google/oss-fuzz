@@ -75,4 +75,4 @@ RUN git clone --depth 1 https://github.com/libyal/libvhdi.git libvhdi
 RUN git clone --depth 1 https://github.com/libyal/libvmdk.git libvmdk
 
 WORKDIR libyal
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
