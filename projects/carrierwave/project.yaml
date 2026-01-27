@@ -1,0 +1,8 @@
+homepage: "https://github.com/carrierwaveuploader/carrierwave"
+language: ruby
+primary_contact: "adam@adalogics.com"
+main_repo: "https://github.com/carrierwaveuploader/carrierwave"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
