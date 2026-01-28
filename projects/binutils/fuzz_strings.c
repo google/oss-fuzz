@@ -30,7 +30,29 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   fwrite(data, size, 1, fp);
   fclose(fp);
 
+  setlocale (LC_ALL, "");
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+
   program_name = "fuzz_strings";
+  xmalloc_set_program_name (program_name);
+  bfd_set_error_program_name (program_name);
+
+
+  string_min = 4;
+  include_all_whitespace = false;
+  print_addresses = false;
+  print_filenames = false;
+  datasection_only = true;
+  target = NULL;
+  encoding = 's';
+  output_separator = NULL;
+  encoding_bytes = 1;
+
+  if (bfd_init () != BFD_INIT_MAGIC)
+    fatal (_("fatal error: libbfd ABI mismatch"));
+  set_default_bfd_target ();
+
 
   // Main fuzz entrypoint in strings.c
   strings_object_file(filename);
