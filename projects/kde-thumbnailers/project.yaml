@@ -4,4 +4,7 @@ primary_contact: tsdgeos@gmail.com
 sanitizers:
   - address
   - undefined
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
 main_repo: "https://invent.kde.org/network/kio-extras.git"

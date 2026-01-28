@@ -31,9 +31,13 @@ RUN apt-get update && \
     libgflags-dev \
     yasm
 
+# Due to libtiff requirements, build requires autoconf 2.71 (or later)
+RUN curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/main/a/autoconf/autoconf_2.72-3.1ubuntu1_all.deb && \
+    apt install ./autoconf_2.72-3.1ubuntu1_all.deb
+
 # Due to libxml2 requirements, build requires automake 1.16.3 (or later)
-RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
-    apt install ./automake_1.16.5-1.3_all.deb
+RUN curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/main/a/automake-1.17/automake_1.17-4ubuntu1_all.deb && \
+    apt install ./automake_1.17-4ubuntu1_all.deb
 
 # GraphicsMagick
 RUN hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
@@ -54,7 +58,7 @@ RUN git clone --depth 1 https://bitbucket.org/multicoreware/x265_git/src/stable/
     printf "https://bitbucket.org/multicoreware/x265_git/src/stable/ is not available!\n"
 
 # AV1 Codec Library needed by libheif
-RUN git clone --depth 1 --branch master https://aomedia.googlesource.com/aom aom || \
+RUN git clone --depth 1 https://aomedia.googlesource.com/aom aom || \
     printf "https://aomedia.googlesource.com/aom is not available!\n"
 
 # AVC (OpenH264) Codec Library needed by libheif
@@ -117,6 +121,21 @@ RUN git -C libjxl submodule update --init --recommend-shallow \
 
 # JBIG-kit
 RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit # does not support shallow
+
+# libwmf
+RUN git clone --depth 1 https://github.com/caolanm/libwmf.git
+
+# vvdec
+RUN git clone --depth 1 https://github.com/fraunhoferhhi/vvdec.git
+
+# vvenc
+RUN git clone --depth 1 https://github.com/fraunhoferhhi/vvenc.git
+
+# x264
+RUN git clone --depth 1 https://code.videolan.org/videolan/x264.git
+
+# OpenJPH
+RUN git clone --depth 1 https://github.com/aous72/OpenJPH.git
 
 # Build!
 WORKDIR $SRC/graphicsmagick

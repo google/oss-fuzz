@@ -18,7 +18,7 @@
 mv $SRC/{*.zip,*.dict} $OUT
 
 MAVEN_ARGS="-DskipTests -Djavac.src.version=15 -Djavac.target.version=15"
-$MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
+$MVN -pl xstream package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 cp "xstream/target/xstream-$CURRENT_VERSION.jar" $OUT/xstream.jar

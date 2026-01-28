@@ -1,0 +1,61 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+name: 'Check Base OS Consistency'
+
+on:
+  pull_request:
+    paths:
+      - 'projects/**'
+
+jobs:
+  check-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Fetch all history to compare with main
+
+      - name: Get changed project directories
+        id: changed-projects
+        run: |
+          # Get the list of changed files compared to the target branch
+          # and filter for unique directories under 'projects/'.
+          CHANGED_DIRS=$(git diff --name-only ${{ github.base_ref }} ${{ github.head_ref }} | \
+            grep '^projects/' | \
+            xargs -n 1 dirname | \
+            sort -u)
+          echo "changed_dirs=${CHANGED_DIRS}" >> $GITHUB_OUTPUT
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install PyYAML
+
+      - name: Check each modified project
+        if: steps.changed-projects.outputs.changed_dirs != ''
+        run: |
+          EXIT_CODE=0
+          for project_dir in ${{ steps.changed-projects.outputs.changed_dirs }};
+          do
+            echo "--- Checking ${project_dir} ---"
+            python3 infra/ci/check_base_os.py "${project_dir}" || EXIT_CODE=$?
+          done
+          exit $EXIT_CODE

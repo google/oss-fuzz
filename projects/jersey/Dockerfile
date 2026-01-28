@@ -16,13 +16,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip && \
 unzip maven.zip -d $SRC/maven && \
 rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.9.11/bin/mvn
 
-RUN git clone --depth 1 https://github.com/eclipse-ee4j/jersey -b 3.1
+RUN git clone --depth 1 https://github.com/eclipse-ee4j/jersey
 
 COPY build.sh $SRC/
 COPY HttpHeaderReaderFuzzer.java $SRC/

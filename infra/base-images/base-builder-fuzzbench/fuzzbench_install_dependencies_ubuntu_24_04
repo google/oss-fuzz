@@ -21,8 +21,6 @@ else
   apt-get update && apt-get install -y gcc gfortran python3-dev libopenblas-dev liblapack-dev cython3 libpq-dev
 fi
 wget -O /tmp/requirements.txt https://raw.githubusercontent.com/google/fuzzbench/master/requirements.txt
-sed -i 's/pytype==2022.10.13/pytype==2024.4.11/' /tmp/requirements.txt
-sed -i 's/Orange3==3.33.0/Orange3==3.39.0/' /tmp/requirements.txt
 pip3 install pip --upgrade
 CFLAGS= CXXFLAGS= pip3 install -r /tmp/requirements.txt
 rm /tmp/requirements.txt

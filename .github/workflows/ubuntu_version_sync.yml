@@ -1,0 +1,103 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+name: 'Ubuntu Version Sync Check'
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-sync:
+    name: Ubuntu File Synchronization Check
+    runs-on: ubuntu-latest
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+    - name: 'Checkout code'
+      uses: actions/checkout@v6
+      with:
+        # Fetch all history so we can diff against the base branch.
+        fetch-depth: 0
+
+    - name: 'Run sync check'
+      run: |
+        set -e
+        
+        MODIFIED_FILES=$(git diff --name-only $BASE_SHA...$HEAD_SHA)
+        echo "Checking for synchronized file changes..."
+        echo "Modified files in this PR:"
+        echo "$MODIFIED_FILES"
+        
+        ERRORS=""
+
+        # Define the mapping of legacy files to their versioned counterparts.
+        # Format: "legacy_file;versioned_file_pattern"
+        # The pattern uses {version} which will be replaced with "ubuntu-20-04" and "ubuntu-24-04".
+        # For Dockerfiles, the pattern is different from scripts.
+        declare -A LEGACY_DOCKERFILES
+        LEGACY_DOCKERFILES["infra/base-images/base-builder-fuzzbench/Dockerfile"]="infra/base-images/base-builder-fuzzbench/{version}.Dockerfile"
+        LEGACY_DOCKERFILES["infra/base-images/base-builder-swift/Dockerfile"]="infra/base-images/base-builder-swift/{version}.Dockerfile"
+        LEGACY_DOCKERFILES["infra/base-images/base-builder/Dockerfile"]="infra/base-images/base-builder/{version}.Dockerfile"
+        LEGACY_DOCKERFILES["infra/base-images/base-clang/Dockerfile"]="infra/base-images/base-clang/{version}.Dockerfile"
+        LEGACY_DOCKERFILES["infra/base-images/base-runner/Dockerfile"]="infra/base-images/base-runner/{version}.Dockerfile"
+
+        declare -A LEGACY_SCRIPTS
+        LEGACY_SCRIPTS["infra/base-images/base-builder-fuzzbench/fuzzbench_install_dependencies"]="infra/base-images/base-builder-fuzzbench/fuzzbench_install_dependencies_{version}"
+        LEGACY_SCRIPTS["infra/base-images/base-builder/install_deps.sh"]="infra/base-images/base-builder/install_deps_{version}.sh"
+        LEGACY_SCRIPTS["infra/base-images/base-builder/install_swift.sh"]="infra/base-images/base-builder/install_swift_{version}.sh"
+        LEGACY_SCRIPTS["infra/base-images/base-builder/precompile_honggfuzz"]="infra/base-images/base-builder/precompile_honggfuzz_{version}"
+        LEGACY_SCRIPTS["infra/base-images/base-clang/checkout_build_install_llvm.sh"]="infra/base-images/base-clang/checkout_build_install_llvm_{version}.sh"
+        LEGACY_SCRIPTS["infra/base-images/base-runner/install_deps.sh"]="infra/base-images/base-runner/install_deps_{version}.sh"
+
+        VERSIONS=("ubuntu-20-04" "ubuntu-24-04")
+
+        # Check Dockerfiles
+        for legacy_file in "${!LEGACY_DOCKERFILES[@]}"; do
+          if [[ "${legacy_file}" == infra/* ]] && echo "$MODIFIED_FILES" | grep -q "^${legacy_file}$"; then
+            echo "Legacy file changed: $legacy_file. Verifying counterparts..."
+            for version in "${VERSIONS[@]}"; do
+              pattern="${LEGACY_DOCKERFILES[$legacy_file]}"
+              versioned_file="${pattern/\{version\}/$version}"
+              if ! echo "$MODIFIED_FILES" | grep -q "^${versioned_file}$"; then
+                ERRORS+="\n- Legacy file '${legacy_file}' was changed, but its counterpart '${versioned_file}' was not."
+              fi
+            done
+          fi
+        done
+
+        # Check Scripts
+        for legacy_file in "${!LEGACY_SCRIPTS[@]}"; do
+          if echo "$MODIFIED_FILES" | grep -q "^${legacy_file}$"; then
+            echo "Legacy script changed: $legacy_file. Verifying counterparts..."
+            for version in "${VERSIONS[@]}"; do
+              pattern="${LEGACY_SCRIPTS[$legacy_file]}"
+              versioned_file="${pattern/\{version\}/$version}"
+              if ! echo "$MODIFIED_FILES" | grep -q "^${versioned_file}$"; then
+                ERRORS+="\n- Legacy script '${legacy_file}' was changed, but its counterpart '${versioned_file}' was not."
+              fi
+            done
+          fi
+        done
+
+        if [ -n "$ERRORS" ]; then
+          echo -e "\n\e[31mError: Found synchronization issues between legacy and versioned files.\e[0m"
+          echo -e "Please update the following files to match their legacy counterparts or ensure they are included in this PR:$ERRORS"
+          exit 1
+        else
+          echo -e "\n\e[32mSuccess: All modified legacy files are synchronized with their versioned counterparts.\e[0m"
+        fi

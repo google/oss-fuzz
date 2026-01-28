@@ -1,5 +1,5 @@
 #!/bin/bash -eux
-# Copyright 2025 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,10 +37,10 @@ apt-get update && apt install -y $SWIFT_PACKAGES && \
   apt install -y $SWIFT_SYMBOLIZER_PACKAGES --no-install-recommends
 
 
-wget -q https://download.swift.org/swift-5.10.1-release/ubuntu2004/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu_20_04.tar.gz
-tar xzf swift-5.10.1-RELEASE-ubuntu_20_04.tar.gz
-cp -r swift-5.10.1-RELEASE-ubuntu_20_04/usr/* /usr/
-rm -rf swift-5.10.1-RELEASE-ubuntu_20_04.tar.gz swift-5.10.1-RELEASE-ubuntu_20_04/
+wget -q https://download.swift.org/swift-5.10.1-release/ubuntu2004/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu20.04.tar.gz
+tar xzf swift-5.10.1-RELEASE-ubuntu20.04.tar.gz
+cp -r swift-5.10.1-RELEASE-ubuntu20.04/usr/* /usr/
+rm -rf swift-5.10.1-RELEASE-ubuntu20.04.tar.gz swift-5.10.1-RELEASE-ubuntu20.04/
 # TODO: Move to a seperate work dir
 git clone https://github.com/llvm/llvm-project.git
 cd llvm-project

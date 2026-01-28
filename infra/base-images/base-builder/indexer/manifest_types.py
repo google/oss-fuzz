@@ -36,23 +36,22 @@ import tempfile
 from typing import Any, Callable, Mapping, Self, Sequence
 import urllib.request
 
+import manifest_constants
 import pathlib
 
 
-# Source directory.
-SRC_DIR = pathlib.Path("src")
-# Object directory.
-OBJ_DIR = pathlib.Path("obj")
-# Directory for indexer data.
-INDEX_DIR = pathlib.Path("idx")
-# The index database filename.
-INDEX_DB = pathlib.Path("db.sqlite")
-# Library directory, where shared libraries are copied - inside obj.
-LIB_DIR = OBJ_DIR / "lib"
-# Manifest location
-MANIFEST_PATH = pathlib.Path("manifest.json")
-# Where archive version 1 expects the lib directory to be mounted.
-_LIB_MOUNT_PATH_V1 = pathlib.Path("/ossfuzzlib")
+SRC_DIR = manifest_constants.SRC_DIR
+OBJ_DIR = manifest_constants.OBJ_DIR
+INDEX_DIR = manifest_constants.INDEX_DIR
+INDEX_DB = manifest_constants.INDEX_DB
+LIB_DIR = manifest_constants.LIB_DIR
+MANIFEST_PATH = manifest_constants.MANIFEST_PATH
+LIB_MOUNT_PATH_V1 = manifest_constants.LIB_MOUNT_PATH_V1
+
+INPUT_FILE = manifest_constants.INPUT_FILE
+OUTPUT_FILE = manifest_constants.OUTPUT_FILE
+DYNAMIC_ARGS = manifest_constants.DYNAMIC_ARGS
+
 # Min archive version we currently support.
 _MIN_SUPPORTED_ARCHIVE_VERSION = 1
 # The current version of the build archive format.
@@ -60,17 +59,10 @@ ARCHIVE_VERSION = 5
 # OSS-Fuzz $OUT dir.
 OUT = pathlib.Path(os.getenv("OUT", "/out"))
 # OSS-Fuzz coverage info.
-_COVERAGE_INFO_URL = ("https://storage.googleapis.com/oss-fuzz-coverage/"
-                      f"latest_report_info/{os.getenv('PROJECT_NAME')}.json")
-
-
-# Will be replaced with the input file for target execution.
-INPUT_FILE = "<input_file>"
-# A file the target can write output to.
-OUTPUT_FILE = "<output_file>"
-# Will be replaced with any dynamic arguments.
-DYNAMIC_ARGS = "<dynamic_args>"
-
+_COVERAGE_INFO_URL = (
+    "https://storage.googleapis.com/oss-fuzz-coverage/"
+    f"latest_report_info/{os.getenv('PROJECT_NAME')}.json"
+)
 
 
 class RepositoryType(enum.StrEnum):
@@ -142,11 +134,18 @@ class BinaryConfig:
 
   Attributes:
     kind: The kind of binary configuration.
-    binary_args: The arguments to pass to the binary, for example
-      "<input_file>".
+    binary_name: The name of the executable file.
   """
 
   kind: BinaryConfigKind
+
+  binary_name: str
+
+  @property
+  def uses_stdin(self) -> bool:
+    """Whether the binary uses stdin."""
+    del self
+    return False
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
@@ -186,7 +185,6 @@ class HarnessKind(enum.StrEnum):
 class CommandLineBinaryConfig(BinaryConfig):
   """Configuration for a command-line userspace binary."""
 
-  binary_name: str
   binary_args: list[str]
   # Additional environment variables to pass to the binary. They will overwrite
   # any existing environment variables with the same name.
@@ -197,6 +195,11 @@ class CommandLineBinaryConfig(BinaryConfig):
   # are directly linked into the target binary. Should usually be true but
   # some targets like V8 require this to be false, see b/433718862.
   filter_compile_commands: bool = True
+
+  @property
+  def uses_stdin(self) -> bool:
+    """Whether the binary uses stdin."""
+    return manifest_constants.INPUT_FILE not in self.binary_args
 
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
@@ -285,7 +288,7 @@ class Manifest:
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Manifest object from a deserialized dict."""
     if data["version"] == 1:
-      lib_mount_path = _LIB_MOUNT_PATH_V1
+      lib_mount_path = LIB_MOUNT_PATH_V1
     else:
       lib_mount_path = _get_mapped(data, "lib_mount_path", pathlib.Path)
     if data["version"] < 3:
@@ -358,7 +361,7 @@ class Manifest:
           f"Build archive version too high: {self.version}. Only supporting"
           f" up to {ARCHIVE_VERSION}."
       )
-    if self.version == 1 and _LIB_MOUNT_PATH_V1 != self.lib_mount_path:
+    if self.version == 1 and LIB_MOUNT_PATH_V1 != self.lib_mount_path:
       raise RuntimeError(
           "Build archive with version 1 has an alternative lib_mount_path set"
           f" ({self.lib_mount_path}). This is not a valid archive."
@@ -409,12 +412,6 @@ class Manifest:
 
     self.validate()
 
-    if not hasattr(self.binary_config, "binary_name"):
-      raise RuntimeError(
-          "Attempting to save a binary config type without binary_name."
-          " This is not yet supported. Kind: {self.binary_config.kind}."
-      )
-
     with tempfile.NamedTemporaryFile() as tmp:
       mode = "w:gz" if archive_path.suffix.endswith("gz") else "w"
       with tarfile.open(tmp.name, mode) as tar:
@@ -430,6 +427,10 @@ class Manifest:
             for file in files:
               if file.endswith("_seed_corpus.zip"):
                 # Don't copy over the seed corpus -- it's not necessary.
+                continue
+
+              if "/.git/" in root or root.endswith("/.git"):
+                # Skip the .git directory -- it can be large.
                 continue
 
               file = pathlib.Path(root, file)
@@ -455,7 +456,9 @@ class Manifest:
 
         dumped_self = self
         if self.index_db_version is None:
-          index_db_version = _get_sqlite_db_user_version(index_dir / INDEX_DB)
+          index_db_version = _get_sqlite_db_user_version(
+              pathlib.Path(index_dir) / INDEX_DB
+          )
           dumped_self = dataclasses.replace(
               self, index_db_version=index_db_version
           )
@@ -471,8 +474,8 @@ class Manifest:
             ),
         )
 
-        # Make sure the index database (the only file directly in `INDEX_DIR`)
-        # is early in the archive for the same reason.
+        # Make sure the index databases (the only files directly in `INDEX_DIR`)
+        # are early in the archive for the same reason.
         _save_dir(index_dir, INDEX_DIR)
 
         if source_dir:
@@ -501,7 +504,8 @@ class Manifest:
 
 
 def report_missing_source_files(
-    binary_name: str, copied_files: list[str], tar: tarfile.TarFile):
+    binary_name: str, copied_files: list[str], tar: tarfile.TarFile
+):
   """Saves a report of missing source files to the snapshot tarball."""
   copied_files = {_get_comparable_path(file) for file in copied_files}
   covered_files = {
@@ -512,9 +516,7 @@ def report_missing_source_files(
   if not missing:
     return
   logging.info("Reporting missing files: %s", missing)
-  missing_report_lines = sorted([
-      covered_files[k] for k in missing
-  ])
+  missing_report_lines = sorted([covered_files[k] for k in missing])
   report_name = f"{binary_name}_missing_files.txt"
   tar_info = tarfile.TarInfo(name=report_name)
   missing_report = " ".join(missing_report_lines)
@@ -534,15 +536,19 @@ def get_covered_files(target: str) -> Sequence[str]:
     latest_info = json.load(resp)
 
   stats_url = latest_info.get("fuzzer_stats_dir").replace(
-      "gs://", "https://storage.googleapis.com/")
+      "gs://", "https://storage.googleapis.com/"
+  )
 
   target_url = f"{stats_url}/{target}.json"
   with urllib.request.urlopen(target_url) as resp:
     target_cov = json.load(resp)
 
   files = target_cov["data"][0]["files"]
-  return [file["filename"]
-          for file in files if file["summary"]["regions"]["covered"]]
+  return [
+      file["filename"]
+      for file in files
+      if file["summary"]["regions"]["covered"]
+  ]
 
 
 def _get_mapped(

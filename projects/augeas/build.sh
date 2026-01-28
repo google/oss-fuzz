@@ -21,8 +21,28 @@
 ./configure --enable-static --disable-shared --without-selinux
 make -j$(nproc)
 
-sed -i '31 i\#ifdef __cplusplus'\\n'\extern "C" {'\\n'\#endif'\\n src/fa.h
-sed -i '326 i\#ifdef __cplusplus'\\n'\}'\\n'\#endif'\\n src/fa.h
+# Add extern "C" guards for C++ compilation using awk
+# This handles both the opening and closing guards
+awk '
+/#define FA_H_/ {
+    print
+    print ""
+    print "#ifdef __cplusplus"
+    print "extern \"C\" {"
+    print "#endif"
+    print ""
+    next
+}
+/^#endif$/ && !done {
+    print ""
+    print "#ifdef __cplusplus"
+    print "}"
+    print "#endif"
+    print ""
+    done = 1
+}
+{ print }
+' src/fa.h > src/fa.h.tmp && mv src/fa.h.tmp src/fa.h
 
 ASAN_OPTIONS=detect_leaks=0
 

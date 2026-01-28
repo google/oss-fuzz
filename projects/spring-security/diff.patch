@@ -1,21 +1,3 @@
-diff --git a/oauth2/oauth2-client/spring-security-oauth2-client.gradle b/oauth2/oauth2-client/spring-security-oauth2-client.gradle
-index 0666a90..94c14cd 100644
---- a/oauth2/oauth2-client/spring-security-oauth2-client.gradle
-+++ b/oauth2/oauth2-client/spring-security-oauth2-client.gradle
-@@ -1,3 +1,4 @@
-+apply plugin: "com.github.johnrengelman.shadow"
- apply plugin: 'io.spring.convention.spring-module'
- 
- dependencies {
-diff --git a/oauth2/oauth2-jose/spring-security-oauth2-jose.gradle b/oauth2/oauth2-jose/spring-security-oauth2-jose.gradle
-index 8290b85..c177be4 100644
---- a/oauth2/oauth2-jose/spring-security-oauth2-jose.gradle
-+++ b/oauth2/oauth2-jose/spring-security-oauth2-jose.gradle
-@@ -1,3 +1,4 @@
-+apply plugin: "com.github.johnrengelman.shadow"
- apply plugin: 'io.spring.convention.spring-module'
- 
- dependencies {
 diff --git a/acl/spring-security-acl.gradle b/acl/spring-security-acl.gradle
 index 976d8d4..f01b423 100644
 --- a/acl/spring-security-acl.gradle
@@ -26,53 +8,56 @@ index 976d8d4..f01b423 100644
  
  dependencies {
 diff --git a/build.gradle b/build.gradle
-diff --git a/build.gradle b/build.gradle
 index 21893a7..faf7dff 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -2,6 +2,7 @@ import io.spring.gradle.IncludeRepoTask
- 
+@@ -4,6 +4,7 @@ import trang.RncToXsd
  buildscript {
  	dependencies {
+ 		classpath libs.io.spring.javaformat.spring.javaformat.gradle.plugin
 +		classpath "gradle.plugin.com.github.johnrengelman:shadow:7.1.2"
- 		classpath "io.spring.javaformat:spring-javaformat-gradle-plugin:$springJavaformatVersion"
- 		classpath 'io.spring.nohttp:nohttp-gradle:0.0.10'
- 		classpath "io.freefair.gradle:aspectj-plugin:6.5.1"
-@@ -14,6 +15,7 @@ buildscript {
- 	}
+ 		classpath libs.io.spring.nohttp.nohttp.gradle
+ 		classpath libs.io.freefair.gradle.aspectj.plugin
+ 		classpath libs.org.jetbrains.kotlin.kotlin.gradle.plugin
+@@ -18,6 +19,7 @@ plugins {
+ 	alias(libs.plugins.org.gradle.wrapper.upgrade)
  }
  
 +apply plugin: 'com.github.johnrengelman.shadow'
  apply plugin: 'io.spring.nohttp'
  apply plugin: 'locks'
- apply plugin: 's101'
+ apply plugin: 'io.spring.convention.root'
 diff --git a/config/spring-security-config.gradle b/config/spring-security-config.gradle
 index 7818f34..4ef9150 100644
 --- a/config/spring-security-config.gradle
 +++ b/config/spring-security-config.gradle
 @@ -1,5 +1,6 @@
- import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+ import org.springframework.gradle.xsd.CreateVersionlessXsdTask
+ import trang.RncToXsd
  
 +apply plugin: 'com.github.johnrengelman.shadow'
  apply plugin: 'io.spring.convention.spring-module'
  apply plugin: 'trang'
- apply plugin: 'kotlin'
 diff --git a/core/spring-security-core.gradle b/core/spring-security-core.gradle
 index 2968d3d..9a1be67 100644
 --- a/core/spring-security-core.gradle
 +++ b/core/spring-security-core.gradle
-@@ -1,5 +1,6 @@
- import java.util.concurrent.Callable
- 
+@@ -3,6 +3,7 @@ import java.util.concurrent.Callable
+ plugins {
+ 	id 'security-nullability'
+ }
 +apply plugin: 'com.github.johnrengelman.shadow'
- apply plugin: 'io.spring.convention.spring-module'
  
- dependencies {
+ apply plugin: 'io.spring.convention.spring-module'
+ apply plugin: 'security-kotlin'
 diff --git a/data/spring-security-data.gradle b/data/spring-security-data.gradle
 index 3e915ef..1b4d55b 100644
 --- a/data/spring-security-data.gradle
 +++ b/data/spring-security-data.gradle
-@@ -1,3 +1,4 @@
+@@ -2,6 +2,7 @@ plugins {
+ 	id 'security-nullability'
+ }
+ 
 +apply plugin: 'com.github.johnrengelman.shadow'
  apply plugin: 'io.spring.convention.spring-module'
  
@@ -81,15 +66,15 @@ diff --git a/dependencies/spring-security-dependencies.gradle b/dependencies/spr
 index fb306f6..b27cd44 100644
 --- a/dependencies/spring-security-dependencies.gradle
 +++ b/dependencies/spring-security-dependencies.gradle
-@@ -6,6 +6,8 @@ javaPlatform {
+@@ -4,6 +4,8 @@ plugins {
+ javaPlatform {
  	allowDependencies()
  }
- 
-+apply plugin: "com.github.johnrengelman.shadow"
 +
++apply plugin: "com.github.johnrengelman.shadow"
+ 
  dependencies {
- 	api platform("org.springframework:spring-framework-bom:$springFrameworkVersion")
- 	api platform("io.projectreactor:reactor-bom:$reactorVersion")
+ 	if (project.hasProperty("isOverrideVersionCatalog")) {
 diff --git a/ldap/spring-security-ldap.gradle b/ldap/spring-security-ldap.gradle
 index c4f6c08..39023ed 100644
 --- a/ldap/spring-security-ldap.gradle
@@ -105,15 +90,27 @@ index c4f6c08..39023ed 100644
  	optional 'ldapsdk:ldapsdk'
 -	optional "com.unboundid:unboundid-ldapsdk"
 +	api "com.unboundid:unboundid-ldapsdk"
- 	optional "org.apache.directory.server:apacheds-core"
- 	optional "org.apache.directory.server:apacheds-core-entry"
- 	optional "org.apache.directory.server:apacheds-protocol-shared"
+ 	optional 'tools.jackson.core:jackson-databind'
+ 	api ('org.springframework.ldap:spring-ldap-core') {
+ 		exclude(group: 'commons-logging', module: 'commons-logging')
 diff --git a/messaging/spring-security-messaging.gradle b/messaging/spring-security-messaging.gradle
 index 64435e6..9f8526f 100644
 --- a/messaging/spring-security-messaging.gradle
 +++ b/messaging/spring-security-messaging.gradle
-@@ -1,3 +1,4 @@
+@@ -2,6 +2,7 @@ plugins {
+ 	id 'security-nullability'
+ }
+ 
 +apply plugin: 'com.github.johnrengelman.shadow'
+ apply plugin: 'io.spring.convention.spring-module'
+ 
+ dependencies {
+diff --git a/oauth2/oauth2-client/spring-security-oauth2-client.gradle b/oauth2/oauth2-client/spring-security-oauth2-client.gradle
+index 0666a90..94c14cd 100644
+--- a/oauth2/oauth2-client/spring-security-oauth2-client.gradle
++++ b/oauth2/oauth2-client/spring-security-oauth2-client.gradle
+@@ -1,3 +1,4 @@
++apply plugin: "com.github.johnrengelman.shadow"
  apply plugin: 'io.spring.convention.spring-module'
  
  dependencies {
@@ -126,11 +123,23 @@ index 9fb4449..101532c 100644
  apply plugin: 'io.spring.convention.spring-module'
  
  dependencies {
+diff --git a/oauth2/oauth2-jose/spring-security-oauth2-jose.gradle b/oauth2/oauth2-jose/spring-security-oauth2-jose.gradle
+index 8290b85..c177be4 100644
+--- a/oauth2/oauth2-jose/spring-security-oauth2-jose.gradle
++++ b/oauth2/oauth2-jose/spring-security-oauth2-jose.gradle
+@@ -1,3 +1,4 @@
++apply plugin: "com.github.johnrengelman.shadow"
+ apply plugin: 'io.spring.convention.spring-module'
+ 
+ dependencies {
 diff --git a/test/spring-security-test.gradle b/test/spring-security-test.gradle
 index 92b3868..b24d835 100644
 --- a/test/spring-security-test.gradle
 +++ b/test/spring-security-test.gradle
-@@ -1,3 +1,4 @@
+@@ -2,6 +2,7 @@ plugins {
+ 	id 'security-nullability'
+ }
+ 
 +apply plugin: "com.github.johnrengelman.shadow"
  apply plugin: 'io.spring.convention.spring-module'
  
@@ -139,14 +148,17 @@ diff --git a/web/spring-security-web.gradle b/web/spring-security-web.gradle
 index ca63924..45aea6f 100644
 --- a/web/spring-security-web.gradle
 +++ b/web/spring-security-web.gradle
-@@ -1,3 +1,4 @@
+@@ -2,6 +2,7 @@ plugins {
+ 	id 'security-nullability'
+ }
+ 
 +apply plugin: 'com.github.johnrengelman.shadow'
  apply plugin: 'io.spring.convention.spring-module'
  
- dependencies {
-@@ -17,7 +18,7 @@ dependencies {
- 	optional 'org.springframework:spring-webflux'
- 	optional 'org.springframework:spring-webmvc'
+ configurations {
+@@ -50,7 +51,7 @@ dependencies {
+ 	optional 'tools.jackson.core:jackson-databind'
+ 	optional libs.webauthn4j.core
  
 -	provided 'jakarta.servlet:jakarta.servlet-api'
 +	api 'jakarta.servlet:jakarta.servlet-api'

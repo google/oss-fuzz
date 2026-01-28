@@ -40,15 +40,20 @@ SRC = Path(os.getenv('SRC', '/src'))
 # On OSS-Fuzz build infra, $OUT is not /out.
 OUT = Path(os.getenv('OUT', '/out'))
 INDEXES_PATH = Path(os.getenv('INDEXES_PATH', '/indexes'))
+INCREMENTAL_CDB_PATH = Path('/incremental_cdb')
+_GCC_BASE_PATH = Path('/usr/lib/gcc/x86_64-linux-gnu')
 
 _LD_BINARY = 'ld-linux-x86-64.so.2'
 _LD_PATH = Path('/lib64') / _LD_BINARY
+_DEFAULT_GCC_VERSION = '9'
 _LLVM_READELF_PATH = '/usr/local/bin/llvm-readelf'
 
 DEFAULT_COVERAGE_FLAGS = '-fsanitize-coverage=bb,no-prune,trace-pc-guard'
+TRACING_COVERAGE_FLAGS = '-fsanitize-coverage=func,trace-pc-guard'
 DEFAULT_FUZZING_ENGINE = 'fuzzing_engine.cc'
 
-_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', '/usr/local'))
+DEFAULT_CLANG_TOOLCHAIN = '/usr/local'
+_CLANG_TOOLCHAIN = Path(os.getenv('CLANG_TOOLCHAIN', DEFAULT_CLANG_TOOLCHAIN))
 _TOOLCHAIN_WITH_WRAPPER = Path('/opt/toolchain')
 
 INDEXER_DIR = Path(__file__).parent
@@ -57,6 +62,13 @@ INDEXER_DIR = Path(__file__).parent
 # so we can't always rely on using environment variables to pass settings to the
 # wrapper. Get around this by writing to a file instead.
 COMPILE_SETTINGS_PATH = INDEXER_DIR / 'compile_settings.json'
+
+CLANG_TOOLCHAIN_BINARY_PREFIXES = (
+    'clang-',
+    'ld',
+    'lld',
+    'llvm-',
+)
 
 EXTRA_CFLAGS = (
     '-fno-omit-frame-pointer '
@@ -122,11 +134,15 @@ def set_up_wrapper_dir():
     shutil.rmtree(_TOOLCHAIN_WITH_WRAPPER)
   _TOOLCHAIN_WITH_WRAPPER.mkdir(parents=True)
 
-  # Set up symlinks to every binary except for clang.
+  # Set up symlinks to toolchain binaries.
   wrapper_bin_dir = _TOOLCHAIN_WITH_WRAPPER / 'bin'
   wrapper_bin_dir.mkdir()
   for name in os.listdir(_CLANG_TOOLCHAIN / 'bin'):
-    if name in ('clang', 'clang++'):
+    # Symlink clang/llvm toolchain binaries, except for clang itself.
+    # We have to be careful not to symlink other unrelated binaries, since other
+    # parts of the build process may wrap those binaries (e.g.
+    # make_build_replayable.py in OSS-Fuzz).
+    if not name.startswith(CLANG_TOOLCHAIN_BINARY_PREFIXES):
       continue
 
     os.symlink(_CLANG_TOOLCHAIN / 'bin' / name, wrapper_bin_dir / name)
@@ -377,11 +393,30 @@ def copy_fuzzing_engine(fuzzing_engine: str) -> Path:
   return fuzzing_engine_dir
 
 
+def _get_latest_gcc_version() -> str:
+  """Finds the latest GCC version installed.
+
+  Defaults to '9' for backward compatibility if detection fails.
+
+  Returns:
+    The latest GCC version found, or the default.
+  """
+  if _GCC_BASE_PATH.exists():
+    versions = []
+    for d in _GCC_BASE_PATH.iterdir():
+      if d.is_dir() and d.name.isdigit():
+        versions.append(int(d.name))
+
+    if versions:
+      return str(max(versions))
+
+  return _DEFAULT_GCC_VERSION
+
+
 def build_project(
     targets_to_index: Sequence[str] | None = None,
     compile_args: Sequence[str] | None = None,
     binaries_only: bool = False,
-    fuzzing_engine: str = DEFAULT_FUZZING_ENGINE,
     coverage_flags: str = DEFAULT_COVERAGE_FLAGS,
 ):
   """Build the actual project."""
@@ -401,7 +436,8 @@ def build_project(
       )
   )
 
-  fuzzing_engine_dir = copy_fuzzing_engine(fuzzing_engine)
+  fuzzing_engine_dir = copy_fuzzing_engine(DEFAULT_FUZZING_ENGINE)
+  gcc_version = _get_latest_gcc_version()
   build_fuzzing_engine_command = [
       f'{_CLANG_TOOLCHAIN}/bin/clang++',
       '-c',
@@ -413,18 +449,18 @@ def build_project(
       '-fno-exceptions',
       '-glldb',
       '-O0',
-      (fuzzing_engine_dir / fuzzing_engine).as_posix(),
+      (fuzzing_engine_dir / DEFAULT_FUZZING_ENGINE).as_posix(),
       '-o',
       f'{OUT}/fuzzing_engine.o',
       '-gen-cdb-fragment-path',
       f'{OUT}/cdb',
       '-Qunused-arguments',
       f'-isystem {_CLANG_TOOLCHAIN}/lib/clang/{clang_version}',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/c++/{gcc_version}',
       '-I',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/x86_64-linux-gnu/c++/{gcc_version}',
       '-I',
-      '/usr/lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward',
+      f'/usr/lib/gcc/x86_64-linux-gnu/{gcc_version}/../../../../include/c++/{gcc_version}/backward',
       '-I',
       f'{_CLANG_TOOLCHAIN}/lib/clang/{clang_version}/include',
       '-I',
@@ -435,6 +471,18 @@ def build_project(
       '/usr/include',
   ]
   subprocess.run(build_fuzzing_engine_command, check=True, cwd='/opt/indexer')
+
+  build_cov_instrumentation_command = [
+      f'{_CLANG_TOOLCHAIN}/bin/clang++',
+      '-fno-rtti',
+      '-fno-exceptions',
+      '-c',
+      '/opt/indexer/coverage.cc',
+  ]
+  subprocess.run(
+      build_cov_instrumentation_command, check=True, cwd='/opt/indexer'
+  )
+
   ar_cmd = [
       'ar',
       'rcs',
@@ -773,18 +821,14 @@ def main():
       ),
   )
   parser.add_argument(
-      '--fuzzing-engine',
-      default=DEFAULT_FUZZING_ENGINE,
-      help='Path to the fuzzing engine to use for the fuzz target.',
-  )
-  parser.add_argument(
-      '--coverage-flags',
-      default=DEFAULT_COVERAGE_FLAGS,
-      help='Coverage flags to set for the instrumentation.',
+      '--tracing-instrumentation',
+      action='store_true',
+      help='Enable tracing coverage instrumentation.',
   )
   args = parser.parse_args()
 
   INDEXES_PATH.mkdir(exist_ok=True)
+  INCREMENTAL_CDB_PATH.mkdir(exist_ok=True)
 
   # Clean up the existing OUT by default, otherwise we may run into various
   # build errors.
@@ -876,8 +920,9 @@ def main():
       None if args.targets_all_index else targets_to_index,
       args.compile_arg,
       args.binaries_only,
-      args.fuzzing_engine,
-      args.coverage_flags,
+      TRACING_COVERAGE_FLAGS
+      if args.tracing_instrumentation
+      else DEFAULT_COVERAGE_FLAGS,
   )
 
   if not args.binaries_only:

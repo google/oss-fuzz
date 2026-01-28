@@ -54,7 +54,7 @@ meson setup \
     -Dintrospection=disabled \
     -Dman=false \
     -Ddocumentation=false \
-    -Dtests=false \
+    -Dtests=true \
     -Dinstalled_tests=false \
     -Dthumbnailer=disabled \
     -Dglycin=disabled \
