@@ -1,11 +1,14 @@
 homepage: "https://github.com/awslabs/mcp"
 language: python
-primary_contact: ""
+primary_contact: "scoschre@amazon.com"
 auto_ccs:
-  - ""
+  - "awslabs-mcp+oss-fuzz@amazon.com"
+  - "scoschre@amazon.com"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
   - address
-  - memory:
-     experimental: True
   - undefined
-main_repo: 'https://github.com/awslabs/mcp.git'
+architectures:
+  - x86_64
+main_repo: "https://github.com/awslabs/mcp"
