@@ -14,11 +14,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool g++ curl cmake sqlite3 pkg-config
 
-RUN git clone --depth 1 https://github.com/OSGeo/gdal gdal
+# Using this temporary branch while the pull request in google/ossfuzz has not been yet merged
+# Once it has been, this ossfuzz_ubuntu_2404 branch will be merged back to OSGeo/gdal master
+RUN git clone --depth 1 --branch ossfuzz_ubuntu_2404 https://github.com/rouault/gdal gdal
+#RUN git clone --depth 1 https://github.com/OSGeo/gdal gdal
 
 RUN cp gdal/fuzzers/build.sh $SRC/
 
