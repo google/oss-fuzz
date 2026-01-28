@@ -262,7 +262,7 @@ def diff_patch_analysis(stage: str) -> int:
   
   
   Returns:   int: 0 if no patch found, 1 if patch found and -1 on
-            unkonwn (such as due to unsupported version control).
+            unknown (such as due to unsupported version control).
   """
 
   print(

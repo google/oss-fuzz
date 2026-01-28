@@ -9,7 +9,7 @@ At the core, Chronos relies on caching containers after project build, in order
 to enable fast rebuilding of a project following minor patches, and also enable
 running of the tests in a given project. To support this, Chronos creates a snapshot
 of a the docker container given project post build completion. This means that all `.o` files, generated
-configuations etc. persist in the docker container. These artifacts are then
+configurations etc. persist in the docker container. These artifacts are then
 leverage for future "replay builds" where only a minor part of the project has changed,
 e.g. due to some patching on the project. This patching could be e.g. minor adjustments
 to the fuzzing harness source code e.g. by [oss-fuzz-gen](https://github.com/google/oss-fuzz-gen).

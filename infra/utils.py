@@ -131,7 +131,7 @@ def get_container_name():
 
 
 def is_executable(file_path):
-  """Returns True if |file_path| is an exectuable."""
+  """Returns True if |file_path| is an executable."""
   return os.path.exists(file_path) and os.access(file_path, os.X_OK)
 
 

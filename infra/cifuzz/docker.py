@@ -105,7 +105,7 @@ def get_base_docker_run_command(workspace,
                                 language=constants.DEFAULT_LANGUAGE,
                                 architecture=constants.DEFAULT_ARCHITECTURE,
                                 docker_in_docker=False):
-  """Returns part of the command that should be used everytime 'docker run' is
+  """Returns part of the command that should be used every time 'docker run' is
   invoked."""
   docker_args, docker_container = get_base_docker_run_args(
       workspace,

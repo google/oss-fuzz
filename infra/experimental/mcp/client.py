@@ -444,7 +444,7 @@ def _get_all_broken_oss_fuzz_projects(language: str = '') -> list[str]:
 
     # Make sure the project actually exists in the OSS-Fuzz repository.
     # We need to do this because Clusterfuzz may keep some projects rolling
-    # withouth them being in OSS-Fuzz any longer.
+    # without them being in OSS-Fuzz any longer.
     project_path = os.path.join(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
                                 'projects', project['name'])
     if not os.path.exists(project_path):
