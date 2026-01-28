@@ -150,8 +150,13 @@ cmake --build build --parallel --verbose --target copy_tests
 # Generating test wrappers for luzer-based tests.
 for test_file in $(find $LUZER_TEST_DIR -name "*.lua" -type f);
 do
-  "$SRC/compile_lua_fuzzer" "$LUA_RUNTIME_NAME" $(basename "$test_file")
+  test_name=$(basename $test_file);
+  "$SRC/compile_lua_fuzzer" "$LUA_RUNTIME_NAME" $test_name
   cp "$test_file" "$OUT/"
+  corpus_dir="test/static/corpus/$test_name"
+  if [ -e "$corpus_dir" ]; then
+    zip --quiet -j $OUT/"$test_name"_seed_corpus.zip $corpus_dir/*
+  fi
 done
 
 cp $TARANTOOL_PATH "$OUT/$LUA_RUNTIME_NAME"
