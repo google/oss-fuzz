@@ -1,0 +1,38 @@
+name: indexer tests
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - 'infra/base-images/base-builder/indexer/**'
+      - '.github/workflows/index_build_tests.yml'
+
+jobs:
+  'indexer':
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v6
+        with:  # Needed for git diff to work. (get_changed_files)
+          fetch-depth: 0
+      - run: |
+          git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+
+      - name: Setup python environment
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.11
+
+      - name: Get latest indexer binary
+        run: curl -O https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer && chmod +x indexer
+        working-directory: 'infra/base-images/base-builder/indexer'
+
+      - name: Run indexer tests
+        run: sudo env "PATH=$PATH" INDEX_BUILD_TESTS=1 python -m unittest index_build_test
+        working-directory: 'infra/base-images/base-builder/indexer'

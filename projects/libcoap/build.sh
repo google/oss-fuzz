@@ -20,7 +20,7 @@ if [ "$SANITIZER" == "introspector" ]; then
 fi
 
 ./autogen.sh && ./configure --disable-doxygen --disable-manpages \
-                            --disable-dtls                       \
+                            --with-openssl --enable-tests        \
     && make -j$(nproc)
 
 # build all fuzzer targets

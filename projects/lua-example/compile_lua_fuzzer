@@ -1,0 +1,37 @@
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# The Lua runtime name.
+lua_runtime=$1
+# Path to the fuzz target source file relative to the project's root.
+fuzz_target=$2
+
+fuzzer_basename=$(basename -s .lua "$fuzz_target")
+
+# Create an execution wrapper that executes luzer with the correct
+# arguments.
+echo "#!/bin/bash
+
+# LLVMFuzzerTestOneInput so that the wrapper script is recognized
+# as a fuzz target for 'check_build'.
+project_dir=\$(dirname \"\$0\")
+eval \$(luarocks --tree lua_modules path)
+LD_PRELOAD=\$project_dir/lua_modules/lib/lua/5.1/libfuzzer_with_asan.so \
+ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$project_dir/llvm-symbolizer:detect_leaks=0 \
+\$project_dir/$lua_runtime \$project_dir/$fuzz_target \$@" > "$OUT/$fuzzer_basename"
+
+chmod +x "$OUT/$fuzzer_basename"

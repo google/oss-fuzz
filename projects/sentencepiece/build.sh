@@ -15,20 +15,22 @@
 #
 ################################################################################
 
+set -x
+
 # build project
 mkdir build
 cd build
-cmake -DSPM_ENABLE_SHARED=ON ..
-make -j $(nproc)
-make install
+cmake ../ -B ./ -DSPM_ENABLE_SHARED=ON -DCMAKE_INSTALL_PREFIX=./root -DSPM_BUILD_TEST=ON
+cmake --build ./ --config Release --target install --parallel $(nproc)
 
 # build fuzzers
-for fuzzer in $(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party'); do
+fuzzers=$(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party')
+echo "Found fuzzers: ${fuzzers[@]}"
+for fuzzer in "${fuzzers[@]}"; do
   fuzz_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -std=c++17 -I. -I$SRC/sentencepiece \
-      -I$SRC/sentencepiece/src \
-      -I$SRC/sentencepiece/src/builtin_pb/ \
-      -I$SRC/sentencepiece/third_party/protobuf-lite/ \
-        $fuzzer $LIB_FUZZING_ENGINE ./src/libsentencepiece.a \
-        -o $OUT/$fuzz_basename
+  $CXX $CXXFLAGS -std=c++17 \
+      -I. -I./root/include \
+      $fuzzer $LIB_FUZZING_ENGINE \
+      ./root/lib/*.a \
+      -o $OUT/$fuzz_basename
 done

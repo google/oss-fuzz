@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export CXXFLAGS="${CXXFLAGS} -pthread"
+
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
@@ -25,5 +27,19 @@ then
     export CXXFLAGS="$CXXFLAGS -DASAN"
 fi
 
+# Build fuzz harness.
 $CXX $CXXFLAGS -D_GLIBCXX_DEBUG -I $SRC/rapidjson/include $SRC/fuzzer.cpp $LIB_FUZZING_ENGINE -o $OUT/fuzzer
 
+# Build unit test and perf test only
+mkdir build
+cd build
+NO_ERROR="-Wno-error=character-conversion"
+NO_ERROR="$NO_ERROR -Wno-error=deprecated-declarations"
+NO_ERROR="$NO_ERROR -Wno-error=uninitialized-const-pointer"
+export LDFLAGS="-pthread"
+cmake -DRAPIDJSON_BUILD_CXX17=ON \
+  -DRAPIDJSON_BUILD_CXX11=OFF \
+  -DRAPIDJSON_BUILD_THIRDPARTY_GTEST=OFF \
+  -DCMAKE_CXX_FLAGS="$NO_ERROR" \
+  ..
+make -j$(nproc) unittest perftest

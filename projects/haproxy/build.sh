@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 export ORIG_CFLAGS=${CFLAGS}
-cd haproxy
+cd $SRC/haproxy
 
 # Fix some things in the Makefile where there are no options available
 sed 's/COPTS += $(DEBUG) $(OPTIONS_CFLAGS) $(CFLAGS) $(ADDINC)/COPTS += $(DEBUG) $(OPTIONS_CFLAGS) $(CFLAGS) $(ADDINC) ${ORIG_CFLAGS}/g' -i Makefile
@@ -39,3 +39,8 @@ for fuzzer in hpack_decode cfg_parser; do
   $CC $CFLAGS $SETTINGS -c fuzz_${fuzzer}.c  -o fuzz_${fuzzer}.o
   $CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_${fuzzer}.o libhaproxy.a -o $OUT/fuzz_${fuzzer}
 done
+
+# build vtest for run_tests.sh
+cd $SRC/VTest2
+make vtest
+# vtest binary is in $SRC/VTest2/vtest

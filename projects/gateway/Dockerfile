@@ -16,15 +16,18 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-RUN wget https://go.dev/dl/go1.24.0.linux-amd64.tar.gz \
-    && mkdir temp-go \
-    && rm -rf /root/.go/* \
-    && tar -C temp-go/ -xzf go1.24.0.linux-amd64.tar.gz \
-    && mv temp-go/go/* /root/.go/ \
-    && rm -rf temp-go go1.24.0.linux-amd64.tar.gz \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install -y btrfs-progs libbtrfs-dev
 
 RUN git clone --depth 1 https://github.com/envoyproxy/gateway.git
 
-COPY build.sh $SRC/
+RUN cd $SRC/gateway && \
+    GO_VERSION=$(grep -oP '^go \K[0-9]+\.[0-9]+(\.[0-9]+)?' go.mod | head -1) && \
+    wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
+    mkdir temp-go && \
+    rm -rf /root/.go/* && \
+    tar -C temp-go/ -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
+    mv temp-go/go/* /root/.go/ && \
+    rm -rf temp-go go${GO_VERSION}.linux-amd64.tar.gz
+
+COPY build.sh default.options $SRC/

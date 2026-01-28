@@ -16,6 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
+ENV RUSTUP_TOOLCHAIN=nightly-2025-07-04
+
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install --no-install-recommends -y \
@@ -24,24 +26,24 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 RUN pip3 install --disable-pip-version-check --no-cache-dir \
-        pip==24.2
+        pip==25.1.1
 RUN pip3 install --disable-pip-version-check --no-cache-dir \
-        meson==1.5.1 \
-        ninja==1.11.1.1 \
-        packaging==24.1
+        meson==1.8.2 \
+        ninja==1.11.1.4 \
+        packaging==25.0
 
 # We have to compile various dependencies because the distro does not have recent enough
 # versions of packages like Pango. Manual compilation also makes it easier to use static linking:
 # https://google.github.io/oss-fuzz/further-reading/fuzzer-environment/
 
 RUN git clone --depth=1 --no-tags https://gitlab.gnome.org/GNOME/librsvg.git
-RUN git clone --depth=1 --branch=2.82.0 https://gitlab.gnome.org/GNOME/glib.git
+RUN git clone --depth=1 --branch=2.85.2 https://gitlab.gnome.org/GNOME/glib.git
 RUN git clone --depth=1 --branch=VER-2-13-3 https://gitlab.freedesktop.org/freetype/freetype.git
-RUN git clone --depth=1 --branch=v2.13.3 https://gitlab.gnome.org/GNOME/libxml2.git
-RUN git clone --depth=1 --branch=2.15.0 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
-RUN git clone --depth=1 --branch=1.18.2 https://gitlab.freedesktop.org/cairo/cairo.git
-RUN git clone --depth=1 --branch=9.0.0 https://github.com/harfbuzz/harfbuzz.git
-RUN git clone --depth=1 --branch=1.54.0 https://gitlab.gnome.org/GNOME/pango.git
+RUN git clone --depth=1 --branch=v2.14.5 https://gitlab.gnome.org/GNOME/libxml2.git
+RUN git clone --depth=1 --branch=2.17.1 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
+RUN git clone --depth=1 --branch=1.18.4 https://gitlab.freedesktop.org/cairo/cairo.git
+RUN git clone --depth=1 --branch=11.3.2 https://github.com/harfbuzz/harfbuzz.git
+RUN git clone --depth=1 --branch=1.56.4 https://gitlab.gnome.org/GNOME/pango.git
 
 RUN git clone --depth=1 --no-tags https://github.com/google/fuzzing.git
 

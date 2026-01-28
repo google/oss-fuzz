@@ -12,4 +12,5 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
  - address
- - undefined
+ # Temporarily disabled (see google/oss-fuzz#14253)
+ # - undefined

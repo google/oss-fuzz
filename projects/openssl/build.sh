@@ -17,7 +17,7 @@
 
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/openssl/fuzz/fuzz_introspector_exclusion.config
 
-CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-ssl3 enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment"
+CONFIGURE_FLAGS="--debug enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment enable-unit-test no-tests"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
   CONFIGURE_FLAGS="$CONFIGURE_FLAGS no-asm"
@@ -38,12 +38,17 @@ fi
 
 function build_fuzzers() {
     SUFFIX=$1
+    local EXTRA_CONFIGURE_FLAGS="$2"
+    local EXTRA_SOURCES="$3"
+
     if [[ $CFLAGS = *-m32* ]]
     then
         setarch i386 ./config $CONFIGURE_FLAGS
     else
-        ./config $CONFIGURE_FLAGS
+        ./config $CONFIGURE_FLAGS $EXTRA_CONFIGURE_FLAGS
     fi
+
+    df -h
 
     make -j$(nproc) LDCMD="$CXX $CXXFLAGS"
 
@@ -64,7 +69,7 @@ function build_fuzzers() {
     cp fuzz/oids.txt $OUT/x509${SUFFIX}.dict
     if [ "$SANITIZER" == coverage ]; then
       DESTDIR=$OUT/src/openssl${SUFFIX#_}
-      SOURCES="include crypto ssl providers engines fuzz"
+      SOURCES="include crypto ssl providers fuzz $EXTRA_SOURCES"
       mkdir -p $DESTDIR
       if [ -f e_os.h ]; then
         cp e_os.h $DESTDIR/
@@ -72,24 +77,29 @@ function build_fuzzers() {
       find $SOURCES -type f -a \( -name '*.[ch]' -o -name '*.inc' \) -exec cp --parents '{}' $DESTDIR/ \;
     fi
 
-    if [[ -z "${INDEXER_BUILD:-}" ]]; then
-      df
-      rm -rf * .git*
-      df
+    df -h
+    if [[ -z "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
+      git clean -dfx
     fi
+    df -h
 }
 
 cd $SRC/openssl/
-build_fuzzers ""
+build_fuzzers "" "no-apps" ""
 
-# In introspector and indexer builds, only build the master branch
-if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" ]]; then
+# In introspector, indexer builds and when capturing replay builds, only build
+# the master branch
+if [[ "$SANITIZER" == introspector || -n "${INDEXER_BUILD:-}" || -n "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
   exit 0
 fi
 
 cd $SRC/openssl30/
-build_fuzzers "_30"
-cd $SRC/openssl31/
-build_fuzzers "_31"
-cd $SRC/openssl32/
-build_fuzzers "_32"
+build_fuzzers "_30" "" "engines"
+cd $SRC/openssl33/
+build_fuzzers "_33" "no-apps" "engines"
+cd $SRC/openssl34/
+build_fuzzers "_34" "no-apps" "engines"
+cd $SRC/openssl35/
+build_fuzzers "_35" "no-apps" "engines"
+cd $SRC/openssl36/
+build_fuzzers "_36" "no-apps" "engines"

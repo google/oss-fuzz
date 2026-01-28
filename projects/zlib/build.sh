@@ -15,10 +15,18 @@
 #
 ################################################################################
 
-./configure
+if ! ./configure; then
+    cat configure.log
+    exit 1
+fi
+
 make -j$(nproc) clean
 make -j$(nproc) all
-make -j$(nproc) check
+
+# Skip make check for memory sanitizer - zlib's tests have uninitialized memory issues
+if [ "$SANITIZER" != "memory" ]; then
+    make -j$(nproc) check
+fi
 
 for f in $(find $SRC -name '*_fuzzer.cc'); do
     b=$(basename -s .cc $f)

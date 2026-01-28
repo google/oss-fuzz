@@ -234,6 +234,21 @@ You can checkout CIFuzz configs for OSS-Fuzz projects. Example -
 [systemd](https://github.com/systemd/systemd/blob/main/.github/workflows/cifuzz.yml),
 [curl](https://github.com/curl/curl/blob/master/.github/workflows/fuzz.yml).
 
+## Ubuntu 24.04 Support
+
+CIFuzz supports building and running fuzzers in an Ubuntu 24.04 environment.
+Existing projects will continue to use the legacy environment (Ubuntu 20.04) by default,
+preserving current behavior.
+
+To migrate your project to Ubuntu 24.04, add the following line to your `project.yaml`:
+
+```yaml
+base_os_version: ubuntu-24-04
+```
+
+For OSS-Fuzz projects, this file is located at `projects/<project_name>/project.yaml`.
+For external projects (ClusterFuzzLite), this file is typically located at `.clusterfuzzlite/project.yaml`.
+
 ## Understanding results
 
 The results of CIFuzz can be found in two different places.

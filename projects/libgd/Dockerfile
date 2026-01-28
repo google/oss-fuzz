@@ -20,4 +20,4 @@ RUN apt-get update && \
 RUN git clone --depth 1 https://github.com/libgd/libgd
 ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/afl_testcases.tgz
 WORKDIR libgd
-COPY build.sh *.cc $SRC/
+COPY run_tests.sh build.sh *.cc $SRC/

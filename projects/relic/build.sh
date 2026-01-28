@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL"
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -Wno-deprecated-literal-operator"
 export LIBFUZZER_LINK="$LIB_FUZZING_ENGINE"
 
 # Install Boost headers
@@ -36,7 +36,7 @@ then
 else
     export RELIC_ARCH="X64"
 fi
-cmake .. -DCOMP="$CFLAGS" -DQUIET=on -DRAND=CALL -DSHLIB=off -DSTBIN=off -DTESTS=0 -DBENCH=0 -DALLOC=DYNAMIC -DARCH=$RELIC_ARCH
+cmake .. -DCOMP="$CFLAGS" -DQUIET=on -DRAND=CALL -DSHLIB=off -DSTBIN=off -DTESTS=1 -DBENCH=0 -DALLOC=DYNAMIC -DARCH=$RELIC_ARCH
 make -j$(nproc)
 cd ../..
 export RELIC_PATH=$(realpath relic)
