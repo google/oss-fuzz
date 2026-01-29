@@ -4,7 +4,6 @@ primary_contact: "seahen123@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:
-  - libfuzzer
   - afl
 language: rust
 auto_ccs:
