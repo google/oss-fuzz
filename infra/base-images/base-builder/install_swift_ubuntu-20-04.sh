@@ -1,5 +1,5 @@
 #!/bin/bash -eux
-# Copyright 2025 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,61 +15,33 @@
 #
 ################################################################################
 
-# Detect Ubuntu version
-source /etc/os-release
 
-if [[ "$VERSION_ID" == "20.04" ]]; then
-  SWIFT_PACKAGES="wget \
-            binutils \
-            git \
-            gnupg2 \
-            libc6-dev \
-            libcurl4 \
-            libedit2 \
-            libgcc-9-dev \
-            libpython2.7 \
-            libsqlite3-0 \
-            libstdc++-9-dev \
-            libxml2 \
-            libz3-dev \
-            pkg-config \
-            tzdata \
-            zlib1g-dev"
-  SWIFT_URL="https://download.swift.org/swift-5.10.1-release/ubuntu2004/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu_20_04.tar.gz"
-  SWIFT_DIR="swift-5.10.1-RELEASE-ubuntu_20_04"
-elif [[ "$VERSION_ID" == "24.04" ]]; then
-  SWIFT_PACKAGES="wget \
-            binutils \
-            git \
-            gnupg2 \
-            libc6-dev \
-            libcurl4 \
-            libedit2 \
-            libgcc-13-dev \
-            libsqlite3-0 \
-            libstdc++-13-dev \
-            libxml2 \
-            libz3-dev \
-            pkg-config \
-            tzdata \
-            zlib1g-dev"
-  SWIFT_URL="https://download.swift.org/swift-5.10.1-release/ubuntu2404/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-ubuntu24.04.tar.gz"
-  SWIFT_DIR="swift-5.10.1-RELEASE-ubuntu24.04"
-else
-  echo "Unsupported Ubuntu version: $VERSION_ID"
-  exit 1
-fi
-
+SWIFT_PACKAGES="wget \
+          binutils \
+          git \
+          gnupg2 \
+          libc6-dev \
+          libcurl4 \
+          libedit2 \
+          libgcc-9-dev \
+          libpython2.7 \
+          libsqlite3-0 \
+          libstdc++-9-dev \
+          libxml2 \
+          libz3-dev \
+          pkg-config \
+          tzdata \
+          uuid-dev \
+          zlib1g-dev"
 SWIFT_SYMBOLIZER_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev"
 apt-get update && apt install -y $SWIFT_PACKAGES && \
   apt install -y $SWIFT_SYMBOLIZER_PACKAGES --no-install-recommends
 
 
-wget -q $SWIFT_URL
-tar xzf $(basename $SWIFT_URL)
-cp -r $SWIFT_DIR/usr/* /usr/
-rm -rf $(basename $SWIFT_URL) $SWIFT_DIR
-
+wget -q https://download.swift.org/swift-6.1.3-release/ubuntu2004/swift-6.1.3-RELEASE/swift-6.1.3-RELEASE-ubuntu20.04.tar.gz
+tar xzf swift-6.1.3-RELEASE-ubuntu20.04.tar.gz
+cp -r swift-6.1.3-RELEASE-ubuntu20.04/usr/* /usr/
+rm -rf swift-6.1.3-RELEASE-ubuntu20.04.tar.gz swift-6.1.3-RELEASE-ubuntu20.04/
 # TODO: Move to a seperate work dir
 git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
@@ -92,5 +64,5 @@ cd $SRC
 rm -rf llvm-project llvmsymbol.diff
 
 # TODO: Cleanup packages
-apt-get remove --purge -y wget zlib1g-dev
+apt-get remove --purge -y wget
 apt-get autoremove -y
