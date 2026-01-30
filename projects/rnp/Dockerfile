@@ -31,4 +31,4 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/rnpgp/rnp.git rnp
 WORKDIR $SRC
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
