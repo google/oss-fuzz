@@ -26,8 +26,13 @@ pushd ${build_dir}
 # needed for MemorySanitizer (see bug oss-fuzz:9497 and bug oss-fuzz:9499).
 if [[ $CFLAGS = *sanitize=memory* ]]; then
   extra_c_flags='-DVPX_MAX_ALLOCABLE_MEMORY=536870912'
+  # MemorySanitizer requires that all program code is instrumented.
+  # Disable all assembly code, leaving the optimizations implemented with
+  # compiler intrinsics, to improve sanitizer performance and coverage.
+  extra_configure_flags=(--disable-x86-asm)
 else
   extra_c_flags='-DVPX_MAX_ALLOCABLE_MEMORY=1073741824'
+  extra_configure_flags=()
 fi
 
 LDFLAGS="$CXXFLAGS" LD=$CXX $SRC/libvpx/configure \
@@ -39,7 +44,8 @@ LDFLAGS="$CXXFLAGS" LD=$CXX $SRC/libvpx/configure \
     --disable-webm-io \
     --enable-debug \
     --enable-vp8-encoder \
-    --enable-vp9-encoder
+    --enable-vp9-encoder \
+    "${extra_configure_flags[@]}"
 make -j$(nproc) all
 popd
 
