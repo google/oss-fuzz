@@ -30,8 +30,8 @@ set -eu
 
 # LLVMFuzzerTestOneInput so that the wrapper script is recognized
 # as a fuzz target for 'check_build'.
-project_dir=\$(dirname \"\$0\")
-eval \$(luarocks --lua-version 5.1 --tree lua_modules path)
+project_dir=\$(dirname \$(realpath \"\$0\"))
+eval \$(luarocks --lua-version 5.1 --tree \$project_dir/lua_modules path)
 ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$project_dir/llvm-symbolizer:detect_leaks=0 \
 \$project_dir/$lua_runtime \$project_dir/$fuzz_target \$@" > "$OUT/$fuzzer_basename"
 
