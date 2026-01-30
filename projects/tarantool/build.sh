@@ -119,8 +119,11 @@ done
 # is libFuzzer-based.
 # UndefinedBehaviorSanitizer is not supported,
 # see https://github.com/tarantool/tarantool/issues/12216.
+# Code coverage is not supported,
+# see https://github.com/google/oss-fuzz/issues/14859.
 if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
-   [[ "$SANITIZER" == "undefined" ]]; then
+   [[ "$SANITIZER" == "undefined" ]] ||
+   [[ "$SANITIZER" == "coverage" ]]; then
   exit
 fi
 
