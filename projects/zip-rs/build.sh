@@ -16,16 +16,16 @@
 ################################################################################
 
 cd $SRC/zip
-cargo fuzz build -O --debug-assertions
 
-for file in tests/data/*.zip
-do
-  mv "$file" "${file%.zip}_zip"
-done
+mkdir -vp fuzz-read-out
+cargo afl build --manifest-path=fuzz/Cargo.toml --all-features -p fuzz_read
+# Curated input corpus:
+cargo afl fuzz -i fuzz/read/in -o fuzz-read-out fuzz/target/debug/fuzz_read
+# Test data files:
+cargo afl fuzz -i tests/data -e zip -o fuzz-read-out fuzz/target/debug/fuzz_read
 
-zip from_zip_seed_corpus.zip tests/data/*_zip
-cp from_zip_seed_corpus.zip structured_fuzz_reader_seed_corpus.zip
+mkdir -vp fuzz-write-out
+cargo afl build --manifest-path=fuzz/Cargo.toml --all-features -p fuzz_write
+# Curated input corpus and dictionary schema:
+cargo afl fuzz -x fuzz/write/fuzz.dict -i fuzz/write/in -o fuzz-write-out fuzz/target/debug/fuzz_write
 
-cp fuzz/target/x86_64-unknown-linux-gnu/release/from_zip $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/structured_fuzz_reader $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/roundtrip $OUT/
