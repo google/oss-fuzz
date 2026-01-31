@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cd $SRC/zip
+cd $SRC/zip2
 
 mkdir -vp fuzz-read-out
 cargo afl build --manifest-path=fuzz/Cargo.toml --all-features -p fuzz_read
