@@ -1,0 +1,9 @@
+homepage: "https://kokkos.org"
+language: c++
+primary_contact: "lberge@sandia.gov"
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+  - undefined
+main_repo: 'https://github.com/kokkos/kokkos-kernels.git'
