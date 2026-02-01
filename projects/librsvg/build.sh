@@ -87,6 +87,9 @@ cp target/x86_64-unknown-linux-gnu/release/render_document "$OUT/"
 # Copy options files for fuzz targets
 cp "$SRC"/*.options "$OUT/"
 
+# Copy suppressions file for fuzz targets
+cp "$SRC/librsvg/tools/lsan.supp" "$OUT/"
+
 # Create dictionary files for fuzz targets
 cat "$SRC/fuzzing/dictionaries/"{css,svg,xml}.dict > "$OUT/render_document.dict"
 
