@@ -1,0 +1,8 @@
+homepage: "https://github.com/Zxilly/go-size-analyzer"
+language: go
+main_repo: "https://github.com/Zxilly/go-size-analyzer"
+primary_contact: "zhouxinyu1001@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
