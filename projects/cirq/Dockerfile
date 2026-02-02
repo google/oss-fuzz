@@ -23,10 +23,6 @@ RUN git clone \
 
 WORKDIR $SRC/Cirq
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-ENV DEBIAN_FRONTEND=noninteractive
-
 # Install pip dependencies.
 RUN --mount=type=cache,target=/root/.cache/pip \
     export PIP_ROOT_USER_ACTION=ignore && \
