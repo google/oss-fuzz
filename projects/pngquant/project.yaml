@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://pngquant.org"
 main_repo: "https://github.com/kornelski/pngquant"
 language: c

@@ -16,26 +16,20 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven-3.6.3 && \
+# Newer Maven release are listed at https://archive.apache.org/dist/maven/maven-3/
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.12/binaries/apache-maven-3.9.12-bin.zip -o maven.zip && \
+unzip maven.zip -d $SRC/maven-3.9.12 && \
 rm -rf maven.zip
 
-ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
+ENV MVN $SRC/maven-3.9.12/apache-maven-3.9.12/bin/mvn
 ENV TARGET_PACKAGE_PREFIX org.apache.poi.*:org.apache.xmlbeans.*
 
-# Newer JDK releases are listed at https://github.com/adoptium/temurin8-binaries/releases/
-RUN curl -L https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u432-b06/OpenJDK8U-jdk_x64_linux_hotspot_8u432b06.tar.gz -o OpenJDK8U-jdk_x64_linux_hotspot_8u432b06.tar.gz && \
-  tar xvf OpenJDK8U-jdk_x64_linux_hotspot_8u432b06.tar.gz && \
-  rm -rf OpenJDK8U-jdk_x64_linux_hotspot_8u432b06.tar.gz
-
-ENV JAVA_HOME_8 $SRC/jdk8u432-b06
-
 # Newer JDK releases are listed at https://github.com/adoptium/temurin11-binaries/releases/
-RUN curl -L https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.25%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.25_9.tar.gz -o OpenJDK11U-jdk_x64_linux_hotspot_11.0.25_9.tar.gz && \
-  tar xvf OpenJDK11U-jdk_x64_linux_hotspot_11.0.25_9.tar.gz && \
-  rm -rf OpenJDK11U-jdk_x64_linux_hotspot_11.0.25_9.tar.gz
+RUN curl -L https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.29%2B7/OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz -o OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz && \
+  tar xvf OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz && \
+  rm -rf OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz
 
-ENV JAVA_HOME_11 $SRC/jdk-11.0.25+9
+ENV JAVA_HOME_11 $SRC/jdk-11.0.29+7
 
 WORKDIR ${SRC}
 #
@@ -44,7 +38,7 @@ WORKDIR ${SRC}
 RUN git clone --depth 1 https://github.com/apache/poi.git
 
 # install packages required for font-handling and other code in java.awt.*
-RUN apt-get update && apt-get install -y libxext6 libx11-6 libxrender1 libxtst6 libxi6 libxcb1 libxau6 libxdmcp6 \
+RUN apt-get update && apt-get install -y libxext6 libx11-6 libxrender1 libxtst6 libxi6 libxcb1 libxau6 libxdmcp6 libfreetype6 libpng16-16 \
 && apt-get clean autoclean \
 && apt-get autoremove --yes \
 && rm -rf /var/lib/{apt,dpkg,cache,log}/

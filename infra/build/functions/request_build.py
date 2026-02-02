@@ -70,7 +70,9 @@ def get_build_steps(project_name, timestamp=None):
   """Retrieve build steps."""
   project_yaml, dockerfile_lines = get_project_data(project_name)
   build_config = build_project.Config(
-      build_type=build_project.FUZZING_BUILD_TYPE)
+      build_type=build_project.FUZZING_BUILD_TYPE,
+      base_image_tag=project_yaml.get('base_os_version', None))
+
   return build_project.get_build_steps(project_name,
                                        project_yaml,
                                        dockerfile_lines,

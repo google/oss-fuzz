@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y \
  autoconf \
  autogen \
@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y \
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git
 RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
-RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+RUN git clone --depth=1 --branch nettle_3.9.1_release_20230601 https://git.lysator.liu.se/nettle/nettle.git
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git -b 3.8.3
 RUN git clone --depth=1 https://github.com/LMDB/lmdb.git
 RUN git clone --depth=1 https://gitlab.labs.nic.cz/knot/knot-dns

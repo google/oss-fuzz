@@ -109,14 +109,15 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
 COPY install_javascript.sh /
 RUN /install_javascript.sh && rm /install_javascript.sh
 
-# Copy built ruby and ruzzy from builder
-COPY --from=base-ruby /usr/local/rvm /usr/local/rvm
-COPY --from=base-ruby /install/ruzzy /install/ruzzy
-COPY ruzzy /usr/bin/ruzzy
-ENV PATH="$PATH:/usr/local/rvm/rubies/ruby-3.3.1/bin"
-# RubyGems installation directory
-ENV GEM_HOME="$OUT/fuzz-gem"
-ENV GEM_PATH="/install/ruzzy"
+# Copy built ruby. It is up to the fuzzing harnesses
+# themselves to set GEM_HOME and GEM_PATH appropriately, as this depends
+# on how the harnesses are packaged.
+COPY --from=base-ruby /usr/local/bin/ruby /usr/local/bin/ruby
+COPY --from=base-ruby /usr/local/bin/gem /usr/local/bin/gem
+COPY --from=base-ruby /usr/local/lib/ruby /usr/local/lib/ruby
+COPY --from=base-ruby /usr/local/include/ruby-3.3.0 /usr/local/include/ruby-3.3.0
+
+RUN apt-get update && apt-get install -y luarocks
 
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \

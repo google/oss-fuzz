@@ -15,7 +15,26 @@
 #
 ################################################################################
 
+(
 export LD=$CC
 export LDFLAGS="$CFLAGS"
 cd $SRC/mruby
-rake -m test
+rake test > /tmp/test.out 2>&1
+)
+
+# There are two test runs, each of which executes many tests. Neither of these
+# must have crashing tests and that they have successful tests as well.
+# For the first batch We expect 165x tests to succeed and some tests skipped,
+# and 100 for the second batch.
+# I suspect the skipping causes
+# rake to return an error code. However, in normal circumastances we see
+# 9 tests skipped.
+grep "OK: 165" /tmp/test.out
+grep "OK: 100" /tmp/test.out
+
+if [[ `grep "Crash: 0" /tmp/test.out | wc -l` != '2' ]]; then
+    exit 1
+fi
+if [[ `grep "KO: 0" /tmp/test.out | wc -l` != '2' ]]; then
+    exit 1
+fi

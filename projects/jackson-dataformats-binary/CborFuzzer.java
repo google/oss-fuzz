@@ -14,16 +14,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.cbor.databind.CBORMapper;
-import java.io.IOException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.cbor.CBORMapper;
+
 
 public class CborFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     ObjectMapper mapper = new CBORMapper();
     try {
       mapper.readTree(input);
-    } catch (IOException ignored) {
+    } catch (RuntimeException ignored) {
     }
   }
 }

@@ -15,10 +15,4 @@
 #
 ################################################################################
 
-# At the time of writing, `tests/test_worker.js`
-# fails from latest master, so we remove it.
-# This is being tracked in https://github.com/bellard/quickjs/issues/390.
-# A TODO is to track when it has been patched
-# upstream and enable all tests.
-git apply $SRC/run_tests_patch.diff
 CONFIG_CLANG=y make test

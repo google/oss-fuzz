@@ -17,5 +17,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake
 RUN git clone https://github.com/pupnp/pupnp
 RUN git clone https://github.com/pkillarjun/oss-fuzz-bloat
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 WORKDIR $SRC/pupnp/

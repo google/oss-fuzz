@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-name: 'Ubuntu Version Sync'
+name: 'Ubuntu Version Sync Check'
 
 on:
   pull_request:
@@ -22,10 +22,14 @@ on:
 
 jobs:
   check-sync:
+    name: Ubuntu File Synchronization Check
     runs-on: ubuntu-latest
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
     - name: 'Checkout code'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         # Fetch all history so we can diff against the base branch.
         fetch-depth: 0
@@ -34,7 +38,7 @@ jobs:
       run: |
         set -e
         
-        MODIFIED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }})
+        MODIFIED_FILES=$(git diff --name-only $BASE_SHA...$HEAD_SHA)
         echo "Checking for synchronized file changes..."
         echo "Modified files in this PR:"
         echo "$MODIFIED_FILES"
@@ -63,13 +67,13 @@ jobs:
         VERSIONS=("ubuntu-20-04" "ubuntu-24-04")
 
         # Check Dockerfiles
-        for legacy_file in "${{!LEGACY_DOCKERFILES[@]}}"; do
-          if echo "$MODIFIED_FILES" | grep -q "^${legacy_file}$"; then
+        for legacy_file in "${!LEGACY_DOCKERFILES[@]}"; do
+          if [[ "${legacy_file}" == infra/* ]] && echo "$MODIFIED_FILES" | grep -q "^${legacy_file}$"; then
             echo "Legacy file changed: $legacy_file. Verifying counterparts..."
-            for version in "${{VERSIONS[@]}}"; do
-              pattern=${{LEGACY_DOCKERFILES[$legacy_file]}}
-              versioned_file="${{pattern/{{version}}/$version}}"
-              if ! echo "$MODIFIED_FILES" | grep -q "^${{versioned_file}}$"; then
+            for version in "${VERSIONS[@]}"; do
+              pattern="${LEGACY_DOCKERFILES[$legacy_file]}"
+              versioned_file="${pattern/\{version\}/$version}"
+              if ! echo "$MODIFIED_FILES" | grep -q "^${versioned_file}$"; then
                 ERRORS+="\n- Legacy file '${legacy_file}' was changed, but its counterpart '${versioned_file}' was not."
               fi
             done
@@ -77,13 +81,13 @@ jobs:
         done
 
         # Check Scripts
-        for legacy_file in "${{!LEGACY_SCRIPTS[@]}}"; do
+        for legacy_file in "${!LEGACY_SCRIPTS[@]}"; do
           if echo "$MODIFIED_FILES" | grep -q "^${legacy_file}$"; then
             echo "Legacy script changed: $legacy_file. Verifying counterparts..."
-            for version in "${{VERSIONS[@]}}"; do
-              pattern=${{LEGACY_SCRIPTS[$legacy_file]}}
-              versioned_file="${{pattern/{{version}}/$version}}"
-              if ! echo "$MODIFIED_FILES" | grep -q "^${{versioned_file}}$"; then
+            for version in "${VERSIONS[@]}"; do
+              pattern="${LEGACY_SCRIPTS[$legacy_file]}"
+              versioned_file="${pattern/\{version\}/$version}"
+              if ! echo "$MODIFIED_FILES" | grep -q "^${versioned_file}$"; then
                 ERRORS+="\n- Legacy script '${legacy_file}' was changed, but its counterpart '${versioned_file}' was not."
               fi
             done
