@@ -27,12 +27,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && \
-    grep -vhE '^#|^$' dev_tools/conf/apt-list-dev-tools.txt | \
-    xargs -r apt-get install -y --no-install-recommends
-
 # Install pip dependencies.
 RUN --mount=type=cache,target=/root/.cache/pip \
     export PIP_ROOT_USER_ACTION=ignore && \
