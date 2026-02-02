@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +14,10 @@
 #
 ################################################################################
 
-# build a mocking fuzzer
-pushd /home/V2X-Hub/src
-CC=gcc CXX=g++ CFLAGS="" CXXFLAGS="" ./build_tmx.sh
-ldconfig
-popd
-
-pushd /home/V2X-Hub/src/tmx
-$CXX $CFLAGS \
-  -o $OUT/mockfuzzer $LIB_FUZZING_ENGINE \
-  $SRC/StringParserSubstringFuzzer.cpp \
-  -Wl,--start-group \
-    /home/V2X-Hub/src/tmx/build/lib/libtmxutils.a \
-    /home/V2X-Hub/src/tmx/build/lib/libtmxctlStatic.a \
-  -Wl,--end-group
-
-popd
-
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool libltdl-dev groff-base uuid-dev libuuid1 git groff
+RUN git clone --depth 1 https://git.openldap.org/openldap/openldap.git openldap     # or use other version control
+WORKDIR openldap
+COPY build.sh $SRC/
+COPY fuzz_ldap_url_parse.cpp $SRC/
+COPY fuzz_ber_decode.cpp $SRC/
