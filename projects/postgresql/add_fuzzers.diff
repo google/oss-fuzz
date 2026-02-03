@@ -1,20 +1,19 @@
 diff --git a/src/backend/tcop/postgres.c b/src/backend/tcop/postgres.c
-index 2f8c3d5f918..d9774758413 100644
+index aeaf1c6db8f..88c4527c9bd 100644
 --- a/src/backend/tcop/postgres.c
 +++ b/src/backend/tcop/postgres.c
-@@ -104,6 +104,11 @@ int			client_connection_check_interval = 0;
- /* flags for non-system relation kinds to restrict use */
- int			restrict_nonsystem_relation_kind;
+@@ -118,6 +118,10 @@ int			restrict_nonsystem_relation_kind;
+	((pid) == 0 ? 0 : \
+	 errdetail("Signal sent by PID %d, UID %d.", (int) (pid), (int) (uid)))
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 +bool        fuzzer_first_run = true;
 +#endif
 +
-+
  /* ----------------
   *		private typedefs etc
   * ----------------
-@@ -480,11 +485,14 @@ static int
+@@ -492,11 +496,14 @@ static int
  ReadCommand(StringInfo inBuf)
  {
  	int			result;
@@ -30,7 +29,7 @@ index 2f8c3d5f918..d9774758413 100644
  	return result;
  }
  
-@@ -4190,6 +4198,11 @@ PostgresMain(const char *dbname, const char *username)
+@@ -4268,6 +4275,11 @@ PostgresMain(const char *dbname, const char *username)
  	volatile bool idle_in_transaction_timeout_enabled = false;
  	volatile bool idle_session_timeout_enabled = false;
  
@@ -42,7 +41,7 @@ index 2f8c3d5f918..d9774758413 100644
  	Assert(dbname != NULL);
  	Assert(username != NULL);
  
-@@ -4509,6 +4522,11 @@ PostgresMain(const char *dbname, const char *username)
+@@ -4587,6 +4599,11 @@ PostgresMain(const char *dbname, const char *username)
  	if (!ignore_till_sync)
  		send_ready_for_query = true;	/* initially, or after error */
  
@@ -54,16 +53,3 @@ index 2f8c3d5f918..d9774758413 100644
  	/*
  	 * Non-error queries loop here.
  	 */
-diff --git a/src/backend/utils/error/elog.c b/src/backend/utils/error/elog.c
-index 47af743990f..476e336d418 100644
---- a/src/backend/utils/error/elog.c
-+++ b/src/backend/utils/error/elog.c
-@@ -540,7 +540,7 @@ errfinish(const char *filename, int lineno, const char *funcname)
- 	}
- 
- 	/* Emit the message to the right places */
--	EmitErrorReport();
-+ 	//EmitErrorReport();
- 
- 	/* Now free up subsidiary data attached to stack entry, and release it */
- 	FreeErrorDataContents(edata);
