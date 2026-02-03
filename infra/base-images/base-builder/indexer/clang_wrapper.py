@@ -540,6 +540,7 @@ def merge_incremental_cdb(cdb_path: Path, merged_cdb_path: Path) -> None:
       if output_path in existing_output_files:
         # Remove existing entry for the output file.
         os.unlink(existing_output_files[output_path])
+        del existing_output_files[output_path]
 
       shutil.copy2(file, merged_cdb_path / file.name)
 

@@ -17,7 +17,6 @@
 
 # Build Werkzeug from latest
 cd $SRC/werkzeug
-pip3 install -r ./requirements/dev.in
 pip3 install .
 
 # Build flask
