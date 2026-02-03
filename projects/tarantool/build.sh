@@ -48,7 +48,7 @@ fi
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
 FUZZER_ARGS=""
-if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
+if [[ "$FUZZING_ENGINE" == libfuzzer && "$SANITIZER" != "coverage" ]]; then
   FUZZER_ARGS="-DENABLE_LIBFUZZER_STATIC_LINKAGE=ON"
 fi
 
@@ -132,8 +132,9 @@ fi
 # see FUZZING_ENGINE environment variable.
 cmake --build build --target tarantool --parallel --verbose
 
-LUA_RUNTIME_NAME=tarantool
-TARANTOOL_PATH=build/src/$LUA_RUNTIME_NAME
+# XXX: Code coverage scripts relies on that.
+LUA_RUNTIME_NAME=lua
+TARANTOOL_PATH=build/src/tarantool
 LUA_MODULES_DIR=lua_modules
 
 apt install -y luarocks liblua5.1-0 liblua5.1-0-dev liblua5.1-0-dbg lua5.1
