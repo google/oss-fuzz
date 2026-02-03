@@ -117,10 +117,7 @@ done
 
 # Finish execution if libFuzzer is not used, because luzer
 # is libFuzzer-based.
-# Code coverage is not supported,
-# see https://github.com/google/oss-fuzz/issues/14859.
-if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
-   [[ "$SANITIZER" == "coverage" ]]; then
+if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
   exit
 fi
 
