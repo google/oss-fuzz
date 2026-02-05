@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kimageformats.git
-RUN $SRC/kimageformats/autotests/ossfuzz/prepare_build.sh
-RUN cp $SRC/kimageformats/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
-
-WORKDIR $SRC/kimageformats
+./unit_testing_all.sh

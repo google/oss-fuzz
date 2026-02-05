@@ -18,12 +18,12 @@
 PROJECT=tika
 MAIN_REPOSITORY=https://github.com/apache/tika/
 
-MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests -Dcheckstyle.skip -Dossindex.skip -am -pl :tika-app"
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests -Dcheckstyle.skip -Dossindex.skip --no-transfer-progress -am -pl :tika-app"
 
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
   # set dependency project version in fuzz-targets
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dexcludes=com.code-intelligence:jazzer -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  (cd fuzz-targets && $MVN --no-transfer-progress versions:use-dep-version -Dexcludes=com.code-intelligence:jazzer -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
 }
 
 cd $SRC/project-parent
@@ -32,7 +32,7 @@ set_project_version_in_fuzz_targets_dependency
 
 #install
 (cd $PROJECT && $MVN install $MAVEN_ARGS -Dmaven.repo.local=$OUT/m2)
-$MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
+$MVN --no-transfer-progress -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
 
 # build classpath
 cp  $SRC/project-parent/fuzz-targets/target/fuzz-targets-0.0.1-SNAPSHOT.jar $OUT/fuzz-targets.jar
@@ -44,6 +44,11 @@ cp ${SRC}/seeds/*_seed_corpus.zip ${OUT}/
 
 for fuzzer in $(find $SRC/project-parent -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
+
+  # skip helper class which is not a fuzz-target
+  if [ "$fuzzer_basename" == "ParserFuzzer"]; then
+    continue;
+  fi
 
   # Create an execution wrapper for every fuzztarget
   # This bumps memory to > 2gb to get around new byte[Integer.MAX_VALUE] single
