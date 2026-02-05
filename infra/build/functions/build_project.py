@@ -552,7 +552,7 @@ def _create_indexed_build_steps(project,
       # in a standalone way without the mount paths GCB installs by default
       # (/workspace).
       # First we save the $OUT contents into /outbak.
-      'mkdir -p /outbak && mv $$OUT/* /outbak/ && '
+      'mkdir -p /outbak && cp -a $$OUT/* /outbak/ && '
       # Create a link from /out to the actual $OUT.
       'rm -rf /out && ln -s $$OUT /out && '
       # Unmount GCB's mount paths.
