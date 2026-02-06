@@ -434,13 +434,11 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           (project_name, 'No compatible sanitizers or engines'))
       continue
 
-    # Check if project's base_os_version is compatible with the current build.
+    # Check if project's base_os_version matches the current build version.
     project_base_os = project_yaml.get('base_os_version', 'legacy')
     current_build_version = config.base_image_tag or 'legacy'
 
-    # If the project requires Ubuntu 24.04, it cannot be built on legacy/20.04.
-    if project_base_os == 'ubuntu-24-04' and current_build_version in (
-        'legacy', 'ubuntu-20-04'):
+    if project_base_os != current_build_version:
       skipped_projects.append(
           (project_name, f'Project requires {project_base_os}, but '
            f'build version is {current_build_version}'))
