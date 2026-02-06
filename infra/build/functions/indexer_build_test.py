@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ sys.path.append(FUNCTIONS_DIR)
 import build_project
 import build_lib
 
+
 class TestIndexerBuildSteps(fake_filesystem_unittest.TestCase):
   """Unit tests for indexer build steps."""
 
@@ -43,16 +44,17 @@ class TestIndexerBuildSteps(fake_filesystem_unittest.TestCase):
                                    mock_get_policy_doc):
     """Test get_indexer_build_steps."""
     # Setup mocks
-    mock_get_project_image_steps.return_value = [] # Return empty list for base steps
-    
+    mock_get_project_image_steps.return_value = [
+    ]  # Return empty list for base steps
+
     # Mock Policy Document
     mock_policy_doc = mock.Mock()
     mock_policy_doc.bucket = 'test-bucket'
     mock_get_policy_doc.return_value = mock_policy_doc
-    
+
     # Mock Curl Args
     mock_signed_policy_args.return_value = ['-F', 'policy=foo']
-    
+
     # Mock upload using policy
     mock_upload_using_policy.return_value = {'name': 'upload_srcmap'}
 
@@ -63,23 +65,18 @@ class TestIndexerBuildSteps(fake_filesystem_unittest.TestCase):
         'sanitizers': ['address'],
         'architectures': ['x86_64'],
         'main_repo': 'https://github.com/test/repo.git',
-        'indexer': {'targets': ['target1']}
+        'indexer': {
+            'targets': ['target1']
+        }
     }
     dockerfile = '''FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get install -y make'''
-    
-    config = build_project.Config(
-        upload=True,
-        experiment=False
-    )
+
+    config = build_project.Config(upload=True, experiment=False)
 
     # Call the function under test
     steps, reason = build_project.get_indexer_build_steps(
-        project_name,
-        project_yaml,
-        dockerfile,
-        config
-    )
+        project_name, project_yaml, dockerfile, config)
 
     # Verification
     # Expected steps:
@@ -88,35 +85,39 @@ RUN apt-get install -y make'''
     # 3. Indexer srcmap upload step (from upload_steps)
     # 4. Push image steps (3 steps)
     # 5. Tracer steps (similar to indexer)
-    
+
     # We are interested in the Indexer build step (index 0 of the returned list for indexer part)
     # But since we have indexer AND tracer, we need to find the step with name containing 'indexed-container'
-    
+
     indexer_step = None
     for step in steps:
-        # Check if it is the build step (has 'docker run' args and container name)
-        # build_lib.dockerify_run_step adds '--name', 'indexed-container'
-        if 'args' in step and '--name' in step['args'] and 'indexed-container' in step['args']:
-            indexer_step = step
-            break
-            
+      # Check if it is the build step (has 'docker run' args and container name)
+      # build_lib.dockerify_run_step adds '--name', 'indexed-container'
+      if 'args' in step and '--name' in step[
+          'args'] and 'indexed-container' in step['args']:
+        indexer_step = step
+        break
+
     self.assertIsNotNone(indexer_step, "Indexer build step not found")
-    
+
     # Verify the build command contains unshallow_repos.py
-    bash_command = indexer_step['args'][-1] 
+    bash_command = indexer_step['args'][-1]
     self.assertIn('unshallow_repos.py', bash_command)
-    
+
     # Find and verify the upload step
     upload_step = None
     for step in steps:
-        if 'args' in step and len(step['args']) >= 2 and isinstance(step['args'][1], str) and 'for tar in' in step['args'][1]:
-            upload_step = step
-            break
-            
+      if 'args' in step and len(step['args']) >= 2 and isinstance(
+          step['args'][1], str) and 'for tar in' in step['args'][1]:
+        upload_step = step
+        break
+
     self.assertIsNotNone(upload_step, "Upload step not found")
     upload_command = upload_step['args'][1]
-    self.assertIn('for tar in /workspace/out/none-address-x86_64/*.tar', upload_command)
+    self.assertIn('for tar in /workspace/out/none-address-x86_64/*.tar',
+                  upload_command)
     self.assertIn('curl -F policy=foo', upload_command)
+
 
 if __name__ == '__main__':
   unittest.main()
