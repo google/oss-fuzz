@@ -26,9 +26,6 @@
 
 set -x
 
-# The below test is failing in the OSS-Fuzz environment. Patch it out for now.
-sed -i "s/TEST (testAttrBytes/\/\/TEST (testAttrBytes/g" $SRC/openexr/src/test/OpenEXRCoreTest/main.cpp
-
 BUILD_DIR=$WORK/_build.oss-fuzz
 
 cmake -S $SRC/openexr -B $BUILD_DIR --preset oss_fuzz
