@@ -75,10 +75,17 @@ def _get_production_build_statuses(build_type):
   """Gets the statuses for |build_type| that is reported by build-status.
   Returns a dictionary mapping projects to bools indicating whether the last
   build of |build_type| succeeded."""
-  request = urllib.request.urlopen(
-      'https://oss-fuzz-build-logs.storage.googleapis.com/'
-      f'{build_type.status_filename}')
-  project_statuses = json.load(request)['projects']
+  try:
+    request = urllib.request.urlopen(
+        'https://oss-fuzz-build-logs.storage.googleapis.com/'
+        f'{build_type.status_filename}')
+    project_statuses = json.load(request)['projects']
+  except urllib.error.URLError:
+    # It is not a critical error if the status file cannot be found.
+    # This might happen for new build types (e.g. indexer).
+    # In this case, we assume no projects have a status (effectively same as not found).
+    return {}
+
   results = {}
   for project in project_statuses:
     name = project['name']
