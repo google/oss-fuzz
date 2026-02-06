@@ -21,13 +21,6 @@ mkdir -p $SRC/ClickHouse/build && cd $SRC/ClickHouse/build
 [ -e CMakeLists ] && rm -rf CMakeFiles
 [ -e CMakeCache.txt ] && rm -rf CMakeCache.txt
 
-sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt
-
-# It will be hard to maintain any compilation fails (if any) in two repositories.
-# Also ClickHouse won't compile without this.
-# It is very strange, because we have as many warnings as you could imagine.
-sed -i -e 's/add_warning(/no_warning(/g' $SRC/ClickHouse/CMakeLists.txt
-
 # ClickHouse uses libcxx from contrib.
 # Enabling libstdc++ manually will cause duplicate symbols at linker stage.
 # Plus we want to fuzz the same binary as we have in our CI
