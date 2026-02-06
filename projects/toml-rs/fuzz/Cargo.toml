@@ -1,0 +1,44 @@
+[package]
+name = "toml-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+toml = { path = "../crates/toml" }
+toml_edit = { path = "../crates/toml_edit" }
+serde = { version = "1.0", features = ["derive"] }
+
+[[bin]]
+name = "fuzz_parse"
+path = "fuzz_targets/fuzz_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_ser_de"
+path = "fuzz_targets/fuzz_ser_de.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_edit"
+path = "fuzz_targets/fuzz_edit.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_datetime"
+path = "fuzz_targets/fuzz_datetime.rs"
+test = false
+doc = false
+bench = false

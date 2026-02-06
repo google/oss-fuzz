@@ -1,0 +1,91 @@
+# TOML fuzzing dictionary
+# Keywords and common patterns
+
+# Basic types
+"true"
+"false"
+"inf"
+"+inf"
+"-inf"
+"nan"
+"+nan"
+"-nan"
+
+# Common keys
+"name"
+"version"
+"title"
+"description"
+"type"
+"value"
+"enabled"
+"disabled"
+"path"
+"url"
+"date"
+"time"
+
+# String delimiters
+"\""
+"'"
+"\"\"\""
+"'''"
+
+# Escape sequences
+"\\n"
+"\\t"
+"\\r"
+"\\\\"
+"\\u0000"
+"\\u00E9"
+"\\U0001F600"
+
+# Number prefixes
+"0x"
+"0o"
+"0b"
+"0X"
+"0O"
+"0B"
+
+# Date-time patterns
+"T"
+"Z"
+"-00:00"
+"+00:00"
+
+# Table syntax
+"["
+"]"
+"[["
+"]]"
+"."
+"="
+
+# Inline table
+"{"
+"}"
+","
+
+# Comments
+"#"
+
+# Common patterns
+"[table]"
+"[[array]]"
+"key = \"value\""
+"key = 123"
+"key = true"
+"key = []"
+"key = {}"
+"# comment"
+
+# Edge cases
+""
+" "
+"\n"
+"\t"
+"[[]]"
+"[.]"
+"[\"\"]"
+"[a.b.c]"

@@ -1,0 +1,11 @@
+homepage: "https://github.com/toml-rs/toml"
+main_repo: "https://github.com/toml-rs/toml"
+primary_contact: "jaredreyespt@gmail.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "jaredreyespt@gmail.com"

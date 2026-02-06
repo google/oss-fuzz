@@ -1,0 +1,24 @@
+# String examples
+str1 = "I'm a string."
+str2 = "You can \"quote\" me."
+str3 = "Name\tJos\u00E9\nLoc\tSF."
+
+# Multi-line basic strings
+str4 = """
+Roses are red
+Violets are blue"""
+
+# Literal strings
+winpath  = 'C:\Users\nodejs\templates'
+winpath2 = '\\ServerX\admin$\system32\'
+quoted   = 'Tom "Dubs" Preston-Werner'
+regex    = '<\i\c*\s*>'
+
+# Multi-line literal strings
+regex2 = '''I [dw]on't need \d{2} apples'''
+lines  = '''
+The first newline is
+trimmed in raw strings.
+   All other whitespace
+   is preserved.
+'''
