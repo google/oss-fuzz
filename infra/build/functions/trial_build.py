@@ -146,12 +146,14 @@ def get_args(args=None):
   parser.add_argument('projects',
                       help='Projects. "all" for all projects',
                       nargs='+')
-  parser.add_argument(
-      '--sanitizers',
-      required=False,
-      default=['address', 'memory', 'undefined', 'coverage', 'introspector', 'indexer'],
-      nargs='+',
-      help='Sanitizers.')
+  parser.add_argument('--sanitizers',
+                      required=False,
+                      default=[
+                          'address', 'memory', 'undefined', 'coverage',
+                          'introspector', 'indexer'
+                      ],
+                      nargs='+',
+                      help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
                       required=False,
                       default=['afl', 'libfuzzer', 'honggfuzz', 'centipede'],
@@ -439,9 +441,9 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
     # If the project requires Ubuntu 24.04, it cannot be built on legacy/20.04.
     if project_base_os == 'ubuntu-24-04' and current_build_version in (
         'legacy', 'ubuntu-20-04'):
-      skipped_projects.append((project_name,
-                               f'Project requires {project_base_os}, but '
-                               f'build version is {current_build_version}'))
+      skipped_projects.append(
+          (project_name, f'Project requires {project_base_os}, but '
+           f'build version is {current_build_version}'))
       continue
 
     steps, reason = build_type.get_build_steps_func(project_name, project_yaml,
