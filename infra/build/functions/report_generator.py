@@ -28,36 +28,25 @@ RESULT_FILES = {
 }
 
 
-def get_visible_width(text):
-  """Calculates the visible width of a string containing emojis."""
-  width = 0
-  for char in text:
-    if char in ['✅', '❌', '⏩']:
-      width += 2
-    else:
-      width += 1
-  return width
-
-
 def _print_box(title, lines):
   """Prints a formatted box with a title and lines."""
   box_width = 92
-  title_line = f'║ {title.center(box_width - 4)} ║'
+  title_line = f'| {title.center(box_width - 4)} |'
   summary_lines = [
-      '╔' + '═' * (box_width - 2) + '╗',
+      '+' + '-' * (box_width - 2) + '+',
       title_line,
-      '╠' + '═' * (box_width - 2) + '╣',
+      '+' + '-' * (box_width - 2) + '+',
   ]
   for line in lines:
-    padding = box_width - 4 - get_visible_width(line)
-    summary_lines.append(f'║ {line}{" " * padding} ║')
+    padding = box_width - 4 - len(line)
+    summary_lines.append(f'| {line}{" " * padding} |')
 
-  summary_lines.append('╚' + '═' * (box_width - 2) + '╝')
+  summary_lines.append('+' + '-' * (box_width - 2) + '+')
   print('\n'.join(summary_lines))
 
 
 def generate_final_summary(all_results):
-  """Prints a visually appealing summary of all build versions."""
+  """Prints a summary of all build versions."""
   box_width = 92
   summary_lines = []
   total_unique_projects = set()
@@ -72,7 +61,7 @@ def generate_final_summary(all_results):
           data.get('successful_builds', 0) + data.get('failed_builds', 0) +
           data.get('skipped_builds', 0))
       line = (
-          f"  {version.ljust(15)} ► {'Passed:'.ljust(8)} {passed.ljust(6)} | "
+          f"  {version.ljust(15)} -> {'Passed:'.ljust(8)} {passed.ljust(6)} | "
           f"{'Failed:'.ljust(8)} {failed.ljust(6)} | {'Skipped:'.ljust(8)} {skipped.ljust(6)} | "
           f"{'Total:'.ljust(7)} {total_builds.ljust(6)}")
       summary_lines.append(line)
@@ -95,7 +84,7 @@ def generate_comparison_table(all_results):
       all_projects.update(data['all_projects'])
 
   if not all_projects:
-    print('\n✅ No projects were run.')
+    print('\nNo projects were run.')
     return
 
   project_col_width = 30
@@ -114,12 +103,12 @@ def generate_comparison_table(all_results):
       status_icon = ' '
       if all_results.get(version):
         if project in all_results[version].get('failed_projects', []):
-          status_icon = '❌'
+          status_icon = 'FAIL'
         elif project in all_results[version].get('skipped_projects', []):
-          status_icon = '⏩'
+          status_icon = 'SKIP'
         else:
-          status_icon = '✅'
-      row += f' {status_icon.center(15)} |'
+          status_icon = 'PASS'
+      row += f' {status_icon.center(16)} |'
     row = row[:-1]
     table_lines.append(row)
 

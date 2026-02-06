@@ -28,6 +28,7 @@ import sys
 import textwrap
 import time
 import urllib.request
+import urllib.error
 import yaml
 import oauth2client.client
 from googleapiclient.discovery import build as cloud_build
@@ -62,6 +63,9 @@ BUILD_TYPES = {
         BuildType('introspector',
                   build_and_run_coverage.get_fuzz_introspector_steps,
                   'status-introspector.json'),
+    'indexer':
+        BuildType('indexer', build_project.get_indexer_build_steps,
+                  'status-indexer.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
@@ -138,7 +142,7 @@ def get_args(args=None):
   parser.add_argument(
       '--sanitizers',
       required=False,
-      default=['address', 'memory', 'undefined', 'coverage', 'introspector'],
+      default=['address', 'memory', 'undefined', 'coverage', 'introspector', 'indexer'],
       nargs='+',
       help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
@@ -282,6 +286,9 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
   if 'introspector' in sanitizers:
     sanitizers.pop(sanitizers.index('introspector'))
     build_types.append(BUILD_TYPES['introspector'])
+  if 'indexer' in sanitizers:
+    sanitizers.pop(sanitizers.index('indexer'))
+    build_types.append(BUILD_TYPES['indexer'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
 
@@ -304,7 +311,7 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
       unselected_projects = set(specified_projects) - set(projects_to_build)
       for project in unselected_projects:
         skipped_projects[build_type.type_name].append(
-            (project, 'Production build succeeded'))
+            (project, 'Production build failed'))
 
       logging.info('Build type: %s', build_type.type_name)
       logging.info(
@@ -418,6 +425,18 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
           (project_name, 'No compatible sanitizers or engines'))
       continue
 
+    # Check if project's base_os_version is compatible with the current build.
+    project_base_os = project_yaml.get('base_os_version', 'legacy')
+    current_build_version = config.base_image_tag or 'legacy'
+
+    # If the project requires Ubuntu 24.04, it cannot be built on legacy/20.04.
+    if project_base_os == 'ubuntu-24-04' and current_build_version in (
+        'legacy', 'ubuntu-20-04'):
+      skipped_projects.append((project_name,
+                               f'Project requires {project_base_os}, but '
+                               f'build version is {current_build_version}'))
+      continue
+
     steps, reason = build_type.get_build_steps_func(project_name, project_yaml,
                                                     dockerfile_contents, config)
     if reason:
@@ -447,18 +466,18 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
 def _print_summary_box(title, lines):
   """Prints a formatted box for summarizing build results."""
   box_width = 80
-  title_line = f'║ {title.center(box_width - 4)} ║'
-  separator = '╟' + '─' * (box_width - 2) + '╢'
+  title_line = f'| {title.center(box_width - 4)} |'
+  separator = '+' + '-' * (box_width - 2) + '+'
   summary_lines = [
-      '╔' + '═' * (box_width - 2) + '╗',
+      '+' + '-' * (box_width - 2) + '+',
       title_line,
-      '╠' + '═' * (box_width - 2) + '╣',
+      '+' + '-' * (box_width - 2) + '+',
   ]
   for line in lines:
     wrapped_lines = textwrap.wrap(line, box_width - 6)
     for i, sub_line in enumerate(wrapped_lines):
-      summary_lines.append(f'║  {sub_line.ljust(box_width - 6)}  ║')
-  summary_lines.append('╚' + '═' * (box_width - 2) + '╝')
+      summary_lines.append(f'|  {sub_line.ljust(box_width - 6)}  |')
+  summary_lines.append('+' + '-' * (box_width - 2) + '+')
   print('\n'.join(summary_lines))
 
 
