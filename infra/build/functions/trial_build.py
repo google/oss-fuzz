@@ -419,7 +419,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers']) + ['coverage', 'introspector']
+        project_yaml['sanitizers']) + ['coverage', 'introspector', 'indexer']
     project_yaml['sanitizers'] = list(
         set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
