@@ -1,0 +1,123 @@
+# QUIC fuzzing dictionary for quinn
+# Based on RFC 9000 and quinn implementation
+
+# Frame types (RFC 9000 Section 12.4)
+"\x00"  # PADDING
+"\x01"  # PING
+"\x02"  # ACK
+"\x03"  # ACK with ECN
+"\x04"  # RESET_STREAM
+"\x05"  # STOP_SENDING
+"\x06"  # CRYPTO
+"\x07"  # NEW_TOKEN
+"\x08"  # STREAM (base, various flags 0x08-0x0f)
+"\x09"  # STREAM with FIN
+"\x0a"  # STREAM with LEN
+"\x0b"  # STREAM with LEN | FIN
+"\x0c"  # STREAM with OFF
+"\x0d"  # STREAM with OFF | FIN
+"\x0e"  # STREAM with OFF | LEN
+"\x0f"  # STREAM with OFF | LEN | FIN
+"\x10"  # MAX_DATA
+"\x11"  # MAX_STREAM_DATA
+"\x12"  # MAX_STREAMS (Bi)
+"\x13"  # MAX_STREAMS (Uni)
+"\x14"  # DATA_BLOCKED
+"\x15"  # STREAM_DATA_BLOCKED
+"\x16"  # STREAMS_BLOCKED (Bi)
+"\x17"  # STREAMS_BLOCKED (Uni)
+"\x18"  # NEW_CONNECTION_ID
+"\x19"  # RETIRE_CONNECTION_ID
+"\x1a"  # PATH_CHALLENGE
+"\x1b"  # PATH_RESPONSE
+"\x1c"  # CONNECTION_CLOSE (transport)
+"\x1d"  # CONNECTION_CLOSE (application)
+"\x1e"  # HANDSHAKE_DONE
+"\x30"  # DATAGRAM (no length)
+"\x31"  # DATAGRAM (with length)
+
+# Packet header types
+"\xc0"  # Initial packet (long header, type 00)
+"\xd0"  # 0-RTT packet (long header, type 01)
+"\xe0"  # Handshake packet (long header, type 10)
+"\xf0"  # Retry packet (long header, type 11)
+"\x40"  # Short header (1-RTT)
+"\x50"  # Short header variant
+"\x60"  # Short header variant
+"\x70"  # Short header variant
+
+# QUIC version
+"\x00\x00\x00\x01"  # QUIC v1 (RFC 9000)
+"\x00\x00\x00\x00"  # Version negotiation
+
+# Transport parameter IDs (RFC 9000 Section 18.2)
+"\x00"  # original_destination_connection_id
+"\x01"  # max_idle_timeout
+"\x02"  # stateless_reset_token
+"\x03"  # max_udp_payload_size
+"\x04"  # initial_max_data
+"\x05"  # initial_max_stream_data_bidi_local
+"\x06"  # initial_max_stream_data_bidi_remote
+"\x07"  # initial_max_stream_data_uni
+"\x08"  # initial_max_streams_bidi
+"\x09"  # initial_max_streams_uni
+"\x0a"  # ack_delay_exponent
+"\x0b"  # max_ack_delay
+"\x0c"  # disable_active_migration
+"\x0d"  # preferred_address
+"\x0e"  # active_connection_id_limit
+"\x0f"  # initial_source_connection_id
+"\x10"  # retry_source_connection_id
+"\x20"  # max_datagram_frame_size
+
+# Variable-length integer prefixes
+"\x00"  # 1-byte VLIE (0-63)
+"\x40"  # 2-byte VLIE (64-16383)
+"\x80"  # 4-byte VLIE (16384-1073741823)
+"\xc0"  # 8-byte VLIE (1073741824+)
+
+# Common variable-length integers
+"\x00"  # 0
+"\x01"  # 1
+"\x02"  # 2
+"\x03"  # 3
+"\x04"  # 4
+"\x08"  # 8
+"\x10"  # 16
+"\x40\x00"  # 0 (2-byte encoding)
+"\x44\xb8"  # 1200 (common MTU)
+"\x47\xd0"  # 2000
+"\x75\x30"  # 30000 (30 second timeout)
+
+# Error codes (RFC 9000 Section 20)
+"\x00"  # NO_ERROR
+"\x01"  # INTERNAL_ERROR
+"\x02"  # CONNECTION_REFUSED
+"\x03"  # FLOW_CONTROL_ERROR
+"\x04"  # STREAM_LIMIT_ERROR
+"\x05"  # STREAM_STATE_ERROR
+"\x06"  # FINAL_SIZE_ERROR
+"\x07"  # FRAME_ENCODING_ERROR
+"\x08"  # TRANSPORT_PARAMETER_ERROR
+"\x09"  # CONNECTION_ID_LIMIT_ERROR
+"\x0a"  # PROTOCOL_VIOLATION
+"\x0b"  # INVALID_TOKEN
+"\x0c"  # APPLICATION_ERROR
+"\x0d"  # CRYPTO_BUFFER_EXCEEDED
+"\x0e"  # KEY_UPDATE_ERROR
+"\x0f"  # AEAD_LIMIT_REACHED
+"\x10"  # NO_VIABLE_PATH
+
+# Common patterns
+"quic"  # Protocol string (though not used in wire format)
+"\x00\x00\x00\x00\x00\x00\x00\x00"  # 8 zero bytes
+"\xff\xff\xff\xff\xff\xff\xff\xff"  # 8 0xff bytes
+
+# Realistic small values
+"\x19"  # 25 (default max_ack_delay)
+"\x64"  # 100
+"\xff"  # 255
+
+# Connection ID lengths (common)
+"\x08"  # 8-byte CID
+"\x14"  # 20-byte CID (max)

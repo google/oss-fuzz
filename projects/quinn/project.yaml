@@ -1,0 +1,11 @@
+homepage: "https://github.com/quinn-rs/quinn"
+main_repo: "https://github.com/quinn-rs/quinn"
+primary_contact: "jared.reyes@kimberlite.dev"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "jared.reyes@kimberlite.dev"

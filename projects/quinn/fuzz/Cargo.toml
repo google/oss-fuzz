@@ -1,0 +1,43 @@
+[package]
+name = "fuzz"
+version = "0.1.0"
+publish = false
+license = "MIT OR Apache-2.0"
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+arbitrary = { version = "1.0.1", features = ["derive"] }
+libfuzzer-sys = "0.4.2"
+bytes = "1"
+
+[dependencies.proto]
+features = ["arbitrary"]
+path = "../quinn-proto"
+package = "quinn-proto"
+
+[[bin]]
+name = "streams"
+path = "fuzz_targets/streams.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "streamid"
+path = "fuzz_targets/streamid.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "packet"
+path = "fuzz_targets/packet.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_transport_params"
+path = "fuzz_targets/fuzz_transport_params.rs"
+test = false
+doc = false
