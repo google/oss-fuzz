@@ -1,11 +1,11 @@
 homepage: "https://github.com/servo/rust-url"
+language: rust
 primary_contact: "manishsmail@gmail.com"
-main_repo: "https://github.com/servo/rust-url"
+auto_ccs:
+  - "jaredreyespt@gmail.com"
+vendor_ccs:
+  - "jaredreyespt@gmail.com"
 sanitizers:
   - address
   - undefined
-fuzzing_engines:
-  - libfuzzer
-language: rust
-auto_ccs:
-  - "jaredreyes.dev@gmail.com"
+main_repo: "https://github.com/servo/rust-url"
