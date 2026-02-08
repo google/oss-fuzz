@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Unit tests for indexer build steps."""
+"""Unittests for indexer build steps."""
 import sys
 import os
 import unittest
@@ -29,7 +29,7 @@ import build_lib
 
 
 class TestIndexerBuildSteps(fake_filesystem_unittest.TestCase):
-  """Unit tests for indexer build steps."""
+  """Unittests for indexer build."""
 
   def setUp(self):
     self.setUpPyfakefs()
@@ -43,22 +43,12 @@ class TestIndexerBuildSteps(fake_filesystem_unittest.TestCase):
                                    mock_signed_policy_args,
                                    mock_get_policy_doc):
     """Test get_indexer_build_steps."""
-    # Setup mocks
-    mock_get_project_image_steps.return_value = [
-    ]  # Return empty list for base steps
-
-    # Mock Policy Document
+    mock_get_project_image_steps.return_value = []
     mock_policy_doc = mock.Mock()
     mock_policy_doc.bucket = 'test-bucket'
     mock_get_policy_doc.return_value = mock_policy_doc
-
-    # Mock Curl Args
     mock_signed_policy_args.return_value = ['-F', 'policy=foo']
-
-    # Mock upload using policy
     mock_upload_using_policy.return_value = {'name': 'upload_srcmap'}
-
-    # Setup Project Data
     project_name = 'test-project'
     project_yaml = {
         'language': 'c++',
@@ -73,38 +63,19 @@ class TestIndexerBuildSteps(fake_filesystem_unittest.TestCase):
 RUN apt-get install -y make'''
 
     config = build_project.Config(upload=True, experiment=False)
-
-    # Call the function under test
     steps, reason = build_project.get_indexer_build_steps(
         project_name, project_yaml, dockerfile, config)
-
-    # Verification
-    # Expected steps:
-    # 1. Base project image steps (mocked to empty)
-    # 2. Indexer build step
-    # 3. Indexer srcmap upload step (from upload_steps)
-    # 4. Push image steps (3 steps)
-    # 5. Tracer steps (similar to indexer)
-
-    # We are interested in the Indexer build step (index 0 of the returned list for indexer part)
-    # But since we have indexer AND tracer, we need to find the step with name containing 'indexed-container'
-
     indexer_step = None
     for step in steps:
-      # Check if it is the build step (has 'docker run' args and container name)
-      # build_lib.dockerify_run_step adds '--name', 'indexed-container'
-      if 'args' in step and '--name' in step[
-          'args'] and 'indexed-container' in step['args']:
+      if 'args' in step and ('--name' in step['args'] and
+                             'indexed-container' in step['args']):
         indexer_step = step
         break
 
     self.assertIsNotNone(indexer_step, "Indexer build step not found")
-
-    # Verify the build command contains unshallow_repos.py
     bash_command = indexer_step['args'][-1]
     self.assertIn('unshallow_repos.py', bash_command)
 
-    # Find and verify the upload step
     upload_step = None
     for step in steps:
       if 'args' in step and len(step['args']) >= 2 and isinstance(
