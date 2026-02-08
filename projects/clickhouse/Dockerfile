@@ -42,5 +42,10 @@ RUN apt-get update -y \
 
 RUN git clone -j 8 --recursive https://github.com/ClickHouse/ClickHouse $SRC/ClickHouse
 WORKDIR $SRC/ClickHouse
+# It will be hard to maintain any compilation fails (if any) in two repositories.
+# Also ClickHouse won't compile without this.
+# It is very strange, because we have as many warnings as you could imagine.
+RUN sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt && \
+    sed -i -e 's/add_warning(/no_warning(/g' $SRC/ClickHouse/CMakeLists.txt
 
 COPY build.sh $SRC/

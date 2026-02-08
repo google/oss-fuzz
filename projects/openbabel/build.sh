@@ -16,10 +16,6 @@
 ################################################################################
 
 export CXXFLAGS="${CXXFLAGS} -std=c++17"
-sed -i 's/CMAKE_CXX_STANDARD 11/CMAKE_CXX_STANDARD 17/g' CMakeLists.txt
-
-# Remove use of deprecated functions
-sed -i 's/std::random/\/\/std::random/g' test/*.cpp
 
 # build project
 mkdir build && cd build
