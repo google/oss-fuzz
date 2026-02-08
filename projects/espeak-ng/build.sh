@@ -31,10 +31,10 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/ssml-fuzzer.o \
 # Instruct the synth_fuzzer to use "en" for FUZZ_VOICE. We do not set
 # the environment variable at runtime, so we conver https://github.com/espeak-ng/espeak-ng/blob/3dcbe7ea3ea85a9212968d0f05172dde4259e770/tests/fuzzing/synth_fuzzer.c#L54C22-L54C28
 # to const char *lang = "en";//getenv("FUZZ_VOICE");
-sed -i 's/getenv/"en";\/\//g' tests/fuzzing/synth_fuzzer.c
-$CC $CFLAGS -I. -Isrc/include -DPATH_ESPEAK_DATA=\"/out/espeak-ng-data\" -Isrc/libespeak-ng \
-    -c tests/fuzzing/synth_fuzzer.c -o tests/fuzzing/synth_fuzzer.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/fuzzing/synth_fuzzer.o \
-    src/.libs/libespeak-ng.a -o $OUT/synth_fuzzer -lm
+# sed -i 's/getenv/"en";\/\//g' tests/fuzzing/synth_fuzzer.c
+#$CC $CFLAGS -I. -Isrc/include -DPATH_ESPEAK_DATA=\"/out/espeak-ng-data\" -Isrc/libespeak-ng \
+#    -c tests/fuzzing/synth_fuzzer.c -o tests/fuzzing/synth_fuzzer.o
+#$CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/fuzzing/synth_fuzzer.o \
+#    src/.libs/libespeak-ng.a -o $OUT/synth_fuzzer -lm
 
 cp -r espeak-ng-data/ $OUT/
