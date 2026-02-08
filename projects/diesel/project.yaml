@@ -1,0 +1,11 @@
+homepage: "https://diesel.rs"
+language: rust
+primary_contact: "diesel-core@googlegroups.com"
+auto_ccs:
+  - "jrey8343@gmail.com"
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+  - "jrey8343@gmail.com"
+main_repo: 'https://github.com/diesel-rs/diesel.git'
