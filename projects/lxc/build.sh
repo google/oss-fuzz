@@ -18,4 +18,5 @@
 if [ -f /usr/local/bin/clang-21 ]; then
   export CFLAGS="${CFLAGS} -Wno-error=unterminated-string-initialization"
 fi
+export CFLAGS="${CFLAGS} -Wno-error=backend-plugin"
 src/tests/oss-fuzz.sh
