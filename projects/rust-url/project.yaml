@@ -1,0 +1,11 @@
+homepage: "https://github.com/servo/rust-url"
+language: rust
+primary_contact: "manishsmail@gmail.com"
+auto_ccs:
+  - "jaredreyespt@gmail.com"
+vendor_ccs:
+  - "jaredreyespt@gmail.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: "https://github.com/servo/rust-url"
