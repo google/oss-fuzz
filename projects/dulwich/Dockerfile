@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+RUN apt-get update && apt-get install -y libgpgme-dev
 RUN git clone https://github.com/jelmer/dulwich.git dulwich
 RUN $SRC/dulwich/fuzzing/oss-fuzz-scripts/container-environment-bootstrap.sh
 
