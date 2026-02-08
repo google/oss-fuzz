@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y make autoconf automake libtool g++ postgresql-server-dev-12 libgeos-dev libproj-dev libxml2-dev pkg-config libjson-c-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool g++ postgresql-server-dev-16 libgeos-dev libproj-dev libxml2-dev pkg-config libjson-c-dev
 RUN git clone --depth 1 https://git.osgeo.org/gitea/postgis/postgis.git postgis
 WORKDIR postgis
 COPY build.sh $SRC/
