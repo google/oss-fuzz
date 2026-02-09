@@ -1,0 +1,11 @@
+homepage: https://nmap.org
+language: c++
+primary_contact: "peter.john.henggeler@gmail.com"
+main_repo: 'https://github.com/nmap/nmap'
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
