@@ -1,0 +1,63 @@
+# DNS name decompression and query creation dictionary
+# Common DNS labels and domain parts
+"www"
+"mail"
+"ns1"
+"ns2"
+"example"
+"com"
+"net"
+"org"
+"io"
+"local"
+"localhost"
+"arpa"
+"in-addr"
+"ip6"
+
+# DNS wire format elements
+"\x00"
+"\xc0\x0c"
+"\xc0\x00"
+"\x03www\x07example\x03com\x00"
+"\x07example\x03com\x00"
+
+# IPv4 addresses
+"127.0.0.1"
+"0.0.0.0"
+"255.255.255.255"
+"192.168.1.1"
+"10.0.0.1"
+"8.8.8.8"
+
+# IPv6 addresses
+"::1"
+"::"
+"::ffff:127.0.0.1"
+"fe80::1"
+"2001:db8::1"
+"ff02::1"
+
+# DNS record types as strings
+"A"
+"AAAA"
+"MX"
+"NS"
+"PTR"
+"SRV"
+"TXT"
+"SOA"
+"CNAME"
+"CAA"
+"NAPTR"
+"HTTPS"
+"SVCB"
+"URI"
+"TLSA"
+"ANY"
+
+# DNS classes as strings
+"IN"
+"CH"
+"HS"
+"ANY"

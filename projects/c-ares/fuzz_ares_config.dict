@@ -1,0 +1,50 @@
+# c-ares configuration and channel options dictionary
+# Sort list CIDR formats
+"0.0.0.0"
+"127.0.0.0/8"
+"10.0.0.0/8"
+"172.16.0.0/12"
+"192.168.0.0/16"
+"::1/128"
+"fe80::/10"
+"0.0.0.0/0"
+"255.255.255.255/32"
+
+# Server CSV formats
+"127.0.0.1"
+"127.0.0.1:53"
+"[::1]:53"
+"8.8.8.8,8.8.4.4"
+"8.8.8.8:53,8.8.4.4:53"
+"[2001:db8::1]:53"
+"[::1]"
+
+# Lookups options
+"b"
+"f"
+"bf"
+"fb"
+
+# Device names
+"lo"
+"lo0"
+"eth0"
+"en0"
+"wlan0"
+
+# Sort list separators
+" "
+","
+";"
+"\x09"
+"\x0a"
+
+# CIDR notation
+"/0"
+"/8"
+"/16"
+"/24"
+"/32"
+"/48"
+"/64"
+"/128"

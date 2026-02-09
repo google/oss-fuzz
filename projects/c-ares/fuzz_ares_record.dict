@@ -1,0 +1,76 @@
+# DNS record construction and manipulation dictionary
+# Domain names
+"example.com"
+"www.example.com"
+"mail.example.com"
+"ns1.example.com"
+"_sip._tcp.example.com"
+"_http._tcp.example.com"
+
+# Record type keywords
+"A"
+"AAAA"
+"MX"
+"NS"
+"PTR"
+"SRV"
+"TXT"
+"SOA"
+"CNAME"
+"CAA"
+"NAPTR"
+"HTTPS"
+"SVCB"
+"URI"
+"TLSA"
+"HINFO"
+"OPT"
+
+# DNS class keywords
+"IN"
+"CH"
+"HS"
+"NONE"
+"ANY"
+
+# OpCode keywords
+"QUERY"
+"IQUERY"
+"STATUS"
+"NOTIFY"
+"UPDATE"
+
+# RCode keywords
+"NOERROR"
+"FORMERR"
+"SERVFAIL"
+"NXDOMAIN"
+"NOTIMP"
+"REFUSED"
+
+# IPv4/IPv6 for PTR conversion
+"127.0.0.1"
+"192.168.1.1"
+"10.0.0.1"
+"::1"
+"2001:db8::1"
+"fe80::1%eth0"
+
+# TXT record values
+"v=spf1 include:example.com ~all"
+"google-site-verification=abc123"
+"DKIM1"
+
+# CAA record values
+"issue"
+"issuewild"
+"iodef"
+"letsencrypt.org"
+
+# SVCB/HTTPS params
+"alpn"
+"no-default-alpn"
+"port"
+"ipv4hint"
+"ipv6hint"
+"ech"

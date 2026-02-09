@@ -21,3 +21,6 @@ RUN git clone --depth 1 https://github.com/google/googletest
 
 WORKDIR c-ares
 COPY build.sh run_tests.sh $SRC/
+COPY fuzz_ares_name.c fuzz_ares_name.dict $SRC/
+COPY fuzz_ares_config.c fuzz_ares_config.dict $SRC/
+COPY fuzz_ares_record.c fuzz_ares_record.dict $SRC/
