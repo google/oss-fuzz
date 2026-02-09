@@ -1,0 +1,11 @@
+homepage: https://www.zsh.org
+language: c
+primary_contact: "peter.john.henggeler@gmail.com"
+main_repo: 'https://github.com/zsh-users/zsh'
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
