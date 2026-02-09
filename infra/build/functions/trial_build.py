@@ -65,7 +65,7 @@ BUILD_TYPES = {
                   'status-introspector.json'),
     'indexer':
         BuildType('indexer', build_project.get_indexer_build_steps,
-                  'status-indexer.json'),
+                  'status.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
@@ -82,8 +82,7 @@ def _get_production_build_statuses(build_type):
     project_statuses = json.load(request)['projects']
   except urllib.error.URLError:
     # It is not a critical error if the status file cannot be found.
-    # This might happen for new build types (e.g. indexer).
-    # In this case, we assume no projects have a status (effectively same as not found).
+    # This is expected for indexer.
     return {}
 
   results = {}
