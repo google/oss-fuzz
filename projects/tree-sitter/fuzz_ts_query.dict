@@ -1,0 +1,70 @@
+# S-expression query patterns
+sexp_open="("
+sexp_close=")"
+capture="@"
+wildcard="_"
+anchor="."
+predicate="#"
+quantifier_opt="?"
+quantifier_star="*"
+quantifier_plus="+"
+negation="!"
+field_name=":"
+
+# Common node type names (JSON)
+node_document="document"
+node_object="object"
+node_array="array"
+node_pair="pair"
+node_string="string"
+node_number="number"
+node_true="true"
+node_false="false"
+node_null="null"
+
+# Common node type names (JavaScript)
+node_program="program"
+node_function="function_declaration"
+node_var="variable_declaration"
+node_assign="assignment_expression"
+node_call="call_expression"
+node_if="if_statement"
+node_for="for_statement"
+node_return="return_statement"
+node_class="class_declaration"
+node_method="method_definition"
+node_arrow="arrow_function"
+node_ident="identifier"
+node_comment="comment"
+
+# Field names
+field_key="key:"
+field_value="value:"
+field_name2="name:"
+field_body="body:"
+field_params="parameters:"
+field_cond="condition:"
+
+# Query predicates
+pred_eq="#eq?"
+pred_match="#match?"
+pred_any_of="#any-of?"
+pred_not_eq="#not-eq?"
+pred_is="#is?"
+pred_is_not="#is-not?"
+pred_set="#set!"
+
+# Capture names
+cap_name="@name"
+cap_func="@function"
+cap_type="@type"
+cap_value="@value"
+cap_comment="@comment"
+cap_keyword="@keyword"
+
+# Example patterns
+pat_simple="(document)"
+pat_capture="(pair key: (string) @key)"
+pat_wildcard="(_ (_) @child)"
+pat_nested="(object (pair) @pair)"
+pat_alt="[(true) (false)] @bool"

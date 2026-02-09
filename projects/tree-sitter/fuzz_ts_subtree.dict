@@ -1,0 +1,28 @@
+# JSON tokens for edit fuzzing
+json_obj="{\"key\": \"value\"}"
+json_arr="[1, 2, 3]"
+json_nested="{\"a\": {\"b\": [1]}}"
+json_string="\"hello\""
+json_number="42"
+json_true="true"
+json_false="false"
+json_null="null"
+json_empty_obj="{}"
+json_empty_arr="[]"
+
+# HTML tokens for edit fuzzing
+html_tag="<div>text</div>"
+html_attrs="<a href=\"url\" class=\"c\">"
+html_nested="<ul><li>item</li></ul>"
+html_self_close="<br/>"
+html_comment="<!-- comment -->"
+html_doctype="<!DOCTYPE html>"
+
+# Common edit patterns
+insert_char="x"
+insert_bracket="{"
+insert_quote="\""
+insert_space=" "
+insert_newline="\x0a"
+insert_comma=","
+delete_marker="\x7f"

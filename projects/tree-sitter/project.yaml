@@ -1,0 +1,14 @@
+homepage: https://tree-sitter.github.io
+language: c
+primary_contact: "peter.john.henggeler@gmail.com"
+main_repo: 'https://github.com/tree-sitter/tree-sitter'
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - centipede
+sanitizers:
+  - address
+  - undefined
+  - memory:
+      experimental: True
