@@ -1,0 +1,11 @@
+homepage: https://www.gnu.org/software/screen/
+language: c
+primary_contact: "peter.john.henggeler@gmail.com"
+main_repo: 'https://git.savannah.gnu.org/git/screen.git'
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
