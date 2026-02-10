@@ -110,21 +110,21 @@ def run_experiment(project_name,
   }
   steps.append(build_lib.dockerify_run_step(run_step, build))
   steps.append({
-      'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', local_output_path, output_path]
+      'name': 'gcr.io/cloud-builders/gcloud',
+      'args': ['storage', 'cp', local_output_path, output_path]
   })
 
   # Upload corpus.
   steps.append({
       'name':
-          'gcr.io/cloud-builders/gsutil',
+          'gcr.io/cloud-builders/gcloud',
       'entrypoint':
           '/bin/bash',
       'args': [
           '-c',
           (f'cd {local_corpus_path} && '
            f'zip -r {local_corpus_zip_path} * && '
-           f'gsutil -m cp {local_corpus_zip_path} {upload_corpus_path} || '
+           f'gcloud storage cp {local_corpus_zip_path} {upload_corpus_path} || '
            f'rm -f {local_corpus_zip_path}'),
       ],
   })
@@ -136,7 +136,7 @@ def run_experiment(project_name,
     # If multiple files are found, suffix them and upload them all.
     steps.append({
         'name':
-            'gcr.io/cloud-builders/gsutil',
+            'gcr.io/cloud-builders/gcloud',
         'entrypoint':
             '/bin/bash',
         'args': [
@@ -144,7 +144,7 @@ def run_experiment(project_name,
             (f'cp {default_target_path} {local_target_dir} 2>/dev/null || '
              f'find {build.out} -type f -name {target_name} -exec bash -c '
              f'\'cp "$0" "{local_target_dir}/$(echo "$0" | sed "s@/@_@g")"\' '
-             f'{{}} \\; && gsutil cp -r {local_target_dir} '
+             f'{{}} \\; && gcloud storage cp --recursive {local_target_dir} '
              f'{upload_reproducer_path}/target_binary || true'),
         ],
     })
@@ -152,12 +152,12 @@ def run_experiment(project_name,
     # Upload reproducer.
     steps.append({
         'name':
-            'gcr.io/cloud-builders/gsutil',
+            'gcr.io/cloud-builders/gcloud',
         'entrypoint':
             '/bin/bash',
         'args': [
             '-c',
-            (f'gsutil -m cp -r {local_artifact_path} {upload_reproducer_path} '
+            (f'gcloud storage cp --recursive {local_artifact_path} {upload_reproducer_path} '
              '|| true'),
         ],
     })
@@ -165,7 +165,7 @@ def run_experiment(project_name,
     # Upload stacktrace.
     steps.append({
         'name':
-            'gcr.io/cloud-builders/gsutil',
+            'gcr.io/cloud-builders/gcloud',
         'entrypoint':
             '/bin/bash',
         'args': [
@@ -178,7 +178,7 @@ def run_experiment(project_name,
              f'"$target" {local_artifact_path}/* > '
              f'"{local_stacktrace_path}/$target.st" 2>&1; '
              'done; fi; '
-             f'gsutil -m cp -r {local_stacktrace_path} {upload_reproducer_path}'
+             f'gcloud storage cp --recursive {local_stacktrace_path} {upload_reproducer_path}'
              ' || true'),
         ],
     })
@@ -230,11 +230,11 @@ def run_experiment(project_name,
   # Upload raw coverage data.
   steps.append({
       'name':
-          'gcr.io/cloud-builders/gsutil',
+          'gcr.io/cloud-builders/gcloud',
       'args': [
-          '-m',
+          'storage',
           'cp',
-          '-r',
+          '--recursive',
           os.path.join(build.out, 'dumps'),
           os.path.join(upload_coverage_path, 'dumps'),
       ],
@@ -243,11 +243,11 @@ def run_experiment(project_name,
   # Upload coverage report.
   steps.append({
       'name':
-          'gcr.io/cloud-builders/gsutil',
+          'gcr.io/cloud-builders/gcloud',
       'args': [
-          '-m',
+          'storage',
           'cp',
-          '-r',
+          '--recursive',
           os.path.join(build.out, 'report'),
           os.path.join(upload_coverage_path, 'report'),
       ],
@@ -256,11 +256,11 @@ def run_experiment(project_name,
   # Upload textcovs.
   steps.append({
       'name':
-          'gcr.io/cloud-builders/gsutil',
+          'gcr.io/cloud-builders/gcloud',
       'args': [
-          '-m',
+          'storage',
           'cp',
-          '-r',
+          '--recursive',
           os.path.join(build.out, 'textcov_reports'),
           os.path.join(upload_coverage_path, 'textcov_reports'),
       ],

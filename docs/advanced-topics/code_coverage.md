@@ -51,7 +51,7 @@ corpora by doing the following:
 * Check whether you have access to the corpus for your project:
 
 ```bash
-$ gsutil ls gs://${PROJECT_NAME}-corpus.clusterfuzz-external.appspot.com/
+$ gcloud storage ls gs://${PROJECT_NAME}-corpus.clusterfuzz-external.appspot.com/
 ```
 
 If you see an authorization error from the command above, run this:
