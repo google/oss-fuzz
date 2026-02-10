@@ -426,9 +426,12 @@ def get_build_steps_for_project(project,
         if config.upload_build_logs:
           build_steps.append({
               'name':
-                  'gcr.io/cloud-builders/gsutil',
+                  'gcr.io/cloud-builders/gcloud',
               'args': [
-                  '-m', 'cp', LOCAL_BUILD_LOG_PATH, config.upload_build_logs
+                  'storage',
+                  'cp',
+                  LOCAL_BUILD_LOG_PATH,
+                  config.upload_build_logs
               ],
           })
 
