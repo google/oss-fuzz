@@ -31,3 +31,5 @@ RUN git clone https://github.com/khronosgroup/Vulkan-Headers vulkan-headers
 RUN git clone https://github.com/khronosgroup/Vulkan-Loader vulkan-loader
 COPY fuzzers/*.h fuzzers/*_fuzzer.c *.sh vulkan-keywords.dict *.diff $SRC/
 WORKDIR $SRC/vulkan-loader
+RUN git apply --ignore-space-change --ignore-whitespace $SRC/fuzz-patch.diff && \
+    sed -i 's/fput/\/\/fput/g' $SRC/vulkan-loader/loader/log.c

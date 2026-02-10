@@ -17,5 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt install -y cmake
 RUN git clone --depth 1 https://github.com/openbabel/openbabel.git
-COPY *.sh $SRC/
 WORKDIR $SRC/openbabel
+# Remove use of deprecated functions
+RUN sed -i 's/CMAKE_CXX_STANDARD 11/CMAKE_CXX_STANDARD 17/g' CMakeLists.txt && \
+    sed -i 's/std::random/\/\/std::random/g' test/*.cpp
+
+COPY *.sh $SRC/
