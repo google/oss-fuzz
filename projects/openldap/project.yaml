@@ -1,6 +1,6 @@
 homepage: "https://www.openldap.org/"
 language: c++
-primary_contact: "quanah@openldap.org"
+primary_contact: "openldap-devel@openldap.org"
 main_repo: "https://git.openldap.org/openldap/openldap"
 file_github_issue: false
 
