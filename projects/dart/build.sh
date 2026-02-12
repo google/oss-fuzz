@@ -16,6 +16,7 @@
 ################################################################################
 
 # build project
+# Apply patch to fix libfuzzer compatibility with MSan stubs
 git apply ../../patch.diff
-./tools/build.py --no-goma -j$(nproc) -m debug -a x64 --sanitizer=asan dart_libfuzzer
+./tools/build.py -j$(nproc) -m debug -a x64 --sanitizer=asan dart_libfuzzer
 cp out/DebugASANX64/*fuzzer $OUT/

@@ -15,11 +15,12 @@
 #
 ################################################################################
 
-cmake . -DSTATIC_ONLY=ON -DLIBICAL_GLIB=False -DLIBICAL_GLIB_BUILD_DOCS=False -DLIBICAL_GOBJECT_INTROSPECTION=False -DLIBICAL_JAVA_BINDINGS=False
+cmake . -DSTATIC_ONLY=ON -DLIBICAL_GLIB=False -DLIBICAL_GLIB_BUILD_DOCS=False -DLIBICAL_GOBJECT_INTROSPECTION=False -DLIBICAL_JAVA_BINDINGS=False -DLIBICAL_BUILD_TESTING=True
 make install -j$(nproc)
 
 
 $CXX $CXXFLAGS -std=c++11 $SRC/libical_fuzzer.cc $LIB_FUZZING_ENGINE /usr/local/lib/libical.a -o $OUT/libical_fuzzer
 $CXX $CXXFLAGS -std=c++11 $SRC/libical_extended_fuzzer.cc $LIB_FUZZING_ENGINE /usr/local/lib/libical.a -o $OUT/libical_extended_fuzzer
+$CXX $CXXFLAGS -std=c++11 $SRC/libicalvcard_fuzzer.cc $LIB_FUZZING_ENGINE /usr/local/lib/libicalvcard.a /usr/local/lib/libical.a -o $OUT/libicalvcard_fuzzer
 
 find . -name *.ics -print | zip -q $OUT/libical_fuzzer_seed_corpus.zip -@

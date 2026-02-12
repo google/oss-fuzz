@@ -28,6 +28,7 @@ limitations under the License.
 extern "C" {
 extern VALUE rb_parser_new(void);
 extern VALUE rb_parser_compile_string(VALUE vparser, const char *f, VALUE s, int line);
+extern VALUE ruby_verbose;
 }
 
 /* Silence stderr output during fuzzing */
@@ -52,12 +53,21 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         ruby_init();
         ruby_init_loadpath();
         initialized = 1;
+        
+        // Suppress Ruby warnings to avoid log noise
+        ruby_verbose = Qfalse;
     }
     
     if (size == 0) {
         return 0;
     }
     
+    // Limit input size to avoid pathologically slow parsing
+    // Ruby parser can be exponentially slow with deeply nested
+    // structures resulting in timeouts.
+    if (size > 50000) {
+        return 0;
+    }
     // Use FuzzedDataProvider for structured data consumption
     FuzzedDataProvider fdp(data, size);
     

@@ -13,8 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y libpcre3-dev zlib1g-dev cmake libssl-dev libpcre2-dev pkg-config
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y libpcre3-dev zlib1g-dev cmake libssl-dev libpcre2-dev pkg-config libc-ares-dev
 RUN git clone --depth 1 https://github.com/apache/trafficserver.git
 RUN cp $SRC/trafficserver/tests/fuzzing/oss-fuzz.sh $SRC/build.sh
 WORKDIR $SRC/trafficserver/

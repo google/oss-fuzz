@@ -47,9 +47,17 @@ fi
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
+FUZZER_ARGS=""
+if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
+  FUZZER_ARGS="-DENABLE_LIBFUZZER_STATIC_LINKAGE=ON"
+fi
+
 cmake_args=(
     # Specific to Tarantool
-    -DENABLE_BACKTRACE=OFF
+    # Tarantool executable binary is needed for running Lua tests,
+    # it should not have any dependencies.
+    -DBUILD_STATIC=ON
+    -DENABLE_BACKTRACE=ON
     -DENABLE_FUZZER=ON
     -DOSS_FUZZ=ON
     -DLUA_USE_APICHECK=ON
@@ -57,6 +65,7 @@ cmake_args=(
     -DLUAJIT_USE_SYSMALLOC=ON
     -DLUAJIT_ENABLE_GC64=ON
     $SANITIZERS_ARGS
+    $FUZZER_ARGS
 
     -DCMAKE_BUILD_TYPE=Debug
 
@@ -76,7 +85,7 @@ cmake_args=(
 
     # Dependencies
     -DENABLE_BUNDLED_ICU=ON
-    -DENABLE_BUNDLED_LIBUNWIND=OFF
+    -DENABLE_BUNDLED_LIBUNWIND=ON
     -DENABLE_BUNDLED_ZSTD=OFF
 )
 
@@ -90,9 +99,9 @@ cmake --build build --target fuzzers --parallel --verbose
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 # Postfix `_fuzzer` is used in Tarantool, postfix `_test` is
-# used in Lua C API tests [1].
+# used in additional tests [1].
 #
-# 1. https://github.com/ligurio/lua-c-api-tests/
+# 1. https://github.com/ligurio/lunapark
 cp test/static/*.dict test/static/*.options $OUT/
 for f in $(find build/test/fuzz/ \( -name '*_fuzzer' -o -name '*_test' \) -type f);
 do
@@ -105,3 +114,58 @@ do
     zip --quiet -j $OUT/"$name"_seed_corpus.zip $corpus_dir/*
   fi
 done
+
+# Finish execution if libFuzzer is not used, because luzer
+# is libFuzzer-based.
+# Code coverage is not supported,
+# see https://github.com/google/oss-fuzz/issues/14859.
+if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
+   [[ "$SANITIZER" == "coverage" ]]; then
+  exit
+fi
+
+# Tarantool binary is required for running luzer-based tests.
+# Beware, tarantool binary is linked with libFuzzer statically
+# when CMake options ENABLE_LIBFUZZER_STATIC_LINKAGE and
+# ENABLE_FUZZER are passed, the linkage can fail
+# when other fuzzing engine is used due to symbols conflict,
+# see FUZZING_ENGINE environment variable.
+cmake --build build --target tarantool --parallel --verbose
+
+LUA_RUNTIME_NAME=tarantool
+TARANTOOL_PATH=build/src/$LUA_RUNTIME_NAME
+LUA_MODULES_DIR=lua_modules
+
+apt install -y luarocks liblua5.1-0 liblua5.1-0-dev liblua5.1-0-dbg lua5.1
+
+# Required by luzer installed using luarocks.
+export OSS_FUZZ=1
+luarocks install --lua-version 5.1 --server=https://luarocks.org/dev --tree=$LUA_MODULES_DIR luzer
+unset OSS_FUZZ
+
+# This Lua module exists only when target `lua-tests` is used,
+# see cmake/BuildLuaTests.cmake.
+lua_lib_path="build/test/fuzz/lua-tests/src/tests/lapi/lib.lua"
+if [ -f $lua_lib_path ]; then
+    cp $lua_lib_path $OUT
+fi
+LUZER_TEST_DIR="build/luzer_tests"
+# Copying luzer-based tests to a $LUZER_TEST_DIR.
+cmake --build build --parallel --verbose --target copy_tests
+# Generating test wrappers for luzer-based tests.
+for test_path in $(find $LUZER_TEST_DIR -name "*.lua" -type f);
+do
+  test_file=$(basename $test_path);
+  test_name_we="${test_file%.*}";
+  module_name=$(echo $test_name_we | sed 's/_test//' )
+  "$SRC/compile_lua_fuzzer" "$LUA_RUNTIME_NAME" $test_file
+  cp "$test_path" "$OUT/"
+  corpus_dir="test/static/corpus/$module_name"
+  if [ -e "$corpus_dir" ]; then
+    zip -j $OUT/"$test_name_we"_seed_corpus.zip $corpus_dir/*
+    echo "Build corpus '$OUT/"$test_name_we"_seed_corpus.zip' for the test '$test_name_we'"
+  fi
+done
+
+cp $TARANTOOL_PATH "$OUT/$LUA_RUNTIME_NAME"
+cp -R $LUA_MODULES_DIR "$OUT/"

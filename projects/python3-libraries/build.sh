@@ -30,9 +30,6 @@ case $SANITIZER in
     ;;
   memory)
     FLAGS+=("--with-memory-sanitizer")
-    # installing ensurepip takes a while with MSAN instrumentation, so
-    # we disable it here
-    FLAGS+=("--without-ensurepip")
     # -msan-keep-going is needed to allow MSAN's halt_on_error to function
     FLAGS+=("CFLAGS=-mllvm -msan-keep-going=1")
     ;;
@@ -46,7 +43,7 @@ rm -rf $CPYTHON_INSTALL_PATH
 mkdir $CPYTHON_INSTALL_PATH
 
 cd $SRC/cpython
-cp $SRC/python-library-fuzzers/python_coverage.h Python/
+cp $SRC/library-fuzzers/python_coverage.h Python/
 
 # Patch the interpreter to record code coverage
 sed -i '1 s/^.*$/#include "python_coverage.h"/g' Python/ceval.c
@@ -57,62 +54,73 @@ make -j$(nproc)
 make install
 
 cp -R $CPYTHON_INSTALL_PATH $OUT/
+$OUT/cpython-install/bin/python3 -m pip install hypothesis
 
-cd $SRC/python-library-fuzzers
+cd $SRC/library-fuzzers
 make
 
-cp $SRC/python-library-fuzzers/fuzzer-html $OUT/
-cp $SRC/python-library-fuzzers/html.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-html $OUT/
+cp $SRC/library-fuzzers/html.py $OUT/
 zip -j $OUT/fuzzer-html_seed_corpus.zip corp-html/*
 
-cp $SRC/python-library-fuzzers/fuzzer-email $OUT/
-cp $SRC/python-library-fuzzers/email.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-xml $OUT/
+cp $SRC/library-fuzzers/xml.py $OUT/
+zip -j $OUT/fuzzer-xml_seed_corpus.zip corp-xml/*
+
+cp $SRC/library-fuzzers/fuzzer-email $OUT/
+cp $SRC/library-fuzzers/email.py $OUT/
 zip -j $OUT/fuzzer-email_seed_corpus.zip corp-email/*
 
-cp $SRC/python-library-fuzzers/fuzzer-httpclient $OUT/
-cp $SRC/python-library-fuzzers/httpclient.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-httpclient $OUT/
+cp $SRC/library-fuzzers/httpclient.py $OUT/
 zip -j $OUT/fuzzer-httpclient_seed_corpus.zip corp-httpclient/*
 
-cp $SRC/python-library-fuzzers/fuzzer-json $OUT/
-cp $SRC/python-library-fuzzers/json.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-json $OUT/
+cp $SRC/library-fuzzers/json.py $OUT/
 zip -j $OUT/fuzzer-json_seed_corpus.zip corp-json/*
 
-cp $SRC/python-library-fuzzers/fuzzer-difflib $OUT/
-cp $SRC/python-library-fuzzers/difflib.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-difflib $OUT/
+cp $SRC/library-fuzzers/difflib.py $OUT/
 zip -j $OUT/fuzzer-difflib_seed_corpus.zip corp-difflib/*
 
-cp $SRC/python-library-fuzzers/fuzzer-csv $OUT/
-cp $SRC/python-library-fuzzers/csv.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-csv $OUT/
+cp $SRC/library-fuzzers/csv.py $OUT/
 zip -j $OUT/fuzzer-csv_seed_corpus.zip corp-csv/*
 
-cp $SRC/python-library-fuzzers/fuzzer-decode $OUT/
-cp $SRC/python-library-fuzzers/decode.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-decode $OUT/
+cp $SRC/library-fuzzers/decode.py $OUT/
 zip -j $OUT/fuzzer-decode_seed_corpus.zip corp-decode/*
-cp $SRC/python-library-fuzzers/fuzzer-decode.dict $OUT/
+cp $SRC/library-fuzzers/fuzzer-decode.dict $OUT/
 
-cp $SRC/python-library-fuzzers/fuzzer-ast $OUT/
-cp $SRC/python-library-fuzzers/ast.py $OUT/
-cp $SRC/python-library-fuzzers/fuzzer-ast.dict $OUT/
+cp $SRC/library-fuzzers/fuzzer-ast $OUT/
+cp $SRC/library-fuzzers/ast.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-ast.dict $OUT/
 # Use CPython source code as seed corpus
 mkdir corp-ast/
 find $SRC/cpython -type f -name '*.py' -size -4097c -exec cp {} corp-ast/ \;
 zip -j $OUT/fuzzer-ast_seed_corpus.zip corp-ast/*
 
-cp $SRC/python-library-fuzzers/fuzzer-re $OUT/
-cp $SRC/python-library-fuzzers/re.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-re $OUT/
+cp $SRC/library-fuzzers/re.py $OUT/
 
-cp $SRC/python-library-fuzzers/fuzzer-zipfile $OUT/
-cp $SRC/python-library-fuzzers/zipfile.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-zipfile $OUT/
+cp $SRC/library-fuzzers/zipfile.py $OUT/
 
-cp $SRC/python-library-fuzzers/fuzzer-tarfile $OUT/
-cp $SRC/python-library-fuzzers/tarfile.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-zipfile-hypothesis $OUT/
+cp $SRC/library-fuzzers/zipfile_hypothesis.py $OUT/
 
-cp $SRC/python-library-fuzzers/fuzzer-configparser $OUT/
-cp $SRC/python-library-fuzzers/configparser.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-tarfile $OUT/
+cp $SRC/library-fuzzers/tarfile.py $OUT/
 
-cp $SRC/python-library-fuzzers/fuzzer-tomllib $OUT/
-cp $SRC/python-library-fuzzers/tomllib.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-tarfile-hypothesis $OUT/
+cp $SRC/library-fuzzers/tarfile_hypothesis.py $OUT/
 
-cp $SRC/python-library-fuzzers/fuzzer-plistlib $OUT/
-cp $SRC/python-library-fuzzers/plist.py $OUT/
+cp $SRC/library-fuzzers/fuzzer-configparser $OUT/
+cp $SRC/library-fuzzers/configparser.py $OUT/
+
+cp $SRC/library-fuzzers/fuzzer-tomllib $OUT/
+cp $SRC/library-fuzzers/tomllib.py $OUT/
+
+cp $SRC/library-fuzzers/fuzzer-plistlib $OUT/
+cp $SRC/library-fuzzers/plist.py $OUT/
 

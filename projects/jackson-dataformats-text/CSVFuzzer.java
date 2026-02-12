@@ -14,16 +14,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.csv.CsvMapper;
 
 public class CSVFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     ObjectMapper mapper = new CsvMapper();
     try {
       mapper.readTree(input);
-    } catch (IOException ignored) {
+    } catch (JacksonException ignored) {
     }
   }
 }

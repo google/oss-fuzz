@@ -14,6 +14,8 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y ninja-build pkg-config
+RUN python3 -m pip install meson
 RUN git clone https://github.com/Neargye/magic_enum
-COPY build.sh *_fuzzer.cc $SRC/
+COPY run_tests.sh build.sh *_fuzzer.cc $SRC/
 WORKDIR $SRC/magic_enum

@@ -25,6 +25,7 @@
 
 #include "indexer/index/file_copier.h"
 #include "indexer/index/types.h"
+#include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_map.h"
@@ -284,8 +285,7 @@ FlatIndex InMemoryIndex::Export() && {
     for (const auto& [location, id] : locations_) {
       sorted_locations.emplace_back(location, id);
     }
-    std::sort(sorted_locations.begin(), sorted_locations.end(),
-              ComparePairFirst());
+    absl::c_sort(sorted_locations, ComparePairFirst());
     CHECK_EQ(sorted_locations.size(), locations_.size());
     locations_.clear();
 
@@ -318,8 +318,7 @@ FlatIndex InMemoryIndex::Export() && {
       Entity& new_entity = iter.first;
       new_entity.location_id_ = new_location_id;
     }
-    std::sort(sorted_entities.begin(), sorted_entities.end(),
-              ComparePairFirst());
+    absl::c_sort(sorted_entities, ComparePairFirst());
     CHECK_EQ(sorted_entities.size(), entities_.size());
     entities_.clear();
     id_to_entity_.clear();
@@ -373,7 +372,7 @@ FlatIndex InMemoryIndex::Export() && {
     CHECK_NE(new_location_id, kInvalidLocationId);
     result.references.emplace_back(new_entity_id, new_location_id);
   }
-  std::sort(result.references.begin(), result.references.end());
+  absl::c_sort(result.references);
   // Remove duplicates that could have arisen due to location column erasure.
   auto last = std::unique(result.references.begin(), result.references.end());
   result.references.erase(last, result.references.end());
@@ -387,8 +386,7 @@ FlatIndex InMemoryIndex::Export() && {
     CHECK_NE(new_child, kInvalidEntityId);
     result.virtual_method_links.emplace_back(new_parent, new_child);
   }
-  std::sort(result.virtual_method_links.begin(),
-            result.virtual_method_links.end());
+  absl::c_sort(result.virtual_method_links);
 
   return result;
 }

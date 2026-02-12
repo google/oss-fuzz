@@ -6,13 +6,12 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+auto_ccs:
+  - "fanningpj@gmail.com"
+  - "me@yawk.at"
 vendor_ccs:
-  - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
-  - "glendowne@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
-  - "hlin@code-intelligence.com"
-  - "bug-disclosure@code-intelligence.com"
   - "adam@adalogics.com"
   - "david@adalogics.com"
   - "arthur.chan@adalogics.com"

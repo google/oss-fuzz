@@ -31,8 +31,6 @@ sed -i "s/\$libS\$libR \(-lpcre2-8$\)/\$libS\$libR -Wl,-Bstatic \1 -Wl,-Bdynamic
 popd
 
 # build project
-rm -rf build
-
 ./configure
 make njs_fuzzer
 
