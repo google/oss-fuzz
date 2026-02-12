@@ -9,6 +9,9 @@ auto_ccs:
   - "courmisch@gmail.com"
   - "robux4@gmail.com"
   - "epirat07@gmail.com"
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
 sanitizers:
   - address
   - undefined
