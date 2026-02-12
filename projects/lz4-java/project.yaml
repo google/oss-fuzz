@@ -1,0 +1,6 @@
+homepage: "https://github.com/yawkat/lz4-java"
+main_repo: "https://github.com/yawkat/lz4-java"
+language: java
+primary_contact: "jonas.konrad@oracle.com"
+auto_ccs:
+  - "me@yawk.at"
