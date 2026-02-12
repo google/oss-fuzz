@@ -108,7 +108,7 @@ def generate_comparison_table(all_results):
           status_icon = 'SKIP'
         else:
           status_icon = 'PASS'
-      row += f' {status_icon.center(16)} |'
+      row += f' {status_icon.center(15)} |'
     row = row[:-1]
     table_lines.append(row)
 
