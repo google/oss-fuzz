@@ -17,7 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake make
 RUN cargo install cargo-afl
-COPY .cargo .cargo
 
 RUN git clone --depth 1 https://github.com/kuba--/zip.git zip \
         && cp zip/fuzz/build.sh $SRC/
