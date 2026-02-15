@@ -32,6 +32,7 @@ import org.apache.poi.openxml4j.exceptions.OpenXML4JRuntimeException;
 import org.apache.poi.ss.formula.FormulaParseException;
 import org.apache.poi.ss.formula.eval.NotImplementedException;
 import org.apache.poi.stress.FileHandler;
+import org.apache.poi.stress.HDGFFileHandler;
 import org.apache.poi.stress.HEMFFileHandler;
 import org.apache.poi.stress.HMEFFileHandler;
 import org.apache.poi.stress.HPBFFileHandler;
@@ -67,13 +68,14 @@ import org.xml.sax.SAXException;
  */
 public class POIFileHandlerFuzzer {
 	private static final FileHandler[] HANDLERS = new FileHandler[] {
+		new HDGFFileHandler(),
+		new HEMFFileHandler(),
 		new HMEFFileHandler(),
 		new HPBFFileHandler(),
 		new HPSFFileHandler(),
 		new HSLFFileHandler(),
 		new HSMFFileHandler(),
 		new HSSFFileHandler(),
-		new HEMFFileHandler(),
 		new HWMFFileHandler(),
 		new HWPFFileHandler(),
 		new OPCFileHandler(),
@@ -104,7 +106,7 @@ public class POIFileHandlerFuzzer {
 					 OpenXML4JException | OpenXML4JRuntimeException | DocumentFormatException | XSSFBParseException |
 					 // some FileHandlers perform checks via assertions, so we expect this type of exception as well
 					 AssertionFailedError | TestAbortedException |
-					 NotImplementedException | FormulaParseException | IllegalPathStateException
+					 NotImplementedException | FormulaParseException | IllegalPathStateException | ArithmeticException
 					e) {
 				// expected here
 			} catch (AWTError e) {
