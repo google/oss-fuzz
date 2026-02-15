@@ -30,9 +30,6 @@ case $SANITIZER in
     ;;
   memory)
     FLAGS+=("--with-memory-sanitizer")
-    # installing ensurepip takes a while with MSAN instrumentation, so
-    # we disable it here
-    FLAGS+=("--without-ensurepip")
     # -msan-keep-going is needed to allow MSAN's halt_on_error to function
     FLAGS+=("CFLAGS=-mllvm -msan-keep-going=1")
     ;;

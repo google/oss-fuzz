@@ -14,26 +14,9 @@
 #
 ################################################################################
 
-# Todo: unpin to support llvm 22
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
-RUN apt-get update && apt-get install --yes cmake make autoconf automake autopoint libtool wget po4a ninja-build pkgconf
-RUN git clone --depth 1 https://github.com/madler/zlib.git
-RUN git clone --depth 1 -b v1.5.7 https://github.com/facebook/zstd.git
-RUN wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
-RUN git clone https://github.com/tukaani-project/xz.git
-RUN git clone --depth 1 --branch=RB-3.3 https://github.com/AcademySoftwareFoundation/openexr.git
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/extra-cmake-modules.git
-RUN git clone --depth 1 --branch=dev git://code.qt.io/qt/qtbase.git
-RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/karchive.git
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kimageformats.git
-RUN git clone --depth 1 -b v3.12.1 https://aomedia.googlesource.com/aom
-RUN git clone --depth 1 -b v1.3.0 https://github.com/AOMediaCodec/libavif.git
-RUN git clone --depth 1 https://github.com/strukturag/libde265.git
-RUN git clone --depth 1 -b v2.5.3 https://github.com/uclouvain/openjpeg.git
-RUN git clone --depth 1 https://github.com/strukturag/libheif.git
-RUN git clone --depth=1 --branch v0.11.x --recursive --shallow-submodules https://github.com/libjxl/libjxl.git
-RUN git clone --depth 1 https://github.com/LibRaw/LibRaw
-RUN git clone --depth 1 https://github.com/mircomir/jxrlib.git
-RUN git clone --depth 1 -b v2.6.0 https://github.com/cisco/openh264.git
-COPY build.sh kimgio_fuzzer.cc $SRC/
+RUN $SRC/kimageformats/autotests/ossfuzz/prepare_build.sh
+RUN cp $SRC/kimageformats/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
+
 WORKDIR $SRC/kimageformats

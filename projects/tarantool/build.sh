@@ -117,10 +117,10 @@ done
 
 # Finish execution if libFuzzer is not used, because luzer
 # is libFuzzer-based.
-# UndefinedBehaviorSanitizer is not supported,
-# see https://github.com/tarantool/tarantool/issues/12216.
+# Code coverage is not supported,
+# see https://github.com/google/oss-fuzz/issues/14859.
 if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
-   [[ "$SANITIZER" == "undefined" ]]; then
+   [[ "$SANITIZER" == "coverage" ]]; then
   exit
 fi
 
@@ -143,15 +143,28 @@ export OSS_FUZZ=1
 luarocks install --lua-version 5.1 --server=https://luarocks.org/dev --tree=$LUA_MODULES_DIR luzer
 unset OSS_FUZZ
 
-cp build/test/fuzz/lua-tests/src/tests/lapi/lib.lua "$OUT"
+# This Lua module exists only when target `lua-tests` is used,
+# see cmake/BuildLuaTests.cmake.
+lua_lib_path="build/test/fuzz/lua-tests/src/tests/lapi/lib.lua"
+if [ -f $lua_lib_path ]; then
+    cp $lua_lib_path $OUT
+fi
 LUZER_TEST_DIR="build/luzer_tests"
 # Copying luzer-based tests to a $LUZER_TEST_DIR.
 cmake --build build --parallel --verbose --target copy_tests
 # Generating test wrappers for luzer-based tests.
-for test_file in $(find $LUZER_TEST_DIR -name "*.lua" -type f);
+for test_path in $(find $LUZER_TEST_DIR -name "*.lua" -type f);
 do
-  "$SRC/compile_lua_fuzzer" "$LUA_RUNTIME_NAME" $(basename "$test_file")
-  cp "$test_file" "$OUT/"
+  test_file=$(basename $test_path);
+  test_name_we="${test_file%.*}";
+  module_name=$(echo $test_name_we | sed 's/_test//' )
+  "$SRC/compile_lua_fuzzer" "$LUA_RUNTIME_NAME" $test_file
+  cp "$test_path" "$OUT/"
+  corpus_dir="test/static/corpus/$module_name"
+  if [ -e "$corpus_dir" ]; then
+    zip -j $OUT/"$test_name_we"_seed_corpus.zip $corpus_dir/*
+    echo "Build corpus '$OUT/"$test_name_we"_seed_corpus.zip' for the test '$test_name_we'"
+  fi
 done
 
 cp $TARANTOOL_PATH "$OUT/$LUA_RUNTIME_NAME"

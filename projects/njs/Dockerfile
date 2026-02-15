@@ -21,4 +21,4 @@ RUN hg clone http://hg.nginx.org/njs
 RUN git clone --branch pcre2-10.39 https://github.com/PhilipHazel/pcre2 pcre2
 
 WORKDIR njs
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
