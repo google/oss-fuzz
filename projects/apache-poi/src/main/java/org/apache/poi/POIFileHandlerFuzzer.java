@@ -114,6 +114,11 @@ public class POIFileHandlerFuzzer {
 				if (!ExceptionUtils.readStackTrace(e).contains("Can't connect to X11 window server")) {
 					throw e;
 				}
+			} catch (NoClassDefFoundError e) {
+				// POI cannot fix it if there is no DISPLAY
+				if (!ExceptionUtils.readStackTrace(e).contains("Could not initialize class java.awt.GraphicsEnvironment$LocalGE")) {
+					throw e;
+				}
 			} catch (InternalError e) {
 				// POI cannot fix it if the font-system is not fully installed, so let's ignore
 				// this for fuzzing
