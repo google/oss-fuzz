@@ -70,4 +70,4 @@ RUN git clone --depth 1 https://github.com/OpenNavigationSurface/BAG bag
 RUN pip install -r bag/requirements.txt
 
 RUN cp $SRC/bag/fuzzers/build.sh $SRC/
-COPY run_tests.sh $SRC/
+COPY replay_build.sh run_tests.sh $SRC/
