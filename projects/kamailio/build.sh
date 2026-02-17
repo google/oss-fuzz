@@ -1,3 +1,4 @@
+
 #!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
@@ -17,30 +18,29 @@
 
 cd $SRC/kamailio
 
-export CC_OPT="${CFLAGS}"
-export LD_EXTRA_OPTS="${CFLAGS}"
+# export CFLAGS="${CFLAGS}"
+export LDFLAGS="${CFLAGS}"
 
-sed -i 's/int main(/int main2(/g' ./src/main.c
+mkdir -p build
+cd build
+cmake -DVERBOSE=ON \
+      -DPKG_MALLOC=OFF \
+      -DMODULE_GROUP_NAME="" \
+      -G "Unix Makefiles" ..
+make -j$(nproc) kamailio-oss-fuzz || true  
 
-export MEMPKG=sys
-make Q=verbose || true
-cd src
-mkdir objects && find . -name "*.o" -exec cp {} ./objects/ \;
-ar -r libkamilio.a ./objects/*.o
 cd ../
-$CC $CFLAGS -c ./misc/fuzz/fuzz_uri.c \
-    -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
-    -I./src/ -I./src/core/parser -ldl -lresolv -lm
+
+$CC $CFLAGS -c ./misc/fuzz/fuzz_uri.c -o fuzz_uri.o \
+    -DFAST_LOCK -D__CPU_i386 \
+    -I./src/ -I./src/core/parser
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_uri.o -o $OUT/fuzz_uri \
-    -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
-    -I./src/ -I./src/core/parser -ldl -lresolv -lm
+    ./build/src/libkamailio-oss-fuzz.a -ldl -lresolv -lm
 
-$CC $CFLAGS  ./misc/fuzz/fuzz_parse_msg.c -c \
-    -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
-    -I./src/ -I./src/core/parser -ldl -lresolv -lm
+$CC $CFLAGS ./misc/fuzz/fuzz_parse_msg.c -c -o fuzz_parse_msg.o \
+    -DFAST_LOCK -D__CPU_i386 \
+    -I./src/ -I./src/core/parser
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_msg.o -o $OUT/fuzz_parse_msg \
-    -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
-    -I./src/ -I./src/core/parser -ldl -lresolv -lm
-
+    ./build/src/libkamailio-oss-fuzz.a -ldl -lresolv -lm
