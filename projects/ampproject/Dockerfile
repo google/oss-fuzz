@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
 RUN apt-get update && apt-get install -y make autoconf automake libtool libomp-dev libgomp1 nodejs
 COPY build.sh *.diff $SRC/
 
