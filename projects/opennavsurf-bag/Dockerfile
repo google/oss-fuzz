@@ -69,4 +69,4 @@ WORKDIR $SRC
 RUN git clone --depth 1 https://github.com/OpenNavigationSurface/BAG bag
 RUN pip install -r bag/requirements.txt
 
-COPY run_tests.sh $SRC/
+COPY $SRC/bag/fuzzers/build.sh run_tests.sh $SRC/
