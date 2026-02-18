@@ -12,6 +12,7 @@ auto_ccs:
   - "bjorn.harrtell@gmail.com"
   - "nyall.dawson@gmail.com"
   - "uygabel@gmail.com"
+  - "apasotti@gmail.com"
 architectures:
   - x86_64
   - i386
