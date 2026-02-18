@@ -16,5 +16,4 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake libtiff-dev zip
-RUN git clone --depth 1 https://github.com/aous72/OpenJPH.git
 COPY build.sh .
