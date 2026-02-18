@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    mercurial git libpcre2-dev
-RUN hg clone http://hg.nginx.org/njs
+    git libpcre2-dev
+RUN git clone https://github.com/nginx/njs
 RUN git clone --branch pcre2-10.39 https://github.com/PhilipHazel/pcre2 pcre2
 
 WORKDIR njs
