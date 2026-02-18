@@ -1,0 +1,29 @@
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# Build the fuzz targets
+mkdir $SRC/build/
+cd $SRC/build/
+cmake $SRC/OpenJPH -DBUILD_SHARED_LIBS=OFF -DOJPH_BUILD_FUZZER=ON
+make
+cp fuzzing/ojph_expand_fuzz_target $OUT
+
+# Build the seed corpus
+cd $SRC
+git clone --depth 1 https://github.com/aous72/jp2k_test_codestreams.git
+rm $OUT/j2c_expand_fuzz_target_seed_corpus.zip
+zip -j $OUT/j2c_expand_fuzz_target_seed_corpus.zip jp2k_test_codestreams/openjph/*.j2c
