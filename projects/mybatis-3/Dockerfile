@@ -15,11 +15,11 @@
 ##########################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.9.9/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.9.11/bin/mvn
 ENV PATH="$JAVA_HOME/bin:$PATH"
 RUN git clone --depth 1 https://github.com/mybatis/mybatis-3 mybatis-3
 COPY *.sh *.java $SRC/

@@ -52,6 +52,15 @@ if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
   FUZZER_ARGS="-DENABLE_LIBFUZZER_STATIC_LINKAGE=ON"
 fi
 
+# Apply potential fix for the problem described in
+# google/oss-fuzz#13226.
+# See https://github.com/ossf/fuzz-introspector/pull/2278
+if [[ "$SANITIZER" = "introspector" ]]; then
+  curl -O https://patch-diff.githubusercontent.com/raw/ossf/fuzz-introspector/pull/2278.patch
+  patch -p1 --directory=/fuzz-introspector/ < 2278.patch
+  export FUZZ_INTROSPECTOR_PARALLEL=false
+fi
+
 cmake_args=(
     # Specific to Tarantool
     # Tarantool executable binary is needed for running Lua tests,
@@ -117,12 +126,9 @@ done
 
 # Finish execution if libFuzzer is not used, because luzer
 # is libFuzzer-based.
-# UndefinedBehaviorSanitizer is not supported,
-# see https://github.com/tarantool/tarantool/issues/12216.
 # Code coverage is not supported,
 # see https://github.com/google/oss-fuzz/issues/14859.
 if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
-   [[ "$SANITIZER" == "undefined" ]] ||
    [[ "$SANITIZER" == "coverage" ]]; then
   exit
 fi
@@ -156,14 +162,17 @@ LUZER_TEST_DIR="build/luzer_tests"
 # Copying luzer-based tests to a $LUZER_TEST_DIR.
 cmake --build build --parallel --verbose --target copy_tests
 # Generating test wrappers for luzer-based tests.
-for test_file in $(find $LUZER_TEST_DIR -name "*.lua" -type f);
+for test_path in $(find $LUZER_TEST_DIR -name "*.lua" -type f);
 do
-  test_name=$(basename $test_file);
-  "$SRC/compile_lua_fuzzer" "$LUA_RUNTIME_NAME" $test_name
-  cp "$test_file" "$OUT/"
-  corpus_dir="test/static/corpus/$test_name"
+  test_file=$(basename $test_path);
+  test_name_we="${test_file%.*}";
+  module_name=$(echo $test_name_we | sed 's/_test//' )
+  "$SRC/compile_lua_fuzzer" "$LUA_RUNTIME_NAME" $test_file
+  cp "$test_path" "$OUT/"
+  corpus_dir="test/static/corpus/$module_name"
   if [ -e "$corpus_dir" ]; then
-    zip --quiet -j $OUT/"$test_name"_seed_corpus.zip $corpus_dir/*
+    zip -j $OUT/"$test_name_we"_seed_corpus.zip $corpus_dir/*
+    echo "Build corpus '$OUT/"$test_name_we"_seed_corpus.zip' for the test '$test_name_we'"
   fi
 done
 

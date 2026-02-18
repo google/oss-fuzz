@@ -1,4 +1,5 @@
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,20 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+make unit_test
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven-3.9.11 && \
-rm -rf maven.zip
-
-ENV MVN $SRC/maven-3.9.11/apache-maven-3.9.11/bin/mvn
-
-WORKDIR ${SRC}
-#
-# clone repository
-#
-RUN git clone https://github.com/apache/maven.git
-
-ADD pom.xml build.sh ${SRC}/
-ADD src/ ${SRC}/src/
-WORKDIR ${SRC}/maven
