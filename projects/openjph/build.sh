@@ -25,5 +25,5 @@ cp fuzzing/ojph_expand_fuzz_target $OUT
 # Build the seed corpus
 cd $SRC
 git clone --depth 1 https://github.com/aous72/jp2k_test_codestreams.git
-rm $OUT/j2c_expand_fuzz_target_seed_corpus.zip
+rm -f $OUT/j2c_expand_fuzz_target_seed_corpus.zip
 zip -j $OUT/j2c_expand_fuzz_target_seed_corpus.zip jp2k_test_codestreams/openjph/*.j2c
