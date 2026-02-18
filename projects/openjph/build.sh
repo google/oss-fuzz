@@ -16,7 +16,7 @@
 ################################################################################
 
 # Build the fuzz targets
-git clone --branch issue/fix-oss-fuzz-build https://github.com/sandflow/OpenJPH.git
+git clone https://github.com/aous72/OpenJPH.git
 mkdir $SRC/build/
 cd $SRC/build/
 cmake $SRC/OpenJPH -DBUILD_SHARED_LIBS=OFF -DOJPH_BUILD_FUZZER=ON -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS"
