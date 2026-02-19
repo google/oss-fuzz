@@ -5,4 +5,11 @@ auto_ccs:
   - "pal@sandflow.com"
   - "miksmith@gmail.com"
   - "aous@unsw.edu.au"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
 main_repo: "https://github.com/aous72/OpenJPH"
