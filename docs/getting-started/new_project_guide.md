@@ -102,6 +102,7 @@ Programming language the project is written in. Values you can specify include:
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
 * [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift-lang/)
 * [`javascript`]({{ site.baseurl }}//getting-started/new-project-guide/javascript-lang/)
+* [`lua`]({{ site.baseurl }}//getting-started/new-project-guide/lua-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -236,6 +237,10 @@ You also need to setup environment variables needed by this toolchain, for examp
 For an example, see
 [ecc-diff-fuzzer/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/ecc-diff-fuzzer/Dockerfile).
 where we use `base-builder-rust`and install golang
+
+Runtime dependencies of your project, such as third-party static libraries, will
+not be instrumented if you build them in the Dockerfile. In most cases, you will
+want to build them in `build.sh` instead.
 
 ## build.sh {#buildsh}
 

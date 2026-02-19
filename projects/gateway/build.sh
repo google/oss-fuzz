@@ -16,3 +16,16 @@
 ################################################################################
 
 $SRC/gateway/test/fuzz/oss_fuzz_build.sh
+
+# Copy default.options to all fuzzers in $OUT if they don't have specific options files
+for fuzzer in "$OUT"/*; do
+  # Skip non-files and files with extensions
+  [[ ! -f "$fuzzer" ]] || [[ "$fuzzer" == *.* ]] && continue
+  
+  fuzzer_name=$(basename "$fuzzer")
+  options_file="$OUT/${fuzzer_name}.options"
+  
+  if [[ ! -f "$options_file" ]] && [[ -f "$SRC/default.options" ]]; then
+    cp "$SRC/default.options" "$options_file"
+  fi
+done

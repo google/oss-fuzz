@@ -30,4 +30,4 @@ RUN cd $SRC/gateway && \
     mv temp-go/go/* /root/.go/ && \
     rm -rf temp-go go${GO_VERSION}.linux-amd64.tar.gz
 
-COPY build.sh $SRC/
+COPY build.sh default.options $SRC/

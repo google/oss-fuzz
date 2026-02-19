@@ -1,11 +1,11 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/wasmerio/wasmer"
 language: rust
 main_repo: "https://github.com/wasmerio/wasmer"
-primary_contact: "edoardo@wasmer.io"
+primary_contact: "martin@wasmer.io"
 auto_ccs:
   - syrus@wasmer.io
   - christoph@wasmer.io
-  - amin@wasmer.io
 sanitizers:
   - address
 fuzzing_engines:

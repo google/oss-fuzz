@@ -21,5 +21,5 @@ RUN apt-get update && \
     autoconf automake indent libtool libnum-ocaml-dev fig2dev
 
 RUN git clone https://github.com/FFTW/fftw3 fftw3
-COPY build.sh *.cc $SRC/
+COPY run_tests.sh build.sh *.cc $SRC/
 WORKDIR $SRC/fftw3

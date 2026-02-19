@@ -60,8 +60,14 @@ RUN ./autogen.sh \
     make -j$(nproc) && \
     make install
 
+WORKDIR /tmp
+RUN git clone https://github.com/catchorg/Catch2.git && cd Catch2 && git checkout v3.12.0
+RUN cd Catch2 && cmake -B build -S . && cmake --build build --target install
+
 WORKDIR $SRC
 
 RUN git clone --depth 1 https://github.com/OpenNavigationSurface/BAG bag
+RUN pip install -r bag/requirements.txt
 
 RUN cp $SRC/bag/fuzzers/build.sh $SRC/
+COPY replay_build.sh run_tests.sh $SRC/

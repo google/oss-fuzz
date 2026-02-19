@@ -31,7 +31,9 @@ ARGS='is_asan = true
  treat_warnings_as_errors = false
  libcxx_is_shared = false
  v8_enable_backtrace = true
- v8_enable_fast_mksnapshot = false'
+ v8_enable_slow_dchecks = true
+ v8_enable_test_features = true
+ v8_enable_fast_mksnapshot = true'
 
 if [[ -n "${INDEXER_BUILD:-}" ]]; then
   ARGS="$ARGS is_debug=true v8_optimized_debug=false v8_enable_slow_dchecks=true clang_base_path=\"/opt/toolchain\""
@@ -49,5 +51,5 @@ rm -f out/fuzz/d8
 # Build binary
 ninja -C out/fuzz d8 -j$(nproc)
 
-# Copy binary to $OUT
-cp ./out/fuzz/{d8,snapshot_blob.bin} $OUT
+# Copy binaries to $OUT
+cp ./out/fuzz/{d8,snapshot_blob.bin,*.so} $OUT

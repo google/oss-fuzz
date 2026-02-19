@@ -19,4 +19,8 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config zlib1g-dev libpci-dev
 RUN git clone --depth 1 https://github.com/liblouis/liblouis
 WORKDIR liblouis
-COPY build.sh $SRC/
+RUN sed -i 's/main/main2/g' tests/fuzzing/fuzz_backtranslate.c && \
+    sed -i 's/main/main2/g' tests/fuzzing/fuzz_translate_generic.c && \
+    sed -i 's/LLVMFuzzerRunDriver(&argc/\/\/LLVMFuzzerRunDriver(&argc/g' tests/fuzzing/fuzz_backtranslate.c && \
+    sed -i 's/LLVMFuzzerRunDriver(&argc/\/\/LLVMFuzzerRunDriver(&argc/g' tests/fuzzing/fuzz_translate_generic.c
+COPY build.sh run_tests.sh $SRC/
