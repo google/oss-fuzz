@@ -16,15 +16,14 @@
 ################################################################################
 
 # Build the fuzz targets
-git clone https://github.com/aous72/OpenJPH.git
-mkdir $SRC/build/
-cd $SRC/build/
+cd $SRC
+mkdir build/
+cd build/
 cmake $SRC/OpenJPH -DBUILD_SHARED_LIBS=OFF -DOJPH_BUILD_FUZZER=ON -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS"
 make -j$(nproc)
 cp fuzzing/ojph_expand_fuzz_target $OUT
 
-# Initialize the seed corpus
+# Build the seed corpus
 cd $SRC
-git clone --depth 1 https://github.com/aous72/jp2k_test_codestreams.git
 rm -f $OUT/ojph_expand_fuzz_target_seed_corpus.zip
 zip -j $OUT/ojph_expand_fuzz_target_seed_corpus.zip jp2k_test_codestreams/openjph/*.j2c
