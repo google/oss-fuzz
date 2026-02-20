@@ -34,6 +34,11 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   program_name = "fuzz_strings";
 
+  string_min = 4;
+  encoding = 's';
+  encoding_bytes = 1;
+  datasection_only = true;
+
   // Main fuzz entrypoint in strings.c
   strings_object_file(filename);
 
