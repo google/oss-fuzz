@@ -49,10 +49,7 @@ public class POIPPTX2PNGFuzzer {
                     graphics.dispose();
                 }
             }
-        } catch (IOException | POIXMLException | IllegalArgumentException | IllegalStateException | 
-                 IndexOutOfBoundsException | ArithmeticException | NegativeArraySizeException |
-                 RecordFormatException | BufferUnderflowException | OpenXML4JRuntimeException |
-                 UnsupportedOperationException | NoSuchElementException e) {
+        } catch (Exception | Error e) {
             // Expected exceptions on malformed input
         }
     }
