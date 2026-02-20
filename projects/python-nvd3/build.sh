@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-python3 ./setup.py install
+pip3 install .
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --collect-data nvd3
 done
