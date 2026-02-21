@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+make distclean || true
 ./autogen.sh
 ./configure PANDOC=false --with-fuzzer=clang
 make
