@@ -17,24 +17,21 @@
 package com.example;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.junit.FuzzTest;
 
 import com.github.wnameless.json.flattener.*;
 import com.github.wnameless.json.base.JsonCore;
 import com.github.wnameless.json.base.GsonJsonCore;
-import com.github.wnameless.json.base.JacksonJsonCore;
 
 import java.util.function.Consumer;
 
 
-class FlattenFuzzer {
+public class FlattenFuzzer {
     static PrintMode [] printModes = {PrintMode.PRETTY, PrintMode.MINIMAL};
     static FlattenMode [] flattenModes = {FlattenMode.NORMAL, FlattenMode.MONGODB, FlattenMode.KEEP_ARRAYS, FlattenMode.KEEP_PRIMITIVE_ARRAYS};
     static StringEscapePolicy [] stringEscapePolicies = {StringEscapePolicy.DEFAULT, StringEscapePolicy.ALL, StringEscapePolicy.ALL_BUT_SLASH, StringEscapePolicy.ALL_BUT_UNICODE, StringEscapePolicy.ALL_BUT_SLASH_AND_UNICODE};
-    static JsonCore [] jsonCores = {new GsonJsonCore(), new JacksonJsonCore()};
+    static JsonCore [] jsonCores = {new GsonJsonCore()};
 
-    @FuzzTest
-    void myFuzzTest(FuzzedDataProvider data) {
+    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
 
         try {
             JsonFlattenerFactory jsonFlattenerFactory = jsonFlattenerFactory(data.pickValue(printModes), data.pickValue(flattenModes), data.pickValue(stringEscapePolicies), data.pickValue(jsonCores));
