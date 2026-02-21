@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://www.graphicsmagick.org/"
 main_repo: "https://foss.heptapod.net/graphicsmagick/graphicsmagick"
 language: c++
@@ -8,7 +9,6 @@ auto_ccs:
     - paul.l.kehrer@gmail.com
 sanitizers:
     - address
-    - memory
     - undefined
 architectures:
     - x86_64
