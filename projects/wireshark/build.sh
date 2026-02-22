@@ -53,6 +53,15 @@ CMAKE_DEFINES="$CMAKE_DEFINES -DBUILD_wireshark=OFF -DBUILD_stratoshark=OFF -DBU
 
 cd "$WIRESHARK_BUILD_PATH"
 
+# Workaround: ensure errno is defined when building UI sources in some
+# configurations (fixes missing errno/ERANGE build errors under sanitized
+# builds). Insert include if not already present.
+if [ -f "$SRC/wireshark/ui/ui_prefs.c" ]; then
+      if ! grep -q "#include <errno.h>" "$SRC/wireshark/ui/ui_prefs.c"; then
+            sed -i '1i#include <errno.h>' "$SRC/wireshark/ui/ui_prefs.c" || true
+      fi
+fi
+
 cmake -GNinja \
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
       -DCMAKE_C_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CFLAGS" -DCMAKE_CXX_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CXXFLAGS" \
