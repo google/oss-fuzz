@@ -173,7 +173,7 @@ public class POIFuzzer {
 	static void adjustLimits() {
 		// reduce limits so we do not get OOMs with the Xmx settings
 		// that are used for the fuzzing runs
-		RecordFactory.setMaxNumberOfRecords(100_000);
+		RecordFactory.setMaxNumberOfRecords(50_000);
 		EscherRecord.setMaxNumberOfChildren(10_000);
 	}
 }
