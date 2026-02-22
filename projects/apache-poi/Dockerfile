@@ -43,6 +43,20 @@ RUN apt-get update && apt-get install -y libxext6 libx11-6 libxrender1 libxtst6 
 && apt-get autoremove --yes \
 && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
+# Remove unused code-parts to speed up introspection
+# Need to keep some test-code which is used in the poi-integration module
+RUN cd ${SRC}/poi && rm `find \
+    jenkins \
+    osgi \
+    poi/src/test/ \
+    poi-examples/src/test \
+    poi-excelant/src/test \
+    poi-ooxml/src/test \
+    poi-scratchpad/src/test \
+    src \
+    \
+    -name *.java -a ! -name *DataSamples*.java -a ! -name Biff*.java`
+
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/
 WORKDIR ${SRC}/poi
