@@ -1,0 +1,8 @@
+homepage: "https://obsproject.com/"
+language: c
+primary_contact: "joel.bethke@gmail.com"
+sanitizers:
+- address
+- undefined
+- memory
+main_repo: 'https://github.com/obsproject/obs-studio/'
