@@ -23,8 +23,9 @@ do
     mkdir build
     # does not seem to work in source directory
     # + make.sh overwrites CFLAGS
+    # Build with unit testing
     cd build
-    cmake -DCAPSTONE_BUILD_SHARED=0 ..
+    cmake -DCAPSTONE_BUILD_SHARED=0 -DCAPSTONE_BUILD_CSTEST=ON ..
     make
 
     cd $SRC/capstone$branch/bindings/python
