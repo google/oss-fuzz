@@ -60,6 +60,7 @@ public class POIFuzzer {
 		// that we should take a look at
 
 		fuzzAny(input);
+		POIRleFuzzer.fuzzerTestOneInput(input);
 
 		POIHDGFFuzzer.fuzzerTestOneInput(input);
 
