@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool g++ libssl-dev \
-                       libssl-dev:i386
-RUN git clone --depth 1 https://w1.fi/hostap.git hostap
-WORKDIR hostap
-COPY build.sh $SRC/
+# Build the fuzz targets
+cd $SRC
+mkdir build/
+cd build/
+cmake $SRC/OpenJPH -DBUILD_SHARED_LIBS=OFF -DOJPH_BUILD_FUZZER=ON -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS"
+make -j$(nproc)
+cp fuzzing/ojph_expand_fuzz_target $OUT
+
+# Build the seed corpus
+cd $SRC
+rm -f $OUT/ojph_expand_fuzz_target_seed_corpus.zip
+zip -j $OUT/ojph_expand_fuzz_target_seed_corpus.zip jp2k_test_codestreams/openjph/*.j2c

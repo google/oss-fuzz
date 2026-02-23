@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool g++ libssl-dev \
-                       libssl-dev:i386
-RUN git clone --depth 1 https://w1.fi/hostap.git hostap
-WORKDIR hostap
-COPY build.sh $SRC/
+. $SRC/build.sh

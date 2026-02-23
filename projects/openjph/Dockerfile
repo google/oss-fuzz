@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool g++ libssl-dev \
-                       libssl-dev:i386
-RUN git clone --depth 1 https://w1.fi/hostap.git hostap
-WORKDIR hostap
-COPY build.sh $SRC/
+
+# install dependencies
+RUN apt-get update && apt-get install -y cmake libtiff-dev zip
+
+# clone the library
+RUN git clone https://github.com/aous72/OpenJPH.git
+
+# clone the seed corpus
+RUN git clone --depth 1 https://github.com/aous72/jp2k_test_codestreams.git
+
+# import the build script
+COPY build.sh .
+
