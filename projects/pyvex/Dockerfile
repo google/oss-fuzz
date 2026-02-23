@@ -16,13 +16,18 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN apt-get update && \
-        DEBIAN_FRONTEND=noninteractive apt-get install -y python3.9 python3.9-dev && \
-        ln --force -s /usr/bin/python3.9 /usr/local/bin/python3 && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common && \
+        add-apt-repository ppa:deadsnakes/ppa && \
+        apt-get update && \
+        DEBIAN_FRONTEND=noninteractive apt-get install -y python3.10 python3.10-dev python3-distutils && \
+        ln --force -s /usr/bin/python3.10 /usr/local/bin/python3 && \
         apt-get install -y python3-pip && \
+        curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10 && \
+        python3 -m pip install --upgrade setuptools && \
         python3 -m pip install cython "atheris>=2.1.1" "pyinstaller>=5.0.1" "coverage>=6.3.2" && \
         rm -rf /var/lib/apt/lists/*
 RUN python3 -m pip install --upgrade pip
-RUN rm -rf /usr/local/bin/python3 && ln -s /usr/bin/python3.9 /usr/local/bin/python3
+RUN rm -rf /usr/local/bin/python3 && ln -s /usr/bin/python3.10 /usr/local/bin/python3
 RUN git clone --recursive https://github.com/angr/archinfo.git archinfo
 RUN git clone --recursive https://github.com/angr/pyvex.git pyvex
 #RUN git clone --recursive https://github.com/capuanob/pyvex.git pyvex
