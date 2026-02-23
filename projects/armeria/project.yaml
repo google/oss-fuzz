@@ -1,0 +1,15 @@
+homepage: "https://armeria.dev/"
+language: jvm
+primary_contact: "dl_developer-experience@linecorp.com"
+main_repo: "https://github.com/line/armeria.git"
+auto_ccs:
+  - "guins_j@guins.org"
+  - "ih.pert@gmail.com"
+  - "songmw725@gmail.com"
+  - "t@motd.kr"
+  - "seonghyeoncho96@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+file_github_issue: true
