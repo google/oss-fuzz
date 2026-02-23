@@ -23,6 +23,7 @@ RUN git clone --depth 1 https://github.com/wolfSSL/wolfssh.git
 RUN git clone --depth 1 https://github.com/JacobBarthelmeh/fuzzing-headers.git
 RUN git clone --depth 1 https://github.com/JacobBarthelmeh/wolf-ssl-ssh-fuzzers
 RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
+RUN sed -i 's/kNegativeIntegers = false/kNegativeIntegers = true/g' $SRC/cryptofuzz/config.h
 RUN git clone --depth 1 https://github.com/google/wycheproof.git
 RUN wget https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.bz2
 RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
