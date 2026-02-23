@@ -82,11 +82,11 @@ def run_experiment(project_name, command, output_path, experiment_name):
           ]
       },
       {
-          'name': 'gcr.io/cloud-builders/gsutil',
+          'name': 'gcr.io/cloud-builders/gcloud',
           'args': [
-              '-m',
+              'storage',
               'cp',
-              '-r',
+              '--recursive',
               '/workspace/out/*',
               output_path,
           ]
