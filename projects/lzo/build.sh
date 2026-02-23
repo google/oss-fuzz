@@ -16,7 +16,6 @@
 ################################################################################
 
 # build project
-cd $SRC
 tar xzf lzo.tar.gz
 cd lzo-*
 ./configure && make -j$(nproc)

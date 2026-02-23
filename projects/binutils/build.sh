@@ -20,7 +20,6 @@ if [ "$SANITIZER" = undefined ]; then
     export CFLAGS="$CFLAGS -fno-sanitize=unsigned-integer-overflow"
     export CXXFLAGS="$CXXFLAGS -fno-sanitize=unsigned-integer-overflow"
 fi
-cd binutils-gdb
 
 # Comment out the lines of logging to stderror from elfcomm.c
 # This is to make it nicer to read the output of libfuzzer.
@@ -173,10 +172,10 @@ fi
 
 # Copy seeds out
 for fuzzname in readelf_pef readelf_elf32_csky readelf_elf64_mmix readelf_elf32_littlearm readelf_elf32_bigarm objdump objdump_safe nm objcopy bfd windres addr2line dwarf; do
-  cp $SRC/binary-samples/oss-fuzz-binutils/general_seeds.zip $OUT/fuzz_${fuzzname}_seed_corpus.zip
+  cp $SRC/binutils-gdb/binary-samples/oss-fuzz-binutils/general_seeds.zip $OUT/fuzz_${fuzzname}_seed_corpus.zip
 done
 # Seed targeted the pef file format
-cp $SRC/binary-samples/oss-fuzz-binutils/fuzz_bfd_ext_seed_corpus.zip $OUT/fuzz_bfd_ext_seed_corpus.zip
+cp $SRC/binutils-gdb/binary-samples/oss-fuzz-binutils/fuzz_bfd_ext_seed_corpus.zip $OUT/fuzz_bfd_ext_seed_corpus.zip
 
 # Copy options files
 for ft in readelf readelf_pef readelf_elf32_csky readelf_elf64_mmix readelf_elf32_littlearm readelf_elf32_bigarm objcopy objdump dlltool disas_ext-bfd_arch_csky nm as windres objdump_safe ranlib_simulation addr2line dwarf; do

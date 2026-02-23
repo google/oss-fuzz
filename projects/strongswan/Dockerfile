@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y automake autoconf libtool pkg-config ge
 RUN git clone --depth 1 --no-single-branch https://github.com/strongswan/strongswan.git strongswan
 RUN git clone --depth 1 https://github.com/strongswan/fuzzing-corpora.git strongswan/fuzzing-corpora
 WORKDIR strongswan
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

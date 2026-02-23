@@ -1,4 +1,6 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +16,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN \
-  apt-get update && \
-  apt-get install -y libtool libusb-1.0-0-dev pkg-config libglib2.0-dev && \
-  apt-get clean
-
-# Ubuntu 16.04 ships Meson 0.29 which doesn't support the "feature" option type.
-#
-# https://mesonbuild.com/Build-options.html#features
-RUN python3 -m pip install --no-user --no-cache meson ninja
-
-RUN git clone --depth 1 https://gitlab.freedesktop.org/spice/usbredir.git $SRC/spice-usbredir
-
-WORKDIR $SRC/spice-usbredir
-COPY run_tests.sh build.sh $SRC/
+export ASAN_OPTIONS="detect_leaks=0"
+make check -j$(nproc) -C $SRC/binutils-gdb
