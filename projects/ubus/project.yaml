@@ -1,0 +1,17 @@
+homepage: "https://openwrt.org/docs/techref/ubus"
+language: c
+primary_contact: "mail@aparcar.org" # during testing, TBD
+main_repo: "https://github.com/openwrt/ubus.git"
+sanitizers:
+  - address
+  - undefined
+  - memory
+architectures:
+  - x86_64
+  - i386
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+vendor_ccs:
+  - "contact@openwrt.org"
