@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libmaxminddb-dev \
         libkrb5-dev \
         zlib1g-dev \
+        libzmq3-dev \
   && rm -rf /var/lib/apt/lists/*
 
 RUN git clone --depth 1 --recursive https://github.com/zeek/zeek zeek
