@@ -24,4 +24,4 @@ RUN corpus-replicator -o decode_corpus audio_vorbis_ogg_libvorbis.yml audio
 RUN mkdir people.xiph.org/
 RUN touch people.xiph.org/dummy.ogg
 WORKDIR vorbis
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

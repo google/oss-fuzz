@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make
 
 RUN git clone --depth 1 -b develop https://github.com/zlib-ng/zlib-ng.git
 WORKDIR zlib-ng
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
