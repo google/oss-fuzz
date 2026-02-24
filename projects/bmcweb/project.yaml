@@ -1,0 +1,10 @@
+homepage: "https://github.com/openbmc/bmcweb"
+language: c++
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/openbmc/bmcweb.git'
+vendor_ccs:
+- david@adalogics.com
