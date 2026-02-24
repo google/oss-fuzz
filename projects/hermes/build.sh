@@ -21,6 +21,15 @@ mv $SRC/hermes_seed_corpus.zip $OUT
 # Copy dictionary file
 mv $SRC/hermes.dict $OUT
 
+if [ "${SANITIZER}" = undefined ]
+then
+    # Hermes disables RTTI (-fno-rtti) so the vptr sanitizer is incompatible.
+    # Add -DHERMES_UBSAN for correct behavior in hermes code (avoids known UB
+    # patterns that would otherwise be flagged by the sanitizer).
+    export CFLAGS="$CFLAGS -fno-sanitize=vptr -DHERMES_UBSAN"
+    export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr -DHERMES_UBSAN"
+fi
+
 # build ICU for linking statically.
 cd $SRC/icu/source
 ./configure --disable-shared --enable-static --disable-layoutex \
@@ -36,17 +45,7 @@ ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicudata.a
 ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicuuc.a
 ln -s $PWD/libicu.a /usr/lib/x86_64-linux-gnu/libicui18n.a
 
-if [ "${SANITIZER}" = address ]
-then
-    CONFIGURE_FLAGS="-DHERMES_ENABLE_ADDRESS_SANITIZER=ON"
-elif [ "${SANITIZER}" = undefined ]
-then
-    CONFIGURE_FLAGS="-DHERMES_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER=ON"
-else
-    CONFIGURE_FLAGS=""
-fi
-
-cmake -S "${SRC}/hermes" -B "${OUT}/build" ${CONFIGURE_FLAGS} -DCMAKE_BUILD_TYPE=Release \
+cmake -S "${SRC}/hermes" -B "${OUT}/build" -DCMAKE_BUILD_TYPE=Release \
                  -DHERMES_USE_STATIC_ICU=ON \
                  -DBUILD_SHARED_LIBS=OFF -DHERMES_BUILD_SHARED_JSI=OFF \
                  -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON
