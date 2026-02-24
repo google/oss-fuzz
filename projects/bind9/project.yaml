@@ -16,4 +16,4 @@ main_repo: 'https://gitlab.isc.org/isc-projects/bind9.git'
 
 fuzzing_engines:
   - libfuzzer
-
+base_os_version: ubuntu-24-04

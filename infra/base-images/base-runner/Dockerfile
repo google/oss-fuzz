@@ -117,6 +117,7 @@ COPY --from=base-ruby /usr/local/bin/gem /usr/local/bin/gem
 COPY --from=base-ruby /usr/local/lib/ruby /usr/local/lib/ruby
 COPY --from=base-ruby /usr/local/include/ruby-3.3.0 /usr/local/include/ruby-3.3.0
 
+RUN apt-get update && apt-get install -y luarocks
 
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \

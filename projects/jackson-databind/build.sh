@@ -15,41 +15,34 @@
 #
 ################################################################################
 
-cd $SRC/javaparser
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout)
-$MVN package -DskipTests
-cp javaparser-core/target/javaparser-core-$CURRENT_VERSION.jar $OUT/javaparser-core.jar
-cp javaparser-symbol-solver-core/target/javaparser-symbol-solver-core-$CURRENT_VERSION.jar $OUT/javaparser-symbol-solver.jar
 cd $SRC/jackson-databind
 
 # Move seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
 mv $SRC/github-samples/jackson/*.zip $OUT/
-zip $OUT/ObjectReaderRandomClassFuzzer_seed_corpus.zip $SRC/javaparser/javaparser-core/src/main/java/com/github/javaparser/Processor.java
 
-# jackson-databind
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
-$MVN package $MAVEN_ARGS
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout)
-cp "target/jackson-databind-$CURRENT_VERSION.jar" "$OUT/jackson-databind.jar"
-
-# jackson-core
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
-$MVN package $MAVEN_ARGS -f "jackson-core/pom.xml"
-CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
- -Dexpression=project.version -q -DforceStdout -f "jackson-core/pom.xml")
-cp "jackson-core/target/jackson-core-$CURRENT_VERSION.jar" "$OUT/jackson-core.jar"
-
-# jackson-annnotations
-MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
+# jackson-annotations (must be built first - no dependencies)
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
 $MVN package $MAVEN_ARGS -f "jackson-annotations/pom.xml"
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout -f "jackson-annotations/pom.xml")
 cp "jackson-annotations/target/jackson-annotations-$CURRENT_VERSION.jar" "$OUT/jackson-annotations.jar"
 
-ALL_JARS="jackson-databind.jar jackson-core.jar jackson-annotations.jar javaparser-symbol-solver.jar javaparser-core.jar"
+# jackson-core (depends on jackson-annotations)
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
+$MVN package $MAVEN_ARGS -f "jackson-core/pom.xml"
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout -f "jackson-core/pom.xml")
+cp "jackson-core/target/jackson-core-$CURRENT_VERSION.jar" "$OUT/jackson-core.jar"
+
+# jackson-databind (depends on both jackson-core and jackson-annotations)
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests"
+$MVN package $MAVEN_ARGS
+CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+ -Dexpression=project.version -q -DforceStdout)
+cp "target/jackson-databind-$CURRENT_VERSION.jar" "$OUT/jackson-databind.jar"
+
+ALL_JARS="jackson-databind.jar jackson-core.jar jackson-annotations.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -63,9 +56,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   javac -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
 
-  if [ "$fuzzer_basename" != "ObjectReaderRandomClassFuzzer" ]; then
-    cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/
-  fi
+  cp $SRC/$fuzzer_basename\$DummyClass.class $OUT/ 2>/dev/null || true
   if [ "$fuzzer_basename" == "AdaLObjectReader3Fuzzer" ]; then
     cp $SRC/$fuzzer_basename\$NoCheckSubTypeValidator.class $OUT/
     cp $SRC/$fuzzer_basename\$MockFuzzDataInput.class $OUT/
@@ -82,7 +73,7 @@ else
 fi
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
---instrumentation_excludes=com.fasterxml.jackson.core.** \
+--instrumentation_excludes=tools.jackson.core.** \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \
 --jvm_args=\"\$mem_settings\" \

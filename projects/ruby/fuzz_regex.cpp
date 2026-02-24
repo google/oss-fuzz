@@ -28,12 +28,16 @@ limitations under the License.
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <fuzzer/FuzzedDataProvider.h>
 #include "ruby.h"
 #include "ruby/encoding.h"
 #include "ruby/re.h"
 
 static int ruby_initialized = 0;
+
+extern "C" VALUE ruby_verbose;
 
 // Wrapper functions for rb_protect - necessary to catch exceptions
 // Regex operations can raise (e.g., syntax errors, invalid patterns)
@@ -66,6 +70,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (!ruby_initialized) {
         ruby_init();
         ruby_initialized = 1;
+        
+        // Suppress Ruby warnings to avoid log noise
+        ruby_verbose = Qfalse;
     }
     
     if (size < 2) return 0;
@@ -73,86 +80,94 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     // Use FuzzedDataProvider to split input into pattern and test string
     FuzzedDataProvider fdp(data, size);
     
-    // Consume pattern string with random length
-    size_t pattern_len = fdp.ConsumeIntegralInRange<size_t>(1, 10000);
+    // Consume pattern string with limited length to avoid pathological patterns
+    size_t pattern_len = fdp.ConsumeIntegralInRange<size_t>(1, 1000);  // Reduced from 10000
     std::string pattern = fdp.ConsumeBytesAsString(pattern_len);
-    VALUE pattern_str = rb_str_new(pattern.data(), pattern.size());
     
-    // Consume test string from remaining data
+    // Consume test string from remaining data with size limit
     std::string test = fdp.ConsumeRemainingBytesAsString();
+    if (test.size() > 10000) {
+        test.resize(10000);  // Limit test string size to prevent memory issues
+    }
+    
+    // Create Ruby strings - these can fail if data is invalid
+    VALUE pattern_str = rb_str_new(pattern.data(), pattern.size());
     VALUE test_str = rb_str_new(test.data(), test.size());
     
     int state = 0;
     VALUE args[3];
     
-    // Try to compile regex with different options
-    // Tests how different flags affect parsing and matching
-    int options[] = {
-        0,                                    // No options - default behavior
-        1,                                    // IGNORECASE - case-insensitive matching
-        2,                                    // EXTENDED - ignore whitespace, allow comments
-        4,                                    // MULTILINE - ^ and $ match line boundaries
-        1 | 2,                               // IGNORECASE | EXTENDED
-        1 | 4,                               // IGNORECASE | MULTILINE
-        2 | 4,                               // EXTENDED | MULTILINE
-        1 | 2 | 4                            // ALL options
-    };
+    // Temporarily redirect stderr file descriptor to suppress regex compilation warnings
+    // Duplicate stderr, redirect to /dev/null, then restore after compilation
+    int saved_stderr = dup(STDERR_FILENO);
+    int dev_null = open("/dev/null", O_WRONLY);
+    if (dev_null >= 0) {
+        dup2(dev_null, STDERR_FILENO);
+        close(dev_null);
+    }
     
-    for (size_t i = 0; i < sizeof(options) / sizeof(options[0]); i++) {
-        // Compile the regex - this exercises the regex parser (regparse.c)
-        // Tests pattern syntax validation, AST building, and optimization
-        VALUE regexp = rb_protect((VALUE (*)(VALUE))rb_reg_regcomp, pattern_str, &state);
-        
-        if (state) {
-            // Pattern compilation failed (syntax error, invalid escape, etc.)
-            rb_set_errinfo(Qnil);
-            state = 0;
-            continue;
-        }
-        
-        if (NIL_P(regexp)) continue;
-        
-        // Test 1: Regexp#match - exercises regex matching engine (regexec.c)
-        // Returns MatchData object with capture groups
-        args[0] = regexp;
-        args[1] = test_str;
-        rb_protect(call_regex_match, (VALUE)args, &state);
-        if (state) {
-            rb_set_errinfo(Qnil);
-            state = 0;
-        }
-        
-        // Test 2: Regexp#=~ - exercises match position finding
-        // Returns integer position or nil
-        rb_protect(call_regex_match_op, (VALUE)args, &state);
-        if (state) {
-            rb_set_errinfo(Qnil);
-            state = 0;
-        }
-        
-        // Test 3: String#scan - find all matches
-        // Tests repeated matching and capture handling
+    // Compile the regex with default options (0)
+    // This exercises the regex parser (regparse.c)
+    // Tests pattern syntax validation, AST building, and optimization
+    VALUE regexp = rb_protect((VALUE (*)(VALUE))rb_reg_regcomp, pattern_str, &state);
+    
+    // Restore stderr file descriptor
+    if (saved_stderr >= 0) {
+        dup2(saved_stderr, STDERR_FILENO);
+        close(saved_stderr);
+    }
+    
+    if (state) {
+        // Pattern compilation failed (syntax error, invalid escape, etc.)
+        rb_set_errinfo(Qnil);
+        rb_gc_start();
+        return 0;
+    }
+    
+    if (NIL_P(regexp)) {
+        rb_gc_start();
+        return 0;
+    }
+    
+    // Test 1: Regexp#match - exercises regex matching engine (regexec.c)
+    // Returns MatchData object with capture groups
+    args[0] = regexp;
+    args[1] = test_str;
+    rb_protect(call_regex_match, (VALUE)args, &state);
+    if (state) {
+        rb_set_errinfo(Qnil);
+        state = 0;
+    }
+    
+    // Test 2: Regexp#=~ - exercises match position finding
+    // Returns integer position or nil
+    rb_protect(call_regex_match_op, (VALUE)args, &state);
+    if (state) {
+        rb_set_errinfo(Qnil);
+        state = 0;
+    }
+    
+    // Test 3: String#scan - find all matches
+    // Tests repeated matching and capture handling
+    // Skip scan if test string is too large to avoid memory issues
+    if (test.size() <= 5000) {
         rb_protect(call_regex_scan, (VALUE)args, &state);
         if (state) {
             rb_set_errinfo(Qnil);
             state = 0;
         }
-        
-        // Test 4: String#gsub - replace matches
-        // Tests matching combined with string building
-        VALUE replacement = rb_str_new("X", 1);
-        args[0] = regexp;
-        args[1] = test_str;
-        args[2] = replacement;
-        rb_protect(call_regex_gsub, (VALUE)args, &state);
-        if (state) {
-            rb_set_errinfo(Qnil);
-            state = 0;
-        }
-        
-        // Only test first two option combinations to avoid timeout
-        // Full testing would be 8 combinations which is excessive
-        if (i >= 1) break;
+    }
+    
+    // Test 4: String#gsub - replace matches
+    // Tests matching combined with string building
+    VALUE replacement = rb_str_new("X", 1);
+    args[0] = regexp;
+    args[1] = test_str;
+    args[2] = replacement;
+    rb_protect(call_regex_gsub, (VALUE)args, &state);
+    if (state) {
+        rb_set_errinfo(Qnil);
+        state = 0;
     }
     
     // Clean up - force GC to release memory

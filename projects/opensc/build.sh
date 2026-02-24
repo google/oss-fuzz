@@ -16,9 +16,6 @@
 ################################################################################
 
 # Build OpenPACE
-if [ -d "openpace" ]; then
-    rm -rf "openpace"
-fi
 git clone https://github.com/frankmorgner/openpace.git
 pushd openpace
 autoreconf --verbose --install

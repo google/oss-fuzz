@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-clang:ubuntu-24-04
 
-COPY install_deps_ubuntu-24-04.sh install_swift_ubuntu_24_04.sh /
+COPY install_deps_ubuntu-24-04.sh install_swift_ubuntu-24-04.sh /
 RUN /install_deps_ubuntu-24-04.sh
 
 # Build and install latest Python 3.11.
@@ -180,7 +180,7 @@ COPY bazel_build_fuzz_tests \
     install_python.sh \
     install_ruby.sh \
     install_rust.sh \
-    install_swift_ubuntu_24_04.sh \
+    install_swift_ubuntu-24-04.sh \
     make_build_replayable.py \
     python_coverage_helper.py \
     replay_build.sh \
@@ -197,7 +197,7 @@ ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc2
 RUN chmod +x /usr/local/bin/clang-jcc /usr/local/bin/clang++-jcc /usr/local/bin/clang-jcc2 /usr/local/bin/clang++-jcc2
 
 COPY indexer /opt/indexer
-COPY --from=gcr.io/oss-fuzz-base/indexer /indexer/build/indexer /opt/indexer/indexer
+COPY --from=gcr.io/oss-fuzz-base/indexer:ubuntu-24-04 /indexer/build/indexer /opt/indexer/indexer
 RUN chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
 
 COPY llvmsymbol.diff $SRC

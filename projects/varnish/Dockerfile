@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt install -y automake autoconf libtool pkg-config python3-docutils python3-sphinx libedit-dev libpcre2-dev libncurses-dev
-RUN git clone --depth 1 --recursive https://github.com/varnishcache/varnish-cache
-COPY build.sh $SRC
-WORKDIR $SRC/varnish-cache
+RUN git clone --recursive https://code.vinyl-cache.org/vinyl-cache/vinyl-cache
+COPY run_tests.sh build.sh $SRC/
+WORKDIR $SRC/vinyl-cache

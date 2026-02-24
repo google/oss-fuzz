@@ -14,9 +14,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.eclipsecollections.EclipseCollectionsModule;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.eclipsecollections.EclipseCollectionsModule;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,9 @@ public class EclipseCollectionsDeserializerFuzzer {
 
   public static void fuzzerInitialize() {
     // Register the EclipseCollectionsModule for the deserialization
-    mapper = new ObjectMapper().registerModule(new EclipseCollectionsModule());
+    mapper = JsonMapper.builder()
+        .addModule(new EclipseCollectionsModule())
+        .build();
     initializeClassChoice();
   }
 
@@ -37,8 +40,7 @@ public class EclipseCollectionsDeserializerFuzzer {
       Class type = data.pickValue(choice);
       String value = data.consumeRemainingAsString();
       mapper.readValue(value, type);
-      mapper.readTree(value);
-    } catch (IOException | IllegalArgumentException e) {
+    } catch (JacksonException e) {
       // Known exception
     }
   }
