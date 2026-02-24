@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-####################################################################################################################################
+################################################################################
 
 FUZZERS=(
   dcmtk_dicom_fuzzer
@@ -22,7 +22,16 @@ FUZZERS=(
 
 # Build DCMTK (static) with iconv enabled so liboficonv is present.
 cd "$SRC"
-cmake -S dcmtk -B dcmtk-build   -DBUILD_SHARED_LIBS=OFF   -DDCMTK_WITH_OPENSSL=OFF   -DDCMTK_WITH_PNG=OFF   -DDCMTK_WITH_TIFF=OFF   -DDCMTK_WITH_XML=OFF   -DDCMTK_WITH_ICONV=ON   -DDCMTK_WITH_ZLIB=ON   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_INSTALL_PREFIX="$WORK/dcmtk-install"
+cmake -S dcmtk -B dcmtk-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DDCMTK_WITH_OPENSSL=OFF \
+  -DDCMTK_WITH_PNG=OFF \
+  -DDCMTK_WITH_TIFF=OFF \
+  -DDCMTK_WITH_XML=OFF \
+  -DDCMTK_WITH_ICONV=ON \
+  -DDCMTK_WITH_ZLIB=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX="$WORK/dcmtk-install"
 cmake --build dcmtk-build -j"$(nproc)"
 cmake --install dcmtk-build
 
@@ -41,14 +50,8 @@ export PKG_CONFIG_PATH="$DCMTK_LIBDIR/pkgconfig:${PKG_CONFIG_PATH:-}"
 RAW_LIBS="$(pkg-config --static --libs dcmtk 2>/dev/null || true)"
 FILTERED_LIBS=""
 for tok in $RAW_LIBS; do
-  if [[ "$tok" == -l* ]]; then
-    lib="${tok#-l}"
-    if [ -f "$DCMTK_LIBDIR/lib${lib}.a" ] || [ -f "$DCMTK_LIBDIR/lib${lib}.so" ]; then
-      FILTERED_LIBS+=" $tok"
-    fi
-  else
-    FILTERED_LIBS+=" $tok"
-  fi
+  # Keep every token: -L paths, -l libs (both DCMTK and system ones like -lz)
+  FILTERED_LIBS+=" $tok"
 done
 [ -z "$FILTERED_LIBS" ] && FILTERED_LIBS="-ldcmdata -loflog -lofstd -loficonv -lz"
 DCMTK_LIBS="-Wl,--start-group ${FILTERED_LIBS} -Wl,--end-group -lpthread -ldl"
@@ -56,7 +59,9 @@ DCMTK_LIBS="-Wl,--start-group ${FILTERED_LIBS} -Wl,--end-group -lpthread -ldl"
 build_one() {
   local src="$1"
   local out="$2"
-  "$CXX" $CXXFLAGS -std=c++17 -I"$DCMTK_INC"     "$src" -o "$OUT/$out"     $LIB_FUZZING_ENGINE -L"$DCMTK_LIBDIR" ${DCMTK_LIBS}
+  "$CXX" $CXXFLAGS -std=c++17 -I"$DCMTK_INC" \
+    "$src" -o "$OUT/$out" \
+    $LIB_FUZZING_ENGINE -L"$DCMTK_LIBDIR" ${DCMTK_LIBS}
 }
 
 for fz in "${FUZZERS[@]}"; do
