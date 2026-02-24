@@ -16,4 +16,6 @@
 ################################################################################
 
 cd $SRC/qemu/
+# Fix hard link creation failure when target file already exists
+sed -i 's/^        ln  /        ln -f /' $SRC/qemu/scripts/oss-fuzz/build.sh
 $SRC/qemu/scripts/oss-fuzz/build.sh
