@@ -46,7 +46,8 @@ else
     CONFIGURE_FLAGS=""
 fi
 
-cmake -S "${SRC}/hermes" -B "${OUT}/build" ${CONFIGURE_FLAGS} -DHERMES_USE_STATIC_ICU=ON \
+cmake -S "${SRC}/hermes" -B "${OUT}/build" ${CONFIGURE_FLAGS} -DCMAKE_BUILD_TYPE=Release \
+                 -DHERMES_USE_STATIC_ICU=ON \
                  -DBUILD_SHARED_LIBS=OFF -DHERMES_BUILD_SHARED_JSI=OFF \
                  -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON
 cmake --build "$OUT/build" --target fuzzer-jsi-entry -j 4

@@ -36,7 +36,7 @@ RUN wget https://github.com/unicode-org/icu/archive/refs/tags/cldr/2021-08-25.ta
     tar xzvf ./2021-08-25.tar.gz && \
     mv ./icu-cldr-2021-08-25/icu4c $SRC/icu
 
-RUN git clone https://github.com/facebook/hermes.git && \
+RUN git clone -b main https://github.com/facebook/hermes.git && \
     git clone --depth 1 https://github.com/tc39/test262 && \
     git clone --depth 1 https://github.com/Zon8Research/v8-vulnerabilities && \
     git clone --depth 1 https://github.com/v8/v8

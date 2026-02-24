@@ -49,18 +49,29 @@ if __name__ == "__main__":
 
     hermes_skiplist_path = Path("./hermes/utils/testsuite/testsuite_skiplist.py")
     if not hermes_skiplist_path.is_file():
-        for file in os.listdir("./hermes"):
-            if fnmatch.fnmatch(file, "testsuite_skiplist.py"):
-                hermes_skiplist_path = Path(file)
-                break
+        # Search recursively for the file in the hermes directory
+        for root, dirs, files in os.walk("./hermes"):
+            for file in files:
+                if file == "testsuite_skiplist.py":
+                    hermes_skiplist_path = Path(os.path.join(root, file))
+                    break
 
-    shutil.copy(hermes_skiplist_path, "./testsuite_skiplist.py")
-    from testsuite_skiplist import (
-        SKIP_LIST,
-        PERMANENT_SKIP_LIST,
-        UNSUPPORTED_FEATURES,
-        PERMANENT_UNSUPPORTED_FEATURES,
-    )
+    if hermes_skiplist_path.is_file():
+        shutil.copy(hermes_skiplist_path, "./testsuite_skiplist.py")
+        from testsuite_skiplist import (
+            SKIP_LIST,
+            PERMANENT_SKIP_LIST,
+            UNSUPPORTED_FEATURES,
+            PERMANENT_UNSUPPORTED_FEATURES,
+        )
+    else:
+        # The hermes repo may have restructured its skip list (e.g. static_h branch).
+        # Use empty defaults so corpus preprocessing can still proceed.
+        print("Warning: testsuite_skiplist.py not found, using empty skip lists")
+        SKIP_LIST = []
+        PERMANENT_SKIP_LIST = []
+        UNSUPPORTED_FEATURES = set()
+        PERMANENT_UNSUPPORTED_FEATURES = set()
 
     # Exclude tests in mjsunit using v8 runtime functions
     for test in mjsunit_tests.copy():
