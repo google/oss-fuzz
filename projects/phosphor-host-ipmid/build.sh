@@ -23,23 +23,33 @@ git apply --ignore-space-change --ignore-whitespace $SRC/fuzz-patch.diff
 # Disable transport/serialbridge build (needs systemd pkg-config we don't have)
 sed -i "s|subdir('transport/serialbridge')|# subdir('transport/serialbridge')|" meson.build
 
-# Copy fuzzer source files into the test directory
-cp $SRC/fuzz_*.cpp test/
+# Copy fuzzer source files and logging stub into the test directory
+cp $SRC/fuzz_*.cpp $SRC/lg2_stub.cpp test/
 
 # Append fuzz target definitions to test/meson.build
 cat >> test/meson.build << 'MESON_EOF'
 
+# Header-only versions of deps for fuzz targets.
+# Using partial_dependency() strips link libraries so we do NOT link against
+# phosphor-dbus-interfaces (whose static constructors crash at startup with
+# std::bad_array_new_length due to static-init-order fiasco under libc++).
+# lg2_stub.cpp provides a no-op lg2::details::do_log() to satisfy the linker.
+phosphor_logging_headers = phosphor_logging_dep.partial_dependency(
+    compile_args: true, includes: true)
+sdbusplus_headers = sdbusplus_dep.partial_dependency(
+    compile_args: true, includes: true)
+
 # Fuzz targets
 executable(
     'fuzz_payload_unpack',
-    'fuzz_payload_unpack.cpp',
+    ['fuzz_payload_unpack.cpp', 'lg2_stub.cpp'],
     include_directories: root_inc,
     implicit_include_directories: false,
     dependencies: [
         boost,
         crypto,
-        phosphor_logging_dep,
-        sdbusplus_dep,
+        phosphor_logging_headers,
+        sdbusplus_headers,
         libsystemd_dep,
     ],
     link_args: get_option('fuzz_engine').split(),
@@ -48,20 +58,22 @@ executable(
 
 executable(
     'fuzz_fru_area',
-    ['fuzz_fru_area.cpp', '../ipmi_fru_info_area.cpp'],
+    ['fuzz_fru_area.cpp', '../ipmi_fru_info_area.cpp', 'lg2_stub.cpp'],
     include_directories: root_inc,
     implicit_include_directories: false,
-    dependencies: [phosphor_logging_dep],
+    dependencies: [phosphor_logging_headers],
     link_args: get_option('fuzz_engine').split(),
     install: true,
 )
 
+# Compile sensorutils.cpp directly (instead of using sensorutils_dep which
+# transitively links phosphor-dbus-interfaces via phosphor_logging_dep).
 executable(
     'fuzz_sensor_utils',
-    'fuzz_sensor_utils.cpp',
+    ['fuzz_sensor_utils.cpp', '../dbus-sdr/sensorutils.cpp', 'lg2_stub.cpp'],
     include_directories: root_inc,
     implicit_include_directories: false,
-    dependencies: [sensorutils_dep, phosphor_logging_dep],
+    dependencies: [phosphor_logging_headers],
     link_args: get_option('fuzz_engine').split(),
     install: true,
 )
@@ -178,7 +190,7 @@ find /usr/include/boost -name hash.hpp -path '*/container_hash/*' -exec \
 # Build everything
 ninja -C build -v -j$(($(nproc) / 4))
 
-# Copy fuzzers to $OUT
+# Copy fuzzers and seed corpora to $OUT
 cp build/test/fuzz_payload_unpack $OUT/
 cp build/test/fuzz_fru_area $OUT/
 cp build/test/fuzz_sensor_utils $OUT/
