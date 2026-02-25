@@ -16,7 +16,13 @@
 // Comprehensive GIF roundtrip fuzzer targeting uncovered code paths:
 // - Decode-encode roundtrip via DGifSlurp + EGifSpew + GifMakeSavedImage
 // - Low-level decode API (DGifGetLine, DGifGetPixel, DGifGetCode)
+// - LZ code piping (DGifGetCode -> EGifPutCode/EGifPutCodeNext)
+// - Direct LZ code decoding (DGifGetLZCodes)
 // - Encode with extensions (EGifPutComment, EGifPutExtension*, EGifPutPixel)
+// - Long multi-block comments (>255 bytes) and plaintext extensions
+// - Interlaced encode + re-decode via DGifSlurp interlace path
+// - Local-only colormap encoding (no global colormap)
+// - Extension block manipulation (GifAddExtensionBlock, GifFreeExtensions)
 // - Utility functions (GifUnionColorMap, GifBitSize, GifApplyTranslation)
 // - Drawing functions (GifDrawBox, GifDrawRectangle, GifDrawBoxedText8x8)
 // - GCB roundtrip (DGifExtensionToGCB, EGifGCBToExtension, EGifGCBToSavedExtension)
@@ -103,6 +109,19 @@ static void roundtrip_high_level(const uint8_t *data, size_t size)
 			}
 			GifFreeMapObject(merged);
 		}
+	}
+
+	// Exercise GifAddExtensionBlock + GifFreeExtensions directly
+	if (GifIn->ImageCount > 0) {
+		SavedImage *img0 = &GifIn->SavedImages[0];
+		unsigned char extBytes[4] = {0x01, 0x02, 0x03, 0x04};
+		GifAddExtensionBlock(&img0->ExtensionBlockCount,
+		                     &img0->ExtensionBlocks,
+		                     APPLICATION_EXT_FUNC_CODE, 4, extBytes);
+		// Add a second block to exercise reallocarray path
+		GifAddExtensionBlock(&img0->ExtensionBlockCount,
+		                     &img0->ExtensionBlocks,
+		                     COMMENT_EXT_FUNC_CODE, 3, extBytes);
 	}
 
 	// GCB roundtrip: decode extension to GCB, serialize, write back
@@ -327,7 +346,15 @@ static void enhanced_encode(const uint8_t *data, size_t size)
 		return;
 	}
 
-	EGifPutComment(GifFile, "fuzz test");
+	// Long comment (>255 bytes) exercises multi-block path in EGifPutComment
+	char longComment[310];
+	memset(longComment, 'A', 300);
+	longComment[300] = '\0';
+	EGifPutComment(GifFile, longComment);
+
+	// Plaintext extension (PLAINTEXT_EXT_FUNC_CODE = 0x01)
+	unsigned char ptData[15] = {0};
+	EGifPutExtension(GifFile, PLAINTEXT_EXT_FUNC_CODE, 15, ptData);
 
 	// Multi-block extension via leader/block/trailer
 	EGifPutExtensionLeader(GifFile, APPLICATION_EXT_FUNC_CODE);
@@ -374,10 +401,211 @@ static void enhanced_encode(const uint8_t *data, size_t size)
 		}
 	}
 
+	// Second image: interlaced, exercises EGifPutImageDesc interlace path
+	if (EGifPutImageDesc(GifFile, 0, 0, w, h, true, NULL) == GIF_OK) {
+		for (int y = 0; y < h; y++) {
+			for (int x = 0; x < w; x++) {
+				size_t idx = (size_t)(10 + (h + y) * w + x);
+				line[x] = (idx < size) ? data[idx] % colorCount : 0;
+			}
+			if (EGifPutLine(GifFile, line, w) == GIF_ERROR)
+				break;
+		}
+	}
+
 	free(line);
 	GifFreeMapObject(cmap);
 	EGifCloseFile(GifFile, &Error);
+
+	// Re-decode our output to exercise DGifSlurp interlaced path
+	if (writer.len > 6) {
+		struct MemReader rdr = {writer.data, writer.len, 0};
+		GifFileType *GifRe = DGifOpen(&rdr, mem_read, &Error);
+		if (GifRe) {
+			DGifSlurp(GifRe);
+			DGifCloseFile(GifRe, &Error);
+		}
+	}
+
 	free(writer.data);
+}
+
+// Local-only colormap encode (no global colormap).
+// Covers: EGifPutScreenDesc NULL colormap (egif_lib.c:305-309),
+//         EGifPutImageDesc local colormap (egif_lib.c:399-417)
+static void local_colormap_encode(const uint8_t *data, size_t size)
+{
+	if (size < 10) return;
+
+	int Error;
+	struct MemWriter writer = {NULL, 0, 0};
+	writer.data = (uint8_t *)malloc(4096);
+	if (!writer.data) return;
+	writer.cap = 4096;
+
+	GifFileType *GifFile = EGifOpen(&writer, mem_write, &Error);
+	if (!GifFile) {
+		free(writer.data);
+		return;
+	}
+
+	int w = (data[0] % 16) + 4;
+	int h = (data[1] % 16) + 4;
+
+	// No global colormap (NULL) - exercises egif_lib.c:305-309
+	if (EGifPutScreenDesc(GifFile, w, h, 4, 0, NULL) == GIF_ERROR) {
+		EGifCloseFile(GifFile, &Error);
+		free(writer.data);
+		return;
+	}
+
+	// Local colormap on image instead
+	ColorMapObject *localMap = GifMakeMapObject(4, NULL);
+	if (!localMap) {
+		EGifCloseFile(GifFile, &Error);
+		free(writer.data);
+		return;
+	}
+	for (int i = 0; i < 4; i++) {
+		localMap->Colors[i].Red = (i < (int)size) ? data[i] : 0;
+		localMap->Colors[i].Green = (i + 4 < (int)size) ? data[i + 4] : 0;
+		localMap->Colors[i].Blue = (i + 8 < (int)size) ? data[i + 8] : 0;
+	}
+
+	// EGifPutImageDesc with local colormap - exercises egif_lib.c:399-417
+	if (EGifPutImageDesc(GifFile, 0, 0, w, h, false, localMap) == GIF_OK) {
+		GifPixelType *line = (GifPixelType *)calloc(w, 1);
+		if (line) {
+			for (int y = 0; y < h; y++) {
+				if (EGifPutLine(GifFile, line, w) == GIF_ERROR)
+					break;
+			}
+			free(line);
+		}
+	}
+
+	GifFreeMapObject(localMap);
+	EGifCloseFile(GifFile, &Error);
+	free(writer.data);
+}
+
+// Decode raw LZ codes and pipe them to encoder via EGifPutCode/EGifPutCodeNext.
+// Covers: EGifPutCode (egif_lib.c:717-736), EGifPutCodeNext (744-765)
+static void lz_code_pipe(const uint8_t *data, size_t size)
+{
+	int Error;
+	struct MemReader reader = {data, size, 0};
+
+	GifFileType *GifIn = DGifOpen(&reader, mem_read, &Error);
+	if (!GifIn) return;
+
+	GifRecordType RecordType;
+	if (DGifGetRecordType(GifIn, &RecordType) == GIF_ERROR ||
+	    RecordType != IMAGE_DESC_RECORD_TYPE) {
+		DGifCloseFile(GifIn, &Error);
+		return;
+	}
+	if (DGifGetImageDesc(GifIn) == GIF_ERROR) {
+		DGifCloseFile(GifIn, &Error);
+		return;
+	}
+
+	int w = GifIn->Image.Width;
+	int h = GifIn->Image.Height;
+	if (w <= 0 || h <= 0 || w > 2048 || h > 2048) {
+		DGifCloseFile(GifIn, &Error);
+		return;
+	}
+
+	// Get first code block
+	int CodeSize;
+	GifByteType *CodeBlock;
+	if (DGifGetCode(GifIn, &CodeSize, &CodeBlock) == GIF_ERROR) {
+		DGifCloseFile(GifIn, &Error);
+		return;
+	}
+
+	// Set up encoder to pipe codes into
+	struct MemWriter writer = {NULL, 0, 0};
+	writer.data = (uint8_t *)malloc(4096);
+	if (!writer.data) {
+		DGifCloseFile(GifIn, &Error);
+		return;
+	}
+	writer.cap = 4096;
+
+	GifFileType *GifOut = EGifOpen(&writer, mem_write, &Error);
+	if (!GifOut) {
+		free(writer.data);
+		DGifCloseFile(GifIn, &Error);
+		return;
+	}
+
+	ColorMapObject *cmap = GifMakeMapObject(4, NULL);
+	if (!cmap) {
+		EGifCloseFile(GifOut, &Error);
+		free(writer.data);
+		DGifCloseFile(GifIn, &Error);
+		return;
+	}
+
+	bool ok = true;
+	if (EGifPutScreenDesc(GifOut, w, h, 4, 0, cmap) == GIF_ERROR)
+		ok = false;
+	if (ok && EGifPutImageDesc(GifOut, 0, 0, w, h, false, NULL) == GIF_ERROR)
+		ok = false;
+
+	if (ok && CodeBlock != NULL) {
+		if (EGifPutCode(GifOut, CodeSize, CodeBlock) == GIF_OK) {
+			int blocks = 0;
+			while (blocks < 4096) {
+				if (DGifGetCodeNext(GifIn, &CodeBlock) == GIF_ERROR)
+					break;
+				if (EGifPutCodeNext(GifOut, CodeBlock) == GIF_ERROR)
+					break;
+				if (CodeBlock == NULL) break;
+				blocks++;
+			}
+		}
+	}
+
+	GifFreeMapObject(cmap);
+	EGifCloseFile(GifOut, &Error);
+	free(writer.data);
+	DGifCloseFile(GifIn, &Error);
+}
+
+// Decode LZ codes directly via DGifGetLZCodes.
+// Covers: DGifGetLZCodes (dgif_lib.c:1027-1059) - completely uncovered
+static void lz_codes_decode(const uint8_t *data, size_t size)
+{
+	int Error;
+	struct MemReader reader = {data, size, 0};
+
+	GifFileType *GifFile = DGifOpen(&reader, mem_read, &Error);
+	if (!GifFile) return;
+
+	GifRecordType RecordType;
+	if (DGifGetRecordType(GifFile, &RecordType) == GIF_ERROR ||
+	    RecordType != IMAGE_DESC_RECORD_TYPE) {
+		DGifCloseFile(GifFile, &Error);
+		return;
+	}
+	if (DGifGetImageDesc(GifFile) == GIF_ERROR) {
+		DGifCloseFile(GifFile, &Error);
+		return;
+	}
+
+	int Code;
+	int count = 0;
+	while (count < 65536) {
+		if (DGifGetLZCodes(GifFile, &Code) == GIF_ERROR)
+			break;
+		if (Code == -1) break; // EOF
+		count++;
+	}
+
+	DGifCloseFile(GifFile, &Error);
 }
 
 static void exercise_error_strings(void)
@@ -398,6 +626,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 	roundtrip_high_level(Data, Size);
 	lowlevel_decode(Data, Size);
 	enhanced_encode(Data, Size);
+	local_colormap_encode(Data, Size);
+	lz_code_pipe(Data, Size);
+	lz_codes_decode(Data, Size);
 	exercise_error_strings();
 
 	return 0;
