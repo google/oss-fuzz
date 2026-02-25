@@ -39,6 +39,8 @@ declare -r EXTRA_BAZEL_FLAGS="$(
 # Disabling layering_check because it breaks the abseil build. See
 # https://github.com/google/oss-fuzz/blob/f0fa8b5cd3f99b5905e91b336d07a870ca1bc2e3/projects/abseil-cpp/build.sh#L17-L21.
 echo "--features=-layering_check"
+# Suppress nullability warnings from cel-cpp that became errors with newer clang
+echo "--copt=-Wno-nullability-completeness"
 if [ -n "$CC" ]; then
   echo "--action_env=CC=${CC}"
 fi
@@ -55,6 +57,12 @@ then
 elif [ "$SANITIZER" = "address" ]
 then
   echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
+  # Suppress container-overflow false positive in protobuf's JSON parser.
+  # The false positive is caused by libc++ std::vector annotations (controlled by
+  # __has_feature(address_sanitizer)) combined with C++ template ODR at link time:
+  # the linker may pick an annotated template instantiation from an instrumented TU
+  # even for code compiled with -fno-sanitize=all, making per_file_copt ineffective.
+  echo "--action_env=ASAN_OPTIONS=detect_container_overflow=0"
 fi
 )"
 
