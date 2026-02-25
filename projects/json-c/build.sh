@@ -19,7 +19,7 @@ cd json-c-build
 cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON ..
 make -j$(nproc)
 cd ..
-
+# nop
 cp $SRC/json-c/fuzz/*.dict $OUT/
 
 for f in $SRC/json-c/fuzz/*_fuzzer.cc; do
