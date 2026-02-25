@@ -27,6 +27,6 @@ export CXXFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -stdlib=libc++"
 # Deno uses --export-dynamic-symbol-list which requires lld
 export RUSTFLAGS="$RUSTFLAGS -Clink-arg=-fuse-ld=lld"
 
-cargo build --release --target x86_64-unknown-linux-gnu -j$(($(nproc) / 4))
+cargo build --release --target x86_64-unknown-linux-gnu -j$(($(nproc) / 8))
 
 cp target/x86_64-unknown-linux-gnu/release/deno $OUT/
