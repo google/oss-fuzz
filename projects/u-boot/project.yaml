@@ -1,6 +1,8 @@
 homepage: "https://u-boot.readthedocs.io/"
 language: c
-primary_contact: "adam@adalogics.com"
+primary_contact: "trini@konsulko.com"
+auto_ccs:
+  - "adam@adalogics.com"
 main_repo: "https://github.com/u-boot/u-boot"
 fuzzing_engines:
   - libfuzzer
