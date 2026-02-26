@@ -1,0 +1,9 @@
+diff --git a/meson.options b/meson.options
+--- a/meson.options
++++ b/meson.options
+@@ -282,3 +282,5 @@ option(
+     value: ['all'],
+     description: 'Build selected OEM IPMI provider libraries',
+ )
++
++option('fuzz_engine', type: 'string', value: '', description: 'Fuzzing engine flags')
