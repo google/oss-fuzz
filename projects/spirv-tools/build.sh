@@ -71,12 +71,19 @@ unset AFL_NOOPT
 
 popd
 
+function make_empty_dir() {
+  if [ -d "$@" ]; then
+    rm -rf "$@"/*
+  else
+    mkdir -p "$@"
+  fi
+}
 
 # Generate a corpus of SPIR-V binaries from the SPIR-V assembly files in the
 # SPIRV-Tools and tint repositories.
-mkdir $WORK/tint-binary-corpus
+make_empty_dir $WORK/tint-binary-corpus
 python3 $SCRIPT_DIR/generate_spirv_corpus.py dawn/test/tint $WORK/tint-binary-corpus standard-build/tools/spirv-as
-mkdir $WORK/spirv-binary-corpus-hashed-names
+make_empty_dir $WORK/spirv-binary-corpus-hashed-names
 tint_test_cases=`ls $WORK/tint-binary-corpus/*.spv`
 spirv_tools_test_cases=`find test/fuzzers/corpora -name "*.spv"`
 for f in $tint_test_cases $spirv_tools_test_cases
@@ -93,7 +100,7 @@ do
 done
 
 # Generate a corpus of SPIR-V assembly files from the tint repository.
-mkdir $WORK/spirv-assembly-corpus-hashed-names
+make_empty_dir $WORK/spirv-assembly-corpus-hashed-names
 for f in `find dawn/test/tint -name "*.spvasm"`
 do
   hashed_name=$(sha1sum "$f" | awk '{print $1}')
