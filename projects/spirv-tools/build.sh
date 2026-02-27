@@ -17,11 +17,14 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )"
 
-git clone https://github.com/KhronosGroup/SPIRV-Headers external/spirv-headers --depth=1
-git clone https://github.com/protocolbuffers/protobuf   external/protobuf      --branch v3.13.0.1
-git clone https://dawn.googlesource.com/dawn --depth=1
+[ -d external/abseil_cpp ] || git clone https://github.com/abseil/abseil-cpp external/abseil_cpp --depth=1
+[ -d external/re2 ] || git clone https://github.com/google/re2 external/re2 --depth=1
+[ -d external/effcee ] || git clone https://github.com/google/effcee external/effcee --depth=1
+[ -d external/googletest ] || git clone https://github.com/google/googletest external/googletest --depth=1
+[ -d external/spirv-headers ] || git clone https://github.com/KhronosGroup/SPIRV-Headers external/spirv-headers --depth=1
+[ -d external/protobuf ] || git clone https://github.com/protocolbuffers/protobuf   external/protobuf      --branch v3.13.0.1
 
-mkdir build
+[ -d build ] || mkdir build
 pushd build
 
 CMAKE_ARGS="-DSPIRV_BUILD_LIBFUZZER_TARGETS=ON -DSPIRV_LIB_FUZZING_ENGINE_LINK_OPTIONS=$LIB_FUZZING_ENGINE"
@@ -50,9 +53,14 @@ done
 
 popd
 
+if [ -f do-not-build-corpus ]; then
+  echo "Stopping before building fuzzing corpus: File $(pwd)/do-not-build-corpus exists"
+  exit 0
+fi
+
 # An un-instrumented build of spirv-as is used to generate a corpus of SPIR-V binaries.
-mkdir standard-build
-pushd standard-build
+[ -d out/standard-build ] || mkdir -p out/standard-build
+pushd out/standard-build
 
 # Back-up instrumentation options
 CFLAGS_SAVE="$CFLAGS"
@@ -61,7 +69,7 @@ unset CFLAGS
 unset CXXFLAGS
 export AFL_NOOPT=1
 
-cmake -G Ninja .. ${CMAKE_ARGS}
+cmake -G Ninja ../.. ${CMAKE_ARGS}
 ninja spirv-as
 
 # Restore instrumentation options
@@ -74,6 +82,7 @@ popd
 function make_empty_dir() {
   if [ -d "$@" ]; then
     rm -rf "$@"/*
+    rm -rf "$@"/.*
   else
     mkdir -p "$@"
   fi
@@ -81,8 +90,11 @@ function make_empty_dir() {
 
 # Generate a corpus of SPIR-V binaries from the SPIR-V assembly files in the
 # SPIRV-Tools and tint repositories.
+make_empty_dir dawn
+git clone https://dawn.googlesource.com/dawn --depth=1
+
 make_empty_dir $WORK/tint-binary-corpus
-python3 $SCRIPT_DIR/generate_spirv_corpus.py dawn/test/tint $WORK/tint-binary-corpus standard-build/tools/spirv-as
+python3 $SCRIPT_DIR/generate_spirv_corpus.py dawn/test/tint $WORK/tint-binary-corpus out/standard-build/tools/spirv-as
 make_empty_dir $WORK/spirv-binary-corpus-hashed-names
 tint_test_cases=`ls $WORK/tint-binary-corpus/*.spv`
 spirv_tools_test_cases=`find test/fuzzers/corpora -name "*.spv"`
