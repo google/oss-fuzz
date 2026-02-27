@@ -105,6 +105,7 @@ then
 # External dependencies. Disable all instrumentation.
   echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*abseil-cpp.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_github_grpc_grpc.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*boringssl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_googlesource_code_re2.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
@@ -113,6 +114,7 @@ then
   echo " --per_file_copt=^.*com_github_jbeder_yaml_cpp.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*proxy_wasm_cpp_host/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_github_google_libprotobuf_mutator/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*libprotobuf-mutator/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_googlesource_googleurl/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_lightstep_tracer_cpp/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
 
@@ -120,7 +122,7 @@ then
 # coverage instrumentation.
   echo " --per_file_copt=^.*com_google_cel_cpp.*\.cpp\$@-fsanitize-coverage=0"
   echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0"
-  echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0"
+  echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
 
 # All protobuf code and code in bazel-out
   echo " --per_file_copt=^.*\.pb\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
