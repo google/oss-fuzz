@@ -1,10 +1,10 @@
 homepage: "https://github.com/coturn/coturn"
 language: c
-primary_contact: "misi@majd.eu"
+base_os_version: ubuntu-24-04
+primary_contact: "eakraly@gmail.com"
 auto_ccs:
-  - "mom040267@gmail.com"
+  - "eakraly@gmail.com"
   - "gustavogb@gmail.com"
-  - "ajsinghyadav00@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl

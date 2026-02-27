@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-##########################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip \
-      -o maven.zip && \
-      unzip maven.zip -d $SRC/maven && \
-      rm maven.zip
-ENV MVN $SRC/maven/apache-maven-3.9.9/bin/mvn
-RUN git clone --depth 1 https://github.com/fasseg/exp4j exp4j
-COPY *.sh *.java $SRC/
-WORKDIR $SRC/exp4j
+################################################################################
+
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN pip3 install jsonschema jinja2
+RUN git clone --depth 1 https://github.com/u-boot/u-boot.git $SRC/u-boot
+WORKDIR $SRC/u-boot
+COPY build.sh $SRC/

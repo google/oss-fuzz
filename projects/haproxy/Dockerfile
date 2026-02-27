@@ -16,7 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make libpcre2-dev zlib1g-dev
 RUN git clone https://github.com/haproxy/haproxy
-RUN git clone https://github.com/vtest/VTest2 --depth=1
+RUN git clone https://code.vinyl-cache.org/vtest/VTest2
 
 WORKDIR $SRC/haproxy
 

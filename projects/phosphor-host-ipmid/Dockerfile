@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool g++ libssl-dev \
-                       libssl-dev:i386
-RUN git clone --depth 1 https://w1.fi/hostap.git hostap
-WORKDIR hostap
-COPY build.sh $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+
+RUN apt-get update && apt-get install --reinstall -y \
+    ninja-build meson cmake pkg-config \
+    libsystemd-dev libpam0g-dev libboost-all-dev libssl-dev \
+    python3-pip && \
+    pip3 install inflection pyyaml mako jsonschema --break-system-packages
+RUN git clone https://github.com/openbmc/phosphor-host-ipmid $SRC/phosphor-host-ipmid
+COPY *.cpp *.sh *.diff $SRC/
+WORKDIR $SRC/phosphor-host-ipmid
