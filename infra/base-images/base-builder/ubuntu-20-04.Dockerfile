@@ -125,7 +125,7 @@ WORKDIR $SRC
 COPY afl_llvm22_patch.diff $SRC/
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout eadc8a2a7e0fa0338802ee6254bf296489ce4fd7 && \
+    git checkout 474ff18ba2a7999a518a4d194fcd5a1f87c3625d && \
     wget --no-check-certificate -O oss.sh https://raw.githubusercontent.com/vanhauser-thc/binary_blobs/master/oss.sh && \
     git apply $SRC/afl_llvm22_patch.diff && \
     rm -rf .git && \
