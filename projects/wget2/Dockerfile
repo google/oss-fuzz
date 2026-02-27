@@ -46,6 +46,13 @@ RUN cd /usr/src && \
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var && \
     make install
 
+RUN cd /usr/src && \
+    curl -ogettext-0.22.5.tar.gz https://ftp.gnu.org/gnu/gettext/gettext-0.22.5.tar.gz && \
+    tar xf gettext-0.22.5.tar.gz && \
+    cd gettext-0.22.5 && \
+    ./configure --prefix=/usr && \
+    make -j$(nproc) install
+
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 ENV GNULIB_SRCDIR $SRC/gnulib
 RUN git clone https://git.savannah.gnu.org/git/gnulib.git gnulib
