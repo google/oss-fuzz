@@ -833,6 +833,8 @@ def run_clusterfuzzlite(args):
           '-v',
           f'{workspace}:{workspace}',
           '-e',
+          'DOCKER_IN_DOCKER=true',
+          '-e',
           f'FILESTORE_ROOT_DIR={filestore_path}',
           '-e',
           f'WORKSPACE={workspace}',
