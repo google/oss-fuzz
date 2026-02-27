@@ -832,6 +832,8 @@ def run_clusterfuzzlite(args):
           f'{filestore_path}:{filestore_path}',
           '-v',
           f'{workspace}:{workspace}',
+          '-v',
+          f'{OSS_FUZZ_DIR}:/opt/oss-fuzz',
           '-e',
           'DOCKER_IN_DOCKER=true',
           '-e',
