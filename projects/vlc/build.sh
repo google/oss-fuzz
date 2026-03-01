@@ -29,10 +29,24 @@ mkdir contrib/contrib-build
 cd contrib/contrib-build
 ../bootstrap
 
+# Disable X11/xlib in FFmpeg to avoid runtime dependency on libX11
+sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape' ../src/ffmpeg/rules.mak
+
 make V=1 -j$(nproc) \
     .matroska \
     .ogg \
-    .libxml2
+    .libxml2 \
+    .flac \
+    .opus \
+    .vorbis \
+    .speex \
+    .speexdsp \
+    .theora \
+    .dav1d \
+    .vpx \
+    .mpg123 \
+    .dvbpsi \
+    .ffmpeg
 
 cd ../../
 
@@ -52,6 +66,10 @@ sed -i 's/-lstdc++ //g' ./configure.ac
 sed -i 's/-lstdc++/$(NULL)/g' ./test/Makefile.am
 
 sed -i 's/..\/..\/lib\/libvlc_internal.h/lib\/libvlc_internal.h/g' ./test/src/input/decoder.c
+
+# Add extra codec, packetizer, and demux modules for broader fuzzing coverage.
+# See fuzzing-modules.patch for the actual changes.
+patch -p1 < $SRC/fuzzing-modules.patch
 
 # clang is used to link the binary since there are no cpp sources (but we have
 # cpp modules), force clang++ usage
@@ -84,13 +102,12 @@ sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
             --disable-shared \
             --enable-static \
             --enable-vlc=no \
-            --disable-avcodec \
-            --disable-swscale \
-            --disable-a52 \
             --disable-xcb \
             --disable-alsa \
+            --disable-libva \
             --with-libfuzzer
 make V=1 -j$(nproc)
+
 cp ./test/vlc-demux-dec-libfuzzer $OUT/
 
 for i in fuzz-corpus/seeds/* fuzz-corpus/dictionaries/*.dict
