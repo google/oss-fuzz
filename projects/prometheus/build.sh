@@ -14,10 +14,30 @@
 # limitations under the License.
 #
 ################################################################################
-# Wrong naming in this fuzzer breaks the coverage build
-rm promql/fuzz_test.go
 
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseMetric fuzzParseMetric
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseOpenMetric fuzzParseOpenMetric
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseMetricSelector fuzzParseMetricSelector
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseExpr fuzzParseExpr
+# go-118-fuzz-build_v2 overlays $GOROOT/src/testing/fuzz.go. When Go
+# downloads a newer toolchain to satisfy a go.work/go.mod requirement,
+# GOROOT falls under GOMODCACHE whose files Go refuses to overlay. To
+# work around this, copy the downloaded toolchain to a writable temp
+# dir, prepend it to PATH, and pin GOTOOLCHAIN=local so the copied
+# go binary (which IS the required version) is used directly.
+goroot=$(go env GOROOT)
+gomodcache=$(go env GOMODCACHE)
+if [[ "$goroot" == "$gomodcache"* ]]; then
+  tmp_go=$(mktemp -d)
+  cp -r "$goroot/." "$tmp_go"
+  export GOROOT="$tmp_go"
+  export PATH="$tmp_go/bin:$PATH"
+  export GOTOOLCHAIN=local
+fi
+
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseMetricText fuzzParseMetricText
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseOpenMetric fuzzParseOpenMetric
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseMetricSelector fuzzParseMetricSelector
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseExpr fuzzParseExpr
+
+/root/.go/bin/go generate -tags fuzzing ./util/fuzzing/corpus_gen
+mv util/fuzzing/fuzzParseExpr_seed_corpus.zip $OUT/
+mv util/fuzzing/fuzzParseMetricSelector_seed_corpus.zip $OUT/
+mv util/fuzzing/fuzzParseMetricText_seed_corpus.zip $OUT/
+mv util/fuzzing/fuzzParseOpenMetric_seed_corpus.zip $OUT/
