@@ -17,14 +17,18 @@
 
 # go-118-fuzz-build_v2 overlays $GOROOT/src/testing/fuzz.go. When Go
 # downloads a newer toolchain to satisfy a go.work/go.mod requirement,
-# GOROOT falls under GOMODCACHE, whose files cannot be overlaid. Copy
-# GOROOT to a writable temp dir so the overlay succeeds.
+# GOROOT falls under GOMODCACHE whose files Go refuses to overlay. To
+# work around this, copy the downloaded toolchain to a writable temp
+# dir, prepend it to PATH, and pin GOTOOLCHAIN=local so the copied
+# go binary (which IS the required version) is used directly.
 goroot=$(go env GOROOT)
 gomodcache=$(go env GOMODCACHE)
 if [[ "$goroot" == "$gomodcache"* ]]; then
-  tmp_goroot=$(mktemp -d)
-  cp -r "$goroot/." "$tmp_goroot"
-  export GOROOT="$tmp_goroot"
+  tmp_go=$(mktemp -d)
+  cp -r "$goroot/." "$tmp_go"
+  export GOROOT="$tmp_go"
+  export PATH="$tmp_go/bin:$PATH"
+  export GOTOOLCHAIN=local
 fi
 
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseMetricText fuzzParseMetricText
