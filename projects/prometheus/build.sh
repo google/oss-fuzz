@@ -15,9 +15,17 @@
 #
 ################################################################################
 
-# Prevent Go from downloading a newer toolchain into GOMODCACHE, which
-# go-118-fuzz-build_v2 cannot overlay (GOMODCACHE files are read-only).
-export GOTOOLCHAIN=local
+# go-118-fuzz-build_v2 overlays $GOROOT/src/testing/fuzz.go. When Go
+# downloads a newer toolchain to satisfy a go.work/go.mod requirement,
+# GOROOT falls under GOMODCACHE, whose files cannot be overlaid. Copy
+# GOROOT to a writable temp dir so the overlay succeeds.
+goroot=$(go env GOROOT)
+gomodcache=$(go env GOMODCACHE)
+if [[ "$goroot" == "$gomodcache"* ]]; then
+  tmp_goroot=$(mktemp -d)
+  cp -r "$goroot/." "$tmp_goroot"
+  export GOROOT="$tmp_goroot"
+fi
 
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseMetricText fuzzParseMetricText
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseOpenMetric fuzzParseOpenMetric
