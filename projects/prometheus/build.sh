@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Prevent Go from downloading a newer toolchain into GOMODCACHE, which
+# go-118-fuzz-build_v2 cannot overlay (GOMODCACHE files are read-only).
+export GOTOOLCHAIN=local
+
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseMetricText fuzzParseMetricText
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseOpenMetric fuzzParseOpenMetric
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseMetricSelector fuzzParseMetricSelector
