@@ -23,17 +23,25 @@ tags="-tags gofuzz"
 # Get absolute path.
 abs_file_dir=$(go list $tags -f {{.Dir}} $path)
 
-# TODO(adamkorcz): Get rid of "-r" flag here.
-export fuzzer_filename=$(grep -r -l --include='*.go' -s "$function" "${abs_file_dir}")
+# Find the file containing the fuzzer function definition.
+# Search for the actual function signature with testing.F to avoid false matches
+# in files that only reference the function name (e.g., in comments or helper functions).
+export fuzzer_filename=$(grep -r -l --include='*.go' "func ${function}(.*testing\.F" "${abs_file_dir}")
 
 # Import build_native_go_fuzzer
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/go_utils.sh"
 
-# Test if file contains a line with "func $function" and "testing.F".
-if [ $(grep -r "func $function" $fuzzer_filename | grep "testing.F" | wc -l) -eq 1 ]
+# Verify we found exactly one file with the fuzzer function.
+file_count=$(echo "$fuzzer_filename" | wc -w)
+if [ "$file_count" -eq 1 ] && [ -n "$fuzzer_filename" ] && [ -f "$fuzzer_filename" ]
 then
   build_native_go_fuzzer $fuzzer $function $abs_file_dir $path
+elif [ "$file_count" -gt 1 ]
+then
+  echo "Error: Found multiple files with func ${function}(f *testing.F):"
+  echo "$fuzzer_filename"
+  exit 1
 else
   echo "Could not find the function: func ${function}(f *testing.F)"
 fi
