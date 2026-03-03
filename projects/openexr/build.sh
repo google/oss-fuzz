@@ -26,12 +26,10 @@
 
 set -x
 
-BUILD_DIR=$WORK/_build.oss-fuzz
+export BUILD_DIR=$WORK/_build.oss-fuzz
 
-cmake -S $SRC/openexr -B $BUILD_DIR --preset oss_fuzz
-cmake --build $BUILD_DIR --target oss_fuzz -j"$(nproc)"
-cmake --install $BUILD_DIR --component oss_fuzz
+./src/test/oss-fuzz/oss-fuzz_build.sh
 
 # Build tests to support replay_tests.sh
 cd $BUILD_DIR
-make OpenEXRTest OpenEXRCoreTest IexTest OpenEXRUtilTest -j$(nproc)
+cmake --build $BUILD_DIR --target OpenEXRTest OpenEXRCoreTest IexTest OpenEXRUtilTest -j$(nproc)
