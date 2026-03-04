@@ -22,8 +22,7 @@ import subprocess
 import constants
 
 OSS_FUZZ_DIR = os.environ.get(
-    'OSS_FUZZ_DIR',
-    os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
+    'OSS_FUZZ_DIR', os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
 BASE_RUNNER_IMAGE = 'gcr.io/oss-fuzz-base/base-runner'
