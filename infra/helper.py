@@ -1624,8 +1624,8 @@ def index(args):
     run_args.extend(args.docker_arg)
 
   if args.dev:
-    indexer_dir = os.path.join(os.path.dirname(__file__),
-                               'base-images', 'base-builder', 'indexer')
+    indexer_dir = os.path.join(os.path.dirname(__file__), 'base-images',
+                               'base-builder', 'indexer')
     indexer_binary_path = os.path.join(indexer_dir, 'indexer')
     if not os.path.exists(indexer_binary_path):
       print('Indexer binary does not exist, pulling prebuilt.')
