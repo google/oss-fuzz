@@ -20,3 +20,9 @@ cd dovecot
 make -j$(nproc)
 # Copy over the fuzzers
 find . -name "fuzz-*" -executable -exec cp {} $OUT/ \;
+cd ../pigeonhole
+./autogen.sh
+./configure --with-dovecot=../dovecot --with-fuzzer=clang
+make -j$(nproc)
+# Copy over the fuzzers
+find . -name "fuzz-*" -executable -exec cp {} $OUT/ \;
