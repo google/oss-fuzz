@@ -27,5 +27,5 @@ the one above, the
 
 ### Requesting a review
 PRs should be reviewed within a few days by the OSS-Fuzz oncall. There is no need to add anyone to review your code.
-If for some reason this does not happen for a few days, feel free to add @jonathanmetzman or email oss-fuzz-team@google.com
+If for some reason this does not happen for a few days, feel free to add a team member or email oss-fuzz-team@google.com
 about your PR.

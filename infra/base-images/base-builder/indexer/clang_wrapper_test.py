@@ -144,6 +144,38 @@ class ClangWrapperTest(unittest.TestCase):
         ],
     )
 
+  def test_merge_incremental_cdb_duplicate_outputs(self):
+    """Tests that incremental cdb is merged correctly with duplicate outputs."""
+    cdb_path = pathlib.Path(self.create_tempdir().full_path)
+    merged_cdb_path = pathlib.Path(self.create_tempdir().full_path)
+
+    fragment1 = {
+        "directory": "/build",
+        "file": "test.c",
+        "output": "test.o",
+    }
+    (merged_cdb_path / "1.json").write_text(json.dumps(fragment1) + ",\n")
+
+    fragment2 = {
+        "directory": "/build",
+        "file": "test.c",
+        "output": "test.o",
+    }
+    (cdb_path / "2.json").write_text(json.dumps(fragment2) + ",\n")
+    (cdb_path / "3.json").write_text(json.dumps(fragment2) + ",\n")
+
+    clang_wrapper.merge_incremental_cdb(cdb_path, merged_cdb_path)
+
+    self.assertCountEqual(
+        merged_cdb_path.iterdir(),
+        [
+            merged_cdb_path / ".lock",
+            merged_cdb_path / "2.json",
+            merged_cdb_path / "3.json",
+        ],
+    )
+    self.assertFalse((merged_cdb_path / "1.json").exists())
+
 
 if __name__ == "__main__":
   unittest.main()

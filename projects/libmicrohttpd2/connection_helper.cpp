@@ -17,16 +17,15 @@
 #include <cstring>
 #include <unordered_set>
 
-extern "C" {
-  #include "mhd_action.h"
-  #include "http_post_enc.h"
-  #include "mempool_funcs.h"
-  #include "daemon_funcs.h"
-  #include "post_parser_funcs.h"
-  #include "response_funcs.h"
-  #include "stream_process_request.h"
-  #include "stream_funcs.h"
-}
+#include "mhd_action.h"
+#include "http_post_enc.h"
+#include "mempool_funcs.h"
+#include "daemon_funcs.h"
+#include "post_parser_funcs.h"
+#include "response_funcs.h"
+#include "stream_process_request.h"
+#include "stream_funcs.h"
+
 
 // MHD memory pool
 struct mhd_MemoryPool *g_pool = nullptr;
@@ -175,8 +174,8 @@ void init_daemon_connection(FuzzedDataProvider& fdp,
   // Configure connection request and general settings
   c.discard_request = false;
   c.suspended = false;
-  c.connection_timeout_ms = fdp.ConsumeIntegralInRange<uint32_t>(0, 4096);
-  c.last_activity = 0;
+  c.timeout.milsec = fdp.ConsumeIntegralInRange<uint32_t>(0, 4096);
+  c.timeout.last_act = 0;
 
   // Add dummy callback function
   d.req_cfg.cb = dummy_request_cb;
@@ -365,7 +364,7 @@ void prepare_headers_and_parse(MHD_Connection& connection, size_t size) {
     struct MHD_String value;
     value.len  = vlen;
     value.cstr = vbuf;
-    mhd_stream_add_field(&connection, MHD_VK_HEADER, &name, &value);
+    mhd_stream_add_field(&connection.h1_stream, MHD_VK_HEADER, &name, &value);
   };
   add_hdr("Host", "fuzz");
   if ((size & 3u) == 0u) {

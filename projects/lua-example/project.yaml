@@ -1,0 +1,8 @@
+homepage: https://github.com/ligurio/luzer
+language: c
+main_repo: https://github.com/ligurio/luzer
+fuzzing_engines:
+  # luzer is libFuzzer-based, other engines are not supported.
+  - libfuzzer
+vendor_ccs:
+  - estetus@gmail.com

@@ -2,6 +2,7 @@ auto_ccs:
 - jammamarkus@gmail.com
 - guidovranken@gmail.com
 - info+django+security@markusholtermann.eu
+- jacobtylerwalls@gmail.com
 fuzzing_engines:
 - libfuzzer
 homepage: https://www.djangoproject.com/

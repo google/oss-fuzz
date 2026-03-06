@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake
+RUN apt-get update && apt-get install -y make cmake libcmocka-dev
 RUN git clone --depth 1 https://github.com/PJK/libcbor
 WORKDIR libcbor
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

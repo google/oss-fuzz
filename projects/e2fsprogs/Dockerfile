@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages git make texinfo
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y git make texinfo
 RUN git clone --depth 1 https://github.com/tytso/e2fsprogs
 
 COPY build.sh $SRC/

@@ -7,8 +7,4 @@ sanitizers:
 - address
 vendor_ccs:
 - patrice.salathe@code-intelligence.com
-- wagner@code-intelligence.com
 - yakdan@code-intelligence.com
-- glendowne@code-intelligence.com
-- hlin@code-intelligence.com
-- bug-disclosure@code-intelligence.com

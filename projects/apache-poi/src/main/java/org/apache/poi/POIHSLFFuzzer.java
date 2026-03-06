@@ -43,7 +43,8 @@ public class POIHSLFFuzzer {
 			slides.write(NullOutputStream.INSTANCE);
 		} catch (IOException | IllegalArgumentException | RecordFormatException |
 				 IllegalStateException | HSLFException | IndexOutOfBoundsException |
-				 BufferUnderflowException | POIXMLException | NoSuchElementException e) {
+				 BufferUnderflowException | POIXMLException | NoSuchElementException |
+				NegativeArraySizeException e) {
 			// expected here
 		}
 

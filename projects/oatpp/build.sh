@@ -16,7 +16,7 @@
 ################################################################################
 
 mkdir build && cd build
-cmake -DOATPP_BUILD_TESTS=OFF ../
+cmake -DOATPP_BUILD_TESTS=ON ../
 make -j$(nproc)
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzers/oatpp/json/ObjectMapper.cpp -o $OUT/fuzz_mapper \

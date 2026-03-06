@@ -1,16 +1,15 @@
 homepage: "https://gitlab.kitware.com/cmake/cmake"
 main_repo: "https://gitlab.kitware.com/cmake/cmake"
-language: c
+language: c++
 primary_contact: "brad.king@kitware.com"
 auto_ccs:
   - "Adam@adalogics.com"
+  - "tyler.yankee@kitware.com"
 sanitizers:
   - address
   - undefined
-# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
-#  - memory
-
+  - memory
 fuzzing_engines:
-  - honggfuzz
   - libfuzzer
-
+  - afl
+  - honggfuzz

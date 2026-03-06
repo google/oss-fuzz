@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y cmake ninja-build
 RUN git clone --depth 1 https://github.com/openthread/openthread
 
 WORKDIR openthread
-COPY build.sh *.options $SRC/
+COPY run_tests.sh build.sh *.options $SRC/

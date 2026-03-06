@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-  
+
+# Build fuzzer only
 cd $SRC/flatbuffers
 mkdir build
 cd build
@@ -24,3 +25,9 @@ make
 cp ../tests/fuzzer/*.dict $OUT/
 cp *.bfbs $OUT/
 cp *_fuzzer $OUT/
+
+# Build unit test
+mkdir $SRC/flatbuffers/build-tests
+cd $SRC/flatbuffers/build-tests
+cmake -DFLATBUFFERS_BUILD_FLATC=ON -DFLATBUFFERS_BUILD_TESTS=ON ..
+make flattests -j$(nproc)

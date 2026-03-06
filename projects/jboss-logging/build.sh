@@ -22,7 +22,7 @@ MAIN_REPOSITORY=https://github.com/jboss-logging/jboss-logging
 
 function set_project_version_in_fuzz_targets_dependency {
   #PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
-  PROJECT_VERSION=3.6.2.Final-SNAPSHOT #workaround to make it consistent with pom.xml
+  PROJECT_VERSION=3.6.3.Final-SNAPSHOT #workaround to make it consistent with pom.xml
   # set dependency project version in fuzz-targets
   (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
 }

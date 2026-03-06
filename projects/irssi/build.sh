@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,11 @@ fuzz_targets=(
 if [ "$FUZZING_ENGINE" = honggfuzz ]; then
     export CC="$SRC"/"$FUZZING_ENGINE"/hfuzz_cc/hfuzz-clang
     export CXX="$SRC"/"$FUZZING_ENGINE"/hfuzz_cc/hfuzz-clang++
+    # hfuzz compilers automatically link libhfuzz, so pass empty fuzzer-lib
+    # to avoid double-linking
+    FUZZER_LIB_FLAG=""
+else
+    FUZZER_LIB_FLAG="-Dwith-fuzzer-lib=$LIB_FUZZING_ENGINE"
 fi
 
 # cleanup
@@ -35,7 +40,7 @@ mkdir -p "$BUILD"
 
 # Configure the project.
 meson "$BUILD" -Dstatic-dependency=yes -Dinstall-glib=force \
-      -Dwith-fuzzer=yes -Dwith-fuzzer-lib=$LIB_FUZZING_ENGINE \
+      -Dwith-fuzzer=yes $FUZZER_LIB_FLAG \
       -Dfuzzer-link-language=cpp \
     || ( cat "$BUILD"/meson-logs/meson-log.txt && false )
 

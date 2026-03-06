@@ -104,7 +104,9 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DLLVM_NO_DEAD_STRIP=ON \
     -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
     -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly \
-    -DCOMPILER_RT_INCLUDE_TESTS=OFF
+    -DCOMPILER_RT_INCLUDE_TESTS=OFF \
+    -DLLVM_ENABLE_PCH=OFF \
+    -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
 
 # Patch certain build rules in code coverage mode, as otherwise the process is killed.
 # Verify we can build some of the troublesome rules by building them.
@@ -125,7 +127,7 @@ for fuzzer in "${FUZZERS[@]}"; do
     if [[ "$SANITIZER" = coverage ]]; then
       ninja $fuzzer -j $(( $(nproc) / 4)) || ninja $fuzzer -j 2 || ninja $fuzzer -j 1
     else
-      ninja $fuzzer -j $(( $(nproc) / 4))
+      ninja $fuzzer -j $(( $(nproc) / 4)) || ninja $fuzzer -j 2 || ninja $fuzzer -j 1
     fi
   fi
   cp bin/$fuzzer $OUT

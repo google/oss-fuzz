@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y python3-pip
 RUN unset CFLAGS CXXFLAGS && pip3 install -U meson ninja
 RUN git clone --depth 1 https://github.com/rauc/rauc.git rauc
 WORKDIR rauc
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
