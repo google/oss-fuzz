@@ -20,7 +20,6 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 # install maven configuration, which is also used by gradles's publishToMavenLocal
 #
 ADD maven-settings.xml ${SRC}/
-RUN apt-get update
 RUN apt-get update && apt-get install -y xmlstarlet
 RUN mkdir -p ~/.m2 && \
 	xmlstarlet ed \
@@ -52,10 +51,10 @@ RUN git clone https://git.openjdk.org/jdk/ ${SRC}/jdk
 # Install jdk dependencies. Current master needs JDK 19 or newer, which isn't available
 # in ubuntu's repositories yet
 #
-RUN apt install -y autoconf file libasound2-dev libcups2-dev libfontconfig1-dev \
+RUN apt-get update && apt-get install -y autoconf file libasound2-dev libcups2-dev libfontconfig1-dev \
 		libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev
 RUN curl -o ${SRC}/jdk-25_linux-x64_bin.deb https://download.oracle.com/java/25/latest/jdk-25_linux-x64_bin.deb && \
-	apt install -y ${SRC}/jdk-25_linux-x64_bin.deb && \
+	apt-get update && apt-get install -y ${SRC}/jdk-25_linux-x64_bin.deb && \
 	ln -sf $(ls -d /usr/lib/jvm/jdk-25*) /usr/lib/jvm/jdk-25
 ENV JAVA_HOME=/usr/lib/jvm/jdk-25/
 ENV CC gcc
