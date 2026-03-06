@@ -19,5 +19,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len)
 	struct msg_parse prs;
 	memset(&prs, 0, sizeof(prs));
 	parse_packet(&pktbuf, &prs, region);
+	regional_free_all(region);
 	return 0;
 }
