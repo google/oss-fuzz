@@ -17,7 +17,7 @@
 
 if ! test -e ${OUT}/jdk.tar.xz; then
 	pushd ${SRC}/jdk
-		bash configure --build x86_64-linux-gnu
+		bash configure --build x86_64-linux-gnu --disable-warnings-as-errors
 		make images
 		pushd ${SRC}/jdk/build/linux-x86_64-server-release/images
 			tar cf ${OUT}/jdk.tar.xz jdk
