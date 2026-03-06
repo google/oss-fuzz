@@ -27,7 +27,7 @@ mv $SRC/{*.zip,*.dict} $OUT
 function set_project_version_in_fuzz_targets_dependency {
   PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
   FUZZ_TARGET_DEPENDENCIES=":jetty-http :jetty-server :jetty-util :jetty-io :jetty-runner :jetty-client .http2:http2-common .http2:http2-server"
-  
+
   for dependency in $FUZZ_TARGET_DEPENDENCIES; do
     # set dependency project version in fuzz-targets
     (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID$dependency -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
@@ -45,17 +45,19 @@ if [[ -v LOCAL_DEV ]]; then
   set_project_version_in_fuzz_targets_dependency
 
   #install
-  (cd $PROJECT && $MVN install $MAVEN_ARGS) 
+  (cd $PROJECT && $MVN install $MAVEN_ARGS)
   $MVN -pl fuzz-targets install
 
 else
   # Move seed corpus and dictionary.
   # mv $SRC/{*.zip,*.dict} $OUT
-  
+
   set_project_version_in_fuzz_targets_dependency
 
-  #install
-  (cd $PROJECT && $MVN install $MAVEN_ARGS -Dmaven.repo.local=$OUT/m2)
+  #install only the modules needed by fuzz targets
+  (cd $PROJECT && $MVN install \
+    -pl jetty-http,jetty-server,jetty-util,jetty-io,jetty-client,jetty-runner,jetty-http2/http2-common,jetty-http2/http2-server \
+    -am $MAVEN_ARGS -Dmaven.repo.local=$OUT/m2)
   $MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
 
   # build classpath
@@ -65,8 +67,16 @@ else
   # replace dirname with placeholder $this_dir that will be replaced at runtime
   RUNTIME_CLASSPATH=$(echo $RUNTIME_CLASSPATH_ABSOLUTE | sed "s|$OUT|\$this_dir|g")
 
+  # Fuzzers that make network connections need SSRF sanitizer disabled
+  SSRF_FUZZERS="HttpClientFuzzer SslConnectionFuzzer HTTP2CServerFuzzer"
+
   for fuzzer in $(find $SRC/project-parent/fuzz-targets -name '*Fuzzer.java' ! -name WebAppDefaultServletFuzzer.java); do
     fuzzer_basename=$(basename -s .java $fuzzer)
+
+    disabled_hooks=""
+    if echo "$SSRF_FUZZERS" | grep -qw "$fuzzer_basename"; then
+      disabled_hooks="--disabled_hooks=com.code_intelligence.jazzer.sanitizers.ServerSideRequestForgery"
+    fi
 
     # Create an execution wrapper for every fuzztarget
     echo "#!/bin/bash
@@ -81,6 +91,7 @@ else
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=com.example.$fuzzer_basename \
+$disabled_hooks \
 --jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
     chmod u+x $OUT/$fuzzer_basename
@@ -89,6 +100,7 @@ else
   # disable NamingContextLookup sanitizer for WebAppDefaultServletFuzzer.java
   echo "#!/bin/bash
   # LLVMFuzzerTestOneInput comment for fuzzer detection by infrastructure.
+  this_dir=\$(dirname \"\$0\")
   if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
     mem_settings='-Xmx1900m:-Xss900k'
   else
