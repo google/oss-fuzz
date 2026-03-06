@@ -16,11 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \
     rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.9.6/bin/mvn
 
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
     cp fuzzing/dictionaries/http.dict $SRC/HTTP2CServerFuzzer.dict && \
@@ -37,7 +37,7 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
 COPY project-parent $SRC/project-parent/
 
 RUN rm -rf $SRC/project-parent/jetty
-RUN git clone --depth 1 https://github.com/eclipse/jetty.project $SRC/project-parent/jetty
+RUN git clone --depth 1 --branch jetty-10.0.x https://github.com/eclipse/jetty.project $SRC/project-parent/jetty
 
 # required by jetty's asciidoctor-maven-plugin
 RUN apt-get update && apt-get -y install fontconfig
