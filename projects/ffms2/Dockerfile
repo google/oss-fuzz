@@ -18,8 +18,16 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && \
     apt-get install -y python-is-python3 build-essential \
-    autoconf automake libtool zlib1g-dev pkg-config \
-    libavformat-dev libswscale-dev
+    autoconf automake libtool zlib1g-dev pkg-config nasm
+
+RUN git clone --depth 1 --branch n7.1 https://github.com/FFmpeg/FFmpeg.git ffmpeg
+RUN cd $SRC/ffmpeg && \
+    ./configure --prefix=/usr --enable-shared --disable-static \
+        --disable-doc --disable-programs --disable-debug \
+        --cc=clang --cxx=clang++ && \
+    make -j$(nproc) && \
+    make install && \
+    ldconfig
 
 RUN git clone https://github.com/FFMS/ffms2 ffms2
 COPY build.sh $SRC/
