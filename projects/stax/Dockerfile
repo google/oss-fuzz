@@ -20,6 +20,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 # install maven configuration, which is also used by gradles's publishToMavenLocal
 #
 ADD maven-settings.xml ${SRC}/
+RUN apt-get update
 RUN apt-get update && apt-get install -y xmlstarlet
 RUN mkdir -p ~/.m2 && \
 	xmlstarlet ed \
