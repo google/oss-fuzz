@@ -53,9 +53,10 @@ RUN git clone https://git.openjdk.org/jdk/ ${SRC}/jdk
 #
 RUN apt install -y autoconf file libasound2-dev libcups2-dev libfontconfig1-dev \
 		libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev
-RUN curl -o ${SRC}/jdk-19_linux-x64_bin.deb https://download.oracle.com/java/19/latest/jdk-19_linux-x64_bin.deb && \
-	apt install -y ${SRC}/jdk-19_linux-x64_bin.deb
-ENV JAVA_HOME /usr/lib/jvm/jdk-19/
+RUN curl -o ${SRC}/jdk-25_linux-x64_bin.deb https://download.oracle.com/java/25/latest/jdk-25_linux-x64_bin.deb && \
+	apt install -y ${SRC}/jdk-25_linux-x64_bin.deb && \
+	ln -sf $(ls -d /usr/lib/jvm/jdk-25*) /usr/lib/jvm/jdk-25
+ENV JAVA_HOME=/usr/lib/jvm/jdk-25/
 ENV CC gcc
 ENV CXX g++
 #
