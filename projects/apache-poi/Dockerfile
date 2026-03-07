@@ -57,6 +57,10 @@ RUN cd ${SRC}/poi && rm `find \
     \
     -name *.java -a ! -name *DataSamples*.java -a ! -name Biff*.java`
 
+# run a small Gradle task to perform the downloading of Gradle distribution here
+# this avoids this step when using the Docker image later
+RUN cd ${SRC}/poi && chmod a+x gradlew && JAVA_HOME=$JAVA_HOME_11 ./gradlew wrapper
+
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/
 WORKDIR ${SRC}/poi
