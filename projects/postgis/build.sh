@@ -17,4 +17,5 @@
 
 # OSS-Fuzz invokes $SRC/build.sh inside the builder image.
 # Keep this file as a thin wrapper into the PostGIS-owned build script.
-bash ./fuzzers/build_oss_fuzz.sh
+cd "$SRC/postgis"
+exec bash ./fuzzers/build_oss_fuzz.sh
