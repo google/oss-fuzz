@@ -39,20 +39,14 @@ ALL_JARS=$(find $OUT -maxdepth 1 -name "*.jar" | xargs -n1 basename)
 # The runtime classpath will include all jars in $OUT and the this_dir itself for classes
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-# List of fuzzer targets
-FUZZERS=(
-  "org.apache.calcite.avatica.fuzz.AvaticaSiteFuzzer"
-  "org.apache.calcite.avatica.fuzz.JsonHandlerFuzzer"
-  "org.apache.calcite.avatica.fuzz.ProtobufHandlerFuzzer"
-  "org.apache.calcite.avatica.fuzz.TypedValueFuzzer"
-  "org.apache.calcite.avatica.fuzz.Base64Fuzzer"
-  "org.apache.calcite.avatica.fuzz.ConnectStringParserFuzzer"
-)
+# Dynamically find all fuzzer classes in the specified package
+FUZZER_CLASSES_DIR="$OUT/org/apache/calcite/avatica/fuzz"
+FUZZERS=$(find "$FUZZER_CLASSES_DIR" -maxdepth 1 -name "*Fuzzer.class" -exec basename {} .class \;)
 
 # For each fuzzer, create a wrapper script
-for target_class in "${FUZZERS[@]}"
+for fuzzer_basename in $FUZZERS
 do
-  fuzzer_basename=$(echo $target_class | awk -F. '{print $NF}')
+  target_class="org.apache.calcite.avatica.fuzz.$fuzzer_basename"
   
   echo "#!/bin/bash
   # LLVMFuzzerTestOneInput for fuzzer detection.
