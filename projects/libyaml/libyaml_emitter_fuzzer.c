@@ -247,10 +247,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       goto delete_parser;
     }
 
-    if (copy_event(&events[event_number++], &event)) {
+    if (!copy_event(&events[event_number], &event)) {
       yaml_event_delete(&event);
       goto delete_parser;
     }
+    event_number++;
 
     if (!yaml_emitter_emit(&emitter, &event)) {
       goto delete_parser;
@@ -259,6 +260,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   yaml_parser_delete(&parser);
+
+  if (!out.buf || out.size == 0)
+    goto error;
 
   done = false;
   if (!yaml_parser_initialize(&parser))
