@@ -15,31 +15,56 @@
 #
 ################################################################################
 
-MBEDTLS=$SRC/u-boot/lib/mbedtls/external/mbedtls
+cd $SRC/u-boot
 
-# Build mbedtls static libraries with fuzzing instrumentation
-make -C $MBEDTLS/library -j$(nproc)
+# 0. Patch u-boot source for OSS-Fuzz compatibility
+git apply $SRC/oss-fuzz.patch
 
-cd $WORK
+# 1. Configure: sandbox + fuzz + all fuzzer target dependencies
+make sandbox_defconfig CC="$CC" HOSTCC="$CC"
+./scripts/config --enable CONFIG_FUZZ
+./scripts/config --enable CONFIG_DM_FUZZING_ENGINE
+./scripts/config --enable CONFIG_FUZZING_ENGINE_SANDBOX
+./scripts/config --disable CONFIG_EFI_CAPSULE_AUTHENTICATE
+./scripts/config --disable CONFIG_LTO
+./scripts/config --disable CONFIG_OF_SEPARATE
+./scripts/config --enable CONFIG_OF_EMBED
+./scripts/config --set-str CONFIG_DEFAULT_DEVICE_TREE "test"
+# Decompressors
+./scripts/config --enable CONFIG_GZIP
+./scripts/config --enable CONFIG_BZIP2
+./scripts/config --enable CONFIG_LZMA
+./scripts/config --enable CONFIG_LZO
+./scripts/config --enable CONFIG_LZ4
+./scripts/config --enable CONFIG_ZSTD
+# Filesystems
+./scripts/config --enable CONFIG_FS_BTRFS
+./scripts/config --enable CONFIG_CMD_BTRFS
+make olddefconfig CC="$CC" HOSTCC="$CC"
 
-# Build each standalone mbedtls fuzzer
-for fuzzer in fuzz_pubkey fuzz_x509crt fuzz_x509crl fuzz_x509csr fuzz_pkcs7; do
-    $CC $CFLAGS -I$MBEDTLS/include \
-        -c $MBEDTLS/programs/fuzz/${fuzzer}.c -o ${fuzzer}.o
-    $CXX $CXXFLAGS ${fuzzer}.o \
-        -L$MBEDTLS/library -lmbedtls -lmbedx509 -lmbedcrypto \
-        $LIB_FUZZING_ENGINE -o $OUT/mbedtls_${fuzzer}
-    rm ${fuzzer}.o
+# 2. Build u-boot sandbox
+#    NO_PYTHON=1 skips pylibfdt (_libfdt.so) resulting in  no shared libraries.
+#    CONFIG_BINMAN= overrides the Makefile variable so binman (which
+#    needs pylibfdt) never runs.  Sandbox doesn't need binman.
+make -j$(nproc) CROSS_COMPILE="" CC="$CC" HOSTCC="$CC" NO_PYTHON=1 \
+    CONFIG_BINMAN= KCFLAGS="$CFLAGS"
+
+# 3. Install all fuzzers (same binary, different names)
+FUZZERS="
+    fuzz_efi_load_image
+    fuzz_fit_image_load
+    fuzz_image_decomp
+    fuzz_btrfs
+"
+
+for fuzzer in $FUZZERS; do
+    cp u-boot $OUT/$fuzzer
+
+    cat > $OUT/$fuzzer.options <<EOF
+[libfuzzer]
+detect_leaks=0
+[asan]
+detect_leaks=0
+EOF
 done
 
-# Build mbedtls fuzzers that need common.c
-$CC $CFLAGS -I$MBEDTLS/include \
-    -c $MBEDTLS/programs/fuzz/common.c -o common.o
-for fuzzer in fuzz_privkey; do
-    $CC $CFLAGS -I$MBEDTLS/include \
-        -c $MBEDTLS/programs/fuzz/${fuzzer}.c -o ${fuzzer}.o
-    $CXX $CXXFLAGS ${fuzzer}.o common.o \
-        -L$MBEDTLS/library -lmbedtls -lmbedx509 -lmbedcrypto \
-        $LIB_FUZZING_ENGINE -o $OUT/mbedtls_${fuzzer}
-    rm ${fuzzer}.o
-done

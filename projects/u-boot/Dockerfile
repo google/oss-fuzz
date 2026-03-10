@@ -15,7 +15,21 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y \
+    device-tree-compiler \
+    python3-pyelftools \
+    flex \
+    bison \
+    bc \
+    libssl-dev \
+    libgnutls28-dev \
+    swig
 RUN pip3 install jsonschema jinja2
 RUN git clone --depth 1 https://github.com/u-boot/u-boot.git $SRC/u-boot
+#ADD u-boot $SRC/u-boot
 WORKDIR $SRC/u-boot
+COPY efi_load_image.c $SRC/u-boot/test/fuzz/
+COPY fit_image_load.c image_decomp.c $SRC/u-boot/test/fuzz/
+COPY btrfs.c $SRC/u-boot/test/fuzz/
+COPY oss-fuzz.patch $SRC/
 COPY build.sh $SRC/
