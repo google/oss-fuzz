@@ -26,7 +26,6 @@ RUN apt-get update && apt-get install -y \
     swig
 RUN pip3 install jsonschema jinja2
 RUN git clone --depth 1 https://github.com/u-boot/u-boot.git $SRC/u-boot
-#ADD u-boot $SRC/u-boot
 WORKDIR $SRC/u-boot
 COPY efi_load_image.c $SRC/u-boot/test/fuzz/
 COPY fit_image_load.c image_decomp.c $SRC/u-boot/test/fuzz/

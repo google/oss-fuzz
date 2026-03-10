@@ -17,7 +17,7 @@
 
 cd $SRC/u-boot
 
-# 0. Patch u-boot source for OSS-Fuzz compatibility
+# 0. Patch u-boot source
 git apply $SRC/oss-fuzz.patch
 
 # 1. Configure: sandbox + fuzz + all fuzzer target dependencies
