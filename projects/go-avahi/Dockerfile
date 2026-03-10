@@ -17,7 +17,14 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
 
-RUN apt-get update && apt-get install -y libavahi-client-dev libavahi-common-dev libdbus-1-dev pkg-config
+RUN apt-get update && apt-get install -y \
+    libavahi-client-dev \
+    libavahi-common-dev \
+    libdbus-1-dev \
+    pkg-config \
+    patchelf \
+    avahi-daemon \
+    dbus
 
 RUN git clone --depth 1 https://github.com/OpenPrinting/go-avahi.git $SRC/go-avahi
 
