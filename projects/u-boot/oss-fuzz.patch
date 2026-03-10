@@ -1,3 +1,35 @@
+diff --git a/Kconfig b/Kconfig
+index ce25ea24..05614884 100644
+--- a/Kconfig
++++ b/Kconfig
+@@ -190,7 +190,6 @@ config FUZZ
+ 	bool "Enable fuzzing"
+ 	depends on CC_IS_CLANG
+ 	depends on DM_FUZZING_ENGINE
+-	select ASAN
+ 	help
+ 	  Enables the fuzzing infrastructure to generate fuzzing data and run
+           fuzz tests.
+diff --git a/arch/sandbox/config.mk b/arch/sandbox/config.mk
+index 275661a1..2f7c54b7 100644
+--- a/arch/sandbox/config.mk
++++ b/arch/sandbox/config.mk
+@@ -27,12 +27,14 @@ cmd_u-boot__ = \
+ 	$(CC) -o $@ -Wl,-T u-boot.lds $(u-boot-init) \
+ 	$(KBUILD_LDFLAGS:%=-Wl,%) \
+ 	$(SANITIZERS) \
++	$(KCFLAGS) \
+ 	$(LTO_FINAL_LDFLAGS) \
+ 	-Wl,--whole-archive \
+ 		$(u-boot-main) \
+ 		$(u-boot-keep-syms-lto) \
+ 	-Wl,--no-whole-archive \
+-	$(PLATFORM_LIBS) -Wl,-Map -Wl,u-boot.map -Wl,--gc-sections
++	$(PLATFORM_LIBS) -Wl,-Map -Wl,u-boot.map -Wl,--gc-sections \
++	-Wl,--allow-multiple-definition
+ 
+ cmd_u-boot-spl = (cd $(obj) && \
+ 	touch $(patsubst $(obj)/%,%,$(u-boot-spl-main)) && \
 diff --git a/arch/sandbox/cpu/os.c b/arch/sandbox/cpu/os.c
 index e48eb23c..00258af7 100644
 --- a/arch/sandbox/cpu/os.c

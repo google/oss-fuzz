@@ -43,11 +43,14 @@ make sandbox_defconfig CC="$CC" HOSTCC="$CC"
 make olddefconfig CC="$CC" HOSTCC="$CC"
 
 # 2. Build u-boot sandbox
-#    NO_PYTHON=1 skips pylibfdt (_libfdt.so) resulting in  no shared libraries.
-#    CONFIG_BINMAN= overrides the Makefile variable so binman (which
-#    needs pylibfdt) never runs.  Sandbox doesn't need binman.
+#    NO_PYTHON=1 skips pylibfdt (_libfdt.so) meaning no shared libraries.
+#    CONFIG_BINMAN= prevents binman (needs pylibfdt) from running.
+#    -fintegrated-as avoids clang/gas assembler incompatibility.
+#    KCFLAGS passes $CFLAGS (which the OSS-Fuzz compile script populates
+#    with sanitizer and coverage flags) through to both compilation and
+#    the link command (the patch adds $(KCFLAGS) to cmd_u-boot__).
 make -j$(nproc) CROSS_COMPILE="" CC="$CC" HOSTCC="$CC" NO_PYTHON=1 \
-    CONFIG_BINMAN= KCFLAGS="$CFLAGS"
+    CONFIG_BINMAN= KCFLAGS="$CFLAGS -fintegrated-as"
 
 # 3. Install all fuzzers (same binary, different names)
 FUZZERS="
