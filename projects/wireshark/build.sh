@@ -16,8 +16,8 @@
 ################################################################################
 
 cd $SRC
-tar -xzf $SRC/libxml2-2.9.7.tar.gz
-cd libxml2-2.9.7
+tar -xJf $SRC/libxml2-2.12.10.tar.xz
+cd libxml2-2.12.10
 ./configure --disable-shared --enable-static --disable-ipv6 --without-python --without-zlib --without-lzma
 make -j$(nproc)
 make install
