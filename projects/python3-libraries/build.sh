@@ -124,3 +124,7 @@ cp $SRC/library-fuzzers/tomllib.py $OUT/
 cp $SRC/library-fuzzers/fuzzer-plistlib $OUT/
 cp $SRC/library-fuzzers/plist.py $OUT/
 
+cp $SRC/library-fuzzers/fuzzer-zoneinfo $OUT/
+cp $SRC/library-fuzzers/zoneinfo.py $OUT/
+zip -j $OUT/fuzzer-zoneinfo_seed_corpus.zip corp-zoneinfo/*
+
