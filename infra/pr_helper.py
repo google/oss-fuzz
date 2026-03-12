@@ -66,6 +66,7 @@ def save_env(message, is_ready_for_merge, is_internal=False):
   """Saves the outputs as environment variables."""
   with open(os.environ['GITHUB_ENV'], 'a') as github_env:
     github_env.write(f'MESSAGE={message}\n')
+    github_env.write(f'MESSAGE1=TEST\n')
     github_env.write(f'IS_READY_FOR_MERGE={is_ready_for_merge}\n')
     github_env.write(f'IS_INTERNAL={is_internal}')
 
