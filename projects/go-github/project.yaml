@@ -1,0 +1,9 @@
+homepage: "https://github.com/google/go-github" 
+language: go 
+main_repo: "https://github.com/google/go-github" 
+auto_ccs: 
+  - "youichi0929@outlook.jp" 
+fuzzing_engines: 
+  - libfuzzer 
+sanitizers: 
+  - address 
