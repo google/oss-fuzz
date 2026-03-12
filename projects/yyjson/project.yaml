@@ -1,0 +1,12 @@
+homepage: "https://github.com/ibireme/yyjson"
+language: c
+primary_contact: "ibireme@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+main_repo: 'https://github.com/ibireme/yyjson.git'
