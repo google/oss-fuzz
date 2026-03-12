@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
+# Nothing!
 
 export USE_BAZEL_VERSION=7.4.0
 # Disable `layering_check` feature.
