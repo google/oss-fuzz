@@ -100,7 +100,8 @@ echo "Configuring target Ruby with static linking..."
     --without-gmp \
     --disable-dtrace \
     --disable-jit-support \
-    --with-baseruby="$BASERUBY"
+    --with-baseruby="$BASERUBY" \
+    ac_cv_func_backtrace=no
 
 # Build Ruby static library
 echo "Building Ruby static library..."

@@ -51,8 +51,5 @@ sed -i 's/class/class2/g' ./dnsmasq.h
 sed -i 's/new/new2/g' ./dnsmasq.h
 
 # Build the fuzzers
-#for fuzz_name in dhcp6 rfc1035 auth dhcp util; do
-for fuzz_name in util; do
-    $CC $CFLAGS -c $SRC/fuzz_${fuzz_name}.c -I./ -I$SRC/ -DVERSION=\'\"UNKNOWN\"\' -g
-    $CC $CFLAGS $LIB_FUZZING_ENGINE ./fuzz_${fuzz_name}.o libdnsmasq.a -o $OUT/fuzz_${fuzz_name}
-done
+$CXX $CXXFLAGS -c $SRC/fuzz_util.cc -I./ -I$SRC/ -DVERSION=\'\"UNKNOWN\"\' -g
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz_util.o libdnsmasq.a -o $OUT/fuzz_util

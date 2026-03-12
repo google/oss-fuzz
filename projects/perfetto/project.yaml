@@ -26,6 +26,9 @@ vendor_ccs:
   - maverickm@google.com
   - swansonr@google.com
   - warrenwright@google.com
+fuzzing_engines:
+- libfuzzer
+- honggfuzz
 sanitizers:
   - address
   - undefined

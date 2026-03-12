@@ -58,6 +58,11 @@ export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
 # Build Cryptofuzz
 cd $SRC/cryptofuzz
+# Fix Botan exception types removed in Botan 3.7.0+
+sed -i 's/::Botan::Invalid_Argument&\?/std::exception/g' modules/botan/bn_ops.cpp
+sed -i 's/::Botan::Invalid_State&\?/std::exception/g' modules/botan/bn_ops.cpp
+sed -i 's/::Botan::Encoding_Error&\?/std::exception/g' modules/botan/bn_ops.cpp
+
 python gen_repository.py
 rm extra_options.h
 echo -n '"' >>extra_options.h

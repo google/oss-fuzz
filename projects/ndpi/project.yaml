@@ -9,6 +9,7 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://github.com/ntop/nDPI.git'
+base_os_version: ubuntu-24-04
 
 #As a general rule, we want coverage for all the third party code that we have
 #in our repository. Two exceptions:
