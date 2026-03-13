@@ -110,7 +110,8 @@ make V=1 -j$(nproc)
 
 cp ./test/vlc-demux-dec-libfuzzer $OUT/
 
-cat fuzz-corpus/dictionaries/*.dict >> $OUT/vlc-demux-dec-libfuzzer.dict
+rm fuzz-corpus/dictionaries/sdp.dict
+find fuzz-corpus/dictionaries -name "*dict" -exec cat {} \; -exec echo "" \; >> $OUT/vlc-demux-dec-libfuzzer.dict
 
 for i in fuzz-corpus/seeds/* fuzz-corpus/dictionaries/*.dict
 do
