@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for generating coverage reports."""
+import logging
 import os
 
 import base_runner_utils
@@ -27,7 +28,15 @@ def run_coverage_command(config, workspace):
   env['CORPUS_DIR'] = workspace.corpora
   env['COVERAGE_OUTPUT_DIR'] = workspace.coverage_report
   command = 'coverage'
-  return utils.execute(command, env=env)
+
+  stdout, stderr, return_code = utils.execute(command, env=env)
+  if stdout:
+    logging.info('coverage stdout:\n%s', stdout)
+  if stderr:
+    logging.info('coverage stderr:\n%s', stderr)
+  if return_code:
+    logging.error('coverage command exited with code %d.', return_code)
+  return stdout, stderr, return_code
 
 
 def download_corpora(fuzz_target_paths, clusterfuzz_deployment):
