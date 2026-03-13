@@ -1,0 +1,15 @@
+[package]
+name = "netlink_packet_utils"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+anyhow = { path = "/src/fuchsia/third_party/rust_crates/vendor/anyhow-1.0.86" }
+bitflags = { path = "/src/fuchsia/third_party/rust_crates/vendor/bitflags-2.4.1" }
+byteorder = "1.5"
+paste = { path = "/src/fuchsia/third_party/rust_crates/vendor/paste-1.0.9" }
+thiserror = { path = "/src/fuchsia/third_party/rust_crates/vendor/thiserror-1.0.57" }
+
+[lib]
+name = "netlink_packet_utils"
+path = "src/lib.rs"

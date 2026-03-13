@@ -18,41 +18,32 @@
 # Print date to embed it into build logs
 date
 
-if [ "$SANITIZER" != "introspector" ]; then
-  # Temporarily skip this under introspector
-  $SRC/build_cryptofuzz.sh
-fi
-
 cd $SRC/bitcoin-core/
 
 # Build dependencies
 # This will also force static builds
 if [ "$ARCHITECTURE" = "i386" ]; then
-  export BUILD_TRIPLET="i686-pc-linux-gnu"
-
-  # Temp workaround
-  mkdir /usr/local/lib/clang/18/lib/linux
-  ln -s /usr/local/lib/clang/18/lib/i386-unknown-linux-gnu/libclang_rt.asan_static.a /usr/local/lib/clang/18/lib/linux/libclang_rt.asan_static-i386.a
-  ln -s /usr/local/lib/clang/18/lib/i386-unknown-linux-gnu/libclang_rt.asan.a /usr/local/lib/clang/18/lib/linux/libclang_rt.asan-i386.a
+  export BUILD_TRIPLET="i386-linux-gnu"
 else
   export BUILD_TRIPLET="x86_64-pc-linux-gnu"
 fi
 
-# Build using ThinLTO, to avoid OOM, and other LLVM issues.
-# See https://github.com/google/oss-fuzz/pull/10123.
-# Skip CFLAGS for now, to avoid:
-# "/usr/bin/ld: error: Failed to link module lib/libevent.a.llvm.17822.buffer.c: Expected at most one ThinLTO module per bitcode file".
-# export CFLAGS="$CFLAGS -flto=thin"
-# Skip CXXFLAGS for now, to avoid: undefined reference to __sancov_gen_.
-# export CXXFLAGS="$CXXFLAGS -flto=thin"
-# export LDFLAGS="-flto=thin"
+
+export CFLAGS="$CFLAGS -flto=full"
+export CXXFLAGS="$CXXFLAGS -flto=full"
+# Use lld to workaround <module> referenced in <section> of /tmp/lto-llvm-*.o: defined in discarded section
+export LDFLAGS="-fuse-ld=lld -flto=full"
 
 export CPPFLAGS="-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG -DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE"
 
 (
   cd depends
   sed -i --regexp-extended '/.*rm -rf .*extract_dir.*/d' ./funcs.mk  # Keep extracted source
-  make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_BDB=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 NO_USDT=1 \
+  # Disable IPC until a fuzz test actually needs it
+  # At that point, as workaround can be added to remove capnps
+  # internal oss-fuzz detection: https://github.com/google/oss-fuzz/pull/14203#issuecomment-3461008642
+  make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_ZMQ=1 NO_USDT=1 \
+       NO_IPC=1 \
        AR=llvm-ar NM=llvm-nm RANLIB=llvm-ranlib STRIP=llvm-strip \
        -j$(nproc)
 )
@@ -76,12 +67,12 @@ cmake -B build_fuzz \
   -DCMAKE_C_FLAGS_RELWITHDEBINFO="" \
   -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="" \
   -DBUILD_FOR_FUZZING=ON \
-  -DSANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE" \
+  -DFUZZ_LIBS="$LIB_FUZZING_ENGINE" \
   $EXTRA_BUILD_OPTIONS
 
 cmake --build build_fuzz -j$(nproc)
 
-WRITE_ALL_FUZZ_TARGETS_AND_ABORT="/tmp/a" "./build_fuzz/src/test/fuzz/fuzz" || true
+WRITE_ALL_FUZZ_TARGETS_AND_ABORT="/tmp/a" "./build_fuzz/bin/fuzz" || true
 readarray FUZZ_TARGETS < "/tmp/a"
 if [ -n "${OSS_FUZZ_CI-}" ]; then
   # When running in CI, check the first targets only to save time and disk space
@@ -102,7 +93,7 @@ cmake --build build_fuzz -j$(nproc)
 # Replace the magic string with the actual name of each fuzz target
 for fuzz_target in ${FUZZ_TARGETS[@]}; do
   df --human-readable ./src
-  python3 -c "c_str_target=b\"${fuzz_target}\x00\";c_str_magic=b\"$MAGIC_STR\";dat=open('./build_fuzz/src/test/fuzz/fuzz','rb').read();dat=dat.replace(c_str_magic, c_str_target+c_str_magic[len(c_str_target):]);open(\"$OUT/$fuzz_target\",'wb').write(dat)"
+  python3 -c "c_str_target=b\"${fuzz_target}\x00\";c_str_magic=b\"$MAGIC_STR\";dat=open('./build_fuzz/bin/fuzz','rb').read();dat=dat.replace(c_str_magic, c_str_target+c_str_magic[len(c_str_target):]);open(\"$OUT/$fuzz_target\",'wb').write(dat)"
 
   chmod +x "$OUT/$fuzz_target"
   (

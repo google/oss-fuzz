@@ -21,7 +21,7 @@ export LIBFUZZER_LIB=$( echo /usr/local/lib/clang/*/lib/$ARCHITECTURE-unknown-li
 
 CXXFLAGS="${CXXFLAGS} -DHILTI_HAVE_SANITIZER" ./configure --generator=Ninja --build-type=Release || (cat build/config.log && exit)
 mapfile -t FUZZ_TARGETS < <(ninja -C build -t targets | grep fuzz- | cut -d: -f1)
-ninja -j"$(nproc)" -C build "${FUZZ_TARGETS[@]}"
+ninja -j"$(nproc)" -C build "${FUZZ_TARGETS[@]}" tests
 
 cp build/bin/fuzz-* "${OUT}"
 cp -r build "${OUT}"
@@ -40,7 +40,7 @@ rm -rf "${TO}/spicy/runtime/include/spicy/rt"/*
 cp -rP "${FROM}/spicy/runtime/include/"* "${TO}/spicy/runtime/include/spicy/rt"
 
 # Replace softlinks to 3rdparty dependencies with actual contents.
-for DEP in any ArticleEnumClass-v2 ghc SafeInt tinyformat nlohmann; do
+for DEP in ArticleEnumClass-v2 SafeInt tinyformat nlohmann; do
 	D=${TO}/hilti/runtime/include/hilti/rt/3rdparty
 	rm -r "${D}/${DEP}"
 	mkdir -p "${D}/${DEP}"

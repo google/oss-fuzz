@@ -15,9 +15,9 @@
 #
 ################################################################################
 
-export JAVA_HOME="$OUT/open-jdk-11"
+export JAVA_HOME="$OUT/open-jdk-21"
 mkdir -p $JAVA_HOME
-rsync -aL --exclude=*.zip --exclude 'lib/security/blacklisted.certs' "/usr/lib/jvm/java-11-openjdk-amd64/" "$JAVA_HOME"
+rsync -aL --exclude=*.zip --exclude 'lib/security/blacklisted.certs' "/usr/lib/jvm/java-21-openjdk-amd64/" "$JAVA_HOME"
 
 $ANT
 $ANT test-compile
@@ -48,7 +48,7 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer --release 11
+  javac -cp $BUILD_CLASSPATH $fuzzer --release 21
   cp $SRC/[$fuzzer_basename]*.class $OUT/
 
   # Create an execution wrapper that executes Jazzer with the correct arguments.
@@ -60,8 +60,8 @@ if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
 else
   mem_settings='-Xmx2048m:-Xss1024k'
 fi
-JAVA_HOME=\"\$this_dir/open-jdk-11/\" \
-LD_LIBRARY_PATH=\"\$this_dir/open-jdk-11/lib/server\":\$this_dir \
+JAVA_HOME=\"\$this_dir/open-jdk-21/\" \
+LD_LIBRARY_PATH=\"\$this_dir/open-jdk-21/lib/server\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$fuzzer_basename \

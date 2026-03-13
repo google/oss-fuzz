@@ -25,3 +25,8 @@ cp -R ../libwebm/testing/testdata/*.webm corpus/
 # copy nestegg test data
 cp test/media/*.webm corpus/
 zip -rj0 $OUT/fuzz_seed_corpus.zip corpus/*.webm
+
+# Build unit test
+autoreconf --install
+./configure
+make

@@ -20,6 +20,7 @@ RUN git clone --depth 1 git://thekelleys.org.uk/dnsmasq.git dnsmasq
 WORKDIR dnsmasq
 COPY build.sh $SRC/
 COPY fuzz*.c $SRC/
+COPY fuzz*.cc $SRC/
 COPY fuzz*.h $SRC/
 
 COPY fuzz_patch.patch $SRC/

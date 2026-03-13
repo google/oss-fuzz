@@ -18,14 +18,13 @@
 # build project
 mkdir -p build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DURIPARSER_BUILD_DOCS:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -DURIPARSER_BUILD_TESTS:BOOL=OFF ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DURIPARSER_OSSFUZZ_BUILD=ON \
+      -DURIPARSER_BUILD_FUZZERS=ON \
+      -DURIPARSER_BUILD_DOCS=OFF \
+      -DURIPARSER_BUILD_TESTS=OFF \
+      -DURIPARSER_BUILD_TOOLS=OFF \
+      -DURIPARSER_ENABLE_INSTALL=OFF \
+      ..
 make
-make install
-
-# build fuzzers
-for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
-  fuzz_basename=$(basename -s .cc $fuzzers)
-  $CXX $CXXFLAGS -std=c++11 -I. \
-  $fuzzers $LIB_FUZZING_ENGINE ./liburiparser.a  \
-  -o $OUT/$fuzz_basename
-done
+cp fuzz/*_fuzzer "$OUT/"

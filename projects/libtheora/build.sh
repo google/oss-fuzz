@@ -33,9 +33,12 @@ make -j$(nproc)
 make install
 
 cd $SRC/fuzzing-headers/
-./install.sh
+rm -rf /usr/include/fuzzing
+cp -R include/fuzzing/ /usr/include/
 
 cd $SRC/libtheora/
+# patch configure since the baseimage is using an older autoconf
+sed -i 's/AC_PREREQ(\[[^]]*\])/AC_PREREQ([2.60])/' configure.ac
 ./autogen.sh
 
 if [[ $CFLAGS = *sanitize=memory* || $CFLAGS = *-m32* ]]

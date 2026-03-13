@@ -19,6 +19,7 @@ RUN apt-get update && \
     apt-get install -y libre2-dev zlib1g-dev libssl-dev
 RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --upgrade  mock
+RUN python3 -m pip install charset_normalizer
 RUN git clone --depth 1 https://github.com/googleapis/google-cloud-python $SRC/google-cloud-python
 WORKDIR $SRC/google-cloud-python/packages/google-cloud-tasks
 COPY build.sh *.py $SRC/

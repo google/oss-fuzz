@@ -90,7 +90,7 @@ jobs:
        fuzz-seconds: 600
        output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
@@ -170,7 +170,7 @@ jobs:
        sanitizer: ${{ matrix.sanitizer }}
        output-sarif: true
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: steps.build.outcome == 'success'
      with:
        name: ${{ matrix.sanitizer }}-artifacts
@@ -223,7 +223,7 @@ jobs:
        language: c++
        fuzz-seconds: 600
    - name: Upload Crash
-     uses: actions/upload-artifact@v3
+     uses: actions/upload-artifact@v4
      if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
@@ -233,6 +233,21 @@ jobs:
 You can checkout CIFuzz configs for OSS-Fuzz projects. Example -
 [systemd](https://github.com/systemd/systemd/blob/main/.github/workflows/cifuzz.yml),
 [curl](https://github.com/curl/curl/blob/master/.github/workflows/fuzz.yml).
+
+## Ubuntu 24.04 Support
+
+CIFuzz supports building and running fuzzers in an Ubuntu 24.04 environment.
+Existing projects will continue to use the legacy environment (Ubuntu 20.04) by default,
+preserving current behavior.
+
+To migrate your project to Ubuntu 24.04, add the following line to your `project.yaml`:
+
+```yaml
+base_os_version: ubuntu-24-04
+```
+
+For OSS-Fuzz projects, this file is located at `projects/<project_name>/project.yaml`.
+For external projects (ClusterFuzzLite), this file is typically located at `.clusterfuzzlite/project.yaml`.
 
 ## Understanding results
 
@@ -263,8 +278,8 @@ To download the artifact, do the following steps:
 
 ![github-actions-download-crash]
 
-[github-actions-summary]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-summary.png
-[github-actions-download-crash]: https://storage.googleapis.com/clusterfuzzlite-public/images/github-actions-download-crash.png
+[github-actions-summary]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-summary.png)
+[github-actions-download-crash]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-download-crash.png)
 
 ## Feedback/Questions/Issues
 

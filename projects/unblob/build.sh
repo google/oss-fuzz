@@ -14,7 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
-pip3 install .
+
+python3 -m pip cache purge
+
+unset RUSTFLAGS
+unset CXXFLAGS
+unset CFLAGS
+python3 -m pip install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do

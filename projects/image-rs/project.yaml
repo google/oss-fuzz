@@ -7,5 +7,4 @@ fuzzing_engines:
   - libfuzzer
 language: rust
 auto_ccs:
-  - "fintelia@gmail.com"
   - "p.antoine@catenacyber.fr"

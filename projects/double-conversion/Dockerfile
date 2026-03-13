@@ -24,5 +24,5 @@ RUN apt-get update && \
 RUN git clone --single-branch \
     https://github.com/google/double-conversion.git double-conversion
 WORKDIR double-conversion
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 COPY *.cc $SRC/

@@ -17,7 +17,7 @@
 
 cd $SRC/snappy
 mkdir -p build && cd build
-cmake -DSNAPPY_FUZZING_BUILD=ON -DSNAPPY_BUILD_TESTS=0 \
+cmake -DSNAPPY_FUZZING_BUILD=ON -DSNAPPY_BUILD_TESTS=1 \
     -DSNAPPY_BUILD_BENCHMARKS=0 ../ && cmake --build .
 
 cp *_fuzzer $OUT/

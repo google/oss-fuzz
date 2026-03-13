@@ -1,0 +1,13 @@
+homepage: "https://www.behaviortree.dev/"
+language: c++
+primary_contact: "christopher.krah@tii.ae"
+main_repo: "https://github.com/BehaviorTree/BehaviorTree.CPP"
+file_github_issue: true
+vendor_ccs:
+  - "dfaconti@aurynrobotics.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+sanitizers:
+  - address
+  - undefined

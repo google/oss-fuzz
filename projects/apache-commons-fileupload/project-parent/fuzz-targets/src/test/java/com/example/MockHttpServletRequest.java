@@ -16,7 +16,7 @@
 
 package com.example;
 
-import org.apache.commons.fileupload2.FileUploadBase;
+import org.apache.commons.fileupload2.core.AbstractFileUpload;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletInputStream;
@@ -63,7 +63,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         mmRequestData = requestData;
         length = requestLength;
         mStrContentType = strContentType;
-        mHeaders.put(FileUploadBase.CONTENT_TYPE, strContentType);
+        mHeaders.put(AbstractFileUpload.CONTENT_TYPE, strContentType);
     }
 
     /**

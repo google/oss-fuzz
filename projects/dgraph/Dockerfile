@@ -14,7 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
+RUN wget https://go.dev/dl/go1.24.3.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.24.3.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/ \
+    && rm -rf temp-go go1.24.3.linux-amd64.tar.gz
 RUN git clone --depth 1 https://github.com/dgraph-io/dgraph
 COPY build.sh fuzz_parser_test.go $SRC/
 WORKDIR $SRC/dgraph

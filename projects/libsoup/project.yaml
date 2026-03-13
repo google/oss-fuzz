@@ -1,4 +1,5 @@
-homepage: "https://libsoup.org"
+base_os_version: ubuntu-24-04
+homepage: "https://libsoup.gnome.org"
 language: c++
 primary_contact: "tngpng@gmail.com"
 auto_ccs:
@@ -8,4 +9,8 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl
+# FIXME: honggfuzz fails and centipede hangs
 main_repo: 'https://gitlab.gnome.org/GNOME/libsoup.git'

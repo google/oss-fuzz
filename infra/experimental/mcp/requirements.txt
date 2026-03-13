@@ -1,0 +1,3 @@
+openai==1.97.0
+pydantic_ai==0.4.10
+logfire

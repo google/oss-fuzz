@@ -47,7 +47,7 @@ model of your project.
 OSS-Fuzz will report some bugs that are labeled `Reliably reproduces: NO` and
 these can be tricky to deal with. A non-reproducible bug is an issue that
 OSS-Fuzz did indeed discover, however, OSS-Fuzz is unable to reproduce the bug
-with `python infra/helper.py reproduce`. In general, our suggestion is to do
+with `python3 infra/helper.py reproduce`. In general, our suggestion is to do
 analysis of the bug and determine whether there in fact is an issue.
 
 The non-reproducible bugs can be of varying nature. Some of these bugs will be

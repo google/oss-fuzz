@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install --upgrade pip cython
-RUN git clone https://github.com/zeromq/pyzmq pyzmq
+RUN apt-get update && apt-get install -y libzmq3-dev
+RUN python -m pip install cython
+RUN git clone --depth 1 --branch main https://github.com/zeromq/pyzmq pyzmq
 COPY *.sh *py $SRC/
 WORKDIR $SRC/pyzmq

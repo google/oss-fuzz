@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# Reinstall grpcio to fix potential build issues
+python3 -m pip install --force-reinstall --upgrade grpcio
+
 GRPC_PYTHON_CFLAGS="${CFLAGS}" \
 GRPC_PYTHON_BUILD_SYSTEM_RE2=true \
 GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true \

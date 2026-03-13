@@ -5,7 +5,7 @@ index 3c9d011b4a..7eec687c0c 100644
 @@ -1,6 +1,10 @@
  description = "Spring WebSocket"
  
-+apply plugin: "com.github.johnrengelman.shadow"
++apply plugin: "com.gradleup.shadow"
 +
  dependencies {
 +	implementation 'org.mockito:mockito-core:4.7.0'

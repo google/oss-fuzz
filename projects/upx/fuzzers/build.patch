@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f278fff..48aad10 100644
+index ac15329b..dba7e5f5 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -500,6 +500,40 @@ if(Threads_FOUND)
+@@ -336,10 +336,87 @@ if(Threads_FOUND)
      target_link_libraries(upx Threads::Threads)
  endif()
  
@@ -43,9 +43,6 @@ index f278fff..48aad10 100644
  #***********************************************************************
  # target compilation flags
  #***********************************************************************
-@@ -595,6 +629,49 @@ else()
-     target_compile_options(${t} PRIVATE ${warn_Wall} ${warn_Werror})
- endif()
  
 +foreach(fuzzer ${fuzzers})
 +    set(t ${fuzzer})
@@ -90,14 +87,14 @@ index f278fff..48aad10 100644
 +    endif()
 +endforeach()
 +
- #***********************************************************************
- # test
- #   ctest
+ upx_cmake_include_hook(5_target_compilation_flags)
+ 
+ if(NOT UPX_CONFIG_DISABLE_BZIP2)
 diff --git a/src/main.cpp b/src/main.cpp
-index f97da20..bcff107 100644
+index 2d181687..ccb14660 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
-@@ -1326,6 +1326,7 @@ int upx_main(int argc, char *argv[]) may_throw {
+@@ -1341,6 +1341,7 @@ int upx_main(int argc, char *argv[]) may_throw {
  // real entry point
  **************************************************************************/
  
@@ -105,7 +102,7 @@ index f97da20..bcff107 100644
  #if !(WITH_GUI)
  
  #if 1 && (ACC_OS_DOS32) && defined(__DJGPP__)
-@@ -1380,5 +1381,6 @@ int __acc_cdecl_main main(int argc, char *argv[]) /*noexcept*/ {
+@@ -1394,5 +1395,6 @@ int __acc_cdecl_main main(int argc, char *argv[]) /*noexcept*/ {
  }
  
  #endif /* !(WITH_GUI) */

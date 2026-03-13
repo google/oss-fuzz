@@ -1,0 +1,9 @@
+homepage: "https://github.com/KhronosGroup/SPIRV-Cross"
+main_repo: "https://github.com/KhronosGroup/SPIRV-Cross.git"
+language: c++
+sanitizers:
+- address
+vendor_ccs:
+- "fuzzing@fuchsia.dev"
+- "david@adalogics.com"
+- "arthur.chan@adalogics.com"

@@ -17,7 +17,7 @@
 
 # Only build the Java module
 MAVEN_ARGS="-DskipTests"
-cd arrow/java
+cd arrow-java
 $MVN install ${MAVEN_ARGS}
 
 # copy dependencies

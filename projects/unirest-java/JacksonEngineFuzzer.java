@@ -16,7 +16,7 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import kong.unirest.core.json.JsonEngine;
 import kong.unirest.core.json.JSONException;
-import kong.unirest.jackson.JacksonEngine;
+import kong.unirest.modules.jackson.JacksonEngine;
 
 // Generated with https://github.com/ossf/fuzz-introspector/tree/main/tools/auto-fuzz
 // Minor modifications to beautify code and ensure exception is caught.

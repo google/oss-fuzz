@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python lzip libgmp-dev
-RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
 RUN git clone --depth 1 https://github.com/supranational/blst
 RUN git clone --depth 1 https://github.com/herumi/mcl.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git

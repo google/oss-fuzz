@@ -21,6 +21,7 @@ RUN apt-get update && \
 RUN curl --silent -O https://storage.googleapis.com/aom-test-data/fuzzer/dec_fuzzer_seed_corpus.zip
 RUN curl --silent -O https://download.videolan.org/contrib/dav1d/dav1d_fuzzer_seed_corpus.zip
 RUN git clone --depth 1 https://code.videolan.org/videolan/dav1d.git dav1d
+RUN cd dav1d && git clone https://code.videolan.org/videolan/dav1d-test-data.git tests/dav1d-test-data
 WORKDIR dav1d
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
 COPY linux32.meson $SRC/

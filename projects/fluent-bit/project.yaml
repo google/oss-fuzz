@@ -1,6 +1,7 @@
 homepage: "https://github.com/fluent/fluent-bit"
 primary_contact: "edsiper@gmail.com"
 language: c++
+base_os_version: ubuntu-24-04
 auto_ccs:
   - "david@adalogics.com"
   - "wppttt@amazon.com"

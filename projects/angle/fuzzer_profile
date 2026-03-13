@@ -1,0 +1,93 @@
+declare_args() {
+  complete_static_lib = true
+}
+
+if (angle_has_build) {
+  executable("fuzz_sha1") {
+    sources = [ "src/fuzz/fuzz_sha1.cc" ]
+    deps = [
+      ":angle_static",
+      ":angle_common",
+    ]
+
+    cflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-O1",
+      "-fno-omit-frame-pointer",
+      "-g",
+      "-fprofile-instr-generate",
+      "-fcoverage-mapping",
+      "-resource-dir=/usr/local/lib/clang/22",
+      "-fcoverage-prefix-map=../../src/=/src/angle/src/",
+      "-fcoverage-prefix-map=../../include/=/src/angle/include/",
+      "-fdebug-compilation-dir=/src/angle",
+    ]
+
+    ldflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-fprofile-instr-generate",
+    ]
+
+    if (getenv("FUZZING_ENGINE") == "centipede") {
+      cflags += [ "-fsanitize-coverage=trace-pc-guard,pc-table,inline-8bit-counters,trace-cmp,indirect-calls" ]
+      ldflags += [ getenv("LIB_FUZZING_ENGINE") ]
+    } else if (getenv("FUZZING_ENGINE") == "afl") {
+      cflags += [ "-fsanitize=fuzzer-no-link" ]
+      ldflags += [
+        "/out/afl-compiler-rt-64.o",
+        getenv("LIB_FUZZING_ENGINE"),
+      ]
+    } else if (getenv("FUZZING_ENGINE") == "libfuzzer") {
+      cflags += [ "-fsanitize=fuzzer-no-link" ]
+      ldflags += [ getenv("LIB_FUZZING_ENGINE_DEPRECATED") ]
+    } else {
+      cflags += [ "-fsanitize=fuzzer-no-link" ]
+      ldflags += [ getenv("LIB_FUZZING_ENGINE") ]
+    }
+
+    configs -= ["//build/config/compiler:thin_archive"]
+
+    libs = [
+      "/usr/local/lib/clang/22/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer.a",
+    ]
+  }
+
+  executable("fuzz_translator") {
+    sources = [ "src/compiler/fuzz/translator_fuzzer.cpp" ]
+
+    include_dirs = [
+      "include",
+      "src",
+    ]
+
+    deps = [
+      ":translator",
+    ]
+
+    cflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-O1",
+      "-fno-omit-frame-pointer",
+      "-g",
+      "-fprofile-instr-generate",
+      "-fcoverage-mapping",
+      "-fsanitize=fuzzer-no-link",
+      "-resource-dir=/usr/local/lib/clang/22",
+      "-UANGLE_USE_ABSEIL",
+      "-fcoverage-prefix-map=../../src/=/src/angle/src/",
+      "-fcoverage-prefix-map=../../include/=/src/angle/include/",
+      "-fdebug-compilation-dir=/src/angle",
+    ]
+
+    ldflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-fprofile-instr-generate",
+    ]
+
+    configs -= ["//build/config/compiler:thin_archive"]
+
+    libs = [
+      "/usr/local/lib/clang/22/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer.a",
+    ]
+  }
+}

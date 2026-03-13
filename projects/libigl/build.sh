@@ -30,7 +30,7 @@ cmake -DLIBIGL_OPENGL=OFF \
       -DLIBIGL_PREDICATES=OFF \
       -DLIBIGL_XML=OFF \
       -DLIBIGL_RESTRICTED_MATLAB=OFF \
-      -DLIBIGL_BUILD_TESTS=OFF \
+      -DLIBIGL_BUILD_TESTS=ON \
       ..
 make -j$(nproc)
 

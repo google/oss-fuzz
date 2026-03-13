@@ -22,5 +22,6 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
 
 RUN git clone --depth 1 https://github.com/cilium/cilium
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
+RUN git clone --depth 1 https://github.com/cilium/proxy
 COPY build.sh $SRC/
 WORKDIR $SRC/cilium

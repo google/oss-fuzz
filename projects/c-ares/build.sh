@@ -15,9 +15,18 @@
 #
 ################################################################################
 
+cd $SRC/googletest
+mkdir build
+cd build
+cmake ..
+make -j$(nproc)
+make install
+
+cd $SRC/c-ares
+
 # Build the project.
 ./buildconf
-./configure --enable-debug --disable-tests
+./configure --enable-debug --enable-tests
 make clean
 make -j$(nproc) V=1 all
 

@@ -30,6 +30,14 @@ public abstract class Server extends org.hsqldb.server.Server implements AutoClo
 	private PrintWriter m_stderr = null;
 	private PrintWriter m_stdout = null;
 
+	static {
+		try {
+			Class.forName("org.hsqldb.jdbc.JDBCDriver");
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("Failed to load HSQLDB driver", e);
+		}
+	}
+
 	public Server(boolean verbose, String databaseName) {
 		super();
 		setVerbose(verbose);

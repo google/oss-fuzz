@@ -1,0 +1,14 @@
+homepage: "https://github.com/openbmc/docs/blob/master/designs/bios-bmc-smm-error-logging.md"
+language: c++
+primary_contact: "javanlacerda@google.com"
+auto_ccs:
+  - pedroysb@google.com
+  - cloud-ti-fuzzing+bugs@google.com
+
+main_repo: "https://github.com/javanlacerda/bios-bmc-smm-error-logger"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+
+base_os_version: ubuntu-24-04

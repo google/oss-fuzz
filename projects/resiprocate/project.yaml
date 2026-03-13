@@ -8,3 +8,5 @@ fuzzing_engines:
   - honggfuzz
   - libfuzzer
 
+
+base_os_version: ubuntu-24-04

@@ -12,4 +12,4 @@ sanitizers:
 main_repo: "https://github.com/RoaringBitmap/CRoaring"
 fuzzing_engines:
   - libfuzzer
-  
+base_os_version: ubuntu-24-04

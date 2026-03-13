@@ -1,9 +1,9 @@
 fuzzing_engines:
 - libfuzzer
-homepage: https://github.com/Ousret/charset_normalizer
+homepage: https://github.com/jawah/charset_normalizer
 language: python
-main_repo: https://github.com/Ousret/charset_normalizer
-primary_contact: ahmed.tahri@cloudnursery.dev
+main_repo: https://github.com/jawah/charset_normalizer
+primary_contact: tahri.ahmed@proton.me
 sanitizers:
 - address
 vendor_ccs:

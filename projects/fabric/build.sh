@@ -34,8 +34,6 @@ cp $SRC/policydsl_fuzzer.go $SRC/fabric/common/policydsl/
 cp $SRC/msp_fuzzer.go $SRC/fabric/msp/
 cp $SRC/fabenc_fuzzer.go $SRC/fabric-lib-go/common/flogging/fabenc/
 
-cd $SRC/instrumentation
-go run main.go --target_dir=$SRC/fabric --check_io_length=true
 cd $SRC/fabric
 go mod tidy && go mod vendor
 

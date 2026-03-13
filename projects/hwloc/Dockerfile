@@ -20,6 +20,6 @@ RUN apt-get update && \
     apt-get install -y python-is-python3 build-essential \
     autoconf automake libtool zlib1g-dev pkg-config
 
-RUN git clone https://github.com/open-mpi/hwloc hwloc
+RUN git clone --recurse-submodules https://github.com/open-mpi/hwloc hwloc
 COPY *.sh *_fuzzer.c *.options $SRC/
 WORKDIR $SRC/hwloc

@@ -14,9 +14,11 @@
       "build",
       "--tag",
       "gcr.io/oss-fuzz/test-project",
-      "."
+      "--tag",
+      "us-central1-docker.pkg.dev/oss-fuzz/unsafe/test-project",
+      "oss-fuzz/projects/test-project"
     ],
-    "dir": "oss-fuzz/projects/test-project"
+    "id": "build-UNIQUE_ID"
   },
   {
     "name": "gcr.io/oss-fuzz/test-project",
@@ -68,9 +70,11 @@
       "--load",
       "--tag",
       "gcr.io/oss-fuzz/test-project-aarch64",
-      "."
+      "--tag",
+      "us-central1-docker.pkg.dev/oss-fuzz/unsafe/test-project-aarch64",
+      "oss-fuzz/projects/test-project"
     ],
-    "dir": "oss-fuzz/projects/test-project"
+    "id": "build-UNIQUE_ID"
   },
   {
     "name": "gcr.io/cloud-builders/docker",
@@ -106,7 +110,7 @@
       "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/afl-address-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/afl-address-x86_64 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-afl-address-x86_64"
   },
@@ -144,7 +148,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine afl --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer address --engine afl --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-afl-address-x86_64"
   },
@@ -247,7 +251,7 @@
       "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/centipede-address-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine centipede --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/centipede-address-x86_64 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine centipede --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-centipede-address-x86_64"
   },
@@ -285,7 +289,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine centipede --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine centipede --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine centipede --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer address --engine centipede --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-centipede-address-x86_64"
   },
@@ -388,7 +392,7 @@
       "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/centipede-none-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer none --engine centipede --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/centipede-none-x86_64 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer none --engine centipede --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-centipede-none-x86_64"
   },
@@ -426,7 +430,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer none --engine centipede --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer none --engine centipede --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer none --engine centipede --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer none --engine centipede --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-centipede-none-x86_64"
   },
@@ -529,7 +533,7 @@
       "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/honggfuzz-address-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/honggfuzz-address-x86_64 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-honggfuzz-address-x86_64"
   },
@@ -567,7 +571,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine honggfuzz --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer address --engine honggfuzz --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-honggfuzz-address-x86_64"
   },
@@ -670,7 +674,7 @@
       "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-address-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-address-x86_64 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-libfuzzer-address-x86_64"
   },
@@ -708,7 +712,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-libfuzzer-address-x86_64"
   },
@@ -811,7 +815,7 @@
       "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-address-i386 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture i386 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-address-i386 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture i386 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-libfuzzer-address-i386"
   },
@@ -849,7 +853,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture i386 test-project\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture i386 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture i386 test-project\\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture i386 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-libfuzzer-address-i386"
   },
@@ -952,7 +956,7 @@
       "gcr.io/oss-fuzz/test-project-aarch64",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-address-aarch64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture aarch64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-address-aarch64 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture aarch64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-libfuzzer-address-aarch64"
   },
@@ -990,7 +994,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture aarch64 test-project\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture aarch64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture aarch64 test-project\\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture aarch64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-libfuzzer-address-aarch64"
   },
@@ -1093,7 +1097,7 @@
       "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-memory-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer memory --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-memory-x86_64 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer memory --engine libfuzzer --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-libfuzzer-memory-x86_64"
   },
@@ -1131,7 +1135,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer memory --engine libfuzzer --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer memory --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer memory --engine libfuzzer --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer memory --engine libfuzzer --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-libfuzzer-memory-x86_64"
   },
@@ -1234,7 +1238,7 @@
       "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-undefined-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer undefined --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-undefined-x86_64 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer undefined --engine libfuzzer --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-libfuzzer-undefined-x86_64"
   },
@@ -1272,7 +1276,7 @@
       "gcr.io/oss-fuzz-base/base-runner",
       "bash",
       "-c",
-      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer undefined --engine libfuzzer --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer undefined --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\\nBuild checks failed.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer undefined --engine libfuzzer --architecture x86_64 test-project\\npython infra/helper.py check_build --sanitizer undefined --engine libfuzzer --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "build-check-libfuzzer-undefined-x86_64"
   },

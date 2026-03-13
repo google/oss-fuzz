@@ -15,7 +15,26 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/go-git/go-git.git
-RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
-RUN cp $SRC/go-git/oss-fuzz.sh $SRC/build.sh
-WORKDIR $SRC/go-git
+
+ENV GOPATH="${GOPATH:-/root/go}"
+ENV ORG_ROOT="${GOPATH}/src/github.com/go-git"
+
+RUN mkdir -p "${ORG_ROOT}"
+
+# The fuzzed components are scattered around multiple repositories.
+# Here we clone all of them and cache their go dependencies.
+# The build process happens as build.sh iterate over each one of them.
+ARG REPOSITORIES="go-git go-billy"
+RUN for repo in ${REPOSITORIES}; do \
+    git clone --depth 1 "https://github.com/go-git/${repo}" "${ORG_ROOT}/${repo}"; \
+    cd "${ORG_ROOT}/${repo}"; \
+    go mod download; \
+    cd -; \
+    done
+
+# Install go imports as the import section needs to reflect some of the changes
+# made by build.sh.
+RUN go install golang.org/x/tools/cmd/goimports@latest
+
+COPY build.sh $SRC/
+WORKDIR $SRC

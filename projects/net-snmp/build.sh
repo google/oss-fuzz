@@ -17,10 +17,11 @@
 
 # Globally disable leaks to let fuzzers continue.
 export ASAN_OPTIONS="detect_leaks=0"
+export CFLAGS="${CFLAGS} -Wno-error=declaration-after-statement"
 
 # Configure and build Net-SNMP and the fuzzers.
 export CC CXX CFLAGS CXXFLAGS SRC WORK OUT LIB_FUZZING_ENGINE
-ci/build.sh
+MODE=regular ci/build.sh
 
 # Create dictionary and seeds
 cp $SRC/mib.dict $OUT/snmp_mib_fuzzer.dict

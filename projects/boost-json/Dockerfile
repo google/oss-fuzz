@@ -14,9 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
-#RUN apt-get update && apt-get install -y g++
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
 RUN pwd
@@ -24,9 +22,9 @@ RUN ls
 RUN git -C boost submodule update --init libs/json
 RUN git -C boost/libs/json checkout develop
 RUN git -C boost submodule update --init --depth 1 \
-libs/align/ \
 libs/assert \
 libs/config/ \
+libs/compat \
 libs/container \
 libs/container_hash/ \
 libs/core \
@@ -37,10 +35,8 @@ libs/intrusive/ \
 libs/move/ \
 libs/mp11/ \
 libs/predef/ \
-libs/static_assert \
 libs/system/ \
 libs/throw_exception/ \
-libs/type_traits/ \
 libs/winapi/ \
 libs/variant2/ \
 tools/boost_install \

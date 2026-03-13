@@ -9,6 +9,3 @@ sanitizers:
 auto_ccs:
   - "ffrr33aakk@gmail.com"
 vendor_ccs:
-  - "wagner@code-intelligence.com"
-  - "hlin@code-intelligence.com"
-  - "bug-disclosure@code-intelligence.com"

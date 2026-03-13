@@ -25,9 +25,10 @@ sed -i'' -e 's/INT_MAX/100000/' "$SRC/libgd/src/gd_security.c"
 ./configure --prefix="$WORK" --disable-shared
 make -j$(nproc) install
 
+export CXXFLAGS="${CXXFLAGS} -std=c++17"
 for target in Bmp Gd Gd2 Gif Jpeg Png Tga Tiff WBMP Webp; do
     lowercase=$(echo $target | tr "[:upper:]" "[:lower:]")
-    $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
+    $CXX $CXXFLAGS -I"$WORK/include" -L"$WORK/lib" \
       -DFUZZ_GD_FORMAT=$target \
       $SRC/parser_target.cc -o $OUT/${lowercase}_target \
       $LIB_FUZZING_ENGINE -lgd -Wl,-Bstatic -lz -Wl,-Bdynamic
@@ -35,7 +36,7 @@ done
 
 for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
       fuzz_basename=$(basename -s .cc $fuzzers)
-      $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
+      $CXX $CXXFLAGS -I"$WORK/include" -L"$WORK/lib" \
       $fuzzers -o $OUT/$fuzz_basename \
       $LIB_FUZZING_ENGINE -lgd -Wl,-Bstatic -lz -Wl,-Bdynamic
 done
@@ -48,3 +49,13 @@ for format in bmp gif png webp; do
     zip -rj $format.zip $format/
     cp $format.zip "$OUT/${format}_target_seed_corpus.zip"
 done
+
+# Build unit testing by cmake
+# UBSan crashes with the unit testing build, thus unset the CXXFLAGS
+# when UBSan is used for the unit testing build.
+if [[ "$SANITIZER" == "undefined" ]]
+then
+  unset CXXFLAGS
+fi
+cmake . -DBUILD_TEST=ON
+make -C tests -j$(nproc)

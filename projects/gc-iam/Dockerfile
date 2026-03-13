@@ -21,3 +21,5 @@ RUN python3 -m pip install --upgrade pip
 RUN git clone --depth 1 https://github.com/googleapis/google-cloud-python $SRC/google-cloud-python
 WORKDIR $SRC/google-cloud-python/packages/google-cloud-iam
 COPY build.sh fuzz_*.py $SRC/
+# Ensure all relevant dependencies are installed
+RUN python3 -m pip install -r requirements.txt || :

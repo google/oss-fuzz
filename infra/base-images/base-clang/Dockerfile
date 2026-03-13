@@ -33,19 +33,12 @@ RUN apt-get update && apt-get install -y wget sudo && \
     SUDO_FORCE_REMOVE=yes apt-get autoremove --purge -y wget sudo && \
     rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
 
-RUN apt-get update && apt-get install -y git && \
-    git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
-    cd fuzz-introspector && \
-    git checkout 3e66864b5fc85eca238f9fc3fd7492c0a9c39958 && \
-    git submodule init && \
-    git submodule update && \
-    apt-get autoremove --purge -y git && \
-    rm -rf .git
-
 COPY checkout_build_install_llvm.sh /root/
+
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.
-RUN /root/checkout_build_install_llvm.sh
+ARG FULL_LLVM_BUILD
+RUN FULL_LLVM_BUILD=$FULL_LLVM_BUILD /root/checkout_build_install_llvm.sh
 RUN rm /root/checkout_build_install_llvm.sh
 
 # Setup the environment.
@@ -66,12 +59,12 @@ ENV CCC "clang++"
 ENV CFLAGS -O1 \
   -fno-omit-frame-pointer \
   -gline-tables-only \
-  -Wno-error=enum-constexpr-conversion \
   -Wno-error=incompatible-function-pointer-types \
   -Wno-error=int-conversion \
   -Wno-error=deprecated-declarations \
   -Wno-error=implicit-function-declaration \
   -Wno-error=implicit-int \
+  -Wno-error=unknown-warning-option \
   -Wno-error=vla-cxx-extension \
   -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"

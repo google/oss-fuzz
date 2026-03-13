@@ -45,12 +45,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char *tmp2 = get_random_string();
   if (strlen(tmp2) > sizeof(struct packet_id_send)) {
     struct packet_id_send pidsend;
-    memcmp(&pidsend, tmp2, sizeof(struct packet_id_send));
+    memcpy(&pidsend, tmp2, sizeof(struct packet_id_send));
 
-    struct timeval tv;
-    tv.tv_sec = pidsend.time;
-    tv.tv_usec = 0;
-    if (localtime(&tv)) {
+    time_t tv_sec = (time_t)pidsend.time;
+    if (localtime(&tv_sec) != NULL) {
       struct buffer iv_buffer;
       buf_set_write(&iv_buffer, tmp2, strlen(tmp2));
       packet_id_write(&pidsend, &iv_buffer, false, false);
@@ -85,11 +83,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   memset(&p, 0, sizeof(struct packet_id_persist));
   packet_id_persist_init(&p);
   packet_id_persist_load(&p, filename);
-  //p.time = NULL;
-  struct timeval tv;
-  tv.tv_sec = p.time;
-  tv.tv_usec = 0;
-  if (localtime(&tv) != NULL) {
+  time_t p_time = (time_t)p.time;
+  if (localtime(&p_time) != NULL) {
     gc = gc_new();
     p.id_last_written = fuzz_randomizer_get_int(0, 0xfffffff);
     //packet_id_persist_print(&p, &gc);
@@ -97,7 +92,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     gc_free(&gc);
   }
 
-  packet_id_persist_close(&p); 
+  packet_id_persist_close(&p);
+  unlink(filename);
 
   fuzz_random_destroy();
   return 0;

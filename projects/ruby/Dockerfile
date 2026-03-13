@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN apt-get update -y && \
-    apt-get install -y libssl-dev libyaml-dev libreadline6-dev \
-                       zlib1g-dev libncurses5-dev libffi-dev \
-                       bison autoconf ruby pkg-config
-
-RUN git clone https://github.com/ruby/ruby.git
-WORKDIR ruby
-
-COPY build.sh $SRC/
-RUN mkdir $SRC/fuzz
-COPY *.rb *.c *.options $SRC/fuzz/
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libyaml-dev \
+    zlib1g-dev \
+    ruby \
+    ruby-dev \
+    autoconf \
+    automake \
+    libtool \
+    bison \
+    wget
+RUN git clone --depth=1 --single-branch https://github.com/ruby/ruby $SRC/ruby
+COPY *.sh *.cpp *.c *.options $SRC/

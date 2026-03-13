@@ -16,4 +16,7 @@
 #
 ################################################################################
 
+# TODO: Right now, we apply patch only if sanitizer is not 'memory'.
+# TODO: Upstream the patch to PcapPlusPlus repo.
+git -C "$SRC/PcapPlusPlus" apply "$SRC/pcapplusplus_enable_tests.diff"
 $SRC/PcapPlusPlus/Tests/Fuzzers/ossfuzz.sh

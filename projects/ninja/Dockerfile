@@ -21,3 +21,4 @@ RUN git clone --depth 1 https://github.com/ninja-build/ninja
 WORKDIR ninja
 RUN mv $SRC/ninja/misc/oss-fuzz/build.sh $SRC/
 RUN mv $SRC/ninja/misc/oss-fuzz/sample_ninja_build $SRC/
+COPY run_tests.sh $SRC/

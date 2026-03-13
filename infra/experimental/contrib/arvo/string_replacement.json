@@ -1,0 +1,96 @@
+{
+    "http://download.icu-project.org/files/icu4c/59.1/":
+        "https://github.com/unicode-org/icu/releases/download/release-59-1/",
+    "git://git.gnome.org/libxml2":
+        "https://gitlab.gnome.org/GNOME/libxml2.git",
+    "svn co svn://vcs.exim.org/pcre2/code/trunk pcre2":
+        "git clone https://github.com/PCRE2Project/pcre2 pcre2",
+    "https://git.savannah.nongnu.org/r/freetype/freetype2":
+        "https://github.com/freetype/freetype2",
+    "https://git.savannah.gnu.org/git/freetype/freetype2.git":
+        "https://github.com/freetype/freetype2",
+    "git://git.sv.nongnu.org/freetype/freetype2.git":
+        "https://github.com/freetype/freetype2",
+    "ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz":
+        "-L http://ppmcore.mpi-cbg.de/upload/netcdf-4.4.1.1.tar.gz",
+    "RUN curl http":
+        "RUN curl -L http",
+    "&& curl http":
+        "&& curl -L http",
+    "https://github.com/01org/libva":
+        "https://github.com/intel/libva.git",
+    "https://github.com/intel/libva\n":
+        "https://github.com/intel/libva.git\n",
+    "http://www.zlib.net/zlib-1.2.11.tar.gz":
+        "https://www.zlib.net/fossils/zlib-1.2.11.tar.gz",
+    "https://jannau.net/dav1d_fuzzer_seed_corpus.zip":
+        "https://download.videolan.org/pub/videolan/testing/contrib/dav1d/dav1d_fuzzer_seed_corpus.zip",
+    "git://git.xiph.org/ogg.git":
+        "https://gitlab.xiph.org/xiph/ogg.git",
+    "https://github.com/xiph/ogg.git":
+        "https://gitlab.xiph.org/xiph/ogg.git",
+    "git://git.xiph.org/opus.git":
+        "https://gitlab.xiph.org/xiph/opus.git",
+    "git://git.xiph.org/theora.git":
+        "https://gitlab.xiph.org/xiph/theora.git",
+    "git://git.xiph.org/vorbis.git":
+        "https://gitlab.xiph.org/xiph/vorbis.git",
+    "svn co http://svn.xiph.org/trunk/ogg":
+        "git clone https://gitlab.xiph.org/xiph/ogg.git",
+    "git://git.videolan.org/git/x264.git":
+        "https://code.videolan.org/videolan/x264.git",
+    "http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz":
+        "https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz",
+    "https://downloads.apache.org/maven/maven-3/3.6.3/binaries/":
+        "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.6.3/",
+    "https://downloads.apache.org/maven/maven-3/3.8.6/binaries/":
+        "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.6/",
+    "https://downloads.apache.org/maven/maven-3/3.8.5/binaries/":
+        "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.5/",
+    "https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/":
+        "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.6/",
+    "https://dlcdn.apache.org/maven/maven-3/3.8.5/binaries/":
+        "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.5/",
+    "https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz":
+        "http://opus-codec.org/static/testvectors/opus_testvectors.tar.gz",
+    "https://anongit.freedesktop.org/git/harfbuzz.git":
+        "https://github.com/harfbuzz/harfbuzz.git",
+    "git://anongit.kde.org/extra-cmake-modules":
+        "https://invent.kde.org/frameworks/extra-cmake-modules.git",
+    "git://anongit.kde.org/kimageformats":
+        "https://invent.kde.org/frameworks/kimageformats.git",
+    "git://anongit.kde.org/karchive":
+        "https://invent.kde.org/frameworks/karchive.git",
+    "git://git.savannah.gnu.org/gnulib.git":
+        "https://github.com/coreutils/gnulib.git",
+    "svn co http://llvm.org/svn/llvm-project/llvm/trunk":
+        "git clone https://github.com/llvm/llvm-project.git",
+    "svn co svn://vcs.exim.org/pcre/code/trunk":
+        "git clone https://github.com/PhilipHazel/pcre2",
+    "https://github.com/cmeister2/libssh2.git":
+        "https://github.com/libssh2/libssh2.git",
+    "git://git.code.sf.net/p/matio/matio":
+        "https://github.com/tbeu/matio.git",
+    "https://github.com/cmeister2/aspell.git":
+        "https://github.com/gnuaspell/aspell.git",
+    "https://github.com/erikd/libsndfile.git":
+        "https://github.com/libsndfile/libsndfile.git",
+    "https://anongit.freedesktop.org/git/poppler/poppler.git":
+        "https://gitlab.freedesktop.org/poppler/poppler.git",
+    "https://gitlab.freedesktop.org/ceyhunalp/poppler.git":
+        "https://gitlab.freedesktop.org/poppler/poppler.git",
+    "git.ghostscript.com/ghostpdl.git":
+        "cgit.ghostscript.com/ghostpdl.git",
+    "https://github.com/guidovranken/cryptofuzz\n":
+        "https://github.com/MozillaSecurity/cryptofuzz.git\n",
+    "https://gnunet.org/git":
+        "https://git.gnunet.org",
+    " --depth 1":
+        "",
+    " --depth=1":
+        "",
+    " --depth ":
+        " --jobs ",
+    " --recursive ":
+        " "
+}

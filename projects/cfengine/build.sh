@@ -15,8 +15,13 @@
 #
 ################################################################################
 
+cd $SRC/librsync
+cmake . -DBUILD_SHARED_LIBS=OFF
+make install
+
+cd $SRC/core
 ./autogen.sh
-./configure
+./configure --enable-static --disable-shared
 make V=1 -j$(nproc)
 
 cd libpromises

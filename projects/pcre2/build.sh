@@ -18,7 +18,7 @@
 # build project
 ./autogen.sh
 ./configure --enable-fuzz-support \
-    --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-depth=1000 \
+    --enable-never-backslash-C --with-match-limit=1000000 --with-match-limit-depth=1000000 \
     --enable-jit \
     --enable-pcre2-16 --enable-pcre2-32
 make -j$(nproc) clean
@@ -35,7 +35,7 @@ $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer_32 \
 # test different link sizes
 for i in $(seq 3 4); do
     ./configure --enable-fuzz-support \
-        --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-depth=1000 \
+        --enable-never-backslash-C --with-match-limit=1000000 --with-match-limit-depth=1000000 \
         --enable-jit \
         --enable-pcre2-16 --enable-pcre2-32 --with-link-size=${i}
     make -j$(nproc) clean
@@ -52,8 +52,8 @@ done
 
 # set up dictionary and options to use it
 for bits in "" "_16" "_32"; do
-  cp "pcre2_fuzzer${bits}.dict" "${OUT}/pcre2_fuzzer${bits}.dict"
+  cp "testdata/fuzzing/pcre2_fuzzer${bits}.dict" "${OUT}/pcre2_fuzzer${bits}.dict"
   for linksize in "" "_3l" "_4l"; do
-    cp "pcre2_fuzzer${bits}.options" "${OUT}/pcre2_fuzzer${bits}${linksize}.options"
+    cp "testdata/fuzzing/pcre2_fuzzer${bits}.options" "${OUT}/pcre2_fuzzer${bits}${linksize}.options"
   done
 done

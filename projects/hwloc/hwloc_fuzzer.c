@@ -11,7 +11,6 @@ limitations under the License.
 */
 
 #include "hwloc.h"
-#include "private/netloc.h"
 #include "private/private.h"
 #include <string.h>
 
@@ -33,21 +32,5 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   free(new_str);
   free(target);
 
-  // Fuzz netloc toplogy
-  char filename[256];
-  sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-  FILE *fp = fopen(filename, "wb");
-  if (!fp) {
-    return 0;
-  }
-  fwrite(data, size, 1, fp);
-  fclose(fp);
-  netloc_topology_t *topology = netloc_topology_construct(filename);
-  if (topology != NULL) {
-
-    netloc_topology_destruct(topology);
-  }
-
-  unlink(filename);
   return 0;
 }

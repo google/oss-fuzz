@@ -18,5 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone https://github.com/greg7mdp/parallel-hashmap
 
 WORKDIR $SRC/parallel-hashmap
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
 COPY phashmap_fuzz.cc $SRC/

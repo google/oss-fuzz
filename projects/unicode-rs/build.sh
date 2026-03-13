@@ -15,13 +15,11 @@
 #
 ################################################################################
 
-if [ $SANITIZER != "coverage" ]
-then
-    cd $SRC/unicode-normalization
-    cargo fuzz build -O 
-    cp fuzz/target/x86_64-unknown-linux-gnu/release/unicode-normalization $OUT/unicode-normalization-normalization
-    cp fuzz/target/x86_64-unknown-linux-gnu/release/streaming $OUT/unicode-normalization-streaming
-fi
+cd $SRC/unicode-normalization
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/unicode-normalization $OUT/unicode-normalization-normalization
+cp fuzz/target/x86_64-unknown-linux-gnu/release/streaming $OUT/unicode-normalization-streaming
+cp fuzz/target/x86_64-unknown-linux-gnu/release/process $OUT/process
 
 cd $SRC/unicode-segmentation/
 cargo fuzz build -O

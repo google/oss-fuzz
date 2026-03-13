@@ -74,7 +74,7 @@ A [test input] that causes a specific bug to reproduce.
 Fuzzers are usually built with one or more [sanitizer](https://github.com/google/sanitizers) enabled. 
 
 ```bash
-$ python infra/helper.py build_fuzzers --sanitizer undefined json
+$ python3 infra/helper.py build_fuzzers --sanitizer undefined json
 ```
 
 Supported sanitizers:
@@ -95,5 +95,5 @@ You can choose which configurations to automatically run your fuzzers with in `p
 ClusterFuzz supports fuzzing on x86_64 (aka x64) by default. However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifying the `$ARCHITECTURE` build environment variable using the `--architecture` option:
 
 ```bash
-python infra/helper.py build_fuzzers --architecture i386 json
+python3 infra/helper.py build_fuzzers --architecture i386 json
 ```

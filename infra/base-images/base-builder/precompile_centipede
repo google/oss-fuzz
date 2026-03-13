@@ -21,8 +21,12 @@ echo -n "Precompiling centipede"
 cd "$SRC/fuzztest/centipede/"
 apt-get update && apt-get install libssl-dev -y
 unset CXXFLAGS CFLAGS
+# We need to use an older version of BAZEL because fuzztest relies on WORKSPACE
+# Ref: https://github.com/google/oss-fuzz/pull/12838#issue-2733821058
+export USE_BAZEL_VERSION=7.4.0
 echo 'build --cxxopt=-stdlib=libc++ --linkopt=-lc++' >> /tmp/centipede.bazelrc
 bazel --bazelrc=/tmp/centipede.bazelrc build -c opt :all
+unset USE_BAZEL_VERSION
 
 # Prepare the weak symbols:
 # This is necessary because we compile the target binary and the intermediate

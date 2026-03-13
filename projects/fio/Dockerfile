@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make
+RUN apt-get update && apt-get install -y make libcunit1 libcunit1-dev
 RUN git clone --depth 1 https://github.com/axboe/fio.git fio
 WORKDIR $SRC/fio
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

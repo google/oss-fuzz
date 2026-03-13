@@ -26,6 +26,7 @@ import org.springframework.security.oauth2.jwt.JwtEncodingException;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.KeyType;
+import com.nimbusds.jose.jwk.KeyRevocation;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -114,6 +115,12 @@ public class NimbusJwtEncoderFuzzer {
         public int size() {
             // TODO Auto-generated method stub
             return 0;
+        }
+
+        @Override
+        public JWK toRevokedJWK(KeyRevocation keyRevocation) {
+            // TODO Auto-generated method stub
+            return null;
         }
     }
     

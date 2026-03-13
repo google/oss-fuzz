@@ -40,7 +40,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   llama_backend_init();
 
-  gpt_params params;
+  common_params params;
   params.prompt = prompt.c_str();
   params.n_predict = 4;
 
@@ -55,7 +55,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fwrite(model_payload.c_str(), model_payload.size(), 1, fp);
   fclose(fp);
 
-  llama_model_params model_params = llama_model_params_from_gpt_params(params);
+  llama_model_params model_params = common_model_params_to_llama(params);
   model_params.use_mmap = false;
 
   const int n_predict = params.n_predict;
@@ -65,7 +65,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
       // Now time to do inference.
       llama_context_params ctx_params =
-          llama_context_params_from_gpt_params(params);
+          common_context_params_to_llama(params);
       llama_context *ctx = llama_new_context_with_model(model, ctx_params);
       if (ctx != NULL) {
           /*

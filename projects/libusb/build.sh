@@ -23,7 +23,7 @@ make -j$(nproc) all
 # build fuzzer
 for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
     fuzzer_basename=$(basename -s .cc $fuzzer)
-    $CXX $CXXFLAGS -std=c++11 -I. \
+    $CXX $CXXFLAGS -std=c++17 -I. \
     $fuzzer $LIB_FUZZING_ENGINE ./libusb/.libs/libusb-1.0.a \
     -lpthread -ludev \
     -o $OUT/$fuzzer_basename

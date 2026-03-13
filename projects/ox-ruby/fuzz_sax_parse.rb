@@ -32,6 +32,9 @@ class MyHandler < Ox::Sax
 end
 
 test_one_input = lambda do |data|
+  if data.length < 100
+    return 0
+  end
   begin
     handler = MyHandler.new
     Ox.sax_parse(handler, StringIO.new(data))

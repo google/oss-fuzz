@@ -28,7 +28,7 @@ RUN apt-get -y update \
 				autoconf-archive \
 				automake
 
-COPY build.sh *.options $SRC/
+COPY build.sh *.options run_tests.sh $SRC/
 
 RUN git clone --depth 1 https://github.com/openthread/wpantund
 

@@ -16,18 +16,26 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y -q && \
     apt-get install -y -q --no-install-recommends \
         bison \
-        build-essential \
-        cmake \
         flex \
-        ninja-build \
-        python3
-RUN wget https://archives.boost.io/release/1.85.0/source/boost_1_85_0.tar.bz2  # Temporarily use manual installation over the outdated libboost-dev package
+        ninja-build
+
+ARG boost_version=1.89.0
+# uuid and locale needed for Thrift source build
+ARG boost_components=filesystem;system;process;multiprecision;crc;uuid;locale
+
+RUN wget https://github.com/boostorg/boost/releases/download/boost-${boost_version}/boost-${boost_version}-cmake.tar.gz && \
+    tar -xf boost-${boost_version}-cmake.tar.gz && \
+    cd boost-${boost_version}/ && \
+    mkdir -p build / && \
+    cd build/ && \
+    cmake .. -GNinja -DBOOST_INCLUDE_LIBRARIES="${boost_components}" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF && \
+    cmake --build . --target install
 
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow
 
-COPY build.sh $SRC/
+COPY *.sh $SRC/

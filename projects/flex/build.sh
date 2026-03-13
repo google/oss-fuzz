@@ -28,15 +28,16 @@ cd ../
 
 # Remove some object files we dont need. This is needed because we will link to
 # all othero bject files in the src folder.
-mv ./src/stage1*.o /tmp/
-mv ./src/libmain.o /tmp/
-mv ./src/flex-main.o /tmp/
-mv ./src/libyywrap.o /tmp/
+mv ./src/stage1*.o /tmp/ || true
+mv ./src/libmain.o /tmp/ || true
+mv ./src/flex-main.o /tmp/ || true
+mv ./src/libyywrap.o /tmp/ || true
 
 $CC $CFLAGS -c $SRC/fuzz-scanopt.c -I$SRC/flex/src
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz-scanopt.o ./src/*.o -o $OUT/fuzz-scanopt
+$CC $CFLAGS -c src/scan.c -I$SRC/flex/src
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz-scanopt.o ./src/*.o -o $OUT/fuzz-scanopt scan.o
 
 $CC $CFLAGS -c $SRC/fuzz-main.c -I$SRC/flex/src
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz-main.o ./src/*.o -o $OUT/fuzz-main
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz-main.o ./src/*.o -o $OUT/fuzz-main scan.o
 
 cp $SRC/*.options $OUT/

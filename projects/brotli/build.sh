@@ -15,9 +15,9 @@
 #
 ################################################################################
 
-cmake . -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=OFF
+cmake . -DBUILD_TESTING=ON -DBUILD_SHARED_LIBS=OFF
 make clean
-make -j$(nproc) brotlidec
+make -j$(nproc)
 
 $CC $CFLAGS -c -std=c99 -I. -I./c/include c/fuzz/decode_fuzzer.c 
 

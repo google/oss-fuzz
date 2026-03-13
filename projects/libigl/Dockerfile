@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y make libgmp-dev libmpfr-dev
 RUN git clone --depth 1 https://github.com/libigl/libigl
 WORKDIR $SRC/libigl
 COPY igl_fuzzer.cpp \
+     run_tests.sh \
      build.sh \
      $SRC/
 

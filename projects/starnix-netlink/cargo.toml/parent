@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "netlink_packet_core",
+    "netlink_packet_generic",
+    "netlink_packet_route",
+    "netlink_packet_sock_diag",
+    "netlink_packet_utils",
+    "fuzz"
+]

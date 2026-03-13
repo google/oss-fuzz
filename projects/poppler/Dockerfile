@@ -15,27 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y wget autoconf automake libtool pkg-config gperf python
-RUN pip3 install meson ninja gyp-next packaging
 
-RUN git clone --depth 1 https://github.com/madler/zlib.git
-RUN git clone --depth 1 https://gitlab.freedesktop.org/freetype/freetype.git
-RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git
-RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
-RUN git clone --depth 1 https://github.com/glennrp/libpng.git
-RUN git clone --depth 1 https://gitlab.freedesktop.org/fontconfig/fontconfig.git
-RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git
-RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/pango.git
-ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.80/glib-2.80.0.tar.xz $SRC
-RUN tar xvJf $SRC/glib-2.80.0.tar.xz
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.83.0/source/boost_1_83_0.tar.bz2
-RUN wget https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_99_RTM/src/nss-3.99-with-nspr-4.35.tar.gz
 RUN git clone --depth 1 --single-branch https://gitlab.freedesktop.org/poppler/poppler.git
-
-RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
-    zip -q $SRC/poppler_seed_corpus.zip pdf.js/test/pdfs/*.pdf && \
-    rm -rf pdf.js
-ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/pdf.dict $SRC/poppler.dict
-WORKDIR $SRC/poppler
-COPY build.sh $SRC/
+RUN $SRC/poppler/test/ossfuzz/prepare_build.sh
+RUN cp $SRC/poppler/test/ossfuzz/build_fuzzers.sh $SRC/build.sh

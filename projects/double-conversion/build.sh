@@ -19,7 +19,7 @@
 mkdir -p ${WORK}/double-conversion
 cd ${WORK}/double-conversion
 
-cmake -GNinja ${SRC}/double-conversion/
+cmake -GNinja -DBUILD_TESTING=ON ${SRC}/double-conversion/
 ninja
 
 fuzzer="string_to_double_fuzzer"

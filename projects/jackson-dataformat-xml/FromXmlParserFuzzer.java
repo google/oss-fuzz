@@ -14,11 +14,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
-import com.fasterxml.jackson.dataformat.xml.XmlFactory;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser;
-import java.io.IOException;
+import tools.jackson.dataformat.xml.XmlFactory;
+import tools.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.dataformat.xml.XmlReadFeature;
+import tools.jackson.dataformat.xml.deser.FromXmlParser;
 import java.util.EnumSet;
 
 /** This fuzzer targets the methods of the FromXmlParser object */
@@ -27,31 +26,26 @@ public class FromXmlParserFuzzer {
     try {
       Integer choice = data.consumeInt(1, 19);
 
-      // Retrieve set of FromXmlParser.Feature
-      EnumSet<FromXmlParser.Feature> featureSet = EnumSet.allOf(FromXmlParser.Feature.class);
+      // Retrieve set of XmlReadFeature
+      EnumSet<XmlReadFeature> featureSet = EnumSet.allOf(XmlReadFeature.class);
 
       // Create and configure XmlMapper
       XmlMapper mapper = null;
       if (data.consumeBoolean()) {
         mapper =
-            new XmlMapper(
+            XmlMapper.builder(
                 XmlFactory.builder()
                     .enable(data.pickValue(featureSet))
                     .disable(data.pickValue(featureSet))
-                    .build());
+                    .build())
+                .build();
       } else {
-        mapper = new XmlMapper(new JacksonXmlModule());
+        mapper = XmlMapper.builder().build();
       }
 
       // Create and configure FromXmlParser
-      boolean[] featureChoice = data.consumeBooleans(featureSet.size());
       FromXmlParser parser =
-          (FromXmlParser) mapper.getFactory().createParser(data.consumeRemainingAsString());
-
-      int counter = 0;
-      for (FromXmlParser.Feature feature : featureSet) {
-        parser.configure(feature, featureChoice[counter++]);
-      }
+          (FromXmlParser) mapper.createParser(data.consumeRemainingAsString());
 
       // Fuzz methods of FromXmlParser
       switch (choice) {
@@ -74,7 +68,8 @@ public class FromXmlParserFuzzer {
           parser.nextToken();
           break;
         case 7:
-          parser.nextTextValue();
+          parser.nextToken();
+          parser.getText();
           break;
         case 8:
           parser.getText();
@@ -115,7 +110,7 @@ public class FromXmlParserFuzzer {
       }
 
       parser.close();
-    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

@@ -18,7 +18,13 @@
 cd $SRC/html5ever/html5ever/fuzz
 cargo update -p serde --precise 1.0.200
 cd ..
-cargo fuzz build -O 
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_document_parse $OUT/
+
+cd $SRC/html5ever/xml5ever/fuzz
+cargo update -p serde --precise 1.0.200
+cd ..
+cargo fuzz build -O
 cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_document_parse $OUT/
 
 cd $SRC/rust-cssparser
@@ -27,4 +33,5 @@ cp fuzz/target/x86_64-unknown-linux-gnu/release/cssparser $OUT/fuzz-cssparser
 
 cd $SRC/rust-url/url
 cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz-url $OUT/fuzz-url
 cp fuzz/target/x86_64-unknown-linux-gnu/release/parse $OUT/fuzz-url-parse

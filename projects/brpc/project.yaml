@@ -16,3 +16,5 @@ sanitizers:
   - address
   - undefined
 main_repo: "https://github.com/apache/incubator-brpc"
+
+base_os_version: ubuntu-24-04

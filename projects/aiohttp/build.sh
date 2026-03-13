@@ -14,12 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-ln -sf /usr/local/bin/python3 /usr/local/bin/python
-ln -sf /usr/local/bin/pip3 /usr/local/bin/pip
+# Build the llhttp parser
+git submodule update --init --recursive
+pushd "$SRC/aiohttp/vendor/llhttp/"
+npm ci
+make
+popd # "$SRC/aiohttp/vendor/llhttp/"
 
-# install aiohttp
-pip3 install -r requirements/dev.txt
-pre-commit install
+# Build & install aiohttp
+make cythonize
 make install-dev
 
 # Duplicate fuzzers to use Pure python code (in addition

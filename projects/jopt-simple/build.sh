@@ -29,23 +29,46 @@ pushd "/tmp"
 popd
 
 pushd "${SRC}/${LIBRARY_NAME}"
-	${MVN} package ${MVN_FLAGS}
+    # Compile and package the project
+	${MVN} clean package ${MVN_FLAGS}
 	CURRENT_VERSION=$(${MVN} org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
   		-Dexpression=project.version -q -DforceStdout)
-	${MVN} ${MVN_FLAGS} install:install-file -Dfile=${SRC}/jopt-simple/net.sf.joptsimple/target/net-sf-joptsimple-${CURRENT_VERSION}.jar \
+    
+    # Log contents of target directory for debug
+    echo "Contents of target directory:"
+    ls target/
+    
+    # Directly hard code the target jar name based on existing listing
+    TARGET_JAR="target/jopt-simple-fuzzer-${CURRENT_VERSION}.jar"
+    if [[ ! -f "$TARGET_JAR" ]]; then
+        echo "ERROR: Expected target jar not found!"
+        exit 1
+    fi
+
+    # Log the found jar
+    echo "Target jar found: $TARGET_JAR"
+
+    # Install the jar
+	${MVN} ${MVN_FLAGS} install:install-file -Dfile=${TARGET_JAR} \
 		-DgroupId="net.sf.jopt-simple" \
 		-DartifactId="jopt-simple" \
 		-Dversion="${CURRENT_VERSION}" \
 		-Dpackaging=jar
+
+    # Execute second Maven command in correct directory
+    ${MVN} package -DfuzzedLibaryVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
+    install -v ${TARGET_JAR} ${OUT}/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar
+    ALL_JARS="${ALL_JARS} ${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar"
+
+    # Ensure `OptionParserFuzzer` is included in classpath
+    FUZZER_CLASSPATH="$OUT/jopt-simple-fuzzer-${CURRENT_VERSION}.jar:$JAZZER_API_PATH"
+
+    for fuzzer in $(find ${SRC}/src/main/java/ossfuzz -name '*.java'); do
+        # Compile fuzzer into jar if not present
+        javac -cp $FUZZER_CLASSPATH -d $OUT $fuzzer || echo "Compilation of $fuzzer failed"
+    done
+
 popd
-
-pushd "${SRC}"
-	${MVN} package -DfuzzedLibaryVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
-	install -v target/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar ${OUT}/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar
-	ALL_JARS="${ALL_JARS} ${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar"
-popd
-
-
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
@@ -60,8 +83,7 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
 	# Find our fuzzer inside the maven structure
 	stripped_path=$(echo ${fuzzer} | sed \
 		-e 's|^.*src/main/java/\(.*\).java$|\1|' \
-		-e 's|^.*src/test/java/\(.*\).java$|\1|' \
-	);
+		-e 's|^.*src/test/java/\(.*\).java$|\1|');
 	# The .java suffix was stripped by sed.
 	if (echo ${stripped_path} | grep ".java$"); then
 		continue;
@@ -81,7 +103,6 @@ LD_LIBRARY_PATH=\"\$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=${RUNTIME_CLASSPATH} \
 --target_class=${fuzzer_classname} \
---jvm_args=\"-Xmx2048m\" \
-\$@" > $OUT/${fuzzer_basename}
-	chmod u+x $OUT/${fuzzer_basename}
+--jvm_args=\"\$@\"" > $OUT/$(basename -s .java $fuzzer).sh
+	chmod +x $OUT/$(basename -s .java $fuzzer).sh
 done

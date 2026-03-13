@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 ##########################################################################
-# Retrieve JDK-11
-wget https://download.java.net/openjdk/jdk11.0.0.1/ri/openjdk-11.0.0.1_linux-x64_bin.tar.gz -O openjdk-11.tar.gz
-tar -zxf openjdk-11.tar.gz
-rm -f openjdk-11.tar.gz
-cp -r jdk-11.0.0.1 $OUT/
-JAVA_HOME=$OUT/jdk-11.0.0.1
+# Retrieve JDK-17
+wget https://download.java.net/openjdk/jdk17/ri/openjdk-17+35_linux-x64_bin.tar.gz -O openjdk-17.tar.gz
+tar -zxf openjdk-17.tar.gz
+rm -f openjdk-17.tar.gz
+cp -r jdk-17 $OUT/
+JAVA_HOME=$OUT/jdk-17
 PATH=$JAVA_HOME/bin:$PATH
 
 # Add task for copy dependency jars
@@ -52,7 +52,7 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer

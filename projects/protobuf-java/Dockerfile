@@ -26,8 +26,6 @@ ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 
 RUN curl -L -O https://raw.githubusercontent.com/protobuf-c/protobuf-c/39cd58f5ff06048574ed5ce17ee602dc84006162/t/test-full.proto
 
-RUN git clone --depth 1 --recursive https://github.com/protocolbuffers/protobuf.git
-
 COPY build.sh $SRC
 COPY ProtobufFuzzer.java $SRC
 

@@ -17,5 +17,10 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/cockroachdb/cockroach.git cockroach
+RUN wget https://go.dev/dl/go1.22.9.linux-amd64.tar.gz \
+    && mkdir temp-go \
+    && rm -rf /root/.go/* \
+    && tar -C temp-go/ -xzf go1.22.9.linux-amd64.tar.gz \
+    && mv temp-go/go/* /root/.go/
 WORKDIR cockroach
 COPY build.sh $SRC/

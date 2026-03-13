@@ -1,8 +1,0 @@
-cmake_minimum_required(VERSION 3.5)
-project(tink_fuzz CXX)
-set(CMAKE_CXX_STANDARD 11)
-
-add_subdirectory(../.. tink)
-
-add_executable(tink_encrypt_fuzzer tink_encrypt_decrypt_fuzzer.cc)
-target_link_libraries(tink_encrypt_fuzzer tink::static $ENV{LIB_FUZZING_ENGINE})

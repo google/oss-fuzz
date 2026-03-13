@@ -15,7 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake ninja-build libboost-dev
+RUN apt-get update && apt-get install -y cmake ninja-build
+
+RUN wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2
 RUN git clone --depth 1 https://github.com/lballabio/QuantLib.git quantlib
 WORKDIR quantlib
 COPY build.sh $SRC/

@@ -16,24 +16,20 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
-unzip maven.zip -d $SRC/maven-3.6.3 && \
+# Newer Maven release are listed at https://archive.apache.org/dist/maven/maven-3/
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.12/binaries/apache-maven-3.9.12-bin.zip -o maven.zip && \
+unzip maven.zip -d $SRC/maven-3.9.12 && \
 rm -rf maven.zip
 
-ENV MVN $SRC/maven-3.6.3/apache-maven-3.6.3/bin/mvn
+ENV MVN $SRC/maven-3.9.12/apache-maven-3.9.12/bin/mvn
 ENV TARGET_PACKAGE_PREFIX org.apache.poi.*:org.apache.xmlbeans.*
 
-RUN curl -L https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u382-b05/OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz -o OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz && \
-  tar xvf OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz && \
-  rm -rf OpenJDK8U-jdk_x64_linux_hotspot_8u382b05.tar.gz
+# Newer JDK releases are listed at https://github.com/adoptium/temurin11-binaries/releases/
+RUN curl -L https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.29%2B7/OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz -o OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz && \
+  tar xvf OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz && \
+  rm -rf OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz
 
-ENV JAVA_HOME_8 $SRC/jdk8u382-b05
-
-RUN curl -L https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.20%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.20_8.tar.gz -o OpenJDK11U-jdk_x64_linux_hotspot_11.0.20_8.tar.gz && \
-  tar xvf OpenJDK11U-jdk_x64_linux_hotspot_11.0.20_8.tar.gz && \
-  rm -rf OpenJDK11U-jdk_x64_linux_hotspot_11.0.20_8.tar.gz
-
-ENV JAVA_HOME_11 $SRC/jdk-11.0.20+8
+ENV JAVA_HOME_11 $SRC/jdk-11.0.29+7
 
 WORKDIR ${SRC}
 #
@@ -42,10 +38,28 @@ WORKDIR ${SRC}
 RUN git clone --depth 1 https://github.com/apache/poi.git
 
 # install packages required for font-handling and other code in java.awt.*
-RUN apt-get install -y libxext6 libx11-6 libxrender1 libxtst6 libxi6 libxcb1 libxau6 libxdmcp6 \
+RUN apt-get update && apt-get install -y libxext6 libx11-6 libxrender1 libxtst6 libxi6 libxcb1 libxau6 libxdmcp6 libfreetype6 libpng16-16 \
 && apt-get clean autoclean \
 && apt-get autoremove --yes \
 && rm -rf /var/lib/{apt,dpkg,cache,log}/
+
+# Remove unused code-parts to speed up introspection
+# Need to keep some test-code which is used in the poi-integration module
+RUN cd ${SRC}/poi && rm `find \
+    jenkins \
+    osgi \
+    poi/src/test/ \
+    poi-examples/src/test \
+    poi-excelant/src/test \
+    poi-ooxml/src/test \
+    poi-scratchpad/src/test \
+    src \
+    \
+    -name *.java -a ! -name *DataSamples*.java -a ! -name Biff*.java`
+
+# run a small Gradle task to perform the downloading of Gradle distribution here
+# this avoids this step when using the Docker image later
+RUN cd ${SRC}/poi && chmod a+x gradlew && JAVA_HOME=$JAVA_HOME_11 ./gradlew wrapper
 
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/

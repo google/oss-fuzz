@@ -15,9 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake zlib1g-dev libssl-dev
+RUN apt-get update && apt-get install -y cmake zlib1g-dev libssl-dev libcmocka0 libcmocka-dev
 
 RUN git clone --depth=1 https://git.libssh.org/projects/libssh.git
 
 WORKDIR libssh
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.bouncycastle.org/"
 language: jvm
 primary_contact: ""
@@ -7,9 +8,5 @@ sanitizers:
   - "address"
 main_repo: "https://github.com/bcgit/bc-java.git"
 vendor_ccs:
-  - "glendowne@code-intelligence.com"
-  - "wagner@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
   - "yakdan@code-intelligence.com"
-  - "hlin@code-intelligence.com"
-  - "bug-disclosure@code-intelligence.com"

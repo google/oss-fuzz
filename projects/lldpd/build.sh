@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
+
 ./autogen.sh
+
+export check_LIBS="-l:libcheck.a -l:libsubunit.a -lrt -lm -lpthread"
+
 ./configure --disable-shared --enable-pie --enable-fuzzer=$LIB_FUZZING_ENGINE
 make
 

@@ -19,4 +19,4 @@ RUN git clone https://github.com/Exiv2/exiv2 exiv2
 RUN ./exiv2/ci/install_dependencies.sh
 WORKDIR exiv2
 
-COPY build.sh $SRC/
+COPY *.sh $SRC/

@@ -19,6 +19,8 @@ if [ "$2" = "fuzzing" ]; then
   topic=request-build
 elif [ "$2" = "coverage" ]; then
   topic=request-coverage-build
+elif [ "$2" = "introspector" ]; then
+  topic=request-introspector-build
 else
   echo "Invalid build type $2."
   exit 1

@@ -47,8 +47,10 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
               }])
   @mock.patch('build_project.get_datetime_now',
               return_value=test_utils.FAKE_DATETIME)
+  @mock.patch('build_lib.get_unique_build_step_image_id',
+              return_value='UNIQUE_ID')
   def test_get_coverage_build_steps(self, mock_url, mock_corpora_steps,
-                                    mock_get_datetime_now):
+                                    mock_get_datetime_now, mock_get_id):
     """Test for get_build_steps."""
     del mock_url, mock_corpora_steps, mock_get_datetime_now
     project_yaml_contents = (
@@ -70,7 +72,7 @@ class TestRequestCoverageBuilds(fake_filesystem_unittest.TestCase):
     config = build_project.Config(upload=False)
     project_yaml, dockerfile = build_project.get_project_data(
         test_utils.PROJECT)
-    build_steps = build_and_run_coverage.get_build_steps(
+    build_steps, _ = build_and_run_coverage.get_build_steps(
         test_utils.PROJECT, project_yaml, dockerfile, config)
     self.assertEqual(build_steps, expected_coverage_build_steps)
 

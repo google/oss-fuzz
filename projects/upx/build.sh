@@ -17,13 +17,14 @@
 
 # Temporary fix for clang bug of upx
 sed -i 's/ \&\& __clang_major__ < 15//m' /src/upx/src/util/util.cpp
-git apply $SRC/upx/fuzzers/build.patch
+git apply   --ignore-space-change --ignore-whitespace  $SRC/upx/fuzzers/build.patch
 
 # build project
 # e.g.
 mkdir -p build/debug
 cd build/debug
-cmake ../..
+# Disable UBSan for the compiler sanity check that intentionally tests overflow
+cmake ../.. -DCMAKE_CXX_FLAGS="${CXXFLAGS} -fno-sanitize=signed-integer-overflow" -DCMAKE_C_FLAGS="${CFLAGS} -fno-sanitize=signed-integer-overflow"
 
 for fuzzer in $(find $SRC -name '*_fuzzer.cpp'); do
     fuzz_basename=$(basename -s .cpp $fuzzer)

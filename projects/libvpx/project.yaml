@@ -11,7 +11,8 @@ auto_ccs:
 - jzern@google.com
 - wtc@google.com
 vendor_ccs:
-- twsmith@mozilla.com
+- "media-alerts@mozilla.com"
+- "twsmith@mozilla.com"
 - "product-security@apple.com"
 - "dkishore@apple.com"
 - "phan@apple.com"
@@ -22,10 +23,13 @@ vendor_ccs:
 - "albassam@apple.com"
 - "youenn@apple.com"
 - "ddkilzer@apple.com"
+- "zakr@apple.com"
+- "roberto_rodriguez2@apple.com"
+- "k_monsen@apple.com"
+- "nnothstine@apple.com"
 main_repo: 'https://chromium.googlesource.com/webm/libvpx'
 
 fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-

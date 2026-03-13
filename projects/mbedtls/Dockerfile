@@ -32,4 +32,4 @@ RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl && \
     cd openssl && \
     git submodule update --init fuzz/corpora
 WORKDIR mbedtls
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

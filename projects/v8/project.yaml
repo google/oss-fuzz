@@ -1,0 +1,11 @@
+homepage: "https://chromium.googlesource.com/v8/v8"
+language: c++
+main_repo: "https://chromium.googlesource.com/v8/v8"
+fuzzing_engines:
+  - none
+sanitizers:
+  - address
+
+indexer:
+  targets:
+    - d8

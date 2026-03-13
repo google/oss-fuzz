@@ -32,8 +32,10 @@ unset CXXFLAGS
 
 cd $SRC/sof_workspace
 
-sof/scripts/fuzz.sh -b -- -DEXTRA_CONF_FILE=stub_build_all_ipc3.conf
+sof/scripts/fuzz.sh -b -s $SANITIZER -a $ARCHITECTURE -- -DEXTRA_CONF_FILE=stub_build_all_ipc3.conf -DEXTRA_CFLAGS="-fno-sanitize-recover=all"
 cp build-fuzz/zephyr/zephyr.exe $OUT/sof-ipc3
+zip $OUT/sof-ipc3.zip sof/tools/corpus/sof-ipc3/*
 
-sof/scripts/fuzz.sh -b -- -DEXTRA_CONF_FILE=stub_build_all_ipc4.conf
+sof/scripts/fuzz.sh -b -s $SANITIZER -a $ARCHITECTURE -- -DEXTRA_CONF_FILE=stub_build_all_ipc4.conf -DEXTRA_CFLAGS="-fno-sanitize-recover=all"
 cp build-fuzz/zephyr/zephyr.exe $OUT/sof-ipc4
+zip $OUT/sof-ipc4.zip sof/tools/corpus/sof-ipc4/*

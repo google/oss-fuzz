@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install --upgrade pip
+RUN python -m pip install 'setuptools~=69.0'
 RUN git clone https://github.com/jaraco/configparser/ configparser
 COPY *.sh *py $SRC/
 WORKDIR $SRC/configparser

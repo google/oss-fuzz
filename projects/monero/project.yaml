@@ -3,8 +3,13 @@ language: c++
 primary_contact: "binaryfate01@gmail.com"
 auto_ccs:
   - luigi1111w@gmail.com
-  - ric@ts.org
+  - jeffro256@volunteer.magicgrants.org
+  - justinberman95@gmail.com
+  - xmrfuzz@mm.st
   - moneromooo@protonmail.com
+  - arthur.chan@adalogics.com
+  - david@adalogics.com
+  - adam@adalogics.com
 sanitizers:
   - address
 fuzzing_engines:

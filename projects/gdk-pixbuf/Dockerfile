@@ -14,16 +14,23 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y ffmpeg python3-pip gtk-doc-tools libffi-dev
-RUN pip3 install meson==0.55.3 ninja
 
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
-ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
-RUN tar xvJf $SRC/glib-2.64.2.tar.xz
+RUN apt-get update && \
+    apt-get install -y ffmpeg python3-pip gtk-doc-tools libffi-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+RUN pip3 install --disable-pip-version-check --no-cache-dir \
+        pip==25.1.1
+RUN pip3 install --disable-pip-version-check --no-cache-dir \
+        corpus-replicator \
+        meson==1.8.2 \
+        ninja==1.11.1.4
 
-RUN python3 -m pip install --upgrade pip && python3 -m pip install corpus-replicator
+RUN git clone --depth=1 --no-tags https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
+RUN git clone --depth=1 --branch=2.84.3 https://gitlab.gnome.org/GNOME/glib.git
+
 RUN corpus-replicator -o corpus image_gif_gif_ffmpeg.yml image_jpg_jpg_ffmpeg.yml image_png_png_ffmpeg.yml image
-RUN git clone --depth 1 https://github.com/glennrp/libpng.git && \
+RUN git clone --depth=1 --no-tags https://github.com/glennrp/libpng.git && \
     find $SRC/gdk-pixbuf/tests/ \( -name '*.jpeg' -o -name '*.jpg' -o -name '*.png' \) -exec cp -v '{}' corpus/ ';' && \
     find $SRC/libpng -name "*.png" | grep -v crashers | xargs cp -t corpus/ && \
     zip -q $SRC/gdk-pixbuf_seed_corpus.zip corpus/* && \
@@ -37,4 +44,4 @@ RUN awk 1 $SRC/*.dict > $SRC/gdk-pixbuf.dict && \
 
 WORKDIR $SRC/gdk-pixbuf
 COPY targets $SRC/fuzz
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

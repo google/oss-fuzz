@@ -15,36 +15,21 @@
 #
 ################################################################################
 
-cd $WORK/
+#
+# Build the OpenEXR fuzzers, via the "oss_fuzz" CMake target.
+#
+# The "oss_fuzz" target is specially constructed to operate in this
+# env. It queries the environment for the values of
+# LIB_FUZZING_ENGINE, OUT, and CC/CC_FLAGS, and CXX/CXX_FLAGS. The
+# installed fuzzers go in the OUT directory.
+#
 
-CMAKE_SETTINGS=(
-  "-D BUILD_SHARED_LIBS=OFF"         # Build static libraries only
-  "-D BUILD_TESTING=OFF"             # Or tests
-  "-D OPENEXR_INSTALL_EXAMPLES=OFF"  # Or examples
-  "-D OPENEXR_LIB_SUFFIX="           # Don't append the version number to library files
-)
-cmake $SRC/openexr ${CMAKE_SETTINGS[@]}
-make -j$(nproc)
+set -x
 
-INCLUDES=(
-  "-I $SRC"
-  "-I $SRC/openexr/src/lib/OpenEXRCore"
-  "-I $SRC/openexr/src/lib/OpenEXR"
-  "-I $SRC/openexr/src/lib/OpenEXRUtil"
-  "-I $WORK/cmake"
-)
+export BUILD_DIR=$WORK/_build.oss-fuzz
 
-LIBS=(
-  "$WORK/src/lib/OpenEXRUtil/libOpenEXRUtil.a"
-  "$WORK/src/lib/OpenEXR/libOpenEXR.a"
-  "$WORK/src/lib/OpenEXRCore/libOpenEXRCore.a"
-  "$WORK/src/lib/IlmThread/libIlmThread.a"
-  "$WORK/src/lib/Iex/libIex.a"
-  "$WORK/_deps/imath-build/src/Imath/libImath*.a"
-)
+./src/test/oss-fuzz/oss-fuzz_build.sh
 
-for fuzzer in $SRC/openexr/src/test/OpenEXRFuzzTest/oss-fuzz/*_fuzzer.cc; do
-  fuzzer_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -std=c++11 -pthread ${INCLUDES[@]} $fuzzer $LIB_FUZZING_ENGINE ${LIBS[@]} -lz \
-    -o $OUT/$fuzzer_basename
-done
+# Build tests to support replay_tests.sh
+cd $BUILD_DIR
+cmake --build $BUILD_DIR --target OpenEXRTest OpenEXRCoreTest IexTest OpenEXRUtilTest -j$(nproc)

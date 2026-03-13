@@ -27,6 +27,6 @@ RUN apt-get update && apt-get install -y \
     xsltproc \
     zlib1g-dev
 RUN git clone --depth 1 https://github.com/gssapi/gss-ntlmssp
-COPY build.sh $SRC/
+COPY *.sh $SRC/
 COPY fuzzing/ $SRC/gss-ntlmssp/fuzzing/
 WORKDIR $SRC/gss-ntlmssp/

@@ -103,6 +103,8 @@ class ProjectYamlChecker:
       'vendor_ccs',
       'view_restrictions',
       'file_github_issue',
+      'indexer',  # Flags specific to infra/indexer.
+      'base_os_version',
   ]
 
   REQUIRED_SECTIONS = ['main_repo']
@@ -262,7 +264,7 @@ def _check_one_apt_update(path):
     if 'RUN apt install' in dockerfile or 'RUN apt-get install' in dockerfile:
       print('Please add an "apt-get update" before "apt-get install". '
             'Otherwise, a cached and outdated RUN layer may lead to install '
-            'failures.')
+            'failures in file %s.' % str(path))
       return False
 
   return True
@@ -430,8 +432,12 @@ def run_nonbuild_tests(parallel):
   # pass directories to pytest.
   command = [
       'pytest',
+      '--ignore-glob=infra/base-images/base-builder/indexer/*',
       '--ignore-glob=infra/build/*',
       '--ignore-glob=projects/*',
+      '--ignore-glob=infra/experimental/contrib/*',
+      '--ignore-glob=infra/experimental/chronos/*',
+      '--ignore-glob=infra/experimental/mcp/*',
   ]
   if parallel:
     command.extend(['-n', 'auto'])
