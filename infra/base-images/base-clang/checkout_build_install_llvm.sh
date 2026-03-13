@@ -195,6 +195,8 @@ function free_disk_space {
       /usr/local/bin/llvm-nm \
       /usr/local/bin/llvm-profdata \
       /usr/local/bin/llvm-ranlib \
+      /usr/local/bin/llvm-readelf \
+      /usr/local/bin/llvm-readobj \
       /usr/local/bin/llvm-symbolizer \
       /usr/local/bin/llvm-undname \
       /usr/local/bin/llvm-readelf \
