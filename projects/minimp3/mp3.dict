@@ -1,0 +1,38 @@
+# MP3 frame sync words (0xFFE0 mask)
+# MPEG1 Layer3
+kw_sync_mp1l3="\xff\xfb"
+kw_sync_mp1l3_2="\xff\xfa"
+# MPEG1 Layer2
+kw_sync_mp1l2="\xff\xfd"
+kw_sync_mp1l2_2="\xff\xfc"
+# MPEG1 Layer1
+kw_sync_mp1l1="\xff\xfe"
+# MPEG2 Layer3
+kw_sync_mp2l3="\xff\xf3"
+kw_sync_mp2l3_2="\xff\xf2"
+# MPEG2.5 Layer3
+kw_sync_mp25l3="\xff\xe3"
+kw_sync_mp25l3_2="\xff\xe2"
+
+# ID3v2 header
+kw_id3v2="ID3"
+# ID3v1 header
+kw_id3v1="TAG"
+# APE tag
+kw_ape="APETAGEX"
+
+# Xing VBR header
+kw_xing="Xing"
+kw_info="Info"
+# VBRI header
+kw_vbri="VBRI"
+
+# Common frame header bytes
+kw_hdr1="\xff\xfb\x90\x00"
+kw_hdr2="\xff\xfb\x90\x64"
+kw_hdr3="\xff\xfb\x92\x00"
+kw_hdr4="\xff\xf3\x90\x00"
+kw_hdr5="\xff\xe3\x90\x00"
+
+# Common bitrates (128kbps stereo 44100Hz)
+kw_common="\xff\xfb\x90\x04"
