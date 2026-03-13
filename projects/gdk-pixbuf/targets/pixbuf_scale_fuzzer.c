@@ -26,8 +26,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     char *tmpfile = fuzzer_get_tmpfile(data, size);
     pixbuf = gdk_pixbuf_new_from_file_at_scale(tmpfile, 1, size, TRUE, &error);
-    g_clear_error(&error);
-    g_clear_object(&pixbuf);
+    if (pixbuf != NULL) {
+        g_clear_object(&pixbuf);
+    } else {
+        g_clear_error(&error);
+    }
     pixbuf = gdk_pixbuf_new_from_file_at_scale(tmpfile, 1, size, FALSE, &error);
     if (pixbuf != NULL) {
         g_clear_object(&pixbuf);
