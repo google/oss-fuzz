@@ -19,3 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/ARM-software/astc-encoder
 WORKDIR astc-encoder/Source
 COPY build.sh $SRC/
+RUN sed -i 's/c++14/c++17/g' $SRC/astc-encoder/Source/Fuzzers/build.sh
