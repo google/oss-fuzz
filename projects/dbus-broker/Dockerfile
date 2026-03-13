@@ -24,4 +24,4 @@ ENV RUSTUP_TOOLCHAIN nightly-2025-09-05
 
 RUN cargo install bindgen-cli
 WORKDIR dbus-broker
-COPY *.c build.sh $SRC/
+COPY *.c build.sh run_tests.sh $SRC/
