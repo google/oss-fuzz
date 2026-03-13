@@ -1,0 +1,13 @@
+homepage: "https://github.com/lieff/minimp3"
+main_repo: "https://github.com/lieff/minimp3.git"
+language: c
+primary_contact: "leaveleave01@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - centipede
+sanitizers:
+  - address
+  - undefined
+  - memory
