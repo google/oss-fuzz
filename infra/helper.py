@@ -1012,9 +1012,9 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
 
   corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project.name,
                                                       fuzz_target=fuzz_target)
-  command = ['gsutil', 'ls', corpus_backup_url]
+  command = ['gcloud storage', 'ls', corpus_backup_url]
 
-  # Don't capture stderr. We want it to print in real time, in case gsutil is
+  # Don't capture stderr. We want it to print in real time, in case gcloud storage is
   # asking for two-factor authentication.
   corpus_listing = subprocess.Popen(command, stdout=subprocess.PIPE)
   output, _ = corpus_listing.communicate()
@@ -1027,7 +1027,7 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
   if output:
     latest_backup_url = output.splitlines()[-1]
     archive_path = corpus_dir + '.zip'
-    command = ['gsutil', '-q', 'cp', latest_backup_url, archive_path]
+    command = ['gcloud', 'storage', 'cp', latest_backup_url, archive_path]
     subprocess.check_call(command)
 
     command = ['unzip', '-q', '-o', archive_path, '-d', corpus_dir]
@@ -1037,7 +1037,7 @@ def _get_latest_corpus(project, fuzz_target, base_corpus_dir):
     # Sync the working corpus copy if a minimized backup is not available.
     corpus_url = CORPUS_URL_FORMAT.format(project_name=project.name,
                                           fuzz_target=fuzz_target)
-    command = ['gsutil', '-m', '-q', 'rsync', '-R', corpus_url, corpus_dir]
+    command = ['gcloud', 'storage', 'rsync', '--recursive', corpus_url, corpus_dir]
     subprocess.check_call(command)
 
 
@@ -1099,10 +1099,10 @@ def download_corpora(args):
   else:
     try:
       with open(os.devnull, 'w') as stdout:
-        subprocess.check_call(['gsutil', '--version'], stdout=stdout)
+        subprocess.check_call(['gcloud', '--version'], stdout=stdout)
     except OSError:
-      logger.error('gsutil not found. Please install it from '
-                   'https://cloud.google.com/storage/docs/gsutil_install')
+      logger.error('gcloud not found. Please install it from '
+                   'https://docs.cloud.google.com/sdk/docs/install-sdk')
       return False
 
   if args.fuzz_target:
