@@ -19,6 +19,9 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-
   unzip maven.zip -d $SRC/maven && \
   rm maven.zip
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+RUN apt-get update && apt-get install -y openjdk-21-jdk rsync
+ENV JAVA_HOME /usr/lib/jvm/java-21-openjdk-amd64
+ENV PATH "$JAVA_HOME/bin:$PATH"
 RUN git clone --depth 1 https://github.com/checkstyle/checkstyle checkstyle
 COPY *.sh *Fuzzer.java $SRC/
 WORKDIR $SRC/checkstyle
