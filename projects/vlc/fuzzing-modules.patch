@@ -2,7 +2,7 @@ diff --git a/test/Makefile.am b/test/Makefile.am
 index 7eb4ab5..cdbd28a 100644
 --- a/test/Makefile.am
 +++ b/test/Makefile.am
-@@ -480,8 +480,16 @@ libvlc_demux_run_la_LIBADD += \
+@@ -480,8 +480,17 @@ libvlc_demux_run_la_LIBADD += \
  	../modules/libpacketizer_mpegaudio_plugin.la \
  	../modules/libpacketizer_mpegvideo_plugin.la \
  	../modules/libpacketizer_vc1_plugin.la \
@@ -16,6 +16,7 @@ index 7eb4ab5..cdbd28a 100644
 +	../modules/libvc1_plugin.la \
 +	../modules/libmpgv_plugin.la \
 +	../modules/libdemux_stl_plugin.la \
++	../modules/libmpc_plugin.la \
  	../modules/libfilesystem_plugin.la \
  	../modules/libxml_plugin.la \
  	../modules/libogg_plugin.la \
