@@ -1,0 +1,13 @@
+homepage: "https://github.com/OpenPrinting/go-avahi"
+main_repo: "https://github.com/OpenPrinting/go-avahi"
+primary_contact: "rishavtarway@gmail.com"
+auto_ccs:
+  - "till.kamppeter@gmail.com"
+  - "ossfuzz@iosifache.me"
+  - "jiongchiyu@gmail.com"
+  - "pzz@apevzner.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
