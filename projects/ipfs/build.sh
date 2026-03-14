@@ -29,6 +29,4 @@ function compile_ds_fuzzer {
 }
 
 compile_ds_fuzzer ipfs_ds_flatfs
-compile_ds_fuzzer ipfs_ds_badger "github.com/ipfs/go-ds-badger"
-compile_ds_fuzzer ipfs_ds_badger2 "github.com/ipfs/go-ds-badger2"
-
+compile_ds_fuzzer ipfs_ds_pebble "github.com/ipfs/go-ds-pebble"

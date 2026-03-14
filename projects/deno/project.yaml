@@ -1,0 +1,12 @@
+homepage: "https://github.com/denoland/deno"
+language: rust
+main_repo: "https://github.com/denoland/deno"
+fuzzing_engines:
+  - none
+sanitizers:
+  - address
+indexer:
+  targets:
+    - deno
+vendor_ccs:
+- david@adalogics.com

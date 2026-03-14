@@ -52,6 +52,15 @@ if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
   FUZZER_ARGS="-DENABLE_LIBFUZZER_STATIC_LINKAGE=ON"
 fi
 
+# Apply potential fix for the problem described in
+# google/oss-fuzz#13226.
+# See https://github.com/ossf/fuzz-introspector/pull/2278
+if [[ "$SANITIZER" = "introspector" ]]; then
+  curl -O https://patch-diff.githubusercontent.com/raw/ossf/fuzz-introspector/pull/2278.patch
+  patch -p1 --directory=/fuzz-introspector/ < 2278.patch
+  export FUZZ_INTROSPECTOR_PARALLEL=false
+fi
+
 cmake_args=(
     # Specific to Tarantool
     # Tarantool executable binary is needed for running Lua tests,
