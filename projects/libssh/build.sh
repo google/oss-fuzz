@@ -17,6 +17,15 @@
 
 BUILD=$WORK/build
 mkdir -p $BUILD
+
+# Fix deadlock in ssh_scp_fuzzer: the server thread blocks in
+# ssh_handle_key_exchange and pthread_join waits forever because the
+# sockets are only closed after the join. Shut them down first.
+SCP_FUZZER="$SRC/libssh/tests/fuzz/ssh_scp_fuzzer.c"
+if [ -f "$SCP_FUZZER" ]; then
+    sed -i 's/^cleanup_thread:/cleanup_thread:\n    shutdown(socket_fds[0], SHUT_RDWR);\n    shutdown(socket_fds[1], SHUT_RDWR);/' "$SCP_FUZZER"
+fi
+
 pushd $BUILD
 CFLAGS="$CFLAGS -Wno-error=declaration-after-statement"
 cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
@@ -25,6 +34,13 @@ cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
     -DUNIT_TESTING=ON -DWITH_EXAMPLES=OFF $SRC/libssh
 make "-j$(nproc)"
 
+# Build the shared mock server object (needed by ssh_scp_fuzzer)
+MOCK_SRC="$SRC/libssh/tests/fuzz/ssh_server_mock.c"
+if [ -f "$MOCK_SRC" ]; then
+    $CC $CFLAGS -I$SRC/libssh/include/ -I$SRC/libssh/src/ -I$BUILD/ -I$BUILD/include/ \
+        -c "$MOCK_SRC" -O0 -g
+fi
+
 fuzzers=$(find $SRC/libssh/tests/fuzz/ -name "*_fuzzer.c")
 for f in $fuzzers; do
     fuzzerName=$(basename $f .c)
@@ -32,9 +48,21 @@ for f in $fuzzers; do
     $CC $CFLAGS -I$SRC/libssh/include/ -I$SRC/libssh/src/ -I$BUILD/ -I$BUILD/include/ \
         -c "$f" -O0 -g
 
-    $CXX $CXXFLAGS $fuzzerName.o \
+    # Fuzzers that use the mock server need the mock object and pthread
+    EXTRA_OBJS=""
+    EXTRA_LIBS=""
+    if [ -f ssh_server_mock.o ]; then
+        case "$fuzzerName" in
+            ssh_scp_fuzzer|ssh_sftp_fuzzer)
+                EXTRA_OBJS="ssh_server_mock.o"
+                EXTRA_LIBS="-lpthread"
+                ;;
+        esac
+    fi
+
+    $CXX $CXXFLAGS $fuzzerName.o $EXTRA_OBJS \
         -o "$OUT/$fuzzerName" -O0 -g \
-        $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
+        $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic $EXTRA_LIBS
 
     if [ -d "$SRC/libssh/tests/fuzz/${fuzzerName}_corpus" ]; then
         zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/libssh/tests/fuzz/${fuzzerName}_corpus/*
