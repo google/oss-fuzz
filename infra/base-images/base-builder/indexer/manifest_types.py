@@ -24,6 +24,7 @@ A snapshot is a tarball containing the following:
 
 import dataclasses
 import enum
+import inspect
 import io
 import json
 import logging
@@ -379,7 +380,7 @@ class Manifest:
               " empty URL. Source map entry: {ref}"
           )
     # check very simple basic types.
-    for k, v in self.__annotations__.items():
+    for k, v in inspect.get_annotations(type(self)).items():
       if not isinstance(v, type):
         continue
       if not isinstance(getattr(self, k), v):
