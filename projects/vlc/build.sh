@@ -46,6 +46,7 @@ make V=1 -j$(nproc) \
     .vpx \
     .mpg123 \
     .dvbpsi \
+    .mpcdec \
     .ffmpeg
 
 cd ../../
@@ -70,6 +71,10 @@ sed -i 's/..\/..\/lib\/libvlc_internal.h/lib\/libvlc_internal.h/g' ./test/src/in
 # Add extra codec, packetizer, and demux modules for broader fuzzing coverage.
 # See fuzzing-modules.patch for the actual changes.
 patch -p1 < $SRC/fuzzing-modules.patch
+
+# Register the MPC demux module in the static module list (the module is linked
+# via fuzzing-modules.patch but also needs to be in the PLUGINS macro).
+sed -i 's/f(demux_ogg)/f(demux_mpc) \\\n    f(demux_ogg)/' ./test/src/input/demux-run.c
 
 # clang is used to link the binary since there are no cpp sources (but we have
 # cpp modules), force clang++ usage
@@ -110,7 +115,9 @@ make V=1 -j$(nproc)
 
 cp ./test/vlc-demux-dec-libfuzzer $OUT/
 
-cat fuzz-corpus/dictionaries/*.dict >> $OUT/vlc-demux-dec-libfuzzer.dict
+# Prepare for removing sdp.dict without breaking the build
+rm fuzz-corpus/dictionaries/sdp.dict || true
+find fuzz-corpus/dictionaries -name "*dict" -exec cat {} \; -exec echo "" \; >> $OUT/vlc-demux-dec-libfuzzer.dict
 
 for i in fuzz-corpus/seeds/* fuzz-corpus/dictionaries/*.dict
 do
