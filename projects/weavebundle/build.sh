@@ -19,9 +19,25 @@ cmake -S . -B build -G Ninja \
   -DCMAKE_CXX_COMPILER="$CXX" \
   -DWEAVEBUNDLE_ENABLE_FUZZING=ON
 
-cmake --build build --target fuzz_parser
+cmake --build build --target fuzz_parser fuzz_rle fuzz_section fuzz_footer
 
 cp build/fuzz_parser "$OUT/"
+cp build/fuzz_rle "$OUT/"
+cp build/fuzz_section "$OUT/"
+cp build/fuzz_footer "$OUT/"
+cp fuzz/fuzz_parser.dict "$OUT/"
+cp fuzz/fuzz_rle.dict "$OUT/"
+cp fuzz/fuzz_section.dict "$OUT/"
+cp fuzz/fuzz_footer.dict "$OUT/"
 
 mkdir -p $OUT/fuzz_parser_seed_corpus
 cp examples/*.wvbf $OUT/fuzz_parser_seed_corpus/
+
+mkdir -p $OUT/fuzz_rle_seed_corpus
+cp examples/*.wvbf $OUT/fuzz_rle_seed_corpus/
+
+mkdir -p $OUT/fuzz_section_seed_corpus
+cp examples/*.wvbf $OUT/fuzz_section_seed_corpus/
+
+mkdir -p $OUT/fuzz_footer_seed_corpus
+cp examples/*.wvbf $OUT/fuzz_footer_seed_corpus/
