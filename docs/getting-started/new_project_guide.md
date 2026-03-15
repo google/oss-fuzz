@@ -83,9 +83,19 @@ This configuration file stores project metadata. The following attributes are su
 - [vendor_ccs](#vendor) (optional)
 - [sanitizers](#sanitizers) (optional)
 - [architectures](#architectures) (optional)
+- [fuzzing_engines](#fuzzing_engines) (optional)
 - [help_url](#help_url) (optional)
 - [builds_per_day](#build_frequency) (optional)
 - [file_github_issue](#file_github_issue) (optional)
+- [view_restrictions](#view_restrictions) (optional)
+- [blackbox](#blackbox) (optional)
+- [coverage_extra_args](#coverage_extra_args) (optional)
+- [disabled](#disabled) (optional)
+- [run_tests](#run_tests) (optional)
+- [selective_unpack](#selective_unpack) (optional)
+- [labels](#labels) (optional)
+- [indexer](#indexer) (optional)
+- [base_os_version](#base_os_version) (optional)
 
 ### homepage
 You project's homepage.
@@ -209,6 +219,64 @@ Will build the project twice per day.
 ### file_github_issue (optional) {#file_github_issue}
 Whether to mirror issues on github instead of having them only in the OSS-Fuzz
 tracker.
+
+### view_restrictions (optional) {#view_restrictions}
+Controls the visibility of bug reports. Set to `none` to make bug reports public.
+By default, bug reports are only visible to project members listed in `primary_contact` and `auto_ccs`.
+
+Example:
+```yaml
+view_restrictions: none
+```
+
+### blackbox (optional) {#blackbox}
+Set to `true` for blackbox fuzzing projects. This is used for projects where source code is not available.
+
+Example:
+```yaml
+blackbox: true
+```
+
+### coverage_extra_args (optional) {#coverage_extra_args}
+Additional arguments to pass to the coverage tool. Commonly used to ignore certain files or directories from coverage reports.
+
+Example:
+```yaml
+coverage_extra_args: -ignore-filename-regex=.*/vendor/.*
+```
+
+### disabled (optional) {#disabled}
+Set to `true` to temporarily disable fuzzing for this project. The project will not be built or run.
+
+Example:
+```yaml
+disabled: true
+```
+
+### run_tests (optional) {#run_tests}
+Whether to run tests during the build process. This can be used to validate the build before fuzzing.
+
+Example:
+```yaml
+run_tests: true
+```
+
+### selective_unpack (optional) {#selective_unpack}
+Controls selective unpacking of build artifacts. This is an advanced option for optimizing storage and transfer of fuzzing artifacts.
+
+### labels (optional) {#labels}
+Internal use only. Used to assign labels to specific fuzzers for organizational purposes.
+
+### indexer (optional) {#indexer}
+Flags specific to the infra/indexer component. This is used for internal indexing configuration.
+
+### base_os_version (optional) {#base_os_version}
+Specifies the base OS version to use for building. Currently supports `ubuntu-24-04`.
+
+Example:
+```yaml
+base_os_version: ubuntu-24-04
+```
 
 ## Dockerfile {#dockerfile}
 
