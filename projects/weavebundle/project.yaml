@@ -1,0 +1,11 @@
+homepage: "https://github.com/hadipra5/weavebundle"
+language: c++
+primary_contact: "diemail.adi@gmail.com"
+main_repo: "https://github.com/hadipra5/weavebundle"
+auto_ccs:
+  - "diemail.adi@gmail.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
