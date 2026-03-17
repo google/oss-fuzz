@@ -1,0 +1,11 @@
+homepage: "https://github.com/libmdbx/libmdbx"
+language: c++
+primary_contact: "leo@yuriev.ru"
+auto_ccs:
+  - "chloe.cano@protonmail.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/erthink/libmdbx'
