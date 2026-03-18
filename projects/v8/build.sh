@@ -33,7 +33,7 @@ ARGS='is_asan = true
  v8_enable_backtrace = true
  v8_enable_slow_dchecks = true
  v8_enable_test_features = true
- v8_enable_fast_mksnapshot = false'
+ v8_enable_fast_mksnapshot = true'
 
 if [[ -n "${INDEXER_BUILD:-}" ]]; then
   ARGS="$ARGS is_debug=true v8_optimized_debug=false v8_enable_slow_dchecks=true clang_base_path=\"/opt/toolchain\""

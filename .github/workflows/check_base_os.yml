@@ -35,7 +35,7 @@ jobs:
         run: |
           # Get the list of changed files compared to the target branch
           # and filter for unique directories under 'projects/'.
-          CHANGED_DIRS=$(git diff --name-only ${{ github.base_ref }} ${{ github.head_ref }} | \
+          CHANGED_DIRS=$(git diff --name-only ${GITHUB_BASE_REF} ${GITHUB_HEAD_REF} | \
             grep '^projects/' | \
             xargs -n 1 dirname | \
             sort -u)
@@ -53,9 +53,11 @@ jobs:
         if: steps.changed-projects.outputs.changed_dirs != ''
         run: |
           EXIT_CODE=0
-          for project_dir in ${{ steps.changed-projects.outputs.changed_dirs }};
+          for project_dir in ${STEPS_CHANGED_PROJECTS_OUTPUTS_CHANGED_DIRS};
           do
             echo "--- Checking ${project_dir} ---"
             python3 infra/ci/check_base_os.py "${project_dir}" || EXIT_CODE=$?
           done
           exit $EXIT_CODE
+        env:
+          STEPS_CHANGED_PROJECTS_OUTPUTS_CHANGED_DIRS: ${{ steps.changed-projects.outputs.changed_dirs }}

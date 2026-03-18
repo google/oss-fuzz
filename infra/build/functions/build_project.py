@@ -552,7 +552,7 @@ def _create_indexed_build_steps(project,
       # in a standalone way without the mount paths GCB installs by default
       # (/workspace).
       # First we save the $OUT contents into /outbak.
-      'mkdir -p /outbak && mv $$OUT/* /outbak/ && '
+      'mkdir -p /outbak && cp -a $$OUT/* /outbak/ && '
       # Create a link from /out to the actual $OUT.
       'rm -rf /out && ln -s $$OUT /out && '
       # Unmount GCB's mount paths.
@@ -633,7 +633,7 @@ def get_indexer_build_steps(project_name,
   project = Project(project_name, project_yaml, dockerfile)
 
   if project.fuzzing_language not in {'c', 'c++'}:
-    return []
+    return [], f'Project "{project.name}" is written in "{project.fuzzing_language}", indexer is not supported yet.'
 
   if not timestamp:
     timestamp = get_datetime_now()
@@ -664,7 +664,7 @@ def get_indexer_build_steps(project_name,
                                              env,
                                              project.indexer_targets,
                                              build_type='tracer')
-  return build_steps + indexer_steps + tracer_steps
+  return build_steps + indexer_steps + tracer_steps, None
 
 
 def get_targets_list_upload_step(bucket, project, build, uploader_image):

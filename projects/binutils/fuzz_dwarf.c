@@ -20,6 +20,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+  if (size > 16384)
+    return 0;
   char filename[256];
   sprintf(filename, "/tmp/libfuzzer.%d", getpid());
   FILE *fp = fopen(filename, "wb");

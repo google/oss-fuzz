@@ -14,9 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
+cd dovecot
 ./autogen.sh
 ./configure PANDOC=false --with-fuzzer=clang
-make
-
+make -j$(nproc)
+# Copy over the fuzzers
+find . -name "fuzz-*" -executable -exec cp {} $OUT/ \;
+cd ../pigeonhole
+./autogen.sh
+./configure --with-dovecot=../dovecot --with-fuzzer=clang
+make -j$(nproc)
 # Copy over the fuzzers
 find . -name "fuzz-*" -executable -exec cp {} $OUT/ \;

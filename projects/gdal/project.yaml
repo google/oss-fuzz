@@ -4,7 +4,6 @@ language: c++
 primary_contact: "even.rouault@gmail.com"
 auto_ccs:
   - "schwehr@gmail.com"
-  - "mateusz@loskot.net"
   - "bishop.dev@gmail.com"
   - "juergen.fischer@gmail.com"
   - "athomas@thinkspatial.com.au"
@@ -12,6 +11,7 @@ auto_ccs:
   - "bjorn.harrtell@gmail.com"
   - "nyall.dawson@gmail.com"
   - "uygabel@gmail.com"
+  - "apasotti@gmail.com"
 architectures:
   - x86_64
   - i386

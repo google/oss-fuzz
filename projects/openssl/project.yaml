@@ -16,6 +16,7 @@ auto_ccs:
  - "nikolap@openssl.org"
  - "milanb@openssl.org"
  - "eugenes@openssl.org"
+ - "norbertp@openssl.org"
 sanitizers:
  - address
  - memory:
