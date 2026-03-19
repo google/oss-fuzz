@@ -21,12 +21,13 @@ env MAKE_VERSION 4.4.1
 RUN cd $SRC &&\
   curl -L https://ftp.gnu.org/gnu/make/make-$MAKE_VERSION.tar.gz -o make.tar.gz &&\
   tar xf make.tar.gz &&\
-  mv make-$MAKE_VERSION make &&\
-  cd make &&\
-  ./configure --prefix=$SRC/make &&\
+  cd make-${MAKE_VERSION} &&\
+  ./configure --prefix=$SRC/make-${MAKE_VERSION} &&\
   make -j$(nproc)
 
-RUN git clone --depth 1 https://github.com/erthink/libmdbx
+#RUN git clone --depth 1 https://github.com/erthink/libmdbx
+RUN git clone --depth 1 https://github.com/Segwaz/libmdbx -b fuzz_raw_db_format
+#RUN git clone --depth 1 https://github.com/Segwaz/libmdbx_mirror.git libmdbx
 
 COPY build.sh $SRC/
 

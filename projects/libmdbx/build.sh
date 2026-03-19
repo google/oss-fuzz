@@ -22,9 +22,9 @@ export MAKE=$SRC/make-"$MAKE_VERSION"/make
 $MAKE clean || true
 $MAKE libmdbx.a CC="$CC" CFLAGS="$CFLAGS"
 
-cp ./fuzz/seed/fuzz_raw_db_format.zip $OUT/fuzz_raw_db_format.zip
+cp ./fuzz/seed/fuzz_raw_db_format_seed_corpus.zip $OUT
 
-$CC $CFLAGS -I./ \
+$CC $CFLAGS -I./ -I./fuzz \
   ./fuzz/fuzz_raw_db_format.c \
   ./libmdbx.a \
   -o $OUT/fuzz_raw_db_format \
