@@ -27,7 +27,6 @@ RUN cd $SRC &&\
 
 #RUN git clone --depth 1 https://github.com/erthink/libmdbx
 RUN git clone --depth 1 https://github.com/Segwaz/libmdbx -b fuzz_raw_db_format
-#RUN git clone --depth 1 https://github.com/Segwaz/libmdbx_mirror.git libmdbx
 
 COPY build.sh $SRC/
 

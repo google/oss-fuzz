@@ -25,7 +25,8 @@ $MAKE libmdbx.a CC="$CC" CFLAGS="$CFLAGS"
 cp ./fuzz/seed/fuzz_raw_db_format_seed_corpus.zip $OUT
 
 $CC $CFLAGS -I./ -I./fuzz \
-  ./fuzz/fuzz_raw_db_format.c \
-  ./libmdbx.a \
-  -o $OUT/fuzz_raw_db_format \
-  $LIB_FUZZING_ENGINE
+    ./fuzz/fuzz_raw_db_format.c \
+    ./fuzz/mode_desc.c \
+    ./libmdbx.a \
+    -o $OUT/fuzz_raw_db_format \
+    $LIB_FUZZING_ENGINE
