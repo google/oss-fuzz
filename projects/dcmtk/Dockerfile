@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,27 +14,16 @@
 #
 ################################################################################
 
-./autogen.sh
 
-./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE -DDEBUG_LEVEL=-1" \
-	--enable-imc-test \
-	--enable-tnccs-20 \
-	--enable-libipsec \
-	--enable-eap-radius \
-	--enable-fuzzing \
-	--with-libfuzzer=$LIB_FUZZING_ENGINE \
-	--enable-monolithic \
-	--disable-shared \
-	--enable-static
+FROM gcr.io/oss-fuzz-base/base-builder
 
-make -j$(nproc)
+RUN apt-get update && apt-get install -y --no-install-recommends     cmake ninja-build make pkg-config zlib1g-dev python3 &&     rm -rf /var/lib/apt/lists/*
 
-fuzzers=$(find fuzz -maxdepth 1 -executable -type f -name 'fuzz_*')
-for f in $fuzzers; do
-	fuzzer=$(basename $f)
-	cp $f $OUT/
-	corpus=${fuzzer#fuzz_}
-	if [ -d "fuzzing-corpora/${corpus}" ]; then
-		zip -rj $OUT/${fuzzer}_seed_corpus.zip fuzzing-corpora/${corpus}
-	fi
-done
+RUN git clone --depth 1 https://github.com/DCMTK/dcmtk $SRC/dcmtk
+RUN git clone --depth 1 https://github.com/DCMTK/dcmtk-fuzzers $SRC/dcmtk-fuzzers
+
+COPY build.sh $SRC/
+COPY dcmtk_dicom_fuzzer.dict make_seed_corpus.py $SRC/dcmtk-fuzzers/
+COPY dcmtk_dicom_fuzzer.cc dcmtk_meta_fuzzer.cc $SRC/dcmtk-fuzzers/
+
+WORKDIR $SRC/dcmtk-fuzzers

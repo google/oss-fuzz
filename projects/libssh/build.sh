@@ -48,21 +48,17 @@ for f in $fuzzers; do
     $CC $CFLAGS -I$SRC/libssh/include/ -I$SRC/libssh/src/ -I$BUILD/ -I$BUILD/include/ \
         -c "$f" -O0 -g
 
-    # Fuzzers that use the mock server need the mock object and pthread
-    EXTRA_OBJS=""
-    EXTRA_LIBS=""
-    if [ -f ssh_server_mock.o ]; then
-        case "$fuzzerName" in
-            ssh_scp_fuzzer|ssh_sftp_fuzzer)
-                EXTRA_OBJS="ssh_server_mock.o"
-                EXTRA_LIBS="-lpthread"
-                ;;
-        esac
+    # Check if this fuzzer needs ssh_server_mock
+    if [ "$fuzzerName" = "ssh_scp_fuzzer" ] || [ "$fuzzerName" = "ssh_sftp_fuzzer" ]; then
+        echo "Linking $fuzzerName with ssh_server_mock"
+        $CXX $CXXFLAGS $fuzzerName.o ssh_server_mock.o \
+            -o "$OUT/$fuzzerName" -O0 -g \
+            $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic -lpthread
+    else
+        $CXX $CXXFLAGS $fuzzerName.o \
+            -o "$OUT/$fuzzerName" -O0 -g \
+            $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
     fi
-
-    $CXX $CXXFLAGS $fuzzerName.o $EXTRA_OBJS \
-        -o "$OUT/$fuzzerName" -O0 -g \
-        $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic $EXTRA_LIBS
 
     if [ -d "$SRC/libssh/tests/fuzz/${fuzzerName}_corpus" ]; then
         zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/libssh/tests/fuzz/${fuzzerName}_corpus/*
@@ -71,4 +67,5 @@ for f in $fuzzers; do
 
     cp $OUT/${fuzzerName} $OUT/${fuzzerName}_nalloc
 done
+
 popd
