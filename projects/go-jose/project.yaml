@@ -1,0 +1,19 @@
+homepage: "https://github.com/go-jose/go-jose"
+language: go
+primary_contact: "go-jose@googlegroups.com"
+main_repo: "https://github.com/go-jose/go-jose.git"
+file_github_issue: true
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+```
+
+Commit mesajı:
+```
+project: add go-jose fuzzing integration
+```
+
+**"Create a new branch"** seç, branch adı:
+```
+add-go-jose-fuzzing
