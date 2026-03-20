@@ -7,13 +7,3 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-```
-
-Commit mesajı:
-```
-project: add go-jose fuzzing integration
-```
-
-**"Create a new branch"** seç, branch adı:
-```
-add-go-jose-fuzzing
