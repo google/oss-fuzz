@@ -58,9 +58,9 @@ DCMTK_LIBS="-Wl,--start-group ${FILTERED_LIBS} -Wl,--end-group -lpthread -ldl"
 
 build_one() {
   local src="$1"
-  local out="$2"
+  local base_out="$2"
   "$CXX" $CXXFLAGS -std=c++17 -I"$DCMTK_INC" \
-    "$src" -o "$OUT/$out" \
+    "$src" -o "$OUT/$base_out" \
     $LIB_FUZZING_ENGINE -L"$DCMTK_LIBDIR" ${DCMTK_LIBS}
 }
 
@@ -87,7 +87,7 @@ dict = dcmtk_dicom_fuzzer.dict
 EOF
 
 # Seed corpus next to binaries
-python3 "$SRC/dcmtk-fuzzers/make_seed_corpus.py"
+python3 $SRC/dcmtk-fuzzers/make_seed_corpus.py $OUT/dcmtk_dicom_fuzzer_seed_corpus.zip
 
 # Copy dictionary next to binaries under both names (defensive)
 cp "$SRC/dcmtk-fuzzers/dcmtk_dicom_fuzzer.dict" "$OUT/dcmtk_dicom_fuzzer.dict" || true
