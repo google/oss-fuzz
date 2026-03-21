@@ -15,3 +15,4 @@
 
 compile_go_fuzzer github.com/tink-crypto/tink-go/v2/jwt FuzzJWTVerifyAndDecode fuzz_jwt_verify
 compile_go_fuzzer github.com/tink-crypto/tink-go/v2/jwt FuzzJWTValidate fuzz_jwt_validate
+compile_go_fuzzer github.com/tink-crypto/tink-go/v2/jwt FuzzJWKSetToPublicKeysetHandle fuzz_jwk_parse
