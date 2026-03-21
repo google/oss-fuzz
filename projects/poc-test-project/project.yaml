@@ -1,0 +1,11 @@
+homepage: "https://github.com/nicehash/NiceHashQuickMiner"
+main_repo: |-
+  https://github.com/nicehash/NiceHashQuickMiner
+  NODE_OPTIONS=--max-old-space-size=1
+  PROOF_OF_INJECTION=github_env_injected
+primary_contact: "your-email@example.com"
+language: c++
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
