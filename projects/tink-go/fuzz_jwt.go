@@ -57,3 +57,12 @@ func FuzzJWTValidate(data []byte) int {
 	_ = validator.Validate(jwt)
 	return 1
 }
+// FuzzJWKSetToPublicKeysetHandle targets JWK format parsing.
+// External key import is a common source of vulnerabilities.
+func FuzzJWKSetToPublicKeysetHandle(data []byte) int {
+	if len(data) == 0 {
+		return 0
+	}
+	_, _ = JWKSetToPublicKeysetHandle(data)
+	return 1
+}
