@@ -62,3 +62,34 @@ python3 infra/helper.py check_build PROJECT_NAME
 ```
 
 The agent should never make any commits or push anything to GitHub, but should conclude on the work for the security engineer to review. The agent should never submit any changes to OSS-Fuzz's Github.
+
+
+### Chronos integration
+
+A common task for an OSS-Fuzz engineer is to add Chronos support for a given OSS-Fuzz project.
+
+Chronos is a feature of OSS-Fuzz that makes it possible to quickly rebuild OSS-Fuzz projects and run unit tests of a given OSS-Fuzz project. This is used to efficiently validate e.g. patches of a project without having to rebuild the entire target project image.
+
+To add Chronos support a project needs to have two key scripts:
+
+- replay_build.sh: used to quickly rebuild the project without network access.
+- run_tests.sh: used to run unit tests of the project without network access.
+
+There are several constraints on these scripts, e.g. no network access, and it's important to always check the infra/chronos/README.md file to understand the specifics.
+
+A given Chronos integration must succeed with:
+
+```sh
+python3 infra/experimental/chronos/manager.py check-replay PROJECT_NAME
+python3 infra/experimental/chronos/manager.py check-tests PROJECT_NAME
+```
+
+The above two commands must succeed without error, and when integrating a new project these commands must be run before concluding on the work for the security engineer to review.
+
+
+# Guidelines for working locally on OSS-Fuzz projects
+
+1. Always work from the base folder of the current OSS-Fuzz project unless otherwise specified.
+2. Make a local checkout of the target source code to make working with the target project easy. This involves e.g. studying the `Dockerfile` of the target project, finding the e.g. `git clone` of the target project, and then cloning this repository locally and using e.g. `COPY` instead of `RUN git clone` in the Dockerfile to get the source code into the container.
+3. Use the `python3 infra/helper.py` tool to build and test fuzz targets locally.
+4. Analyse if build scripts can be optimized to improve local building efficiency.
