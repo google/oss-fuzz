@@ -34,3 +34,11 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzz_model.cc \
     ./build/pthreadpool/libpthreadpool.a ./build/cpuinfo/libcpuinfo.a \
     ./build/libxnnpack-microkernels-all.a ./build/libxnnpack-microkernels-prod.a \
     -o $OUT/fuzz_model
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzz_subgraph.cc \
+    -I/src/xnnpack/src -I/src/xnnpack/build/pthreadpool-source/include \
+    -I/src/xnnpack/build/FXdiv-source/include -I/src/xnnpack/include/ \
+    -I/src/xnnpack/build/FP16-source/include ./build/libXNNPACK.a \
+    ./build/pthreadpool/libpthreadpool.a ./build/cpuinfo/libcpuinfo.a \
+    ./build/libxnnpack-microkernels-all.a ./build/libxnnpack-microkernels-prod.a \
+    -o $OUT/fuzz_subgraph
