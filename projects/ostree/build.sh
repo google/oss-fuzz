@@ -15,17 +15,11 @@
 #
 ################################################################################
 
-# Build glib with sanitizer support
-cd glib
-mkdir build
-cd build
-meson --prefix=/usr --buildtype=release -Db_lundef=false -Ddefault_library=static -Dlibmount=disabled
-ninja
-ninja install
-
 # Build libostree
 cd $SRC/ostree
 env NOCONFIGURE=1 ./autogen.sh
+# Fix missing include for uintptr_t
+sed -i '26i #include <stdint.h>' src/libostree/ostree-bootloader-aboot.c
 ./configure --enable-static --without-selinux
 make V=1
 

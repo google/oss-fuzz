@@ -33,6 +33,7 @@ FuzzBins=$(find . -name "*.c")
 for File in $FuzzBins; do
     FuzzBin=$(basename $File .c)
     cp $FuzzBin $OUT/$FuzzBin
+    echo -e "[libfuzzer]\nmax_len=16384" > $OUT/${FuzzBin}.options
 done
 popd
 
