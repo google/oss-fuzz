@@ -24,8 +24,7 @@ RUN git clone \
 WORKDIR $SRC/Cirq
 
 # Install pip dependencies.
-RUN --mount=type=cache,target=/root/.cache/pip \
-    export PIP_ROOT_USER_ACTION=ignore && \
+RUN export PIP_ROOT_USER_ACTION=ignore && \
     pip3 install --upgrade pip && \
     pip3 install -r dev_tools/requirements/dev.env.txt
 

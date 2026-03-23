@@ -15,14 +15,17 @@
 #
 ################################################################################
 cd dovecot
+# Patch ldflags
+find . -name "Makefile.am" -exec sed -i -e 's,(FUZZER_LDFLAGS),(FUZZER_LDFLAGS) -static-libtool-libs,' {} \;
 ./autogen.sh
-./configure PANDOC=false --with-fuzzer=clang
+./configure PANDOC=false --with-fuzzer=clang --prefix=$OUT
 make -j$(nproc)
 # Copy over the fuzzers
-find . -name "fuzz-*" -executable -exec cp {} $OUT/ \;
+find . -name "fuzz-*" -executable -exec libtool install install -m0755 {} $OUT/ \;
 cd ../pigeonhole
+find . -name "Makefile.am" -exec sed -i -e 's,(FUZZER_LDFLAGS),(FUZZER_LDFLAGS) -static-libtool-libs,' {} \;
 ./autogen.sh
-./configure --with-dovecot=../dovecot --with-fuzzer=clang
+./configure --with-dovecot=../dovecot --with-fuzzer=clang --prefix=$OUT
 make -j$(nproc)
 # Copy over the fuzzers
-find . -name "fuzz-*" -executable -exec cp {} $OUT/ \;
+find . -name "fuzz-*" -executable -exec libtool install install -m0755 {} $OUT/ \;
