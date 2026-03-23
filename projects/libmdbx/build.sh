@@ -15,18 +15,12 @@
 #
 ################################################################################
 
-cd $SRC/libmdbx
+cd $SRC/libmdbx-fuzzing
 
 export MAKE=$SRC/make-"$MAKE_VERSION"/make
 
 $MAKE clean || true
-$MAKE libmdbx.a CC="$CC" CFLAGS="$CFLAGS"
+$MAKE fuzz_raw_db_format
 
-cp ./fuzz/seed/fuzz_raw_db_format_seed_corpus.zip $OUT
-
-$CC $CFLAGS -I./ -I./fuzz \
-    ./fuzz/fuzz_raw_db_format.c \
-    ./fuzz/mode_desc.c \
-    ./libmdbx.a \
-    -o $OUT/fuzz_raw_db_format \
-    $LIB_FUZZING_ENGINE
+cp ./seed/fuzz_raw_db_format_seed_corpus.zip $OUT
+cp ./fuzz_raw_db_format $OUT

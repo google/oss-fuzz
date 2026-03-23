@@ -26,7 +26,7 @@ RUN cd $SRC &&\
   make -j$(nproc)
 
 #RUN git clone --depth 1 https://github.com/erthink/libmdbx
-RUN git clone --depth 1 https://github.com/Segwaz/libmdbx -b fuzz_raw_db_format
+RUN git clone --recursive https://github.com/Mithril-mine/libmdbx-fuzzing
 
 COPY build.sh $SRC/
 
