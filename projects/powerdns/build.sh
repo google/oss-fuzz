@@ -32,6 +32,8 @@ sed -i 's/AC_CC_PIE//' configure.ac
  CFLAGS="" CXXFLAGS="" ./bootstrap.sh
  CFLAGS="" CXXFLAGS="" ./b2 headers
  cp -R boost/ /usr/include/
+ # work around https://github.com/mesonbuild/meson/issues/15470
+ touch /usr/lib/libboost_bogus.so
 )
 
 # build fuzzing targets
