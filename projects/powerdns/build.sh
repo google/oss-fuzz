@@ -74,9 +74,9 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
         make -j$(nproc) fuzz_targets
     else
         build_dir='build'
-        sed -i "/'b_pie=true',/d" meson.build
         meson setup \
           -D fuzz-targets=true \
+          -D b_pie=false \
           ${build_dir}
         meson compile -C ${build_dir} fuzz-targets
     fi
