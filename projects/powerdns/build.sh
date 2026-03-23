@@ -32,6 +32,8 @@ sed -i 's/AC_CC_PIE//' configure.ac
  CFLAGS="" CXXFLAGS="" ./bootstrap.sh
  CFLAGS="" CXXFLAGS="" ./b2 headers
  cp -R boost/ /usr/include/
+ # work around https://github.com/mesonbuild/meson/issues/15470
+ touch /usr/lib/libboost_bogus.so
 )
 
 # build fuzzing targets
@@ -72,9 +74,9 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
         make -j$(nproc) fuzz_targets
     else
         build_dir='build'
-        sed -i "/'b_pie=true',/d" meson.build
         meson setup \
           -D fuzz-targets=true \
+          -D b_pie=false \
           ${build_dir}
         meson compile -C ${build_dir} fuzz-targets
     fi
