@@ -5,6 +5,9 @@ auto_ccs:
   - "nanang@teluu.com"
   - "ming@teluu.com"
   - "riza@teluu.com"
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
 fuzzing_engines:
   - libfuzzer
   - afl

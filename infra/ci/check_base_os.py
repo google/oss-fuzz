@@ -28,7 +28,7 @@ import yaml
 SUPPORTED_VERSIONS = [
     'legacy',
     # 'ubuntu-20-04',
-    # 'ubuntu-24-04',
+    'ubuntu-24-04',
 ]
 
 # A map from the base_os_version in project.yaml to the expected Dockerfile

@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@
 
 namespace oss_fuzz {
 namespace indexer {
-
 namespace {
+
 void PreparePath(std::string& path) {
   if (!path.empty() && !path.ends_with('/')) {
     path.append("/");
@@ -37,16 +37,18 @@ void PreparePath(std::string& path) {
 
   CHECK(path.empty() || std::filesystem::path(path).is_absolute()) << path;
 }
+
 }  // namespace
 
 FileCopier::FileCopier(absl::string_view base_path,
                        absl::string_view index_path,
                        const std::vector<std::string>& extra_paths,
-                       Behavior behavior)
+                       Behavior behavior, bool skip_missing_files)
     : base_path_(base_path),
       extra_paths_(extra_paths),
       index_path_(index_path),
-      behavior_(behavior) {
+      behavior_(behavior),
+      skip_missing_files_(skip_missing_files) {
   if (behavior_ == Behavior::kNoOp) {
     return;
   }
@@ -58,7 +60,7 @@ FileCopier::FileCopier(absl::string_view base_path,
 }
 
 std::string FileCopier::AbsoluteToIndexPath(absl::string_view path) const {
-  CHECK(path.starts_with("/")) << "Absolute path expected: " << path;
+  CHECK(path.starts_with('/')) << "Absolute path expected: " << path;
 
   std::string result = std::string(path);
   if (!base_path_.empty() && absl::StartsWith(path, base_path_)) {
@@ -102,10 +104,17 @@ void FileCopier::CopyIndexedFiles() {
       dst_path = std::filesystem::path(index_path_) / "relative" / indexed_path;
     }
 
-    DLOG(INFO) << "\nFrom: " << src_path << "\n  To: " << dst_path << "\n";
+    if (!std::filesystem::exists(src_path)) {
+      if (!skip_missing_files_) {
+        LOG(QFATAL) << "Source file " << src_path
+                   << " does not exist and skip_missing_files is false.";
+      } else {
+        LOG(WARNING) << "Skipping non-existent source file: " << src_path;
+        continue;
+      }
+    }
 
-    QCHECK(std::filesystem::exists(src_path))
-        << "Source file does not exist: " << src_path;
+    DLOG(INFO) << "\nFrom: " << src_path << "\n  To: " << dst_path << "\n";
 
     std::error_code error_code;
     // The destination directory may already exist, but report other errors.
@@ -125,5 +134,6 @@ void FileCopier::CopyIndexedFiles() {
                         << ")";
   }
 }
+
 }  // namespace indexer
 }  // namespace oss_fuzz

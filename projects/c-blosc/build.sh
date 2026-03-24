@@ -15,10 +15,18 @@
 #
 ################################################################################
 
-# Build project
-cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS"     \
-        -DBUILD_FUZZERS=ON -DBUILD_TESTS=OFF -DBUILD_BENCHMARKS=OFF \
-        -DBUILD_STATIC=ON -DBUILD_SHARED=OFF
+# Build with fuzzer and unit test (Turn on shared build for unit testing only)
+# Shared library of local zstd requires x64 architecture, thus disable it
+# in i386 architecture
+if [ "$ARCHITECTURE" = "i386" ]; then
+    cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+            -DBUILD_FUZZERS=ON -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=OFF \
+            -DBUILD_STATIC=ON -DBUILD_SHARED=ON -DDEACTIVATE_ZSTD=ON
+else
+    cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+            -DBUILD_FUZZERS=ON -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=OFF \
+            -DBUILD_STATIC=ON -DBUILD_SHARED=ON
+fi
 make clean
 make -j$(nproc)
 

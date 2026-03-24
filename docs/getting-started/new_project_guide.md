@@ -86,6 +86,7 @@ This configuration file stores project metadata. The following attributes are su
 - [help_url](#help_url) (optional)
 - [builds_per_day](#build_frequency) (optional)
 - [file_github_issue](#file_github_issue) (optional)
+- [disable_remediation](#disable_remediation) (optional)
 
 ### homepage
 You project's homepage.
@@ -102,6 +103,7 @@ Programming language the project is written in. Values you can specify include:
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
 * [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift-lang/)
 * [`javascript`]({{ site.baseurl }}//getting-started/new-project-guide/javascript-lang/)
+* [`lua`]({{ site.baseurl }}//getting-started/new-project-guide/lua-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -209,6 +211,13 @@ Will build the project twice per day.
 Whether to mirror issues on github instead of having them only in the OSS-Fuzz
 tracker.
 
+### disable_remediation (optional) {#disable_remediation}
+Opt out of receiving remediation for all new and existing bugs. If remediation
+is disabled, all disclosure notifications will not include any proposed code
+changes. If enabled (default), proposed code changes and comments to remediate
+bugs may be automatically included in disclosure that is private during the
+embargo of each issue on a case-by-case basis basis.
+
 ## Dockerfile {#dockerfile}
 
 This configuration file defines the Docker image for your project. Your [build.sh](#buildsh) script will be executed in inside the container you define.
@@ -236,6 +245,10 @@ You also need to setup environment variables needed by this toolchain, for examp
 For an example, see
 [ecc-diff-fuzzer/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/ecc-diff-fuzzer/Dockerfile).
 where we use `base-builder-rust`and install golang
+
+Runtime dependencies of your project, such as third-party static libraries, will
+not be instrumented if you build them in the Dockerfile. In most cases, you will
+want to build them in `build.sh` instead.
 
 ## build.sh {#buildsh}
 

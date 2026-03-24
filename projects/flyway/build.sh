@@ -17,18 +17,18 @@
 
 # Install mongo-jdbc-dependency required byu flyway
 cd mongo-jdbc-driver/
-git checkout v1.19
+git checkout v1.21
 ./gradlew clean shadowJar
 $MVN install:install-file \
-  -Dfile=../mongo-jdbc-driver/build/libs/mongo-jdbc-standalone-1.19.jar \
+  -Dfile=../mongo-jdbc-driver/build/libs/mongo-jdbc-standalone-1.21.jar \
   -DgroupId=com.github.kornilova203 -DartifactId=mongo-jdbc-driver \
-  -Dversion=1.19 -Dpackaging=jar -DgeneratePom=true
+  -Dversion=1.21 -Dpackaging=jar -DgeneratePom=true
 
 # Buuild flyway
 cd ../flyway
 $MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
     -Dencoding=UTF-8 -Dmaven.antrun.skip=true -Dcheckstyle.skip=true \
-    -DperformRelease=True dependency:copy-dependencies
+    -DperformRelease=True dependency:copy-dependencies -fn
 
 JARFILE_LIST=
 for JARFILE in $(find ./  -name *.jar)

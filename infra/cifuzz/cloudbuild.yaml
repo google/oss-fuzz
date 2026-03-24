@@ -38,6 +38,44 @@ steps:
   - '-f'
   - infra/run_fuzzers.Dockerfile
   - infra
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-base:ubuntu-24-04-v1
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-base:ubuntu-24-04
+  - '-f'
+  - infra/cifuzz/cifuzz-base/ubuntu-24-04.Dockerfile
+  - .
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:ubuntu-24-04-v1
+  - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:ubuntu-24-04
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:ubuntu-24-04-v1
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:ubuntu-24-04
+  - '-f'
+  - infra/build_fuzzers.ubuntu-24-04.Dockerfile
+  - infra
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:ubuntu-24-04-v1
+  - '-t'
+  - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:ubuntu-24-04
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:ubuntu-24-04-v1
+  - '-t'
+  - gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:ubuntu-24-04
+  - '-f'
+  - infra/run_fuzzers.ubuntu-24-04.Dockerfile
+  - infra
 images:
 - gcr.io/oss-fuzz-base/cifuzz-base
 - gcr.io/oss-fuzz-base/cifuzz-base:v1
@@ -49,4 +87,14 @@ images:
 - gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:v1
 - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers
 - gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:v1
+- gcr.io/oss-fuzz-base/cifuzz-base:ubuntu-24-04-v1
+- gcr.io/oss-fuzz-base/cifuzz-base:ubuntu-24-04
+- gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:ubuntu-24-04-v1
+- gcr.io/oss-fuzz-base/cifuzz-run-fuzzers:ubuntu-24-04
+- gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:ubuntu-24-04-v1
+- gcr.io/oss-fuzz-base/cifuzz-build-fuzzers:ubuntu-24-04
+- gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:ubuntu-24-04-v1
+- gcr.io/oss-fuzz-base/clusterfuzzlite-run-fuzzers:ubuntu-24-04
+- gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:ubuntu-24-04-v1
+- gcr.io/oss-fuzz-base/clusterfuzzlite-build-fuzzers:ubuntu-24-04
 timeout: 1800s

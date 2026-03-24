@@ -63,6 +63,15 @@ build() {
 # Ensure OCaml environment is set up prior to Wasmtime build.
 eval $(opam env)
 
+# Needed for Wasmtime's adapter/test builds
+rustup target add wasm32-unknown-unknown wasm32-wasip1 wasm32-wasip2
+
+# Shrink builds to take up less disk space
+export CARGO_INCREMENTAL=0
+export CARGO_PROFILE_DEV_DEBUG=0
+export CARGO_PROFILE_DEV_STRIP=debuginfo
+export CARGO_PROFILE_RELEASE_DEBUG=0
+
 build wasmtime "" "" target
 build wasm-tools wasm-tools- "" target --features wasmtime
 build regalloc2 regalloc2- ion fuzz/target

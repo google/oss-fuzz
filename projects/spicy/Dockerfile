@@ -63,4 +63,4 @@ RUN git clone --depth 1 --recursive https://github.com/zeek/spicy spicy \
 
 WORKDIR ${SRC}/spicy
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

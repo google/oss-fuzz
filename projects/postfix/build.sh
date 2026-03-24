@@ -16,7 +16,7 @@
 ################################################################################
 
 cd postfix
-make makefiles CCARGS="${CFLAGS}"
+make makefiles CCARGS="${CFLAGS} -DNO_NIS -DNO_NISPLUS"
 make
 BASE=$PWD
 
@@ -34,4 +34,4 @@ cd ${BASE}
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./src/global/fuzz_tok822.o \
   -o $OUT/fuzz_tok822 ./lib/libglobal.a ./lib/libutil.a
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./src/global/fuzz_mime.o -o $OUT/fuzz_mime \
-  ./lib/libglobal.a ./lib/libutil.a -ldb -lnsl
+  ./lib/libglobal.a ./lib/libutil.a -ldb

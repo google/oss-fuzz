@@ -27,4 +27,4 @@ RUN git clone --depth 1 https://github.com/google/fuzzing && \
 RUN zip -j $SRC/fuzz-mdhtml_seed_corpus.zip $SRC/md4c/test/fuzzers/seed-corpus/*
 
 WORKDIR $SRC/md4c
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

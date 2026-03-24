@@ -28,4 +28,4 @@ RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib.git --branch=$glib_t
 
 RUN git clone --depth 1 https://git.qemu.org/git/qemu.git qemu
 WORKDIR qemu
-COPY run_tests.sh build.sh $SRC/
+COPY run_tests.sh build.sh replay_build.sh $SRC/

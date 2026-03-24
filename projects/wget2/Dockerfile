@@ -46,18 +46,24 @@ RUN cd /usr/src && \
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var && \
     make install
 
+RUN cd /usr/src && \
+    curl -ogettext-0.22.5.tar.gz https://ftp.gnu.org/gnu/gettext/gettext-0.22.5.tar.gz && \
+    tar xf gettext-0.22.5.tar.gz && \
+    cd gettext-0.22.5 && \
+    ./configure --prefix=/usr && \
+    make -j$(nproc) install
+
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 ENV GNULIB_SRCDIR $SRC/gnulib
-RUN git clone https://gitlab.com/gnuwget/gnulib-mirror.git gnulib
+RUN git clone https://git.savannah.gnu.org/git/gnulib.git gnulib
 RUN wget -qO- https://ftp.gnu.org/gnu/libunistring/libunistring-latest.tar.gz | tar xz && mv libunistring-* libunistring
 RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar xz && mv libidn2-* libidn2
 RUN wget -qO- https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.gz | tar xz && mv gmp-* gmp
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
-RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git --branch=nettle_3.9.1_release_20230601
+RUN wget -qO- https://ftp.gnu.org/gnu/nettle/nettle-3.10.tar.gz | tar xz && mv nettle-3.10 nettle
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN wget -O- https://ftp.gnu.org/pub/gnu/libmicrohttpd/libmicrohttpd-latest.tar.gz | tar xz
 
 RUN git clone --recursive https://gitlab.com/gnuwget/wget2.git
-
 WORKDIR wget2
 COPY build.sh run_tests.sh $SRC/

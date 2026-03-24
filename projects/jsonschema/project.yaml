@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/Julian/jsonschema"
 language: python
 primary_contact: "Julian+Security@GrayVines.com"

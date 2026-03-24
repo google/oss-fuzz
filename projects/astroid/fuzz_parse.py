@@ -33,6 +33,7 @@ def TestOneInput(data):
       astroid.modutils.NoSourceFile,
       astroid.exceptions.AstroidError,
       astroid.exceptions.UseInferenceDefault,
+      RecursionError,
   ):
     pass
 

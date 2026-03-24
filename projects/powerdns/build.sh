@@ -32,6 +32,8 @@ sed -i 's/AC_CC_PIE//' configure.ac
  CFLAGS="" CXXFLAGS="" ./bootstrap.sh
  CFLAGS="" CXXFLAGS="" ./b2 headers
  cp -R boost/ /usr/include/
+ # work around https://github.com/mesonbuild/meson/issues/15470
+ touch /usr/lib/libboost_bogus.so
 )
 
 # build fuzzing targets
@@ -58,19 +60,29 @@ cp fuzz_target_* "${OUT}/"
 # build the dnsdist fuzzing target, if any
 if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
     cd dnsdistdist
-    sed -i 's/AC_CC_PIE//' configure.ac
-    autoreconf -vi
-    ./configure \
-        --enable-fuzz-targets \
-        --disable-dependency-tracking \
-        --disable-silent-rules || /bin/bash
-    if [ -d ext/arc4random/ ]; then
-        make -j$(nproc) -C ext/arc4random/
+    build_dir='.'
+    if [ -f configure.ac ]; then
+        sed -i 's/AC_CC_PIE//' configure.ac
+        autoreconf -vi
+        ./configure \
+            --enable-fuzz-targets \
+            --disable-dependency-tracking \
+            --disable-silent-rules || /bin/bash
+        if [ -d ext/arc4random/ ]; then
+            make -j$(nproc) -C ext/arc4random/
+        fi
+        make -j$(nproc) fuzz_targets
+    else
+        build_dir='build'
+        meson setup \
+          -D fuzz-targets=true \
+          -D b_pie=false \
+          ${build_dir}
+        meson compile -C ${build_dir} fuzz-targets
     fi
-    make -j$(nproc) fuzz_targets
 
     # copy the fuzzing target binaries
-    cp fuzz_target_* "${OUT}/"
+    cp ${build_dir}/fuzz_target_* "${OUT}/"
 
     # back to the pdns/ directory
     cd ..

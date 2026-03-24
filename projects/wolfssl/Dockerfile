@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool zip wget
 RUN git clone --depth 1 https://github.com/wolfssl/wolfssl $SRC/wolfssl
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfsm
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssh.git
-RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git
+RUN git clone --depth 1 https://github.com/JacobBarthelmeh/fuzzing-headers.git
 RUN git clone --depth 1 https://github.com/JacobBarthelmeh/wolf-ssl-ssh-fuzzers
 RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
 RUN git clone --depth 1 https://github.com/google/wycheproof.git

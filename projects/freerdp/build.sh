@@ -67,3 +67,9 @@ for f in $(find build/Testing/ -name 'TestFuzz*' -type f);
 do
     cp $f $OUT/
 done
+
+# Build test
+mkdir $SRC/FreeRDP/build-test
+cd $SRC/FreeRDP/build-test
+cmake -DBUILD_TESTING=True ..
+make

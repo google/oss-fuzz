@@ -105,7 +105,30 @@ We currently do not have a good way to deduplicate timeout or OOM bugs.
 So, we report only one timeout and only one OOM bug per fuzz target.
 Once that bug is fixed, we will file another one, and so on.
 
-Currently we do not offer ways to change the memory and time limits.
+## Can I change the default timeout and OOM for a fuzz target?
+
+Yes, you can. For this, create a fuzz target options file named `<fuzz-target>.options`,
+where `<fuzz-target>` is the executable file name of the fuzz target, in the same
+directory as your `project.yaml`. The options file can contain fuzzer-specific
+configuration values, such as:
+
+```
+[libfuzzer]
+rss_limit_mb = 6000
+timeout = 30
+```
+
+## My library gracefully handles allocation failures, why are OOMs reported?
+
+OOM detection is done *not* by instrumenting memory allocation routines such as `malloc`
+to have them return NULL, but using a separate watchdog thread that measures the resident
+set size (RSS) on a periodic basis. Therefore, your fuzz target might successfully
+allocate more than the configured max RSS, and yet get killed shortly afterwards.
+
+The only reliable way to avoid this is for your fuzz target to use a custom allocator
+that will prevent allocating more memory than a given limit. You can find a more
+detailed discussion of this topic, as well as links to the solution implemented
+by a specific project, in [this issue](https://github.com/google/oss-fuzz/issues/1830).
 
 ## Can I launch an additional process (e.g. a daemon) from my fuzz target?
 

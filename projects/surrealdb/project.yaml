@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://surrealdb.com/"
 language: rust
 primary_contact: "tobie@surrealdb.com"

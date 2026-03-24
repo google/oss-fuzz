@@ -15,7 +15,28 @@
 #
 ################################################################################
 
-$GRADLE jar
+# Set encoding to UTF-8 for Java compilation
+export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
+
+# Disable ErrorProne by removing it from annotation processor path
+# ErrorProne requires Java 21+ but the base image has Java 17
+cat > /tmp/disable-errorprone.gradle << 'EOF'
+allprojects {
+    afterEvaluate {
+        tasks.withType(JavaCompile).configureEach {
+            options.errorprone.enabled = false
+            options.compilerArgs.removeAll { it.startsWith('-Xplugin:ErrorProne') }
+        }
+        // Remove errorprone from annotation processor configuration
+        configurations.matching { it.name.toLowerCase().contains('errorprone') }.all {
+            dependencies.clear()
+        }
+    }
+}
+EOF
+
+# Build only Java 8/11/15/17 compatible versions, skip Java 25 tasks
+$GRADLE jar -x compileJava25Java -x java25Classes --init-script /tmp/disable-errorprone.gradle
 find . -name "core*.jar" -exec cp {} $OUT/core.jar \;
 find . -name "bcpkix*.jar" -exec cp {} $OUT/bcpkix.jar \;
 find . -name "bcutil*.jar" -exec cp {} $OUT/bcutil.jar \;
@@ -33,7 +54,7 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer
+  javac -encoding UTF-8 -cp $BUILD_CLASSPATH $fuzzer
   cp $SRC/$fuzzer_basename.class $OUT/
 
 

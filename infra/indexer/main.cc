@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -62,6 +62,9 @@ ABSL_FLAG(bool, delta, false,
 ABSL_FLAG(std::string, database_only, "",
           "Do not copy source files, only build the index database at the given"
           " location (--index_dir is not effective in that case)");
+ABSL_FLAG(bool, skip_missing_files, false,
+          "If set to true, missing source files will be skipped with a warning."
+          " If false, the indexer will error out on missing files.");
 
 static constexpr char kIndexDbName[] = "db.sqlite";
 static constexpr char kDeltaDbName[] = "delta.sqlite";
@@ -122,7 +125,8 @@ int main(int argc, char** argv) {
     }
   }
 
-  FileCopier file_copier(source_dir, index_dir, extra_dirs, behavior);
+  FileCopier file_copier(source_dir, index_dir, extra_dirs, behavior,
+                         absl::GetFlag(FLAGS_skip_missing_files));
 
   std::unique_ptr<MergeQueue> merge_queue = MergeQueue::Create(
       absl::GetFlag(FLAGS_merge_queues), absl::GetFlag(FLAGS_merge_queue_size));

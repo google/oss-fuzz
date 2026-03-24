@@ -22,10 +22,10 @@
 #include <vector>
 
 #include <fuzzer/FuzzedDataProvider.h>
-extern "C" {
-  #include "mhd_str.h"
-  #include "microhttpd2.h"
-}
+
+#include "mhd_str.h"
+#include "microhttpd2.h"
+
 
 static void fuzz_tokens(FuzzedDataProvider& fdp) {
   // Prepare random string for string comparison
@@ -203,7 +203,6 @@ static void fuzz_transformation(FuzzedDataProvider& fdp) {
 
     // Fuzz conversion functions
     MHD_http_method_to_string(static_cast<MHD_HTTP_Method>(value));
-    MHD_predef_header_to_string(static_cast<MHD_PredefinedHeader>(value));
     MHD_protocol_version_to_string(static_cast<MHD_HTTP_ProtocolVersion>(value));
   }
 }

@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/Config/llvm-config.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/raw_ostream.h"
 
@@ -864,7 +865,11 @@ const clang::CXXRecordDecl* GetCXXRecordForType(const clang::QualType& type) {
   }
   const auto* record_type = derived_type->castAs<clang::RecordType>();
   CHECK(record_type);
+#if LLVM_VERSION_MAJOR > 22
+  const clang::RecordDecl* decl = record_type->getDecl();
+#else
   const clang::RecordDecl* decl = record_type->getOriginalDecl();
+#endif
   CHECK(decl);
   return llvm::dyn_cast<clang::CXXRecordDecl>(decl);
 }

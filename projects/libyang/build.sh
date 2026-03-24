@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-cd libyang
 git checkout devel
 
 mkdir build && cd build
@@ -29,3 +28,9 @@ for fuzzer in lyd_parse_mem_json lyd_parse_mem_xml lys_parse_mem; do
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ${fuzzer}.o -o $OUT/${fuzzer} \
     ./libyang.a ${static_pcre}
 done
+
+# Build test
+mkdir $SRC/libyang/build-test
+cd $SRC/libyang/build-test
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+make

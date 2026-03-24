@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://www.html-tidy.org/"
 language: c++
 primary_contact: "balthisar@gmail.com"

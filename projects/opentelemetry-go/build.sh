@@ -15,6 +15,18 @@
 #
 ################################################################################
 
-pushd sdk/metric/internal/aggregate
-compile_native_go_fuzzer_v2 $(go list) FuzzGetBin FuzzGetBin
-popd
+REPO=$PWD
+
+cd $REPO/attribute
+# Mitigate the error: found packages attribute_test and attribute in /src/opentelemetry-go/attribute.
+# Remove all Go files with *_test package before building the fuzzer.
+# Tracking issue: https://github.com/google/oss-fuzz/issues/7923.
+grep -rl --include="*.go" '^package .*_test' . | xargs rm -f 
+compile_native_go_fuzzer_v2 $(go list) FuzzHashKVs sdk_attribute_FuzzHashKVs
+
+cd $REPO/sdk/metric/internal/aggregate
+compile_native_go_fuzzer_v2 $(go list) FuzzGetBin sdk_metric_internal_aggregate_FuzzGetBin
+
+cd $REPO/trace
+compile_native_go_fuzzer_v2 $(go list) FuzzTraceIDFromHex trace_FuzzTraceIDFromHex
+compile_native_go_fuzzer_v2 $(go list) FuzzSpanIDFromHex trace_FuzzSpanIDFromHex

@@ -5,6 +5,7 @@ auto_ccs :
   - "beorn@grafana.com"
   - "roidelapluie@prometheus.io"
   - "richih@richih.org"
+  - "bjboreham@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer

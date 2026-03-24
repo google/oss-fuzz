@@ -14,5 +14,34 @@
 # limitations under the License.
 #
 ################################################################################
-export USE_BAZEL_VERSION=5.4.0
-bazel_build_fuzz_tests
+export USE_BAZEL_VERSION="7.3.2"
+export CC=${CC:-clang}
+export CXX=${CXX:-clang++}
+
+# modified version of bazel_build_fuzz_tests to work around issues with
+# bzlmod dependency on rules_fuzzing
+
+bazel build -c opt --config=oss-fuzz //fuzz:fuzz_parse_oss_fuzz
+
+for oss_fuzz_archive in $(find bazel-bin/ -name "*oss_fuzz.tar"); do
+    tar --no-same-owner -xvf "${oss_fuzz_archive}" -C "${OUT}"
+done
+
+if [ "$SANITIZER" = "coverage" ]; then
+    echo "Collecting the repository source files for coverage tracking."
+    declare -r COVERAGE_SOURCES="${OUT}/proc/self/cwd"
+    mkdir -p "${COVERAGE_SOURCES}"
+    declare -r RSYNC_FILTER_ARGS=(
+        "--include" "*.h"
+        "--include" "*.cc"
+        "--include" "*.hpp"
+        "--include" "*.cpp"
+        "--include" "*.c"
+        "--include" "*.inc"
+        "--include" "*/"
+        "--exclude" "*"
+    )
+    rsync -avLk "${RSYNC_FILTER_ARGS[@]}" \
+        "$(bazel info execution_root)/" \
+        "${COVERAGE_SOURCES}/"
+fi

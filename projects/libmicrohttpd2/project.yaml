@@ -1,7 +1,8 @@
-homepage: "https://git.gnunet.org/libmicrohttpd2.git"
-main_repo: "https://git.gnunet.org/libmicrohttpd2.git"
-primary_contact: "christian@grothoff.org"
-language: c++
+base_os_version: ubuntu-24-04
+homepage: "https://www.gnu.org/s/libmicrohttpd/"
+main_repo: "git://git.gnunet.org/libmicrohttpd2.git"
+primary_contact: "grothoff@gmail.com"
+language: c
 vendor_ccs:
   - "arthur.chan@adalogics.com"
   - "david@adalogics.com"
@@ -10,3 +11,6 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+architectures:
+  - x86_64
+builds_per_day: 1

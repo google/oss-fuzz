@@ -62,7 +62,7 @@ for image_name in ${IMAGE_LIST}; do
   fi
 
   echo "Building ${tag} from ${dockerfile}..."
-  docker build --pull -t "${tag}" -f "${dockerfile}" "${image_dir}"
+  docker build -t "${tag}" -f "${dockerfile}" "${image_dir}"
 done
 
 echo "All builds for version ${VERSION_TAG} completed successfully."
