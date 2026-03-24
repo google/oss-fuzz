@@ -1,5 +1,5 @@
-#!/usr/bin/python3
-# Copyright 2022 Google LLC
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,35 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+################################################################################
 
-import io
-import sys
-import atheris
-
-from fontTools import ttLib
-from fontTools.ttLib import TTFont
-import xml
-
-
-def TestOneInput(data):
-  randfile = "/tmp/random2.ttx"
-  with open(randfile, "wb") as f:
-    f.write(data)
-  try:
-    otf = TTFont(randfile)
-  except ttLib.TTLibError:
-    pass
-  except AssertionError:
-    pass
-  except ImportError:
-    pass
-
-
-def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput)
-  atheris.Fuzz()
-
-
-if __name__ == "__main__":
-  main()
+cd $SRC/leveldb/build
+ctest -j$(nproc)
