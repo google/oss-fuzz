@@ -1,9 +1,11 @@
-homepage: "https://github.com/google/go-github" 
-language: go 
-main_repo: "https://github.com/google/go-github" 
-auto_ccs: 
-  - "youichi0929@outlook.jp" 
-fuzzing_engines: 
-  - libfuzzer 
-sanitizers: 
-  - address 
+homepage: "https://github.com/google/go-github"
+language: go
+main_repo: "https://github.com/google/go-github"
+primary_contact: "glenn@on-demand-books.com"
+auto_ccs:
+  - "glenn@on-demand-books.com"
+  - "youichi0929@outlook.jp"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
