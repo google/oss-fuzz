@@ -35,9 +35,13 @@ compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzPa
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseOpenMetric fuzzParseOpenMetric
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseMetricSelector fuzzParseMetricSelector
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzParseExpr fuzzParseExpr
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzXORChunk fuzzXORChunk
+compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzXOR2Chunk fuzzXOR2Chunk
 
 go generate -tags fuzzing ./util/fuzzing/corpus_gen
 mv util/fuzzing/fuzzParseExpr_seed_corpus.zip $OUT/
 mv util/fuzzing/fuzzParseMetricSelector_seed_corpus.zip $OUT/
 mv util/fuzzing/fuzzParseMetricText_seed_corpus.zip $OUT/
 mv util/fuzzing/fuzzParseOpenMetric_seed_corpus.zip $OUT/
+mv util/fuzzing/fuzzXORChunk_seed_corpus.zip $OUT/
+mv util/fuzzing/fuzzXOR2Chunk_seed_corpus.zip $OUT/
