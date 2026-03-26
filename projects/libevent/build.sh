@@ -48,4 +48,5 @@ fi
 # The dictionary is not compatible with AFL
 if [ "$FUZZING_ENGINE" != 'afl' ]; then
   cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer.dict
+  cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_message_fuzzer.dict
 fi
