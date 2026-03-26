@@ -20,3 +20,17 @@ cmake -G Ninja -DBUILD_TESTING=false $SRC/bloaty
 ninja -j$(nproc)
 cp fuzz_target $OUT
 zip -j $OUT/fuzz_target_seed_corpus.zip $SRC/bloaty/tests/testdata/fuzz_corpus/*
+
+# Build the project tests for Chronos
+cd $WORK
+unset LIB_FUZZING_ENGINE
+cmake -G Ninja \
+  -DBUILD_TESTING=true \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_C_FLAGS="" \
+  -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
+  -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++" \
+  -DCMAKE_SHARED_LINKER_FLAGS="" \
+  $SRC/bloaty -B build-tests
+ninja -C build-tests -j$(nproc)

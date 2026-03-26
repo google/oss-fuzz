@@ -49,3 +49,14 @@ fi
 if [ "$FUZZING_ENGINE" != 'afl' ]; then
   cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer.dict
 fi
+
+# Build the project tests for Chronos
+mkdir -p $SRC/libevent/build-tests
+cd $SRC/libevent/build-tests
+cmake -DEVENT__DISABLE_TESTS=OFF \
+      -DEVENT__DISABLE_MBEDTLS=ON \
+      -DEVENT__DISABLE_OPENSSL=ON \
+      -DEVENT__LIBRARY_TYPE=STATIC \
+      -DEVENT__DISABLE_SAMPLES=ON \
+      ..
+make -j$(nproc)
