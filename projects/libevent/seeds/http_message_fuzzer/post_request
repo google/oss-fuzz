@@ -1,5 +1,0 @@
-POST /data HTTP/1.1
-Host: localhost
-Content-Length: 13
-
-Hello, World!

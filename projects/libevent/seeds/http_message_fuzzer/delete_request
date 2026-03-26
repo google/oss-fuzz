@@ -1,3 +1,0 @@
-DELETE /resource/123 HTTP/1.1
-Host: localhost
-

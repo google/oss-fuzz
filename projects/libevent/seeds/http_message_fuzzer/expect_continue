@@ -1,6 +1,0 @@
-POST /upload HTTP/1.1
-Host: localhost
-Expect: 100-continue
-Content-Length: 5
-
-Hello
