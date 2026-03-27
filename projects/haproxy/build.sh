@@ -34,11 +34,33 @@ SETTINGS="-Iinclude -g -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERSION=\"\" -DC
 $CC $CFLAGS $SETTINGS -c -o ./src/haproxy.o ./src/haproxy.c
 ar cr libhaproxy.a ./src/*.o
 
-for fuzzer in hpack_decode cfg_parser; do
+for fuzzer in hpack_decode cfg_parser h1_parse; do
   cp $SRC/fuzz_${fuzzer}.c .
   $CC $CFLAGS $SETTINGS -c fuzz_${fuzzer}.c  -o fuzz_${fuzzer}.o
   $CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_${fuzzer}.o libhaproxy.a -o $OUT/fuzz_${fuzzer}
 done
+
+# Copy dictionary and create seed corpus for H1 parser fuzzer
+cp $SRC/fuzz_h1_parse.dict $OUT/fuzz_h1_parse.dict
+
+mkdir -p "$WORK/h1_seeds"
+# Generate seed HTTP/1 requests and responses (first byte: 0=req, 1=resp)
+printf '\x00GET / HTTP/1.1\r\nHost: example.com\r\n\r\n' > "$WORK/h1_seeds/get_simple"
+printf '\x00POST /api HTTP/1.1\r\nHost: example.com\r\nContent-Length: 13\r\nContent-Type: application/json\r\n\r\n{"key":"val"}' > "$WORK/h1_seeds/post_cl"
+printf '\x00POST /upload HTTP/1.1\r\nHost: example.com\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\n\r\n' > "$WORK/h1_seeds/post_chunked"
+printf '\x00GET /page HTTP/1.1\r\nHost: example.com\r\nAccept: text/html\r\nAccept-Encoding: gzip\r\nConnection: keep-alive\r\nCookie: s=abc\r\nUser-Agent: Mozilla/5.0\r\nX-Forwarded-For: 10.0.0.1\r\n\r\n' > "$WORK/h1_seeds/get_multi"
+printf '\x00GET /old HTTP/1.0\r\nHost: example.com\r\n\r\n' > "$WORK/h1_seeds/get_http10"
+printf '\x00GET /ws HTTP/1.1\r\nHost: example.com\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n' > "$WORK/h1_seeds/websocket"
+printf '\x00CONNECT example.com:443 HTTP/1.1\r\nHost: example.com:443\r\n\r\n' > "$WORK/h1_seeds/connect"
+printf '\x00HEAD / HTTP/1.1\r\nHost: example.com\r\n\r\n' > "$WORK/h1_seeds/head"
+printf '\x00OPTIONS * HTTP/1.1\r\nHost: example.com\r\n\r\n' > "$WORK/h1_seeds/options"
+printf '\x01HTTP/1.1 200 OK\r\nContent-Length: 5\r\nContent-Type: text/plain\r\n\r\nhello' > "$WORK/h1_seeds/resp_200"
+printf '\x01HTTP/1.1 301 Moved Permanently\r\nLocation: https://example.com/\r\nContent-Length: 0\r\n\r\n' > "$WORK/h1_seeds/resp_301"
+printf '\x01HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\na\r\n0123456789\r\n0\r\n\r\n' > "$WORK/h1_seeds/resp_chunked"
+printf '\x01HTTP/1.0 200 OK\r\nConnection: close\r\n\r\n<html></html>' > "$WORK/h1_seeds/resp_connclose"
+printf '\x01HTTP/1.1 100 Continue\r\n\r\n' > "$WORK/h1_seeds/resp_100"
+printf '\x01HTTP/1.1 204 No Content\r\n\r\n' > "$WORK/h1_seeds/resp_204"
+zip -j "$OUT/fuzz_h1_parse_seed_corpus.zip" "$WORK"/h1_seeds/*
 
 # build vtest for run_tests.sh
 cd $SRC/VTest2
