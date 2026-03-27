@@ -18,6 +18,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 env MAKE_VERSION 4.4.1
 
+RUN apt-get update && apt-get install -y ninja-build zlib1g-dev liblzma-dev
+
 RUN cd $SRC &&\
   curl -L https://ftp.gnu.org/gnu/make/make-$MAKE_VERSION.tar.gz -o make.tar.gz &&\
   tar xf make.tar.gz &&\
@@ -25,8 +27,10 @@ RUN cd $SRC &&\
   ./configure --prefix=$SRC/make-${MAKE_VERSION} &&\
   make -j$(nproc)
 
-#RUN git clone --depth 1 https://github.com/erthink/libmdbx
 RUN git clone --recursive https://github.com/Mithril-mine/libmdbx-fuzzing
+
+RUN cd $SRC/libmdbx-fuzzing && \
+ make obj/lpm-build/src/libfuzzer/libprotobuf-mutator-libfuzzer.a
 
 COPY build.sh $SRC/
 
