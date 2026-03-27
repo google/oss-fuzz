@@ -46,7 +46,7 @@ CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
   --enable-freetype --enable-fontconfig \
   --enable-cups --with-ijs --with-jbig2dec \
   --with-drivers=pdfwrite,cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint,pgmraw,ps2write,png16m,tiffsep1,faxg3,psdcmyk,eps2write,bmpmono,xpswrite
-make -j$(nproc) libgpdl
+make -j$(nproc) libgpdl libgs
 
 fuzzers="gstoraster_fuzzer                \
          gstoraster_fuzzer_all_colors     \
@@ -64,12 +64,22 @@ fuzzers="gstoraster_fuzzer                \
          gs_device_xpswrite_fuzzer        \
          gs_device_pxlcolor_fuzzer        \
          gs_device_tiffsep1_fuzzer        \
-         gs_device_pdfwrite_opts_fuzzer   \
-         gs_pcl_fuzzer                    \
-         gs_pxl_fuzzer                    \
-         gs_xps_fuzzer"
+         gs_device_pdfwrite_opts_fuzzer"
 
 for fuzzer in $fuzzers; do
+  $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
+    $SRC/${fuzzer}.cc \
+    -o "$OUT/${fuzzer}" \
+    -Wl,-rpath='$ORIGIN' \
+    $CUPS_LIBS \
+    $LIB_FUZZING_ENGINE bin/gs.a
+done
+
+
+fuzzers2="gs_pcl_fuzzer                    \
+         gs_pxl_fuzzer                    \
+         gs_xps_fuzzer"
+for fuzzer in $fuzzers2; do
   $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
     $SRC/${fuzzer}.cc \
     -o "$OUT/${fuzzer}" \
