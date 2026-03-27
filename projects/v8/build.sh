@@ -52,4 +52,4 @@ rm -f out/fuzz/d8
 ninja -C out/fuzz d8 -j$(nproc)
 
 # Copy binaries to $OUT
-cp ./out/fuzz/{d8,snapshot_blob.bin,*.so} $OUT
+cp ./out/fuzz/{d8,snapshot_blob.bin,*.so,icudtl.dat} $OUT
