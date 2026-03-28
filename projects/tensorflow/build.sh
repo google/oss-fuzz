@@ -136,7 +136,8 @@ for f in ${CXXFLAGS}; do
 done
 if [ "$SANITIZER" = "undefined" ]
 then
-  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
+  echo "--linkopt=$(find /usr/local/lib -name 'libclang_rt.ubsan_standalone_cxx*.a' -path '*x86_64*' ! -name '*.syms' | head -1)"
+  echo "--linkopt=$(find /usr/local/lib -name 'libclang_rt.ubsan_standalone.a' -path '*x86_64*' | head -1)"
   sed -i -e 's/"\/\/conditions:default": \[/"\/\/conditions:default": \[\n"-fno-sanitize=undefined",/' third_party/nasm/nasm.BUILD
   sed -i -e 's/includes/linkopts = \["-fno-sanitize=undefined"\],\nincludes/' third_party/nasm/nasm.BUILD
 fi
@@ -155,26 +156,49 @@ sed -i -e 's/linkstatic/linkopts = \["-fsanitize=fuzzer"\],\nlinkstatic/' tensor
 # fuzztest's setup_configs normally provides. Find and pass it explicitly.
 FUZZER_NO_MAIN_LIB=$(find /usr/local/lib -name "libclang_rt.fuzzer_no_main.a" -path "*x86_64*" 2>/dev/null | head -1)
 
-# On Ubuntu 24.04, the system fuzzer_no_main.a references C23 glibc symbols
-# (__isoc23_strtoul etc.) not in TF's hermetic sysroot (glibc 2.27).
-# Provide shims that forward to the older non-C23 equivalents.
+# On Ubuntu 24.04, the system clang-rt libraries reference C23 glibc symbols
+# (__isoc23_strtoul, __isoc23_sscanf, etc.) not in TF's hermetic sysroot
+# (glibc 2.27). Provide shims that forward to the older non-C23 equivalents.
 # Build the shims in the TF source tree so bazel sandbox can access them.
 SHIMS_LIB=$SRC/tensorflow/libglibc_c23_shims.a
 cat > /tmp/glibc_c23_shims.c << 'SHIMEOF'
 unsigned long strtoul(const char *, char **, int);
 unsigned long __isoc23_strtoul(const char *n, char **e, int b) { return strtoul(n, e, b); }
+long strtol(const char *, char **, int);
+long __isoc23_strtol(const char *n, char **e, int b) { return strtol(n, e, b); }
 long long strtoll_l(const char *, char **, int, void *);
 long long __isoc23_strtoll_l(const char *n, char **e, int b, void *l) { return strtoll_l(n, e, b, l); }
+unsigned long long strtoull(const char *, char **, int);
+unsigned long long __isoc23_strtoull(const char *n, char **e, int b) { return strtoull(n, e, b); }
 unsigned long long strtoull_l(const char *, char **, int, void *);
 unsigned long long __isoc23_strtoull_l(const char *n, char **e, int b, void *l) { return strtoull_l(n, e, b, l); }
+int vsscanf(const char *, const char *, __builtin_va_list);
+int __isoc23_vsscanf(const char *s, const char *fmt, __builtin_va_list ap) { return vsscanf(s, fmt, ap); }
+int __isoc23_sscanf(const char *s, const char *fmt, ...) {
+    __builtin_va_list ap;
+    __builtin_va_start(ap, fmt);
+    int r = vsscanf(s, fmt, ap);
+    __builtin_va_end(ap);
+    return r;
+}
 SHIMEOF
 clang -c -o /tmp/glibc_c23_shims.o /tmp/glibc_c23_shims.c
 ar rcs "${SHIMS_LIB}" /tmp/glibc_c23_shims.o
 
-export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --copt=-UNDEBUG --config=monolithic --linkopt=${FUZZER_NO_MAIN_LIB} --linkopt=${SHIMS_LIB}"
+# For the undefined sanitizer, TF's hermetic linker also can't find the UBSAN
+# runtime. Find and add it explicitly alongside the shims.
+UBSAN_EXTRA_LINKOPT=""
+if [ "$SANITIZER" = "undefined" ]; then
+  UBSAN_LIB=$(find /usr/local/lib -name "libclang_rt.ubsan_standalone.a" -path "*x86_64*" ! -name "*.syms" 2>/dev/null | head -1)
+  UBSAN_CXX_LIB=$(find /usr/local/lib -name "libclang_rt.ubsan_standalone_cxx.a" -path "*x86_64*" ! -name "*.syms" 2>/dev/null | head -1)
+  [ -n "${UBSAN_LIB}" ] && UBSAN_EXTRA_LINKOPT="--linkopt=${UBSAN_LIB}"
+  [ -n "${UBSAN_CXX_LIB}" ] && UBSAN_EXTRA_LINKOPT="${UBSAN_EXTRA_LINKOPT} --linkopt=${UBSAN_CXX_LIB}"
+fi
+
+export FUZZTEST_EXTRA_ARGS="--spawn_strategy=sandboxed --action_env=ASAN_OPTIONS=detect_leaks=0,detect_odr_violation=0 --define force_libcpp=enabled --verbose_failures --copt=-UNDEBUG --config=monolithic --linkopt=${FUZZER_NO_MAIN_LIB} --linkopt=${SHIMS_LIB} ${UBSAN_EXTRA_LINKOPT}"
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
-  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.6 --strip=always"
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.65 --strip=always"
 else
   export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS} --local_ram_resources=HOST_RAM*1.0 --local_cpu_resources=HOST_CPUS*.15 --strip=never"
 fi
