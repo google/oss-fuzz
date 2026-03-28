@@ -1,9 +1,9 @@
 base_os_version: ubuntu-24-04
 homepage: "https://halide-lang.org/"
 language: c++
-primary_contact: "srj@google.com"
+primary_contact: "areinking@adobe.com"
 main_repo: "https://github.com/halide/Halide"
-file_github_issue: false
+file_github_issue: true
 auto_ccs:
   - alex.reinking@gmail.com
   - nathaniel.brough@gmail.com
