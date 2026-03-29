@@ -40,3 +40,19 @@ The below are characteristics commonly found in good fuzzing harnesses, which co
 11. **Follows code conventions**: The harness should follow the coding conventions of the project, making it easier for maintainers to understand and integrate the harness into the codebase.
 12. **Does not get stuck**: The harness should be designed to avoid getting stuck on certain inputs or code paths, allowing the fuzzer to continue exploring other areas of the codebase.
 13. **Includes dictionary**: The harness should include a dictionary of known inputs or patterns that are relevant to the project, helping the fuzzer to generate more effective test cases.
+
+### Operational guidelines
+
+- Always build and run fuzzing harnesses to validate they work. This can for example be done in a oss-fuzz environment:
+
+```
+python3 infra/helper.py build_fuzzers <project_name>
+python3 infra/helper.py run_fuzzer <project_name> <fuzzer_name> -- -max_total_time=30 # run the fuzzer for 30 seconds to validate it works
+python3 infra/helper.py check_build <project_name>
+```
+
+- If a fuzzer runs into a crash instantly, it's very likely wrong.
+- Always document the rationale for design decisions in the fuzzing harness, and the rationale for why the harness is expected to find bugs. This can be done in a markdown file in the same directory as the fuzzing harness, or in comments in the code of the fuzzing harness itself.
+- Look for function entrypoints that are exposed to untrusted input, and try to design fuzzing harnesses that target these entrypoints. This is often the most effective way to find security bugs.
+- When extending existing fuzzing harnesses, always validate that the existing code coverage does not digress. You should empirically evaluate this and give a justification that no digression has happened, or if it has happened then you should give a justification for why the digression is acceptable in light of the achieved extension.
+- When extending fuzzing harnesses you should give justification for the impact of bugs that they will find.
