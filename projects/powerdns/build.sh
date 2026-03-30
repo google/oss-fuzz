@@ -77,6 +77,7 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
         meson setup \
           -D fuzz-targets=true \
           -D b_pie=false \
+          -D yaml=disabled \
           ${build_dir}
         meson compile -C ${build_dir} fuzz-targets
     fi
