@@ -27,11 +27,14 @@ per-project report.
 """
 
 import argparse
+import concurrent.futures
 import os
 import subprocess
 import sys
 import textwrap
 from datetime import datetime, timedelta
+
+DEFAULT_MAX_PARALLEL = 2
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OSS_FUZZ_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
@@ -141,6 +144,8 @@ EXPAND_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are working from: `{oss_fuzz_root}`
     The project directory is: `{oss_fuzz_root}/projects/{project}`
     Write your report to: `{report_path}`
+
+Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
 """)
 
 FIX_BUILD_PROMPT_TEMPLATE = textwrap.dedent("""\
@@ -251,6 +256,8 @@ FIX_BUILD_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are working from: `{oss_fuzz_root}`
     The project directory is: `{oss_fuzz_root}/projects/{project}`
     Write your report to: `{report_path}`
+
+Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
 """)
 
 
@@ -352,6 +359,26 @@ def _validate_projects(projects):
     sys.exit(1)
 
 
+def _run_single_session(agent_cli, task, project):
+  """Launch an agent session and wait for it to complete.
+
+  Returns a dict with the project name, return code, and log path.
+  """
+  proc = launch_agent_session(agent_cli, task, project)
+  if proc is None:
+    return {'project': project, 'returncode': -1, 'log_path': None}
+
+  proc.wait()
+  proc._log_file.close()
+  status = 'OK' if proc.returncode == 0 else f'FAILED (rc={proc.returncode})'
+  print(f'    [{status}] {proc._project}  (log: {proc._log_path})')
+  return {
+      'project': project,
+      'returncode': proc.returncode,
+      'log_path': proc._log_path,
+  }
+
+
 def _run_sessions(task, args):
   """Shared logic for launching parallel agent sessions."""
   projects = args.projects
@@ -373,30 +400,26 @@ def _run_sessions(task, args):
         file=sys.stderr)
     sys.exit(1)
 
+  max_parallel = args.max_parallel
+
   print(f'[*] Using agent CLI: {agent_cli}')
   print(f'[*] Task: {task}')
   print(f'[*] Projects: {", ".join(projects)}')
+  print(f'[*] Max parallel sessions: {max_parallel}')
   print()
 
-  # Launch all sessions in parallel.
-  procs = []
-  for project in projects:
-    proc = launch_agent_session(agent_cli, task, project)
-    if proc is not None:
-      procs.append(proc)
+  print(f'[*] Launching {len(projects)} session(s) '
+        f'(max {max_parallel} in parallel) ...\n')
 
-  if not procs:
-    return
-
-  print(f'\n[*] {len(procs)} agent session(s) running in parallel.')
-  print('[*] Waiting for all sessions to finish ...\n')
-
-  # Wait for all to complete.
-  for proc in procs:
-    proc.wait()
-    proc._log_file.close()
-    status = 'OK' if proc.returncode == 0 else f'FAILED (rc={proc.returncode})'
-    print(f'    [{status}] {proc._project}  (log: {proc._log_path})')
+  results = []
+  with concurrent.futures.ThreadPoolExecutor(
+      max_workers=max_parallel) as executor:
+    futures = {
+        executor.submit(_run_single_session, agent_cli, task, project): project
+        for project in projects
+    }
+    for future in concurrent.futures.as_completed(futures):
+      results.append(future.result())
 
   # Summary.
   print('\n[*] All sessions complete. Check the following for results:')
@@ -473,6 +496,14 @@ def main():
       '--print-only',
       action='store_true',
       help='Print the prompts without launching agent sessions.',
+  )
+  session_args.add_argument(
+      '-j',
+      '--max-parallel',
+      type=int,
+      default=DEFAULT_MAX_PARALLEL,
+      help='Maximum number of agent sessions to run in parallel '
+      f'(default: {DEFAULT_MAX_PARALLEL}).',
   )
 
   # expand-oss-fuzz-projects
