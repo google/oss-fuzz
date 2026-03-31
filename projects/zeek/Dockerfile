@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libkrb5-dev \
         libmaxminddb-dev \
         libpcap-dev \
+        libzmq3-dev \
         libssl-dev \
         ninja-build \
         patchelf \
