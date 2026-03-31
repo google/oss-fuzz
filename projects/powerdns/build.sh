@@ -76,7 +76,7 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
         cp ${build_dir}/fuzz_target_* "${OUT}/"
     else
         build_dir='build'
-        meson setup \
+        CC_LD=lld CXX_LD=lld meson setup \
           -D fuzz-targets=true \
           -D b_pie=false \
           -D yaml=disabled \
