@@ -17,16 +17,16 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        patchelf \
-        cmake \
-        ninja-build \
-        flex \
         bison \
+        cmake \
+        flex \
         libfl-dev \
+        libkrb5-dev \
+        libmaxminddb-dev \
         libpcap-dev \
         libssl-dev \
-        libmaxminddb-dev \
-        libkrb5-dev \
+        ninja-build \
+        patchelf \
         zlib1g-dev \
   && rm -rf /var/lib/apt/lists/*
 
