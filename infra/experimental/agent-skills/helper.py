@@ -33,7 +33,6 @@ import sys
 import textwrap
 from datetime import datetime, timedelta
 
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OSS_FUZZ_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
 
@@ -256,189 +255,184 @@ FIX_BUILD_PROMPT_TEMPLATE = textwrap.dedent("""\
 
 
 def get_recent_date_str(days_ago=1):
-    """Return a YYYYMMDD string for a recent date."""
-    dt = datetime.now() - timedelta(days=days_ago)
-    return dt.strftime('%Y%m%d')
+  """Return a YYYYMMDD string for a recent date."""
+  dt = datetime.now() - timedelta(days=days_ago)
+  return dt.strftime('%Y%m%d')
 
 
 def find_agent_cli():
-    """Find the first available agent CLI on PATH."""
-    for agent in SUPPORTED_AGENTS:
-        if subprocess.run(['which', agent],
-                          capture_output=True).returncode == 0:
-            return agent
-    return None
+  """Find the first available agent CLI on PATH."""
+  for agent in SUPPORTED_AGENTS:
+    if subprocess.run(['which', agent], capture_output=True).returncode == 0:
+      return agent
+  return None
 
 
 def build_prompt(task, project):
-    """Build the agent prompt for a given task and project."""
-    if task == 'expand':
-        report_name = 'expansion_report.md'
-        template = EXPAND_PROMPT_TEMPLATE
-    elif task == 'fix-build':
-        report_name = 'fix_build_report.md'
-        template = FIX_BUILD_PROMPT_TEMPLATE
-    else:
-        raise ValueError(f'Unknown task: {task}')
+  """Build the agent prompt for a given task and project."""
+  if task == 'expand':
+    report_name = 'expansion_report.md'
+    template = EXPAND_PROMPT_TEMPLATE
+  elif task == 'fix-build':
+    report_name = 'fix_build_report.md'
+    template = FIX_BUILD_PROMPT_TEMPLATE
+  else:
+    raise ValueError(f'Unknown task: {task}')
 
-    report_path = os.path.join(OSS_FUZZ_ROOT, 'projects', project,
-                               report_name)
-    return template.format(
-        project=project,
-        oss_fuzz_root=OSS_FUZZ_ROOT,
-        report_path=report_path,
-    ), report_name
+  report_path = os.path.join(OSS_FUZZ_ROOT, 'projects', project, report_name)
+  return template.format(
+      project=project,
+      oss_fuzz_root=OSS_FUZZ_ROOT,
+      report_path=report_path,
+  ), report_name
 
 
 def print_prompt(task, project):
-    """Print the prompt that would be sent to an agent."""
-    prompt, _ = build_prompt(task, project)
-    print(f'===== Prompt for {project} ({task}) =====')
-    print(prompt)
-    print(f'===== End prompt for {project} =====\n')
+  """Print the prompt that would be sent to an agent."""
+  prompt, _ = build_prompt(task, project)
+  print(f'===== Prompt for {project} ({task}) =====')
+  print(prompt)
+  print(f'===== End prompt for {project} =====\n')
 
 
 def launch_agent_session(agent_cli, task, project):
-    """Launch an agent session for a single project.
+  """Launch an agent session for a single project.
 
     Returns a subprocess.Popen object.
     """
-    prompt, _ = build_prompt(task, project)
+  prompt, _ = build_prompt(task, project)
 
-    print(f'[*] Launching {agent_cli} session for project: {project} ({task})')
+  print(f'[*] Launching {agent_cli} session for project: {project} ({task})')
 
-    if agent_cli == 'claude':
-        cmd = [
-            'claude',
-            '-p', prompt,
-            '--dangerously-skip-permissions'
-        ]
-    elif agent_cli == 'gemini':
-        cmd = [
-            'gemini',
-            '--yolo',
-            '-p', prompt,
-        ]
-    else:
-        print(f'[!] Unsupported agent CLI: {agent_cli}', file=sys.stderr)
-        return None
+  if agent_cli == 'claude':
+    cmd = ['claude', '-p', prompt, '--dangerously-skip-permissions']
+  elif agent_cli == 'gemini':
+    cmd = [
+        'gemini',
+        '--yolo',
+        '-p',
+        prompt,
+    ]
+  else:
+    print(f'[!] Unsupported agent CLI: {agent_cli}', file=sys.stderr)
+    return None
 
-    log_dir = os.path.join(OSS_FUZZ_ROOT, 'build', 'agent-logs')
-    os.makedirs(log_dir, exist_ok=True)
-    log_path = os.path.join(
-        log_dir,
-        f'{project}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log')
+  log_dir = os.path.join(OSS_FUZZ_ROOT, 'build', 'agent-logs')
+  os.makedirs(log_dir, exist_ok=True)
+  log_path = os.path.join(
+      log_dir, f'{project}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log')
 
-    log_file = open(log_path, 'w')
-    print(f'    Log: {log_path}')
+  log_file = open(log_path, 'w')
+  print(f'    Log: {log_path}')
 
-    proc = subprocess.Popen(
-        cmd,
-        cwd=OSS_FUZZ_ROOT,
-        stdout=log_file,
-        stderr=subprocess.STDOUT,
-    )
-    # Stash the log file handle so we can close it later.
-    proc._log_file = log_file
-    proc._log_path = log_path
-    proc._project = project
-    return proc
+  proc = subprocess.Popen(
+      cmd,
+      cwd=OSS_FUZZ_ROOT,
+      stdout=log_file,
+      stderr=subprocess.STDOUT,
+  )
+  # Stash the log file handle so we can close it later.
+  proc._log_file = log_file
+  proc._log_path = log_path
+  proc._project = project
+  return proc
 
 
 def _validate_projects(projects):
-    """Validate that each project directory exists. Exits on failure."""
-    missing = [p for p in projects
-                if not os.path.isdir(
-                    os.path.join(OSS_FUZZ_ROOT, 'projects', p))]
-    if missing:
-        print(f'[!] Unknown projects (no directory in projects/): '
-              f'{", ".join(missing)}', file=sys.stderr)
-        sys.exit(1)
+  """Validate that each project directory exists. Exits on failure."""
+  missing = [
+      p for p in projects
+      if not os.path.isdir(os.path.join(OSS_FUZZ_ROOT, 'projects', p))
+  ]
+  if missing:
+    print(
+        f'[!] Unknown projects (no directory in projects/): '
+        f'{", ".join(missing)}',
+        file=sys.stderr)
+    sys.exit(1)
 
 
 def _run_sessions(task, args):
-    """Shared logic for launching parallel agent sessions."""
-    projects = args.projects
-    _validate_projects(projects)
+  """Shared logic for launching parallel agent sessions."""
+  projects = args.projects
+  _validate_projects(projects)
 
-    _, report_name = build_prompt(task, projects[0])
+  _, report_name = build_prompt(task, projects[0])
 
-    if args.print_only:
-        for project in projects:
-            print_prompt(task, project)
-        return
-
-    agent_cli = args.agent or find_agent_cli()
-    if agent_cli is None:
-        print('[!] No supported agent CLI found on PATH '
-              f'({", ".join(SUPPORTED_AGENTS)}).\n'
-              '    Install one or use --print-only to see the prompts.',
-              file=sys.stderr)
-        sys.exit(1)
-
-    print(f'[*] Using agent CLI: {agent_cli}')
-    print(f'[*] Task: {task}')
-    print(f'[*] Projects: {", ".join(projects)}')
-    print()
-
-    # Launch all sessions in parallel.
-    procs = []
+  if args.print_only:
     for project in projects:
-        proc = launch_agent_session(agent_cli, task, project)
-        if proc is not None:
-            procs.append(proc)
+      print_prompt(task, project)
+    return
 
-    if not procs:
-        return
+  agent_cli = args.agent or find_agent_cli()
+  if agent_cli is None:
+    print(
+        '[!] No supported agent CLI found on PATH '
+        f'({", ".join(SUPPORTED_AGENTS)}).\n'
+        '    Install one or use --print-only to see the prompts.',
+        file=sys.stderr)
+    sys.exit(1)
 
-    print(f'\n[*] {len(procs)} agent session(s) running in parallel.')
-    print('[*] Waiting for all sessions to finish ...\n')
+  print(f'[*] Using agent CLI: {agent_cli}')
+  print(f'[*] Task: {task}')
+  print(f'[*] Projects: {", ".join(projects)}')
+  print()
 
-    # Wait for all to complete.
-    for proc in procs:
-        proc.wait()
-        proc._log_file.close()
-        status = 'OK' if proc.returncode == 0 else f'FAILED (rc={proc.returncode})'
-        print(f'    [{status}] {proc._project}  (log: {proc._log_path})')
+  # Launch all sessions in parallel.
+  procs = []
+  for project in projects:
+    proc = launch_agent_session(agent_cli, task, project)
+    if proc is not None:
+      procs.append(proc)
 
-    # Summary.
-    print('\n[*] All sessions complete. Check the following for results:')
-    for project in projects:
-        report = os.path.join(OSS_FUZZ_ROOT, 'projects', project,
-                              report_name)
-        exists = 'EXISTS' if os.path.isfile(report) else 'MISSING'
-        print(f'    - projects/{project}/{report_name}  [{exists}]')
+  if not procs:
+    return
 
-    print('\n[*] Review local changes with:')
-    print(f'    cd {OSS_FUZZ_ROOT} && git diff')
+  print(f'\n[*] {len(procs)} agent session(s) running in parallel.')
+  print('[*] Waiting for all sessions to finish ...\n')
+
+  # Wait for all to complete.
+  for proc in procs:
+    proc.wait()
+    proc._log_file.close()
+    status = 'OK' if proc.returncode == 0 else f'FAILED (rc={proc.returncode})'
+    print(f'    [{status}] {proc._project}  (log: {proc._log_path})')
+
+  # Summary.
+  print('\n[*] All sessions complete. Check the following for results:')
+  for project in projects:
+    report = os.path.join(OSS_FUZZ_ROOT, 'projects', project, report_name)
+    exists = 'EXISTS' if os.path.isfile(report) else 'MISSING'
+    print(f'    - projects/{project}/{report_name}  [{exists}]')
+
+  print('\n[*] Review local changes with:')
+  print(f'    cd {OSS_FUZZ_ROOT} && git diff')
 
 
 def cmd_expand(args):
-    """Handle the expand-oss-fuzz-projects subcommand."""
-    _run_sessions('expand', args)
+  """Handle the expand-oss-fuzz-projects subcommand."""
+  _run_sessions('expand', args)
 
 
 def cmd_fix_builds(args):
-    """Handle the fix-builds subcommand."""
-    _run_sessions('fix-build', args)
+  """Handle the fix-builds subcommand."""
+  _run_sessions('fix-build', args)
 
 
 def cmd_show_prompt(args):
-    """Handle the show-prompt subcommand."""
-    task = args.task
-    for project in args.projects:
-        if not os.path.isdir(
-                os.path.join(OSS_FUZZ_ROOT, 'projects', project)):
-            print(f'[!] Warning: projects/{project}/ does not exist',
-                  file=sys.stderr)
-        print_prompt(task, project)
+  """Handle the show-prompt subcommand."""
+  task = args.task
+  for project in args.projects:
+    if not os.path.isdir(os.path.join(OSS_FUZZ_ROOT, 'projects', project)):
+      print(f'[!] Warning: projects/{project}/ does not exist', file=sys.stderr)
+    print_prompt(task, project)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='Launch agent sessions to work on OSS-Fuzz projects.',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=textwrap.dedent("""\
+  parser = argparse.ArgumentParser(
+      description='Launch agent sessions to work on OSS-Fuzz projects.',
+      formatter_class=argparse.RawDescriptionHelpFormatter,
+      epilog=textwrap.dedent("""\
             Examples:
               # Expand three projects in parallel:
               python %(prog)s expand-oss-fuzz-projects open62541 json-c htslib
@@ -457,59 +451,66 @@ def main():
               python %(prog)s show-prompt --task expand open62541
               python %(prog)s show-prompt --task fix-build open62541
         """),
-    )
+  )
 
-    subparsers = parser.add_subparsers(dest='command', required=True)
+  subparsers = parser.add_subparsers(dest='command', required=True)
 
-    # Shared arguments for session-launching subcommands.
-    session_args = argparse.ArgumentParser(add_help=False)
-    session_args.add_argument(
-        'projects', nargs='+',
-        help='One or more OSS-Fuzz project names (directories under '
-             'projects/).',
-    )
-    session_args.add_argument(
-        '--agent', choices=SUPPORTED_AGENTS, default=None,
-        help='Agent CLI to use (default: auto-detect).',
-    )
-    session_args.add_argument(
-        '--print-only', action='store_true',
-        help='Print the prompts without launching agent sessions.',
-    )
+  # Shared arguments for session-launching subcommands.
+  session_args = argparse.ArgumentParser(add_help=False)
+  session_args.add_argument(
+      'projects',
+      nargs='+',
+      help='One or more OSS-Fuzz project names (directories under '
+      'projects/).',
+  )
+  session_args.add_argument(
+      '--agent',
+      choices=SUPPORTED_AGENTS,
+      default=None,
+      help='Agent CLI to use (default: auto-detect).',
+  )
+  session_args.add_argument(
+      '--print-only',
+      action='store_true',
+      help='Print the prompts without launching agent sessions.',
+  )
 
-    # expand-oss-fuzz-projects
-    expand_parser = subparsers.add_parser(
-        'expand-oss-fuzz-projects',
-        parents=[session_args],
-        help='Launch agent sessions to expand fuzzing coverage of OSS-Fuzz '
-             'projects.',
-    )
-    expand_parser.set_defaults(func=cmd_expand)
+  # expand-oss-fuzz-projects
+  expand_parser = subparsers.add_parser(
+      'expand-oss-fuzz-projects',
+      parents=[session_args],
+      help='Launch agent sessions to expand fuzzing coverage of OSS-Fuzz '
+      'projects.',
+  )
+  expand_parser.set_defaults(func=cmd_expand)
 
-    # fix-builds
-    fix_parser = subparsers.add_parser(
-        'fix-builds',
-        parents=[session_args],
-        help='Launch agent sessions to fix broken OSS-Fuzz project builds.',
-    )
-    fix_parser.set_defaults(func=cmd_fix_builds)
+  # fix-builds
+  fix_parser = subparsers.add_parser(
+      'fix-builds',
+      parents=[session_args],
+      help='Launch agent sessions to fix broken OSS-Fuzz project builds.',
+  )
+  fix_parser.set_defaults(func=cmd_fix_builds)
 
-    # show-prompt
-    show_parser = subparsers.add_parser(
-        'show-prompt',
-        help='Print the agent prompt for a project without running anything.',
-    )
-    show_parser.add_argument('projects', nargs='+',
-                             help='OSS-Fuzz project names.')
-    show_parser.add_argument(
-        '--task', choices=['expand', 'fix-build'], default='expand',
-        help='Which task prompt to show (default: expand).',
-    )
-    show_parser.set_defaults(func=cmd_show_prompt)
+  # show-prompt
+  show_parser = subparsers.add_parser(
+      'show-prompt',
+      help='Print the agent prompt for a project without running anything.',
+  )
+  show_parser.add_argument('projects',
+                           nargs='+',
+                           help='OSS-Fuzz project names.')
+  show_parser.add_argument(
+      '--task',
+      choices=['expand', 'fix-build'],
+      default='expand',
+      help='Which task prompt to show (default: expand).',
+  )
+  show_parser.set_defaults(func=cmd_show_prompt)
 
-    args = parser.parse_args()
-    args.func(args)
+  args = parser.parse_args()
+  args.func(args)
 
 
 if __name__ == '__main__':
-    main()
+  main()
