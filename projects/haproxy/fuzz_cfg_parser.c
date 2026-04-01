@@ -17,13 +17,32 @@
 */
 
 #include <haproxy/cfgparse.h>
+#include <haproxy/chunk.h>
 
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+/* trash is a global scratch buffer used throughout haproxy (e.g. in
+ * make_arg_list).  Normal startup initialises it via init_trash_buffers(),
+ * but the fuzzer bypasses the full init sequence, so we allocate it once
+ * here to avoid a NULL-pointer dereference.
+ */
+extern THREAD_LOCAL struct buffer trash;
+
+#define FUZZ_TRASH_SIZE 65536
+
+static int trash_initialized = 0;
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  if (!trash_initialized) {
+    chunk_init(&trash, malloc(FUZZ_TRASH_SIZE), FUZZ_TRASH_SIZE);
+    if (!trash.area)
+      return 0;
+    trash_initialized = 1;
+  }
+
   struct cfgfile dummy_cfg = {
       .filename = "fuzzer",
       .content = (const char *)data,
