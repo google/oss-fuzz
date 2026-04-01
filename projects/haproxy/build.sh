@@ -34,14 +34,14 @@ SETTINGS="-Iinclude -g -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERSION=\"\" -DC
 $CC $CFLAGS $SETTINGS -c -o ./src/haproxy.o ./src/haproxy.c
 ar cr libhaproxy.a ./src/*.o
 
-for fuzzer in hpack_decode cfg_parser h1_parse; do
+for fuzzer in hpack_decode cfg_parser h1_parse h1_htx; do
   cp $SRC/fuzz_${fuzzer}.c .
   $CC $CFLAGS $SETTINGS -c fuzz_${fuzzer}.c  -o fuzz_${fuzzer}.o
   $CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_${fuzzer}.o libhaproxy.a -o $OUT/fuzz_${fuzzer}
 done
 
 # Copy dictionary and create seed corpus for H1 parser fuzzer
-cp $SRC/fuzz_h1_parse.dict $OUT/fuzz_h1_parse.dict
+cp $SRC/*.dict $OUT/
 
 mkdir -p "$WORK/h1_seeds"
 # Generate seed HTTP/1 requests and responses (first byte: 0=req, 1=resp)
