@@ -40,8 +40,8 @@ meson --default-library=static --prefer-static --wrap-mode=nodownload \
   || (cat build/meson-logs/meson-log.txt && false)
 
 # Build the fuzzers.
-ninja -v -j$(nproc) -C $build test/fuzzing/hb-{shape,raster,vector,subset,repacker}-fuzzer
-mv $build/test/fuzzing/hb-{shape,raster,vector,subset,repacker}-fuzzer $OUT/
+ninja -v -j$(nproc) -C $build test/fuzzing/hb-{shape,raster,vector,gpu,subset,repacker}-fuzzer
+mv $build/test/fuzzing/hb-{shape,raster,vector,gpu,subset,repacker}-fuzzer $OUT/
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 mkdir all-fonts
@@ -59,6 +59,7 @@ done
 zip $OUT/hb-shape-fuzzer_seed_corpus.zip all-fonts/*
 cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-raster-fuzzer_seed_corpus.zip
 cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-vector-fuzzer_seed_corpus.zip
+cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-gpu-fuzzer_seed_corpus.zip
 cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-subset-fuzzer_seed_corpus.zip
 zip $OUT/hb-repacker-fuzzer_seed_corpus.zip ./test/fuzzing/graphs/*
 
