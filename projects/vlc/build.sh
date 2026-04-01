@@ -136,3 +136,6 @@ do
     # Create one binary per target
     cp "$outfile" "$outfile_target"
 done
+
+# Write an options file to disable leak for the general harness
+echo -e "[libfuzzer]\ndetect_leaks=0" > $OUT/vlc-demux-dec-libfuzzer.options

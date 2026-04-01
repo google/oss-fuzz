@@ -15,8 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y python3-pip ragel pkg-config && \
-    pip3 install meson==0.60.0 ninja
+RUN apt-get update && apt-get install -y python3-pip ragel pkg-config zlib1g-dev:i386 && \
+    pip3 install meson==1.2.0 ninja
 RUN git clone --depth 1 https://github.com/harfbuzz/harfbuzz.git
 WORKDIR harfbuzz
 COPY build.sh $SRC/

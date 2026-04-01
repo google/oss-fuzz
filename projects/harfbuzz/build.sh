@@ -20,6 +20,11 @@
 export CFLAGS="$CFLAGS -fno-sanitize=vptr -DHB_NO_VISIBILITY"
 export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr -DHB_NO_VISIBILITY"
 
+# Use i386 pkg-config paths for 32-bit builds so meson finds the right libraries
+if [ "$ARCHITECTURE" = "i386" ]; then
+  export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
+fi
+
 # setup
 build=$WORK/build
 
@@ -28,7 +33,7 @@ rm -rf $build
 mkdir -p $build
 
 # Build the library.
-meson --default-library=static --wrap-mode=nodownload \
+meson --default-library=static --prefer-static --wrap-mode=nodownload \
       -Dexperimental_api=true \
       -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
       $build \

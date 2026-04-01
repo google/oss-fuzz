@@ -39,6 +39,8 @@ static CoverageData* coverage_data;
 
 bool IsStandardLibrary(const char* file_path) {
   return (strstr(file_path, "include/c++/v1") ||
+          strstr(file_path, "src/libcxx/include") ||
+          strstr(file_path, "src/libcxx/staging/include") ||
           strncmp(file_path, "/usr/include", 12) == 0 ||
           strstr(file_path, "libc++/src/include") ||
           strstr(file_path, "/absl/"));
