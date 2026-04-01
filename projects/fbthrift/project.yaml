@@ -1,0 +1,12 @@
+base_os_version: ubuntu-24-04
+homepage: "https://github.com/facebook/fbthrift"
+language: c++
+primary_contact: "juchem@gmail.com"
+vendor_ccs:
+  - "juchem@gmail.com"
+main_repo: "https://github.com/facebook/fbthrift.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
