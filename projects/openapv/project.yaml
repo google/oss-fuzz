@@ -1,0 +1,10 @@
+homepage: "https://github.com/AcademySoftwareFoundation/openapv"
+language: c
+primary_contact: "AOM-PROJECT@aomedia.org"
+sanitizers:
+- address
+- undefined
+- memory
+architectures:
+- x86_64
+main_repo: 'https://github.com/AcademySoftwareFoundation/openapv'
