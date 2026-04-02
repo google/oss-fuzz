@@ -65,7 +65,8 @@ fuzzers="gstoraster_fuzzer                \
          gs_device_pxlcolor_fuzzer        \
          gs_device_tiffsep1_fuzzer        \
          gs_device_pdfwrite_opts_fuzzer  \
-         gs_device_ljet4_fuzzer"
+         gs_device_ljet4_fuzzer          \
+         gs_icc_fuzzer"
 
 for fuzzer in $fuzzers; do
   $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
@@ -180,3 +181,16 @@ zip -j "$OUT/gs_xps_fuzzer_seed_corpus.zip" "$WORK"/xps_seeds/*
 cp $SRC/dicts/pcl.dict $OUT/gs_pcl_fuzzer.dict
 cp $SRC/dicts/pxl.dict $OUT/gs_pxl_fuzzer.dict
 cp $SRC/dicts/xps.dict $OUT/gs_xps_fuzzer.dict
+
+# Create ICC fuzzer seed corpus from ICC profile files
+# Prepend a selector byte (profile type) to each ICC file
+mkdir -p "$WORK/icc_seeds"
+for f in iccprofiles/*.icc lcms2mt/testbed/*.icc; do
+  if [ -f "$f" ]; then
+    s=$(sha1sum "$f" | awk '{print $1}')
+    # Prepend type selector byte (0=gray, 1=rgb, 2=cmyk)
+    printf "\x01" | cat - "$f" > "$WORK/icc_seeds/$s"
+  fi
+done
+zip -j "$OUT/gs_icc_fuzzer_seed_corpus.zip" "$WORK"/icc_seeds/*
+cp $SRC/dicts/pdf.dict $OUT/gs_icc_fuzzer.dict
