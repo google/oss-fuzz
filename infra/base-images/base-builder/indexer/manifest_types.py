@@ -285,6 +285,8 @@ class Manifest:
   # Version of the index database schema.
   index_db_version: int | None = None
 
+  metadata: dict[str, str] = dataclasses.field(default_factory=dict)
+
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Manifest object from a deserialized dict."""
@@ -332,6 +334,7 @@ class Manifest:
             data, "reproducibility", Reproducibility.from_dict
         ),
         binary_config=binary_config,
+        metadata=data.get("metadata", {}),
     )
 
   def to_dict(self) -> dict[str, Any]:
