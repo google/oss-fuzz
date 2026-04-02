@@ -34,7 +34,7 @@ SETTINGS="-Iinclude -g -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERSION=\"\" -DC
 $CC $CFLAGS $SETTINGS -c -o ./src/haproxy.o ./src/haproxy.c
 ar cr libhaproxy.a ./src/*.o
 
-for fuzzer in hpack_decode cfg_parser h1_parse h1_htx; do
+for fuzzer in hpack_decode cfg_parser h1_parse h1_htx http; do
   cp $SRC/fuzz_${fuzzer}.c .
   $CC $CFLAGS $SETTINGS -c fuzz_${fuzzer}.c  -o fuzz_${fuzzer}.o
   $CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_${fuzzer}.o libhaproxy.a -o $OUT/fuzz_${fuzzer}
