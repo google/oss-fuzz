@@ -28,7 +28,7 @@ cmake $SRC/openapv \
     -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
     -DCMAKE_BUILD_TYPE=Release
 
-make -j$(nproc) oapv_static
+make -j$(nproc) oapv
 popd
 
 # Build the decoder fuzzer
@@ -43,6 +43,11 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
     -L${build_dir}/lib -loapv \
     -lpthread \
     -o $OUT/oapv_dec_fuzzer
+
+# Build encoder for seed corpus generation (best-effort, non-fatal)
+pushd ${build_dir}
+make -j$(nproc) oapv_app_enc 2>/dev/null || true
+popd
 
 # Generate seed corpus from the encoder
 if [ -x "${build_dir}/bin/oapv_app_enc" ]; then

@@ -41,8 +41,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     int ret = 0;
 
     memset(&cdesc, 0, sizeof(cdesc));
+    memset(&bitb, 0, sizeof(bitb));
     memset(&ofrms, 0, sizeof(ofrms));
     memset(&aui, 0, sizeof(oapv_au_info_t));
+    memset(&stat, 0, sizeof(stat));
 
     // Create decoder
     did = oapvd_create(&cdesc, &ret);
@@ -61,8 +63,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         goto cleanup;
     }
 
-    // Allocate frame buffers with size limit
+    // Allocate frame buffers with size limit.
+    // Cap num_frms to OAPV_MAX_NUM_FRAMES (16) to prevent OOB on ofrms.frm[].
     ofrms.num_frms = aui.num_frms;
+    if (ofrms.num_frms > 16) {
+        goto cleanup;
+    }
     for (int i = 0; i < ofrms.num_frms; i++) {
         oapv_frm_t *frm = &ofrms.frm[i];
         oapv_frm_info_t *finfo = &aui.frm_info[i];

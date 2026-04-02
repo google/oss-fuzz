@@ -1,6 +1,6 @@
 homepage: "https://github.com/AcademySoftwareFoundation/openapv"
 language: c
-primary_contact: "AOM-PROJECT@aomedia.org"
+primary_contact: "security@aswf.io"
 sanitizers:
 - address
 - undefined
