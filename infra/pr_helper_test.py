@@ -17,7 +17,6 @@
 """PR helper env variable injection and URL sanitization tests."""
 
 import os
-import re
 import tempfile
 import unittest
 from unittest import mock
@@ -28,41 +27,41 @@ import pr_helper
 
 
 def _parse_github_env(content):
-  """Parses a GITHUB_ENV file and returns a dict of env var names to values.
-
-  Supports both KEY=value and KEY<<DELIMITER formats.
-  """
+  """Parses GITHUB_ENV content into a dict of env var names to values."""
   env_vars = {}
   lines = content.split('\n')
   i = 0
   while i < len(lines):
     line = lines[i]
-    if not line:
+    if '<<' in line:
+      name, delim = line.split('<<', 1)
+      vals = []
       i += 1
-      continue
-
-    # Check for delimiter format: NAME<<DELIMITER
-    delim_match = re.match(r'^([A-Z_]+)<<(.+)$', line)
-    if delim_match:
-      name = delim_match.group(1)
-      delimiter = delim_match.group(2)
-      value_lines = []
-      i += 1
-      while i < len(lines) and lines[i] != delimiter:
-        value_lines.append(lines[i])
+      while i < len(lines) and lines[i] != delim:
+        vals.append(lines[i])
         i += 1
-      env_vars[name] = '\n'.join(value_lines)
-      i += 1  # skip the closing delimiter
-      continue
-
-    # Check for simple KEY=value format
-    eq_match = re.match(r'^([A-Z_]+)=(.*)$', line)
-    if eq_match:
-      env_vars[eq_match.group(1)] = eq_match.group(2)
-
+      env_vars[name] = '\n'.join(vals)
+    elif '=' in line:
+      name, val = line.split('=', 1)
+      env_vars[name] = val
     i += 1
-
   return env_vars
+
+
+class ParseGithubEnvTest(unittest.TestCase):
+  """Verify the test helper parses both GITHUB_ENV formats correctly."""
+
+  def test_key_value_format(self):
+    """KEY=value lines are parsed correctly."""
+    content = 'FOO=bar\nBAZ=qux\n'
+    self.assertEqual(_parse_github_env(content), {'FOO': 'bar', 'BAZ': 'qux'})
+
+  def test_delimiter_format(self):
+    """KEY<<DELIM blocks are parsed correctly, including multiline values."""
+    content = 'MSG<<EOF\nhello\nworld\nEOF\nOTHER<<END\nval\nEND\n'
+    env_vars = _parse_github_env(content)
+    self.assertEqual(env_vars['MSG'], 'hello\nworld')
+    self.assertEqual(env_vars['OTHER'], 'val')
 
 
 class SaveEnvTest(unittest.TestCase):
@@ -85,22 +84,22 @@ class SaveEnvTest(unittest.TestCase):
     with open(self.env_file.name, 'r', encoding='utf-8') as env_file:
       return env_file.read()
 
-  def test_save_env_basic(self):
-    """Normal values produce correct key=value output."""
+  @mock.patch('pr_helper.uuid.uuid4')
+  def test_save_env_basic(self, mock_uuid):
+    """Normal values produce correct delimiter-based output."""
+    mock_uuid.return_value.hex = 'deadbeef'
     pr_helper.save_env('hello world', True, False)
-    env_vars = _parse_github_env(self._read_env_file())
-    self.assertEqual(env_vars['MESSAGE'], 'hello world')
-    self.assertEqual(env_vars['IS_READY_FOR_MERGE'], 'True')
-    self.assertEqual(env_vars['IS_INTERNAL'], 'False')
+    expected = ('MESSAGE<<deadbeef\nhello world\ndeadbeef\n'
+                'IS_READY_FOR_MERGE<<deadbeef\nTrue\ndeadbeef\n'
+                'IS_INTERNAL<<deadbeef\nFalse\ndeadbeef\n')
+    self.assertEqual(self._read_env_file(), expected)
 
   def test_save_env_newline_injection_blocked(self):
     """Newlines in message must not inject extra env vars."""
     malicious = 'hello\nGITHUB_API_URL=https://evil.com'
     pr_helper.save_env(malicious, True, False)
     env_vars = _parse_github_env(self._read_env_file())
-    # The injected env var must NOT appear as a separate variable.
     self.assertNotIn('GITHUB_API_URL', env_vars)
-    # There must be exactly 3 env vars.
     self.assertEqual(len(env_vars), 3)
 
   def test_save_env_carriage_return_injection_blocked(self):
@@ -117,12 +116,15 @@ class SaveEnvTest(unittest.TestCase):
     self.assertNotIn('EVIL', env_vars)
     self.assertEqual(len(env_vars), 3)
 
-  def test_save_env_none_values(self):
+  @mock.patch('pr_helper.uuid.uuid4')
+  def test_save_env_none_values(self, mock_uuid):
     """None values (internal member path) are written safely."""
+    mock_uuid.return_value.hex = 'deadbeef'
     pr_helper.save_env(None, None, True)
-    env_vars = _parse_github_env(self._read_env_file())
-    self.assertEqual(env_vars['MESSAGE'], 'None')
-    self.assertEqual(env_vars['IS_INTERNAL'], 'True')
+    expected = ('MESSAGE<<deadbeef\nNone\ndeadbeef\n'
+                'IS_READY_FOR_MERGE<<deadbeef\nNone\ndeadbeef\n'
+                'IS_INTERNAL<<deadbeef\nTrue\ndeadbeef\n')
+    self.assertEqual(self._read_env_file(), expected)
 
   def test_save_env_full_attack_scenario(self):
     """Reproduces the reported attack: malicious main_repo
