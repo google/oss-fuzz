@@ -18,7 +18,8 @@ set -euox pipefail
 
 export LDFLAGS="-fuse-ld=lld"
 
-declare -A LLVM_SANITIZER=(["address"]="Address" ["undefined"]="Undefined" ["memory"]="Memory")
+: "${SANITIZER:=}"
+declare -A LLVM_SANITIZER=([""]="" ["address"]="Address" ["coverage"]="" ["memory"]="Memory" ["undefined"]="Undefined")
 
 cmake -G Ninja -S "$SRC/llvm-project/llvm" -B "$WORK/llvm-build" \
 	-DCMAKE_BUILD_TYPE=Release \
