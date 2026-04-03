@@ -14,5 +14,4 @@ fuzzing_engines:
 
 sanitizers:
  - address
- # LLVM isn't building with Undefined sanitizer
- # - undefined
+ - undefined
