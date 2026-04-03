@@ -14,4 +14,6 @@ fuzzing_engines:
 
 sanitizers:
  - address
- - undefined
+# LLVM 22.1.2 fails to build with:
+# /src/llvm-project/llvm/include/llvm/ADT/DenseMap.h:850:70: runtime error: unsigned integer overflow: 0 - 1 cannot be represented in type 'unsigned int'
+# - undefined
