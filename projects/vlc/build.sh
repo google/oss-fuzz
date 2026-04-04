@@ -30,7 +30,7 @@ cd contrib/contrib-build
 ../bootstrap
 
 # Disable X11/xlib in FFmpeg to avoid runtime dependency on libX11
-sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape' ../src/ffmpeg/rules.mak
+sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-x86asm' ../src/ffmpeg/rules.mak
 
 make V=1 -j$(nproc) \
     .matroska \
@@ -136,3 +136,6 @@ do
     # Create one binary per target
     cp "$outfile" "$outfile_target"
 done
+
+# Write an options file to disable leak for the general harness
+echo -e "[libfuzzer]\ndetect_leaks=0" > $OUT/vlc-demux-dec-libfuzzer.options

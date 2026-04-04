@@ -72,17 +72,19 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
             make -j$(nproc) -C ext/arc4random/
         fi
         make -j$(nproc) fuzz_targets
+        # copy the fuzzing target binaries
+        cp ${build_dir}/fuzz_target_* "${OUT}/"
     else
         build_dir='build'
-        meson setup \
+        CC_LD=lld CXX_LD=lld meson setup \
           -D fuzz-targets=true \
           -D b_pie=false \
+          -D yaml=disabled \
           ${build_dir}
         meson compile -C ${build_dir} fuzz-targets
+        # copy the fuzzing target binaries
+        cp ${build_dir}/fuzz-target-* "${OUT}/"
     fi
-
-    # copy the fuzzing target binaries
-    cp ${build_dir}/fuzz_target_* "${OUT}/"
 
     # back to the pdns/ directory
     cd ..

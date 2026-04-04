@@ -77,7 +77,7 @@ FUZZ_DEFINES="-DHAVE_CONFIG_H \
 
 FUZZ_WERROR=""
 
-for fuzz in repo bsdiff; do
+for fuzz in repo bsdiff bootconfig content-stream rfc2616-date; do
   $CC $CFLAGS $FUZZ_DEFINES $FUZZ_INCLUDES -o tests/fuzz-$fuzz.o -c tests/fuzz-$fuzz.c
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $FUZZ_INCLUDES -o $OUT/fuzz-$fuzz  tests/fuzz-$fuzz.o $FUZZ_LIBS
 done

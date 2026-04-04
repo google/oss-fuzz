@@ -23,13 +23,9 @@ RUN git clone \
 
 WORKDIR $SRC/Cirq
 
-# Install pip dependencies.
+# Install pip dependencies and Cirq modules.
 RUN export PIP_ROOT_USER_ACTION=ignore && \
     pip3 install --upgrade pip && \
-    pip3 install -r dev_tools/requirements/dev.env.txt
-
-# Install Cirq-related modules.
-RUN export PIP_ROOT_USER_ACTION=ignore && \
     pip3 install --no-cache-dir \
     ./cirq-core \
     ./cirq-aqt \
