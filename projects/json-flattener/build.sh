@@ -40,10 +40,8 @@ if [[ -v LOCAL_DEV ]]; then
   set_project_version_in_fuzz_targets_dependency
 
   # Copy fuzzers from upstream project to fuzz-targets module
-  if [ -d "$PROJECT/src/test/java/com/example" ]; then
-    mkdir -p fuzz-targets/src/test/java/com/example
-    cp -r $PROJECT/src/test/java/com/example/* fuzz-targets/src/test/java/com/example/
-  fi
+  mkdir -p fuzz-targets/src/test/java/com/example
+  cp -r $PROJECT/src/test/java/com/example/* fuzz-targets/src/test/java/com/example/
 
   #install
   (cd $PROJECT && $MVN install $MAVEN_ARGS)
@@ -56,10 +54,8 @@ else
   set_project_version_in_fuzz_targets_dependency
 
   # Copy fuzzers from upstream project to fuzz-targets module
-  if [ -d "$PROJECT/src/test/java/com/example" ]; then
-    mkdir -p fuzz-targets/src/test/java/com/example
-    cp -r $PROJECT/src/test/java/com/example/* fuzz-targets/src/test/java/com/example/
-  fi
+  mkdir -p fuzz-targets/src/test/java/com/example
+  cp -r $PROJECT/src/test/java/com/example/* fuzz-targets/src/test/java/com/example/
 
   #install
   (cd $PROJECT && $MVN install $MAVEN_ARGS -Dmaven.repo.local=$OUT/m2)
