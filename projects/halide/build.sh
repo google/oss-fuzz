@@ -18,8 +18,12 @@ set -euox pipefail
 
 export LDFLAGS="-fuse-ld=lld"
 
-: "${SANITIZER:=}"
-declare -A LLVM_SANITIZER=([""]="" ["address"]="Address" ["coverage"]="" ["memory"]="Memory" ["undefined"]="Undefined")
+declare -A LLVM_SANITIZER=(["address"]="Address" ["coverage"]="" ["memory"]="Memory" ["undefined"]="Undefined")
+if [[ -n ${SANITIZER:=} ]]; then
+	LLVM_USE_SANITIZER="${LLVM_SANITIZER[$SANITIZER]}"
+else
+	LLVM_USE_SANITIZER=""
+fi
 
 cmake -G Ninja -S "$SRC/llvm-project/llvm" -B "$WORK/llvm-build" \
 	-DCMAKE_BUILD_TYPE=Release \
@@ -34,7 +38,7 @@ cmake -G Ninja -S "$SRC/llvm-project/llvm" -B "$WORK/llvm-build" \
 	-DLLVM_INCLUDE_BENCHMARKS=OFF \
 	-DLLVM_INCLUDE_EXAMPLES=OFF \
 	-DLLVM_INCLUDE_TESTS=OFF \
-	-DLLVM_USE_SANITIZER="${LLVM_SANITIZER[$SANITIZER]}"
+	-DLLVM_USE_SANITIZER="$LLVM_USE_SANITIZER"
 
 cmake --build "$WORK/llvm-build" -j "$(nproc)" --target install
 
