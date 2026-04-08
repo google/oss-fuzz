@@ -57,8 +57,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 		goto cleanup;
 
 cleanup:
-	dwfl_end(dwfl);
-	elf_end(core);
+	if (dwfl != NULL)
+		dwfl_end(dwfl);
+	if (core != NULL)
+		elf_end(core);
 	close(fd);
 	unlink(name);
 	return 0;
