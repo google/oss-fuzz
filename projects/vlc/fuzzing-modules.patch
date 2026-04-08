@@ -2,7 +2,7 @@ diff --git a/test/Makefile.am b/test/Makefile.am
 index 7eb4ab5..cdbd28a 100644
 --- a/test/Makefile.am
 +++ b/test/Makefile.am
-@@ -480,8 +480,17 @@ libvlc_demux_run_la_LIBADD += \
+@@ -480,8 +480,19 @@ libvlc_demux_run_la_LIBADD += \
  	../modules/libpacketizer_mpegaudio_plugin.la \
  	../modules/libpacketizer_mpegvideo_plugin.la \
  	../modules/libpacketizer_vc1_plugin.la \
@@ -17,10 +17,12 @@ index 7eb4ab5..cdbd28a 100644
 +	../modules/libmpgv_plugin.la \
 +	../modules/libdemux_stl_plugin.la \
 +	../modules/libmpc_plugin.la \
++	../modules/libhx_plugin.la \
++	../modules/libdmxmus_plugin.la \
  	../modules/libfilesystem_plugin.la \
  	../modules/libxml_plugin.la \
  	../modules/libogg_plugin.la \
-@@ -522,13 +530,28 @@ libvlc_demux_dec_run_la_LIBADD += \
+@@ -522,13 +533,28 @@ libvlc_demux_dec_run_la_LIBADD += \
  	../modules/libsubsusf_plugin.la \
  	../modules/libsvcdsub_plugin.la \
  	../modules/libtextst_plugin.la \
@@ -49,7 +51,7 @@ index 7eb4ab5..cdbd28a 100644
 +endif
  endif
  EXTRA_LTLIBRARIES += libvlc_demux_dec_run.la
- 
+
 diff --git a/test/src/input/demux-run.c b/test/src/input/demux-run.c
 index c71afa2..c4c2ebd 100644
 --- a/test/src/input/demux-run.c
@@ -74,7 +76,7 @@ index c71afa2..c4c2ebd 100644
  #else
  #define DECODER_PLUGINS(f)
  #endif
-@@ -464,11 +475,27 @@ int vlc_demux_process_memory(const struct vlc_run_args *args,
+@@ -464,11 +477,29 @@ int vlc_demux_process_memory(const struct vlc_run_args *args,
      f(packetizer_mpegaudio) \
      f(packetizer_mpegvideo) \
      f(packetizer_vc1) \
@@ -89,10 +91,12 @@ index c71afa2..c4c2ebd 100644
 +    f(demux_vc1) \
 +    f(demux_mpeg_mpgv) \
 +    f(demux_demux_stl) \
++    f(demux_hx) \
++    f(demux_dmxmus) \
      f(demux_ogg) \
 +    PLUGIN_AVCODEC(f) \
      DECODER_PLUGINS(f)
- 
+
 +#ifdef HAVE_AVCODEC
 +# define PLUGIN_AVCODEC(f) f(codec_avcodec_avcodec)
 +#else

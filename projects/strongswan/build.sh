@@ -15,16 +15,12 @@
 #
 ################################################################################
 
-# Temporary fix to break circular dependency issue
-sed -i '/libcharon\/\.libs\/libcharon\.a.*\\$/a\	$(top_builddir)/src/libradius/.libs/libradius.a \\' $SRC/strongswan/fuzz/Makefile.am
-
 ./autogen.sh
 
 ./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE -DDEBUG_LEVEL=-1" \
 	--enable-imc-test \
 	--enable-tnccs-20 \
 	--enable-libipsec \
-	--enable-vici \
 	--enable-eap-radius \
 	--enable-fuzzing \
 	--with-libfuzzer=$LIB_FUZZING_ENGINE \
