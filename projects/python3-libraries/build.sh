@@ -90,7 +90,6 @@ zip -j $OUT/fuzzer-csv_seed_corpus.zip corp-csv/*
 cp $SRC/library-fuzzers/fuzzer-decode $OUT/
 cp $SRC/library-fuzzers/decode.py $OUT/
 zip -j $OUT/fuzzer-decode_seed_corpus.zip corp-decode/*
-cp $SRC/library-fuzzers/fuzzer-decode.dict $OUT/
 
 cp $SRC/library-fuzzers/fuzzer-ast $OUT/
 cp $SRC/library-fuzzers/ast.py $OUT/
