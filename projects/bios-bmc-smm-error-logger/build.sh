@@ -91,6 +91,11 @@ if [ -f subprojects/sdbusplus/include/sdbusplus/asio/connection.hpp ]; then
     sed -i 's/std::move_only_function/std::function/g' subprojects/sdbusplus/include/sdbusplus/asio/connection.hpp
 fi
 
+# Patch sdbusplus barrier.cpp to add missing <algorithm> for std::ranges::for_each
+if [ -f subprojects/sdbusplus/src/async/barrier.cpp ]; then
+    sed -i '1i#include <algorithm>' subprojects/sdbusplus/src/async/barrier.cpp
+fi
+
 # Build everything
 ninja -C build -v
 
