@@ -54,6 +54,11 @@ cd ../../
 # Resume instrumentation
 export CFLAGS="${CFLAGS_SAVE}"
 export CXXFLAGS="${CXXFLAGS_SAVE}"
+# Disable asserts under ASAN to let the fuzzer find deeper bugs past debug checks
+if [ "$SANITIZER" = "address" ]; then
+    export CFLAGS="$CFLAGS -DNDEBUG"
+    export CXXFLAGS="$CXXFLAGS -DNDEBUG"
+fi
 unset AFL_NOOPT
 
 # Use OSS-Fuzz environment rather than hardcoded setup.
