@@ -15,7 +15,7 @@
 ##
 ##################################################################################
 #!/usr/bin/env python3
-import struct, os, zipfile, io
+import struct, os, zipfile, io, sys
 
 def u16(x, be=False): return struct.pack('>H' if be else '<H', x)
 def u32(x, be=False): return struct.pack('>I' if be else '<I', x)
@@ -204,7 +204,8 @@ makers = [
 for name, fn in makers[:10]:
   fn(os.path.join(out_dir, name))
 
-with zipfile.ZipFile('/out/dcmtk_dicom_fuzzer_seed_corpus.zip', 'w', zipfile.ZIP_DEFLATED) as z:
+target_seed = sys.argv[1]
+with zipfile.ZipFile(target_seed, 'w', zipfile.ZIP_DEFLATED) as z:
   for name, _ in makers[:10]:
     z.write(os.path.join(out_dir, name), arcname=name)
-print("Seed corpus written to /out/dcmtk_dicom_fuzzer_seed_corpus.zip")
+print(f"Seed corpus written to {target_seed}")

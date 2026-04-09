@@ -421,6 +421,11 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
       '--coverage-only',
       action='store_true',
       help='if specified, will only collect coverage.')
+  introspector_parser.add_argument(
+      '--out',
+      help='output directory for the coverage/introspector report. '
+      'Useful for comparing multiple runs by writing each to a '
+      'distinct folder.')
 
   download_corpora_parser = subparsers.add_parser(
       'download_corpora', help='Download all corpora for a project.')
@@ -1247,6 +1252,28 @@ def _introspector_prepare_corpus(args):
   return True
 
 
+def _copy_coverage_report(project_out, dest_dir):
+  """Copies the coverage report and per-target reports to dest_dir."""
+  dest_dir = os.path.abspath(dest_dir)
+  os.makedirs(dest_dir, exist_ok=True)
+
+  # Copy the main coverage report.
+  src_report = os.path.join(project_out, 'report')
+  dst_report = os.path.join(dest_dir, 'report')
+  if os.path.isdir(src_report):
+    shutil.rmtree(dst_report, ignore_errors=True)
+    shutil.copytree(src_report, dst_report)
+
+  # Copy per-target coverage reports.
+  src_target_report = os.path.join(project_out, 'report_target')
+  dst_target_report = os.path.join(dest_dir, 'report_target')
+  if os.path.isdir(src_target_report):
+    shutil.rmtree(dst_target_report, ignore_errors=True)
+    shutil.copytree(src_target_report, dst_target_report)
+
+  logger.info('Coverage report copied to %s', dest_dir)
+
+
 def introspector(args):
   """Runs a complete end-to-end run of introspector."""
   parser = get_parser()
@@ -1284,6 +1311,10 @@ def introspector(args):
 
   logger.info('Coverage collected for %s', args.project.name)
   if args.coverage_only:
+    if args.out:
+      _copy_coverage_report(args.project.out, args.out)
+    else:
+      logger.info('Report in %s', os.path.join(args.project.out, 'report'))
     logger.info('Coverage-only enabled, finishing now.')
     return True
 
@@ -1295,7 +1326,7 @@ def introspector(args):
     logger.error('Failed to build project with introspector')
     return False
 
-  introspector_dst = os.path.join(args.project.out,
+  introspector_dst = os.path.join(args.out if args.out else args.project.out,
                                   "introspector-report/inspector")
   shutil.rmtree(introspector_dst, ignore_errors=True)
   shutil.copytree(os.path.join(args.project.out, "inspector"), introspector_dst)

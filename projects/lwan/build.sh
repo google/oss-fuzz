@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+sed -i 's/static struct coro_switcher switcher;/static coro_context switcher;/' \
+	$SRC/lwan/src/lib/lwan-request.c
 
 mkdir -p $WORK/lwan
 cd $WORK/lwan

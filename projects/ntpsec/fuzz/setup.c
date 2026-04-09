@@ -24,6 +24,7 @@ struct peer *peer_list = NULL;
 
 void dns_take_server(struct peer *a, sockaddr_u *b);
 void dns_take_status(struct peer *a, DNS_Status b);
+void dns_take_pool(struct peer *a, sockaddr_u *b);
 
 void dns_take_server(struct peer *a, sockaddr_u *b) {
 	UNUSED_ARG(a);
@@ -32,6 +33,12 @@ void dns_take_server(struct peer *a, sockaddr_u *b) {
 }
 
 void dns_take_status(struct peer *a, DNS_Status b) {
+	UNUSED_ARG(a);
+	UNUSED_ARG(b);
+	return;
+}
+
+void dns_take_pool(struct peer *a, sockaddr_u *b) {
 	UNUSED_ARG(a);
 	UNUSED_ARG(b);
 	return;
