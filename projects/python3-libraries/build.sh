@@ -59,75 +59,19 @@ $OUT/cpython-install/bin/python3 -m pip install hypothesis
 cd $SRC/library-fuzzers
 make
 
-cp $SRC/library-fuzzers/fuzzer-html $OUT/
-cp $SRC/library-fuzzers/html.py $OUT/
-zip -j $OUT/fuzzer-html_seed_corpus.zip corp-html/*
+while read -r name fuzzer; do
+  cp $SRC/library-fuzzers/fuzzer-$name $OUT/
+  cp $SRC/library-fuzzers/$fuzzer $OUT/
+  if [ -d "corp-$name" ]; then
+    zip -j "$OUT/fuzzer-${name}_seed_corpus.zip" corp-$name/*
+  fi
+  if [ -f "fuzzer-${name}.dict" ]; then
+    cp "fuzzer-${name}.dict" "$OUT/fuzzer-${name}.dict"
+  fi
+done < $SRC/library-fuzzers/fuzz_targets.txt
 
-cp $SRC/library-fuzzers/fuzzer-xml $OUT/
-cp $SRC/library-fuzzers/xml.py $OUT/
-zip -j $OUT/fuzzer-xml_seed_corpus.zip corp-xml/*
-
-cp $SRC/library-fuzzers/fuzzer-email $OUT/
-cp $SRC/library-fuzzers/email.py $OUT/
-zip -j $OUT/fuzzer-email_seed_corpus.zip corp-email/*
-
-cp $SRC/library-fuzzers/fuzzer-httpclient $OUT/
-cp $SRC/library-fuzzers/httpclient.py $OUT/
-zip -j $OUT/fuzzer-httpclient_seed_corpus.zip corp-httpclient/*
-
-cp $SRC/library-fuzzers/fuzzer-json $OUT/
-cp $SRC/library-fuzzers/json.py $OUT/
-zip -j $OUT/fuzzer-json_seed_corpus.zip corp-json/*
-
-cp $SRC/library-fuzzers/fuzzer-difflib $OUT/
-cp $SRC/library-fuzzers/difflib.py $OUT/
-zip -j $OUT/fuzzer-difflib_seed_corpus.zip corp-difflib/*
-
-cp $SRC/library-fuzzers/fuzzer-csv $OUT/
-cp $SRC/library-fuzzers/csv.py $OUT/
-zip -j $OUT/fuzzer-csv_seed_corpus.zip corp-csv/*
-
-cp $SRC/library-fuzzers/fuzzer-decode $OUT/
-cp $SRC/library-fuzzers/decode.py $OUT/
-zip -j $OUT/fuzzer-decode_seed_corpus.zip corp-decode/*
-
-cp $SRC/library-fuzzers/fuzzer-ast $OUT/
-cp $SRC/library-fuzzers/ast.py $OUT/
+# Use CPython source code as seed corpus and use dict from cpython3
 cp $SRC/cpython/Modules/_xxtestfuzz/dictionaries/fuzz_pycompile.dict $OUT/fuzzer-ast.dict
-# Use CPython source code as seed corpus
 mkdir corp-ast/
 find $SRC/cpython -type f -name '*.py' -size -4097c -exec cp {} corp-ast/ \;
 zip -j $OUT/fuzzer-ast_seed_corpus.zip corp-ast/*
-
-cp $SRC/library-fuzzers/fuzzer-re $OUT/
-cp $SRC/library-fuzzers/re.py $OUT/
-
-cp $SRC/library-fuzzers/fuzzer-zipfile $OUT/
-cp $SRC/library-fuzzers/zipfile.py $OUT/
-zip -j $OUT/fuzzer-zipfile_seed_corpus.zip corp-zipfile/*
-
-cp $SRC/library-fuzzers/fuzzer-zipfile-hypothesis $OUT/
-cp $SRC/library-fuzzers/zipfile_hypothesis.py $OUT/
-
-cp $SRC/library-fuzzers/fuzzer-tarfile $OUT/
-cp $SRC/library-fuzzers/tarfile.py $OUT/
-zip -j $OUT/fuzzer-tarfile_seed_corpus.zip corp-tarfile/*
-
-cp $SRC/library-fuzzers/fuzzer-tarfile-hypothesis $OUT/
-cp $SRC/library-fuzzers/tarfile_hypothesis.py $OUT/
-
-cp $SRC/library-fuzzers/fuzzer-configparser $OUT/
-cp $SRC/library-fuzzers/configparser.py $OUT/
-zip -j $OUT/fuzzer-configparser_seed_corpus.zip corp-configparser/*
-
-cp $SRC/library-fuzzers/fuzzer-tomllib $OUT/
-cp $SRC/library-fuzzers/tomllib.py $OUT/
-zip -j $OUT/fuzzer-tomllib_seed_corpus.zip corp-tomllib/*
-
-cp $SRC/library-fuzzers/fuzzer-plistlib $OUT/
-cp $SRC/library-fuzzers/plist.py $OUT/
-
-cp $SRC/library-fuzzers/fuzzer-zoneinfo $OUT/
-cp $SRC/library-fuzzers/zoneinfo.py $OUT/
-zip -j $OUT/fuzzer-zoneinfo_seed_corpus.zip corp-zoneinfo/*
-
