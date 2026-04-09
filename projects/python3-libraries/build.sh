@@ -68,7 +68,7 @@ while read -r name fuzzer; do
   if [ -f "fuzzer-${name}.dict" ]; then
     cp "fuzzer-${name}.dict" "$OUT/fuzzer-${name}.dict"
   fi
-done < $SRC/library-fuzzers/fuzz_tests.txt
+done < $SRC/library-fuzzers/fuzz_targets.txt
 
 # Use CPython source code as seed corpus and use dict from cpython3
 cp $SRC/cpython/Modules/_xxtestfuzz/dictionaries/fuzz_pycompile.dict $OUT/fuzzer-ast.dict
