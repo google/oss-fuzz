@@ -57,8 +57,7 @@ FUZZING_SKILLS_BLURB = (
     '      - Rust    → **fuzzing-rust-expert**\n'
     '      - Java/Kotlin/JVM → **fuzzing-jvm-expert**\n'
     '      - Python  → **fuzzing-python-expert**\n'
-    '    Activate all relevant skills at the start of your session.'
-)
+    '    Activate all relevant skills at the start of your session.')
 
 EXPAND_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are an OSS-Fuzz engineer tasked with expanding the fuzzing coverage of
@@ -269,7 +268,6 @@ FIX_BUILD_PROMPT_TEMPLATE = textwrap.dedent("""\
 Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
 """)
 
-
 FREE_TASK_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are an OSS-Fuzz engineer working on the **{project}** OSS-Fuzz project.
 
@@ -314,7 +312,6 @@ FREE_TASK_PROMPT_TEMPLATE = textwrap.dedent("""\
 
 Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
 """)
-
 
 INTEGRATE_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are an OSS-Fuzz engineer tasked with integrating a new open source
@@ -663,8 +660,10 @@ def _run_single_session(agent_cli, task, project, task_description=None):
 
   Returns a dict with the project name, return code, and log path.
   """
-  proc = launch_agent_session(
-      agent_cli, task, project, task_description=task_description)
+  proc = launch_agent_session(agent_cli,
+                              task,
+                              project,
+                              task_description=task_description)
   if proc is None:
     return {'project': project, 'returncode': -1, 'log_path': None}
 
@@ -717,8 +716,7 @@ def _run_sessions(task, args):
       max_workers=max_parallel) as executor:
     futures = {
         executor.submit(_run_single_session, agent_cli, task, project,
-                        task_description): project
-        for project in projects
+                        task_description): project for project in projects
     }
     for future in concurrent.futures.as_completed(futures):
       results.append(future.result())
