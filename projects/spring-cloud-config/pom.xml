@@ -11,7 +11,7 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>4.0.0-SNAPSHOT</fuzzedLibaryVersion>
+		<fuzzedLibaryVersion>5.0.2</fuzzedLibaryVersion>
 		<exec.mainClass>EnvironmentFuzzer</exec.mainClass>
 	</properties>
 
