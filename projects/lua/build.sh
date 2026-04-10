@@ -83,18 +83,16 @@ FUZZER_ARGS=""
 # enabled.
 #
 # 1. https://github.com/ligurio/lunapark/issues/180.
-LAPI_TESTING="ON"
 if [[ "$FUZZING_ENGINE" != "libfuzzer" ]] ||
    [[ "$ARCHITECTURE" == "i386" ]] ||
    [[ "$SANITIZER" == "coverage" ]]; then
   FUZZER_ARGS="-DDISABLE_LIBFUZZER_STATIC_LINKAGE=ON"
-  LAPI_TESTING="OFF"
 fi
 
 cmake_args=(
     -DUSE_LUA=ON
     -DOSS_FUZZ=ON
-    -DENABLE_LAPI_TESTS=${LAPI_TESTING}
+    -DENABLE_LAPI_TESTS=ON
     $SANITIZERS_ARGS
     $FUZZER_ARGS
 
@@ -144,12 +142,9 @@ done
 
 # Finish execution if libFuzzer is not used, because luzer
 # is libFuzzer-based.
-# Code coverage is not supported,
-# see https://github.com/google/oss-fuzz/issues/14859.
 # Building luzer on i386 is unsupported,
 # https://github.com/ligurio/luzer/issues/83.
 if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
-   [[ "$SANITIZER" == "coverage" ]] ||
    [[ "$ARCHITECTURE" == "i386" ]]; then
   echo "Lua API testing is not supported."
   exit
