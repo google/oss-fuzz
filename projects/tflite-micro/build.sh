@@ -21,7 +21,7 @@
 #
 # The fuzz target exercises:
 #   GetModel() -> MicroInterpreter -> AllocateTensors() -> Invoke()
-# to catch integer overflow in BytesRequiredForTensor, ElementCount, etc.
+#
 ###############################################################################
 
 cd $SRC/tflite-micro
@@ -121,12 +121,22 @@ echo "[+] Built: $OUT/fuzz_model_load"
 # -------------------------------------------------------------------
 # Step 5: Package seed corpus
 #
-# Include the PoC malicious.tflite and any .tflite test models from
-# the TFLM repo itself as mutation seeds.
+# Include PoC seeds for both vulnerabilities and any .tflite test
+# models from the TFLM repo as mutation seeds.
 # -------------------------------------------------------------------
 echo "[*] Packaging seed corpus..."
 
-# Start with our hand-crafted seeds
+# Generate the Gather OOB PoC seed if the generator is available
+if [ -f "$SRC/build_malicious_gather.py" ]; then
+    echo "[*] Generating malicious_gather.tflite seed..."
+    python3 $SRC/build_malicious_gather.py || true
+    if [ -f "malicious_gather.tflite" ]; then
+        cp malicious_gather.tflite $SRC/seed_corpus/ 2>/dev/null || true
+        echo "[+] Added malicious_gather.tflite to seed corpus"
+    fi
+fi
+
+# Start with our hand-crafted seeds (integer overflow + gather OOB)
 if [ -d "$SRC/seed_corpus" ] && [ "$(ls -A $SRC/seed_corpus/*.tflite 2>/dev/null)" ]; then
     zip -j $OUT/fuzz_model_load_seed_corpus.zip $SRC/seed_corpus/*.tflite
     echo "[+] Added $(ls $SRC/seed_corpus/*.tflite | wc -l) seed files from seed_corpus/"
@@ -164,11 +174,18 @@ cat > $OUT/fuzz_model_load.dict << 'DICT_EOF'
 "\x02"
 "\x09"
 
-# FullyConnected opcode
+# FullyConnected opcode = 9
 "\x09"
+
+# GATHER opcode = 36 (0x24)
+"\x24"
+
+# BuiltinOptions_GatherOptions = 23 (0x17)
+"\x17"
 
 # Common dimension values
 "\x01\x00\x00\x00"
+"\x03\x00\x00\x00"
 "\x04\x00\x00\x00"
 "\x08\x00\x00\x00"
 "\x10\x00\x00\x00"
@@ -183,6 +200,16 @@ cat > $OUT/fuzz_model_load.dict << 'DICT_EOF'
 # Powers of 2 near overflow boundary
 "\x00\x00\x00\x20"
 "\x00\x00\x00\x10"
+
+# GATHER OOB INDEX TRIGGER VALUES (as int32 little-endian)
+# 999 (0x3E7) -- small OOB, stays within arena (silent info-leak)
+"\xE7\x03\x00\x00"
+# 100000 (0x186A0) -- large OOB, goes past arena -> ASAN SEGV
+"\xA0\x86\x01\x00"
+# -1 (0xFFFFFFFF) -- negative index for backward OOB read
+"\xFF\xFF\xFF\xFF"
+# INT32_MIN (0x80000000) -- extreme negative
+"\x00\x00\x00\x80"
 
 # FlatBuffer structural tokens
 "\x00\x00\x00\x00"

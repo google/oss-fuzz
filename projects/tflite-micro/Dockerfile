@@ -32,15 +32,16 @@ RUN apt-get update && apt-get install -y \
 #   numpy  - generate_cc_arrays.py
 #   Pillow - generate_cc_arrays.py (PIL image handling)
 #   wave   - stdlib, but ensure it's available
-RUN pip3 install numpy Pillow --break-system-packages 2>/dev/null \
-    || pip3 install numpy Pillow
+RUN pip3 install numpy Pillow flatbuffers --break-system-packages 2>/dev/null \
+    || pip3 install numpy Pillow flatbuffers
 
 # Clone tflite-micro repository
 RUN git clone --depth 1 https://github.com/tensorflow/tflite-micro.git \
     $SRC/tflite-micro
 
-# Copy the fuzz target source
+# Copy the fuzz target source and PoC generators
 COPY fuzz_model_load.cc $SRC/
+COPY build_malicious_gather.py $SRC/
 
 # Copy seed corpus directory
 COPY seed_corpus/ $SRC/seed_corpus/
