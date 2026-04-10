@@ -1,8 +1,8 @@
 homepage: "https://github.com/vgmstream/vgmstream"
 language: c++
-primary_contact: "shravan.s.fuzz@gmail.com"
+primary_contact: "shravankumarsheri39@gmail.com"
 auto_ccs:
-  - "shravan.s.fuzz@gmail.com"
+  - "shravankumarsheri39@gmail.com"
 main_repo: "https://github.com/vgmstream/vgmstream.git"
 file_github_issue: true
 sanitizers:
