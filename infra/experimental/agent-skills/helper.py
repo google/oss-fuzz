@@ -715,8 +715,8 @@ def _run_sessions(task, args):
   with concurrent.futures.ThreadPoolExecutor(
       max_workers=max_parallel) as executor:
     futures = {
-        executor.submit(_run_single_session, agent_cli, task, project,
-                        task_description): project for project in projects
+        executor.submit(_run_single_session, agent_cli, task, project, task_description):
+            project for project in projects
     }
     for future in concurrent.futures.as_completed(futures):
       results.append(future.result())
