@@ -1,4 +1,4 @@
-/* Copyright 2026 Google LLC
+/* Copyright 2026 Shravan S.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,7 @@
  * (~447 formats in src/meta/*) until one matches. A single corpus
  * therefore exercises every parser in the library; the seed corpus and
  * dictionary are biased toward Sony BNK because that is the format with
- * the highest manually-verified bug density (the maintainer-acknowledged
- * OOB read in ubi_bao_parser.c was found via this harness, see
- * accompanying PR description for details).
+ * the highest manually-verified bug density.
  *
  * Per-iteration cost is one mkstemp + one write + one init_vgmstream
  * call + one close + one unlink, all on tmpfs.
