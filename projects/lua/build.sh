@@ -181,8 +181,8 @@ for fuzzer in $(find $SRC -name '*_test.lua'); do
 done
 cp $SRC/testdir/tests/lapi/lib.lua "$OUT/"
 
-# BAD BUILD: /tmp/not-out/tmpse6jp7h6/string_buffer_encode_test \
-#   seems to have either startup crash or exit:
+# These tests does not print a string "Done 4 runs" and
+# therefore script bad_build_check thinks the test is bad.
 rm -f $OUT/table_foreachi_test* \
       $OUT/table_foreachi_test* \
       $OUT/table_clear_test* \
