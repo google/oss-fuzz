@@ -1,0 +1,10 @@
+homepage: "https://github.com/soypat/lneto"
+language: go
+primary_contact: "graded.sp@gmail.com"
+auto_ccs:
+  - "ron@hybridgroup.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/soypat/lneto.git"
