@@ -1,0 +1,17 @@
+homepage: "https://github.com/vgmstream/vgmstream"
+language: c++
+primary_contact: "shravan.s.fuzz@gmail.com"
+auto_ccs:
+  - "shravan.s.fuzz@gmail.com"
+main_repo: "https://github.com/vgmstream/vgmstream.git"
+file_github_issue: true
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+vendor_ccs: []
