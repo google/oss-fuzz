@@ -1,16 +1,23 @@
 homepage: "https://github.com/tensorflow/tflite-micro"
 main_repo: "https://github.com/tensorflow/tflite-micro"
-primary_contact: "anindyaisandy@gmail.com"
-auto_ccs: []
+
+primary_contact: "security@tensorflow.org"
+
+auto_ccs:
+  - "anindyaisandy@gmail.com"
+
 language: c++
+
 fuzzing_engines:
   - libfuzzer
   - afl
   - honggfuzz
+
 sanitizers:
   - address
   - undefined
   - memory
+
 architectures:
   - x86_64
   - i386
