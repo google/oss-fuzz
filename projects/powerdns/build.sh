@@ -83,7 +83,7 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
           ${build_dir}
         meson compile -C ${build_dir} fuzz-targets
         # copy the fuzzing target binaries
-        cp ${build_dir}/fuzz-target-* "${OUT}/"
+        find ${build_dir} -type f -executable -name 'fuzz-target-*' -exec cp {} ${OUT}/ \;
     fi
 
     # back to the pdns/ directory

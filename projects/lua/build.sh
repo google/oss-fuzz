@@ -22,7 +22,7 @@ if [ "$SANITIZER" == "introspector" ]; then
   export CXXFLAGS="${CXXFLAGS} -fsanitize=address"
 fi
 
-PACKAGES="build-essential ninja-build cmake make"
+PACKAGES="build-essential ninja-build cmake make luarocks"
 if [ "$ARCHITECTURE" = "i386" ]; then
     PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386"
 elif [ "$ARCHITECTURE" = "aarch64" ]; then
@@ -74,10 +74,29 @@ fi
 : ${LD:="${CXX}"}
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
+FUZZER_ARGS=""
+# The static linkage with libFuzzer is unsupported on i386 [1] and
+# the source code coverage tools can conflict with LibFuzzer,
+# typically resulting in drastically slower execution speeds,
+# crash reproduction failures, or inaccurate coverage reports, so
+# libFuzzer static linkage is disabled when code coverage is
+# enabled.
+#
+# 1. https://github.com/ligurio/lunapark/issues/180.
+LAPI_TESTING="ON"
+if [[ "$FUZZING_ENGINE" != "libfuzzer" ]] ||
+   [[ "$ARCHITECTURE" == "i386" ]] ||
+   [[ "$SANITIZER" == "coverage" ]]; then
+  FUZZER_ARGS="-DDISABLE_LIBFUZZER_STATIC_LINKAGE=ON"
+  LAPI_TESTING="OFF"
+fi
+
 cmake_args=(
     -DUSE_LUA=ON
     -DOSS_FUZZ=ON
+    -DENABLE_LAPI_TESTS=${LAPI_TESTING}
     $SANITIZERS_ARGS
+    $FUZZER_ARGS
 
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
@@ -122,3 +141,58 @@ do
   cp $f $OUT/
   [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$name"_seed_corpus.zip
 done
+
+# Finish execution if libFuzzer is not used, because luzer
+# is libFuzzer-based.
+# Code coverage is not supported,
+# see https://github.com/google/oss-fuzz/issues/14859.
+# Building luzer on i386 is unsupported,
+# https://github.com/ligurio/luzer/issues/83.
+if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
+   [[ "$SANITIZER" == "coverage" ]] ||
+   [[ "$ARCHITECTURE" == "i386" ]]; then
+  echo "Lua API testing is not supported."
+  exit
+fi
+
+luarocks --local install luarocks
+eval $(luarocks path)
+
+# Build luarocks config for PUC Rio Lua 5.5, see [1] and [2].
+# 1. http://lua-users.org/wiki/LuaRocksConfig
+# 2. https://github.com/luarocks/luarocks/blob/main/docs/config_file_format.md
+luarocks config lua_version 5.5
+luarocks config variables.LUA_INCDIR $LUALIB_PATH
+luarocks config variables.LUA_LIBDIR $LUALIB_PATH
+luarocks config variables.LUA $LUALIB_PATH/lua
+
+VERBOSE=1 luarocks install --tree=lua_modules --server=https://luarocks.org/dev luzer LUA_LIBRARIES=$LUALIB_PATH/liblua.a LUA_INCLUDE_DIR=$LUALIB_PATH OSS_FUZZ=ON
+
+LUA_RUNTIME_NAME=lua
+
+for fuzzer in $(find $SRC -name '*_test.lua'); do
+  $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME $(basename $fuzzer)
+  cp $fuzzer "$OUT/"
+done
+cp $SRC/testdir/tests/lapi/lib.lua "$OUT/"
+
+# BAD BUILD: /tmp/not-out/tmpse6jp7h6/string_buffer_encode_test \
+#   seems to have either startup crash or exit:
+rm -f $OUT/table_foreachi_test* \
+      $OUT/table_foreachi_test* \
+      $OUT/table_clear_test* \
+      $OUT/table_maxn_test* \
+      $OUT/table_foreach_test* \
+      $OUT/string_buffer_torture_test* \
+      $OUT/bitop_tohex_test* \
+      $OUT/jit_p_test* \
+      $OUT/bitop_arshift_test* \
+      $OUT/bitop_rol_test* \
+      $OUT/bitop_tobit_test* \
+      $OUT/bitop_ror_test* \
+      $OUT/bitop_bswap_test* \
+      $OUT/builtin_getfenv_test* \
+      $OUT/string_buffer_encode_test*
+
+cp $LUALIB_PATH/$LUA_RUNTIME_NAME "$OUT/$LUA_RUNTIME_NAME"
+cp -R lua_modules "$OUT/"
