@@ -1,0 +1,90 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# IGES format dictionary for fuzzing OpenCASCADE IGES parser
+# Section identifiers (column 73 of 80-col lines)
+section_start="S"
+section_global="G"
+section_directory="D"
+section_parameter="P"
+section_terminate="T"
+
+# Field delimiters
+delim_param=","
+delim_record=";"
+
+# Common IGES entity types (directory entry field 1)
+ent_circular_arc="100"
+ent_composite="102"
+ent_conic_arc="104"
+ent_copious="106"
+ent_line="110"
+ent_parametric_spline="112"
+ent_point="116"
+ent_ruled_surface="118"
+ent_surface_rev="120"
+ent_tabulated_cyl="122"
+ent_transform="124"
+ent_rational_bspline="126"
+ent_rational_bspline_surf="128"
+ent_offset_curve="130"
+ent_connect_point="132"
+ent_trimmed_surface="144"
+ent_bounded_surface="143"
+ent_plane="190"
+ent_right_circ_cyl="192"
+ent_color="314"
+ent_subfigure="308"
+ent_singular_subfig="408"
+ent_view="410"
+ent_drawing="404"
+ent_property="406"
+ent_assoc="402"
+
+# Hollerith string prefix (nH = n chars follow)
+hollerith_1="1H"
+hollerith_2="2H"
+hollerith_3="3H"
+hollerith_4="4H"
+hollerith_8="8H"
+hollerith_16="16H"
+hollerith_80="80H"
+hollerith_200="200H"
+
+# Common global section values
+global_comma="1H,"
+global_semi="1H;"
+global_product="7Hproduct"
+global_file="4Hfile"
+global_system="6Hsystem"
+global_version="4H5.3"
+
+# Integer values common in directory entries
+int_0="0"
+int_1="1"
+int_2="2"
+int_3="3"
+int_4="4"
+int_8="8"
+
+# Overflow triggers
+big_hollerith="99999H"
+big_int="999999999"
+neg_int="-1"
+zero="0"
+many_params=",,,,,,,,,,,,,,,,"
+
+# Line padding (spaces to fill 72-col data area)
+spaces8="        "
+spaces16="                "
