@@ -17,6 +17,7 @@
 
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
-compile_native_go_fuzzer github.com/soypat/lneto/x/xnet    FuzzStackAsyncHTTP    fuzz_AsyncHTTP
+compile_native_go_fuzzer github.com/soypat/lneto/x/xnet    FuzzStackPacketHTTP   fuzz_StackPacketHTTP
+compile_native_go_fuzzer github.com/soypat/lneto/x/xnet    FuzzStackSeeded       fuzz_StackSeeded
 compile_native_go_fuzzer github.com/soypat/lneto/tcp       FuzzTCBActions        fuzz_TCBActions
 compile_native_go_fuzzer github.com/soypat/lneto/tcp       FuzzTCPControlBlock   fuzz_TCB
