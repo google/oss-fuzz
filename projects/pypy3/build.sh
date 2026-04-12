@@ -27,6 +27,7 @@ CC=clang CFLAGS="" pypy pypy/tool/release/package.py \
     --archive-name=pypy-built \
     --targetdir=/tmp/pypy-pkg
 tar xf /tmp/pypy-pkg/pypy-built.tar.bz2 -C $PYPY_INSTALL_PATH --strip-components=1
+cp $SRC/pypy/pypy/goal/libpypy3*-c.so $PYPY_INSTALL_PATH/bin/
 ln -sf libpypy3.11-c.so $PYPY_INSTALL_PATH/bin/libpypy3-c.so
 
 export LD_LIBRARY_PATH=$PYPY_INSTALL_PATH/bin
