@@ -23,6 +23,7 @@ cd $SRC/pypy-fuzz
 while read -r name; do
     CC=clang CFLAGS="" $PYPY build_cffi_fuzz.py "$name"
     $CC $FUZZ_CFLAGS fuzzer_stub.c ./_pypy_fuzz_${name}.so \
+        -L$PYPY_INSTALL_PATH/bin -lpypy3-c \
         $LIB_FUZZING_ENGINE -rdynamic -ldl -o fuzzer-${name}
 
     cp fuzzer-${name} _pypy_fuzz_${name}.so fuzz_${name}.py $OUT/
