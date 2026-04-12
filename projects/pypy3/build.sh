@@ -10,6 +10,7 @@ cd $SRC/pypy/pypy/goal
 CC=clang CFLAGS="" pypy ../../rpython/bin/rpython --opt=2 --shared
 
 cd $SRC/pypy
+mkdir -p /tmp/pypy-pkg
 CC=clang CFLAGS="" pypy pypy/tool/release/package.py \
     --archive-name=pypy-built \
     --targetdir=/tmp/pypy-pkg
