@@ -11,7 +11,7 @@ esac
 # Funky way to work around RPython
 cat > /usr/local/bin/pypy-cc <<EOF
 #!/bin/sh
-exec clang $SAN "\$@"
+exec clang $SAN -shared-libsan "\$@"
 EOF
 chmod +x /usr/local/bin/pypy-cc
 
