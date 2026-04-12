@@ -3,28 +3,24 @@
 export ASAN_OPTIONS="detect_leaks=0"
 CFLAGS=${CFLAGS//"-pthread"/}
 
+PYPY_CFLAGS="${CFLAGS//-fsanitize=fuzzer-no-link/}"
+PYPY_CFLAGS="${PYPY_CFLAGS//-fno-sanitize=function/}"
+
 export PYPY_INSTALL_PATH=$SRC/pypy-install
 mkdir -p $PYPY_INSTALL_PATH
 
+cd $SRC/pypy/pypy/goal
+CFLAGS="$PYPY_CFLAGS" pypy ../../rpython/bin/rpython --opt=2 --shared
+
 cd $SRC/pypy
-
-pypy rpython/bin/rpython --opt=2 --shared \
-    pypy/goal/targetpypystandalone.py
-
-# Install
-PYPY_EXE=$(ls pypy/goal/pypy3*-c | head -1)
-PYPY_LIB=$(ls pypy/goal/libpypy3*-c.so | head -1)
-mkdir -p $PYPY_INSTALL_PATH/{bin,lib}
-cp "$PYPY_EXE" $PYPY_INSTALL_PATH/bin/pypy3
-cp "$PYPY_LIB" $PYPY_INSTALL_PATH/lib/
-ln -sf "$(basename "$PYPY_LIB")" $PYPY_INSTALL_PATH/lib/libpypy3-c.so
-cp -r lib-python/3 $PYPY_INSTALL_PATH/lib-python/3
-cp -r lib_pypy $PYPY_INSTALL_PATH/lib_pypy
-cp -r include $PYPY_INSTALL_PATH/include
+pypy pypy/tool/release/package.py \
+    --archive-name=pypy-built \
+    --targetdir=/tmp/pypy-pkg
+tar xf /tmp/pypy-pkg/pypy-built.tar.bz2 -C $PYPY_INSTALL_PATH --strip-components=1
 
 PYPY=$PYPY_INSTALL_PATH/bin/pypy3
-cd $SRC/pypy-fuzz
 
+cd $SRC/pypy-fuzz
 while read -r name; do
     $PYPY build_cffi_fuzz.py "$name"
     $CC $CFLAGS fuzzer_stub.c -L. -l_pypy_fuzz_${name} \
