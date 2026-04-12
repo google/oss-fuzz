@@ -1,17 +1,18 @@
 #!/bin/bash -eu
 
 export ASAN_OPTIONS="detect_leaks=0"
-FUZZ_CFLAGS=${CFLAGS//"-pthread"/}
+export CC=clang
+CFLAGS=${CFLAGS//-fsanitize=fuzzer-no-link/}
 
 export PYPY_INSTALL_PATH=$SRC/pypy-install
 mkdir -p $PYPY_INSTALL_PATH
 
 cd $SRC/pypy/pypy/goal
-CC=clang CFLAGS="" pypy ../../rpython/bin/rpython --opt=2 --shared
+pypy ../../rpython/bin/rpython --opt=2 --shared
 
 cd $SRC/pypy
 mkdir -p /tmp/pypy-pkg
-CC=clang CFLAGS="" pypy pypy/tool/release/package.py \
+pypy pypy/tool/release/package.py \
     --archive-name=pypy-built \
     --targetdir=/tmp/pypy-pkg
 tar xf /tmp/pypy-pkg/pypy-built.tar.bz2 -C $PYPY_INSTALL_PATH --strip-components=1
@@ -21,8 +22,8 @@ PYPY=$PYPY_INSTALL_PATH/bin/pypy3
 
 cd $SRC/pypy-fuzz
 while read -r name; do
-    CC=clang CFLAGS="" $PYPY build_cffi_fuzz.py "$name"
-    $CC $FUZZ_CFLAGS fuzzer_stub.c ./_pypy_fuzz_${name}.so \
+    $PYPY build_cffi_fuzz.py "$name"
+    $CC $CFLAGS fuzzer_stub.c ./_pypy_fuzz_${name}.so \
         -L$PYPY_INSTALL_PATH/bin -lpypy3-c \
         -Wl,-rpath,'$ORIGIN' \
         $LIB_FUZZING_ENGINE -rdynamic -ldl -o fuzzer-${name}
