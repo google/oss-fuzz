@@ -1,0 +1,10 @@
+homepage: https://github.com/hashgraph-online/ai-plugin-scanner
+main_repo: https://github.com/hashgraph-online/ai-plugin-scanner
+language: python
+primary_contact: 6068672+kantorcodes@users.noreply.github.com
+help_url: https://github.com/hashgraph-online/ai-plugin-scanner/issues
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
