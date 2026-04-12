@@ -15,11 +15,9 @@ CC=clang CFLAGS="" pypy pypy/tool/release/package.py \
     --archive-name=pypy-built \
     --targetdir=/tmp/pypy-pkg
 tar xf /tmp/pypy-pkg/pypy-built.tar.bz2 -C $PYPY_INSTALL_PATH --strip-components=1
-ln -sf $PYPY_INSTALL_PATH/lib/libpypy3.11-c.so $PYPY_INSTALL_PATH/lib/libpypy3-c.so
-ln -sf $PYPY_INSTALL_PATH/lib/libpypy3.11-c.so $PYPY_INSTALL_PATH/bin/libpypy3-c.so
+ln -sf libpypy3.11-c.so $PYPY_INSTALL_PATH/bin/libpypy3-c.so
 
 PYPY=$PYPY_INSTALL_PATH/bin/pypy3
-export LIBRARY_PATH=$PYPY_INSTALL_PATH/lib
 
 cd $SRC/pypy-fuzz
 while read -r name; do
