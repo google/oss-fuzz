@@ -14,16 +14,11 @@ export PYPY_INSTALL_PATH=$SRC/pypy-install
 mkdir -p $PYPY_INSTALL_PATH
 
 cd $SRC/pypy/pypy/goal
-CC=clang pypy ../../rpython/bin/rpython --opt=2 --shared
+CC=clang pypy ../../rpython/bin/rpython --opt=2 --shared --source
 
-# recompile generated C with sanitizers
-if [ -n "$SAN" ]; then
-    BUILD_DIR=$(dirname $(find /tmp/usession-py3.11-* -name 'Makefile' | head -1))
-    find $BUILD_DIR -name '*.o' -delete
-    rm -f pypy3*-c libpypy3*-c.so
-    make -C $BUILD_DIR "CC=clang $SAN"
-    cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so .
-fi
+BUILD_DIR=$(dirname $(find /tmp/usession-py3.11-* -name 'Makefile' | head -1))
+make -j$(nproc) -C $BUILD_DIR "CC=clang $SAN"
+cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so .
 
 # Package
 export CC=clang
@@ -35,6 +30,7 @@ pypy pypy/tool/release/package.py \
 tar xf /tmp/pypy-pkg/pypy-built.tar.bz2 -C $PYPY_INSTALL_PATH --strip-components=1
 ln -sf libpypy3.11-c.so $PYPY_INSTALL_PATH/bin/libpypy3-c.so
 
+export LD_LIBRARY_PATH=$PYPY_INSTALL_PATH/bin
 PYPY=$PYPY_INSTALL_PATH/bin/pypy3
 
 # Build fuzz targets
