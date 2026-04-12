@@ -1,0 +1,12 @@
+homepage: "https://pypy.org/"
+language: c
+main_repo: "https://github.com/pypy/pypy"
+auto_ccs:
+ - "stanulbrych@gmail.com"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+sanitizers:
+ - address
+ - undefined
