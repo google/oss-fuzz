@@ -3,7 +3,7 @@
 export ASAN_OPTIONS="detect_leaks=0"
 
 case $SANITIZER in
-  address)   SAN=-fsanitize=address ;;
+  address)   SAN=-fsanitize=address; ulimit -s unlimited ;;
   undefined) SAN=-fsanitize=undefined ;;
   *)         SAN="" ;;
 esac
