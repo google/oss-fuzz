@@ -42,7 +42,7 @@ while read -r name; do
         -Wl,-rpath,'$ORIGIN' \
         $LIB_FUZZING_ENGINE -rdynamic -ldl -o fuzzer-${name}
 
-    cp fuzzer-${name} _pypy_fuzz_${name}.so fuzz_${name}.py $OUT/
+    cp fuzzer-${name} _pypy_fuzz_${name}.so fuzz_${name}.py ubsan_suppressions.txt $OUT/
     cp $PYPY_INSTALL_PATH/bin/libpypy3.11-c.so $OUT/libpypy3-c.so
     if [ -d "corp-${name}" ]; then
         zip -j "$OUT/fuzzer-${name}_seed_corpus.zip" corp-${name}/*
