@@ -1,8 +1,15 @@
 #!/bin/bash -eu
 
 export ASAN_OPTIONS="detect_leaks=0"
-export CC=clang
-CFLAGS=${CFLAGS//-fsanitize=fuzzer-no-link/}
+
+case $SANITIZER in
+  address)   SAN=-fsanitize=address ;;
+  undefined) SAN=-fsanitize=undefined ;;
+  *)         SAN="" ;;
+esac
+
+export CC="clang $SAN"
+CFLAGS=$(echo "$CFLAGS" | sed 's/-f[no-]*sanitize[^ ]*//g')
 
 export PYPY_INSTALL_PATH=$SRC/pypy-install
 mkdir -p $PYPY_INSTALL_PATH
@@ -23,7 +30,7 @@ PYPY=$PYPY_INSTALL_PATH/bin/pypy3
 cd $SRC/pypy-fuzz
 while read -r name; do
     $PYPY build_cffi_fuzz.py "$name"
-    $CC $CFLAGS fuzzer_stub.c ./_pypy_fuzz_${name}.so \
+    $CC $CFLAGS -fsanitize=fuzzer-no-link fuzzer_stub.c ./_pypy_fuzz_${name}.so \
         -L$PYPY_INSTALL_PATH/bin -lpypy3-c \
         -Wl,-rpath,'$ORIGIN' \
         $LIB_FUZZING_ENGINE -rdynamic -ldl -o fuzzer-${name}
