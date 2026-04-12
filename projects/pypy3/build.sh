@@ -3,14 +3,11 @@
 export ASAN_OPTIONS="detect_leaks=0"
 CFLAGS=${CFLAGS//"-pthread"/}
 
-PYPY_CFLAGS="${CFLAGS//-fsanitize=fuzzer-no-link/}"
-PYPY_CFLAGS="${PYPY_CFLAGS//-fno-sanitize=function/}"
-
 export PYPY_INSTALL_PATH=$SRC/pypy-install
 mkdir -p $PYPY_INSTALL_PATH
 
 cd $SRC/pypy/pypy/goal
-CFLAGS="$PYPY_CFLAGS" pypy ../../rpython/bin/rpython --opt=2 --shared
+CC=clang CFLAGS="" pypy ../../rpython/bin/rpython --opt=2 --shared
 
 cd $SRC/pypy
 pypy pypy/tool/release/package.py \
