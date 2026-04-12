@@ -21,10 +21,9 @@ make -j$(nproc) -C $BUILD_DIR "CC=clang $SAN"
 cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so .
 
 # Package
-export CC=clang
 cd $SRC/pypy
 mkdir -p /tmp/pypy-pkg
-pypy pypy/tool/release/package.py \
+CC=clang CFLAGS="" pypy pypy/tool/release/package.py \
     --archive-name=pypy-built \
     --targetdir=/tmp/pypy-pkg
 tar xf /tmp/pypy-pkg/pypy-built.tar.bz2 -C $PYPY_INSTALL_PATH --strip-components=1
