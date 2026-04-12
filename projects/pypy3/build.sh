@@ -24,10 +24,11 @@ while read -r name; do
     CC=clang CFLAGS="" $PYPY build_cffi_fuzz.py "$name"
     $CC $FUZZ_CFLAGS fuzzer_stub.c ./_pypy_fuzz_${name}.so \
         -L$PYPY_INSTALL_PATH/bin -lpypy3-c \
-        -Wl,-rpath,'\$ORIGIN/pypy-install/bin' -Wl,-rpath,'\$ORIGIN' \
+        -Wl,-rpath,'$ORIGIN' \
         $LIB_FUZZING_ENGINE -rdynamic -ldl -o fuzzer-${name}
 
     cp fuzzer-${name} _pypy_fuzz_${name}.so fuzz_${name}.py $OUT/
+    cp $PYPY_INSTALL_PATH/bin/libpypy3.11-c.so $OUT/libpypy3-c.so
     if [ -d "corp-${name}" ]; then
         zip -j "$OUT/fuzzer-${name}_seed_corpus.zip" corp-${name}/*
     fi
