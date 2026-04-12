@@ -8,7 +8,14 @@ case $SANITIZER in
   *)         SAN="" ;;
 esac
 
-export CC="clang $SAN"
+# Funky way to work around RPython
+cat > /usr/local/bin/pypy-cc <<EOF
+#!/bin/sh
+exec clang $SAN "\$@"
+EOF
+chmod +x /usr/local/bin/pypy-cc
+
+export CC=pypy-cc
 CFLAGS=$(echo "$CFLAGS" | sed 's/-f[no-]*sanitize[^ ]*//g')
 
 export PYPY_INSTALL_PATH=$SRC/pypy-install
