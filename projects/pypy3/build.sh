@@ -36,7 +36,7 @@ PYPY=$PYPY_INSTALL_PATH/bin/pypy3
 # Build fuzz targets
 cd $SRC/pypy-fuzz
 while read -r name; do
-    CC=clang CFLAGS="" $PYPY build_cffi_fuzz.py "$name"
+    CC=clang CFLAGS="$SAN" LDSHARED="clang -shared $SAN" $PYPY build_cffi_fuzz.py "$name"
     clang $SAN $CFLAGS -fsanitize=fuzzer-no-link fuzzer_stub.c ./_pypy_fuzz_${name}.so \
         -L$PYPY_INSTALL_PATH/bin -lpypy3-c \
         -Wl,-rpath,'$ORIGIN' \
