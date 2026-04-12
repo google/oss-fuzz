@@ -8,24 +8,25 @@ case $SANITIZER in
   *)         SAN="" ;;
 esac
 
-# Funky way to work around RPython
-cat > /usr/local/bin/pypy-cc <<EOF
-#!/bin/sh
-exec clang $SAN -shared-libsan "\$@"
-EOF
-chmod +x /usr/local/bin/pypy-cc
-
-export CC=pypy-cc
 CFLAGS=$(echo "$CFLAGS" | sed 's/-f[no-]*sanitize[^ ]*//g')
-CLANG_RT_DIR=$(dirname $(find /usr/lib -name 'libclang_rt.ubsan_standalone*.so' 2>/dev/null | head -1))
-export LD_LIBRARY_PATH=${CLANG_RT_DIR:+$CLANG_RT_DIR:}${LD_LIBRARY_PATH:-}
 
 export PYPY_INSTALL_PATH=$SRC/pypy-install
 mkdir -p $PYPY_INSTALL_PATH
 
 cd $SRC/pypy/pypy/goal
-pypy ../../rpython/bin/rpython --opt=2 --shared
+CC=clang pypy ../../rpython/bin/rpython --opt=2 --shared
 
+# recompile generated C with sanitizers
+if [ -n "$SAN" ]; then
+    BUILD_DIR=$(dirname $(find /tmp/usession-py3.11-* -name 'Makefile' | head -1))
+    find $BUILD_DIR -name '*.o' -delete
+    rm -f pypy3*-c libpypy3*-c.so
+    make -C $BUILD_DIR "CC=clang $SAN"
+    cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so .
+fi
+
+# Package
+export CC=clang
 cd $SRC/pypy
 mkdir -p /tmp/pypy-pkg
 pypy pypy/tool/release/package.py \
@@ -36,10 +37,11 @@ ln -sf libpypy3.11-c.so $PYPY_INSTALL_PATH/bin/libpypy3-c.so
 
 PYPY=$PYPY_INSTALL_PATH/bin/pypy3
 
+# Build fuzz targets
 cd $SRC/pypy-fuzz
 while read -r name; do
     $PYPY build_cffi_fuzz.py "$name"
-    $CC $CFLAGS -fsanitize=fuzzer-no-link fuzzer_stub.c ./_pypy_fuzz_${name}.so \
+    clang $SAN $CFLAGS -fsanitize=fuzzer-no-link fuzzer_stub.c ./_pypy_fuzz_${name}.so \
         -L$PYPY_INSTALL_PATH/bin -lpypy3-c \
         -Wl,-rpath,'$ORIGIN' \
         $LIB_FUZZING_ENGINE -rdynamic -ldl -o fuzzer-${name}
