@@ -17,6 +17,8 @@ chmod +x /usr/local/bin/pypy-cc
 
 export CC=pypy-cc
 CFLAGS=$(echo "$CFLAGS" | sed 's/-f[no-]*sanitize[^ ]*//g')
+CLANG_RT_DIR=$(dirname $(find /usr/lib -name 'libclang_rt.ubsan_standalone*.so' 2>/dev/null | head -1))
+export LD_LIBRARY_PATH=${CLANG_RT_DIR:+$CLANG_RT_DIR:}${LD_LIBRARY_PATH:-}
 
 export PYPY_INSTALL_PATH=$SRC/pypy-install
 mkdir -p $PYPY_INSTALL_PATH
