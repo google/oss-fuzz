@@ -8,7 +8,7 @@ mkdir -p $PYPY_INSTALL_PATH
 
 cd $SRC/pypy
 
-python3 rpython/bin/rpython --opt=2 --shared \
+pypy rpython/bin/rpython --opt=2 --shared \
     pypy/goal/targetpypystandalone.py
 
 # Install
