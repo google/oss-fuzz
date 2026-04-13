@@ -8,5 +8,4 @@ fuzzing_engines:
   - honggfuzz
   - libfuzzer
 sanitizers:
- - address
  - undefined

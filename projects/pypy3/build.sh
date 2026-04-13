@@ -19,8 +19,7 @@ CC=clang pypy ../../rpython/bin/rpython --opt=2 --shared --source
 
 BUILD_DIR=$(dirname $(find /tmp/usession-py3.11-* -name 'Makefile' | head -1))
 make -j$(nproc) -C $BUILD_DIR "CC=clang $SAN"
-ar rcs $BUILD_DIR/libpypy3-c.a $BUILD_DIR/*.o
-cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so $BUILD_DIR/libpypy3-c.a .
+cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so .
 
 # Package
 cd $SRC/pypy
@@ -40,10 +39,9 @@ cd $SRC/pypy-fuzz
 while read -r name; do
     CC=clang CFLAGS="$SAN" LDSHARED="clang -shared $SAN" $PYPY build_cffi_fuzz.py "$name"
     clang $SAN $CFLAGS -fsanitize=fuzzer-no-link fuzzer_stub.c ./_pypy_fuzz_${name}.so \
-        -Wl,--start-group $SRC/pypy/pypy/goal/libpypy3-c.a -L$PYPY_INSTALL_PATH/bin -lpypy3-c -Wl,--end-group \
-        $LIB_FUZZING_ENGINE -rdynamic -ldl -lpthread -lm -lffi -lz -lbz2 -lncursesw -ltinfo -lrt -lutil \
+        -L$PYPY_INSTALL_PATH/bin -lpypy3-c \
         -Wl,-rpath,'$ORIGIN' \
-        -o fuzzer-${name}
+        $LIB_FUZZING_ENGINE -rdynamic -ldl -o fuzzer-${name}
 
     cp fuzzer-${name} _pypy_fuzz_${name}.so fuzz_${name}.py ubsan_suppressions.txt $OUT/
     cp $PYPY_INSTALL_PATH/bin/libpypy3.11-c.so $OUT/libpypy3-c.so
