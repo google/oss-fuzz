@@ -173,6 +173,11 @@ LUA_RUNTIME_NAME=lua
 for fuzzer in $(find $SRC -name '*_test.lua'); do
   $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME $(basename $fuzzer)
   cp $fuzzer "$OUT/"
+  test_file=$(basename $fuzzer);
+  test_name_we="${test_file%.*}";
+  module_name=$(echo $test_name_we | sed 's/_test//' )
+  corpus_dir="corpus_dir/$module_name"
+  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$test_name_we"_seed_corpus.zip
 done
 cp $SRC/testdir/tests/lapi/lib.lua "$OUT/"
 
