@@ -40,11 +40,13 @@ cd $SRC/pypy-fuzz
 while read -r name; do
     CC=clang CFLAGS="$SAN" LDSHARED="clang -shared $SAN" $PYPY build_cffi_fuzz.py "$name"
     clang $SAN $CFLAGS -fsanitize=fuzzer-no-link fuzzer_stub.c ./_pypy_fuzz_${name}.so \
-        -Wl,--start-group $SRC/pypy/pypy/goal/libpypy3-c.a -Wl,--end-group \
+        -Wl,--start-group $SRC/pypy/pypy/goal/libpypy3-c.a -L$PYPY_INSTALL_PATH/bin -lpypy3-c -Wl,--end-group \
         $LIB_FUZZING_ENGINE -rdynamic -ldl -lpthread -lm -lffi -lz -lbz2 -lncursesw -ltinfo -lrt -lutil \
+        -Wl,-rpath,'$ORIGIN' \
         -o fuzzer-${name}
 
     cp fuzzer-${name} _pypy_fuzz_${name}.so fuzz_${name}.py ubsan_suppressions.txt $OUT/
+    cp $PYPY_INSTALL_PATH/bin/libpypy3.11-c.so $OUT/libpypy3-c.so
     if [ -d "corp-${name}" ]; then
         zip -j "$OUT/fuzzer-${name}_seed_corpus.zip" corp-${name}/*
     fi
