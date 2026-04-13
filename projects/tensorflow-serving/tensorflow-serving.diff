@@ -46,7 +46,7 @@ index b8145986..2b6a464b 100644
  #include "tensorflow/core/lib/core/errors.h"
  #include "tensorflow/core/lib/core/status_test_util.h"
  #include "tensorflow/core/platform/protobuf.h"
-@@ -184,6 +188,51 @@ TEST(JsontensorTest, FloatTensorWithPrecisionLoss) {
+@@ -184,6 +188,50 @@ TEST(JsontensorTest, FloatTensorWithPrecisionLoss) {
               )"));
  }
  
@@ -115,3 +115,4 @@ index de1203a7..dd18da94 100644
      # ==== TensorFlow Decision Forests ===
      http_archive(
          name = "org_tensorflow_decision_forests",
+
