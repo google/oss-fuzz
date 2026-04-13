@@ -40,7 +40,7 @@ cd $SRC/pypy-fuzz
 while read -r name; do
     CC=clang CFLAGS="$SAN" LDSHARED="clang -shared $SAN" $PYPY build_cffi_fuzz.py "$name"
     clang $SAN $CFLAGS -fsanitize=fuzzer-no-link fuzzer_stub.c ./_pypy_fuzz_${name}.so \
-        $SRC/pypy/pypy/goal/libpypy3-c.a \
+        -Wl,--start-group $SRC/pypy/pypy/goal/libpypy3-c.a -Wl,--end-group \
         $LIB_FUZZING_ENGINE -rdynamic -ldl -lpthread -lm -lffi -lz -lbz2 -lncursesw -ltinfo -lrt -lutil \
         -o fuzzer-${name}
 
