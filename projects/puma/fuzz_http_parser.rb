@@ -33,9 +33,13 @@ PARSE_FNS = [
   },
   # Resume parse after partial read — exercises incremental parsing path
   ->(str) {
+    return Puma::HttpParser.new.execute({}, str, 0) if str.bytesize < 2
+
     parser = Puma::HttpParser.new
-    nread = parser.execute({}, str, 0)
-    parser.execute({}, str, nread) unless parser.finished?
+    req = {}
+    split = str.bytesize / 2
+    nread = parser.execute(req, str.byteslice(0, split), 0)
+    parser.execute(req, str, nread) unless parser.finished?
   },
 ].freeze
 
