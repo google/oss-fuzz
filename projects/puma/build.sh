@@ -29,7 +29,7 @@ export GEM_HOME=$OUT/fuzz-gems
 sed -i '/nio4r/d' puma.gemspec
 
 PUMA_DISABLE_SSL=1 gem build puma.gemspec
-RUZZY_DEBUG=1 gem install --verbose puma-*.gem
+PUMA_DISABLE_SSL=1 RUZZY_DEBUG=1 gem install --verbose puma-*.gem
 rsync -avu /install/ruzzy/* $OUT/fuzz-gems
 
 # ASAN_OPTIONS required for Ruby C extension targets.
