@@ -1,9 +1,10 @@
 #!/bin/bash -eu
 
-export ASAN_OPTIONS="detect_leaks=0"
+export ASAN_OPTIONS="detect_leaks=0:detect_stack_use_after_return=0"
+ulimit -s 65536
 
 case $SANITIZER in
-  address)   SAN=-fsanitize=address; ulimit -s unlimited ;;
+  address)   SAN=-fsanitize=address ;;
   undefined) SAN=-fsanitize=undefined ;;
   *)         SAN="" ;;
 esac
@@ -18,7 +19,8 @@ CC=clang pypy ../../rpython/bin/rpython --opt=2 --shared --source
 
 BUILD_DIR=$(dirname $(find /tmp/usession-py3.11-* -name 'Makefile' | head -1))
 make -j$(nproc) -C $BUILD_DIR "CC=clang $SAN"
-cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so .
+ar rcs $BUILD_DIR/libpypy3-c.a $BUILD_DIR/*.o
+cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so $BUILD_DIR/libpypy3-c.a .
 
 # Package
 cd $SRC/pypy
@@ -38,12 +40,11 @@ cd $SRC/pypy-fuzz
 while read -r name; do
     CC=clang CFLAGS="$SAN" LDSHARED="clang -shared $SAN" $PYPY build_cffi_fuzz.py "$name"
     clang $SAN $CFLAGS -fsanitize=fuzzer-no-link fuzzer_stub.c ./_pypy_fuzz_${name}.so \
-        -L$PYPY_INSTALL_PATH/bin -lpypy3-c \
-        -Wl,-rpath,'$ORIGIN' \
-        $LIB_FUZZING_ENGINE -rdynamic -ldl -o fuzzer-${name}
+        $SRC/pypy/pypy/goal/libpypy3-c.a \
+        $LIB_FUZZING_ENGINE -rdynamic -ldl -lpthread -lm -lffi -lz -lbz2 -lncursesw -ltinfo -lrt -lutil \
+        -o fuzzer-${name}
 
     cp fuzzer-${name} _pypy_fuzz_${name}.so fuzz_${name}.py ubsan_suppressions.txt $OUT/
-    cp $PYPY_INSTALL_PATH/bin/libpypy3.11-c.so $OUT/libpypy3-c.so
     if [ -d "corp-${name}" ]; then
         zip -j "$OUT/fuzzer-${name}_seed_corpus.zip" corp-${name}/*
     fi
