@@ -17,6 +17,7 @@
 case $SANITIZER in
   address)   SAN=-fsanitize=address ;;
   undefined) SAN=-fsanitize=undefined ;;
+  *)         SAN="" ;;
 esac
 
 CFLAGS=$(echo "$CFLAGS" | sed 's/-f[no-]*sanitize[^ ]*//g')
