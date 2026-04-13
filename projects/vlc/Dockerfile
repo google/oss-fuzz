@@ -22,4 +22,4 @@ RUN pip3 install meson
 RUN git clone --depth 1 https://code.videolan.org/videolan/vlc.git vlc
 RUN git clone --depth 1 https://code.videolan.org/VideoLAN.org/vlc-fuzz-corpus.git vlc/fuzz-corpus
 WORKDIR vlc
-COPY build.sh fuzzing-modules.patch $SRC/
+COPY build.sh fuzzing-modules.patch generate_ts_seeds.py $SRC/
