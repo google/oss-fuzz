@@ -31,7 +31,8 @@ RUN apt-get update && apt-get -y install  \
     wget            \
     golang          \
     rsync           \
-    python3
+    python3 \
+    libtinfo5
 
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/
