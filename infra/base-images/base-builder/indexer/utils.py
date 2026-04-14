@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2025 Google LLC.
+# Copyright 2026 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -131,13 +131,24 @@ def patch_binary_rpath_and_interpreter(
     binary_path: os.PathLike[str],
     lib_mount_path: pathlib.Path,
     ld_binary_path: pathlib.Path = LD_BINARY_PATH_X86_64,
+    extra_rpath_entries: Sequence[pathlib.Path] = (),
 ):
-  """Patches the binary rpath and interpreter."""
+  """Patches the binary rpath and interpreter.
+
+  Args:
+    binary_path: Path to the ELF binary to patch.
+    lib_mount_path: Primary library directory.  Used as the main RPATH entry and
+      to resolve the ELF interpreter (ld-linux).
+    ld_binary_path: Basename / path of the dynamic linker.
+    extra_rpath_entries: Additional directories prepended to the RPATH (searched
+      before ``lib_mount_path``).
+  """
+  rpath = ":".join(p.as_posix() for p in [*extra_rpath_entries, lib_mount_path])
   subprocess.run(
       [
           "patchelf",
           "--set-rpath",
-          lib_mount_path.as_posix(),
+          rpath,
           "--force-rpath",
           binary_path,
       ],

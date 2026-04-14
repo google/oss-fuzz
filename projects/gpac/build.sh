@@ -35,4 +35,10 @@ for f in $fuzzers; do
         zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/gpac/testsuite/oss-fuzzers/${fuzzerName}_corpus/*
     fi
 
+    if [ -f "$SRC/gpac/testsuite/oss-fuzzers/${fuzzerName}.dict" ]; then
+        cp $SRC/gpac/testsuite/oss-fuzzers/${fuzzerName}.dict $OUT/
+    fi
+    if [ -f "$SRC/gpac/testsuite/oss-fuzzers/${fuzzerName}.options" ]; then
+        cp $SRC/gpac/testsuite/oss-fuzzers/${fuzzerName}.options $OUT/
+    fi
 done

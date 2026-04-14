@@ -157,7 +157,7 @@ done
 if [ "$FUZZING_ENGINE" != "afl" ]
 then
   cd ../gas
-  ./configure
+  ./configure --enable-leak-check
   make -j$(nproc)
   sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' as.c > fuzz_as.h
   rm as.o || true
