@@ -19,4 +19,6 @@ RUN apt-get update && apt-get install -y make cmake python3-six wget libmbedtls-
 RUN git clone --depth 1 https://github.com/open62541/open62541.git -bmaster open62541
 WORKDIR open62541
 RUN git submodule update --init --recursive
+RUN git clone --depth 1 --branch 1.5 https://github.com/open62541/open62541.git $SRC/open62541_15
+RUN cd $SRC/open62541_15 && git submodule update --init --recursive
 COPY build.sh $SRC/

@@ -16,3 +16,9 @@
 ################################################################################
 # Run the OSS-Fuzz script in the project
 $SRC/cjson/fuzzing/ossfuzz.sh
+
+# Build the project tests for Chronos
+mkdir -p $SRC/cjson/build-tests
+cd $SRC/cjson/build-tests
+cmake -DENABLE_CJSON_TEST=ON -DBUILD_SHARED_LIBS=OFF ..
+make -j$(nproc)
