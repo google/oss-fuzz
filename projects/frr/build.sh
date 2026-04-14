@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-python3 -m venv $SRC/venv
+# Inherit system packages to support Indexer building.
+python3 -m venv --system-site-packages $SRC/venv
 source $SRC/venv/bin/activate
 pip3 install pytest
 

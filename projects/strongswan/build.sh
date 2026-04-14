@@ -21,6 +21,7 @@
 	--enable-imc-test \
 	--enable-tnccs-20 \
 	--enable-libipsec \
+	--enable-eap-radius \
 	--enable-fuzzing \
 	--with-libfuzzer=$LIB_FUZZING_ENGINE \
 	--enable-monolithic \

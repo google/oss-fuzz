@@ -16,8 +16,8 @@
 ################################################################################
 
 cd $SRC
-tar -xzf $SRC/libxml2-2.9.7.tar.gz
-cd libxml2-2.9.7
+tar -xJf $SRC/libxml2-2.12.10.tar.xz
+cd libxml2-2.12.10
 ./configure --disable-shared --enable-static --disable-ipv6 --without-python --without-zlib --without-lzma
 make -j$(nproc)
 make install
@@ -56,9 +56,11 @@ cd "$WIRESHARK_BUILD_PATH"
 cmake -GNinja \
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
       -DCMAKE_C_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CFLAGS" -DCMAKE_CXX_FLAGS="-Wno-error=fortify-source -Wno-error=missing-field-initializers $CXXFLAGS" \
+      -DCMAKE_JOB_POOL_LINK=limited_link_pool \
+      -DCMAKE_JOBS_POOLS:STRING=limited_link_pool=2 \
       -DENABLE_WERROR=OFF -DOSS_FUZZ=ON $CMAKE_DEFINES \
       -DUSE_STATIC=ON $SRC/wireshark
 
-ninja all-fuzzers -j$(expr $(nproc) / 2)
+ninja all-fuzzers -j$(expr $(nproc) / 4)
 
 $SRC/wireshark/tools/oss-fuzzshark/build.sh all
