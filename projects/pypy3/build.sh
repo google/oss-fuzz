@@ -26,7 +26,7 @@ cd $SRC/pypy/pypy/goal
 CC=clang pypy ../../rpython/bin/rpython --opt=2 --shared --source
 
 BUILD_DIR=$(dirname $(find /tmp/usession-py3.11-* -name 'Makefile' | head -1))
-make -j$(nproc) -C $BUILD_DIR "CC=clang $SAN"
+make lldebug -j$(nproc) -C $BUILD_DIR "CC=clang $SAN"
 cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so .
 ln -sf libpypy3.11-c.so libpypy3-c.so
 
