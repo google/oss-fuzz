@@ -455,8 +455,8 @@ ADD_CHRONOS_PROMPT_TEMPLATE = textwrap.dedent("""\
     `projects/{project}/` so that both Chronos validation commands pass:
 
     ```
-    python3 infra/experimental/chronos/manager.py check-replay {project}
-    python3 infra/experimental/chronos/manager.py check-tests {project}
+    python3 infra/helper.py check-replay {project}
+    python3 infra/helper.py check-tests {project}
     ```
 
     ## Step-by-step workflow
@@ -500,8 +500,8 @@ ADD_CHRONOS_PROMPT_TEMPLATE = textwrap.dedent("""\
     6. **Validate**
        Run both Chronos checks and iterate until both pass without error:
        ```
-       python3 infra/experimental/chronos/manager.py check-replay {project}
-       python3 infra/experimental/chronos/manager.py check-tests {project}
+       python3 infra/helper.py check-replay {project}
+       python3 infra/helper.py check-tests {project}
        ```
        Also confirm the normal OSS-Fuzz build still passes:
        ```
