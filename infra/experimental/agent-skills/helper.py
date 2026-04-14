@@ -26,9 +26,12 @@ Usage:
               and add targeted harnesses for the attribute-parsing paths." \
       open62541 json-c
 
+  python infra/experimental/agent-skills/helper.py add-chronos-support \
+      open62541 json-c htslib
+
 This will launch parallel agent sessions to expand fuzzing coverage, fix
-broken builds, or carry out an arbitrary task for each listed project,
-producing local changes and a per-project report.
+broken builds, add Chronos support, or carry out an arbitrary task for each
+listed project, producing local changes and a per-project report.
 """
 
 import argparse
@@ -419,6 +422,118 @@ INTEGRATE_PROMPT_TEMPLATE = textwrap.dedent("""\
 Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
 """)
 
+ADD_CHRONOS_PROMPT_TEMPLATE = textwrap.dedent("""\
+    You are an OSS-Fuzz engineer tasked with adding Chronos support to the
+    **{project}** OSS-Fuzz project.
+
+    ## Important: use your skills
+
+    You MUST use the following skills throughout this task:
+    {fuzzing_skills_blurb}
+
+    Rely on them for every step below.
+
+    ## What is Chronos
+
+    Chronos is a feature of OSS-Fuzz that enables fast, offline rebuilds and
+    unit-test runs for a project — without network access. It is used to
+    validate patches quickly without rebuilding the entire Docker image from
+    scratch. Two scripts must be added to the project directory:
+
+    - **`replay_build.sh`**: rebuilds the project (and its fuzz targets)
+      entirely offline, using only files already present in the container.
+    - **`run_tests.sh`**: runs the project's own unit-test suite offline.
+      Must leave the repository in exactly the same state as it found it
+      (i.e. `git diff` is unchanged before and after).
+
+    Read `infra/chronos/README.md` carefully before writing either script —
+    it is the authoritative reference for constraints and conventions.
+
+    ## Objective
+
+    Add working `replay_build.sh` and `run_tests.sh` scripts to
+    `projects/{project}/` so that both Chronos validation commands pass:
+
+    ```
+    python3 infra/experimental/chronos/manager.py check-replay {project}
+    python3 infra/experimental/chronos/manager.py check-tests {project}
+    ```
+
+    ## Step-by-step workflow
+
+    1. **Read the Chronos specification**
+       - Read `infra/chronos/README.md` in full. Understand all constraints
+         before touching any project files.
+
+    2. **Understand the project**
+       - Read `projects/{project}/` (Dockerfile, build.sh, project.yaml,
+         and any existing harnesses).
+       - Identify: the build system (CMake, Meson, Autotools, Make, …),
+         the upstream repository URL, and the project's own test suite
+         (CTest, pytest, gtest, …).
+
+    3. **Clone the source locally**
+       - Find the `git clone` line in the Dockerfile, clone the upstream
+         repository locally alongside the project directory, and update the
+         Dockerfile to use `COPY` so you can iterate without network
+         round-trips.
+
+    4. **Write `replay_build.sh`**
+       - The script must rebuild the project and all fuzz targets using only
+         files present in the container — no `apt-get`, no `git clone`, no
+         network calls of any kind.
+       - Mirror the essential compilation steps from `build.sh`, but omit
+         any network-dependent setup.
+       - Place the script at `projects/{project}/replay_build.sh`.
+
+    5. **Write `run_tests.sh`**
+       - The script must run the project's unit tests with no network access.
+       - Any test that requires network connectivity must be explicitly
+         skipped; document each such skip with a comment explaining why.
+       - After the script exits, `git diff` inside the target repository must
+         be identical to what it was before the script ran. Clean up any
+         build artefacts or temporary files the test suite creates.
+       - If the tests fail, the script must exit with a non-zero status so
+         that `check-tests` correctly reports failure.
+       - Place the script at `projects/{project}/run_tests.sh`.
+
+    6. **Validate**
+       Run both Chronos checks and iterate until both pass without error:
+       ```
+       python3 infra/experimental/chronos/manager.py check-replay {project}
+       python3 infra/experimental/chronos/manager.py check-tests {project}
+       ```
+       Also confirm the normal OSS-Fuzz build still passes:
+       ```
+       python3 infra/helper.py build_fuzzers {project}
+       python3 infra/helper.py check_build {project}
+       ```
+
+    7. **Write a report**
+       Create a file `{report_path}` containing:
+       - Overview of the build system and test suite found in the project.
+       - Description of `replay_build.sh`: what it does and any simplifications
+         made relative to `build.sh`.
+       - Description of `run_tests.sh`: which tests are run, which are skipped
+         (and why), and how idempotency is ensured.
+       - Output of both `check-replay` and `check-tests` confirming success.
+       - Any follow-up recommendations (e.g. tests that could be un-skipped
+         once network access is available, or flaky tests to investigate).
+
+    8. **Conclude**
+       Do NOT commit or push anything. Leave all changes locally for the
+       security engineer to review. End with a brief summary of what was
+       created and where the report is.
+
+    ## Working directory
+
+    You are working from: `{oss_fuzz_root}`
+    The project directory is: `{oss_fuzz_root}/projects/{project}`
+    Write your report to: `{report_path}`
+
+Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
+""")
+
 
 def get_recent_date_str(days_ago=1):
   """Return a YYYYMMDD string for a recent date."""
@@ -575,6 +690,9 @@ def build_prompt(task, project, task_description=None):
   elif task == 'free-task':
     report_name = 'task_report.md'
     template = FREE_TASK_PROMPT_TEMPLATE
+  elif task == 'add-chronos':
+    report_name = 'chronos_report.md'
+    template = ADD_CHRONOS_PROMPT_TEMPLATE
   else:
     raise ValueError(f'Unknown task: {task}')
 
@@ -747,6 +865,11 @@ def cmd_run_task(args):
   _run_sessions('free-task', args)
 
 
+def cmd_add_chronos(args):
+  """Handle the add-chronos-support subcommand."""
+  _run_sessions('add-chronos', args)
+
+
 def cmd_integrate_project(args):
   """Handle the integrate-project subcommand."""
   _run_integrate_sessions(args)
@@ -786,6 +909,9 @@ def main():
               python %(prog)s fix-builds --print-only open62541
               python %(prog)s run-task --print-only \\
                   --task-description "Check seed corpus quality." open62541
+
+              # Add Chronos support (replay_build.sh + run_tests.sh):
+              python %(prog)s add-chronos-support open62541 json-c htslib
 
               # Integrate a new project from its repository URL:
               python %(prog)s integrate-project https://github.com/owner/repo
@@ -872,6 +998,15 @@ def main():
   )
   run_task_parser.set_defaults(func=cmd_run_task)
 
+  # add-chronos-support
+  chronos_parser = subparsers.add_parser(
+      'add-chronos-support',
+      parents=[session_args],
+      help='Launch agent sessions to add Chronos support (replay_build.sh '
+      'and run_tests.sh) to OSS-Fuzz projects.',
+  )
+  chronos_parser.set_defaults(func=cmd_add_chronos)
+
   # integrate-project
   integrate_parser = subparsers.add_parser(
       'integrate-project',
@@ -916,7 +1051,7 @@ def main():
                            help='OSS-Fuzz project names.')
   show_parser.add_argument(
       '--task',
-      choices=['expand', 'fix-build', 'free-task'],
+      choices=['expand', 'fix-build', 'free-task', 'add-chronos'],
       default='expand',
       help='Which task prompt to show (default: expand).',
   )
