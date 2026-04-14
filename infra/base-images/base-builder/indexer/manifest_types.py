@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2025 Google LLC.
+# Copyright 2026 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ A snapshot is a tarball containing the following:
 
 import dataclasses
 import enum
+import inspect
 import io
 import json
 import logging
@@ -379,7 +380,7 @@ class Manifest:
               " empty URL. Source map entry: {ref}"
           )
     # check very simple basic types.
-    for k, v in self.__annotations__.items():
+    for k, v in inspect.get_annotations(type(self)).items():
       if not isinstance(v, type):
         continue
       if not isinstance(getattr(self, k), v):

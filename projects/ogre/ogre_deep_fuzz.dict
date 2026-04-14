@@ -1,0 +1,17 @@
+# Ogre mesh format magic/version strings
+"[MeshSerializer_v1.100]"
+"[MeshSerializer_v1.8]"
+"[MeshSerializer_v1.41]"
+"[MeshSerializer_v1.40]"
+"[MeshSerializer_v1.30]"
+"[MeshSerializer_v1.20]"
+"[MeshSerializer_v1.10]"
+
+# Ogre skeleton format version strings
+"[Serializer_v1.80]"
+"[Serializer_v1.10]"
+
+# Config file syntax
+"["
+"]"
+"="

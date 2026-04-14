@@ -1,0 +1,93 @@
+# HTTP/1 request methods
+"GET "
+"POST "
+"PUT "
+"DELETE "
+"HEAD "
+"OPTIONS "
+"PATCH "
+"CONNECT "
+"TRACE "
+
+# HTTP versions
+"HTTP/1.0"
+"HTTP/1.1"
+"HTTP/2.0"
+
+# Line endings
+"\x0d\x0a"
+"\x0a"
+"\x0d\x0a\x0d\x0a"
+
+# Common headers
+"Host: "
+"Content-Length: "
+"Transfer-Encoding: "
+"Connection: "
+"Upgrade: "
+"Content-Type: "
+"Accept: "
+"Cookie: "
+"User-Agent: "
+"Authorization: "
+"X-Forwarded-For: "
+"X-Forwarded-Proto: "
+"Expect: "
+
+# Transfer-Encoding values
+"chunked"
+"identity"
+"gzip"
+"compress"
+"deflate"
+
+# Connection values
+"keep-alive"
+"close"
+"upgrade"
+
+# Upgrade values
+"websocket"
+"h2c"
+
+# Status codes
+" 100 "
+" 200 "
+" 204 "
+" 301 "
+" 302 "
+" 304 "
+" 400 "
+" 403 "
+" 404 "
+" 500 "
+" 502 "
+" 503 "
+
+# URI components
+"/"
+"/index.html"
+"*"
+"http://"
+"https://"
+"?"
+"#"
+"@"
+
+# Numbers (for content-length/chunk sizes)
+"0"
+"1"
+"10"
+"100"
+"4096"
+"65536"
+"0\x0d\x0a\x0d\x0a"
+
+# Header folding (obs-fold)
+"\x0d\x0a "
+"\x0d\x0a\x09"
+
+# Null and special bytes
+"\x00"
+"\x09"
+"\x20"

@@ -16,6 +16,8 @@
 ################################################################################
 
 ./autogen.sh
+# Generate ASN.1 headers needed by the trust module fuzzers
+make -j$(nproc) common/basic.asn.h common/openssl.asn.h common/pkix.asn.h
 make -j$(nproc) oss-fuzz
 
 cd fuzz
