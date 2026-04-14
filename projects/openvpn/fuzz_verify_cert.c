@@ -59,13 +59,13 @@ static int init_session_opt(struct tls_options **_opt, struct gc_arena *gc) {
   int r;
 
   ALLOC_OBJ_GC(*_opt, struct tls_options, gc);
-  if (opt == NULL) {
+  if (*_opt == NULL) {
 		return -1;
   }
 
   opt = *_opt;
 
-  memset(opt, 0xFE, sizeof(struct tls_options));
+  memset(opt, 0, sizeof(struct tls_options));
 
   opt->es = env_set_create(gc);
   opt->x509_username_field[0] = NULL;
@@ -121,7 +121,7 @@ static int init_session(struct tls_session **_session, struct gc_arena *gc) {
   }
 
   session = *_session;
-  memset(session, 0xFE, sizeof(struct tls_session));
+  memset(session, 0, sizeof(struct tls_session));
 
   /* Accessed in set_common_name() */
   session->common_name = get_random_string();;
