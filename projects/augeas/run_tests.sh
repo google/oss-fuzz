@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 #
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,4 +18,14 @@
 
 # Disable leak sanitizer/null return check and run unit testing
 export ASAN_OPTIONS="detect_leaks=0:allocator_may_return_null=1"
-make check -j$(nproc) -C $SRC/augeas/tests
+
+# We are in $SRC/augeas
+cd $SRC/augeas
+
+# Run tests in the tests directory only, to avoid finicky gnulib tests
+# that might fail under ASAN.
+set +e
+make check -j$(nproc) -C tests
+test_status=$?
+
+exit $test_status
