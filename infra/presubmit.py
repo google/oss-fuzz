@@ -90,6 +90,7 @@ class ProjectYamlChecker:
       'builds_per_day',
       'coverage_extra_args',
       'disabled',
+      'disable_remediation',
       'fuzzing_engines',
       'help_url',
       'homepage',
