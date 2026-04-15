@@ -637,7 +637,6 @@ ADD_CHRONOS_PROMPT_TEMPLATE = textwrap.dedent("""\
 Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
 """)
 
-
 EXPAND_SUMMARY_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are an OSS-Fuzz engineer tasked with writing a consolidated summary
     of a multi-round fuzzing expansion that was just completed for the
@@ -932,9 +931,9 @@ def build_prompt(task,
       prev_report_name = (f'expansion_report_round_{prev_round_num}.md'
                           if total_rounds > 1 else 'expansion_report.md')
       previous_report_path = os.path.join(OSS_FUZZ_ROOT, 'projects', project,
-                                           prev_report_name)
-      prev_cov_after_dir = os.path.join(OSS_FUZZ_ROOT,
-                                         f'{project}-cov-after-round{prev_round_num}')
+                                          prev_report_name)
+      prev_cov_after_dir = os.path.join(
+          OSS_FUZZ_ROOT, f'{project}-cov-after-round{prev_round_num}')
       fmt_kwargs['round_context'] = '\n' + EXPAND_ROUND_CONTEXT_TEMPLATE.format(
           round_num=round_num,
           total_rounds=total_rounds,
@@ -1013,8 +1012,7 @@ def launch_agent_session(agent_cli,
                   if task == 'expand' and total_rounds > 1 else '')
   log_path = os.path.join(
       log_dir,
-      f'{project}{round_suffix}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log'
-  )
+      f'{project}{round_suffix}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log')
 
   log_file = open(log_path, 'w')
   print(f'    Log: {log_path}')
@@ -1256,8 +1254,7 @@ def _run_expand_sessions(args):
     completed_rounds = 0
     for round_num in range(1, total_rounds + 1):
       if total_rounds > 1:
-        print(
-            f'[*] {project}: starting round {round_num}/{total_rounds} ...')
+        print(f'[*] {project}: starting round {round_num}/{total_rounds} ...')
       result = _run_single_session(agent_cli,
                                    'expand',
                                    project,
