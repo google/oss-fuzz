@@ -18,15 +18,22 @@ set -euxo pipefail
 
 export CXXFLAGS="$CXXFLAGS -Wno-error=missing-field-initializers"
 
+# Patch target Makefiles to use absolute include paths for the per-target
+# src/ directory (contains tusb_config.h). The upstream Makefiles use a
+# relative "src" include which resolves differently per build directory,
+# causing the indexer to pick up conflicting compile commands.
+for f in test/fuzz/device/*/Makefile; do
+  sed -i '/^[[:space:]]\+src[[:space:]]/s|src|$(abspath src)|' "$f"
+done
+
 fuzz_harness=$(ls -d test/fuzz/device/*/)
 for h in $fuzz_harness
 do
   make -C $h get-deps
   make -C $h all
   cp $h/_build/$(basename $h) $OUT/
-  corpus=$h/$(basename $h)_seed_corpus.zip  
+  corpus=$h/$(basename $h)_seed_corpus.zip
   if test -f $corpus; then
     cp $corpus $OUT/
   fi
 done
-

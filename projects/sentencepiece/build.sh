@@ -23,11 +23,48 @@ cd build
 cmake ../ -B ./ -DSPM_ENABLE_SHARED=ON -DCMAKE_INSTALL_PREFIX=./root -DSPM_BUILD_TEST=ON
 cmake --build ./ --config Release --target install --parallel $(nproc)
 
+# Generate a minimal sentencepiece model for the processor_text_fuzzer.
+# Use the sanitized compiler but link without the fuzzer engine since
+# this is a regular executable, not a fuzzer.
+$CXX $CXXFLAGS -std=c++17 \
+    -I../src -I../src/builtin_pb -I../third_party/protobuf-lite \
+    -I. -I./root/include \
+    $SRC/generate_model.cc \
+    ./root/lib/*.a \
+    -lpthread \
+    -o generate_model
+
+# Generate the unigram model and convert it to a C header for embedding
+./generate_model /tmp/embedded_model.bin unigram
+
+# Create embedded_model.h with the model as a byte array
+python3 -c "
+import sys
+data = open('/tmp/embedded_model.bin', 'rb').read()
+with open('embedded_model.h', 'w') as f:
+    f.write('// Auto-generated embedded model data\\n')
+    f.write('#pragma once\\n')
+    f.write('static const unsigned char kEmbeddedModelData[] = {\\n')
+    for i in range(0, len(data), 16):
+        chunk = data[i:i+16]
+        f.write('  ' + ', '.join(f'0x{b:02x}' for b in chunk) + ',\\n')
+    f.write('};\\n')
+    f.write(f'static const size_t kEmbeddedModelSize = {len(data)};\\n')
+print(f'Generated embedded_model.h ({len(data)} bytes)')
+"
+
+# Create seed corpus for model_load_fuzzer with models of all types
+mkdir -p /tmp/model_seeds
+./generate_model /tmp/model_seeds/unigram.model unigram
+./generate_model /tmp/model_seeds/bpe.model bpe
+./generate_model /tmp/model_seeds/word.model word
+./generate_model /tmp/model_seeds/char.model char
+cd /tmp/model_seeds && zip -j $OUT/model_load_fuzzer_seed_corpus.zip *.model && cd -
+
 # build fuzzers
-fuzzers=$(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party')
-echo "Found fuzzers: ${fuzzers[@]}"
-for fuzzer in "${fuzzers[@]}"; do
+for fuzzer in $(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party'); do
   fuzz_basename=$(basename -s .cc $fuzzer)
+  echo "Building fuzzer: $fuzz_basename"
   $CXX $CXXFLAGS -std=c++17 \
       -I. -I./root/include \
       $fuzzer $LIB_FUZZING_ENGINE \

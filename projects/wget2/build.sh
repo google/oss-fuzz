@@ -64,11 +64,15 @@ CFLAGS="$GNUTLS_CFLAGS" \
 make -j$(nproc)
 make install
 
+cd $SRC/libmicrohttpd-*
+./configure --enable-static --disable-shared --disable-doc --disable-examples --disable-tools --prefix=$WGET2_DEPS_PATH
+make -j$(nproc)
+make install
+
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget2
-sed -i 's/0\.21/0\.19\.8/g' configure.ac
 ./bootstrap
 
 LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \

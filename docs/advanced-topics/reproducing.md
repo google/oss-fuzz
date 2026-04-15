@@ -122,7 +122,7 @@ You can also mount local sources into the running container by using these comma
 
 ```bash
 $ python3 infra/helper.py build_fuzzers \
-    --sanitizer <address/memory/undefined> $PROJECT_NAME <source_path>
+    --sanitizer <address/memory/undefined> $PROJECT_NAME --mount_path <source_path>
 $ python3 infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
