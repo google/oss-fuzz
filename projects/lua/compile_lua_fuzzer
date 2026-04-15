@@ -28,9 +28,22 @@ echo "#!/bin/bash
 
 # LLVMFuzzerTestOneInput so that the wrapper script is recognized
 # as a fuzz target for 'check_build'.
-project_dir=\$(dirname \"\$0\")
-eval \$(luarocks --lua-version 5.5 --tree lua_modules path)
-ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$project_dir/llvm-symbolizer:detect_leaks=0 \
+project_dir=\$(dirname \$(realpath \"\$0\"))
+
+luarocks=\$(type -p luarocks)
+if [ -n \"\$luarocks\" ]; then
+  echo \"luarocks is found \$luarocks\"
+  eval \$(luarocks --lua-version 5.5 --tree \$project_dir/lua_modules path)
+else
+  echo \"luarocks is not found\"
+  export LUA_PATH=\"\$project_dir/lua_modules/share/lua/5.5/?/init.lua;\$project_dir/lua_modules/share/lua/5.5/?.lua;\"
+  export LUA_CPATH=\"\$project_dir/lua_modules/lib/lua/5.5/?.so;\"
+fi
+
+echo \"LUA_PATH: \$LUA_PATH\"
+echo \"LUA_CPATH: \$LUA_CPATH\"
+
+LD_DYNAMIC_WEAK=1 ASAN_OPTIONS=\${ASAN_OPTIONS:-verbosity=1}:symbolize=1:external_symbolizer_path=\$project_dir/llvm-symbolizer:detect_leaks=0 \
 \$project_dir/$lua_runtime \$project_dir/$fuzz_target \$@" > "$OUT/$fuzzer_basename"
 
 chmod +x "$OUT/$fuzzer_basename"
