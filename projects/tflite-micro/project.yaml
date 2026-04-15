@@ -1,15 +1,12 @@
 homepage: "https://github.com/tensorflow/tflite-micro"
 main_repo: "https://github.com/tensorflow/tflite-micro"
 
-primary_contact: "lpak@google.com"
+primary_contact: "veblush@google.com"
 
 auto_ccs:
+  - "terrytangyuan@gmail.com"
+  - "anindyaandy1904@gmail.com"
   - "anindyaisandy@gmail.com"
-  - "itaiz@google.com"
-  - "mihaimaruseac@google.com"
-  - "rostam@google.com"
-  - "unda@google.com"
-  - "david@adalogics.com"
 
 language: c++
 
