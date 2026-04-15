@@ -2,7 +2,7 @@ diff --git a/tensorflow_serving/util/BUILD b/tensorflow_serving/util/BUILD
 index 4802a79f..f7d596dc 100644
 --- a/tensorflow_serving/util/BUILD
 +++ b/tensorflow_serving/util/BUILD
-@@ -345,6 +345,28 @@ cc_test(
+@@ -345,6 +345,29 @@ cc_test(
      ],
  )
  
@@ -18,6 +18,7 @@ index 4802a79f..f7d596dc 100644
 +        # "//tensorflow_serving/core/test_util:test_main",
 +	"@org_tensorflow//tensorflow/core:testlib",
 +        "//tensorflow_serving/test_util",
++        "//tensorflow_serving/util/net_http/compression:gzip_zlib",
 +	"@com_google_fuzztest//fuzztest",
 +	"@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
 +        "@com_google_protobuf//:protobuf",
@@ -35,18 +36,19 @@ diff --git a/tensorflow_serving/util/json_tensor_test.cc b/tensorflow_serving/ut
 index b8145986..2b6a464b 100644
 --- a/tensorflow_serving/util/json_tensor_test.cc
 +++ b/tensorflow_serving/util/json_tensor_test.cc
-@@ -23,6 +23,10 @@ limitations under the License.
+@@ -23,6 +23,11 @@ limitations under the License.
  #include <gmock/gmock.h>
  #include <gtest/gtest.h>
  #include "absl/strings/substitute.h"
 +
 +#include "fuzztest/fuzztest.h"
 +#include "absl/strings/str_cat.h"
++#include "tensorflow_serving/util/net_http/compression/gzip_zlib.h"
 +
  #include "tensorflow/core/lib/core/errors.h"
  #include "tensorflow/core/lib/core/status_test_util.h"
  #include "tensorflow/core/platform/protobuf.h"
-@@ -184,6 +188,50 @@ TEST(JsontensorTest, FloatTensorWithPrecisionLoss) {
+@@ -184,6 +188,88 @@ TEST(JsontensorTest, FloatTensorWithPrecisionLoss) {
               )"));
  }
  
@@ -94,6 +96,44 @@ index b8145986..2b6a464b 100644
 +}
 +FUZZ_TEST(JsonFuzzTest, FuzzJsonRegress);
 +
++// Fuzz MakeJsonFromTensors with arbitrary serialized TensorProto bytes.
++// Exercises the OOB-read path (vuln report #3) when tensor_content is
++// populated but float_val/int_val etc. are empty.
++void FuzzMakeJsonFromTensors(const std::string &serialized_tensor_proto) {
++  tensorflow::TensorProto tensor_proto;
++  if (!tensor_proto.ParseFromString(serialized_tensor_proto)) {
++    return;
++  }
++  ::google::protobuf::Map<std::string, tensorflow::TensorProto> tensor_map;
++  tensor_map["t"] = tensor_proto;
++  std::string json;
++  auto s1 = MakeJsonFromTensors(tensor_map, JsonPredictRequestFormat::kRow, &json);
++  (void)s1;
++  auto s2 = MakeJsonFromTensors(tensor_map, JsonPredictRequestFormat::kColumnar, &json);
++  (void)s2;
++}
++FUZZ_TEST(JsonFuzzTest, FuzzMakeJsonFromTensors);
++
++// Fuzz the gzip decompression path (vuln report #2): a crafted gzip stream
++// with a large ISIZE footer value causes heap allocation of up to 100 MB.
++void FuzzUncompressGzipAndAllocate(const std::string &data) {
++  tensorflow::serving::net_http::ZLib zlib;
++  // Use a local constant to avoid ODR issues with static constexpr member.
++  const uLongf kLocalMaxBytes = 100UL * 1024UL * 1024UL;
++  uLongf destLen = kLocalMaxBytes;
++  Bytef *dest = nullptr;
++
++  zlib.UncompressGzipAndAllocate(&dest, &destLen,
++      reinterpret_cast<const Bytef*>(data.data()),
++      static_cast<uLong>(data.size()));
++
++  if (dest != nullptr) {
++    // deallocate with the size that was allocated (set by UncompressGzipAndAllocate)
++    std::allocator<Bytef>().deallocate(dest, destLen);
++  }
++}
++FUZZ_TEST(JsonFuzzTest, FuzzUncompressGzipAndAllocate);
++
  TEST(JsontensorTest, FloatTensorThatExceedsMaxReturnsInf) {
    TensorInfoMap infomap;
    ASSERT_TRUE(
@@ -115,4 +155,3 @@ index de1203a7..dd18da94 100644
      # ==== TensorFlow Decision Forests ===
      http_archive(
          name = "org_tensorflow_decision_forests",
-

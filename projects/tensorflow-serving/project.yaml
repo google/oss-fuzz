@@ -1,7 +1,7 @@
 homepage: "https://github.com/tensorflow/serving"
 primary_contact: "david@adalogics.com"
 auto_ccs:
-  - "anindyaisandy@gmail.com"
+  - "anindyaandy1904@gmail.com"
 main_repo: "https://github.com/tensorflow/serving"
 language: c++
 sanitizers:

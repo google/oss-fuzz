@@ -64,7 +64,7 @@ git apply  --ignore-space-change --ignore-whitespace $SRC/tensorflow-serving.dif
 echo "7.4.1" > .bazelversion
 echo "common --noenable_bzlmod" >> .bazelrc
 bazel run @com_google_fuzztest//bazel:setup_configs >> .bazelrc
-bazel build --config=oss-fuzz --subcommands --spawn_strategy=sandboxed //tensorflow_serving/util:json_tensor_test_fuzz
+bazel build --config=oss-fuzz --spawn_strategy=sandboxed //tensorflow_serving/util:json_tensor_test_fuzz
 
 cp bazel-bin/tensorflow_serving/util/json_tensor_test_fuzz $OUT/json_tensor_test_fuzz
 
@@ -78,7 +78,7 @@ chmod +x \$this_dir/json_tensor_test_fuzz
 chmod +x $OUT/${TARGET_FUZZER}
 
 # === New fuzz targets (JSON API coverage) ===
-for FUZZ_FUNC in FuzzJsonPredict FuzzJsonClassify FuzzJsonRegress; do
+for FUZZ_FUNC in FuzzJsonPredict FuzzJsonClassify FuzzJsonRegress FuzzMakeJsonFromTensors FuzzUncompressGzipAndAllocate; do
   TARGET_FUZZER="json_tensor_test_fuzz@JsonFuzzTest.${FUZZ_FUNC}"
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
