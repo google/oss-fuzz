@@ -735,7 +735,6 @@ EXPAND_SUMMARY_PROMPT_TEMPLATE = textwrap.dedent("""\
 Once the summary is written, exit. Do NOT commit or push anything.
 """)
 
-
 CONSOLIDATE_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are an OSS-Fuzz engineer reviewing the fuzzing harnesses of the
     **{project}** OSS-Fuzz project after one or more expansion rounds.
@@ -1089,8 +1088,7 @@ def launch_consolidation_session(agent_cli, project):
   prompt, _ = build_consolidation_prompt(project)
 
   print(
-      f'[*] Launching {agent_cli} consolidation session for project: {project}'
-  )
+      f'[*] Launching {agent_cli} consolidation session for project: {project}')
 
   if agent_cli == 'claude':
     cmd = ['claude', '-p', prompt, '--dangerously-skip-permissions']
@@ -1104,8 +1102,7 @@ def launch_consolidation_session(agent_cli, project):
   os.makedirs(log_dir, exist_ok=True)
   log_path = os.path.join(
       log_dir,
-      f'{project}-consolidation-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log'
-  )
+      f'{project}-consolidation-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log')
 
   log_file = open(log_path, 'w')
   print(f'    Log: {log_path}')
@@ -1325,8 +1322,8 @@ def _run_expand_sessions(args):
   total_rounds = rounds
   # Default: summary and consolidation on for multi-round, off for single round.
   run_summary = args.summary if args.summary is not None else (total_rounds > 1)
-  run_consolidate = (args.consolidate
-                     if args.consolidate is not None else (total_rounds > 1))
+  run_consolidate = (args.consolidate if args.consolidate is not None else
+                     (total_rounds > 1))
 
   if args.print_only:
     for project in projects:
