@@ -1,0 +1,10 @@
+homepage: "https://github.com/catatafishen/agentbridge"
+language: jvm
+primary_contact: "catatafishen@users.noreply.github.com"
+main_repo: "https://github.com/catatafishen/agentbridge.git"
+fuzzing_engines:
+  - jazzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "catatafishen@users.noreply.github.com"
