@@ -737,193 +737,32 @@ Once the summary is written, exit. Do NOT commit or push anything.
 
 
 CONSOLIDATE_PROMPT_TEMPLATE = textwrap.dedent("""\
-    You are an OSS-Fuzz engineer tasked with consolidating the fuzzing
-    harnesses of the **{project}** OSS-Fuzz project to eliminate redundancy
-    and ensure every harness that remains earns its place.
+    You are an OSS-Fuzz engineer reviewing the fuzzing harnesses of the
+    **{project}** OSS-Fuzz project after one or more expansion rounds.
 
     ## Important: use your skills
 
     You MUST use the following skills throughout this task:
     {fuzzing_skills_blurb}
 
-    ## Context
+    ## Objective
 
-    One or more expansion rounds have just added new harnesses to this
-    project. Before the final summary is written, your job is to measure
-    per-harness coverage, identify redundant or heavily-overlapping harnesses,
-    and consolidate them so the project has a lean, high-quality harness set
-    rather than an accumulation of mediocre ones.
+    One or more expansion rounds have just added new harnesses to this project.
+    Take a look at the current harness set and decide whether any consolidation
+    is warranted — for example removing or merging harnesses that are clearly
+    redundant, or dropping ones that add little value. Use your own judgement
+    on a case-by-case basis; not every project will need changes.
 
-    **Scope**: consolidate across ALL harnesses currently in the project,
-    both pre-existing ones and those added during the expansion rounds.
-    However, apply stricter criteria before removing or merging a harness
-    that was already committed (i.e. present in `git status` as unmodified)
-    — those were placed deliberately and should only be removed if they are
-    a clear strict subset of another harness.
+    Be conservative: when in doubt, keep a harness. Pre-existing harnesses
+    (those already committed before this session) should only be touched if
+    there is a clear reason.
 
-    ## Step-by-step workflow
+    After any changes, confirm the project still builds and passes `check_build`.
+    Write a short report to `{report_path}` summarising what you looked at,
+    what you changed (if anything), and why.
 
-    ### Phase 1 — Inventory
-
-    1. Read `projects/{project}/build.sh` and list every fuzzing target that
-       is compiled and installed to `$OUT`. Record each harness name.
-    2. Run `git status` and `git diff --name-only` to identify which harness
-       source files are **newly added** in this session vs **pre-existing**
-       (already committed). Keep this distinction throughout.
-
-    ### Phase 2 — Per-harness coverage measurement
-
-    3. Build with the coverage sanitizer:
-       ```
-       python3 infra/helper.py build_fuzzers --sanitizer coverage {project}
-       ```
-
-    4. For each harness `<name>`, run coverage in isolation and save the
-       result to a dedicated directory:
-       ```
-       python3 infra/helper.py coverage \\
-           --fuzz-target <name> \\
-           --corpus-dir {oss_fuzz_root}/build/corpus/<name> \\
-           {project}
-       ```
-       Immediately after each run, copy or note the contents of
-       `build/out/{project}/report/linux/summary.json` — subsequent runs
-       overwrite this file. Save each harness's summary as
-       `{oss_fuzz_root}/{project}-cov-harness-<name>.json`.
-
-       If `--corpus-dir` does not exist yet, omit it; the harness will
-       generate coverage from its own seed inputs or random mutation.
-
-    5. From each saved `summary.json`, extract:
-       - **Total lines covered** (sum of `covered` across all files)
-       - **Total lines reachable** (sum of `count` across all files)
-       - **Per-file line coverage** (file path → covered/total)
-       - **Coverage percentage** = covered / reachable
-
-    ### Phase 3 — Overlap analysis
-
-    6. Build a pairwise **containment matrix**. For every ordered pair
-       (A, B), compute:
-
-       ```
-       containment(A→B) = |lines covered by both A and B| / |lines covered by A|
-       ```
-
-       Because `summary.json` gives per-file totals rather than per-line
-       sets, use the following approximation: for each file covered by both
-       A and B, the shared coverage ≈ min(covered_A, covered_B). Sum these
-       across all files both harnesses touch.
-
-    7. Classify each ordered pair (A, B) using these thresholds:
-
-       | containment(A→B) | Classification |
-       |---|---|
-       | ≥ 0.90 | **A is redundant** — nearly everything A covers, B also covers |
-       | 0.60 – 0.90 | **High overlap** — candidate for merging into one better harness |
-       | < 0.60 | **Complementary** — keep both |
-
-    ### Phase 4 — Semantic review of flagged pairs
-
-    8. For every pair flagged as redundant or high-overlap, read both
-       harness source files and answer these questions before acting:
-
-       - Do they target **different entry points or API surfaces**? If yes,
-         keep both regardless of coverage overlap — coverage metrics cannot
-         capture input-shape diversity.
-       - Do they exercise **different error conditions or call contexts**?
-         (e.g. one passes malformed input, the other passes oversized input
-         to the same function). If yes, keep both.
-       - Does one harness use a **structurally richer input model**
-         (FuzzedDataProvider, protobuf mutator) while the other uses raw
-         bytes? If yes, the richer one is preferable — remove the raw-byte
-         one only if its unique coverage is negligible.
-       - Is either harness a **strict syntactic wrapper** around the other
-         with no meaningful difference in what it exercises? If yes, that
-         is a clear removal candidate.
-
-    ### Phase 5 — Consolidation decisions
-
-    9. For each flagged pair, choose one of:
-
-       **Remove A** — when A is a strict subset of B, exercises no distinct
-       entry point or error path, and was added in the current expansion
-       session (not pre-existing). Remove the source file and its entry
-       from `build.sh`.
-
-       **Merge A and B into a single improved harness** — when both cover
-       meaningful unique entry points but share most of their boilerplate,
-       initialisation logic, or target the same library subsystem. Write a
-       new combined harness that exercises all the distinct paths from both.
-       Remove both originals and add the merged one to `build.sh`.
-
-       **Keep both** — when semantic review (step 8) reveals they serve
-       distinct purposes, regardless of coverage overlap. Document why.
-
-       **Flag for human review** — for pre-existing harnesses that appear
-       redundant but were not added in this session. Do NOT remove them;
-       note them in the report instead.
-
-    ### Phase 6 — Validate
-
-    10. After all removals and merges, rebuild normally and confirm the
-        project still passes:
-        ```
-        python3 infra/helper.py build_fuzzers {project}
-        python3 infra/helper.py check_build {project}
-        ```
-        For each remaining harness, run briefly:
-        ```
-        python3 infra/helper.py run_fuzzer {project} <name> -- -max_total_time=30
-        ```
-        Fix any regressions before proceeding.
-
-    11. Run a final combined coverage measurement over all surviving
-        harnesses and confirm total coverage did not decrease relative to
-        the pre-consolidation state:
-        ```
-        python3 infra/helper.py introspector --coverage-only --seconds 30 \\
-            --out {project}-cov-post-consolidation {project}
-        ```
-        Compare against the last expansion round's `cov-after` directory.
-        A small regression (< 2 percentage points) is acceptable if it
-        eliminates a meaningfully redundant harness. Anything larger must
-        be explained or reversed.
-
-    ### Phase 7 — Write the consolidation report
-
-    12. Create `{report_path}` with the following sections:
-
-        **Harness inventory** — table of all harnesses found, their
-        coverage %, lines covered, and whether they are new or pre-existing.
-
-        | Harness | New/Pre-existing | Lines covered | Coverage % |
-        |---|---|---|---|
-
-        **Overlap matrix** — for every flagged pair, the containment scores
-        in both directions and the classification.
-
-        | Harness A | Harness B | A→B containment | B→A containment | Class |
-        |---|---|---|---|---|
-
-        **Decisions made** — for each flagged pair, what action was taken
-        and the reason (covering both coverage data and semantic reasoning
-        from step 8).
-
-        **Harnesses removed** — list with rationale.
-
-        **Harnesses merged** — list showing which originals were merged into
-        which new harness, with a description of what the merged harness
-        covers that neither original covered as well individually.
-
-        **Harnesses flagged for human review** — pre-existing harnesses that
-        appear redundant but were not touched.
-
-        **Coverage before vs. after consolidation** — total lines covered
-        and coverage % before (last expansion round's cov-after) and after
-        (post-consolidation measurement), with explanation of any delta.
-
-        **Final harness set** — the surviving harnesses after consolidation,
-        with a one-line description of what each uniquely contributes.
+    Do NOT commit or push anything. Leave all changes locally for the
+    security engineer to review.
 
     ## Working directory
 
@@ -931,8 +770,7 @@ CONSOLIDATE_PROMPT_TEMPLATE = textwrap.dedent("""\
     The project directory is: `{project_dir}`
     Write your report to: `{report_path}`
 
-Once consolidation is complete, exit. Do NOT commit or push anything.
-Leave all changes locally for the security engineer to review.
+Once consolidation is complete, exit.
 """)
 
 
