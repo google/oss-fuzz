@@ -1,11 +1,11 @@
-homepage: "https://github.com/0ai-Cyberviser/Hancock"
+homepage: "https://github.com/cyberviser/Hancock"
 language: python
-primary_contact: "cyberviser@proton.me"
+primary_contact: "0ai@cyberviserai.com"
 auto_ccs:
-  - "security@cyberviser.ai"
+  - "cyberviser@proton.me"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
   - undefined
-main_repo: "https://github.com/0ai-Cyberviser/Hancock"
+main_repo: "https://github.com/cyberviser/Hancock"

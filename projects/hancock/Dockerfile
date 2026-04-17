@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y python3-dev
-RUN git clone --depth 1 https://github.com/0ai-Cyberviser/Hancock.git $SRC/hancock
+RUN git clone --depth 1 https://github.com/cyberviser/Hancock.git $SRC/hancock
 WORKDIR $SRC/hancock
 COPY build.sh $SRC/
