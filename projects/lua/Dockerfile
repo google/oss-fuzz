@@ -14,7 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+# Upgrade to Ubuntu 24.04 breaks OSS Fuzz "code-change" workflow,
+# see https://github.com/google/oss-fuzz/issues/15359
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone https://github.com/ligurio/lunapark testdir
 WORKDIR $SRC/testdir
 
