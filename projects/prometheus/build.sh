@@ -40,6 +40,7 @@ compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzXO
 compile_native_go_fuzzer_v2 github.com/prometheus/prometheus/util/fuzzing FuzzXOR2Chunk fuzzXOR2Chunk
 
 go generate -tags fuzzing ./util/fuzzing/corpus_gen
+mv util/fuzzing/fuzzParseExpr.dict $OUT/
 mv util/fuzzing/fuzzParseExpr_seed_corpus.zip $OUT/
 mv util/fuzzing/fuzzParseMetricSelector_seed_corpus.zip $OUT/
 mv util/fuzzing/fuzzParseMetricText_seed_corpus.zip $OUT/

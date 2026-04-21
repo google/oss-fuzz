@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-swift
+FROM gcr.io/oss-fuzz-base/base-builder-swift:ubuntu-24-04
 
 # specific to project
 RUN apt-get update && apt-get install -y zlib1g-dev

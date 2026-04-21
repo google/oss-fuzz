@@ -38,7 +38,7 @@ ARGS='is_asan = true
 if [[ -n "${INDEXER_BUILD:-}" ]]; then
   ARGS="$ARGS is_debug=true v8_optimized_debug=false v8_enable_slow_dchecks=true clang_base_path=\"/opt/toolchain\""
 else
-  ARGS="$ARGS is_debug=false v8_enable_slow_dchecks=false"
+  ARGS="$ARGS is_debug=true v8_optimized_debug=false v8_enable_slow_dchecks=true"
 fi
 
 # Generate ninja file for build

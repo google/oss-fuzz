@@ -44,7 +44,7 @@ ninja -v -j$(nproc) -C $build test/fuzzing/hb-{shape,raster,vector,gpu,subset,re
 mv $build/test/fuzzing/hb-{shape,raster,vector,gpu,subset,repacker}-fuzzer $OUT/
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
-mkdir all-fonts
+mkdir -p all-fonts
 for d in \
 	test/shape/data/in-house/fonts \
 	test/shape/data/aots/fonts \
