@@ -23,6 +23,8 @@ make -j$(nproc)
 # Copy over the fuzzers
 find . -name "fuzz-*" -executable -exec libtool install install -m0755 {} $OUT/ \;
 cd ../pigeonhole
+# Fix typo in upstream: fuzz_suite_LDFLAG -> fuzz_suite_LDFLAGS
+find . -name "Makefile.am" -exec sed -i -e 's,fuzz_suite_LDFLAG ,fuzz_suite_LDFLAGS ,' {} \;
 find . -name "Makefile.am" -exec sed -i -e 's,(FUZZER_LDFLAGS),(FUZZER_LDFLAGS) -static-libtool-libs,' {} \;
 ./autogen.sh
 ./configure --with-dovecot=../dovecot --with-fuzzer=clang --prefix=$OUT

@@ -153,7 +153,9 @@ $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
   webp_encoder
 
 $SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
+  api_grshape \
   cubic_roots \
+  hdr_agtm \
   parse_path \
   quad_roots \
   skmeshspecification \
@@ -291,7 +293,6 @@ mv out/FuzzDebug/skruntimeeffect $OUT/skruntimeeffect
 mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
 mv ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
-#
 mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
 mv ../skia_data/skdescriptor_deserialize_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
@@ -313,6 +314,8 @@ mv out/Fuzz/api_regionop $OUT/api_regionop
 
 mv out/Fuzz/api_triangulation $OUT/api_triangulation
 
+mv out/Fuzz/api_grshape $OUT/api_grshape
+
 mv out/Fuzz/colrv1 $OUT/colrv1
 mv ../skia_data/colrv1_seed_corpus.zip $OUT/colrv1_seed_corpus.zip
 
@@ -325,3 +328,6 @@ mv ../skia_data/parse_path_seed_corpus.zip $OUT/parse_path_seed_corpus.zip
 # These only take a few floats - no seed corpus necessary
 mv out/FuzzDebug/quad_roots $OUT/quad_roots
 mv out/FuzzDebug/cubic_roots $OUT/cubic_roots
+
+mv out/Fuzz/hdr_agtm $OUT/hdr_agtm
+mv ../skia_data/hdr_agtm_seed_corpus.zip $OUT/hdr_agtm_seed_corpus.zip

@@ -35,6 +35,8 @@ for f in $fuzzers; do
 	fuzzer=$(basename $f)
 	cp $f $OUT/
 	corpus=${fuzzer#fuzz_}
+	corpus=${corpus%_def}
+	corpus=${corpus%_cus}
 	if [ -d "fuzzing-corpora/${corpus}" ]; then
 		zip -rj $OUT/${fuzzer}_seed_corpus.zip fuzzing-corpora/${corpus}
 	fi
