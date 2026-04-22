@@ -33,14 +33,11 @@ cd contrib/contrib-build
 sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-x86asm' ../src/ffmpeg/rules.mak
 
 make V=1 -j$(nproc) \
-    .matroska \
-    .ogg \
     .libxml2 \
     .flac \
     .opus \
     .vorbis \
     .speex \
-    .speexdsp \
     .theora \
     .dav1d \
     .vpx \
@@ -59,10 +56,13 @@ if [ "$SANITIZER" = "address" ]; then
 fi
 unset AFL_NOOPT
 
-# Build dvbpsi and mpcdec with full sanitizer/coverage instrumentation so that
-# bugs in these parsing libraries are detected when the fuzzers exercise them.
+# Build various contribs with instrumentation
 cd contrib/contrib-build
 make V=1 -j$(nproc) \
+    .ebml \
+    .matroska \
+    .ogg \
+    .speexdsp \
     .dvbpsi \
     .mpcdec
 cd ../../
