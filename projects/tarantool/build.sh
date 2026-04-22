@@ -145,12 +145,11 @@ LUA_RUNTIME_NAME=tarantool
 TARANTOOL_PATH=build/src/$LUA_RUNTIME_NAME
 LUA_MODULES_DIR=lua_modules
 
-apt install -y luarocks liblua5.1-0 liblua5.1-0-dev liblua5.1-0-dbg lua5.1
+apt install -y luarocks
 
-# Required by luzer installed using luarocks.
-export OSS_FUZZ=1
-luarocks install --lua-version 5.1 --server=https://luarocks.org/dev --tree=$LUA_MODULES_DIR luzer
-unset OSS_FUZZ
+LUA_LIBRARIES=$(realpath build/third_party/luajit/src/libluajit.a)
+LUA_INCLUDE_DIR=$(realpath third_party/luajit/src)
+luarocks install --lua-version 5.1 --server=https://luarocks.org/dev --tree=$LUA_MODULES_DIR luzer LUA_LIBRARIES="$LUA_LIBRARIES" LUA_INCLUDE_DIR="$LUA_INCLUDE_DIR" OSS_FUZZ=ON ENABLE_LUAJIT=ON LUAJIT_FRIENDLY_MODE=ON
 
 # These Lua modules exists only when target `lua-tests` is used,
 # see cmake/BuildLuaTests.cmake.
