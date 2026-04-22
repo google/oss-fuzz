@@ -45,8 +45,6 @@ make V=1 -j$(nproc) \
     .dav1d \
     .vpx \
     .mpg123 \
-    .dvbpsi \
-    .mpcdec \
     .ffmpeg
 
 cd ../../
@@ -60,6 +58,14 @@ if [ "$SANITIZER" = "address" ]; then
     export CXXFLAGS="$CXXFLAGS -DNDEBUG"
 fi
 unset AFL_NOOPT
+
+# Build dvbpsi and mpcdec with full sanitizer/coverage instrumentation so that
+# bugs in these parsing libraries are detected when the fuzzers exercise them.
+cd contrib/contrib-build
+make V=1 -j$(nproc) \
+    .dvbpsi \
+    .mpcdec
+cd ../../
 
 # Use OSS-Fuzz environment rather than hardcoded setup.
 sed -i 's/-fsanitize-coverage=trace-pc-guard//g' ./configure.ac
