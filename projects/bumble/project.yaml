@@ -1,0 +1,8 @@
+homepage: "https://github.com/google/bumble"
+language: python
+primary_contact: "bumble-core+oss-fuzz@googlegroups.com"
+main_repo: "https://github.com/google/bumble"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
