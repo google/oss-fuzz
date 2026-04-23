@@ -26,9 +26,12 @@ Usage:
               and add targeted harnesses for the attribute-parsing paths." \
       open62541 json-c
 
+  python infra/experimental/agent-skills/helper.py add-chronos-support \
+      open62541 json-c htslib
+
 This will launch parallel agent sessions to expand fuzzing coverage, fix
-broken builds, or carry out an arbitrary task for each listed project,
-producing local changes and a per-project report.
+broken builds, add Chronos support, or carry out an arbitrary task for each
+listed project, producing local changes and a per-project report.
 """
 
 import argparse
@@ -59,6 +62,77 @@ FUZZING_SKILLS_BLURB = (
     '      - Python  → **fuzzing-python-expert**\n'
     '    Activate all relevant skills at the start of your session.')
 
+EXPAND_SIZE_GUIDANCE = {
+    'small':
+        'Focus on a **single, well-justified improvement** — one new harness '
+        'or a meaningful improvement to an existing one.',
+    'medium':
+        'Aim for **2–3 focused improvements** — new harnesses or meaningful '
+        'extensions of existing ones.',
+    'large':
+        'Be **comprehensive** — target 5 or more distinct under-covered areas '
+        'with new harnesses or major extensions to existing ones.',
+}
+
+EXPAND_ROUND_CONTEXT_TEMPLATE = textwrap.dedent("""\
+    ## Continuation: Round {round_num} of {total_rounds}
+
+    A previous expansion round has already run for this project. Before doing
+    anything else, read and extract the following artifacts from the previous
+    round's report at `{previous_report_path}`.  Each artifact directly shapes
+    what you should do in this round.
+
+    ### Artifacts to extract from `{previous_report_path}`
+
+    1. **Harnesses added** — read the "Harnesses added this round" section.
+       List every harness filename that was written. Do NOT re-implement any
+       of these.  If build.sh was updated, re-read it now to see the current
+       state before making further changes.
+
+    2. **Coverage delta** — read the "Coverage delta" section. Note the
+       overall line/branch coverage percentages before and after round
+       {prev_round_num}.  Use the *after* numbers as your new baseline: any
+       improvement you measure this round must be on top of that baseline.
+       The previous round's coverage output directory is at:
+       `{prev_cov_after_dir}`
+       Read `{prev_cov_after_dir}/linux/summary.json` (if it exists) to get
+       per-file hit/total line counts — use this to find files that are still
+       poorly covered.
+
+    3. **Candidate functions not yet targeted** — read the "Remaining coverage
+       gaps" section. The previous round identified under-covered functions
+       but may not have targeted all of them. Pick from that list first before
+       doing fresh analysis, prioritising functions with the lowest hit ratio
+       that sit on a security-relevant code path.
+
+    4. **Threat model notes** — read the "Threat model" section. The previous
+       round reasoned about which input paths reach security-sensitive code.
+       Do not repeat that reasoning from scratch; extend it. If the previous
+       round found that a certain subsystem (e.g. the XML parser) was already
+       well-targeted, skip it and focus on the next highest-risk subsystem
+       identified there.
+
+    5. **Iteration failures** — read the "Approaches tried and abandoned"
+       section (if present). Any harness design that was attempted but
+       discarded (e.g. caused false positives, had zero coverage gain, was
+       too slow) must NOT be retried. Note the reasons and use them to avoid
+       the same dead ends.
+
+    ### What to do differently this round
+
+    - Start from the state left by round {prev_round_num}: the repo already
+      has the harnesses, Dockerfile changes, and build.sh edits from that
+      round. Do not undo or re-apply them.
+    - Target the coverage gaps and candidate functions surfaced above.
+    - If coverage stalled completely in the previous round despite multiple
+      attempts, change subsystem — pick the next-highest-risk area from the
+      threat model notes rather than hammering the same code paths.
+    - Your coverage baseline for this round is the *after* state of round
+      {prev_round_num}.  Measure improvement relative to that, not relative
+      to the original project state.
+
+""")
+
 EXPAND_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are an OSS-Fuzz engineer tasked with expanding the fuzzing coverage of
     the **{project}** OSS-Fuzz project.
@@ -69,13 +143,12 @@ EXPAND_PROMPT_TEMPLATE = textwrap.dedent("""\
     {fuzzing_skills_blurb}
 
     Rely on them for every step below.
-
+{round_context}
     ## Objective
 
     Expand the fuzzing posture of the **{project}** project by adding one or
     more new fuzzing harnesses (or meaningfully improving existing ones) so that
-    code coverage increases. Focus on a single, well-justified improvement
-    rather than many shallow changes.
+    code coverage increases. {expansion_size_guidance}
 
     ## Step-by-step workflow
 
@@ -120,32 +193,65 @@ EXPAND_PROMPT_TEMPLATE = textwrap.dedent("""\
        harness).
 
     6. **Measure coverage impact**
-       Generate a *before* coverage baseline and an *after* report:
+       Use round-stamped output directories so later rounds can locate this
+       round's coverage data precisely.
+
+       Generate a *before* baseline (using the build as it stands at the start
+       of this round, before your new harnesses are added):
        ```
        python3 infra/helper.py introspector --coverage-only --seconds 30 \\
-           --out {project}-cov-before {project}
+           --out {project}-cov-before{round_label} {project}
        ```
-       (run this BEFORE making changes, using the original build)
 
        After your changes:
        ```
        python3 infra/helper.py introspector --coverage-only --seconds 30 \\
-           --out {project}-cov-after {project}
+           --out {project}-cov-after{round_label} {project}
        ```
 
-       Compare the two and confirm that overall coverage did not regress. If it
-       did, explain why the regression is acceptable. If you see no coverage
-       improvement then go back to previous steps and try a different approach.
-       You must continue iterating on steps 3-6 until you have clear improvements
-       at hand.
+       Compare the two `linux/summary.json` files and confirm that overall
+       coverage did not regress. If you see no coverage improvement, go back
+       to steps 3–6 and try a different approach. Keep iterating until you
+       have a clear improvement.
 
     7. **Write a report**
-       Create a file `{report_path}` containing:
-       - Summary of changes made.
-       - Rationale: why this area was chosen, what bugs it may find.
-       - Coverage comparison (before vs. after).
-       - Build / check_build / run_fuzzer output excerpts showing success.
-       - Recommendations for further expansion.
+       Create a file `{report_path}` with the following sections. Sections
+       marked *(hand-off)* are consumed verbatim by the next round's agent —
+       write them carefully and completely.
+
+       - **Summary of changes**: list every file modified and what changed.
+
+       - **Harnesses added this round** *(hand-off)*: one line per harness —
+         filename, entry-point function fuzzed, and one sentence on why that
+         target was chosen. Future rounds use this list to avoid duplication.
+
+       - **Threat model** *(hand-off)*: which subsystems / input paths were
+         analysed, which are security-relevant, which have already been
+         covered (by this and prior rounds), and which remain untargeted.
+         Be specific: name source files and functions.
+
+       - **Coverage delta** *(hand-off)*: the overall line and branch
+         coverage percentages from `{project}-cov-before{round_label}` and
+         `{project}-cov-after{round_label}` (read from `linux/summary.json`).
+         Include the path to the *after* directory so the next round can
+         load it as its baseline.
+
+       - **Remaining coverage gaps** *(hand-off)*: a ranked list of
+         under-covered functions (name, file, hit/total line ratio) that were
+         identified but NOT targeted this round, ordered by security
+         relevance. The next round picks from this list first.
+
+       - **Approaches tried and abandoned** *(hand-off)*: any harness designs
+         that were attempted but discarded (e.g. zero coverage gain, false
+         positives, excessive slowness), with a one-line reason for each.
+         Future rounds must not retry these.
+
+       - **Build / validation output**: excerpts from build_fuzzers,
+         check_build, and run_fuzzer confirming success.
+
+       - **Recommendations**: suggested next steps beyond the current set of
+         rounds (seed corpora, dictionaries, sanitizer coverage, upstream
+         notification).
 
     8. **Conclude**
        Do NOT commit or push anything. Leave all changes locally for the
@@ -419,6 +525,253 @@ INTEGRATE_PROMPT_TEMPLATE = textwrap.dedent("""\
 Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
 """)
 
+ADD_CHRONOS_PROMPT_TEMPLATE = textwrap.dedent("""\
+    You are an OSS-Fuzz engineer tasked with adding Chronos support to the
+    **{project}** OSS-Fuzz project.
+
+    ## Important: use your skills
+
+    You MUST use the following skills throughout this task:
+    {fuzzing_skills_blurb}
+
+    Rely on them for every step below.
+
+    ## What is Chronos
+
+    Chronos is a feature of OSS-Fuzz that enables fast, offline rebuilds and
+    unit-test runs for a project — without network access. It is used to
+    validate patches quickly without rebuilding the entire Docker image from
+    scratch. Two scripts must be added to the project directory:
+
+    - **`replay_build.sh`**: rebuilds the project (and its fuzz targets)
+      entirely offline, using only files already present in the container.
+    - **`run_tests.sh`**: runs the project's own unit-test suite offline.
+      Must leave the repository in exactly the same state as it found it
+      (i.e. `git diff` is unchanged before and after).
+
+    Read `infra/chronos/README.md` carefully before writing either script —
+    it is the authoritative reference for constraints and conventions.
+
+    ## Objective
+
+    Add working `replay_build.sh` and `run_tests.sh` scripts to
+    `projects/{project}/` so that both Chronos validation commands pass:
+
+    ```
+    python3 infra/helper.py check-replay {project}
+    python3 infra/helper.py check-tests {project}
+    ```
+
+    ## Step-by-step workflow
+
+    1. **Read the Chronos specification**
+       - Read `infra/chronos/README.md` in full. Understand all constraints
+         before touching any project files.
+
+    2. **Understand the project**
+       - Read `projects/{project}/` (Dockerfile, build.sh, project.yaml,
+         and any existing harnesses).
+       - Identify: the build system (CMake, Meson, Autotools, Make, …),
+         the upstream repository URL, and the project's own test suite
+         (CTest, pytest, gtest, …).
+
+    3. **Clone the source locally**
+       - Find the `git clone` line in the Dockerfile, clone the upstream
+         repository locally alongside the project directory, and update the
+         Dockerfile to use `COPY` so you can iterate without network
+         round-trips.
+
+    4. **Write `replay_build.sh`**
+       - The script must rebuild the project and all fuzz targets using only
+         files present in the container — no `apt-get`, no `git clone`, no
+         network calls of any kind.
+       - Mirror the essential compilation steps from `build.sh`, but omit
+         any network-dependent setup.
+       - Place the script at `projects/{project}/replay_build.sh`.
+
+    5. **Write `run_tests.sh`**
+       - The script must run the project's unit tests with no network access.
+       - Any test that requires network connectivity must be explicitly
+         skipped; document each such skip with a comment explaining why.
+       - After the script exits, `git diff` inside the target repository must
+         be identical to what it was before the script ran. Clean up any
+         build artefacts or temporary files the test suite creates.
+       - If the tests fail, the script must exit with a non-zero status so
+         that `check-tests` correctly reports failure.
+       - Place the script at `projects/{project}/run_tests.sh`.
+
+    6. **Validate**
+       Run both Chronos checks and iterate until both pass without error:
+       ```
+       python3 infra/helper.py check-replay {project}
+       python3 infra/helper.py check-tests {project}
+       ```
+       Also confirm the normal OSS-Fuzz build still passes:
+       ```
+       python3 infra/helper.py build_fuzzers {project}
+       python3 infra/helper.py check_build {project}
+       ```
+
+    7. **Write a report**
+       Create a file `{report_path}` containing:
+       - Overview of the build system and test suite found in the project.
+       - Description of `replay_build.sh`: what it does and any simplifications
+         made relative to `build.sh`.
+       - Description of `run_tests.sh`: which tests are run, which are skipped
+         (and why), and how idempotency is ensured.
+       - Output of both `check-replay` and `check-tests` confirming success.
+       - Any follow-up recommendations (e.g. tests that could be un-skipped
+         once network access is available, or flaky tests to investigate).
+
+    8. **Conclude**
+       Do NOT commit or push anything. Leave all changes locally for the
+       security engineer to review. End with a brief summary of what was
+       created and where the report is.
+
+    ## Working directory
+
+    You are working from: `{oss_fuzz_root}`
+    The project directory is: `{oss_fuzz_root}/projects/{project}`
+    Write your report to: `{report_path}`
+
+Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
+""")
+
+EXPAND_SUMMARY_PROMPT_TEMPLATE = textwrap.dedent("""\
+    You are an OSS-Fuzz engineer tasked with writing a consolidated summary
+    of a multi-round fuzzing expansion that was just completed for the
+    **{project}** OSS-Fuzz project.
+
+    ## Important: use your skills
+
+    You MUST use the following skills throughout this task:
+    {fuzzing_skills_blurb}
+
+    ## What happened
+
+    A multi-round expansion ran {total_rounds} round(s) for this project.
+    Each round added new fuzzing harnesses and measured coverage. Your job
+    is to read every round's artifacts and synthesise them into a single,
+    authoritative summary report.
+
+    ## Artifacts to read
+
+    For each round N from 1 to {total_rounds}, read:
+
+    1. **Round report**: `{project_dir}/expansion_report_round_N.md`
+       (contains the hand-off sections written by each round's agent)
+
+    2. **Coverage baseline** (before that round's changes):
+       `{oss_fuzz_root}/{project}-cov-before-roundN/linux/summary.json`
+
+    3. **Coverage result** (after that round's changes):
+       `{oss_fuzz_root}/{project}-cov-after-roundN/linux/summary.json`
+
+    If a file is missing (e.g. a round was aborted), note that in the report
+    and continue with what is available.
+
+    Also read the current project files in `{project_dir}/` (Dockerfile,
+    build.sh, and all harness source files) to confirm the final state of
+    the project matches what the round reports describe.
+
+    ## What to write
+
+    Create a file at `{summary_path}` with the following sections:
+
+    ### 1. Executive summary
+    Two to four sentences: what project was expanded, how many rounds ran,
+    how many harnesses were added, and the net coverage change from start
+    to finish.
+
+    ### 2. Harnesses added (complete list)
+    A table with one row per harness added across all rounds:
+
+    | Round | Harness file | Entry point fuzzed | Rationale |
+    |---|---|---|---|
+
+    ### 3. Coverage progression
+    A table showing coverage at the start of each round and after it, plus
+    the delta. Use the line-coverage percentage from each round's
+    `summary.json`. Include a final row showing total gain from baseline
+    (before round 1) to final state (after round {total_rounds}).
+
+    | Round | Coverage before | Coverage after | Delta |
+    |---|---|---|---|
+
+    If per-file data is available, also list the top 5 source files with the
+    largest absolute coverage gain across all rounds.
+
+    ### 4. Threat model coverage
+    Summarise which attack-surface areas were analysed across all rounds,
+    which are now covered by at least one harness, and which remain
+    unaddressed. Be specific: name subsystems, source files, and key
+    functions.
+
+    ### 5. Remaining coverage gaps
+    A consolidated, de-duplicated, ranked list of under-covered functions
+    and files that were identified but NOT targeted in any round. Order by
+    security relevance (highest risk first). This section is the primary
+    input for any future expansion work.
+
+    ### 6. Approaches tried and abandoned
+    A consolidated list of harness designs that were attempted across all
+    rounds but discarded, with the reason for each. Future engineers must
+    not retry these without first addressing the stated reason.
+
+    ### 7. Recommendations
+    Concrete next steps, ordered by impact:
+    - Additional harnesses that should be written (name the function/file
+      and explain why).
+    - Seed corpora or dictionaries that would improve fuzzing efficiency.
+    - Sanitizer or engine coverage gaps worth addressing.
+    - Any upstream issues worth reporting to the project maintainers.
+
+    ## Working directory
+
+    You are working from: `{oss_fuzz_root}`
+    The project directory is: `{project_dir}`
+    Write the summary to: `{summary_path}`
+
+Once the summary is written, exit. Do NOT commit or push anything.
+""")
+
+CONSOLIDATE_PROMPT_TEMPLATE = textwrap.dedent("""\
+    You are an OSS-Fuzz engineer reviewing the fuzzing harnesses of the
+    **{project}** OSS-Fuzz project after one or more expansion rounds.
+
+    ## Important: use your skills
+
+    You MUST use the following skills throughout this task:
+    {fuzzing_skills_blurb}
+
+    ## Objective
+
+    One or more expansion rounds have just added new harnesses to this project.
+    Take a look at the current harness set and decide whether any consolidation
+    is warranted — for example removing or merging harnesses that are clearly
+    redundant, or dropping ones that add little value. Use your own judgement
+    on a case-by-case basis; not every project will need changes.
+
+    Be conservative: when in doubt, keep a harness. Pre-existing harnesses
+    (those already committed before this session) should only be touched if
+    there is a clear reason.
+
+    After any changes, confirm the project still builds and passes `check_build`.
+    Write a short report to `{report_path}` summarising what you looked at,
+    what you changed (if anything), and why.
+
+    Do NOT commit or push anything. Leave all changes locally for the
+    security engineer to review.
+
+    ## Working directory
+
+    You are working from: `{oss_fuzz_root}`
+    The project directory is: `{project_dir}`
+    Write your report to: `{report_path}`
+
+Once consolidation is complete, exit.
+""")
+
 
 def get_recent_date_str(days_ago=1):
   """Return a YYYYMMDD string for a recent date."""
@@ -564,10 +917,27 @@ def _run_integrate_sessions(args):
   print(f'    cd {OSS_FUZZ_ROOT} && git diff && git status')
 
 
-def build_prompt(task, project, task_description=None):
-  """Build the agent prompt for a given task and project."""
+def build_prompt(task,
+                 project,
+                 task_description=None,
+                 round_num=1,
+                 total_rounds=1,
+                 expansion_size='medium'):
+  """Build the agent prompt for a given task and project.
+
+  Args:
+    task: One of 'expand', 'fix-build', 'free-task', 'add-chronos'.
+    project: OSS-Fuzz project name.
+    task_description: Free-form task description (free-task only).
+    round_num: Current expansion round (1-based; expand only).
+    total_rounds: Total number of rounds planned (expand only).
+    expansion_size: 'small', 'medium', or 'large' (expand only).
+  """
   if task == 'expand':
-    report_name = 'expansion_report.md'
+    if total_rounds > 1:
+      report_name = f'expansion_report_round_{round_num}.md'
+    else:
+      report_name = 'expansion_report.md'
     template = EXPAND_PROMPT_TEMPLATE
   elif task == 'fix-build':
     report_name = 'fix_build_report.md'
@@ -575,6 +945,9 @@ def build_prompt(task, project, task_description=None):
   elif task == 'free-task':
     report_name = 'task_report.md'
     template = FREE_TASK_PROMPT_TEMPLATE
+  elif task == 'add-chronos':
+    report_name = 'chronos_report.md'
+    template = ADD_CHRONOS_PROMPT_TEMPLATE
   else:
     raise ValueError(f'Unknown task: {task}')
 
@@ -585,27 +958,77 @@ def build_prompt(task, project, task_description=None):
       report_path=report_path,
       fuzzing_skills_blurb=FUZZING_SKILLS_BLURB,
   )
+  if task == 'expand':
+    fmt_kwargs['expansion_size_guidance'] = EXPAND_SIZE_GUIDANCE.get(
+        expansion_size, EXPAND_SIZE_GUIDANCE['medium'])
+    fmt_kwargs['round_label'] = (f'-round{round_num}'
+                                 if total_rounds > 1 else '')
+    if round_num > 1:
+      prev_round_num = round_num - 1
+      prev_report_name = (f'expansion_report_round_{prev_round_num}.md'
+                          if total_rounds > 1 else 'expansion_report.md')
+      previous_report_path = os.path.join(OSS_FUZZ_ROOT, 'projects', project,
+                                          prev_report_name)
+      prev_cov_after_dir = os.path.join(
+          OSS_FUZZ_ROOT, f'{project}-cov-after-round{prev_round_num}')
+      fmt_kwargs['round_context'] = '\n' + EXPAND_ROUND_CONTEXT_TEMPLATE.format(
+          round_num=round_num,
+          total_rounds=total_rounds,
+          prev_round_num=prev_round_num,
+          previous_report_path=previous_report_path,
+          prev_cov_after_dir=prev_cov_after_dir,
+      )
+    else:
+      fmt_kwargs['round_context'] = ''
   if task_description is not None:
     fmt_kwargs['task_description'] = task_description
   return template.format(**fmt_kwargs), report_name
 
 
-def print_prompt(task, project, task_description=None):
+def print_prompt(task,
+                 project,
+                 task_description=None,
+                 round_num=1,
+                 total_rounds=1,
+                 expansion_size='medium'):
   """Print the prompt that would be sent to an agent."""
-  prompt, _ = build_prompt(task, project, task_description=task_description)
-  print(f'===== Prompt for {project} ({task}) =====')
+  prompt, _ = build_prompt(task,
+                           project,
+                           task_description=task_description,
+                           round_num=round_num,
+                           total_rounds=total_rounds,
+                           expansion_size=expansion_size)
+  label = f'{task}'
+  if task == 'expand' and total_rounds > 1:
+    label += f' round {round_num}/{total_rounds}'
+  print(f'===== Prompt for {project} ({label}) =====')
   print(prompt)
   print(f'===== End prompt for {project} =====\n')
 
 
-def launch_agent_session(agent_cli, task, project, task_description=None):
+def launch_agent_session(agent_cli,
+                         task,
+                         project,
+                         task_description=None,
+                         round_num=1,
+                         total_rounds=1,
+                         expansion_size='medium'):
   """Launch an agent session for a single project.
 
     Returns a subprocess.Popen object.
     """
-  prompt, _ = build_prompt(task, project, task_description=task_description)
+  prompt, _ = build_prompt(task,
+                           project,
+                           task_description=task_description,
+                           round_num=round_num,
+                           total_rounds=total_rounds,
+                           expansion_size=expansion_size)
 
-  print(f'[*] Launching {agent_cli} session for project: {project} ({task})')
+  round_label = (f' round {round_num}/{total_rounds}'
+                 if task == 'expand' and total_rounds > 1 else '')
+  print(
+      f'[*] Launching {agent_cli} session for project: {project} ({task}{round_label})'
+  )
 
   if agent_cli == 'claude':
     cmd = ['claude', '-p', prompt, '--dangerously-skip-permissions']
@@ -622,8 +1045,11 @@ def launch_agent_session(agent_cli, task, project, task_description=None):
 
   log_dir = os.path.join(OSS_FUZZ_ROOT, 'build', 'agent-logs')
   os.makedirs(log_dir, exist_ok=True)
+  round_suffix = (f'-round{round_num}'
+                  if task == 'expand' and total_rounds > 1 else '')
   log_path = os.path.join(
-      log_dir, f'{project}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log')
+      log_dir,
+      f'{project}{round_suffix}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log')
 
   log_file = open(log_path, 'w')
   print(f'    Log: {log_path}')
@@ -641,6 +1067,151 @@ def launch_agent_session(agent_cli, task, project, task_description=None):
   return proc
 
 
+def build_consolidation_prompt(project):
+  """Build the agent prompt for post-expansion harness consolidation."""
+  project_dir = os.path.join(OSS_FUZZ_ROOT, 'projects', project)
+  report_path = os.path.join(project_dir, 'harness_consolidation_report.md')
+  return CONSOLIDATE_PROMPT_TEMPLATE.format(
+      project=project,
+      project_dir=project_dir,
+      oss_fuzz_root=OSS_FUZZ_ROOT,
+      report_path=report_path,
+      fuzzing_skills_blurb=FUZZING_SKILLS_BLURB,
+  ), 'harness_consolidation_report.md'
+
+
+def launch_consolidation_session(agent_cli, project):
+  """Launch a consolidation agent session for a project.
+
+  Returns a subprocess.Popen object.
+  """
+  prompt, _ = build_consolidation_prompt(project)
+
+  print(
+      f'[*] Launching {agent_cli} consolidation session for project: {project}')
+
+  if agent_cli == 'claude':
+    cmd = ['claude', '-p', prompt, '--dangerously-skip-permissions']
+  elif agent_cli == 'gemini':
+    cmd = ['gemini', '--yolo', '-p', prompt]
+  else:
+    print(f'[!] Unsupported agent CLI: {agent_cli}', file=sys.stderr)
+    return None
+
+  log_dir = os.path.join(OSS_FUZZ_ROOT, 'build', 'agent-logs')
+  os.makedirs(log_dir, exist_ok=True)
+  log_path = os.path.join(
+      log_dir,
+      f'{project}-consolidation-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log')
+
+  log_file = open(log_path, 'w')
+  print(f'    Log: {log_path}')
+
+  proc = subprocess.Popen(
+      cmd,
+      cwd=OSS_FUZZ_ROOT,
+      stdout=log_file,
+      stderr=subprocess.STDOUT,
+  )
+  proc._log_file = log_file
+  proc._log_path = log_path
+  proc._project = project
+  return proc
+
+
+def _run_single_consolidation_session(agent_cli, project):
+  """Launch a consolidation session and wait for it to complete.
+
+  Returns a dict with the project name, return code, and log path.
+  """
+  proc = launch_consolidation_session(agent_cli, project)
+  if proc is None:
+    return {'project': project, 'returncode': -1, 'log_path': None}
+
+  proc.wait()
+  proc._log_file.close()
+  status = 'OK' if proc.returncode == 0 else f'FAILED (rc={proc.returncode})'
+  print(
+      f'    [{status}] {proc._project} consolidation  (log: {proc._log_path})')
+  return {
+      'project': project,
+      'returncode': proc.returncode,
+      'log_path': proc._log_path,
+  }
+
+
+def build_summary_prompt(project, total_rounds):
+  """Build the agent prompt for the post-expansion summary."""
+  project_dir = os.path.join(OSS_FUZZ_ROOT, 'projects', project)
+  summary_path = os.path.join(project_dir, 'expansion_summary.md')
+  return EXPAND_SUMMARY_PROMPT_TEMPLATE.format(
+      project=project,
+      total_rounds=total_rounds,
+      project_dir=project_dir,
+      oss_fuzz_root=OSS_FUZZ_ROOT,
+      summary_path=summary_path,
+      fuzzing_skills_blurb=FUZZING_SKILLS_BLURB,
+  ), 'expansion_summary.md'
+
+
+def launch_summary_session(agent_cli, project, total_rounds):
+  """Launch a summary agent session for a project after all rounds complete.
+
+  Returns a subprocess.Popen object.
+  """
+  prompt, _ = build_summary_prompt(project, total_rounds)
+
+  print(f'[*] Launching {agent_cli} summary session for project: {project}')
+
+  if agent_cli == 'claude':
+    cmd = ['claude', '-p', prompt, '--dangerously-skip-permissions']
+  elif agent_cli == 'gemini':
+    cmd = ['gemini', '--yolo', '-p', prompt]
+  else:
+    print(f'[!] Unsupported agent CLI: {agent_cli}', file=sys.stderr)
+    return None
+
+  log_dir = os.path.join(OSS_FUZZ_ROOT, 'build', 'agent-logs')
+  os.makedirs(log_dir, exist_ok=True)
+  log_path = os.path.join(
+      log_dir,
+      f'{project}-summary-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log')
+
+  log_file = open(log_path, 'w')
+  print(f'    Log: {log_path}')
+
+  proc = subprocess.Popen(
+      cmd,
+      cwd=OSS_FUZZ_ROOT,
+      stdout=log_file,
+      stderr=subprocess.STDOUT,
+  )
+  proc._log_file = log_file
+  proc._log_path = log_path
+  proc._project = project
+  return proc
+
+
+def _run_single_summary_session(agent_cli, project, total_rounds):
+  """Launch a summary session and wait for it to complete.
+
+  Returns a dict with the project name, return code, and log path.
+  """
+  proc = launch_summary_session(agent_cli, project, total_rounds)
+  if proc is None:
+    return {'project': project, 'returncode': -1, 'log_path': None}
+
+  proc.wait()
+  proc._log_file.close()
+  status = 'OK' if proc.returncode == 0 else f'FAILED (rc={proc.returncode})'
+  print(f'    [{status}] {proc._project} summary  (log: {proc._log_path})')
+  return {
+      'project': project,
+      'returncode': proc.returncode,
+      'log_path': proc._log_path,
+  }
+
+
 def _validate_projects(projects):
   """Validate that each project directory exists. Exits on failure."""
   missing = [
@@ -655,7 +1226,13 @@ def _validate_projects(projects):
     sys.exit(1)
 
 
-def _run_single_session(agent_cli, task, project, task_description=None):
+def _run_single_session(agent_cli,
+                        task,
+                        project,
+                        task_description=None,
+                        round_num=1,
+                        total_rounds=1,
+                        expansion_size='medium'):
   """Launch an agent session and wait for it to complete.
 
   Returns a dict with the project name, return code, and log path.
@@ -663,7 +1240,10 @@ def _run_single_session(agent_cli, task, project, task_description=None):
   proc = launch_agent_session(agent_cli,
                               task,
                               project,
-                              task_description=task_description)
+                              task_description=task_description,
+                              round_num=round_num,
+                              total_rounds=total_rounds,
+                              expansion_size=expansion_size)
   if proc is None:
     return {'project': project, 'returncode': -1, 'log_path': None}
 
@@ -732,9 +1312,142 @@ def _run_sessions(task, args):
   print(f'    cd {OSS_FUZZ_ROOT} && git diff')
 
 
+def _run_expand_sessions(args):
+  """Handle expand-oss-fuzz-projects with multi-round and size support."""
+  projects = args.projects
+  _validate_projects(projects)
+
+  rounds = args.rounds
+  expansion_size = args.expansion_size
+  total_rounds = rounds
+  # Default: summary and consolidation on for multi-round, off for single round.
+  run_summary = args.summary if args.summary is not None else (total_rounds > 1)
+  run_consolidate = (args.consolidate if args.consolidate is not None else
+                     (total_rounds > 1))
+
+  if args.print_only:
+    for project in projects:
+      for round_num in range(1, total_rounds + 1):
+        print_prompt('expand',
+                     project,
+                     round_num=round_num,
+                     total_rounds=total_rounds,
+                     expansion_size=expansion_size)
+      if run_consolidate:
+        prompt, _ = build_consolidation_prompt(project)
+        print(f'===== Consolidation prompt for {project} =====')
+        print(prompt)
+        print(f'===== End consolidation prompt for {project} =====\n')
+      if run_summary:
+        prompt, _ = build_summary_prompt(project, total_rounds)
+        print(f'===== Summary prompt for {project} =====')
+        print(prompt)
+        print(f'===== End summary prompt for {project} =====\n')
+    return
+
+  agent_cli = args.agent or find_agent_cli()
+  if agent_cli is None:
+    print(
+        '[!] No supported agent CLI found on PATH '
+        f'({", ".join(SUPPORTED_AGENTS)}).\n'
+        '    Install one or use --print-only to see the prompts.',
+        file=sys.stderr)
+    sys.exit(1)
+
+  max_parallel = args.max_parallel
+
+  print(f'[*] Using agent CLI: {agent_cli}')
+  print(f'[*] Task: expand')
+  print(f'[*] Projects: {", ".join(projects)}')
+  print(f'[*] Rounds per project: {total_rounds}')
+  print(f'[*] Expansion size: {expansion_size}')
+  print(f'[*] Consolidation agent: {"yes" if run_consolidate else "no"}')
+  print(f'[*] Summary agent: {"yes" if run_summary else "no"}')
+  print(f'[*] Max parallel sessions: {max_parallel}')
+  print()
+
+  def run_project_rounds(project):
+    """Run all rounds then the summary agent sequentially for one project."""
+    results = []
+    completed_rounds = 0
+    for round_num in range(1, total_rounds + 1):
+      if total_rounds > 1:
+        print(f'[*] {project}: starting round {round_num}/{total_rounds} ...')
+      result = _run_single_session(agent_cli,
+                                   'expand',
+                                   project,
+                                   round_num=round_num,
+                                   total_rounds=total_rounds,
+                                   expansion_size=expansion_size)
+      results.append(result)
+      if result['returncode'] != 0:
+        print(f'    [!] {project}: round {round_num} failed '
+              f'(rc={result["returncode"]}), stopping further rounds.')
+        break
+      completed_rounds += 1
+
+    if run_consolidate and completed_rounds > 0:
+      print(f'[*] {project}: running consolidation agent ...')
+      consolidation_result = _run_single_consolidation_session(
+          agent_cli, project)
+      results.append(consolidation_result)
+
+    if run_summary and completed_rounds > 0:
+      print(f'[*] {project}: running summary agent over '
+            f'{completed_rounds} completed round(s) ...')
+      summary_result = _run_single_summary_session(agent_cli, project,
+                                                   completed_rounds)
+      results.append(summary_result)
+
+    return results
+
+  print(f'[*] Launching sessions for {len(projects)} project(s) '
+        f'({total_rounds} round(s) each, max {max_parallel} projects in '
+        f'parallel) ...\n')
+
+  all_results = {}
+  with concurrent.futures.ThreadPoolExecutor(
+      max_workers=max_parallel) as executor:
+    futures = {
+        executor.submit(run_project_rounds, project): project
+        for project in projects
+    }
+    for future in concurrent.futures.as_completed(futures):
+      project = futures[future]
+      all_results[project] = future.result()
+
+  # Final report listing.
+  print('\n[*] All sessions complete. Reports written:')
+  for project in projects:
+    for round_num in range(1, total_rounds + 1):
+      _, report_name = build_prompt('expand',
+                                    project,
+                                    round_num=round_num,
+                                    total_rounds=total_rounds,
+                                    expansion_size=expansion_size)
+      report = os.path.join(OSS_FUZZ_ROOT, 'projects', project, report_name)
+      exists = 'EXISTS' if os.path.isfile(report) else 'MISSING'
+      print(f'    - projects/{project}/{report_name}  [{exists}]')
+    if run_consolidate:
+      consolidation = os.path.join(OSS_FUZZ_ROOT, 'projects', project,
+                                   'harness_consolidation_report.md')
+      exists = 'EXISTS' if os.path.isfile(consolidation) else 'MISSING'
+      print(
+          f'    - projects/{project}/harness_consolidation_report.md  [{exists}]'
+      )
+    if run_summary:
+      summary = os.path.join(OSS_FUZZ_ROOT, 'projects', project,
+                             'expansion_summary.md')
+      exists = 'EXISTS' if os.path.isfile(summary) else 'MISSING'
+      print(f'    - projects/{project}/expansion_summary.md  [{exists}]')
+
+  print('\n[*] Review local changes with:')
+  print(f'    cd {OSS_FUZZ_ROOT} && git diff')
+
+
 def cmd_expand(args):
   """Handle the expand-oss-fuzz-projects subcommand."""
-  _run_sessions('expand', args)
+  _run_expand_sessions(args)
 
 
 def cmd_fix_builds(args):
@@ -747,6 +1460,11 @@ def cmd_run_task(args):
   _run_sessions('free-task', args)
 
 
+def cmd_add_chronos(args):
+  """Handle the add-chronos-support subcommand."""
+  _run_sessions('add-chronos', args)
+
+
 def cmd_integrate_project(args):
   """Handle the integrate-project subcommand."""
   _run_integrate_sessions(args)
@@ -756,10 +1474,18 @@ def cmd_show_prompt(args):
   """Handle the show-prompt subcommand."""
   task = args.task
   task_description = getattr(args, 'task_description', None)
+  total_rounds = getattr(args, 'rounds', 1) if task == 'expand' else 1
+  expansion_size = getattr(args, 'expansion_size', 'medium')
   for project in args.projects:
     if not os.path.isdir(os.path.join(OSS_FUZZ_ROOT, 'projects', project)):
       print(f'[!] Warning: projects/{project}/ does not exist', file=sys.stderr)
-    print_prompt(task, project, task_description=task_description)
+    for round_num in range(1, total_rounds + 1):
+      print_prompt(task,
+                   project,
+                   task_description=task_description,
+                   round_num=round_num,
+                   total_rounds=total_rounds,
+                   expansion_size=expansion_size)
 
 
 def main():
@@ -768,8 +1494,27 @@ def main():
       formatter_class=argparse.RawDescriptionHelpFormatter,
       epilog=textwrap.dedent("""\
             Examples:
-              # Expand three projects in parallel:
+              # Expand three projects in parallel (single round, medium size):
               python %(prog)s expand-oss-fuzz-projects open62541 json-c htslib
+
+              # Run 3 rounds of expansion, aiming for 5+ harnesses each round
+              # (summary agent runs automatically after all rounds):
+              python %(prog)s expand-oss-fuzz-projects --rounds 3 --expansion-size large open62541
+
+              # Single focused harness per project (no summary by default):
+              python %(prog)s expand-oss-fuzz-projects --expansion-size small json-c htslib
+
+              # Force a summary even for a single round:
+              python %(prog)s expand-oss-fuzz-projects --summary open62541
+
+              # Multi-round without the summary agent:
+              python %(prog)s expand-oss-fuzz-projects --rounds 3 --no-summary open62541
+
+              # Force consolidation even for a single round:
+              python %(prog)s expand-oss-fuzz-projects --consolidate open62541
+
+              # Multi-round skipping consolidation:
+              python %(prog)s expand-oss-fuzz-projects --rounds 3 --no-consolidate open62541
 
               # Fix broken builds for two projects:
               python %(prog)s fix-builds open62541 json-c
@@ -786,6 +1531,9 @@ def main():
               python %(prog)s fix-builds --print-only open62541
               python %(prog)s run-task --print-only \\
                   --task-description "Check seed corpus quality." open62541
+
+              # Add Chronos support (replay_build.sh + run_tests.sh):
+              python %(prog)s add-chronos-support open62541 json-c htslib
 
               # Integrate a new project from its repository URL:
               python %(prog)s integrate-project https://github.com/owner/repo
@@ -847,6 +1595,53 @@ def main():
       help='Launch agent sessions to expand fuzzing coverage of OSS-Fuzz '
       'projects.',
   )
+  expand_parser.add_argument(
+      '--rounds',
+      type=int,
+      default=1,
+      metavar='N',
+      help='Number of expansion rounds to run per project (default: 1). '
+      'Rounds run sequentially; each round reads the previous round\'s '
+      'report and targets different code areas.',
+  )
+  expand_parser.add_argument(
+      '--expansion-size',
+      choices=list(EXPAND_SIZE_GUIDANCE.keys()),
+      default='medium',
+      help='How many harnesses the agent should aim to add per round: '
+      'small=1, medium=2-3 (default), large=5+.',
+  )
+  consolidate_group = expand_parser.add_mutually_exclusive_group()
+  consolidate_group.add_argument(
+      '--consolidate',
+      dest='consolidate',
+      action='store_true',
+      default=None,
+      help='Run a consolidation agent after all rounds complete to remove '
+      'redundant harnesses and merge high-overlap ones (default: on when '
+      '--rounds > 1, off for a single round).',
+  )
+  consolidate_group.add_argument(
+      '--no-consolidate',
+      dest='consolidate',
+      action='store_false',
+      help='Skip the consolidation agent even when running multiple rounds.',
+  )
+  summary_group = expand_parser.add_mutually_exclusive_group()
+  summary_group.add_argument(
+      '--summary',
+      dest='summary',
+      action='store_true',
+      default=None,
+      help='Run a summary agent after all rounds complete (default: on when '
+      '--rounds > 1, off for a single round).',
+  )
+  summary_group.add_argument(
+      '--no-summary',
+      dest='summary',
+      action='store_false',
+      help='Skip the summary agent even when running multiple rounds.',
+  )
   expand_parser.set_defaults(func=cmd_expand)
 
   # fix-builds
@@ -871,6 +1666,15 @@ def main():
       help='Free-form description of the task for the agent to perform.',
   )
   run_task_parser.set_defaults(func=cmd_run_task)
+
+  # add-chronos-support
+  chronos_parser = subparsers.add_parser(
+      'add-chronos-support',
+      parents=[session_args],
+      help='Launch agent sessions to add Chronos support (replay_build.sh '
+      'and run_tests.sh) to OSS-Fuzz projects.',
+  )
+  chronos_parser.set_defaults(func=cmd_add_chronos)
 
   # integrate-project
   integrate_parser = subparsers.add_parser(
@@ -916,7 +1720,7 @@ def main():
                            help='OSS-Fuzz project names.')
   show_parser.add_argument(
       '--task',
-      choices=['expand', 'fix-build', 'free-task'],
+      choices=['expand', 'fix-build', 'free-task', 'add-chronos'],
       default='expand',
       help='Which task prompt to show (default: expand).',
   )
@@ -925,6 +1729,19 @@ def main():
       metavar='TEXT',
       default=None,
       help='Task description (required when --task=free-task).',
+  )
+  show_parser.add_argument(
+      '--rounds',
+      type=int,
+      default=1,
+      metavar='N',
+      help='Number of rounds to show prompts for (expand task only).',
+  )
+  show_parser.add_argument(
+      '--expansion-size',
+      choices=list(EXPAND_SIZE_GUIDANCE.keys()),
+      default='medium',
+      help='Expansion size to use in the shown prompt (expand task only).',
   )
   show_parser.set_defaults(func=cmd_show_prompt)
 
