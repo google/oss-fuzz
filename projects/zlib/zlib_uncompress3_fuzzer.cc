@@ -30,6 +30,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   uLong multiplier1 = size ? (--size, *data++) : 1;
 
   uLongf buffer_length = static_cast<uLongf>(basesz * multiplier0 * multiplier1);
+  // Clamp buffer_length to actual buffer size to prevent buffer overflow
+  if (buffer_length > sizeof(buffer))
+    buffer_length = sizeof(buffer);
+
   uLong buf_size = static_cast<uLong>(size);
   // Ignore return code.
   uncompress2(buffer, &buffer_length, data, &buf_size);
