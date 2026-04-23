@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-swift
+FROM gcr.io/oss-fuzz-base/base-builder-swift:ubuntu-24-04
 
 # specific swift-nio
 RUN git clone --depth 1 https://github.com/google/fuzzing
