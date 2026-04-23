@@ -231,9 +231,6 @@ extern "C" int InitializeNginx(void) {
   ngx_event_actions.init = init_event;
   ngx_io.send_chain = send_chain;
   ngx_event_flags = 1;
-  ngx_queue_init(&ngx_posted_accept_events);
-  ngx_queue_init(&ngx_posted_next_events);
-  ngx_queue_init(&ngx_posted_events);
   ngx_event_timer_init(cycle->log);
   return 0;
 }
@@ -246,6 +243,10 @@ extern "C" long int invalid_call(ngx_connection_s *a, ngx_chain_s *b,
 DEFINE_PROTO_FUZZER(const HttpProto &input) {
   static int init = InitializeNginx();
   assert(init == 0);
+
+  ngx_queue_init(&ngx_posted_accept_events);
+  ngx_queue_init(&ngx_posted_next_events);
+  ngx_queue_init(&ngx_posted_events);
 
   // have two free connections, one for client, one for upstream
   ngx_event_t read_event1 = {};
@@ -322,9 +323,20 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
   if (c->destroyed != 1) {
     if (c->read->data != NULL) {
       ngx_connection_t *c2 = (ngx_connection_t*)c->read->data;
-        ngx_http_request_t *req_tmp = (ngx_http_request_t*)c2->data;
-        req_tmp->cleanup = NULL;
-        ngx_http_finalize_request(req_tmp, NGX_DONE);
+      ngx_http_request_t *req_tmp = (ngx_http_request_t*)c2->data;
+      req_tmp->cleanup = NULL;
+      ngx_http_upstream_t *u = req_tmp->upstream;
+      if (u) {
+        ngx_peer_connection_t pc = u->peer;
+        if (pc.connection) {
+          ngx_close_socket(pc.connection->fd);
+          ngx_destroy_pool(pc.connection->pool);
+
+          if (pc.connection->write->timer.left)
+            ngx_del_timer(pc.connection->write);
+        }
+      }
+      ngx_http_finalize_request(req_tmp, NGX_DONE);
     }
     ngx_close_connection(c);
   }
