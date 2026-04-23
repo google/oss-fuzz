@@ -33,20 +33,15 @@ cd contrib/contrib-build
 sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-x86asm' ../src/ffmpeg/rules.mak
 
 make V=1 -j$(nproc) \
-    .matroska \
-    .ogg \
     .libxml2 \
     .flac \
     .opus \
     .vorbis \
     .speex \
-    .speexdsp \
     .theora \
     .dav1d \
     .vpx \
     .mpg123 \
-    .dvbpsi \
-    .mpcdec \
     .ffmpeg
 
 cd ../../
@@ -60,6 +55,17 @@ if [ "$SANITIZER" = "address" ]; then
     export CXXFLAGS="$CXXFLAGS -DNDEBUG"
 fi
 unset AFL_NOOPT
+
+# Build various contribs with instrumentation
+cd contrib/contrib-build
+make V=1 -j$(nproc) \
+    .ebml \
+    .matroska \
+    .ogg \
+    .speexdsp \
+    .dvbpsi \
+    .mpcdec
+cd ../../
 
 # Use OSS-Fuzz environment rather than hardcoded setup.
 sed -i 's/-fsanitize-coverage=trace-pc-guard//g' ./configure.ac

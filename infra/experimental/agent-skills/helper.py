@@ -735,6 +735,43 @@ EXPAND_SUMMARY_PROMPT_TEMPLATE = textwrap.dedent("""\
 Once the summary is written, exit. Do NOT commit or push anything.
 """)
 
+CONSOLIDATE_PROMPT_TEMPLATE = textwrap.dedent("""\
+    You are an OSS-Fuzz engineer reviewing the fuzzing harnesses of the
+    **{project}** OSS-Fuzz project after one or more expansion rounds.
+
+    ## Important: use your skills
+
+    You MUST use the following skills throughout this task:
+    {fuzzing_skills_blurb}
+
+    ## Objective
+
+    One or more expansion rounds have just added new harnesses to this project.
+    Take a look at the current harness set and decide whether any consolidation
+    is warranted — for example removing or merging harnesses that are clearly
+    redundant, or dropping ones that add little value. Use your own judgement
+    on a case-by-case basis; not every project will need changes.
+
+    Be conservative: when in doubt, keep a harness. Pre-existing harnesses
+    (those already committed before this session) should only be touched if
+    there is a clear reason.
+
+    After any changes, confirm the project still builds and passes `check_build`.
+    Write a short report to `{report_path}` summarising what you looked at,
+    what you changed (if anything), and why.
+
+    Do NOT commit or push anything. Leave all changes locally for the
+    security engineer to review.
+
+    ## Working directory
+
+    You are working from: `{oss_fuzz_root}`
+    The project directory is: `{project_dir}`
+    Write your report to: `{report_path}`
+
+Once consolidation is complete, exit.
+""")
+
 
 def get_recent_date_str(days_ago=1):
   """Return a YYYYMMDD string for a recent date."""
@@ -1030,6 +1067,79 @@ def launch_agent_session(agent_cli,
   return proc
 
 
+def build_consolidation_prompt(project):
+  """Build the agent prompt for post-expansion harness consolidation."""
+  project_dir = os.path.join(OSS_FUZZ_ROOT, 'projects', project)
+  report_path = os.path.join(project_dir, 'harness_consolidation_report.md')
+  return CONSOLIDATE_PROMPT_TEMPLATE.format(
+      project=project,
+      project_dir=project_dir,
+      oss_fuzz_root=OSS_FUZZ_ROOT,
+      report_path=report_path,
+      fuzzing_skills_blurb=FUZZING_SKILLS_BLURB,
+  ), 'harness_consolidation_report.md'
+
+
+def launch_consolidation_session(agent_cli, project):
+  """Launch a consolidation agent session for a project.
+
+  Returns a subprocess.Popen object.
+  """
+  prompt, _ = build_consolidation_prompt(project)
+
+  print(
+      f'[*] Launching {agent_cli} consolidation session for project: {project}')
+
+  if agent_cli == 'claude':
+    cmd = ['claude', '-p', prompt, '--dangerously-skip-permissions']
+  elif agent_cli == 'gemini':
+    cmd = ['gemini', '--yolo', '-p', prompt]
+  else:
+    print(f'[!] Unsupported agent CLI: {agent_cli}', file=sys.stderr)
+    return None
+
+  log_dir = os.path.join(OSS_FUZZ_ROOT, 'build', 'agent-logs')
+  os.makedirs(log_dir, exist_ok=True)
+  log_path = os.path.join(
+      log_dir,
+      f'{project}-consolidation-{datetime.now().strftime("%Y%m%d-%H%M%S")}.log')
+
+  log_file = open(log_path, 'w')
+  print(f'    Log: {log_path}')
+
+  proc = subprocess.Popen(
+      cmd,
+      cwd=OSS_FUZZ_ROOT,
+      stdout=log_file,
+      stderr=subprocess.STDOUT,
+  )
+  proc._log_file = log_file
+  proc._log_path = log_path
+  proc._project = project
+  return proc
+
+
+def _run_single_consolidation_session(agent_cli, project):
+  """Launch a consolidation session and wait for it to complete.
+
+  Returns a dict with the project name, return code, and log path.
+  """
+  proc = launch_consolidation_session(agent_cli, project)
+  if proc is None:
+    return {'project': project, 'returncode': -1, 'log_path': None}
+
+  proc.wait()
+  proc._log_file.close()
+  status = 'OK' if proc.returncode == 0 else f'FAILED (rc={proc.returncode})'
+  print(
+      f'    [{status}] {proc._project} consolidation  (log: {proc._log_path})')
+  return {
+      'project': project,
+      'returncode': proc.returncode,
+      'log_path': proc._log_path,
+  }
+
+
 def build_summary_prompt(project, total_rounds):
   """Build the agent prompt for the post-expansion summary."""
   project_dir = os.path.join(OSS_FUZZ_ROOT, 'projects', project)
@@ -1210,8 +1320,10 @@ def _run_expand_sessions(args):
   rounds = args.rounds
   expansion_size = args.expansion_size
   total_rounds = rounds
-  # Default: summary on for multi-round, off for single round.
+  # Default: summary and consolidation on for multi-round, off for single round.
   run_summary = args.summary if args.summary is not None else (total_rounds > 1)
+  run_consolidate = (args.consolidate if args.consolidate is not None else
+                     (total_rounds > 1))
 
   if args.print_only:
     for project in projects:
@@ -1221,6 +1333,11 @@ def _run_expand_sessions(args):
                      round_num=round_num,
                      total_rounds=total_rounds,
                      expansion_size=expansion_size)
+      if run_consolidate:
+        prompt, _ = build_consolidation_prompt(project)
+        print(f'===== Consolidation prompt for {project} =====')
+        print(prompt)
+        print(f'===== End consolidation prompt for {project} =====\n')
       if run_summary:
         prompt, _ = build_summary_prompt(project, total_rounds)
         print(f'===== Summary prompt for {project} =====')
@@ -1244,6 +1361,7 @@ def _run_expand_sessions(args):
   print(f'[*] Projects: {", ".join(projects)}')
   print(f'[*] Rounds per project: {total_rounds}')
   print(f'[*] Expansion size: {expansion_size}')
+  print(f'[*] Consolidation agent: {"yes" if run_consolidate else "no"}')
   print(f'[*] Summary agent: {"yes" if run_summary else "no"}')
   print(f'[*] Max parallel sessions: {max_parallel}')
   print()
@@ -1267,6 +1385,12 @@ def _run_expand_sessions(args):
               f'(rc={result["returncode"]}), stopping further rounds.')
         break
       completed_rounds += 1
+
+    if run_consolidate and completed_rounds > 0:
+      print(f'[*] {project}: running consolidation agent ...')
+      consolidation_result = _run_single_consolidation_session(
+          agent_cli, project)
+      results.append(consolidation_result)
 
     if run_summary and completed_rounds > 0:
       print(f'[*] {project}: running summary agent over '
@@ -1304,6 +1428,13 @@ def _run_expand_sessions(args):
       report = os.path.join(OSS_FUZZ_ROOT, 'projects', project, report_name)
       exists = 'EXISTS' if os.path.isfile(report) else 'MISSING'
       print(f'    - projects/{project}/{report_name}  [{exists}]')
+    if run_consolidate:
+      consolidation = os.path.join(OSS_FUZZ_ROOT, 'projects', project,
+                                   'harness_consolidation_report.md')
+      exists = 'EXISTS' if os.path.isfile(consolidation) else 'MISSING'
+      print(
+          f'    - projects/{project}/harness_consolidation_report.md  [{exists}]'
+      )
     if run_summary:
       summary = os.path.join(OSS_FUZZ_ROOT, 'projects', project,
                              'expansion_summary.md')
@@ -1378,6 +1509,12 @@ def main():
 
               # Multi-round without the summary agent:
               python %(prog)s expand-oss-fuzz-projects --rounds 3 --no-summary open62541
+
+              # Force consolidation even for a single round:
+              python %(prog)s expand-oss-fuzz-projects --consolidate open62541
+
+              # Multi-round skipping consolidation:
+              python %(prog)s expand-oss-fuzz-projects --rounds 3 --no-consolidate open62541
 
               # Fix broken builds for two projects:
               python %(prog)s fix-builds open62541 json-c
@@ -1473,6 +1610,22 @@ def main():
       default='medium',
       help='How many harnesses the agent should aim to add per round: '
       'small=1, medium=2-3 (default), large=5+.',
+  )
+  consolidate_group = expand_parser.add_mutually_exclusive_group()
+  consolidate_group.add_argument(
+      '--consolidate',
+      dest='consolidate',
+      action='store_true',
+      default=None,
+      help='Run a consolidation agent after all rounds complete to remove '
+      'redundant harnesses and merge high-overlap ones (default: on when '
+      '--rounds > 1, off for a single round).',
+  )
+  consolidate_group.add_argument(
+      '--no-consolidate',
+      dest='consolidate',
+      action='store_false',
+      help='Skip the consolidation agent even when running multiple rounds.',
   )
   summary_group = expand_parser.add_mutually_exclusive_group()
   summary_group.add_argument(
