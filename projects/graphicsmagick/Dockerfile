@@ -47,6 +47,15 @@ RUN hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphics
 # Libtiff
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 
+# Lerc
+RUN git clone --depth 1 https://github.com/Esri/lerc
+
+# Libdeflate
+RUN git clone --depth 1 https://github.com/ebiggers/libdeflate
+
+# libgeotiff
+RUN git clone --depth 1 https://github.com/OSGeo/libgeotiff
+
 # h.265 codec implementation needed by libheif
 RUN git clone --depth 1 https://github.com/strukturag/libde265 || \
     printf "https://github.com/strukturag/libde265 is not available!\n"
