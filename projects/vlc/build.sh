@@ -35,9 +35,6 @@ sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable
 make V=1 -j$(nproc) \
     .libxml2 \
     .flac \
-    .opus \
-    .vorbis \
-    .speex \
     .theora \
     .dav1d \
     .vpx \
@@ -62,6 +59,9 @@ make V=1 -j$(nproc) \
     .ebml \
     .matroska \
     .ogg \
+    .opus \
+    .vorbis \
+    .speex \
     .speexdsp \
     .dvbpsi \
     .mpcdec
