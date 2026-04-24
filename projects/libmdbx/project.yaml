@@ -5,7 +5,5 @@ auto_ccs:
   - "chloe.cano@protonmail.com"
 sanitizers:
   - address
-  - memory:
-     experimental: True
   - undefined
 main_repo: 'https://github.com/erthink/libmdbx'
