@@ -71,14 +71,14 @@ detect problems in memory-safe languages such as Go, Rust, and Python.
 
 ## Getting Started for New Contributors
 
-If you are new to OSS-Fuzz, it may not be immediately clear how to begin. Here is a quick overview to help you get started:
+If you are new to OSS-Fuzz, here is a quick overview to help you get started:
 
-- OSS-Fuzz is a free service by Google that uses fuzz testing to automatically detect bugs in open source software.
-- Contributors can participate by improving documentation, adding fuzz targets, or integrating new projects.
-- Beginners are encouraged to start with documentation improvements to understand the project structure and workflow.
-- You can explore the `getting-started/` section for step-by-step setup instructions and examples.
+- OSS-Fuzz is a service that helps open source projects find bugs by running fuzzing at scale.
+- The primary goal is to integrate projects with OSS-Fuzz so they can be continuously fuzzed.
+- To get started, explore the `getting-started/` section to learn how to add your project and write fuzz targets.
+- Reviewing existing projects in the `projects/` directory can help you understand how integrations are structured.
 
-This guide is intended to provide a simple entry point before diving into more advanced topics.
+This section provides a starting point for understanding how to bring a project into OSS-Fuzz and begin fuzzing.
 
 ## Learn more about fuzzing
 
