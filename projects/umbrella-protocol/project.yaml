@@ -1,0 +1,91 @@
+# Google OSS-Fuzz project configuration для Umbrella Protocol.
+# Google OSS-Fuzz project configuration for Umbrella Protocol.
+#
+# Этап 9 Hardening, блок 9.6 — OSS-Fuzz onboarding.
+# Stage 9 Hardening, block 9.6 — OSS-Fuzz onboarding.
+#
+# Submission flow:
+#   1. Открыть PR в google/oss-fuzz repo с тремя файлами в
+#      `projects/umbrella-protocol/`: Dockerfile + build.sh + project.yaml
+#      (содержимое идентично нашим локальным `oss-fuzz/*` файлам).
+#   2. После merge — Google CI автоматически запускает 24-часовые fuzz циклы
+#      per target (23 binary entries — 16 classical + 7 PQ).
+#   3. Findings reported в `bugs.chromium.org/p/oss-fuzz` issue tracker;
+#      automatic email notifications на primary_contact.
+#
+# Submission flow:
+#   1. Open a PR in the google/oss-fuzz repo with three files in
+#      `projects/umbrella-protocol/`: Dockerfile + build.sh + project.yaml
+#      (content identical to our local `oss-fuzz/*` files).
+#   2. After merge, Google CI automatically runs 24-hour fuzz cycles per
+#      target (23 binary entries — 16 classical + 7 PQ).
+#   3. Findings are reported in the `bugs.chromium.org/p/oss-fuzz` issue
+#      tracker; automatic email notifications go to primary_contact.
+
+# Язык проекта. На блок 9.6 supported sanitizers для Rust — только `address`
+# (per Google OSS-Fuzz Rust integration guide); fuzzing engine — только
+# `libfuzzer`.
+#
+# Project language. As of block 9.6, the supported sanitizers for Rust are
+# only `address` (per the Google OSS-Fuzz Rust integration guide); the
+# fuzzing engine is only `libfuzzer`.
+language: rust
+
+# Single supported fuzzing engine для Rust crates per Google docs.
+# Single supported fuzzing engine for Rust crates per Google docs.
+fuzzing_engines:
+  - libfuzzer
+
+# Только address sanitizer supported для Rust per Google docs.
+# undefined / memory sanitizers НЕ supported (postulate 1: документы =
+# источник правды; не активируем неподдерживаемые опции).
+#
+# Only address sanitizer is supported for Rust per Google docs.
+# undefined / memory sanitizers are NOT supported (postulate 1: documents =
+# source of truth; we do not activate unsupported options).
+sanitizers:
+  - address
+
+# Primary contact — Daniel (UmbrellaX security lead). Получает email
+# notifications о новых findings, build failures, корнelованных corpus
+# changes.
+#
+# Primary contact — Daniel (UmbrellaX security lead). Receives email
+# notifications about new findings, build failures, and corpus changes.
+primary_contact: samuel.vens18@gmail.com
+
+# Auto-CCs — пустой на блок 9.6. Backend team coordination per ADR-014
+# (rust_1mlrd cross-references) проходит через separate workflow; OSS-Fuzz
+# notifications направляются только к primary_contact на этой фазе. Список
+# может расширяться post-9.6 при onboarding additional security engineers.
+#
+# Auto-CCs are empty at block 9.6. Backend team coordination per ADR-014
+# (rust_1mlrd cross-references) goes via a separate workflow; OSS-Fuzz
+# notifications are routed only to primary_contact at this phase. The list
+# may grow post-9.6 as additional security engineers are onboarded.
+auto_ccs: []
+
+# Каноническая ссылка на upstream repo. Используется Google OSS-Fuzz CI для
+# git clone (соответствует Dockerfile RUN git clone выше).
+#
+# Canonical link to the upstream repo. Used by Google OSS-Fuzz CI for the
+# git clone (matches the Dockerfile RUN git clone above).
+main_repo: 'https://github.com/umbrellax/umbrella-protocol'
+
+# Homepage — публичный сайт UmbrellaX (referenced в Cargo.toml `homepage`).
+# Homepage — UmbrellaX public site (referenced in Cargo.toml `homepage`).
+homepage: 'https://umbrellax.io'
+
+# Vendor CCs — пустой. Сторонние audit firms (Cure53 + NCC Group per ADR-012
+# Решение 4 + memory project_stage_9_hardening.md) НЕ получают autom OSS-Fuzz
+# notifications; reports им поступают через separate audit deliverables
+# workflow в block 9.Z (closing milestone). Этот список может быть extended
+# при формальном onboarding'е audit teams в OSS-Fuzz access tier.
+#
+# Vendor CCs are empty. Third-party audit firms (Cure53 + NCC Group per
+# ADR-012 Decision 4 + memory project_stage_9_hardening.md) do NOT receive
+# automatic OSS-Fuzz notifications; reports reach them through the separate
+# audit deliverables workflow in block 9.Z (closing milestone). This list may
+# be extended once audit teams are formally onboarded into the OSS-Fuzz
+# access tier.
+vendor_ccs: []
