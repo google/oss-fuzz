@@ -15,7 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake make
+RUN apt-get update && apt-get install -y cmake make rustup
+RUN rustup default stable
 RUN cargo install cargo-afl
 
 RUN git clone --depth 1 https://github.com/kuba--/zip.git zip \
