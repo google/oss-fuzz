@@ -16,7 +16,7 @@ homepage: "https://github.com/go-jose/go-jose"
 language: go
 primary_contact: "go-jose@googlegroups.com"
 main_repo: "https://github.com/go-jose/go-jose.git"
-file_github_issue: true
+file_github_issue: false
 fuzzing_engines:
   - libfuzzer
 sanitizers:
