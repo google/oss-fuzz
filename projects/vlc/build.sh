@@ -32,13 +32,18 @@ cd contrib/contrib-build
 # Disable X11/xlib in FFmpeg to avoid runtime dependency on libX11
 sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-x86asm' ../src/ffmpeg/rules.mak
 
+# VPX's configure uses the raw 'ld' linker for its toolchain link test.
+# When objects are compiled with -fsanitize=address, raw ld cannot resolve
+# the ASan runtime symbols, failing with "Toolchain is unable to link
+# executables". Fix: propagate sanitizer CFLAGS into LDFLAGS and override LD
+# to use the compiler driver (clang/CC), which automatically links the correct
+# sanitizer runtimes.
+sed -i 's|VPX_LDFLAGS := $(LDFLAGS)|VPX_LDFLAGS = $(LDFLAGS) $(filter -fsanitize%,$(CFLAGS))|' ../src/vpx/rules.mak
+sed -i 's|LDFLAGS="$(VPX_LDFLAGS)" CROSS=$(VPX_CROSS)|LDFLAGS="$(VPX_LDFLAGS)" LD=$(CC) CROSS=$(VPX_CROSS)|' ../src/vpx/rules.mak
+
 make V=1 -j$(nproc) \
-    .libxml2 \
     .flac \
-    .theora \
-    .dav1d \
-    .vpx \
-    .mpg123 \
+    .libxml2 \
     .ffmpeg
 
 cd ../../
@@ -56,6 +61,10 @@ unset AFL_NOOPT
 # Build various contribs with instrumentation
 cd contrib/contrib-build
 make V=1 -j$(nproc) \
+    .theora \
+    .dav1d \
+    .vpx \
+    .mpg123 \
     .ebml \
     .matroska \
     .ogg \
