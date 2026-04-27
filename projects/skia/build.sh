@@ -15,57 +15,15 @@
 #
 ################################################################################
 
-# Build SwiftShader so we can compile in our GPU code and test it in an
-# an environment that does not have a real GPU.
-pushd third_party/externals/swiftshader/
-export SWIFTSHADER_INCLUDE_PATH=$PWD/include
-# SwiftShader already has a build/ directory, use something else
-rm -rf build_swiftshader
-mkdir build_swiftshader
-
-cd build_swiftshader
-if [ $SANITIZER == "address" ]; then
-  CMAKE_SANITIZER="SWIFTSHADER_ASAN"
-elif [ $SANITIZER == "memory" ]; then
-  CMAKE_SANITIZER="SWIFTSHADER_MSAN"
-  # oss-fuzz will patch the rpath for this after compilation and linking,
-  # so we only need to set this to appease the Swiftshader build rules check.
-  export SWIFTSHADER_MSAN_INSTRUMENTED_LIBCXX_PATH="/does/not/matter"
-elif [ $SANITIZER == "undefined" ]; then
-  # The current SwiftShader build needs -fno-sanitize=vptr, but it cannot be
-  # specified here since -fsanitize=undefined will always come after any
-  # user specified flags passed to cmake. SwiftShader does not need to be
-  # built with the undefined sanitizer in order to fuzz Skia, so don't.
-  CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
-elif [ $SANITIZER == "coverage" ]; then
-  CMAKE_SANITIZER="SWIFTSHADER_EMIT_COVERAGE"
-elif [ $SANITIZER == "thread" ]; then
-  CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
-elif [ $SANITIZER == "none" ]; then
-  CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
-else
-  exit 1
-fi
-# These deprecated warnings get quite noisy and mask other issues.
-CFLAGS= CXXFLAGS="-stdlib=libc++ -Wno-deprecated-declarations" cmake .. -GNinja \
-  -DCMAKE_MAKE_PROGRAM="$SRC/skia/third_party/ninja/ninja" -D$CMAKE_SANITIZER=1 -DSWIFTSHADER_WARNINGS_AS_ERRORS=FALSE
-
-# Swiftshader only supports Vulkan, so we will build our fuzzers with Vulkan too.
-$SRC/skia/third_party/ninja/ninja libvk_swiftshader.so
-mv libvk_swiftshader.so $OUT
-export SWIFTSHADER_LIB_PATH=$OUT
-
-popd
 # These are any clang warnings we need to silence.
 DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
          -Wno-cast-qual"
 # Disable UBSan vptr since target built with -fno-rtti.
-export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
- -DSK_GPU_TOOLS_VK_LIBRARY_NAME=libvk_swiftshader.so \
+export CFLAGS="$CFLAGS $DISABLE \
  -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -DSK_BUILD_FOR_FUZZER"
-export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH \
+export CXXFLAGS="$CXXFLAGS $DISABLE \
  -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -D SK_BUILD_FOR_FUZZER"
-export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH -fuse-ld=lld"
+export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -fuse-ld=lld"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
 export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
@@ -83,7 +41,7 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_enable_graphite=true
            skia_enable_skottie=true
            skia_enable_precompile=true
-           skia_use_vulkan=true
+           skia_use_vulkan=false
            skia_use_egl=false
            skia_use_gl=false
            skia_use_fontconfig=false
@@ -102,19 +60,6 @@ $SRC/skia/bin/gn gen out/Fuzz\
       is_debug=false
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
-      extra_ldflags=["'"$LDFLAGS_ARR"'"]'
-
-# Some fuzz targets benefit from assertions so we enable SK_DEBUG to allow SkASSERT
-# and SkDEBUGCODE to run. We still enable optimization (via is_debug=false) because
-# faster code means more fuzz tests and deeper coverage.
-$SRC/skia/bin/gn gen out/FuzzDebug\
-    --args='cc="'$CC'"
-      cxx="'$CXX'"
-      '"$LIMITED_LINK_POOL"'
-      '"${SKIA_ARGS[*]}"'
-      is_debug=false
-      extra_cflags_c=["-DSK_DEBUG","'"$CFLAGS_ARR"'"]
-      extra_cflags_cc=["-DSK_DEBUG","'"$CXXFLAGS_ARR"'"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]'
 
 $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
@@ -151,6 +96,19 @@ $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
   svg_dom \
   textblob_deserialize \
   webp_encoder
+
+# Some fuzz targets benefit from assertions so we enable SK_DEBUG to allow SkASSERT
+# and SkDEBUGCODE to run. We still enable optimization (via is_debug=false) because
+# faster code means more fuzz tests and deeper coverage.
+$SRC/skia/bin/gn gen out/FuzzDebug\
+    --args='cc="'$CC'"
+      cxx="'$CXX'"
+      '"$LIMITED_LINK_POOL"'
+      '"${SKIA_ARGS[*]}"'
+      is_debug=false
+      extra_cflags_c=["-DSK_DEBUG","'"$CFLAGS_ARR"'"]
+      extra_cflags_cc=["-DSK_DEBUG","'"$CXXFLAGS_ARR"'"]
+      extra_ldflags=["'"$LDFLAGS_ARR"'"]'
 
 $SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
   api_grshape \
@@ -293,6 +251,19 @@ mv out/FuzzDebug/skruntimeeffect $OUT/skruntimeeffect
 mv ../skia_data/sksl.dict $OUT/skruntimeeffect.dict
 mv ../skia_data/sksl_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
+mv out/FuzzDebug/skcolorspace $OUT/skcolorspace
+mv ../skia_data/skcolorspace_seed_corpus.zip $OUT/skcolorspace_seed_corpus.zip
+
+mv out/FuzzDebug/parse_path $OUT/parse_path
+mv ../skia_data/parse_path_seed_corpus.zip $OUT/parse_path_seed_corpus.zip
+
+# These only take a few floats - no seed corpus necessary
+mv out/FuzzDebug/quad_roots $OUT/quad_roots
+mv out/FuzzDebug/cubic_roots $OUT/cubic_roots
+
+mv out/FuzzDebug/api_grshape $OUT/api_grshape
+mv out/FuzzDebug/hdr_agtm $OUT/hdr_agtm
+
 mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
 mv ../skia_data/skdescriptor_deserialize_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
@@ -314,20 +285,5 @@ mv out/Fuzz/api_regionop $OUT/api_regionop
 
 mv out/Fuzz/api_triangulation $OUT/api_triangulation
 
-mv out/Fuzz/api_grshape $OUT/api_grshape
-
 mv out/Fuzz/colrv1 $OUT/colrv1
 mv ../skia_data/colrv1_seed_corpus.zip $OUT/colrv1_seed_corpus.zip
-
-mv out/FuzzDebug/skcolorspace $OUT/skcolorspace
-mv ../skia_data/skcolorspace_seed_corpus.zip $OUT/skcolorspace_seed_corpus.zip
-
-mv out/FuzzDebug/parse_path $OUT/parse_path
-mv ../skia_data/parse_path_seed_corpus.zip $OUT/parse_path_seed_corpus.zip
-
-# These only take a few floats - no seed corpus necessary
-mv out/FuzzDebug/quad_roots $OUT/quad_roots
-mv out/FuzzDebug/cubic_roots $OUT/cubic_roots
-
-mv out/Fuzz/hdr_agtm $OUT/hdr_agtm
-mv ../skia_data/hdr_agtm_seed_corpus.zip $OUT/hdr_agtm_seed_corpus.zip
