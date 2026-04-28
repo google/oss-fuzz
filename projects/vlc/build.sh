@@ -72,8 +72,7 @@ make V=1 -j$(nproc) \
     .vorbis \
     .speex \
     .speexdsp \
-    .dvbpsi \
-    .mpcdec
+    .dvbpsi
 cd ../../
 
 # Use OSS-Fuzz environment rather than hardcoded setup.
@@ -91,10 +90,6 @@ sed -i 's/..\/..\/lib\/libvlc_internal.h/lib\/libvlc_internal.h/g' ./test/src/in
 # Add extra codec, packetizer, and demux modules for broader fuzzing coverage.
 # See fuzzing-modules.patch for the actual changes.
 patch -p1 < $SRC/fuzzing-modules.patch
-
-# Register the MPC demux module in the static module list (the module is linked
-# via fuzzing-modules.patch but also needs to be in the PLUGINS macro).
-sed -i 's/f(demux_ogg)/f(demux_mpc) \\\n    f(demux_ogg)/' ./test/src/input/demux-run.c
 
 # clang is used to link the binary since there are no cpp sources (but we have
 # cpp modules), force clang++ usage
