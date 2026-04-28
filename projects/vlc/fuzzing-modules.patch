@@ -16,7 +16,6 @@ index 7eb4ab5..cdbd28a 100644
 +	../modules/libvc1_plugin.la \
 +	../modules/libmpgv_plugin.la \
 +	../modules/libdemux_stl_plugin.la \
-+	../modules/libmpc_plugin.la \
 +	../modules/libhx_plugin.la \
 +	../modules/libdmxmus_plugin.la \
  	../modules/libfilesystem_plugin.la \
