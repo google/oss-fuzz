@@ -17,7 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget \
                                          uuid-dev pkg-config libtool-bin \
-                                         libbsd-dev
+                                         libbsd-dev perl cpanminus
+RUN cpanm --notest ExtUtils::XSBuilder
 
 RUN git clone https://github.com/PCRE2Project/pcre2 pcre2 && \
     cd pcre2 && \
@@ -34,6 +35,8 @@ RUN wget https://github.com/libexpat/libexpat/releases/download/R_2_4_1/expat-2.
     ./configure && \
     make && \
     make install
+
+RUN git clone --depth=1 https://github.com/apache/apreq
 
 RUN git clone --depth=1 https://github.com/apache/httpd
 WORKDIR httpd

@@ -30,11 +30,37 @@ make -j$( nproc )
 
 static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
 
+# Build libapreq2 against the apr we just built.
+# APR 2.x merged apr-util, so apu-config no longer exists.
+# Provide a shim that delegates to apr-2-config but returns empty for
+# --apu-la-file, which apr-2-config does not support.
+cat > $SRC/httpd/srclib/apr/apu-2-config <<'EOF'
+#!/bin/sh
+if [ "$1" = "--apu-la-file" ]; then
+  echo ""
+else
+  exec "$(dirname "$0")/apr-2-config" "$@"
+fi
+EOF
+chmod +x $SRC/httpd/srclib/apr/apu-2-config
+
+cd $SRC/apreq
+./buildconf
+./configure --with-apache2-src=$SRC/httpd \
+            --with-apr-config=$SRC/httpd/srclib/apr/apr-2-config \
+            --with-apu-config=$SRC/httpd/srclib/apr/apu-2-config \
+            --disable-perl-glue \
+            --disable-dependency-tracking \
+            APR_MAJOR_VERSION=2
+make -C library -j$(nproc)
+cd $SRC/httpd
+
 # Build the fuzzers
 for fuzzname in utils parse tokenize addr_parse uri request preq; do
   $CC $CFLAGS -c \
     -I$SRC/fuzz-headers/lang/c -I./include -I./os/unix \
     -I./srclib/apr/include -I./srclib/apr-util/include/ \
+    -I$SRC/apreq/include \
     $SRC/fuzz_${fuzzname}.c
 
   $INITIAL_CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_${fuzzname}.o -o $OUT/fuzz_${fuzzname} \
@@ -45,5 +71,6 @@ for fuzzname in utils parse tokenize addr_parse uri request preq; do
                       ./server/mpm/event/.libs/libevent.a \
                       ./os/unix/.libs/libos.a \
                       ./srclib/apr/.libs/libapr-2.a \
+                      $SRC/apreq/library/.libs/libapreq2.a \
     -Wl,--end-group -luuid -lcrypt -lexpat -l:libbsd.a ${static_pcre}
 done
