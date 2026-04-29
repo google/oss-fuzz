@@ -20,8 +20,7 @@ export LDFLAGS="$CFLAGS"
 
 ./configure \
 --disable-ffmpeg --disable-ssl \
---disable-speex-aec --disable-speex-codec \
---disable-g7221-codec --disable-gsm-codec --disable-ilbc-codec \
+--disable-speex-aec --disable-g7221-codec \
 --disable-resample --disable-libwebrtc --disable-libyuv
 
 make dep
@@ -34,6 +33,7 @@ FuzzBins=$(find . -name "*.c")
 for File in $FuzzBins; do
     FuzzBin=$(basename $File .c)
     cp $FuzzBin $OUT/$FuzzBin
+    echo -e "[libfuzzer]\nmax_len=16384" > $OUT/${FuzzBin}.options
 done
 popd
 

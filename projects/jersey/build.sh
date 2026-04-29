@@ -23,10 +23,12 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
 cp "core-server/target/jersey-server-$CURRENT_VERSION.jar" "$OUT/jersey-server.jar"
 cp "core-common/target/jersey-common-$CURRENT_VERSION.jar" "$OUT/jersey-common.jar"
 cp "core-client/target/jersey-client-$CURRENT_VERSION.jar" "$OUT/jersey-client.jar"
-cp "bundles/jaxrs-ri/target/jaxrs-ri.jar" "$OUT/jaxrs-ri.jar"
 cp "org.osgi.core-6.0.0.jar" "$OUT/org.osgi.core.jar"
 
-ALL_JARS="jersey-server.jar jersey-common.jar jersey-client.jar jaxrs-ri.jar org.osgi.core.jar"
+# Copy Jakarta WS RS API jar for compilation
+find . -path "*/jakarta.ws.rs-api*.jar" -not -name "*sources*" | head -1 | xargs -I{} cp {} "$OUT/jakarta.ws.rs-api.jar"
+
+ALL_JARS="jersey-server.jar jersey-common.jar jersey-client.jar org.osgi.core.jar jakarta.ws.rs-api.jar"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.

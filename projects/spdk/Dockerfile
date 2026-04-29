@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make curl yasm autoconf libtool nasm ninja-build
-RUN pip3 install --upgrade pip meson
+RUN pip3 install --upgrade pip meson jinja2 tabulate
 RUN git clone --depth 1 https://github.com/spdk/spdk && \
     cd spdk && \
     git submodule update --init

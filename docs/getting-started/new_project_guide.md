@@ -86,6 +86,7 @@ This configuration file stores project metadata. The following attributes are su
 - [help_url](#help_url) (optional)
 - [builds_per_day](#build_frequency) (optional)
 - [file_github_issue](#file_github_issue) (optional)
+- [disable_remediation](#disable_remediation) (optional)
 
 ### homepage
 You project's homepage.
@@ -209,6 +210,13 @@ Will build the project twice per day.
 ### file_github_issue (optional) {#file_github_issue}
 Whether to mirror issues on github instead of having them only in the OSS-Fuzz
 tracker.
+
+### disable_remediation (optional) {#disable_remediation}
+Opt out of receiving remediation for all new and existing bugs. If remediation
+is disabled, all disclosure notifications will not include any proposed code
+changes. If enabled (default), proposed code changes and comments to remediate
+bugs may be automatically included in disclosure that is private during the
+embargo of each issue on a case-by-case basis basis.
 
 ## Dockerfile {#dockerfile}
 

@@ -16,8 +16,11 @@
 ################################################################################
 
 pushd INCHI-1-SRC
-$CC $CFLAGS -Wno-everything -DTARGET_API_LIB -DCOMPILE_ANSI_ONLY -ansi -c \
-    INCHI_BASE/src/*.c INCHI_API/libinchi/src/*.c INCHI_API/libinchi/src/ixa/*.c
+# Compile library sources (exclude ichimain.c which is the standalone program main)
+# Remove -ansi flag since upstream now uses C99 features (loop-scoped variables)
+SRC_FILES=$(ls INCHI_BASE/src/*.c INCHI_API/libinchi/src/*.c INCHI_API/libinchi/src/ixa/*.c | grep -v ichimain.c)
+$CC $CFLAGS -Wno-everything -DTARGET_API_LIB -c $SRC_FILES
+
 ar rcs $WORK/libinchi.a *.o
 
 for fuzzer in $SRC/*_fuzzer.c; do

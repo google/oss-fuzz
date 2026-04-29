@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# Suppress C++17 errors from old dependency headers (lcms2 uses 'register')
+export CXXFLAGS="$CXXFLAGS -Wno-register"
+
 tar -xJf $SRC/zlib-1.2.11.tar.xz
 pushd zlib-1.2.11
 ./configure --static
@@ -62,12 +65,7 @@ export ICU_CFLAGS="-I$(pwd) -I$(pwd)/i18n -I$(pwd)/common"
 export ICU_LIBS="-L$(pwd)/lib -licui18n -licuuc -licudata"
 popd
 
-tar -xjf $SRC/boost_1_66_0.tar.bz2
-pushd boost_1_66_0
-patch -p2 < $SRC/ofz2894.patch
-patch -p2 < $SRC/ofz4303.patch
-export CPPFLAGS="-I$(pwd)"
-popd
+# System boost from libboost-dev package is used (headers in /usr/include/boost/)
 
 tar -xjf $SRC/mdds-1.3.1.tar.bz2
 pushd mdds-1.3.1
