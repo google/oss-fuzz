@@ -41,7 +41,7 @@ LUA_PATH=\"\$LUA_PATH;\$project_dir/?.lua\"
 echo \"LUA_PATH: \$LUA_PATH\"
 echo \"LUA_CPATH: \$LUA_CPATH\"
 
-LD_DYNAMIC_WEAK=1 ASAN_OPTIONS=\${ASAN_OPTIONS:-verbosity=1}:symbolize=1:external_symbolizer_path=\$project_dir/llvm-symbolizer:detect_leaks=0 \
+LD_DYNAMIC_WEAK=1 ASAN_OPTIONS=\${ASAN_OPTIONS:-verbosity=1}:use_sigaltstack=0:symbolize=1:external_symbolizer_path=\$project_dir/llvm-symbolizer:detect_leaks=0 \
 \$project_dir/$lua_runtime \$project_dir/$fuzz_target \$@" > "$OUT/$fuzzer_basename"
 
 chmod +x "$OUT/$fuzzer_basename"
