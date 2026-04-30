@@ -30,16 +30,11 @@ echo "#!/bin/bash
 # as a fuzz target for 'check_build'.
 project_dir=\$(dirname \$(realpath \"\$0\"))
 
-luarocks=\$(type -p luarocks)
-if [ -n \"\$luarocks\" ]; then
-  echo \"luarocks is found \$luarocks\"
-  eval \$(luarocks --lua-version 5.5 --tree \$project_dir/lua_modules path)
-else
-  echo \"luarocks is not found\"
-  ver=\"5.5\"
-  export LUA_PATH=\"\$project_dir/lua_modules/share/lua/\$ver/?/init.lua;\$project_dir/lua_modules/share/lua/\$ver/?.lua;\"
-  export LUA_CPATH=\"\$project_dir/lua_modules/lib/lua/\$ver/?.so;\"
-fi
+# Use static paths, because luarocks is outdated in Ubuntu 22.04,
+# flags --lua-* were added in luarocks 3.10.0.
+ver=\"5.5\"
+export LUA_PATH=\"\$project_dir/lua_modules/share/lua/\$ver/?/init.lua;\$project_dir/lua_modules/share/lua/\$ver/?.lua;\"
+export LUA_CPATH=\"\$project_dir/lua_modules/lib/lua/\$ver/?.so;\"
 
 LUA_PATH=\"\$LUA_PATH;\$project_dir/?.lua\"
 
