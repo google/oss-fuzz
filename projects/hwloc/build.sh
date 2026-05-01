@@ -21,11 +21,11 @@ make LDFLAGS=-all-static
 
 for f in $SRC/*_fuzzer.c; do
   fuzzer=$(basename "$f" _fuzzer.c)
-  $CC $CFLAGS -I$SRC/hwloc/include -c $SRC/${fuzzer}_fuzzer.c \
+  $CC $CFLAGS -I$SRC/hwloc/include -I$SRC/hwloc/private -c $SRC/${fuzzer}_fuzzer.c \
     -o $SRC/${fuzzer}_fuzzer.o
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/${fuzzer}_fuzzer.o \
     -o $OUT/${fuzzer}_fuzzer \
-    -Wl,--start-group ./hwloc/.libs/libhwloc.a ./netloc/.libs/libnetloc.a \
+    -Wl,--start-group ./hwloc/.libs/libhwloc.a \
     ./utils/hwloc/.libs/libutils_common.a -Wl,--end-group
 done
 

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/cubefs/cubefs"
 main_repo: "https://github.com/cubefs/cubefs"
 primary_contact: "626148589@qq.com"

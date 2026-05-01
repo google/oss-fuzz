@@ -1,0 +1,14 @@
+homepage: "http://www.litech.org/radvd"
+language: c
+sanitizers:
+  - address
+  - undefined
+  - memory
+primary_contact: "javanlacerda@google.com"
+auto_ccs:
+- "pedroysb@google.com"
+- "david@adalogics.com"
+- "cloud-ti-fuzzing+bugs@google.com"
+
+main_repo: "http://www.litech.org/radvd"
+base_os_version: ubuntu-24-04

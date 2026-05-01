@@ -45,7 +45,6 @@
 #include <unistd.h>
 #include <libgen.h>
 
-const char *progname = "progname";
 static sigjmp_buf postgre_exit;
 static bool postgre_started;
 static char *buffer;

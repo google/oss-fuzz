@@ -40,7 +40,7 @@ cd ../
 	    --disable-libbacktrace --disable-gas --disable-ld --disable-werror \
       --enable-targets=all
 make clean
-make MAKEINFO=true && true
+make MAKEINFO=true -j$(nproc) && true
 
 
 # Make fuzzer directory
@@ -157,8 +157,8 @@ done
 if [ "$FUZZING_ENGINE" != "afl" ]
 then
   cd ../gas
-  ./configure
-  make
+  ./configure --enable-leak-check
+  make -j$(nproc)
   sed 's/main (int argc/old_main32 (int argc, char **argv);\nint old_main32 (int argc/' as.c > fuzz_as.h
   rm as.o || true
   ar r libar.a *.o

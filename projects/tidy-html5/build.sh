@@ -16,8 +16,8 @@
 #
 ################################################################################
 
-mkdir -p ${WORK}/tidy-html5
-cd ${WORK}/tidy-html5
+mkdir -p build/cmake
+cd build/cmake
 
 cmake -GNinja ${SRC}/tidy-html5/
 ninja
@@ -28,6 +28,7 @@ for fuzzer in tidy_config_fuzzer tidy_fuzzer tidy_xml_fuzzer tidy_parse_string_f
     ${CXX} ${CXXFLAGS} -std=c++11 ${fuzzer}.o \
         -o $OUT/${fuzzer} \
         $LIB_FUZZING_ENGINE libtidy.a
+    cp $SRC/tidy_config_fuzzer.options $OUT/${fuzzer}.options
 done
 
 cp ${SRC}/*.options ${OUT}/

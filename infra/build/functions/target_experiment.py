@@ -267,14 +267,15 @@ def run_experiment(project_name,
   })
 
   credentials, _ = google.auth.default()
-  build_id = build_project.run_build(
-      project_name,
-      steps,
-      credentials,
-      'experiment',
-      experiment=True,
-      extra_tags=[experiment_name, project_name] + tags)
+  build = build_project.run_build(project_name,
+                                  steps,
+                                  credentials,
+                                  'experiment',
+                                  experiment=True,
+                                  extra_tags=[experiment_name, project_name] +
+                                  tags)
 
+  build_id = build['id']
   print('Waiting for build', build_id)
   try:
     build_lib.wait_for_build(build_id, credentials, 'oss-fuzz')

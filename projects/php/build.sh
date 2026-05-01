@@ -36,11 +36,10 @@ fi
     --enable-option-checking=fatal \
     --enable-fuzzer \
     --enable-exif \
-    --enable-opcache \
     --without-pcre-jit \
     --disable-phpdbg \
     --disable-cgi \
-    --with-pic
+    --enable-pic
 make -j$(nproc)
 
 # Generate corpuses and dictionaries.
@@ -67,10 +66,6 @@ done
 if [ "$SANITIZER" != "memory" ] && [ "$SANITIZER" != "undefined" ]; then
     cp sapi/fuzzer/php-fuzz-function-jit $OUT/
     cp sapi/fuzzer/php-fuzz-tracing-jit $OUT/
-
-    # Copy opcache.so extension, which does not support static linking.
-    mkdir -p $OUT/modules
-    cp modules/opcache.so $OUT/modules
 fi
 
 # copy corpora from source

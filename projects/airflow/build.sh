@@ -15,11 +15,13 @@
 #
 ################################################################################
 
+cd $SRC/airflow
 # Build and install project (using current CFLAGS, CXXFLAGS).
 pip3 install --upgrade pip
 pip3 install colorlog
-pip3 install .
+pip3 install ./task-sdk ./airflow-core .
 
 # Build fuzzers in $OUT.
 cd $SRC
-compile_python_fuzzer dag_fuzz.py --add-data airflow:airflow --add-data airflow/airflow:airflow --add-data /usr/local/lib/python3.8/site-packages/cron_descriptor:cron_descriptor
+CONFIG_TEMPLATES_PATH=$(python3 -c "import os, airflow; print(os.path.join(os.path.dirname(airflow.__file__), 'config_templates'))")
+compile_python_fuzzer dag_fuzz.py --add-data "$CONFIG_TEMPLATES_PATH:airflow/config_templates" --hidden-import="airflow.utils.log.timezone_aware" --hidden-import="aiosqlite" --hidden-import="airflow.sdk.serde.serializers"

@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/Ousret/charset_normalizer charset_normalizer
+RUN git clone --depth 1 https://github.com/jawah/charset_normalizer charset_normalizer
 WORKDIR charset_normalizer
 COPY build.sh *.py $SRC/

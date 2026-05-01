@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-conf
 RUN git clone --depth 1 https://github.com/leethomason/tinyxml2
 WORKDIR tinyxml2
 
-COPY build.sh *.cpp *.dict *.options $SRC/
+COPY run_tests.sh build.sh *.cpp *.dict *.options $SRC/

@@ -20,10 +20,9 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool zip wget
 RUN git clone --depth 1 https://github.com/wolfssl/wolfssl $SRC/wolfssl
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfsm
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssh.git
-RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git
-RUN git clone --depth 1 https://github.com/guidovranken/wolf-ssl-ssh-fuzzers
+RUN git clone --depth 1 https://github.com/JacobBarthelmeh/fuzzing-headers.git
+RUN git clone --depth 1 https://github.com/JacobBarthelmeh/wolf-ssl-ssh-fuzzers
 RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
-RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/google/wycheproof.git
 RUN wget https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.bz2
 RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
@@ -39,12 +38,6 @@ RUN gsutil cp gs://relic-backup.clusterfuzz-external.appspot.com/corpus/libFuzze
 RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-openssl/public.zip $SRC/corpus_cryptofuzz-openssl.zip
 RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-boringssl/public.zip $SRC/corpus_cryptofuzz-boringssl.zip
 RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-nss/public.zip $SRC/corpus_cryptofuzz-nss.zip
-
-# Botan corpora, which require a special import procedure
-RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_p256/public.zip $SRC/corpus_botan_ecc_p256.zip
-RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_p384/public.zip $SRC/corpus_botan_ecc_p384.zip
-RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_p521/public.zip $SRC/corpus_botan_ecc_p521.zip
-RUN gsutil cp gs://botan-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/botan_ecc_bp256/public.zip $SRC/corpus_botan_ecc_bp256.zip
 
 # OpenSSL/LibreSSL corpora, which require a special import procedure
 RUN gsutil cp gs://openssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/openssl_bignum/public.zip $SRC/corpus_openssl_expmod.zip

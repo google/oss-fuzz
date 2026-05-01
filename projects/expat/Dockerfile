@@ -26,4 +26,4 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone --depth 1 https://github.com/libexpat/libexpat expat
 WORKDIR expat
-COPY build.sh *.dict $SRC/
+COPY run_tests.sh build.sh *.dict $SRC/

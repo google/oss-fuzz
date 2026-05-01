@@ -33,7 +33,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   };
   size_t message_count = 6;
 
-  llama_chat_apply_template(nullptr, p1.c_str(), conversation, message_count,
+  llama_chat_apply_template(p1.c_str(), conversation, message_count,
                             true, buf, 4096);
   return 0;
 }

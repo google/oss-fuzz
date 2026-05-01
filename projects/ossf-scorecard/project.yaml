@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://openssf.org/"
 main_repo: "https://github.com/ossf/scorecard"
 primary_contact: "hey@auggie.dev" # <-- IAM / commits: foo@auggie.dev

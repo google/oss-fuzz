@@ -18,6 +18,9 @@ require 'ruzzy'
 require 'ox'
 
 test_one_input = lambda do |data|
+  if data.length < 100
+    return 0
+  end
   begin
     Ox.parse(data)
   rescue Ox::ParseError, Ox::SyntaxError, EncodingError

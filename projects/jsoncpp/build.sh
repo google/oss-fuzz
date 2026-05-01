@@ -20,7 +20,10 @@ sed -i 's/set(CMAKE_CXX_STANDARD 11)/set(CMAKE_CXX_STANDARD 17)/' CMakeLists.txt
 mkdir -p build
 cd build
 cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-      -DBUILD_SHARED_LIBS=OFF -G "Unix Makefiles" ..
+      -DBUILD_SHARED_LIBS=OFF \
+      -DJSONCPP_WITH_TESTS=ON \
+      -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
+      -G "Unix Makefiles" ..
 make
 
 # Compile fuzzer.

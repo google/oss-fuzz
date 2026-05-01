@@ -28,11 +28,12 @@ import java.io.File;
 import java.lang.IllegalArgumentException;
 import java.net.URI;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.JacksonException;
 
 public class ObjectReader2Fuzzer {
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
@@ -46,31 +47,29 @@ public class ObjectReader2Fuzzer {
         ObjectReader r, r2, r3;
         JsonParser jp;
 
-        DeserializationFeature[] deserializationfeatures = new DeserializationFeature[]{DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS,
-                                        DeserializationFeature.USE_BIG_INTEGER_FOR_INTS,
-                                        DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY,
-                                        DeserializationFeature.READ_ENUMS_USING_TO_STRING,
-                                        DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY,
-                                        DeserializationFeature.UNWRAP_ROOT_VALUE,
-                                        DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS,
-                                        DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT,
-                                        DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
-                                        DeserializationFeature.ACCEPT_FLOAT_AS_INT,
-                                        DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE,
-                                        DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS,
-                                        DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL,
-                                        DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE,
-                                        DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES,
-                                        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                                        DeserializationFeature.FAIL_ON_INVALID_SUBTYPE,
-                                        DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,
-                                        DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS,
-                                        DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY,
-                                        DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS,
-                                        DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES,
-                                        DeserializationFeature.WRAP_EXCEPTIONS,
-                                        DeserializationFeature.FAIL_ON_TRAILING_TOKENS,
-                                        DeserializationFeature.EAGER_DESERIALIZER_FETCH};
+        DeserializationFeature[] deserializationfeatures = new DeserializationFeature[]{
+            DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS,
+            DeserializationFeature.USE_BIG_INTEGER_FOR_INTS,
+            DeserializationFeature.USE_LONG_FOR_INTS,
+            DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY,
+            DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+            DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,
+            DeserializationFeature.FAIL_ON_INVALID_SUBTYPE,
+            DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY,
+            DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES,
+            DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS,
+            DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES,
+            DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES,
+            DeserializationFeature.FAIL_ON_TRAILING_TOKENS,
+            DeserializationFeature.WRAP_EXCEPTIONS,
+            DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY,
+            DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS,
+            DeserializationFeature.UNWRAP_ROOT_VALUE,
+            DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
+            DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT,
+            DeserializationFeature.ACCEPT_FLOAT_AS_INT,
+            DeserializationFeature.EAGER_DESERIALIZER_FETCH
+        };
 
         ObjectMapper mapper = new ObjectMapper();
         int idx = data.consumeInt(0, classes.length - 1);
@@ -175,9 +174,9 @@ public class ObjectReader2Fuzzer {
                 int idx2 = data.consumeInt(0, classes.length - 1);
                 switch (data.consumeInt()%4) {
                 case 0:
-                    r.readValue(data.consumeRemainingAsBytes(), classes[idx]);
+                    mapper.readValue(data.consumeRemainingAsBytes(), classes[idx]);
                 case 1:
-                    r.readValue(data.consumeRemainingAsString(), classes[idx]);
+                    mapper.readValue(data.consumeRemainingAsString(), classes[idx]);
                 }
             case 20:
                 fuzzInt1 = data.consumeInt(0, classes.length - 1);
@@ -192,10 +191,9 @@ public class ObjectReader2Fuzzer {
             
             // target with();
             if (data.consumeBoolean()) {
-                JsonFactory jf = new JsonFactory();
-                r2 = r.with(jf);                
+                r2 = r.with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);                
             }
-        } catch (IOException | IllegalArgumentException e) { }
+        } catch (JacksonException | IOException | IllegalArgumentException e) { }
 
         try {
             Files.delete(Paths.get("fuzzFile"));

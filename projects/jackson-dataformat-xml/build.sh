@@ -18,7 +18,18 @@
 # Move seed corpus and dictionary.
 mv $SRC/{*.zip,*.dict} $OUT
 
-MAVEN_ARGS="-P!java14+ -Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
+MAVEN_ARGS="-P!java14+ -Dmaven.test.skip=true -Djavac.src.version=17 -Djavac.target.version=17"
+
+# Build jackson-core first (required dependency)
+cd $SRC/jackson-core
+$MVN install $MAVEN_ARGS
+
+# Build jackson-databind (required dependency)
+cd $SRC/jackson-databind
+$MVN install $MAVEN_ARGS
+
+# Build jackson-dataformat-xml
+cd $SRC/jackson-dataformat-xml
 $MVN package dependency:copy-dependencies $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)

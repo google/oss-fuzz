@@ -15,11 +15,22 @@
 #
 ################################################################################
 
+# Install google test to be compatible with LLVM 21
+git clone --depth 1 https://github.com/google/googletest
+cd $SRC/googletest
+mkdir build
+cd build
+cmake ..
+make -j$(nproc)
+make install
+
+
+cd $SRC/
 mkdir jsonnet/build
 pushd jsonnet/build
-cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
-  -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DBUILD_TESTS=OFF ..
-make -j$(nproc) libjsonnet_static
+cmake -DUSE_SYSTEM_GTEST=ON -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
+  -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DBUILD_TESTS=ON ..
+make -j$(nproc) all
 popd
 
 INSTALL_DIR="$SRC/jsonnet"
@@ -29,7 +40,5 @@ for fuzzer in convert_jsonnet_fuzzer_regular \
  convert_jsonnet_fuzzer_multi; do
   $CXX $CXXFLAGS -I${INSTALL_DIR}/include $LIB_FUZZING_ENGINE \
     $fuzzer.cc -o $OUT/$fuzzer \
-    ${INSTALL_DIR}/build/libjsonnet.a \
-    ${INSTALL_DIR}/build/libmd5.a \
-    ${INSTALL_DIR}/build/libryml.a
+    ${INSTALL_DIR}/build/libjsonnet.a
 done

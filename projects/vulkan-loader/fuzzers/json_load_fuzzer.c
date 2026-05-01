@@ -16,6 +16,7 @@ limitations under the License.
 
 #include "cJSON.h"
 #include "loader.h"
+#include "fuzz_header.h"
 
 /*
  * Targets the custom version of cJson.

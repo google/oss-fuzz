@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/alibaba/fastjson2"
 language: jvm
 primary_contact: "shaojin.wensj@alibaba-inc.com"
@@ -8,5 +9,3 @@ sanitizers:
   - address
 vendor_ccs:
   - "norbert.schneider@code-intelligence.com"
-  - "hlin@code-intelligence.com"
-  - "bug-disclosure@code-intelligence.com"

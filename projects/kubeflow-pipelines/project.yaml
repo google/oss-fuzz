@@ -1,0 +1,11 @@
+homepage: "https://github.com/kubeflow/pipelines"
+language: go
+primary_contact: "rmartine@redhat.com"
+main_repo: "https://github.com/kubeflow/pipelines"
+auto_ccs:
+  - "adam@adalogics.com"
+  - "humair88@hotmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

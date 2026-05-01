@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake gettext libtool 
 
 RUN git clone --depth 1 https://github.com/WizardMac/ReadStat readstat
 WORKDIR readstat
-COPY build.sh $SRC/
+COPY *.sh $SRC/

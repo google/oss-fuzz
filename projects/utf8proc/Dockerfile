@@ -25,4 +25,4 @@ RUN wget -O $SRC/utf8proc/test/NormalizationTest.txt https://www.unicode.org/Pub
 RUN wget -O $SRC/utf8proc/test/GraphemeBreakTest.txt https://www.unicode.org/Public/13.0.0/ucd/auxiliary/GraphemeBreakTest.txt
 
 WORKDIR $SRC/utf8proc/
-COPY build.sh $SRC/
+COPY *.sh $SRC/

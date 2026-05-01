@@ -70,7 +70,9 @@ def get_build_steps(project_name, timestamp=None):
   """Retrieve build steps."""
   project_yaml, dockerfile_lines = get_project_data(project_name)
   build_config = build_project.Config(
-      build_type=build_project.FUZZING_BUILD_TYPE)
+      build_type=build_project.FUZZING_BUILD_TYPE,
+      base_image_tag=project_yaml.get('base_os_version', None))
+
   return build_project.get_build_steps(project_name,
                                        project_yaml,
                                        dockerfile_lines,
@@ -98,10 +100,10 @@ def run_build(oss_fuzz_project,
               update_history=True):
   """Execute build on cloud build. Wrapper around build_project.py that also
   updates the db."""
-  build_id = build_project.run_build(oss_fuzz_project, build_steps, credentials,
-                                     build_type, cloud_project)
+  build = build_project.run_build(oss_fuzz_project, build_steps, credentials,
+                                  build_type, cloud_project)
   if update_history:
-    update_build_history(oss_fuzz_project, build_id, build_type)
+    update_build_history(oss_fuzz_project, build['id'], build_type)
 
 
 # pylint: disable=no-member

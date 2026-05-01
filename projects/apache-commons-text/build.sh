@@ -20,11 +20,12 @@ MODULE=org.apache.commons:commons-text
 PROJECT_GROUP_ID=org.apache.commons
 PROJECT_ARTIFACT_ID=commons-text
 MAIN_REPOSITORY=https://github.com/apache/commons-text/
+MVN_FLAGS="--no-transfer-progress"
 
 function set_project_version_in_fuzz_targets_dependency {
-  PROJECT_VERSION=$(cd $PROJECT && $MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
+  PROJECT_VERSION=$(cd $PROJECT && $MVN ${MVN_FLAGS} org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
   # set dependency project version in fuzz-targets
-  (cd fuzz-targets && $MVN versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
+  (cd fuzz-targets && $MVN ${MVN_FLAGS} versions:use-dep-version -Dincludes=$PROJECT_GROUP_ID:$PROJECT_ARTIFACT_ID -DdepVersion=$PROJECT_VERSION -DforceVersion=true)
 }
 
 cd project-parent
@@ -40,7 +41,7 @@ if [[ -v LOCAL_DEV ]]; then
 
   # install
   # skip RAT license check to avoid build error
-  mvn -pl $MODULE install -DskipTests -Drat.skip=true 
+  mvn -pl $MODULE install -DskipTests -Drat.skip=true
   mvn -pl fuzz-targets install
 
 else
@@ -51,11 +52,11 @@ else
 
   # install
   # skip RAT license check to avoid build error
-  $MVN -pl $MODULE install -DskipTests -Drat.skip=true -Dmaven.repo.local=$OUT/m2
-  $MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
+  $MVN ${MVN_FLAGS} -pl $MODULE install -DskipTests -Drat.skip=true -Dmaven.repo.local=$OUT/m2
+  $MVN ${MVN_FLAGS} -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
 
   # build classpath
-  $MVN -pl fuzz-targets dependency:build-classpath -Dmdep.outputFile=cp.txt -Dmaven.repo.local=$OUT/m2
+  $MVN ${MVN_FLAGS} -pl fuzz-targets dependency:build-classpath -Dmdep.outputFile=cp.txt -Dmaven.repo.local=$OUT/m2
   cp -r $SRC/project-parent/fuzz-targets/target/test-classes/ $OUT/test-classes
   RUNTIME_CLASSPATH_ABSOLUTE="$(cat fuzz-targets/cp.txt):$OUT/test-classes"
   # replace dirname with placeholder $this_dir that will be replaced at runtime

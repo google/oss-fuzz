@@ -15,6 +15,13 @@
 #
 ################################################################################
 
+# Some of the tests do not work in the OSS-Fuzz environment, patch these out
+# here:
+sed -i "s/add_clar_test(libgit2_tests online /#add_clar_test(libgit2_tests online/g" tests/libgit2/CMakeLists.txt
+sed -i "s/add_clar_test(libgit2_tests prox/#add_clar_test(libgit2_tests prox/g" tests/libgit2/CMakeLists.txt
+sed -i "s/add_clar_test(libgit2_tests auth_clone/#add_clar_test(libgit2_tests auth_clone/g" tests/libgit2/CMakeLists.txt
+
+
 # build project
 mkdir -p build
 cd build

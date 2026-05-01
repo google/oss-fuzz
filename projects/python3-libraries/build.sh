@@ -30,9 +30,6 @@ case $SANITIZER in
     ;;
   memory)
     FLAGS+=("--with-memory-sanitizer")
-    # installing ensurepip takes a while with MSAN instrumentation, so
-    # we disable it here
-    FLAGS+=("--without-ensurepip")
     # -msan-keep-going is needed to allow MSAN's halt_on_error to function
     FLAGS+=("CFLAGS=-mllvm -msan-keep-going=1")
     ;;
@@ -46,7 +43,7 @@ rm -rf $CPYTHON_INSTALL_PATH
 mkdir $CPYTHON_INSTALL_PATH
 
 cd $SRC/cpython
-cp $SRC/python-library-fuzzers/python_coverage.h Python/
+cp $SRC/library-fuzzers/python_coverage.h Python/
 
 # Patch the interpreter to record code coverage
 sed -i '1 s/^.*$/#include "python_coverage.h"/g' Python/ceval.c
@@ -57,43 +54,26 @@ make -j$(nproc)
 make install
 
 cp -R $CPYTHON_INSTALL_PATH $OUT/
+$OUT/cpython-install/bin/python3 -m pip install hypothesis
 
-cd $SRC/python-library-fuzzers
+cd $SRC/library-fuzzers
 make
 
-cp $SRC/python-library-fuzzers/fuzzer-html $OUT/
-cp $SRC/python-library-fuzzers/html.py $OUT/
-zip -j $OUT/fuzzer-html_seed_corpus.zip corp-html/*
+while read -r name fuzzer; do
+  cp $SRC/library-fuzzers/fuzzer-$name $OUT/
+  cp $SRC/library-fuzzers/$fuzzer $OUT/
+  if [ -d "corp-$name" ]; then
+    zip -j "$OUT/fuzzer-${name}_seed_corpus.zip" corp-$name/*
+  fi
+  if [ -f "fuzzer-${name}.dict" ]; then
+    cp "fuzzer-${name}.dict" "$OUT/fuzzer-${name}.dict"
+  fi
+done < $SRC/library-fuzzers/fuzz_targets.txt
 
-cp $SRC/python-library-fuzzers/fuzzer-email $OUT/
-cp $SRC/python-library-fuzzers/email.py $OUT/
-zip -j $OUT/fuzzer-email_seed_corpus.zip corp-email/*
+cp $SRC/library-fuzzers/fuzzeddataprovider.py $OUT/
 
-cp $SRC/python-library-fuzzers/fuzzer-httpclient $OUT/
-cp $SRC/python-library-fuzzers/httpclient.py $OUT/
-zip -j $OUT/fuzzer-httpclient_seed_corpus.zip corp-httpclient/*
-
-cp $SRC/python-library-fuzzers/fuzzer-json $OUT/
-cp $SRC/python-library-fuzzers/json.py $OUT/
-zip -j $OUT/fuzzer-json_seed_corpus.zip corp-json/*
-
-cp $SRC/python-library-fuzzers/fuzzer-difflib $OUT/
-cp $SRC/python-library-fuzzers/difflib.py $OUT/
-zip -j $OUT/fuzzer-difflib_seed_corpus.zip corp-difflib/*
-
-cp $SRC/python-library-fuzzers/fuzzer-csv $OUT/
-cp $SRC/python-library-fuzzers/csv.py $OUT/
-zip -j $OUT/fuzzer-csv_seed_corpus.zip corp-csv/*
-
-cp $SRC/python-library-fuzzers/fuzzer-decode $OUT/
-cp $SRC/python-library-fuzzers/decode.py $OUT/
-zip -j $OUT/fuzzer-decode_seed_corpus.zip corp-decode/*
-cp $SRC/python-library-fuzzers/fuzzer-decode.dict $OUT/
-
-cp $SRC/python-library-fuzzers/fuzzer-ast $OUT/
-cp $SRC/python-library-fuzzers/ast.py $OUT/
-cp $SRC/python-library-fuzzers/fuzzer-ast.dict $OUT/
-# Use CPython source code as seed corpus
+# Use CPython source code as seed corpus and use dict from cpython3
+cp $SRC/cpython/Modules/_xxtestfuzz/dictionaries/fuzz_pycompile.dict $OUT/fuzzer-ast.dict
 mkdir corp-ast/
 find $SRC/cpython -type f -name '*.py' -size -4097c -exec cp {} corp-ast/ \;
 zip -j $OUT/fuzzer-ast_seed_corpus.zip corp-ast/*

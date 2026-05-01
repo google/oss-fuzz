@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -24,5 +24,4 @@ RUN apt-get update && \
 RUN git clone -b next --single-branch \
     https://github.com/htacg/tidy-html5.git tidy-html5
 WORKDIR tidy-html5
-COPY build.sh $SRC/
-COPY *.c *.h *.options $SRC/
+COPY *.sh *.c *.h *.options $SRC/

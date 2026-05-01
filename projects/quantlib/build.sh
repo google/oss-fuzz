@@ -14,6 +14,17 @@
 # limitations under the License.
 #
 ################################################################################
+
+# Install Boost headers
+cd $SRC/
+tar jxf boost_1_87_0.tar.bz2
+cd boost_1_87_0/
+CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+CFLAGS="" CXXFLAGS="" ./b2 headers
+./b2 --with-math install
+
+cd $SRC/quantlib
+
 mkdir build
 cd build
 export LDFLAGS="-Wl,-rpath,'\$ORIGIN/lib'"
@@ -25,6 +36,7 @@ cmake .. -GNinja\
  -DQL_BUILD_TEST_SUITE=OFF\
  -DQL_BUILD_BENCHMARK=OFF\
  -DQL_BUILD_EXAMPLES=OFF\
+ -DCMAKE_CXX_STANDARD=20\
  -L
 cmake --build . --verbose -j$(nproc)
 mkdir $OUT/lib -p

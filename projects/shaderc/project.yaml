@@ -1,10 +1,12 @@
 homepage: "https://github.com/google/shaderc"
 main_repo: "https://github.com/google/shaderc.git"
-primary_contact: "david@adalogics.com"
+primary_contact: "dneto@google.com"
 language: c++
 sanitizers:
 - address
 auto_ccs:
+- "dneto@google.com"
+- "dsinclair@google.com"
 - "fuzzing@fuchsia.dev"
-- "arthur.chan@adalogics.com"
-- "adam@adalogics.com"
+- "nathangauer@google.com"
+- "stevenperron@google.com"

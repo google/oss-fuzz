@@ -1,10 +1,10 @@
 diff --git a/src/backend/tcop/postgres.c b/src/backend/tcop/postgres.c
-index 0775abe35d..f53b3580b3 100644
+index 2f8c3d5f918..d9774758413 100644
 --- a/src/backend/tcop/postgres.c
 +++ b/src/backend/tcop/postgres.c
-@@ -105,6 +105,11 @@ int			PostAuthDelay = 0;
- /* Time between checks that the client is still connected. */
- int			client_connection_check_interval = 0;
+@@ -104,6 +104,11 @@ int			client_connection_check_interval = 0;
+ /* flags for non-system relation kinds to restrict use */
+ int			restrict_nonsystem_relation_kind;
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 +bool        fuzzer_first_run = true;
@@ -14,7 +14,7 @@ index 0775abe35d..f53b3580b3 100644
  /* ----------------
   *		private typedefs etc
   * ----------------
-@@ -471,11 +476,14 @@ static int
+@@ -480,11 +485,14 @@ static int
  ReadCommand(StringInfo inBuf)
  {
  	int			result;
@@ -30,9 +30,9 @@ index 0775abe35d..f53b3580b3 100644
  	return result;
  }
  
-@@ -4021,6 +4029,11 @@ PostgresMain(const char *dbname, const char *username)
- 	bool		idle_in_transaction_timeout_enabled = false;
- 	bool		idle_session_timeout_enabled = false;
+@@ -4190,6 +4198,11 @@ PostgresMain(const char *dbname, const char *username)
+ 	volatile bool idle_in_transaction_timeout_enabled = false;
+ 	volatile bool idle_session_timeout_enabled = false;
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 +       if(fuzzer_first_run)
@@ -42,7 +42,7 @@ index 0775abe35d..f53b3580b3 100644
  	Assert(dbname != NULL);
  	Assert(username != NULL);
  
-@@ -4312,6 +4325,11 @@ PostgresMain(const char *dbname, const char *username)
+@@ -4509,6 +4522,11 @@ PostgresMain(const char *dbname, const char *username)
  	if (!ignore_till_sync)
  		send_ready_for_query = true;	/* initially, or after error */
  
@@ -55,16 +55,15 @@ index 0775abe35d..f53b3580b3 100644
  	 * Non-error queries loop here.
  	 */
 diff --git a/src/backend/utils/error/elog.c b/src/backend/utils/error/elog.c
-index 2af87ee3bd..825bb70532 100644
+index 47af743990f..476e336d418 100644
 --- a/src/backend/utils/error/elog.c
 +++ b/src/backend/utils/error/elog.c
-@@ -594,7 +594,9 @@ errfinish(const char *filename, int lineno, const char *funcname)
+@@ -540,7 +540,7 @@ errfinish(const char *filename, int lineno, const char *funcname)
  	}
  
  	/* Emit the message to the right places */
-+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
- 	EmitErrorReport();
-+#endif
+-	EmitErrorReport();
++ 	//EmitErrorReport();
  
  	/* Now free up subsidiary data attached to stack entry, and release it */
- 	if (edata->message)
+ 	FreeErrorDataContents(edata);

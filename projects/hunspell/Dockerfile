@@ -19,4 +19,4 @@ RUN apt-get update && \
     apt-get install -y autoconf automake autopoint libtool
 RUN git clone --depth 1 https://github.com/hunspell/hunspell.git hunspell
 WORKDIR hunspell
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

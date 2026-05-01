@@ -42,4 +42,4 @@ RUN cd ${SRC}/clamav-mussels-cookbook && \
 RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav.git
 
 WORKDIR clamav
-COPY build.sh $SRC/
+COPY build.sh replay_build.sh $SRC/

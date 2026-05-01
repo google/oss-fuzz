@@ -20,4 +20,7 @@ RUN apt-get update && \
 RUN git clone https://github.com/ia0/data-encoding
 WORKDIR $SRC/data-encoding
 
+# The default toolchain used by OSS-Fuzz is too old for our fuzzing crate.
+ENV RUSTUP_TOOLCHAIN nightly-2025-07-16
+
 COPY build.sh $SRC/

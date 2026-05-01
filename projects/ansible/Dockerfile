@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y make autoconf automake build-essential
 RUN pip3 install --upgrade pip

@@ -6,7 +6,6 @@ auto_ccs:
 sanitizers:
 - address
 - undefined
-- memory
 main_repo: 'https://github.com/simdjson/simdjson.git'
 
 fuzzing_engines:

@@ -53,7 +53,7 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./jq_fuzz_parse_stream.o \
     -o $OUT/jq_fuzz_parse_stream -I./src
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./tests/jq_fuzz_execute.cpp \
-    -I./src \
+    -I./src -I./vendor/oniguruma/src \
     ./.libs/libjq.a ./vendor/oniguruma/src/.libs/libonig.a\
     -o $OUT/jq_fuzz_execute -I./src
 

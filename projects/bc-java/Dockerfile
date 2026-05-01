@@ -14,13 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
-RUN wget https://services.gradle.org/distributions/gradle-7.4.2-bin.zip -O gradle.zip && \
+RUN wget https://services.gradle.org/distributions/gradle-8.10-bin.zip -O gradle.zip && \
     unzip gradle.zip -d $SRC/gradle && \
     rm -rf gradle.zip
 
-ENV GRADLE $SRC/gradle/gradle-7.4.2/bin/gradle
+ENV GRADLE=$SRC/gradle/gradle-8.10/bin/gradle
 
 RUN git clone --depth 1 https://github.com/bcgit/bc-java.git bc-java
 

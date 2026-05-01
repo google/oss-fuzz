@@ -14,7 +14,7 @@ sanitizers:
   - memory
 architectures:
   - x86_64
-  - i386
+#  - i386 disabled for now: https://github.com/google/clusterfuzz/pull/4773
 selective_unpack: true  # Required to avoid out-of-space when executing AFL on clusterfuzz bots
 fuzzing_engines:
   - afl

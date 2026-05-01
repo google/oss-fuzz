@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+# Make Python 3.12 the default python3 for this build
+export PATH="/usr/local/python3.12/bin:$PATH"
+export LD_LIBRARY_PATH="/usr/local/python3.12/lib:$LD_LIBRARY_PATH"
+ln -sf /usr/local/python3.12/bin/python3.12 /usr/local/bin/python3
+ln -sf /usr/local/python3.12/bin/pip3.12 /usr/local/bin/pip3
+
+# Install atheris and pyinstaller for Python 3.12
+python3 -m pip install atheris pyinstaller
+
 # Build and install project (using current CFLAGS, CXXFLAGS). This is required
 # for projects with C extensions so that they're built with the proper flags.
 python3 -m pip install .

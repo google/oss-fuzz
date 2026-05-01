@@ -28,31 +28,42 @@ rm -rf $BUILD
 mkdir -p $BUILD
 
 # Build glib
-pushd $SRC/glib-2.64.2
-meson \
+pushd $SRC/glib
+meson setup \
     --prefix=$PREFIX \
     --libdir=lib \
     --default-library=static \
     -Db_lundef=false \
     -Doss_fuzz=enabled \
     -Dlibmount=disabled \
-    -Dinternal_pcre=true \
+    -Dman-pages=disabled \
+    -Dsysprof=disabled \
+    -Dtests=false \
     _builddir
 ninja -C _builddir
 ninja -C _builddir install
 popd
 
 # Build gdk-pixbuf
+# TODO: Enable tiff support
 pushd $SRC/gdk-pixbuf
-meson \
+meson setup \
     --prefix=$PREFIX \
     --libdir=lib \
     --default-library=static \
     -Dintrospection=disabled \
-    -Dgtk_doc=false \
     -Dman=false \
-    -Ddocs=false \
+    -Ddocumentation=false \
+    -Dtests=true \
+    -Dinstalled_tests=false \
+    -Dthumbnailer=disabled \
+    -Dglycin=disabled \
     -Dbuiltin_loaders='all' \
+    -Djpeg=enabled \
+    -Dpng=enabled \
+    -Dgif=enabled \
+    -Dothers=enabled \
+    -Dtiff=disabled \
     _builddir
 ninja -C _builddir
 ninja -C _builddir install

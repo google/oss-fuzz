@@ -20,4 +20,4 @@ RUN git clone --depth 1 https://github.com/lvandeve/lodepng.git lodepng     # or
 WORKDIR lodepng
 ADD http://oss-fuzz-corpus.storage.googleapis.com/lodepng/lodepng_fuzzer_seed_corpus.zip $SRC/
 ADD https://raw.githubusercontent.com/google/AFL/master/dictionaries/png.dict $SRC/lodepng_fuzzer.dict
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/

@@ -1,6 +1,5 @@
 homepage: "https://gitlab.gnome.org/GNOME/libxml2"
 language: c++
-primary_contact: "wellnhofer@aevum.de"
 vendor_ccs:
   - "ddkilzer@apple.com"
   - "benl@google.com"

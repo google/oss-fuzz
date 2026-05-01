@@ -19,3 +19,5 @@ RUN apt-get update && apt-get install -y make autoconf automake zlib1g-dev libbz
 RUN git clone --depth 1 --shallow-submodules --recurse-submodules https://github.com/samtools/htslib.git htslib
 WORKDIR htslib
 COPY build.sh $SRC/
+COPY run_tests.sh $SRC/
+

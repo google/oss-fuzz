@@ -19,7 +19,7 @@
 mkdir build
 cd build
 
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release -DARGS_BUILD_TESTS=ON ..
 make -j4
 
 for fuzzer in $(find $SRC/args/fuzz/ -name "*_fuzzer.cpp"); do

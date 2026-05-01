@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake libtool
+RUN apt-get update && apt-get install -y autoconf automake libtool libcmocka-dev
 RUN git clone https://github.com/CESNET/libyang
 
 RUN git clone https://github.com/PCRE2Project/pcre2 pcre2 && \
@@ -25,5 +25,5 @@ RUN git clone https://github.com/PCRE2Project/pcre2 pcre2 && \
     make && \
     make install
 
-WORKDIR $SRC
-COPY build.sh $SRC/
+WORKDIR $SRC/libyang
+COPY run_tests.sh build.sh $SRC/

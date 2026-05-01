@@ -15,10 +15,11 @@
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.eclipsecollections.EclipseCollectionsModule;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.eclipsecollections.EclipseCollectionsModule;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.MutableMap;
@@ -41,7 +42,9 @@ public class EclipseCollectionsSerializerFuzzer {
 
   public static void fuzzerInitialize() {
     // Register the EclipseCollectionsModule for the serialization
-    mapper = new ObjectMapper().registerModule(new EclipseCollectionsModule());
+    mapper = JsonMapper.builder()
+        .addModule(new EclipseCollectionsModule())
+        .build();
   }
 
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
@@ -62,9 +65,6 @@ public class EclipseCollectionsSerializerFuzzer {
               new PrimitiveIterativeObject(ByteLists.immutable.of(byteArray)));
           break;
         case 3:
-          mapper =
-              mapper.configure(
-                  SerializationFeature.WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS, data.consumeBoolean());
           char[] charArray = data.consumeRemainingAsString().toCharArray();
           mapper.writeValueAsString(CharLists.immutable.of(charArray));
           mapper.writeValueAsString(
@@ -164,7 +164,7 @@ public class EclipseCollectionsSerializerFuzzer {
           mapper.writeValueAsString(IntObjectMaps.immutable.of(0, data.consumeRemainingAsBytes()));
           break;
       }
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       // Known exception
     }
   }

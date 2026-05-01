@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+export CXXFLAGS="${CXXFLAGS} -std=c++17 -stdlib=libstdc++"
 
 # ===== BUILD Sqlite =====
 SQLITE_VER=sqlite-autoconf-3480000
@@ -34,6 +35,11 @@ cmake .. -DBUILD_SHARED=OFF -DBUILD_STATIC=ON -DZMQ_BUILD_TESTS=OFF
 make -j"$(nproc)"
 make install
 cd ../..
+
+# ===== Apply patch: replace std::from_chars for double (not in GCC 9 libstdc++) =====
+# GCC 9 libstdc++ does not implement the floating-point overloads of std::from_chars
+# (only added in GCC 11). Replace with std::strtod which is universally available.
+patch -p1 < $SRC/fix_float_from_chars.patch
 
 # ===== Build BehaviorTree.CPP =====
 mkdir build && cd build

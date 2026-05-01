@@ -15,4 +15,9 @@
 #
 ################################################################################
 
+# TODO(David): move this patch upstream
+if [ -f /usr/local/bin/clang-22 ]; then
+  echo "Adjusting clang version"
+  sed -i 's/CLANG_VER=18/CLANG_VER=22/g' ./scripts/fuzz/oss-fuzz-build.sh
+fi
 bash -x ./scripts/fuzz/oss-fuzz-build.sh

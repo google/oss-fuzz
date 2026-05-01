@@ -34,14 +34,12 @@ if grep -q -F "20.04" /etc/os-release ; then
 fi
 
 cd "$SRC"/libunistring
-./autogen.sh
 ASAN_OPTIONS=detect_leaks=0 \
   ./configure --enable-static --disable-shared --prefix="$DEPS_PATH"
 make -j"$(nproc)"
 make install
 
 cd "$SRC"/libidn2
-./bootstrap
 ASAN_OPTIONS=detect_leaks=0 \
   ./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix="$DEPS_PATH"
 make -j"$(nproc)"
@@ -53,16 +51,12 @@ make install
 GMP_CONFIGURE_FLAGS="--disable-assembly --disable-fat"
 
 cd "$SRC"/gmp
-if [[ -e .bootstrap ]]; then
-    bash .bootstrap
-fi
 ASAN_OPTIONS=detect_leaks=0 \
   ./configure --disable-shared --prefix="$DEPS_PATH" $GMP_CONFIGURE_FLAGS
 make -j"$(nproc)"
 make install
 
 cd $SRC/libtasn1
-bash bootstrap
 ./configure --disable-gcc-warnings --disable-gtk-doc --disable-gtk-doc-pdf --disable-doc \
   --disable-shared --enable-static --prefix="$DEPS_PATH"
 make -j"$(nproc)"

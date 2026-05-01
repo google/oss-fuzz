@@ -34,9 +34,10 @@ USER jazzer_user
 
 WORKDIR $SRC
 
+# Install Jazzer version 0.26.0
 RUN git clone https://github.com/CodeIntelligenceTesting/jazzer && \
     cd jazzer && \
-    git checkout 11b42852df4344737df54a380c2f522025bb4e84
+    git checkout 86378b7a20f08165e72a45582d6a9a5091212318
 
 WORKDIR $SRC/jazzer
 

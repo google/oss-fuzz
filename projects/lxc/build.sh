@@ -14,4 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
+
+export CFLAGS="${CFLAGS} -Wno-error=backend-plugin"
 src/tests/oss-fuzz.sh

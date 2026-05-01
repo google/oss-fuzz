@@ -19,8 +19,8 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/askama-rs/askama.git askama
 WORKDIR askama/fuzzing
 
-# The current default toolchain used by OSS-Fuzz (1.81) is too old for askama v0.14,
-# which needs at least 1.83.
-ENV RUSTUP_TOOLCHAIN nightly-2025-01-10
+# The current default toolchain used by OSS-Fuzz (1.81) is too old for askama v0.15,
+# which needs at least 1.88.
+ENV RUSTUP_TOOLCHAIN nightly-2025-07-04
 
 COPY build.sh $SRC/

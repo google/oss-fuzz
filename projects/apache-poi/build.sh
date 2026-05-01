@@ -18,7 +18,7 @@
 MVN_FLAGS="--no-transfer-progress -DskipTests"
 ALL_JARS=""
 LIBRARY_NAME="poi"
-GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_8,JAVA_HOME_11 --console=plain"
+GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_11 --console=plain"
 
 echo Copy libraries for java.awt in place
 ls /usr/lib/x86_64-linux-gnu/
@@ -30,13 +30,12 @@ cp /usr/lib/x86_64-linux-gnu/libXext.so.6* \
   /usr/lib/x86_64-linux-gnu/libxcb.so.1* \
   /usr/lib/x86_64-linux-gnu/libXau.so.6* \
   /usr/lib/x86_64-linux-gnu/libXdmcp.so.6* \
+  /usr/lib/x86_64-linux-gnu/libfreetype.so.6* \
+  /usr/lib/x86_64-linux-gnu/libpng16.so.16* \
   ${OUT}/
 
 echo Main Java
 ${JAVA_HOME}/bin/java -version
-
-echo Java 8
-${JAVA_HOME_8}/bin/java -version
 
 echo Java 11
 ${JAVA_HOME_11}/bin/java -version
@@ -46,20 +45,35 @@ pushd "/tmp"
 	${MVN} install:install-file -Dfile=${JAZZER_API_PATH} \
 		-DgroupId="com.code-intelligence" \
 		-DartifactId="jazzer-api" \
-		-Dversion="0.12.0" \
+		-Dversion="0.29.1" \
 		-Dpackaging=jar \
 		 ${MVN_FLAGS}
 popd
 
 pushd "${SRC}/${LIBRARY_NAME}"
 	# build and publish current binaries
-	./gradlew publishToMavenLocal ${GRADLE_FLAGS}
+	./gradlew publishToMavenLocal :poi-integration:testJar :poi-fuzz:jar ${GRADLE_FLAGS}
 
 	# determine current version-tag
 	CURRENT_VERSION=$(./gradlew properties ${GRADLE_FLAGS} | sed -nr "s/^version:\ (.*)/\1/p")
 
+  # additionally publish the testJar to MavenLocal
+  ${MVN} install:install-file -Dfile=build/dist/maven/poi-integration-tests/poi-integration-${CURRENT_VERSION}-tests.jar \
+      -DgroupId=org.apache.poi \
+      -DartifactId=poi-integration \
+      -Dversion=${CURRENT_VERSION} \
+      -Dpackaging=jar
+
+  # additionally publish the fuzz-targets to MavenLocal
+  ${MVN} install:install-file -Dfile=build/dist/maven/poi-fuzz/poi-fuzz-${CURRENT_VERSION}.jar \
+      -DgroupId=org.apache.poi \
+      -DartifactId=poi-fuzz \
+      -Dversion=${CURRENT_VERSION} \
+      -Dpackaging=jar
+
 	# prepare some seed-corpus archives based on the test-data of Apache POI
 	# we cannot do this automatically as there is not a 1:1 match of fuzz targets and formats
+	zip -r $OUT/POIFileHandlerFuzzer_seed_corpus.zip test-data
 	zip -r $OUT/POIFuzzer_seed_corpus.zip test-data
 	zip -jr $OUT/POIHDGFFuzzer_seed_corpus.zip test-data/diagram/*.vsd
 	zip -jr $OUT/POIHMEFFuzzer_seed_corpus.zip test-data/hmef/*
@@ -94,18 +108,13 @@ RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_di
 
 MVN_FUZZERS_PREFIX="src/main/java"
 
-for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
-	# Find our fuzzer inside the maven structure
-	stripped_path=$(echo ${fuzzer} | sed \
-		-e 's|^.*src/main/java/\(.*\).java$|\1|' \
-		-e 's|^.*src/test/java/\(.*\).java$|\1|' \
-	);
-	# The .java suffix was stripped by sed.
-	if (echo ${stripped_path} | grep ".java$"); then
-		continue;
-	fi
+for fuzzer in $(unzip -l ${OUT}/dependency/${LIBRARY_NAME}-fuzzer-libs-${CURRENT_VERSION}.jar | \
+    grep Fuzzer.class | \
+    sed -e 's|^.*\(org/apache/poi/fuzz/.*\).class$|\1|g'); do
+	# Get fuzzer-name from .class file-name in jar
+	stripped_path=$(echo ${fuzzer} | sed -e 's|^org/apache/poi/fuzz/\(.*\).class$|\1|');
 
-	fuzzer_basename=$(basename -s .java $fuzzer)
+	fuzzer_basename=$(basename ${fuzzer})
 	fuzzer_classname=$(echo ${stripped_path} | sed 's|/|.|g');
 
 	# Create an execution wrapper that executes Jazzer with the correct arguments.

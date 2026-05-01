@@ -23,6 +23,6 @@ RUN apt-get update && \
 
 RUN git clone --depth 1 https://github.com/Taywee/args.git $SRC/args/
 
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
 WORKDIR $SRC/args/
 

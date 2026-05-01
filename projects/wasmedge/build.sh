@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export CXXFLAGS="${CXXFLAGS} -Wno-error=invalid-specialization"
+
 cd "$SRC/WasmEdge"
 sed -ie 's@core lto native@core native@' cmake/Helper.cmake
 cmake -GNinja -Bbuild -DCMAKE_BUILD_TYPE=RelWithDebInfo \

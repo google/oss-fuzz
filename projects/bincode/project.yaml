@@ -1,4 +1,4 @@
-homepage: "https://github.com/bincode-org/bincode"
+homepage: "https://git.sr.ht/~stygianentity/bincode"
 language: rust
 primary_contact: "nathan@mccarty.io"
 auto_ccs:
@@ -9,4 +9,4 @@ sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
-main_repo: 'https://github.com/bincode-org/bincode'
+main_repo: 'https://git.sr.ht/~stygianentity/bincode'

@@ -24,4 +24,4 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone --recursive --shallow-submodules --depth 1 https://github.com/nghttp2/nghttp2.git
 WORKDIR nghttp2
-COPY build.sh *.options $SRC/
+COPY run_tests.sh build.sh *.options $SRC/

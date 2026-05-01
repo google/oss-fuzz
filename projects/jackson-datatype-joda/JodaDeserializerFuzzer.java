@@ -16,11 +16,12 @@
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.fasterxml.jackson.datatype.joda.deser.DateTimeDeserializer;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.datatype.joda.JodaModule;
+import tools.jackson.datatype.joda.deser.DateTimeDeserializer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,9 @@ public class JodaDeserializerFuzzer {
 
   public static void fuzzerInitialize() {
     // Register the JodaModule for the deserialization
-    mapper = new ObjectMapper().registerModule(new JodaModule());
+    mapper = tools.jackson.databind.json.JsonMapper.builder()
+            .addModule(new JodaModule())
+            .build();
     plainMapper = new ObjectMapper();
     initializeClassChoice();
   }
@@ -63,7 +66,7 @@ public class JodaDeserializerFuzzer {
       mapper.readValue(value, classReference);
       mapper.readValue(value, typeReference);
       plainMapper.readValue(value, AnnotationClass.class);
-    } catch (IOException | IllegalArgumentException | ArithmeticException | UnsupportedOperationException e) {
+    } catch (IllegalArgumentException | ArithmeticException | UnsupportedOperationException | MismatchedInputException e) {
       // Known exception
     }
   }

@@ -19,5 +19,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake libcurlpp-dev libcurl4-openssl-dev
 RUN git clone --depth 1 https://github.com/tristanpenman/valijson
+COPY run_tests.sh $SRC/
 WORKDIR valijson
 RUN cp $SRC/valijson/tests/fuzzing/oss-fuzz-build.sh $SRC/build.sh

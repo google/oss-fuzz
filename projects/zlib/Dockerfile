@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 -b develop https://github.com/madler/zlib.git
 WORKDIR zlib
-COPY build.sh *_fuzzer.c* $SRC/
+COPY run_tests.sh build.sh *_fuzzer.c* $SRC/

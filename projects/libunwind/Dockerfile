@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/libunwind/libunwind libunwind
 WORKDIR libunwind
-COPY build.sh *.c $SRC/
+COPY run_tests.sh build.sh *.c $SRC/

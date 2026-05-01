@@ -27,4 +27,7 @@ FUZZ_TARGET_OUTPUT_DIR=target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs; do
         FUZZ_TARGET_NAME=$(basename "${f%.*}")
         cp "$FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME" "$OUT/"
+        if [ -d "fuzz/corpus/$FUZZ_TARGET_NAME" ]; then
+                zip -j "$OUT/${FUZZ_TARGET_NAME}_seed_corpus.zip" "fuzz/corpus/$FUZZ_TARGET_NAME"/*
+        fi
 done

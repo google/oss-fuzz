@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-bu
     libfdt-dev libpixman-1-dev zlib1g-dev libslirp-dev patchelf wget \
     libattr1 libattr1-dev libcap-ng-dev pkg-config
 
-Run python3 -m pip install meson tomli
+Run python3 -m pip install distlib meson tomli
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib.git --branch=$glib_tag && \
   meson setup _build glib --prefix=/usr -Ddefault_library=shared -Dtests=false && \
   meson install -C _build && \
@@ -28,4 +28,4 @@ RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib.git --branch=$glib_t
 
 RUN git clone --depth 1 https://git.qemu.org/git/qemu.git qemu
 WORKDIR qemu
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh replay_build.sh $SRC/

@@ -29,6 +29,8 @@ mkdir build && cd build
 
 cmake -DBUILD_SHARED_LIBS=OFF \
       -DABSL_MIN_LOG_LEVEL=4 \
-      -DBUILD_TESTS=OFF ..
+      -DGOOGLETEST_ROOT=/usr/src/googletest \
+      -DCMAKE_EXE_LINKER_FLAGS="-lssl -lcrypto" \
+      -DBUILD_TESTS=ON ..
 make -j$(nproc)
 find . -name "s2fuzzer" -exec cp {} $OUT/s2_fuzzer \;

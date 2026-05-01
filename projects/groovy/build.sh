@@ -19,12 +19,24 @@
 ALL_JARS=""
 
 pushd "${SRC}/groovy"
-	./gradlew shadowJar
-	cp -v ./build/libs/groovy-raw-*-SNAPSHOT.jar "$OUT/groovy.jar"
-	ALL_JARS="${ALL_JARS} groovy.jar"
+  ./gradlew shadowJar --info
+  JAR_PATH=$(find ./build/libs/ -name "groovy-*.jar" | head -n 1)
+  if [[ -f $JAR_PATH ]]; then
+    cp -v "$JAR_PATH" "$OUT/groovy.jar"
+    ALL_JARS="${ALL_JARS} groovy.jar"
+  else
+    echo "Error: No JAR file found in ./build/libs/"
+    exit 1
+  fi
 
-  cp -v ./subprojects/groovy-test/build/libs/groovy-test-*-SNAPSHOT-all.jar "$OUT/groovy-test.jar"
-	ALL_JARS="${ALL_JARS} groovy-test.jar"
+
+  if ls ./subprojects/groovy-test/build/libs/groovy-test-*-SNAPSHOT-all.jar 1> /dev/null 2>&1; then
+    cp -v ./subprojects/groovy-test/build/libs/groovy-test-*-SNAPSHOT-all.jar "$OUT/groovy-test.jar"
+    ALL_JARS="${ALL_JARS} groovy-test.jar"
+  else
+    echo "Error: ./subprojects/groovy-test/build/libs/groovy-test-*-SNAPSHOT-all.jar not found"
+    exit 1
+  fi
 popd
 
 # The classpath at build-time includes the project jars in $OUT as well as the
@@ -57,4 +69,4 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 --jvm_args=\"\$mem_settings\" \
 \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
-done
+  done

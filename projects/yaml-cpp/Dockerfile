@@ -24,6 +24,6 @@ RUN apt-get update && \
 RUN git clone --depth 1 https://github.com/jbeder/yaml-cpp.git $SRC/yaml-cpp/
 RUN git clone --depth 1 https://github.com/initializedd/yaml-cpp-fuzzer.git $SRC/yaml-cpp-fuzzer/
 
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
 WORKDIR $SRC/yaml-cpp/
 

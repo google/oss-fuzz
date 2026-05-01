@@ -21,6 +21,7 @@ from google.cloud import ndb
 
 import build_and_run_coverage
 import request_build
+import build_project
 
 BASE_PROJECT = 'oss-fuzz-base'
 
@@ -28,11 +29,14 @@ BASE_PROJECT = 'oss-fuzz-base'
 # TODO (navidem): write test, currently tested manually.
 def get_build_steps(project_name, image_project, base_images_project):
   """Retrieve build steps."""
-  build_config = request_build.get_empty_config()
-  project_yaml_contents, dockerfile_lines = request_build.get_project_data(
-      project_name)
+  project_yaml, dockerfile_lines = request_build.get_project_data(project_name)
+  build_config = build_project.Config(
+      base_image_tag=project_yaml.get('base_os_version', None))
+
+  build_config.base_image_tag = project_yaml.get('base_os_version', None)
+
   return build_and_run_coverage.get_fuzz_introspector_steps(
-      project_name, project_yaml_contents, dockerfile_lines, build_config)
+      project_name, project_yaml, dockerfile_lines, build_config)
 
 
 def request_introspector_build(event, context):
