@@ -24,3 +24,5 @@ ADD https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/pdf.dict
 WORKDIR mupdf
 COPY *.cc $SRC/
 COPY build.sh *.options $SRC/
+COPY create_image_corpus.sh $SRC/
+RUN bash $SRC/create_image_corpus.sh
