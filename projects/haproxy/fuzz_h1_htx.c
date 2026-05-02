@@ -40,6 +40,7 @@
 #include <haproxy/http-hdr.h>
 #include <haproxy/global.h>
 #include <haproxy/buf.h>
+#include <haproxy/chunk.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -49,14 +50,8 @@
 #define HTX_BUF_SIZE   65536
 #define TRASH_BUF_SIZE 65536
 
-/* trash is a global scratch buffer used in h1_parse_msg_hdrs (via
- * b_slow_realign_ofs).  Normal startup initialises it, but the fuzzer
- * bypasses the full init sequence. */
-extern THREAD_LOCAL struct buffer trash;
-
 static int fuzz_initialized = 0;
 static char *htx_area = NULL;
-static char *trash_area = NULL;
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	struct h1m h1m;
@@ -71,14 +66,25 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	if (size < 2)
 		return 0;
 
-	/* One-time init */
+	/* One-time init: replicate the trash buffer setup that haproxy normally
+	 * performs at startup (alloc_early_trash + alloc_trash_buffers_per_thread).
+	 * init_trash_buffers() is the public entry point that creates the pool and
+	 * allocates the two alternating trash buffers (trash_buf1/trash_buf2) plus
+	 * the scratch buffer (trash) used throughout haproxy.  The first call with
+	 * first=1 mirrors alloc_early_trash(); the second with first=0 also creates
+	 * the large and small trash pools and their per-thread buffers. */
 	if (!fuzz_initialized) {
 		htx_area = malloc(HTX_BUF_SIZE);
-		trash_area = malloc(TRASH_BUF_SIZE);
-		if (!htx_area || !trash_area)
+		if (!htx_area)
 			return 0;
-		chunk_init(&trash, trash_area, TRASH_BUF_SIZE);
+		global.tune.bufsize = TRASH_BUF_SIZE;
+		global.tune.bufsize_large = TRASH_BUF_SIZE * 2;
+		global.tune.bufsize_small = 1024;
 		global.tune.max_http_hdr = MAX_HDR_NUM;
+		if (!init_trash_buffers(1))
+			return 0;
+		if (!init_trash_buffers(0))
+			return 0;
 		fuzz_initialized = 1;
 	}
 
