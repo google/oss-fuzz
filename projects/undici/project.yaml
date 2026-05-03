@@ -1,7 +1,7 @@
 homepage: https://undici.nodejs.org
 language: javascript
 main_repo: https://github.com/nodejs/undici.git
-primary_contact: "security@nodejs.org"
+primary_contact: "undici@iojs.org"
 fuzzing_engines:
 - libfuzzer
 sanitizers:
