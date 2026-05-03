@@ -43,7 +43,7 @@ COMMON_LIBS="-Wl,--start-group \
       -Wl,--end-group"
 
 # Build the existing fuzzers
-for fuzzer in image_fuzz stream_fuzz; do
+for fuzzer in image_fuzz stream_fuzz zip_fuzz; do
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/${fuzzer}.cpp -o $OUT/${fuzzer} \
     $COMMON_INCLUDES -pthread $COMMON_LIBS
 done
