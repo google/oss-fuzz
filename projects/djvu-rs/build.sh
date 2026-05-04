@@ -15,13 +15,13 @@
 #
 ################################################################################
 
-# Build seed corpus from test fixtures
-zip -r -j "$OUT/fuzz_full_seed_corpus.zip" tests/fixtures/*.djvu
-
-# Build all fuzz targets
 cargo fuzz build -O
 
-# Copy fuzz binaries to $OUT
-cargo fuzz list | while read target; do
-    cp "fuzz/target/x86_64-unknown-linux-gnu/release/$target" "$OUT/"
+# Copy fuzz binaries and seed corpora to $OUT.
+fuzz_out=fuzz/target/x86_64-unknown-linux-gnu/release
+for target in fuzz_full fuzz_iff fuzz_jb2 fuzz_bzz fuzz_iw44; do
+    cp "$fuzz_out/$target" "$OUT/$target"
+    if [ -d "fuzz/corpus/$target" ] && [ -n "$(ls -A fuzz/corpus/$target 2>/dev/null)" ]; then
+        (cd "fuzz/corpus/$target" && zip -qr "$OUT/${target}_seed_corpus.zip" .)
+    fi
 done

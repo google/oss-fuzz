@@ -15,7 +15,7 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-RUN git clone https://github.com/matyushkin/djvu-rs
+RUN git clone --depth 1 https://github.com/matyushkin/djvu-rs.git $SRC/djvu-rs
 WORKDIR $SRC/djvu-rs
 
 COPY build.sh $SRC/
