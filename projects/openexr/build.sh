@@ -26,6 +26,10 @@
 
 set -x
 
+# Ensure absolute path is used
+export CC=$(which clang)
+export CXX=$(which clang++)
+
 export BUILD_DIR=$WORK/_build.oss-fuzz
 
 ./src/test/oss-fuzz/oss-fuzz_build.sh
