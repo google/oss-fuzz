@@ -36,9 +36,12 @@ if [ -n \"\$luarocks\" ]; then
   eval \$(luarocks --lua-version 5.5 --tree \$project_dir/lua_modules path)
 else
   echo \"luarocks is not found\"
-  export LUA_PATH=\"\$project_dir/lua_modules/share/lua/5.5/?/init.lua;\$project_dir/lua_modules/share/lua/5.5/?.lua;\"
-  export LUA_CPATH=\"\$project_dir/lua_modules/lib/lua/5.5/?.so;\"
+  ver=\"5.5\"
+  export LUA_PATH=\"\$project_dir/lua_modules/share/lua/\$ver/?/init.lua;\$project_dir/lua_modules/share/lua/\$ver/?.lua;\"
+  export LUA_CPATH=\"\$project_dir/lua_modules/lib/lua/\$ver/?.so;\"
 fi
+
+LUA_PATH=\"\$LUA_PATH;\$project_dir/?.lua\"
 
 echo \"LUA_PATH: \$LUA_PATH\"
 echo \"LUA_CPATH: \$LUA_CPATH\"
