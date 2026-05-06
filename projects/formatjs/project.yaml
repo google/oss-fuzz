@@ -1,6 +1,6 @@
 homepage: "https://formatjs.github.io/"
 language: javascript
-primary_contact: "formatjs@example.com"
+primary_contact: "formatjsproject@gmail.com"
 main_repo: "https://github.com/formatjs/formatjs"
 fuzzing_engines:
   - libfuzzer
