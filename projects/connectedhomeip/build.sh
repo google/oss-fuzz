@@ -15,12 +15,22 @@
 #
 ################################################################################
 
+
+# workaround to get Fuzz Introspector to build; making it link with lld instead of the environment's gold linker which gives an error
+if [ "$SANITIZER" == "introspector" ]; then
+  export CFLAGS=$(echo "$CFLAGS" | sed 's/gold/lld/g')
+  export CXXFLAGS=$(echo "$CXXFLAGS" | sed 's/gold/lld/g')
+fi
+
 cd $SRC/connectedhomeip
 
 # Activate Pigweed environment
 set +u
 PW_ENVSETUP_QUIET=1 source scripts/activate.sh
 set -u
+
+#This adds zap-cli to PATH, needed for fuzzing all-clusters-app
+export PATH="/src/connectedhomeip/.environment/cipd/packages/zap/:$PATH"
 
 # Create a build directory with the following options:
 # - `oss_fuzz` enables OSS-Fuzz build
@@ -39,7 +49,7 @@ gn gen out/fuzz_targets \
     is_clang=true \
     enable_rtti=true \
     chip_enable_thread_safety_checks=false \
-    chip_enable_openthread=false \
+    chip_enable_thread=false \
     target_ldflags=[\"-fuse-ld=lld\"]"
 
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains
@@ -49,3 +59,16 @@ deactivate
 ninja -C out/fuzz_targets fuzz_tests
 
 cp out/fuzz_targets/tests/* $OUT/
+
+# Copy some GLib and GIO runtime libraries into $OUT so fuzzed all-clusters app can run under OSS-Fuzz base-runner, which does not provide these libraries.
+mkdir -p $OUT/lib
+cp /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0 $OUT/lib/
+cp /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0 $OUT/lib/
+cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0 $OUT/lib/
+cp /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 $OUT/lib/
+
+for f in $OUT/fuzz-*; do
+    file "$f" | grep -q "ELF" && patchelf --set-rpath '$ORIGIN/lib' "$f"
+done
+patchelf --set-rpath '$ORIGIN' $OUT/lib/*.so* 2>/dev/null
+	

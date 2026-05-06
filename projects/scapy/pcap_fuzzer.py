@@ -27,7 +27,8 @@ with atheris.instrument_imports():
 
 def TestOneInput(input_bytes):
     try:
-        scapy.utils.rdpcap(io.BytesIO(input_bytes))
+        for p in scapy.utils.rdpcap(io.BytesIO(input_bytes)):
+            p.summary()
     except scapy.error.Scapy_Exception:
         pass
 

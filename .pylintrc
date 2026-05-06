@@ -141,6 +141,7 @@ disable=print-statement,
         comprehension-escape,
         fixme,
         import-error,
+        logging-fstring-interpolation,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -246,6 +247,7 @@ function-naming-style=snake_case
 good-names=i,
            j,
            k,
+           fp,
            ex,
            Run,
            _
@@ -437,7 +439,7 @@ spelling-store-unknown-words=no
 additional-builtins=
 
 # Tells whether unused global variables should be treated as a violation.
-allow-global-unused-variables=yes
+allow-global-unused-variables=no
 
 # List of strings which can identify a callback function by name. A callback
 # name must start or end with one of those strings.

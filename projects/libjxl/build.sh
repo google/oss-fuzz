@@ -42,23 +42,15 @@ build_args=(
   cd ${WORK}/libjxl-corpus
   cmake "${build_args[@]}" "${SRC}/libjxl"
   ninja clean
-  ninja djxl_fuzzer_corpus jpegli_dec_fuzzer_corpus
+  ninja djxl_fuzzer_corpus
 
   # Generate fuzzer corpora.
   fuzzers=(
     djxl_fuzzer
-    jpegli_dec_fuzzer
   )
   for fuzzer in "${fuzzers[@]}"; do
     mkdir -p "${fuzzer}_corpus"
     "tools/${fuzzer}_corpus" -q -r "${fuzzer}_corpus"
-  done
-
-  # Copy the libjpeg-turbo seed corpus files and add 4 random bytes to each.
-  for file in $(find "${SRC}"/seed-corpora/{bugs/decompress,afl-testcases/jpeg*} -type f); do
-    dst=jpegli_dec_fuzzer_corpus/$(basename "${file}")
-    cp "${file}" "${dst}"
-    dd if=/dev/urandom bs=1 count=4 2>/dev/null >> "${dst}"
   done
 
   for fuzzer in "${fuzzers[@]}"; do
@@ -83,13 +75,16 @@ cmake \
   "${SRC}/libjxl"
 
 fuzzers=(
-  color_encoding_fuzzer
   cjxl_fuzzer
+  color_encoding_fuzzer
+  decode_basic_info_fuzzer
   djxl_fuzzer
   fields_fuzzer
   icc_codec_fuzzer
-  jpegli_dec_fuzzer
   rans_fuzzer
+  set_from_bytes_fuzzer
+  streaming_fuzzer
+  transforms_fuzzer
 )
 
 ninja clean

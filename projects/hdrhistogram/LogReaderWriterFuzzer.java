@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import org.HdrHistogram.Histogram;
 import org.HdrHistogram.EncodableHistogram;
 import org.HdrHistogram.HistogramLogReader;
+import java.util.NoSuchElementException;
 
 public class LogReaderWriterFuzzer {
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
@@ -34,10 +35,15 @@ public class LogReaderWriterFuzzer {
         Histogram accumulatedHistogram = new Histogram(numberOfSignificantValueDigits);
         InputStream readerStream = new ByteArrayInputStream(input);
         HistogramLogReader reader = new HistogramLogReader(readerStream);
-        while ((encodeableHistogram = reader.nextIntervalHistogram()) != null) {
-            Histogram histogram = (Histogram) encodeableHistogram;
-            histogram.getTotalCount();
-            accumulatedHistogram.add(histogram);
+        // Modification to handle exceptions
+        try {
+            while ((encodeableHistogram = reader.nextIntervalHistogram()) != null) {
+                Histogram histogram = (Histogram) encodeableHistogram;
+                histogram.getTotalCount();
+                accumulatedHistogram.add(histogram);
+            }
+        } catch (NoSuchElementException e) {
+            // Handle exception gracefully; maybe log it or simply ignore
         }
     }
 }

@@ -1,6 +1,5 @@
 homepage: "https://docs.tinyusb.org/en/latest/"
 language: c++
-primary_contact: "Ha Thach"
 main_repo: "https://github.com/hathach/tinyusb.git"
 primary_contact: "thach@tinyusb.org"
 auto_ccs:
@@ -14,4 +13,5 @@ sanitizers:
 
 architectures:
 - x86_64
-- aarch64
+# aarch64 is not supported yet. Enabling it causes trouble for maintainers.
+#- aarch64

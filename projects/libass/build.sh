@@ -38,7 +38,9 @@ cd $SRC/libass
 
 export PKG_CONFIG_PATH=/work/lib/pkgconfig
 ./autogen.sh
-./configure FUZZ_CPPFLAGS="-DASS_FUZZMODE=2" --disable-asm --disable-shared --enable-fuzz
+./configure \
+  FUZZ_CPPFLAGS="-DASS_FUZZMODE=2 -DASSFUZZ_MAX_LEN=8192" \
+  --disable-asm --disable-shared --enable-fuzz
 make -j "$(nproc)" fuzz/fuzz_ossfuzz
 cp fuzz/fuzz_ossfuzz $OUT/libass_fuzzer
 cp fuzz/ass.dict $OUT/ass.dict

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for sarif_utils.py"""
-import copy
 import os
 import unittest
 from unittest import mock
@@ -104,6 +103,17 @@ def _get_mock_crash_info():
   crash_info.frames = frames
   crash_info.crash_state = 'vuln_func\nvuln_func0\nvuln_func1'
   return crash_info
+
+
+class GetErrorFrameTest(unittest.TestCase):
+  """Tests for get_error_frame."""
+
+  def test_empty_frames_does_not_raise(self):
+    """Tests that get_error_frame doesn't raise IndexError when frames is empty."""
+    crash_info = mock.MagicMock()
+    crash_info.frames = []
+    crash_info.crash_state = 'some_func\nsome_func1'
+    self.assertIsNone(sarif_utils.get_error_frame(crash_info))
 
 
 class GetErrorSourceInfoTest(unittest.TestCase):

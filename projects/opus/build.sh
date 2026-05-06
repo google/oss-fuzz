@@ -17,9 +17,10 @@
 set -eu
 
 FUZZERS="opus_encode_fuzzer opus_multistream_decode_fuzzer opus_multistream_encode_fuzzer opus_projection_decoder_fuzzer opus_projection_encoder_fuzzer opus_repacketizer_fuzzer"
-BUILDS=(floating fixed)
+BUILDS=(floating fixed floating_qext fixed_qext)
 
 tar xvf $SRC/opus_testvectors.tar.gz
+zip -r $SRC/zipped-corpus.zip opus_testvectors/
 
 if [[ $CFLAGS = *sanitize=memory* ]]; then
   CFLAGS+=" -D_FORTIFY_SOURCE=0"
@@ -32,8 +33,16 @@ for build in "${BUILDS[@]}"; do
     floating)
       extra_args=""
       ;;
+    floating_qext)
+      extra_args=" --enable-qext"
+      CXXFLAGS+=" -DENABLE_QEXT"
+      ;;
     fixed)
       extra_args=" --enable-fixed-point --enable-check-asm"
+      ;;
+    fixed_qext)
+      extra_args=" --enable-fixed-point --enable-check-asm --enable-fixed-res24 --enable-qext"
+      CXXFLAGS+=" -DENABLE_QEXT"
       ;;
   esac
 
@@ -56,6 +65,8 @@ for build in "${BUILDS[@]}"; do
     # fuzzer's name
     [ -f tests/$fuzzer.options ] \
         && cp tests/$fuzzer.options $OUT/${fuzzer}_${build}.options
-    zip -r $OUT/${fuzzer}_${build}_seed_corpus.zip opus_testvectors/
+    cp $SRC/zipped-corpus.zip $OUT/${fuzzer}_${build}_seed_corpus.zip &
   done
 done
+
+wait

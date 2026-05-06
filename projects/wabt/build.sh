@@ -22,7 +22,7 @@ cmake ..
 cmake --build . --parallel
 cd ..
 
-for fuzzers in $(find $SRC -name '*_fuzzer.cc' | grep -v wasm_objdump_fuzzer); do
+for fuzzers in $(find $SRC -maxdepth 1 -name '*_fuzzer.cc' | grep -v wasm_objdump_fuzzer); do
   fuzz_basename=$(basename -s .cc $fuzzers)
   $CXX $CXXFLAGS -std=c++17 -I. -Ibuild -Iinclude -Ibuild/include \
   $fuzzers $LIB_FUZZING_ENGINE ./build/libwabt.a \

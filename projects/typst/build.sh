@@ -16,14 +16,11 @@
 ################################################################################
 
 cd tests/fuzz
-# Pin the nightly version to match upstream nightly compilation.
-# Typst has a large API and as a result, will often fail to build on nightly,
-# due to bugs in rustc. Because of this we are pinning the nightly version
-# to a specific version.
-cargo +nightly-2023-09-13 fuzz build -O --debug-assertions
+# Use the most recent nightly version available.
+cargo +nightly fuzz build -O --debug-assertions
 
 FUZZ_TARGET_OUTPUT_DIR=$SRC/typst/target/x86_64-unknown-linux-gnu/release 
-for f in src/*.rs
+for f in src/bin/*.rs
 do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/

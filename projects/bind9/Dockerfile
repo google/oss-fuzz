@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -y update && apt-get -y dist-upgrade
 RUN apt-get -y install		\
@@ -26,12 +26,16 @@ RUN apt-get -y install		\
 	libcap-dev		\
 	libnghttp2-dev		\
 	libssl-dev		\
+	liblmdb-dev     \
 	libtool			\
 	libtool-bin		\
 	liburcu-dev		\
 	libuv1-dev		\
 	pkg-config		\
-	zip
+	zip \
+    libcmocka-dev && \
+    python3 -m pip install  -U meson ninja
+
 RUN git clone --depth 1 https://gitlab.isc.org/isc-projects/bind9.git
 WORKDIR bind9
-COPY build.sh $SRC/
+COPY *.sh *.diff $SRC/

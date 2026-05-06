@@ -16,20 +16,17 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.zip -o maven.zip && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip && \
 unzip maven.zip -d $SRC/maven && \
 rm -rf maven.zip
 
-ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
+ENV MVN $SRC/maven/apache-maven-3.9.11/bin/mvn
 
 WORKDIR ${SRC}
 #
 # clone repository
 #
 RUN git clone https://github.com/apache/commons-beanutils.git
-COPY *.diff $SRC/
-RUN cd commons-beanutils && tr -d '\015' < $SRC/remove-rat.diff | git apply
-
 
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/

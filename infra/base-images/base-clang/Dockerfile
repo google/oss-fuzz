@@ -23,6 +23,7 @@ ARG arch=x86_64
 ENV FUZZINTRO_OUTDIR=$SRC
 
 # Install newer cmake.
+# Many projects, as well as recent clang versions, need a newer cmake.
 ENV CMAKE_VERSION 3.29.2
 RUN apt-get update && apt-get install -y wget sudo && \
     wget -q https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-$arch.sh && \
@@ -32,19 +33,12 @@ RUN apt-get update && apt-get install -y wget sudo && \
     SUDO_FORCE_REMOVE=yes apt-get autoremove --purge -y wget sudo && \
     rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
 
-RUN apt-get update && apt-get install -y git && \
-    git clone https://github.com/ossf/fuzz-introspector.git fuzz-introspector && \
-    cd fuzz-introspector && \
-    git checkout b3846c1393b7955de343c76bc305a267c8283f7a && \
-    git submodule init && \
-    git submodule update && \
-    apt-get autoremove --purge -y git && \
-    rm -rf .git
-
 COPY checkout_build_install_llvm.sh /root/
+
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.
-RUN /root/checkout_build_install_llvm.sh
+ARG FULL_LLVM_BUILD
+RUN FULL_LLVM_BUILD=$FULL_LLVM_BUILD /root/checkout_build_install_llvm.sh
 RUN rm /root/checkout_build_install_llvm.sh
 
 # Setup the environment.
@@ -59,8 +53,19 @@ ENV CCC "clang++"
 # warning, to allow compiling legacy code.
 # See https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html#potentially-breaking-changes
 # Same for deprecated-declarations, int-conversion,
-# incompatible-function-pointer-types, enum-constexpr-conversion
+# incompatible-function-pointer-types, enum-constexpr-conversion,
+# vla-cxx-extension
 
-ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -Wno-error=enum-constexpr-conversion -Wno-error=incompatible-function-pointer-types -Wno-error=int-conversion -Wno-error=deprecated-declarations -Wno-error=implicit-function-declaration -Wno-error=implicit-int -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+ENV CFLAGS -O1 \
+  -fno-omit-frame-pointer \
+  -gline-tables-only \
+  -Wno-error=incompatible-function-pointer-types \
+  -Wno-error=int-conversion \
+  -Wno-error=deprecated-declarations \
+  -Wno-error=implicit-function-declaration \
+  -Wno-error=implicit-int \
+  -Wno-error=unknown-warning-option \
+  -Wno-error=vla-cxx-extension \
+  -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"

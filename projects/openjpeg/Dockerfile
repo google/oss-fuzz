@@ -15,8 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake g++
+RUN apt-get update && apt-get install -y make cmake g++ libtiff-dev
 RUN git clone --depth 1 https://github.com/uclouvain/openjpeg openjpeg
 # openjpeg-data is used to create a seed corpus
 WORKDIR openjpeg
-COPY build.sh $SRC/
+COPY *.sh $SRC/

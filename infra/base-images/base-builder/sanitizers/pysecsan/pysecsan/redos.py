@@ -72,7 +72,7 @@ def hook_post_exec_re_compile(retval, pattern, flags=None):
   sanlib.sanitizer_log('Inside of post compile hook', sanlib.LOG_DEBUG)
   wrapper_object = sanlib.create_object_wrapper(
       findall=(hook_pre_exec_re_pattern_findall,
-               hook_pre_exec_re_pattern_findall))
+               hook_post_exec_re_pattern_findall))
   hooked_object = wrapper_object(retval)
   return hooked_object
 

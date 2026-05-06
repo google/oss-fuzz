@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake
 RUN git clone https://github.com/upx/upx-testsuite.git testsuite
 RUN git clone https://github.com/upx/upx-testsuite-v2.git testsuite2

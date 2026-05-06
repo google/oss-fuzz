@@ -1,0 +1,10 @@
+homepage: "https://github.com/ben-manes/caffeine"
+language: jvm
+main_repo: "https://github.com/ben-manes/caffeine.git"
+primary_contact: "ben.manes@gmail.com"
+auto_ccs:
+  - "cpovirk@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

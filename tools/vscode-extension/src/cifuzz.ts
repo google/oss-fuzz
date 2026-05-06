@@ -53,7 +53,7 @@ jobs:
         fuzz-seconds: ${secondToRun}
         output-sarif: true
     - name: Upload Crash
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure() && steps.build.outcome == 'success'
         with:
         name: artifacts

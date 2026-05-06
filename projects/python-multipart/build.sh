@@ -17,5 +17,6 @@
 
 python3 -m pip install '.[dev]'
 for fuzzer in $(find $SRC -name "fuzz_*.py"); do
-	compile_python_fuzzer $fuzzer
+    compile_python_fuzzer $fuzzer
 done
+cp $SRC/*.options $OUT/

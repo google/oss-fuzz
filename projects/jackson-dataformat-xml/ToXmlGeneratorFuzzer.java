@@ -14,13 +14,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
-import com.fasterxml.jackson.dataformat.xml.XmlFactory;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import tools.jackson.core.io.SerializedString;
+import tools.jackson.dataformat.xml.XmlFactory;
+import tools.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.dataformat.xml.XmlWriteFeature;
+import tools.jackson.dataformat.xml.ser.ToXmlGenerator;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.EnumSet;
@@ -30,33 +29,26 @@ import javax.xml.namespace.QName;
 public class ToXmlGeneratorFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     try {
-      // Retrieve set of ToXmlGenerator.Feature
-      EnumSet<ToXmlGenerator.Feature> featureSet = EnumSet.allOf(ToXmlGenerator.Feature.class);
+      // Retrieve set of XmlWriteFeature
+      EnumSet<XmlWriteFeature> featureSet = EnumSet.allOf(XmlWriteFeature.class);
 
       // Create and configure XmlMapper
       XmlMapper mapper = null;
       if (data.consumeBoolean()) {
         mapper =
-            new XmlMapper(
+            XmlMapper.builder(
                 XmlFactory.builder()
                     .enable(data.pickValue(featureSet))
                     .disable(data.pickValue(featureSet))
-                    .build());
+                    .build())
+                .build();
       } else {
-        mapper = new XmlMapper(new JacksonXmlModule());
-      }
-
-      // Failsafe logic
-      if (mapper == null) {
-        return;
+        mapper = XmlMapper.builder().build();
       }
 
       // Create and configure ToXmlGenerator
       ToXmlGenerator generator =
-          ((XmlMapper) mapper).getFactory().createGenerator(new ByteArrayOutputStream());
-      for (ToXmlGenerator.Feature feature : EnumSet.allOf(ToXmlGenerator.Feature.class)) {
-        generator.configure(feature, data.consumeBoolean());
-      }
+          (ToXmlGenerator) mapper.createGenerator(new ByteArrayOutputStream());
       generator.initGenerator();
       generator.setNextName(new QName("OSS-Fuzz"));
       generator.writeStartObject();
@@ -65,11 +57,11 @@ public class ToXmlGeneratorFuzzer {
       String value = null;
       switch (data.consumeInt(1, 18)) {
         case 1:
-          generator.writeStringField(
-              data.consumeString(data.remainingBytes()), data.consumeRemainingAsString());
+          generator.writeName(data.consumeString(data.remainingBytes()));
+          generator.writeString(data.consumeRemainingAsString());
           break;
         case 2:
-          generator.writeFieldName(new SerializedString(data.consumeRemainingAsString()));
+          generator.writeName(new SerializedString(data.consumeRemainingAsString()));
           break;
         case 3:
           value = data.consumeRemainingAsString();
@@ -129,7 +121,7 @@ public class ToXmlGeneratorFuzzer {
       generator.writeEndObject();
       generator.flush();
       generator.close();
-    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

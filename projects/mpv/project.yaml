@@ -1,10 +1,22 @@
 homepage: "https://github.com/mpv-player/mpv"
+main_repo: "https://github.com/mpv-player/mpv"
 language: c
 primary_contact: "kasper93@gmail.com"
+auto_ccs:
+  - "jeebjp@gmail.com"
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
 sanitizers:
   - address
+  - memory
   - undefined
-main_repo: 'https://github.com/mpv-player/mpv'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+selective_unpack: true
+coverage_extra_args: >
+  -ignore-filename-regex=mpv/subprojects/.*
+  -ignore-filename-regex=mpv/build/subprojects/.*
+  -ignore-filename-regex=ffmpeg/.*

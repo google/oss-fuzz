@@ -1,0 +1,11 @@
+homepage: "https://github.com/openkruise/kruise"
+main_repo: "https://github.com/openkruise/kruise"
+primary_contact: "furykerry@gmail.com"
+auto_ccs:
+  - "berg.zms@gmail.com"
+  - "yc649518322@gmail.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

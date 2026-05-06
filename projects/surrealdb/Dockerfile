@@ -14,14 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/surrealdb/surrealdb surrealdb
 RUN git clone --depth 1 https://github.com/surrealdb/docs.surrealdb.com.git surrealdb_website
 WORKDIR surrealdb
-# TODO(gguillemas): Remove `RUN rustup.*` lines once
-# google/oss-fuzz#11681 is reverted to use nightly in image builder.
-RUN rustup install nightly
-RUN rustup default nightly
+RUN rustup toolchain install nightly-2025-12-01 && rustup default nightly-2025-12-01
+ENV RUSTUP_TOOLCHAIN=nightly-2025-12-01
 # needed for MSAN and coverage build
 RUN rustup component add rust-src
 COPY build.sh $SRC/

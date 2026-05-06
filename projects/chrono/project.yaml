@@ -1,0 +1,8 @@
+homepage: "https://github.com/chronotope/chrono"
+main_repo: "https://github.com/chronotope/chrono.git"
+language: rust
+primary_contact: "dirkjan@ochtman.nl"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN pip3 install meson ninja
 RUN git clone --depth 1 https://github.com/syoyo/tinygltf.git
 WORKDIR $SRC/tinygltf
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

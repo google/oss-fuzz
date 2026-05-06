@@ -1,6 +1,8 @@
 homepage: "https://github.com/AOMediaCodec/libavif"
 language: c++
 primary_contact: "wtc@google.com"
+fuzzing_engines:
+  - libfuzzer
 auto_ccs:
   - "fgalligan@google.com"
   - "joedrago@gmail.com"

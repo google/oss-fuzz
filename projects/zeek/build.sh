@@ -23,8 +23,7 @@ CFLAGS="${CFLAGS} -pthread" CXXFLAGS="${CXXFLAGS} -pthread" \
                 --disable-python \
                 --disable-zeekctl \
                 --disable-auxtools \
-                --disable-broker-tests \
-		--disable-spicy
+                --disable-broker-tests
 
 cd build
 ninja install
@@ -61,6 +60,18 @@ for f in ${fuzzers}; do
         copy_lib ${f} libcrypto
         copy_lib ${f} libz
         copy_lib ${f} libmaxminddb
+
+        # ZeroMQ and dependencies.
+        copy_lib ${f} libzmq
+        copy_lib ${f} libsodium
+        copy_lib ${f} libpgm
+        copy_lib ${f} libnorm
+        copy_lib ${f} libcom_err
+        copy_lib ${f} libkeyutils
+
+        # Make libzmq search for dependencies in $ORIGIN so it
+        # has them available at runtime.
+        patchelf --set-rpath '$ORIGIN' ${OUT}/lib/libzmq.so*
     fi
 
     patchelf --set-rpath '$ORIGIN/lib' ${OUT}/${fuzzer_exe}

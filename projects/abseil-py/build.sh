@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-python3 setup.py install
+python3 -m pip install .
 cd ../
 mkdir fuzzbuilds
 cd fuzzbuilds

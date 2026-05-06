@@ -1,0 +1,10 @@
+homepage: "http://tinysparql.org"
+language: c
+primary_contact: "mrgarnacho@gmail.com"
+auto_ccs:
+- ssssam@gmail.com
+sanitizers:
+- address
+- undefined
+help_url: https://gitlab.gnome.org/GNOME/tinysparql/tree/main/fuzzing#how-to-reproduce-oss-fuzz-bugs-locally
+main_repo: 'https://gitlab.gnome.org/GNOME/tinysparql'

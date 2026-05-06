@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN git clone https://github.com/dragonflyoss/Dragonfly
 COPY build.sh $SRC/
 WORKDIR $SRC/Dragonfly

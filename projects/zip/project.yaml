@@ -1,0 +1,8 @@
+homepage: "https://github.com/kuba--/zip"
+language: c
+primary_contact: "capuanobailey@gmail.com"
+main_repo: "https://github.com/kuba--/zip.git"
+fuzzing_engines:
+    - libfuzzer
+    - afl
+    - honggfuzz

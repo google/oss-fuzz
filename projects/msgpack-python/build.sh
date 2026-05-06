@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-pip3 install .
+make cython
+python3 -m pip install .
 
 if [ "$SANITIZER" = "address" ]
 then

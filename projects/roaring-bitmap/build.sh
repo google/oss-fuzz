@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 ##########################################################################
-./gradlew clean build -x test -x javadoc -x sources
+./gradlew clean :roaringbitmap:build -x test -x javadoc -x sources --no-daemon
 
 CURRENT_VERSION=$(./gradlew properties | grep ^version: | cut -d" " -f2)
 
-cp "./RoaringBitmap/build/libs/RoaringBitmap-$CURRENT_VERSION.jar" $OUT/roaring-bitmap.jar
+cp "./roaringbitmap/build/libs/roaringbitmap-$CURRENT_VERSION.jar" $OUT/roaring-bitmap.jar
 
 ALL_JARS="roaring-bitmap.jar"
 

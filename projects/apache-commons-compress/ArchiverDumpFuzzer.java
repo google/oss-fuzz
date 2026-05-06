@@ -14,7 +14,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.dump.DumpArchiveInputStream;
 
 import java.io.ByteArrayInputStream;
@@ -24,7 +23,7 @@ public class ArchiverDumpFuzzer extends BaseTests {
     public static void fuzzerTestOneInput(byte[] data) {
         try {
             fuzzArchiveInputStream(new DumpArchiveInputStream(new ByteArrayInputStream(data)));
-        } catch (ArchiveException|IOException ignored) {
+        } catch (IOException ignored) {
         }
     }
 }

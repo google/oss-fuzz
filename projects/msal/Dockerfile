@@ -13,7 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder-python
+# Held back because of github.com/google/oss-fuzz/pull/13407
+# Please fix the build failure + upgrade.
+
+FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:d223a882810372830fd7968eb3e64533f3a2318c90be43ac753a46a15946faec
 RUN pip3 install --upgrade pip
 RUN git clone https://github.com/AzureAD/microsoft-authentication-library-for-python msal
 WORKDIR msal

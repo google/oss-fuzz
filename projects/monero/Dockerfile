@@ -17,8 +17,7 @@
 # Multistage docker build, requires docker 17.05
 
 # builder stage
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN set -ex && \
     apt-get update && \
@@ -56,31 +55,33 @@ WORKDIR monero
 ENV CFLAGS="${CFLAGS} -fPIC -pthread"
 ENV CXXFLAGS="${CXXFLAGS} -fPIC -pthread"
 
+## Workaround for boost build issue
+RUN cp /usr/local/include/x86_64-unknown-linux-gnu/c++/v1/__config_site /usr/local/include/c++/v1/
+
 ## Boost
-ARG BOOST_VERSION=1_70_0
-ARG BOOST_VERSION_DOT=1.70.0
-ARG BOOST_HASH=430ae8354789de4fd19ee52f3b1f739e1fba576f0aded0897c3c2bc00fb38778
+ARG BOOST_VERSION=1_84_0
+ARG BOOST_VERSION_DOT=1.84.0
+ARG BOOST_HASH=a5800f405508f5df8114558ca9855d2640a2de8f0445f051fa1c7c3383045724
 RUN set -ex \
-    && curl -s -L -o  boost_${BOOST_VERSION}.tar.bz2 https://downloads.getmonero.org/libs/boost_${BOOST_VERSION}.tar.bz2 \
-    && echo "${BOOST_HASH}  boost_${BOOST_VERSION}.tar.bz2" | sha256sum -c \
-    && tar -xjf boost_${BOOST_VERSION}.tar.bz2 \
+    && curl -s -L -o  boost_${BOOST_VERSION}.tar.gz https://archives.boost.io/release/${BOOST_VERSION_DOT}/source/boost_${BOOST_VERSION}.tar.gz \
+    && echo "${BOOST_HASH}  boost_${BOOST_VERSION}.tar.gz" | sha256sum -c \
+    && tar -xf boost_${BOOST_VERSION}.tar.gz \
     && cd boost_${BOOST_VERSION} \
-    && sed -i -e 's/use(* m_instance)/if (m_instance) use(* m_instance)/' boost/serialization/singleton.hpp \
     && ./bootstrap.sh --with-toolset=clang \
-    && ./b2 --build-type=minimal link=static runtime-link=static --with-chrono --with-date_time --with-filesystem --with-program_options --with-regex --with-serialization --with-system --with-thread --with-locale threading=multi threadapi=pthread cflags="$CFLAGS" cxxflags="$CXXFLAGS" stage
+    && ./b2 --build-type=minimal link=static runtime-link=static --with-chrono --with-date_time --with-filesystem --with-program_options --with-regex --with-serialization --with-system --with-thread --with-locale threading=multi threadapi=pthread cflags="$CFLAGS" cxxflags="$CXXFLAGS" install
 ENV BOOST_ROOT /usr/local/boost_${BOOST_VERSION}
 
 # OpenSSL
 ARG OPENSSL_VERSION=1.1.1g
 ARG OPENSSL_HASH=ddb04774f1e32f0c49751e21b67216ac87852ceb056b75209af2443400636d46
 RUN set -ex \
-    && curl -s -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
+    && curl -s -O -L https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
     && echo "${OPENSSL_HASH}  openssl-${OPENSSL_VERSION}.tar.gz" | sha256sum -c \
     && tar -xzf openssl-${OPENSSL_VERSION}.tar.gz \
     && cd openssl-${OPENSSL_VERSION} \
     && ./Configure linux-x86_64 no-shared --static "$CFLAGS" \
     && make build_generated \
-    && make libcrypto.a \
+    && make -j$(nproc) libcrypto.a \
     && make install
 ENV OPENSSL_ROOT_DIR=/usr/local/openssl-${OPENSSL_VERSION}
 
@@ -94,7 +95,7 @@ RUN set -ex \
     && sed -i -e 's/::~generic_mtrie_t /::~generic_mtrie_t<T> /' src/generic_mtrie_impl.hpp \
     && ./autogen.sh \
     && ./configure --enable-static --disable-shared --with-libsodium \
-    && make \
+    && make -j$(nproc) \
     && make install \
     && ldconfig
 
@@ -107,7 +108,7 @@ RUN set -ex \
     && test `git rev-parse HEAD` = ${USB_HASH} || exit 1 \
     && ./autogen.sh \
     && ./configure --disable-shared \
-    && make \
+    && make -j$(nproc) \
     && make install
 
 # Hidapi
@@ -119,11 +120,16 @@ RUN set -ex \
     && test `git rev-parse HEAD` = ${HIDAPI_HASH} || exit 1 \
     && ./bootstrap \
     && ./configure --enable-static --disable-shared \
-    && make \
+    && make -j$(nproc) \
     && make install
 
 RUN git clone https://github.com/NLnetLabs/unbound && \
-    cd unbound && ./configure && make && make install
+    cd unbound && ./configure && \
+    make libunbound.la && \
+    cp .libs/libunbound.a /usr/local/lib/ && \
+    cp .libs/libunbound.so* /usr/local/lib/ && \
+    find . -name 'unbound.h' -exec cp {} /usr/local/include/ \; && \
+    ldconfig
 
 RUN git clone --depth 1 https://github.com/monero-project/monero.git monero
-COPY build.sh $SRC/
+COPY build.sh *.options $SRC/

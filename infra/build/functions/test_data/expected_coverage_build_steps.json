@@ -14,9 +14,11 @@
       "build",
       "--tag",
       "gcr.io/oss-fuzz/test-project",
-      "."
+      "--tag",
+      "us-central1-docker.pkg.dev/oss-fuzz/unsafe/test-project",
+      "oss-fuzz/projects/test-project"
     ],
-    "dir": "oss-fuzz/projects/test-project"
+    "id": "build-UNIQUE_ID"
   },
   {
     "name": "gcr.io/oss-fuzz/test-project",
@@ -65,7 +67,7 @@
       "gcr.io/oss-fuzz/test-project",
       "bash",
       "-c",
-      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-coverage-x86_64 && compile || (echo \"********************************************************************************\nFailed to build.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer coverage --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/libfuzzer-coverage-x86_64 && compile || (echo \"********************************************************************************\\nFailed to build.\\nTo reproduce, run:\\npython infra/helper.py build_image test-project\\npython infra/helper.py build_fuzzers --sanitizer coverage --engine libfuzzer --architecture x86_64 test-project\\n********************************************************************************\" && false)"
     ],
     "id": "compile-libfuzzer-coverage-x86_64"
   },

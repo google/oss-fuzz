@@ -20,14 +20,14 @@ RUN apt-get update && \
     libgflags-dev \
     libgoogle-glog-dev \
     libgtest-dev libssl-dev \
-    make \
+    make libgtest-dev \
     curl pkg-config 
 
 # OpenSSL
 ARG OPENSSL_VERSION=1.1.1g
 ARG OPENSSL_HASH=ddb04774f1e32f0c49751e21b67216ac87852ceb056b75209af2443400636d46
 RUN set -ex \
-    && curl -s -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
+    && curl -s -O -L https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
     && echo "${OPENSSL_HASH}  openssl-${OPENSSL_VERSION}.tar.gz" | sha256sum -c \
     && tar -xzf openssl-${OPENSSL_VERSION}.tar.gz \
     && cd openssl-${OPENSSL_VERSION} \
@@ -38,7 +38,8 @@ RUN set -ex \
 
 RUN git clone https://github.com/google/s2geometry
 WORKDIR $SRC/s2geometry
-COPY build.sh \
+COPY run_tests.sh \
+     build.sh \
      s2_fuzzer.cc \
      $SRC/
 COPY project.patch $SRC/

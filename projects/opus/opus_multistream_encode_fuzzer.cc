@@ -24,6 +24,8 @@
 #include "opus_types.h"
 #include "../celt/os_support.h"
 
+#include "opus_ossfuzz_utils.h"
+
 #define MAX_PACKET (1500)
 static unsigned char out[MAX_PACKET];
 
@@ -31,7 +33,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzedDataProvider fdp(data, size);
 
   opus_int32 nb_channels = fdp.ConsumeIntegralInRange(0, 255);
-  const opus_int32 frequency = fdp.PickValueInArray({8, 12, 16, 24, 48}) * 1000;
+  const opus_int32 frequency = fdp.PickValueInArray({8, 12, 16, 24, 48
+                                                     ARG_QEXT(96)}) * 1000;
   int streams = fdp.ConsumeIntegralInRange(0, 255);
   int coupled_streams = fdp.ConsumeIntegralInRange(0, 255);
   int frame_size_ms_x2 =

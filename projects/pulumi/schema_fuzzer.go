@@ -26,6 +26,8 @@ func SchemaFuzzer(data []byte) int {
 	if err != nil {
 		return 0
 	}
-	_, _ = ImportSpec(pkgSpec, nil)
+	_, _ = ImportSpec(pkgSpec, nil, ValidationOptions{
+		AllowDanglingReferences: true,
+	})
 	return 1
 }

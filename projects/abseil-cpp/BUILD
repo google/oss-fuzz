@@ -29,5 +29,13 @@ cc_fuzz_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:cord",
         "@com_google_absl//absl/strings:str_format",
+        # The below are added for OSS-Fuzz-gen purposes. The goal is to make
+        # a general build rule from which we can build harnesses targeting
+        # most of the abseil-cpp codebase.
+        "@com_google_absl//absl/algorithm:algorithm",
+        "@com_google_absl//absl/hash:hash",
+        "@com_google_absl//absl/crc:crc32c",
+        "@com_google_absl//absl/time:time",
+        "@com_google_absl//absl/base:base",
     ],
 )

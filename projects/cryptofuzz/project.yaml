@@ -35,6 +35,7 @@ auto_ccs:
   - jschwartzentruber@mozilla.com
   - nkulatova@mozilla.com
   - twsmith@mozilla.com
+  - mdauer@mozilla.com
 vendor_ccs:
   - oss-fuzz@mozilla-fuzzing.iam.gserviceaccount.com
 sanitizers:

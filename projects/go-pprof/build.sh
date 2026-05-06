@@ -16,6 +16,4 @@
 ################################################################################
 
 mv $SRC/fuzz_test.go $SRC/pprof/profile/
-printf "package pprof\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./fuzz/register.go
-go mod tidy
-compile_native_go_fuzzer github.com/google/pprof/profile FuzzParseData FuzzParseData
+compile_native_go_fuzzer_v2 github.com/google/pprof/profile FuzzParseData FuzzParseData

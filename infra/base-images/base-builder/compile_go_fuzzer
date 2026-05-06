@@ -23,6 +23,10 @@ if [[ $#  -eq 4 ]]; then
   tags="-tags $4"
 fi
 
+# Import go_utils.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/go_utils.sh"
+
 # makes directory change temporary
 (
 cd $GOPATH/src/$path || true
@@ -57,7 +61,15 @@ if [[ $SANITIZER = *coverage* ]]; then
     abspath_repo=`go list -m $tags -f {{.Dir}} $GO_COV_ADD_PKG || go list $tags -f {{.Dir}} $GO_COV_ADD_PKG`
     echo "s=^$GO_COV_ADD_PKG"="$abspath_repo"= >> $OUT/$fuzzer.gocovpath
   fi
-  go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/...$pkgaddcov -c -o $OUT/$fuzzer $path
+  go test $tags \
+    -c \
+    -o $OUT/$fuzzer \
+    -v \
+    -covermode=atomic \
+    -coverpkg $fuzzed_repo/...$pkgaddcov \
+    $path
+    function_names_file="$OUT/fuzzer_function_names.json"
+    save_function_name "$fuzzer" "Test${function}Corpus" "$function_names_file"
 else
   # Compile and instrument all Go files relevant to this fuzz target.
   echo "Running go-fuzz $tags -func $function -o $fuzzer.a $path"

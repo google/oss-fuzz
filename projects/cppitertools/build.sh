@@ -16,4 +16,4 @@
 ################################################################################
 
 cp $SRC/fuzz_* .
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./ fuzz_cppitertools.cpp -std=c++17 -o $OUT/fuzz_cppitertools
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I./ -I./cppitertools fuzz_cppitertools.cpp -std=c++17 -o $OUT/fuzz_cppitertools

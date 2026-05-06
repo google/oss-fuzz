@@ -14,7 +14,12 @@
 # limitations under the License.
 #
 ##########################################################################
-mkdir ~/.m2
+# Ensure directories exist
+
+if [[ ! -d ~/.m2 ]]; then
+  mkdir ~/.m2
+fi
+
 cp $SRC/toolchains.xml ~/.m2/toolchains.xml
 
 $MVN clean package -Dmaven.javadoc.skip=true -DskipTests=true -Dpmd.skip=true \
@@ -47,7 +52,7 @@ cd $curr_dir
 BUILD_CLASSPATH=$JAZZER_API_PATH:$OUT/jar_temp
 RUNTIME_CLASSPATH=\$this_dir/jar_temp:\$this_dir
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH $fuzzer

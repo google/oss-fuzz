@@ -45,7 +45,9 @@ sed -i 's/sys\/stat.h>/sys\/stat.h>\n#include <linux\/sockios.h>/g' ./third_part
 # OpenSSL now declares RAND_bytes so we must patch
 find ./src/test-apps/fuzz/ -name "FuzzP*.cpp" -exec sed -i 's/RAND_bytes/RAND_bytes2/g' {} \;
 
-make -j$(nproc)
+# Don't use all cores to avoid OOM.
+# See https://github.com/google/oss-fuzz/pull/12174
+make -j$(expr $(nproc) / 2)
 
 find src/test-apps/fuzz/ -type f -executable -name "Fuzz*" | while read i; do
     patchelf --set-rpath '$ORIGIN/lib' ${i}

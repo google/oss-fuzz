@@ -1,0 +1,51 @@
+# HTTP/1 methods
+kw_get="GET "
+kw_post="POST "
+kw_put="PUT "
+kw_delete="DELETE "
+kw_head="HEAD "
+kw_options="OPTIONS "
+kw_connect="CONNECT "
+kw_patch="PATCH "
+
+# HTTP versions
+kw_http10="HTTP/1.0"
+kw_http11="HTTP/1.1"
+
+# Common headers
+kw_host="Host: "
+kw_cl="Content-Length: "
+kw_te="Transfer-Encoding: "
+kw_conn="Connection: "
+kw_ct="Content-Type: "
+kw_accept="Accept: "
+kw_cookie="Cookie: "
+kw_ua="User-Agent: "
+kw_upgrade="Upgrade: "
+kw_expect="Expect: "
+
+# Transfer-Encoding values
+kw_chunked="chunked"
+kw_identity="identity"
+
+# Connection values
+kw_keepalive="keep-alive"
+kw_close="close"
+kw_upgrade2="upgrade"
+
+# Status codes
+kw_200="200 OK"
+kw_301="301 Moved"
+kw_400="400 Bad Request"
+kw_404="404 Not Found"
+kw_500="500 Internal Server Error"
+kw_100="100 Continue"
+kw_204="204 No Content"
+
+# Delimiters
+kw_crlf="\x0d\x0a"
+kw_crlfcrlf="\x0d\x0a\x0d\x0a"
+kw_colon=": "
+
+# Chunk terminator
+kw_chunkend="0\x0d\x0a\x0d\x0a"

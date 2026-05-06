@@ -15,5 +15,7 @@
 #
 ################################################################################
 
+cmake -DPHMAP_MASTER_PROJECT=ON -DPHMAP_BUILD_TESTS=ON -B build
+cmake --build build
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/phashmap_fuzz.cc -I./ -o $OUT/phashmap_fuzz

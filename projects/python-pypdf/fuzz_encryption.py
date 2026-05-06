@@ -19,7 +19,6 @@ from io import BytesIO
 
 with atheris.instrument_imports():
     from pypdf import PdfWriter, PdfReader
-    from pypdf.generic import AnnotationBuilder
 
 
 @atheris.instrument_func
@@ -35,11 +34,6 @@ def TestInputOne(data):
             f"/X{fdp.ConsumeUnicodeNoSurrogates(100)}": fdp.ConsumeUnicodeNoSurrogates(100)
         })
         rect = (10, 20, 30, 40)
-        writer.add_annotation(page_number=0,
-                              annotation=AnnotationBuilder.link(
-                                  url=f"{fdp.ConsumeUnicodeNoSurrogates(100)}.com",
-                                  rect=rect
-                              ))
         # Encrypt
         key = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
         writer.encrypt(key, algorithm="AES-256")

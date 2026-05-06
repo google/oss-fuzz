@@ -1,15 +1,19 @@
 homepage: "https://www.python.org/"
 main_repo: "https://github.com/python/cpython"
 language: c
-primary_contact: "guidovranken@gmail.com"
+primary_contact: "seth@python.org"
 auto_ccs:
- - "gps@google.com"
+ - "greg@krypto.org"
  - "alex.gaynor@gmail.com"
  - "ammar@ammaraskar.com"
  - "pablogsal@python.org"
+ - "stanulbrych@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
 sanitizers:
  - address
- - undefined
+ - memory:
+    experimental: True
+ - undefined:
+    experimental: True

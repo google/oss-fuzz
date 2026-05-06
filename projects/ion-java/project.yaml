@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/amazon-ion/ion-java/"
 language: jvm
 fuzzing_engines:
@@ -5,9 +6,5 @@ fuzzing_engines:
 main_repo: "https://github.com/amazon-ion/ion-java/"
 sanitizers:
   - address
-vendor_ccs:
-  - "wagner@code-intelligence.com"
-  - "yakdan@code-intelligence.com"
-  - "patrice.salathe@code-intelligence.com"
-  - "hlin@code-intelligence.com"
-  - "bug-disclosure@code-intelligence.com"
+auto_ccs:
+  - "ion-team@amazon.com"

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone https://github.com/msgpack/msgpack-python msgpack-python
+RUN git clone --depth 1 https://github.com/msgpack/msgpack-python msgpack-python
+RUN python3 -m pip install --upgrade pip \
+    && python3 -m pip install -r $SRC/msgpack-python/requirements.txt
 COPY *.sh *py $SRC/
 WORKDIR $SRC/msgpack-python

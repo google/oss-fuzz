@@ -27,6 +27,8 @@
 #include "opus_projection.h"
 #include "opus_types.h"
 
+#include "opus_ossfuzz_utils.h"
+
 // Having a huge-size vastly reduces the fuzzer's speed
 #define MAX_MATRIX_SIZE 4096
 
@@ -35,7 +37,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   const int frame_size_ms_x2 =
       fdp.PickValueInArray({5, 10, 20, 40, 80, 120, 160, 200, 240});
-  const opus_int32 frequency = fdp.PickValueInArray({8, 12, 16, 24, 48}) * 1000;
+  const opus_int32 frequency = fdp.PickValueInArray({8, 12, 16, 24, 48
+                                                     ARG_QEXT(96)}) * 1000;
   const int frame_size = frame_size_ms_x2 * frequency / 2000;
 
   // The allowed number of channels is either n^2 or n^2 + 2

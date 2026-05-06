@@ -1,7 +1,8 @@
 homepage: "https://github.com/expr-lang/expr"
 primary_contact: "martin.swende@ethereum.org"
 auto_ccs:
-  - "anton@medv.io"
+  - "antonmedvio@gmail.com"
+  - "ville@vesilehto.fi"
 language: go
 fuzzing_engines:
   - libfuzzer

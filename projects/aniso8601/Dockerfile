@@ -14,6 +14,6 @@
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN pip3 install --upgrade pip
-RUN git clone https://bitbucket.org/nielsenb/aniso8601 aniso8601
+RUN git clone https://codeberg.org/nielsenb-jf/aniso8601 aniso8601
 COPY *.sh *py $SRC/
 WORKDIR $SRC/aniso8601

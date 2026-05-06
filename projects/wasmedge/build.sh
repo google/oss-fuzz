@@ -15,8 +15,7 @@
 #
 ################################################################################
 
-export CFLAGS="$CFLAGS -fuse-ld=lld"
-export CXXFLAGS="$CXXFLAGS -fuse-ld=lld"
+export CXXFLAGS="${CXXFLAGS} -Wno-error=invalid-specialization"
 
 cd "$SRC/WasmEdge"
 sed -ie 's@core lto native@core native@' cmake/Helper.cmake

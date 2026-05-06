@@ -14,51 +14,46 @@
 //
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.joda.JodaMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.datatype.joda.JodaModule;
 import org.joda.time.*;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.MonthDay;
-import java.time.Period;
-import java.time.YearMonth;
+import java.io.IOException;
 import java.util.*;
 
 public class JodaMapperFuzzer {
-    public static SerializationFeature[] serializationFeatures = new SerializationFeature[]{
-            SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS,
-            SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
-            SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS,
-            SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS,
-            SerializationFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE,
-            SerializationFeature.WRITE_DATES_WITH_ZONE_ID,
+    public static DateTimeFeature[] dateTimeFeatures = new DateTimeFeature[]{
+            DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS,
+            DateTimeFeature.WRITE_DURATIONS_AS_TIMESTAMPS,
+            DateTimeFeature.WRITE_DATES_WITH_ZONE_ID,
     };
 
-    public static Class[] classes = { DummyClass.class, DateTimeZone.class, Date.class, DateTime.class, Duration.class,
-            Instant.class, LocalDateTime.class, LocalDate.class, LocalTime.class, Period.class, ReadablePeriod.class,
+    public static Class[] classes = { DummyClass.class, DateTimeZone.class, Date.class, DateTime.class, org.joda.time.Duration.class,
+            org.joda.time.Instant.class, org.joda.time.LocalDateTime.class, org.joda.time.LocalDate.class, org.joda.time.LocalTime.class, org.joda.time.Period.class, ReadablePeriod.class,
             ReadableDateTime.class, ReadableInstant.class, Interval.class, MonthDay.class, YearMonth.class };
 
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-        JodaMapper jodaMapper = new JodaMapper();
-        jodaMapper.setWriteDatesAsTimestamps(data.consumeBoolean());
+        JsonMapper.Builder builder = JsonMapper.builder()
+                .addModule(new JodaModule());
+        
+        boolean writeDatesAsTimestamps = data.consumeBoolean();
+        builder.configure(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, writeDatesAsTimestamps);
 
-        List <SerializationFeature>pickedValues = data.pickValues(serializationFeatures,
-                data.consumeInt(0, serializationFeatures.length));
-        for (SerializationFeature feature : pickedValues) {
-            jodaMapper.enable(feature);
+        List<DateTimeFeature> pickedValues = data.pickValues(dateTimeFeatures,
+                data.consumeInt(0, dateTimeFeatures.length));
+        for (DateTimeFeature feature : pickedValues) {
+            builder.enable(feature);
         }
-
+        
+        JsonMapper jodaMapper = builder.build();
         ObjectReader reader = jodaMapper.readerFor(data.pickValue(classes));
 
         try {
             reader.readValue(data.consumeRemainingAsString());
-        } catch (JsonProcessingException | IllegalArgumentException | ArithmeticException e) {}
+        } catch (IllegalArgumentException | ArithmeticException | MismatchedInputException e) {}
     }
 
     public static class DummyClass {
@@ -66,11 +61,11 @@ public class JodaMapperFuzzer {
         public TimeZone timeZone;
         public Calendar calendar;
         public Locale locale;
-        public Duration duration;
-        public LocalDateTime localDateTime;
-        public LocalDate localDate;
-        public LocalTime localTime;
-        public Period period;
+        public org.joda.time.Duration duration;
+        public org.joda.time.LocalDateTime localDateTime;
+        public org.joda.time.LocalDate localDate;
+        public org.joda.time.LocalTime localTime;
+        public org.joda.time.Period period;
         public ReadablePeriod readablePeriod;
         public ReadableDateTime readableDateTime;
         public ReadableInstant readableInstant;

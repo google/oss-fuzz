@@ -15,10 +15,14 @@
 # limitations under the License.
 #
 ##########################################################################
-python3 -m pip install -r ./requirements.txt
-python3 setup.py build install
+
+# Fix the pyproject.toml issue by specifying the license correctly
+sed -i 's/license = "MIT"/license = {text = "MIT"}/' /src/numexpr/pyproject.toml
+
+python3 -m pip install -r /src/numexpr/requirements.txt
+python3 /src/numexpr/setup.py build install
 
 # Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+for fuzzer in $(find /src -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done

@@ -53,7 +53,7 @@ find $SEED_DATA_DIR \( -name '*_seed_corpus.zip' -o -name '*.options' -o -name '
   -exec cp {} "$OUT" \;
 
 find "$SRC" -maxdepth 1 -name 'fuzz_*.py' -print0 | while IFS= read -r -d $'\0' fuzz_harness; do
-  compile_python_fuzzer "$fuzz_harness" \
+  LD_PRELOAD=$OUT/sanitizer_with_fuzzer.so ASAN_OPTIONS=detect_leaks=0 compile_python_fuzzer "$fuzz_harness" \
     --collect-all="lxml"
 
   common_base_dictionary_filename="$SEED_DATA_DIR/__base.dict"
@@ -71,5 +71,3 @@ find "$SRC" -maxdepth 1 -name 'fuzz_*.py' -print0 | while IFS= read -r -d $'\0' 
     cat "$common_base_dictionary_filename" >> "$output_file"
   fi
 done
-
-

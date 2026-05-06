@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool libz-dev
 RUN git clone --depth 1 https://github.com/sleuthkit/sleuthkit sleuthkit
 WORKDIR sleuthkit
-COPY build.sh buildcorpus.sh sleuthkit_mem_img.h *_fuzzer.cc $SRC/
+COPY run_tests.sh build.sh replay_build.sh $SRC/

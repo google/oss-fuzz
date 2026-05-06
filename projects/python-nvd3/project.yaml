@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: https://github.com/areski/python-nvd3
 main_repo: https://github.com/areski/python-nvd3
 language: python

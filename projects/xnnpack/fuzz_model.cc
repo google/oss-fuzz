@@ -55,7 +55,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       w2.data(), -1 /* output zero point */,
       provider.ConsumeFloatingPoint<float>() /* output scale */,
       -126 /* output min */, 126 /* output max */, 0 /* flags */, nullptr,
-      nullptr, &op0);
+      &op0);
 
   xnn_deinitialize();
   return 0;

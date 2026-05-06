@@ -69,15 +69,13 @@ static void laction (int i) {
   lua_sethook(globalL, lstop, flag, 1);
 }
 
-
-
 /*
 ** Prints an error message, adding the program name in front of it
 ** (if present)
 */
 static void l_message (const char *pname, const char *msg) {
-  if (pname) lua_writestringerror("%s: ", pname);
-  lua_writestringerror("%s\n", msg);
+  if (pname) fprintf(stderr, "%s: ", pname);
+  fprintf(stderr, "%s\n", msg);
 }
 
 

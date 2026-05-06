@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/FasterXML/jackson-core"
 language: jvm
 primary_contact: "tatu@fasterxml.com"
@@ -10,7 +11,6 @@ auto_ccs:
   - "Adam@adalogics.com"
   - "David@adalogics.com"
   - "fanningpj@gmail.com"
+  - "me@yawk.at"
 vendor_ccs:
   - "norbert.schneider@code-intelligence.com"
-  - "hlin@code-intelligence.com"
-  - "bug-disclosure@code-intelligence.com"

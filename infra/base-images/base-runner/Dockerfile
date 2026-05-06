@@ -18,11 +18,17 @@
 # Keeping the rust toolchain in the image wastes 1 GB.
 FROM gcr.io/oss-fuzz-base/base-image as temp-runner-binary-builder
 
-RUN apt-get update && apt-get install -y cargo
+RUN apt-get update && apt-get install -y cargo libyaml-dev
 RUN cargo install rustfilt
 
 # Using multi-stage build to copy some LLVM binaries needed in the runner image.
 FROM gcr.io/oss-fuzz-base/base-clang AS base-clang
+FROM gcr.io/oss-fuzz-base/base-builder-ruby AS base-ruby
+
+# The base builder image compiles a specific Python version. Using a multi-stage build
+# to copy that same Python interpreter into the runner image saves build time and keeps
+# the Python versions in sync.
+FROM gcr.io/oss-fuzz-base/base-builder AS base-builder
 
 # Real image that will be used later.
 FROM gcr.io/oss-fuzz-base/base-image
@@ -35,6 +41,18 @@ COPY --from=base-clang /usr/local/bin/llvm-cov \
      /usr/local/bin/llvm-symbolizer \
      /usr/local/bin/
 
+# Copy the pre-compiled Python binaries and libraries
+COPY --from=base-builder /usr/local/bin/python3.11 /usr/local/bin/python3.11
+COPY --from=base-builder /usr/local/lib/libpython3.11.so.1.0 /usr/local/lib/libpython3.11.so.1.0
+COPY --from=base-builder /usr/local/include/python3.11 /usr/local/include/python3.11
+COPY --from=base-builder /usr/local/lib/python3.11 /usr/local/lib/python3.11
+COPY --from=base-builder /usr/local/bin/pip3 /usr/local/bin/pip3
+
+# Create symbolic links to ensure compatibility
+RUN ldconfig && \
+    ln -s /usr/local/bin/python3.11 /usr/local/bin/python3 && \
+    ln -s /usr/local/bin/python3.11 /usr/local/bin/python
+
 COPY install_deps.sh /
 RUN /install_deps.sh && rm /install_deps.sh
 
@@ -45,8 +63,11 @@ RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage
     cd /opt/code_coverage && \
     git checkout edba4873b5e8a390e977a64c522db2df18a8b27d && \
     pip3 install wheel && \
+    # If version "Jinja2==2.10" is in requirements.txt, bump it to a patch version that
+    # supports upgrading its MarkupSafe dependency to a Python 3.11 compatible release:
+    sed -i 's/Jinja2==2.10/Jinja2==2.10.3/' requirements.txt && \
     pip3 install -r requirements.txt && \
-    pip3 install MarkupSafe==0.23 && \
+    pip3 install MarkupSafe==2.0.1 && \
     pip3 install coverage==6.3.2
 
 # Default environment options for various sanitizers.
@@ -71,7 +92,8 @@ COPY install_go.sh /
 RUN /install_go.sh && rm -rf /install_go.sh /root/.go
 
 # Install OpenJDK 15 and trim its size by removing unused components.
-ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV JAVA_15_HOME=/usr/lib/jvm/java-15-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
 ENV PATH=$PATH:$JAVA_HOME/bin
 
@@ -86,6 +108,16 @@ RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jaco
 
 COPY install_javascript.sh /
 RUN /install_javascript.sh && rm /install_javascript.sh
+
+# Copy built ruby. It is up to the fuzzing harnesses
+# themselves to set GEM_HOME and GEM_PATH appropriately, as this depends
+# on how the harnesses are packaged.
+COPY --from=base-ruby /usr/local/bin/ruby /usr/local/bin/ruby
+COPY --from=base-ruby /usr/local/bin/gem /usr/local/bin/gem
+COPY --from=base-ruby /usr/local/lib/ruby /usr/local/lib/ruby
+COPY --from=base-ruby /usr/local/include/ruby-3.3.0 /usr/local/include/ruby-3.3.0
+
+RUN apt-get update && apt-get install -y luarocks
 
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \

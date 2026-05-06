@@ -20,5 +20,5 @@ go mod download
 find /root/go/pkg/mod/github.com/aws/aws-sdk-go-v2 -name "*fuzz.go" -exec rm -rf {} \;
 
 # Compile fuzzer:
-mv $SRC/storage_fuzzer.go $SRC/juju/storage/
-compile_go_fuzzer github.com/juju/juju/storage Fuzz storage_fuzzer
+mv $SRC/devices_fuzzer.go $SRC/juju/core/devices/
+compile_go_fuzzer github.com/juju/juju/core/devices Fuzz devices_fuzzer

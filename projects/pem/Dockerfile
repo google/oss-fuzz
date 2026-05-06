@@ -16,7 +16,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN pip3 install --upgrade pip && pip install twisted
+RUN python3 -m pip install --upgrade pip \
+    && python3 -m pip install 'pyinstaller==6.10.0' 'setuptools==72.1.0' twisted
 RUN git clone --depth 1 https://github.com/hynek/pem
+RUN urls="\
+https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/pem.dict \
+https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/utf8.dict" \
+  && target_file="$SRC/__base.dict" \
+  && echo $urls | xargs -n 1 wget -qO- >> $target_file
 WORKDIR pem
 COPY build.sh *.py *.pem $SRC/

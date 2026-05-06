@@ -42,7 +42,7 @@ for F in $fuzzerFiles; do
   $CXX $CXXFLAGS \
       -D_BORINGSSL_LIBPKI_ -std=c++1z \
       -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
-      -I $SRC/boringssl/include ./libpki.a ./ssl/libssl.a  ./crypto/libcrypto.a
+      -I $SRC/boringssl/include ./libpki.a ./libssl.a  ./libcrypto.a
 
   if [ -d "$SRC/boringssl/fuzz/${fuzzerName}_corpus" ]; then
     zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/boringssl/fuzz/${fuzzerName}_corpus/*
@@ -65,7 +65,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
         -DNDEBUG \
         -I $SRC/boringssl/include \
         $F genfiles/asn1_pdu.pb.cc $SRC/asn1_pdu_to_der.cc $SRC/common.cc \
-        ./ssl/libssl.a ./crypto/libcrypto.a \
+        ./libssl.a ./libcrypto.a \
         $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
         $SRC/LPM/src/libprotobuf-mutator.a \
         -Wl,--start-group $SRC/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \

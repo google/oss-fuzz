@@ -1,6 +1,8 @@
 homepage: "https://github.com/openthread/openthread"
 language: c++
 primary_contact: "jonhui@google.com"
+auto_ccs:
+  - "abtink@google.com"
 fuzzing_engines:
   - libfuzzer
   - afl

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.mysql.com"
 language: c++
 primary_contact: "secalert_us@oracle.com"

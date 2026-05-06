@@ -14,22 +14,28 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+FROM gcr.io/oss-fuzz-base/base-builder
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y -q && \
-    apt-get update -y -q && \
     apt-get install -y -q --no-install-recommends \
         bison \
-        build-essential \
-        cmake \
         flex \
-        libboost-all-dev \
-        ninja-build \
-        python3
+        ninja-build
+
+ARG boost_version=1.89.0
+# uuid and locale needed for Thrift source build
+ARG boost_components=filesystem;system;process;multiprecision;crc;uuid;locale
+
+RUN wget https://github.com/boostorg/boost/releases/download/boost-${boost_version}/boost-${boost_version}-cmake.tar.gz && \
+    tar -xf boost-${boost_version}-cmake.tar.gz && \
+    cd boost-${boost_version}/ && \
+    mkdir -p build / && \
+    cd build/ && \
+    cmake .. -GNinja -DBOOST_INCLUDE_LIBRARIES="${boost_components}" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF && \
+    cmake --build . --target install
 
 RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow
 
-COPY build.sh $SRC/
+COPY *.sh $SRC/

@@ -1,0 +1,10 @@
+homepage: "https://developers.cloudflare.com/time-services/roughtime"
+language: go
+primary_contact: "armfazh@cloudflare.com"
+auto_ccs:
+  - "pkillarjun@protonmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/cloudflare/roughtime.git"

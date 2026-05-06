@@ -17,31 +17,42 @@
 */
 
 #include <haproxy/cfgparse.h>
+#include <haproxy/chunk.h>
+#include <haproxy/global.h>
 
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-int
-LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
-{
-    if (size < 50)
-        return 0;
+#define FUZZ_TRASH_SIZE 65536
 
-	char filename[256];
-	sprintf(filename, "/tmp/libfuzzer.%d", getpid());
+static int trash_initialized = 0;
 
-	FILE *fp = fopen(filename, "wb");
-	if (!fp)
-			return 0;
-	fwrite(data, size, 1, fp);
-	fclose(fp);
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  /* One-time init: use init_trash_buffers() to properly initialize all trash
+   * buffers (trash, trash_buf1, trash_buf2 and their large/small variants).
+   * This mirrors haproxy's alloc_early_trash + alloc_trash_buffers_per_thread
+   * startup sequence. */
+  if (!trash_initialized) {
+    global.tune.bufsize = FUZZ_TRASH_SIZE;
+    global.tune.bufsize_large = FUZZ_TRASH_SIZE * 2;
+    global.tune.bufsize_small = 1024;
+    if (!init_trash_buffers(1))
+      return 0;
+    if (!init_trash_buffers(0))
+      return 0;
+    trash_initialized = 1;
+  }
 
-	// Fuzz the cfg parser
-	readcfgfile(filename);
+  struct cfgfile dummy_cfg = {
+      .filename = "fuzzer",
+      .content = (const char *)data,
+      .size = size,
+  };
+  if (size < 50)
+    return 0;
 
-	unlink(filename);
-
-	return 0;
+  parse_cfg(&dummy_cfg);
+  return 0;
 }

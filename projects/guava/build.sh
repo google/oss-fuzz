@@ -16,7 +16,7 @@
 ################################################################################
 
 MAVEN_ARGS="-Djavac.src.version=15 -Djavac.target.version=15 -DskipTests"
-$MVN package $MAVEN_ARGS
+$MVN install $MAVEN_ARGS
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 cp "guava/target/guava-$CURRENT_VERSION.jar" "$OUT/guava.jar"

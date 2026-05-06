@@ -21,7 +21,7 @@ mv $SRC/nss $SRC/nss-nspr/
 mv $SRC/nspr $SRC/nss-nspr/
 cd $SRC/nss-nspr/
 # We do not need NSS to be built with address sanitizer
-CFLAGS="" CXXFLAGS="" nss/build.sh --static
+CFLAGS="" CXXFLAGS="" nss/build.sh --static --disable-tests
 
 # Create a package config for NSS
 cp dist/Debug/lib/pkgconfig/{nspr,nss}.pc

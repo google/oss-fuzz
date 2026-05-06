@@ -41,10 +41,15 @@ $CC $CFLAGS  -std=c99 -c \
   $SRC/h5_read_fuzzer.c
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE h5_read_fuzzer.o ./build-dir/bin/libhdf5.a -lz -o $OUT/h5_read_fuzzer
 
-
 $CC $CFLAGS  -std=c99 -c \
   -I/src/hdf5/src -I/src/hdf5/build-dir/src -I./src/H5FDsubfiling/ \
   $SRC/h5_extended_fuzzer.c
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE h5_extended_fuzzer.o ./build-dir/bin/libhdf5.a -lz -o $OUT/h5_extended_fuzzer
 
 zip -j $OUT/h5_extended_fuzzer_seed_corpus.zip $SRC/hdf5/test/testfiles/*.h5
+
+# Build test
+mkdir $SRC/hdf5/build-test
+cd $SRC/hdf5/build-test
+cmake -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_TESTING:BOOL=ON ..
+cmake --build . --verbose --config Release -j$(nproc)

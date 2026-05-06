@@ -39,4 +39,3 @@ then
     rm $OUT/server
     rm $OUT/persist
 fi
-

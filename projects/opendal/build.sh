@@ -15,7 +15,7 @@
 
 # build fuzz targets
 cd $SRC/opendal/core
-cargo +nightly-2023-12-28 fuzz build -O --debug-assertions
+cargo fuzz build -O --debug-assertions
 
 # copy fuzz targets to $OUT
 targets=(

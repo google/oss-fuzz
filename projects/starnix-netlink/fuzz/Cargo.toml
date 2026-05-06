@@ -1,0 +1,32 @@
+[package]
+name = "netlink_fuzz"
+version = "0.0.0"
+publish = false
+edition = "2018"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+arbitrary = "1.3.2"
+derive_arbitrary = "1.3.2"
+netlink_packet_core = { path = "../netlink_packet_core" }
+netlink_packet_generic = { path = "../netlink_packet_generic" }
+netlink_packet_route = { path = "../netlink_packet_route" }
+netlink_packet_sock_diag = { path = "../netlink_packet_sock_diag" }
+netlink_packet_utils = { path = "../netlink_packet_utils" }
+
+[[bin]]
+name = "core_fuzzer"
+path = "fuzz_targets/core_fuzzer.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "utils_fuzzer"
+path = "fuzz_targets/utils_fuzzer.rs"
+test = false
+doc = false
+bench = false

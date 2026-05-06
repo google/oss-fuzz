@@ -15,4 +15,15 @@
 #
 ################################################################################
 
+pushd $SRC/json-c-json-c-0.17-20230812
+  mkdir build
+  cd build
+  cmake -DBUILD_SHARED_LIBS=OFF ..
+  make -j$(nproc)
+  make install
+popd
+
 bash -x ./ndpi/tests/ossfuzz.sh
+pushd $SRC/ndpi/tests/unit
+    make unit
+popd

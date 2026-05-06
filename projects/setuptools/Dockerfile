@@ -12,8 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone https://github.com/pypa/setuptools setuptools
-RUN python3 -m pip install --upgrade pip tomli tomli-w railroad-diagrams pyparsing jinja2
+# Held back because of github.com/google/oss-fuzz/pull/13407
+# Please fix the build failure + upgrade.
+
+FROM gcr.io/oss-fuzz-base/base-builder-python@sha256:d223a882810372830fd7968eb3e64533f3a2318c90be43ac753a46a15946faec
+RUN git clone --depth 1 --single-branch https://github.com/pypa/setuptools setuptools
+RUN git clone --depth 1 --single-branch https://github.com/pypa/distutils distutils
+RUN python3 -m pip install --upgrade pip \
+    && python3 -m pip install 'pyinstaller==6.10.0' tomli tomli-w railroad-diagrams pyparsing jinja2
+RUN urls="\
+https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/utf8.dict \
+https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/toml.dict" \
+  && target_file="$SRC/__base.dict" \
+  && echo $urls | xargs -n 1 wget -qO- >> $target_file
 COPY *.sh *py $SRC/
 WORKDIR $SRC/setuptools

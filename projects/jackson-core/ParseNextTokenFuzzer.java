@@ -16,15 +16,15 @@
 
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.Base64Variant;
-import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.io.SerializedString;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.Base64Variant;
+import tools.jackson.core.Base64Variants;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.io.SerializedString;
 
 import java.io.Writer;
 import java.io.StringWriter;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -44,13 +44,13 @@ public class ParseNextTokenFuzzer {
           } else if(execType==1) {
             jp.nextToken();
           } else if(execType==2) {
-            jp.nextTextValue();
+            jp.nextStringValue();
           } else if(execType==3) {
             jp.nextBooleanValue();
           } else if(execType==4) {
-            jp.nextFieldName();
+            jp.nextName();
           } else if(execType==5) {
-            jp.nextFieldName(new SerializedString(data.consumeString(10000)));
+            jp.nextName(new SerializedString(data.consumeString(10000)));
           } else if(execType==6) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             Base64Variant orig = Base64Variants.PEM;
@@ -60,8 +60,7 @@ public class ParseNextTokenFuzzer {
           } else if(execType==8) {
             int outInt = jp.getValueAsInt();
           } else if(execType==9) {
-            Writer writer = new StringWriter();
-            int len = jp.getText(writer);
+            String text = jp.getText();
           } else if(execType==10) {
             char[] textChars = jp.getTextCharacters();
           } else if(execType==11) {
@@ -78,7 +77,7 @@ public class ParseNextTokenFuzzer {
             jp.finishToken();
           }
         }
-    } catch (IOException | IllegalArgumentException ignored) {
+    } catch (JacksonException | IllegalArgumentException ignored) {
   }
 }
 }

@@ -39,6 +39,8 @@ RUN git clone --depth 1 https://github.com/tc39/test262 && \
     find test262/test/built-ins -iname '*.js' -exec stripcomments --write --confirm-overwrite '{}' \+ && \
     # strip empty lines
     find test262/test/built-ins -iname '*.js' -exec sed -i '/^[[:space:]]*$/d' '{}' \+ && \
+    # strip functions that sleep
+    find test262/test/built-ins -iname '*.js' -exec grep -l 'Atomics\.wait' {} \; -exec rm -f {} \; && \
     find test262/test/built-ins -iname '*.js' | zip -@ -q $SRC/xst_seed_corpus.zip
 
 RUN git clone --depth=1 https://github.com/Moddable-OpenSource/moddable moddable && \

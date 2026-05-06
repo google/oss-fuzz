@@ -16,15 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-RUN curl -L https://dlcdn.apache.org//ant/binaries/apache-ant-1.10.12-bin.tar.gz -o ant.tar.gz && \
+RUN curl -L https://archive.apache.org/dist/ant/binaries/apache-ant-1.10.15-bin.tar.gz -o ant.tar.gz && \
     mkdir -p $SRC/ant && \
     tar -zxvf ant.tar.gz -C $SRC/ant --strip-components=1 && \
     rm -rf ant.tar.gz
 
-RUN apt update && apt install -y default-jdk
+RUN apt update && apt install -y openjdk-21-jdk
 
 ENV ANT_HOME=$SRC/ant
 ENV ANT $SRC/ant/bin/ant
+ENV JAVA_HOME /usr/lib/jvm/java-21-openjdk-amd64
 
 RUN git clone --depth 1 https://github.com/apache/tomcat
 

@@ -22,3 +22,12 @@ npm install --save-dev @jazzer.js/core
 
 # Build Fuzzers.
 compile_javascript_fuzzer sharp fuzz.js -i sharp
+
+# Merge the seed corpus in a single directory, exclude files larger than 4k
+mkdir -p fuzz/corpus
+find \
+  $SRC/afl-testcases/{gif*,jpeg*,png,tiff,webp}/full/images \
+  test/fixtures \
+  -type f -size -4k \
+  -exec bash -c 'hash=($(sha1sum {})); mv {} fuzz/corpus/$hash' \;
+zip -jrq $OUT/fuzz_seed_corpus.zip fuzz/corpus

@@ -17,25 +17,25 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.core.FormatFeature;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.csv.CsvFactory;
-import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.javaprop.JavaPropsFactory;
-import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlFactory;
-import com.fasterxml.jackson.dataformat.toml.TomlMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlWriteFeature;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.core.FormatFeature;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.TokenStreamFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.dataformat.csv.CsvFactory;
+import tools.jackson.dataformat.csv.CsvMapper;
+import tools.jackson.dataformat.csv.CsvWriteFeature;
+import tools.jackson.dataformat.javaprop.JavaPropsFactory;
+import tools.jackson.dataformat.javaprop.JavaPropsMapper;
+import tools.jackson.dataformat.toml.TomlFactory;
+import tools.jackson.dataformat.toml.TomlMapper;
+import tools.jackson.dataformat.toml.TomlWriteFeature;
+import tools.jackson.dataformat.yaml.YAMLFactory;
+import tools.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -46,13 +46,13 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.emitter.EmitterException;
+import org.snakeyaml.engine.v2.api.DumpSettings;
+import org.snakeyaml.engine.v2.common.FlowStyle;
 
 /** This fuzzer targets the serialization methods of YAML/TOML/JavaProps/CSV objects */
 public class SerializerFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-    JsonFactory factory = null;
+    TokenStreamFactory factory = null;
     JsonGenerator generator = null;
     ObjectMapper mapper = null;
     FormatFeature feature = null;
@@ -67,7 +67,7 @@ public class SerializerFuzzer {
           mapper = CsvMapper.builder((CsvFactory) factory).build();
 
           // Initialize format options
-          feature = data.pickValue(EnumSet.allOf(CsvGenerator.Feature.class));
+          feature = data.pickValue(EnumSet.allOf(CsvWriteFeature.class));
           break;
         case 2:
           // Initialize JavaPropsFactory object
@@ -88,15 +88,16 @@ public class SerializerFuzzer {
           break;
         case 4:
           // Initialize YAMLFactory object
-          DumperOptions options = new DumperOptions();
-          options.setDefaultFlowStyle(data.pickValue(EnumSet.allOf(DumperOptions.FlowStyle.class)));
-          factory = YAMLFactory.builder().dumperOptions(options).build();
+          DumpSettings dumpSettings = DumpSettings.builder()
+                  .setDefaultFlowStyle(data.pickValue(EnumSet.allOf(FlowStyle.class)))
+                  .build();
+          factory = YAMLFactory.builder().dumperOptions(dumpSettings).build();
 
           // Initialize YAMLMapper object
           mapper = YAMLMapper.builder((YAMLFactory) factory).build();
 
           // Initialize format options
-          feature = data.pickValue(EnumSet.allOf(YAMLGenerator.Feature.class));
+          feature = data.pickValue(EnumSet.allOf(YAMLWriteFeature.class));
           break;
       }
 
@@ -138,7 +139,7 @@ public class SerializerFuzzer {
           break;
         case 2:
           generator.writeStartObject();
-          generator.writeBinaryField("data", data.consumeRemainingAsBytes());
+          generator.writeBinary(data.consumeRemainingAsBytes());
           generator.writeEndObject();
           break;
         case 3:
@@ -215,7 +216,7 @@ public class SerializerFuzzer {
 
       writer.writeValueAsString(object);
       writer.writeValueAsBytes(object);
-    } catch (IOException | IllegalArgumentException | EmitterException e) {
+    } catch (JacksonException | IllegalArgumentException e) {
       // Known exception
     } finally {
       try {
@@ -224,7 +225,7 @@ public class SerializerFuzzer {
           generator.flush();
           generator.close();
         }
-      } catch (IOException | EmitterException e) {
+      } catch (JacksonException e) {
         // Ignore exceptions for generator closing
       }
     }

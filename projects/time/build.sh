@@ -24,6 +24,7 @@ go get github.com/facebook/time/fbclock/daemon
 
 # FuzzCompute
 sed -i -e '/func TestHashShouldMatch(/,/^}/ s/^/\/\//' leaphash/leaphash_test.go
+sed -i -e '/\"github.com\/stretchr\/testify\/require\"/ s/^/\/\//' leaphash/leaphash_test.go
 
 # FuzzBytesToPacket
 sed -i -e '/func Benchmark.*(/,/^}/ s/^/\/\//' ntp/protocol/ntp_test.go

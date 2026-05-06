@@ -64,7 +64,7 @@ by running the following commands:
 $ cd /path/to/oss-fuzz
 $ export PROJECT_NAME=<project_name>
 $ export LANGUAGE=<project_language>
-$ python infra/helper.py generate $PROJECT_NAME --language=$LANGUAGE
+$ python3 infra/helper.py generate $PROJECT_NAME --language=$LANGUAGE
 ```
 
 Once the template configuration files are created, you can modify them to fit your project.
@@ -86,6 +86,8 @@ This configuration file stores project metadata. The following attributes are su
 - [help_url](#help_url) (optional)
 - [builds_per_day](#build_frequency) (optional)
 - [file_github_issue](#file_github_issue) (optional)
+- [disable_remediation](#disable_remediation) (optional)
+- [disable_remediation_pre_review](#disable_remediation_pre_review) (optional)
 
 ### homepage
 You project's homepage.
@@ -102,6 +104,7 @@ Programming language the project is written in. Values you can specify include:
 * [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
 * [`swift`]({{ site.baseurl }}//getting-started/new-project-guide/swift-lang/)
 * [`javascript`]({{ site.baseurl }}//getting-started/new-project-guide/javascript-lang/)
+* [`lua`]({{ site.baseurl }}//getting-started/new-project-guide/lua-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -209,6 +212,20 @@ Will build the project twice per day.
 Whether to mirror issues on github instead of having them only in the OSS-Fuzz
 tracker.
 
+### disable_remediation (optional) {#disable_remediation}
+Opt out of receiving remediation for all new and existing bugs. If remediation
+is disabled, all disclosure notifications will not include any proposed code
+changes. If enabled (default), proposed code changes and comments to remediate
+bugs may be automatically included in disclosure that is private during the
+embargo of each issue on a case-by-case basis basis.
+
+### disable_remediation_pre_review (optional) {#disable_remediation_pre_review}
+Opt out of human-in-the-loop pre-review for proposed remediation code changes.
+If this is enabled, proposed code changes will be included in disclosure
+notifications without prior manual review by the OSS-Fuzz team. If disabled
+(default), all proposed remediation changes will be reviewed by a human before
+being shared.
+
 ## Dockerfile {#dockerfile}
 
 This configuration file defines the Docker image for your project. Your [build.sh](#buildsh) script will be executed in inside the container you define.
@@ -236,6 +253,10 @@ You also need to setup environment variables needed by this toolchain, for examp
 For an example, see
 [ecc-diff-fuzzer/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/ecc-diff-fuzzer/Dockerfile).
 where we use `base-builder-rust`and install golang
+
+Runtime dependencies of your project, such as third-party static libraries, will
+not be instrumented if you build them in the Dockerfile. In most cases, you will
+want to build them in `build.sh` instead.
 
 ## build.sh {#buildsh}
 
@@ -365,8 +386,8 @@ You can build your docker image and fuzz targets locally, so you can test them b
 
     ```bash
     $ cd /path/to/oss-fuzz
-    $ python infra/helper.py build_image $PROJECT_NAME
-    $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
+    $ python3 infra/helper.py build_image $PROJECT_NAME
+    $ python3 infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
     ```
 
     The built binaries appear in the `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
@@ -378,13 +399,13 @@ You can build your docker image and fuzz targets locally, so you can test them b
 2. Find failures to fix by running the `check_build` command:
 
     ```bash
-    $ python infra/helper.py check_build $PROJECT_NAME
+    $ python3 infra/helper.py check_build $PROJECT_NAME
     ```
 
 3. If you want to test changes against a particular fuzz target, run the following command:
 
     ```bash
-    $ python infra/helper.py run_fuzzer --corpus-dir=<path-to-temp-corpus-dir> $PROJECT_NAME <fuzz_target>
+    $ python3 infra/helper.py run_fuzzer --corpus-dir=<path-to-temp-corpus-dir> $PROJECT_NAME <fuzz_target>
     ```
 
 4. We recommend taking a look at your code coverage as a test to ensure that
@@ -392,11 +413,11 @@ your fuzz targets get to the code you expect. This would use the corpus
 generated from the previous `run_fuzzer` step in your local corpus directory.
 
     ```bash
-    $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
-    $ python infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
+    $ python3 infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
+    $ python3 infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
     ```
 
-You may need to run `python infra/helper.py pull_images` to use the latest
+You may need to run `python3 infra/helper.py pull_images` to use the latest
 coverage tools. Please refer to
 [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
 information on code coverage generation.

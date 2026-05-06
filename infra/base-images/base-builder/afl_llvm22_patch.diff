@@ -1,0 +1,22 @@
+diff --git a/GNUmakefile.llvm b/GNUmakefile.llvm
+index 2cde89d9..7cafd3f5 100644
+--- a/GNUmakefile.llvm
++++ b/GNUmakefile.llvm
+@@ -32,7 +32,7 @@ VERSION     = $(shell grep '^ *$(HASH)define VERSION ' ./config.h | cut -d '"' -
+ 
+ SYS = $(shell uname -s)
+ 
+-override LLVM_TOO_NEW_DEFAULT := 21
++override LLVM_TOO_NEW_DEFAULT := 22
+ override LLVM_TOO_OLD_DEFAULT := 14
+ 
+ ifeq "$(SYS)" "OpenBSD"
+@@ -69,7 +69,7 @@ endif
+ 
+ LLVM_STDCXX                  := gnu++11
+ LLVM_LTO                     := 0
+-LLVM_UNSUPPORTED             := $(shell echo "$(LLVMVER)" | grep -E -q '^[0-2]\.|^3\.[0-7]\.|^2[2-9]\.' && echo 1 || echo 0)
++LLVM_UNSUPPORTED             := $(shell echo "$(LLVMVER)" | grep -E -q '^[0-2]\.|^3\.[0-7]\.|^2[3-9]\.' && echo 1 || echo 0)
+ # Uncomment to see the values assigned above
+ # $(foreach var,_CLANG_VERSIONS_TO_TEST LLVM_CONFIG LLVMVER LLVM_MAJOR LLVM_MINOR LLVM_TOO_NEW LLVM_TOO_OLD LLVM_TOO_NEW_DEFAULT LLVM_TOO_OLD_DEFAULT LLVM_NEW_API LLVM_NEWER_API LLVM_13_OK LLVM_HAVE_LTO LLVM_BINDIR LLVM_LIBDIR LLVM_STDCXX LLVM_APPLE_XCODE LLVM_LTO LLVM_UNSUPPORTED,$(warning $(var) = $($(var))))
+ 

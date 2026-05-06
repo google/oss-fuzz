@@ -4,10 +4,11 @@ primary_contact: "cncf-flux-security@lists.cncf.io"
 auto_ccs :
   - "hidde@weave.works"
   - "scott@r6by.com"
-  - "paulo.gomes.uk@gmail.com"
   - "david@adalogics.com"
   - "adam@adalogics.com"
-  - "max@weave.works"
+  - "max@e13.dev"
+  - "matheuscscp@gmail.com"
+  - "stefan.prodan@gmail.com"
 language: go
 fuzzing_engines:
   - libfuzzer

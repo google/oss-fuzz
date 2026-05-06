@@ -1,0 +1,8 @@
+homepage: "https://www.clusterlabs.org/pacemaker/"
+language: c
+primary_contact: "clumens@redhat.com"
+auto_ccs:
+- "nwahl@redhat.com"
+- "david@adalogics.com"
+- "adam@adalogics.com"
+main_repo: "https://github.com/ClusterLabs/pacemaker"

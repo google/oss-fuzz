@@ -1,0 +1,14 @@
+homepage: "https://jerryscript.net"
+language: c
+primary_contact: "zherczeg7@gmail.com"
+auto_ccs:
+  - "reni@inf.u-szeged.hu"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/jerryscript-project/jerryscript"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz

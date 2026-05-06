@@ -44,7 +44,7 @@ RUN apt-get update \
     python3-sphinx-rtd-theme \
     python3-setuptools \
     python3-wheel doxygen \
- && pip3 install --no-cache-dir "btest>=0.66" pre-commit \
+ && pip3 install --no-cache-dir "btest>=0.66" \
  # Install a recent CMake.
  && mkdir -p /opt/cmake \
  && curl -L https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-linux-x86_64.tar.gz | tar xzvf - -C /opt/cmake --strip-components 1 \
@@ -63,4 +63,4 @@ RUN git clone --depth 1 --recursive https://github.com/zeek/spicy spicy \
 
 WORKDIR ${SRC}/spicy
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

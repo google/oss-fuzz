@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly-2023-12-28 --profile=minimal
-cargo install cargo-fuzz && rm -rf /rust/registry
+curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=$RUSTUP_TOOLCHAIN --profile=minimal
+cargo install cargo-fuzz --locked && rm -rf /rust/registry
 # Needed to recompile rust std library for MSAN
-rustup component add rust-src --toolchain nightly-2023-12-28
+rustup component add rust-src
 cp -r /usr/local/lib/x86_64-unknown-linux-gnu/* /usr/local/lib/

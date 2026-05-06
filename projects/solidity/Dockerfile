@@ -28,19 +28,19 @@ RUN git clone --branch="v0.11.0" --recurse-submodules \
 
 # Install statically built dependencies in "/usr" directory
 # Install boost
-RUN cd $SRC; \
-    wget -q 'https://archives.boost.io/release/1.73.0/source/boost_1_73_0.tar.bz2' -O boost.tar.bz2; \
-    test "$(sha256sum boost.tar.bz2)" = "4eb3b8d442b426dc35346235c8733b5ae35ba431690e38c6a8263dce9fcbb402  boost.tar.bz2"; \
-    tar -xf boost.tar.bz2; \
-    rm boost.tar.bz2; \
-    cd boost_1_73_0; \
-    CXXFLAGS="-stdlib=libc++ -pthread" LDFLAGS="-stdlib=libc++" ./bootstrap.sh --with-toolset=clang --prefix=/usr; \
-    ./b2 toolset=clang cxxflags="-stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" headers; \
+RUN cd $SRC && \
+    wget -q 'https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.bz2' -O boost.tar.bz2 && \
+    test "$(sha256sum boost.tar.bz2)" = "6478edfe2f3305127cffe8caf73ea0176c53769f4bf1585be237eb30798c3b8e  boost.tar.bz2" && \
+    tar -xf boost.tar.bz2 && \
+    rm boost.tar.bz2 && \
+    cd boost_1_83_0 && \
+    CXXFLAGS="-stdlib=libc++ -pthread" LDFLAGS="-stdlib=libc++" ./bootstrap.sh --with-toolset=clang --prefix=/usr && \
+    ./b2 toolset=clang cxxflags="-stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" headers && \
     ./b2 toolset=clang cxxflags="-stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" \
         link=static variant=release runtime-link=static \
         system filesystem unit_test_framework program_options \
-        install -j $(($(nproc)/2)); \
-    rm -rf $SRC/boost_1_73_0
+        install -j $(($(nproc)/2)) && \
+    rm -rf $SRC/boost_1_83_0
 
 # Install libprotobuf-mutator
 # Use commit prior to libprotobuf upgrade that broke solidity build

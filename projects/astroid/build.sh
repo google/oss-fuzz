@@ -19,3 +19,14 @@ pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
+
+# Build a fuzz_parse seed corpus consisting of all the .py files from the astroid repo
+CORPUS_DIR="$WORK/corpus"
+mkdir -p "$CORPUS_DIR"
+
+FILES=$(find "$SRC/astroid" -type f -iname "*.py")
+for file in $FILES; do
+  cp "$file" "$CORPUS_DIR/$(md5sum "$file" | cut -f 1 -d ' ').py"
+done
+
+zip -r "$OUT/fuzz_parse_seed_corpus.zip" "$CORPUS_DIR"/*

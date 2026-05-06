@@ -47,18 +47,23 @@ def convert(xml):
   src_files = list_src_files()
 
   for class_element in report.findall('./package/class'):
-    class_name = class_element.attrib['name']
-    package_name = os.path.dirname(class_name)
+    # Skip fuzzer classes
+    if is_fuzzer_class(class_element):
+      continue
+
+    # Skip non class elements
     if 'sourcefilename' not in class_element.attrib:
       continue
+
+    class_name = class_element.attrib['name']
+    package_name = os.path.dirname(class_name)
     basename = class_element.attrib['sourcefilename']
     # This path is 'foo/Bar.java' for the class element
     # <class name="foo/Bar" sourcefilename="Bar.java">.
     canonical_path = os.path.join(package_name, basename)
 
     class_summary = make_element_summary(class_element)
-    src_files = relative_to_src_path(src_files, canonical_path)
-    for src_file in src_files:
+    for src_file in relative_to_src_path(src_files, canonical_path):
       summary['data'][0]['files'].append({
           'filename': src_file,
           'summary': class_summary,
@@ -77,9 +82,18 @@ def list_src_files():
     for filename in filenames:
       full_path = dirpath + '/' + filename
       # Map /out//src/... to /src/...
-      src_path = full_path[len(out_path):]
-      filename_to_paths.setdefault(filename, []).append(src_path)
+      file_path = full_path[len(out_path):]
+      filename_to_paths.setdefault(filename, []).append(file_path)
   return filename_to_paths
+
+
+def is_fuzzer_class(class_element):
+  """Check if the class is fuzzer class."""
+  method_elements = class_element.find('./method[@name=\"fuzzerTestOneInput\"]')
+  if method_elements:
+    return True
+
+  return False
 
 
 def relative_to_src_path(src_files, canonical_path):

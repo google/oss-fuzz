@@ -5,8 +5,11 @@ auto_ccs :
 - "miek@miek.nl"
 - "p.antoine@catenacyber.fr"
 - "yong.tang.github@gmail.com"
+- "ville@vesilehto.fi"
 language: go
 fuzzing_engines:
 - libfuzzer
 sanitizers:
 - address
+
+base_os_version: ubuntu-24-04

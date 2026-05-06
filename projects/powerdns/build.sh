@@ -24,6 +24,18 @@ sed -i 's/AC_MSG_ERROR(\[Boost Program Options library not found\])/AC_MSG_NOTIC
 # does not appear to be compiled as PIC
 sed -i 's/AC_CC_PIE//' configure.ac
 
+# Install Boost headers
+(
+ cd $SRC/
+ tar jxf boost_1_84_0.tar.bz2
+ cd boost_1_84_0/
+ CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+ CFLAGS="" CXXFLAGS="" ./b2 headers
+ cp -R boost/ /usr/include/
+ # work around https://github.com/mesonbuild/meson/issues/15470
+ touch /usr/lib/libboost_bogus.so
+)
+
 # build fuzzing targets
 autoreconf -vi
 ./configure \
@@ -48,19 +60,31 @@ cp fuzz_target_* "${OUT}/"
 # build the dnsdist fuzzing target, if any
 if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
     cd dnsdistdist
-    sed -i 's/AC_CC_PIE//' configure.ac
-    autoreconf -vi
-    ./configure \
-        --enable-fuzz-targets \
-        --disable-dependency-tracking \
-        --disable-silent-rules || /bin/bash
-    if [ -d ext/arc4random/ ]; then
-        make -j$(nproc) -C ext/arc4random/
+    build_dir='.'
+    if [ -f configure.ac ]; then
+        sed -i 's/AC_CC_PIE//' configure.ac
+        autoreconf -vi
+        ./configure \
+            --enable-fuzz-targets \
+            --disable-dependency-tracking \
+            --disable-silent-rules || /bin/bash
+        if [ -d ext/arc4random/ ]; then
+            make -j$(nproc) -C ext/arc4random/
+        fi
+        make -j$(nproc) fuzz_targets
+        # copy the fuzzing target binaries
+        cp ${build_dir}/fuzz_target_* "${OUT}/"
+    else
+        build_dir='build'
+        CC_LD=lld CXX_LD=lld meson setup \
+          -D fuzz-targets=true \
+          -D b_pie=false \
+          -D yaml=disabled \
+          ${build_dir}
+        meson compile -C ${build_dir} fuzz-targets
+        # copy the fuzzing target binaries
+        find ${build_dir} -type f -executable -name 'fuzz-target-*' -exec cp {} ${OUT}/ \;
     fi
-    make -j$(nproc) fuzz_targets
-
-    # copy the fuzzing target binaries
-    cp fuzz_target_* "${OUT}/"
 
     # back to the pdns/ directory
     cd ..

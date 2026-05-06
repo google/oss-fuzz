@@ -17,7 +17,8 @@ import os
 import sys
 import atheris
 
-import pem
+with atheris.instrument_imports():
+    import pem
 
 def TestOneInput(data):
     certs = pem.parse(data)
@@ -27,7 +28,6 @@ def TestOneInput(data):
     s1 = certs[0].sha1_hexdigest
 
 def main():
-    atheris.instrument_all()
     atheris.Setup(sys.argv, TestOneInput)
     atheris.Fuzz()
 

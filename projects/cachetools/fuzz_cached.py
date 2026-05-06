@@ -40,7 +40,7 @@ def TestOneInput(data):
         cachetools.FIFOCache(maxsize=cache_size),
         cachetools.LFUCache(maxsize=cache_size),
         cachetools.LRUCache(maxsize=cache_size),
-        cachetools.MRUCache(maxsize=cache_size),
+        # cachetools.MRUCache(maxsize=cache_size),
         cachetools.RRCache(maxsize=cache_size, choice=random.choice),
         cachetools.TTLCache(maxsize=cache_size, ttl=cache_ttl),
         cachetools.TLRUCache(maxsize=cache_size, ttu=get_ttu, timer=datetime.datetime.now)

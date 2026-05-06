@@ -41,6 +41,7 @@ def delete_unneeded_docker_images(config):
       docker.BASE_BUILDER_TAG + '-jvm',
       docker.BASE_BUILDER_TAG + '-python',
       docker.BASE_BUILDER_TAG + '-rust',
+      docker.BASE_BUILDER_TAG + '-ruby',
       docker.BASE_BUILDER_TAG + '-swift',
   ]
   docker.delete_images(images)
@@ -51,6 +52,15 @@ def run_fuzzers_entrypoint():
   This action can be added to any OSS-Fuzz project's workflow that uses
   Github."""
   config = config_utils.RunFuzzersConfig()
+
+  if config.base_os_version == 'ubuntu-24-04':
+    result = config_utils.pivot_to_ubuntu_24_04(
+        'run-fuzzers',
+        '/opt/oss-fuzz/infra/cifuzz/run_fuzzers_entrypoint.py',
+        check_result=not config.dry_run)
+    if result is not None:
+      return result
+
   # The default return code when an error occurs.
   returncode = 1
   if config.dry_run:

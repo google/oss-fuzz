@@ -18,8 +18,8 @@
 DIR=$SRC/libwebsockets/
 
 cd $DIR
+sed -i 's/-Werror//g' ./CMakeLists.txt
 mkdir build && cd build
-
 cmake -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
       -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$CFLAGS" ..
 make -j8

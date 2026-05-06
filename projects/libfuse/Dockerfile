@@ -16,8 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
-  make autoconf automake libtool meson ninja-build libudev-dev pkg-config \
-  udev
+  make autoconf automake libtool libudev-dev pkg-config \
+  udev python3-pip && \
+  python3 -m pip install meson==0.60.0 ninja
 RUN git clone --depth 1 https://github.com/AdaLogics/fuzz-headers fuzz-headers
 RUN git clone --depth 1 https://github.com/libfuse/libfuse libfuse
 WORKDIR libfuse

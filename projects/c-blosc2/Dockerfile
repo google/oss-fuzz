@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y cmake make
 RUN git clone --depth 1 https://github.com/Blosc/c-blosc2.git c-blosc2
 WORKDIR c-blosc2
-COPY build.sh $SRC/
+COPY *.sh $SRC/

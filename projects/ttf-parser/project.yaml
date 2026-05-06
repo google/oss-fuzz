@@ -1,0 +1,11 @@
+homepage: "https://github.com/RazrFalcon/ttf-parser"
+main_repo: "https://github.com/RazrFalcon/ttf-parser.git"
+language: rust
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+- "david@adalogics.com"
+- "arthur.chan@adalogics.com"
+- "fuzzing@fuchsia.dev"

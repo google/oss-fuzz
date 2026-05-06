@@ -14,20 +14,20 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        patchelf \
-        cmake \
-        ninja-build \
-        flex \
         bison \
+        cmake \
+        flex \
         libfl-dev \
-        libpcap-dev \
-        libssl-dev \
-        libmaxminddb-dev \
         libkrb5-dev \
+        libmaxminddb-dev \
+        libpcap-dev \
+        libzmq3-dev \
+        libssl-dev \
+        ninja-build \
+        patchelf \
         zlib1g-dev \
   && rm -rf /var/lib/apt/lists/*
 

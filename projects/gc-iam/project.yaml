@@ -1,8 +1,8 @@
 fuzzing_engines:
 - libfuzzer
-homepage: https://github.com/googleapis/python-iam
+homepage: https://github.com/googleapis/google-cloud-python/tree/main/packages/google-cloud-iam
 language: python
-main_repo: https://github.com/googleapis/python-iam
+main_repo: https://github.com/googleapis/google-cloud-python
 sanitizers:
 - address
 - undefined

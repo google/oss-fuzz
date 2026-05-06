@@ -36,24 +36,26 @@ int dumper(void* user, const char* section, const char* name,
     return 1;
 }
 
-extern int LLVMFuzzerTestOneInput(const char *data, size_t size) {
+extern int
+LLVMFuzzerTestOneInput(const char *data, size_t size)
+{
+    char *data_in;
+    static int u = 100;
+
     if (size < kMinInputLength || size > kMaxInputLength) {
         return 0;
     }
 
-    int e;
-    static int u = 100;
     Prev_section[0] = '\0';
 
-    char *data_in = malloc(size + 1);
-    if (!data_in) return 0; // Just in case malloc fails
+    data_in = calloc((size + 1), sizeof(char));
+    if (!data_in) return 0;
 
     memcpy(data_in, data, size);
-    data_in[size] = '\0';
 
-    e = ini_parse_string(data_in, dumper, &u);
+    ini_parse_string(data_in, dumper, &u);
 
     free(data_in);
 
-    return e;
+    return 0;
 }

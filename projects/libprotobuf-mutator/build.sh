@@ -23,6 +23,7 @@ pushd build
 rm -rf *
 cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release \
     -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON \
+    -DLIB_PROTO_MUTATOR_EXAMPLES_USE_LATEST=ON \
     -DLIB_PROTO_MUTATOR_FUZZER_LIBRARIES=FuzzingEngine
 ninja libxml2_example expat_example
 cp -f examples/libxml2/libxml2_example $OUT/

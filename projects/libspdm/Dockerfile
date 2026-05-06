@@ -21,5 +21,5 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool
 #RUN git config --global http.proxy http://proxy.example.com:80/
 #RUN git config --global https.proxy https://proxy.example.com:80/
 RUN git clone --depth 1 https://github.com/DMTF/libspdm.git libspdm && cd libspdm && git submodule update --init    # or use other version control
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 WORKDIR $SRC/libspdm

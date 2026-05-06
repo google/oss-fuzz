@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,12 +20,15 @@
 cd $SRC/mruby
 export LD=$CC
 export LDFLAGS="$CFLAGS"
-rake -m
+rake all
+
+# This should be allowed to fail. So long as it does not fail in `run_tests.sh`
+rake test || true
 
 # build fuzzers
 FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_fuzzer.c
 name=$(basename $FUZZ_TARGET .c)
-$CC -c $CFLAGS -Iinclude \
+$CC -c $CFLAGS -Iinclude -Ibuild/host/include \
      ${FUZZ_TARGET} -o $OUT/${name}.o
 $CXX $CXXFLAGS $OUT/${name}.o $LIB_FUZZING_ENGINE -lm \
     $SRC/mruby/build/host/lib/libmruby.a -o $OUT/${name}
@@ -48,10 +51,10 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
     mkdir $SRC/mruby/genfiles
     $SRC/LPM/external.protobuf/bin/protoc --proto_path=$SRC/mruby/oss-fuzz ruby.proto --cpp_out=$SRC/mruby/genfiles
     $CXX -c $CXXFLAGS $SRC/mruby/genfiles/ruby.pb.cc -DNDEBUG -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include
-    $CXX -I $SRC/mruby/include -I $SRC/LPM/external.protobuf/include $CXXFLAGS $PROTO_FUZZ_TARGET $SRC/mruby/genfiles/ruby.pb.o $PROTO_CONVERTER \
+    $CXX -I $SRC/mruby/include -I $SRC/mruby/build/host/include -I $SRC/LPM/external.protobuf/include $CXXFLAGS $PROTO_FUZZ_TARGET $SRC/mruby/genfiles/ruby.pb.o $PROTO_CONVERTER \
       -I $SRC/mruby/genfiles \
       -I $SRC/libprotobuf-mutator \
-      -I $SRC/mruby/include -lz -lm \
+      -lz -lm \
       $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
       $SRC/LPM/src/libprotobuf-mutator.a \
       -Wl,--start-group $SRC/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \

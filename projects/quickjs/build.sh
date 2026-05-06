@@ -18,11 +18,10 @@
 # build quickjs
 # Makefile should not override CFLAGS
 sed -i -e 's/CFLAGS=/CFLAGS+=/' Makefile
+sed -i -e 's/#define USE_WORKER/\/\/#define USE_WORKER/' quickjs-libc.c
 CONFIG_CLANG=y make libquickjs.fuzz.a .obj/fuzz_common.o .obj/libregexp.fuzz.o .obj/cutils.fuzz.o .obj/libunicode.fuzz.o
-zip -r $OUT/fuzz_eval_seed_corpus.zip tests/*.js
-zip -r $OUT/fuzz_eval_seed_corpus.zip examples/*.js
-zip -r $OUT/fuzz_compile_seed_corpus.zip tests/*.js
-zip -r $OUT/fuzz_compile_seed_corpus.zip examples/*.js
+zip -r $OUT/fuzz_eval_seed_corpus.zip $SRC/quickjs-corpus/js/*.js
+zip -r $OUT/fuzz_compile_seed_corpus.zip $SRC/quickjs-corpus/js/*.js
 
 build_fuzz_target () {
     local target=$1

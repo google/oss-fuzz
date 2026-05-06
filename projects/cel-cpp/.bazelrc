@@ -18,6 +18,10 @@
 build --action_env=CC=clang
 build --action_env=CXX=clang++
 
-build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine
+build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:oss_fuzz
 build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz
 build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_sanitizer=none
+build:oss-fuzz --cxxopt=-stdlib=libc++
+build:oss-fuzz --linkopt=-lc++
+build:oss-fuzz --verbose_failures
+build:oss-fuzz --spawn_strategy=standalone

@@ -15,5 +15,6 @@
 # limitations under the License.
 #
 ################################################################################
-$CXX $CXXFLAGS -std=c++11 -g src/cxa_demangle.cpp -Iinclude fuzz/cxa_demangle_fuzzer.cpp \
-  -o $OUT/cxa_demangle_fuzzer  $LIB_FUZZING_ENGINE
+$CXX $CXXFLAGS -std=c++11 -g src/cxa_demangle.cpp src/abort_message.cpp \
+  -Iinclude fuzz/cxa_demangle_fuzzer.cpp -o $OUT/cxa_demangle_fuzzer \
+  $LIB_FUZZING_ENGINE

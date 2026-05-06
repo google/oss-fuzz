@@ -22,7 +22,7 @@ import os
 import functools
 import subprocess
 import traceback
-import importlib
+import importlib.util
 
 from typing import Any, Callable, Optional
 from pysecsan import command_injection, redos, yaml_deserialization
@@ -54,7 +54,7 @@ def sanitizer_log_always(msg, log_prefix=True):
 def is_module_present(mod_name):
   """Identify if module is importable."""
   # pylint: disable=deprecated-method
-  return importlib.find_loader(mod_name) is not None
+  return importlib.util.find_spec(mod_name) is not None
 
 
 def _log_bug(bug_title):

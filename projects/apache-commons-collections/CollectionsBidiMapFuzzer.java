@@ -15,47 +15,53 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
 
 public class CollectionsBidiMapFuzzer {
 
-	BidiMap m_bidiMap = null;
+    void runTest(FuzzedDataProvider data) {
+        // Initialize the BidiMap inside the method for each test run
+        BidiMap<String, String> m_bidiMap = new TreeBidiMap<>();
+	    
+        switch(data.consumeInt(1, 5)) {
+            case 1:
+                String key = data.consumeString(data.consumeInt(5, 15));
+                String value = data.consumeString(data.consumeInt(5, 15));
+                try {
+                    m_bidiMap.put(key, value);
+                } catch (IllegalArgumentException ex) {
+                    
+                }
+                break;
 
-	public CollectionsBidiMapFuzzer(FuzzedDataProvider data) {
-		m_bidiMap = new TreeBidiMap();
-	}
-	
-	void runTest(FuzzedDataProvider data) {
-		switch(data.consumeInt(1, 5)) {
-			case 1:
-				try {
-					m_bidiMap.put(data.consumeString(10), data.consumeString(10));
-				} catch(IllegalArgumentException ex) {
-					/* documented, ignore */
-				}
-				break;
-			case 2:
-				m_bidiMap.get(data.consumeString(10));
-				break;
-			case 3:
-				m_bidiMap.getKey(data.consumeString(10));
-				break;
-			case 4:
-				try {
-					m_bidiMap.removeValue(data.consumeString(10));
-				} catch(UnsupportedOperationException ex) {
-					/* documented, ignore */
-				}
-				break;
-			case 5:
-				m_bidiMap.inverseBidiMap();
-		}
-	}
+            case 2:
+                String getKey = data.consumeString(data.consumeInt(5, 15));
+                m_bidiMap.get(getKey);
+                break;
 
-	public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-		CollectionsBidiMapFuzzer testClosure = new CollectionsBidiMapFuzzer(data);
-		testClosure.runTest(data);
-	}
+            case 3:
+                String getValue = data.consumeString(data.consumeInt(5, 15));
+                m_bidiMap.getKey(getValue);
+                break;
+
+            case 4:
+                String removeValue = data.consumeString(data.consumeInt(5, 15));
+                try {
+                    m_bidiMap.removeValue(removeValue);
+                } catch (UnsupportedOperationException ex) {
+                    
+                }
+                break;
+
+            case 5:
+                m_bidiMap.inverseBidiMap();
+                break;
+        }
+    }
+
+    public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+        CollectionsBidiMapFuzzer testClosure = new CollectionsBidiMapFuzzer();
+        testClosure.runTest(data);
+    }
 }

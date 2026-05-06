@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016,2017 Google Inc.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,13 +19,9 @@ cd $SRC/botan
 
 ln -s $SRC/fuzzer_corpus .
 
-./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
-               --disable-shared --disable-modules=locking_allocator \
-               --unsafe-fuzzer-mode --build-fuzzers=libfuzzer \
-               --without-os-features=getrandom,getentropy --with-fuzzer-lib='FuzzingEngine'
+./src/scripts/config_for_oss_fuzz.py $CXX "$CXXFLAGS"
 
-make -j$(nproc) libs
-make -j$(nproc) fuzzers
+make -j$(nproc) libs fuzzers
 make fuzzer_corpus_zip
 
 # the seed corpus zips will also be in this directory

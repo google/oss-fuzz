@@ -10,4 +10,4 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
+coverage_extra_args: -ignore-filename-regex=.*/LPM/.*

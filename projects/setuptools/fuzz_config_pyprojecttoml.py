@@ -14,13 +14,14 @@
 # limitations under the License.
 
 import sys
+import os
+import tempfile
 import atheris
 
-from setuptools.extern import tomli
-from setuptools.config.pyprojecttoml import (
-    read_configuration
-)
-from setuptools.errors import FileError
+with atheris.instrument_imports():
+    import tomli
+    from setuptools.config.pyprojecttoml import (read_configuration)
+    from setuptools.errors import FileError
 
 
 def TestOneInput(data):
@@ -28,21 +29,19 @@ def TestOneInput(data):
   cause exceptions to happen.
   """
   fdp = atheris.FuzzedDataProvider(data)
-  config_path = "/tmp/pyproject.taml"
-  with open(config_path, "w") as cf:
-      cf.write(fdp.ConsumeUnicodeNoSurrogates(4096))
-      
+  with tempfile.TemporaryDirectory() as temp_dir:
+    config_path = os.path.join(temp_dir, "pyproject.taml")
+    with open(config_path, "w") as cf:
+      cf.write(fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(1, 4096)))
+
   try:
     config = read_configuration(config_path)
-  except tomli.TOMLDecodeError:
-    pass
-  except FileError:
-    pass
+  except (tomli.TOMLDecodeError, FileError):
+    return -1
 
 
 def main():
-  atheris.instrument_all()
-  atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+  atheris.Setup(sys.argv, TestOneInput)
   atheris.Fuzz()
 
 

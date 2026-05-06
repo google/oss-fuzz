@@ -14,21 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # Install prerequisite packages
 # See connectedhomeip/docs/guides/BUILDING.md#prerequisites
 RUN apt-get update && \
-    apt-get install -y pkg-config libssl-dev libdbus-1-dev libglib2.0-dev \
-		libavahi-client-dev ninja-build python3-venv python3-dev python3-pip \
-		unzip libgirepository1.0-dev libcairo2-dev libreadline-dev
-
-# Ensure python that was just installed gets precedence over
-# the one already installed in /usr/local/bin
-ENV PATH="/usr/bin/:${PATH}"
-
-# PEP-517 needed for cryptography. Update pip
-RUN pip3 install --upgrade pip setuptools wheel
+    apt-get install -y --no-install-recommends pkg-config libssl-dev libdbus-1-dev libglib2.0-dev libglib2.0-0\
+        libavahi-client-dev ninja-build libmount-dev libblkid-dev \
+        unzip libgirepository1.0-dev libcairo2-dev libreadline-dev patchelf file libevent-dev
 
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -37,6 +30,9 @@ RUN rustup install nightly
 RUN rustup default nightly
 
 RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
+
+# PW_PROJECT_ROOT is used in requirements.build.txt
+ENV PW_PROJECT_ROOT=$SRC/connectedhomeip
 
 # Ensure global python has access to build requirements
 RUN pip3 install -r connectedhomeip/scripts/setup/requirements.build.txt

@@ -4,7 +4,6 @@ language: c
 builds_per_day: 4
 auto_ccs:
   - "kzak@redhat.com"
-  - "evvers@ya.ru"
   - "evverx@gmail.com"
   - "kerolasa@gmail.com"
   - "gmazyland@gmail.com"

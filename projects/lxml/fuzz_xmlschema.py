@@ -17,6 +17,7 @@
 import atheris
 import sys
 import io
+from test_utils import is_expected_error
 
 with atheris.instrument_imports():
   from lxml import etree
@@ -32,6 +33,15 @@ def TestOneInput(data):
     schema.validate(valid_tree)
   except etree.LxmlError:
     return -1  # Reject so the input will not be added to the corpus.
+  except (ValueError, TypeError) as e:
+    expected_exceptions = [
+        "Input object has no document",
+        "Invalid input object",
+    ]
+    if is_expected_error(expected_exceptions, e):
+      return -1
+    else:
+      raise e
 
 
 def main():

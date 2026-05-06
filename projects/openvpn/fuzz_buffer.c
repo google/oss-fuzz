@@ -49,7 +49,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         tmp = NULL;
       }
     } else {
-#define NUM_TARGETS 32
+#define NUM_TARGETS 31
       generic_ssizet = fuzz_randomizer_get_int(0, NUM_TARGETS);
       switch (generic_ssizet) {
       case 0:
@@ -187,7 +187,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         tmp = NULL;
         break;
       case 26:
-        convert_to_one_line(bufp);
+        tmp = get_random_string();
+        buf_puts(bufp, tmp);
+        free(tmp);
+        tmp = NULL;
         break;
       case 27:
         buf_advance(bufp, fuzz_randomizer_get_int(0, 25523));
@@ -203,12 +206,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         break;
       case 31:
         buf_forward_capacity(bufp);
-        break;
-      case 32:
-        tmp = get_random_string();
-        buf_puts(bufp, tmp);
-        free(tmp);
-        tmp = NULL;
         break;
       }
     }

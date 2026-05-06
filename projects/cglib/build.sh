@@ -67,6 +67,11 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
   # Create an execution wrapper that executes Jazzer with the correct arguments.
   echo "#!/bin/bash
 # LLVMFuzzerTestOneInput for fuzzer detection.
+
+export JAVA_HOME=$JAVA_15_HOME
+export JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
+export PATH=$JAVA_HOME/bin:$PATH
+
 this_dir=\$(dirname \"\$0\")
 if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
   mem_settings='-Xmx1900m:-Xss900k'

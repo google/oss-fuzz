@@ -18,7 +18,7 @@
 ./autogen.sh --no-po4a --no-doxygen
 ./configure \
   --enable-static \
-  --disable-debug \
+  --enable-debug \
   --disable-shared \
   --disable-xz \
   --disable-xzdec \

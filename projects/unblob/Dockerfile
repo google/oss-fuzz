@@ -12,10 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN pip3 install --upgrade pip
+
 RUN git clone https://github.com/onekey-sec/unblob
-RUN unblob/unblob/install-deps.sh
-RUN pip install ./unblob
+
+RUN apt-get update && apt-get install build-essential libssl-dev libffi-dev pkg-config python3-dev cargo -y
+RUN python3 -m pip install --upgrade pip
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup install nightly
+RUN rustup default nightly
+
+RUN unblob/install-deps.sh
+RUN python3 -m pip install ./unblob
 
 COPY build.sh $SRC/
 WORKDIR $SRC/unblob
