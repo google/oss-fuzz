@@ -210,8 +210,13 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
             0x3042, 0x0041, 0x0000
         };
         for (i = 0; i < sizeof(test_wcs) / sizeof(test_wcs[0]); i++) {
-            utf8_fromwc(test_wcs[i], &ud);
-            if (ud.size > 0 && ud.size <= UTF8_SIZE) {
+            /*
+             * Only feed ud onward when utf8_fromwc reports DONE; on
+             * ERROR ud->width may be left in an invalid state which
+             * would cause utf8_from_data() to fatalx().
+             */
+            if (utf8_fromwc(test_wcs[i], &ud) == UTF8_DONE &&
+                ud.size > 0 && ud.size <= UTF8_SIZE && ud.width <= 2) {
                 utf8_from_data(&ud, &uc);
                 utf8_to_data(uc, &ud2);
             }

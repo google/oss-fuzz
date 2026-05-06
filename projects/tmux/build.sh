@@ -18,22 +18,22 @@
 # OSS-Fuzz build script for tmux.
 #
 # This script:
-#   1. Builds tmux with the existing in-tree fuzzer (input-fuzzer)
-#   2. Optionally builds additional harnesses from the tmux-oss-fuzz
-#      project if it is present at $SRC/tmux-oss-fuzz
-#   3. Generates the seed corpus for input-fuzzer
+#   1. Builds tmux from upstream master with the existing in-tree fuzzers
+#      (input-fuzzer, cmd-parse-fuzzer, format-fuzzer, style-fuzzer).
+#   2. Builds 6 additional, hand-picked harnesses from the tmux-oss-fuzz
+#      project — one per parser/processing surface that achieved the
+#      best evaluation coverage.
+#   3. Generates the seed corpus for input-fuzzer.
 
 set -u
 
-# Ensure libevent (built in the Dockerfile) is discoverable
 export PKG_CONFIG_PATH="/usr/local/lib/"
 
 cd "${SRC}/tmux"
 
 # ---------------------------------------------------------------------------
-# Step 1: Build tmux's in-tree fuzzer (input-fuzzer)
+# Step 1: Build tmux's in-tree fuzzers
 # ---------------------------------------------------------------------------
-
 ./autogen.sh
 
 ./configure \
@@ -44,29 +44,26 @@ cd "${SRC}/tmux"
 
 make -j"$(nproc)" check
 
-# Copy the in-tree fuzzer artifacts to $OUT
 find "${SRC}/tmux/fuzz/" -name '*-fuzzer'         -exec cp -v '{}' "${OUT}/" \;
 find "${SRC}/tmux/fuzz/" -name '*-fuzzer.options' -exec cp -v '{}' "${OUT}/" \;
 find "${SRC}/tmux/fuzz/" -name '*-fuzzer.dict'    -exec cp -v '{}' "${OUT}/" \;
 
 # ---------------------------------------------------------------------------
-# Step 2: Build additional harnesses from tmux-oss-fuzz (optional)
+# Step 2: Build the additional best-of-breed harnesses
 # ---------------------------------------------------------------------------
-#
-# When this project is cloned alongside tmux into $SRC, build the extra
-# harnesses against tmux's already-compiled object files. Each harness is
-# emitted as a separate fuzz target named "<target>-<type>".
+# Each entry below is the single best harness for its target, chosen
+# from the comparative evaluation in tmux-oss-fuzz/docs/results.md.
+# Format: "<source-relative-path-under-harnesses/> <output-target-name>".
 
 EXTRA_DIR="${SRC}/tmux-oss-fuzz"
 if [ -d "${EXTRA_DIR}/harnesses" ]; then
-    echo "Building additional harnesses from ${EXTRA_DIR}..."
+    echo "Building additional best-of-breed harnesses from ${EXTRA_DIR}..."
 
-    # tmux object files. INCLUDE tmux.o because tmux's build under
-    # --enable-fuzzing marks main() as weak so libFuzzer's main wins;
-    # tmux.o also provides global helpers (clean_name, etc.) that the
-    # other tmux objects reference.
-    # Exclude only the in-tree fuzzer objects (their own
-    # LLVMFuzzerTestOneInput would clash with ours).
+    # All tmux objects. We INCLUDE tmux.o because tmux's
+    # --enable-fuzzing path marks main() as weak so libFuzzer's main
+    # wins, and tmux.o provides global helpers used by other objects.
+    # Exclude in-tree fuzzer objects (they each define their own
+    # LLVMFuzzerTestOneInput which would collide).
     TMUX_OBJS=$(find "${SRC}/tmux" -name "*.o" \
         ! -path "*/fuzz/*" \
         | tr '\n' ' ')
@@ -80,6 +77,10 @@ if [ -d "${EXTRA_DIR}/harnesses" ]; then
         local src="$1"
         local out_name="$2"
 
+        if [ ! -f "${src}" ]; then
+            echo "  SKIP ${out_name}: source missing (${src})"
+            return
+        fi
         echo "  Building ${out_name}..."
         $CC $CFLAGS \
             -I"${SRC}/tmux" \
@@ -87,50 +88,23 @@ if [ -d "${EXTRA_DIR}/harnesses" ]; then
             ${TMUX_OBJS} \
             ${LIB_FUZZING_ENGINE} \
             -levent -lncurses -lutil -lm -lresolv \
-            -o "${OUT}/${out_name}" \
-            || echo "    FAILED: ${out_name}"
+            -o "${OUT}/${out_name}"
     }
 
-    # Derive a canonical target name from a harness basename.
-    # Categories are inferred from the directory, so we just strip
-    # the trailing per-category/per-style suffix from the filename.
-    derive_target() {
-        local base="$1"
-        # Strip category suffix
-        case "${base}" in
-            *-manual)   base="${base%-manual}" ;;
-            *-llm)      base="${base%-llm}" ;;
-            *-fuzzgen)  base="${base%-fuzzgen}" ;;
-        esac
-        # Strip trailing -fuzzer (manual harnesses are sometimes named
-        # "<target>-fuzzer.c", and a few are "<target>-fuzzer-<cat>.c").
-        base="${base%-fuzzer}"
-        # Normalize: input/input-fuzzer all refer to input-parse target
-        case "${base}" in
-            input|input-fuzzer) base="input-parse" ;;
-        esac
-        echo "${base}"
-    }
-
-    for category_dir in "${EXTRA_DIR}/harnesses/manual" \
-                        "${EXTRA_DIR}/harnesses/llm_generated" \
-                        "${EXTRA_DIR}/harnesses/fuzzgen_generated"; do
-        [ -d "${category_dir}" ] || continue
-        category=$(basename "${category_dir}" | sed 's/_generated//')
-
-        for harness in "${category_dir}"/*.c; do
-            [ -f "${harness}" ] || continue
-            base=$(basename "${harness}" .c)
-            target=$(derive_target "${base}")
-            build_harness "${harness}" "${target}-${category}"
-        done
-    done
+    # The "best of breed" set: one harness per target, chosen by coverage.
+    #   target            picked variant      output name
+    #   ----------------  -----------------   ------------
+    build_harness "${EXTRA_DIR}/harnesses/llm_generated/input-parse-llm.c"   input-parse-fuzzer-extra
+    build_harness "${EXTRA_DIR}/harnesses/llm_generated/cmd-parse-llm.c"     cmd-parse-fuzzer-extra
+    build_harness "${EXTRA_DIR}/harnesses/manual/layout-parse-fuzzer.c"      layout-parse-fuzzer-extra
+    build_harness "${EXTRA_DIR}/harnesses/manual/utf8-fuzzer.c"              utf8-fuzzer-extra
+    build_harness "${EXTRA_DIR}/harnesses/manual/format-fuzzer.c"            format-fuzzer-extra
+    build_harness "${EXTRA_DIR}/harnesses/llm_generated/style-llm.c"         style-fuzzer-extra
 fi
 
 # ---------------------------------------------------------------------------
 # Step 3: Build seed corpus for input-fuzzer
 # ---------------------------------------------------------------------------
-
 OPTIONS_FILE="${OUT}/input-fuzzer.options"
 if [ -f "${OPTIONS_FILE}" ]; then
     MAXLEN=$(grep -Po 'max_len\s*=\s*\K\d+' "${OPTIONS_FILE}" || echo "8192")
@@ -139,7 +113,6 @@ if [ -f "${OPTIONS_FILE}" ]; then
         mkdir "${WORK}/fuzzing_corpus"
         cd "${WORK}/fuzzing_corpus"
 
-        # Use tmux's built-in test scripts as seeds
         bash "${SRC}/tmux/tools/24-bit-color.sh" 2>/dev/null | \
             split -a4 -db"${MAXLEN}" - 24-bit-color.out. || true
         perl "${SRC}/tmux/tools/256colors.pl"    2>/dev/null | \
@@ -147,7 +120,6 @@ if [ -f "${OPTIONS_FILE}" ]; then
         cat "${SRC}/tmux/tools/UTF-8-demo.txt"   2>/dev/null | \
             split -a4 -db"${MAXLEN}" - UTF-8-demo.txt.   || true
 
-        # External terminal-emulator test sequences (shipped via tmux-fuzzing-corpus)
         if [ -d "${SRC}/tmux-fuzzing-corpus" ]; then
             for src_dir in alacritty esctest iterm2; do
                 [ -d "${SRC}/tmux-fuzzing-corpus/${src_dir}" ] || continue

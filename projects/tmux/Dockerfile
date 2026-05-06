@@ -39,14 +39,15 @@ RUN git clone --depth 1 https://github.com/libevent/libevent.git && \
         ../ && \
     make -j"$(nproc)" && make install
 
-# tmux source
-RUN git clone --depth 1 https://github.com/tmux/tmux.git
+# tmux source. --depth 1 from the master branch ensures every OSS-Fuzz
+# build runs against the latest upstream commit.
+RUN git clone --depth 1 --branch master https://github.com/tmux/tmux.git
 
 # Seed corpus from terminal-emulator test suites
 RUN git clone --depth 1 https://github.com/tmux/tmux-fuzzing-corpus.git
 
-# Additional harnesses (manual / LLM / FuzzGen variants), vendored from
-# https://github.com/cglosner/tmux-oss-fuzz
+# Additional best-of-breed harnesses, vendored from
+# https://github.com/cglosner/tmux-oss-fuzz (one per target)
 COPY tmux-oss-fuzz $SRC/tmux-oss-fuzz/
 
 WORKDIR tmux
