@@ -15,17 +15,39 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake bison pkg-config \
-    ncurses-dev libtool
 
-RUN git clone https://github.com/libevent/libevent.git && \
+# Build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf \
+    automake \
+    bison \
+    pkg-config \
+    ncurses-dev \
+    libtool \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build libevent statically (required for fuzzing)
+RUN git clone --depth 1 https://github.com/libevent/libevent.git && \
     cd libevent && \
-    mkdir build && \
-    cd build && \
-    cmake -DEVENT__DISABLE_MBEDTLS=ON -DEVENT__DISABLE_OPENSSL=ON -DEVENT__LIBRARY_TYPE=STATIC -DEVENT__DISABLE_TESTS=ON -DEVENT__DISABLE_SAMPLES=ON ../ && \
-    make && make install
+    mkdir build && cd build && \
+    cmake \
+        -DEVENT__DISABLE_MBEDTLS=ON \
+        -DEVENT__DISABLE_OPENSSL=ON \
+        -DEVENT__LIBRARY_TYPE=STATIC \
+        -DEVENT__DISABLE_TESTS=ON \
+        -DEVENT__DISABLE_SAMPLES=ON \
+        ../ && \
+    make -j"$(nproc)" && make install
 
+# tmux source
 RUN git clone --depth 1 https://github.com/tmux/tmux.git
+
+# Seed corpus from terminal-emulator test suites
 RUN git clone --depth 1 https://github.com/tmux/tmux-fuzzing-corpus.git
+
+# Additional harnesses (manual / LLM / FuzzGen variants), vendored from
+# https://github.com/cglosner/tmux-oss-fuzz
+COPY tmux-oss-fuzz $SRC/tmux-oss-fuzz/
+
 WORKDIR tmux
 COPY build.sh $SRC/
