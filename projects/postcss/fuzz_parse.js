@@ -20,10 +20,16 @@ const postcss = require('./lib/postcss');
 module.exports.fuzz = function (data) {
   const provider = new FuzzedDataProvider(data);
 
-  // Pick a randomized parser option set so we cover both the from/map paths
-  // and the bare parse() entry point.
+  // The CSS input itself is randomized: every byte the fuzzer produces (or
+  // mutates from the seed corpus) flows directly into `cssString` via
+  // consumeRemainingAsString(). The option flags below are read from the
+  // *back* of the buffer (jazzer.js consumes integrals/booleans from the
+  // tail), so seed CSS files from postcss-parser-tests are fed into the
+  // parser nearly verbatim, with only their last few bytes nibbled off as
+  // option control.
   const useMap = provider.consumeBoolean();
   const useFrom = provider.consumeBoolean();
+  const useProcessor = provider.consumeBoolean();
   const splitMode = provider.consumeIntegralInRange(0, 2);
   const cssString = provider.consumeRemainingAsString();
 
@@ -75,6 +81,18 @@ module.exports.fuzz = function (data) {
     postcss.fromJSON(json);
   } catch (e) {
     if (!isExpected(e, postcss)) throw e;
+  }
+
+  // Exercise the main public entry point: postcss().process(). This drives
+  // the LazyResult / NoWorkResult pipeline that real plugin chains use.
+  if (useProcessor) {
+    try {
+      const result = postcss().process(cssString, parseOptions);
+      void result.css;
+      void result.warnings();
+    } catch (e) {
+      if (!isExpected(e, postcss)) throw e;
+    }
   }
 
   // Exercise the list helpers, which have their own quoting/escape logic.

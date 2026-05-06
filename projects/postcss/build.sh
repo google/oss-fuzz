@@ -21,5 +21,16 @@
 npm install --omit=dev --ignore-scripts --legacy-peer-deps
 npm install --save-dev --legacy-peer-deps @jazzer.js/core
 
+# Build a seed corpus from the upstream postcss-parser-tests CSS cases so
+# the fuzzer starts mutating from realistic, parser-shaped inputs rather
+# than from empty bytes.
+mkdir -p "$WORK/seed_corpus"
+cp "$SRC"/postcss-parser-tests/cases/*.css "$WORK/seed_corpus/"
+(cd "$WORK/seed_corpus" && zip -q -r "$OUT/fuzz_parse_seed_corpus.zip" .)
+
+# Ship the CSS dictionary alongside the fuzzer so libFuzzer can splice in
+# common CSS tokens during mutation.
+cp "$SRC/postcss/fuzz_parse.dict" "$OUT/fuzz_parse.dict"
+
 # Build Fuzzers.
 compile_javascript_fuzzer postcss fuzz_parse.js -i postcss --sync

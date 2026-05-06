@@ -18,8 +18,15 @@ FROM gcr.io/oss-fuzz-base/base-builder-javascript
 
 COPY build.sh $SRC/
 
-RUN git clone --depth 1 https://github.com/postcss/postcss
+# PostCSS's default branch is `main`. Pin it explicitly so the integration
+# does not silently break if the default ever changes.
+RUN git clone --depth 1 -b main https://github.com/postcss/postcss
 
-COPY fuzz_parse.js $SRC/postcss/
+# postcss-parser-tests is the upstream-maintained collection of CSS test
+# cases. We use its `cases/` directory as the seed corpus so the fuzzer
+# starts mutating from real, parser-shaped inputs.
+RUN git clone --depth 1 -b main https://github.com/postcss/postcss-parser-tests
+
+COPY fuzz_parse.js fuzz_parse.dict $SRC/postcss/
 
 WORKDIR $SRC/postcss
