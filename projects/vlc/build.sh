@@ -25,6 +25,12 @@ export AFL_NOOPT=1
 # But we need libc++
 export CXXFLAGS="-stdlib=libc++"
 
+# theora (>=1.2) now requires autoconf >=2.71, but the OSS-Fuzz base image
+# (Ubuntu 20.04) ships autoconf 2.69. Build a newer autoconf locally via
+# VLC's extras/tools and prepend it to PATH so contrib autoreconf calls find it.
+(cd extras/tools && ./bootstrap && make -j$(nproc) .autoconf)
+export PATH="$SRC/vlc/extras/tools/build/bin:$PATH"
+
 mkdir contrib/contrib-build
 cd contrib/contrib-build
 ../bootstrap
