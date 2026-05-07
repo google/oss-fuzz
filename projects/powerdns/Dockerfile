@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 # install required packages to build your project
 RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel
-RUN python3 -m pip install -U meson ninja
+RUN python3 -m pip install -U meson ninja pyyaml
 RUN wget https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2  # Temporarily use manual installation over the outdated libboost-dev package
 
 # checkout all sources needed to build your project

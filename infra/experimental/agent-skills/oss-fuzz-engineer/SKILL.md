@@ -8,6 +8,8 @@ description:
 
 This skill guides the agent how to use the OSS-Fuzz infrastructure to find and report bugs in open source software. The agent can use this skill to integrate new projects, extend and improve the fuzzing posture of projects, run fuzzing campaigns, and fix broken existing OSS-Fuzz projects.
 
+When working on OSS-Fuzz tasks then you should also use any fuzzing related skills you have, such as code analysis and fuzzing harness writing skills, to achieve the best results.
+
 ## Workflows
 
 There are multiple common workflows that an OSS-Fuzz engineer might follow and we describe some imporant ones here.
@@ -36,7 +38,17 @@ The agent can also be used to extend and improve the fuzzing posture of existing
 
 A useful approach for extending a project is to study the latest code coverage report for the project, which is publicly available, to identify areas of the code that are not well covered by existing fuzz targets. The agent can then write new fuzz targets to cover those areas, and test them locally before concluding on the work for the security engineer to review.
 
-Use the local code coverage feature of the `python3 infra/helper.py` tool to generate code coverage reports for fuzz targets locally, for example to validate the code coverage achieved by a new fuzz target. This can be done by running `python3 infra/helper.py introspector --coverage-only PROJECT_NAME` and then studying the generated report in e.g. build/out/PROJECT_NAME/report.
+Use the local code coverage feature of the `python3 infra/helper.py` tool to generate code coverage reports for fuzz targets locally, for example to validate the code coverage achieved by a new fuzz target. This can be done by running `python3 infra/helper.py introspector --coverage-only PROJECT_NAME` and then studying the generated report in e.g. build/out/PROJECT_NAME/report. Some examples of this include:
+
+```
+# Generate a coverage report for htslib OSS-Fuzz project from running each
+# fuzzer for 30 seconds, and store coverage directory in `htslib-cov-1`.
+python3 infra/helper.py introspector --coverage-only --seconds 30 --out htslib-cov-1 htslib
+
+# Generate a coverage report for leveldb OSS-Fuzz project from running each
+# fuzzer for 45 seconds, and store coverage directory in `leveldb-cov-1`.
+python3 infra/helper.py introspector --coverage-only --seconds 45 --out leveldb-cov-1 leveldb
+```
 
 The user may provide directions on how to extend the fuzzing, and it's crucial to follow instructions on this matter. For example, the user may ask to focus on a specific area of the code, or to target specific types of vulnerabilities. The agent should always provide a clear explanation of the rationale for each extension or improvement made to the fuzzing posture of the project.
 
@@ -46,6 +58,9 @@ The agent should always provide clear technical justification for each extension
 
 When doing this type of work it's crucial the agent uses any skills it has related to code analysis and fuzzing harness writing. It's important each extension is done through a personal assessment of the current fuzzing posture of the project, and a clear explanation of the rationale for each extension or improvement. The agent should never make any commits or push anything to GitHub, but should conclude on the work for the security engineer to review. The agent should never submit any changes to OSS-Fuzz's Github.
 
+It is crucial when extending existing OSS-Fuzz project you must validate the existing code coverage does not digress. You should empirically evaluate this and give a justification that no digression has happened, or if it has happened then you should give a justification for why the digression is acceptable in light of the achieved extension.
+
+Unless otherwise specified, the agent should focus on improving a single fuzzing harness for the target project, and not focus on making broad changes that will take a long time to review. Simple changes are often more effective than broad large changes.
 
 ### Fixing broken existing OSS-Fuzz projects
 
@@ -86,6 +101,11 @@ python3 infra/experimental/chronos/manager.py check-tests PROJECT_NAME
 
 The above two commands must succeed without error, and when integrating a new project these commands must be run before concluding on the work for the security engineer to review.
 
+In addition to the above, there are some constraints on Chronos worth mentioning:
+- If the tests fail when `run_tests.sh` is run, then `check-tests` *must* fail as well. This is a crucial invariant that is used to validate if wrong patches lead to wrong outcomes, and we must be able to check wrong patches that break tests.
+- The `run_tests.sh` script should leave a given repository in the state it was before the script was run. For example, `git diff` should be the same before and after `run_tests.sh` is run inside the target repository.
+- `run_tests.sh` has no network connection, so if any tests requires network connection then these tests should be skipped in `run_tests.sh` and this should be clearly documented in the script.
+
 
 # Guidelines for working locally on OSS-Fuzz projects
 
@@ -93,3 +113,18 @@ The above two commands must succeed without error, and when integrating a new pr
 2. Make a local checkout of the target source code to make working with the target project easy. This involves e.g. studying the `Dockerfile` of the target project, finding the e.g. `git clone` of the target project, and then cloning this repository locally and using e.g. `COPY` instead of `RUN git clone` in the Dockerfile to get the source code into the container.
 3. Use the `python3 infra/helper.py` tool to build and test fuzz targets locally.
 4. Analyse if build scripts can be optimized to improve local building efficiency.
+
+
+# Public data available for OSS-Fuzz projects
+
+The OSS-Fuzz infrastructure provides a lot of public data that can be used to guide the work of an OSS-Fuzz engineer. This includes:
+
+- Current build status of all OSS-Fuzz projects:
+  - html page: https://oss-fuzz-build-logs.storage.googleapis.com/index.html
+  - json file: https://oss-fuzz-build-logs.storage.googleapis.com/status.json
+  - use this reference to identify latest build status of a given project, and to identify if there are any build issues that need to be fixed.
+  - If you are tasked with fixing the build of a project, then use this data to identify the latest build error.
+  - If you are tasked with fixing the build of a project, then use this data to identify the conditions of the latest build error, e.g. which architecture, fuzzing engine and sanitizer is failing.
+  - Some build errors are due to the harnesses running into an issue immediately, meaning they build but `check_build` fails. These are bugs that likely indicate the fuzzing harnesses have a deficiency.
+- in the references section guidance is provided on code coverage reports, helper script used for interacting with OSS-Fuzz projects and documentation on the structure of OSS-Fuzz projects.
+- https://introspector.oss-fuzz.com : details insights on macro and micro level stats on OSS-Fuzz.
