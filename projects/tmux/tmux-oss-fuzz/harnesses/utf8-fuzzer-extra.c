@@ -1,8 +1,11 @@
 /*
- * utf8-fuzzer.c - Manual harness for tmux UTF-8 handling
+ * utf8-fuzzer-extra.c - additional harness for tmux UTF-8 handling.
  *
- * Target: utf8.c - all public functions
- * Fuzzes UTF-8 validation, conversion, string operations, and padding.
+ * Targets utf8.c. Exercises every public utf8_* entry point,
+ * including byte-by-byte parsing (utf8_open/utf8_append), validation
+ * (utf8_isvalid), conversion (utf8_fromwc/utf8_towc), and the
+ * string-level helpers (utf8_strvis, utf8_sanitize, utf8_padcstr,
+ * utf8_rpadcstr, utf8_cstrhas, ...).
  *
  * UTF-8 handling bugs can lead to buffer overflows, invalid memory
  * access, or incorrect string handling.

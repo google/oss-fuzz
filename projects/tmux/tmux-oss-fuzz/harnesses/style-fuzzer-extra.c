@@ -1,14 +1,12 @@
 /*
- * style-llm.c - LLM-optimized harness for tmux style parsing
+ * style-fuzzer-extra.c - additional harness for tmux style parsing.
  *
- * Target: style.c (style_parse, style_tostring, style_set)
- *
- * LLM-generated optimizations:
- * - Style attribute awareness (fg, bg, attr, fill)
- * - Color format coverage (named, RGB, 256-color)
- * - Attribute combination exploration
- * - Range and list handling
- * - Roundtrip validation
+ * Targets style.c (style_parse, style_tostring, style_set). Aims for
+ * coverage of:
+ *   - Style attribute combinations (fg, bg, attr, fill)
+ *   - Colour formats (named, RGB, 256-colour)
+ *   - Range and list handling
+ *   - parse -> tostring -> parse roundtrip validation
  */
 
 #include <stddef.h>

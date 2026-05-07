@@ -91,15 +91,11 @@ if [ -d "${EXTRA_DIR}/harnesses" ]; then
             -o "${OUT}/${out_name}"
     }
 
-    # The "best of breed" set: one harness per target, chosen by coverage.
-    #   target            picked variant      output name
-    #   ----------------  -----------------   ------------
-    build_harness "${EXTRA_DIR}/harnesses/llm_generated/input-parse-llm.c"   input-parse-fuzzer-extra
-    build_harness "${EXTRA_DIR}/harnesses/llm_generated/cmd-parse-llm.c"     cmd-parse-fuzzer-extra
-    build_harness "${EXTRA_DIR}/harnesses/manual/layout-parse-fuzzer.c"      layout-parse-fuzzer-extra
-    build_harness "${EXTRA_DIR}/harnesses/manual/utf8-fuzzer.c"              utf8-fuzzer-extra
-    build_harness "${EXTRA_DIR}/harnesses/manual/format-fuzzer.c"            format-fuzzer-extra
-    build_harness "${EXTRA_DIR}/harnesses/llm_generated/style-llm.c"         style-fuzzer-extra
+    # One harness per target.
+    for harness in input-parse  cmd-parse  layout-parse  utf8  format  style; do
+        build_harness "${EXTRA_DIR}/harnesses/${harness}-fuzzer-extra.c" \
+                      "${harness}-fuzzer-extra"
+    done
 fi
 
 # ---------------------------------------------------------------------------

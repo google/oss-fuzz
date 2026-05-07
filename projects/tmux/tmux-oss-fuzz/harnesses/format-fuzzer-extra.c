@@ -1,15 +1,19 @@
 /*
- * format-fuzzer.c - Manual harness for tmux format string expansion
+ * format-fuzzer-extra.c - additional harness for tmux format-string
+ * expansion.
  *
- * Target: format.c (format_expand, format_expand_time, format_true,
- *         format_find, format_replace, format_build_modifiers, etc.)
+ * Targets format.c (format_expand, format_expand_time, format_true,
+ * format_find, format_replace, format_build_modifiers, ...).
  *
- * Fuzzes the format string parser which handles strings like:
- *   "#{window_name}", "#{?pane_active,yes,no}", "#{==:left,right}"
- *   "#{s/find/replace/:text}", "#{l:UPPER}", "#{b:/path/file}"
+ * Exercises strings such as:
+ *   "#{window_name}"             - simple variable expansion
+ *   "#{?pane_active,yes,no}"     - conditional
+ *   "#{==:left,right}"           - comparison
+ *   "#{s/find/replace/:text}"    - substitution
+ *   "#{l:UPPER}", "#{b:/p/file}" - modifier chains
  *
- * Format strings are used extensively in tmux for status bars, hooks,
- * and display. Complex nested expressions could trigger bugs.
+ * Format strings are used extensively in tmux for status bars, hooks
+ * and display. Complex nested expressions are an interesting target.
  */
 
 #include <assert.h>

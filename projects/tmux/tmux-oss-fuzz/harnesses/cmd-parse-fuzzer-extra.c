@@ -1,28 +1,24 @@
 /*
- * cmd-parse-llm.c - LLM-optimized harness for tmux command parsing
+ * cmd-parse-fuzzer-extra.c - additional harness for tmux command parsing.
  *
- * Targets: cmd-parse.y
- *   cmd_parse_from_string  – NUL-terminated string path
+ * Targets cmd-parse.y:
+ *   cmd_parse_from_string  - NUL-terminated string path
  *                            (config files, :prompt, bind-key)
- *   cmd_parse_from_buffer  – length-delimited buffer path
+ *   cmd_parse_from_buffer  - length-delimited buffer path
  *                            (internal tmux buffer reader)
  *
- * Both targets run on EVERY input — they share the same yacc grammar but
- * follow different C code paths (cmd_parse_do_buffer vs the string shim),
- * so running both doubles coverage per execution at negligible cost.
- * The selector byte from the previous design has been removed; the full
- * fuzz payload goes to both parsers.
+ * Both entry points run on every input. They share the yacc grammar
+ * but exercise different C code paths (cmd_parse_do_buffer vs the
+ * string shim), so running both roughly doubles per-execution coverage.
  *
- * Coverage improvements:
- * - No selector byte: full payload reaches both parsers every iteration
+ * Notable design choices:
  * - LLVMFuzzerCustomCrossOver: splices two corpus inputs at a grammar
  *   boundary (semicolon / newline) rather than a random byte offset,
- *   producing valid multi-command sequences far more often
- * - Hardcoded valid-command seeds injected at init via
- *   LLVMFuzzerAddCorpus (if available) so the corpus starts with
- *   parseable inputs rather than 1-4 byte blobs
- * - analyze_structure() retained for value-profile hints
- * - Known tmux yyparse() leak suppressed via __lsan_disable/enable
+ *   producing valid multi-command sequences far more often.
+ * - Built-in seed_inputs[] pre-populates the corpus with parseable
+ *   commands so the fuzzer starts from known-good inputs.
+ * - Known tmux yyparse() leak is suppressed locally via
+ *   __lsan_disable/__lsan_enable around the call.
  */
 
 #include <stddef.h>

@@ -1,13 +1,13 @@
 /*
- * input-parse-llm.c - LLM-optimized harness for tmux input parsing
+ * input-parse-fuzzer-extra.c - additional harness for tmux's terminal
+ * escape-sequence parser.
  *
- * Target: input.c (input_parse_buffer)
- *
- * LLM-generated optimizations:
- * - Strategic escape sequence injection for better coverage
- * - State machine coverage hints
- * - CSI/OSC/DCS sequence awareness
- * - Boundary condition exploration
+ * Targets input.c (input_parse_buffer). Designed for high coverage
+ * of the CSI/OSC/DCS state machine via:
+ *   - escape-sequence injection seeds
+ *   - mode-byte selectors that toggle terminal flags between iterations
+ *   - state-machine coverage hints for value-profile feedback
+ *   - boundary-condition exploration
  */
 
 #include <assert.h>

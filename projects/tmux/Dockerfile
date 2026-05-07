@@ -46,8 +46,7 @@ RUN git clone --depth 1 --branch master https://github.com/tmux/tmux.git
 # Seed corpus from terminal-emulator test suites
 RUN git clone --depth 1 https://github.com/tmux/tmux-fuzzing-corpus.git
 
-# Additional best-of-breed harnesses, vendored from
-# https://github.com/cglosner/tmux-oss-fuzz (one per target)
+# Additional fuzz harnesses (one per parsing/processing surface).
 COPY tmux-oss-fuzz $SRC/tmux-oss-fuzz/
 
 WORKDIR tmux

@@ -1,12 +1,13 @@
 /*
- * layout-parse-fuzzer.c - Manual harness for tmux layout parsing
+ * layout-parse-fuzzer-extra.c - additional harness for tmux layout
+ * parsing.
  *
- * Target: layout-custom.c (layout_parse)
- * Fuzzes the layout string parser which handles layout specifications like:
+ * Targets layout-custom.c (layout_parse). Layout strings encode how
+ * panes are arranged in a window:
  *   "34x80,0,0{17x80,0,0,1,16x80,18,0,2}"
  *
- * Layout strings define how panes are arranged in a window.
- * Malformed layouts could cause crashes or memory corruption.
+ * Malformed layouts may cause crashes or memory corruption, which is
+ * what this target is designed to surface.
  */
 
 #include <assert.h>
