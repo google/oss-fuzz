@@ -197,6 +197,14 @@ DICT_EOF
 # modules/demux/mpeg/.
 python3 $SRC/generate_ts_seeds.py fuzz-corpus/seeds/ts
 
+# Replace the upstream dvd_subtitle.vob in seeds/ps. The shipped seed has a
+# malformed SPU header (i_spu_size=8192 vs ~40 bytes of payload), so the
+# spudec packetizer holds the block waiting for more data forever and
+# modules/codec/spudec/parse.c (the actual control-sequence + RLE parser)
+# never runs. generate_ps_seeds.py emits a complete DVD subtitle SPU that
+# flows through ParsePacket -> ParseControlSeq -> ParseRLE.
+python3 $SRC/generate_ps_seeds.py fuzz-corpus/seeds/ps
+
 # Prepare for removing sdp.dict without breaking the build
 rm fuzz-corpus/dictionaries/sdp.dict || true
 find fuzz-corpus/dictionaries -name "*dict" -exec cat {} \; -exec echo "" \; >> $OUT/vlc-demux-dec-libfuzzer.dict
