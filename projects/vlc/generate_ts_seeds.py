@@ -43,16 +43,46 @@ def crc32_mpeg(data: bytes) -> int:
     return crc
 
 
-def make_ts_packet(pid: int, payload: bytes, pusi: bool = False, cc: int = 0) -> bytes:
-    """Assemble a 188-byte TS packet (no adaptation field)."""
+def make_ts_packet(pid: int, payload: bytes, pusi: bool = False, cc: int = 0,
+                   pcr_90khz: int = None) -> bytes:
+    """Assemble a 188-byte TS packet.
+
+    If ``pcr_90khz`` is given, an adaptation field with the PCR flag is added.
+    Without PCR delivery, the TS demuxer holds blocks in its prepcr queue and
+    never forwards them to decoders, masking the coverage of subtitle/audio
+    decoders that depend on the PES path (e.g. modules/codec/dvbsub.c).
+    """
     assert 0 <= pid <= 0x1FFF
     b1 = (0x40 if pusi else 0x00) | ((pid >> 8) & 0x1F)
     b2 = pid & 0xFF
-    b3 = 0x10 | (cc & 0x0F)          # adaptation_field_control=0b01 (payload only)
+    if pcr_90khz is None:
+        b3 = 0x10 | (cc & 0x0F)      # adaptation_field_control=0b01 (payload only)
+        header = bytes([0x47, b1, b2, b3])
+        stuffing = 184 - len(payload)
+        assert stuffing >= 0, f"Payload {len(payload)} bytes exceeds 184"
+        return header + payload + bytes([0xFF] * stuffing)
+    # adaptation_field_control=0b11 (AF + payload)
+    b3 = 0x30 | (cc & 0x0F)
+    base = pcr_90khz & ((1 << 33) - 1)
+    ext = 0
+    pcr_bytes = bytes([
+        (base >> 25) & 0xFF,
+        (base >> 17) & 0xFF,
+        (base >> 9)  & 0xFF,
+        (base >> 1)  & 0xFF,
+        ((base & 0x1) << 7) | 0x7E | ((ext >> 8) & 0x01),
+        ext & 0xFF,
+    ])
+    af_flags = 0x10               # PCR_flag
+    af_data = bytes([af_flags]) + pcr_bytes      # 7 bytes
+    af_length = len(af_data)                      # 7
+    af = bytes([af_length]) + af_data             # 8 bytes total (length byte + 7)
     header = bytes([0x47, b1, b2, b3])
-    stuffing = 184 - len(payload)
-    assert stuffing >= 0, f"Payload {len(payload)} bytes exceeds 184"
-    return header + payload + bytes([0xFF] * stuffing)
+    space = 188 - len(header) - len(af)
+    assert len(payload) <= space, \
+        f"Payload {len(payload)} bytes exceeds {space} after PCR AF"
+    stuffing = space - len(payload)
+    return header + af + payload + bytes([0xFF] * stuffing)
 
 
 def psi_section(table_id: int, tid_ext: int, body: bytes) -> bytes:
@@ -143,15 +173,26 @@ def make_pes(stream_id: int, payload: bytes, pts_90khz: int = 0) -> bytes:
     return pes_data
 
 
-def pes_ts_packets(pes_data: bytes, pid: int) -> bytes:
-    """Split PES data into TS packets."""
+def pes_ts_packets(pes_data: bytes, pid: int, pcr_90khz: int = None) -> bytes:
+    """Split PES data into TS packets.
+
+    If ``pcr_90khz`` is given, the first packet carries an adaptation field
+    with that PCR. The TS demuxer's prepcr queue holds back PES blocks until
+    a PCR is observed (or 500ms of stream time elapses), so seeds with a
+    single PES never reach the decoder unless we provide a PCR explicitly.
+    """
     out = b''
     offset = 0
     pusi = True
     cc = 0
     while offset < len(pes_data):
-        chunk = pes_data[offset: offset + 184]
-        out += make_ts_packet(pid, chunk, pusi=pusi, cc=cc)
+        if pusi and pcr_90khz is not None:
+            chunk = pes_data[offset: offset + 184 - 8]  # leave room for AF
+            out += make_ts_packet(pid, chunk, pusi=True, cc=cc,
+                                  pcr_90khz=pcr_90khz)
+        else:
+            chunk = pes_data[offset: offset + 184]
+            out += make_ts_packet(pid, chunk, pusi=pusi, cc=cc)
         offset += len(chunk)
         pusi = False
         cc = (cc + 1) & 0x0F
@@ -228,12 +269,80 @@ DTS_PAYLOAD = bytes([
     0xFF, 0x1F, 0x00, 0x00, 0xFF, 0xE8,
 ])
 
-# DVB subtitle PES data (data_identifier=0x20, stream_id=0xFF, type=0x02)
-DVB_SUB_PAYLOAD = bytes([
-    0x20,        # data_identifier
-    0x00,        # stream_id
-    0x0F,        # end_of_PES_data_field_marker
-])
+# DVB subtitle PES payload (ETSI EN 300 743). The previous version was
+# 3 bytes (0x20 0x00 0x0F) and immediately failed inside decode_segment(),
+# leaving modules/codec/dvbsub.c at <8% line coverage. The build below
+# emits a complete subtitle data block exercising every segment dispatch
+# branch in decode_segment() (DDS/PCS/RCS/CLUT/ODS/ALT_CLUT/EOD/STUFFING)
+# plus the rendering pipeline (render_segments/render_region/render_pdata)
+# triggered when PCS state == ACQUISITION sets b_page=true.
+def _dvbsub_seg(seg_type: int, page_id: int, data: bytes) -> bytes:
+    return bytes([0x0F, seg_type]) + struct.pack('>HH', page_id, len(data)) + data
+
+
+def _build_dvb_sub_payload(page_id: int = 1) -> bytes:
+    out = bytes([0x20, 0x00])  # data_identifier, subtitle_stream_id
+    # Display Definition Segment (DDS, 0x14): 720x576, no window
+    out += _dvbsub_seg(0x14, page_id,
+                       bytes([0x10, 0x02, 0xCF, 0x02, 0x3F]))
+    # Page Composition Segment (PCS, 0x10): state=ACQUISITION sets b_page=true
+    # 1 region ref (id=0 at (0,0))
+    out += _dvbsub_seg(0x10, page_id,
+                       bytes([0x05, 0x14,
+                              0x00, 0xFF, 0x00, 0x00, 0x00, 0x00]))
+    # Region Composition Segment (RCS, 0x11): 16x16 8-bpp region, 1 obj ref
+    out += _dvbsub_seg(0x11, page_id,
+                       bytes([0x00, 0x10,
+                              0x00, 0x10, 0x00, 0x10,
+                              0x4C, 0x00, 0x00, 0x00,
+                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+    # CLUT Definition Segment (0x12): one entry full_range, one entry 8-bit
+    out += _dvbsub_seg(0x12, page_id,
+                       bytes([0x00, 0x10,
+                              0x00, 0xE1, 0x80, 0x80, 0x80, 0x80,
+                              0x01, 0x21, 0xFF, 0x80, 0x80, 0x00]))
+    # Object Data Segment (ODS, 0x13) coding_method=0 (pixel data).
+    # Top-field bytes exercise dvbsub_pdata2bpp / 4bpp / 8bpp / map tables /
+    # end-of-line (0xF0) inside dvbsub_render_pdata().
+    _top = bytes([0x10, 0x00, 0x00, 0x00,
+                  0x11, 0x00, 0x00,
+                  0x12, 0x00, 0x00,
+                  0x20, 0x00,
+                  0x21, 0x00, 0x00,
+                  0x22, 0x00, 0x00, 0x00, 0x00,
+                  0xF0])
+    out += _dvbsub_seg(0x13, page_id,
+                       struct.pack('>H', 0x0000) + bytes([0x00])
+                       + struct.pack('>HH', len(_top), 0) + _top)
+    # ODS coding_method=1 (character string). Reaches the !=0 dispatch arm.
+    out += _dvbsub_seg(0x13, page_id,
+                       struct.pack('>H', 0x0001) + bytes([0x40])
+                       + bytes([0x02])
+                       + struct.pack('>HH', 0x0041, 0x0042))
+    # Alternative CLUT (0x16): 8-bit YCbCr, SDR-709 colorimetry, 2 entries
+    out += _dvbsub_seg(0x16, page_id,
+                       bytes([0x01, 0x10, 0x00, 0x00,
+                              0x80, 0x80, 0x80, 0x00,
+                              0xFF, 0x80, 0x80, 0x00]))
+    # Stuffing (0xFF) and End-of-Display (0x80)
+    out += _dvbsub_seg(0xFF, page_id, b'\x00\x00')
+    out += _dvbsub_seg(0x80, page_id, b'')
+    # End-of-PES marker: low 6 bits must be 0x3F (0xFF satisfies)
+    out += bytes([0xFF])
+    return out
+
+
+DVB_SUB_PAYLOAD = _build_dvb_sub_payload(page_id=1)
+
+# The TS demuxer (modules/demux/mpeg/ts_pes.c:115) marks PES blocks CORRUPTED
+# when i_gathered is more than 16 bytes beyond i_data_size (= PES_packet_length
+# + TS_PES_HEADER_SIZE). The "copy" SPU packetizer (modules/packetizer/copy.c
+# PacketizeSub) drops corrupted blocks, so the dvbsub decoder never sees them.
+# Pad the PES so PES_packet_length closely matches the TS packet's 184-byte
+# payload after the 8-byte optional PES header (PTS-only): 184 - 6 - 8 = 170.
+_DVB_SUB_PAD_TARGET = 170                               # final PES payload bytes
+DVB_SUB_PAYLOAD = DVB_SUB_PAYLOAD + bytes(
+    [0xFF] * max(0, _DVB_SUB_PAD_TARGET - len(DVB_SUB_PAYLOAD)))
 
 # SCTE-27 subtitling data (minimal)
 SCTE27_PAYLOAD = bytes([
@@ -339,12 +448,20 @@ def seed_dvb_subtitle() -> bytes:
         (0x02, VIDEO_PID, b''),
         (0x06, SUBS_PID, sub_desc),
     ])
-    video_pes = make_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
-    subs_pes = make_pes(0xBD, DVB_SUB_PAYLOAD, pts_90khz=0)
+    # PCR on the video PID (which is the PCR_PID) so the TS demuxer's prepcr
+    # queue gets flushed and the dvbsub block is delivered to the decoder.
+    # IMPORTANT: VLC_TICK_INVALID == 0, so PTS/DTS must be NONZERO or the
+    # spu packetizer (modules/packetizer/copy.c PacketizeSub) drops the block.
+    # We emit two DVB sub PES so the second's PUSI=1 also forces the first
+    # to drain.
+    video_pes = make_pes(0xE0, MPGV_PAYLOAD, pts_90khz=900)
+    subs_pes_a = make_pes(0xBD, DVB_SUB_PAYLOAD, pts_90khz=1800)
+    subs_pes_b = make_pes(0xBD, DVB_SUB_PAYLOAD, pts_90khz=9000)
     return (psi_packet(pat, 0x0000) +
             psi_packet(pmt, PMT_PID) +
-            pes_ts_packets(video_pes, VIDEO_PID) +
-            pes_ts_packets(subs_pes, SUBS_PID))
+            pes_ts_packets(video_pes, VIDEO_PID, pcr_90khz=450) +
+            pes_ts_packets(subs_pes_a, SUBS_PID) +
+            pes_ts_packets(subs_pes_b, SUBS_PID))
 
 
 def seed_scte27() -> bytes:
