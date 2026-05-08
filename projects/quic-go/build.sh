@@ -1,4 +1,6 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+set -euo pipefail
 
-RUN go install github.com/AdamKorcz/go-118-fuzz-build@latest
-
-RUN git clone --depth 1 https://github.com/quic-go/qpack/ $GOPATH/src/github.com/quic-go/qpack
-RUN git clone --depth 1 https://github.com/quic-go/quic-go/ $GOPATH/src/github.com/quic-go/quic-go
-
-COPY build.sh $SRC/build.sh
-RUN chmod +x $SRC/build.sh
+exec bash "$GOPATH/src/github.com/quic-go/quic-go/oss-fuzz.sh" "$@"
