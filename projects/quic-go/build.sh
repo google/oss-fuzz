@@ -1,4 +1,6 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +16,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake make
-RUN git clone --depth 1 https://github.com/libevent/libevent.git libevent
-RUN git clone --depth 1 https://github.com/google/fuzzing fuzzing
-WORKDIR libevent
-COPY build.sh run_tests.sh *.cc *.c *.dict $SRC/
+set -euo pipefail
+
+exec bash "$GOPATH/src/github.com/quic-go/quic-go/oss-fuzz.sh" "$@"

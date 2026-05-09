@@ -25,6 +25,12 @@ export AFL_NOOPT=1
 # But we need libc++
 export CXXFLAGS="-stdlib=libc++"
 
+# theora (>=1.2) now requires autoconf >=2.71, but the OSS-Fuzz base image
+# (Ubuntu 20.04) ships autoconf 2.69. Build a newer autoconf locally via
+# VLC's extras/tools and prepend it to PATH so contrib autoreconf calls find it.
+(cd extras/tools && ./bootstrap && make -j$(nproc) .autoconf)
+export PATH="$SRC/vlc/extras/tools/build/bin:$PATH"
+
 mkdir contrib/contrib-build
 cd contrib/contrib-build
 ../bootstrap
@@ -190,6 +196,14 @@ DICT_EOF
 # ts_pid.c, ts_streams.c, ts_decoders.c, ts_si.c, ts_scte.c in
 # modules/demux/mpeg/.
 python3 $SRC/generate_ts_seeds.py fuzz-corpus/seeds/ts
+
+# Replace the upstream dvd_subtitle.vob in seeds/ps. The shipped seed has a
+# malformed SPU header (i_spu_size=8192 vs ~40 bytes of payload), so the
+# spudec packetizer holds the block waiting for more data forever and
+# modules/codec/spudec/parse.c (the actual control-sequence + RLE parser)
+# never runs. generate_ps_seeds.py emits a complete DVD subtitle SPU that
+# flows through ParsePacket -> ParseControlSeq -> ParseRLE.
+python3 $SRC/generate_ps_seeds.py fuzz-corpus/seeds/ps
 
 # Prepare for removing sdp.dict without breaking the build
 rm fuzz-corpus/dictionaries/sdp.dict || true
