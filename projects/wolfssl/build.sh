@@ -40,7 +40,6 @@ then
 
     # Configure Cryptofuzz
     cd $SRC/cryptofuzz
-    sed -i 's/kNegativeIntegers = false/kNegativeIntegers = true/g' config.h
     cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-openssl-api/
     cd $SRC/cryptofuzz-openssl-api/
     python gen_repository.py

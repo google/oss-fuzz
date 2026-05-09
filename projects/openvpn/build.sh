@@ -17,31 +17,6 @@
 
 BASE=${SRC}/openvpn/src/openvpn
 
-apply_sed_changes() {
-  sed -i 's/read(/fuzz_read(/g' ${BASE}/console_systemd.c
-  sed -i 's/fgets(/fuzz_fgets(/g' ${BASE}/console_builtin.c
-  sed -i 's/fgets(/fuzz_fgets(/g' ${BASE}/misc.c
-  sed -i 's/#include "forward.h"/#include "fuzz_header.h"\n#include "forward.h"/g' ${BASE}/proxy.c
-  sed -i 's/openvpn_select(/fuzz_select(/g' ${BASE}/proxy.c
-  sed -i 's/openvpn_send(/fuzz_send(/g' ${BASE}/proxy.c
-  sed -i 's/recv(/fuzz_recv(/g' ${BASE}/proxy.c
-  sed -i 's/isatty/fuzz_isatty/g' ${BASE}/console_builtin.c
-
-  sed -i 's/fopen/fuzz_fopen/g' ${BASE}/console_builtin.c
-  sed -i 's/fclose/fuzz_fclose/g' ${BASE}/console_builtin.c
-
-  sed -i 's/sendto/fuzz_sendto/g' ${BASE}/socket.h
-  sed -i 's/#include "misc.h"/#include "misc.h"\nextern size_t fuzz_sendto(int sockfd, void *buf, size_t len, int flags, struct sockaddr *dest_addr, socklen_t addrlen);/g' ${BASE}/socket.h
-
-  sed -i 's/fp = (flags/fp = stdout;\n\/\//g' ${BASE}/error.c
-
-  sed -i 's/crypto_msg(M_FATAL/crypto_msg(M_WARN/g' ${BASE}/crypto_openssl.c
-  sed -i 's/msg(M_FATAL, \"Cipher/return;msg(M_FATAL, \"Cipher/g' ${BASE}/crypto.c
-  sed -i 's/msg(M_FATAL/msg(M_WARN/g' ${BASE}/crypto.c
-
-  sed -i 's/= write/= fuzz_write/g' ${BASE}/packet_id.c
-}
-
 # Changes in the code so we can fuzz it.
 #git apply $SRC/crypto_patch.txt
 
@@ -49,9 +24,6 @@ echo "" >> ${BASE}/openvpn.c
 echo "#include \"fake_fuzz_header.h\"" >> ${BASE}/openvpn.c
 echo "ssize_t fuzz_get_random_data(void *buf, size_t len) { return 0; }" >> ${BASE}/fake_fuzz_header.h
 echo "int fuzz_success;" >> ${BASE}/fake_fuzz_header.h
-
-# Apply hooking changes
-apply_sed_changes
 
 # Copy corpuses out
 zip -r $OUT/fuzz_verify_cert_seed_corpus.zip $SRC/boringssl/fuzz/cert_corpus

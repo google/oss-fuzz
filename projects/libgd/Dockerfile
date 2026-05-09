@@ -21,3 +21,7 @@ RUN git clone --depth 1 https://github.com/libgd/libgd
 ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/afl_testcases.tgz
 WORKDIR libgd
 COPY run_tests.sh build.sh *.cc $SRC/
+RUN sed -i 's/-Werror//g' configure.ac && \
+    # Limit the size of buffer allocations to avoid bogus OOM issues
+    # https://github.com/libgd/libgd/issues/422
+    sed -i 's/INT_MAX/100000/' src/gd_security.c

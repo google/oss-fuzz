@@ -16,12 +16,8 @@
 #
 ################################################################################
 
-git apply --ignore-space-change --ignore-whitespace $SRC/fuzz-patch.diff
-
 mkdir -p build
 cd build
-
-sed -i 's/fput/\/\/fput/g' $SRC/vulkan-loader/loader/log.c
 
 cmake -DUPDATE_DEPS=ON -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
