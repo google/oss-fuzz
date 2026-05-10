@@ -1,0 +1,8 @@
+homepage: "https://blamejs.com"
+language: javascript
+primary_contact: "security@blamejs.com"
+auto_ccs:
+  - "security@blamejs.com"
+main_repo: "https://github.com/blamejs/blamejs"
+fuzzing_engines:
+  - libfuzzer
