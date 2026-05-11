@@ -29,8 +29,10 @@ cp "$SRC"/postcss-parser-tests/cases/*.css "$WORK/seed_corpus/"
 (cd "$WORK/seed_corpus" && zip -q -r "$OUT/fuzz_parse_seed_corpus.zip" .)
 
 # Ship the CSS dictionary alongside the fuzzer so libFuzzer can splice in
-# common CSS tokens during mutation.
-cp "$SRC/postcss/fuzz_parse.dict" "$OUT/fuzz_parse.dict"
+# common CSS tokens during mutation. The dictionary lives in the upstream
+# postcss repo under test/fuzzing/, so it is already present in the clone.
+cp "$SRC/postcss/test/fuzzing/fuzz_parse.dict" "$OUT/fuzz_parse.dict"
 
-# Build Fuzzers.
-compile_javascript_fuzzer postcss fuzz_parse.js -i postcss --sync
+# Build Fuzzers. The harness lives upstream at test/fuzzing/fuzz_parse.js
+# and is supplied by the postcss clone above.
+compile_javascript_fuzzer postcss test/fuzzing/fuzz_parse.js -i postcss --sync
