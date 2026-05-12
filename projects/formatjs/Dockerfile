@@ -16,17 +16,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
 
-COPY build.sh $SRC/
-
-# formatjs is a Bazel + pnpm monorepo. Rather than reproduce that toolchain
-# we set up a small fuzz workspace and install the published @formatjs/*
-# packages from npm — these are the artifacts downstream users actually run.
-RUN mkdir -p $SRC/formatjs
-
-COPY package.json babel.config.json $SRC/formatjs/
-COPY fuzz_icu_messageformat_parser.js \
-     fuzz_intl_messageformat.js \
-     fuzz_icu_skeleton_parser.js \
-     $SRC/formatjs/
+# The harnesses, package.json, babel config and build.sh all live upstream
+# under formatjs/formatjs's fuzz/ directory. Clone the repo, lift fuzz/ into
+# the OSS-Fuzz-conventional $SRC/<project> location, drop the rest of the
+# checkout, and stage build.sh where the base image expects it.
+RUN git clone --depth 1 https://github.com/formatjs/formatjs $SRC/formatjs-upstream && \
+    mv $SRC/formatjs-upstream/fuzz $SRC/formatjs && \
+    rm -rf $SRC/formatjs-upstream
+RUN cp $SRC/formatjs/build.sh $SRC/
 
 WORKDIR $SRC/formatjs
