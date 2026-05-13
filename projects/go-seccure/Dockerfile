@@ -14,9 +14,7 @@
 #
 ################################################################################
 #
-# OSS-Fuzz build container for go-seccure. Lives here in the upstream
-# project repo for review/onboarding; the active copy is in
-# google/oss-fuzz's projects/go-seccure/ directory.
+# OSS-Fuzz build container for go-seccure.
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 

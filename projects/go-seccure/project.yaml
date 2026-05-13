@@ -1,16 +1,8 @@
 # OSS-Fuzz project descriptor for go-seccure.
-#
-# This file isn't consumed from this repo at runtime — it lives here for
-# convenience and is copied verbatim into google/oss-fuzz's
-# projects/go-seccure/ directory when onboarding. See
-# https://google.github.io/oss-fuzz/getting-started/new-project-guide/go-lang/
-# for the canonical onboarding flow.
 
 homepage: "https://github.com/invenity-labs/go-seccure"
 language: go
 primary_contact: "imdaveb@gmail.com"
-auto_ccs:
-  - "imdaveb@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:
