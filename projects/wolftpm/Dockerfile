@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone --depth 1 https://github.com/wolfssl/wolfssl $SRC/wolfssl
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfTPM $SRC/wolfTPM
-RUN git cloen --depth 1 https://github.com/AdaLogics/ada-fuzzers
+RUN git clone --depth 1 https://github.com/AdaLogics/ada-fuzzers $SRC/ada-fuzzers
 
 COPY build.sh $SRC/
 
