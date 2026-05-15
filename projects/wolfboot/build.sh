@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-# OSS-Fuzz entrypoint for wolfBoot.
-#
 # Build strategy: drive wolfBoot's own upstream build system. The
 # config/examples/library.config recipe produces libwolfboot.a via
 # TARGET=library (ARCH=sim, host build, includes wolfCrypt). Module-level

@@ -1,6 +1,8 @@
 homepage: "https://www.wolfssl.com/products/wolfboot/"
 language: c++
-primary_contact: "david@adalogics.com"
+primary_contact: "daniele@wolfssl.com"
+auto_ccs:
+- "david@adalogics.com"
 main_repo: "https://github.com/wolfSSL/wolfBoot"
 fuzzing_engines:
   - libfuzzer
