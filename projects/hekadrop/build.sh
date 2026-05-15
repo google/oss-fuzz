@@ -22,12 +22,17 @@ cd "$SRC/hekadrop"
 
 cargo fuzz build -O --fuzz-dir fuzz
 
-FUZZ_BIN="fuzz/target/x86_64-unknown-linux-gnu/release"
-
+# Binary path: mimariye göre değişir (x86_64, i686, aarch64 vs.)
+# `find` ile dinamik lokasyon — hardcoded triple yok.
 for f in fuzz/fuzz_targets/*.rs; do
     target=$(basename "${f%.*}")
-    cp "$FUZZ_BIN/$target" "$OUT/$target"
-    if [ -d "fuzz/corpus/$target" ] && [ -n "$(ls -A "fuzz/corpus/$target" 2>/dev/null)" ]; then
+    bin=$(find fuzz/target -name "$target" -type f \
+        ! -name "*.d" ! -path "*/deps/*" | head -1)
+    if [ -n "$bin" ]; then
+        cp "$bin" "$OUT/$target"
+    fi
+    if [ -d "fuzz/corpus/$target" ] && \
+       [ -n "$(ls -A "fuzz/corpus/$target" 2>/dev/null)" ]; then
         zip -j "$OUT/${target}_seed_corpus.zip" "fuzz/corpus/$target"/*
     fi
 done
