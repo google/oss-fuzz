@@ -26,7 +26,7 @@
 #   seeds/rawdv/*.dv          — minimal NTSC / PAL DV frames.
 #   seeds/vc1/*.vc1           — VC-1 start-code-prefixed elementary streams.
 #   seeds/cdg/*.cdg           — CDG command frames exercising decoder branches.
-#   seeds/mus/*.mus           — DOOM-style .MUS music with event variants.
+#   seeds/dmxmus/*.mus           — DOOM-style .MUS music with event variants.
 #   dictionaries/{heif,rawdv,vc1,cdg,mus}.dict
 #
 # Usage:
@@ -339,9 +339,13 @@ _SCTE27_MSG = (
 )
 _SCTE27_INNER = bytes([0x00]) + _SCTE27_MSG + bytes([0xDE, 0xAD, 0xBE, 0xEF])
 _SCTE27_SECT_LEN = len(_SCTE27_INNER)
+# SCTE-27 subtitle_section() per spec: section_syntax_indicator = 0
+# (private_section / no MPEG CRC trailer).  Round-1 had 0xB0 which sets
+# syntax_indicator=1 and causes dvbpsi to reject the section because the
+# trailing 4 bytes are an SCTE-27 message field, not a valid MPEG CRC32.
 SCTE27_PAYLOAD = (
     bytes([0xC6,
-           0xB0 | ((_SCTE27_SECT_LEN >> 8) & 0x0F),
+           0x30 | ((_SCTE27_SECT_LEN >> 8) & 0x0F),
            _SCTE27_SECT_LEN & 0xFF])
     + _SCTE27_INNER
 )
@@ -448,11 +452,10 @@ def seed_scte27() -> bytes:
         (0x82, SUBS_PID, b''),
     ])
     video_pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
-    scte_pes = make_ts_pes(0xBD, SCTE27_PAYLOAD, pts_90khz=0)
     return (psi_packet(pat, 0x0000) +
             psi_packet(pmt, PMT_PID) +
             pes_ts_packets(video_pes, VIDEO_PID) +
-            pes_ts_packets(scte_pes, SUBS_PID))
+            _scte27_section_ts_packet([SCTE27_PAYLOAD], SUBS_PID))
 
 
 def seed_with_sdt() -> bytes:
@@ -604,6 +607,205 @@ def seed_atsc_psip() -> bytes:
             psi_packet(eit, eit_pid))
 
 
+# ──────────────────────────────────────────────────
+# Round 2: SCTE-27 enhanced subtitle bitmaps
+# ──────────────────────────────────────────────────
+#
+# scte27.c::DecodeSimpleBitmap has four mutually-exclusive style branches:
+#   - outline_style == 0: plain bitmap (existing round 1 seed covers this).
+#   - outline_style == 1: outline draw — needs `is_framed=1` to be useful and
+#     uses outline_thickness with a circle stamp.
+#   - outline_style == 2: shadow draw — uses shadow_right/shadow_bottom.
+#   - outline_style == 3: reserved (skip 24 bits, plain bitmap render).
+# Each variant exercises a different rendering loop. The four bytes
+# preceding DecodeSubtitleMessage carry display_standard (0..3 = 480/576/720/1080)
+# and a subtitle_type==1 flag — switching display_standard exercises the
+# four `frame_duration` branches at scte27.c:364-391.
+#
+# We also generate one segmentation_overlay variant that splits the
+# subtitle_message across two SCTE-27 sections (index=0 then index=last)
+# so the xrealloc/concat path at scte27.c:445-470 runs.
+
+class _BitWriter:
+    def __init__(self):
+        self.buf = 0
+        self.nbits = 0
+        self.out = bytearray()
+    def write(self, n, v):
+        v &= (1 << n) - 1
+        self.buf = (self.buf << n) | v
+        self.nbits += n
+        while self.nbits >= 8:
+            self.nbits -= 8
+            self.out.append((self.buf >> self.nbits) & 0xFF)
+    def bytes(self):
+        if self.nbits:
+            self.out.append((self.buf << (8 - self.nbits)) & 0xFF)
+            self.nbits = 0
+        return bytes(self.out)
+
+
+def _scte27_color(bs, y, alpha_flag, v, u):
+    bs.write(5, y & 0x1F)
+    bs.write(1, alpha_flag & 1)
+    bs.write(5, v & 0x1F)
+    bs.write(5, u & 0x1F)
+
+
+def _scte27_bitmap_body(*, is_framed, outline_style):
+    """Return the simple_bitmap_section payload (bit-packed)."""
+    bs = _BitWriter()
+    bs.write(5, 0)
+    bs.write(1, 1 if is_framed else 0)
+    bs.write(2, outline_style)
+    _scte27_color(bs, y=0x10, alpha_flag=1, v=0x08, u=0x08)
+    bs.write(12, 8)
+    bs.write(12, 8)
+    bs.write(12, 24)
+    bs.write(12, 24)
+    if is_framed:
+        bs.write(12, 4)
+        bs.write(12, 4)
+        bs.write(12, 28)
+        bs.write(12, 28)
+        _scte27_color(bs, y=0x05, alpha_flag=1, v=0x10, u=0x10)
+    if outline_style == 1:
+        bs.write(4, 0)
+        bs.write(4, 2)
+        _scte27_color(bs, y=0x1F, alpha_flag=1, v=0x00, u=0x00)
+    elif outline_style == 2:
+        bs.write(4, 1)
+        bs.write(4, 1)
+        _scte27_color(bs, y=0x00, alpha_flag=1, v=0x00, u=0x00)
+    elif outline_style == 3:
+        bs.write(24, 0)
+    bs.write(16, 0)
+    for _ in range(2):
+        bs.write(1, 1); bs.write(3, 4); bs.write(5, 8)
+    for _ in range(2):
+        bs.write(2, 0b01); bs.write(6, 16)
+    bs.write(3, 0b001); bs.write(4, 4)
+    bs.write(4, 0b0001); bs.write(2, 1)
+    return bs.bytes()
+
+
+def _scte27_subtitle_message(*, display_standard, pre_clear, is_framed,
+                             outline_style, display_duration=8):
+    bitmap = _scte27_bitmap_body(is_framed=is_framed,
+                                 outline_style=outline_style)
+    # data[3] = pre_clear<<7 | display_standard
+    flags3 = (0x80 if pre_clear else 0x00) | (display_standard & 0x1F)
+    subtitle_type = 1
+    block_length = len(bitmap)
+    header = bytes([
+        0x00, 0x00, 0x00,
+        flags3,
+        0x00, 0x00, 0x00, 0x00,
+        (subtitle_type << 4) | ((display_duration >> 8) & 0x07),
+        display_duration & 0xFF,
+        (block_length >> 8) & 0xFF,
+        block_length & 0xFF,
+    ])
+    return header + bitmap
+
+
+def _scte27_section(*, payload, segmentation_overlay=False,
+                    seg_id=0, last=0, index=0):
+    """Wrap an SCTE-27 message in an MPEG section."""
+    if segmentation_overlay:
+        body = (bytes([0x40])
+                + struct.pack('>H', seg_id)
+                + bytes([(last >> 4) & 0xFF,
+                         ((last & 0x0F) << 4) | ((index >> 8) & 0x0F),
+                         index & 0xFF])
+                + payload
+                + bytes([0xDE, 0xAD, 0xBE, 0xEF]))
+    else:
+        body = bytes([0x00]) + payload + bytes([0xDE, 0xAD, 0xBE, 0xEF])
+    section_length = len(body)
+    # syntax_indicator=0 (private_section, no CRC) — see SCTE27_PAYLOAD note.
+    return (bytes([0xC6,
+                   0x30 | ((section_length >> 8) & 0x0F),
+                   section_length & 0xFF])
+            + body)
+
+
+def _scte27_pes_payload(sections, pad_to=170):
+    """Legacy helper retained for callers; SCTE-27 transport is sections,
+    not PES, but the section bytes are identical to what we used to pad."""
+    raw = b''.join(sections)
+    return raw + bytes([0xFF] * max(0, pad_to - len(raw)))
+
+
+def _scte27_section_ts_packet(sections, pid: int, cc: int = 0) -> bytes:
+    """Wrap one or more SCTE-27 sections directly in a single TS packet.
+
+    SCTE-27 (PMT stream_type 0x82) is delivered as TS_TRANSPORT_SECTIONS
+    inside the TS payload (pointer_field + section bytes), NOT inside a PES.
+    Wrapping in a PES (as round-1's seed_scte27 did) means
+    GatherSectionsData / ts_sections_processor_Push never see the section
+    header and SCTE27_Section_Callback in ts_scte.c is never invoked.
+    """
+    raw = b''.join(sections) if isinstance(sections, (list, tuple)) else sections
+    payload = bytes([0x00]) + raw   # pointer_field = 0
+    assert len(payload) <= 184, \
+        f"SCTE-27 section payload {len(payload)} bytes too large for a single TS packet"
+    return make_ts_packet(pid, payload, pusi=True, cc=cc)
+
+
+def _seed_scte27_variant(sections):
+    """sections may be a single bytes object (one section), a list of sections,
+    or — for backwards compatibility with the old PES-padded payload — a
+    bytes blob already containing concatenated sections + 0xFF padding."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    pmt = make_pmt(0x0001, VIDEO_PID, [
+        (0x02, VIDEO_PID, b''),
+        (0x82, SUBS_PID, b''),
+    ])
+    video_pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
+    return (psi_packet(pat, 0x0000) +
+            psi_packet(pmt, PMT_PID) +
+            pes_ts_packets(video_pes, VIDEO_PID) +
+            _scte27_section_ts_packet(sections, SUBS_PID))
+
+
+def seed_scte27_framed() -> bytes:
+    msg = _scte27_subtitle_message(display_standard=1, pre_clear=True,
+                                   is_framed=True, outline_style=0)
+    return _seed_scte27_variant([_scte27_section(payload=msg)])
+
+
+def seed_scte27_outline() -> bytes:
+    msg = _scte27_subtitle_message(display_standard=2, pre_clear=True,
+                                   is_framed=True, outline_style=1)
+    return _seed_scte27_variant([_scte27_section(payload=msg)])
+
+
+def seed_scte27_shadow() -> bytes:
+    msg = _scte27_subtitle_message(display_standard=3, pre_clear=True,
+                                   is_framed=True, outline_style=2)
+    return _seed_scte27_variant([_scte27_section(payload=msg)])
+
+
+def seed_scte27_reserved_style() -> bytes:
+    """outline_style==3: takes the 24-bit-skip branch + falls through to
+    DEFAULT display_standard (5)."""
+    msg = _scte27_subtitle_message(display_standard=5, pre_clear=False,
+                                   is_framed=False, outline_style=3)
+    return _seed_scte27_variant([_scte27_section(payload=msg)])
+
+
+def seed_scte27_segmented() -> bytes:
+    msg = _scte27_subtitle_message(display_standard=0, pre_clear=True,
+                                   is_framed=True, outline_style=1)
+    split = max(8, len(msg) // 2)
+    sec0 = _scte27_section(payload=msg[:split], segmentation_overlay=True,
+                           seg_id=0x1234, last=1, index=0)
+    sec1 = _scte27_section(payload=msg[split:], segmentation_overlay=True,
+                           seg_id=0x1234, last=1, index=1)
+    return _seed_scte27_variant([sec0, sec1])
+
+
 TS_SEEDS = {
     'mpeg2_video.ts':  seed_mpeg2_video,
     'h264_video.ts':   seed_h264_video,
@@ -614,6 +816,11 @@ TS_SEEDS = {
     'dts_audio.ts':    seed_dts_audio,
     'dvb_subtitle.ts': seed_dvb_subtitle,
     'scte27.ts':       seed_scte27,
+    'scte27_framed.ts':   seed_scte27_framed,
+    'scte27_outline.ts':  seed_scte27_outline,
+    'scte27_shadow.ts':   seed_scte27_shadow,
+    'scte27_reserved.ts': seed_scte27_reserved_style,
+    'scte27_segmented.ts': seed_scte27_segmented,
     'with_sdt.ts':     seed_with_sdt,
     'multi_program.ts': seed_multi_program,
     'multi_stream.ts': seed_multi_stream,
@@ -1013,6 +1220,12 @@ def gen_cdg(root):
 
 
 def gen_mus(root):
+    # The libfuzzer harness picks the demuxer module from the binary-name
+    # suffix (`vlc-demux-dec-libfuzzer-<dirname>`). The DMX music demuxer
+    # module is named "dmxmus" upstream — not "mus" — so seeds placed in
+    # seeds/dmxmus/ would be passed to demux_New(... "mus" ...) and that call
+    # fails with "cannot create demultiplexer: mus", never reaching
+    # modules/demux/dmxmus.c. Use the actual module name.
     MAGIC = b"MUS\x1A"
 
     def header(primaries: int, secondaries: int, instc: int,
@@ -1031,7 +1244,7 @@ def gen_mus(root):
     events1 = bytes([0x10, 0x3C, 0x60])
     seed1 = header(primaries=1, secondaries=0, instc=0,
                    event_bytes_len=len(events1)) + events1
-    _write(os.path.join(root, "seeds/mus/minimal_play.mus"), seed1)
+    _write(os.path.join(root, "seeds/dmxmus/minimal_play.mus"), seed1)
 
     instc = 2
     patch_list = struct.pack("<HH", 0x0001, 0x0010)
@@ -1047,9 +1260,73 @@ def gen_mus(root):
     ])
     seed2 = header(primaries=2, secondaries=1, instc=instc,
                    event_bytes_len=len(events2)) + patch_list + events2
-    _write(os.path.join(root, "seeds/mus/controls.mus"), seed2)
+    _write(os.path.join(root, "seeds/dmxmus/controls.mus"), seed2)
 
-    dict_path = os.path.join(root, "dictionaries/mus.dict")
+    # Round 2 — comprehensive event stream. The previous seeds covered only a
+    # handful of MUS_CTRL_* values; this one walks every documented event type
+    # and every HandleControl/HandleControlValue branch so the switch
+    # statements in dmxmus.c:165 and :194 are exercised.
+    # Event-byte layout: high nibble = type<<4, low nibble = channel.
+    #   0x00 release | 0x10 play | 0x20 pitch | 0x30 control |
+    #   0x40 control_value | 0x50 measure_end | 0x60 track_end | 0x70 dummy.
+    # Setting bit 7 on the event byte signals a VLQ delay follows.
+    primaries3 = 4
+    secondaries3 = 3
+    instc3 = 6
+    patch_list3 = b''.join(struct.pack('<HH', p, 0x0010 + p)
+                           for p in range(instc3))
+    events3 = bytes([
+        # PLAY with running-volume on channel 0 (buf[1]&0x80=1 → also reads volume)
+        0x10, 0x80 | 60, 0x60,
+        # MUS_EV_DUMMY (type 7) — single extra byte
+        0x70, 0x00,
+        # CONTROL_VALUE on channel 1: every documented num (0..9)
+        0x41, 0x00, 0x42,    # MUS_CTRL_PROGRAM_CHANGE
+        0x41, 0x01, 0x10,    # MUS_CTRL_BANK_SELECT (returns NULL)
+        0x41, 0x02, 0x40,    # MUS_CTRL_MODULATION
+        0x41, 0x03, 0x60,    # MUS_CTRL_VOLUME
+        0x41, 0x04, 0x55,    # MUS_CTRL_PAN
+        0x41, 0x05, 0x4F,    # MUS_CTRL_EXPRESSION
+        0x41, 0x06, 0x33,    # MUS_CTRL_REVERB
+        0x41, 0x07, 0x22,    # MUS_CTRL_CHORUS
+        0x41, 0x08, 0x77,    # MUS_CTRL_PEDAL_HOLD
+        0x41, 0x09, 0x05,    # MUS_CTRL_PEDAL_SOFT
+        # CONTROL_VALUE with num >= 10 falls through to HandleControl
+        0x41, 0x0A, 0x00,    # → MUS_CTRL_SOUND_OFF in HandleControl
+        0x41, 0x0B, 0x00,    # → MUS_CTRL_NOTES_OFF
+        0x41, 0x0C, 0x00,    # → MUS_CTRL_MONO
+        0x41, 0x0D, 0x00,    # → MUS_CTRL_POLY
+        0x41, 0x0E, 0x00,    # → MUS_CTRL_RESET
+        0x41, 0x0F, 0x00,    # → MUS_CTRL_EVENT
+        0x41, 0x55, 0x00,    # → default "unknown control"
+        # CONTROL (type 3) directly — must hit each branch too
+        0x32, 0x0A,          # MUS_CTRL_SOUND_OFF
+        0x32, 0x0B,          # MUS_CTRL_NOTES_OFF
+        0x32, 0x0C,          # MUS_CTRL_MONO
+        0x32, 0x0D,          # MUS_CTRL_POLY
+        0x32, 0x0E,          # MUS_CTRL_RESET
+        0x32, 0x0F,          # MUS_CTRL_EVENT
+        0x32, 0x77,          # default
+        # PITCH (type 2)
+        0x20, 0x40,
+        # RELEASE on channel 5 (within primaries) and channel 14 (re-mapped to 9)
+        0x05, 0x3C,
+        0x0E, 0x3C,
+        # PLAY without running-volume (buf[1] & 0x80 == 0) — reuses last volume
+        0x10, 0x40,
+        # MEASURE_END
+        0x50,
+        # Event with bit-7 delay (multi-byte VLQ): 0x80 sets the loop, then
+        # 0x82 (cont) 0x05 (final) → delay = 0x02<<7 | 0x05 = 0x105.
+        0x90, 0x40, 0x82, 0x05,
+        # TRACK_END
+        0x60,
+    ])
+    seed3 = header(primaries=primaries3, secondaries=secondaries3, instc=instc3,
+                   event_bytes_len=len(events3)) + patch_list3 + events3
+    _write(os.path.join(root, "seeds/dmxmus/all_events.mus"), seed3)
+
+    dict_path = os.path.join(root, "dictionaries/dmxmus.dict")
     os.makedirs(os.path.dirname(dict_path), exist_ok=True)
     with open(dict_path, "w") as f:
         f.write('# DMX .MUS magic and event-type byte high-nibbles\n')
@@ -1167,6 +1444,416 @@ def gen_h264(root):
 
 
 # ──────────────────────────────────────────────────
+#  TTA (True Audio) seeds (modules/demux/tta.c)
+# ──────────────────────────────────────────────────
+#
+# The vlc-fuzz-corpus tree has no seeds/tta directory, so the
+# vlc-demux-dec-libfuzzer-tta target starts every campaign with an empty
+# corpus and the TTA1 magic check at modules/demux/tta.c:96 fails on every
+# random byte. Public report (2026-05-13): 21/161 lines (13.0%).
+#
+# tta.c Open() requires:
+#   off  0  "TTA1"          (4)
+#   off  4  AudioFormat     (2  little-endian)
+#   off  6  NumChannels     (2  little-endian)
+#   off  8  BitsPerSample   (2  little-endian)
+#   off 10  SampleRate      (4  little-endian)  must be > 0 and <= 1<<20
+#   off 14  DataLength      (4  little-endian)
+#   off 18  HeaderCRC32     (4  little-endian) — not validated by demuxer
+# Then a per-frame seektable (totalframes * 4 bytes) and a 4-byte trailing
+# CRC; Demux() reads seektable[i] bytes per frame and pushes them to es_out.
+
+def _tta_seed(rate, channels, bps, datalen, frame_bytes_list):
+    header = (b"TTA1"
+              + struct.pack("<H", 1)
+              + struct.pack("<H", channels)
+              + struct.pack("<H", bps)
+              + struct.pack("<I", rate)
+              + struct.pack("<I", datalen)
+              + struct.pack("<I", 0))
+    seektable = b"".join(struct.pack("<I", n) for n in frame_bytes_list)
+    seektable_crc = struct.pack("<I", 0)
+    payload = b"".join(b"\x00" * n for n in frame_bytes_list)
+    return header + seektable + seektable_crc + payload
+
+
+def gen_tta(root):
+    _write(os.path.join(root, "seeds/tta/minimal.tta"),
+           _tta_seed(rate=44100, channels=2, bps=16,
+                     datalen=88200, frame_bytes_list=(50,)))
+    _write(os.path.join(root, "seeds/tta/multi_frame.tta"),
+           _tta_seed(rate=22050, channels=1, bps=16,
+                     datalen=22050 * 3, frame_bytes_list=(40, 30, 35)))
+    _write(os.path.join(root, "seeds/tta/mono8.tta"),
+           _tta_seed(rate=8000, channels=1, bps=8,
+                     datalen=8000, frame_bytes_list=(20, 25)))
+
+    dict_path = os.path.join(root, "dictionaries/tta.dict")
+    os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+    with open(dict_path, "w") as f:
+        f.write('# TTA (True Audio) lossless audio magic + sample rates\n')
+        f.write('"TTA1"\n')
+        f.write('"\\x01\\x00"\n')
+        f.write('"\\x44\\xAC\\x00\\x00"\n')
+        f.write('"\\x22\\x56\\x00\\x00"\n')
+        f.write('"\\x40\\x1F\\x00\\x00"\n')
+    print(f"  wrote {dict_path}")
+
+
+# ──────────────────────────────────────────────────
+#  Extended HEIF seeds — transform & decoder-config properties
+# ──────────────────────────────────────────────────
+#
+# heif_basic/avif_basic/heic_grid (above) exercise the ipco/ipma/iloc
+# walking paths but never the property branches at heif.c:371-451 (hvcC,
+# avcC, av1C, irot, clap, colr, clli, mdcv). These extra seeds attach a
+# realistic hvcC/av1C config + each transform property in turn so the
+# associated SetupES paths run.
+
+def hvcC_box() -> bytes:
+    body = bytes([
+        0x01,            # configurationVersion
+        0x42, 0xC0, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0,
+        0x00, 0xFC, 0xFD, 0xF8, 0xF8, 0x00, 0x00, 0x0F,
+        0x00,
+    ])
+    return box(b'hvcC', body)
+
+
+def av1C_box() -> bytes:
+    body = bytes([0x81, 0x05, 0x0C, 0x00])
+    return box(b'av1C', body)
+
+
+def irot_box(rot_idx: int) -> bytes:
+    return box(b'irot', bytes([rot_idx & 0x03]))
+
+
+def imir_box(axis: int) -> bytes:
+    return box(b'imir', bytes([axis & 0x01]))
+
+
+def colr_nclx_box() -> bytes:
+    body = b'nclx' + struct.pack('>HHHB', 1, 13, 1, 0x80)
+    return box(b'colr', body)
+
+
+def clap_box(w_n, w_d, h_n, h_d, x_n, x_d, y_n, y_d) -> bytes:
+    body = struct.pack('>iiiiiiii', w_n, w_d, h_n, h_d, x_n, x_d, y_n, y_d)
+    return box(b'clap', body)
+
+
+def seed_heic_with_hvcC() -> bytes:
+    img_data = bytes([0x00, 0x00, 0x00, 0x02, 0x40, 0x01])
+    iinf_box = iinf([infe(1, b'hvc1', b'IMG\x00')])
+    pitm_box = pitm(1)
+    ipco_box = ipco([
+        ispe(64, 48),
+        hvcC_box(),
+        pixi([8, 8, 8]),
+        colr_nclx_box(),
+    ])
+    ipma_box = ipma([(1, [1, 2, 3, 4])])
+    iprp_box = iprp(ipco_box, ipma_box)
+    placeholder = iloc([(1, len(img_data))], 0)
+    meta_box = meta([pitm_box, iinf_box, placeholder, iprp_box])
+    ftyp_box = ftyp(b'heic', [b'mif1', b'heic'])
+    mdat_off = len(ftyp_box) + len(meta_box) + 8
+    iloc_box = iloc([(1, len(img_data))], mdat_off)
+    meta_box = meta([pitm_box, iinf_box, iloc_box, iprp_box])
+    mdat_box = box(b'mdat', img_data)
+    return ftyp_box + meta_box + mdat_box
+
+
+def seed_heic_irot() -> bytes:
+    img_data = bytes([0x00, 0x00, 0x00, 0x02, 0x40, 0x01])
+    iinf_box = iinf([infe(1, b'hvc1', b'IMG\x00')])
+    pitm_box = pitm(1)
+    ipco_box = ipco([
+        ispe(32, 32),
+        hvcC_box(),
+        irot_box(1),       # 90° CCW
+        imir_box(1),
+        clap_box(16, 1, 16, 1, 8, 1, 8, 1),
+    ])
+    ipma_box = ipma([(1, [1, 2, 3, 4, 5])])
+    iprp_box = iprp(ipco_box, ipma_box)
+    placeholder = iloc([(1, len(img_data))], 0)
+    meta_box = meta([pitm_box, iinf_box, placeholder, iprp_box])
+    ftyp_box = ftyp(b'heic', [b'mif1', b'heic'])
+    mdat_off = len(ftyp_box) + len(meta_box) + 8
+    iloc_box = iloc([(1, len(img_data))], mdat_off)
+    meta_box = meta([pitm_box, iinf_box, iloc_box, iprp_box])
+    mdat_box = box(b'mdat', img_data)
+    return ftyp_box + meta_box + mdat_box
+
+
+def seed_avif_with_av1C() -> bytes:
+    img_data = bytes([0x12, 0x00, 0x0a, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x00])
+    iinf_box = iinf([infe(1, b'av01', b'AV1\x00')])
+    pitm_box = pitm(1)
+    ipco_box = ipco([
+        ispe(16, 16),
+        av1C_box(),
+        pixi([8, 8, 8]),
+        colr_nclx_box(),
+        irot_box(2),
+    ])
+    ipma_box = ipma([(1, [1, 2, 3, 4, 5])])
+    iprp_box = iprp(ipco_box, ipma_box)
+    placeholder = iloc([(1, len(img_data))], 0)
+    meta_box = meta([pitm_box, iinf_box, placeholder, iprp_box])
+    ftyp_box = ftyp(b'avif', [b'mif1', b'avif'])
+    mdat_off = len(ftyp_box) + len(meta_box) + 8
+    iloc_box = iloc([(1, len(img_data))], mdat_off)
+    meta_box = meta([pitm_box, iinf_box, iloc_box, iprp_box])
+    mdat_box = box(b'mdat', img_data)
+    return ftyp_box + meta_box + mdat_box
+
+
+def iref_thmb(from_id: int, to_id: int) -> bytes:
+    body = struct.pack('>HH', from_id, 1) + struct.pack('>H', to_id)
+    return fullbox(b'iref', 0, 0, box(b'thmb', body))
+
+
+def seed_heic_thumb() -> bytes:
+    main_data = bytes([0x00, 0x00, 0x00, 0x02, 0x40, 0x01])
+    thumb_data = bytes([0x00, 0x00, 0x00, 0x02, 0x40, 0x02])
+    iinf_box = iinf([
+        infe(1, b'hvc1', b'MAIN\x00'),
+        infe(2, b'hvc1', b'THMB\x00'),
+    ])
+    pitm_box = pitm(1)
+    iref_box = iref_thmb(2, 1)
+    ipco_box = ipco([
+        ispe(64, 48),
+        hvcC_box(),
+        ispe(16, 12),
+    ])
+    ipma_box = ipma([(1, [1, 2]), (2, [3, 2])])
+    iprp_box = iprp(ipco_box, ipma_box)
+    placeholder = iloc([(1, len(main_data)), (2, len(thumb_data))], 0)
+    meta_box = meta([pitm_box, iinf_box, placeholder, iref_box, iprp_box])
+    ftyp_box = ftyp(b'heic', [b'mif1', b'heic'])
+    mdat_off = len(ftyp_box) + len(meta_box) + 8
+    iloc_box = iloc([(1, len(main_data)), (2, len(thumb_data))], mdat_off)
+    meta_box = meta([pitm_box, iinf_box, iloc_box, iref_box, iprp_box])
+    mdat_box = box(b'mdat', main_data + thumb_data)
+    return ftyp_box + meta_box + mdat_box
+
+
+HEIF_EXTRA_SEEDS = {
+    'heic_hvcC.heic':  seed_heic_with_hvcC,
+    'heic_irot.heic':  seed_heic_irot,
+    'avif_av1C.avif':  seed_avif_with_av1C,
+    'heic_thumb.heic': seed_heic_thumb,
+}
+
+
+def gen_heif_extra(root):
+    seed_dir = os.path.join(root, 'seeds', 'heif')
+    os.makedirs(seed_dir, exist_ok=True)
+    for filename, gen in HEIF_EXTRA_SEEDS.items():
+        data = gen()
+        with open(os.path.join(seed_dir, filename), 'wb') as f:
+            f.write(data)
+        print(f'  seeds/heif/{filename}: {len(data)} bytes')
+
+
+# ──────────────────────────────────────────────────
+#  Ogg seeds — Speex header + data packets (codec/speex.c)
+# ──────────────────────────────────────────────────
+#
+# Round 2 deferred this with "Constructing a structurally valid Ogg page
+# requires CRC-32/Ogg over the entire page with the CRC field zeroed;
+# doable in Python but high-effort for what would be a single seed."
+# Round 3 implements the CRC + page builder and adds a multi-page Speex
+# stream so OpenDecoder + ProcessInitialHeader + DecodeBlock are exercised.
+
+_OGG_CRC_TABLE = None
+
+
+def _ogg_crc_table():
+    global _OGG_CRC_TABLE
+    if _OGG_CRC_TABLE is None:
+        tbl = [0] * 256
+        for i in range(256):
+            r = i << 24
+            for _ in range(8):
+                r = ((r << 1) ^ 0x04C11DB7) & 0xFFFFFFFF if (r & 0x80000000) else ((r << 1) & 0xFFFFFFFF)
+            tbl[i] = r
+        _OGG_CRC_TABLE = tbl
+    return _OGG_CRC_TABLE
+
+
+def ogg_crc32(data: bytes) -> int:
+    tbl = _ogg_crc_table()
+    r = 0
+    for b in data:
+        r = ((r << 8) ^ tbl[((r >> 24) ^ b) & 0xFF]) & 0xFFFFFFFF
+    return r
+
+
+def ogg_page(packets, *, serial: int, page_seq: int, granule: int = 0,
+             bos: bool = False, eos: bool = False,
+             continued: bool = False) -> bytes:
+    """Pack one or more whole packets into a single Ogg page.
+
+    Each entry in `packets` is the raw packet bytes; segment lacing values
+    are computed as 0xFF * (len // 255) followed by (len % 255).  Caller is
+    responsible for keeping the total segment count ≤ 255.
+    """
+    segs = bytearray()
+    body = bytearray()
+    for pkt in packets:
+        n = len(pkt)
+        while n >= 255:
+            segs.append(255)
+            n -= 255
+        segs.append(n)
+        body.extend(pkt)
+    assert len(segs) <= 255, "too many segments for one Ogg page"
+    htype = (0x01 if continued else 0) | (0x02 if bos else 0) | (0x04 if eos else 0)
+    header = (b'OggS'
+              + bytes([0, htype])
+              + struct.pack('<q', granule)
+              + struct.pack('<I', serial)
+              + struct.pack('<I', page_seq)
+              + struct.pack('<I', 0)   # CRC placeholder
+              + bytes([len(segs)])
+              + bytes(segs))
+    page = bytes(header) + bytes(body)
+    crc = ogg_crc32(page)
+    return page[:22] + struct.pack('<I', crc) + page[26:]
+
+
+def _speex_header_packet(rate: int = 16000, channels: int = 1,
+                         mode: int = 1, frames_per_packet: int = 1,
+                         frame_size: int = 320, nb_packets: int = 0xFFFFFFFF) -> bytes:
+    """Build the 80-byte Speex BOS header.  The reference layout (from
+    libspeex/speex_header.c) is:
+      char speex_string[8]       = "Speex   "
+      char speex_version[20]
+      int  speex_version_id
+      int  header_size  = 80
+      int  rate
+      int  mode         = 0 (NB) / 1 (WB) / 2 (UWB)
+      int  mode_bitstream_version
+      int  nb_channels
+      int  bitrate      = -1
+      int  frame_size
+      int  vbr
+      int  frames_per_packet
+      int  extra_headers
+      int  reserved1
+      int  reserved2
+    """
+    speex_string = b'Speex   '
+    version = b'speex-1.2.0'.ljust(20, b'\x00')
+    return (speex_string
+            + version
+            + struct.pack('<I', 1)        # speex_version_id
+            + struct.pack('<I', 80)       # header_size
+            + struct.pack('<I', rate)
+            + struct.pack('<I', mode)
+            + struct.pack('<I', 4)        # mode_bitstream_version (libspeex 1.2)
+            + struct.pack('<I', channels)
+            + struct.pack('<i', -1)       # bitrate
+            + struct.pack('<I', frame_size)
+            + struct.pack('<I', 0)        # vbr
+            + struct.pack('<I', frames_per_packet)
+            + struct.pack('<I', 0)        # extra_headers
+            + struct.pack('<I', 0)        # reserved1
+            + struct.pack('<I', 0))       # reserved2
+
+
+def _speex_comment_packet() -> bytes:
+    vendor = b'vlc-fuzz-corpus'
+    return (struct.pack('<I', len(vendor)) + vendor + struct.pack('<I', 0))
+
+
+def seed_speex_full() -> bytes:
+    """Multi-page Speex stream: BOS header + comment + several data packets
+    + EOS.  The data packets are deliberately small frame-sized blobs; the
+    speex decoder will reject them as malformed frames but the rejection
+    path still drains through speex_decode_int / cleanup which is far more
+    code than just the OpenDecoder + ProcessInitialHeader hot-path the
+    existing single-page seed exercises."""
+    serial = 0xC0FFEE01
+    pages = [
+        ogg_page([_speex_header_packet(rate=16000, mode=1, frame_size=320,
+                                       frames_per_packet=1)],
+                 serial=serial, page_seq=0, granule=0, bos=True),
+        ogg_page([_speex_comment_packet()],
+                 serial=serial, page_seq=1, granule=0),
+    ]
+    # Several short audio packets — random-ish bit patterns that exercise
+    # the frame-decode error paths in libspeex/nb_celp.c without crashing.
+    frames = [
+        bytes.fromhex('36ff83e00018'),
+        bytes.fromhex('36ff83e00018' '24008000'),
+        bytes([0x80, 0x00] * 8),
+        bytes([0x55] * 38),
+        bytes([0xAA] * 38),
+        bytes.fromhex('1e0040201008'),
+    ]
+    seq = 2
+    granule = 320
+    for i, f in enumerate(frames):
+        pages.append(ogg_page([f], serial=serial, page_seq=seq,
+                              granule=granule,
+                              eos=(i == len(frames) - 1)))
+        seq += 1
+        granule += 320
+    return b''.join(pages)
+
+
+def seed_speex_8khz_nb() -> bytes:
+    """Narrow-band variant: drives the mode=0 branch in CreateDefaultHeader
+    and ProcessInitialHeader."""
+    serial = 0xC0FFEE02
+    pages = [
+        ogg_page([_speex_header_packet(rate=8000, mode=0, frame_size=160,
+                                       frames_per_packet=2, channels=1)],
+                 serial=serial, page_seq=0, granule=0, bos=True),
+        ogg_page([_speex_comment_packet()],
+                 serial=serial, page_seq=1, granule=0),
+        ogg_page([bytes.fromhex('36ff83e000183600')],
+                 serial=serial, page_seq=2, granule=160),
+        ogg_page([bytes([0x9F] * 24)],
+                 serial=serial, page_seq=3, granule=320, eos=True),
+    ]
+    return b''.join(pages)
+
+
+def seed_speex_uwb_stereo() -> bytes:
+    """Ultra-wide-band 32 kHz stereo — stereo path adds an inband stereo
+    flag-handling branch in libspeex; 2-channel header drives
+    ProcessHeader's channel-clamp / fmt_out.audio.i_channels=2 path."""
+    serial = 0xC0FFEE03
+    pages = [
+        ogg_page([_speex_header_packet(rate=32000, mode=2, frame_size=640,
+                                       frames_per_packet=1, channels=2)],
+                 serial=serial, page_seq=0, granule=0, bos=True),
+        ogg_page([_speex_comment_packet()],
+                 serial=serial, page_seq=1, granule=0),
+        ogg_page([bytes([0x77] * 80)],
+                 serial=serial, page_seq=2, granule=640),
+        ogg_page([bytes([0x33] * 80)],
+                 serial=serial, page_seq=3, granule=1280, eos=True),
+    ]
+    return b''.join(pages)
+
+
+def gen_ogg(root):
+    out = os.path.join(root, 'seeds', 'ogg')
+    os.makedirs(out, exist_ok=True)
+    _write(os.path.join(out, 'speex_full.ogg'), seed_speex_full())
+    _write(os.path.join(out, 'speex_nb.ogg'), seed_speex_8khz_nb())
+    _write(os.path.join(out, 'speex_uwb_stereo.ogg'), seed_speex_uwb_stereo())
+
+
+# ──────────────────────────────────────────────────
 #  main
 # ──────────────────────────────────────────────────
 
@@ -1185,6 +1872,9 @@ def main():
     gen_mus(root)
     gen_mpgv(root)
     gen_h264(root)
+    gen_tta(root)
+    gen_heif_extra(root)
+    gen_ogg(root)
 
 
 if __name__ == '__main__':
