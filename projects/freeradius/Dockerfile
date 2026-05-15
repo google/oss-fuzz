@@ -18,7 +18,17 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y gnupg
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BE18FC5A41382202
 RUN echo "deb http://packages.networkradius.com/extras/ubuntu/focal focal  main" > /etc/apt/sources.list.d/networkradius-extras.list
-RUN apt-get update && apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev libjson-c-dev
+RUN apt-get update && apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev cmake
+
+# json-c source — built statically with sanitizer instrumentation in build.sh
+ARG JSONC_VERSION=0.18
+ARG JSONC_HASH=876ab046479166b869afc6896d288183bbc0e5843f141200c677b3e8dfb11724
+RUN set -ex \
+    && curl -s -L -o json-c-${JSONC_VERSION}.tar.gz https://s3.amazonaws.com/json-c_releases/releases/json-c-${JSONC_VERSION}.tar.gz \
+    && echo "${JSONC_HASH}  json-c-${JSONC_VERSION}.tar.gz" | sha256sum -c \
+    && tar -xzf json-c-${JSONC_VERSION}.tar.gz \
+    && mv json-c-${JSONC_VERSION} $SRC/json-c
+ENV JSONC_PREFIX=/usr/local/json-c
 
 # OpenSSL 3.0
 ARG OPENSSL_VERSION=3.0.15

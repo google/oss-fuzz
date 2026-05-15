@@ -1,5 +1,7 @@
 homepage: "https://github.com/quic-go/quic-go"
 primary_contact: "martenseemann@gmail.com"
+auto_ccs:
+  - "quic-go-corpus-ci@quic-go-oss-fuzz-ci.iam.gserviceaccount.com"
 language: go
 fuzzing_engines:
 - libfuzzer

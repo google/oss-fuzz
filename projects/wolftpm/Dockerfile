@@ -14,17 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-# install dependencies
-RUN apt-get update && apt-get install -y cmake libtiff-dev zip
+RUN apt-get update && apt-get install -y \
+    make autoconf automake libtool pkg-config && \
+    rm -rf /var/lib/apt/lists/*
 
-# clone the library
-RUN git clone https://github.com/aous72/OpenJPH.git
+RUN git clone --depth 1 https://github.com/wolfssl/wolfssl $SRC/wolfssl
+RUN git clone --depth 1 https://github.com/wolfSSL/wolfTPM $SRC/wolfTPM
+RUN git clone --depth 1 https://github.com/AdaLogics/ada-fuzzers $SRC/ada-fuzzers
 
-# import the ojph_expand_fuzz_target seed corpus
-RUN git clone --depth 1 https://github.com/aous72/jp2k_test_codestreams.git
+COPY build.sh $SRC/
 
-# import the build script
-COPY build.sh .
-
+WORKDIR $SRC/wolfTPM
