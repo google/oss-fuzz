@@ -28,7 +28,7 @@ RUN set -ex \
     && echo "${JSONC_HASH}  json-c-${JSONC_VERSION}.tar.gz" | sha256sum -c \
     && tar -xzf json-c-${JSONC_VERSION}.tar.gz \
     && mv json-c-${JSONC_VERSION} $SRC/json-c
-ENV JSONC_PREFIX=/usr/local/json-c
+ENV JSONC_PREFIX=/src/json-c-install
 
 # OpenSSL 3.0
 ARG OPENSSL_VERSION=3.0.15
