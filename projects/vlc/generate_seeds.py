@@ -1160,12 +1160,30 @@ def seed_atsc_psip() -> bytes:
     ett_b = make_atsc_ett((0x00FF << 16) | 0xC002, long_b)
 
     video_pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=900)
+    # Section dispatch is driven by dvbpsi sub-decoders attached lazily as
+    # tables arrive.  In particular:
+    #   - The STT sub-decoder is attached at PSIP base setup time.
+    #   - ATSC_STT_Callback's first call attaches the MGT decoder.
+    #   - ATSC_MGT_Callback attaches the VCT and per-PID EIT/ETT decoders.
+    #   - ATSC_EIT_Callback won't process anything until both p_stt and
+    #     p_vct are already set on the base PSIP context.
+    # We therefore inject STT first to bootstrap MGT, then MGT (which
+    # attaches VCT + EIT/ETT decoders), then TVCT, then a second STT/MGT
+    # round so the EIT/ETT sections that follow have a fully-populated
+    # base context to satisfy ATSC_EIT_Callback's pre-conditions.
     return (psi_packet(pat, 0x0000) +
             psi_packet(pmt, PMT_PID) +
             pes_ts_packets(video_pes, VIDEO_PID, pcr_90khz=450) +
-            psi_packet(mgt, ATSC_BASE_PID) +
             psi_packet(stt, ATSC_BASE_PID) +
+            psi_packet(mgt, ATSC_BASE_PID) +
             psi_packet(tvct, ATSC_BASE_PID) +
+            psi_packet(stt, ATSC_BASE_PID) +
+            psi_packet(mgt, ATSC_BASE_PID) +
+            psi_packet(tvct, ATSC_BASE_PID) +
+            psi_packet(eit0, eit_pid_0) +
+            psi_packet(eit1, eit_pid_1) +
+            psi_packet(ett_a, ett_pid_0) +
+            psi_packet(ett_b, ett_pid_1) +
             psi_packet(eit0, eit_pid_0) +
             psi_packet(eit1, eit_pid_1) +
             psi_packet(ett_a, ett_pid_0) +
