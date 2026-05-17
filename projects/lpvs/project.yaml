@@ -1,0 +1,10 @@
+homepage: "https://samsung.github.io/LPVS/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/samsung/lpvs"
+sanitizers:
+  - address
+vendor_ccs:
+  - "o.kopysov@samsung.com"
+  - "t.drozdovsky@samsung.com"
