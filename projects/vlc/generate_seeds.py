@@ -114,11 +114,28 @@ def psi_section(table_id: int, tid_ext: int, body: bytes) -> bytes:
     return full + struct.pack('>I', crc32_mpeg(full))
 
 
+_PSI_CC_STATE = {}
+
+
 def psi_packet(section: bytes, pid: int) -> bytes:
-    """Wrap a PSI section in a single TS packet (pointer_field = 0x00)."""
+    """Wrap a PSI section in a single TS packet (pointer_field = 0x00).
+       Continuity counters are tracked per-PID in a module-level dict so
+       that successive PSI packets on the same PID present a valid CC
+       sequence — dvbpsi otherwise reports "TS discontinuity" and drops
+       sections (the cause of seed_atsc_psip's atsc_a65.c coverage being
+       zero before this fix)."""
     payload = bytes([0x00]) + section   # pointer_field = 0
     assert len(payload) <= 184, "Section too large for one TS packet"
-    return make_ts_packet(pid, payload, pusi=True, cc=0)
+    cc = _PSI_CC_STATE.get(pid, 0)
+    _PSI_CC_STATE[pid] = (cc + 1) & 0x0F
+    return make_ts_packet(pid, payload, pusi=True, cc=cc)
+
+
+def reset_psi_cc():
+    """Reset the per-PID CC counter — call between independent seed
+       generators so each seed file starts with CC=0."""
+    _PSI_CC_STATE.clear()
+    _PES_CC_STATE.clear()
 
 
 def make_pat(programs: list) -> bytes:
@@ -190,6 +207,9 @@ def make_ts_pes(stream_id: int, payload: bytes, pts_90khz: int = 0) -> bytes:
     return pes_data
 
 
+_PES_CC_STATE = {}
+
+
 def pes_ts_packets(pes_data: bytes, pid: int, pcr_90khz: int = None) -> bytes:
     """Split PES data into TS packets.
 
@@ -197,11 +217,15 @@ def pes_ts_packets(pes_data: bytes, pid: int, pcr_90khz: int = None) -> bytes:
     with that PCR. The TS demuxer's prepcr queue holds back PES blocks until
     a PCR is observed (or 500ms of stream time elapses), so seeds with a
     single PES never reach the decoder unless we provide a PCR explicitly.
+
+    Continuity counters are tracked per-PID across multiple calls so that
+    repeated PES packets on the same PID do not look like discontinuities
+    to the dvbpsi/TS demuxers.
     """
     out = b''
     offset = 0
     pusi = True
-    cc = 0
+    cc = _PES_CC_STATE.get(pid, 0)
     while offset < len(pes_data):
         if pusi and pcr_90khz is not None:
             chunk = pes_data[offset: offset + 184 - 8]  # leave room for AF
@@ -213,6 +237,7 @@ def pes_ts_packets(pes_data: bytes, pid: int, pcr_90khz: int = None) -> bytes:
         offset += len(chunk)
         pusi = False
         cc = (cc + 1) & 0x0F
+    _PES_CC_STATE[pid] = cc
     return out
 
 
@@ -324,6 +349,351 @@ DVB_SUB_PAYLOAD = DVB_SUB_PAYLOAD + bytes(
     [0xFF] * max(0, _DVB_SUB_PAD_TARGET - len(DVB_SUB_PAYLOAD)))
 
 
+# ──────────────────────────────────────────────────
+#  DVB subtitle — extended payloads exercising the
+#  decode_object / dvbsub_render_pdata / dvbsub_pdataNbpp
+#  RLE paths plus alternative_CLUT depth/gamut branches.
+#  See modules/codec/dvbsub.c (~1800 lines, 7.2% in 2026-05-16
+#  report).  All segment formats below follow ETSI EN 300-743.
+# ──────────────────────────────────────────────────
+
+# CLUT definition section.  Each entry header is:
+#   8 bits id, 3 bits "type" mask (bit2=8b,bit1=4b,bit0=2b),
+#   reserved 4 bits, 1 bit "full_range" flag.
+# When full_range=1: 4*8 bits (Y/Cr/Cb/T).
+# When full_range=0: 6+4+4+2 bits (Y/Cr/Cb/T compressed).
+def _dvb_clut_entry(cid: int, type_mask: int, full: bool,
+                    y: int, cr: int, cb: int, t: int) -> bytes:
+    if full:
+        return bytes([cid,
+                      (type_mask & 0x07) << 5 | 0x01,
+                      y & 0xFF, cr & 0xFF, cb & 0xFF, t & 0xFF])
+    # 6+4+4+2 = 16 bits packed into 2 bytes
+    b0 = ((y >> 2) & 0x3F) << 2 | ((cr >> 4) & 0x03)
+    b1 = (((cr >> 6) & 0x03) << 6
+          | ((cb >> 4) & 0x0F) << 2
+          | ((t  >> 6) & 0x03))
+    return bytes([cid,
+                  (type_mask & 0x07) << 5 | 0x00,
+                  b0, b1])
+
+
+def _dvb_clut_seg(page_id: int, clut_id: int, entries: bytes) -> bytes:
+    body = bytes([clut_id, 0x00]) + entries  # version=0
+    return _dvbsub_seg(0x12, page_id, body)
+
+
+def _dvb_pcs(page_id: int, regions: list, version: int = 0,
+             state: int = 0x02) -> bytes:
+    # state: 0=normal,1=acquisition,2=mode-change,3=reserved.
+    body = bytes([0x14, (version & 0x0F) << 4 | (state & 0x03) << 2])
+    for region_id, x, y in regions:
+        body += bytes([region_id, 0xFF]) + struct.pack('>HH', x, y)
+    return _dvbsub_seg(0x10, page_id, body)
+
+
+def _dvb_region(page_id: int, region_id: int, *, width: int, height: int,
+                depth: int, level_comp: int, clut_id: int, fill: bool,
+                version: int = 0, obj_defs: list = ()) -> bytes:
+    # depth: 1=2bpp, 2=4bpp, 3=8bpp.
+    # level_comp: 1=2bpp,2=4bpp,3=8bpp.
+    flags = (version & 0x0F) << 4 | (1 << 3 if fill else 0)
+    body = bytes([region_id, flags])
+    body += struct.pack('>HH', width, height)
+    body += bytes([(level_comp & 0x07) << 5 | (depth & 0x07) << 2,
+                   clut_id,
+                   0x00,        # 8bpp pixel code for background
+                   0x00,        # 4bpp (4 bits) | 2bpp (2 bits) bg | reserved
+                   ])
+    for obj_id, obj_type, ox, oy in obj_defs:
+        body += struct.pack('>H', obj_id)
+        body += bytes([(obj_type & 0x03) << 6 | 0x00 | ((ox >> 8) & 0x0F)])
+        body += bytes([ox & 0xFF])
+        body += bytes([((oy >> 8) & 0x0F)])
+        body += bytes([oy & 0xFF])
+        body += bytes([0x00])  # fg/bg pixel codes only for type 1/2
+    return _dvbsub_seg(0x11, page_id, body)
+
+
+# Encode raw bits for the pixel-data inner streams. The RLE specs in
+# dvbsub.c make every switch branch reachable; we emit at least one of
+# each so the function bodies of dvbsub_pdata{2,4,8}bpp are entered.
+class _BitW:
+    def __init__(self):
+        self.bits = []
+    def w(self, value, n):
+        for i in range(n - 1, -1, -1):
+            self.bits.append((value >> i) & 1)
+    def out(self):
+        # Pad to byte boundary with 0.
+        while len(self.bits) % 8:
+            self.bits.append(0)
+        out = bytearray()
+        for i in range(0, len(self.bits), 8):
+            v = 0
+            for b in self.bits[i:i+8]:
+                v = (v << 1) | b
+            out.append(v)
+        return bytes(out)
+
+
+def _pdata2bpp_field() -> bytes:
+    # color != 0 path
+    w = _BitW(); w.w(0b01, 2)        # single px color 1
+    # Switch1: 3+count + color
+    w.w(0b00, 2); w.w(0b1, 1)        # zero color, switch1=1
+    w.w(0b101, 3); w.w(0b10, 2)      # 3+5=8 px color 2
+    # Switch2 case 0x02: 12+count + color
+    w.w(0b00, 2); w.w(0b0, 1); w.w(0b1, 1); w.w(0b10, 2)
+    w.w(0b0011, 4); w.w(0b11, 2)     # 12+3=15 px color 3
+    # Switch2 case 0x03: 29+count + color
+    w.w(0b00, 2); w.w(0b0, 1); w.w(0b1, 1); w.w(0b11, 2)
+    w.w(0b00000101, 8); w.w(0b01, 2) # 29+5=34 px color 1
+    # Switch2 case 0x01: 2 pixel run
+    w.w(0b00, 2); w.w(0b0, 1); w.w(0b1, 1); w.w(0b01, 2)
+    # Single pixel color 0
+    w.w(0b00, 2); w.w(0b0, 1); w.w(0b0, 1)
+    # End-of-string (Switch3 case 0x00)
+    w.w(0b00, 2); w.w(0b0, 1); w.w(0b1, 1); w.w(0b00, 2)
+    return w.out()
+
+
+def _pdata4bpp_field() -> bytes:
+    w = _BitW()
+    w.w(0x5, 4)                        # color != 0 single px
+    # Switch1==0 with count!=0 path: count = bs_read(3)+2
+    w.w(0x0, 4); w.w(0b0, 1); w.w(0b011, 3)   # 3+2 = 5 px color 0
+    # Switch1==1, Switch2==0 path: 4+count, color
+    w.w(0x0, 4); w.w(0b1, 1); w.w(0b0, 1); w.w(0b10, 2); w.w(0x3, 4)
+    # Switch1==1, Switch2==1, Switch3==0x0 path: 1 px color 0
+    w.w(0x0, 4); w.w(0b1, 1); w.w(0b1, 1); w.w(0b00, 2)
+    # Switch1==1, Switch2==1, Switch3==0x1 path: 2 px color 0
+    w.w(0x0, 4); w.w(0b1, 1); w.w(0b1, 1); w.w(0b01, 2)
+    # Switch1==1, Switch2==1, Switch3==0x2 path: 9+count, color
+    w.w(0x0, 4); w.w(0b1, 1); w.w(0b1, 1); w.w(0b10, 2); w.w(0x4, 4); w.w(0x7, 4)
+    # Switch1==1, Switch2==1, Switch3==0x3 path: 25+count, color
+    w.w(0x0, 4); w.w(0b1, 1); w.w(0b1, 1); w.w(0b11, 2); w.w(0x02, 8); w.w(0x9, 4)
+    # End-of-string (Switch1==0, count=0)
+    w.w(0x0, 4); w.w(0b0, 1); w.w(0b000, 3)
+    return w.out()
+
+
+def _pdata8bpp_field() -> bytes:
+    w = _BitW()
+    w.w(0x42, 8)                       # color != 0 single px
+    # Switch1==0 (zero color), count!=0 path: bs_read(7)
+    w.w(0x00, 8); w.w(0b0, 1); w.w(0b0000110, 7)   # 6 px color 0
+    # Switch1==1 path: bs_read(7) count, bs_read(8) color
+    w.w(0x00, 8); w.w(0b1, 1); w.w(0b0001000, 7); w.w(0x55, 8)
+    # End-of-string (Switch1==0, count=0)
+    w.w(0x00, 8); w.w(0b0, 1); w.w(0b0000000, 7)
+    return w.out()
+
+
+def _dvb_object_pixmap(page_id: int, obj_id: int,
+                       topfield: bytes, bottomfield: bytes) -> bytes:
+    # 16 bits id, 4 bits version, 2 bits coding_method=0, 1 bit non_modify,
+    # 1 bit reserved, 16 bits top_len, 16 bits bottom_len, payload(s).
+    body = struct.pack('>H', obj_id)
+    body += bytes([0x00])  # version=0 | coding_method=0 | non_modify=0 | rsv=0
+    body += struct.pack('>HH', len(topfield), len(bottomfield))
+    body += topfield + bottomfield
+    return _dvbsub_seg(0x13, page_id, body)
+
+
+def _dvb_object_chars(page_id: int, obj_id: int, chars: bytes) -> bytes:
+    # coding_method=1 (chars): 16 bits id, 4 bits v, 2 bits cm=1,
+    # 2 bits, 8 bits number_of_codes, then number_of_codes * 16 bits.
+    body = struct.pack('>H', obj_id)
+    body += bytes([0x40])  # version=0 | coding_method=1 | non_modify=0 | rsv=0
+    body += bytes([len(chars)])
+    for ch in chars:
+        body += struct.pack('>H', ch)
+    return _dvbsub_seg(0x13, page_id, body)
+
+
+def _dvb_dds(page_id: int, *, windowed: bool, width: int, height: int,
+             window: tuple = (0, 0, 0, 0)) -> bytes:
+    # 4 bits version, 1 bit display_window_flag, 3 bits reserved,
+    # 16 bits width-1, 16 bits height-1, optional 8x16 bits window.
+    body = bytes([(1 if windowed else 0) << 3])
+    body += struct.pack('>HH', max(0, width - 1), max(0, height - 1))
+    if windowed:
+        body += struct.pack('>HHHH', *window)
+    return _dvbsub_seg(0x14, page_id, body)
+
+
+def _dvb_alt_clut(page_id: int, clut_id: int, *,
+                  output_bit_depth: int = 0,
+                  gamut: int = 0,
+                  entries: list = ()) -> bytes:
+    # alternative_CLUT: 8 bits id, 4 bits version, 4 bits reserved,
+    # CLUT_parameters (2 bits max-num, 2 bits comp-type, 3 bits bit-depth,
+    # 1 bit rsv, 8 bits dynamic_range_and_colour_gamut), then entries.
+    body = bytes([clut_id, 0x00])
+    body += bytes([(0 << 6) | (0 << 4) | ((output_bit_depth & 0x07) << 1)])
+    body += bytes([gamut & 0xFF])
+    for y, cr, cb, t in entries:
+        if output_bit_depth == 0x01:
+            # 10-bit: 4 * 10 = 40 bits per entry = 5 bytes
+            v = ((y & 0x3FF) << 30) | ((cr & 0x3FF) << 20) \
+                | ((cb & 0x3FF) << 10) | (t & 0x3FF)
+            body += v.to_bytes(5, 'big')
+        else:
+            body += bytes([y & 0xFF, cr & 0xFF, cb & 0xFF, t & 0xFF])
+    return _dvbsub_seg(0x16, page_id, body)
+
+
+def _build_dvb_sub_payload_rich(page_id: int = 1) -> bytes:
+    """A DVB sub PES exercising:
+       - display definition (DDS) with windowed=true (covers windowed branch)
+       - page composition (PCS) with state=ACQUISITION + 3 regions
+       - region composition x3 covering depths 1/2/3 (2bpp/4bpp/8bpp)
+         each with multiple object_defs of type 0 (basic char) and 1 (composite)
+       - CLUT definition with full and partial color ranges and entries
+         setting type bits to fill c_2b / c_4b / c_8b storage classes
+       - object data of coding_method=0 carrying both pdata2bpp/4bpp/8bpp
+         RLE bitstreams in top and bottom fields
+       - object data of coding_method=1 (char codes)
+       - alternative_CLUT for the same clut_id with output_bit_depth=8 and
+         gamut switching across DVBSUB_ST_COLORIMETRY_CDS/SDR_709/HDR_PQ/HDR_HLG
+       - end_of_display + stuffing"""
+    out = bytes([0x20, 0x00])
+
+    # DDS — windowed=true with offsets within a 720x576 raster
+    out += _dvb_dds(page_id, windowed=True, width=720, height=576,
+                    window=(10, 700, 10, 560))
+
+    # PCS — acquisition with three region defs
+    out += _dvb_pcs(page_id, version=0, state=0x01,
+                    regions=[(0x00, 0, 0),
+                             (0x01, 100, 0),
+                             (0x02, 0, 100)])
+
+    # CLUT 0: type bit 0 (2b) + bit 1 (4b) + bit 2 (8b), entries with both
+    # full-range and partial-range encodings.
+    clut_entries = b''
+    clut_entries += _dvb_clut_entry(0x00, type_mask=0x07, full=True,
+                                    y=80, cr=128, cb=128, t=0)
+    clut_entries += _dvb_clut_entry(0x01, type_mask=0x04, full=True,
+                                    y=255, cr=128, cb=128, t=0xFF)
+    clut_entries += _dvb_clut_entry(0x02, type_mask=0x02, full=False,
+                                    y=128, cr=160, cb=160, t=0x80)
+    clut_entries += _dvb_clut_entry(0x03, type_mask=0x01, full=False,
+                                    y=0, cr=0, cb=0, t=0xFF)
+    # y==0 special case path
+    clut_entries += _dvb_clut_entry(0x04, type_mask=0x07, full=True,
+                                    y=0, cr=100, cb=100, t=0x00)
+    out += _dvb_clut_seg(page_id, clut_id=0, entries=clut_entries)
+
+    # Three regions, one per depth.
+    out += _dvb_region(page_id, region_id=0,
+                       width=32, height=16, depth=1, level_comp=1,
+                       clut_id=0, fill=True,
+                       obj_defs=[(0x0010, 0, 0, 0),
+                                 (0x0011, 1, 8, 0),
+                                 (0x0012, 2, 16, 0)])
+    out += _dvb_region(page_id, region_id=1,
+                       width=32, height=16, depth=2, level_comp=2,
+                       clut_id=0, fill=True,
+                       obj_defs=[(0x0020, 0, 0, 0),
+                                 (0x0021, 1, 8, 0)])
+    out += _dvb_region(page_id, region_id=2,
+                       width=32, height=16, depth=3, level_comp=3,
+                       clut_id=0, fill=True,
+                       obj_defs=[(0x0030, 0, 0, 0)])
+
+    # Object data — three pixmap objects (2bpp/4bpp/8bpp) one per region.
+    f2 = _pdata2bpp_field()
+    f4 = _pdata4bpp_field()
+    f8 = _pdata8bpp_field()
+    # Each field is preceded/followed by 0x10/0x11/0x12 selector + optional
+    # 0x20/0x21/0x22 (map-tables, ignored) + 0xF0 end-of-line; we wrap
+    # everything to exercise dvbsub_render_pdata's switch on 0x10/0x11/0x12/
+    # 0x20/0x21/0x22/0xF0.
+    f2_wrap = bytes([0x10]) + f2 + bytes([0x20, 0x21, 0x22, 0xF0, 0x10]) + f2
+    f4_wrap = bytes([0x11]) + f4 + bytes([0xF0, 0x11]) + f4
+    f8_wrap = bytes([0x12]) + f8 + bytes([0xF0, 0x12]) + f8
+    out += _dvb_object_pixmap(page_id, obj_id=0x0010, topfield=f2_wrap,
+                              bottomfield=bytes([0x10]) + f2)
+    # Bottom field empty -> duplicate top field path
+    out += _dvb_object_pixmap(page_id, obj_id=0x0011, topfield=f2_wrap,
+                              bottomfield=b'')
+    out += _dvb_object_pixmap(page_id, obj_id=0x0020, topfield=f4_wrap,
+                              bottomfield=bytes([0x11]) + f4)
+    out += _dvb_object_pixmap(page_id, obj_id=0x0030, topfield=f8_wrap,
+                              bottomfield=bytes([0x12]) + f8)
+
+    # Character-coded object (coding_method=1)
+    out += _dvb_object_chars(page_id, obj_id=0x0012,
+                             chars=b'ABCDEF')
+    out += _dvb_object_chars(page_id, obj_id=0x0021,
+                             chars=b'XY')
+
+    # Alternative CLUT — 8-bit depth, each iteration touches the
+    # colorimetry switch in decode_object's render path indirectly via
+    # default_clut + Color range = FULL.
+    alt_entries = [(80, 128, 128, 0),
+                   (255, 128, 128, 0xFF),
+                   (160, 200, 100, 0x80)]
+    out += _dvb_alt_clut(page_id, clut_id=0, output_bit_depth=0x00,
+                         gamut=0x00, entries=alt_entries)
+
+    # Stuffing + end-of-display
+    out += _dvbsub_seg(0xFF, page_id, b'\x00\x00\x00\x00')
+    out += _dvbsub_seg(0x80, page_id, b'')
+
+    # End-marker terminating the while-loop on sync_byte == 0x0F.
+    out += bytes([0xFF])
+    return out
+
+
+DVB_SUB_PAYLOAD_RICH = _build_dvb_sub_payload_rich(page_id=1)
+_DVB_SUB_RICH_PAD = 760
+DVB_SUB_PAYLOAD_RICH = DVB_SUB_PAYLOAD_RICH + bytes(
+    [0xFF] * max(0, _DVB_SUB_RICH_PAD - len(DVB_SUB_PAYLOAD_RICH)))
+
+
+# Variant focused on alternative_CLUT branches (10-bit + colour-gamut
+# enums) so all four DVBSUB_ST_COLORIMETRY_* cases run.
+def _build_dvb_sub_altclut_payload(page_id: int = 1) -> bytes:
+    out = bytes([0x20, 0x00])
+    out += _dvb_dds(page_id, windowed=False, width=720, height=576)
+    out += _dvb_pcs(page_id, version=0, state=0x01, regions=[(0x00, 0, 0)])
+    # Define the CLUT first so alternative_CLUT updates an existing entry.
+    out += _dvb_clut_seg(page_id, clut_id=0,
+                         entries=_dvb_clut_entry(0x00, 0x07, True,
+                                                  80, 128, 128, 0))
+    out += _dvb_region(page_id, region_id=0, width=8, height=8, depth=3,
+                       level_comp=3, clut_id=0, fill=True,
+                       obj_defs=[(0x0030, 0, 0, 0)])
+    out += _dvb_object_pixmap(page_id, obj_id=0x0030,
+                              topfield=bytes([0x12]) + _pdata8bpp_field(),
+                              bottomfield=b'')
+    # 8-bit depth, walk every colorimetry enum.
+    entries = [(64+i, 128, 128, 0) for i in range(8)]
+    out += _dvb_alt_clut(page_id, clut_id=0, output_bit_depth=0x00,
+                         gamut=0x00, entries=entries)   # CDS-mapped
+    out += _dvb_alt_clut(page_id, clut_id=0, output_bit_depth=0x00,
+                         gamut=0x01, entries=entries)   # SDR_2020
+    out += _dvb_alt_clut(page_id, clut_id=0, output_bit_depth=0x00,
+                         gamut=0x02, entries=entries)   # HDR_PQ
+    out += _dvb_alt_clut(page_id, clut_id=0, output_bit_depth=0x00,
+                         gamut=0x03, entries=entries)   # HDR_HLG
+    # 10-bit path
+    out += _dvb_alt_clut(page_id, clut_id=0, output_bit_depth=0x01,
+                         gamut=0x00, entries=[(0x300, 0x200, 0x200, 0)])
+    # Error-path: invalid bit-depth (4) so error=true is taken.
+    out += _dvb_alt_clut(page_id, clut_id=0, output_bit_depth=0x04,
+                         gamut=0x00, entries=[(80, 128, 128, 0)])
+    out += _dvbsub_seg(0x80, page_id, b'')
+    out += bytes([0xFF])
+    return out
+
+
+DVB_SUB_PAYLOAD_ALTCLUT = _build_dvb_sub_altclut_payload(page_id=1)
+
+
 # SCTE-27 subtitling section
 _SCTE27_BMP = bytes([0x00,
                      0x00, 0x00,
@@ -422,14 +792,21 @@ def seed_dts_audio() -> bytes:
             pes_ts_packets(pes, AUDIO_PID))
 
 
-def seed_dvb_subtitle() -> bytes:
-    sub_desc = bytes([
+def _dvb_sub_descriptor(page_id: int = 1) -> bytes:
+    # subtitling_descriptor (tag 0x59), one entry, page composition page_id.
+    return bytes([
         0x59, 0x08,
-        0x65, 0x6E, 0x67,
-        0x10,
-        0x00, 0x01,
-        0x00, 0x01,
+        0x65, 0x6E, 0x67,          # eng
+        0x10,                       # subtitling_type = DVB
+        (page_id >> 8) & 0xFF,      # composition_page_id
+        page_id & 0xFF,
+        (page_id >> 8) & 0xFF,      # ancillary_page_id (same here)
+        page_id & 0xFF,
     ])
+
+
+def seed_dvb_subtitle() -> bytes:
+    sub_desc = _dvb_sub_descriptor(page_id=1)
     pat = make_pat([(0x0001, PMT_PID)])
     pmt = make_pmt(0x0001, VIDEO_PID, [
         (0x02, VIDEO_PID, b''),
@@ -443,6 +820,65 @@ def seed_dvb_subtitle() -> bytes:
             pes_ts_packets(video_pes, VIDEO_PID, pcr_90khz=450) +
             pes_ts_packets(subs_pes_a, SUBS_PID) +
             pes_ts_packets(subs_pes_b, SUBS_PID))
+
+
+def seed_dvb_subtitle_rich() -> bytes:
+    """TS carrying the structurally-rich DVB sub PES that walks every
+       segment type, both CLUT encodings, all three pixel-data RLE
+       decoders, and the character-coded object branch."""
+    sub_desc = _dvb_sub_descriptor(page_id=1)
+    pat = make_pat([(0x0001, PMT_PID)])
+    pmt = make_pmt(0x0001, VIDEO_PID, [
+        (0x02, VIDEO_PID, b''),
+        (0x06, SUBS_PID, sub_desc),
+    ])
+    video_pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=900)
+    # Send the rich payload twice — first packet establishes state, second
+    # exercises the "skip duplicate version" and re-render paths.
+    subs_pes_a = make_ts_pes(0xBD, DVB_SUB_PAYLOAD_RICH, pts_90khz=1800)
+    subs_pes_b = make_ts_pes(0xBD, DVB_SUB_PAYLOAD_RICH, pts_90khz=9000)
+    return (psi_packet(pat, 0x0000) +
+            psi_packet(pmt, PMT_PID) +
+            pes_ts_packets(video_pes, VIDEO_PID, pcr_90khz=450) +
+            pes_ts_packets(subs_pes_a, SUBS_PID) +
+            pes_ts_packets(subs_pes_b, SUBS_PID))
+
+
+def seed_cea708_video() -> bytes:
+    """TS carrying an H.264 PES whose payload is the full SPS+PPS+SEI(CC)
+       +SEI(CC)+IDR sequence built by _build_h264_cea708_seed.  The TS
+       demuxer + h264 packetizer combo is significantly more robust at
+       reaching OutputPicture (and therefore SEI processing) than the raw
+       h264 ES demuxer, so this is the path that actually drives
+       modules/codec/cc.c and modules/codec/cea708.c."""
+    h264 = cea708_h264_payload()
+    pat = make_pat([(0x0001, PMT_PID)])
+    pmt = make_pmt(0x0001, VIDEO_PID, [(0x1B, VIDEO_PID, b'')])
+    # Send two PES so the h264 packetizer hits an OutputPicture: a first
+    # IDR (with our SEI) followed by a brand-new SPS/PPS/SEI/IDR which
+    # triggers the picture-output path on the second slice arrival.
+    pes_a = make_ts_pes(0xE0, h264, pts_90khz=900)
+    pes_b = make_ts_pes(0xE0, h264, pts_90khz=4500)
+    return (psi_packet(pat, 0x0000) +
+            psi_packet(pmt, PMT_PID) +
+            pes_ts_packets(pes_a, VIDEO_PID, pcr_90khz=450) +
+            pes_ts_packets(pes_b, VIDEO_PID))
+
+
+def seed_dvb_subtitle_altclut() -> bytes:
+    """TS exercising the alternative_CLUT depth/gamut branches."""
+    sub_desc = _dvb_sub_descriptor(page_id=1)
+    pat = make_pat([(0x0001, PMT_PID)])
+    pmt = make_pmt(0x0001, VIDEO_PID, [
+        (0x02, VIDEO_PID, b''),
+        (0x06, SUBS_PID, sub_desc),
+    ])
+    video_pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=900)
+    subs_pes = make_ts_pes(0xBD, DVB_SUB_PAYLOAD_ALTCLUT, pts_90khz=1800)
+    return (psi_packet(pat, 0x0000) +
+            psi_packet(pmt, PMT_PID) +
+            pes_ts_packets(video_pes, VIDEO_PID, pcr_90khz=450) +
+            pes_ts_packets(subs_pes, SUBS_PID))
 
 
 def seed_scte27() -> bytes:
@@ -553,27 +989,138 @@ def make_atsc_tvct() -> bytes:
     return _atsc_section(0xC8, 0x0001, body)
 
 
-def make_atsc_eit(source_id: int = 0x00FF) -> bytes:
-    title_segment = bytes([
-        0x01,
-        0x65, 0x6E, 0x67,
-        0x01,
-        0x00,
-        0x00,
-        0x04,
-    ]) + b'TEST'
-    event = struct.pack('>H', 0xC001)
-    event += struct.pack('>I', 1_000_000)
-    event += bytes([0xC0, 0x00, 0x00, 0x3C])
-    event += bytes([len(title_segment)]) + title_segment
-    event += struct.pack('>H', 0xF000)
-    body = bytes([0x01]) + event
+# ATSC A/65 multiple_string structure ([number_of_strings] then per-string:
+# [lang(3)][number_of_segments] then per-segment: [compression][mode][bytes][..]).
+# Compression must be 0 (NONE) for atsc_a65.c to actually decode; mode must
+# be <= 0x06 (UNICODE_RANGE_END) for the UTF-16BE iconv path to run.
+def _a65_segment(compression: int, mode: int, data: bytes) -> bytes:
+    assert len(data) <= 0xFF
+    return bytes([compression & 0xFF, mode & 0xFF, len(data) & 0xFF]) + data
+
+
+def _a65_string(lang: bytes, segments: list) -> bytes:
+    assert len(lang) == 3
+    out = bytearray(lang)
+    out.append(len(segments) & 0xFF)
+    for s in segments:
+        out += s
+    return bytes(out)
+
+
+def _a65_multiple_string(strings: list) -> bytes:
+    out = bytearray([len(strings) & 0xFF])
+    for s in strings:
+        out += s
+    return bytes(out)
+
+
+# A/65 §6.10 Content Advisory descriptor (tag 0x87): rating regions w/
+# rating dimensions and a multiple_string description.
+def _atsc_content_advisory(description_text: bytes) -> bytes:
+    region = bytes([0x01,             # rating region (US)
+                    0x01,             # rated_dimensions
+                    0x05,             # rating dimension index
+                    0x03])            # rating value
+    region += bytes([len(description_text)]) + description_text
+    body = bytes([(1 & 0x3F) | 0xC0]) + region
+    return bytes([0x87, len(body)]) + body
+
+
+# A/65 §6.16 Extended Channel Name descriptor (tag 0xA0): just one
+# multiple_string holding the long channel name.
+def _atsc_extended_channel_name(name: bytes) -> bytes:
+    return bytes([0xA0, len(name)]) + name
+
+
+def make_atsc_tvct_rich() -> bytes:
+    """TVCT with two channels:
+       0xFE source carries an extended_channel_name descriptor that
+         routes through atsc_a65_Decode_multiple_string,
+       0xFF source carries no descriptors so we also exercise the
+         short_name-only fallback path."""
+    long_name = _a65_multiple_string([
+        _a65_string(b'eng', [_a65_segment(0x00, 0x00, b'Test Channel One')])
+    ])
+    desc_a = _atsc_extended_channel_name(long_name)
+
+    short_a = 'TestCh1'.encode('utf-16-be')
+    chan_a = short_a
+    chan_a += bytes([0xF0, 0x04, 0x01])
+    chan_a += bytes([0x04])
+    chan_a += struct.pack('>I', 0)
+    chan_a += struct.pack('>H', 0x0001)
+    chan_a += struct.pack('>H', 0x0001)
+    chan_a += struct.pack('>H', 0xFC00)
+    chan_a += struct.pack('>H', 0x00FE)            # source_id == 0xFE
+    chan_a += struct.pack('>H', 0xFC00 | (len(desc_a) & 0x03FF))
+    chan_a += desc_a
+
+    short_b = 'TestCh2'.encode('utf-16-be')
+    chan_b = short_b
+    chan_b += bytes([0xF0, 0x04, 0x01])
+    chan_b += bytes([0x04])
+    chan_b += struct.pack('>I', 0)
+    chan_b += struct.pack('>H', 0x0002)
+    chan_b += struct.pack('>H', 0x0002)
+    chan_b += struct.pack('>H', 0xFC00)
+    chan_b += struct.pack('>H', 0x00FF)            # source_id == 0xFF
+    chan_b += struct.pack('>H', 0xFC00)
+    body = bytes([0x02]) + chan_a + chan_b
+    body += struct.pack('>H', 0xFC00)              # outer additional_descriptors
+    return _atsc_section(0xC8, 0x0001, body)
+
+
+def make_atsc_eit_rich(source_id: int = 0x00FF) -> bytes:
+    """EIT with two events, the second carrying a content_advisory
+       descriptor that funnels its description through A/65 decoding."""
+    title_a = _a65_multiple_string([
+        _a65_string(b'eng', [_a65_segment(0x00, 0x00, b'Event A title')])
+    ])
+    event_a = struct.pack('>H', 0xC001)            # event_id 1
+    event_a += struct.pack('>I', 1_000_000)         # start_time (GPS)
+    event_a += bytes([0xC0, 0x00, 0x00, 0x3C])      # ETM_loc=00, length=60
+    event_a += bytes([len(title_a)]) + title_a
+    event_a += struct.pack('>H', 0xF000)            # descriptor_loop empty
+
+    title_b = _a65_multiple_string([
+        _a65_string(b'eng', [_a65_segment(0x00, 0x00, b'Event B title')])
+    ])
+    advisory_text = _a65_multiple_string([
+        _a65_string(b'eng', [_a65_segment(0x00, 0x00, b'PG-13 advisory')])
+    ])
+    ca_desc = _atsc_content_advisory(advisory_text)
+    event_b = struct.pack('>H', 0xC002)            # event_id 2
+    event_b += struct.pack('>I', 1_000_120)         # start (later)
+    event_b += bytes([0xC0, 0x00, 0x00, 0xB4])      # ETM_loc=00, length=180s
+    event_b += bytes([len(title_b)]) + title_b
+    event_b += struct.pack('>H', 0xF000 | (len(ca_desc) & 0x03FF)) + ca_desc
+
+    body = bytes([0x02]) + event_a + event_b
     return _atsc_section(0xCB, source_id, body)
 
 
+# A/65 ETT carries an ETM_id (32-bit) made of (source<<16 | event_id) for
+# events and (source<<16) for channels, plus an extended_text_message that
+# is itself an A/65 multiple_string.
+def make_atsc_ett(etm_id: int, text_ms: bytes) -> bytes:
+    body = struct.pack('>I', etm_id) + text_ms
+    # ETT uses table_id 0xCC and table_id_extension is the ETT table type ID
+    # (any value, here 0 — dvbpsi ETT raw callback uses ETM_id for matching).
+    return _atsc_section(0xCC, 0x0000, body)
+
+
 def seed_atsc_psip() -> bytes:
+    """Full-fat ATSC PSIP stream:
+       MGT → STT → TVCT (two channels, one w/ extended_channel_name) →
+       two EITs across two PIDs → two ETT messages matching the two events
+       on a third PID.  Covers ts_psip.c MGT/STT/VCT/EIT/ETT callbacks,
+       ts_si.c never gets activated here because the PMT carries GA94 so
+       the demuxer enters ATSC mode (see ts.c TS_STANDARD_ATSC)."""
     ga94 = bytes([0x05, 0x04, 0x47, 0x41, 0x39, 0x34])
-    eit_pid = 0x1D00
+    eit_pid_0 = 0x1D00
+    eit_pid_1 = 0x1D01
+    ett_pid_0 = 0x1D80
+    ett_pid_1 = 0x1D81
     pat = make_pat([(0x0001, PMT_PID)])
 
     def make_pmt_with_outer(program_num: int, pcr_pid: int, outer_desc: bytes,
@@ -590,21 +1137,120 @@ def seed_atsc_psip() -> bytes:
     pmt = make_pmt_with_outer(0x0001, VIDEO_PID, ga94,
                               [(0x02, VIDEO_PID, b'')])
     mgt = make_atsc_mgt([
-        (0x0000, ATSC_BASE_PID, 0, 0),
-        (0x0100, eit_pid, 0, 0),
-        (0x0004, ATSC_BASE_PID, 0, 0),
+        (0x0000, ATSC_BASE_PID, 0, 0),    # TVCT
+        (0x0004, ATSC_BASE_PID, 0, 0),    # Channel ETT (CETT) base
+        (0x0100, eit_pid_0,    0, 0),    # EIT_0
+        (0x0101, eit_pid_1,    0, 0),    # EIT_1
+        (0x0200, ett_pid_0,    0, 0),    # ETT_0
+        (0x0201, ett_pid_1,    0, 0),    # ETT_1
     ])
     stt = make_atsc_stt()
-    tvct = make_atsc_tvct()
-    eit  = make_atsc_eit()
+    tvct = make_atsc_tvct_rich()
+    eit0 = make_atsc_eit_rich(source_id=0x00FE)
+    eit1 = make_atsc_eit_rich(source_id=0x00FF)
+
+    # Long descriptions for both events; ETM_id = (source<<16) | event_id.
+    long_a = _a65_multiple_string([
+        _a65_string(b'eng', [_a65_segment(0x00, 0x00, b'Long ETT for event A')])
+    ])
+    long_b = _a65_multiple_string([
+        _a65_string(b'eng', [_a65_segment(0x00, 0x00, b'Long ETT for event B')])
+    ])
+    ett_a = make_atsc_ett((0x00FE << 16) | 0xC001, long_a)
+    ett_b = make_atsc_ett((0x00FF << 16) | 0xC002, long_b)
+
+    video_pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=900)
+    # Section dispatch is driven by dvbpsi sub-decoders attached lazily as
+    # tables arrive.  In particular:
+    #   - The STT sub-decoder is attached at PSIP base setup time.
+    #   - ATSC_STT_Callback's first call attaches the MGT decoder.
+    #   - ATSC_MGT_Callback attaches the VCT and per-PID EIT/ETT decoders.
+    #   - ATSC_EIT_Callback won't process anything until both p_stt and
+    #     p_vct are already set on the base PSIP context.
+    # We therefore inject STT first to bootstrap MGT, then MGT (which
+    # attaches VCT + EIT/ETT decoders), then TVCT, then a second STT/MGT
+    # round so the EIT/ETT sections that follow have a fully-populated
+    # base context to satisfy ATSC_EIT_Callback's pre-conditions.
+    return (psi_packet(pat, 0x0000) +
+            psi_packet(pmt, PMT_PID) +
+            pes_ts_packets(video_pes, VIDEO_PID, pcr_90khz=450) +
+            psi_packet(stt, ATSC_BASE_PID) +
+            psi_packet(mgt, ATSC_BASE_PID) +
+            psi_packet(tvct, ATSC_BASE_PID) +
+            psi_packet(stt, ATSC_BASE_PID) +
+            psi_packet(mgt, ATSC_BASE_PID) +
+            psi_packet(tvct, ATSC_BASE_PID) +
+            psi_packet(eit0, eit_pid_0) +
+            psi_packet(eit1, eit_pid_1) +
+            psi_packet(ett_a, ett_pid_0) +
+            psi_packet(ett_b, ett_pid_1) +
+            psi_packet(eit0, eit_pid_0) +
+            psi_packet(eit1, eit_pid_1) +
+            psi_packet(ett_a, ett_pid_0) +
+            psi_packet(ett_b, ett_pid_1))
+
+
+def seed_dvb_si() -> bytes:
+    """Pure DVB stream (no GA94 → ts_si.c attaches SDT/EIT/TDT subdecoders).
+       Covers ts_si.c EIT/TDT/TOT paths and SDT service-name decoding via
+       dvb_charset that are not exercised by the existing 'with_sdt.ts'."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    pmt = make_pmt(0x0001, VIDEO_PID, [(0x02, VIDEO_PID, b'')])
+    sdt = make_sdt(tsid=0x0001, orig_net=0x0001,
+                   services={0x0001: ('Test Service', 0x01)})
+
+    # EIT (DVB) — table_id 0x4E (present/following actual TS).
+    # Section header structure differs from ATSC; for DVB EIT the section
+    # carries: table_id, section_syntax + section_length, service_id (ext),
+    # version + current_next, section_number, last_section_number,
+    # transport_stream_id, original_network_id, segment_last_section_number,
+    # last_table_id, then events.
+    short_event_dr = bytes([0x4D, 0x12,             # tag, length
+                            0x65, 0x6E, 0x67,        # ISO 639 'eng'
+                            0x05] + list(b'Title')   # event_name_length, event_name
+                           + [0x06] + list(b'Descr'))
+    # 0x4D length should be 3 (lang) + 1 (event_name_length) + 5 (name) + 1 (text_length) + 5 (text) = 15 = 0x0F
+    short_event_dr = (bytes([0x4D, 3 + 1 + len(b'Event Name') + 1 + len(b'Event Text'),
+                             0x65, 0x6E, 0x67,
+                             len(b'Event Name')]) + b'Event Name'
+                      + bytes([len(b'Event Text')]) + b'Event Text')
+
+    parental_dr = bytes([0x55, 0x04, ord('U'), ord('S'), ord('A'), 0x05])
+
+    event = struct.pack('>H', 0xC001)           # event_id
+    event += bytes([0xC0, 0x00, 0x00, 0x00, 0x00])  # start_time (MJD/UTC,5 bytes)
+    event += bytes([0x00, 0x10, 0x00])          # duration BCD 0:10:00
+    descs = short_event_dr + parental_dr
+    # running_status=4 (running), free_CA=0, descriptors_loop_length(12)
+    event += struct.pack('>H', (0x4 << 13) | (len(descs) & 0x0FFF))
+    event += descs
+
+    # DVB EIT body
+    eit_body  = struct.pack('>H', 0x0001)       # tsid
+    eit_body += struct.pack('>H', 0x0001)       # original_network_id
+    eit_body += bytes([0x00, 0x4E])             # segment_last_sn, last_table_id
+    eit_body += event
+
+    # Build section
+    section_length = 9 + len(eit_body) + 4      # 9 header + body + crc
+    eit = bytes([0x4E])                          # table_id
+    eit += struct.pack('>H', 0x8000 | 0x3000 | (section_length & 0x0FFF))
+    eit += struct.pack('>H', 0x0001)             # service_id (= program)
+    eit += bytes([0xC1, 0x00, 0x00])             # version/current_next/sn/last_sn
+    eit += eit_body
+    eit += struct.pack('>I', crc32_mpeg(eit))
+
+    # TDT (table_id 0x70) carries 5 bytes of UTC time.
+    tdt_payload = bytes([0xC0, 0x00, 0x00, 0x00, 0x00])
+    tdt = bytes([0x70]) + struct.pack('>H', 0x7005) + tdt_payload  # syntax=0, len=5
+
     video_pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=900)
     return (psi_packet(pat, 0x0000) +
             psi_packet(pmt, PMT_PID) +
             pes_ts_packets(video_pes, VIDEO_PID, pcr_90khz=450) +
-            psi_packet(mgt, ATSC_BASE_PID) +
-            psi_packet(stt, ATSC_BASE_PID) +
-            psi_packet(tvct, ATSC_BASE_PID) +
-            psi_packet(eit, eit_pid))
+            psi_packet(sdt, SDT_PID) +
+            psi_packet(eit, 0x0012) +              # DVB EIT PID
+            psi_packet(tdt, 0x0014))              # DVB TDT PID
 
 
 # ──────────────────────────────────────────────────
@@ -815,6 +1461,8 @@ TS_SEEDS = {
     'ac3_audio.ts':    seed_ac3_audio,
     'dts_audio.ts':    seed_dts_audio,
     'dvb_subtitle.ts': seed_dvb_subtitle,
+    'dvb_subtitle_rich.ts':    seed_dvb_subtitle_rich,
+    'dvb_subtitle_altclut.ts': seed_dvb_subtitle_altclut,
     'scte27.ts':       seed_scte27,
     'scte27_framed.ts':   seed_scte27_framed,
     'scte27_outline.ts':  seed_scte27_outline,
@@ -825,6 +1473,8 @@ TS_SEEDS = {
     'multi_program.ts': seed_multi_program,
     'multi_stream.ts': seed_multi_stream,
     'atsc_psip.ts':    seed_atsc_psip,
+    'dvb_si.ts':       seed_dvb_si,
+    'cea708_video.ts': lambda: seed_cea708_video(),
 }
 
 
@@ -832,6 +1482,7 @@ def gen_ts(root):
     outdir = os.path.join(root, 'seeds', 'ts')
     os.makedirs(outdir, exist_ok=True)
     for filename, generator in TS_SEEDS.items():
+        reset_psi_cc()
         data = generator()
         assert len(data) % 188 == 0, f'{filename}: length {len(data)} not multiple of 188'
         path = os.path.join(outdir, filename)
@@ -1414,27 +2065,204 @@ def _rbsp(payload: bytes) -> bytes:
     return bytes(out)
 
 
+# ──────────────────────────────────────────────────
+# CEA-708 DTVCC packet construction
+# ──────────────────────────────────────────────────
+# modules/codec/cea708.c (~1200 lines, 9.3% in 2026-05-16 coverage report)
+# is fed via H.264 SEI user_data_registered_itu_t_t35 → cc_data records
+# (3 bytes each, ATSC A/53). Each record:
+#   bits 7-3: marker (0x1F), bit 2: valid, bits 1-0: cc_type
+#   cc_type 3 = DTVCC packet header (data[2] is first packet byte)
+#   cc_type 2 = DTVCC packet data (data[1], data[2] are next 2 bytes)
+# The first byte of a packet encodes seq (bits 7-6) and packet_size_code
+# (bits 5-0); actual payload size = packet_size_code * 2 - 1 bytes
+# (or 127 if code == 0). Inside that payload sit service blocks:
+#   byte 0: service_id (bits 7-5), block_size (bits 4-0)
+# Service block data is then parsed by CEA708_Decoder which routes C0/G0/
+# C1/G1/G2/G3 codes to the dedicated Decode_* functions. The default seed
+# in vlc-fuzz-corpus delivers a malformed 1-byte packet, so essentially
+# no Decode_C* / Decode_G* function ever runs. This generator fixes that.
+
+def _cea708_service_block(sid: int, payload: bytes) -> bytes:
+    assert 1 <= sid <= 6, 'standard service id range; use _cea708_extsb otherwise'
+    assert len(payload) <= 0x1F, 'service block size field is 5 bits'
+    return bytes([(sid << 5) | (len(payload) & 0x1F)]) + payload
+
+
+def _cea708_extended_service_block(ext_sid: int, payload: bytes) -> bytes:
+    # 2-byte header form: 0xE0 | size, then 0x00 | ext_sid (>=7).
+    assert 7 <= ext_sid <= 0x3F
+    assert len(payload) <= 0x1F
+    return bytes([(0x07 << 5) | (len(payload) & 0x1F),
+                  ext_sid & 0x3F]) + payload
+
+
+def _cea708_define_window(visible: bool, prio: int, anchor_point: int,
+                          row_count: int, col_count: int,
+                          win_style: int = 1, pen_style: int = 1) -> bytes:
+    b0 = (1 if visible else 0) << 5 | 0x18 | (prio & 0x07)  # row/col lock + prio
+    b1 = 0x00                                                # relative=0, anchor_v=0
+    b2 = 0x00                                                # anchor_h
+    b3 = ((anchor_point & 0x0F) << 4) | (row_count & 0x0F)
+    b4 = col_count & 0x3F
+    b5 = ((win_style & 0x07) << 3) | (pen_style & 0x07)
+    return bytes([b0, b1, b2, b3, b4, b5])
+
+
+def _cea708_set_window_attrs() -> bytes:
+    # fill_opacity=2, fill_color=0x05; border_color=0x06, border_type=0;
+    # border_type_msb=0, word_wrap=1, print_dir=0, scroll_dir=0, justify=0;
+    # effect_speed=0, effect_dir=0, display_effect=0.
+    return bytes([0x85, 0x06, 0x40, 0x00])
+
+
+def _cea708_set_pen_attrs() -> bytes:
+    # text_tag=0, offset=0, size=1; italics=0, underline=1, edge_type=2, font=1.
+    return bytes([0x01, 0x4A])
+
+
+def _cea708_set_pen_color() -> bytes:
+    # fg op=2 col=0x10; bg op=2 col=0x20; edge col=0x05.
+    return bytes([0x90, 0xA0, 0x05])
+
+
+def _cea708_set_pen_location(row: int, col: int) -> bytes:
+    return bytes([row & 0x0F, col & 0x3F])
+
+
+def _build_cea708_service1() -> bytes:
+    """Service block #1: define+show window, set attrs, write G0 + G2
+       chars + P16, then ETX to flush.  Fits in a 31-byte service block."""
+    out = bytearray()
+    out.append(0x98)                                  # DF0 (define window 0)
+    out += _cea708_define_window(visible=True, prio=4, anchor_point=4,
+                                 row_count=2, col_count=10)
+    out.append(0x97); out += _cea708_set_window_attrs()       # SWA
+    out.append(0x90); out += _cea708_set_pen_attrs()          # SPA
+    out += b'Hi'                                      # G0 chars
+    out.append(0x0D)                                  # C0 CR
+    out.append(0x10); out.append(0x25)                # C0 EXT1 + G2 ellipsis
+    out.append(0x18); out.append(0x4E); out.append(0x6F)  # P16 'N','o'
+    out.append(0x91); out += _cea708_set_pen_color()          # SPC
+    out.append(0x03)                                  # C0 ETX
+    assert len(out) <= 0x1F, f'service1 too large: {len(out)}'
+    return bytes(out)
+
+
+def _build_cea708_service2() -> bytes:
+    """Service block #2: C1 window-bitmask commands + delay + reset, plus
+       a G1 char (>=0xA0).  ~12 bytes."""
+    out = bytearray()
+    out.append(0xA1)                  # G1 char (latin '¡')
+    out.extend([0x88, 0x01])          # CLW window 0
+    out.extend([0x89, 0x01])          # DSW window 0
+    out.extend([0x8A, 0x02])          # HDW window 1
+    out.extend([0x8B, 0x01])          # TGW window 0
+    out.extend([0x8D, 0x05])          # DLY 0.5s
+    out.append(0x8E)                  # DLC
+    out.append(0x8F)                  # RST
+    return bytes(out)
+
+
+def _build_cea708_service3() -> bytes:
+    """Service block: DF7 (define window 7) + CW7 + SPL + chars. Exercises
+       the CW7/DF7 endpoints of the CEA708_C1_CWx / DFx range checks."""
+    out = bytearray()
+    out.append(0x9F)                                  # DF7 (define window 7)
+    out += _cea708_define_window(visible=True, prio=2, anchor_point=8,
+                                 row_count=4, col_count=20,
+                                 win_style=3, pen_style=4)
+    out.append(0x87)                                  # CW7
+    out.append(0x92); out += _cea708_set_pen_location(1, 2)
+    out += b'World'
+    out.append(0x03)
+    return bytes(out)
+
+
+def _cea708_pack_packet(service_blocks: list, seq: int = 0):
+    """Pack service blocks into a DTVCC packet.
+       Returns ``(size_byte, payload_bytes)`` where payload_bytes is what
+       ends up in the demuxer's per-packet buffer (h->data) and size_byte
+       is the byte placed in data[1] of the header cc_data record."""
+    payload = b''.join(service_blocks)
+    # The demuxer reads pktsize_code from data[1] & 63 and computes the
+    # target size as ``code * 2 - 1`` bytes (or 127 if code==0). Payload
+    # length must therefore be odd.
+    if len(payload) % 2 == 0:
+        payload += bytes([0x00])
+    target = len(payload)
+    assert 1 <= target <= 127
+    code = (target + 1) // 2
+    if code == 64:
+        code = 0
+    size_byte = ((seq & 0x03) << 6) | (code & 0x3F)
+    return size_byte, payload
+
+
+def _cea708_cc_data_records(size_byte: int, payload: bytes) -> bytes:
+    """Convert a DTVCC packet (size byte + payload) into cc_data records.
+       Header record carries (0xFF, size_byte, payload[0]); subsequent
+       data records carry (0xFE, payload[i], payload[i+1])."""
+    assert len(payload) >= 1
+    assert len(payload) % 2 == 1, 'payload length must be odd (pad NUL upstream)'
+    out = bytearray([0xFF, size_byte, payload[0]])
+    i = 1
+    while i < len(payload):
+        out.extend([0xFE, payload[i], payload[i + 1]])
+        i += 2
+    return bytes(out)
+
+
+def _cea708_cc_data_payload(packets: list) -> bytes:
+    """Concatenate cc_data records for several DTVCC packets plus a
+       trailing NTSC field-1 record to also exercise the CEA-608 path.
+       ``packets`` is a list of ``(size_byte, payload_bytes)`` tuples."""
+    cc_data = b''.join(_cea708_cc_data_records(s, p) for s, p in packets)
+    cc_data += bytes([0xFC, 0x41, 0x80])               # NTSC F1 'A'
+    cc_count = len(cc_data) // 3
+    assert cc_count <= 0x1F, f'cc_count {cc_count} too large'
+    return bytes([0xC0 | (cc_count & 0x1F), 0xFF]) + cc_data
+
+
+def cea708_h264_payload() -> bytes:
+    """Returns a raw H.264 ES byte-stream carrying an SPS/PPS/SEI(CC)/IDR
+       sequence.  Used both as a stand-alone ``.264`` seed (gen_h264) and
+       wrapped in MPEG-TS PES below for the cea708_video.ts seed."""
+    return _build_h264_cea708_seed()
+
+
+def _cea708_sei_nal(cc_packets: list) -> bytes:
+    """Wrap one or more DTVCC packets in an H.264 SEI user_data_registered_
+       itu_t_t35 NAL.  cc_count is capped at 31 so very long sequences must
+       be split across multiple SEIs."""
+    cc_data = _cea708_cc_data_payload(cc_packets)
+    t35 = (bytes([0xB5, 0x00, 0x31]) + b'GA94'
+           + bytes([0x03]) + cc_data + bytes([0xFF]))
+    sei_payload = bytes([0x04, len(t35) & 0xFF]) + t35 + bytes([0x80])
+    return bytes([0x06]) + _rbsp(sei_payload)
+
+
 def _build_h264_cea708_seed() -> bytes:
-    # cc_data: process_cc_data_flag=1, reserved=1, cc_count=3.
-    process_cc = 0xC0 | 0x03
-    cc_data  = bytes([process_cc, 0xFF])
-    cc_data += bytes([0xFC, 0x41, 0x80])      # NTSC field 1 — 608 ch 1 'A'
-    cc_data += bytes([0xFF, 0x01, 0x21])      # DTVCC packet start
-    cc_data += bytes([0xFE, 0x21, 0x41])      # DTVCC packet data
-
-    # user_data_registered_itu_t_t35 (SEI type 4):
-    # country=0xB5 + provider=0x0031 + user_id='GA94' + type=0x03 + cc_data + 0xFF
-    t35 = bytes([0xB5, 0x00, 0x31]) + b'GA94' + bytes([0x03]) + cc_data + bytes([0xFF])
-
-    sei_payload = bytes([0x04]) + bytes([len(t35)]) + t35 + bytes([0x80])
-    sei_nal = bytes([0x06]) + _rbsp(sei_payload)
+    # Each SEI fits ≤ 31 cc_data triplets; split rich packets across two.
+    sei1 = _cea708_sei_nal([
+        _cea708_pack_packet([
+            _cea708_service_block(1, _build_cea708_service1()),
+            _cea708_service_block(2, _build_cea708_service2()),
+        ], seq=0),
+    ])
+    sei2 = _cea708_sei_nal([
+        _cea708_pack_packet([
+            _cea708_service_block(3, _build_cea708_service3()),
+            _cea708_extended_service_block(0x10, b'\x80\x83\x03'),
+        ], seq=1),
+    ])
 
     sps = bytes([0x67, 0x42, 0xC0, 0x1E, 0xD9, 0x00, 0xA0, 0x47, 0xFE, 0xC8])
     pps = bytes([0x68, 0xCE, 0x38, 0x80])
     idr = bytes([0x65, 0x88, 0x84, 0x00, 0x33, 0xFF])
 
     sc = b'\x00\x00\x00\x01'
-    return sc + sps + sc + pps + sc + sei_nal + sc + idr
+    return sc + sps + sc + pps + sc + sei1 + sc + sei2 + sc + idr
 
 
 def gen_h264(root):
@@ -1854,6 +2682,293 @@ def gen_ogg(root):
 
 
 # ──────────────────────────────────────────────────
+#  MKV seed — Matroska with DVD chapter codec commands
+# ──────────────────────────────────────────────────
+#
+# modules/demux/mkv/chapter_command_dvd.cpp (~700 lines, 0 % in
+# 2026-05-16 coverage report).  The native upstream seeds carry plain
+# chapters with no ChapterProcess, so dvd_chapter_codec_c is never
+# instantiated and its Enter / Interpret entry-points never run.
+#
+# When matroska_segment_c::ParseChapterAtom encounters a ChapterProcess
+# with ChapProcessCodecID == 1 it instantiates dvd_chapter_codec_c and
+# routes each ChapterProcessCommand into its enter/during/leave bucket
+# (see chapter_command.cpp::AddCommand for the routing).  As soon as the
+# demuxer starts streaming (virtual_segment_c::UpdateCurrentToChapter)
+# the current chapter's Enter() is invoked, which iterates the
+# enter-commands and calls dvd_command_interpretor_c::Interpret on every
+# 8-byte sub-command — that's the big function we need to exercise.
+
+def _mkv_vint(value: int) -> bytes:
+    """Encode an EBML variable-length size."""
+    if value < (1 << 7) - 1:
+        return bytes([0x80 | value])
+    if value < (1 << 14) - 1:
+        return bytes([0x40 | (value >> 8), value & 0xFF])
+    if value < (1 << 21) - 1:
+        return bytes([0x20 | (value >> 16), (value >> 8) & 0xFF, value & 0xFF])
+    if value < (1 << 28) - 1:
+        return bytes([0x10 | (value >> 24), (value >> 16) & 0xFF,
+                      (value >> 8) & 0xFF, value & 0xFF])
+    raise ValueError(f'vint too large: {value}')
+
+
+def _mkv_id(id_value: int) -> bytes:
+    """Encode an element ID as the documented big-endian byte sequence."""
+    if id_value <= 0xFF:
+        return bytes([id_value])
+    if id_value <= 0xFFFF:
+        return id_value.to_bytes(2, 'big')
+    if id_value <= 0xFFFFFF:
+        return id_value.to_bytes(3, 'big')
+    return id_value.to_bytes(4, 'big')
+
+
+def _mkv_elem(elem_id: int, payload: bytes) -> bytes:
+    return _mkv_id(elem_id) + _mkv_vint(len(payload)) + payload
+
+
+def _mkv_uint(elem_id: int, value: int) -> bytes:
+    # 1-byte for simplicity unless larger needed.
+    nbytes = max(1, (value.bit_length() + 7) // 8)
+    data = value.to_bytes(nbytes, 'big')
+    return _mkv_elem(elem_id, data)
+
+
+def _mkv_str(elem_id: int, text: bytes) -> bytes:
+    return _mkv_elem(elem_id, text)
+
+
+def _mkv_bin(elem_id: int, data: bytes) -> bytes:
+    return _mkv_elem(elem_id, data)
+
+
+# Matroska element IDs we use:
+_MKV_EBML            = 0x1A45DFA3
+_MKV_EBML_VERSION    = 0x4286
+_MKV_EBML_READVER    = 0x42F7
+_MKV_DOCTYPE         = 0x4282
+_MKV_DOCTYPE_VER     = 0x4287
+_MKV_DOCTYPE_RDVER   = 0x4285
+
+_MKV_SEGMENT         = 0x18538067
+_MKV_INFO            = 0x1549A966
+_MKV_TIMECODE_SCALE  = 0x2AD7B1
+_MKV_DURATION        = 0x4489
+_MKV_MUXAPP          = 0x4D80
+_MKV_WRITEAPP        = 0x5741
+
+_MKV_TRACKS          = 0x1654AE6B
+_MKV_TRACK_ENTRY     = 0xAE
+_MKV_TRACK_NUMBER    = 0xD7
+_MKV_TRACK_UID       = 0x73C5
+_MKV_TRACK_TYPE      = 0x83
+_MKV_CODEC_ID        = 0x86
+_MKV_FLAG_LACING     = 0x9C
+
+_MKV_CHAPTERS        = 0x1043A770
+_MKV_EDITION_ENTRY   = 0x45B9
+_MKV_EDITION_FLAG_DEFAULT = 0x45DB
+_MKV_EDITION_FLAG_HIDDEN  = 0x45BD
+_MKV_EDITION_FLAG_ORDERED = 0x45DD
+_MKV_CHAPTER_ATOM    = 0xB6
+_MKV_CHAPTER_UID     = 0x73C4
+_MKV_CHAPTER_TIME_START = 0x91
+_MKV_CHAPTER_TIME_END   = 0x92
+_MKV_CHAPTER_FLAG_HIDDEN  = 0x98
+_MKV_CHAPTER_FLAG_ENABLED = 0x4598
+_MKV_CHAPTER_DISPLAY = 0x80
+_MKV_CHAP_STRING     = 0x85
+_MKV_CHAP_LANGUAGE   = 0x437C
+_MKV_CHAPTER_PROCESS = 0x6944
+_MKV_CHAP_PROC_CODEC_ID = 0x6955
+_MKV_CHAP_PROC_PRIVATE  = 0x450D
+_MKV_CHAP_PROC_COMMAND  = 0x6911
+_MKV_CHAP_PROC_TIME     = 0x6922
+_MKV_CHAP_PROC_DATA     = 0x6933
+
+_MKV_CLUSTER         = 0x1F43B675
+_MKV_TIMECODE        = 0xE7
+_MKV_SIMPLEBLOCK     = 0xA3
+
+
+def _mkv_dvd_command(opcode_word: int, ops: bytes = b'\x00' * 6) -> bytes:
+    """An 8-byte DVD VM opcode. opcode_word is the first 2 bytes (big-
+    endian); ``ops`` provides bytes 2..7 of the command word."""
+    assert len(ops) == 6
+    return struct.pack('>H', opcode_word) + ops
+
+
+def _build_mkv_dvd_chapters_seed() -> bytes:
+    """A short Matroska file with:
+      - EBMLHeader (doctype=matroska)
+      - Segment containing Info (timecode_scale=1ms), one bogus subtitle
+        Track, a Chapters element with one EditionEntry → ChapterAtom that
+        carries a DVD ChapterProcess (codec_id=1) plus enter / during /
+        leave commands covering a representative slice of the DVD VM
+        opcode table (NOP, JUMP_TT, CALLSS, JUMPSS, JUMP_PG_PGC, SET_GPRM,
+        compare-and-branch tests, etc.), and a tiny single-block Cluster
+        so demux_Demux runs at least once and Enter() fires."""
+
+    # EBML Header
+    ebml_body  = _mkv_uint(_MKV_EBML_VERSION, 1)
+    ebml_body += _mkv_uint(_MKV_EBML_READVER, 1)
+    ebml_body += _mkv_str(_MKV_DOCTYPE, b'matroska')
+    ebml_body += _mkv_uint(_MKV_DOCTYPE_VER, 4)
+    ebml_body += _mkv_uint(_MKV_DOCTYPE_RDVER, 2)
+    ebml = _mkv_elem(_MKV_EBML, ebml_body)
+
+    # Info — timescale = 1 ms; Duration in timecode units so that
+    # matroska_segment_c::i_duration becomes non-zero and the non-ordered
+    # virtual-chapter retiming gives the top-level vchap a non-zero range
+    # (otherwise getChapterbyTimecode(0) skips it and the edition's DVD
+    # codec commands never reach Enter()).  Duration encoded as IEEE
+    # double (8 bytes, big-endian, value = 1000 timecode units = 1 s).
+    info_body  = _mkv_bin(_MKV_TIMECODE_SCALE,
+                          (1_000_000).to_bytes(3, 'big'))   # 1 ms ticks
+    info_body += _mkv_bin(_MKV_DURATION, struct.pack('>d', 1000.0))
+    info_body += _mkv_str(_MKV_MUXAPP, b'oss-fuzz-vlc')
+    info_body += _mkv_str(_MKV_WRITEAPP, b'oss-fuzz-vlc')
+    info = _mkv_elem(_MKV_INFO, info_body)
+
+    # One subtitle track so the demuxer doesn't bail on "no tracks".
+    track_body  = _mkv_uint(_MKV_TRACK_NUMBER, 1)
+    track_body += _mkv_bin(_MKV_TRACK_UID, (1).to_bytes(4, 'big'))
+    track_body += _mkv_uint(_MKV_TRACK_TYPE, 0x11)            # subtitle
+    track_body += _mkv_str(_MKV_CODEC_ID, b'S_TEXT/UTF8')
+    track_body += _mkv_uint(_MKV_FLAG_LACING, 0)
+    tracks = _mkv_elem(_MKV_TRACKS, _mkv_elem(_MKV_TRACK_ENTRY, track_body))
+
+    # DVD chapter commands.  Each command is 8 bytes; ProcessData is a
+    # blob of (count) opcodes prefixed by the count byte (chapter_command_
+    # dvd.cpp::EnterLeaveHelper at line 56:
+    #     i_size = std::min<size_t>( *p_data++, ((*it).GetSize() - 1) >> 3 )
+    # so the first byte is the command count and the rest is count*8
+    # bytes.
+    enter_commands = bytes()
+    enter_commands += _mkv_dvd_command(0x0000)                  # NOP
+    enter_commands += _mkv_dvd_command(0x0020)                  # NOP2
+    enter_commands += _mkv_dvd_command(0x3010,  b'\x00\x00\x01\x00\x00\x00')  # JumpTT 1
+    enter_commands += _mkv_dvd_command(0x3030,  b'\x00\x00\x00\x00\x00\x00')  # CallSS PGC
+    enter_commands += _mkv_dvd_command(0x3050,  b'\x80\x00\x02\x00\x40\x00')  # JumpSS VTSM
+    enter_commands += _mkv_dvd_command(0x3060,  b'\x00\x00\x00\x00\x01\x02')  # JumpVTS_PTT
+    enter_commands += _mkv_dvd_command(0x4070,  b'\x00\x01\x00\x00\x00\x05')  # JumpVTS_TT
+    enter_commands += _mkv_dvd_command(0x5180,  b'\x00\x00\x00\x00\x00\x05')  # SetGPRM
+    enter_commands += _mkv_dvd_command(0x6190,  b'\x00\x00\x00\x00\x00\x10')  # Compare
+    # A handful of register-test prefixes: high nibble selects encoding
+    # of CR1/CR2 in different command word slots.
+    enter_commands += _mkv_dvd_command(0x21F0,  b'\x05\x00\x10\x00\x00\x00')  # IF EQ
+    enter_commands += _mkv_dvd_command(0x4140,  b'\x05\x00\x00\x00\x00\x10')  # IF !EQ (alt enc)
+    enter_commands += _mkv_dvd_command(0x6420,  b'\x05\x00\x00\x10\x00\x10')  # IF AND (alt2)
+    private_data_enter = bytes([len(enter_commands) // 8]) + enter_commands
+
+    leave_commands = (
+        _mkv_dvd_command(0x0000)                           # NOP
+        + _mkv_dvd_command(0x2030, b'\x00\x10\x00\x00\x00\x00')  # SET GPRM
+        + _mkv_dvd_command(0x5000, b'\x00\x00\x00\x00\x00\x01')  # IF SUP
+    )
+    private_data_leave = bytes([len(leave_commands) // 8]) + leave_commands
+
+    during_commands = (
+        _mkv_dvd_command(0x0010)                            # NOP variant
+        + _mkv_dvd_command(0x3000, b'\x80\x00\x02\x00\x40\x00')  # JumpSS VMGM Title
+    )
+    private_data_during = bytes([len(during_commands) // 8]) + during_commands
+
+    # Build ChapterProcess element: codec_id=1 (DVD), private data, three
+    # ChapterProcessCommand sub-elements with different ProcessTime values
+    # (0=BEFORE, 1=DURING, 2=AFTER) so all three buckets in
+    # chapter_command.cpp::AddCommand are filled.
+
+    # DVD level for the "Title" level (TT == 0x28) — the private blob is
+    # 4 bytes when GetTitleNumber() reads it (level + 0x00 + title_msb + title_lsb).
+    chap_private = bytes([0x28, 0x00, 0x00, 0x01])
+    chap_process_body  = _mkv_uint(_MKV_CHAP_PROC_CODEC_ID, 1)
+    chap_process_body += _mkv_bin(_MKV_CHAP_PROC_PRIVATE, chap_private)
+
+    def _make_command(time_val: int, blob: bytes) -> bytes:
+        cmd_body  = _mkv_uint(_MKV_CHAP_PROC_TIME, time_val)
+        cmd_body += _mkv_bin(_MKV_CHAP_PROC_DATA, blob)
+        return _mkv_elem(_MKV_CHAP_PROC_COMMAND, cmd_body)
+
+    chap_process_body += _make_command(0, private_data_enter)
+    chap_process_body += _make_command(1, private_data_during)
+    chap_process_body += _make_command(2, private_data_leave)
+    chap_process = _mkv_elem(_MKV_CHAPTER_PROCESS, chap_process_body)
+
+    # ChapterAtom 1 with display name + DVD chapter process.
+    chap_display = _mkv_elem(_MKV_CHAPTER_DISPLAY,
+                             _mkv_str(_MKV_CHAP_STRING, b'Chapter 1')
+                             + _mkv_str(_MKV_CHAP_LANGUAGE, b'eng'))
+    chap_atom_body  = _mkv_uint(_MKV_CHAPTER_UID, 1)
+    chap_atom_body += _mkv_uint(_MKV_CHAPTER_FLAG_HIDDEN, 0)
+    chap_atom_body += _mkv_uint(_MKV_CHAPTER_FLAG_ENABLED, 1)
+    chap_atom_body += _mkv_uint(_MKV_CHAPTER_TIME_START, 0)
+    chap_atom_body += _mkv_uint(_MKV_CHAPTER_TIME_END, 0x10000)
+    chap_atom_body += chap_display
+    chap_atom_body += chap_process
+    chap_atom_1 = _mkv_elem(_MKV_CHAPTER_ATOM, chap_atom_body)
+
+    # A second ChapterAtom carrying a different DVD level (PGC = 0x20) so
+    # the GetTitleNumber path matches a different branch.  EndTime must
+    # be present in ordered editions, otherwise the chapter is dropped.
+    chap_private_2 = bytes([0x20, 0x00, 0x00, 0x02])
+    chap_process_2_body  = _mkv_uint(_MKV_CHAP_PROC_CODEC_ID, 1)
+    chap_process_2_body += _mkv_bin(_MKV_CHAP_PROC_PRIVATE, chap_private_2)
+    chap_process_2_body += _make_command(0, private_data_enter)
+    chap_process_2 = _mkv_elem(_MKV_CHAPTER_PROCESS, chap_process_2_body)
+    chap_atom_2_body  = _mkv_uint(_MKV_CHAPTER_UID, 2)
+    chap_atom_2_body += _mkv_uint(_MKV_CHAPTER_TIME_START, 0x10000)
+    chap_atom_2_body += _mkv_uint(_MKV_CHAPTER_TIME_END,   0x20000)
+    chap_atom_2_body += chap_process_2
+    chap_atom_2 = _mkv_elem(_MKV_CHAPTER_ATOM, chap_atom_2_body)
+
+    # A third ChapterAtom carrying a native (Matroska script) codec_id=0
+    # so chapter_command_script.cpp also picks up coverage.
+    chap_process_3_body  = _mkv_uint(_MKV_CHAP_PROC_CODEC_ID, 0)
+    chap_process_3_body += _mkv_bin(_MKV_CHAP_PROC_PRIVATE, b'')
+    chap_process_3_body += _make_command(0, b'\x01' + _mkv_dvd_command(0x0000))
+    chap_process_3 = _mkv_elem(_MKV_CHAPTER_PROCESS, chap_process_3_body)
+    chap_atom_3_body  = _mkv_uint(_MKV_CHAPTER_UID, 3)
+    chap_atom_3_body += _mkv_uint(_MKV_CHAPTER_TIME_START, 0x20000)
+    chap_atom_3_body += _mkv_uint(_MKV_CHAPTER_TIME_END,   0x30000)
+    chap_atom_3_body += chap_process_3
+    chap_atom_3 = _mkv_elem(_MKV_CHAPTER_ATOM, chap_atom_3_body)
+
+    # EditionEntry — default + ordered.  Ordered editions make the demuxer
+    # iterate chapters in declaration order using their explicit
+    # ChapterTime{Start,End} values, which means our chapter atoms become
+    # the actual vchapters list (not sub-chapters of a wrapping edition
+    # vchapter) and getChapterbyTimecode(0) returns chapter 1, whose
+    # DVD ChapterProcessCommands are then run by Enter().
+    edition_body  = _mkv_bin(_MKV_EDITION_FLAG_DEFAULT, b'\x01')
+    edition_body += _mkv_bin(_MKV_EDITION_FLAG_ORDERED, b'\x01')
+    edition_body += chap_atom_1 + chap_atom_2 + chap_atom_3
+    edition = _mkv_elem(_MKV_EDITION_ENTRY, edition_body)
+    chapters = _mkv_elem(_MKV_CHAPTERS, edition)
+
+    # Cluster — one SimpleBlock so Demux() runs at least once and
+    # UpdateCurrentToChapter() can invoke Enter() before EOF.
+    cluster_body  = _mkv_uint(_MKV_TIMECODE, 0)
+    block_payload = bytes([0x81, 0x00, 0x00, 0x00]) + b'x'      # track=1, ts=0
+    cluster_body += _mkv_bin(_MKV_SIMPLEBLOCK, block_payload)
+    cluster = _mkv_elem(_MKV_CLUSTER, cluster_body)
+
+    # Segment: Info + Tracks + Chapters + Cluster
+    segment_body = info + tracks + chapters + cluster
+    segment = _mkv_elem(_MKV_SEGMENT, segment_body)
+
+    return ebml + segment
+
+
+def gen_mkv(root):
+    out = os.path.join(root, 'seeds', 'mkv')
+    os.makedirs(out, exist_ok=True)
+    _write(os.path.join(out, 'dvd_chapter_commands.mkv'),
+           _build_mkv_dvd_chapters_seed())
+
+
+# ──────────────────────────────────────────────────
 #  main
 # ──────────────────────────────────────────────────
 
@@ -1875,6 +2990,7 @@ def main():
     gen_tta(root)
     gen_heif_extra(root)
     gen_ogg(root)
+    gen_mkv(root)
 
 
 if __name__ == '__main__':
