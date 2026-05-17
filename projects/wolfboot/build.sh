@@ -73,7 +73,6 @@ build_harness() {
 build_harness fuzz_elf   "-DWOLFBOOT_ELF"
 build_harness fuzz_gpt   ""
 build_harness fuzz_gzip  "-DWOLFBOOT_GZIP"
-build_harness fuzz_fdt   "-DWOLFBOOT_FDT"
 build_harness fuzz_delta "-DDELTA_UPDATES -DDELTA_BLOCK_SIZE=512"
 
 # ---- Seed corpora ----------------------------------------------------------
@@ -95,20 +94,6 @@ python3 -c "import gzip,sys; sys.stdout.buffer.write(gzip.compress(b''))" \
 python3 -c "import gzip,sys; sys.stdout.buffer.write(gzip.compress(b'wolfBoot fuzz seed'))" \
     > $WORK/seeds_gzip/short.gz
 (cd $WORK/seeds_gzip && zip -qr $OUT/fuzz_gzip_seed_corpus.zip .)
-
-mkdir -p $WORK/seeds_fdt
-python3 - <<'PYEOF' > $WORK/seeds_fdt/empty.dtb
-import struct, sys
-hdr_sz = 40
-rsvmap = b'\x00' * 16
-struct_block = b'\x00\x00\x00\x09'  # FDT_END
-total = hdr_sz + len(rsvmap) + len(struct_block)
-hdr = struct.pack('>10I',
-    0xd00dfeed, total, hdr_sz + len(rsvmap), total, hdr_sz,
-    17, 16, 0, 0, len(struct_block))
-sys.stdout.buffer.write(hdr + rsvmap + struct_block)
-PYEOF
-(cd $WORK/seeds_fdt && zip -qr $OUT/fuzz_fdt_seed_corpus.zip .)
 
 mkdir -p $WORK/seeds_delta
 python3 -c "import sys; sys.stdout.buffer.write(b'\x00'*4096 + b'\x7f\x00\x00\x00\x00\x00\x00')" \
@@ -134,14 +119,6 @@ EOF
 cat > $OUT/fuzz_gzip.dict <<'EOF'
 "\x1f\x8b\x08\x00"
 "\x1f\x8b\x08\x08"
-EOF
-
-cat > $OUT/fuzz_fdt.dict <<'EOF'
-"\xd0\x0d\xfe\xed"
-"\x00\x00\x00\x01"
-"\x00\x00\x00\x02"
-"\x00\x00\x00\x03"
-"\x00\x00\x00\x09"
 EOF
 
 cat > $OUT/fuzz_delta.dict <<'EOF'
