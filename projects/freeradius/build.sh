@@ -24,6 +24,11 @@ function copy_lib
 
 mkdir -p $OUT/lib
 
+# Normalize source-tree timestamps. Without this, host/container clock skew
+# can leave files dated in the future, which makes the FreeRADIUS build system
+# loop forever printing "all.mk is out of date. Please re-run configure".
+find . -exec touch {} +
+
 # Build json-c statically with the current sanitizer CFLAGS so it is
 # instrumented and gets linked into fuzzer_json with no runtime shared
 # library dependency on libjson-c.so.
@@ -51,6 +56,15 @@ sed -i \
     -e "s|-ljson-c|${JSONC_PREFIX}/lib/libjson-c.a|" \
     "$FUZZER_JSON_MK"
 cat "$FUZZER_JSON_MK"
+
+# fuzzer_cf.mk and fuzzer_value.mk are missing TGT_LDLIBS, so on ld linkers that
+# refuse indirect DSO references (ubuntu-24-04) they fail to link against
+# libtalloc. Append the same TGT_LDLIBS line the protocol/xlat fuzzers use.
+for mk in src/fuzzer/fuzzer_cf.mk src/fuzzer/fuzzer_value.mk src/fuzzer/fuzzer_xlat.mk; do
+    if ! grep -q '^TGT_LDLIBS' "$mk"; then
+        echo 'TGT_LDLIBS		:= $(LIBS)' >> "$mk"
+    fi
+done
 
 # build project — point FreeRADIUS' json-c probe at our static build
 ./configure --enable-fuzzer --enable-coverage --enable-address-sanitizer \
