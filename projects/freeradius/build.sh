@@ -45,11 +45,12 @@ popd
 # git apply --ignore-whitespace $SRC/patch.diff
 # fuzzer_json.mk doesn't pull in the json-c include path; inject it and
 # force static linking against our instrumented libjson-c.a.
+FUZZER_JSON_MK=src/fuzzer/fuzzer_json.mk
 sed -i \
     -e "s|^SRC_CFLAGS\s*+= -I\$(top_builddir)/src/lib/json/|SRC_CFLAGS += -I\$(top_builddir)/src/lib/json/ -I${JSONC_PREFIX}/include|" \
     -e "s|-ljson-c|${JSONC_PREFIX}/lib/libjson-c.a|" \
-    src/bin/fuzzer_json.mk
-cat src/bin/fuzzer_json.mk
+    "$FUZZER_JSON_MK"
+cat "$FUZZER_JSON_MK"
 
 # build project — point FreeRADIUS' json-c probe at our static build
 ./configure --enable-fuzzer --enable-coverage --enable-address-sanitizer \
