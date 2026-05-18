@@ -24,7 +24,9 @@ make -j$(nproc)
 cp fuzzing/ojph_expand_fuzz_target $OUT
 cp fuzzing/ojph_compress_fuzz_target $OUT
 
-# Build the seed corpus
+# Build the seed corpora
 cd $SRC
 rm -f $OUT/ojph_expand_fuzz_target_seed_corpus.zip
 zip -j $OUT/ojph_expand_fuzz_target_seed_corpus.zip jp2k_test_codestreams/openjph/*.j2c
+rm -f $OUT/ojph_compress_fuzz_target_seed_corpus.zip
+zip -j $OUT/ojph_compress_fuzz_target_seed_corpus.zip $SRC/OpenJPH/fuzzing/seed_corpus/ojph_compress_fuzz_target/w128_h128_b2_79_b3_09.bin

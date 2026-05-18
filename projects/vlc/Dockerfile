@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake flex bison gettext libglu1-mesa-dev ninja-build \
   python3-pip nasm yasm
@@ -22,4 +22,4 @@ RUN pip3 install meson
 RUN git clone --depth 1 https://code.videolan.org/videolan/vlc.git vlc
 RUN git clone --depth 1 https://code.videolan.org/VideoLAN.org/vlc-fuzz-corpus.git vlc/fuzz-corpus
 WORKDIR vlc
-COPY build.sh fuzzing-modules.patch generate_ts_seeds.py generate_ps_seeds.py $SRC/
+COPY build.sh fuzzing-modules.patch generate_seeds.py $SRC/
