@@ -246,12 +246,23 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             char *encoded = evhttp_encode_uri(uri_str);
             if (encoded)
                 free(encoded);
+            
+            char *escaped = evhttp_htmlescape(uri_str);
+            if (escaped)
+                free(escaped);
+
+            struct evhttp_uri *uri = evhttp_uri_parse(uri_str);
+            if (uri) {
+                char uri_buf[256];
+                evhttp_uri_join(uri, uri_buf, sizeof(uri_buf));
+                evhttp_uri_free(uri);
+            }
 
             free(uri_str);
         }
     }
 
-    /* === Exercise evhttp_parse_query_str_flags === */
+    /* === Exercise evhttp_parse_query and evhttp_parse_query_str_flags === */
     if (mode & 0x20) {
         char *query = (char *)malloc(size + 1);
         if (query) {
@@ -260,16 +271,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
             struct evkeyvalq params;
             TAILQ_INIT(&params);
+            
+            /* Exercise both the simple and flagged versions */
+            if (evhttp_parse_query(query, &params) == 0) {
+                evhttp_clear_headers(&params);
+            }
+            
             int flags = (extra & 0x0F);
-            evhttp_parse_query_str_flags(query, &params, flags);
-
-            /* Iterate and free all parsed parameters */
-            struct evkeyval *kv;
-            while ((kv = TAILQ_FIRST(&params)) != NULL) {
-                TAILQ_REMOVE(&params, kv, next);
-                free(kv->key);
-                free(kv->value);
-                free(kv);
+            if (evhttp_parse_query_str_flags(query, &params, flags) == 0) {
+                evhttp_clear_headers(&params);
             }
 
             free(query);

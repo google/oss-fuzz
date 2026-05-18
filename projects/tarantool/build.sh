@@ -170,7 +170,7 @@ do
   cp "$test_path" "$OUT/"
   corpus_dir="test/static/corpus/$module_name"
   if [ -e "$corpus_dir" ]; then
-    zip -j $OUT/"$test_name_we"_seed_corpus.zip $corpus_dir/*
+    zip --quiet -j $OUT/"$test_name_we"_seed_corpus.zip $corpus_dir/*
     echo "Build corpus '$OUT/"$test_name_we"_seed_corpus.zip' for the test '$test_name_we'"
   fi
 done
