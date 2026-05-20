@@ -30,7 +30,14 @@ fi
 
 for f in $(find $SRC -name '*_fuzzer.cc'); do
     b=$(basename -s .cc $f)
-    $CXX $CXXFLAGS -std=c++11 -I. $f -o $OUT/$b $LIB_FUZZING_ENGINE ./libz.a
+    if [ "$b" = "infback9_fuzzer" ]; then
+        $CC $CFLAGS -I. -c contrib/infback9/infback9.c -o /tmp/infback9.o
+        $CC $CFLAGS -I. -c contrib/infback9/inftree9.c -o /tmp/inftree9.o
+        $CXX $CXXFLAGS -std=c++11 -I. $f -o $OUT/$b \
+            $LIB_FUZZING_ENGINE /tmp/infback9.o /tmp/inftree9.o ./libz.a
+    else
+        $CXX $CXXFLAGS -std=c++11 -I. $f -o $OUT/$b $LIB_FUZZING_ENGINE ./libz.a
+    fi
 done
 
 zip $OUT/seed_corpus.zip *.*
