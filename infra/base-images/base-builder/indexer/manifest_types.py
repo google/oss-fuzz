@@ -38,8 +38,8 @@ from typing import Any, Callable, Mapping, Self, Sequence
 import urllib.request
 
 import manifest_constants
-import pathlib
 
+import pathlib
 
 SRC_DIR = manifest_constants.SRC_DIR
 OBJ_DIR = manifest_constants.OBJ_DIR
@@ -406,6 +406,7 @@ class Manifest:
       archive_path: pathlib.PurePath,
       out_dir: pathlib.PurePath = pathlib.Path("/out"),
       overwrite: bool = True,
+      source_dir_filtering: bool = True,
   ) -> Self:
     """Saves a build archive with this Manifest."""
     if os.path.exists(archive_path) and not overwrite:
@@ -420,17 +421,25 @@ class Manifest:
         def _save_dir(
             path: pathlib.PurePath,
             prefix: pathlib.Path,
+            *,
+            disable_filtering: bool = False,
             exclude_build_artifacts: bool = False,
             only_include_target: str | None = None,
         ):
+          if disable_filtering:
+            tar.add(path.as_posix(), arcname=prefix)
+            return
+
           prefix = prefix.as_posix() + "/"
           for root, _, files in os.walk(path):
             for file in files:
-              if file.endswith("_seed_corpus.zip"):
+              file = pathlib.Path(root, file)
+
+              if file.name.endswith("_seed_corpus.zip"):
                 # Don't copy over the seed corpus -- it's not necessary.
                 continue
 
-              if "/.git/" in root or root.endswith("/.git"):
+              if ".git" in file.parents:
                 # Skip the .git directory -- it can be large.
                 continue
 
@@ -439,8 +448,8 @@ class Manifest:
                 continue
 
               if only_include_target and _is_elf(file):
-                # Skip ELF files that aren't the relevant target (unless it's a
-                # shared library).
+                # Skip ELF files that aren't the relevant target (unless it's
+                # a shared library).
                 if (
                     file.name != only_include_target
                     and ".so" not in file.name
@@ -480,7 +489,12 @@ class Manifest:
         _save_dir(index_dir, INDEX_DIR)
 
         if source_dir:
-          _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
+          _save_dir(
+              source_dir,
+              SRC_DIR,
+              disable_filtering=not source_dir_filtering,
+              exclude_build_artifacts=True,
+          )
 
         # Only include the relevant target for the snapshot, to save on disk
         # space.
