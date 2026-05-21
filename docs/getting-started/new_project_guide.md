@@ -553,6 +553,40 @@ Adding it is super easy, just follow this template:
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/<project>.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:<project>)
 ```
 
+## Example: Simple C++ Fuzz Target for Memory Safety
+Below is a minimal C++ fuzz target compatible with OSS‑Fuzz, designed to detect common memory‑safety vulnerabilities including buffer overflow, null‑pointer dereference, and integer overflow.
+
+```cpp
+#include <cstddef>
+#include <cstdint>
+
+// OSS‑Fuzz entry point
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+    if (size < 2) return 0;
+
+    // Detect buffer overflow
+    char small_buf[8];
+    for (size_t i = 0; i < size && i < sizeof(small_buf); ++i) {
+        small_buf[i] = static_cast<char>(data[i]);
+    }
+
+    // Detect null‑pointer dereference
+    int* ptr = nullptr;
+    if (data[0] & 1) ptr = reinterpret_cast<int*>(data);
+
+    // Detect integer overflow
+    int a = static_cast<int>(data[0]);
+    int b = static_cast<int>(data[1]);
+    int sum = a + b;
+
+    return 0;
+}
+```
+Key Notes:
+- This minimal example follows OSS-Fuzz standard fuzz target format.
+- It covers classic C/C++ security flaws taught in secure coding courses.
+- Compile with -fsanitize=fuzzer, address for full vulnerability detection.
+
 ## Monitoring performance via Fuzz Introspector
 
 As soon as your project is run with ClusterFuzz (< 1 day), you can view the Fuzz
