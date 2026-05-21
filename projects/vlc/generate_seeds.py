@@ -1453,6 +1453,201 @@ def seed_scte27_segmented() -> bytes:
     return _seed_scte27_variant([sec0, sec1])
 
 
+# ──────────────────────────────────────────────────
+#  TS extensions targeting 0%-covered PMT setup paths in
+#  modules/demux/mpeg/ts_psi.c and the dependent
+#  ts_metadata.c / ts_arib.c files.
+# ──────────────────────────────────────────────────
+#
+# As of the 2026-05-20 OSS-Fuzz report ts_psi.c sat at 44% line coverage
+# and the following PMT-stream-setup functions were entirely 0%:
+#
+#   * PMTSetupEsHDMV          — Blu-ray HDMV registration, dispatches by
+#                               stream type 0x80…0x92/0xEA/0xA1/0xA2
+#   * PMTSetupEs0x83, 0xA0, 0xD1, 0xEA — non-HDMV variants of those types
+#   * SetupMetadataDescriptors / Metadata_stream_processor_New
+#                             — Metadata descriptor (0x26) driving
+#                               ts_metadata.c (whole file at 0%)
+#   * ParsePMTPrivateRegistrations + TS_PMT_REGISTRATION_ARIB branch
+#                             — ARIB STD-B10 detection (descriptors 0x09
+#                               CA_id=0x05, 0xC1, 0xF6); ts_arib.c is
+#                               also 0%.
+#
+# The seeds below build minimal valid TS streams that walk those branches
+# during PMT parsing. They reuse the existing make_ts_packet / psi_packet
+# / make_pat machinery used elsewhere in this file.
+
+
+def make_pmt_with_program_info(program_num: int, pcr_pid: int,
+                               program_info: bytes, streams: list) -> bytes:
+    """Like make_pmt but with program-level descriptors before the per-ES
+       loop. Required for HDMV registration / ARIB triggers / etc."""
+    body = struct.pack('>H', 0xE000 | pcr_pid)
+    body += struct.pack('>H', 0xF000 | (len(program_info) & 0x0FFF))
+    body += program_info
+    for stype, es_pid, descs in streams:
+        body += bytes([stype])
+        body += struct.pack('>H', 0xE000 | es_pid)
+        body += struct.pack('>H', 0xF000 | (len(descs) & 0x0FFF))
+        body += descs
+    return psi_section(0x02, program_num, body)
+
+
+def _ts_registration_dr(rgs: bytes) -> bytes:
+    assert len(rgs) == 4
+    return bytes([0x05, 0x04]) + rgs
+
+
+def _ts_ca_dr(ca_system_id: int, ca_pid: int = 0x1FFF) -> bytes:
+    return bytes([0x09, 0x04]) + struct.pack('>HH',
+                                             ca_system_id,
+                                             0xE000 | (ca_pid & 0x1FFF))
+
+
+def _ts_pad_to_min_packets(stream: bytes, min_packets: int = 4) -> bytes:
+    """Append NULL packets (PID=0x1FFF, 0xFF stuffing) until the stream
+       contains at least min_packets TS packets. ts.c::DetectPacketSize
+       peeks 4*188 sync bytes before accepting a stream, so 3-packet
+       seeds are rejected outright."""
+    assert len(stream) % 188 == 0
+    null_pkt = bytes([0x47, 0x1F, 0xFF, 0x10]) + bytes([0xFF] * 184)
+    while len(stream) // 188 < min_packets:
+        stream += null_pkt
+    return stream
+
+
+def _ts_metadata_dr() -> bytes:
+    """Metadata_descriptor (tag 0x26) declaring ID3 application_format and
+       format identifiers — triggers SetupMetadataDescriptors's ID3
+       carriage path."""
+    body  = struct.pack('>H', 0xFFFF)          # metadata_application_format
+    body += b'ID3 '                             # metadata_application_format_identifier
+    body += bytes([0xFF])                       # metadata_format = 0xFF (extended)
+    body += b'ID3 '                             # metadata_format_identifier
+    body += bytes([0x01])                       # metadata_service_id
+    body += bytes([0x00])                       # flags (decoder_config_flags<<4)
+    return bytes([0x26, len(body)]) + body
+
+
+def seed_ts_bluray_hdmv() -> bytes:
+    """HDMV-registered PMT carrying every Blu-ray stream type whose branch
+       lives inside PMTSetupEsHDMV: 0x80 (LPCM), 0x81 (AC-3), 0x82/0xA2
+       (DTS), 0x83 (TrueHD), 0x84/0xA1 (E-AC-3), 0x85/0x86 (DTS-HD),
+       0x90 (PGS), 0x91 (IGS), 0x92 (Text-ST), 0xEA (VC-1)."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    hdmv_dr = _ts_registration_dr(b'HDMV')
+    streams = [
+        (0x02, VIDEO_PID, b''),
+        (0x80, 0x0110, b''),
+        (0x81, 0x0111, b''),
+        (0x82, 0x0112, b''),
+        (0x83, 0x0113, b''),
+        (0x84, 0x0114, b''),
+        (0x85, 0x0115, b''),
+        (0x86, 0x0116, b''),
+        (0x90, 0x0190, b''),
+        (0x91, 0x0191, b''),
+        (0x92, 0x0192, b''),
+        (0xEA, 0x01EA, b''),
+        (0xA1, 0x01A1, b''),
+        (0xA2, 0x01A2, b''),
+    ]
+    pmt = make_pmt_with_program_info(0x0001, VIDEO_PID, hdmv_dr, streams)
+    pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
+    stream = (psi_packet(pat, 0x0000) +
+              psi_packet(pmt, PMT_PID) +
+              pes_ts_packets(pes, VIDEO_PID, pcr_90khz=0))
+    return _ts_pad_to_min_packets(stream)
+
+
+def seed_ts_arib_pmt() -> bytes:
+    """PMT carrying the three descriptors that flip the TS demuxer into
+       TS_STANDARD_ARIB (ParsePMTRegistrations / i_arib_score_flags==0x07):
+       CA descriptor with system_id 0x05, descriptor 0xC1, descriptor 0xF6.
+       Activating ARIB exercises ARIB-specific branches in ts_psi.c and
+       the data_component_descriptor (0xFD) decode in ts_arib.c."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    arib_pi = (_ts_ca_dr(0x0005) +
+               bytes([0xC1, 0x01, 0x00]) +
+               bytes([0xF6, 0x01, 0x00]))
+    # data_component_descriptor (tag 0xFD) with component_id 0x0008 (=ARIB
+    # caption) so the per-ES private descriptor path also fires.
+    dcd = bytes([0xFD, 0x03, 0x00, 0x08, 0x3D])
+    streams = [
+        (0x02, VIDEO_PID, b''),
+        (0x06, 0x0103, dcd),
+    ]
+    pmt = make_pmt_with_program_info(0x0001, VIDEO_PID, arib_pi, streams)
+    pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
+    stream = (psi_packet(pat, 0x0000) +
+              psi_packet(pmt, PMT_PID) +
+              pes_ts_packets(pes, VIDEO_PID, pcr_90khz=0))
+    return _ts_pad_to_min_packets(stream)
+
+
+def seed_ts_metadata_id3() -> bytes:
+    """PMT with stream_type 0x15 (Metadata in PES) + Metadata_descriptor
+       (0x26) advertising ID3 carriage. ts_psi.c invokes
+       SetupMetadataDescriptors → Metadata_stream_processor_New, and the
+       PES blocks get routed through ts_metadata.c
+       (Metadata_stream_processor_Push)."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    metadata_pid = 0x0103
+    streams = [
+        (0x02, VIDEO_PID, b''),
+        (0x15, metadata_pid, _ts_metadata_dr()),
+    ]
+    pmt = make_pmt(0x0001, VIDEO_PID, streams)
+    pes_video = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
+    # ID3v2.4 tag (size-syncsafe = 0x18 bytes of frames): a single TIT2
+    # frame holding "Title" so ID3TAG_Parse_Handler runs against real data.
+    id3 = b'ID3\x04\x00\x00\x00\x00\x00\x18'
+    id3 += b'TIT2'                              # frame id
+    id3 += struct.pack('>I', 0x0e)              # syncsafe size
+    id3 += b'\x00\x00'                          # flags
+    id3 += b'\x03'                              # encoding = UTF-8
+    id3 += b'Title\x00\x00\x00\x00\x00\x00\x00\x00'
+    # Metadata PES uses stream_id 0xFC (metadata stream) per H.222.0
+    pes_md = make_ts_pes(0xFC, id3, pts_90khz=900)
+    return (psi_packet(pat, 0x0000) +
+            psi_packet(pmt, PMT_PID) +
+            pes_ts_packets(pes_video, VIDEO_PID, pcr_90khz=0) +
+            pes_ts_packets(pes_md, metadata_pid))
+
+
+def seed_ts_private_stream_types() -> bytes:
+    """PMT without a Blu-ray registration but with stream types 0x83
+       (LPCM), 0xA0 (MS-CODEC), 0xD1 (Dirac), 0xEA (VC-1) and 0x21
+       (JPEG 2000 video) — each routes through its own per-type
+       PMTSetupEs0xXX setup function, all of which sit at 0% coverage
+       outside the HDMV path. The 0x21 stream carries a J2K_video
+       descriptor (tag 0x32) so SetupJ2KDescriptors also fires."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    j2k_dr = bytes([0x32, 0x18,
+                    0x10, 0x00,                # profile_and_level
+                    0x00, 0x00, 0x07, 0x80,    # horizontal_size
+                    0x00, 0x00, 0x04, 0x38,    # vertical_size
+                    0x00, 0x00, 0x00, 0x00,    # max_bit_rate
+                    0x00, 0x00, 0x00, 0x00,    # max_buffer_size
+                    0x00, 0x00,                # DEN_frame_rate
+                    0x00, 0x19,                # NUM_frame_rate
+                    0x00, 0x00])               # rest reserved
+    streams = [
+        (0x02, VIDEO_PID, b''),
+        (0x83, 0x0103, b''),
+        (0xA0, 0x01A0, b''),
+        (0xD1, 0x01D1, b''),
+        (0xEA, 0x01EA, b''),
+        (0x21, 0x0121, j2k_dr),
+    ]
+    pmt = make_pmt(0x0001, VIDEO_PID, streams)
+    pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
+    stream = (psi_packet(pat, 0x0000) +
+              psi_packet(pmt, PMT_PID) +
+              pes_ts_packets(pes, VIDEO_PID, pcr_90khz=0))
+    return _ts_pad_to_min_packets(stream)
+
+
 TS_SEEDS = {
     'mpeg2_video.ts':  seed_mpeg2_video,
     'h264_video.ts':   seed_h264_video,
@@ -1476,6 +1671,10 @@ TS_SEEDS = {
     'atsc_psip.ts':    seed_atsc_psip,
     'dvb_si.ts':       seed_dvb_si,
     'cea708_video.ts': lambda: seed_cea708_video(),
+    'bluray_hdmv.ts':       seed_ts_bluray_hdmv,
+    'arib_pmt.ts':          seed_ts_arib_pmt,
+    'metadata_id3.ts':      seed_ts_metadata_id3,
+    'private_streams.ts':   seed_ts_private_stream_types,
 }
 
 
