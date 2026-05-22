@@ -1,0 +1,11 @@
+homepage: "https://github.com/IntentProof/intentproof-tools"
+language: go
+primary_contact: "security@intentproof.io"
+auto_ccs:
+  - "security@intentproof.io"
+main_repo: "https://github.com/IntentProof/intentproof-tools.git"
+file_github_issue: true
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
