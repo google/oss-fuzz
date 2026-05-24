@@ -23,7 +23,8 @@ with atheris.instrument_imports():
 
 def TestOneInput(data):
     try:
-        shape_inference.infer_shapes(data, check_type=True, strict_mode=False)
+        model = onnx.load_model_from_string(data)
+        shape_inference.infer_shapes(model, check_type=True, strict_mode=False)
     except Exception:
         return
 

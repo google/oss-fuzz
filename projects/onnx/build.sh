@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,14 @@
 
 cd $SRC/onnx
 
-pip3 install .
+# Enable ONNX's built-in sanitizer support so the C++ extensions are
+# instrumented alongside the Python atheris layer.
+if [[ "$SANITIZER" == "address" || "$SANITIZER" == "undefined" ]]; then
+  export CMAKE_ARGS="-DONNX_USE_ASAN=ON"
+fi
+
+CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" pip3 install --no-build-isolation .
+python3 $SRC/make_seed_corpus.py $OUT/fuzz_version_converter_seed_corpus.zip
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -maxdepth 1 -name 'fuzz_*.py'); do

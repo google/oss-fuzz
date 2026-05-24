@@ -6,3 +6,4 @@ main_repo: https://github.com/onnx/onnx
 primary_contact: onnx-technical-discuss@lists.lfaidata.foundation
 sanitizers:
 - address
+- undefined

@@ -25,8 +25,6 @@ def TestOneInput(data):
     text = fdp.ConsumeUnicode(sys.maxsize)
     try:
         parser.parse_model(text)
-    except parser.ParseError:
-        return
     except Exception:
         return
 

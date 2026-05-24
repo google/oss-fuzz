@@ -24,7 +24,7 @@ with atheris.instrument_imports():
 def TestOneInput(data):
     try:
         checker.check_model(data, full_check=True)
-    except (onnx.checker.ValidationError, ValueError, Exception):
+    except Exception:
         return
 
 

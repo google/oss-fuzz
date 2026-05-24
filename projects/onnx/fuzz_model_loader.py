@@ -23,6 +23,10 @@ with atheris.instrument_imports():
 def TestOneInput(data):
     try:
         model = onnx.load_model_from_string(data)
+        _ = len(model.graph.node)
+        _ = len(model.graph.input)
+        _ = len(model.graph.output)
+        onnx.checker.check_model(model)
     except Exception:
         return
 
