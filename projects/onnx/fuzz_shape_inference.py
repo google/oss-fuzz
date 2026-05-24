@@ -59,11 +59,6 @@ _UNARY = (
 _SUBGRAPH_OPS = ("If", "Loop", "Scan")
 
 
-def _random_shape(fdp, max_rank=5, max_dim=16):
-    rank = fdp.ConsumeIntInRange(0, max_rank)
-    return [fdp.ConsumeIntInRange(1, max_dim) for _ in range(rank)]
-
-
 def _const_bool(name, value=True):
     tensor = helper.make_tensor(name, TensorProto.BOOL, [], [value])
     return helper.make_node("Constant", [], [name], value=tensor)
@@ -144,9 +139,12 @@ def _build_model(fdp):
 
 @atheris.instrument_func
 def TestOneInput(data):
-    # Toggles live in the trailing byte so the head can be fed verbatim to
-    # the protobuf parser on the raw path. Consuming via FuzzedDataProvider
-    # from the head would shift the protobuf framing and reject every seed.
+    # Toggles live in the trailing byte. On the structured path we slice the
+    # byte off before handing the rest to FuzzedDataProvider. On the raw path
+    # we pass the full `data` to the protobuf parser unchanged: seed models
+    # are complete serialized ModelProtos, so slicing the tail would truncate
+    # every seed. The trailing toggle byte becomes part of the raw input,
+    # which libFuzzer mutates freely anyway.
     if len(data) < 2:
         return
     toggles = data[-1]
@@ -155,14 +153,13 @@ def TestOneInput(data):
     use_structured = bool(toggles & 0x04)
     # bits 0x08..0x80 are reserved for future toggles; mutations against
     # them are harmless until claimed.
-    body = data[:-1]
 
     try:
         if use_structured:
-            fdp = atheris.FuzzedDataProvider(body)
+            fdp = atheris.FuzzedDataProvider(data[:-1])
             model = _build_model(fdp)
         else:
-            model = onnx.load_model_from_string(body)
+            model = onnx.load_model_from_string(data)
         shape_inference.infer_shapes(
             model, check_type=check_type, strict_mode=strict,
         )
@@ -178,6 +175,9 @@ def TestOneInput(data):
 
 
 def main():
+    # instrument_all() mirrors the other ONNX fuzzers in this directory so
+    # coverage feedback covers harness-local bytecode too, not just imports.
+    atheris.instrument_all()
     atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
     atheris.Fuzz()
 
