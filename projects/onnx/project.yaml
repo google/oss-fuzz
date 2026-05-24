@@ -3,7 +3,9 @@ fuzzing_engines:
 homepage: https://onnx.ai/
 language: python
 main_repo: https://github.com/onnx/onnx
-primary_contact: onnx-technical-discuss@lists.lfaidata.foundation
+primary_contact: a.fehlner@googlemail.com
+auto_ccs:
+  - fehlner@arcor.de
 sanitizers:
 - address
 - undefined
