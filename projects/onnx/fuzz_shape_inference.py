@@ -43,7 +43,7 @@ with atheris.instrument_imports():
 # would otherwise crash the fuzzer process on every iteration that mutates
 # into a deep graph, preventing discovery of unrelated bugs. Remove once
 # the upstream fix lands.
-sys.setrecursionlimit(500)
+sys.setrecursionlimit(1000)
 
 # Elementwise unary ops with trivial shape inference rules. Useful as
 # filler nodes so generated graphs have non-trivial bodies that exercise
@@ -127,7 +127,7 @@ def _build_model(fdp):
     # Top-level graph mirrors a branch but lives at depth 0 and chooses its
     # own opset version so different shape-inference codepaths (per-opset
     # schemas) are reached. The 80-deep cap leaves comfortable headroom under
-    # the 500-frame Python recursion limit for builder calls while still
+    # the 1000-frame Python recursion limit for builder calls while still
     # producing graphs deep enough to stress the recursive C++ visitor.
     max_depth = fdp.ConsumeIntInRange(0, 80)
     graph = _build_branch(fdp, depth=0, max_depth=max_depth)
@@ -137,7 +137,6 @@ def _build_model(fdp):
     )
 
 
-@atheris.instrument_func
 def TestOneInput(data):
     # Toggles live in the trailing byte. On the structured path we slice the
     # byte off before handing the rest to FuzzedDataProvider. On the raw path
