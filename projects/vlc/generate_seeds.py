@@ -33,6 +33,7 @@
 #     generate_seeds.py <fuzz-corpus-root>
 
 import os
+import re
 import struct
 import sys
 
@@ -1452,6 +1453,201 @@ def seed_scte27_segmented() -> bytes:
     return _seed_scte27_variant([sec0, sec1])
 
 
+# ──────────────────────────────────────────────────
+#  TS extensions targeting 0%-covered PMT setup paths in
+#  modules/demux/mpeg/ts_psi.c and the dependent
+#  ts_metadata.c / ts_arib.c files.
+# ──────────────────────────────────────────────────
+#
+# As of the 2026-05-20 OSS-Fuzz report ts_psi.c sat at 44% line coverage
+# and the following PMT-stream-setup functions were entirely 0%:
+#
+#   * PMTSetupEsHDMV          — Blu-ray HDMV registration, dispatches by
+#                               stream type 0x80…0x92/0xEA/0xA1/0xA2
+#   * PMTSetupEs0x83, 0xA0, 0xD1, 0xEA — non-HDMV variants of those types
+#   * SetupMetadataDescriptors / Metadata_stream_processor_New
+#                             — Metadata descriptor (0x26) driving
+#                               ts_metadata.c (whole file at 0%)
+#   * ParsePMTPrivateRegistrations + TS_PMT_REGISTRATION_ARIB branch
+#                             — ARIB STD-B10 detection (descriptors 0x09
+#                               CA_id=0x05, 0xC1, 0xF6); ts_arib.c is
+#                               also 0%.
+#
+# The seeds below build minimal valid TS streams that walk those branches
+# during PMT parsing. They reuse the existing make_ts_packet / psi_packet
+# / make_pat machinery used elsewhere in this file.
+
+
+def make_pmt_with_program_info(program_num: int, pcr_pid: int,
+                               program_info: bytes, streams: list) -> bytes:
+    """Like make_pmt but with program-level descriptors before the per-ES
+       loop. Required for HDMV registration / ARIB triggers / etc."""
+    body = struct.pack('>H', 0xE000 | pcr_pid)
+    body += struct.pack('>H', 0xF000 | (len(program_info) & 0x0FFF))
+    body += program_info
+    for stype, es_pid, descs in streams:
+        body += bytes([stype])
+        body += struct.pack('>H', 0xE000 | es_pid)
+        body += struct.pack('>H', 0xF000 | (len(descs) & 0x0FFF))
+        body += descs
+    return psi_section(0x02, program_num, body)
+
+
+def _ts_registration_dr(rgs: bytes) -> bytes:
+    assert len(rgs) == 4
+    return bytes([0x05, 0x04]) + rgs
+
+
+def _ts_ca_dr(ca_system_id: int, ca_pid: int = 0x1FFF) -> bytes:
+    return bytes([0x09, 0x04]) + struct.pack('>HH',
+                                             ca_system_id,
+                                             0xE000 | (ca_pid & 0x1FFF))
+
+
+def _ts_pad_to_min_packets(stream: bytes, min_packets: int = 4) -> bytes:
+    """Append NULL packets (PID=0x1FFF, 0xFF stuffing) until the stream
+       contains at least min_packets TS packets. ts.c::DetectPacketSize
+       peeks 4*188 sync bytes before accepting a stream, so 3-packet
+       seeds are rejected outright."""
+    assert len(stream) % 188 == 0
+    null_pkt = bytes([0x47, 0x1F, 0xFF, 0x10]) + bytes([0xFF] * 184)
+    while len(stream) // 188 < min_packets:
+        stream += null_pkt
+    return stream
+
+
+def _ts_metadata_dr() -> bytes:
+    """Metadata_descriptor (tag 0x26) declaring ID3 application_format and
+       format identifiers — triggers SetupMetadataDescriptors's ID3
+       carriage path."""
+    body  = struct.pack('>H', 0xFFFF)          # metadata_application_format
+    body += b'ID3 '                             # metadata_application_format_identifier
+    body += bytes([0xFF])                       # metadata_format = 0xFF (extended)
+    body += b'ID3 '                             # metadata_format_identifier
+    body += bytes([0x01])                       # metadata_service_id
+    body += bytes([0x00])                       # flags (decoder_config_flags<<4)
+    return bytes([0x26, len(body)]) + body
+
+
+def seed_ts_bluray_hdmv() -> bytes:
+    """HDMV-registered PMT carrying every Blu-ray stream type whose branch
+       lives inside PMTSetupEsHDMV: 0x80 (LPCM), 0x81 (AC-3), 0x82/0xA2
+       (DTS), 0x83 (TrueHD), 0x84/0xA1 (E-AC-3), 0x85/0x86 (DTS-HD),
+       0x90 (PGS), 0x91 (IGS), 0x92 (Text-ST), 0xEA (VC-1)."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    hdmv_dr = _ts_registration_dr(b'HDMV')
+    streams = [
+        (0x02, VIDEO_PID, b''),
+        (0x80, 0x0110, b''),
+        (0x81, 0x0111, b''),
+        (0x82, 0x0112, b''),
+        (0x83, 0x0113, b''),
+        (0x84, 0x0114, b''),
+        (0x85, 0x0115, b''),
+        (0x86, 0x0116, b''),
+        (0x90, 0x0190, b''),
+        (0x91, 0x0191, b''),
+        (0x92, 0x0192, b''),
+        (0xEA, 0x01EA, b''),
+        (0xA1, 0x01A1, b''),
+        (0xA2, 0x01A2, b''),
+    ]
+    pmt = make_pmt_with_program_info(0x0001, VIDEO_PID, hdmv_dr, streams)
+    pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
+    stream = (psi_packet(pat, 0x0000) +
+              psi_packet(pmt, PMT_PID) +
+              pes_ts_packets(pes, VIDEO_PID, pcr_90khz=0))
+    return _ts_pad_to_min_packets(stream)
+
+
+def seed_ts_arib_pmt() -> bytes:
+    """PMT carrying the three descriptors that flip the TS demuxer into
+       TS_STANDARD_ARIB (ParsePMTRegistrations / i_arib_score_flags==0x07):
+       CA descriptor with system_id 0x05, descriptor 0xC1, descriptor 0xF6.
+       Activating ARIB exercises ARIB-specific branches in ts_psi.c and
+       the data_component_descriptor (0xFD) decode in ts_arib.c."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    arib_pi = (_ts_ca_dr(0x0005) +
+               bytes([0xC1, 0x01, 0x00]) +
+               bytes([0xF6, 0x01, 0x00]))
+    # data_component_descriptor (tag 0xFD) with component_id 0x0008 (=ARIB
+    # caption) so the per-ES private descriptor path also fires.
+    dcd = bytes([0xFD, 0x03, 0x00, 0x08, 0x3D])
+    streams = [
+        (0x02, VIDEO_PID, b''),
+        (0x06, 0x0103, dcd),
+    ]
+    pmt = make_pmt_with_program_info(0x0001, VIDEO_PID, arib_pi, streams)
+    pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
+    stream = (psi_packet(pat, 0x0000) +
+              psi_packet(pmt, PMT_PID) +
+              pes_ts_packets(pes, VIDEO_PID, pcr_90khz=0))
+    return _ts_pad_to_min_packets(stream)
+
+
+def seed_ts_metadata_id3() -> bytes:
+    """PMT with stream_type 0x15 (Metadata in PES) + Metadata_descriptor
+       (0x26) advertising ID3 carriage. ts_psi.c invokes
+       SetupMetadataDescriptors → Metadata_stream_processor_New, and the
+       PES blocks get routed through ts_metadata.c
+       (Metadata_stream_processor_Push)."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    metadata_pid = 0x0103
+    streams = [
+        (0x02, VIDEO_PID, b''),
+        (0x15, metadata_pid, _ts_metadata_dr()),
+    ]
+    pmt = make_pmt(0x0001, VIDEO_PID, streams)
+    pes_video = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
+    # ID3v2.4 tag (size-syncsafe = 0x18 bytes of frames): a single TIT2
+    # frame holding "Title" so ID3TAG_Parse_Handler runs against real data.
+    id3 = b'ID3\x04\x00\x00\x00\x00\x00\x18'
+    id3 += b'TIT2'                              # frame id
+    id3 += struct.pack('>I', 0x0e)              # syncsafe size
+    id3 += b'\x00\x00'                          # flags
+    id3 += b'\x03'                              # encoding = UTF-8
+    id3 += b'Title\x00\x00\x00\x00\x00\x00\x00\x00'
+    # Metadata PES uses stream_id 0xFC (metadata stream) per H.222.0
+    pes_md = make_ts_pes(0xFC, id3, pts_90khz=900)
+    return (psi_packet(pat, 0x0000) +
+            psi_packet(pmt, PMT_PID) +
+            pes_ts_packets(pes_video, VIDEO_PID, pcr_90khz=0) +
+            pes_ts_packets(pes_md, metadata_pid))
+
+
+def seed_ts_private_stream_types() -> bytes:
+    """PMT without a Blu-ray registration but with stream types 0x83
+       (LPCM), 0xA0 (MS-CODEC), 0xD1 (Dirac), 0xEA (VC-1) and 0x21
+       (JPEG 2000 video) — each routes through its own per-type
+       PMTSetupEs0xXX setup function, all of which sit at 0% coverage
+       outside the HDMV path. The 0x21 stream carries a J2K_video
+       descriptor (tag 0x32) so SetupJ2KDescriptors also fires."""
+    pat = make_pat([(0x0001, PMT_PID)])
+    j2k_dr = bytes([0x32, 0x18,
+                    0x10, 0x00,                # profile_and_level
+                    0x00, 0x00, 0x07, 0x80,    # horizontal_size
+                    0x00, 0x00, 0x04, 0x38,    # vertical_size
+                    0x00, 0x00, 0x00, 0x00,    # max_bit_rate
+                    0x00, 0x00, 0x00, 0x00,    # max_buffer_size
+                    0x00, 0x00,                # DEN_frame_rate
+                    0x00, 0x19,                # NUM_frame_rate
+                    0x00, 0x00])               # rest reserved
+    streams = [
+        (0x02, VIDEO_PID, b''),
+        (0x83, 0x0103, b''),
+        (0xA0, 0x01A0, b''),
+        (0xD1, 0x01D1, b''),
+        (0xEA, 0x01EA, b''),
+        (0x21, 0x0121, j2k_dr),
+    ]
+    pmt = make_pmt(0x0001, VIDEO_PID, streams)
+    pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=0)
+    stream = (psi_packet(pat, 0x0000) +
+              psi_packet(pmt, PMT_PID) +
+              pes_ts_packets(pes, VIDEO_PID, pcr_90khz=0))
+    return _ts_pad_to_min_packets(stream)
+
+
 TS_SEEDS = {
     'mpeg2_video.ts':  seed_mpeg2_video,
     'h264_video.ts':   seed_h264_video,
@@ -1475,6 +1671,10 @@ TS_SEEDS = {
     'atsc_psip.ts':    seed_atsc_psip,
     'dvb_si.ts':       seed_dvb_si,
     'cea708_video.ts': lambda: seed_cea708_video(),
+    'bluray_hdmv.ts':       seed_ts_bluray_hdmv,
+    'arib_pmt.ts':          seed_ts_arib_pmt,
+    'metadata_id3.ts':      seed_ts_metadata_id3,
+    'private_streams.ts':   seed_ts_private_stream_types,
 }
 
 
@@ -2969,6 +3169,239 @@ def gen_mkv(root):
 
 
 # ──────────────────────────────────────────────────
+#  MP4 extras (modules/demux/mp4/libmp4.c)
+# ──────────────────────────────────────────────────
+#
+# The upstream vlc-fuzz-corpus seeds in seeds/mp4/ (aac_audio.mp4,
+# avc_video.mp4, fragmented.mp4, with_sidx.mp4, …) exercise the common
+# ftyp/moov/trak/mdia/stbl tree, leaving several specialized libmp4.c
+# parsers at 0% coverage in the production OSS-Fuzz report:
+#
+#   * MP4_ReadBox_st3d / prhd / equi / cbmp   — spherical/VR metadata
+#     (sv3d > proj > {prhd,equi,cbmp}; st3d at any depth)
+#   * MP4_ReadBox_tfrf / tfxd / XML360         — Smooth Streaming /
+#     Google360 uuid-typed boxes routed through MP4_ReadBox_uuid
+#   * MP4_ReadBox_urn                          — DataReference 'urn '
+#     variant; the upstream corpus only uses 'url '
+#
+# The seeds below place those boxes directly under a minimal moov so
+# MP4_BoxGetRoot walks them during demux_New, even though mp4.c::Open
+# subsequently fails (no trak with ES). Box parsing completes before
+# that failure, which is the only requirement for hitting the parsers.
+# The mp4 dictionary is also enlarged from 3 tokens to ~200 by
+# harvesting every ATOM_xxxx 4CC define from libmp4.h so libfuzzer
+# mutation has a chance of synthesizing the dispatch keys.
+
+UUID_TFRF = bytes([0xd4, 0x80, 0x7e, 0xf2, 0xca, 0x39, 0x46, 0x95,
+                   0x8e, 0x54, 0x26, 0xcb, 0x9e, 0x46, 0xa7, 0x9f])
+UUID_TFXD = bytes([0x6d, 0x1d, 0x9b, 0x05, 0x42, 0xd5, 0x44, 0xe6,
+                   0x80, 0xe2, 0x14, 0x1d, 0xaf, 0xf7, 0x57, 0xb2])
+UUID_XML360 = bytes([0xff, 0xcc, 0x82, 0x63, 0xf8, 0x55, 0x4a, 0x93,
+                     0x88, 0x14, 0x58, 0x7a, 0x02, 0x52, 0x1f, 0xdd])
+
+
+def mp4_uuid_box(uuid: bytes, payload: bytes) -> bytes:
+    assert len(uuid) == 16
+    return box(b'uuid', uuid + payload)
+
+
+def _mp4_ftyp_mp42() -> bytes:
+    # mp42/isom brands fall through the default branch in mp4.c::Open;
+    # heic/heix/mif1/jpeg/avci/avif/f4v are explicitly diverted to the
+    # heif submodule and would cause our seed to be rejected outright.
+    return box(b'ftyp', b'mp42' + struct.pack('>I', 0) + b'mp42isom')
+
+
+def _mp4_mvhd_minimal() -> bytes:
+    body  = struct.pack('>II', 0, 0)
+    body += struct.pack('>II', 1000, 0)
+    body += struct.pack('>I', 0x00010000)
+    body += struct.pack('>H', 0x0100)
+    body += bytes(10)
+    body += struct.pack('>9I',
+                        0x00010000, 0, 0,
+                        0, 0x00010000, 0,
+                        0, 0, 0x40000000)
+    body += bytes(24)
+    body += struct.pack('>I', 2)
+    return fullbox(b'mvhd', 0, 0, body)
+
+
+def seed_mp4_spherical() -> bytes:
+    """Drives MP4_ReadBox_st3d / prhd / equi / cbmp by carrying the
+       sv3d > proj > {prhd,equi,cbmp} chain plus a sibling st3d. sv3d
+       and st3d both have i_parent=0 in the dispatch table so they
+       parse at any depth; placing them under moov keeps the seed
+       small."""
+    prhd = fullbox(b'prhd', 0, 0,
+                   struct.pack('>iii', 0, 0, 0))
+    equi = fullbox(b'equi', 0, 0,
+                   struct.pack('>IIII', 0, 0, 0, 0))
+    cbmp = fullbox(b'cbmp', 0, 0,
+                   struct.pack('>II', 0, 0))
+    proj = box(b'proj', prhd + equi + cbmp)
+    sv3d = box(b'sv3d', proj)
+    st3d = fullbox(b'st3d', 0, 0, bytes([0x00]))
+    moov = box(b'moov', _mp4_mvhd_minimal() + sv3d + st3d)
+    return _mp4_ftyp_mp42() + moov
+
+
+def seed_mp4_uuid_boxes() -> bytes:
+    """Hits MP4_ReadBox_uuid's UUID-dispatch ladder for the three
+       handled extended types: TfrfBoxUUID, TfxdBoxUUID, XML360BoxUUID.
+       MP4_ReadBox_tfrf / tfxd / XML360 are all 0% covered in the
+       production report."""
+    tfrf_payload = (bytes([0x00, 0x00, 0x00, 0x00])
+                    + bytes([0x01])
+                    + struct.pack('>II', 0, 100))
+    tfrf = mp4_uuid_box(UUID_TFRF, tfrf_payload)
+
+    tfxd_payload = (bytes([0x00, 0x00, 0x00, 0x00])
+                    + struct.pack('>II', 0, 100))
+    tfxd = mp4_uuid_box(UUID_TFXD, tfxd_payload)
+
+    xml360 = mp4_uuid_box(
+        UUID_XML360,
+        b'<rdf:Description'
+        b' xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"'
+        b' xmlns:GSpherical="http://ns.google.com/videos/1.0/spherical/"'
+        b' GSpherical:Spherical="true"'
+        b' GSpherical:Stitched="true"'
+        b' GSpherical:ProjectionType="equirectangular"/>\x00')
+
+    moov = box(b'moov', _mp4_mvhd_minimal() + tfrf + tfxd + xml360)
+    return _mp4_ftyp_mp42() + moov
+
+
+def seed_mp4_dref_urn() -> bytes:
+    """Reaches MP4_ReadBox_urn by emitting a urn entry inside a dref
+       at moov-root. Both dref and urn carry i_parent=0 in the dispatch
+       table so they parse outside the usual trak/mdia/minf/dinf chain."""
+    urn = fullbox(b'urn ', 0, 0,
+                  b'urn:example:fuzz\x00urn:example:loc\x00')
+    dref_payload = struct.pack('>I', 1) + urn
+    dref = fullbox(b'dref', 0, 0, dref_payload)
+    moov = box(b'moov', _mp4_mvhd_minimal() + dref)
+    return _mp4_ftyp_mp42() + moov
+
+
+MP4_EXTRA_SEEDS = {
+    'spherical.mp4':  seed_mp4_spherical,
+    'uuid_boxes.mp4': seed_mp4_uuid_boxes,
+    'dref_urn.mp4':   seed_mp4_dref_urn,
+}
+
+
+# Curated fallback used when libmp4.h isn't readable (e.g. running
+# generate_seeds.py outside the container). Kept in sync with the
+# dispatch table in libmp4.c (5044+) but trimmed to atoms whose
+# 4CCs are printable ASCII and parser-relevant.
+_MP4_FALLBACK_ATOMS = [
+    # Structural / brand
+    'ftyp', 'moov', 'foov', 'moof', 'mdat', 'free', 'skip', 'wide',
+    'udta', 'pnot', 'pict', 'uuid', 'styp', 'cmov', 'dcom', 'cmvd',
+    'sidx',
+    # Track / media
+    'trak', 'tkhd', 'tref', 'load', 'mdia', 'mdhd', 'hdlr', 'minf',
+    'vmhd', 'smhd', 'hmhd', 'nmhd', 'dinf', 'dref', 'url ', 'urn ',
+    'stbl', 'elst', 'edts', 'mvhd', 'iods',
+    # Sample table
+    'stsd', 'stts', 'stsc', 'stsz', 'stz2', 'stco', 'co64', 'ctts',
+    'cslg', 'stss', 'stsh', 'sdtp', 'padb', 'stps',
+    # Sample groups / aux
+    'sbgp', 'sgpd', 'saio', 'saiz',
+    # Movie extension / fragments
+    'mvex', 'mehd', 'trex', 'leva', 'moof', 'mfhd', 'traf', 'tfhd',
+    'trun', 'tfdt', 'tfra', 'mfra', 'mfro', 'sidx', 'prft', 'emsg',
+    'subs',
+    # User data / metadata
+    'name', 'kind', 'chap', 'sync', 'hint', 'cont', 'alis', 'rsrc',
+    'gnre', 'covr', 'tags', 'ilst', 'data', 'mean', 'keys', 'chpl',
+    'ID32', 'hdr3', 'mvcg', 'mvci',
+    # Visual sample entries / codec config
+    'avc1', 'avc3', 'avc4', 'hvc1', 'hev1', 'hvt1', 'lhv1', 'av01',
+    'vp08', 'vp09', 'mp4v', 'mp4a', 'jpeg', 'jpgC', 'jp2 ', 'mjp2',
+    'btrt', 'avcC', 'hvcC', 'av1C', 'dvcC', 'dvvC', 'lhvC', 'vpcC',
+    'fiel', 'pasp', 'colr', 'clap', 'esds', 'jpeC', 'dac3', 'dec3',
+    'enda', 'chnl', 'chan', 'mhaC', 'mhap', 'iso2', 'iso3', 'iso6',
+    # HDR / display
+    'clli', 'mdcv', 'smdm', 'coll',
+    # Spherical / VR
+    'sv3d', 'st3d', 'proj', 'prhd', 'equi', 'cbmp', 'svhd',
+    # Encryption
+    'sinf', 'frma', 'schm', 'schi', 'tenc', 'pssh', 'senc', 'sbgp',
+    'sgpd', 'cbcs', 'cbc1', 'cenc', 'cens',
+    # HEIF / item-based
+    'meta', 'pitm', 'iinf', 'infe', 'iloc', 'iref', 'dimg', 'thmb',
+    'cdsc', 'auxl', 'iprp', 'ipco', 'ipma', 'ispe', 'pixi', 'irot',
+    'imir', 'idat', 'grid', 'iovl', 'iden', 'hvcC', 'avcC', 'av1C',
+    'jpeC', 'lhvC',
+    # Apple / QuickTime / metadata atom IDs
+    'wave', 'alac', 'in24', 'in32', 'lpcm', 'sowt', 'twos', 'ulaw',
+    'alaw', 'samr', 'sawb', 'sawp', '.mp3', '.MP3', 'ms\x00\x55',
+    # Branding strings frequently checked in mp4.c
+    'mp42', 'mp41', 'isom', 'iso2', 'iso6', 'iso8', 'qt  ', '3gp4',
+    '3gp5', 'M4A ', 'M4V ', 'mp71', 'avif', 'avis', 'heic', 'heix',
+    'mif1', 'msf1', 'dash', 'cmfc', 'piff', 'CAEP', 'caaa', 'caqv',
+    'crsm', 'cvmp', 'sams', 'msnv', 'm4a ',
+    # Misc / 3GPP / Nero / Smooth streaming
+    'tfrf', 'tfxd', 'kind', 'load', 'rmra', 'rmcs', 'rmdr',
+    'rmla', 'rmvc', 'rmqu', 'rmcd', 'rdrf', 'WLOC', 'WCOL',
+    'WTRK', 'WSEL',
+]
+
+
+def _harvest_libmp4_atoms() -> list:
+    """Parse libmp4.h for ATOM_xxx VLC_FOURCC(..) defines so the mp4
+       dictionary stays in sync with the source. Falls back to the
+       curated _MP4_FALLBACK_ATOMS when libmp4.h isn't reachable
+       (running outside the container during development)."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(here, 'vlc', 'modules', 'demux', 'mp4', 'libmp4.h'),
+        '/src/vlc/modules/demux/mp4/libmp4.h',
+    ]
+    path = next((p for p in candidates if os.path.exists(p)), None)
+    if path is None:
+        return list(_MP4_FALLBACK_ATOMS)
+    tokens = set()
+    pat = re.compile(
+        r"VLC_FOURCC\(\s*'(.)'\s*,\s*'(.)'\s*,\s*'(.)'\s*,\s*'(.)'\s*\)")
+    with open(path) as f:
+        for line in f:
+            for m in pat.finditer(line):
+                tokens.add(''.join(m.groups()))
+    # Always include the curated set so spherical/uuid/etc. tokens
+    # survive even if libmp4.h evolves and renames atoms.
+    tokens.update(_MP4_FALLBACK_ATOMS)
+    return sorted(tokens)
+
+
+def mp4_dictionary() -> str:
+    tokens = _harvest_libmp4_atoms()
+    lines = ['# MP4 / ISOBMFF box / brand tokens harvested from libmp4.h']
+    for t in tokens:
+        # libFuzzer rejects unprintable bytes outside \x escapes, and
+        # rejects unbalanced quotes; encode every byte as \xHH.
+        encoded = ''.join('\\x%02x' % b for b in t.encode('latin-1'))
+        lines.append('"' + encoded + '"')
+    return '\n'.join(lines) + '\n'
+
+
+def gen_mp4_extras(root):
+    seed_dir = os.path.join(root, 'seeds', 'mp4')
+    dict_dir = os.path.join(root, 'dictionaries')
+    os.makedirs(seed_dir, exist_ok=True)
+    os.makedirs(dict_dir, exist_ok=True)
+    for filename, gen in MP4_EXTRA_SEEDS.items():
+        data = gen()
+        _write(os.path.join(seed_dir, filename), data)
+    with open(os.path.join(dict_dir, 'mp4.dict'), 'w') as f:
+        f.write(mp4_dictionary())
+    print('  dictionaries/mp4.dict written')
+
+
+# ──────────────────────────────────────────────────
 #  main
 # ──────────────────────────────────────────────────
 
@@ -2991,6 +3424,7 @@ def main():
     gen_heif_extra(root)
     gen_ogg(root)
     gen_mkv(root)
+    gen_mp4_extras(root)
 
 
 if __name__ == '__main__':
