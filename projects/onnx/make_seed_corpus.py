@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,9 +44,134 @@ def _make_model(op_type: str, opset_version: int, inputs: list[str], attrs=None)
     return model.SerializeToString()
 
 
+# Text-format seeds for fuzz_parser, extracted from onnx/test/parser_test.py.
+# Each string is a valid input to onnx.parser.parse_model().
+_PARSER_SEEDS: dict[str, str] = {
+    # Minimal 3-op linear model; exercises basic node and graph parsing.
+    "basic_matmul_softmax.txt": """\
+<
+  ir_version: 7,
+  opset_import: ["" : 10]
+>
+agraph (float[N, 128] X, float[128, 10] W, float[10] B) => (float[N] C)
+{
+   T = MatMul(X, W)
+   S = Add(T, B)
+   C = Softmax(S)
+}
+""",
+    # Multiple opset imports; exercises opset_import list parsing.
+    "multi_opset.txt": """\
+<
+  ir_version: 7,
+  opset_import: ["" : 10, "com.microsoft" : 1]
+>
+agraph (float[N, 128] X, float[128, 10] W, float[10] B) => (float[N] C)
+{
+   T = MatMul(X, W)
+   S = Add(T, B)
+   C = Softmax(S)
+}
+""",
+    # All top-level metadata fields; exercises producer_name, doc_string, etc.
+    "model_with_metadata.txt": """\
+<
+  ir_version: 9,
+  opset_import: ["" : 15],
+  producer_name: "oss-fuzz-seed",
+  producer_version: "1.0",
+  model_version: 1,
+  doc_string: "seed model for fuzz_parser"
+>
+agraph (float[N] x) => (float[N] y)
+{
+   y = Relu(x)
+}
+""",
+    # Model with a local function definition and attribute references;
+    # exercises the function-proto and attribute-default parsing paths.
+    "function_with_attributes.txt": """\
+<
+  ir_version: 9,
+  opset_import: ["" : 15, "custom_domain" : 1],
+  producer_name: "oss-fuzz-seed",
+  producer_version: "1.0",
+  model_version: 1,
+  doc_string: "model with local function"
+>
+agraph (float[N] x) => (float[N] out)
+{
+   out = custom_domain.Selu<alpha=2.0, gamma=3.0>(x)
+}
+<
+  domain: "custom_domain",
+  opset_import: ["" : 15],
+  doc_string: "custom Selu function"
+>
+Selu
+<alpha: float=1.6732631921768188, gamma: float=1.0507010221481323>
+(X) => (C)
+{
+    constant_alpha = Constant<value_float: float=@alpha>()
+    constant_gamma = Constant<value_float: float=@gamma>()
+    alpha_x = CastLike(constant_alpha, X)
+    gamma_x = CastLike(constant_gamma, X)
+    exp_x = Exp(X)
+    alpha_x_exp_x = Mul(alpha_x, exp_x)
+    alpha_x_exp_x_ = Sub(alpha_x_exp_x, alpha_x)
+    neg = Mul(gamma_x, alpha_x_exp_x_)
+    pos = Mul(gamma_x, X)
+    _zero = Constant<value_float=0.0>()
+    zero = CastLike(_zero, X)
+    less_eq = LessOrEqual(X, zero)
+    C = Where(less_eq, neg, pos)
+}
+""",
+    # Cast op with a type initializer; exercises initializer and attribute parsing.
+    "cast_with_initializer.txt": """\
+<
+  ir_version: 10,
+  opset_import: ["" : 19]
+>
+agraph (float[N] X) => (int64[N] C)
+<
+  int64[1] weight = {0}
+>
+{
+   C = Cast<to=7>(X)
+}
+""",
+    # Special float literal values (inf, -inf, nan); exercises the float
+    # literal parser branches that differ from ordinary decimal parsing.
+    "float_special_values.txt": """\
+<
+  ir_version: 8,
+  opset_import: ["" : 18]
+>
+agraph (float[1] X) => (float[1] Y)
+{
+    pos_inf = Constant<value_float=inf>()
+    neg_inf = Constant<value_float=-inf>()
+    not_a_num = Constant<value_float=nan>()
+    Y = Add(X, pos_inf)
+}
+""",
+}
+
+
+def _write_zip(path: str, entries: dict[str, bytes | str]) -> None:
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for name, data in entries.items():
+            if isinstance(data, str):
+                data = data.encode()
+            zf.writestr(name, data)
+
+
 def main() -> int:
-    output_zip = sys.argv[1]
-    seeds = {
+    version_converter_out = sys.argv[1]
+    parser_out = sys.argv[2]
+
+    version_converter_seeds = {
         "cast_9_missing_input.onnx": _make_model("Cast", 9, [], {"to": TensorProto.FLOAT}),
         "softmax_12_missing_input.onnx": _make_model("Softmax", 12, []),
         "softmax_13_missing_input.onnx": _make_model("Softmax", 13, []),
@@ -55,10 +180,8 @@ def main() -> int:
         "upsample_9_valid.onnx": _make_model("Upsample", 9, ["X", "scales"]),
     }
 
-    with zipfile.ZipFile(output_zip, "w", compression=zipfile.ZIP_DEFLATED) as corpus:
-        for name, data in seeds.items():
-            corpus.writestr(name, data)
-
+    _write_zip(version_converter_out, version_converter_seeds)
+    _write_zip(parser_out, _PARSER_SEEDS)
     return 0
 
 
