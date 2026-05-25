@@ -68,6 +68,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party'); do
   $CXX $CXXFLAGS -std=c++17 \
       -I. -I./root/include \
       $fuzzer $LIB_FUZZING_ENGINE \
-      ./root/lib/*.a \
+      ./root/lib/libsentencepiece_train.a ./root/lib/libsentencepiece.a \
+      -lpthread \
       -o $OUT/$fuzz_basename
 done

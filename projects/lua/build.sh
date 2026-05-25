@@ -139,7 +139,7 @@ do
   corpus_dir="corpus_dir/$module"
   echo "Copying for $module";
   cp $f $OUT/
-  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$name"_seed_corpus.zip
+  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip --quiet -@ -j $OUT/"$name"_seed_corpus.zip
 done
 
 # Finish execution if libFuzzer is not used, because luzer
@@ -177,12 +177,12 @@ for fuzzer in $(find $SRC -name '*_test.lua'); do
   test_name_we="${test_file%.*}";
   module_name=$(echo $test_name_we | sed 's/_test//' )
   corpus_dir="corpus_dir/$module_name"
-  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$test_name_we"_seed_corpus.zip
+  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip --quiet -@ -j $OUT/"$test_name_we"_seed_corpus.zip
 done
-cp $SRC/testdir/tests/lapi/lib.lua "$OUT/"
+cp $SRC/testdir/tests/lapi/lib*.lua "$OUT/"
 
-# BAD BUILD: /tmp/not-out/tmpse6jp7h6/string_buffer_encode_test \
-#   seems to have either startup crash or exit:
+# These tests does not print a string "Done 4 runs" and
+# therefore script bad_build_check thinks the test is bad.
 rm -f $OUT/table_foreachi_test* \
       $OUT/table_foreachi_test* \
       $OUT/table_clear_test* \

@@ -2,7 +2,7 @@
 layout: default
 title: Continuous Integration
 parent: Getting started
-nav_order: 5
+nav_order: 4
 permalink: /getting-started/continuous-integration/
 ---
 
