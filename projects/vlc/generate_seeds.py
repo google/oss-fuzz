@@ -2529,6 +2529,184 @@ def gen_tta(root):
 
 
 # ──────────────────────────────────────────────────
+#  CAF (Apple Core Audio File Format) seeds — extend coverage of
+#  modules/demux/caf.c. Upstream vlc-fuzz-corpus seeds/caf/* exercise the
+#  PCM/LPCM happy path plus a minimal AAC-with-kuki and a stub pakt. They do
+#  NOT reach:
+#    * ProcessALACCookie (both 24- and 36-byte kuki shapes)
+#    * ProcessAACCookie branches behind ES_Descriptor flag bits 0x80/0x40/0x20
+#    * ReadKukiChunk's generic non-ALAC/non-AAC branch (i_codec != 0)
+#    * Demux()'s VBR/packet-table branch + FrameSpanAddDescription's two
+#      var-len-integer parsing paths (bytes-only and bytes+samples)
+#  Each seed below is the smallest synthetic CAF that drives one of those
+#  paths end-to-end through Open() and at least one Demux() iteration.
+# ──────────────────────────────────────────────────
+def _caf_varint(n):
+    """CAF/ESDS variable-length integer (7 bits/byte, MSB=continuation)."""
+    if n == 0:
+        return b'\x00'
+    out = []
+    while n:
+        out.append(n & 0x7f)
+        n >>= 7
+    out.reverse()
+    return bytes([b | 0x80 for b in out[:-1]] + [out[-1]])
+
+
+def _caf_chunk(fourcc, body):
+    assert len(fourcc) == 4
+    return fourcc + struct.pack('>q', len(body)) + body
+
+
+def _caf_desc(rate, fmt_id, fmt_flags=0,
+              bytes_per_packet=0, frames_per_packet=0,
+              channels=2, bits=16):
+    assert len(fmt_id) == 4
+    return (struct.pack('>d', float(rate)) + fmt_id +
+            struct.pack('>IIIII', fmt_flags, bytes_per_packet,
+                        frames_per_packet, channels, bits))
+
+
+_CAF_HEADER = b'caff' + struct.pack('>HH', 1, 0)
+
+
+def _caf_aac_esds_basic():
+    """24-byte AAC ESDS magic cookie, no optional flags — same shape as the
+    upstream aac_with_kuki.caf seed. ProcessAACCookie walks all the mandatory
+    descriptors and extracts the 2-byte AudioSpecificConfig."""
+    return (b'\x03\x16'                  # ES_DESCR_TAG, len=22
+            b'\x00\x01'                  # ES_ID
+            b'\x00'                      # flags=0 (no 0x80/0x40/0x20)
+            b'\x04\x11'                  # DEC_CONFIG_DESCR_TAG, len=17
+            b'\x40\x15\x00\x00\x00\x00\x01\xf4\x00\x00\x01\xf4\x00'
+            b'\x05\x02'                  # DEC_SPEC_INFO_TAG, len=2
+            b'\x11\x90')                 # AudioSpecificConfig (AAC LC, 44.1k stereo)
+
+
+def _caf_aac_esds_full_flags():
+    """ESDS exercising the dependence (0x80), URL (0x40) and OCR (0x20) bits.
+    These three branches in ProcessAACCookie are unreached by upstream seeds."""
+    return (b'\x03\x1b'                  # ES_DESCR_TAG, len=27
+            b'\x00\x01'                  # ES_ID
+            b'\xe0'                      # flags=0x80|0x40|0x20
+            b'\x00\x00'                  # 2 bytes dependence (0x80)
+            b'\x00'                      # URL length=0 (0x40)
+            b'\x00\x00'                  # 2 bytes OCR (0x20)
+            b'\x04\x0d'                  # DEC_CONFIG_DESCR_TAG, len=13
+            b'\x40\x15\x00\x00\x00\x00\x01\xf4\x00\x00\x01\xf4\x00'
+            b'\x05\x02'
+            b'\x11\x90')
+
+
+def _caf_alac_cookie24():
+    """24-byte ALAC magic cookie (the "new" shape libavformat documents).
+    ProcessALACCookie expands this to 36 bytes by prefixing size+"alac"+ver."""
+    return struct.pack('>I', 4096) + bytes([
+        0,      # compatibleVersion
+        16,     # bitDepth
+        40,     # pb
+        14,     # mb
+        10,     # kb
+        2,      # numChannels
+    ]) + struct.pack('>H', 255) + struct.pack('>III', 0, 0, 44100)
+
+
+def _caf_alac_cookie36():
+    """36-byte ALAC magic cookie (size + 'alac' + version + 24-byte config)."""
+    return (struct.pack('>I', 36) + b'alac' + struct.pack('>I', 0)
+            + _caf_alac_cookie24())
+
+
+def _caf_build(chunks):
+    return _CAF_HEADER + b''.join(chunks)
+
+
+def gen_caf(root):
+    # 1) VBR-style AAC with full packet table: bytes_per_packet=0 AND
+    #    frames_per_packet=0 forces NeedsPacketTable=true and makes
+    #    FrameSpanAddDescription parse a var-len integer for *both* the byte
+    #    count and the sample count of each packet.
+    aac_kuki = _caf_aac_esds_basic()
+    descs = []
+    for nbytes, nsamples in [(50, 1024), (30, 1024), (20, 1024)]:
+        descs.append(_caf_varint(nbytes) + _caf_varint(nsamples))
+    pakt_body = (struct.pack('>q', 3)        # num_packets
+                 + struct.pack('>q', 3072)   # valid_frames
+                 + struct.pack('>i', 0)      # priming
+                 + struct.pack('>i', 0)      # remainder
+                 + b''.join(descs))
+    data_payload = bytes(50 + 30 + 20)
+    vbr_caf = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=0, frames_per_packet=0,
+                                      channels=2, bits=0)),
+        _caf_chunk(b'kuki', aac_kuki),
+        _caf_chunk(b'pakt', pakt_body),
+        _caf_chunk(b'data', struct.pack('>I', 0) + data_payload),
+    ])
+    _write(os.path.join(root, 'seeds/caf/vbr_aac_full_pakt.caf'), vbr_caf)
+
+    # 2) ALAC with 24-byte cookie. desc has bytes_per_packet=0 AND
+    #    frames_per_packet=4096, so Demux() takes the packet-table branch but
+    #    FrameSpanAddDescription's *bytes-only* path runs (frame_length is
+    #    known, byte count comes from a var-len integer).
+    alac24_descs = b''.join(_caf_varint(n) for n in (200, 180, 160))
+    alac24_pakt = (struct.pack('>q', 3)
+                   + struct.pack('>q', 3 * 4096)
+                   + struct.pack('>i', 0) + struct.pack('>i', 0)
+                   + alac24_descs)
+    alac24 = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'alac',
+                                      bytes_per_packet=0,
+                                      frames_per_packet=4096,
+                                      channels=2, bits=16)),
+        _caf_chunk(b'kuki', _caf_alac_cookie24()),
+        _caf_chunk(b'pakt', alac24_pakt),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(200 + 180 + 160)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/alac_kuki24.caf'), alac24)
+
+    # 3) ALAC with 36-byte cookie — same shape, hits the direct memcpy path
+    #    of ProcessALACCookie instead of the size-prefix expansion path.
+    alac36 = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(48000, b'alac',
+                                      bytes_per_packet=0,
+                                      frames_per_packet=4096,
+                                      channels=2, bits=24)),
+        _caf_chunk(b'kuki', _caf_alac_cookie36()),
+        _caf_chunk(b'pakt', alac24_pakt),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(200 + 180 + 160)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/alac_kuki36.caf'), alac36)
+
+    # 4) AAC with ESDS dependence/URL/OCR bits set — drives the three
+    #    optional-block branches at lines ~630-645 of caf.c.
+    aac_full = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=240,
+                                      frames_per_packet=1024,
+                                      channels=2, bits=0)),
+        _caf_chunk(b'kuki', _caf_aac_esds_full_flags()),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(240 * 2)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/aac_full_esds_flags.caf'), aac_full)
+
+    # 5) lpcm + kuki — non-ALAC, non-AAC codec with a non-zero i_codec, so
+    #    ReadKukiChunk takes the generic else branch that copies the cookie
+    #    verbatim into fmt.p_extra.
+    lpcm_kuki = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'lpcm',
+                                      fmt_flags=0x0c,   # signed/be
+                                      bytes_per_packet=4,
+                                      frames_per_packet=1,
+                                      channels=2, bits=16)),
+        _caf_chunk(b'kuki', b'GENERICCOOKIE' + bytes(8)),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(64)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/lpcm_with_kuki.caf'), lpcm_kuki)
+
+
+# ──────────────────────────────────────────────────
 #  Extended HEIF seeds — transform & decoder-config properties
 # ──────────────────────────────────────────────────
 #
@@ -3421,6 +3599,7 @@ def main():
     gen_mpgv(root)
     gen_h264(root)
     gen_tta(root)
+    gen_caf(root)
     gen_heif_extra(root)
     gen_ogg(root)
     gen_mkv(root)
