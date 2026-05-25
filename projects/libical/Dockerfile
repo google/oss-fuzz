@@ -22,6 +22,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN git clone --depth 1 https://github.com/libical/libical.git
-COPY run_tests.sh build.sh $SRC
+COPY run_tests.sh build.sh $SRC/
 COPY *.cc $SRC/
 WORKDIR libical

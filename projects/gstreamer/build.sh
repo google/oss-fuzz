@@ -28,4 +28,7 @@ if grep -q -F "20.04" /etc/os-release ; then
 fi
 
 
+# Fix Meson dependency error in ci/fuzzing/meson.build
+sed -i 's/extra_deps = dependency(target.get(2))/foreach d : target.get(2)\n      extra_deps += dependency(d)\n    endforeach/' $SRC/gstreamer/ci/fuzzing/meson.build
+
 $SRC/gstreamer/ci/fuzzing/build-oss-fuzz.sh

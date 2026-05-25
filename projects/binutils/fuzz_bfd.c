@@ -39,6 +39,8 @@ static int bufferToFile(char * name, const uint8_t *Data, size_t Size) {
 char *target = NULL;
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+  if (Size > 16384)
+    return 0;
     char tmpfilename[32];
 
     if (bfd_init() != BFD_INIT_MAGIC)

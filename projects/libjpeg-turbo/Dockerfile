@@ -29,7 +29,7 @@ RUN cat fuzz/branches.txt | while read branch; do \
     done
 RUN cd seed-corpora && zip -r ../compress_fuzzer_seed_corpus.zip afl-testcases/bmp afl-testcases/gif* afl-testcases/targa bugs/compress*
 RUN cat fuzz/branches.txt | while read branch; do \
-      zip -r compress_fuzzer_seed_corpus.zip libjpeg-turbo.$branch/testimages/*.bmp libjpeg-turbo.$branch/testimages/*.ppm; \
+      zip -r compress_fuzzer_seed_corpus.zip libjpeg-turbo.$branch/testimages/*.bmp libjpeg-turbo.$branch/testimages/*.ppm libjpeg-turbo.$branch/testimages/*.pgm; \
     done
 RUN rm -rf seed-corpora
 

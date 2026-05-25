@@ -40,6 +40,14 @@ cmake_args=(
   -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}"
   -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}"
   -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
+
+  # ZLIB Configuration
+  -DZLIB_INCLUDE_DIR=/usr/include
+  -DZLIB_LIBRARY=/usr/lib/x86_64-linux-gnu/libz.so
+
+  # Terminfo Configuration
+  -DTerminfo_LIBRARIES=/usr/lib/x86_64-linux-gnu/libncurses.so
+  -DTerminfo_INCLUDE_DIRS=/usr/include
 )
 
 # CORPUS
@@ -60,9 +68,10 @@ cmake_args=(
 
   cmake -S . -B build-classic-interp \
       -DCMAKE_TOOLCHAIN_FILE=./clang_toolchain.cmake \
-      -DLLVM_DIR=/opt/llvm-15.0.6/lib/cmake/llvm \
+      -DLLVM_DIR=/opt/llvm-18.1.8/lib/cmake/llvm \
       -G Ninja \
       -DWAMR_BUILD_FAST_INTERP=0 \
+      -DWAMR_BUILD_SIMD=0 \
       "${cmake_args[@]}" \
     && cmake --build build-classic-interp
 
@@ -77,7 +86,7 @@ cmake_args=(
 
   cmake -S . -B build-fast-interp \
       -DCMAKE_TOOLCHAIN_FILE=./clang_toolchain.cmake \
-      -DLLVM_DIR=/opt/llvm-15.0.6/lib/cmake/llvm \
+      -DLLVM_DIR=/opt/llvm-18.1.8/lib/cmake/llvm \
       -G Ninja \
       "${cmake_args[@]}" \
     && cmake --build build-fast-interp
@@ -93,7 +102,7 @@ cmake_args=(
 
   cmake -S . -B build-llvm-jit \
       -DCMAKE_TOOLCHAIN_FILE=./clang_toolchain.cmake \
-      -DLLVM_DIR=/opt/llvm-15.0.6/lib/cmake/llvm \
+      -DLLVM_DIR=/opt/llvm-18.1.8/lib/cmake/llvm \
       -G Ninja \
       -DWAMR_BUILD_FAST_INTERP=0 \
       -DWAMR_BUILD_JIT=1 \
@@ -111,7 +120,7 @@ cmake_args=(
 
   cmake -S . -B build-aot-compiler \
       -DCMAKE_TOOLCHAIN_FILE=./clang_toolchain.cmake \
-      -DLLVM_DIR=/opt/llvm-15.0.6/lib/cmake/llvm \
+      -DLLVM_DIR=/opt/llvm-18.1.8/lib/cmake/llvm \
       -G Ninja \
       "${cmake_args[@]}" \
     && cmake --build build-aot-compiler --target aot_compiler_fuzz
