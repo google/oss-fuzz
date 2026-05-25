@@ -15,10 +15,21 @@
 #
 ################################################################################
 
-mkdir build && cd build
+# Build spotify-json
+mkdir build
+pushd build
 cmake -DSPOTIFY_JSON_BUILD_TESTS=OFF ../
-make
+make -j$(nproc) spotify-json
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzers//fuzz_decode.cpp \
     -I../include -I../vendor/double-conversion \
     ./libspotify-json.a ./vendor/double-conversion/libdouble-conversion.a  -lpthread -o $OUT/fuzz_decode
+popd
+
+# Build unit testing and benchmark which is incompatible with major build with fuzzing sanitizer
+mkdir build-tests
+pushd build-tests
+unset CXXFLAGS
+cmake -DSPOTIFY_JSON_BUILD_TESTS=ON -DCMAKE_CXX_FLAGS='-stdlib=libstdc++' ../
+make -j$(nproc) spotify_json_test json_benchmark
+popd

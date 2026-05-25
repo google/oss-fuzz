@@ -31,7 +31,13 @@ RUN apt-get update && apt-get install -y \
     libtool \
     bison
 RUN unset CFLAGS CXXFLAGS && pip3 install -U meson ninja
-RUN git clone --depth 1 --branch $glib_tag https://gitlab.gnome.org/GNOME/glib
+RUN git clone --depth 1 --branch $glib_tag https://gitlab.gnome.org/GNOME/glib && \
+    cd glib && \
+    mkdir build && \
+    cd build && \
+    meson --prefix=/usr --buildtype=release -Db_lundef=false -Ddefault_library=static -Dlibmount=disabled && \
+    ninja && \
+    ninja install
 RUN git clone https://github.com/ostreedev/ostree && \
     cd ostree && \
     git submodule update --init

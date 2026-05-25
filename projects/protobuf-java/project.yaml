@@ -28,5 +28,3 @@ labels:
     - protobuf-ossfuzz-bugz-1260285
 vendor_ccs:
 - norbert.schneider@code-intelligence.com
-- hlin@code-intelligence.com
-- bug-disclosure@code-intelligence.com

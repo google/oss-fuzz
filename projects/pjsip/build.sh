@@ -20,9 +20,8 @@ export LDFLAGS="$CFLAGS"
 
 ./configure \
 --disable-ffmpeg --disable-ssl \
---disable-speex-aec --disable-speex-codec \
---disable-g7221-codec --disable-gsm-codec --disable-ilbc-codec \
---disable-resample --disable-libsrtp --disable-libwebrtc --disable-libyuv
+--disable-speex-aec --disable-g7221-codec \
+--disable-resample --disable-libwebrtc --disable-libyuv
 
 make dep
 make -j$(nproc) --ignore-errors
@@ -34,13 +33,9 @@ FuzzBins=$(find . -name "*.c")
 for File in $FuzzBins; do
     FuzzBin=$(basename $File .c)
     cp $FuzzBin $OUT/$FuzzBin
+    echo -e "[libfuzzer]\nmax_len=16384" > $OUT/${FuzzBin}.options
 done
 popd
 
-pushd tests/fuzz/seed/
-FuzzSeed=$(find . -name "*.zip")
-
-for Seed in $FuzzSeed; do
-    cp $Seed $OUT/$Seed
-done
-popd
+# Copy all seed corpus and dictionaries to $OUT
+cp tests/fuzz/seed/* $OUT/

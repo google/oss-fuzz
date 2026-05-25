@@ -31,6 +31,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+  if (size > 16384)
+    return 0;
   char filename[256];
   sprintf(filename, "/tmp/libfuzzer.%d", getpid());
   FILE *fp = fopen(filename, "wb");
@@ -45,21 +47,25 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
   f = open (filename, O_RDWR | O_BINARY, 0);
   if (f < 0) {
+    unlink(filename);
     return 0;
   }
 
   arch = bfd_fdopenr (filename, (const char *) NULL, f);
   if (arch == NULL) {
     close(f);
+    unlink(filename);
     return 0;
   }
   if (! bfd_check_format (arch, bfd_archive)) {
     bfd_close(arch);
+    unlink(filename);
     return 0;
   }
 
   if (! bfd_has_map (arch)) {
     bfd_close(arch);
+    unlink(filename);
     return 0;
   }
 

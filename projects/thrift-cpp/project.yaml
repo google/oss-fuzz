@@ -1,0 +1,12 @@
+homepage: "https://thrift.apache.org/"
+language: c++
+primary_contact: "m.hasnain.lakhani@gmail.com"
+
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - centipede
+sanitizers:
+  - address
+
+main_repo: 'https://github.com/apache/thrift' 

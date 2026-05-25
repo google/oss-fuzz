@@ -52,6 +52,11 @@ meson setup build \
     -Dcpp_link_args="${LDFLAGS:-$CXXFLAGS}" \
     -Dfuzz_engine="$LIB_FUZZING_ENGINE"
 
+# Patch stdexec to fix missing <new> header (provides std::launder)
+if [ -f subprojects/stdexec/include/stdexec/__detail/__utility.hpp ]; then
+    sed -i '1i#include <new>' subprojects/stdexec/include/stdexec/__detail/__utility.hpp
+fi
+
 # Patch stdplus to fix missing includes and ambiguous references
 if [ -f subprojects/stdplus/include/stdplus/function_view.hpp ]; then
     sed -i '1i#include <cstddef>\n#include <concepts>\n#include <type_traits>\n#include <memory>' subprojects/stdplus/include/stdplus/function_view.hpp
@@ -84,6 +89,11 @@ fi
 
 if [ -f subprojects/sdbusplus/include/sdbusplus/asio/connection.hpp ]; then
     sed -i 's/std::move_only_function/std::function/g' subprojects/sdbusplus/include/sdbusplus/asio/connection.hpp
+fi
+
+# Patch sdbusplus barrier.cpp to add missing <algorithm> for std::ranges::for_each
+if [ -f subprojects/sdbusplus/src/async/barrier.cpp ]; then
+    sed -i '1i#include <algorithm>' subprojects/sdbusplus/src/async/barrier.cpp
 fi
 
 # Build everything
