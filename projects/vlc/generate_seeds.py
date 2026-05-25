@@ -2707,6 +2707,104 @@ def gen_caf(root):
 
 
 # ──────────────────────────────────────────────────
+#  WAV / AIFF / CAF seeds for araw.c (raw-audio decoder) — extend coverage of
+#  modules/codec/araw.c. The native araw module wins decoder selection over
+#  avcodec (capability 100 vs 70) for the listed fourccs, so blocks really do
+#  flow into the per-format Decode* helpers. Upstream wav/aiff corpora only
+#  cover S16L (16-bit PCM), S24L (24-bit PCM), F32L (IEEE float 32) plus
+#  big-endian S24B and S16B via AIFF. That leaves these araw branches dead:
+#    * FL64  / F64L            ← 64-bit IEEE float
+#    * S32N  (= S32L on LE)    ← 32-bit signed PCM
+#    * extensible-PCM dispatch in wav.c that consumes sf_tag_to_fourcc paths
+#  Each seed below is a minimal, well-formed container that resolves to one
+#  of these dead codec branches via vlc_fourcc_GetCodecAudio.
+# ──────────────────────────────────────────────────
+def _riff_chunk(fourcc, body):
+    assert len(fourcc) == 4
+    return fourcc + struct.pack('<I', len(body)) + body
+
+
+def _wav_fmt_basic(fmt_tag, channels, rate, bits, block_align=None):
+    if block_align is None:
+        block_align = channels * (bits // 8)
+    avg_bps = rate * block_align
+    return struct.pack('<HHIIHH', fmt_tag, channels, rate, avg_bps,
+                       block_align, bits)
+
+
+def _wav_fmt_extensible(channels, rate, bits, channel_mask, subformat_guid):
+    assert len(subformat_guid) == 16
+    block_align = channels * (bits // 8)
+    avg_bps = rate * block_align
+    cb_size = 22                          # remainder after WAVEFORMATEX
+    # WAVEFORMATEX(16) + cbSize(2) + wValidBitsPerSample(2) + dwChannelMask(4) + GUID(16)
+    return (struct.pack('<HHIIHH', 0xFFFE, channels, rate, avg_bps,
+                        block_align, bits)
+            + struct.pack('<HHI', cb_size, bits, channel_mask)
+            + subformat_guid)
+
+
+def _wav_file(fmt_body, data_body):
+    fmt_chunk = _riff_chunk(b'fmt ', fmt_body)
+    data_chunk = _riff_chunk(b'data', data_body)
+    payload = b'WAVE' + fmt_chunk + data_chunk
+    return b'RIFF' + struct.pack('<I', len(payload)) + payload
+
+
+# KSDATAFORMAT_SUBTYPE_PCM / IEEE_FLOAT GUIDs (Microsoft).
+_GUID_PCM        = bytes.fromhex('0100000000001000800000aa00389b71')
+_GUID_IEEE_FLOAT = bytes.fromhex('0300000000001000800000aa00389b71')
+
+
+def gen_araw(root):
+    # 1) WAVE_FORMAT_IEEE_FLOAT, 64-bit, stereo. wav.c maps this to fourcc
+    #    'aflt'; vlc_fourcc_GetCodecAudio('aflt', 64) → VLC_CODEC_FL64
+    #    → araw.c case VLC_CODEC_FL64 (line 137) which is currently 0%.
+    f64_data = bytes(8 * 2 * 16)          # 16 stereo float64 frames
+    _write(os.path.join(root, 'seeds/wav/ieee_float64_stereo.wav'),
+           _wav_file(_wav_fmt_basic(0x0003, channels=2, rate=44100, bits=64),
+                     f64_data))
+
+    # 2) WAVE_FORMAT_PCM, 32-bit, stereo. wav.c maps PCM to 'araw';
+    #    vlc_fourcc_GetCodecAudio('araw', 32) → VLC_CODEC_S32L → on LE the
+    #    araw case VLC_CODEC_S32N (line 168) fires. Currently 0%.
+    s32_data = bytes(4 * 2 * 64)
+    _write(os.path.join(root, 'seeds/wav/pcm_32bit_stereo.wav'),
+           _wav_file(_wav_fmt_basic(0x0001, channels=2, rate=48000, bits=32),
+                     s32_data))
+
+    # 3) WAVE_FORMAT_EXTENSIBLE with KSDATAFORMAT_SUBTYPE_PCM and 32-bit
+    #    samples. Exercises the GUID-resolution branch in wav.c
+    #    (sf_tag_to_fourcc) on top of the same araw S32N codepath. This is
+    #    additionally interesting because EXTENSIBLE wires up the channel
+    #    layout / chans_to_reorder branch that plain WAVE_FORMAT_PCM skips.
+    _write(os.path.join(root, 'seeds/wav/extensible_pcm32_quad.wav'),
+           _wav_file(_wav_fmt_extensible(channels=4, rate=48000, bits=32,
+                                         channel_mask=0x33,  # FL FR BL BR
+                                         subformat_guid=_GUID_PCM),
+                     bytes(4 * 4 * 32)))
+
+    # 4) WAVE_FORMAT_EXTENSIBLE with KSDATAFORMAT_SUBTYPE_IEEE_FLOAT and
+    #    64-bit samples — drives the same EXTENSIBLE/GUID code in wav.c but
+    #    resolves to FL64 in araw, complementing seed (1).
+    _write(os.path.join(root, 'seeds/wav/extensible_float64_stereo.wav'),
+           _wav_file(_wav_fmt_extensible(channels=2, rate=96000, bits=64,
+                                         channel_mask=0x3,
+                                         subformat_guid=_GUID_IEEE_FLOAT),
+                     bytes(8 * 2 * 16)))
+
+    # 5) WAV PCM 8-channel surround at 32-bit. Stresses both the channel-mask
+    #    fan-out in wav.c (>2 channels triggers the pi_default_channels
+    #    fill-in loop, which is mostly unhit) and the per-frame size math in
+    #    araw's main Decode entry. Block-align is 8 channels × 4 bytes = 32.
+    _write(os.path.join(root, 'seeds/wav/pcm_32bit_8ch.wav'),
+           _wav_file(_wav_fmt_extensible(channels=8, rate=48000, bits=32,
+                                         channel_mask=0x63F,
+                                         subformat_guid=_GUID_PCM),
+                     bytes(32 * 16)))
+
+
+# ──────────────────────────────────────────────────
 #  Extended HEIF seeds — transform & decoder-config properties
 # ──────────────────────────────────────────────────
 #
@@ -3600,6 +3698,7 @@ def main():
     gen_h264(root)
     gen_tta(root)
     gen_caf(root)
+    gen_araw(root)
     gen_heif_extra(root)
     gen_ogg(root)
     gen_mkv(root)
