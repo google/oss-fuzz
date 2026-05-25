@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-conf
 RUN git clone --depth 1 https://github.com/libimobiledevice/libplist
 WORKDIR libplist
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

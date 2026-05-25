@@ -33,13 +33,13 @@ RUN apt-get update && apt-get install -y \
 
 # Build and install Python 3.12 from source (Django main branch requires Python 3.12+)
 RUN cd /tmp && \
-    curl -O https://www.python.org/ftp/python/3.12.8/Python-3.12.8.tgz && \
-    tar -xzf Python-3.12.8.tgz && \
-    cd Python-3.12.8 && \
+    curl -O https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tgz && \
+    tar -xzf Python-3.12.12.tgz && \
+    cd Python-3.12.12 && \
     ./configure --enable-optimizations --enable-shared --prefix=/usr/local/python3.12 && \
     make -j$(nproc) && \
     make install && \
-    rm -rf /tmp/Python-3.12.8*
+    rm -rf /tmp/Python-3.12.12*
 
 # Add Python 3.12 libs to LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH="/usr/local/python3.12/lib:$LD_LIBRARY_PATH"

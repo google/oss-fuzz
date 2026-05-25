@@ -27,8 +27,10 @@ make -j $(nproc)
 # Copy binaries and dictionary to $OUT
 cp ./bin/fuzz-read-print-write $OUT
 cp ./bin/fuzz-read-write $OUT
+cp ./bin/fuzz-preview $OUT
 cp ../fuzz/exiv2.dict $OUT/fuzz-read-print-write.dict
 cp ../fuzz/exiv2.dict $OUT/fuzz-read-write.dict
+cp ../fuzz/exiv2.dict $OUT/fuzz-preview.dict
 
 # Initialize the corpus, using the files in test/data
 mkdir corpus
@@ -39,3 +41,4 @@ done
 
 zip -j $OUT/fuzz-read-print-write.zip corpus/*
 zip -j $OUT/fuzz-read-write.zip corpus/*
+zip -j $OUT/fuzz-preview.zip corpus/*

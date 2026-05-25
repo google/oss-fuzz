@@ -58,7 +58,7 @@ class ParserFuzzer {
         //make sure that other parsers cannot be invoked
         parseContext.set(Parser.class, parser);
         //try first with bytes
-        try (InputStream is = TikaInputStream.get(bytes)) {
+        try (TikaInputStream is = TikaInputStream.get(bytes)) {
             parser.parse(is, handler, new Metadata(), parseContext);
         }
     }

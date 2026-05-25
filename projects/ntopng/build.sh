@@ -22,7 +22,8 @@ unset CFLAGS
 unset CXXFLAGS
 export AFL_NOOPT=1
 # This is needed because oss-fuzz always uses it
-export CXXFLAGS="-stdlib=libc++"
+export CFLAGS="-Wno-error=unused-command-line-argument"
+export CXXFLAGS="-stdlib=libc++ -Wno-error=unused-command-line-argument"
 
 ### Dependencies that need static linking ###
 
@@ -36,7 +37,7 @@ make install
 cd $SRC/zeromq-4.3.5
 ./autogen.sh
 (
-export CXXFLAGS="-Wno-error=missing-braces -stdlib=libc++"
+export CXXFLAGS="-Wno-error=missing-braces -Wno-error=unused-command-line-argument -stdlib=libc++"
 ./configure --without-documentation --without-libsodium --enable-static --disable-shared
 make -j$(nproc)
 make install

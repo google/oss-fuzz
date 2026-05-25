@@ -16,33 +16,34 @@
 
 mkdir -p build
 cd build
-cmake -DOGRE_STATIC=TRUE ..
+cmake -DOGRE_STATIC=TRUE -DOGRE_BUILD_FUZZERS=TRUE -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DOGRE_BUILD_DEPENDENCIES=FALSE -DOGRE_BUILD_SAMPLES=FALSE  ..
 make -j$(nproc)
 
-# Build the fuzzers
-for fuzzer in image_fuzz stream_fuzz; do
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/${fuzzer}.cpp -o $OUT/${fuzzer} \
-    -I../OgreMain/include/ -I./include/ \
-    -pthread -I../PlugIns/STBICodec/include/ -I../Components/Bites/include/ \
-     -Wl,--start-group \
-	./lib/libOgreOverlayStatic.a            \
-	./lib/libOgreRTShaderSystemStatic.a     \
-	./lib/libOgreBulletStatic.a             \
-	./lib/libPlugin_PCZSceneManagerStatic.a \
-	./lib/libOgreMainStatic.a               \
-	./lib/libOgreTerrainStatic.a            \
-	./lib/libPlugin_OctreeZoneStatic.a      \
-	./lib/libOgrePropertyStatic.a           \
-	./lib/libCodec_STBIStatic.a             \
-	./lib/libOgreMeshLodGeneratorStatic.a \
-	./lib/libOgreVolumeStatic.a \
-	./lib/libOgrePagingStatic.a \
-	./lib/libPlugin_BSPSceneManagerStatic.a \
-	./lib/libPlugin_OctreeSceneManagerStatic.a \
-	./lib/libDefaultSamples.a \
-	./lib/libOgreBitesStatic.a \
-	./lib/libPlugin_DotSceneStatic.a \
-	./lib/libPlugin_ParticleFXStatic.a \
-	./pugixml-1.14/libpugixml.a \
-      -Wl,--end-group
+# copy the fuzzers
+for fuzzer in image_fuzz stream_fuzz zip_fuzz ogre_deep_fuzz; do 
+  cp bin/${fuzzer} $OUT/${fuzzer}
 done
+
+# Create seed corpus for the deep fuzzer from Ogre's test/sample media files
+mkdir -p /tmp/ogre_deep_seeds
+# Mesh samples (selector byte 0x00 = FUZZ_MESH)
+for f in $(find .. -name '*.mesh' -not -name '*.skeleton' | head -5); do
+  base=$(basename "$f")
+  printf '\x00' | cat - "$f" > "/tmp/ogre_deep_seeds/mesh_${base}"
+done
+# Skeleton samples (selector byte 0x01 = FUZZ_SKELETON)
+for f in $(find .. -name '*.skeleton' | head -5); do
+  base=$(basename "$f")
+  printf '\x01' | cat - "$f" > "/tmp/ogre_deep_seeds/skel_${base}"
+done
+# ConfigFile samples (selector byte 0x02 = FUZZ_CONFIG)
+for f in $(find .. -name '*.cfg' | head -3); do
+  base=$(basename "$f")
+  printf '\x03' | cat - "$f" > "/tmp/ogre_deep_seeds/cfg_${base}"
+done
+
+cd /tmp/ogre_deep_seeds && zip -q $OUT/ogre_deep_fuzz_seed_corpus.zip * 2>/dev/null || true
+
+# Copy dictionary
+cp ../Tests/fuzz/ogre_deep_fuzz.dict $OUT/ogre_deep_fuzz.dict 2>/dev/null || true
