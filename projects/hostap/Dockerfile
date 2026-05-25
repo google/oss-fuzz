@@ -18,6 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool g++ libssl-dev \
                        libssl-dev:i386
-RUN git clone --depth 1 git://w1.fi/srv/git/hostap.git hostap
+RUN git clone --depth 1 https://w1.fi/hostap.git hostap
 WORKDIR hostap
 COPY build.sh $SRC/

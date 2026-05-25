@@ -1,0 +1,9 @@
+homepage: "https://userver.tech/"
+language: c++
+primary_contact: "antoshkka@gmail.com"
+main_repo: "https://github.com/userver-framework/userver.git"
+file_github_issue: true
+auto_ccs:
+    - "kirikpavlov@gmail.com"
+fuzzing_engines:
+    - honggfuzz

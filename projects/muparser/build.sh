@@ -34,3 +34,8 @@ $CXX -std=c++11 $CXXFLAGS -I. \
      $MU_CXXFLAGS $MU_LIBS \
      $SRC/set_eval_fuzzer.cc -o $OUT/set_eval_fuzzer \
      $LIB_FUZZING_ENGINE libmuparser.a
+
+$CXX -std=c++11 $CXXFLAGS -I. \
+     $MU_CXXFLAGS $MU_LIBS \
+     $SRC/c_api_fuzzer.cc -o $OUT/c_api_fuzzer \
+     $LIB_FUZZING_ENGINE libmuparser.a

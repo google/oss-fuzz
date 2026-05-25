@@ -5,6 +5,9 @@ auto_ccs:
  - "cryptomilk@gmail.com"
  - "jakuje@gmail.com"
  - "norbertpocs0@gmail.com"
+ - "arthur.chan@adalogics.com"
+ - "david@adalogics.com"
+ - "adam@adalogics.com"
 sanitizers:
   - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294

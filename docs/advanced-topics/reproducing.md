@@ -118,7 +118,8 @@ $ python3 infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Dow
 
 ## Reproduce using local source checkout
 
-You can also mount local sources into the running container by using these commands:
+You can also build fuzzers from a local source checkout by using these
+commands:
 
 ```bash
 $ python3 infra/helper.py build_fuzzers \

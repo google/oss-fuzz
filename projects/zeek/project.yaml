@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.zeek.org"
 language: c++
 primary_contact: "security@zeek.org"

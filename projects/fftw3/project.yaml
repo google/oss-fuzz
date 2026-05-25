@@ -2,5 +2,5 @@ homepage: "http://fftw.org/"
 main_repo: "https://github.com/fftw/fftw3.git"
 language: c++
 vendor_ccs:
-- "david@adlogics.com"
+- "david@adalogics.com"
 - "arthur.chan@adalogics.com"

@@ -24,5 +24,8 @@ export BAZEL_EXTRA_BUILD_FLAGS='--features=-layering_check --cxxopt=-std=c++17'
 # The default query is complex and requires additional dependencies in order to
 # work (due to its use of `//...`) whereas this query is simple and sufficient.
 export BAZEL_FUZZ_TEST_QUERY='filter("_fuzzer$", //:all)'
-exec bazel_build_fuzz_tests
 
+# Fix visibility issue in Bazel 7
+sed -i 's/"\/\/visibility:private",//g' abseil-cpp/absl/strings/BUILD.bazel
+
+exec bazel_build_fuzz_tests
