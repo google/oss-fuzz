@@ -20,7 +20,18 @@ RUN \
         apt-get install -y \
         make autoconf automake libtool \
         libstdc++-9-dev \
-        libssl-dev libseccomp-dev pkg-config
+        libseccomp-dev pkg-config && \
+        apt-get remove -y libssl-dev || true
+
+# Build OpenSSL 3.x from source (libtpms requires OpenSSL 3.0+ APIs)
+# Use no-shared to build static libraries only for proper fuzzer linking
+RUN git clone --depth 1 --branch openssl-3.0 https://github.com/openssl/openssl.git /tmp/openssl && \
+    cd /tmp/openssl && \
+    ./Configure --prefix=/usr --openssldir=/etc/ssl --libdir=lib/x86_64-linux-gnu no-shared && \
+    make -j$(nproc) && \
+    make install_sw install_ssldirs && \
+    rm -rf /tmp/openssl
+
 RUN git clone --depth 1 https://github.com/stefanberger/libtpms libtpms
 WORKDIR libtpms
 COPY build.sh $SRC/

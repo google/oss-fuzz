@@ -79,7 +79,7 @@ export CFLAGS="${CFLAGS_SAVE}"
 export CXXFLAGS="${CXXFLAGS_SAVE}"
 
 # Compile and copy the fuzz target(s)
-cd "$SRC/librsvg/fuzz"
+cd "$SRC/librsvg"
 
 cargo fuzz build -O
 cp target/x86_64-unknown-linux-gnu/release/render_document "$OUT/"

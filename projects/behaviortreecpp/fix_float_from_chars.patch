@@ -1,0 +1,25 @@
+--- a/src/xml_parsing.cpp
++++ b/src/xml_parsing.cpp
+@@ -13,6 +13,8 @@
+ #include "behaviortree_cpp/basic_types.h"
+
+ #include <charconv>
++#include <cerrno>
++#include <cstdlib>
+ #include <cstdio>
+ #include <cstring>
+ #include <functional>
+@@ -1191,10 +1193,12 @@
+             // Try double
+             if(!stored)
+             {
+               double dbl_val = 0;
+-              auto [ptr, ec] = std::from_chars(begin, end, dbl_val);
+-              if(ec == std::errc() && ptr == end)
++              char* endptr = const_cast<char*>(begin);
++              errno = 0;
++              dbl_val = std::strtod(begin, &endptr);
++              if(endptr == end && errno != ERANGE)
+               {
+                 new_bb->set(attr_name, dbl_val);
+                 stored = true;

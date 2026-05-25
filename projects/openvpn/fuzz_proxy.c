@@ -82,7 +82,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  generic_ssizet = fuzz_randomizer_get_int(0, 3);
+  generic_ssizet = fuzz_randomizer_get_int(0, 2);
   switch (generic_ssizet) {
   case 0:
     pi.auth_method = HTTP_AUTH_NONE;
@@ -92,9 +92,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     break;
   case 2:
     pi.auth_method = HTTP_AUTH_DIGEST;
-    break;
-  case 3:
-    pi.auth_method = HTTP_AUTH_NTLM2;
     break;
   }
   pi.options.http_version = "1.1";

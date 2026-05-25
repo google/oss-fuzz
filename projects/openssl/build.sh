@@ -43,7 +43,7 @@ function build_fuzzers() {
 
     if [[ $CFLAGS = *-m32* ]]
     then
-        setarch i386 ./config $CONFIGURE_FLAGS
+        setarch i386 ./config $CONFIGURE_FLAGS $EXTRA_CONFIGURE_FLAGS
     else
         ./config $CONFIGURE_FLAGS $EXTRA_CONFIGURE_FLAGS
     fi
@@ -78,12 +78,14 @@ function build_fuzzers() {
     fi
 
     df -h
-    git clean -dfx
+    if [[ -z "${CAPTURE_REPLAY_SCRIPT:-}" ]]; then
+      git clean -dfx
+    fi
     df -h
 }
 
 cd $SRC/openssl/
-build_fuzzers "" "no-apps" ""
+build_fuzzers "" "no-apps no-docs" ""
 
 # In introspector, indexer builds and when capturing replay builds, only build
 # the master branch
@@ -94,10 +96,10 @@ fi
 cd $SRC/openssl30/
 build_fuzzers "_30" "" "engines"
 cd $SRC/openssl33/
-build_fuzzers "_33" "no-apps" "engines"
+build_fuzzers "_33" "no-apps no-docs" "engines"
 cd $SRC/openssl34/
-build_fuzzers "_34" "no-apps" "engines"
+build_fuzzers "_34" "no-apps no-docs" "engines"
 cd $SRC/openssl35/
-build_fuzzers "_35" "no-apps" "engines"
+build_fuzzers "_35" "no-apps no-docs" "engines"
 cd $SRC/openssl36/
-build_fuzzers "_36" "no-apps" "engines"
+build_fuzzers "_36" "no-apps no-docs" "engines"

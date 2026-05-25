@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,26 +17,21 @@
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
 RUN git clone \
-   --depth 1 \
-   --branch main \
-   https://github.com/quantumlib/Cirq.git
+    --depth 1 \
+    --branch main \
+    https://github.com/quantumlib/Cirq.git
 
 WORKDIR $SRC/Cirq
 
-RUN apt-get update
-RUN cat apt-system-requirements.txt dev_tools/conf/apt-list-dev-tools.txt | xargs apt-get install -y
-
-# Install cirq dependencies
-RUN pip3 install --upgrade pip
-RUN pip3 install -r dev_tools/requirements/dev.env.txt
-
-# Install cirq related modules
-RUN pip3 install \
-   ./cirq-core \
-   ./cirq-aqt \
-   ./cirq-web \
-   ./cirq-ionq \
-   ./cirq-google \
-   ./cirq-pasqal
+# Install pip dependencies and Cirq modules.
+RUN export PIP_ROOT_USER_ACTION=ignore && \
+    pip3 install --upgrade pip && \
+    pip3 install --no-cache-dir \
+    ./cirq-core \
+    ./cirq-aqt \
+    ./cirq-web \
+    ./cirq-ionq \
+    ./cirq-google \
+    ./cirq-pasqal
 
 COPY build.sh fuzz_circuit.py $SRC/
