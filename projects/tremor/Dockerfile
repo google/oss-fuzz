@@ -21,5 +21,5 @@ RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/tremor.git
 RUN corpus-replicator -o decode_corpus audio_vorbis_ogg_libvorbis.yml audio
 WORKDIR tremor
-COPY decode_fuzzer.cc $SRC/tremor/
+COPY decode_fuzzer.cc vorbis_synthesis_fuzzer.cc ogg_fuzzer.cc $SRC/tremor/
 COPY build.sh $SRC/

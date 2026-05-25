@@ -19,14 +19,16 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         lsb-release sudo pkg-config file
 
-RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH=/src/depot_tools:$PATH
 WORKDIR angle
-RUN fetch angle
+# Increased retries and added more robust fetch/sync
+RUN for i in {1..20}; do fetch --nohooks angle && break || (echo "Fetch failed, retrying in 60s..." && sleep 60 && if [ $i -eq 20 ]; then exit 1; fi); done
+RUN for i in {1..30}; do gclient sync --jobs 1 --no-history --shallow && break || (echo "Sync failed, retrying in 60s..." && sleep 60 && if [ $i -eq 30 ]; then exit 1; fi); done
 
 RUN ./build/install-build-deps.sh --no-prompt
 
 COPY build.sh *.cc fuzzer_profile $SRC/
 
 # Add fuzzer profile
-RUN cat $SRC/fuzzer_profile >> $SRC/angle/BUILD.gn
+RUN cat $SRC/fuzzer_profile >> /src/angle/BUILD.gn

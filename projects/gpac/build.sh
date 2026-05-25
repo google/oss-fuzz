@@ -15,8 +15,30 @@
 #
 ################################################################################
 
+MAKE_PARAM=""
+
+# force fwrapv to make signed overflows deterministic
+export CFLAGS="$CFLAGS -fwrapv"
+export CXXFLAGS="$CXXFLAGS -fwrapv"
+
+# avoid simple int overflows
+if [ "$SANITIZER" = undefined ]; then
+    export CFLAGS="$CFLAGS -fno-sanitize=unsigned-integer-overflow,signed-integer-overflow"
+    export CXXFLAGS="$CXXFLAGS -fno-sanitize=unsigned-integer-overflow,signed-integer-overflow"
+fi
+
+
+# # for debugging and reproducing do asan+ubsan
+# if [ "$SANITIZER" = "address" ]; then
+#     export CFLAGS="$CFLAGS -fsanitize=undefined -fno-sanitize-recover=undefined"
+#     export CXXFLAGS="$CXXFLAGS -fsanitize=undefined -fno-sanitize-recover=undefined"
+# fi
+# MAKE_PARAM="-j"
+
+
+
 ./configure --static-build --extra-cflags="${CFLAGS}" --extra-ldflags="${CFLAGS}"
-make
+make $MAKE_PARAM
 
 
 fuzzers=$(find $SRC/gpac/testsuite/oss-fuzzers -name "fuzz_*.c")
