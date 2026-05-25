@@ -255,7 +255,6 @@ then
 
     # Unpack corpora from other projects
     unzip -n $SRC/corpus_bearssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_nettle.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_libecc.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_relic.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_cryptofuzz-openssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
