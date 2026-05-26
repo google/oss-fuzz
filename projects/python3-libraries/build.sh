@@ -70,6 +70,8 @@ while read -r name fuzzer; do
   fi
 done < $SRC/library-fuzzers/fuzz_targets.txt
 
+cp $SRC/library-fuzzers/fuzzeddataprovider.py $OUT/
+
 # Use CPython source code as seed corpus and use dict from cpython3
 cp $SRC/cpython/Modules/_xxtestfuzz/dictionaries/fuzz_pycompile.dict $OUT/fuzzer-ast.dict
 mkdir corp-ast/

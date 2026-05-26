@@ -25,6 +25,12 @@ export AFL_NOOPT=1
 # But we need libc++
 export CXXFLAGS="-stdlib=libc++"
 
+# theora (>=1.2) now requires autoconf >=2.71, but the OSS-Fuzz base image
+# (Ubuntu 20.04) ships autoconf 2.69. Build a newer autoconf locally via
+# VLC's extras/tools and prepend it to PATH so contrib autoreconf calls find it.
+(cd extras/tools && ./bootstrap && make -j$(nproc) .autoconf)
+export PATH="$SRC/vlc/extras/tools/build/bin:$PATH"
+
 mkdir contrib/contrib-build
 cd contrib/contrib-build
 ../bootstrap
@@ -32,16 +38,18 @@ cd contrib/contrib-build
 # Disable X11/xlib in FFmpeg to avoid runtime dependency on libX11
 sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-x86asm' ../src/ffmpeg/rules.mak
 
+# VPX's configure uses the raw 'ld' linker for its toolchain link test.
+# When objects are compiled with -fsanitize=address, raw ld cannot resolve
+# the ASan runtime symbols, failing with "Toolchain is unable to link
+# executables". Fix: propagate sanitizer CFLAGS into LDFLAGS and override LD
+# to use the compiler driver (clang/CC), which automatically links the correct
+# sanitizer runtimes.
+sed -i 's|VPX_LDFLAGS := $(LDFLAGS)|VPX_LDFLAGS = $(LDFLAGS) $(filter -fsanitize%,$(CFLAGS))|' ../src/vpx/rules.mak
+sed -i 's|LDFLAGS="$(VPX_LDFLAGS)" CROSS=$(VPX_CROSS)|LDFLAGS="$(VPX_LDFLAGS)" LD=$(CC) CROSS=$(VPX_CROSS)|' ../src/vpx/rules.mak
+
 make V=1 -j$(nproc) \
-    .libxml2 \
     .flac \
-    .opus \
-    .vorbis \
-    .speex \
-    .theora \
-    .dav1d \
-    .vpx \
-    .mpg123 \
+    .libxml2 \
     .ffmpeg
 
 cd ../../
@@ -59,12 +67,18 @@ unset AFL_NOOPT
 # Build various contribs with instrumentation
 cd contrib/contrib-build
 make V=1 -j$(nproc) \
+    .theora \
+    .dav1d \
+    .vpx \
+    .mpg123 \
     .ebml \
     .matroska \
     .ogg \
+    .opus \
+    .vorbis \
+    .speex \
     .speexdsp \
-    .dvbpsi \
-    .mpcdec
+    .dvbpsi
 cd ../../
 
 # Use OSS-Fuzz environment rather than hardcoded setup.
@@ -82,10 +96,6 @@ sed -i 's/..\/..\/lib\/libvlc_internal.h/lib\/libvlc_internal.h/g' ./test/src/in
 # Add extra codec, packetizer, and demux modules for broader fuzzing coverage.
 # See fuzzing-modules.patch for the actual changes.
 patch -p1 < $SRC/fuzzing-modules.patch
-
-# Register the MPC demux module in the static module list (the module is linked
-# via fuzzing-modules.patch but also needs to be in the PLUGINS macro).
-sed -i 's/f(demux_ogg)/f(demux_mpc) \\\n    f(demux_ogg)/' ./test/src/input/demux-run.c
 
 # clang is used to link the binary since there are no cpp sources (but we have
 # cpp modules), force clang++ usage
@@ -126,66 +136,13 @@ make V=1 -j$(nproc)
 
 cp ./test/vlc-demux-dec-libfuzzer $OUT/
 
-# Add MPEG-I/II video ES fuzzer target (mpgv.c) which lacks a dedicated corpus.
-# The mpgv module is linked via fuzzing-modules.patch and registered in the PLUGINS
-# list, but without a seed corpus directory no vlc-demux-dec-libfuzzer-mpgv binary
-# is produced. This directly exercises modules/demux/mpeg/mpgv.c and the MPEG video
-# packetizer (modules/packetizer/mpegvideo.c).
-mkdir -p fuzz-corpus/seeds/mpgv
-python3 -c "
-# Minimal MPEG-1 video elementary stream seed.
-# The sequence_header_code (0x000001B3) passes CheckMPEGStartCode in mpgv.c:
-#   0xB3 is not in {0xB0, 0xB1, 0xB6} and 0xB3 <= 0xB9, so VLC_SUCCESS is returned.
-# The demuxer opens without force and the Demux loop feeds data to the mpegvideo
-# packetizer, exercising parsing logic for MPEG-I/II video bitstreams.
-#
-# Sequence header structure (ISO/IEC 11172-2 / ISO/IEC 13818-2):
-#   start code (4B) | width(12b)/height(12b) | aspect(4b)/framerate(4b) |
-#   bitrate(18b)/marker(1b)/vbv_size(10b)/constrained(1b)/load_flags(2b)
-seed = bytes([
-    # Sequence header: 352x240, 1:1 aspect, 29.97fps, VBR, vbv=0
-    0x00, 0x00, 0x01, 0xB3,  # sequence_header_code
-    0x16, 0x00, 0xF0,        # width=352(12b)|height=240(12b): 0001 0110 0000 | 0000 1111 0000
-    0x15,                    # aspect=1(4b)|framerate=5(4b) = 0001 0101
-    0xFF, 0xFF, 0xE0, 0x00,  # bitrate(18b)=0x3FFFF(VBR) marker=1 vbv(10b)=0 flags=0
-    # Group of Pictures header: closed GOP, 00:00:00:00
-    0x00, 0x00, 0x01, 0xB8,  # group_start_code
-    0x00, 0x00, 0x01,        # time_code(25b)=0 closed_gop=0 broken_link=0
-    # Picture header: temporal_ref=0, I-frame, no extra vbv_delay
-    0x00, 0x00, 0x01, 0x00,  # picture_start_code
-    0x00, 0x10, 0xFF, 0xFF,  # temporal_ref(10b)=0 picture_type(3b)=0x1(I) vbv_delay(16b)=0xFFFF
-    # Slice: slice_vertical_position=1, quantiser_scale=1
-    0x00, 0x00, 0x01, 0x01,  # slice_start_code (row 1)
-    0x22, 0x00, 0x00,        # quantiser_scale=1, intra_slice=0, slice_data
-])
-open('fuzz-corpus/seeds/mpgv/minimal.mpgv', 'wb').write(seed)
-print('Created mpgv seed: {} bytes'.format(len(seed)))
-"
-
-# MPEG video start-code dictionary for the mpgv fuzzer.
-# These tokens help libFuzzer reach specific parsing branches in mpgv.c,
-# mpegvideo packetizer, and the MPEG-4 IOD parser (mpeg4_iod.c via TS).
-cat > fuzz-corpus/dictionaries/mpgv.dict << 'DICT_EOF'
-# MPEG-1/2 video start codes (ISO/IEC 11172-2 / ISO/IEC 13818-2)
-# libFuzzer dictionary format: one token per line, inline comments not allowed.
-"\x00\x00\x01\xB3"
-"\x00\x00\x01\xB7"
-"\x00\x00\x01\xB8"
-"\x00\x00\x01\x00"
-"\x00\x00\x01\xB5"
-"\x00\x00\x01\xB2"
-"\x00\x00\x01\x01"
-"\x00\x00\x01\xAF"
-"\x00\x00\x01"
-DICT_EOF
-
-# Replace the existing TS seeds (which are all null-packets only and do not
-# exercise any PAT/PMT/PES parsing) with proper structured TS streams.
-# generate_ts_seeds.py builds 12 minimal TS files that each contain a valid
-# PAT + PMT + at least one PES packet, directly exercising ts_psi.c, ts_pes.c,
-# ts_pid.c, ts_streams.c, ts_decoders.c, ts_si.c, ts_scte.c in
-# modules/demux/mpeg/.
-python3 $SRC/generate_ts_seeds.py fuzz-corpus/seeds/ts
+# Generate structured seeds + libFuzzer dictionaries for the demux/codec
+# fuzz targets that either had no dedicated corpus or whose upstream seeds
+# fail to exercise the target code. See generate_seeds.py for per-target
+# rationale; the script writes:
+#   seeds/{ts,ps,heif,rawdv,vc1,cdg,mus,mpgv}/* and a CEA-708 SEI seed
+#   appended to the upstream seeds/h264/ corpus, plus matching dictionaries.
+python3 $SRC/generate_seeds.py fuzz-corpus
 
 # Prepare for removing sdp.dict without breaking the build
 rm fuzz-corpus/dictionaries/sdp.dict || true
