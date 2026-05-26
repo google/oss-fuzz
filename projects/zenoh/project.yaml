@@ -1,0 +1,13 @@
+homepage: "https://zenoh.io/"
+main_repo: "https://github.com/eclipse-zenoh/zenoh"
+primary_contact: "evshary@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "cy@zettascale.tech"
+  - "sasha@zettascale.tech"
+  - "Julien.Enoch@zettascale.tech"
+  - "Olivier@zettascale.tech"
