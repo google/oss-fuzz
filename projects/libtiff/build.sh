@@ -17,9 +17,16 @@
 
 . contrib/oss-fuzz/build.sh
 
-# Seed corpus and dictionary for tiff_read_strips_fuzzer
-# Reuse the same AFL testcase corpus and TIFF dictionary used by
-# tiff_read_rgba_fuzzer — they exercise the same file format.
-cp "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip" \
-   "$OUT/tiff_read_strips_fuzzer_seed_corpus.zip"
-cp "$SRC/tiff.dict" "$OUT/tiff_read_strips_fuzzer.dict"
+# Seed corpora and dictionaries for new fuzzers.
+# All reuse the existing AFL testcase corpus and TIFF dictionary since
+# they target the same TIFF file format.
+
+for fuzzer in \
+    tiff_read_strips_fuzzer \
+    tiff_directory_fuzzer \
+    tiff_rgba_oriented_fuzzer \
+    tiff_codec_roundtrip_fuzzer; do
+  cp "$OUT/tiff_read_rgba_fuzzer_seed_corpus.zip" \
+     "$OUT/${fuzzer}_seed_corpus.zip"
+  cp "$SRC/tiff.dict" "$OUT/${fuzzer}.dict"
+done
