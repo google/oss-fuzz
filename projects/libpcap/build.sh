@@ -16,27 +16,48 @@
 ################################################################################
 
 cd libpcap
-# build project
+
+# build project (with rpcapd enabled so daemon.h / daemon.c are available)
 mkdir build
 cd build
-cmake ..
+cmake .. -DENABLE_REMOTE=ON
 make
+cd ..
 
-
-# build fuzz targets
+# build existing fuzz targets
 for target in pcap filter both
 do
-    $CC $CFLAGS -I.. -c ../testprogs/fuzz/fuzz_$target.c -o fuzz_$target.o
-    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target libpcap.a $LIB_FUZZING_ENGINE
+    $CC $CFLAGS -I. -c testprogs/fuzz/fuzz_$target.c -o fuzz_$target.o
+    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target build/libpcap.a $LIB_FUZZING_ENGINE
 done
 
-# export other associated stuff
-cd ..
-cp testprogs/fuzz/fuzz_*.options $OUT/
-# builds corpus
+# build rpcap client/server fuzz targets (previously missing from OSS-Fuzz)
+# fuzz_rclient: exercises the RPCAP client-side network protocol parser
+# fuzz_rserver: exercises rpcapd daemon_serviceloop() server-side protocol handling
+for target in rclient rserver
+do
+    $CC $CFLAGS -I. -Irpcapd -c testprogs/fuzz/fuzz_$target.c -o fuzz_$target.o
+    if [ "$target" = "rserver" ]; then
+        # rserver needs daemon.c and log.c from rpcapd
+        $CC $CFLAGS -I. -Irpcapd -c rpcapd/daemon.c  -o daemon.o
+        $CC $CFLAGS -I. -Irpcapd -c rpcapd/log.c     -o log.o
+        $CXX $CXXFLAGS fuzz_$target.o daemon.o log.o \
+            -o $OUT/fuzz_$target build/libpcap.a $LIB_FUZZING_ENGINE
+    else
+        $CXX $CXXFLAGS fuzz_$target.o \
+            -o $OUT/fuzz_$target build/libpcap.a $LIB_FUZZING_ENGINE
+    fi
+done
+
+# export options files
+cp testprogs/fuzz/fuzz_*.options $OUT/ 2>/dev/null || true
+
+# seed corpora
 cd $SRC/tcpdump/
 zip -r fuzz_pcap_seed_corpus.zip tests/
 cp fuzz_pcap_seed_corpus.zip $OUT/
+cp fuzz_pcap_seed_corpus.zip $OUT/fuzz_rclient_seed_corpus.zip
+
 cd $SRC/libpcap/testprogs/BPF
 mkdir corpus
 ls *.txt | while read i; do tail -1 $i > corpus/$i; done
