@@ -1,0 +1,13 @@
+homepage: "https://grpc.io"
+language: c++
+primary_contact: "grpc-oss@google.com"
+main_repo: "https://github.com/grpc/grpc.git"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+auto_ccs:
+  - "grpc-oss@google.com"
