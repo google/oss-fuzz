@@ -56,10 +56,32 @@ for f in ${fuzzers}; do
         done
 
         copy_lib ${f} libpcap
+        copy_lib ${f} libibverbs
+        copy_lib ${f} libdbus
+        copy_lib ${f} libnl-3
+        copy_lib ${f} libnl-route-3
         copy_lib ${f} libssl
         copy_lib ${f} libcrypto
         copy_lib ${f} libz
         copy_lib ${f} libmaxminddb
+
+        # ZeroMQ and dependencies.
+        copy_lib ${f} libzmq
+        copy_lib ${f} libsodium
+        copy_lib ${f} libpgm
+        copy_lib ${f} libnorm
+        copy_lib ${f} libcom_err
+        copy_lib ${f} libkeyutils
+
+        # Make libzmq search for dependencies in $ORIGIN so it
+        # has them available at runtime.
+        patchelf --set-rpath '$ORIGIN' ${OUT}/lib/libzmq.so*
+
+        # Do the same for libpcap and libibverbs. libpcap depends
+        # on the latter and that one depends on libnl-3 and
+        # libnl-route-3.
+        patchelf --set-rpath '$ORIGIN' ${OUT}/lib/libpcap.so*
+        patchelf --set-rpath '$ORIGIN' ${OUT}/lib/libibverbs.so*
     fi
 
     patchelf --set-rpath '$ORIGIN/lib' ${OUT}/${fuzzer_exe}

@@ -21,7 +21,9 @@
 	--enable-imc-test \
 	--enable-tnccs-20 \
 	--enable-libipsec \
+	--enable-eap-radius \
 	--enable-fuzzing \
+	--enable-sha1 --enable-sha2 --enable-sha3 --enable-mgf1 --enable-gmp \
 	--with-libfuzzer=$LIB_FUZZING_ENGINE \
 	--enable-monolithic \
 	--disable-shared \
@@ -34,6 +36,8 @@ for f in $fuzzers; do
 	fuzzer=$(basename $f)
 	cp $f $OUT/
 	corpus=${fuzzer#fuzz_}
+	corpus=${corpus%_def}
+	corpus=${corpus%_cus}
 	if [ -d "fuzzing-corpora/${corpus}" ]; then
 		zip -rj $OUT/${fuzzer}_seed_corpus.zip fuzzing-corpora/${corpus}
 	fi

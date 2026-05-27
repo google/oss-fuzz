@@ -15,20 +15,23 @@
 #
 ################################################################################
 
-# Get the latest protoc binary release
+# Get the latest stable protobuf-java version from Maven Central
 unset CFLAGS CXXFLAGS
+JAVA_VERSION=$(curl --silent "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/maven-metadata.xml" \
+  | grep '<version>4\.' | grep -v RC | grep -v alpha | grep -v beta | tail -1 | sed 's/.*<version>//;s/<.*//' | tr -d '[:space:]')
+# Derive the protoc version from the Java version (strip the leading "4.")
+VERSION=${JAVA_VERSION#4.}
+
 mkdir -p $SRC/protobuf
-VERSION=$(curl --silent --fail "https://api.github.com/repos/protocolbuffers/protobuf/releases/latest" | jq -r '.tag_name' | sed 's/v//')
 PROTOC_ZIP="protoc-$VERSION-linux-x86_64.zip"
 curl --silent --fail -L -o "$SRC/$PROTOC_ZIP" "https://github.com/protocolbuffers/protobuf/releases/download/v$VERSION/$PROTOC_ZIP"
 unzip -o $PROTOC_ZIP -d $SRC/protobuf
 export PROTOC=$SRC/protobuf/bin/protoc
 
-# Get the matching protobuf-java release (protobuf-java uses 4.x versioning for protoc vx)
-JAVA_VERSION="4.$VERSION"
+# Download matching protobuf-java jar
 JAR_FILE="protobuf-java-$JAVA_VERSION.jar"
-curl --silent -L -o "$SRC/$JAR_FILE" "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/$JAVA_VERSION/$JAR_FILE"
-cp $JAR_FILE $OUT/protobuf-java.jar
+curl --silent --fail -L -o "$SRC/$JAR_FILE" "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/$JAVA_VERSION/$JAR_FILE"
+cp "$SRC/$JAR_FILE" $OUT/protobuf-java.jar
 
 # Compile test protos with protoc.
 cd $SRC/
