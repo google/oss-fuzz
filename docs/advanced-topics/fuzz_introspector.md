@@ -74,7 +74,7 @@ seconds.
 $ python3 infra/helper.py introspector libdwarf --seconds=30
 ```
 
-If the above command was succesful, you should see output along the lines of:
+If the above command was successful, you should see output along the lines of:
 
 ```bash
 INFO:root:To browse the report, run: python3 -m http.server 8008 --directory /home/my_user/oss-fuzz/build/out/libdwarf/introspector-report/inspector and navigate to localhost:8008/fuzz_report.html in your browser
@@ -91,7 +91,7 @@ and will extract code coverage based on the publicly available corpora.
 $ python3 infra/helper.py introspector libdwarf --public-corpora
 ```
 
-Assuming the above command is succesful you can view the report using `python3 -m http.server`
+Assuming the above command is successful you can view the report using `python3 -m http.server`
 following the example described above.
 
 

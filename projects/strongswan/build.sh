@@ -23,6 +23,7 @@
 	--enable-libipsec \
 	--enable-eap-radius \
 	--enable-fuzzing \
+	--enable-sha1 --enable-sha2 --enable-sha3 --enable-mgf1 --enable-gmp \
 	--with-libfuzzer=$LIB_FUZZING_ENGINE \
 	--enable-monolithic \
 	--disable-shared \
