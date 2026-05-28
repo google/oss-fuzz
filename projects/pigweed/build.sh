@@ -17,6 +17,24 @@
 ################################################################################
 cd $SRC/pigweed
 
+# rules_fuzzing 0.6.0 (pinned in MODULE.bazel) generates an oss_fuzz BUILD
+# that uses native cc_library, which was removed in Bazel 9. Override to a
+# newer tag that loads cc_library from @rules_cc.
+cat >> MODULE.bazel <<'EOF'
+
+archive_override(
+    module_name = "rules_fuzzing",
+    urls = ["https://github.com/bazel-contrib/rules_fuzzing/archive/refs/tags/v0.7.0.tar.gz"],
+    strip_prefix = "rules_fuzzing-0.7.0",
+)
+
+# .bazelrc's `non_hermetic` config references @local_config_cc_toolchains;
+# under Bazel 9 + rules_cc 0.2.x this repo must be instantiated explicitly
+# via the cc_configure extension.
+cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
+use_repo(cc_configure, "local_config_cc_toolchains")
+EOF
+
 echo "Building project using Bazel wrapper."
 
 export BAZEL_FUZZ_TEST_QUERY="
