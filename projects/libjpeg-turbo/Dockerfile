@@ -33,4 +33,4 @@ RUN cat fuzz/branches.txt | while read branch; do \
     done
 RUN rm -rf seed-corpora
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
