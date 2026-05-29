@@ -23,6 +23,12 @@ export LDFLAGS="$CFLAGS"
 --disable-speex-aec --disable-g7221-codec \
 --disable-resample --disable-libwebrtc --disable-libyuv
 
+# Force static linking of libvpx and libopus so the fuzzers do not depend on
+# .so files that are absent from the OSS-Fuzz runner image. libvpx-dev and
+# libopus-dev both ship .a archives in /usr/lib/x86_64-linux-gnu/.
+sed -i 's|-lvpx|/usr/lib/x86_64-linux-gnu/libvpx.a|g' build.mak
+sed -i 's|-lopus|/usr/lib/x86_64-linux-gnu/libopus.a|g' build.mak
+
 make dep
 make -j$(nproc) --ignore-errors
 make fuzz
