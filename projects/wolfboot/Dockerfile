@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +14,14 @@
 #
 ################################################################################
 
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-# build project
-./autogen.sh
-./configure --enable-oss-fuzz PCRE2_LIBS=-l:libpcre2-8.a
-make -j2 -C include/
-make -j2 -C lib/libvinyl/
-make -j2 -C lib/libvgz/
-make -j2 -C lib/libvsc/
-make -j2 -C bin/vinyld/ esi_parse_fuzzer
-cp bin/vinyld/*_fuzzer $OUT/
+RUN apt-get update && apt-get install -y make pkg-config
+
+WORKDIR $SRC
+RUN git clone --depth 1 https://github.com/wolfSSL/wolfBoot $SRC/wolfBoot
+RUN git clone --depth 1 https://github.com/wolfssl/wolfssl $SRC/wolfBoot/lib/wolfssl
+RUN git clone --depth 1 https://github.com/AdaLogics/ada-fuzzers $SRC/ada-fuzzers
+
+COPY build.sh $SRC/
+WORKDIR $SRC/wolfBoot

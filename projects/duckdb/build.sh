@@ -19,7 +19,7 @@ make relassert CRASH_ON_ASSERT=1 DISABLE_SANITIZER=1
 EXTENSION_LIBS=$(find ./build/relassert/extension/ -name "*.a")
 THIRD_PARTY_LIBS=$(find ./build/relassert/third_party/ -name "*.a")
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./test/ossfuzz/parse_fuzz_test.cpp \
-    -o $OUT/parse_fuzz_test -I./ -I./src/include \
+    -o $OUT/parse_fuzz_test -I./ -I./src/include -I./third_party/fmt/include \
     -Wl,--start-group \
     ./build/relassert/src/libduckdb_static.a \
     ${EXTENSION_LIBS} ${THIRD_PARTY_LIBS} \
