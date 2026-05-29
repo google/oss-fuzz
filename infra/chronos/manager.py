@@ -121,7 +121,7 @@ def check_cached_replay(project: common_utils.Project,
 
   if not build_cached_project(project, sanitizer=sanitizer):
     logger.info('Failed to build cached image for project: %s', project.name)
-    return
+    return False
 
   start = time.time()
   cmd = [
@@ -142,6 +142,7 @@ def check_cached_replay(project: common_utils.Project,
       '-c',
   ]
 
+  result = True
   if integrity_check:
     # Use different bad patches to test the cached replay build
     failed = []
@@ -166,9 +167,11 @@ def check_cached_replay(project: common_utils.Project,
       logger.info(
           '%s check cached replay failed to detect these bad patches: %s',
           project.name, ' '.join(failed))
+      result = False
     else:
       logger.info('%s check cached replay success to detect all bad patches.',
                   project.name)
+
   else:
     # Normal run with no integrity check
     logger.info('Running cached replay with no integrity check for project: %s',
@@ -184,10 +187,13 @@ def check_cached_replay(project: common_utils.Project,
       replay_success = False
     logger.info('%s check cached replay: %s.', project.name,
                 'succeeded' if replay_success else 'failed')
+    result = replay_success
 
   end = time.time()
   logger.info('%s check cached replay completion time: %.2f seconds',
               project.name, (end - start))
+
+  return result
 
 
 def check_tests(project: common_utils.Project,
@@ -423,15 +429,16 @@ def cmd_dispatcher_check_tests(args):
   """Dispatcher for check-tests command."""
   # This argument is not enabled by default in helper.py, so we set it here.
   args.semantic_test = getattr(args, 'semantic_test', False)
-  check_tests(args.project, args.sanitizer, args.run_full_cache_replay,
-              args.integrity_check, args.stop_on_failure, args.semantic_test)
+  return check_tests(args.project, args.sanitizer, args.run_full_cache_replay,
+                     args.integrity_check, args.stop_on_failure,
+                     args.semantic_test)
 
 
 def cmd_dispatcher_check_replay(args):
   """Dispatcher for check-replay command."""
-  check_cached_replay(args.project,
-                      args.sanitizer,
-                      integrity_check=args.integrity_check)
+  return check_cached_replay(args.project,
+                             args.sanitizer,
+                             integrity_check=args.integrity_check)
 
 
 def cmd_dispatcher_build_cached_image(args):
