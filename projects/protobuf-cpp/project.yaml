@@ -1,0 +1,12 @@
+homepage: "https://github.com/protocolbuffers/protobuf"
+language: c++
+primary_contact: "cloudflare.ddos21@gmail.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+auto_ccs:
+  - "cloudflare.ddos21@gmail.com"
