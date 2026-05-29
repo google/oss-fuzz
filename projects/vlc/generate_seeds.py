@@ -2169,6 +2169,105 @@ def gen_avi(root):
         f.write('"[00:00:00.000-00:00:00.000]"\n')  # Xsub timestamp template
 
 
+def gen_es(root):
+    """Raw elementary-stream audio seeds for modules/demux/mpeg/es.c.
+
+    es.c registers the "Audio ES" demuxer with shortcuts mpga/mp3/m4a/mp4a/
+    aac/ac3/a52/eac3/dts/mlp/thd and probes each codec via AacProbe / MpgaProbe
+    / A52Probe / EA52Probe / DtsProbe / MlpProbe / ThdProbe. The upstream
+    vlc-fuzz-corpus only ships seeds/mp3 and seeds/dts, so the AAC, AC-3,
+    E-AC-3, MLP and TrueHD probe + demux paths are entirely uncovered.
+
+    Each seed dir name matches an es.c shortcut, so the OSS-Fuzz harness
+    (target name -> demux_New name) force-selects es.c with that hint; the
+    probe is then taken as forced, and valid sync frames drive OpenCommon()
+    and the Demux() loop. Header fields are crafted to satisfy the sync
+    checks exactly:
+      - AC-3 (a52): 0x0B77, byte5>>3 == bsid 8 (<=10 -> AC-3); fscod=0,
+        frmsizcod=0 -> 128-byte frames.
+      - E-AC-3 (eac3): 0x0B77, bsid 16 (11..16 -> E-AC-3); frmsiz=63 ->
+        i_size = 2*(63+1) = 128.
+      - AAC (aac): 7-byte ADTS headers (0xFFF sync, no CRC), valid
+        frame_length, fed to the mpeg4audio packetizer.
+      - MLP/TrueHD (mlp/thd): MlpCheckSync/ThdCheckSync require bytes[4..7]
+        == F8 72 6F BB / BA.
+    These header parsers compute frame sizes / sample counts from attacker
+    bytes -- classic OOB-read/overflow surface in es.c and the audio
+    packetizers it instantiates.
+    """
+    def adts_frame(payload_len=24, freq_idx=4, chan=2, profile=1):
+        frame_len = 7 + payload_len
+        h = bytearray(7)
+        h[0] = 0xFF
+        h[1] = 0xF1                                  # MPEG-4, layer 0, no CRC
+        h[2] = ((profile & 3) << 6) | ((freq_idx & 0xF) << 2) | ((chan >> 2) & 1)
+        h[3] = ((chan & 3) << 6) | ((frame_len >> 11) & 3)
+        h[4] = (frame_len >> 3) & 0xFF
+        h[5] = ((frame_len & 7) << 5) | 0x1F
+        h[6] = 0xFC
+        return bytes(h) + bytes(payload_len)
+
+    def ac3_frame():
+        # fscod=0, frmsizcod=0 -> 128-byte frame; bsid 8 -> AC-3 dispatch
+        return bytes([0x0B, 0x77, 0, 0, 0, 0x40, 0, 0]) + bytes(120)
+
+    def eac3_frame():
+        bits = []
+        def put(val, n):
+            for i in range(n - 1, -1, -1):
+                bits.append((val >> i) & 1)
+        put(0x0B77, 16)   # syncword
+        put(0, 2)         # strmtyp
+        put(0, 3)         # substreamid
+        put(63, 11)       # frmsiz -> i_size = 128
+        put(0, 2)         # fscod (48k)
+        put(3, 2)         # numblkscod
+        put(0, 3)         # acmod
+        put(0, 1)         # lfeon
+        put(16, 5)        # bsid (11..16 -> E-AC-3)
+        while len(bits) % 8:
+            bits.append(0)
+        out = bytearray()
+        for i in range(0, len(bits), 8):
+            b = 0
+            for k in range(8):
+                b = (b << 1) | bits[i + k]
+            out.append(b)
+        return bytes(out).ljust(128, b"\x00")
+
+    def mlp_frame(sync_last):
+        f = bytearray(128)
+        f[0] = 0xF0; f[1] = 0x40                     # check-nibble + au_length
+        f[4] = 0xF8; f[5] = 0x72; f[6] = 0x6F; f[7] = sync_last
+        return bytes(f)
+
+    def rep(fn, n):
+        return b"".join(fn() for _ in range(n))
+
+    seeds = {
+        "aac":  {"adts.aac": rep(lambda: adts_frame(24), 16),
+                 "adts_small.aac": rep(lambda: adts_frame(8), 24)},
+        "a52":  {"ac3.a52": rep(ac3_frame, 12)},
+        "eac3": {"eac3.eac3": rep(eac3_frame, 12)},
+        "mlp":  {"mlp.mlp": rep(lambda: mlp_frame(0xBB), 8)},
+        "thd":  {"truehd.thd": rep(lambda: mlp_frame(0xBA), 8)},
+    }
+    dicts = {
+        "aac":  ['"\\xff\\xf1"', '"\\xff\\xf9"', '"ADIF"'],
+        "a52":  ['"\\x0b\\x77"'],
+        "eac3": ['"\\x0b\\x77"'],
+        "mlp":  ['"\\xf8\\x72\\x6f\\xbb"'],
+        "thd":  ['"\\xf8\\x72\\x6f\\xba"'],
+    }
+    for tgt, files in seeds.items():
+        for name, data in files.items():
+            _write(os.path.join(root, "seeds", tgt, name), data)
+        dict_path = os.path.join(root, "dictionaries", tgt + ".dict")
+        os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+        with open(dict_path, "w") as f:
+            f.write("\n".join(dicts[tgt]) + "\n")
+
+
 def gen_rawdv(root):
     # modules/demux/rawdv.c: NTSC frame = 120000 bytes, PAL = 144000.
     DV_NTSC_FRAME_SIZE = 10 * 150 * 80
@@ -3870,6 +3969,7 @@ def main():
     gen_ps(root)
     gen_heif(root)
     gen_avi(root)
+    gen_es(root)
     gen_rawdv(root)
     gen_vc1(root)
     gen_cdg(root)
