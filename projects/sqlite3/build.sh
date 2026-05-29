@@ -41,3 +41,41 @@ $CXX $CXXFLAGS \
     $LIB_FUZZING_ENGINE ./sqlite3.o
 
 cp $SRC/*.options $SRC/*.dict $SRC/*.zip $OUT/
+
+cd $SRC/sqlsmith_proto
+
+case $SANITIZER in
+  address) SANITIZERS_ARGS="-DENABLE_ASAN=ON" ;;
+  undefined) SANITIZERS_ARGS="-DENABLE_UBSAN=ON" ;;
+  *) SANITIZERS_ARGS="" ;;
+esac
+
+: ${LD:="${CXX}"}
+: ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
+
+cmake_args=(
+    -DCMAKE_BUILD_TYPE=Debug
+    -DOSS_FUZZ=ON
+    -DBUNDLED_PROTOBUF=OFF
+    $SANITIZERS_ARGS
+    # C compiler
+    -DCMAKE_C_COMPILER="${CC}"
+    -DCMAKE_C_FLAGS="${CFLAGS}"
+    # C++ compiler
+    -DCMAKE_CXX_COMPILER="${CXX}"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
+    # Linker
+    -DCMAKE_LINKER="${LD}"
+    -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}"
+    -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}"
+    -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
+)
+
+[[ -e build ]] && rm -rf build
+cmake "${cmake_args[@]}" -S . -B build
+cmake --build build --parallel --verbose
+
+for f in $(find build -name '*_test' -type f);
+do
+  cp $f $OUT/
+done
