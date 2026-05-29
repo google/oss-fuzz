@@ -22,7 +22,6 @@ limitations under the License.
 #include <sys/types.h>
 #include <unistd.h>
 #include "libdwfl.h"
-#include "system.h"
 
 static const char *debuginfo_path = "";
 static const Dwfl_Callbacks cb  = {
@@ -41,7 +40,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fd = mkstemp(filename);
   assert(fd >= 0);
 
-  n = write_retry(fd, data, size);
+  n = write(fd, data, size);
   assert(n == (ssize_t) size);
 
   close(fd);
@@ -51,7 +50,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   dwfl_report_begin(dwfl);
 
   Dwfl_Module *mod = dwfl_report_offline(dwfl, filename, filename, -1);
-  dwfl_module_getdwarf(mod, &bias);
+  dwfl_report_end(dwfl, NULL, NULL);
+  if (mod != NULL)
+    dwfl_module_getdwarf(mod, &bias);
 
   dwfl_end (dwfl);
   unlink(filename);
