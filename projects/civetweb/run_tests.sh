@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y zlib1g-dev
-RUN git clone https://github.com/civetweb/civetweb
+# Disable leak sanitizer
+export ASAN_OPTIONS="detect_leaks=0"
 
-WORKDIR $SRC/civetweb
-COPY run_tests.sh build.sh $SRC/
+# Skip the unit test case that requires network connection
+ctest --test-dir build-test --output-on-failure -E \
+  "test-publicserver-minimal-http-client|test-publicserver-minimal-https-client|test-publicserver-server-requests"
