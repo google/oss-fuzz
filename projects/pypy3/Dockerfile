@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,10 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y autoconf libtool-bin pkg-config libssl-dev zlib1g-dev libopus-dev libvpx-dev
-RUN git clone https://github.com/pjsip/pjproject pjsip
+
+
+FROM gcr.io/oss-fuzz-base/base-builder
+
+RUN apt-get update && \
+    apt-get install -y gcc make libffi-dev pkg-config \
+    zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
+    libexpat1-dev libssl-dev libgdbm-dev tk-dev libgc-dev \
+    liblzma-dev libncursesw5-dev \
+    pypy
+
+RUN git clone --depth 1 --branch py3.11 https://github.com/pypy/pypy.git pypy
+RUN git clone --depth 1 --branch main https://github.com/StanFromIreland/pypy-fuzz.git
+WORKDIR pypy
 COPY build.sh $SRC/
-WORKDIR $SRC/pjsip/

@@ -1990,6 +1990,284 @@ def _write(path, data):
     print(f"  wrote {path}: {len(data)} bytes")
 
 
+def gen_avi(root):
+    """Structured AVI (RIFF) seeds for modules/demux/avi.
+
+    The upstream vlc-fuzz-corpus seeds/avi/* (divx/h264/mjpg/mp3/pcm/mono8 ...)
+    only exercise compressed-codec video and PCM audio, leaving large parts of
+    avi.c, libavi.c and bitmapinfoheader.h cold. These seeds drive the stream
+    *type* branches that have no upstream coverage:
+
+      - Uncompressed RGB (BI_RGB 24/8bpp + palette) and BI_BITFIELDS video,
+        exercising ParseBitmapInfoHeader's RGB/palette/mask paths
+        (bitmapinfoheader.h) and the bottom-up "flipped" frame handling.
+      - DXSB (DivX/XSUB) subtitle track: SPU_ES setup plus the demux-time
+        Xsub timestamp parser (ExtractXsubSampleInfo / AVI_PeekSample /
+        AVI_GetXsubSampleTimeAt), all previously 0%.
+      - 'txts' subtitle attachment -> AVI_ExtractSubtitle.
+      - 'iavs'/'ivas' DV stream -> AVI_DvHandleAudio.
+      - WAVE_FORMAT_EXTENSIBLE audio -> WAVEFORMATEXTENSIBLE SubFormat branch.
+      - QNAP proprietary fourcc ('w264' ...) -> IsQNAPCodec + AVI_SendFrame
+        header stripping (needs INFO meta so p_sys->meta is set).
+      - 'vprp' chunk -> aspect-ratio handling.
+      - OpenDML multi-RIFF ('AVIX') -> the AVI_ChunkReadRoot multi-RIFF path.
+
+    Note: the fuzz harness' memory stream is always (fast)seekable and demux
+    controls are off, so avi.c Seek()/Demux_UnSeekable() and the AVI_IndexLoad
+    superindex parser are unreachable here regardless of input -- these seeds
+    deliberately do not target them.
+    """
+    def fcc(s):
+        b = s.encode("latin-1"); assert len(b) == 4; return b
+
+    def chunk(cid, data):
+        out = fcc(cid) + struct.pack("<I", len(data)) + data
+        return out + b"\x00" if (len(data) & 1) else out  # word alignment
+
+    def lst(listtype, *chunks):
+        body = fcc(listtype) + b"".join(chunks)
+        return fcc("LIST") + struct.pack("<I", len(body)) + body
+
+    def riff(fourcc, *chunks):
+        body = fcc(fourcc) + b"".join(chunks)
+        return fcc("RIFF") + struct.pack("<I", len(body)) + body
+
+    def avih(width, height, streams, totalframes=1, usperframe=40000):
+        return struct.pack("<14I", usperframe, 0, 0, 0x10, totalframes, 0,
+                           streams, 0, width, height, 0, 0, 0, 0)
+
+    def strh(typ, handler, scale=1, rate=25, length=1, samplesize=0):
+        # 12 dwords (48B read by libavi) + rcFrame (4x int16) = 56B canonical
+        return (fcc(typ) + fcc(handler) +
+                struct.pack("<11I", 0, 0, 0, scale, rate, 0, length, 0, 0,
+                            samplesize, 0) +
+                struct.pack("<4h", 0, 0, 0, 0))
+
+    def bih(width, height, bitcount, compression, extra=b"", clrused=0):
+        comp = (compression if isinstance(compression, int)
+                else struct.unpack("<I", fcc(compression))[0])
+        return (struct.pack("<I", 40 + len(extra)) +          # biSize
+                struct.pack("<ii", width, height) +
+                struct.pack("<HH", 1, bitcount) +
+                struct.pack("<I", comp) +
+                struct.pack("<I", 0) +                        # biSizeImage
+                struct.pack("<ii", 0, 0) +
+                struct.pack("<II", clrused, 0) + extra)
+
+    def wfx(fmttag, channels=2, rate=44100, bits=16, blockalign=4, extra=b""):
+        body = (struct.pack("<H", fmttag) + struct.pack("<H", channels) +
+                struct.pack("<I", rate) + struct.pack("<I", rate * blockalign) +
+                struct.pack("<H", blockalign) + struct.pack("<H", bits))
+        if fmttag != 0x0001 or extra:                         # non-PCM -> cbSize
+            body += struct.pack("<H", len(extra)) + extra
+        return body
+
+    def strl(strh_data, strf_id, strf_data, extra_chunks=b""):
+        return lst("strl", chunk("strh", strh_data),
+                   chunk(strf_id, strf_data), extra_chunks)
+
+    def movi_chunk(stream, twocc, data):
+        return chunk(f"{stream:02d}{twocc}", data)
+
+    def build(streams, movi_chunks, extra_hdrl=b"", width=64, height=48,
+              nframes=1):
+        hdrl = lst("hdrl", chunk("avih", avih(width, height, len(streams),
+                                              nframes)),
+                   *streams, extra_hdrl)
+        return riff("AVI ", hdrl, lst("movi", *movi_chunks))
+
+    seeds = {}
+
+    # BI_RGB 24bpp, positive height -> b_flipped + BGR24 chroma
+    seeds["rgb24_flipped.avi"] = build(
+        [strl(strh("vids", "DIB "), "strf", bih(8, 6, 24, 0))],
+        [movi_chunk(0, "db", bytes([0x10, 0x20, 0x30]) * (8 * 6))],
+        width=8, height=6)
+
+    # BI_RGB 8bpp + 256-colour palette -> RGBP palette branch
+    pal = b"".join(struct.pack("<BBBB", i, i, i, 0) for i in range(256))
+    seeds["rgb8_palette.avi"] = build(
+        [strl(strh("vids", "DIB "), "strf", bih(8, 6, 8, 0, extra=pal,
+                                                clrused=256))],
+        [movi_chunk(0, "db", bytes(range(48)))], width=8, height=6)
+
+    # BI_BITFIELDS 16bpp + RGB565 masks -> known_chroma match
+    seeds["bitfields_565.avi"] = build(
+        [strl(strh("vids", "\x00\x00\x00\x00"), "strf",
+              bih(8, 6, 16, 3, extra=struct.pack("<III", 0xF800, 0x07E0, 0x001F)))],
+        [movi_chunk(0, "db", b"\x00" * 96)], width=8, height=6)
+
+    # BI_BITFIELDS with extra < 12 bytes -> "bogus mask size, assume BI_RGB"
+    seeds["bitfields_bogus.avi"] = build(
+        [strl(strh("vids", "\x00\x00\x00\x00"), "strf",
+              bih(8, 6, 16, 3, extra=b"\x00\x00\x00\x00"))],
+        [movi_chunk(0, "db", b"\x00" * 96)], width=8, height=6)
+
+    # DXSB subtitle: stream0 real video so AVI_GetVideoTrackForXsub succeeds,
+    # stream1 DXSB -> SPU_ES + demux-time Xsub timestamp parsing.
+    xsub = b"\x00" * 8 + b"[00:00:01.000-00:00:05.000]" + b"\x00" * 16
+    seeds["dxsb_xsub.avi"] = build(
+        [strl(strh("vids", "MJPG", length=2), "strf", bih(64, 48, 24, "MJPG")),
+         strl(strh("vids", "DXSB", length=2), "strf", bih(720, 480, 24, "DXSB"))],
+        [movi_chunk(0, "dc", b"\xff\xd8\xff\xd9"), movi_chunk(1, "dc", xsub),
+         movi_chunk(0, "dc", b"\xff\xd8\xff\xd9"), movi_chunk(1, "dc", xsub)],
+        width=720, height=480, nframes=2)
+
+    # 'txts' subtitle attachment -> AVI_ExtractSubtitle (needs strn name)
+    seeds["txts_attachment.avi"] = build(
+        [strl(strh("txts", "\x00\x00\x00\x00"), "strf", bih(0, 0, 0, 0),
+              extra_chunks=chunk("strn", b"subtitle track\x00"))],
+        [movi_chunk(0, "tx", b"Hello subtitle\x00")])
+
+    # 'iavs' DV stream -> VLC_CODEC_DV + AVI_DvHandleAudio
+    seeds["dv_iavs.avi"] = build(
+        [strl(strh("iavs", "dvsd"), "strf", bih(720, 480, 24, "dvsd"))],
+        [movi_chunk(0, "dc", b"\x1f\x07\x00" * 40)], width=720, height=480)
+
+    # WAVE_FORMAT_EXTENSIBLE audio -> WAVEFORMATEXTENSIBLE SubFormat branch
+    guid = (struct.pack("<I", 0x0001) +
+            b"\x00\x00\x10\x00\x80\x00\x00\xaa\x00\x38\x9b\x71")
+    ext = struct.pack("<H", 16) + struct.pack("<I", 0x3) + guid
+    seeds["extensible_audio.avi"] = build(
+        [strl(strh("auds", "\x00\x00\x00\x00", samplesize=4), "strf",
+              wfx(0xFFFE, channels=2, rate=48000, blockalign=4, extra=ext))],
+        [movi_chunk(0, "wb", b"\x00" * 64)])
+
+    # QNAP fourcc -> IsQNAPCodec + AVI_SendFrame header strip (INFO sets meta)
+    qframe = b"QVR\x00" + b"\x00" * 52 + b"\x00\x00\x00\x01\x67"
+    seeds["qnap_w264.avi"] = build(
+        [strl(strh("vids", "w264"), "strf", bih(320, 240, 24, "w264"))],
+        [movi_chunk(0, "dc", qframe)],
+        extra_hdrl=lst("INFO", chunk("ISFT", b"QNAP\x00")),
+        width=320, height=240)
+
+    # 'vprp' chunk -> aspect-ratio handling
+    vprp = chunk("vprp", struct.pack("<9I", 0, 0, 0, 0x00040003, 64, 48, 0, 0, 1) +
+                 struct.pack("<4I", 0, 0, 0, 0))
+    seeds["vprp_video.avi"] = build(
+        [strl(strh("vids", "MJPG"), "strf", bih(64, 48, 24, "MJPG"),
+              extra_chunks=vprp)],
+        [movi_chunk(0, "dc", b"\xff\xd8\xff\xd9")])
+
+    # OpenDML: a trailing RIFF 'AVIX' segment -> multi-RIFF detection
+    avix = riff("AVIX", lst("movi", movi_chunk(0, "db", b"\x10\x20\x30" * 48)))
+    seeds["multi_riff.avi"] = seeds["rgb24_flipped.avi"] + avix
+
+    for name, data in seeds.items():
+        _write(os.path.join(root, "seeds/avi", name), data)
+
+    # Extend (not replace) the upstream avi.dict with tokens for the new paths.
+    dict_path = os.path.join(root, "dictionaries", "avi.dict")
+    os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+    with open(dict_path, "a") as f:
+        f.write("\n# --- appended by generate_seeds.gen_avi ---\n")
+        for tok in ["strn", "vprp", "DXSB", "iavs", "ivas", "txts",
+                    "DIB ", "w264", "q264", "Q264", "wMP4", "dvsd"]:
+            f.write('"%s"\n' % tok)
+        f.write('"\\x03\\x00\\x00\\x00"\n')   # BI_BITFIELDS compression
+        f.write('"\\xfe\\xff"\n')             # WAVE_FORMAT_EXTENSIBLE tag
+        f.write('"[00:00:00.000-00:00:00.000]"\n')  # Xsub timestamp template
+
+
+def gen_es(root):
+    """Raw elementary-stream audio seeds for modules/demux/mpeg/es.c.
+
+    es.c registers the "Audio ES" demuxer with shortcuts mpga/mp3/m4a/mp4a/
+    aac/ac3/a52/eac3/dts/mlp/thd and probes each codec via AacProbe / MpgaProbe
+    / A52Probe / EA52Probe / DtsProbe / MlpProbe / ThdProbe. The upstream
+    vlc-fuzz-corpus only ships seeds/mp3 and seeds/dts, so the AAC, AC-3,
+    E-AC-3, MLP and TrueHD probe + demux paths are entirely uncovered.
+
+    Each seed dir name matches an es.c shortcut, so the OSS-Fuzz harness
+    (target name -> demux_New name) force-selects es.c with that hint; the
+    probe is then taken as forced, and valid sync frames drive OpenCommon()
+    and the Demux() loop. Header fields are crafted to satisfy the sync
+    checks exactly:
+      - AC-3 (a52): 0x0B77, byte5>>3 == bsid 8 (<=10 -> AC-3); fscod=0,
+        frmsizcod=0 -> 128-byte frames.
+      - E-AC-3 (eac3): 0x0B77, bsid 16 (11..16 -> E-AC-3); frmsiz=63 ->
+        i_size = 2*(63+1) = 128.
+      - AAC (aac): 7-byte ADTS headers (0xFFF sync, no CRC), valid
+        frame_length, fed to the mpeg4audio packetizer.
+      - MLP/TrueHD (mlp/thd): MlpCheckSync/ThdCheckSync require bytes[4..7]
+        == F8 72 6F BB / BA.
+    These header parsers compute frame sizes / sample counts from attacker
+    bytes -- classic OOB-read/overflow surface in es.c and the audio
+    packetizers it instantiates.
+    """
+    def adts_frame(payload_len=24, freq_idx=4, chan=2, profile=1):
+        frame_len = 7 + payload_len
+        h = bytearray(7)
+        h[0] = 0xFF
+        h[1] = 0xF1                                  # MPEG-4, layer 0, no CRC
+        h[2] = ((profile & 3) << 6) | ((freq_idx & 0xF) << 2) | ((chan >> 2) & 1)
+        h[3] = ((chan & 3) << 6) | ((frame_len >> 11) & 3)
+        h[4] = (frame_len >> 3) & 0xFF
+        h[5] = ((frame_len & 7) << 5) | 0x1F
+        h[6] = 0xFC
+        return bytes(h) + bytes(payload_len)
+
+    def ac3_frame():
+        # fscod=0, frmsizcod=0 -> 128-byte frame; bsid 8 -> AC-3 dispatch
+        return bytes([0x0B, 0x77, 0, 0, 0, 0x40, 0, 0]) + bytes(120)
+
+    def eac3_frame():
+        bits = []
+        def put(val, n):
+            for i in range(n - 1, -1, -1):
+                bits.append((val >> i) & 1)
+        put(0x0B77, 16)   # syncword
+        put(0, 2)         # strmtyp
+        put(0, 3)         # substreamid
+        put(63, 11)       # frmsiz -> i_size = 128
+        put(0, 2)         # fscod (48k)
+        put(3, 2)         # numblkscod
+        put(0, 3)         # acmod
+        put(0, 1)         # lfeon
+        put(16, 5)        # bsid (11..16 -> E-AC-3)
+        while len(bits) % 8:
+            bits.append(0)
+        out = bytearray()
+        for i in range(0, len(bits), 8):
+            b = 0
+            for k in range(8):
+                b = (b << 1) | bits[i + k]
+            out.append(b)
+        return bytes(out).ljust(128, b"\x00")
+
+    def mlp_frame(sync_last):
+        f = bytearray(128)
+        f[0] = 0xF0; f[1] = 0x40                     # check-nibble + au_length
+        f[4] = 0xF8; f[5] = 0x72; f[6] = 0x6F; f[7] = sync_last
+        return bytes(f)
+
+    def rep(fn, n):
+        return b"".join(fn() for _ in range(n))
+
+    seeds = {
+        "aac":  {"adts.aac": rep(lambda: adts_frame(24), 16),
+                 "adts_small.aac": rep(lambda: adts_frame(8), 24)},
+        "a52":  {"ac3.a52": rep(ac3_frame, 12)},
+        "eac3": {"eac3.eac3": rep(eac3_frame, 12)},
+        "mlp":  {"mlp.mlp": rep(lambda: mlp_frame(0xBB), 8)},
+        "thd":  {"truehd.thd": rep(lambda: mlp_frame(0xBA), 8)},
+    }
+    dicts = {
+        "aac":  ['"\\xff\\xf1"', '"\\xff\\xf9"', '"ADIF"'],
+        "a52":  ['"\\x0b\\x77"'],
+        "eac3": ['"\\x0b\\x77"'],
+        "mlp":  ['"\\xf8\\x72\\x6f\\xbb"'],
+        "thd":  ['"\\xf8\\x72\\x6f\\xba"'],
+    }
+    for tgt, files in seeds.items():
+        for name, data in files.items():
+            _write(os.path.join(root, "seeds", tgt, name), data)
+        dict_path = os.path.join(root, "dictionaries", tgt + ".dict")
+        os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+        with open(dict_path, "w") as f:
+            f.write("\n".join(dicts[tgt]) + "\n")
+
+
 def gen_rawdv(root):
     # modules/demux/rawdv.c: NTSC frame = 120000 bytes, PAL = 144000.
     DV_NTSC_FRAME_SIZE = 10 * 150 * 80
@@ -3690,6 +3968,8 @@ def main():
     gen_ts(root)
     gen_ps(root)
     gen_heif(root)
+    gen_avi(root)
+    gen_es(root)
     gen_rawdv(root)
     gen_vc1(root)
     gen_cdg(root)
