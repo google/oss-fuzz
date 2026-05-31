@@ -1,0 +1,14 @@
+homepage: "https://jasper-software.github.io/jasper/"
+language: c
+main_repo: "https://github.com/jasper-software/jasper"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
+primary_contact: "mdadams@ece.uvic.ca"
+auto_ccs:
+  - "xananasbot@users.noreply.github.com"
