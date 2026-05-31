@@ -38,6 +38,7 @@ fuzz_dsa_openssl_private_key_from_der
 fuzz_rsa_keypair_from_sexp
 fuzz_rsa_keypair_from_der
 fuzz_rsa_public_key_from_der
+fuzz_ecdsa_from_der
 "
 
 for fuzzer in $FUZZERS; do

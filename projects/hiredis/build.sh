@@ -22,3 +22,10 @@ $CC $CFLAGS -std=c99 -pedantic -c -O3 -fPIC -I./ \
 
 $CXX $CXXFLAGS -O3 -fPIC $LIB_FUZZING_ENGINE format_command_fuzzer.o \
 	-o $OUT/format_command_fuzzer libhiredis.a
+
+# Response reader fuzzer - exercises RESP/RESP3 protocol parsing
+$CC $CFLAGS -std=c99 -pedantic -c -O3 -fPIC -I./ \
+	$SRC/response_reader_fuzzer.c -o response_reader_fuzzer.o
+
+$CXX $CXXFLAGS -O3 -fPIC $LIB_FUZZING_ENGINE response_reader_fuzzer.o \
+	-o $OUT/response_reader_fuzzer libhiredis.a
