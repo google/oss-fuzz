@@ -1,0 +1,12 @@
+homepage: "https://libexpat.github.io/"
+language: c
+primary_contact: "libexpat-users@lists.sourceforge.net"
+main_repo: "https://github.com/libexpat/libexpat"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
