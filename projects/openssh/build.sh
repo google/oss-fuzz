@@ -61,3 +61,38 @@ CASES="$SRC/openssh-fuzz-cases"
 (set -e ; cd ${CASES}/sshsigopt ; zip -r $OUT/sshsigopt_fuzz_seed_corpus.zip .)
 (set -e ; cd ${CASES}/kex ; zip -r $OUT/kex_fuzz_seed_corpus.zip .)
 (set -e ; cd ${CASES}/agent ; zip -r $OUT/agent_fuzz_seed_corpus.zip .)
+
+# authkeys seed corpus: sample authorized_keys lines (keys embedded in harness)
+mkdir -p /tmp/authkeys_corpus
+cp regress/misc/fuzz-harness/testdata/id_ed25519.pub /tmp/authkeys_corpus/ 2>/dev/null || true
+cp regress/misc/fuzz-harness/testdata/id_ecdsa.pub /tmp/authkeys_corpus/ 2>/dev/null || true
+printf 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDPQXmEVMVLmeFRyafKMVWgPDkv8/uRBTwmcEDatZzMD user@host\n' > /tmp/authkeys_corpus/plain.pub
+printf 'from="192.168.1.*",command="/bin/sh" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDPQXmEVMVLmeFRyafKMVWgPDkv8/uRBTwmcEDatZzMD restricted\n' > /tmp/authkeys_corpus/restricted.pub
+printf 'no-pty,no-x11-forwarding,no-agent-forwarding ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA3I user@host\n' > /tmp/authkeys_corpus/no-opts.pub
+(cd /tmp/authkeys_corpus && zip -r $OUT/authkeys_fuzz_seed_corpus.zip .)
+
+# sshconfig seed corpus: sample ssh_config snippets
+mkdir -p /tmp/sshconfig_corpus
+cat > /tmp/sshconfig_corpus/basic.conf << 'CONF'
+Host example.com
+    User admin
+    Port 2222
+    IdentityFile ~/.ssh/id_ed25519
+    StrictHostKeyChecking yes
+CONF
+cat > /tmp/sshconfig_corpus/match.conf << 'CONF'
+Match Host *.internal exec "test -f /etc/flag"
+    ProxyJump bastion.example.com
+    IdentityFile ~/.ssh/internal_key
+    ServerAliveInterval 60
+CONF
+cat > /tmp/sshconfig_corpus/wildcard.conf << 'CONF'
+Host *
+    AddKeysToAgent yes
+    ForwardAgent no
+    Compression yes
+    ConnectTimeout 30
+    ServerAliveCountMax 3
+CONF
+cp $SRC/openssh/ssh_config /tmp/sshconfig_corpus/system.conf 2>/dev/null || true
+(cd /tmp/sshconfig_corpus && zip -r $OUT/sshconfig_fuzz_seed_corpus.zip .)
