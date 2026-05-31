@@ -1,12 +1,14 @@
-homepage: "http://community.openvpn.net"
+homepage: "https://openvpn.net/"
 language: c
-primary_contact: "arne@rfc2549.org"
+primary_contact: "openvpn-security@openvpn.net"
 main_repo: "https://github.com/OpenVPN/openvpn"
-auto_ccs:
- - "david@adalogics.com"
-
+sanitizers:
+  - address
+  - memory
+  - undefined
 fuzzing_engines:
+  - libfuzzer
   - afl
   - honggfuzz
-  - libfuzzer
-
+architectures:
+  - x86_64
