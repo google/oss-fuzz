@@ -89,12 +89,18 @@ make V=1 -j$(nproc) \
     .speexdsp \
     .dvbpsi \
     .modplug \
-    .gme \
     .faad2 \
     .jpeg \
     .png \
     .ass \
     .kate
+
+# libgme's CMake compiles with -fno-rtti, which is incompatible with the
+# -fsanitize=vptr check implied by SANITIZER=undefined ("invalid argument
+# '-fsanitize=vptr' not allowed with '-fno-rtti'"). Build it with that single
+# UBSan sub-check disabled; this is a no-op under the address sanitizer.
+CFLAGS="$CFLAGS -fno-sanitize=vptr" CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
+    make V=1 -j$(nproc) .gme
 cd ../../
 
 # Use OSS-Fuzz environment rather than hardcoded setup.
