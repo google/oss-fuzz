@@ -1,0 +1,22 @@
+# OSS-Fuzz integration configuration for provii-crypto.
+# Schema: https://google.github.io/oss-fuzz/getting-started/new-project-guide/
+#
+# Note: primary_contact and auto_ccs must be Google-account email addresses to
+# receive ClusterFuzz access, crash reports, and fuzzer statistics.
+
+homepage: "https://github.com/provii/provii-crypto"
+main_repo: "https://github.com/provii/provii-crypto"
+language: rust
+primary_contact: "tom@maelstrom.au"
+auto_ccs:
+  - "tom@maelstrom.au"
+
+# cargo-fuzz / libfuzzer-sys harnesses build only against libFuzzer.
+fuzzing_engines:
+  - libfuzzer
+
+# AddressSanitizer catches memory errors; UBSan catches undefined behaviour in
+# the native dependencies (jubjub, blake2s_simd, bellman, etc.).
+sanitizers:
+  - address
+  - undefined
