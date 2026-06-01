@@ -57,4 +57,4 @@ RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN git clone https://git.savannah.gnu.org/git/wget.git
 
 WORKDIR wget
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
