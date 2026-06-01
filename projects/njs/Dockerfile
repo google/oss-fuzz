@@ -21,4 +21,6 @@ RUN git clone https://github.com/nginx/njs
 RUN git clone --branch pcre2-10.39 https://github.com/PhilipHazel/pcre2 pcre2
 
 WORKDIR njs
-COPY build.sh run_tests.sh $SRC/
+COPY build.sh run_tests.sh ngx_js_form_fuzzer.cc ngx_js_form_fuzzer.dict $SRC/
+COPY stubs $SRC/stubs
+COPY seed_corpus $SRC/seed_corpus
