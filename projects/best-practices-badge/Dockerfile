@@ -1,4 +1,4 @@
-# Copyright 2026 The Authors
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,23 @@
 #
 ################################################################################
 #
-# NOTE: "The Authors" in this case are
-# the Linux Foundation and the OpenSSF Best Practices badge contributors.
+# NOTE: The "Copyright 2026 Google LLC" above is FALSE. It is NOT TRUE.
+# Its actual copyright is by the Linux Foundation and the
+# OpenSSF Best Practices badge contributors.
 #
 # ALTERNATIVE LICENSING NOTICE:
-# This file is dual-licensed and is also available
-# under the terms of the MIT License.
+# This file is dual-licensed; it IS available under Apache-2.0,
+# and it is also available under the terms of the MIT License.
 # You may use this file under the terms of either the Apache 2.0 License
 # or the MIT License.
 #
 # SPDX-License-Identifier: (APACHE-2.0 OR MIT)
+#
+# This unfortunate situation is because Google uses a precheck filter
+# presuming that it's for open source software that Google developed and
+# holds the copyright to, even when that is NOT true. Since Google hasn't
+# fixed the filter, the recommended solution is the "required string"
+# followed by text that explains the real situation.
 #
 ################################################################################
 
