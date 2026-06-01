@@ -3956,6 +3956,257 @@ def gen_mp4_extras(root):
 
 
 # ──────────────────────────────────────────────────
+#  GME seeds (modules/demux/gme.c -> contrib libgme)
+# ──────────────────────────────────────────────────
+#
+# gme.c Open() peeks only the first 4 bytes and accepts the file when
+# gme_identify_header() recognises the magic; libgme then parses the format
+# header and emulates the embedded CPU/sound chip in Demux(). The existing
+# corpus has no gme seeds at all, so the plugin and the libgme loaders and
+# CPU cores (6502/Z80/SPC700/GB/HuC6280…) are currently unreached.
+#
+# We emit one minimal but magic-valid file per supported format. A bare header
+# passes Open() and starts the emulator; the fuzzer mutates outward from these
+# into the per-format parsers and the CPU/APU cores.
+
+def _gme_nsf():
+    """NSF (NES, 6502 core)."""
+    h = bytearray(128)
+    h[0:5] = b"NESM\x1a"
+    h[5] = 1                                   # version
+    h[6] = 1                                   # total songs
+    h[7] = 1                                   # starting song (1-based)
+    h[8:10]   = (0x8000).to_bytes(2, "little") # load addr
+    h[10:12]  = (0x8000).to_bytes(2, "little") # init addr
+    h[12:14]  = (0x8000).to_bytes(2, "little") # play addr
+    h[110:112] = (0x411A).to_bytes(2, "little")# NTSC speed
+    h[120:122] = (0x4E20).to_bytes(2, "little")# PAL speed
+    return bytes(h) + bytes([0x60]) * 64       # program: RTS sled at $8000
+
+
+def _gme_gbs():
+    """GBS (Game Boy, LR35902 core)."""
+    h = bytearray(0x70)
+    h[0:4] = b"GBS\x01"
+    h[4] = 1                                    # song count
+    h[5] = 1                                    # first song
+    for off, val in [(6, 0x0400), (8, 0x0400), (10, 0x0400), (12, 0xFFFE)]:
+        h[off:off+2] = val.to_bytes(2, "little")  # load/init/play/sp
+    return bytes(h) + bytes(64)
+
+
+def _gme_vgm():
+    """VGM 1.50 (chip command stream)."""
+    h = bytearray(0x40)
+    h[0:4] = b"Vgm "
+    h[8:12]    = (0x150).to_bytes(4, "little")            # version 1.50
+    h[0x34:0x38] = (0x40 - 0x34).to_bytes(4, "little")    # data offset
+    body = bytes([0x66])                                  # end-of-sound marker
+    h[4:8]     = (0x40 + len(body) - 4).to_bytes(4, "little")  # EOF offset
+    return bytes(h) + body
+
+
+def _gme_magic_only(magic: bytes, size: int) -> bytes:
+    return magic + bytes(max(0, size - len(magic)))
+
+
+def gen_gme(root):
+    seed_dir = os.path.join(root, "seeds", "gme")
+    seeds = {
+        "song.nsf": _gme_nsf(),
+        "song.gbs": _gme_gbs(),
+        "song.vgm": _gme_vgm(),
+        # SPC700 RAM dump is fixed-size 0x10200; magic = first 4 bytes "SNES".
+        "song.spc": _gme_magic_only(b"SNES-SPC700 Sound File Data v0.30", 0x10200),
+        "song.ay":  _gme_magic_only(b"ZXAYEMUL", 128),
+        "song.kss": _gme_magic_only(b"KSCC", 128),
+        "song.gym": _gme_magic_only(b"GYMX", 428),
+        # The HES format is exercised via the "HESM" dictionary entry rather
+        # than a dedicated seed.
+    }
+    for name, data in seeds.items():
+        _write(os.path.join(seed_dir, name), data)
+
+    dict_path = os.path.join(root, "dictionaries", "gme.dict")
+    os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+    with open(dict_path, "w") as f:
+        f.write("# libgme format magics recognised by gme_identify_header()\n")
+        for tag in ['NESM\\x1a', 'GBS\\x01', 'Vgm ', 'ZXAYEMUL',
+                    'KSCC', 'KSSX', 'HESM', 'GYMX', 'NSFE', 'SNES-SPC700']:
+            f.write(f'"{tag}"\n')
+    print("  dictionaries/gme.dict written")
+
+
+# ──────────────────────────────────────────────────
+#  MOD seeds (modules/demux/mod.c -> contrib libmodplug)
+# ──────────────────────────────────────────────────
+#
+# The harness forces the "mod" demuxer by name, so demux->obj.force is true and
+# mod.c skips its extension Validate(); any non-empty file < 500MB is handed
+# straight to libmodplug, which probes every loader by content. The existing
+# corpus has no mod seeds, so libmodplug's loaders (load_it/load_s3m/load_mod/
+# load_xm/…) are currently unreached. We provide one minimal file per major
+# loader so each format's parser is seeded; the fuzzer mutates header
+# counts/offsets from here.
+
+def _mod_it():
+    """Impulse Tracker — 'IMPM' magic at offset 0."""
+    h = bytearray(0xC0)
+    h[0:4] = b"IMPM"
+    # song name (26 bytes) left zero
+    h[0x20:0x22] = (0).to_bytes(2, "little")   # OrdNum
+    h[0x22:0x24] = (0).to_bytes(2, "little")   # InsNum
+    h[0x24:0x26] = (0).to_bytes(2, "little")   # SmpNum
+    h[0x26:0x28] = (0).to_bytes(2, "little")   # PatNum
+    h[0x28:0x2A] = (0x0214).to_bytes(2, "little")  # created w/ tracker version
+    h[0x2A:0x2C] = (0x0200).to_bytes(2, "little")  # compatible version
+    h[0x30] = 0x80                              # global volume
+    h[0x32] = 0x80                              # mixing volume
+    h[0x33] = 6                                 # initial speed
+    h[0x34] = 0x7D                              # initial tempo
+    return bytes(h) + b"\xff"                   # one order: end-of-song marker
+
+
+def _mod_s3m():
+    """ScreamTracker 3 — 'SCRM' magic at offset 0x2C."""
+    h = bytearray(0x60)
+    h[0x1C] = 0x1A                              # EOF marker
+    h[0x1D] = 0x10                              # file type (module)
+    h[0x20:0x22] = (0).to_bytes(2, "little")    # OrdNum
+    h[0x22:0x24] = (0).to_bytes(2, "little")    # InsNum
+    h[0x24:0x26] = (0).to_bytes(2, "little")    # PatNum
+    h[0x28:0x2A] = (0x1320).to_bytes(2, "little")  # cwtv
+    h[0x2A:0x2C] = (2).to_bytes(2, "little")    # file format info
+    h[0x2C:0x30] = b"SCRM"
+    h[0x30] = 6                                 # global volume
+    h[0x31] = 6                                 # initial speed
+    h[0x32] = 0x7D                              # initial tempo
+    # 32 channel settings: all disabled (0xFF)
+    return bytes(h) + b"\xff" * 32
+
+
+def _mod_xm():
+    """FastTracker 2 — 'Extended Module: ' magic at offset 0."""
+    h = bytearray()
+    h += b"Extended Module: "                   # 17 bytes
+    h += b"seed".ljust(20, b"\x00")             # module name (20)
+    h += b"\x1a"                                # 0x1A
+    h += b"FastTracker v2.00   "                # tracker name (20)
+    h += (0x0104).to_bytes(2, "little")         # version 1.04
+    h += (0x0114).to_bytes(4, "little")         # header size (276)
+    h += (1).to_bytes(2, "little")              # song length
+    h += (0).to_bytes(2, "little")              # restart position
+    h += (4).to_bytes(2, "little")              # number of channels
+    h += (0).to_bytes(2, "little")              # number of patterns
+    h += (0).to_bytes(2, "little")              # number of instruments
+    h += (1).to_bytes(2, "little")              # flags (linear freq)
+    h += (6).to_bytes(2, "little")              # default tempo
+    h += (125).to_bytes(2, "little")            # default BPM
+    h += bytes(256)                             # pattern order table
+    return bytes(h)
+
+
+def _mod_protracker():
+    """Amiga ProTracker — 'M.K.' tag at offset 1080."""
+    b = bytearray()
+    b += bytes(20)                              # song title
+    for _ in range(31):                         # 31 sample headers (30 bytes)
+        s = bytearray(30)
+        s[22:24] = (0).to_bytes(2, "big")       # sample length (words)
+        s[25] = 64                              # volume
+        b += s
+    b += bytes([1])                             # song length
+    b += bytes([127])                           # restart byte
+    b += bytes(128)                             # pattern order table
+    b += b"M.K."                                # 4-channel magic @1080
+    b += bytes(1024)                            # one empty pattern (64 rows*4ch*4)
+    return bytes(b)
+
+
+def gen_mod(root):
+    seed_dir = os.path.join(root, "seeds", "mod")
+    seeds = {
+        "seed.it":  _mod_it(),
+        "seed.s3m": _mod_s3m(),
+        "seed.xm":  _mod_xm(),
+        "seed.mod": _mod_protracker(),
+    }
+    for name, data in seeds.items():
+        _write(os.path.join(seed_dir, name), data)
+
+    dict_path = os.path.join(root, "dictionaries", "mod.dict")
+    os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+    with open(dict_path, "w") as f:
+        f.write("# libmodplug loader signatures\n")
+        for tag in ['IMPM', 'SCRM', 'Extended Module: ', 'M.K.', 'M!K!',
+                    '4CHN', '6CHN', '8CHN', 'FLT4', 'FLT8',
+                    'MTM\\x10', 'if', 'JN', 'DBM0', 'PSM ', 'FAR\\xfe']:
+            f.write(f'"{tag}"\n')
+    print("  dictionaries/mod.dict written")
+
+
+# ──────────────────────────────────────────────────
+#  Kate-in-Ogg seed (modules/codec/kate.c -> contrib libkate)
+# ──────────────────────────────────────────────────
+#
+# The kate decoder is reached through the ogg demuxer: ogg.c detects a logical
+# stream whose first packet is `\x80kate\0\0\0`, emits a VLC_CODEC_KATE SPU ES,
+# and feeds the backed-up headers + data packets to codec/kate.c (libkate).
+# There is no kate content in the existing ogg corpus, so kate.c + libkate are
+# unreached. This seed is therefore written into seeds/ogg/ (the target that
+# forces the "ogg" demuxer).
+#
+# Header layout consumed by ogg.c:Ogg_ReadKateHeader() (all byte-aligned):
+#   [0]=0x80  [1:8]="kate\0\0\0"  [8:11]=version  [11]=num_headers
+#   [15]=granule_shift  [24:28]=gnum(LE32, must be !=0)  [28:32]=gden(LE32)
+#   [32:48]=language  [48:64]=category   -> minimal valid ID header = 64 bytes.
+
+def _kate_id_header(num_headers: int = 2) -> bytes:
+    h = bytearray(64)
+    h[0] = 0x80
+    h[1:8] = b"kate\x00\x00\x00"
+    h[8] = 0                                  # bitstream version major
+    h[9] = 6                                  # bitstream version minor
+    h[11] = num_headers                       # total number of headers
+    h[15] = 0                                 # granule shift
+    h[24:28] = (1000).to_bytes(4, "little")   # granule rate numerator (!=0)
+    h[28:32] = (1000).to_bytes(4, "little")   # granule rate denominator
+    h[32:35] = b"und"                         # language
+    h[48:57] = b"subtitles"                   # category
+    return bytes(h)
+
+
+def _kate_comment_header() -> bytes:
+    # 0x81 + magic + minimal Vorbis-style comment (empty vendor, 0 comments).
+    return (b"\x81kate\x00\x00\x00"
+            + (0).to_bytes(4, "little")       # vendor length
+            + (0).to_bytes(4, "little"))      # user comment count
+
+
+def _kate_eos_packet() -> bytes:
+    # Kate "end of stream" data packet (packet type 0x7F).
+    return b"\x7fkate\x00\x00\x00"
+
+
+def seed_kate_ogg() -> bytes:
+    serial = 0x6B617465  # "kate"
+    pages = []
+    pages.append(ogg_page([_kate_id_header(num_headers=2)],
+                          serial=serial, page_seq=0, bos=True))
+    pages.append(ogg_page([_kate_comment_header()],
+                          serial=serial, page_seq=1))
+    pages.append(ogg_page([_kate_eos_packet()],
+                          serial=serial, page_seq=2, granule=1, eos=True))
+    return b"".join(pages)
+
+
+def gen_kate(root):
+    out = os.path.join(root, "seeds", "ogg")
+    os.makedirs(out, exist_ok=True)
+    _write(os.path.join(out, "kate_min.ogg"), seed_kate_ogg())
+
+
+# ──────────────────────────────────────────────────
 #  main
 # ──────────────────────────────────────────────────
 
@@ -3983,6 +4234,9 @@ def main():
     gen_ogg(root)
     gen_mkv(root)
     gen_mp4_extras(root)
+    gen_gme(root)
+    gen_mod(root)
+    gen_kate(root)
 
 
 if __name__ == '__main__':
