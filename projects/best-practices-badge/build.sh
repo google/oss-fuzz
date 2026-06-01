@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2026 the Linux Foundation and the OpenSSF Best Practices badge contributors
+# Copyright 2026 The Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+#
+# NOTE: "The Authors" in this case are
+# the Linux Foundation and the OpenSSF Best Practices badge contributors.
 #
 # ALTERNATIVE LICENSING NOTICE:
 # This file is dual-licensed and is also available
