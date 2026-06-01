@@ -1,0 +1,12 @@
+homepage: "https://github.com/wolfSSL/wolfTPM"
+language: c
+primary_contact: "david@wolfssl.com"
+auto_ccs:
+- "david@adalogics.com"
+main_repo: "https://github.com/wolfSSL/wolfTPM"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+base_os_version: ubuntu-24-04
