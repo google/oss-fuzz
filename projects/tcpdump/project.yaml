@@ -1,0 +1,14 @@
+homepage: "https://www.tcpdump.org/"
+language: c
+main_repo: "https://github.com/the-tcpdump-group/tcpdump"
+primary_contact: "tcpdump-workers@lists.tcpdump.org"
+auto_ccs:
+  - "guy@alum.mit.edu"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+sanitizers:
+  - address
+  - memory
+  - undefined
