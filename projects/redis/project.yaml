@@ -1,0 +1,14 @@
+homepage: "https://redis.io/"
+main_repo: "https://github.com/redis/redis"
+language: c
+primary_contact: "security@redis.io"
+auto_ccs:
+  - "security@redis.io"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
