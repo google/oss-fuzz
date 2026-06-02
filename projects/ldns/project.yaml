@@ -1,0 +1,12 @@
+homepage: "https://www.nlnetlabs.nl/projects/ldns/"
+language: c
+main_repo: "https://github.com/NLnetLabs/ldns"
+primary_contact: "dns-team@nlnetlabs.nl"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+sanitizers:
+  - address
+  - memory
+  - undefined
