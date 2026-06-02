@@ -17,6 +17,10 @@
 
 cd "$SRC/zstd-seekable-format-go/pkg"
 
+# The native Go fuzzer helper rewrites _test.go files into regular Go files.
+# Keep the external-package examples out of that package-local fuzz build.
+rm example_test.go
+
 FUZZERS_PACKAGE=github.com/SaveTheRbtz/zstd-seekable-format-go/pkg
 
 compile_native_go_fuzzer_v2 "$FUZZERS_PACKAGE" FuzzReader FuzzReader
@@ -24,5 +28,5 @@ compile_native_go_fuzzer_v2 "$FUZZERS_PACKAGE" FuzzReaderConst FuzzReaderConst
 compile_native_go_fuzzer_v2 "$FUZZERS_PACKAGE" FuzzRoundTrip FuzzRoundTrip
 compile_native_go_fuzzer_v2 "$FUZZERS_PACKAGE" FuzzCorruptSeekTable FuzzCorruptSeekTable
 
-zip "$OUT/FuzzReader_seed_corpus.zip" testdata/fuzz/FuzzReader/*
-zip "$OUT/FuzzRoundTrip_seed_corpus.zip" testdata/fuzz/FuzzRoundTrip/*
+zip -j "$OUT/FuzzReader_seed_corpus.zip" testdata/fuzz/FuzzReader/*
+zip -j "$OUT/FuzzRoundTrip_seed_corpus.zip" testdata/fuzz/FuzzRoundTrip/*
