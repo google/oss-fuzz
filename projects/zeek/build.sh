@@ -16,7 +16,7 @@
 ################################################################################
 
 export CFLAGS="${CFLAGS} -pthread"
-export CXXFLAGS="${CXXFLAGS} -pthread"
+export CXXFLAGS="${CXXFLAGS} -pthread -D_GLIBCXX_ASSERTIONS"
 
 ./configure --prefix=$(pwd)/build/install-root \
             --build-type=debug \
