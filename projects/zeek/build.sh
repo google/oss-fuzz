@@ -15,15 +15,17 @@
 #
 ################################################################################
 
-CFLAGS="${CFLAGS} -pthread" CXXFLAGS="${CXXFLAGS} -pthread" \
-    ./configure --prefix=$(pwd)/build/install-root \
-                --build-type=debug \
-                --generator=Ninja \
-                --enable-fuzzers \
-                --disable-python \
-                --disable-zeekctl \
-                --disable-auxtools \
-                --disable-broker-tests
+export CFLAGS="${CFLAGS} -pthread"
+export CXXFLAGS="${CXXFLAGS} -pthread"
+
+./configure --prefix=$(pwd)/build/install-root \
+            --build-type=debug \
+            --generator=Ninja \
+            --enable-fuzzers \
+            --disable-python \
+            --disable-zeekctl \
+            --disable-auxtools \
+            --disable-broker-tests
 
 cd build
 ninja install
