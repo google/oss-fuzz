@@ -15,13 +15,22 @@
 #
 ################################################################################
 
-export CFLAGS="${CFLAGS} -fPIC -Wl,--allow-multiple-definition"
-export CXXFLAGS="${CXXFLAGS} -fPIC -Wl,--allow-multiple-definition"
+export CFLAGS="${CFLAGS} -fPIC"
+export CXXFLAGS="${CXXFLAGS} -fPIC"
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
 
-# Use valid value for -Dfuzzing (enabled/disabled/auto)
-meson setup build -Dfuzzing=enabled -Dcmocka=enabled \
+# Use the dedicated oss-fuzz fuzzing backend that BIND 9 provides.  It defines
+# FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION (which drops the standalone main()
+# from fuzz/main.c, so there is no duplicate-main conflict with the fuzzing
+# engine) and links whatever engine OSS-Fuzz passes via $LIB_FUZZING_ENGINE.
+# Building everything statically yields self-contained fuzzer binaries.
+meson setup build \
+  -Dfuzzing=enabled \
+  -Dfuzzing-backend=oss-fuzz \
+  -Doss-fuzz-args="$LIB_FUZZING_ENGINE" \
+  -Db_lundef=false \
+  -Dcmocka=enabled \
   -Dc_link_args="$CFLAGS" -Dcpp_link_args="$CXXFLAGS" \
   -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS" \
   -Ddefault_library=static -Dprefer_static=true \
