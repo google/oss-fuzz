@@ -22,7 +22,11 @@
 	--enable-tnccs-20 \
 	--enable-libipsec \
 	--enable-eap-radius \
+	--enable-pkcs12 \
+	--enable-hmac \
+	--enable-acert \
 	--enable-fuzzing \
+	--enable-sha1 --enable-sha2 --enable-sha3 --enable-mgf1 --enable-gmp \
 	--with-libfuzzer=$LIB_FUZZING_ENGINE \
 	--enable-monolithic \
 	--disable-shared \

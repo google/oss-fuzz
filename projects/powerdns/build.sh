@@ -78,6 +78,7 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
         build_dir='build'
         CC_LD=lld CXX_LD=lld meson setup \
           -D fuzz-targets=true \
+          -D fuzzer_ldflags=${LIB_FUZZING_ENGINE} \
           -D b_pie=false \
           -D yaml=disabled \
           ${build_dir}

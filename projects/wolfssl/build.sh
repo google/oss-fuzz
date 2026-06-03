@@ -41,6 +41,20 @@ then
     # Configure Cryptofuzz
     cd $SRC/cryptofuzz
     sed -i 's/kNegativeIntegers = false/kNegativeIntegers = true/g' config.h
+
+    # wolfSSL changed wc_InitMd2/Md2Update/Md2Final and the Md4 equivalents to
+    # return int (previously void), so cryptofuzz's wolfCrypt module no longer
+    # compiles: its md2/md4 Digest<> instances still use the void-returning
+    # Init_Void/DigestUpdate_Void/DigestFinalize_Void wrappers. Switch them to
+    # the int-returning *_Int wrappers, matching how md5/ripemd/sha are already
+    # declared. Remove this once cryptofuzz upstream is updated.
+    sed -i \
+      's/Init_Void<Md2>, DigestUpdate_Void<Md2>, DigestFinalize_Void<Md2>/Init_Int<Md2>, DigestUpdate_Int<Md2>, DigestFinalize_Int<Md2>/' \
+      modules/wolfcrypt/module.cpp
+    sed -i \
+      's/Init_Void<Md4>, DigestUpdate_Void<Md4>, DigestFinalize_Void<Md4>/Init_Int<Md4>, DigestUpdate_Int<Md4>, DigestFinalize_Int<Md4>/' \
+      modules/wolfcrypt/module.cpp
+
     cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-openssl-api/
     cd $SRC/cryptofuzz-openssl-api/
     python gen_repository.py
