@@ -44,4 +44,7 @@ for f in $fuzzers; do
 	if [ -d "fuzzing-corpora/${corpus}" ]; then
 		zip -rj $OUT/${fuzzer}_seed_corpus.zip fuzzing-corpora/${corpus}
 	fi
+	if [ -f "fuzzing-corpora/${corpus}.dict" ]; then
+		cp "fuzzing-corpora/${corpus}.dict" "$OUT/${fuzzer}.dict"
+	fi
 done
