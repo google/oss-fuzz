@@ -19,6 +19,7 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
+  - undefined
 main_repo: 'https://github.com/zeek/zeek'
 coverage_extra_args: >
   -ignore-filename-regex=src/3rdparty/.*
