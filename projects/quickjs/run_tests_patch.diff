@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 3b1c745..e0a1b97 100644
+index e10cd42..12efc24 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -449,7 +449,6 @@ test: qjs$(EXE)
+@@ -454,7 +454,6 @@ test: qjs$(EXE)
  	$(WINE) ./qjs$(EXE) tests/test_loop.js
  	$(WINE) ./qjs$(EXE) tests/test_bigint.js
  	$(WINE) ./qjs$(EXE) tests/test_cyclic_import.js
