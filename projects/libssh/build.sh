@@ -41,6 +41,13 @@ if [ -f "$MOCK_SRC" ]; then
         -c "$MOCK_SRC" -O0 -g
 fi
 
+# Build the shared mock client object (needed by ssh_sftpserver_fuzzer)
+CLIENT_MOCK_SRC="$SRC/libssh/tests/fuzz/ssh_client_mock.c"
+if [ -f "$CLIENT_MOCK_SRC" ]; then
+    $CC $CFLAGS -I$SRC/libssh/include/ -I$SRC/libssh/src/ -I$BUILD/ -I$BUILD/include/ \
+        -c "$CLIENT_MOCK_SRC" -O0 -g
+fi
+
 fuzzers=$(find $SRC/libssh/tests/fuzz/ -name "*_fuzzer.c")
 for f in $fuzzers; do
     fuzzerName=$(basename $f .c)
@@ -52,6 +59,12 @@ for f in $fuzzers; do
     if [ "$fuzzerName" = "ssh_scp_fuzzer" ] || [ "$fuzzerName" = "ssh_sftp_fuzzer" ]; then
         echo "Linking $fuzzerName with ssh_server_mock"
         $CXX $CXXFLAGS $fuzzerName.o ssh_server_mock.o \
+            -o "$OUT/$fuzzerName" -O0 -g \
+            $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic -lpthread
+    # Check if this fuzzer needs ssh_client_mock
+    elif [ "$fuzzerName" = "ssh_sftpserver_fuzzer" ]; then
+        echo "Linking $fuzzerName with ssh_client_mock"
+        $CXX $CXXFLAGS $fuzzerName.o ssh_client_mock.o \
             -o "$OUT/$fuzzerName" -O0 -g \
             $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic -lpthread
     else

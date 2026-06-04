@@ -16,7 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && \
-   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex patchelf
+   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex patchelf nasm
 
 RUN pip3 install --disable-pip-version-check --no-cache-dir \
         pip==25.1.1
@@ -24,10 +24,6 @@ RUN pip3 install --disable-pip-version-check --no-cache-dir \
         corpus-replicator \
         meson==1.8.2 \
         ninja==1.11.1.4
-
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git vorbis
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git ogg
-RUN git clone --depth 1 https://gitlab.xiph.org/xiph/theora.git theora
 
 # Checkout repository
 RUN git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gstreamer.git gstreamer
