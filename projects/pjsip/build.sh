@@ -18,10 +18,23 @@ export CFLAGS="$CFLAGS -DPJMEDIA_HAS_VIDEO=1"
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS="$CFLAGS"
 
+# Temporary workaround for pjproject#4988: the Opus block in fuzz-audio.c has an
+# unterminated /* ... comment right before the stereo-config block, which the
+# preprocessor swallows along with the block's variable declarations and opening
+# brace, breaking the build. Insert the missing */ after the comment's last line.
+# Remove this once the upstream comment is closed.
+sed -i '/registered "opus\/48000\/2" ID)\./a\     */' tests/fuzz/fuzz-audio.c
+
 ./configure \
 --disable-ffmpeg --disable-ssl \
 --disable-speex-aec --disable-g7221-codec \
 --disable-resample --disable-libwebrtc --disable-libyuv
+
+# Force static linking of libvpx and libopus so the fuzzers do not depend on
+# .so files that are absent from the OSS-Fuzz runner image. libvpx-dev and
+# libopus-dev both ship .a archives in /usr/lib/x86_64-linux-gnu/.
+sed -i 's|-lvpx|/usr/lib/x86_64-linux-gnu/libvpx.a|g' build.mak
+sed -i 's|-lopus|/usr/lib/x86_64-linux-gnu/libopus.a|g' build.mak
 
 make dep
 make -j$(nproc) --ignore-errors

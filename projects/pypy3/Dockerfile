@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 ################################################################################
 
 
-# build project
-./autogen.sh
-./configure --enable-oss-fuzz PCRE2_LIBS=-l:libpcre2-8.a
-make -j2 -C include/
-make -j2 -C lib/libvinyl/
-make -j2 -C lib/libvgz/
-make -j2 -C lib/libvsc/
-make -j2 -C bin/vinyld/ esi_parse_fuzzer
-cp bin/vinyld/*_fuzzer $OUT/
+FROM gcr.io/oss-fuzz-base/base-builder
+
+RUN apt-get update && \
+    apt-get install -y gcc make libffi-dev pkg-config \
+    zlib1g-dev libbz2-dev libsqlite3-dev libncurses5-dev \
+    libexpat1-dev libssl-dev libgdbm-dev tk-dev libgc-dev \
+    liblzma-dev libncursesw5-dev \
+    pypy
+
+RUN git clone --depth 1 --branch py3.11 https://github.com/pypy/pypy.git pypy
+RUN git clone --depth 1 --branch main https://github.com/StanFromIreland/pypy-fuzz.git
+WORKDIR pypy
+COPY build.sh $SRC/

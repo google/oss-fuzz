@@ -1,8 +1,8 @@
 diff --git a/test/Makefile.am b/test/Makefile.am
-index 7eb4ab5..cdbd28a 100644
+index 613cfab..e977d39 100644
 --- a/test/Makefile.am
 +++ b/test/Makefile.am
-@@ -480,8 +480,18 @@ libvlc_demux_run_la_LIBADD += \
+@@ -495,8 +495,20 @@ libvlc_demux_run_la_LIBADD += \
  	../modules/libpacketizer_mpegaudio_plugin.la \
  	../modules/libpacketizer_mpegvideo_plugin.la \
  	../modules/libpacketizer_vc1_plugin.la \
@@ -18,10 +18,12 @@ index 7eb4ab5..cdbd28a 100644
 +	../modules/libdemux_stl_plugin.la \
 +	../modules/libhx_plugin.la \
 +	../modules/libdmxmus_plugin.la \
++	../modules/libmod_plugin.la \
++	../modules/libgme_plugin.la \
  	../modules/libfilesystem_plugin.la \
  	../modules/libxml_plugin.la \
  	../modules/libogg_plugin.la \
-@@ -522,13 +532,28 @@ libvlc_demux_dec_run_la_LIBADD += \
+@@ -537,13 +549,33 @@ libvlc_demux_dec_run_la_LIBADD += \
  	../modules/libsubsusf_plugin.la \
  	../modules/libsvcdsub_plugin.la \
  	../modules/libtextst_plugin.la \
@@ -37,7 +39,12 @@ index 7eb4ab5..cdbd28a 100644
 +	../modules/libdav1d_plugin.la \
 +	../modules/libvpx_plugin.la \
 +	../modules/libmpg123_plugin.la \
-+	../modules/liboggspots_plugin.la
++	../modules/liboggspots_plugin.la \
++	../modules/libfaad_plugin.la \
++	../modules/libjpeg_plugin.la \
++	../modules/libpng_plugin.la \
++	../modules/liblibass_plugin.la \
++	../modules/libkate_plugin.la
  if HAVE_ZVBI
  libvlc_demux_dec_run_la_LIBADD += ../modules/libzvbi_plugin.la
  endif
@@ -50,12 +57,12 @@ index 7eb4ab5..cdbd28a 100644
 +endif
  endif
  EXTRA_LTLIBRARIES += libvlc_demux_dec_run.la
-
+ 
 diff --git a/test/src/input/demux-run.c b/test/src/input/demux-run.c
-index c71afa2..c4c2ebd 100644
+index 92a5d92..1486f79 100644
 --- a/test/src/input/demux-run.c
 +++ b/test/src/input/demux-run.c
-@@ -417,7 +417,18 @@ int vlc_demux_process_memory(const struct vlc_run_args *args,
+@@ -417,7 +417,23 @@ int vlc_demux_process_memory(const struct vlc_run_args *args,
      f(codec_subsusf) \
      f(codec_svcdsub) \
      f(codec_textst) \
@@ -71,11 +78,16 @@ index c71afa2..c4c2ebd 100644
 +    f(codec_dav1d) \
 +    f(codec_vpx) \
 +    f(codec_mpg123) \
-+    f(codec_oggspots)
++    f(codec_oggspots) \
++    f(codec_faad) \
++    f(codec_jpeg) \
++    f(codec_png) \
++    f(codec_ass) \
++    f(codec_kate)
  #else
  #define DECODER_PLUGINS(f)
  #endif
-@@ -464,11 +477,29 @@ int vlc_demux_process_memory(const struct vlc_run_args *args,
+@@ -464,11 +480,31 @@ int vlc_demux_process_memory(const struct vlc_run_args *args,
      f(packetizer_mpegaudio) \
      f(packetizer_mpegvideo) \
      f(packetizer_vc1) \
@@ -92,10 +104,12 @@ index c71afa2..c4c2ebd 100644
 +    f(demux_demux_stl) \
 +    f(demux_hx) \
 +    f(demux_dmxmus) \
++    f(demux_mod) \
++    f(demux_gme) \
      f(demux_ogg) \
 +    PLUGIN_AVCODEC(f) \
      DECODER_PLUGINS(f)
-
+ 
 +#ifdef HAVE_AVCODEC
 +# define PLUGIN_AVCODEC(f) f(codec_avcodec_avcodec)
 +#else
