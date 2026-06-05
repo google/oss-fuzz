@@ -3942,6 +3942,161 @@ def mp4_dictionary() -> str:
     return '\n'.join(lines) + '\n'
 
 
+# ──────────────────────────────────────────────────
+#  CEA-708 caption seeds (modules/codec/cea708.c)
+# ──────────────────────────────────────────────────
+#
+# cea708.c (the DTVCC service-block / window command decoder, ~1200 lines) was
+# only ~9% covered: nothing in the corpus drove it. It is reached only via a
+# real cc.c decoder loaded on a caption ES, NOT via the SEI cc_data extracted by
+# the H.264/H.265 packetizers — the test harness discards packetizer pf_get_cc
+# output (test/src/input/decoder.c). The one container that emits a standalone
+# VLC_CODEC_CEA708 ES is MP4: a 'clcp' handler track with a 'c708' sample entry
+# (modules/demux/mp4/{essetup,mp4}.c). The full reachable path is:
+#
+#   mp4 demux (clcp/c708 track) -> SPU ES VLC_CODEC_CEA708 -> cc.c spu decoder
+#   -> MP4_CDP_Convert: each sample is a QuickTime 'ccdp' atom wrapping an
+#      ST334-2 CDP, parsed by cc.h cc_Extract(CC_PAYLOAD_CDP) into cc triplets
+#   -> cc.c Convert(): triplets with cc_type 3/2 -> CEA708 DTVCC demuxer
+#   -> service blocks (service #1, matching c708 default cc.i_channel 0)
+#   -> CEA708_Decoder_Push -> the C0/C1/G0/G1/G2G3/P16 command parser.
+#
+# These seeds emit valid MP4 c708 tracks whose samples carry DTVCC service
+# blocks exercising DefineWindow (DF0..DF7), SetPen{Attributes,Color,Location},
+# SetWindowAttributes, window display/clear/toggle/hide/delete, delays, reset,
+# G0/G1/G2-G3/P16 text, and rows filled to the screen edge in all four
+# print/scroll directions to drive Window_{Forward,CarriageReturn,Scroll,
+# Truncate,MaxCol,MinCol}. They land in seeds/mp4/ (the mp4 demux target).
+
+def _cea_mvhd():
+    p = struct.pack('>IIII', 0, 0, 1000, 0) + struct.pack('>I', 0x10000)
+    p += struct.pack('>H', 0x0100) + b'\x00' * 10
+    p += struct.pack('>9i', 0x10000,0,0, 0,0x10000,0, 0,0,0x40000000)
+    p += b'\x00' * 24 + struct.pack('>I', 2)
+    return fullbox(b'mvhd', 0, 0, p)
+
+def _cea_tkhd():
+    p = struct.pack('>IIIII', 0,0,1,0,0) + b'\x00' * 8
+    p += struct.pack('>hhhh', 0,0,0,0)
+    p += struct.pack('>9i', 0x10000,0,0, 0,0x10000,0, 0,0,0x40000000)
+    p += struct.pack('>II', 0, 0)
+    return fullbox(b'tkhd', 0, 0x000007, p)   # enabled | in movie | in preview
+
+def _cea_mdhd():
+    return fullbox(b'mdhd', 0, 0, struct.pack('>IIII', 0,0,1000,0) +
+                   struct.pack('>HH', 0x55c4, 0))
+
+def _cea_stsd_c708():
+    entry = box(b'c708', b'\x00' * 6 + struct.pack('>H', 1))  # 6 reserved + dref idx
+    return fullbox(b'stsd', 0, 0, struct.pack('>I', 1) + entry)
+
+def _cea_build_mp4(samples):
+    sizes = [len(s) for s in samples]
+    n = len(samples)
+    def stbl(chunk_off):
+        return box(b'stbl',
+            _cea_stsd_c708() +
+            fullbox(b'stts',0,0, struct.pack('>I',1) + struct.pack('>II', n, 1000)) +
+            fullbox(b'stsc',0,0, struct.pack('>I',1) + struct.pack('>III', 1, n, 1)) +
+            fullbox(b'stsz',0,0, struct.pack('>II', 0, n) +
+                    b''.join(struct.pack('>I', s) for s in sizes)) +
+            fullbox(b'stco',0,0, struct.pack('>I',1) + struct.pack('>I', chunk_off)))
+    def moov(chunk_off):
+        minf = box(b'minf', box(b'dinf', fullbox(b'dref',0,0, struct.pack('>I',1) +
+                   fullbox(b'url ',0,1,b''))) + stbl(chunk_off))
+        mdia = box(b'mdia', _cea_mdhd() + hdlr(b'clcp') + minf)
+        return box(b'moov', _cea_mvhd() + box(b'trak', _cea_tkhd() + mdia))
+    ftypb = ftyp(b'isom', [b'isom', b'mp42'])
+    chunk_off = len(ftypb) + len(moov(0)) + 8     # moov size is offset-independent
+    return ftypb + moov(chunk_off) + box(b'mdat', b''.join(samples))
+
+# DTVCC cc-triplet byte0: marker bits | valid bit (0x04) | cc_type. type 3 =
+# DTVCC packet header, type 2 = continuation (cc.c routes both to the 708 demux).
+def _cea_cdp_sample(command_block, seq):
+    sb = bytes([(1 << 5) | len(command_block)]) + command_block   # service #1
+    P = bytearray(sb)
+    if len(P) % 2 == 0:
+        P.append(0x00)                            # odd length -> clean packing
+    code = (len(P) + 1) // 2
+    trips = [bytes([0xFF, code, P[0]])]           # 0xFF: valid, cc_type 3
+    i = 1
+    while i < len(P):
+        trips.append(bytes([0xFE, P[i], P[i+1]])) # 0xFE: valid, cc_type 2
+        i += 2
+    assert len(trips) <= 31
+    ccdata = bytes([0x72, 0xE0 | len(trips)]) + b''.join(trips)
+    cdp = bytearray([0x96, 0x69, 0, 0x3F, 0x40, (seq >> 8) & 0xFF, seq & 0xFF]) + ccdata
+    cdp[2] = len(cdp) & 0xFF                       # cdp_length
+    return box(b'ccdp', bytes(cdp))
+
+def _cea_command_blocks():
+    DF0, DF7 = 0x98, 0x9F
+    blocks = [
+        # DefineWindow 0, pen/window attributes, pen location, text, flush.
+        bytes([DF0,0x27,0x00,0x00,0x12,0x20,0x09, 0x90,0x4A,0xC5, 0x91,0x7F,0x80,0x2A,
+               0x97,0x40,0x00,0x3C,0x21, 0x92,0x01,0x02, 0x48,0x69, 0x03]),
+        # Window visibility ops + delay/cancel.
+        bytes([0x89,0x01, 0x80, 0x88,0x01, 0x8B,0x01, 0x8A,0x01, 0x8D,0x05, 0x8E]),
+        # DefineWindow 1 (relative), G1 / EXT1+G2 / P16 / C0 controls.
+        bytes([0x99,0x20,0x80,0x10,0x23,0x10,0x12, 0xA1, 0x10,0x30, 0x18,0x00,0x41,
+               0x08, 0x0C, 0x0D, 0x0E, 0x7F, 0x03]),
+        # DefineWindow 7, text, display, delete-all, reset.
+        bytes([DF7,0x20,0x00,0x00,0x11,0x10,0x00, 0x87, 0x54,0x56, 0x89,0x80,
+               0x8C,0xFF, 0x8F]),
+    ]
+    # Small windows in all 4 print/scroll directions, filled with text + CRs to
+    # drive Forward/CarriageReturn/Scroll/Truncate across every direction branch.
+    for d in range(4):
+        win = 2 + d
+        blocks += [
+            bytes([0x98 + win, 0x27,0x00,0x00,0x11,0x04,0x09]),
+            bytes([0x97, 0x00,0x00, 0x40 | (d << 4) | (d << 2), 0x12]),
+            bytes([0x80 + win]),
+            bytes([0x41,0x42,0x43,0x20,0x44,0x45,0x20,0x46, 0x0D,0x0D,0x0D,0x08,0x0C,0x03]),
+            bytes([0x47,0x48,0x49,0x20,0x4A,0x4B, 0x0D,0x0D,0x0E,0x03]),
+        ]
+    # LTR row filled to the right edge (col 41) -> Truncate(LTR) + MaxCol.
+    blocks += [
+        bytes([0x9E,0x27,0x00,0x00,0x11,0x20,0x09]),
+        bytes([0x97,0x00,0x00,0x00,0x00]),
+        bytes([0x86, 0x92,0x00,0x00]),
+        bytes([0x41]*28), bytes([0x41]*28),
+        bytes([0x0D, 0x03]),
+    ]
+    # RTL row filled to the left edge (col 0) -> Truncate(RTL) + MinCol.
+    blocks += [
+        bytes([0x9D,0x27,0x00,0x00,0x11,0x20,0x09]),
+        bytes([0x97,0x00,0x00,0x14,0x00]),
+        bytes([0x85, 0x92,0x00,0x29]),
+        bytes([0x42]*28), bytes([0x42]*28),
+        bytes([0x0D, 0x03]),
+    ]
+    # P16 across all three UTF-8 width branches, then display everything.
+    blocks += [
+        bytes([0x18,0x00,0x41, 0x18,0x04,0x00, 0x18,0x30,0x42, 0x03]),
+        bytes([0x89, 0xFF, 0x03]),
+    ]
+    return blocks
+
+
+def gen_cea708(root):
+    seed_dir = os.path.join(root, 'seeds', 'mp4')
+    os.makedirs(seed_dir, exist_ok=True)
+    blocks = _cea_command_blocks()
+    # One full program seed (all commands), plus a couple of split variants so
+    # the fuzzer has shorter, easily-mutable caption samples to start from.
+    variants = {
+        'cea708_dtvcc_full.mp4': blocks,
+        'cea708_dtvcc_windows.mp4': blocks[:4],
+        'cea708_dtvcc_scroll.mp4': blocks[4:24],
+    }
+    for name, blks in variants.items():
+        samples = [_cea_cdp_sample(b, i) for i, b in enumerate(blks)]
+        data = _cea_build_mp4(samples)
+        _write(os.path.join(seed_dir, name), data)
+        print(f'  seeds/mp4/{name}: {len(data)} bytes, {len(samples)} CDP samples')
+
+
 def gen_mp4_extras(root):
     seed_dir = os.path.join(root, 'seeds', 'mp4')
     dict_dir = os.path.join(root, 'dictionaries')
@@ -4234,6 +4389,7 @@ def main():
     gen_ogg(root)
     gen_mkv(root)
     gen_mp4_extras(root)
+    gen_cea708(root)
     gen_gme(root)
     gen_mod(root)
     gen_kate(root)
