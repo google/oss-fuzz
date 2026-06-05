@@ -23,6 +23,11 @@ CONFIG_CLANG=y make libquickjs.fuzz.a .obj/fuzz_common.o .obj/libregexp.fuzz.o .
 zip -r $OUT/fuzz_eval_seed_corpus.zip $SRC/quickjs-corpus/js/*.js
 zip -r $OUT/fuzz_compile_seed_corpus.zip $SRC/quickjs-corpus/js/*.js
 
+zip -r $OUT/fuzz_module_export_seed_corpus.zip $SRC/quickjs-corpus/js/*.js
+zip -r $OUT/fuzz_json_seed_corpus.zip $SRC/quickjs-corpus/js/*.js
+zip -r $OUT/fuzz_regexp_compile_seed_corpus.zip $SRC/quickjs-corpus/js/*.js
+zip -r $OUT/fuzz_bytecode_seed_corpus.zip $SRC/quickjs-corpus/js/*.js
+
 build_fuzz_target () {
     local target=$1
     shift
@@ -33,6 +38,14 @@ build_fuzz_target () {
 build_fuzz_target fuzz_eval .obj/fuzz_common.o libquickjs.fuzz.a
 build_fuzz_target fuzz_compile .obj/fuzz_common.o libquickjs.fuzz.a
 build_fuzz_target fuzz_regexp .obj/libregexp.fuzz.o .obj/cutils.fuzz.o .obj/libunicode.fuzz.o
+build_fuzz_target fuzz_module_export .obj/fuzz_common.o libquickjs.fuzz.a
+build_fuzz_target fuzz_json .obj/fuzz_common.o libquickjs.fuzz.a
+build_fuzz_target fuzz_regexp_compile .obj/libregexp.fuzz.o .obj/cutils.fuzz.o .obj/libunicode.fuzz.o
+build_fuzz_target fuzz_bytecode .obj/fuzz_common.o libquickjs.fuzz.a
 
 cp fuzz/fuzz.dict $OUT/fuzz_eval.dict
 cp fuzz/fuzz.dict $OUT/fuzz_compile.dict
+cp fuzz/fuzz.dict $OUT/fuzz_module_export.dict
+cp fuzz/fuzz.dict $OUT/fuzz_json.dict
+cp fuzz/fuzz.dict $OUT/fuzz_regexp_compile.dict
+cp fuzz/fuzz.dict $OUT/fuzz_bytecode.dict
