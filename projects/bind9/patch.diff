@@ -1,26 +1,78 @@
+From daadc14f67b1ed6a7d1513c74a320780a1e6af12 Mon Sep 17 00:00:00 2001
+From: Michal Nowak <mnowak@isc.org>
+Date: Fri, 5 Jun 2026 10:08:03 +0000
+Subject: [PATCH] Build the fuzzers without the libbindtest test library
+
+Every fuzz target depended on libtest_dep, which forces building the
+libbindtest shared library.  In a static build (as used by OSS-Fuzz)
+that link fails: libbindtest's netmgr wrappers multiply-define symbols
+that also live in the static libisc/libns archives, and the static
+system libraries are not position independent.
+
+Only fuzz_dns_qp actually uses the qp test helpers, so give it just
+tests/libtest/qp.c via the new libtest_qp_dep and drop libtest_dep
+from the fuzzers.
+
+Assisted-by: Claude:claude-opus-4-8
+---
+ meson.build       | 14 +++++++++-----
+ tests/meson.build |  9 +++++++++
+ 2 files changed, 18 insertions(+), 5 deletions(-)
+
 diff --git a/meson.build b/meson.build
-index d4a675b..f5cb72a 100644
+index 0ca704177b..a3d05d9d25 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -1584,7 +1584,7 @@ foreach name, sources : fuzz_binaries
+@@ -1873,6 +1873,13 @@ subdir('doc')
+ subdir('tests')
+ 
+ foreach name, sources : fuzz_binaries
++    # Only fuzz_dns_qp uses the qp test helpers; give it just those sources
++    # rather than the whole libbindtest library (see libtest_qp_dep).
++    fuzz_deps = [libdns_dep, libisc_dep]
++    if name == 'fuzz_dns_qp'
++        fuzz_deps += libtest_qp_dep
++    endif
++
+     fuzz_bin = executable(
+         name,
+         sources,
+@@ -1880,13 +1887,10 @@ foreach name, sources : fuzz_binaries
          implicit_include_directories: true,
          install: false,
          c_args: ['-Wno-vla'],
--        link_args: fuzz_link_args,
-+        link_args: fuzz_link_args + ['-fsanitize=fuzzer'],
-         dependencies: [
-             libdns_dep,
-             libisc_dep,
++        include_directories: test_inc,
+         link_args: fuzz_link_args,
+         sources: default_sanitize_options,
+-        dependencies: [
+-            libdns_dep,
+-            libisc_dep,
+-            libtest_dep,
+-        ],
++        dependencies: fuzz_deps,
+     )
+ 
+     test(
 diff --git a/tests/meson.build b/tests/meson.build
-index 416ba51..6feb638 100644
+index 416ba5125c..e62cf01de3 100644
 --- a/tests/meson.build
 +++ b/tests/meson.build
-@@ -15,7 +15,7 @@ test_inc = include_directories(
-     '..' / 'lib' / 'dns',
+@@ -39,6 +39,15 @@ libtest_dep = declare_dependency(
+     include_directories: test_inc,
  )
  
--libtest = shared_library(
-+libtest = static_library(
-     'bindtest',
-     files(
-         'libtest/dns.c',
++# Minimal dependency providing just the qp test helpers (compiled into the
++# consumer), for the fuzzers.  It avoids linking the whole libbindtest shared
++# library, which cannot be built from static archives - e.g. the OSS-Fuzz
++# build, where libbindtest's netmgr wrappers clash with libisc/libns.
++libtest_qp_dep = declare_dependency(
++    sources: files('libtest' / 'qp.c'),
++    include_directories: test_inc,
++)
++
+ if not cmocka_dep.found()
+     subdir_done()
+ endif
+-- 
+2.47.3
+
