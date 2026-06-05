@@ -24,11 +24,13 @@ if [[ "$SANITIZER" == "address" || "$SANITIZER" == "undefined" ]]; then
 fi
 
 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" pip3 install --no-build-isolation .
-python3 $SRC/make_seed_corpus.py \
+python3 $SRC/onnx/onnx/fuzz/make_seed_corpus.py \
     $OUT/fuzz_version_converter_seed_corpus.zip \
-    $OUT/fuzz_parser_seed_corpus.zip
+    $OUT/fuzz_parser_seed_corpus.zip \
+    $OUT/fuzz_checker_seed_corpus.zip \
+    $OUT/fuzz_shape_inference_seed_corpus.zip
 
 # Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -maxdepth 1 -name 'fuzz_*.py'); do
+for fuzzer in $(find $SRC/onnx/onnx/fuzz -maxdepth 1 -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done

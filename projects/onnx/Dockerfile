@@ -20,4 +20,4 @@ RUN git clone --depth 1 https://github.com/onnx/onnx.git onnx && \
     cd onnx && \
     git submodule update --init --recursive
 WORKDIR $SRC
-COPY *.py build.sh $SRC/
+COPY build.sh $SRC/

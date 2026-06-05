@@ -3,6 +3,9 @@ fuzzing_engines:
 homepage: https://onnx.ai/
 language: python
 main_repo: https://github.com/onnx/onnx
+# TODO: add a dedicated oss-fuzz security contact for the ONNX project
+# (e.g. onnx-security@lists.lfaidata.foundation or a new alias) once one is
+# established; until then crash reports go only to the addresses below.
 primary_contact: a.fehlner@googlemail.com
 auto_ccs:
   - fehlner@arcor.de
