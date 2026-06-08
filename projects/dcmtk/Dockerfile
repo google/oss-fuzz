@@ -24,6 +24,6 @@ RUN git clone --depth 1 https://github.com/DCMTK/dcmtk-fuzzers $SRC/dcmtk-fuzzer
 
 COPY build.sh $SRC/
 COPY dcmtk_dicom_fuzzer.dict make_seed_corpus.py $SRC/dcmtk-fuzzers/
-COPY dcmtk_dicom_fuzzer.cc dcmtk_meta_fuzzer.cc $SRC/dcmtk-fuzzers/
+COPY dcmtk_dicom_fuzzer.cc dcmtk_meta_fuzzer.cc dcmtk_image_fuzzer.cc $SRC/dcmtk-fuzzers/
 
 WORKDIR $SRC/dcmtk-fuzzers
