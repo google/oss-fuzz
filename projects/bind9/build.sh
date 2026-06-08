@@ -18,8 +18,6 @@
 export CFLAGS="${CFLAGS} -fPIC"
 export CXXFLAGS="${CXXFLAGS} -fPIC"
 
-git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
-
 # Use the dedicated oss-fuzz fuzzing backend that BIND 9 provides.  It defines
 # FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION (which drops the standalone main()
 # from fuzz/main.c, so there is no duplicate-main conflict with the fuzzing
