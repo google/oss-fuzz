@@ -32,7 +32,10 @@ sed -i "s/NSPR/NSS/g" dist/Debug/lib/pkgconfig/nss.pc
 LIBS="-lssl -lsmime -lnssdev -lnss_static -lpk11wrap_static -lcryptohi"
 LIBS="$LIBS -lcerthi -lcertdb -lnssb -lnssutil -lnsspki -ldl -lm -lsqlite"
 LIBS="$LIBS -lsoftokn_static -lsha-x86_c_lib -lfreebl_static"
-LIBS="$LIBS -lgcm-aes-x86_c_lib -lhw-acc-crypto-avx -lhw-acc-crypto-avx2"
+# NSS split the former gcm-aes-x86_c_lib target into gcm + ghash-aes-x86_c_lib
+# (+ intel-gcm-wrap_c_lib on x86_64). See freebl/gcm.gyp and ghash.gyp.
+LIBS="$LIBS -lgcm -lghash-aes-x86_c_lib -lintel-gcm-wrap_c_lib"
+LIBS="$LIBS -lhw-acc-crypto-avx -lhw-acc-crypto-avx2"
 sed -i "s/Libs:.*/Libs: -L\${libdir} $LIBS/g" dist/Debug/lib/pkgconfig/nss.pc
 echo "Requires: nspr" >> dist/Debug/lib/pkgconfig/nss.pc
 
