@@ -21,6 +21,9 @@ on:
     paths:
       - 'projects/**'
 
+permissions:
+  contents: read
+
 jobs:
   check-consistency:
     runs-on: ubuntu-latest
