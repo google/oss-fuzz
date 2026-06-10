@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-export USE_BAZEL_VERSION="7.3.2"
+export USE_BAZEL_VERSION="8.7.0"
 export CC=${CC:-clang}
 export CXX=${CXX:-clang++}
 
