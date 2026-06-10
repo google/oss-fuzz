@@ -18,6 +18,6 @@ cargo fuzz build -O --debug-assertions
 
 FUZZ_TARGET_OUTPUT_DIR=$SRC/opendal/core/target/x86_64-unknown-linux-gnu/release
 
-for target in fuzz_reader fuzz_writer fuzz_path; do
+for target in fuzz_from_uri fuzz_path fuzz_reader fuzz_writer; do
   cp $FUZZ_TARGET_OUTPUT_DIR/$target $OUT/$target
 done
