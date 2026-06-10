@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/go-jose/go-jose go-jose
 COPY build.sh $SRC/
-COPY fuzz_*.go $SRC/go-jose/
 WORKDIR $SRC/go-jose

@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/bin/bash -eu
-compile_go_fuzzer github.com/go-jose/go-jose/v4 FuzzJWEDecrypt fuzz_jwe_decrypt
-compile_go_fuzzer github.com/go-jose/go-jose/v4 FuzzJWSVerify fuzz_jws_verify
-compile_go_fuzzer github.com/go-jose/go-jose/v4 FuzzJWTParse fuzz_jwt_parse
+cd $SRC/go-jose
+
+# Upstream (ana repo) tarafından eklenen fuzzer'ları derle
+compile_go_fuzzer github.com/go-jose/go-jose/v3/fuzz FuzzJWSParse fuzz_jws_parse
+compile_go_fuzzer github.com/go-jose/go-jose/v3/fuzz FuzzJWSParseCompact fuzz_jws_parse_compact
+compile_go_fuzzer github.com/go-jose/go-jose/v3/fuzz FuzzJWSParseDetached fuzz_jws_parse_detached
+compile_go_fuzzer github.com/go-jose/go-jose/v3/fuzz FuzzJWEParse fuzz_jwe_parse
+compile_go_fuzzer github.com/go-jose/go-jose/v3/fuzz FuzzJWEParseCompact fuzz_jwe_parse_compact
+compile_go_fuzzer github.com/go-jose/go-jose/v3/fuzz FuzzJWTParse fuzz_jwt_parse
+compile_go_fuzzer github.com/go-jose/go-jose/v3/fuzz FuzzJWTParseSigned fuzz_jwt_parse_signed
+compile_go_fuzzer github.com/go-jose/go-jose/v3/fuzz FuzzJWTParseEncrypted fuzz_jwt_parse_encrypted

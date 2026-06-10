@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 homepage: "https://github.com/go-jose/go-jose"
 language: go
-primary_contact: "go-jose@googlegroups.com"
+primary_contact: "security@letsencrypt.org"
 main_repo: "https://github.com/go-jose/go-jose.git"
 file_github_issue: false
 fuzzing_engines:
