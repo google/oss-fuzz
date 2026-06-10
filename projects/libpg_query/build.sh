@@ -18,3 +18,7 @@
 make build
 $CC $CFLAGS -c ./test/fuzz/fuzz_parser.c ./libpg_query.a -I./
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parser.o ./libpg_query.a -I./ -o $OUT/fuzz_parser
+
+# Protobuf parse + deparse + fingerprint/normalize/scan harness
+$CC $CFLAGS -c ./test/fuzz/fuzz_protobuf.c ./libpg_query.a -I./
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_protobuf.o ./libpg_query.a -I./ -o $OUT/fuzz_protobuf
