@@ -130,9 +130,10 @@ def copy_shared_libraries(
 def patch_binary_rpath_and_interpreter(
     binary_path: os.PathLike[str],
     lib_mount_path: pathlib.Path,
-    ld_binary_path: pathlib.Path = LD_BINARY_PATH_X86_64,
+    *,
+    ld_binary_path: pathlib.Path | pathlib.Path = LD_BINARY_PATH_X86_64,
     extra_rpath_entries: Sequence[pathlib.Path] = (),
-):
+) -> None:
   """Patches the binary rpath and interpreter.
 
   Args:
@@ -159,7 +160,7 @@ def patch_binary_rpath_and_interpreter(
       [
           "patchelf",
           "--set-interpreter",
-          (lib_mount_path / ld_binary_path.name).as_posix(),
+          ld_binary_path.as_posix(),
           binary_path,
       ],
       check=True,
