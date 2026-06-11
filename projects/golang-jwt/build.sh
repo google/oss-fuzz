@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-#!/bin/bash -eu
 cd $SRC/jwt
 cp $SRC/fuzz_test.go ./
 compile_go_fuzzer github.com/golang-jwt/jwt/v5 FuzzParse fuzz_parse
 compile_go_fuzzer github.com/golang-jwt/jwt/v5 FuzzParseUnverified fuzz_parse_unverified
 compile_go_fuzzer github.com/golang-jwt/jwt/v5 FuzzSigningMethod fuzz_signing_method
+

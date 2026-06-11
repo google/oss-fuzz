@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-#!/bin/bash -eu
 cd $SRC/viper
 cp $SRC/fuzz_test.go ./
 compile_go_fuzzer github.com/spf13/viper FuzzReadConfig fuzz_read_config
@@ -21,3 +21,4 @@ compile_go_fuzzer github.com/spf13/viper FuzzUnmarshal fuzz_unmarshal
 compile_go_fuzzer github.com/spf13/viper FuzzMergeConfigMap fuzz_merge_config_map
 compile_go_fuzzer github.com/spf13/viper FuzzSetGet fuzz_set_get
 compile_go_fuzzer github.com/spf13/viper FuzzConfigFile fuzz_config_file
+

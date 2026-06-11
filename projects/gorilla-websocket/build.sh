@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-#!/bin/bash -eu
 cd $SRC/websocket
 cp $SRC/fuzz_test.go ./
 compile_go_fuzzer github.com/gorilla/websocket FuzzFrameRead fuzz_frame_read
 compile_go_fuzzer github.com/gorilla/websocket FuzzMaskXOR fuzz_mask_xor
 compile_go_fuzzer github.com/gorilla/websocket FuzzCheckOrigin fuzz_check_origin
+

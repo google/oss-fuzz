@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-#!/bin/bash -eu
 cd $SRC/testify
 cp $SRC/fuzz_test.go ./
 compile_go_fuzzer github.com/stretchr/testify FuzzAssertEqual fuzz_assert_equal
@@ -21,3 +21,4 @@ compile_go_fuzzer github.com/stretchr/testify FuzzAssertJSON fuzz_assert_json
 compile_go_fuzzer github.com/stretchr/testify FuzzAssertYAML fuzz_assert_yaml
 compile_go_fuzzer github.com/stretchr/testify FuzzRequireInt fuzz_require_int
 compile_go_fuzzer github.com/stretchr/testify FuzzElementsMatch fuzz_elements_match
+

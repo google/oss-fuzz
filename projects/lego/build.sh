@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-#!/bin/bash -eu
 cd $SRC/lego
 cp $SRC/fuzz_test.go ./
 compile_go_fuzzer github.com/go-acme/lego/v5 FuzzParsePEMBundle fuzz_parse_pem_bundle
@@ -21,3 +21,4 @@ compile_go_fuzzer github.com/go-acme/lego/v5 FuzzParsePEMPrivateKey fuzz_parse_p
 compile_go_fuzzer github.com/go-acme/lego/v5 FuzzPEMDecodeToX509CSR fuzz_pem_decode_to_x509_csr
 compile_go_fuzzer github.com/go-acme/lego/v5 FuzzParsePEMCertificate fuzz_parse_pem_certificate
 compile_go_fuzzer github.com/go-acme/lego/v5 FuzzPEMDecode fuzz_pem_decode
+

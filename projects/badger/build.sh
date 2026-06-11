@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-#!/bin/bash -eu
 cd $SRC/badger
 cp $SRC/fuzz_test.go ./
 compile_go_fuzzer github.com/dgraph-io/badger/v4 FuzzValuePointer fuzz_value_pointer
 compile_go_fuzzer github.com/dgraph-io/badger/v4 FuzzWAL fuzz_wal
 compile_go_fuzzer github.com/dgraph-io/badger/v4 FuzzManifest fuzz_manifest
+

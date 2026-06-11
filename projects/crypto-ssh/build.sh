@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-#!/bin/bash -eu
 cd $SRC/crypto/ssh
 cp $SRC/fuzz_test.go ./
 compile_go_fuzzer golang.org/x/crypto/ssh FuzzParsePublicKey fuzz_parse_public_key
@@ -21,3 +21,4 @@ compile_go_fuzzer golang.org/x/crypto/ssh FuzzParseAuthorizedKey fuzz_parse_auth
 compile_go_fuzzer golang.org/x/crypto/ssh FuzzParseKnownHosts fuzz_parse_known_hosts
 compile_go_fuzzer golang.org/x/crypto/ssh FuzzParsePrivateKey fuzz_parse_private_key
 compile_go_fuzzer golang.org/x/crypto/ssh FuzzParsePrivateKeyWithPassphrase fuzz_parse_private_key_passphrase
+

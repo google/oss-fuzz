@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+################################################################################
 
-#!/bin/bash -eu
 cd $SRC/pgx
 cp $SRC/fuzz_test.go ./
 compile_go_fuzzer github.com/jackc/pgx/v5 FuzzParseConfig fuzz_parse_config
@@ -21,3 +21,4 @@ compile_go_fuzzer github.com/jackc/pgx/v5 FuzzConnString fuzz_conn_string
 compile_go_fuzzer github.com/jackc/pgx/v5 FuzzConnConfig fuzz_conn_config
 compile_go_fuzzer github.com/jackc/pgx/v5 FuzzRuntimeParams fuzz_runtime_params
 compile_go_fuzzer github.com/jackc/pgx/v5 FuzzScanRow fuzz_scan_row
+
