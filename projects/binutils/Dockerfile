@@ -22,3 +22,4 @@ RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git bi
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_*.c $SRC/
+COPY generate_seeds.py $SRC/
