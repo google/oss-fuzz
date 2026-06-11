@@ -1,0 +1,12 @@
+homepage: "https://github.com/dgraph-io/badger"
+language: go
+primary_contact: "candasjunk@gmail.com"
+auto_ccs:
+  - "candasjunk@gmail.com"
+main_repo: "https://github.com/dgraph-io/badger"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
+# Criticality: Badger is the most widely-used embedded KV store in Go (14K+ stars). It underpins Dgraph, a distributed graph database. A crash or data corruption bug in Badger propagates to every system using it for persistence.
