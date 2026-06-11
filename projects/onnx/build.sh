@@ -32,7 +32,17 @@ if [[ "$SANITIZER" == "address" || "$SANITIZER" == "undefined" ]]; then
 fi
 
 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" pip3 install --no-build-isolation .
-python3 $SRC/onnx/onnx/fuzz/make_seed_corpus.py \
+
+# The onnx .so is compiled with -fsanitize=fuzzer-no-link (sancov instrumentation),
+# so importing it from plain Python requires the sanitizer runtime to be preloaded.
+_ASAN_RT=$(clang -print-file-name=libclang_rt.asan-x86_64.so 2>/dev/null || true)
+if [[ "$SANITIZER" == "address" && -f "$_ASAN_RT" ]]; then
+  _PYTHON_RUN="LD_PRELOAD=$_ASAN_RT ASAN_OPTIONS=detect_leaks=0 python3"
+else
+  _PYTHON_RUN="python3"
+fi
+
+eval "$_PYTHON_RUN" $SRC/onnx/onnx/fuzz/make_seed_corpus.py \
     $OUT/fuzz_version_converter_seed_corpus.zip \
     $OUT/fuzz_parser_seed_corpus.zip \
     $OUT/fuzz_checker_seed_corpus.zip \
