@@ -31,18 +31,26 @@ if [[ "$SANITIZER" == "address" || "$SANITIZER" == "undefined" ]]; then
   CMAKE_ARGS="$CMAKE_ARGS -DONNX_USE_ASAN=ON"
 fi
 
-CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" pip3 install --no-build-isolation .
+# Strip -fsanitize=fuzzer-no-link before building the Python extension.
+# That flag adds sancov coverage symbols (__sancov_lowest_stack etc.) that are
+# only provided by libFuzzer at run time, causing an undefined-symbol error when
+# plain Python tries to import the .so.  ASan instrumentation is kept so the
+# extension still detects memory bugs during fuzzing.
+# Use Python for reliable whitespace-token stripping (bash ${//} can silently
+# fail to match when the env var contains trailing punctuation or odd spacing).
+export CFLAGS=$(python3 -c "
+import os, sys
+flags = os.environ.get('CFLAGS', '')
+print(' '.join(f for f in flags.split() if f != '-fsanitize=fuzzer-no-link'))
+")
+export CXXFLAGS=$(python3 -c "
+import os, sys
+flags = os.environ.get('CXXFLAGS', '')
+print(' '.join(f for f in flags.split() if f != '-fsanitize=fuzzer-no-link'))
+")
+pip3 install --no-build-isolation .
 
-# The onnx .so is compiled with -fsanitize=fuzzer-no-link (sancov instrumentation),
-# so importing it from plain Python requires the sanitizer runtime to be preloaded.
-_ASAN_RT=$(clang -print-file-name=libclang_rt.asan-x86_64.so 2>/dev/null || true)
-if [[ "$SANITIZER" == "address" && -f "$_ASAN_RT" ]]; then
-  _PYTHON_RUN="LD_PRELOAD=$_ASAN_RT ASAN_OPTIONS=detect_leaks=0 python3"
-else
-  _PYTHON_RUN="python3"
-fi
-
-eval "$_PYTHON_RUN" $SRC/onnx/onnx/fuzz/make_seed_corpus.py \
+python3 $SRC/onnx/onnx/fuzz/make_seed_corpus.py \
     $OUT/fuzz_version_converter_seed_corpus.zip \
     $OUT/fuzz_parser_seed_corpus.zip \
     $OUT/fuzz_checker_seed_corpus.zip \
