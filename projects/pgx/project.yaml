@@ -1,0 +1,11 @@
+homepage: "https://github.com/jackc/pgx"
+language: go
+primary_contact: "candasjunk@gmail.com"
+auto_ccs:
+  - "candasjunk@gmail.com"
+main_repo: "https://github.com/jackc/pgx"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
