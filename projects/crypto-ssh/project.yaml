@@ -1,0 +1,12 @@
+homepage: "https://github.com/golang/crypto"
+language: go
+primary_contact: "candasjunk@gmail.com"
+auto_ccs:
+  - "candasjunk@gmail.com"
+main_repo: "https://github.com/golang/crypto"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
+# Criticality: golang.org/x/crypto/ssh is the Go standard library extension for SSH. It underpins SSH servers, SFTP clients, and secure remote access across the Go ecosystem. An SSH parsing bug enables remote pre-auth attacks.
