@@ -1,0 +1,11 @@
+homepage: "https://github.com/open-policy-agent/opa"
+language: go
+primary_contact: "candasjunk@gmail.com"
+auto_ccs:
+  - "candasjunk@gmail.com"
+main_repo: "https://github.com/open-policy-agent/opa"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer

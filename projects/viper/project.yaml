@@ -1,0 +1,11 @@
+homepage: "https://github.com/spf13/viper"
+language: go
+primary_contact: "candasjunk@gmail.com"
+auto_ccs:
+  - "candasjunk@gmail.com"
+main_repo: "https://github.com/spf13/viper"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
