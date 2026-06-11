@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y cmake protobuf-compiler libprotobuf-dev
+RUN apt-get update && apt-get install -y cmake protobuf-compiler
 RUN pip install "scikit-build-core>=0.11"
 RUN git clone --depth 1 https://github.com/onnx/onnx.git onnx && \
     cd onnx && \

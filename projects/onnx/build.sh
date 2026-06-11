@@ -17,10 +17,14 @@
 
 cd $SRC/onnx
 
+# Build ONNX's own protobuf from source so it is compiled with -fPIC,
+# which is required to link into the Python extension .so.
+export CMAKE_ARGS="-DONNX_BUILD_CUSTOM_PROTOBUF=ON"
+
 # Enable ONNX's built-in sanitizer support so the C++ extensions are
 # instrumented alongside the Python atheris layer.
 if [[ "$SANITIZER" == "address" || "$SANITIZER" == "undefined" ]]; then
-  export CMAKE_ARGS="-DONNX_USE_ASAN=ON"
+  CMAKE_ARGS="$CMAKE_ARGS -DONNX_USE_ASAN=ON"
 fi
 
 CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" pip3 install --no-build-isolation .
