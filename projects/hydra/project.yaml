@@ -1,0 +1,11 @@
+homepage: "https://github.com/ory/hydra"
+language: go
+primary_contact: "security@ory.sh"
+auto_ccs:
+  - "security@ory.sh"
+main_repo: "https://github.com/ory/hydra"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
