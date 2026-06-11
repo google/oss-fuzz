@@ -1,3 +1,17 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package semver_test
 
 import (
@@ -8,7 +22,7 @@ import (
 )
 
 // =============================================================================
-// Fuzz Target 1: Version Comparison — Compare, LessThan, GreaterThan, Equal
+// Fuzz Target 1: Version Comparison â€” Compare, LessThan, GreaterThan, Equal
 // =============================================================================
 
 // FuzzVersionCompare compares two parsed versions and checks comparison invariants.
@@ -43,18 +57,18 @@ func FuzzVersionCompare(f *testing.F) {
 
 		// Antisymmetry
 		if cmp == 0 && cmpRev != 0 {
-			t.Errorf("Compare asymmetry: %s vs %s → %d / %d", a, b, cmp, cmpRev)
+			t.Errorf("Compare asymmetry: %s vs %s â†’ %d / %d", a, b, cmp, cmpRev)
 		}
 		if cmp > 0 && cmpRev >= 0 {
-			t.Errorf("Compare antisymmetry violation: %s vs %s → %d / %d", a, b, cmp, cmpRev)
+			t.Errorf("Compare antisymmetry violation: %s vs %s â†’ %d / %d", a, b, cmp, cmpRev)
 		}
 		if cmp < 0 && cmpRev <= 0 {
-			t.Errorf("Compare antisymmetry violation: %s vs %s → %d / %d", a, b, cmp, cmpRev)
+			t.Errorf("Compare antisymmetry violation: %s vs %s â†’ %d / %d", a, b, cmp, cmpRev)
 		}
 
-		// Equal ↔ Compare == 0
+		// Equal â†” Compare == 0
 		if va.Equal(vb) != (cmp == 0) {
-			t.Errorf("Equal/Compare mismatch: %s vs %s → Compare=%d Equal=%v", a, b, cmp, va.Equal(vb))
+			t.Errorf("Equal/Compare mismatch: %s vs %s â†’ Compare=%d Equal=%v", a, b, cmp, va.Equal(vb))
 		}
 
 		// LessThan / GreaterThan consistency
@@ -64,7 +78,7 @@ func FuzzVersionCompare(f *testing.F) {
 			t.Errorf("LessThan/GreaterThan both %v for Compare=%d", lt, cmp)
 		}
 		if lt != (cmp < 0) {
-			t.Errorf("LessThan mismatch: %s vs %s → Compare=%d LessThan=%v", a, b, cmp, lt)
+			t.Errorf("LessThan mismatch: %s vs %s â†’ Compare=%d LessThan=%v", a, b, cmp, lt)
 		}
 
 		// Nil check safety
@@ -76,10 +90,10 @@ func FuzzVersionCompare(f *testing.F) {
 }
 
 // =============================================================================
-// Fuzz Target 2: Version Round-Trip — Parse → String → Parse → Equal
+// Fuzz Target 2: Version Round-Trip â€” Parse â†’ String â†’ Parse â†’ Equal
 // =============================================================================
 
-// FuzzVersionRoundTrip verifies that version → string → version preserves equality.
+// FuzzVersionRoundTrip verifies that version â†’ string â†’ version preserves equality.
 func FuzzVersionRoundTrip(f *testing.F) {
 	seeds := []string{
 		"1.2.3",
@@ -111,14 +125,14 @@ func FuzzVersionRoundTrip(f *testing.F) {
 		}
 
 		if !ver.Equal(ver2) {
-			t.Errorf("Round-trip inequality: original=%q → string=%q → parsed=%q",
+			t.Errorf("Round-trip inequality: original=%q â†’ string=%q â†’ parsed=%q",
 				v, str, ver2.String())
 		}
 	})
 }
 
 // =============================================================================
-// Fuzz Target 3: Version Increment — IncPatch/IncMinor/IncMajor (overflow)
+// Fuzz Target 3: Version Increment â€” IncPatch/IncMinor/IncMajor (overflow)
 // =============================================================================
 
 // FuzzIncOverflow tests increment operations on edge-case versions.
@@ -179,7 +193,7 @@ func FuzzIncOverflow(f *testing.F) {
 }
 
 // =============================================================================
-// Fuzz Target 4: Constraint × Version Integration — Check + Validate safety
+// Fuzz Target 4: Constraint Ã— Version Integration â€” Check + Validate safety
 // =============================================================================
 
 // FuzzConstraintVersionCheck feeds constraint+version pairs and verifies no panics.
