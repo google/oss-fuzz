@@ -19,7 +19,7 @@ cd src
 export LDFLAGS="$CFLAGS"
 sed -i 's/CC=gcc/CC=clang/g' Makefile
 
-make deps
+make deps TARGET=agent
 mkdir -p build && cd build
 cmake .. -DTARGET=agent
 make wazuh -j$(nproc)

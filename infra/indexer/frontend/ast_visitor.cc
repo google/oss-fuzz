@@ -108,10 +108,19 @@ bool IsParentADefinition(const clang::Decl* decl) {
 
 const clang::ClassTemplateDecl* GetClassTemplateDefinition(
     const clang::ClassTemplateDecl* class_template_decl) {
-  if (class_template_decl->getTemplatedDecl()->getDefinition()) {
-    class_template_decl = class_template_decl->getTemplatedDecl()
-                              ->getDefinition()
-                              ->getDescribedClassTemplate();
+  if (!class_template_decl) {
+    return nullptr;
+  }
+  if (class_template_decl->getTemplatedDecl() &&
+      class_template_decl->getTemplatedDecl()->getDefinition()) {
+    const auto* definition =
+        class_template_decl->getTemplatedDecl()->getDefinition();
+    if (definition) {
+      const auto* described = definition->getDescribedClassTemplate();
+      if (described) {
+        return described;
+      }
+    }
   }
   return class_template_decl;
 }
@@ -141,7 +150,13 @@ const clang::Decl* GetSpecializationDecl(
     const clang::ClassTemplateDecl* class_template_decl,
     const llvm::ArrayRef<clang::TemplateArgument> template_arguments,
     const clang::ASTContext& context) {
+  if (!class_template_decl) {
+    return nullptr;
+  }
   class_template_decl = GetClassTemplateDefinition(class_template_decl);
+  if (!class_template_decl) {
+    return nullptr;
+  }
   const clang::Decl* decl = class_template_decl;
   const auto* specialization_decl =
       FindSpecialization(class_template_decl, template_arguments, context);
@@ -280,8 +295,7 @@ const clang::NamedDecl* GetTemplatePrototypeNamedDecl(
                  named_decl->getDeclContext())) {
     if (const clang::FunctionDecl* instantiation_pattern =
             function_decl->getTemplateInstantiationPattern()) {
-      template_context = instantiation_pattern;
-      template_decl = instantiation_pattern->getDescribedFunctionTemplate();
+      template_context = instantiation_pattern->getDefinition();
     } else if (function_decl->getDescribedFunctionTemplate() &&
                function_decl->getDescribedFunctionTemplate()
                    ->getInstantiatedFromMemberTemplate()) {
@@ -1046,13 +1060,21 @@ LocationId AstVisitor::GetLocationId(clang::SourceLocation start,
 }
 
 LocationId AstVisitor::GetLocationId(const clang::Decl* decl) {
+  if (!decl) {
+    return kInvalidLocationId;
+  }
+
   // If we have a template specialization or instantiation, we should make
   // sure we use the source location that matches the closest explicit
   // specialization instead of the base template.
   if (llvm::isa<clang::ClassTemplateSpecializationDecl>(decl)) {
     const auto* specialization_decl =
         llvm::cast<clang::ClassTemplateSpecializationDecl>(decl);
-    decl = GetSpecializationDecl(specialization_decl, context_);
+    const auto* resolved_decl =
+        GetSpecializationDecl(specialization_decl, context_);
+    if (resolved_decl) {
+      decl = resolved_decl;
+    }
   }
 
   // For class template definitions, the AST has two nodes:
@@ -1070,7 +1092,11 @@ LocationId AstVisitor::GetLocationId(const clang::Decl* decl) {
     const auto* class_template_decl =
         cxx_record_decl->getDescribedClassTemplate();
     if (class_template_decl) {
-      decl = GetClassTemplateDefinition(class_template_decl);
+      const auto* resolved_template =
+          GetClassTemplateDefinition(class_template_decl);
+      if (resolved_template) {
+        decl = resolved_template;
+      }
     }
   }
 
@@ -1083,16 +1109,26 @@ LocationId AstVisitor::GetLocationId(const clang::Decl* decl) {
   if (llvm::isa<clang::FunctionDecl>(decl)) {
     const auto* function_decl = llvm::cast<clang::FunctionDecl>(decl);
     if (function_decl->isTemplateInstantiation()) {
-      function_decl = function_decl->getTemplateInstantiationPattern();
+      const auto* pattern = function_decl->getTemplateInstantiationPattern();
+      if (pattern) {
+        function_decl = pattern;
+        if (function_decl->getDefinition()) {
+          function_decl = function_decl->getDefinition();
+        }
+      }
     } else if (function_decl->getTemplateSpecializationInfo()) {
       const auto* tmp_info = function_decl->getTemplateSpecializationInfo();
-      function_decl = tmp_info->getFunction();
+      if (tmp_info && tmp_info->getFunction()) {
+        function_decl = tmp_info->getFunction();
+      }
     }
 
     decl = function_decl;
-    const auto* func_template = function_decl->getDescribedFunctionTemplate();
-    if (func_template) {
-      decl = func_template;
+    if (function_decl) {
+      const auto* func_template = function_decl->getDescribedFunctionTemplate();
+      if (func_template) {
+        decl = func_template;
+      }
     }
   }
 
@@ -1420,8 +1456,9 @@ std::optional<Entity> AstVisitor::GetEntityForDecl(const clang::Decl* decl,
 
     // Check for template instantiation.
     const clang::Decl* function_template = nullptr;
-    if (function_decl->getTemplateInstantiationPattern()) {
-      function_template = function_decl->getTemplateInstantiationPattern();
+    if (const auto* instantiation_pattern =
+            function_decl->getTemplateInstantiationPattern()) {
+      function_template = instantiation_pattern->getDefinition();
     } else if (function_decl->getDescribedFunctionTemplate() &&
                function_decl->getDescribedFunctionTemplate()
                    ->getInstantiatedFromMemberTemplate()) {
