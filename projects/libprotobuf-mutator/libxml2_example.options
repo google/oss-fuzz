@@ -1,4 +1,0 @@
-[libfuzzer]
-dict = xml.dict
-max_len=1000
-detect_leaks=0

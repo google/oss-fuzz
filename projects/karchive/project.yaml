@@ -1,8 +1,0 @@
-homepage: https://invent.kde.org/frameworks/karchive.git/
-language: c++
-primary_contact: tsdgeos@gmail.com
-sanitizers:
-  - address
-  - memory
-  - undefined
-main_repo: 'https://invent.kde.org/frameworks/karchive.git'

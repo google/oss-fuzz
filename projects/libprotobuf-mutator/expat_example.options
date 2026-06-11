@@ -1,3 +1,0 @@
-[libfuzzer]
-dict = xml.dict
-max_len=1024

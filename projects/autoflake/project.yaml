@@ -1,9 +1,0 @@
-homepage: https://www.github.com/PyCQA/autoflake
-main_repo: https://www.github.com/PyCQA/autoflake
-language: python
-fuzzing_engines:
-- libfuzzer
-sanitizers:
-- address
-vendor_ccs:
-- david@adalogics.com

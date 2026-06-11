@@ -1,3 +1,0 @@
-[libfuzzer]
-max_len = 16834
-only_ascii = 1

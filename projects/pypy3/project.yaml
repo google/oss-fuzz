@@ -1,9 +1,0 @@
-homepage: "https://pypy.org/"
-language: c
-main_repo: "https://github.com/pypy/pypy"
-primary_contact: "stanulbrych@gmail.com"
-auto_ccs:
- - "matti.picus@gmail.com"
- - "cfbolz@gmail.com"
-sanitizers:
- - undefined

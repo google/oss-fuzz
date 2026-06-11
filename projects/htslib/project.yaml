@@ -1,8 +1,0 @@
-homepage: "https://www.htslib.org/"
-language: c++
-primary_contact: "rmd@sanger.ac.uk"
-auto_ccs:
-        - "aw7@sanger.ac.uk"
-        - "jkb@sanger.ac.uk"
-        - "vo2@sanger.ac.uk"
-main_repo: 'https://github.com/samtools/htslib.git'

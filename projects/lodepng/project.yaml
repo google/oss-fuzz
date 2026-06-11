@@ -1,9 +1,0 @@
-homepage: "https://github.com/lvandeve/lodepng"
-language: c++
-primary_contact: "lvandeve@gmail.com"
-auto_ccs:
-  - "singharshdeep@google.com"
-sanitizers:
-- address
-- undefined
-main_repo: 'https://github.com/lvandeve/lodepng.git'

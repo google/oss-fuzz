@@ -1,8 +1,0 @@
-homepage: "https://github.com/google/piex"
-language: c++
-primary_contact: "nchusid@google.com"
-sanitizers:
- - address
- - undefined
- - memory
-main_repo: 'https://github.com/guidovranken/piex.git'

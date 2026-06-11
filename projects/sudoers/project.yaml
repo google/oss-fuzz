@@ -1,9 +1,0 @@
-homepage: "https://github.com/sudo-project"
-primary_contact: "sudo@sudo.ws"
-language: c
-fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
-auto_ccs:
-  - "david@adalogics.com"
-main_repo: 'https://github.com/sudo-project/sudo'

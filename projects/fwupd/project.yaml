@@ -1,8 +1,0 @@
-homepage: "https://github.com/fwupd/fwupd"
-language: c
-primary_contact: "hughsient@gmail.com"
-main_repo: 'https://github.com/fwupd/fwupd'
-fuzzing_engines:
-  - libfuzzer
-sanitizers:
-  - address

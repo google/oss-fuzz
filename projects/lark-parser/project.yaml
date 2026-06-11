@@ -1,9 +1,0 @@
-homepage: https://github.com/lark-parser/lark
-main_repo: https://github.com/lark-parser/lark
-language: python
-fuzzing_engines:
-- libfuzzer
-sanitizers:
-- address
-vendor_ccs:
-- david@adalogics.com

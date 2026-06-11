@@ -1,9 +1,0 @@
-homepage: "https://github.com/BurntSushi/toml"
-language: go
-main_repo: "https://github.com/BurntSushi/toml"
-fuzzing_engines:
-  - libfuzzer
-sanitizers:
-  - address
-vendor_ccs:
-  - maxnair.dev@gmail.com

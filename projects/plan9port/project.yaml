@@ -1,5 +1,0 @@
-homepage: "https://github.com/9fans/plan9port"
-language: c
-main_repo: 'https://github.com/9fans/plan9port'
-vendor_ccs:
-- david@adalogics.com

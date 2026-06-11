@@ -1,5 +1,0 @@
-base_os_version: ubuntu-24-04
-homepage: "abseil.io"
-language: c++
-primary_contact: "dmauro@google.com"
-main_repo: 'https://github.com/abseil/abseil-cpp.git'

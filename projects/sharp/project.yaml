@@ -1,8 +1,0 @@
-homepage: https://sharp.pixelplumbing.com/
-language: javascript
-main_repo: https://github.com/lovell/sharp
-fuzzing_engines:
-- libfuzzer
-sanitizers:
-- none
-primary_contact: "lovell.fuller@gmail.com"

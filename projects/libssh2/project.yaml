@@ -1,9 +1,0 @@
-homepage: "https://github.com/libssh2/libssh2"
-language: c++
-primary_contact: "will.cosgrove@gmail.com"
-auto_ccs:
-  - "cmeister2@gmail.com"
-sanitizers:
-  - address
-  - undefined
-main_repo: 'https://github.com/libssh2/libssh2.git'

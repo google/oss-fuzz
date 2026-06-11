@@ -1,6 +1,0 @@
-homepage: "https://github.com/mz-automation/libiec61850"
-primary_contact: "support@mz-automation.de"
-auto_ccs:
-  - "david@adalogics.com"
-language: c
-main_repo: 'https://github.com/mz-automation/libiec61850'

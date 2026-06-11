@@ -1,3 +1,0 @@
-[libfuzzer]
-# Increase timeout for corpus pruning
-timeout = 300

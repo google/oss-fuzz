@@ -1,5 +1,0 @@
-homepage: "https://github.com/weechat/weechat"
-main_repo: "https://github.com/weechat/weechat"
-primary_contact: "flashcode@flashtux.org"
-auto_ccs:
-  - "security@weechat.org"

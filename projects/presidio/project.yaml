@@ -1,8 +1,0 @@
-homepage: "https://microsoft.github.io/presidio"
-language: python
-primary_contact: "avishay.balter@gmail.com"
-auto_ccs: 
-  - presidio@microsoft.com
-sanitizers:
-  - address
-main_repo: 'https://github.com/microsoft/presidio'  

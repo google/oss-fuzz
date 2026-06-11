@@ -1,4 +1,0 @@
-[libfuzzer]
-close_fd_mask=3
-detect_leaks=0
-max_len=8192

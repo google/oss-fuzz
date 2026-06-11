@@ -1,4 +1,0 @@
-{
-    "plugins": ["@babel/plugin-transform-modules-commonjs"],
-    "ignore": ["**/@jazzer.js", "**/@babel", "**/istanbul-reports"]
-}
