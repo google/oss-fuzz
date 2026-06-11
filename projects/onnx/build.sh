@@ -19,7 +19,11 @@ cd $SRC/onnx
 
 # Build ONNX's own protobuf from source so it is compiled with -fPIC,
 # which is required to link into the Python extension .so.
-export CMAKE_ARGS="-DONNX_BUILD_CUSTOM_PROTOBUF=ON"
+# Point FetchContent at pre-downloaded sources so cmake needs no network access.
+export CMAKE_ARGS="-DONNX_BUILD_CUSTOM_PROTOBUF=ON \
+    -DFETCHCONTENT_SOURCE_DIR_PROTOBUF=/deps/protobuf \
+    -DFETCHCONTENT_SOURCE_DIR_ABSL=/deps/abseil-cpp \
+    -DFETCHCONTENT_FULLY_DISCONNECTED=ON"
 
 # Enable ONNX's built-in sanitizer support so the C++ extensions are
 # instrumented alongside the Python atheris layer.

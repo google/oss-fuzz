@@ -20,5 +20,12 @@ RUN pip install "scikit-build-core>=0.11"
 RUN git clone --depth 1 https://github.com/onnx/onnx.git onnx && \
     cd onnx && \
     git submodule update --init --recursive
+# Pre-download FetchContent dependencies (protobuf + abseil) so the build
+# works offline inside the container without network access at cmake time.
+RUN mkdir -p /deps/protobuf /deps/abseil-cpp && \
+    wget -qO- https://github.com/protocolbuffers/protobuf/releases/download/v25.1/protobuf-25.1.tar.gz | \
+        tar -xz --strip-components=1 -C /deps/protobuf && \
+    wget -qO- https://github.com/abseil/abseil-cpp/releases/download/20250127.0/abseil-cpp-20250127.0.tar.gz | \
+        tar -xz --strip-components=1 -C /deps/abseil-cpp
 WORKDIR $SRC
 COPY build.sh $SRC/
