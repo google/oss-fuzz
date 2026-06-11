@@ -1,0 +1,12 @@
+homepage: "https://github.com/spf13/viper"
+language: go
+primary_contact: "candasjunk@gmail.com"
+auto_ccs:
+  - "candasjunk@gmail.com"
+main_repo: "https://github.com/spf13/viper"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
+# Criticality: Viper (26K+ stars) is the dominant configuration library for Go. It parses YAML, JSON, TOML, and environment variables for virtually every Go application. A parsing bug in Viper is a universal configuration injection vector.

@@ -1,0 +1,11 @@
+homepage: "https://github.com/golang/net"
+language: go
+primary_contact: "security@golang.org"
+auto_ccs:
+  - "damien.neil@gmail.com"
+main_repo: "https://github.com/golang/net"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
