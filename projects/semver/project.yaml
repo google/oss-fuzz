@@ -1,0 +1,11 @@
+homepage: "https://github.com/Masterminds/semver"
+language: go
+primary_contact: "canolgun@gmail.com"
+auto_ccs:
+  - "canolgun@gmail.com"
+main_repo: "https://github.com/Masterminds/semver"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
