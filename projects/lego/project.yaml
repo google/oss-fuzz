@@ -1,0 +1,12 @@
+homepage: "https://github.com/go-acme/lego"
+language: go
+primary_contact: "candasjunk@gmail.com"
+auto_ccs:
+  - "candasjunk@gmail.com"
+main_repo: "https://github.com/go-acme/lego"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
+# Criticality: Lego (6K+ stars) is the standard ACME client for Go, used by Caddy, Traefik, and Kubernetes cert-manager. It handles TLS certificate issuance and DNS challenges. A protocol parsing bug compromises certificate automation for millions of domains.
