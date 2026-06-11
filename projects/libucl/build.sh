@@ -17,12 +17,22 @@
 ################################################################################
 
 cp $SRC/ucl_add_string_fuzzer.options $OUT/
+cp $SRC/ucl_emit_roundtrip_fuzzer.options $OUT/
 
 ./autogen.sh --force && ./configure
 make
 
+# Original fuzzer: parse-only coverage
 $CC $CFLAGS -c tests/fuzzers/ucl_add_string_fuzzer.c \
   -DHAVE_CONFIG_H -I./src -I./include src/.libs/libucl.a -I./ \
   -o $OUT/ucl_add_string_fuzzer.o
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $OUT/ucl_add_string_fuzzer.o -DHAVE_CONFIG_H -I./src -I./include src/.libs/libucl.a -I. -o $OUT/ucl_add_string_fuzzer
+
+# Emit-roundtrip fuzzer: parse -> emit (JSON/YAML/UCL/MSGPACK) -> re-parse
+# Covers the emitter code paths not reached by the parse-only fuzzer.
+$CC $CFLAGS -c $SRC/ucl_emit_roundtrip_fuzzer.c \
+  -DHAVE_CONFIG_H -I./src -I./include -I./ \
+  -o $OUT/ucl_emit_roundtrip_fuzzer.o
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $OUT/ucl_emit_roundtrip_fuzzer.o -DHAVE_CONFIG_H -I./src -I./include src/.libs/libucl.a -I. -o $OUT/ucl_emit_roundtrip_fuzzer
