@@ -1,0 +1,6 @@
+homepage: "https://github.com/gin-gonic/gin"
+language: go
+primary_contact: "security@gin-gonic.com"
+main_repo: "https://github.com/gin-gonic/gin"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
