@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
-COPY build.sh \/
+COPY build.sh $SRC/
 RUN git clone --depth 1 https://github.com/moment/moment.git
-COPY fuzz.js \/moment
-WORKDIR \/moment
+COPY fuzz.js $SRC/moment
+WORKDIR $SRC/moment
