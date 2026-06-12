@@ -1,14 +1,9 @@
-homepage: "https://github.com/nats-io/nats-server"
-primary_contact: "security@nats.io"
-auto_ccs :
-  - "adam@adalogics.com"
-  - "wally@synadia.com"
-  - "derek@synadia.com"
-  - "tomasz@synadia.com"
-  - "neil@synadia.com"
+homepage: "https://github.com/nats-io/nats-server
+rancher/rancher"
 language: go
-fuzzing_engines:
-  - libfuzzer
-sanitizers:
-  - address
-main_repo: 'https://github.com/nats-io/nats-server'
+primary_contact: "security@nats.io
+rancher.com"
+main_repo: "https://github.com/nats-io/nats-server
+rancher/rancher"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
