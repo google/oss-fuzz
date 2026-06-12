@@ -1,0 +1,6 @@
+homepage: "https://github.com/scrapy/scrapy"
+language: python
+primary_contact: "security@scrapy.org"
+main_repo: "https://github.com/scrapy/scrapy"
+sanitizers: [address, undefined]
+fuzzing_engines: [libfuzzer]
