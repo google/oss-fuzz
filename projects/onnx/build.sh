@@ -51,6 +51,8 @@ if [[ "$SANITIZER" == "coverage" ]]; then
 fi
 
 # Build fuzzers in $OUT.
+# --collect-all numpy bundles all numpy C extensions including numpy._core.*
+# which PyInstaller 6.x does not pick up automatically with numpy 2.x.
 for fuzzer in $(find $SRC/onnx/onnx/fuzz -maxdepth 1 -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --collect-all numpy
 done
