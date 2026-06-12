@@ -1,0 +1,6 @@
+homepage: "https://github.com/go-chi/chi"
+language: go
+primary_contact: "security@go-chi.com"
+main_repo: "https://github.com/go-chi/chi"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
