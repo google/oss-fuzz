@@ -1,6 +1,6 @@
-homepage: "https://github.com/yaml/pyyaml"
+homepage: "https://github.com/encode/starlette"
 language: python
 primary_contact: "security@python.org"
-main_repo: "https://github.com/yaml/pyyaml"
+main_repo: "https://github.com/encode/starlette"
 sanitizers: [address, undefined]
 fuzzing_engines: [libfuzzer]
