@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
-COPY build.sh \/
+COPY build.sh $SRC/
 RUN git clone --depth 1 https://github.com/vercel/next.js.git
-COPY fuzz.js \/next
-WORKDIR \/next
+COPY fuzz.js $SRC/next
+WORKDIR $SRC/next
