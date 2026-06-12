@@ -31,6 +31,8 @@ if [ "$SANITIZER" != "undefined" ]; then
 fi
 cp fuzz/fuzz_table $OUT/fuzz_table
 cp fuzz/fuzz_server $OUT/fuzz_server
+cp fuzz/fuzz_method_decode $OUT/fuzz_method_decode
+cp fuzz/fuzz_properties_decode $OUT/fuzz_properties_decode
 popd
 
 zip -j ${OUT}/fuzz_url_seed_corpus.zip fuzz/input/fuzz_url.raw
