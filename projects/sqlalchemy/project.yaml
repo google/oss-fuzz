@@ -1,11 +1,5 @@
-homepage: "https://www.sqlalchemy.org"
+homepage: "https://github.com/sqlalchemy/sqlalchemy"
 language: python
-primary_contact: "mike_mp@zzzcomputing.com"
-auto_ccs:
-  - "Adam@adalogics.com"
-fuzzing_engines:
-  - libfuzzer
-sanitizers:
-  - address
-  - undefined
 main_repo: "https://github.com/sqlalchemy/sqlalchemy"
+sanitizers: [address, undefined]
+fuzzing_engines: [libfuzzer]

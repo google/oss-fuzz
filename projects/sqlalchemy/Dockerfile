@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone --depth 1 --branch rel_1_3 https://github.com/sqlalchemy/sqlalchemy
+RUN pip3 install atheris sqlalchemy
+COPY . $SRC/sqlalchemy
+COPY build.sh $SRC/
 WORKDIR $SRC/sqlalchemy
-COPY build.sh sqlalchemy_fuzzer.py $SRC/
