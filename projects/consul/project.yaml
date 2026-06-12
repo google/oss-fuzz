@@ -1,0 +1,6 @@
+homepage: "https://github.com/hashicorp/consul"
+language: go
+primary_contact: "security@hashicorp.com"
+main_repo: "https://github.com/hashicorp/consul"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
