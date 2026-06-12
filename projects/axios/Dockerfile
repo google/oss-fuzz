@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
-COPY build.sh \/
+COPY build.sh $SRC/
 RUN git clone --depth 1 https://github.com/axios/axios.git
-COPY fuzz.js \/axios
-WORKDIR \/axios
+COPY fuzz.js $SRC/axios
+WORKDIR $SRC/axios
