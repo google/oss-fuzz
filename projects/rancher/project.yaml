@@ -1,0 +1,6 @@
+homepage: "https://github.com/rancher/rancher"
+language: go
+primary_contact: "security@rancher.com"
+main_repo: "https://github.com/rancher/rancher"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
