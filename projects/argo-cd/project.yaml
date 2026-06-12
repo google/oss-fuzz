@@ -1,0 +1,6 @@
+homepage: "https://github.com/argoproj/argo-cd"
+language: go
+primary_contact: "security@argoproj.io"
+main_repo: "https://github.com/argoproj/argo-cd"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
