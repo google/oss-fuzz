@@ -1,0 +1,7 @@
+homepage: "https://github.com/jquery/jquery
+moment/moment"
+language: javascript
+main_repo: "https://github.com/jquery/jquery
+moment/moment"
+fuzzing_engines: [libfuzzer]
+sanitizers: [none]
