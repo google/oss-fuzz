@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-pip3 install atheris pyyaml
-compile_python_fuzzer fuzz_pyyaml.py
+pip3 install atheris starlette
+compile_python_fuzzer fuzz_starlette.py
