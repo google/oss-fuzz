@@ -1,0 +1,11 @@
+homepage: "https://github.com/traefik/traefik"
+language: go
+primary_contact: "security@traefik.io"
+auto_ccs:
+  - "security@traefik.io"
+main_repo: "https://github.com/traefik/traefik"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
