@@ -1,0 +1,5 @@
+homepage: "https://github.com/axios/axios"
+language: javascript
+main_repo: "https://github.com/axios/axios"
+fuzzing_engines: [libfuzzer]
+sanitizers: [none]
