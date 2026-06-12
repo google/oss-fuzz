@@ -1,0 +1,6 @@
+homepage: "https://github.com/minio/minio"
+language: go
+primary_contact: "security@min.io"
+main_repo: "https://github.com/minio/minio"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
