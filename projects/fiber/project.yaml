@@ -1,0 +1,6 @@
+homepage: "https://github.com/gofiber/fiber"
+language: go
+primary_contact: "security@gofiber.io"
+main_repo: "https://github.com/gofiber/fiber"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
