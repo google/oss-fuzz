@@ -1,0 +1,8 @@
+homepage: "https://eslint.org/"
+language: javascript
+main_repo: "https://github.com/eslint/eslint"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - none
+primary_contact: "milos.djermanovic@gmail.com"
