@@ -1,0 +1,6 @@
+homepage: "https://github.com/goharbor/harbor"
+language: go
+primary_contact: "security@goharbor.io"
+main_repo: "https://github.com/goharbor/harbor"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
