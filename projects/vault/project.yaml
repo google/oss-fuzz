@@ -1,0 +1,11 @@
+homepage: "https://github.com/hashicorp/vault"
+language: go
+primary_contact: "security@hashicorp.com"
+auto_ccs:
+  - "security@hashicorp.com"
+main_repo: "https://github.com/hashicorp/vault"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
