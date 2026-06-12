@@ -1,0 +1,5 @@
+homepage: "https://github.com/expressjs/express"
+language: javascript
+main_repo: "https://github.com/expressjs/express"
+fuzzing_engines: [libfuzzer]
+sanitizers: [none]
