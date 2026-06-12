@@ -1,0 +1,5 @@
+homepage: "https://github.com/markedjs/marked"
+language: javascript
+main_repo: "https://github.com/markedjs/marked"
+fuzzing_engines: [libfuzzer]
+sanitizers: [none]
