@@ -13,8 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
-COPY build.sh \/
-RUN git clone --depth 1 https://github.com/jquery/jquery
-moment/moment.git
-COPY fuzz.js \/jquery
-WORKDIR \/jquery
+COPY build.sh $SRC/
+RUN git clone --depth 1 https://github.com/jquery/jquery.git
+COPY fuzz.js $SRC/jquery
+WORKDIR $SRC/jquery
