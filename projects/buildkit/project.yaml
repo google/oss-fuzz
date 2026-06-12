@@ -1,0 +1,6 @@
+homepage: "https://github.com/moby/buildkit"
+language: go
+primary_contact: "security@docker.com"
+main_repo: "https://github.com/moby/buildkit"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
