@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-$SRC/runc/tests/fuzzing/oss_fuzz_build.sh
-$SRC/cncf-fuzzing/projects/runc/build.sh
+go mod download
+compile_go_fuzzer github.com/opencontainers/runc FuzzHooksUnmarshalJSON fuzz_hooks_unmarshal
+compile_go_fuzzer github.com/opencontainers/runc FuzzHooksMarshalJSON fuzz_hooks_marshal
