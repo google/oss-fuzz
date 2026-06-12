@@ -1,0 +1,5 @@
+homepage: "https://github.com/moment/moment"
+language: javascript
+main_repo: "https://github.com/moment/moment"
+fuzzing_engines: [libfuzzer]
+sanitizers: [none]
