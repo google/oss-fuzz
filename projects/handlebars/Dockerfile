@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript
-COPY build.sh \/
+COPY build.sh $SRC/
 RUN git clone --depth 1 https://github.com/handlebars-lang/handlebars.js.git
-COPY fuzz.js \/handlebars
-WORKDIR \/handlebars
+COPY fuzz.js $SRC/handlebars
+WORKDIR $SRC/handlebars
