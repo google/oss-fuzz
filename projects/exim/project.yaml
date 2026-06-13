@@ -1,0 +1,13 @@
+homepage: "https://www.exim.org/"
+main_repo: "https://github.com/Exim/exim"
+language: c
+primary_contact: "exim-dev@exim.org"
+auto_ccs:
+  - "exim-dev@exim.org"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
