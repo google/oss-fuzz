@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2026 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf make libgif-dev libjpeg-dev libpng-dev libtool zip
-RUN git clone https://chromium.googlesource.com/webm/libwebp
-RUN git clone https://chromium.googlesource.com/webm/libwebp-test-data
-ADD https://storage.googleapis.com/downloads.webmproject.org/webp/testdata/fuzzer/fuzz_seed_corpus.zip $SRC/
-RUN unzip fuzz_seed_corpus.zip -d libwebp-test-data/
-RUN rm fuzz_seed_corpus.zip
-COPY build.sh $SRC/
-WORKDIR libwebp
+RUN apt-get update && \
+    apt-get install -y make cmake automake autoconf libtool
+
+RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp
+COPY *.cc *.sh $SRC/
+WORKDIR $SRC/libwebp
