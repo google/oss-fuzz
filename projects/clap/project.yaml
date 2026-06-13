@@ -1,0 +1,6 @@
+homepage: "https://github.com/clap-rs/clap"
+language: rust
+primary_contact: "security@rust-lang.org"
+main_repo: "https://github.com/clap-rs/clap"
+sanitizers: [address]
+fuzzing_engines: [libfuzzer]

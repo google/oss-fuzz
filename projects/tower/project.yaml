@@ -1,0 +1,6 @@
+homepage: "https://github.com/tower-rs/tower"
+language: rust
+primary_contact: "security@rust-lang.org"
+main_repo: "https://github.com/tower-rs/tower"
+sanitizers: [address]
+fuzzing_engines: [libfuzzer]
