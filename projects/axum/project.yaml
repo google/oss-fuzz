@@ -1,0 +1,7 @@
+homepage: "https://github.com/tokio-rs/axum"
+language: rust
+primary_contact: "security@tokio.rs"
+main_repo: "https://github.com/tokio-rs/axum"
+sanitizers: [address]
+fuzzing_engines: [libfuzzer]
+auto_ccs: ["security@tokio.rs"]
