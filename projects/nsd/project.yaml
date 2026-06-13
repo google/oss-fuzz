@@ -1,0 +1,11 @@
+homepage: "https://www.nlnetlabs.nl/projects/nsd/"
+language: c
+main_repo: "https://github.com/NLnetLabs/nsd"
+primary_contact: "dns-team@nlnetlabs.nl"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
