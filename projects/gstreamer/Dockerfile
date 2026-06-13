@@ -29,4 +29,4 @@ RUN pip3 install --disable-pip-version-check --no-cache-dir \
 RUN git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gstreamer.git gstreamer
 
 WORKDIR gstreamer
-COPY build.sh $SRC/
+COPY build.sh generate_seeds.py $SRC/
