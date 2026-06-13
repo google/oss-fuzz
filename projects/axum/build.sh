@@ -15,6 +15,4 @@
 
 cd $SRC/axum
 cargo fuzz build -O --debug-assertions
-cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_request $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_uri $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_headers $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_* $OUT/
