@@ -1,0 +1,13 @@
+main_repo: "https://github.com/miniupnp/miniupnp"
+homepage: "https://github.com/miniupnp/miniupnp"
+language: c
+primary_contact: "miniupnp@free.fr"
+auto_ccs:
+  - "miniupnp@free.fr"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
