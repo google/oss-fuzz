@@ -1,0 +1,14 @@
+homepage: "https://github.com/InauguralSystems/EigenScript"
+language: c
+primary_contact: "contact@inauguralsystems.com"
+main_repo: "https://github.com/InauguralSystems/EigenScript.git"
+file_github_issue: true
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+architectures:
+  - x86_64
