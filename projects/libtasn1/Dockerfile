@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
 RUN apt-get update && apt-get install -y make autoconf automake libtool bison
 
 RUN git clone git://git.savannah.gnu.org/gnulib.git
