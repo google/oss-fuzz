@@ -1,0 +1,6 @@
+homepage: "https://github.com/seanmonstar/reqwest"
+language: rust
+primary_contact: "security@rust-lang.org"
+main_repo: "https://github.com/seanmonstar/reqwest"
+sanitizers: [address]
+fuzzing_engines: [libfuzzer]
