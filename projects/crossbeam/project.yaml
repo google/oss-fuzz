@@ -1,0 +1,6 @@
+homepage: "https://github.com/crossbeam-rs/crossbeam"
+language: rust
+primary_contact: "security@rust-lang.org"
+main_repo: "https://github.com/crossbeam-rs/crossbeam"
+sanitizers: [address]
+fuzzing_engines: [libfuzzer]
