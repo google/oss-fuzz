@@ -1,0 +1,12 @@
+homepage: "https://xxhash.com"
+language: c++
+primary_contact: "yann.collet.73@gmail.com"
+main_repo: "https://github.com/Cyan4973/xxHash.git"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
