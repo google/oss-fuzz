@@ -1,15 +1,12 @@
-homepage: "https://simdjson.org/"
+homepage: "https://simdjson.org"
 language: c++
-primary_contact: "pauldreikossfuzz@gmail.com"
-auto_ccs:
- - "lemire@gmail.com"
-sanitizers:
-- address
-- undefined
-main_repo: 'https://github.com/simdjson/simdjson.git'
-
+primary_contact: "lemire@gmail.com"
+main_repo: "https://github.com/simdjson/simdjson.git"
 fuzzing_engines:
+  - libfuzzer
   - afl
   - honggfuzz
-  - libfuzzer
-
+sanitizers:
+  - address
+  - undefined
+  - memory
