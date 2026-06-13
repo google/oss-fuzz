@@ -1,0 +1,14 @@
+homepage: "https://github.com/ebiggers/libdeflate"
+language: c
+primary_contact: "ebiggers3@gmail.com"
+main_repo: "https://github.com/ebiggers/libdeflate"
+auto_ccs:
+  - "ebiggers3@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
