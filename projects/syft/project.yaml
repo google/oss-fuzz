@@ -1,0 +1,6 @@
+homepage: "https://github.com/anchore/syft"
+language: go
+primary_contact: "security@anchore.com"
+main_repo: "https://github.com/anchore/syft"
+sanitizers: [address, memory]
+fuzzing_engines: [libfuzzer]
