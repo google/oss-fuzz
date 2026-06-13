@@ -1,0 +1,12 @@
+homepage: "https://github.com/aklomp/base64"
+language: c++
+primary_contact: "alfred@klom.net"
+main_repo: "https://github.com/aklomp/base64.git"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
