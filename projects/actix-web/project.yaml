@@ -1,0 +1,6 @@
+homepage: "https://github.com/actix/actix-web"
+language: rust
+primary_contact: "security@actix.rs"
+main_repo: "https://github.com/actix/actix-web"
+sanitizers: [address]
+fuzzing_engines: [libfuzzer]
