@@ -1,0 +1,10 @@
+homepage: "https://github.com/rhysmcneill/ssmctl"
+primary_contact: "rhysmcneill7@hotmail.co.uk"
+language: "go"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - memory
+vendor_ccs:
+  - "rhysmcneill7@hotmail.co.uk"
