@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool bison flex rsync lynx lld
-RUN GIT_SSL_NO_VERIFY=true git clone -b dev https://bitbucket.nwtime.org/pc/ntp.git ntp-dev
+RUN git clone -b dev https://github.com/ntp-project/ntp.git ntp-dev
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY patch.diff $SRC/

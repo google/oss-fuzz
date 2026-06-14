@@ -87,3 +87,12 @@ done
 cp -r /usr/local/share/freeradius/dictionary $OUT/dict
 # export FR_DICTIONARY_DIR=/out/dictionary/
 # export FR_LIBRARY_PATH=/out/lib/
+
+# Structured seed generation (see generate_seeds.py).
+python3 $SRC/generate_seeds.py $SRC/generated_seeds
+for seeddir in $SRC/generated_seeds/*/; do
+    proto=$(basename "$seeddir")
+    if [ -f "$OUT/fuzzer_${proto}" ]; then
+        zip -j -q "$OUT/fuzzer_${proto}_seed_corpus.zip" "$seeddir"/* || true
+    fi
+done
