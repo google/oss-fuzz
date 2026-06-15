@@ -119,3 +119,13 @@ index 92a5d92..1486f79 100644
  #ifdef HAVE_DVBPSI
  # define PLUGIN_TS(f) f(demux_mpeg_ts)
  #else
+--- a/modules/demux/mp4/mp4.c
++++ b/modules/demux/mp4/mp4.c
+@@ -86,6 +86,7 @@
+         set_subcategory( SUBCAT_INPUT_DEMUX )
+         set_description( N_("HEIF demuxer") )
+         set_shortname( "heif" )
++        add_shortcut( "heif" )
+         set_capability( "demux", 239 )
+         set_callbacks( OpenHEIF, CloseHEIF )
+         set_section( N_("HEIF demuxer"), NULL )
