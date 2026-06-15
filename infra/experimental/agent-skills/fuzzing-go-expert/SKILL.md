@@ -87,6 +87,10 @@ compile_native_go_fuzzer github.com/owner/repo/pkg2 FuzzBar fuzz_bar
 - Dictionaries go in `$OUT/<fuzzer_name>.dict` as plaintext token files.
 - Alternatively, add seeds directly via `f.Add(...)` in the harness — these
   are compiled in and used as the initial corpus.
+- For targets that parse a structured format, generating seeds with a script
+  beats hand-picking a few files — random mutation rarely passes the parser's
+  early checks. See the [structured seed generation
+  reference](../oss-fuzz-engineer/references/structured_seed_generation.md).
 
 ## Characteristics of good Go fuzzing harnesses
 

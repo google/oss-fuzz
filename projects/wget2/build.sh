@@ -73,6 +73,16 @@ make install
 export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget2
+
+# gnulib's standalone lib/gnulib.mk appends to clean variables with '+=' and
+# relies on the including lib/Makefile.am to initialize them with '='. wget2's
+# lib/Makefile.am initializes most of them but not MAINTAINERCLEANFILES. Since
+# gnulib commit 86488a20ea (2026-05-16) the thread-optim module appends to
+# MAINTAINERCLEANFILES, so automake now fails with "MAINTAINERCLEANFILES must
+# be set with '=' before using '+='". Initialize it before the gnulib.mk include.
+grep -q '^MAINTAINERCLEANFILES =' lib/Makefile.am || \
+  sed -i '/^include gnulib.mk/i MAINTAINERCLEANFILES =' lib/Makefile.am
+
 ./bootstrap
 
 LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
