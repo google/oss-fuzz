@@ -29,7 +29,10 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install nightly
 RUN rustup default nightly
 
-RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
+# DO NOT MERGE -- temporary: clone the fork branch carrying the connectedhomeip-side
+# pw_fuzzer/OSS-Fuzz support (project-chip/connectedhomeip#72573) so this PR's CI can build it.
+# Revert to the project-chip master clone once that lands upstream.
+RUN git clone --depth=1 -b pw-fuzztest-ossfuzz https://github.com/Alami-Amine/connectedhomeip.git connectedhomeip
 
 # PW_PROJECT_ROOT is used in requirements.build.txt
 ENV PW_PROJECT_ROOT=$SRC/connectedhomeip
