@@ -1,0 +1,8 @@
+homepage: https://github.com/Fmarzochi/EGC
+language: javascript
+primary_contact: fmarzochi@gmail.com
+main_repo: https://github.com/Fmarzochi/EGC
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
