@@ -110,17 +110,10 @@ cp /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0 $OUT/lib/
 cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0 $OUT/lib/
 cp /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 $OUT/lib/
 
-# Set an rpath on the legacy libFuzzer targets in $OUT (ELF only; the `file ... ELF` guard
-# skips the FuzzTest wrapper shell scripts).
+# Set an rpath on the fuzz target binaries (ELF only; the FuzzTest wrapper scripts and the
+# non-executable shared FuzzTest binaries are matched too — patchelf on the shared ELF, the
+# `file ... ELF` guard skips the shell-script wrappers).
 for f in $OUT/fuzz-*; do
     file "$f" | grep -q "ELF" && patchelf --set-rpath '$ORIGIN/lib' "$f"
 done
-
-# pw_fuzzer shared FuzzTest binaries live in $OUT/bin (kept out of target discovery); point
-# their rpath one level up at $OUT/lib in case a harness needs the bundled runtime libs.
-if [ -d "$OUT/bin" ]; then
-    for f in "$OUT"/bin/*; do
-        file "$f" | grep -q "ELF" && patchelf --set-rpath '$ORIGIN/../lib' "$f"
-    done
-fi
 patchelf --set-rpath '$ORIGIN' $OUT/lib/*.so* 2>/dev/null
