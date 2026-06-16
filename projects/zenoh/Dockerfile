@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-export CFLAGS="$CFLAGS -fPIC"
-make
 
-$CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_dostring.o -c ./test/fuzzers/fuzz_dostring.c
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_dostring.o build/libjanet.a -o $OUT/fuzz_dostring
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-$CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_unmarshal.o -c ./test/fuzzers/fuzz_unmarshal.c
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_unmarshal.o build/libjanet.a -o $OUT/fuzz_unmarshal
+RUN git clone https://github.com/eclipse-zenoh/zenoh.git
+COPY build.sh $SRC
+
+WORKDIR $SRC/
