@@ -20,6 +20,12 @@
 
 MOD=github.com/erigontech/erigon
 
+# compile_native_go_fuzzer rewrites each testing.F fuzzer through
+# go-118-fuzz-build, which imports this shim in place of stdlib testing. It must
+# be resolvable in the module graph. Add it here only (not via `go mod tidy`,
+# which would drop it since no Erigon source imports it).
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
+
 # --- Pure-Go targets (no cgo) ---------------------------------------------
 
 compile_native_go_fuzzer $MOD/common/bitutil           FuzzEncoder              fuzz_bitutil_encoder
