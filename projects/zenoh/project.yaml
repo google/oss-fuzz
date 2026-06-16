@@ -1,0 +1,12 @@
+homepage: "https://zenoh.io/"
+main_repo: "https://github.com/eclipse-zenoh/zenoh"
+primary_contact: "chenying.kuo@zettascale.space"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "sasha@zettascale.space"
+  - "julien@zettascale.space"
+  - "olivier@zettascale.space"
