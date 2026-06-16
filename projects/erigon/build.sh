@@ -26,10 +26,9 @@ MOD=github.com/erigontech/erigon
 # which would drop it since no Erigon source imports it).
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
-# --- Pure-Go targets (no cgo) ---------------------------------------------
-
-compile_native_go_fuzzer $MOD/common/bitutil           FuzzEncoder              fuzz_bitutil_encoder
-compile_native_go_fuzzer $MOD/common/bitutil           FuzzDecoder              fuzz_bitutil_decoder
+# Enabled targets: native fuzzers verified to compile both under
+# go-118-fuzz-build (libfuzzer/sanitizer builds) and under the CGO-disabled
+# coverage build. New targets are added once their blocker (below) is cleared.
 
 compile_native_go_fuzzer $MOD/db/datastruct/fusefilter FuzzReaderOnBytes        fuzz_fusefilter_reader
 compile_native_go_fuzzer $MOD/db/datastruct/fusefilter FuzzReaderShardedOnBytes fuzz_fusefilter_reader_sharded
@@ -40,30 +39,33 @@ compile_native_go_fuzzer $MOD/db/recsplit/eliasfano16  FuzzDoubleEliasFano      
 compile_native_go_fuzzer $MOD/db/recsplit/eliasfano32  FuzzSingleEliasFano      fuzz_ef32_single
 compile_native_go_fuzzer $MOD/db/recsplit/eliasfano32  FuzzDoubleEliasFano      fuzz_ef32_double
 
-compile_native_go_fuzzer $MOD/db/recsplit              FuzzRecSplit             fuzz_recsplit
-
-compile_native_go_fuzzer $MOD/db/seg                   FuzzCompress             fuzz_seg_compress
-compile_native_go_fuzzer $MOD/db/seg                   FuzzDecompressMatch      fuzz_seg_decompress_match
 compile_native_go_fuzzer $MOD/db/seg/patricia          FuzzPatricia             fuzz_patricia
 compile_native_go_fuzzer $MOD/db/seg/patricia          FuzzLongestMatch         fuzz_patricia_longest_match
 
-compile_native_go_fuzzer $MOD/execution/commitment/nibbles FuzzHexCompactRoundtrip fuzz_nibbles_hexcompact
-
-# --- cgo via secp256k1 only (small C lib; same footprint as go-ethereum) ---
-
 compile_native_go_fuzzer $MOD/execution/abi            FuzzABI                  fuzz_abi
-compile_native_go_fuzzer $MOD/execution/types          FuzzRLP                  fuzz_rlp
-compile_native_go_fuzzer $MOD/execution/vm             FuzzPrecompiledContracts fuzz_precompiles
-compile_native_go_fuzzer $MOD/execution/vm/runtime     FuzzVmRuntime            fuzz_vm_runtime
 
-# --- Deferred: cgo + MDBX (txnprovider/txpool) -----------------------------
+# --- Deferred targets ------------------------------------------------------
+# These build under plain `go test` but not yet under the OSS-Fuzz toolchain.
+# Re-enable each as its blocker is resolved.
 #
-# The txpool fuzzers (FuzzParseTx, FuzzPooledTransactions66,
-# FuzzGetPooledTransactions66, FuzzOnNewBlocks) transitively link the MDBX C
-# library, which needs validating under the OSS-Fuzz sanitizer toolchain
-# before being enabled. Add in a follow-up once the build is confirmed green:
+# (a) go-118-fuzz-build's testing shim has no testing.B, and these fuzzers
+#     share a file with benchmarks. Fix: move the fuzzer into a benchmark-free
+#     file upstream, then enable here.
+#       $MOD/common/bitutil                FuzzEncoder, FuzzDecoder
+#       $MOD/execution/commitment/nibbles  FuzzHexCompactRoundtrip
 #
-# compile_native_go_fuzzer $MOD/txnprovider/txpool FuzzParseTx                  fuzz_txpool_parsetx
-# compile_native_go_fuzzer $MOD/txnprovider/txpool FuzzPooledTransactions66     fuzz_txpool_pooledtxns66
-# compile_native_go_fuzzer $MOD/txnprovider/txpool FuzzGetPooledTransactions66  fuzz_txpool_getpooledtxns66
-# compile_native_go_fuzzer $MOD/txnprovider/txpool FuzzOnNewBlocks              fuzz_txpool_onnewblocks
+# (b) The shim's testing.T has no Context() method (Go 1.24+), used in these
+#     fuzzer files.
+#       $MOD/db/recsplit                   FuzzRecSplit
+#       $MOD/db/seg                        FuzzCompress, FuzzDecompressMatch
+#
+# (c) Require cgo, but the OSS-Fuzz coverage build runs with CGO disabled
+#     (undefined secp256k1 symbols). Needs the coverage build to allow cgo, or
+#     these excluded from coverage.
+#       $MOD/execution/types               FuzzRLP
+#       $MOD/execution/vm                  FuzzPrecompiledContracts
+#       $MOD/execution/vm/runtime          FuzzVmRuntime
+#
+# (d) cgo + MDBX (large C lib), needs sanitizer-toolchain validation.
+#       $MOD/txnprovider/txpool  FuzzParseTx, FuzzPooledTransactions66,
+#                                FuzzGetPooledTransactions66, FuzzOnNewBlocks
