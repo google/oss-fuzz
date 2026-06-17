@@ -50,7 +50,16 @@ sed -i 's|LDFLAGS="$(VPX_LDFLAGS)" CROSS=$(VPX_CROSS)|LDFLAGS="$(VPX_LDFLAGS)" L
 make V=1 -j$(nproc) \
     .flac \
     .libxml2 \
-    .ffmpeg
+    .ffmpeg \
+    .freetype2 \
+    .fribidi \
+    .harfbuzz \
+    .fontconfig
+# libass's dependency chain (freetype2/fribidi/harfbuzz/fontconfig) is built
+# here, uninstrumented: fribidi/fontconfig compile build-time codegen tools
+# (e.g. gen-unicode-version) that fail to link under -fsanitize=fuzzer when the
+# sanitizer runtime isn't pulled in. Only libass itself (.ass) is built with
+# instrumentation below, since the SSA/ASS parser is the actual fuzz target.
 
 cd ../../
 
@@ -78,7 +87,20 @@ make V=1 -j$(nproc) \
     .vorbis \
     .speex \
     .speexdsp \
-    .dvbpsi
+    .dvbpsi \
+    .modplug \
+    .faad2 \
+    .jpeg \
+    .png \
+    .ass \
+    .kate
+
+# libgme's CMake compiles with -fno-rtti, which is incompatible with the
+# -fsanitize=vptr check implied by SANITIZER=undefined ("invalid argument
+# '-fsanitize=vptr' not allowed with '-fno-rtti'"). Build it with that single
+# UBSan sub-check disabled; this is a no-op under the address sanitizer.
+CFLAGS="$CFLAGS -fno-sanitize=vptr" CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
+    make V=1 -j$(nproc) .gme
 cd ../../
 
 # Use OSS-Fuzz environment rather than hardcoded setup.
