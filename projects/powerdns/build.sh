@@ -81,10 +81,20 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
           -D fuzzer_ldflags=${LIB_FUZZING_ENGINE} \
           -D b_pie=false \
           -D yaml=disabled \
+          -D libedit=disabled \
           ${build_dir}
         meson compile -C ${build_dir} fuzz-targets
         # copy the fuzzing target binaries
         find ${build_dir} -type f -executable -name 'fuzz-target-*' -exec cp {} ${OUT}/ \;
+
+        # Bundle dnsdist runtime libraries missing from the runner image.
+        mkdir -p ${OUT}/lib
+        for b in ${OUT}/fuzz-target-dnsdist*; do
+            [ -e "$b" ] || continue
+            ldd "$b" | awk '/=> \/.*(libluajit|libedit|libsodium)/{print $3}' \
+                | xargs -r -I{} cp -n {} ${OUT}/lib/
+            patchelf --set-rpath '$ORIGIN/lib' "$b" 2>/dev/null || true
+        done
     fi
 
     # back to the pdns/ directory
