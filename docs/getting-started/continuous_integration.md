@@ -278,8 +278,8 @@ To download the artifact, do the following steps:
 
 ![github-actions-download-crash]
 
-[github-actions-summary]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-summary.png)
-[github-actions-download-crash]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-download-crash.png)
+[github-actions-summary]: https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-summary.png
+[github-actions-download-crash]: https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-download-crash.png
 
 ## Feedback/Questions/Issues
 
