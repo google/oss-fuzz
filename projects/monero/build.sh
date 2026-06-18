@@ -15,22 +15,18 @@
 #
 ################################################################################
 
-export BOOST_ROOT=/src/monero/boost_1_70_0
-export OPENSSL_ROOT_DIR=/src/monero/openssl-1.1.1g
-
 cd monero
-sed -i -e 's/include(FindCcache)/# include(FindCcache)/' CMakeLists.txt
 git submodule init
 git submodule update
 mkdir -p build
 cd build
-export CXXFLAGS="${CXXFLAGS} -fPIC -DBOOST_NO_INCLASS_MEMBER_INITIALIZATION"
 # Upstream monero (commit 65c15857, "cmake: use boost provided module") switched
 # to find_package(Boost ... CONFIG) and dropped its internal
 # `set(Boost_USE_STATIC_RUNTIME ON)`. The OSS-Fuzz image builds Boost with
 # `runtime-link=static`, so config-mode find_package rejects that variant unless
 # Boost_USE_STATIC_RUNTIME is ON. Re-supply it here to match the image's Boost.
-cmake -D OSSFUZZ=ON -D STATIC=ON -D BUILD_TESTS=ON -D USE_LTO=OFF -D ARCH="default" -D Boost_USE_STATIC_RUNTIME=ON ..
+cmake -D OSSFUZZ=ON -D STATIC=ON -D BUILD_TESTS=ON -D USE_LTO=OFF -D ARCH="default" \
+      -D Boost_USE_STATIC_RUNTIME=ON -D USE_COMPILER_CACHE=OFF ..
 
 TESTS="\
   base58_fuzz_tests \
