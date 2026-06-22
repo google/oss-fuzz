@@ -63,8 +63,6 @@ for so in $OUT/*.so; do
 	patchelf --force-rpath --set-rpath '$ORIGIN' "$so" 2>/dev/null || true
 done
 
-echo "XXXXXXXX" > $WORK/testinput
-
 fuzzers=$(find $BUILD/fuzz/ -executable -type f)
 for f in $fuzzers; do
 	fuzzer=$(basename $f)
