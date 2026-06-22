@@ -1,0 +1,22 @@
+# OSS-Fuzz project definition for AegisLink.
+#
+# This file (together with Dockerfile and build.sh in this directory) is the
+# integration submitted to https://github.com/google/oss-fuzz under
+# projects/aegislink/. It is kept in-tree so the fuzzing setup is versioned with
+# the code it exercises; the OSS-Fuzz PR is a copy of this directory.
+#
+# Scope: the untrusted-input parsers (scanned QR / pasted invite link / message
+# body arriving from the relay / decrypted ratchet inner payload). Their
+# contract is to fail soft; an uncaught throw under Jazzer is a remotely
+# triggerable crash. See mobile/src/fuzz/ and mobile/fuzz/.
+homepage: "https://github.com/gabinotech22-cmyk/AegisLink"
+language: javascript
+main_repo: "https://github.com/gabinotech22-cmyk/AegisLink.git"
+primary_contact: "gabinotech22+security@gmail.com"
+file_github_issue: false
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - none
+architectures:
+  - x86_64
