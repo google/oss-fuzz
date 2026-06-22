@@ -23,12 +23,16 @@ LDFLAGS="$CFLAGS"
 sed -i "s|link_args: lib_fuzzing_engine|link_args: [lib_fuzzing_engine, '-ltalloc', '-Wl,-rpath,\$ORIGIN/lib']|" tests/fuzzing/meson.build
 
 meson setup builddir --default-library=static -Dfuzzing=true -Dlib_fuzzing_engine="$LIB_FUZZING_ENGINE"
-ninja -C builddir -k 0 || true
+ninja -C builddir -k 0 \
+    tests/fuzzing/gtp_message_fuzz \
+    tests/fuzzing/nas_message_fuzz \
+    tests/fuzzing/ngap_message_fuzz
 
 cp builddir/tests/fuzzing/gtp_message_fuzz $OUT/gtp_message_fuzz
 cp builddir/tests/fuzzing/nas_message_fuzz $OUT/nas_message_fuzz
+cp builddir/tests/fuzzing/ngap_message_fuzz $OUT/ngap_message_fuzz
 
-mkdir $OUT/lib/
+mkdir -p $OUT/lib/
 cp /lib/x86_64-linux-gnu/libtalloc.so* $OUT/lib/
 
 cp tests/fuzzing/gtp_message_fuzz_seed_corpus.zip $OUT/gtp_message_fuzz_seed_corpus.zip
