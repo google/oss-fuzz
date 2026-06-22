@@ -1,0 +1,10 @@
+homepage: "https://github.com/py-pdf/pypdf"
+main_repo: "https://github.com/py-pdf/pypdf"
+language: python
+primary_contact: "sajjadrahimnouri@gmail.com" # Put your email here!
+# Optional: ask the pypdf maintainers if they want to be added to auto_ccs
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
