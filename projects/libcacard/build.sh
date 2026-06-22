@@ -69,5 +69,3 @@ for f in $fuzzers; do
 	cp $f $OUT/
 	patchelf --force-rpath --set-rpath '$ORIGIN' $OUT/$fuzzer 2>/dev/null || true
 done
-
-rm $WORK/testinput
