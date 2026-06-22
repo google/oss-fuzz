@@ -40,3 +40,7 @@ popd
 zip -j ${OUT}/fuzz_url_seed_corpus.zip fuzz/input/fuzz_url.raw
 zip -j ${OUT}/fuzz_table_seed_corpus.zip fuzz/input/fuzz_table.raw
 zip -j ${OUT}/fuzz_server_seed_corpus.zip fuzz/input/fuzz_server.raw
+zip -j ${OUT}/fuzz_method_decode_seed_corpus.zip fuzz/input/fuzz_method_decode.raw
+zip -j ${OUT}/fuzz_properties_decode_seed_corpus.zip fuzz/input/fuzz_properties_decode.raw
+zip -j ${OUT}/fuzz_codec_seed_corpus.zip fuzz/input/fuzz_codec.raw
+zip -j ${OUT}/fuzz_handle_input_seed_corpus.zip fuzz/input/fuzz_server.raw
