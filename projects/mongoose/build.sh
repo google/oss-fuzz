@@ -16,6 +16,7 @@
 
 cd $SRC/mongoose
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I. test/fuzz.c -o $OUT/fuzz
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I. test/fuzz_ws.c -o $OUT/fuzz_ws
 
 # Fuzzer using honggfuzz netdriver.
 if [[ "$FUZZING_ENGINE" == "honggfuzz" ]]
