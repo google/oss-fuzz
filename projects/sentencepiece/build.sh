@@ -76,7 +76,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party'); do
   fuzz_basename=$(basename -s .cc $fuzzer)
   echo "Building fuzzer: $fuzz_basename"
   $CXX $CXXFLAGS -std=c++17 \
-      -I. -I./root/include \
+      -I. -I./root/include -I../third_party/abseil-cpp \
       $fuzzer $LIB_FUZZING_ENGINE \
       -Wl,--start-group \
       ./root/lib/libsentencepiece_train.a ./root/lib/libsentencepiece.a \
