@@ -26,11 +26,13 @@ meson setup builddir --default-library=static -Dfuzzing=true -Dlib_fuzzing_engin
 ninja -C builddir -k 0 \
     tests/fuzzing/gtp_message_fuzz \
     tests/fuzzing/nas_message_fuzz \
-    tests/fuzzing/ngap_message_fuzz
+    tests/fuzzing/ngap_message_fuzz \
+    tests/fuzzing/s1ap_message_fuzz
 
 cp builddir/tests/fuzzing/gtp_message_fuzz $OUT/gtp_message_fuzz
 cp builddir/tests/fuzzing/nas_message_fuzz $OUT/nas_message_fuzz
 cp builddir/tests/fuzzing/ngap_message_fuzz $OUT/ngap_message_fuzz
+cp builddir/tests/fuzzing/s1ap_message_fuzz $OUT/s1ap_message_fuzz
 
 mkdir -p $OUT/lib/
 cp /lib/x86_64-linux-gnu/libtalloc.so* $OUT/lib/
