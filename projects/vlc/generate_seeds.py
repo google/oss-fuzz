@@ -149,9 +149,13 @@ def make_pat(programs: list) -> bytes:
     return psi_section(0x00, 0x0001, body)
 
 
-def make_pmt(program_num: int, pcr_pid: int, streams: list) -> bytes:
-    """Build a PMT section.  streams = [(stream_type, es_pid, descriptors), ...]"""
-    body = struct.pack('>H', 0xE000 | pcr_pid) + struct.pack('>H', 0xF000)
+def make_pmt(program_num: int, pcr_pid: int, streams: list,
+             program_descs: bytes = b'') -> bytes:
+    """Build a PMT section.  streams = [(stream_type, es_pid, descriptors), ...].
+       program_descs are program-level (program_info) descriptors, e.g. an IOD
+       descriptor (tag 0x1d)."""
+    body = (struct.pack('>H', 0xE000 | pcr_pid)
+            + struct.pack('>H', 0xF000 | len(program_descs)) + program_descs)
     for stype, es_pid, descs in streams:
         body += bytes([stype])
         body += struct.pack('>H', 0xE000 | es_pid)
@@ -1648,8 +1652,55 @@ def seed_ts_private_stream_types() -> bytes:
     return _ts_pad_to_min_packets(stream)
 
 
+def _mp4_od_desc(tag: int, body: bytes) -> bytes:
+    """MPEG-4 expandable descriptor: tag + length + body (single-byte length
+    suffices for <128-byte bodies, top bit clear = no continuation)."""
+    assert len(body) < 128
+    return bytes([tag, len(body)]) + body
+
+
+def _ts_iod_descriptor() -> bytes:
+    """A PMT program-level IOD descriptor (tag 0x1d) carrying a full MPEG-4
+    InitialObjectDescriptor -> ES_Descriptor -> DecoderConfigDescriptor
+    (+ DecoderSpecificInfo) + SLConfigDescriptor, for mpeg4_iod.c::IODNew and
+    the nested OD_*_Read descriptor parsers."""
+    decspecific = _mp4_od_desc(0x05, b'\x12\x10')          # DecoderSpecificInfo
+    deccfg_body = (bytes([0x40, 0x15])                     # objectType=AAC, flags
+                   + b'\x00\x18\x00'                       # bufferSizeDB (3)
+                   + b'\x00\x01\xf4\x00'                   # maxBitrate (4)
+                   + b'\x00\x01\xf4\x00'                   # avgBitrate (4)
+                   + decspecific)
+    deccfg = _mp4_od_desc(0x04, deccfg_body)               # DecoderConfigDescr
+    sl = _mp4_od_desc(0x06, bytes([0x02]))                 # SLConfig predefined=MP4
+    es_body = b'\x00\x01' + b'\x00' + deccfg + sl          # ES_ID=1, flags=0
+    esdescr = _mp4_od_desc(0x03, es_body)                  # ES_Descriptor
+    iod_body = (bytes([0x00, 0x00])                        # ODID + flags (no URL/inline)
+                + b'\xff\xff\xff\xff\xff'                  # OD/scene/audio/visual/graphics PLI
+                + esdescr)
+    iod = _mp4_od_desc(0x02, iod_body)                     # InitialObjectDescriptor
+    payload = bytes([0x10, 0x01]) + iod                    # iod_scope=0x10, iod_label=0x01
+    return bytes([0x1d, len(payload)]) + payload           # PMT descriptor tag 0x1d
+
+
+def seed_ts_iod() -> bytes:
+    pat = make_pat([(0x0001, PMT_PID)])
+    # stream_type 0x12 = ISO/IEC 14496-1 SL-packetized stream carried in PES.
+    pmt = make_pmt(0x0001, VIDEO_PID, [(0x12, VIDEO_PID, b'')],
+                   program_descs=_ts_iod_descriptor())
+    # Repeat PAT/PMT and carry several PES packets: the TS demuxer parses the
+    # PMT (and its descriptor loop) only after locking onto the PSI cadence.
+    out = b''
+    for _ in range(3):
+        out += psi_packet(pat, 0x0000)
+        out += psi_packet(pmt, PMT_PID)
+        out += pes_ts_packets(make_ts_pes(0xE0, MPGV_PAYLOAD * 4, pts_90khz=0),
+                              VIDEO_PID)
+    return out
+
+
 TS_SEEDS = {
     'mpeg2_video.ts':  seed_mpeg2_video,
+    'mpeg4_iod.ts':    seed_ts_iod,
     'h264_video.ts':   seed_h264_video,
     'hevc_video.ts':   seed_hevc_video,
     'mpeg1_audio.ts':  seed_mpeg1_audio,
@@ -2284,6 +2335,188 @@ def gen_rawdv(root):
         for tag in [0x50, 0x51, 0x52, 0x53, 0x60, 0x61, 0x62, 0x63]:
             f.write(f'"\\x{tag:02x}"\n')
     print(f"  wrote {dict_path}")
+
+
+# ──────────────────────────────────────────────────
+#  TiVo TY streams (modules/demux/ty.c)
+# ──────────────────────────────────────────────────
+#
+# A TY stream large enough to clear probe_stream() (which peeks 3 * 128 KiB):
+#   chunk 0   : 128 KiB master/PART chunk (fileid 0xf5467abd, type 0x02,
+#               chunk size 0x20000); 32-byte header + SEQ table fill it exactly
+#               so parse_master() ends on the next chunk boundary.
+#   chunks 1-3: 128 KiB data chunks, >=5 records each, including 0x6e0
+#               (Series-1 video) and 0x9c0 (AC-3 audio / DTivo) for
+#               analyze_chunk() classification, a 0x3c0 MPEG-audio record,
+#               extended 0x01/0x02 closed-caption/XDS records, and a 0x03
+#               data-service record. Video/audio payloads carry PES start codes.
+
+_TY_CHUNK_SIZE = 128 * 1024
+_TY_FILEID = 0xF5467ABD
+
+
+def _ty_master_chunk() -> bytes:
+    """A 128 KiB master chunk. i_map_size=8 and SEQ-table byte count chosen so
+    the header (32 B) + table consume exactly CHUNK_SIZE and parse_master()
+    ends on the next 128 KiB boundary."""
+    entries = (_TY_CHUNK_SIZE - 32) // 16        # 16 B per SEQ entry (8+8)
+    seq_bytes = entries * 16
+    hdr = bytearray(32)
+    hdr[0:4] = struct.pack('>I', _TY_FILEID)
+    hdr[4:8] = struct.pack('>I', 0x02)
+    hdr[8:12] = struct.pack('>I', _TY_CHUNK_SIZE)
+    hdr[20:24] = struct.pack('>I', 8)            # i_map_size (bytes per bitmask)
+    hdr[28:32] = struct.pack('>I', seq_bytes)    # SEQ table size in bytes
+    chunk = bytes(hdr) + b'\x00' * seq_bytes
+    assert len(chunk) == _TY_CHUNK_SIZE
+    return chunk
+
+
+def _ty_rec_hdr(rec_type: int, subrec: int, size: int = 0,
+                pts: int = 0, ext: bytes = None) -> bytes:
+    """Build a 16-byte TY record header. With ext=(b1,b2) the record is
+    'extended' (no payload; data lives in the header). Otherwise it carries a
+    payload of `size` bytes encoded in the size field, plus a TY PTS."""
+    h = bytearray(16)
+    h[3] = rec_type & 0xFF
+    if ext is not None:
+        b1, b2 = ext[0], ext[1]
+        h[0] = 0x80 | ((b1 >> 4) & 0x0F)
+        h[1] = ((b1 & 0x0F) << 4) | ((b2 >> 4) & 0x0F)
+        h[2] = ((b2 & 0x0F) << 4) | (subrec & 0x0F)
+    else:
+        assert size < 0x80000
+        h[0] = (size >> 12) & 0x7F               # top bit clear -> non-extended
+        h[1] = (size >> 4) & 0xFF
+        h[2] = ((size & 0x0F) << 4) | (subrec & 0x0F)
+        h[8:16] = struct.pack('>Q', pts & 0xFFFFFFFFFFFFFFFF)
+    return bytes(h)
+
+
+def _ty_pes(stream_id: int, payload: bytes, with_pts: bool = True) -> bytes:
+    """A minimal MPEG-1/2 PES packet with an optional PTS, so the TY record
+    demuxers find a start code and exercise their PTS extraction."""
+    if with_pts:
+        pts = 0x100000
+        flags = bytes([0x80, 0x80, 0x05])        # '10', PTS_DTS_flags=10, hdrlen=5
+        p = ((0x21 | ((pts >> 29) & 0x0E)))
+        pts_bytes = bytes([0x20 | ((pts >> 29) & 0x0E) | 0x01,
+                           (pts >> 22) & 0xFF,
+                           ((pts >> 14) & 0xFE) | 0x01,
+                           (pts >> 7) & 0xFF,
+                           ((pts << 1) & 0xFE) | 0x01])
+        hdr = flags + pts_bytes
+    else:
+        hdr = bytes([0x80, 0x00, 0x00])
+    body = hdr + payload
+    return bytes([0x00, 0x00, 0x01, stream_id]) + struct.pack('>H', len(body)) + body
+
+
+def _ty_data_chunk() -> bytes:
+    """A 128 KiB TY data chunk with a representative record mix."""
+    video = b'\x00\x00\x01\xb3' + bytes(8) + _ty_pes(0xE0, b'\x00\x00\x01\x00' + bytes(32))
+    video2 = b'\x00\x00\x01\xb8' + _ty_pes(0xE0, bytes(48))   # GOP start code
+    ac3 = b'\x0b\x77' + bytes(60)                              # AC-3 syncword
+    mpga = _ty_pes(0xC0, b'\xff\xfb' + bytes(40))              # MPEG audio in PES
+
+    records = [
+        (0xE0, 0x06, video),    # 0x6e0 -> Series-1 video; DemuxRecVideo
+        (0xC0, 0x09, ac3),      # 0x9c0 -> AC-3 audio/DTivo; DemuxRecAudio
+        (0xE0, 0x06, video2),   # more video
+        (0xC0, 0x03, mpga),     # 0x3c0 -> MPEG audio
+        (0x03, 0x00, bytes(24)),# tivo data service record
+    ]
+
+    hdrs = b''
+    payloads = b''
+    pts = 0x100000
+    for rt, sub, payload in records:
+        hdrs += _ty_rec_hdr(rt, sub, size=len(payload), pts=pts)
+        payloads += payload
+        pts += 0x1000
+    # Extended closed-caption / XDS records (no payload; data in the header).
+    hdrs += _ty_rec_hdr(0x01, 0x00, ext=(0x14, 0x2C))   # 608 control pair
+    hdrs += _ty_rec_hdr(0x02, 0x01, ext=(0x01, 0x42))   # XDS class byte + data
+
+    num_recs = len(records) + 2
+    chunk_hdr = bytes([num_recs & 0xFF, 0x00, 0x00, 0x00])  # 8-bit rec count
+    body = chunk_hdr + hdrs + payloads
+    assert len(body) <= _TY_CHUNK_SIZE, len(body)
+    body += b'\x00' * (_TY_CHUNK_SIZE - len(body))          # stuff bytes
+    return body
+
+
+def gen_ty(root):
+    out = os.path.join(root, 'seeds', 'ty')
+    os.makedirs(out, exist_ok=True)
+    # master + 3 data chunks: >=3 chunks satisfies the 384 KiB probe peek and
+    # leaves data chunks for Demux to iterate over.
+    data = _ty_master_chunk() + _ty_data_chunk() * 3
+    _write(os.path.join(out, 'structured_dtivo.ty'), data)
+
+
+# ──────────────────────────────────────────────────
+#  Nullsoft NSV streams (modules/demux/nsv.c)
+# ──────────────────────────────────────────────────
+#
+# A dedicated seeds/nsv/ target exercising: ReadNSVf (metadata chunk), ReadNSVs
+# (video/audio codec setup, two stream-header variants), the per-frame 5-byte
+# header math, the SUBT auxiliary-data subtitle path, the 0xbeef inter-frame
+# continuation marker, and the 'araw' audio per-frame 4-byte (channels/rate)
+# header branch.
+
+def _nsv_frame(video=b'', audio=b'', subt=None):
+    """One NSV frame: 5-byte header + optional SUBT aux + video + audio.
+    The header's video size field counts the aux region too (nsv.c subtracts
+    6 + i_aux after parsing it)."""
+    if subt is not None:
+        # aux: WLE(i_aux) + 'SUBT' + payload(i_aux). nsv.c skips the first 2
+        # payload bytes then treats the rest as "<lang>\0<text>".
+        apay = b'\x00\x00' + subt
+        aux = struct.pack('<H', len(apay)) + b'SUBT' + apay
+        vsize = 6 + len(apay) + len(video)
+        num_aux = 1
+    else:
+        aux = b''
+        vsize = len(video)
+        num_aux = 0
+    asize = len(audio)
+    hdr = bytes([
+        ((vsize & 0x0F) << 4) | (num_aux & 0x0F),
+        (vsize >> 4) & 0xFF,
+        (vsize >> 12) & 0xFF,
+        asize & 0xFF,
+        (asize >> 8) & 0xFF,
+    ])
+    return hdr + aux + video + audio
+
+
+def _nsvs_header(vfcc: bytes, afcc: bytes, w: int, h: int) -> bytes:
+    assert len(vfcc) == 4 and len(afcc) == 4
+    return (b'NSVs' + vfcc + afcc + struct.pack('<HH', w, h)
+            + bytes([0x00, 0x00, 0x00]))           # framerate + 2 sync bytes = 19 B total
+
+
+def gen_nsv(root):
+    # NSVf metadata chunk: ReadNSVf skips i_header_size bytes total.
+    nsvf = b'NSVf' + struct.pack('<II', 24, 0) + bytes(12)   # 24-byte chunk
+
+    # Stream 1: VP6 video + MP3 audio. Frame with a SUBT subtitle aux block,
+    # then a 0xbeef continuation frame.
+    s1 = _nsvs_header(b'VP60', b'MP3 ', 320, 240)
+    f1 = _nsv_frame(video=bytes(32), audio=bytes(32),
+                    subt=b'en\x00NSV subtitle\x00')
+    beef = struct.pack('<H', 0xbeef)
+    f2 = _nsv_frame(video=bytes(40), audio=bytes(24))
+
+    # Stream 2: H264 video + PCM audio -> 'araw' triggers the 4-byte per-frame
+    # audio header (channels/rate) branch; audio field = 4 header + 32 data.
+    s2 = _nsvs_header(b'H264', b'PCM ', 640, 480)
+    araw_audio = bytes([0x00, 0x02]) + struct.pack('<H', 44100) + bytes(32)
+    f3 = _nsv_frame(video=bytes(48), audio=araw_audio)
+
+    data = nsvf + s1 + f1 + beef + f2 + s2 + f3
+    _write(os.path.join(root, 'seeds/nsv/structured.nsv'), data)
 
 
 def gen_vc1(root):
@@ -3513,6 +3746,7 @@ _MKV_TRACK_NUMBER    = 0xD7
 _MKV_TRACK_UID       = 0x73C5
 _MKV_TRACK_TYPE      = 0x83
 _MKV_CODEC_ID        = 0x86
+_MKV_CODEC_PRIVATE   = 0x63A2
 _MKV_FLAG_LACING     = 0x9C
 
 _MKV_CHAPTERS        = 0x1043A770
@@ -3710,11 +3944,100 @@ def _build_mkv_dvd_chapters_seed() -> bytes:
     return ebml + segment
 
 
+# ──────────────────────────────────────────────────
+#  USF subtitles in Matroska (modules/codec/subsusf.c)
+# ──────────────────────────────────────────────────
+#
+# VLC_CODEC_USF is produced only by the Matroska parser (CodecID "S_TEXT/USF").
+# This seed drives both halves of subsusf.c:
+#   * Track CodecPrivate = <USFSubtitles> header XML (ParseUSFHeader): metadata/
+#     resolution, <styles>/<style> (incl. a "Default" style for the default-copy
+#     branch), <fontstyle> (face/size/italic/weight/underline/color/outline/
+#     shadow/spacing) and <position> (alignment values + %/absolute margins).
+#   * Each SimpleBlock = a USF body (ParseUSFString): a <karaoke> run with <k>
+#     tags, an <image> with a colorkey, and a formatted text line for StripTags
+#     (font/bold/italic, <br/>, &lt;/&gt;/&amp;/&quot;) + SetupPositions.
+# Placed in seeds/mkv/ so the existing "mkv" target picks it up.
+
+_USF_HEADER = (
+    b'<?xml version="1.0" encoding="UTF-8"?>'
+    b'<USFSubtitles version="1.0">'
+    b'<metadata><title>fuzz</title><resolution x="1280" y="720"/></metadata>'
+    b'<styles>'
+    b'<style name="Default">'
+    b'<fontstyle face="Sans" size="24" italic="yes" weight="bold"'
+    b' underline="yes" color="#80ff0000" outline-color="#ff00ff00"'
+    b' outline-level="2" shadow-color="#ff0000ff" shadow-level="1"'
+    b' spacing="3"/>'
+    b'<position alignment="BottomCenter" horizontal-margin="10%"'
+    b' vertical-margin="20"/>'
+    b'</style>'
+    b'<style name="Top">'
+    b'<fontstyle face="Serif" size="+3" italic="no" weight="normal"/>'
+    b'<position alignment="TopLeft" horizontal-margin="5"'
+    b' vertical-margin="8%"/>'
+    b'</style>'
+    b'</styles>'
+    b'</USFSubtitles>'
+)
+
+# A handful of USF body strings, one per SimpleBlock, each hitting a
+# different branch of ParseUSFString / StripTags.
+_USF_BODIES = [
+    b'<text style="Default"><b>Hello</b> <i>world</i> &amp; '
+    b'more &lt;ok&gt;<br/>second &quot;line&quot;</text>',
+    b'<karaoke><k t="50"/>Sing <k t="50"/>a <k t="50"/>song</karaoke>',
+    b'<image colorkey="#ff00ff">embedded.png</image>',
+    b'<text><font color="#00ff00" face="Mono">positioned</font></text>'
+    b'<position alignment="MiddleRight" horizontal-margin="2%"/>',
+]
+
+
+def _build_mkv_usf_seed() -> bytes:
+    """A Matroska file with a single S_TEXT/USF subtitle track whose
+    CodecPrivate is a USF header and whose cluster carries several USF
+    subtitle blocks. Drives modules/codec/subsusf.c end to end."""
+
+    ebml_body  = _mkv_uint(_MKV_EBML_VERSION, 1)
+    ebml_body += _mkv_uint(_MKV_EBML_READVER, 1)
+    ebml_body += _mkv_str(_MKV_DOCTYPE, b'matroska')
+    ebml_body += _mkv_uint(_MKV_DOCTYPE_VER, 4)
+    ebml_body += _mkv_uint(_MKV_DOCTYPE_RDVER, 2)
+    ebml = _mkv_elem(_MKV_EBML, ebml_body)
+
+    info_body  = _mkv_bin(_MKV_TIMECODE_SCALE, (1_000_000).to_bytes(3, 'big'))
+    info_body += _mkv_bin(_MKV_DURATION, struct.pack('>d', 1000.0))
+    info_body += _mkv_str(_MKV_MUXAPP, b'oss-fuzz-vlc')
+    info = _mkv_elem(_MKV_INFO, info_body)
+
+    track_body  = _mkv_uint(_MKV_TRACK_NUMBER, 1)
+    track_body += _mkv_bin(_MKV_TRACK_UID, (1).to_bytes(4, 'big'))
+    track_body += _mkv_uint(_MKV_TRACK_TYPE, 0x11)            # subtitle
+    track_body += _mkv_str(_MKV_CODEC_ID, b'S_TEXT/USF')
+    track_body += _mkv_bin(_MKV_CODEC_PRIVATE, _USF_HEADER)   # USF header XML
+    track_body += _mkv_uint(_MKV_FLAG_LACING, 0)
+    tracks = _mkv_elem(_MKV_TRACKS, _mkv_elem(_MKV_TRACK_ENTRY, track_body))
+
+    # Cluster — one SimpleBlock per USF body, spaced 100 ms apart so each
+    # gets a distinct, valid PTS (ParseText rejects VLC_TICK_INVALID).
+    cluster_body = _mkv_uint(_MKV_TIMECODE, 0)
+    for i, body in enumerate(_USF_BODIES):
+        ts = i * 100
+        block = bytes([0x81]) + struct.pack('>h', ts) + bytes([0x00]) + body
+        cluster_body += _mkv_bin(_MKV_SIMPLEBLOCK, block)
+    cluster = _mkv_elem(_MKV_CLUSTER, cluster_body)
+
+    segment = _mkv_elem(_MKV_SEGMENT, info + tracks + cluster)
+    return ebml + segment
+
+
 def gen_mkv(root):
     out = os.path.join(root, 'seeds', 'mkv')
     os.makedirs(out, exist_ok=True)
     _write(os.path.join(out, 'dvd_chapter_commands.mkv'),
            _build_mkv_dvd_chapters_seed())
+    _write(os.path.join(out, 'usf_subtitles.mkv'),
+           _build_mkv_usf_seed())
 
 
 # ──────────────────────────────────────────────────
@@ -4972,6 +5295,8 @@ def main():
     gen_avi(root)
     gen_es(root)
     gen_rawdv(root)
+    gen_ty(root)
+    gen_nsv(root)
     gen_vc1(root)
     gen_cdg(root)
     gen_mus(root)

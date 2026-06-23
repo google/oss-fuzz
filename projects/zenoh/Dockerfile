@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +14,9 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CFLAGS"
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-mkdir build
-cd build
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
-make -j$(nproc)
+RUN git clone --depth 1 https://github.com/eclipse-zenoh/zenoh.git
+COPY build.sh $SRC
 
-cp fuzzer/FuzzIxml $OUT/FuzzIxml
-cp fuzzer/FuzzHttp $OUT/FuzzHttp
-
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+WORKDIR $SRC/
