@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
-export USE_BAZEL_VERSION="7.3.2"
+export USE_BAZEL_VERSION="8.7.0"
 export CC=${CC:-clang}
 export CXX=${CXX:-clang++}
 
 # modified version of bazel_build_fuzz_tests to work around issues with
 # bzlmod dependency on rules_fuzzing
 
-bazel build -c opt --config=oss-fuzz //fuzz:fuzz_parse_oss_fuzz
+bazel build -c opt --config=oss-fuzz //fuzz:fuzz_parse_oss_fuzz //fuzz:fuzz_eval_oss_fuzz
 
 for oss_fuzz_archive in $(find bazel-bin/ -name "*oss_fuzz.tar"); do
     tar --no-same-owner -xvf "${oss_fuzz_archive}" -C "${OUT}"

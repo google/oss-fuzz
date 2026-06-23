@@ -14,10 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y wget libssl-dev libboost-tools-dev libboost-dev libboost-system-dev
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y wget libssl-dev libboost-tools-dev libboost-dev libboost-system-dev libboost-json-dev
 
-RUN git clone --depth 1 --single-branch --branch RC_2_0 --recurse-submodules https://github.com/arvidn/libtorrent.git
+RUN git clone --depth 1 --single-branch --branch RC_2_1 --recurse-submodules https://github.com/arvidn/libtorrent.git
 WORKDIR libtorrent
 COPY build.sh $SRC/
 
