@@ -4,4 +4,5 @@ main_repo: "https://github.com/wolfSSL/wolfssh"
 primary_contact: "john@wolfssl.com"
 auto_ccs:
 - "david@adalogics.com"
+- "jacob@wolfssl.com"
 base_os_version: ubuntu-24-04

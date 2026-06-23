@@ -22,3 +22,6 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_dostring.o build/libjanet.a -o $OUT/fuzz
 
 $CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_unmarshal.o -c ./test/fuzzers/fuzz_unmarshal.c
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_unmarshal.o build/libjanet.a -o $OUT/fuzz_unmarshal
+
+$CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_dobytes.o -c ./test/fuzzers/fuzz_dobytes.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_dobytes.o build/libjanet.a -o $OUT/fuzz_dobytes
