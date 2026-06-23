@@ -6,6 +6,7 @@ main_repo: https://github.com/onnx/onnx
 primary_contact: a.fehlner@googlemail.com
 auto_ccs:
   - fehlner@arcor.de
+  - muhammedbussnies@gmail.com
   - onnx-fuzzing@lists.lfaidata.foundation
 sanitizers:
 - address
