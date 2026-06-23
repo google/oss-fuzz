@@ -1,24 +1,47 @@
 #!/bin/bash -eu
-# Copyright 2026 Google LLC
+# MIT License
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Copyright (c) 2026 rhysmcneill
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-# Unless required by applicable law or agreed to in writing, WITHOUT WARRANTIES OR
-# CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the Apache License, Version 2.0.
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
 #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 #################################################################################
-
-cd $GOPATH/src/ssmctl
+cd $GOPATH/src/github.com/MozamilS/ssmctl/
 
 go mod download
+go mod tidy
 
-# Compile all fuzz tests
-for fuzz in ShellQuote PowerShellQuote SanitizeBasename RemoteBaseName ParseArg NormalizeWindowsPath AllInstanceIDs NameTag TargetInfoFromInstance FirstInstance NoInstancesFound ListInstancesFiltering DownloadBase64Decoding ParseRemoteFlag ParseS3URL; do
-  compile_native_go_fuzzer github.com/rhysmcneill/ssmctl/internal/ssm "Fuzz${fuzz}" fuzz_
-done
+echo "=== FUZZ FUNCTIONS FOUND ==="
+grep -r "^func Fuzz" $GOPATH/src/github.com/MozamilS/ssmctl/internal/ssm/
+echo "=== END FUZZ FUNCTIONS ==="
+
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzSanitizeBasename fuzz_sanitizebasename
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzRemoteBaseName fuzz_remotebasename
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzDownloadBase64Decoding fuzz_downloadbase64decoding
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzAllInstanceIDs fuzz_allinstanceids
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzFirstInstance fuzz_firstinstance
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzShellQuote fuzz_shellquote
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzPowerShellQuote fuzz_powershellquote
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzNoInstancesFound fuzz_noinstancesfound
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzNormalizeWindowsPath fuzz_normalizewindowspath
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzTargetInfoFromInstance fuzz_targetinfofrommodule
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzParseRemoteFlag fuzz_parseremotsflag
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzNameTag fuzz_nametag
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzParseArg fuzz_parsearg
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzParseS3URL fuzz_parses3url
+compile_native_go_fuzzer github.com/MozamilS/ssmctl/internal/ssm FuzzListInstancesFiltering fuzz_list
