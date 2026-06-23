@@ -23,9 +23,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
 
-RUN git clone https://github.com/MozamilS/ssmctl $GOPATH/src/github.com/MozamilS/ssmctl && \
-    cd $GOPATH/src/github.com/MozamilS/ssmctl && \
-    git checkout chore/fuzzing-check
+RUN git clone --depth 1 https://github.com/rhysmcneill/ssmctl $GOPATH/src/github.com/rhysmcneill/ssmctl && \
+    cd $GOPATH/src/github.com/rhysmcneill/ssmctl
 
 COPY build.sh /src/
 
