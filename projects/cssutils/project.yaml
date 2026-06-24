@@ -1,0 +1,15 @@
+homepage: "https://github.com/jaraco/cssutils"
+main_repo: "https://github.com/jaraco/cssutils"
+language: python
+primary_contact: "sajjadrahimnouri@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+
+sanitizers:
+  - address
+  - undefined
+
+architectures:
+  - x86_64
+
+vendor_ccs: []
