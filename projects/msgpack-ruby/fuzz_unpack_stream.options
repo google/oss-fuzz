@@ -1,0 +1,2 @@
+[libfuzzer]
+rss_limit_mb = 4096
