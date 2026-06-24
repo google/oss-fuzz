@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2024 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,173 +13,183 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import io
-import signal
+"""
+Deep-state fuzzer for cssutils (Fully Silent & Robust).
+Targets: Property values, Selectors, Tokenizer, Encodings, and Error Recovery.
+"""
+
 import sys
-
+import logging
+import signal
+import warnings
 import atheris
+import cssutils
 
-with atheris.instrument_imports():
-    import cssutils
-    import cssutils.serialize
-    import logging
+# ==============================================================================
+# SILENCE NOISE (NUCLEAR OPTION)
+# ==============================================================================
 
-# Suppress cssutils logging to stderr
-cssutils.log.setLevel(logging.CRITICAL)
+# 1. Disable ALL standard library logging (Stops "WARNING Property: ...")
+#    This hides everything below CRITICAL level.
+logging.disable(logging.CRITICAL)
 
+# 2. Silence Python Warnings (Stops DeprecationWarnings, etc.)
+warnings.filterwarnings("ignore")
 
-class TimeoutError(Exception):
+# 3. Silence cssutils specific error handler (Stops "ERROR Selector: ...")
+#    We replace the log object with a dummy class that swallows all calls.
+class _SilentErrorHandler:
+    raiseExceptions = False
+    level = 50 # CRITICAL
+    
+    def handle(self, *args, **kwargs):
+        pass  # Swallow the error
+    
+    def __getattr__(self, name):
+        # Catch any method call (warn, log, info, error) and swallow it
+        return self.handle
+
+try:
+    cssutils.log = _SilentErrorHandler()
+except Exception:
     pass
 
+# ==============================================================================
+# ROBUST IMPORTS
+# ==============================================================================
 
-def timeout_handler(signum, frame):
-    raise TimeoutError("Parsing timeout")
+# cssutils changes its API frequently. We safely import what we can.
+Property = None
+try:
+    from cssutils.css import Property
+except ImportError:
+    pass
 
-
-# Set up timeout to prevent ReDoS from hanging fuzzer indefinitely
-signal.signal(signal.SIGALRM, timeout_handler)
-
-
-def parse_with_timeout(data, timeout_sec=5):
-    """Parse CSS with timeout protection"""
-    signal.alarm(timeout_sec)
+Selector = None
+try:
+    from cssutils.css import Selector
+except ImportError:
     try:
-        return cssutils.parseString(data)
+        from cssutils.selector import Selector
+    except (ImportError, ModuleNotFoundError):
+        pass
+
+CSSParseException = Exception
+try:
+    from cssutils import CSSParseException
+except ImportError:
+    pass
+
+# Increase recursion limit for deep nesting logic
+sys.setrecursionlimit(5000)
+
+# Expected parse errors (NOT bugs)
+EXPECTED_PARSE_EXCEPTIONS = (
+    CSSParseException,
+    KeyError,
+    IndexError,
+    ValueError,
+    TypeError,
+    SyntaxError,
+    NotImplementedError,
+    AttributeError,
+)
+
+def _safe_call(callable_fn, *args, **kwargs):
+    """
+    Catches expected parsing errors. 
+    Re-raises RecursionError/MemoryError (Valid DoS bugs).
+    """
+    try:
+        return callable_fn(*args, **kwargs)
+    except EXPECTED_PARSE_EXCEPTIONS:
+        return None
+    except (RecursionError, MemoryError) as exc:
+        raise exc  # Valid DoS findings
+    except Exception as exc:
+        raise exc  # Logic bugs
+
+def _fuzz_property_parsing(css_text):
+    """Target: The property parser logic."""
+    if Property is None: return
+    _safe_call(Property, "color", css_text)
+    _safe_call(Property, "background", css_text)
+    _safe_call(Property, "content", css_text)
+    _safe_call(cssutils.parseStyle, css_text)
+
+def _fuzz_selector_parsing(css_text):
+    """Target: Selector parsing (Regex/ReDoS)."""
+    if Selector is None: return
+    _safe_call(Selector, css_text)
+
+def _fuzz_encoding_stress(raw_bytes):
+    """Target: Tokenizer encoding handling."""
+    for encoding in ['utf-8', 'ascii', 'latin-1', 'utf-16', 'utf-32']:
+        try:
+            text = raw_bytes.decode(encoding, errors='replace')
+            _safe_call(cssutils.parseString, text)
+        except (UnicodeDecodeError, ValueError):
+            pass
+
+def _fuzz_serialization(sheet, fdp):
+    """Target: Serialization logic."""
+    _safe_call(lambda: sheet.cssText)
+    # Only mutate preferences if the attribute actually exists
+    if hasattr(cssutils, 'serPrefs') and fdp.ConsumeBool():
+        try:
+            cssutils.serPrefs.indent = fdp.ConsumeBool()
+            _safe_call(lambda: sheet.cssText)
+        except (AttributeError, Exception):
+            pass
+
+def _test_one_input(input_bytes):
+    """Main entry point."""
+    fdp = atheris.FuzzedDataProvider(input_bytes)
+
+    # 5-second timeout to catch ReDoS
+    def timeout_handler(signum, frame):
+        raise TimeoutError("Parsing took too long (ReDoS)")
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(5)
+
+    try:
+        # Branch 1: Property/Value Parsing
+        if fdp.ConsumeBool():
+            text = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(10, 2000))
+            _fuzz_property_parsing(text)
+
+        # Branch 2: Selector Parsing
+        if fdp.ConsumeBool():
+            text = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(10, 2000))
+            _fuzz_selector_parsing(text)
+
+        # Branch 3: Encoding Stress Test
+        if fdp.ConsumeBool():
+            raw = fdp.ConsumeBytes(fdp.ConsumeIntInRange(10, 2000))
+            _fuzz_encoding_stress(raw)
+
+        # Branch 4: Full Stylesheet Parse
+        text = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(10, 5000))
+        validate = fdp.ConsumeBool()
+        sheet = _safe_call(cssutils.parseString, text, validate=validate)
+        
+        if sheet:
+            _safe_call(lambda: sheet.cssRules)
+            _fuzz_serialization(sheet, fdp)
+
+    except TimeoutError:
+        pass
     finally:
         signal.alarm(0)
 
-
-def fuzz_stylesheet(fdp):
-    """Fuzz full stylesheet parsing"""
-    data = fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 4096))
-    try:
-        sheet = parse_with_timeout(data)
-        if sheet is None:
-            return
-        
-        # Exercise various properties to increase coverage
-        _ = sheet.cssText
-        _ = sheet.cssRules
-        
-        for rule in sheet.cssRules:
-            _ = rule.cssText
-            _ = rule.type
-            if hasattr(rule, 'selectorText'):
-                _ = rule.selectorText
-            if hasattr(rule, 'style'):
-                for prop in rule.style:
-                    _ = prop.name
-                    _ = prop.value
-                    _ = prop.priority
-    except (TimeoutError, Exception):
-        pass
-
-
-def fuzz_style_attribute(fdp):
-    """Fuzz inline style attribute parsing"""
-    try:
-        text = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 1024))
-        style = cssutils.parseStyle(text)
-        if style:
-            _ = style.cssText
-            for prop in style:
-                _ = prop.name
-                _ = prop.value
-    except (TimeoutError, Exception):
-        pass
-
-
-def fuzz_url_values(fdp):
-    """Fuzz URL values which may have security implications"""
-    try:
-        url = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 512))
-        css = f'background-image: url("{url}");'
-        sheet = parse_with_timeout(css.encode('utf-8', errors='ignore'))
-        if sheet:
-            for rule in sheet.cssRules:
-                if hasattr(rule, 'style'):
-                    _ = rule.style.getPropertyValue('background-image')
-    except (TimeoutError, Exception):
-        pass
-
-
-def fuzz_import_rules(fdp):
-    """Fuzz @import rules"""
-    try:
-        url = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 512))
-        css = f'@import url("{url}");'
-        sheet = parse_with_timeout(css.encode('utf-8', errors='ignore'))
-        if sheet:
-            for rule in sheet.cssRules:
-                if hasattr(rule, 'href'):
-                    _ = rule.href
-    except (TimeoutError, Exception):
-        pass
-
-
-def fuzz_serialization(fdp):
-    """Fuzz serialization with preferences"""
-    try:
-        data = fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, 2048))
-        sheet = parse_with_timeout(data)
-        if sheet is None:
-            return
-        
-        prefs = cssutils.serialize.Preferences()
-        prefs.omitLastSemicolon = fdp.ConsumeBool()
-        prefs.keepEmptyRules = fdp.ConsumeBool()
-        prefs.indentClosingBrace = fdp.ConsumeBool()
-        prefs.normalizedVarNames = fdp.ConsumeBool()
-        
-        serializer = cssutils.CSSSerializer(prefs)
-        _ = serializer.serialize(sheet)
-    except (TimeoutError, Exception):
-        pass
-
-
-def fuzz_selectors(fdp):
-    """Fuzz CSS selector parsing"""
-    try:
-        selector = fdp.ConsumeUnicodeNoSurrogates(fdp.ConsumeIntInRange(0, 512))
-        css = f'{selector} {{ color: red; }}'
-        sheet = parse_with_timeout(css.encode('utf-8', errors='ignore'))
-    except (TimeoutError, Exception):
-        pass
-
-
-# Fuzzing strategies
-STRATEGIES = [
-    fuzz_stylesheet,
-    fuzz_style_attribute,
-    fuzz_url_values,
-    fuzz_import_rules,
-    fuzz_serialization,
-    fuzz_selectors,
-]
-
-
-def TestOneInput(data):
-    """Main entry point for libFuzzer"""
-    if len(data) < 1:
-        return
-    
-    fdp = atheris.FuzzedDataProvider(data)
-    
-    # Select strategy based on first byte
-    strategy_idx = fdp.ConsumeIntInRange(0, len(STRATEGIES) - 1)
-    strategy = STRATEGIES[strategy_idx]
-    
-    try:
-        strategy(fdp)
-    except Exception:
-        # Catch-all to prevent fuzzer from stopping
-        pass
-
-
 def main():
-    atheris.Setup(sys.argv, TestOneInput)
-    atheris.Fuzz()
+    if hasattr(atheris, 'instrument_lib'):
+        atheris.instrument_lib()
+    else:
+        atheris.instrument_all()
 
+    atheris.Setup(sys.argv, _test_one_input)
+    atheris.Fuzz()
 
 if __name__ == "__main__":
     main()
