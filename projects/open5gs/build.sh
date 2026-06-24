@@ -27,17 +27,23 @@ ninja -C builddir -k 0 \
     tests/fuzzing/gtp_message_fuzz \
     tests/fuzzing/nas_message_fuzz \
     tests/fuzzing/ngap_message_fuzz \
-    tests/fuzzing/s1ap_message_fuzz
+    tests/fuzzing/s1ap_message_fuzz \
+    tests/fuzzing/pfcp_message_fuzz \
+    tests/fuzzing/nas_5gs_message_fuzz
 
 cp builddir/tests/fuzzing/gtp_message_fuzz $OUT/gtp_message_fuzz
 cp builddir/tests/fuzzing/nas_message_fuzz $OUT/nas_message_fuzz
 cp builddir/tests/fuzzing/ngap_message_fuzz $OUT/ngap_message_fuzz
 cp builddir/tests/fuzzing/s1ap_message_fuzz $OUT/s1ap_message_fuzz
+cp builddir/tests/fuzzing/pfcp_message_fuzz $OUT/pfcp_message_fuzz
+cp builddir/tests/fuzzing/nas_5gs_message_fuzz $OUT/nas_5gs_message_fuzz
 
 mkdir -p $OUT/lib/
 cp /lib/x86_64-linux-gnu/libtalloc.so* $OUT/lib/
 
 cp tests/fuzzing/gtp_message_fuzz_seed_corpus.zip $OUT/gtp_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/nas_message_fuzz_seed_corpus.zip $OUT/nas_message_fuzz_seed_corpus.zip
+cp tests/fuzzing/pfcp_message_fuzz_seed_corpus.zip $OUT/pfcp_message_fuzz_seed_corpus.zip
+cp tests/fuzzing/nas_5gs_message_fuzz_seed_corpus.zip $OUT/nas_5gs_message_fuzz_seed_corpus.zip
 
 popd
