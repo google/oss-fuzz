@@ -23,13 +23,22 @@ LDFLAGS="$CFLAGS"
 sed -i "s|link_args: lib_fuzzing_engine|link_args: [lib_fuzzing_engine, '-ltalloc', '-Wl,-rpath,\$ORIGIN/lib']|" tests/fuzzing/meson.build
 
 meson setup builddir --default-library=static -Dfuzzing=true -Dlib_fuzzing_engine="$LIB_FUZZING_ENGINE"
+
+# Fixes that move the static to @Response to avoid overlength arguments
+sed -i '/^rule STATIC_LINKER$/,/^$/{
+  s/\( *command = .*\)\$in/\1@$out.rsp/
+  /^ *description = Linking static target/a\ rspfile = $out.rsp\n rspfile_content = $in
+}' builddir/build.ninja
+
 ninja -C builddir -k 0 \
     tests/fuzzing/gtp_message_fuzz \
     tests/fuzzing/nas_message_fuzz \
     tests/fuzzing/ngap_message_fuzz \
     tests/fuzzing/s1ap_message_fuzz \
     tests/fuzzing/pfcp_message_fuzz \
-    tests/fuzzing/nas_5gs_message_fuzz
+    tests/fuzzing/nas_5gs_message_fuzz \
+    tests/fuzzing/sbi_nf_profile_fuzz \
+    tests/fuzzing/sbi_sm_context_fuzz
 
 cp builddir/tests/fuzzing/gtp_message_fuzz $OUT/gtp_message_fuzz
 cp builddir/tests/fuzzing/nas_message_fuzz $OUT/nas_message_fuzz
@@ -37,13 +46,23 @@ cp builddir/tests/fuzzing/ngap_message_fuzz $OUT/ngap_message_fuzz
 cp builddir/tests/fuzzing/s1ap_message_fuzz $OUT/s1ap_message_fuzz
 cp builddir/tests/fuzzing/pfcp_message_fuzz $OUT/pfcp_message_fuzz
 cp builddir/tests/fuzzing/nas_5gs_message_fuzz $OUT/nas_5gs_message_fuzz
+cp builddir/tests/fuzzing/sbi_nf_profile_fuzz $OUT/sbi_nf_profile_fuzz
+cp builddir/tests/fuzzing/sbi_sm_context_fuzz $OUT/sbi_sm_context_fuzz
 
 mkdir -p $OUT/lib/
 cp /lib/x86_64-linux-gnu/libtalloc.so* $OUT/lib/
+
+for fuzzer in sbi_nf_profile_fuzz sbi_sm_context_fuzz; do
+    ldd "$OUT/$fuzzer" 2>/dev/null | awk '/=> \//{print $3}'
+done | grep -Ev '/(ld-linux|libc|libm|libdl|libpthread|librt|libstdc\+\+|libgcc_s)\.' \
+     | grep -v "$OUT/" | sort -u \
+     | while read -r so; do cp -L "$so" $OUT/lib/; done
 
 cp tests/fuzzing/gtp_message_fuzz_seed_corpus.zip $OUT/gtp_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/nas_message_fuzz_seed_corpus.zip $OUT/nas_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/pfcp_message_fuzz_seed_corpus.zip $OUT/pfcp_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/nas_5gs_message_fuzz_seed_corpus.zip $OUT/nas_5gs_message_fuzz_seed_corpus.zip
+cp tests/fuzzing/sbi_nf_profile_fuzz_seed_corpus.zip $OUT/sbi_nf_profile_fuzz_seed_corpus.zip
+cp tests/fuzzing/sbi_sm_context_fuzz_seed_corpus.zip $OUT/sbi_sm_context_fuzz_seed_corpus.zip
 
 popd
