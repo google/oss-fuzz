@@ -1,0 +1,8 @@
+homepage: "https://github.com/russellhaering/gosaml2"
+language: go
+main_repo: "https://github.com/russellhaering/gosaml2"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+primary_contact: "russellhaering@gmail.com"
