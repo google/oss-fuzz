@@ -414,6 +414,11 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       skipped_projects.append((project_name, 'Missing Dockerfile'))
       continue
 
+    # TODO(metzman): Support aarch64 builds.
+    architectures = project_yaml['architectures']
+    if 'aarch64' in architectures:
+      architectures.pop(architectures.index('aarch64'))
+
     build_project.set_yaml_defaults(project_yaml)
     if project_yaml['disabled']:
       skipped_projects.append((project_name, 'Disabled'))
