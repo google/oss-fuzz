@@ -1,0 +1,16 @@
+homepage: "https://github.com/WillBarton888/dilithion"
+main_repo: "https://github.com/WillBarton888/dilithion.git"
+language: c++
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+  - memory
+architectures:
+  - x86_64
+maintainers:
+  - "team@dilithion.org"
+primary_contact: "team@dilithion.org"
+auto_ccs:
+  - "team@dilithion.org"
