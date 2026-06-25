@@ -1,0 +1,5 @@
+homepage: "https://github.com/memononen/nanosvg"
+language: c
+primary_contact: "<primary_contact_email>"
+main_repo: "https://github.com/memononen/nanosvg.git"
+file_github_issue: true
