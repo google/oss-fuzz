@@ -1,0 +1,4 @@
+homepage: "https://github.com/awslabs/git-secrets"
+primary_contact: "clrnc@amazon.com"
+main_repo: "https://github.com/awslabs/git-secrets"
+language: bash
