@@ -23,10 +23,10 @@ module.exports.fuzz = function(data) {
 
   try {
     if (choice === true) {
-      const comprLevel = fdp.consumeIntegral(1);
-      const windowBits = fdp.consumeIntegral(1);
-      const memLevel = fdp.consumeIntegral(1);
-      const strategy = fdp.consumeIntegral(1);
+      const comprLevel = fdp.consumeIntegralInRange(0, 9); // Valid compression levels: 0-9
+      const windowBits = fdp.consumeIntegralInRange(8, 15); // Valid window bits
+      const memLevel = fdp.consumeIntegralInRange(1, 9); // Valid memory levels
+      const strategy = fdp.consumeIntegralInRange(0, 4); // Valid strategies
       const raw = fdp.consumeBoolean();
       const input = fdp.consumeRemainingAsBytes();
       const options = {
@@ -36,36 +36,76 @@ module.exports.fuzz = function(data) {
         strategy: strategy,
         raw: raw
       };
+
+      // Compress and decompress with deflate and inflate
       const defl = pako.deflate(input, options);
-      pako.inflate(defl, options);
+      const decompressed = pako.inflate(defl, options);
+
+      // Validate the output matches the input
+      if (!arraysEqual(decompressed, input)) {
+        throw new Error('Decompressed data does not match original input');
+      }
+
+      // Test deflateRaw and inflateRaw
       const deflRaw = pako.deflateRaw(input, options);
-      pako.inflateRaw(deflRaw, options);
+      const decompressedRaw = pako.inflateRaw(deflRaw, options);
+      if (!arraysEqual(decompressedRaw, input)) {
+        throw new Error('Decompressed raw data does not match original input');
+      }
+
     } else {
+      // Generate random and edge-case options for gzip
       const gzipOptions = {
-        level: fdp.consumeIntegral(1),
+        level: fdp.consumeIntegralInRange(0, 9),
         raw: fdp.consumeBoolean(),
-        to: fdp.consumeBoolean(),
-        windowBits: fdp.consumeIntegral(1),
-        memLevel: fdp.consumeIntegral(1),
-        strategy: fdp.consumeIntegral(1)
+        to: fdp.consumeString(10),
+        windowBits: fdp.consumeIntegralInRange(8, 15),
+        memLevel: fdp.consumeIntegralInRange(1, 9),
+        strategy: fdp.consumeIntegralInRange(0, 4),
+        header: {
+          text: fdp.consumeBoolean(),
+          time: fdp.consumeIntegral(),
+          os: fdp.consumeIntegralInRange(0, 255),
+          extra: fdp.consumeRemainingAsBytes()
+        }
       };
       const input = fdp.consumeRemainingAsBytes();
+
+      // Compress and decompress with gzip and ungzip
       const gzip = pako.gzip(input, gzipOptions);
-      pako.ungzip(gzip, gzipOptions);
+      const decompressedGzip = pako.ungzip(gzip, gzipOptions);
+      if (!arraysEqual(decompressedGzip, input)) {
+        throw new Error('Decompressed gzip data does not match original input');
+      }
+
+      // Test inflate and inflateRaw
       pako.inflate(gzip);
       pako.inflateRaw(gzip);
     }
   } catch (error) {
     if (error.message && !ignoredError(error)) {
+      console.error('Unhandled error:', error.message);
       throw error;
     }
   }
 };
 
-function ignoredError(error) {
-  return !!ignored.find((message) => error.message.indexOf(message) !== -1);
+// Helper function to compare byte arrays
+function arraysEqual(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
 }
 
+// Define ignored errors to avoid unnecessary crashes
+function ignoredError(error) {
+  console.error('Error encountered:', error.message);
+  return !!ignored.find((message) => error.message.includes(message));
+}
+
+// List of errors to ignore
 const ignored = [
   'stream error',
   'invalid window size',
