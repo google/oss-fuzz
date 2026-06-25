@@ -1,9 +1,8 @@
-homepage: https://github.com/sdispater/tomlkit
-main_repo: https://github.com/sdispater/tomlkit
+homepage: "https://github.com/python-poetry/tomlkit"
 language: python
-fuzzing_engines:
-- libfuzzer
+primary_contact: "sdispater@gmail.com" # Main author email / poetry maintainers
+auto_ccs:
+  - "sajjadrahimnouri@gmail.com"
 sanitizers:
-- address
-vendor_ccs:
-- david@adalogics.com
+  - address
+  - undefined

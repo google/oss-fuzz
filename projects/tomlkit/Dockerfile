@@ -1,5 +1,4 @@
-#!/usr/bin/python3
-# Copyright 2023 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+################################################################################
+
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone https://github.com/sdispater/tomlkit tomlkit
-RUN pip3 install dictgen
-COPY *.sh *py $SRC/
-WORKDIR $SRC/tomlkit
+
+# Clone tomlkit repository to build and install it
+RUN git clone --depth 1 https://github.com/python-poetry/tomlkit.git tomlkit
+
+WORKDIR tomlkit
+
+# Copy the fuzzing script and any helper files into the builder source directory
+COPY fuzz_tomlkit.py $SRC/
+COPY generate_seeds.py $SRC/
+
+# The build.sh is executed during the image construction to build executable runners
+COPY build.sh $SRC/
