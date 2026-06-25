@@ -1,6 +1,7 @@
 homepage: "https://github.com/python-poetry/tomlkit"
+main_repo: "https://github.com/python-poetry/tomlkit"
 language: python
-primary_contact: "sdispater@gmail.com" # Main author email / poetry maintainers
+primary_contact: "sdispater@gmail.com"
 auto_ccs:
   - "sajjadrahimnouri@gmail.com"
 sanitizers:
