@@ -1,0 +1,13 @@
+homepage: "https://redis.io"
+primary_contact: "oss-security@redis.com"
+language: c
+main_repo: "https://github.com/redis/redis.git"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+architectures:
+  - x86_64

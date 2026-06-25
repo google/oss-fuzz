@@ -1,0 +1,49 @@
+# Redis protocol keywords
+"SET"
+"GET"
+"DEL"
+"MGET"
+"MSET"
+"INCR"
+"LPUSH"
+"RPUSH"
+"SADD"
+"ZADD"
+"HSET"
+"HGET"
+"AUTH"
+"SELECT"
+"PING"
+"CONFIG"
+"RESTORE"
+"DUMP"
+"EVAL"
+
+# RESP protocol
+"*"
+"$"
+"+"
+"-"
+":"
+"\r\n"
+"*3\r\n"
+"$3\r\n"
+
+# RDB format
+"REDIS"
+"REDIS0012"
+
+# Config keywords
+"bind"
+"port"
+"timeout"
+"maxmemory"
+"requirepass"
+
+# Quoting for sdssplitargs
+"\""
+"'"
+"\\"
+"\\x"
+"\\n"
+"\\r"
