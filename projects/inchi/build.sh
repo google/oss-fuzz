@@ -15,28 +15,8 @@
 #
 ################################################################################
 
-pushd INCHI-1-SRC
-# Compile library sources (exclude ichimain.c which is the standalone program main)
-# Remove -ansi flag since upstream now uses C99 features (loop-scoped variables)
-SRC_FILES=$(ls INCHI_BASE/src/*.c INCHI_API/libinchi/src/*.c INCHI_API/libinchi/src/ixa/*.c | grep -v ichimain.c)
-$CC $CFLAGS -Wno-everything -DTARGET_API_LIB -c $SRC_FILES
+# Build the fuzz targets
+INCHI-1-FUZZ/build.sh
 
-ar rcs $WORK/libinchi.a *.o
-
-for fuzzer in $SRC/*_fuzzer.c; do
-  fuzzer_basename=$(basename -s .c $fuzzer)
-
-  $CC $CFLAGS \
-      -I INCHI_BASE/src/ \
-      -I INCHI_API/libinchi/src/ \
-      -I INCHI_API/libinchi/src/ixa/ \
-      $fuzzer -c -o ${fuzzer_basename}.o
-
-  $CXX $CXXFLAGS \
-      ${fuzzer_basename}.o -o $OUT/$fuzzer_basename \
-      $LIB_FUZZING_ENGINE $WORK/libinchi.a
-done
-popd
-
-# Build test
+# Build the test suite so run_tests.sh (ctest) can run.
 INCHI-1-TEST/build_with_cmake.sh all
