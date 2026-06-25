@@ -88,6 +88,7 @@ ENV GOPATH /root/go
 ENV PATH $PATH:$GOPATH/bin
 COPY gocoverage $GOPATH/gocoverage
 
+RUN apt-get install -y gcc # used to enable CGO in Go
 COPY install_go.sh /
 RUN /install_go.sh && rm -rf /install_go.sh /root/.go
 
