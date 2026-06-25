@@ -20,7 +20,7 @@ FROM gcr.io/oss-fuzz-base/base-builder-jvm
 # install maven configuration, which is also used by gradles's publishToMavenLocal
 #
 ADD maven-settings.xml ${SRC}/
-RUN apt-get install -y xmlstarlet
+RUN apt-get update && apt-get install -y xmlstarlet && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p ~/.m2 && \
 	xmlstarlet ed \
 		-u "settings/localRepository" -v "${OUT}/m2/repository" \
@@ -29,11 +29,11 @@ RUN mkdir -p ~/.m2 && \
 #
 # install maven and gradle
 #
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
-	unzip maven.zip -d $SRC/maven-3.8.7 && \
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o maven.zip && \
+	unzip maven.zip -d $SRC/maven-3.9.9 && \
 	rm -rf maven.zip
 
-ENV MVN $SRC/maven-3.8.7/apache-maven-3.8.7/bin/mvn
+ENV MVN $SRC/maven-3.9.9/apache-maven-3.9.9/bin/mvn
 
 RUN curl -L https://services.gradle.org/distributions/gradle-7.6-bin.zip -o gradle.zip && \
     unzip gradle.zip -d $SRC/gradle && \

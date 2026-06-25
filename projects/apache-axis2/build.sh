@@ -32,6 +32,12 @@ pushd "${SRC}/${LIBRARY_NAME}"
 	CURRENT_VERSION=$(${MVN} org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
 popd
 
+pushd "${SRC}/${LIBRARY_NAME}/modules/fuzz"
+	${MVN} package -Daxis2.test.version="${CURRENT_VERSION}" ${MVN_FLAGS}
+	install -v target/axis2-fuzz-${CURRENT_VERSION}.jar ${OUT}/axis2-fuzz-${CURRENT_VERSION}.jar
+	ALL_JARS="${ALL_JARS} axis2-fuzz-${CURRENT_VERSION}.jar"
+popd
+
 pushd "${SRC}/${LIBRARY_NAME}-fuzzer"
 	${MVN} package -DfuzzedLibaryVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
 	install -v target/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar ${OUT}/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar
@@ -39,13 +45,17 @@ pushd "${SRC}/${LIBRARY_NAME}-fuzzer"
 popd
 
 
-
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
+BUILD_CLASSPATH=$(echo $ALL_JARS | xargs -n1 printf "$OUT/%s:" | sed 's/:$//'):$JAZZER_API_PATH
 
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
+pushd "${SRC}/${LIBRARY_NAME}/modules/fuzz"
+    MAVEN_DEPS=$(${MVN} dependency:build-classpath -Daxis2.test.version="${CURRENT_VERSION}" -Dmdep.outputFile=/tmp/deps.txt -q && cat /tmp/deps.txt | sed "s|$OUT/|\$this_dir/|g")
+popd
+
+JOINED_JARS=$(echo $ALL_JARS | xargs -n1 printf "\$this_dir/%s:" | sed 's/:$//')
+RUNTIME_CLASSPATH="${JOINED_JARS}:\$this_dir:${MAVEN_DEPS}"
 
 MVN_FUZZERS_PREFIX="src/main/java"
 
