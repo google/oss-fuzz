@@ -54,7 +54,7 @@ then
   echo "--linkopt=-fsanitize=undefined"
 elif [ "$SANITIZER" = "address" ]
 then
-  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
+  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address" "--copt=-fno-sanitize-ignorelist"
 fi
 )"
 
