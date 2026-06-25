@@ -16,14 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
 
-# Clone tomlkit repository to build and install it
 RUN git clone --depth 1 https://github.com/python-poetry/tomlkit.git tomlkit
 
-WORKDIR tomlkit
+WORKDIR $SRC/tomlkit
 
-# Copy the fuzzing script and any helper files into the builder source directory
 COPY fuzz_tomlkit.py $SRC/
 COPY generate_seeds.py $SRC/
 
-# The build.sh is executed during the image construction to build executable runners
 COPY build.sh $SRC/
