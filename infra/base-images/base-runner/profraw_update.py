@@ -121,7 +121,7 @@ def upgrade(data, sect_prf_cnts, sect_prf_data):
     # We need this because of CountersDelta -= sizeof(*SrcData);
     # seen in __llvm_profile_merge_from_buffer.
     dataref += 44 + 2 * (v9_header.ValueKindLast + 1)
-    if was8:
+    if base_version <= 8:
       #profraw9 added RelativeBitmapPtr and NumBitmapBytes (8+4 rounded up to 16)
       dataref -= 16
     # This is the size of one ProfrawData structure.
