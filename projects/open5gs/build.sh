@@ -46,23 +46,29 @@ cp builddir/tests/fuzzing/ngap_message_fuzz $OUT/ngap_message_fuzz
 cp builddir/tests/fuzzing/s1ap_message_fuzz $OUT/s1ap_message_fuzz
 cp builddir/tests/fuzzing/pfcp_message_fuzz $OUT/pfcp_message_fuzz
 cp builddir/tests/fuzzing/nas_5gs_message_fuzz $OUT/nas_5gs_message_fuzz
-cp builddir/tests/fuzzing/sbi_nf_profile_fuzz $OUT/sbi_nf_profile_fuzz
-cp builddir/tests/fuzzing/sbi_sm_context_fuzz $OUT/sbi_sm_context_fuzz
 
 mkdir -p $OUT/lib/
 cp /lib/x86_64-linux-gnu/libtalloc.so* $OUT/lib/
-
-for fuzzer in sbi_nf_profile_fuzz sbi_sm_context_fuzz; do
-    ldd "$OUT/$fuzzer" 2>/dev/null | awk '/=> \//{print $3}'
-done | grep -Ev '/(ld-linux|libc|libm|libdl|libpthread|librt|libstdc\+\+|libgcc_s)\.' \
-     | grep -v "$OUT/" | sort -u \
-     | while read -r so; do cp -L "$so" $OUT/lib/; done
 
 cp tests/fuzzing/gtp_message_fuzz_seed_corpus.zip $OUT/gtp_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/nas_message_fuzz_seed_corpus.zip $OUT/nas_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/pfcp_message_fuzz_seed_corpus.zip $OUT/pfcp_message_fuzz_seed_corpus.zip
 cp tests/fuzzing/nas_5gs_message_fuzz_seed_corpus.zip $OUT/nas_5gs_message_fuzz_seed_corpus.zip
-cp tests/fuzzing/sbi_nf_profile_fuzz_seed_corpus.zip $OUT/sbi_nf_profile_fuzz_seed_corpus.zip
-cp tests/fuzzing/sbi_sm_context_fuzz_seed_corpus.zip $OUT/sbi_sm_context_fuzz_seed_corpus.zip
+
+# Disable sbi related fuzzers for memory sanitizer because it depends on
+# libtalloc which contains a MSAN false positive problem
+if [ "$SANITIZER" != "memory" ]; then
+    cp builddir/tests/fuzzing/sbi_nf_profile_fuzz $OUT/sbi_nf_profile_fuzz
+    cp builddir/tests/fuzzing/sbi_sm_context_fuzz $OUT/sbi_sm_context_fuzz
+    for fuzzer in sbi_nf_profile_fuzz sbi_sm_context_fuzz;
+    do
+        ldd "$OUT/$fuzzer" 2>/dev/null | awk '/=> \//{print $3}'
+    done | grep -Ev '/(ld-linux|libc|libm|libdl|libpthread|librt|libstdc\+\+|libgcc_s)\.' \
+     | grep -v "$OUT/" | sort -u \
+     | while read -r so; do cp -L "$so" $OUT/lib/; done
+
+    cp tests/fuzzing/sbi_nf_profile_fuzz_seed_corpus.zip $OUT/sbi_nf_profile_fuzz_seed_corpus.zip
+    cp tests/fuzzing/sbi_sm_context_fuzz_seed_corpus.zip $OUT/sbi_sm_context_fuzz_seed_corpus.zip
+fi
 
 popd
