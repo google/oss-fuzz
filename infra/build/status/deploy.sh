@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-gsutil -h "Cache-Control:no-cache,max-age=0" -m cp -r bower_components index.html src manifest.json gs://oss-fuzz-build-logs
+gcloud storage cp --recursive bower_components index.html src manifest.json gs://oss-fuzz-build-logs --cache-control="no-cache,max-age=0"
