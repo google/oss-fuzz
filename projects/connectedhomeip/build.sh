@@ -33,6 +33,20 @@ OSS_FUZZ_CXX="${CXX:-}"
 OSS_FUZZ_CFLAGS="${CFLAGS:-}"
 OSS_FUZZ_CXXFLAGS="${CXXFLAGS:-}"
 
+# MemorySanitizer needs every linked dependency instrumented. Build the MSAN-instrumented
+# dependency sysroot (GLib/OpenSSL/zlib/libffi/pcre2) HERE rather than in the Dockerfile: the
+# deps' ./configure and meson run MSAN-instrumented test binaries, which require lowered ASLR
+# entropy. The OSS-Fuzz `compile` wrapper sets vm.mmap_rnd_bits=28 and runs this privileged
+# before invoking build.sh; `docker build` can do neither, so a Dockerfile-time bake fails.
+# Done before activate.sh so it uses OSS-Fuzz's clang ($CC/$CFLAGS, which already carry
+# -fsanitize=memory) and the system meson/ninja. libc++ is NOT built -- OSS-Fuzz ships an
+# instrumented one at /usr/msan (applied via -stdlib=libc++); only the C deps are built, with
+# the same $CFLAGS as the fuzzers. Adds ~5-15 min to the memory build.
+MSAN_SYSROOT="$SRC/msan-sysroot"
+if [ "${SANITIZER:-}" == "memory" ]; then
+  scripts/build/build_msan_sysroot.sh --oss-fuzz --out-dir "$MSAN_SYSROOT"
+fi
+
 # Activate Pigweed environment
 set +u
 PW_ENVSETUP_QUIET=1 source scripts/activate.sh
@@ -47,6 +61,23 @@ export CC="$OSS_FUZZ_CC"
 export CXX="$OSS_FUZZ_CXX"
 export CFLAGS="$OSS_FUZZ_CFLAGS"
 export CXXFLAGS="$OSS_FUZZ_CXXFLAGS"
+
+# MemorySanitizer: link the instrumented dependency sysroot built above instead of the
+# uninstrumented system GLib/OpenSSL/zlib/etc, and apply the MSAN ignorelist. Without
+# instrumented dependencies, MSAN reports endless false positives from uninstrumented library
+# internals -- the reason MSAN was previously disabled for this project. PKG_CONFIG_PATH makes
+# Matter's GN pick up the instrumented static libs; it must be exported before `gn gen`.
+#
+# -DCHIP_MEMORY_SANITIZER_ENABLED=1 turns on Matter's in-tree MSan instrumentation guards (e.g.
+# the if_nameindex() unpoisoning in InetInterfaceImplDefault.cpp). That macro is normally defined
+# only by the GN sanitize_memory config (the local MSan unit-test build); OSS-Fuzz enables MSan
+# via $CFLAGS instead, so we set it here. It flows to every TU through the global oss_fuzz config.
+if [ "${SANITIZER:-}" == "memory" ]; then
+  export PKG_CONFIG_PATH="$MSAN_SYSROOT/lib/pkgconfig:$MSAN_SYSROOT/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
+  msan_ignorelist="$SRC/connectedhomeip/build/config/compiler/msan_ignorelist.txt"
+  export CFLAGS="$CFLAGS -fsanitize-ignorelist=$msan_ignorelist -DCHIP_MEMORY_SANITIZER_ENABLED=1"
+  export CXXFLAGS="$CXXFLAGS -fsanitize-ignorelist=$msan_ignorelist -DCHIP_MEMORY_SANITIZER_ENABLED=1"
+fi
 
 # Create a build directory with the following options:
 # - `oss_fuzz` enables OSS-Fuzz build
@@ -103,17 +134,25 @@ if [[ "${FUZZING_ENGINE:-libfuzzer}" == "libfuzzer" ]]; then
   fi
 fi
 
-# Copy some GLib and GIO runtime libraries into $OUT so fuzzed all-clusters app can run under OSS-Fuzz base-runner, which does not provide these libraries.
-mkdir -p $OUT/lib
-cp /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0 $OUT/lib/
-cp /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0 $OUT/lib/
-cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0 $OUT/lib/
-cp /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 $OUT/lib/
+# Copy some GLib and GIO runtime libraries into $OUT so fuzzed all-clusters app can run under
+# OSS-Fuzz base-runner, which does not provide these libraries.
+#
+# Skipped for MemorySanitizer: these are the uninstrumented system GLib libraries, and injecting
+# them at runtime reintroduces exactly the false positives MSAN was disabled for. The MSAN build
+# links the instrumented GLib statically from the sysroot (see the SANITIZER==memory block
+# above), so no runtime .so is needed.
+if [ "${SANITIZER:-}" != "memory" ]; then
+  mkdir -p $OUT/lib
+  cp /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0 $OUT/lib/
+  cp /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0 $OUT/lib/
+  cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0 $OUT/lib/
+  cp /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 $OUT/lib/
 
-# Set an rpath on the fuzz target binaries (ELF only; the FuzzTest wrapper scripts and the
-# non-executable shared FuzzTest binaries are matched too — patchelf on the shared ELF, the
-# `file ... ELF` guard skips the shell-script wrappers).
-for f in $OUT/fuzz-*; do
-    file "$f" | grep -q "ELF" && patchelf --set-rpath '$ORIGIN/lib' "$f"
-done
-patchelf --set-rpath '$ORIGIN' $OUT/lib/*.so* 2>/dev/null
+  # Set an rpath on the fuzz target binaries (ELF only; the FuzzTest wrapper scripts and the
+  # non-executable shared FuzzTest binaries are matched too — patchelf on the shared ELF, the
+  # `file ... ELF` guard skips the shell-script wrappers).
+  for f in $OUT/fuzz-*; do
+      file "$f" | grep -q "ELF" && patchelf --set-rpath '$ORIGIN/lib' "$f"
+  done
+  patchelf --set-rpath '$ORIGIN' $OUT/lib/*.so* 2>/dev/null
+fi
