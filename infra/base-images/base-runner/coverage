@@ -122,15 +122,30 @@ function run_fuzz_target {
     # Extract fuzztest binary name from fuzztest wrapper script.
     target=(${target//@/ }[0])
   fi
-  profraw_update.py $OUT/$target -i $profraw_file_mask
+  # XXX: readelf: Error: Not an ELF file - it has the wrong magic
+  # bytes at the start.
+  grep -q "luarocks" "$target"
+  is_lua=$?
+  if [[ "$is_lua" -ne 0 ]]; then
+    profraw_update.py $OUT/$target -i $profraw_file_mask
+  fi
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
   rm $profraw_file_mask
 
-  shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$target)
+  # `coverage_helper shared_libraries` raise an exception because
+  # it runs `ldd` on a test wrapper and `ldd` returns a non-zero
+  # exit code.
+  test_dir=$(dirname $(realpath "$target"))
+  if [[ "$is_lua" -ne 0 ]]; then
+    shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$objects)
+  else
+    shared_libraries=$(find $test_dir -name "*.so" ! -name 'luzer_impl.so' ! -name 'libfuzzer_with_ubsan.so' ! -name 'libcustom_mutator.so' ! -name 'libfuzzer_with_asan.so' -type f -print | tr "\n" " ")
+  fi
 
-  llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
+  # Lua runtime must have name `lua`.
+  llvm-cov export -summary-only -instr-profile=$profdata_file -object=$test_dir/lua \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 
   # If grep returned zero an error was matched.
@@ -624,7 +639,17 @@ else
 
   # TODO(mmoroz): add script from Chromium for rendering directory view reports.
   # The first path in $objects does not have -object= prefix (llvm-cov format).
-  shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$objects)
+  # `coverage_helper shared_libraries` raise an exception because
+  # it runs `ldd` on a test wrapper and `ldd` returns a non-zero
+  # exit code.
+  grep -q "luarocks" "$target"
+  is_lua=$?
+  if [[ "$is_lua" -ne 0 ]]; then
+    shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$objects)
+  else
+    test_dir=$(dirname $(realpath "$target"))
+    shared_libraries=$(find $test_dir -name "*.so" ! -name 'luzer_impl.so' ! -name 'libfuzzer_with_ubsan.so' ! -name 'libcustom_mutator.so' ! -name 'libfuzzer_with_asan.so' -type f -print | tr "\n" " ")
+  fi
   objects="$objects $shared_libraries"
 
   generate_html $PROFILE_FILE "$shared_libraries" "$objects" "$REPORT_ROOT_DIR"
