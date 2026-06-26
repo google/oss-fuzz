@@ -28,6 +28,12 @@ def TestOneInput(data):
         s1 = digest.digest(io.BytesIO(b1), alg, len(b1))
     except SystemExit:
         pass
+    except digest.DigestError as e:
+        if "unsupported hash type" in str(e):
+            # Uninteresting bug
+            pass
+        else:
+            raise e
     except TypeError as e:
         if "name must be a string" in str(e):
             # non-interesting bug. Let the fuzzer continue
