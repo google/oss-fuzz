@@ -5,4 +5,4 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - none
-primary_contact: "milos.djermanovic@gmail.com"
+primary_contact: "contact@eslint.org"
