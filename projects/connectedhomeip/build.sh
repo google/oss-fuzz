@@ -67,11 +67,16 @@ export CXXFLAGS="$OSS_FUZZ_CXXFLAGS"
 # instrumented dependencies, MSAN reports endless false positives from uninstrumented library
 # internals -- the reason MSAN was previously disabled for this project. PKG_CONFIG_PATH makes
 # Matter's GN pick up the instrumented static libs; it must be exported before `gn gen`.
+#
+# -DCHIP_MEMORY_SANITIZER_ENABLED=1 turns on Matter's in-tree MSan instrumentation guards (e.g.
+# the if_nameindex() unpoisoning in InetInterfaceImplDefault.cpp). That macro is normally defined
+# only by the GN sanitize_memory config (the local MSan unit-test build); OSS-Fuzz enables MSan
+# via $CFLAGS instead, so we set it here. It flows to every TU through the global oss_fuzz config.
 if [ "${SANITIZER:-}" == "memory" ]; then
   export PKG_CONFIG_PATH="$MSAN_SYSROOT/lib/pkgconfig:$MSAN_SYSROOT/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
   msan_ignorelist="$SRC/connectedhomeip/build/config/compiler/msan_ignorelist.txt"
-  export CFLAGS="$CFLAGS -fsanitize-ignorelist=$msan_ignorelist"
-  export CXXFLAGS="$CXXFLAGS -fsanitize-ignorelist=$msan_ignorelist"
+  export CFLAGS="$CFLAGS -fsanitize-ignorelist=$msan_ignorelist -DCHIP_MEMORY_SANITIZER_ENABLED=1"
+  export CXXFLAGS="$CXXFLAGS -fsanitize-ignorelist=$msan_ignorelist -DCHIP_MEMORY_SANITIZER_ENABLED=1"
 fi
 
 # Create a build directory with the following options:
