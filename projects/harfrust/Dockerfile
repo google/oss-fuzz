@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,5 +14,11 @@
 #
 ################################################################################
 
-cargo fuzz build -O --debug-assertions
-cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/
+# Based on https://google.github.io/oss-fuzz/getting-started/new-project-guide/rust-lang/
+
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+
+RUN git clone --depth 1 https://github.com/harfbuzz/harfrust
+WORKDIR $SRC/harfrust
+
+COPY build.sh $SRC/
