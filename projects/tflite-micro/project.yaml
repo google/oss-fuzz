@@ -1,0 +1,11 @@
+homepage: "https://github.com/tensorflow/tflite-micro"
+language: c++
+primary_contact: "foodlook88@gmail.com"
+auto_ccs:
+  - "AdrianLundworthy@google.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/tensorflow/tflite-micro'
