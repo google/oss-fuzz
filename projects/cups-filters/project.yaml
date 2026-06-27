@@ -2,6 +2,7 @@ homepage: "https://github.com/OpenPrinting/cups-filters"
 main_repo: "https://github.com/OpenPrinting/cups-filters.git"
 # help_url:
 language: c++
+base_os_version: ubuntu-24-04
 
 primary_contact: "jiongchiyu@gmail.com"
 auto_ccs:
