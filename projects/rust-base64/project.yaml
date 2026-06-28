@@ -1,0 +1,9 @@
+homepage: "https://crates.io/crates/base64"
+language: rust
+primary_contact: "marshall@mpierce.org"
+main_repo: "https://github.com/marshallpierce/rust-base64"
+file_github_issue: true
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
