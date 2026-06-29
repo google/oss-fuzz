@@ -1,6 +1,9 @@
 homepage: "https://gbmc.googlesource.com/gPowerD/"
 language: c++
 primary_contact: "javanlacerda@google.com"
+auto_ccs:
+  - pedroysb@google.com
+  - cloud-ti-fuzzing+bugs@google.com
 fuzzing_engines:
   - libfuzzer
 sanitizers:
