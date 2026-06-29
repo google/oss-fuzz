@@ -29,10 +29,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install nightly
 RUN rustup default nightly
 
-# TODO(MSAN, DO NOT MERGE as-is): until the chip-side MSAN-fuzz changes land upstream, clone the
-# fork branch that carries `scripts/build/build_msan_sysroot.sh --oss-fuzz` (used by the sysroot
-# bake below) and the MSAN fuzz wiring. Revert to project-chip/connectedhomeip master once merged.
-RUN git clone --depth=1 -b AA/msan-fuzztests https://github.com/Alami-Amine/connectedhomeip.git connectedhomeip
+RUN git clone --depth=1 https://github.com/project-chip/connectedhomeip.git connectedhomeip
 
 # PW_PROJECT_ROOT is used in requirements.build.txt
 ENV PW_PROJECT_ROOT=$SRC/connectedhomeip
@@ -47,13 +44,9 @@ RUN cd $SRC/connectedhomeip && scripts/checkout_submodules.py --shallow --platfo
 SHELL ["/bin/bash", "-c"]
 RUN cd $SRC/connectedhomeip && . scripts/bootstrap.sh
 
-# Tooling for the MSAN-instrumented dependency sysroot that build.sh builds when
-# SANITIZER=memory (see build.sh). The sysroot is built in build.sh -- NOT here -- because the
-# deps' ./configure / meson run MSAN-instrumented test binaries, which require ASLR entropy to be
-# lowered (vm.mmap_rnd_bits=28). The OSS-Fuzz `compile` wrapper sets that and runs the build
-# privileged; `docker build` can neither sysctl nor disable ASLR (seccomp blocks personality()),
-# so a Dockerfile-time bake fails intermittently. meson + the python `packaging` module are
-# GLib's build requirements; ninja/wget/pkg-config were installed above.
+# meson + packaging: GLib build deps for the MSAN dependency sysroot that build.sh builds when
+# SANITIZER=memory (built there, not here -- the deps' configure/meson run instrumented binaries
+# that need lowered ASLR, which only the privileged `compile` step provides).
 RUN pip3 install meson packaging
 
 COPY build.sh $SRC/

@@ -33,15 +33,11 @@ OSS_FUZZ_CXX="${CXX:-}"
 OSS_FUZZ_CFLAGS="${CFLAGS:-}"
 OSS_FUZZ_CXXFLAGS="${CXXFLAGS:-}"
 
-# MemorySanitizer needs every linked dependency instrumented. Build the MSAN-instrumented
-# dependency sysroot (GLib/OpenSSL/zlib/libffi/pcre2) HERE rather than in the Dockerfile: the
-# deps' ./configure and meson run MSAN-instrumented test binaries, which require lowered ASLR
-# entropy. The OSS-Fuzz `compile` wrapper sets vm.mmap_rnd_bits=28 and runs this privileged
-# before invoking build.sh; `docker build` can do neither, so a Dockerfile-time bake fails.
-# Done before activate.sh so it uses OSS-Fuzz's clang ($CC/$CFLAGS, which already carry
-# -fsanitize=memory) and the system meson/ninja. libc++ is NOT built -- OSS-Fuzz ships an
-# instrumented one at /usr/msan (applied via -stdlib=libc++); only the C deps are built, with
-# the same $CFLAGS as the fuzzers. Adds ~5-15 min to the memory build.
+# MSAN needs every linked dependency instrumented. Build the MSAN-instrumented sysroot
+# (GLib/OpenSSL/zlib/libffi/pcre2) here -- before activate.sh, so it uses OSS-Fuzz's clang and
+# $CFLAGS. Not in the Dockerfile: the deps' configure/meson run instrumented test binaries that
+# need vm.mmap_rnd_bits=28, which only the privileged `compile` step provides. libc++ is skipped
+# (OSS-Fuzz ships an instrumented one at /usr/msan). Adds ~5-15 min to the memory build.
 MSAN_SYSROOT="$SRC/msan-sysroot"
 if [ "${SANITIZER:-}" == "memory" ]; then
   scripts/build/build_msan_sysroot.sh --oss-fuzz --out-dir "$MSAN_SYSROOT"
@@ -62,16 +58,12 @@ export CXX="$OSS_FUZZ_CXX"
 export CFLAGS="$OSS_FUZZ_CFLAGS"
 export CXXFLAGS="$OSS_FUZZ_CXXFLAGS"
 
-# MemorySanitizer: link the instrumented dependency sysroot built above instead of the
-# uninstrumented system GLib/OpenSSL/zlib/etc, and apply the MSAN ignorelist. Without
-# instrumented dependencies, MSAN reports endless false positives from uninstrumented library
-# internals -- the reason MSAN was previously disabled for this project. PKG_CONFIG_PATH makes
-# Matter's GN pick up the instrumented static libs; it must be exported before `gn gen`.
-#
-# -DCHIP_MEMORY_SANITIZER_ENABLED=1 turns on Matter's in-tree MSan instrumentation guards (e.g.
-# the if_nameindex() unpoisoning in InetInterfaceImplDefault.cpp). That macro is normally defined
-# only by the GN sanitize_memory config (the local MSan unit-test build); OSS-Fuzz enables MSan
-# via $CFLAGS instead, so we set it here. It flows to every TU through the global oss_fuzz config.
+# Point pkg-config at the instrumented sysroot (before `gn gen`) so Matter links the instrumented
+# static deps, not the uninstrumented system libs, and apply the MSAN ignorelist -- otherwise MSAN
+# drowns in false positives from uninstrumented deps (why it was disabled here before).
+# -DCHIP_MEMORY_SANITIZER_ENABLED=1 enables Matter's in-tree MSan guards (e.g. if_nameindex
+# unpoisoning); the GN sanitize_memory config normally defines it, but OSS-Fuzz drives MSan via
+# $CFLAGS, so set it here.
 if [ "${SANITIZER:-}" == "memory" ]; then
   export PKG_CONFIG_PATH="$MSAN_SYSROOT/lib/pkgconfig:$MSAN_SYSROOT/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
   msan_ignorelist="$SRC/connectedhomeip/build/config/compiler/msan_ignorelist.txt"
@@ -134,13 +126,9 @@ if [[ "${FUZZING_ENGINE:-libfuzzer}" == "libfuzzer" ]]; then
   fi
 fi
 
-# Copy some GLib and GIO runtime libraries into $OUT so fuzzed all-clusters app can run under
-# OSS-Fuzz base-runner, which does not provide these libraries.
-#
-# Skipped for MemorySanitizer: these are the uninstrumented system GLib libraries, and injecting
-# them at runtime reintroduces exactly the false positives MSAN was disabled for. The MSAN build
-# links the instrumented GLib statically from the sysroot (see the SANITIZER==memory block
-# above), so no runtime .so is needed.
+# Copy GLib/GIO runtime libs into $OUT so the all-clusters app runs under base-runner (which lacks
+# them). Skipped for MSAN: these uninstrumented libs would reintroduce the false positives MSAN
+# was disabled for -- the MSAN build links instrumented GLib statically from the sysroot instead.
 if [ "${SANITIZER:-}" != "memory" ]; then
   mkdir -p $OUT/lib
   cp /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0 $OUT/lib/
