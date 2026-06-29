@@ -60,8 +60,7 @@ function build_open62541_fuzzers() {
         -DUA_BUILD_OSS_FUZZ=ON \
         "$SRC_DIR/"
 
-    # Only build with one process otherwise amalgamation fails.
-    make -j1
+    make -j"$(nproc)"
 
     # For suffixed builds, copy every compiled fuzzer binary into the real $OUT
     # with the suffix appended to the binary name.

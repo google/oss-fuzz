@@ -23,6 +23,13 @@ cd build
 cmake ../ -B ./ -DSPM_ENABLE_SHARED=ON -DCMAKE_INSTALL_PREFIX=./root -DSPM_BUILD_TEST=ON
 cmake --build ./ --config Release --target install --parallel $(nproc)
 
+# Collect absl static libraries produced during the build. Upstream now
+# depends on abseil (logging, hashing, random, containers); the installed
+# libsentencepiece*.a archives reference absl symbols but do not bundle
+# them, so fuzzers (and the helper generate_model binary) must link them
+# explicitly.
+ABSL_LIBS=$(find third_party/abseil-cpp -name '*.a' | sort -u)
+
 # Generate a minimal sentencepiece model for the processor_text_fuzzer.
 # Use the sanitized compiler but link without the fuzzer engine since
 # this is a regular executable, not a fuzzer.
@@ -30,7 +37,10 @@ $CXX $CXXFLAGS -std=c++17 \
     -I../src -I../src/builtin_pb -I../third_party/protobuf-lite \
     -I. -I./root/include \
     $SRC/generate_model.cc \
-    ./root/lib/*.a \
+    -Wl,--start-group \
+    ./root/lib/libsentencepiece_train.a ./root/lib/libsentencepiece.a \
+    $ABSL_LIBS \
+    -Wl,--end-group \
     -lpthread \
     -o generate_model
 
@@ -66,9 +76,12 @@ for fuzzer in $(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party'); do
   fuzz_basename=$(basename -s .cc $fuzzer)
   echo "Building fuzzer: $fuzz_basename"
   $CXX $CXXFLAGS -std=c++17 \
-      -I. -I./root/include \
+      -I. -I./root/include -I../third_party/abseil-cpp \
       $fuzzer $LIB_FUZZING_ENGINE \
+      -Wl,--start-group \
       ./root/lib/libsentencepiece_train.a ./root/lib/libsentencepiece.a \
+      $ABSL_LIBS \
+      -Wl,--end-group \
       -lpthread \
       -o $OUT/$fuzz_basename
 done

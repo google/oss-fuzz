@@ -56,3 +56,21 @@ python3 infra/helper.py check_build <project_name>
 - Look for function entrypoints that are exposed to untrusted input, and try to design fuzzing harnesses that target these entrypoints. This is often the most effective way to find security bugs.
 - When extending existing fuzzing harnesses, always validate that the existing code coverage does not digress. You should empirically evaluate this and give a justification that no digression has happened, or if it has happened then you should give a justification for why the digression is acceptable in light of the achieved extension.
 - When extending fuzzing harnesses you should give justification for the impact of bugs that they will find.
+
+### Seed corpus and structured generation
+
+A good harness needs a good initial corpus. Place seed files in
+`$OUT/<fuzzer_name>_seed_corpus.zip` and dictionaries in
+`$OUT/<fuzzer_name>.dict`.
+
+For targets that parse a structured format (binary containers like ELF/PE, or
+codec/network bitstreams, or text grammars), a few hand-picked sample files
+are rarely enough: random mutation almost never gets past the parser's magic /
+length / checksum checks, so the deep parsing code stays dark. The most
+effective approach is a **script that constructs structurally-valid inputs
+from scratch**, run from `build.sh` and appended to the corpus. It is
+reproducible, needs no external samples, and lets you target specific
+dark-but-reachable code identified from coverage. See the OSS-Fuzz engineer
+skill's [structured seed generation
+reference](../oss-fuzz-engineer/references/structured_seed_generation.md) for
+the full workflow and `projects/vlc/generate_seeds.py` for a worked example.
