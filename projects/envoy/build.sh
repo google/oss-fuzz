@@ -15,12 +15,6 @@
 #
 ################################################################################
 
-# Overcome missing dependency declaration with path mapping issue. This is
-# similar to the current abseil build (see
-# https://github.com/google/oss-fuzz/pull/12858), to overcome the issue
-# mentioned in https://github.com/bazelbuild/bazel/issues/23681.
-export USE_BAZEL_VERSION=7.4.0
-
 declare -r FUZZ_TARGET_QUERY='
   let all_fuzz_tests = attr(tags, "fuzz_target", "test/...") in
   $all_fuzz_tests - attr(tags, "no_fuzz", $all_fuzz_tests)
@@ -54,7 +48,7 @@ then
   echo "--linkopt=-fsanitize=undefined"
 elif [ "$SANITIZER" = "address" ]
 then
-  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
+  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address" "--copt=-fno-sanitize-ignorelist"
 fi
 )"
 
