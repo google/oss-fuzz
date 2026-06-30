@@ -93,7 +93,8 @@ make V=1 -j$(nproc) \
     .jpeg \
     .png \
     .ass \
-    .kate
+    .kate \
+    .bpg
 
 # libgme's CMake compiles with -fno-rtti, which is incompatible with the
 # -fsanitize=vptr check implied by SANITIZER=undefined ("invalid argument
@@ -153,6 +154,7 @@ sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
             --disable-xcb \
             --disable-alsa \
             --disable-libva \
+            --enable-bpg \
             --with-libfuzzer
 make V=1 -j$(nproc)
 
