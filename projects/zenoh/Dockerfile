@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-RUN git clone https://github.com/eclipse-zenoh/zenoh.git
+RUN git clone --depth 1 https://github.com/eclipse-zenoh/zenoh.git
 COPY build.sh $SRC
 
 WORKDIR $SRC/

@@ -1,0 +1,13 @@
+homepage: "https://gbmc.googlesource.com/nsmd"
+language: c++
+primary_contact: "javanlacerda@google.com"
+auto_ccs:
+  - "pedroysb@google.com"
+  - "cloud-ti-fuzzing+bugs@google.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://gbmc.googlesource.com/nsmd"
+base_os_version: ubuntu-24-04

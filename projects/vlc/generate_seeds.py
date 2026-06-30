@@ -1698,6 +1698,89 @@ def seed_ts_iod() -> bytes:
     return out
 
 
+# ──────────────────────────────────────────────────
+#  DVB teletext (modules/codec/telx.c), carried over MPEG-TS
+# ──────────────────────────────────────────────────
+#
+# telx is a built-in "spu decoder" for VLC_CODEC_TELETEXT that was never
+# registered in the fuzz harness, so codec/telx.c is entirely absent from the
+# coverage report. The TS demux routes a stream into it when the PMT carries a
+# teletext_descriptor (tag 0x56). The PES payload is EBU teletext: a 1-byte
+# data_identifier followed by 46-byte data units. telx.c (Decode) skips the
+# first byte, then for each 46-byte unit reads the magazine/packet address from
+# two hamming-8/4-coded bytes and dispatches row 0 -> DecodePageHeaderPacket and
+# rows 1..25 -> DecodeNormalPacket. We emit a page header plus two normal rows
+# so the decoder parses and renders a page.
+
+# hamming 8/4 *encode* table: _TELX_HAM[v] is the byte that telx's hamming_8_4()
+# decodes back to nibble v (inverse of the switch table in codec/telx.c).
+_TELX_HAM = [0xA8, 0x0B, 0x26, 0x85, 0x92, 0x31, 0x1C, 0xBF,
+             0x40, 0xE3, 0xCE, 0x6D, 0x7A, 0xD9, 0xF4, 0x57]
+
+
+def _telx_bytereverse(n: int) -> int:
+    """Mirror telx.c's bytereverse() so we can choose magazine/packet bytes."""
+    n = ((n >> 1) & 0x55) | ((n << 1) & 0xAA)
+    n = ((n >> 2) & 0x33) | ((n << 2) & 0xCC)
+    n = ((n >> 4) & 0x0F) | ((n << 4) & 0xF0)
+    return n & 0xFF
+
+
+def _telx_unit(row: int, magazine: int, payload40: bytes,
+               data_unit_id: int = 0x02) -> bytes:
+    """One 46-byte EBU teletext data unit for the given row/magazine.
+
+    telx derives them from mpag = (hamming_8_4(b4)<<4)|hamming_8_4(b5) via
+    row_raw = bytereverse(mpag); magazine = row_raw & 7; row = row_raw >> 3.
+    We invert that to pick the two hamming-coded address bytes."""
+    assert len(payload40) == 40
+    mpag = _telx_bytereverse(((row & 0x1F) << 3) | (magazine & 0x07))
+    return bytes([
+        data_unit_id,             # != 0xFF (0xFF = stuffing, skipped by telx)
+        0x2C,                     # data_unit_length = 44
+        0x00,                     # field parity / line offset (unused by telx)
+        0xE4,                     # framing code
+        _TELX_HAM[(mpag >> 4) & 0x0F],
+        _TELX_HAM[mpag & 0x0F],
+    ]) + payload40
+
+
+def _telx_pes_payload() -> bytes:
+    # Page header packet (row 0, magazine 1): page tens/units and the six
+    # control-flag bytes are hamming-coded; the remainder is header line text.
+    header = _telx_unit(0, 1,
+                        bytes([_TELX_HAM[0], _TELX_HAM[0]])   # page units/tens
+                        + bytes([_TELX_HAM[0]] * 6)           # control flags
+                        + bytes([0x20] * 32))                 # header text
+    row1 = _telx_unit(1, 1, bytes([0x20] * 40))               # normal packet
+    row2 = _telx_unit(2, 1, bytes([0x20] * 40))               # normal packet
+    return bytes([0x10]) + header + row1 + row2               # 0x10 = data_id
+
+
+def _ts_teletext_descriptor(teletext_type: int = 0x02, magazine: int = 1,
+                            page: int = 0x00) -> bytes:
+    """teletext_descriptor (tag 0x56), one language entry. teletext_type must
+    be < 0x06 or the TS demux skips the page (ts_psi.c PMTSetupEsTeletext)."""
+    return bytes([0x56, 0x05, 0x65, 0x6E, 0x67,               # 'eng'
+                  ((teletext_type & 0x1F) << 3) | (magazine & 0x07),
+                  page & 0xFF])
+
+
+def seed_teletext() -> bytes:
+    TELX_PID = 0x0105
+    pat = make_pat([(0x0001, PMT_PID)])
+    pmt = make_pmt(0x0001, VIDEO_PID, [
+        (0x02, VIDEO_PID, b''),                              # video (for PCR)
+        (0x06, TELX_PID, _ts_teletext_descriptor()),         # teletext ES
+    ])
+    video_pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=900)
+    telx_pes = make_ts_pes(0xBD, _telx_pes_payload(), pts_90khz=1800)
+    return (psi_packet(pat, 0x0000) +
+            psi_packet(pmt, PMT_PID) +
+            pes_ts_packets(video_pes, VIDEO_PID, pcr_90khz=450) +
+            pes_ts_packets(telx_pes, TELX_PID))
+
+
 TS_SEEDS = {
     'mpeg2_video.ts':  seed_mpeg2_video,
     'mpeg4_iod.ts':    seed_ts_iod,
@@ -1707,6 +1790,7 @@ TS_SEEDS = {
     'aac_audio.ts':    seed_aac_audio,
     'ac3_audio.ts':    seed_ac3_audio,
     'dts_audio.ts':    seed_dts_audio,
+    'teletext.ts':     seed_teletext,
     'dvb_subtitle.ts': seed_dvb_subtitle,
     'dvb_subtitle_rich.ts':    seed_dvb_subtitle_rich,
     'dvb_subtitle_altclut.ts': seed_dvb_subtitle_altclut,
