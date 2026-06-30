@@ -102,6 +102,22 @@ make V=1 -j$(nproc) \
 # forces clang, keeping libbpg instrumented.
 make V=1 -j$(nproc) CC="$CC" CXX="$CXX" .bpg
 
+# libbpg bundles a forked libavcodec/libavutil. VLC normally builds each plugin
+# as a separate .so, so those symbols never clash with the ffmpeg contrib; but
+# the OSS-Fuzz static build links every plugin into one binary, where libbpg's
+# av_*/ff_*/avcodec_* duplicate ffmpeg's ("multiple definition" link errors).
+# Merge libbpg.a into a single relocatable object and localize every symbol
+# except the public bpg_* API: libbpg then resolves its own libav internally
+# while ffmpeg's symbols stay global for the avcodec plugin.
+for bpg_a in ../*/lib/libbpg.a; do
+    [ -f "$bpg_a" ] || continue
+    ld -r --whole-archive "$bpg_a" -o "${bpg_a}.merged.o"
+    objcopy --wildcard --keep-global-symbol='bpg_*' "${bpg_a}.merged.o" "${bpg_a}.local.o"
+    rm -f "$bpg_a" "${bpg_a}.merged.o"
+    ar crs "$bpg_a" "${bpg_a}.local.o"
+    rm -f "${bpg_a}.local.o"
+done
+
 # libgme's CMake compiles with -fno-rtti, which is incompatible with the
 # -fsanitize=vptr check implied by SANITIZER=undefined ("invalid argument
 # '-fsanitize=vptr' not allowed with '-fno-rtti'"). Build it with that single
