@@ -4784,6 +4784,29 @@ def gen_image(root):
     JPEG (baseline/progressive/subsampling/grey/CMYK) for libpng / libjpeg."""
     O = os.path.join(root, 'seeds', 'image')
     os.makedirs(O, exist_ok=True)
+
+    # BPG (Better Portable Graphics) -> codec/bpg.c + bundled libbpg, reached
+    # via the image demux, which detects the 4-byte 'BPG\xFB' marker. bpg.c was
+    # never registered in the harness (absent from coverage). A structurally
+    # valid BPG header gets past detection and the libbpg header parse (the
+    # front door); libFuzzer mutates from there into the HEVC-based decoder.
+    def _ue7(v: int) -> bytes:
+        out = bytearray([v & 0x7F])
+        v >>= 7
+        while v:
+            out.insert(0, 0x80 | (v & 0x7F))
+            v >>= 7
+        return bytes(out)
+
+    bpg = (b'BPG\xfb'                 # magic
+           + bytes([0x20])            # pixel_format=4:2:0(1), bit_depth_minus8=0
+           + bytes([0x00])            # color_space=YCbCr, no extension/alpha
+           + _ue7(16) + _ue7(16)      # picture_width, picture_height
+           + _ue7(0))                 # picture_data_length (0 = to end of file)
+    bpg += bytes([0x00, 0x00, 0x01, 0x26, 0x01] + [0x00] * 32)   # HEVC payload
+    with open(os.path.join(O, 'minimal.bpg'), 'wb') as f:
+        f.write(bpg)
+
     SIG = b'\x89PNG\r\n\x1a\n'
 
     def png(name, w, h, bd, ct, rows, before=b'', after=b'',
