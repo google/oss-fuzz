@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,5 +15,15 @@
 #
 ################################################################################
 
-cargo fuzz build -O --debug-assertions
-cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/
+$CXX $CXXFLAGS -std=c++23 \
+    -I$SRC/stdplus/include \
+    -I$SRC/hothd_shims \
+    -I$SRC/hothd \
+    -I$SRC/hothd/google3 \
+    $SRC/stdplus/src/exception.cpp \
+    $SRC/stdplus/src/print.cpp \
+    $SRC/stdplus/src/raw.cpp \
+    $SRC/hothd/payload_update.cpp \
+    $SRC/hothd_payload_fuzzer.cc \
+    -o $OUT/hothd_payload_fuzzer \
+    $LIB_FUZZING_ENGINE
