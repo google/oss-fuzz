@@ -21,7 +21,7 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install -y --no-install-recommends pkg-config libssl-dev libdbus-1-dev libglib2.0-dev libglib2.0-0\
         libavahi-client-dev ninja-build libmount-dev libblkid-dev \
-        unzip libgirepository1.0-dev libcairo2-dev libreadline-dev patchelf file libevent-dev
+        unzip libgirepository1.0-dev libcairo2-dev libreadline-dev patchelf file libevent-dev wget
 
 # Install Rust for building `cryptography` python package when bootstraping pigweed
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -43,5 +43,10 @@ RUN cd $SRC/connectedhomeip && scripts/checkout_submodules.py --shallow --platfo
 # Bootstrap pigweed environment
 SHELL ["/bin/bash", "-c"]
 RUN cd $SRC/connectedhomeip && . scripts/bootstrap.sh
+
+# meson + packaging: GLib build deps for the MSAN dependency sysroot that build.sh builds when
+# SANITIZER=memory (built there, not here -- the deps' configure/meson run instrumented binaries
+# that need lowered ASLR, which only the privileged `compile` step provides).
+RUN pip3 install meson packaging
 
 COPY build.sh $SRC/
