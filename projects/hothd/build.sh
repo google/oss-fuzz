@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,13 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 ################################################################################
 
-cd $SRC/opendal/core
-cargo fuzz build -O --debug-assertions
-
-FUZZ_TARGET_OUTPUT_DIR=$SRC/opendal/core/target/x86_64-unknown-linux-gnu/release
-
-for target in fuzz_from_uri fuzz_path fuzz_reader fuzz_writer; do
-  cp $FUZZ_TARGET_OUTPUT_DIR/$target $OUT/$target
-done
+$CXX $CXXFLAGS -std=c++23 \
+    -I$SRC/stdplus/include \
+    -I$SRC/hothd_shims \
+    -I$SRC/hothd \
+    -I$SRC/hothd/google3 \
+    $SRC/stdplus/src/exception.cpp \
+    $SRC/stdplus/src/print.cpp \
+    $SRC/stdplus/src/raw.cpp \
+    $SRC/hothd/payload_update.cpp \
+    $SRC/hothd_payload_fuzzer.cc \
+    -o $OUT/hothd_payload_fuzzer \
+    $LIB_FUZZING_ENGINE

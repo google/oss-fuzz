@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 ################################################################################
 
-cd $SRC/opendal/core
-cargo fuzz build -O --debug-assertions
+# Based on https://google.github.io/oss-fuzz/getting-started/new-project-guide/rust-lang/
 
-FUZZ_TARGET_OUTPUT_DIR=$SRC/opendal/core/target/x86_64-unknown-linux-gnu/release
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-for target in fuzz_from_uri fuzz_path fuzz_reader fuzz_writer; do
-  cp $FUZZ_TARGET_OUTPUT_DIR/$target $OUT/$target
-done
+RUN git clone --depth 1 https://github.com/harfbuzz/harfrust
+WORKDIR $SRC/harfrust
+
+COPY build.sh $SRC/
