@@ -93,8 +93,14 @@ make V=1 -j$(nproc) \
     .jpeg \
     .png \
     .ass \
-    .kate \
-    .bpg
+    .kate
+
+# libbpg ships a hand-written Makefile that hardcodes CC=gcc, but the OSS-Fuzz
+# CFLAGS are clang-only (-gline-tables-only, -fsanitize=fuzzer-no-link), which
+# gcc rejects. Build it in its own make so a command-line CC/CXX override (which
+# beats the Makefile's CC=gcc and propagates to the inner libbpg sub-make)
+# forces clang, keeping libbpg instrumented.
+make V=1 -j$(nproc) CC="$CC" CXX="$CXX" .bpg
 
 # libgme's CMake compiles with -fno-rtti, which is incompatible with the
 # -fsanitize=vptr check implied by SANITIZER=undefined ("invalid argument
