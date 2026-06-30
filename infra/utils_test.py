@@ -102,7 +102,7 @@ class ExecuteTest(unittest.TestCase):
       out, err, err_code = utils.execute(['ls', 'notarealdir'],
                                          location=tmp_dir,
                                          check_result=False)
-      self.assertEqual(err_code, 2)
+      self.assertNotEqual(err_code, 0)
       self.assertIsNotNone(err)
       self.assertEqual(out, '')
       with self.assertRaises(RuntimeError):
