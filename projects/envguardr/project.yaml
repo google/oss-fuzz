@@ -1,0 +1,10 @@
+homepage: "https://fontebasso.github.io/envguardr/"
+language: javascript
+primary_contact: "samuel.txd@gmail.com"
+main_repo: "https://github.com/fontebasso/envguardr.git"
+file_github_issue: true
+base_os_version: ubuntu-24-04
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - none
