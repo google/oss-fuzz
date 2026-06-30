@@ -19,6 +19,4 @@ RUN apt-get update && apt-get install -y cmake
 # fallback to github if main git server is not responding
 RUN git clone --depth 1 https://git.osgeo.org/gitea/geos/geos.git || git clone --depth 1 https://github.com/libgeos/geos.git
 COPY run_tests.sh build.sh $SRC/
-COPY patch.diff $SRC
 WORKDIR $SRC/geos
-RUN git apply ../patch.diff
