@@ -51,9 +51,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     }
 
     std::vector<uint8_t> out_buf(65536, 0);
-    uint32_t fuzz_histogram_id = 0;
-    uint16_t fuzz_parameter = 0;
-    decode_get_histogram_data_req(msg, payload_len, &fuzz_histogram_id, &fuzz_parameter);
+    std::vector<uint8_t> fuzz_histogram_id_buf(65536, 0);
+    uint32_t* fuzz_histogram_id = reinterpret_cast<uint32_t*>(fuzz_histogram_id_buf.data());
+    std::vector<uint8_t> fuzz_parameter_buf(65536, 0);
+    uint16_t* fuzz_parameter = reinterpret_cast<uint16_t*>(fuzz_parameter_buf.data());
+    decode_get_histogram_data_req(msg, payload_len, fuzz_histogram_id, fuzz_parameter);
 
     return 0;
 }

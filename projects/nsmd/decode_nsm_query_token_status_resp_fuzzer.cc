@@ -53,11 +53,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::vector<uint8_t> out_buf(65536, 0);
     uint8_t fuzz_cc = 0;
     uint16_t fuzz_reason_code = 0;
-    enum nsm_debug_token_status fuzz_status;
-    enum nsm_debug_token_status_additional_info fuzz_additional_info;
-    enum nsm_debug_token_type fuzz_token_type;
-    uint32_t fuzz_time_left = 0;
-    decode_nsm_query_token_status_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, &fuzz_status, &fuzz_additional_info, &fuzz_token_type, &fuzz_time_left);
+    std::vector<uint8_t> fuzz_status_buf(65536, 0);
+    enum nsm_debug_token_status* fuzz_status = reinterpret_cast<enum nsm_debug_token_status*>(fuzz_status_buf.data());
+    std::vector<uint8_t> fuzz_additional_info_buf(65536, 0);
+    enum nsm_debug_token_status_additional_info* fuzz_additional_info = reinterpret_cast<enum nsm_debug_token_status_additional_info*>(fuzz_additional_info_buf.data());
+    std::vector<uint8_t> fuzz_token_type_buf(65536, 0);
+    enum nsm_debug_token_type* fuzz_token_type = reinterpret_cast<enum nsm_debug_token_type*>(fuzz_token_type_buf.data());
+    std::vector<uint8_t> fuzz_time_left_buf(65536, 0);
+    uint32_t* fuzz_time_left = reinterpret_cast<uint32_t*>(fuzz_time_left_buf.data());
+    decode_nsm_query_token_status_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, fuzz_status, fuzz_additional_info, fuzz_token_type, fuzz_time_left);
 
     return 0;
 }

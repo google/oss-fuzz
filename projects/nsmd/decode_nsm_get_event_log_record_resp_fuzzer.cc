@@ -52,13 +52,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
     std::vector<uint8_t> out_buf(65536, 0);
     uint8_t fuzz_cc = 0;
-    uint8_t fuzz_nvidia_message_type = 0;
-    uint8_t fuzz_event_id = 0;
-    uint32_t fuzz_event_handle = 0;
-    uint64_t fuzz_timestamp = 0;
+    std::vector<uint8_t> fuzz_nvidia_message_type_buf(65536, 0);
+    uint8_t* fuzz_nvidia_message_type = reinterpret_cast<uint8_t*>(fuzz_nvidia_message_type_buf.data());
+    std::vector<uint8_t> fuzz_event_id_buf(65536, 0);
+    uint8_t* fuzz_event_id = reinterpret_cast<uint8_t*>(fuzz_event_id_buf.data());
+    std::vector<uint8_t> fuzz_event_handle_buf(65536, 0);
+    uint32_t* fuzz_event_handle = reinterpret_cast<uint32_t*>(fuzz_event_handle_buf.data());
+    std::vector<uint8_t> fuzz_timestamp_buf(65536, 0);
+    uint64_t* fuzz_timestamp = reinterpret_cast<uint64_t*>(fuzz_timestamp_buf.data());
     uint8_t* fuzz_payload_ptr = nullptr;
-    uint16_t fuzz_payload_len = 0;
-    decode_nsm_get_event_log_record_resp(msg, payload_len, &fuzz_cc, &fuzz_nvidia_message_type, &fuzz_event_id, &fuzz_event_handle, &fuzz_timestamp, &fuzz_payload_ptr, &fuzz_payload_len);
+    std::vector<uint8_t> fuzz_payload_len_buf(65536, 0);
+    uint16_t* fuzz_payload_len = reinterpret_cast<uint16_t*>(fuzz_payload_len_buf.data());
+    decode_nsm_get_event_log_record_resp(msg, payload_len, &fuzz_cc, fuzz_nvidia_message_type, fuzz_event_id, fuzz_event_handle, fuzz_timestamp, &fuzz_payload_ptr, fuzz_payload_len);
 
     return 0;
 }

@@ -51,8 +51,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     }
 
     std::vector<uint8_t> out_buf(65536, 0);
-    struct nsm_error_injection_payload fuzz_data;
-    decode_set_error_injection_payload_req(msg, payload_len, &fuzz_data);
+    std::vector<uint8_t> fuzz_data_buf(65536, 0);
+    struct nsm_error_injection_payload* fuzz_data = reinterpret_cast<struct nsm_error_injection_payload*>(fuzz_data_buf.data());
+    decode_set_error_injection_payload_req(msg, payload_len, fuzz_data);
 
     return 0;
 }

@@ -53,9 +53,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::vector<uint8_t> out_buf(65536, 0);
     uint8_t fuzz_event_id = 0;
     uint8_t fuzz_event_class = 0;
-    uint16_t fuzz_event_state = 0;
+    std::vector<uint8_t> fuzz_event_state_buf(65536, 0);
+    uint16_t* fuzz_event_state = reinterpret_cast<uint16_t*>(fuzz_event_state_buf.data());
     uint8_t fuzz_data_size = 0;
-    decode_nsm_event_with_data(msg, payload_len, fuzz_event_id, fuzz_event_class, &fuzz_event_state, &fuzz_data_size, out_buf.data());
+    decode_nsm_event_with_data(msg, payload_len, fuzz_event_id, fuzz_event_class, fuzz_event_state, &fuzz_data_size, out_buf.data());
 
     return 0;
 }

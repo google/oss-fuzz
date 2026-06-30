@@ -50,15 +50,39 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         return 0;
     }
 
+    uint8_t completion_code = payload[sizeof(struct nsm_msg_hdr) + 1];
+    if (completion_code == NSM_SUCCESS || completion_code == NSM_ACCEPTED) {
+        if (payload_len >= sizeof(struct nsm_msg_hdr) + sizeof(struct nsm_get_histogram_data_resp)) {
+            const struct nsm_get_histogram_data_resp* resp = reinterpret_cast<const struct nsm_get_histogram_data_resp*>(payload + sizeof(struct nsm_msg_hdr));
+            uint16_t num_of_buckets = le16toh(resp->num_of_buckets);
+            uint8_t type = resp->bucket_data_type;
+            size_t elem_size = 1;
+            switch(type) {
+                case 0: case 1: elem_size = 1; break;
+                case 2: case 3: elem_size = 2; break;
+                case 4: case 5: elem_size = 4; break;
+                case 6: case 7: elem_size = 8; break;
+                case 8: elem_size = 4; break; // NvS24_8 is float (4 bytes)
+                default: elem_size = 1; break;
+            }
+            size_t header_size = sizeof(struct nsm_msg_hdr) + offsetof(struct nsm_get_histogram_data_resp, bucket_data);
+            if (payload_len < header_size || (size_t)num_of_buckets * elem_size > payload_len - header_size) {
+                return 0;
+            }
+        }
+    }
+
     std::vector<uint8_t> out_buf(65536, 0);
     uint8_t fuzz_cc = 0;
     uint16_t fuzz_reason_code = 0;
-    uint16_t fuzz_data_size = 0;
-    uint8_t fuzz_bucket_data_type = 0;
-    uint16_t fuzz_num_of_buckets = 0;
-    uint8_t fuzz_bucket_data = 0;
+    std::vector<uint8_t> fuzz_data_size_buf(65536, 0);
+    uint16_t* fuzz_data_size = reinterpret_cast<uint16_t*>(fuzz_data_size_buf.data());
+    std::vector<uint8_t> fuzz_bucket_data_type_buf(65536, 0);
+    uint8_t* fuzz_bucket_data_type = reinterpret_cast<uint8_t*>(fuzz_bucket_data_type_buf.data());
+    std::vector<uint8_t> fuzz_num_of_buckets_buf(65536, 0);
+    uint16_t* fuzz_num_of_buckets = reinterpret_cast<uint16_t*>(fuzz_num_of_buckets_buf.data());
     uint32_t fuzz_bucket_data_size = 0;
-    decode_get_histogram_data_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, &fuzz_data_size, &fuzz_bucket_data_type, &fuzz_num_of_buckets, &fuzz_bucket_data, &fuzz_bucket_data_size);
+    decode_get_histogram_data_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, fuzz_data_size, fuzz_bucket_data_type, fuzz_num_of_buckets, out_buf.data(), &fuzz_bucket_data_size);
 
     return 0;
 }

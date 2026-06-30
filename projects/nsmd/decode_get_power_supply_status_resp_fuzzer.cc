@@ -53,8 +53,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::vector<uint8_t> out_buf(65536, 0);
     uint8_t fuzz_cc = 0;
     uint16_t fuzz_reason_code = 0;
-    uint8_t fuzz_power_supply_status = 0;
-    decode_get_power_supply_status_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, &fuzz_power_supply_status);
+    std::vector<uint8_t> fuzz_power_supply_status_buf(65536, 0);
+    uint8_t* fuzz_power_supply_status = reinterpret_cast<uint8_t*>(fuzz_power_supply_status_buf.data());
+    decode_get_power_supply_status_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, fuzz_power_supply_status);
 
     return 0;
 }

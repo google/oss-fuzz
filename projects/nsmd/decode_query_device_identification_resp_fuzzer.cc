@@ -53,8 +53,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::vector<uint8_t> out_buf(65536, 0);
     uint8_t fuzz_cc = 0;
     uint16_t fuzz_reason_code = 0;
-    uint8_t fuzz_device_instance = 0;
-    decode_query_device_identification_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, out_buf.data(), &fuzz_device_instance);
+    std::vector<uint8_t> fuzz_device_instance_buf(65536, 0);
+    uint8_t* fuzz_device_instance = reinterpret_cast<uint8_t*>(fuzz_device_instance_buf.data());
+    decode_query_device_identification_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, out_buf.data(), fuzz_device_instance);
 
     return 0;
 }

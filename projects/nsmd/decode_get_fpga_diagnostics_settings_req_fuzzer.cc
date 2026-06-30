@@ -51,8 +51,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     }
 
     std::vector<uint8_t> out_buf(65536, 0);
-    enum fpga_diagnostics_settings_data_index fuzz_data_index;
-    decode_get_fpga_diagnostics_settings_req(msg, payload_len, &fuzz_data_index);
+    std::vector<uint8_t> fuzz_data_index_buf(65536, 0);
+    enum fpga_diagnostics_settings_data_index* fuzz_data_index = reinterpret_cast<enum fpga_diagnostics_settings_data_index*>(fuzz_data_index_buf.data());
+    decode_get_fpga_diagnostics_settings_req(msg, payload_len, fuzz_data_index);
 
     return 0;
 }

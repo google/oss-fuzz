@@ -53,8 +53,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::vector<uint8_t> out_buf(65536, 0);
     uint8_t fuzz_cc = 0;
     uint16_t fuzz_reason_code = 0;
-    struct nsm_debug_token_request fuzz_token_request;
-    decode_nsm_query_token_parameters_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, &fuzz_token_request);
+    std::vector<uint8_t> fuzz_token_request_buf(65536, 0);
+    struct nsm_debug_token_request* fuzz_token_request = reinterpret_cast<struct nsm_debug_token_request*>(fuzz_token_request_buf.data());
+    decode_nsm_query_token_parameters_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, fuzz_token_request);
 
     return 0;
 }

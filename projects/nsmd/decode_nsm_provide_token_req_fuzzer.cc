@@ -51,8 +51,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     }
 
     std::vector<uint8_t> out_buf(65536, 0);
-    uint8_t fuzz_token_data_len = 0;
-    decode_nsm_provide_token_req(msg, payload_len, out_buf.data(), &fuzz_token_data_len);
+    std::vector<uint8_t> fuzz_token_data_len_buf(65536, 0);
+    uint8_t* fuzz_token_data_len = reinterpret_cast<uint8_t*>(fuzz_token_data_len_buf.data());
+    decode_nsm_provide_token_req(msg, payload_len, out_buf.data(), fuzz_token_data_len);
 
     return 0;
 }
