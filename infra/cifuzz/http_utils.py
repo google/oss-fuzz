@@ -30,6 +30,40 @@ _DOWNLOAD_URL_BACKOFF = 1
 _HTTP_REQUEST_TIMEOUT = 10
 
 
+def _safe_extract(zip_file, extract_directory):
+  """Extracts all members of |zip_file| into |extract_directory|, rejecting
+  any member whose resolved destination path escapes |extract_directory|
+  (Zip Slip defence).
+
+  Args:
+    zip_file: An open zipfile.ZipFile object.
+    extract_directory: The directory to extract into.
+
+  Raises:
+    ValueError: If a ZIP entry would be extracted outside extract_directory.
+  """
+  # Resolve the destination once so symlinks in the directory itself are
+  # handled correctly before we compare member paths against it.
+  real_extract_dir = os.path.realpath(extract_directory) + os.sep
+
+  for member in zip_file.infolist():
+    # os.path.join correctly handles absolute member names (e.g. '/etc/passwd')
+    # by discarding the base, so we normalise via realpath instead.
+    member_dest = os.path.realpath(
+        os.path.join(extract_directory, member.filename))
+
+    # Directories end with sep after realpath; add sep to the base so that a
+    # prefix match cannot be fooled by a sibling directory named
+    # "extract_directory_evil".
+    if not (member_dest + os.sep).startswith(real_extract_dir):
+      raise ValueError(
+          'Zip Slip blocked: member %r would be extracted to %r, '
+          'which is outside the target directory %r.' %
+          (member.filename, member_dest, extract_directory))
+
+    zip_file.extract(member, extract_directory)
+
+
 def download_and_unpack_zip(url, extract_directory, headers=None):
   """Downloads and unpacks a zip file from an HTTP URL.
 
@@ -56,9 +90,12 @@ def download_and_unpack_zip(url, extract_directory, headers=None):
 
     try:
       with zipfile.ZipFile(tmp_file.name, 'r') as zip_file:
-        zip_file.extractall(extract_directory)
+        _safe_extract(zip_file, extract_directory)
     except zipfile.BadZipFile:
       logging.error('Error unpacking zip from %s. Bad Zipfile.', url)
+      return False
+    except ValueError as err:
+      logging.error('Error unpacking zip from %s. %s', url, err)
       return False
 
   return True
