@@ -156,11 +156,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_url))
   build_steps.append({
       'name':
-          'gcr.io/cloud-builders/gsutil',
+          'gcr.io/cloud-builders/gcloud',
       'args': [
-          '-m',
+          'storage',
           'cp',
-          '-r',
+          '--recursive',
           os.path.join(build.out, 'report'),
           upload_report_url,
       ],
@@ -174,11 +174,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_by_target_url))
     build_steps.append({
         'name':
-            'gcr.io/cloud-builders/gsutil',
+            'gcr.io/cloud-builders/gcloud',
         'args': [
-            '-m',
+            'storage',
             'cp',
-            '-r',
+            '--recursive',
             os.path.join(build.out, 'report_target'),
             upload_report_by_target_url,
         ],
@@ -190,11 +190,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_stats_url))
   build_steps.append({
       'name':
-          'gcr.io/cloud-builders/gsutil',
+          'gcr.io/cloud-builders/gcloud',
       'args': [
-          '-m',
+          'storage',
           'cp',
-          '-r',
+          '--recursive',
           os.path.join(build.out, 'fuzzer_stats'),
           upload_fuzzer_stats_url,
       ],
@@ -207,11 +207,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
     build_steps.append(build_lib.gsutil_rm_rf_step(upload_textcov_reports_url))
     build_steps.append({
         'name':
-            'gcr.io/cloud-builders/gsutil',
+            'gcr.io/cloud-builders/gcloud',
         'args': [
-            '-m',
+            'storage',
             'cp',
-            '-r',
+            '--recursive',
             os.path.join(build.out, 'textcov_reports'),
             upload_textcov_reports_url,
         ],
@@ -222,11 +222,11 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_logs_url))
   build_steps.append({
       'name':
-          'gcr.io/cloud-builders/gsutil',
+          'gcr.io/cloud-builders/gcloud',
       'args': [
-          '-m',
+          'storage',
           'cp',
-          '-r',
+          '--recursive',
           os.path.join(build.out, 'logs'),
           upload_fuzzer_logs_url,
       ],
@@ -236,8 +236,9 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
   srcmap_upload_url = bucket.get_upload_url('srcmap')
   srcmap_upload_url = srcmap_upload_url.rstrip('/') + '.json'
   build_steps.append({
-      'name': 'gcr.io/cloud-builders/gsutil',
+      'name': 'gcr.io/cloud-builders/gcloud',
       'args': [
+          'storage',
           'cp',
           '/workspace/srcmap.json',
           srcmap_upload_url,
@@ -324,11 +325,11 @@ def get_fuzz_introspector_steps(  # pylint: disable=too-many-locals, too-many-ar
   build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_url))
   build_steps.append({
       'name':
-          'gcr.io/cloud-builders/gsutil',
+          'gcr.io/cloud-builders/gcloud',
       'args': [
-          '-m',
+          'storage',
           'cp',
-          '-r',
+          '--recursive',
           os.path.join(build.out, 'inspector'),
           upload_report_url,
       ],
