@@ -46,7 +46,9 @@ $CXX $CXXFLAGS -std=c++20 \
   -Itlbmc \
   -I$SRC/abseil_install/include \
   $SRC/pacemaker_fuzzer.cc \
-  $(find tlbmc -name "*.cc" ! -name "*test*.cc") \
+  tlbmc/pacemaker/pacemaker.cc \
+  tlbmc/scheduler/scheduler.cc \
+  tlbmc/time/clock.cc \
   -o $OUT/pacemaker_fuzzer \
   $LIB_FUZZING_ENGINE \
   -Wl,--start-group $SRC/abseil_install/lib/libabsl_*.a -Wl,--end-group \
