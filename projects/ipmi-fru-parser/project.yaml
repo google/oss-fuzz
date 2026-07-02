@@ -1,0 +1,7 @@
+homepage: "https://github.com/openbmc/ipmi-fru-parser"
+language: c++
+primary_contact: "openbmc@lists.ozlabs.org"
+main_repo: "https://github.com/openbmc/ipmi-fru-parser"
+sanitizers:
+  - address
+  - undefined
