@@ -1,0 +1,19 @@
+# JSON elements
+"object_start" = "{"
+"object_end" = "}"
+"array_start" = "["
+"array_end" = "]"
+"comma" = ","
+"colon" = ":"
+"quote" = "\""
+
+# Project specific keys
+"targets" = "\"targets\""
+"errorsToMonitor" = "\"errorsToMonitor\""
+"errorToLog" = "\"errorToLog\""
+
+# Project specific values
+"default" = "\"default\""
+"timeout" = "\"timeout\""
+"failed" = "\"failed\""
+"dependency" = "\"dependency\""
