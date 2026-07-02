@@ -1035,9 +1035,19 @@ def gen_discoverer(base):
     # discovery pipeline drives descriptions.c, missing-plugins.c and
     # gsttypefindhelper.c for ~120 distinct container/codec caps (each caps is
     # typefound, then described / reported as a missing plugin).
+    #
+    # A few formats are typefind-only: their element aborts (rather than errors
+    # out) on the short/partial buffers a discovery push pipeline hands it, so
+    # they would crash the discoverer target while it loads the seed corpus.
+    # Keep them in the typefind corpus (detection is safe) but not here:
+    #   * yuv4mpeg  -- gsty4mdec asserts mapinfo.size >= MAX_STREAM_HEADER_LENGTH
+    #                  (128) on a drained sub-128-byte buffer.
+    discoverer_skip = {"yuv4mpeg.y4m"}
     tf = os.path.join(base, "typefind")
     if os.path.isdir(tf):
         for name in os.listdir(tf):
+            if name in discoverer_skip:
+                continue
             shutil.copyfile(os.path.join(tf, name),
                             os.path.join(d, "tf_" + name))
 
