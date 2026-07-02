@@ -46,6 +46,7 @@ Usage:  python3 generate_seeds.py <output_dir>
 
 import os
 import sys
+import shutil
 import struct
 import zlib
 
@@ -750,10 +751,312 @@ def gen_typefind(base):
 # ==========================================================================
 # gst-discoverer  (uses ogg/theora/vorbis demuxers)
 # ==========================================================================
+# --------------------------------------------------------------------------
+# Complete containers for gst-discoverer.
+#
+# gst-discoverer runs the real push pipeline (typefind -> demux -> parse ->
+# caps), so unlike the typefind target it needs structurally complete files:
+# the demuxer must parse a track and emit caps for the discovery/description/
+# codec-utils code to run. These builders emit small but complete containers
+# for the demuxers the build enables (ogg, isomp4/qtdemux, matroska, avi).
+# --------------------------------------------------------------------------
+
+def _ogg_crc(data):
+    crc = 0
+    for byte in data:
+        crc ^= byte << 24
+        crc &= 0xffffffff
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x04c11db7) & 0xffffffff \
+                if crc & 0x80000000 else (crc << 1) & 0xffffffff
+    return crc
+
+
+def _ogg_page(serial, seq, packets, bos=False, eos=False, granule=0):
+    """Assemble one Ogg page carrying whole packets (with lacing + CRC)."""
+    segtab = bytearray()
+    body = bytearray()
+    for p in packets:
+        n = len(p)
+        while n >= 255:
+            segtab.append(255)
+            n -= 255
+        segtab.append(n)
+        body += p
+    htype = (0x02 if bos else 0) | (0x04 if eos else 0)
+    hdr = b"OggS" + bytes([0, htype]) + struct.pack("<q", granule) + \
+        struct.pack("<I", serial) + struct.pack("<I", seq) + \
+        struct.pack("<I", 0) + bytes([len(segtab)]) + bytes(segtab)
+    page = bytearray(hdr + body)
+    page[22:26] = struct.pack("<I", _ogg_crc(page))
+    return bytes(page)
+
+
+def _ogg_stream(serial, headers, audio_granule=1024):
+    """id header (BOS) + remaining headers + one EOS audio page."""
+    pages = [_ogg_page(serial, 0, [headers[0]], bos=True)]
+    if len(headers) > 1:
+        pages.append(_ogg_page(serial, 1, headers[1:]))
+    pages.append(_ogg_page(serial, len(pages), [b"\x00" * 8], eos=True,
+                           granule=audio_granule))
+    return b"".join(pages)
+
+
+def _ogg_vorbis():
+    idh = b"\x01vorbis" + struct.pack("<I", 0) + bytes([2]) + \
+        struct.pack("<I", 44100) + struct.pack("<iii", 0, 128000, 0) + \
+        bytes([0xB8]) + bytes([0x01])
+    vendor = b"gst-fuzz"
+    comments = [b"TITLE=Fuzz", b"ARTIST=Seed", b"ALBUM=Corpus"]
+    ch = b"\x03vorbis" + struct.pack("<I", len(vendor)) + vendor + \
+        struct.pack("<I", len(comments))
+    for c in comments:
+        ch += struct.pack("<I", len(c)) + c
+    ch += bytes([0x01])
+    setup = b"\x05vorbis" + b"\x00" * 32 + bytes([0x01])
+    return _ogg_stream(0xC0FFEE, [idh, ch, setup])
+
+
+def _ogg_opus():
+    idh = b"OpusHead" + bytes([1, 2]) + struct.pack("<H", 312) + \
+        struct.pack("<I", 48000) + struct.pack("<h", 0) + bytes([0])
+    tags = b"OpusTags" + struct.pack("<I", 8) + b"gst-fuzz" + \
+        struct.pack("<I", 2) + struct.pack("<I", 10) + b"TITLE=Fuzz" + \
+        struct.pack("<I", 11) + b"ARTIST=Seed"
+    return _ogg_stream(0xABCDE, [idh, tags], audio_granule=960)
+
+
+def _ogg_theora():
+    idh = bytes([0x80]) + b"theora" + bytes([3, 2, 1]) + \
+        struct.pack(">H", 20) + struct.pack(">H", 15) + b"\x00" * 24
+    com = bytes([0x81]) + b"theora" + struct.pack("<I", 8) + b"gst-fuzz" + \
+        struct.pack("<I", 1) + struct.pack("<I", 10) + b"TITLE=Fuzz"
+    setup = bytes([0x82]) + b"theora" + b"\x00" * 16
+    return _ogg_stream(0x77777, [idh, com, setup])
+
+
+def _ogg_flac():
+    streaminfo = b"\x00\x00\x00\x22" + b"\x10\x00\x10\x00" + \
+        b"\x00\x00\x00\x00\x00\x00" + b"\x0a\xc4\x42\xf0" + b"\x00" * 16
+    idh = b"\x7fFLAC\x01\x00" + struct.pack(">H", 1) + b"fLaC" + \
+        b"\x00" + streaminfo
+    vc = b"gst-fuzz"
+    comments = [b"TITLE=Fuzz"]
+    body = struct.pack("<I", len(vc)) + vc + struct.pack("<I", len(comments))
+    for c in comments:
+        body += struct.pack("<I", len(c)) + c
+    meta = bytes([0x84]) + struct.pack(">I", len(body))[1:] + body
+    return _ogg_stream(0x5151, [idh, meta])
+
+
+def _ogg_speex():
+    hdr = b"Speex   " + b"1.2.0".ljust(20, b"\x00") + struct.pack("<I", 1) + \
+        struct.pack("<I", 80) + struct.pack("<I", 44100) + \
+        struct.pack("<I", 1) + struct.pack("<I", 0) + struct.pack("<I", 1) + \
+        struct.pack("<I", 0) + struct.pack("<I", 160) + struct.pack("<I", 0) + \
+        struct.pack("<I", 1) + struct.pack("<I", 0) + struct.pack("<I", 0) + \
+        struct.pack("<I", 0)
+    com = struct.pack("<I", 8) + b"gst-fuzz" + struct.pack("<I", 0)
+    return _ogg_stream(0x99, [hdr, com])
+
+
+def _avcC():
+    sps = bytes([0x67, 0x42, 0x00, 0x1f, 0xac, 0xb2, 0x00, 0x07, 0x00])
+    pps = bytes([0x68, 0xce, 0x3c, 0x80])
+    return bytes([1, 0x42, 0x00, 0x1f, 0xFF, 0xE1]) + \
+        struct.pack(">H", len(sps)) + sps + bytes([1]) + \
+        struct.pack(">H", len(pps)) + pps
+
+
+def _mp4(video=True, audio=True):
+    """isobmff with real avc1/avcC and/or mp4a/esds tracks and a 1-sample
+    sample table so qtdemux finalises and discovery describes the streams."""
+    def box(typ, payload=b""):
+        return struct.pack(">I", 8 + len(payload)) + typ + payload
+
+    def fbox(typ, ver, flags, payload=b""):
+        return box(typ, bytes([ver]) + struct.pack(">I", flags)[1:] + payload)
+
+    def avc1():
+        b = b"\x00" * 6 + struct.pack(">H", 1) + b"\x00" * 16 + \
+            struct.pack(">HH", 320, 240) + \
+            struct.pack(">II", 0x00480000, 0x00480000) + b"\x00" * 4 + \
+            struct.pack(">H", 1) + b"\x00" * 32 + \
+            struct.pack(">H", 0x0018) + struct.pack(">H", 0xffff) + \
+            box(b"avcC", _avcC())
+        return box(b"avc1", b)
+
+    def mp4a():
+        asc = bytes([0x12, 0x10])                       # AAC-LC 44.1k stereo
+
+        def desc(tag, p):
+            return bytes([tag, len(p)]) + p
+        dsi = desc(0x05, asc)
+        dcd = desc(0x04, bytes([0x40, 0x15]) + b"\x00" * 3 +
+                   struct.pack(">II", 0, 0) + dsi)
+        es = desc(0x03, struct.pack(">H", 0) + bytes([0]) + dcd +
+                  desc(0x06, bytes([0x02])))
+        esds = fbox(b"esds", 0, 0, es)
+        b = b"\x00" * 6 + struct.pack(">H", 1) + b"\x00" * 8 + \
+            struct.pack(">HH", 2, 16) + b"\x00" * 4 + \
+            struct.pack(">I", 44100 << 16) + esds
+        return box(b"mp4a", b)
+
+    def stbl(entry, off):
+        return box(b"stbl",
+                   fbox(b"stsd", 0, 0, struct.pack(">I", 1) + entry) +
+                   fbox(b"stts", 0, 0, struct.pack(">III", 1, 1, 1000)) +
+                   fbox(b"stsc", 0, 0, struct.pack(">I", 1) +
+                        struct.pack(">III", 1, 1, 1)) +
+                   fbox(b"stsz", 0, 0, struct.pack(">III", 0, 1, 16)) +
+                   fbox(b"stco", 0, 0, struct.pack(">II", 1, off)))
+
+    def dinf():
+        return box(b"dinf", fbox(b"dref", 0, 0, struct.pack(">I", 1) +
+                                 fbox(b"url ", 0, 1)))
+
+    def trak(tid, handler, mhdr, entry, timescale, off, w=0, h=0):
+        tkhd = fbox(b"tkhd", 0, 7,
+                    struct.pack(">IIII", 0, 0, tid, 0) + b"\x00" * 4 +
+                    struct.pack(">I", 0) + b"\x00" * 8 +
+                    struct.pack(">HHHH", 0, 0, 0, 0) + b"\x00\x01\x00\x00" +
+                    b"\x00" * 4 + b"\x00" * 36 +
+                    struct.pack(">II", w << 16, h << 16))
+        mdhd = fbox(b"mdhd", 0, 0, struct.pack(">IIII", 0, 0, timescale, 0) +
+                    struct.pack(">HH", 0x55c4, 0))
+        hdlr = fbox(b"hdlr", 0, 0, b"\x00" * 4 + handler + b"\x00" * 12 +
+                    b"h\x00")
+        minf = box(b"minf", mhdr + dinf() + stbl(entry, off))
+        return box(b"trak", tkhd + box(b"mdia", mdhd + hdlr + minf))
+
+    ftyp = box(b"ftyp", b"isom" + struct.pack(">I", 0x200) +
+               b"isomiso2avc1mp41")
+    mvhd = fbox(b"mvhd", 0, 0, struct.pack(">IIII", 0, 0, 1000, 0) +
+                b"\x00\x01\x00\x00" + b"\x00" * 10 + b"\x00\x01\x00\x00" +
+                b"\x00" * 28 + struct.pack(">I", 3))
+    vmhd = fbox(b"vmhd", 0, 1, b"\x00" * 8)
+    smhd = fbox(b"smhd", 0, 0, b"\x00" * 4)
+
+    # Two passes: size the moov with a placeholder chunk offset, then patch it
+    # to the real mdat payload offset.
+    def build(off):
+        traks = b""
+        if video:
+            traks += trak(1, b"vide", vmhd, avc1(), 30000, off, 320, 240)
+        if audio:
+            traks += trak(2, b"soun", smhd, mp4a(), 44100, off)
+        return box(b"moov", mvhd + traks)
+
+    moov0 = build(0)
+    off = len(ftyp) + len(moov0) + 8
+    return ftyp + build(off) + box(b"mdat", b"\x00" * 16)
+
+
+def _matroska_multicodec():
+    """A Matroska segment declaring many codec tracks (vp8/vp9/av1/h264/aac/
+    opus/mp3). Each distinct CodecID makes matroskademux emit a distinct caps,
+    driving descriptions.c and codec-utils.c."""
+    def vint(n):
+        for length in range(1, 9):
+            if n < (1 << (7 * length)) - 1:
+                return (n | (1 << (7 * length))).to_bytes(length, "big")
+        return (n | (1 << 56)).to_bytes(8, "big")
+
+    def el(idhex, data):
+        return bytes.fromhex(idhex) + vint(len(data)) + data
+
+    def u(n):
+        return b"\x00" if n == 0 else n.to_bytes((n.bit_length() + 7) // 8,
+                                                  "big")
+
+    def track(num, ttype, codecid, priv=None, w=320, h=240, rate=44100, ch=2):
+        body = el("D7", u(num)) + el("73C5", u(num)) + el("83", u(ttype)) + \
+            el("86", codecid)
+        if priv is not None:
+            body += el("63A2", priv)
+        if ttype == 1:
+            body += el("E0", el("B0", u(w)) + el("BA", u(h)))
+        else:
+            body += el("E1", el("B5", struct.pack(">d", rate)) +
+                       el("9F", u(ch)))
+        return el("AE", body)
+
+    ebml = el("1A45DFA3",
+              el("4286", u(1)) + el("42F7", u(1)) + el("42F2", u(4)) +
+              el("42F3", u(8)) + el("4282", b"matroska") +
+              el("4287", u(4)) + el("4285", u(2)))
+    info = el("1549A966", el("2AD7B1", u(1000000)) + el("4D80", b"gst-fuzz") +
+             el("5741", b"gst-fuzz") + el("4489", struct.pack(">d", 1000.0)))
+    opushead = b"OpusHead" + bytes([1, 2]) + struct.pack("<H", 312) + \
+        struct.pack("<I", 48000) + struct.pack("<h", 0) + bytes([0])
+    av1c = bytes([0x81, 0x00, 0x00, 0x00]) + \
+        bytes([0x0A, 0x0B, 0x00, 0x00, 0x00, 0x24, 0xCF, 0xBF, 0x1B, 0xE0,
+               0x01, 0x40])
+    tracks = el("1654AE6B",
+                track(1, 1, b"V_VP8") + track(2, 1, b"V_VP9") +
+                track(3, 1, b"V_AV1", av1c) +
+                track(4, 1, b"V_MPEG4/ISO/AVC", _avcC()) +
+                track(5, 2, b"A_AAC", bytes([0x12, 0x10])) +
+                track(6, 2, b"A_OPUS", opushead) +
+                track(7, 2, b"A_MPEG/L3"))
+
+    def simpleblock(tn):
+        return el("A3", vint(tn) + struct.pack(">h", 0) + bytes([0x80]) +
+                  b"\x00" * 4)
+    cluster = el("1F43B675", el("E7", u(0)) + simpleblock(1) + simpleblock(5))
+    return ebml + el("18538067", info + tracks + cluster)
+
+
+def _avi_mjpeg():
+    def ck(fourcc, data):
+        return fourcc + struct.pack("<I", len(data)) + data + \
+            (b"\x00" if len(data) & 1 else b"")
+
+    def lst(name, data):
+        return b"LIST" + struct.pack("<I", 4 + len(data)) + name + data
+    mjpg = ord('M') | (ord('J') << 8) | (ord('P') << 16) | (ord('G') << 24)
+    strh = struct.pack("<4s4sIHHIIIIIIIIhhhh", b"vids", b"MJPG",
+                       0, 0, 0, 0, 1, 25, 0, 10, 0, 0xFFFFFFFF, 0, 0, 0, 20, 15)
+    bih = struct.pack("<IiiHHIIiiII", 40, 20, 15, 1, 24, mjpg, 0, 0, 0, 0, 0)
+    strl = lst(b"strl", ck(b"strh", strh) + ck(b"strf", bih))
+    avih = struct.pack("<IIIIIIIIIIIIII", 40000, 25, 0, 0, 1, 0, 1, 0,
+                       20, 15, 0, 0, 0, 0)
+    hdrl = lst(b"hdrl", ck(b"avih", avih) + strl)
+    movi = lst(b"movi", ck(b"00dc", b"\xff\xd8\xff\xd9"))
+    body = b"AVI " + hdrl + movi
+    return b"RIFF" + struct.pack("<I", len(body)) + body
+
+
 def gen_discoverer(base):
     d = os.path.join(base, "gst-discoverer")
-    # A leading OggS page is enough to start the ogg demuxer / typefind.
+    os.makedirs(d, exist_ok=True)
+
+    # (1) Format variety: reuse the full typefind seed set. Feeding it to the
+    # discovery pipeline drives descriptions.c, missing-plugins.c and
+    # gsttypefindhelper.c for ~120 distinct container/codec caps (each caps is
+    # typefound, then described / reported as a missing plugin).
+    tf = os.path.join(base, "typefind")
+    if os.path.isdir(tf):
+        for name in os.listdir(tf):
+            shutil.copyfile(os.path.join(tf, name),
+                            os.path.join(d, "tf_" + name))
+
+    # (2) Complete containers for the enabled demuxers. These parse into real
+    # tracks, so discovery describes the streams and codec-utils.c parses the
+    # carried codec_data (avcC / esds-ASC / av1C / OpusHead). The Ogg files
+    # also carry Vorbis/Opus/FLAC comment headers, driving gstvorbistag.c.
     w(d, "ogg_start.ogg", _ogg())
+    w(d, "ogg_vorbis.ogg", _ogg_vorbis())
+    w(d, "ogg_opus.ogg", _ogg_opus())
+    w(d, "ogg_theora.ogv", _ogg_theora())
+    w(d, "ogg_flac.oga", _ogg_flac())
+    w(d, "ogg_speex.spx", _ogg_speex())
+    w(d, "mp4_h264_aac.mp4", _mp4(video=True, audio=True))
+    w(d, "mp4_h264.mp4", _mp4(video=True, audio=False))
+    w(d, "mp4_aac.m4a", _mp4(video=False, audio=True))
+    w(d, "matroska_multicodec.mkv", _matroska_multicodec())
+    w(d, "avi_mjpeg.avi", _avi_mjpeg())
+    w(d, "wav_pcm.wav", _riff_wav())
 
 
 # ==========================================================================
