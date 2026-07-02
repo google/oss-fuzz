@@ -177,3 +177,6 @@ done
 
 cp $TARANTOOL_PATH "$OUT/$LUA_RUNTIME_NAME"
 cp -R $LUA_MODULES_DIR "$OUT/"
+
+# Don't consider compile_lua_fuzzer as a test.
+rm -f "$OUT/compile_lua_fuzzer" "$SRC/compile_lua_fuzzer"
