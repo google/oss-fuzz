@@ -32,8 +32,15 @@ fi
 cp fuzz/fuzz_table $OUT/fuzz_table
 cp fuzz/fuzz_server $OUT/fuzz_server
 cp fuzz/fuzz_method_decode $OUT/fuzz_method_decode
+cp fuzz/fuzz_handle_input $OUT/fuzz_handle_input
+cp fuzz/fuzz_properties_decode $OUT/fuzz_properties_decode
+cp fuzz/fuzz_codec $OUT/fuzz_codec
 popd
 
 zip -j ${OUT}/fuzz_url_seed_corpus.zip fuzz/input/fuzz_url.raw
 zip -j ${OUT}/fuzz_table_seed_corpus.zip fuzz/input/fuzz_table.raw
 zip -j ${OUT}/fuzz_server_seed_corpus.zip fuzz/input/fuzz_server.raw
+zip -j ${OUT}/fuzz_method_decode_seed_corpus.zip fuzz/input/fuzz_method_decode.raw
+zip -j ${OUT}/fuzz_properties_decode_seed_corpus.zip fuzz/input/fuzz_properties_decode.raw
+zip -j ${OUT}/fuzz_codec_seed_corpus.zip fuzz/input/fuzz_codec.raw
+zip -j ${OUT}/fuzz_handle_input_seed_corpus.zip fuzz/input/fuzz_server.raw

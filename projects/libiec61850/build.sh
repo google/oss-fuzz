@@ -20,12 +20,15 @@ mkdir build && cd build
 cmake ../
 make
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE ../fuzz/fuzz_mms_decode.c -c \
-	-I../src/iec61850/inc -I../src/mms/inc -I../src/common/inc \
-	-I../hal/inc -I../src/logging
+# Header include dirs (exclude src/vs, whose stdbool.h shim shadows the system one).
+INC="$(find ../src ../hal -name '*.h' -not -path '*/vs/*' -printf '-I%h\n' | sort -u) -Iconfig -I../config"
 
-
-$CXX $CXXFLAGS -fuse-ld=lld $LIB_FUZZING_ENGINE fuzz_mms_decode.o -o $OUT/fuzz_mms_decode ./src/libiec61850.a ./hal/libhal.a
-
-# Copy over the options file
-cp $SRC/fuzz_decode.options $OUT/fuzz_decode.options
+# Build every harness in the upstream fuzz/ directory.
+for src in ../fuzz/*.c; do
+	fuzzer=$(basename "$src" .c)
+	$CC $CFLAGS -include stdbool.h $LIB_FUZZING_ENGINE "$src" -c -o "${fuzzer}.o" $INC
+	$CXX $CXXFLAGS -fuse-ld=lld $LIB_FUZZING_ENGINE "${fuzzer}.o" \
+		-o "$OUT/${fuzzer}" ./src/libiec61850.a ./hal/libhal.a
+	# Disable leak detection for these stateful receive/server harnesses.
+	printf '[asan]\ndetect_leaks=0\n' > "$OUT/${fuzzer}.options"
+done

@@ -16,6 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
+    libssl1.1:i386 libssl-dev:i386 \
     pkg-config libcunit1 libcunit1-doc libcunit1-dev
 RUN git clone https://github.com/obgm/libcoap.git libcoap
 WORKDIR libcoap
