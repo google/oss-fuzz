@@ -6,7 +6,7 @@ auto_ccs:
   - "bas@cloudflare.com"
   - "cpatton@cloudflare.com"
   - "lvalenta@cloudflare.com"
-  - "newton@cloudflare.com"
+  - "snewton@cloudflare.com"
 sanitizers:
  - address
 architectures:
