@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Filestore implementation using gsutil."""
+"""Filestore implementation using gcloud storage."""
 import logging
 import os
 import posixpath
@@ -27,23 +27,23 @@ import utils
 
 
 def _gsutil_execute(*args, parallel=True):
-  """Executes a gsutil command, passing |*args| to gsutil and returns the
+  """Executes a gcloud storage command, passing |*args| to gcloud storage and returns the
   stdout, stderr and returncode. Exceptions on failure."""
-  command = ['gsutil']
+  command = ['gcloud', 'storage']
   if parallel:
-    command.append('-m')
+    pass
   command += list(args)
-  logging.info('Executing gsutil command: %s', command)
+  logging.info('Executing gcloud storage command: %s', command)
   return utils.execute(command, check_result=True)
 
 
 def _rsync(src, dst, recursive=True, delete=False):
-  """Executes gsutil rsync on |src| and |dst|"""
+  """Executes gcloud storage rsync on |src| and |dst|"""
   args = ['rsync']
   if recursive:
     args.append('-r')
   if delete:
-    args.append('-d')
+    args.append('--delete-unmatched-destination-objects')
   args += [src, dst]
   return _gsutil_execute(*args)
 
