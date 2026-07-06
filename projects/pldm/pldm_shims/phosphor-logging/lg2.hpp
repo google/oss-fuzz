@@ -16,14 +16,23 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
+#define PHOSPHOR_LOG2_USING
 
-extern "C" {
-#include "base.h"
+namespace lg2
+{
+// Mock logging functions
+template<typename... Args>
+inline void error(const char*, Args&&...) {}
+
+template<typename... Args>
+inline void info(const char*, Args&&...) {}
+
+template<typename... Args>
+inline void warning(const char*, Args&&...) {}
+
+template<typename... Args>
+inline void debug(const char*, Args&&...) {}
 }
 
-// Validates that the packet actually contains the number of bytes specified in the headers
-inline bool validate_nsm_msg_length(const uint8_t* payload, size_t payload_len) {
-    return payload_len >= sizeof(struct nsm_msg_hdr);
-}
+// Bring them into the global namespace or let the using namespace handle it
+using namespace lg2;

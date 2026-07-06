@@ -4784,6 +4784,29 @@ def gen_image(root):
     JPEG (baseline/progressive/subsampling/grey/CMYK) for libpng / libjpeg."""
     O = os.path.join(root, 'seeds', 'image')
     os.makedirs(O, exist_ok=True)
+
+    # BPG (Better Portable Graphics) -> codec/bpg.c + bundled libbpg, reached
+    # via the image demux, which detects the 4-byte 'BPG\xFB' marker. bpg.c was
+    # never registered in the harness (absent from coverage). A structurally
+    # valid BPG header gets past detection and the libbpg header parse (the
+    # front door); libFuzzer mutates from there into the HEVC-based decoder.
+    def _ue7(v: int) -> bytes:
+        out = bytearray([v & 0x7F])
+        v >>= 7
+        while v:
+            out.insert(0, 0x80 | (v & 0x7F))
+            v >>= 7
+        return bytes(out)
+
+    bpg = (b'BPG\xfb'                 # magic
+           + bytes([0x20])            # pixel_format=4:2:0(1), bit_depth_minus8=0
+           + bytes([0x00])            # color_space=YCbCr, no extension/alpha
+           + _ue7(16) + _ue7(16)      # picture_width, picture_height
+           + _ue7(0))                 # picture_data_length (0 = to end of file)
+    bpg += bytes([0x00, 0x00, 0x01, 0x26, 0x01] + [0x00] * 32)   # HEVC payload
+    with open(os.path.join(O, 'minimal.bpg'), 'wb') as f:
+        f.write(bpg)
+
     SIG = b'\x89PNG\r\n\x1a\n'
 
     def png(name, w, h, bd, ct, rows, before=b'', after=b'',
@@ -5367,6 +5390,96 @@ def gen_mod_extra(root):
         f.write(bytes(x))
 
 
+def gen_voc(root):
+    """Structured seeds for the Creative Voice File demuxer
+    (modules/demux/voc.c).
+
+    A VOC file is:
+      * a 26-byte header: "Creative Voice File\\x1a" + WLE data_offset(>=26)
+        + WLE version + WLE checksum, where checksum == (0x1234 + ~version).
+      * a sequence of blocks: 1 type byte + 3-byte LE size + <size> payload
+        bytes, terminated by a type-0 block.
+
+    Random bytes never satisfy the magic + checksum, so the block parser is
+    only reachable from a structurally valid header. Each seed carries a valid
+    header and a different set of blocks so that ReadBlockHeader()'s switch,
+    the codec-id table (block 1), the silence/repeat/stereo-kludge blocks and
+    the modern block-9 format decoder are each exercised.
+    """
+    def hdr(version=0x010A, data_offset=26):
+        checksum = (0x1234 + (~version)) & 0xFFFF
+        return (b"Creative Voice File\x1a" +
+                struct.pack('<HHH', data_offset, version, checksum))
+
+    def block(btype, payload=b''):
+        return bytes([btype]) + struct.pack('<I', len(payload))[:3] + payload
+
+    def term():
+        return bytes([0])
+
+    def blk1(sr_code, codec_id, data=b'\x00\x00\x00\x00'):
+        # block 1: [sr_code][codec_id] + audio data (size counts both headers)
+        return block(1, bytes([sr_code, codec_id]) + data)
+
+    def w(name, *chunks):
+        _write(os.path.join(root, "seeds", "voc", name),
+               hdr() + b''.join(chunks) + term())
+
+    # Block 1, unsigned 8-bit PCM (codec id 0) -- the common minimal case.
+    w("u8.voc", blk1(0xa5, 0x0))
+
+    # Block 1 across every supported codec id (ADPCM SB-Pro 4/3/2, S16L, ALAW,
+    # MULAW) plus a block 2 (continue with previous format).
+    w("codecs.voc",
+      blk1(0xa5, 0x1), blk1(0xa5, 0x2), blk1(0xa5, 0x3),
+      blk1(0xd0, 0x4), blk1(0xd0, 0x6), blk1(0xd0, 0x7),
+      block(2, b'\x11\x22\x33\x44'))
+
+    # Silence (3), marker (4, skipped), text (5, skipped) blocks.
+    w("silence_marker_text.voc",
+      block(3, struct.pack('<H', 100) + b'\xa5'),        # count + sr byte
+      block(4, struct.pack('<H', 1)),                    # marker id (skipped)
+      block(5, b"info text\x00"))                         # text (skipped)
+
+    # Repeat (6) / repeat-end (7) loop around a block 1.
+    w("repeat.voc",
+      block(6, struct.pack('<H', 2)),                    # loop count
+      blk1(0xa5, 0x0),
+      block(7))                                           # repeat end (size 0)
+
+    # Block 8 (stereo kludge): must be followed by a block 1 with comp 0.
+    # rate = 256000000 / ((65536 - tc) * channels); tc=60000, channels=2.
+    w("stereo8.voc",
+      block(8, struct.pack('<H', 60000) + bytes([0x00, 0x01])),
+      blk1(0xa5, 0x0))
+
+    # Block 9 (modern): rate DWLE, bits, channels, format WLE, + 4 reserved.
+    # PCM 8-bit, PCM 16-bit, and signed 16-bit variants.
+    def blk9(rate, bits, chans, fmt, data=b'\x00\x00'):
+        payload = (struct.pack('<I', rate) + bytes([bits, chans]) +
+                   struct.pack('<H', fmt) + b'\x00\x00\x00\x00' + data)
+        return block(9, payload)
+    w("block9.voc",
+      blk9(44100, 8, 1, 0x0000),
+      blk9(48000, 16, 2, 0x0000),
+      blk9(22050, 16, 1, 0x0004))
+
+    # Unknown block type (default branch: skipped) followed by valid audio.
+    w("unknown_block.voc",
+      block(0x40, b'\xde\xad\xbe\xef'),
+      blk1(0xa5, 0x0))
+
+    # A libFuzzer dictionary: the magic and block-type tokens.
+    dpath = os.path.join(root, "dictionaries", "voc.dict")
+    os.makedirs(os.path.dirname(dpath), exist_ok=True)
+    with open(dpath, "w") as f:
+        f.write('# Creative Voice File (modules/demux/voc.c) tokens\n')
+        f.write('"Creative Voice File\\x1a"\n')
+        for i in range(10):
+            f.write('"\\x%02x"\n' % i)
+    print(f"  wrote {dpath}")
+
+
 def main():
     if len(sys.argv) != 2:
         print(f'Usage: {sys.argv[0]} <fuzz-corpus-root>', file=sys.stderr)
@@ -5400,6 +5513,7 @@ def main():
     gen_image(root)
     gen_av_media(root)
     gen_mod_extra(root)
+    gen_voc(root)
 
 
 if __name__ == '__main__':

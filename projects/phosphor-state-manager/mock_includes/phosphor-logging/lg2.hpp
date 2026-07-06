@@ -16,14 +16,15 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
-
-extern "C" {
-#include "base.h"
+namespace lg2 {
+    template <typename... Args>
+    void error(const char* msg, Args&&... args) {}
+    template <typename... Args>
+    void info(const char* msg, Args&&... args) {}
+    template <typename... Args>
+    void warning(const char* msg, Args&&... args) {}
+    template <typename... Args>
+    void debug(const char* msg, Args&&... args) {}
 }
 
-// Validates that the packet actually contains the number of bytes specified in the headers
-inline bool validate_nsm_msg_length(const uint8_t* payload, size_t payload_len) {
-    return payload_len >= sizeof(struct nsm_msg_hdr);
-}
+#define PHOSPHOR_LOG2_USING using namespace lg2

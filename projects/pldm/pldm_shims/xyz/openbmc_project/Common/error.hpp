@@ -16,14 +16,30 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
+#include <exception>
 
-extern "C" {
-#include "base.h"
-}
+namespace sdbusplus
+{
+namespace xyz
+{
+namespace openbmc_project
+{
+namespace Common
+{
+namespace Error
+{
 
-// Validates that the packet actually contains the number of bytes specified in the headers
-inline bool validate_nsm_msg_length(const uint8_t* payload, size_t payload_len) {
-    return payload_len >= sizeof(struct nsm_msg_hdr);
-}
+class InternalFailure : public std::exception
+{
+  public:
+    const char* what() const noexcept override
+    {
+        return "InternalFailure";
+    }
+};
+
+} // namespace Error
+} // namespace Common
+} // namespace openbmc_project
+} // namespace xyz
+} // namespace sdbusplus
