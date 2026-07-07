@@ -40,6 +40,7 @@ if [ -n "$CXX" ]; then
   echo "--action_env=CXX=${CXX}"
 fi
 echo "--host_action_env=CC=gcc"
+echo "--linkopt=-Wl,-rpath,\$ORIGIN/lib" "--linkopt=-Wl,-rpath,\$ORIGIN"
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
@@ -48,7 +49,7 @@ then
   echo "--linkopt=-fsanitize=undefined"
 elif [ "$SANITIZER" = "address" ]
 then
-  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address" "--copt=-fno-sanitize-ignorelist" "--linkopt=-l:libc++.a" "--linkopt=-l:libc++abi.a" "--linkopt=-l:libunwind.a"
+  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address" "--copt=-fno-sanitize-ignorelist"
 fi
 )"
 
@@ -162,6 +163,20 @@ fi
 
 for oss_fuzz_archive in $(find bazel-bin/ -name '*_oss_fuzz.tar'); do
     tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
+done
+
+# 1. Fix inter-library dependencies among prebuilt toolchain shared libraries in $OUT/lib
+if [ -d "${OUT}/lib" ]; then
+  for so in "${OUT}"/lib/*.so*; do
+    [ -e "$so" ] && patchelf --set-rpath '$ORIGIN' "$so" 2>/dev/null || true
+  done
+fi
+
+# 2. Ensure all extracted fuzz targets can locate shared libraries in $OUT/lib at runtime
+for f in "${OUT}"/*; do
+  if [ -f "$f" ] && [ -x "$f" ] && file "$f" | grep -q "ELF"; then
+    patchelf --set-rpath '$ORIGIN/lib:$ORIGIN' "$f" 2>/dev/null || true
+  fi
 done
 
 # Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build
