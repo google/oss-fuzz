@@ -40,7 +40,6 @@ if [ -n "$CXX" ]; then
   echo "--action_env=CXX=${CXX}"
 fi
 echo "--host_action_env=CC=gcc"
-echo "--linkopt=-Wl,-rpath,\$ORIGIN/lib" "--linkopt=-Wl,-rpath,\$ORIGIN"
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
@@ -164,6 +163,16 @@ fi
 for oss_fuzz_archive in $(find bazel-bin/ -name '*_oss_fuzz.tar'); do
     tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
 done
+
+# Explicitly copy LLVM toolchain C++ runtime shared libraries into $OUT/lib so they are available at runtime.
+mkdir -p "${OUT}/lib"
+find $(bazel info output_base) \( -name "libc++.so*" -o -name "libc++abi.so*" -o -name "libunwind.so*" \) -exec cp -a {} "${OUT}/lib/" \; 2>/dev/null || true
+if [ -d "${OUT}/lib" ]; then
+  (cd "${OUT}/lib" && \
+   [ -f libc++.so.1.0 ] && [ ! -e libc++.so.1 ] && ln -sf libc++.so.1.0 libc++.so.1; \
+   [ -f libc++abi.so.1.0 ] && [ ! -e libc++abi.so.1 ] && ln -sf libc++abi.so.1.0 libc++abi.so.1; \
+   [ -f libunwind.so.1.0 ] && [ ! -e libunwind.so.1 ] && ln -sf libunwind.so.1.0 libunwind.so.1) || true
+fi
 
 # 1. Fix inter-library dependencies among prebuilt toolchain shared libraries in $OUT/lib
 if [ -d "${OUT}/lib" ]; then
