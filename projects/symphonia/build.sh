@@ -23,4 +23,13 @@ cargo fuzz build -O
 
 cargo fuzz list | while read -r target; do
   cp "fuzz/target/x86_64-unknown-linux-gnu/release/$target" "$OUT/"
+
+  # ClusterFuzz automatically uses $OUT/<target>.dict if present. Dictionaries
+  # are keyed by format: the part of the target name after the first underscore
+  # (decode_mpa -> mpa.dict, demux_mkv -> mkv.dict). Raw-sample decoders
+  # (pcm, adpcm, alac, aac) have no syntax to tokenize and ship no dictionary.
+  format="${target#*_}"
+  if [ -f "$SRC/dicts/$format.dict" ]; then
+    cp "$SRC/dicts/$format.dict" "$OUT/$target.dict"
+  fi
 done
