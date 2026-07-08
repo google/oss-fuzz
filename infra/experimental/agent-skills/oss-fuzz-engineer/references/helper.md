@@ -53,11 +53,34 @@ python3 infra/helper.py run_fuzzer [--architecture ARCH] [--engine ENGINE] [--sa
 ### `coverage`
 Generate a code coverage report for the project.
 ```bash
-python3 infra/helper.py coverage [--no-corpus-download] [--no-serve] [--port PORT] [--fuzz-target FUZZ_TARGET] <project> [extra_args ...]
+python3 infra/helper.py coverage [--no-corpus-download] [--no-serve] [--port PORT] [--fuzz-target FUZZ_TARGET] [--corpus-dir CORPUS_DIR] <project> [extra_args ...]
 ```
 - `--no-corpus-download`: Use local corpus instead of downloading from OSS-Fuzz.
 - `--fuzz-target`: Specify a specific fuzz target to generate coverage for.
+- `--corpus-dir`: Measure coverage of a *specific* corpus directory (e.g. only your generated seeds vs. the baseline) on a clean coverage build. Requires the project to already be built with the `coverage` sanitizer.
 - `--no-serve`: Do not start a local web server to view the report.
+
+Note: `coverage` measures an existing coverage build. To build with coverage instrumentation and run the fuzzers in one step, use `introspector` (below).
+
+### `introspector`
+Run the full coverage/Fuzz Introspector pipeline end-to-end: build with ASan, run every fuzzer, rebuild with coverage instrumentation, extract coverage, and build the Fuzz Introspector report.
+
+**This pipeline is heavy and slow locally.** In the interest of time, only run it on **smaller projects**, or when you specifically need the Fuzz Introspector report. For routine local coverage, prefer `coverage` (below) — `build_fuzzers --sanitizer coverage <project>` followed by `coverage <project>` is much cheaper and faster and is the recommended way to validate the effect of a change (a new harness, added seeds, a new dictionary).
+```bash
+python3 infra/helper.py introspector [--seconds SECONDS] [--coverage-only] [--out OUT_DIR] [--public-corpora] [--private-corpora] <project> [source_path]
+```
+- `--seconds`: how long to run each fuzzer before collecting coverage (default: `10`). Use e.g. `30`–`60` for a more representative report.
+- `--coverage-only`: only collect coverage; skip the Introspector report build. Faster when you just need coverage numbers.
+- `--out`: write the report to a named directory instead of the default `build/out/<project>/report`. Use distinct `--out` dirs to compare runs (e.g. before vs. after adding seeds).
+- `--public-corpora`: seed the run with OSS-Fuzz's public corpora (closer to production coverage than seeds alone).
+- `--private-corpora`: use private corpora.
+- `source_path`: optional path to local source to mount.
+
+Example — coverage for `htslib` from a 30s-per-fuzzer run into `htslib-cov-1`:
+```bash
+python3 infra/helper.py introspector --coverage-only --seconds 30 --out htslib-cov-1 htslib
+```
+See the [code coverage reference](code_coverage.md) for how to read the resulting report and turn gaps into actions.
 
 ### `reproduce`
 Reproduce a crash using a local testcase.
