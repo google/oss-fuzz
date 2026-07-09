@@ -19,3 +19,4 @@ RUN git clone https://github.com/pdeljanov/Symphonia $SRC/symphonia
 WORKDIR $SRC/symphonia/symphonia
 
 COPY build.sh $SRC/
+COPY dicts/ $SRC/dicts/
