@@ -12,9 +12,10 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
-# MemorySanitizer is deactivated due to false positives related to Glib
-# For MSan; Glib and all others libs should be compiled with MSan
-#  - memory
+  # MemorySanitizer: the dependencies (GLib, OpenSSL, zlib, libffi, pcre2) are built
+  # instrumented in build.sh via build_msan_sysroot.sh --oss-fuzz, resolving the prior
+  # GLib-related false positives that previously had MSan disabled here.
+  - memory
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
