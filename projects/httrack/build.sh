@@ -18,7 +18,8 @@
 # Build the static engine library with the OSS-Fuzz toolchain, then link the
 # in-tree libFuzzer harnesses (fuzz/) against $LIB_FUZZING_ENGINE.
 ./bootstrap
-./configure --disable-shared --disable-https
+# llvm-ar/ranlib: GNU ranlib leaves afl-clang-fast archives index-less.
+./configure --disable-shared --disable-https AR=llvm-ar RANLIB=llvm-ranlib
 make -j"$(nproc)" -C src libhttrack.la
 
 for f in charset meta idna entities unescape filters url; do
