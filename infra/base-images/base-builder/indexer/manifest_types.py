@@ -90,7 +90,7 @@ class SourceRef:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a SourceRef object from a deserialized dict."""
-    return SourceRef(
+    return SourceRef(  # pyrefly: ignore[bad-return]
         url=data["url"], rev=data["rev"], type=RepositoryType(data["type"])
     )
 
@@ -108,7 +108,7 @@ class Reproducibility:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Reproducibility object from a deserialized dict."""
-    return Reproducibility(
+    return Reproducibility(  # pyrefly: ignore[bad-return]
         success_count=data["success_count"],
         trial_count=data["trial_count"],
     )
@@ -165,7 +165,7 @@ class BinaryConfig:
           val["binary_args"],
       )
       val = dict(val, binary_args=shlex.split(val["binary_args"]))
-    return mapping[kind].from_dict(val)
+    return mapping[kind].from_dict(val)  # pyrefly: ignore[bad-return]
 
   def to_dict(self) -> dict[str, Any]:
     """Converts a BinaryConfig object to a serializable dict."""
@@ -210,7 +210,7 @@ class CommandLineBinaryConfig(BinaryConfig):
     harness_kind = HarnessKind(
         config_dict.get("harness_kind", HarnessKind.BINARY)
     )
-    return CommandLineBinaryConfig(
+    return CommandLineBinaryConfig(  # pyrefly: ignore[bad-return]
         kind=kind,
         harness_kind=harness_kind,
         binary_name=config_dict["binary_name"],
@@ -242,7 +242,7 @@ def _get_sqlite_db_user_version(sqlite_db_path: pathlib.Path) -> int:
     if len(version_bytes) < 4:
       raise too_small_error
 
-    return int.from_bytes(version_bytes, byteorder="big")
+    return int.from_bytes(version_bytes, byteorder="big")  # pyrefly: ignore[bad-argument-type]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -319,18 +319,18 @@ class Manifest:
       logging.warning(
           "Unsupported manifest version %s detected. Not upgrading.", version
       )
-    return Manifest(
+    return Manifest(  # pyrefly: ignore[bad-return]
         version=version,
         index_db_version=data.get("index_db_version"),
         name=data["name"],
         uuid=data["uuid"],
-        lib_mount_path=lib_mount_path,
+        lib_mount_path=lib_mount_path,  # pyrefly: ignore[bad-argument-type]
         source_map=_get_mapped(data, "source_map", source_map_from_dict),
         source_dir_prefix=data.get("source_dir_prefix"),
         reproducibility=_get_mapped(
             data, "reproducibility", Reproducibility.from_dict
         ),
-        binary_config=binary_config,
+        binary_config=binary_config,  # pyrefly: ignore[bad-argument-type]
     )
 
   def to_dict(self) -> dict[str, Any]:
@@ -457,7 +457,7 @@ class Manifest:
             tar.add(path.as_posix(), arcname=prefix)
             return
 
-          prefix = prefix.as_posix() + "/"
+          prefix = prefix.as_posix() + "/"  # pyrefly: ignore[bad-assignment]
           for root, _, files in os.walk(path):
             for file in files:
               file_path = pathlib.Path(root, file)
@@ -512,12 +512,12 @@ class Manifest:
 
         # Make sure the index databases (the only files directly in `INDEX_DIR`)
         # are early in the archive for the same reason.
-        _save_dir(index_dir, INDEX_DIR)
+        _save_dir(index_dir, INDEX_DIR)  # pyrefly: ignore[bad-argument-type]
 
         if source_dir:
           _save_dir(
               source_dir,
-              SRC_DIR,
+              SRC_DIR,  # pyrefly: ignore[bad-argument-type]
               sanitize=sanitize_source_dir,
               exclude_build_artifacts=True,
           )
@@ -526,7 +526,7 @@ class Manifest:
         # space.
         _save_dir(
             build_dir,
-            OBJ_DIR,
+            OBJ_DIR,  # pyrefly: ignore[bad-argument-type]
             only_include_target=self.binary_config.binary_name,
         )
 
@@ -548,12 +548,12 @@ def report_missing_source_files(
     binary_name: str, copied_files: list[str], tar: tarfile.TarFile
 ):
   """Saves a report of missing source files to the snapshot tarball."""
-  copied_files = {_get_comparable_path(file) for file in copied_files}
+  copied_files = {_get_comparable_path(file) for file in copied_files}  # pyrefly: ignore[bad-assignment]
   covered_files = {
       _get_comparable_path(path): path
       for path in get_covered_files(binary_name)
   }
-  missing = set(covered_files) - copied_files
+  missing = set(covered_files) - copied_files  # pyrefly: ignore[unsupported-operation]
   if not missing:
     return
   logging.info("Reporting missing files: %s", missing)

@@ -24,4 +24,4 @@ RUN git clone \
 
 WORKDIR libheif
 
-COPY build.sh $SRC/
+COPY build.sh generate_seeds.py $SRC/
