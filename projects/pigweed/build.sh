@@ -19,6 +19,17 @@ cd $SRC/pigweed
 
 echo "Building project using Bazel wrapper."
 
+# Bazel 9 removed the native `cc_library` / `java_import` rules; they must now be
+# loaded from @rules_cc / @rules_java. rules_fuzzing 0.6.0 (the version pinned by
+# pigweed's MODULE.bazel) generates the @rules_fuzzing_oss_fuzz//:BUILD file for
+# the OSS-Fuzz engine using those *native* rules without a load() statement, so
+# analysis fails with "This rule has been removed from Bazel" under the Bazel 9
+# toolchain used by OSS-Fuzz. rules_fuzzing 0.7.0+ fixes the template by adding
+# the required load() statements. Bump the dependency to 0.8.0 to unbreak the
+# build. This is exactly the fix pigweed's own MODULE.bazel anticipates:
+#   TODO(b/370523804) / https://github.com/bazel-contrib/rules_fuzzing/issues/257
+sed -i 's/name = "rules_fuzzing", version = "0.6.0"/name = "rules_fuzzing", version = "0.8.0"/' MODULE.bazel
+
 export BAZEL_FUZZ_TEST_QUERY="
 let all_fuzz_tests = attr(tags, \"fuzz-test\", \"//...\") in
 let lang_fuzz_tests = attr(generator_function, \"pw_cc_fuzz_test\", \$all_fuzz_tests) in
