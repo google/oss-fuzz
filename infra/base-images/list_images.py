@@ -22,15 +22,24 @@ avoiding logic duplication.
 import os
 import sys
 
-# Add the path to the `functions` directory to import the `base_images` module.
-FUNCTIONS_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', 'build', 'functions'))
-sys.path.append(FUNCTIONS_DIR)
 
-import base_images
+def get_base_image_defs():
+  """Reads base image definitions without importing Cloud Build dependencies."""
+  functions_dir = os.path.abspath(
+      os.path.join(os.path.dirname(__file__), '..', 'build', 'functions'))
+  sys.path.append(functions_dir)
 
-for image_config in base_images.BASE_IMAGE_DEFS:
-  # Exclude 'base-clang-full' as it is a special case not intended for
-  # the general build script.
-  if image_config.get('name', '') != 'base-clang-full':
-    print(image_config.get('name', ''))
+  from base_image_defs import BASE_IMAGE_DEFS
+  return BASE_IMAGE_DEFS
+
+
+def main():
+  for image_config in get_base_image_defs():
+    # Exclude 'base-clang-full' as it is a special case not intended for
+    # the general build script.
+    if image_config.get('name', '') != 'base-clang-full':
+      print(image_config.get('name', ''))
+
+
+if __name__ == '__main__':
+  main()
