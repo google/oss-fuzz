@@ -3,6 +3,10 @@ language: rust
 primary_contact: "andrei.tumbar@jpl.nasa.gov"
 auto_ccs:
   - "haoda.wang@jpl.nasa.gov"
+  - "steven.myint@jpl.nasa.gov"
+architectures:
+  - i386
+  - x86_64
 sanitizers:
   - address
   - memory:
