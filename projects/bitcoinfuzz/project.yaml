@@ -1,0 +1,9 @@
+homepage: "https://github.com/bitcoinfuzz/bitcoinfuzz"
+language: c++
+primary_contact: "brunoely.gc@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: 'https://github.com/bitcoinfuzz/bitcoinfuzz.git'
