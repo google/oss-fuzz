@@ -1,0 +1,8 @@
+homepage: https://github.com/Devolutions/IronRDP
+main_repo: https://github.com/Devolutions/IronRDP
+language: rust
+primary_contact: oss-fuzz@devolutions.net
+auto_ccs:
+  - oss-fuzz@goteleport.com
+sanitizers:
+  - address
