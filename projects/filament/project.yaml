@@ -1,0 +1,14 @@
+homepage: "https://google.github.io/filament/"
+language: c++
+primary_contact: "chigorin.1337@gmail.com"
+main_repo: "https://github.com/google/filament"
+# Filament is Google's real-time physically based renderer. These fuzz targets
+# exercise the untrusted-asset loaders (glTF/GLB via gltfio, and the .filamesh
+# format via filameshio), which decode attacker-controlled buffer metadata.
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
