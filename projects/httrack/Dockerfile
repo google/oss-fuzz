@@ -14,8 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake make
-RUN git clone --depth 1 https://github.com/ibireme/yyjson.git
-WORKDIR yyjson
-COPY build.sh generate_patch_corpora.py $SRC/
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y \
+    make autoconf automake libtool autoconf-archive zlib1g-dev
+RUN git clone --depth 1 --recurse-submodules \
+    https://github.com/xroche/httrack.git httrack
+WORKDIR httrack
+COPY build.sh $SRC/

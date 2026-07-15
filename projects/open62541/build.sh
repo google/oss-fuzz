@@ -35,6 +35,21 @@ function build_open62541_fuzzers() {
     local SRC_DIR=$1
     local SUFFIX=$2
 
+    # Upstream tests/fuzz/CMakeLists.txt unconditionally injects
+    #   link_libraries("-fsanitize=address,undefined,fuzzer")
+    # at link time, even in the OSS-Fuzz build path. Under the memory
+    # sanitizer this hardcoded "-fsanitize=address" collides with the
+    # "-fsanitize=memory" carried by OSS-Fuzz's $CFLAGS, breaking the link
+    # ("invalid argument '-fsanitize=address' not allowed with
+    # '-fsanitize=memory'"). In OSS-Fuzz mode the sanitizer already comes from
+    # $CFLAGS/$CXXFLAGS and the fuzzing engine from $LIB_FUZZING_ENGINE, so the
+    # hardcoded flags are both redundant and harmful. Guard the line so it only
+    # applies to non-OSS-Fuzz builds.
+    local FUZZ_CMAKE="$SRC_DIR/tests/fuzz/CMakeLists.txt"
+    if grep -q '^link_libraries("-fsanitize=address,undefined,fuzzer")$' "$FUZZ_CMAKE"; then
+        sed -i 's|^link_libraries("-fsanitize=address,undefined,fuzzer")$|if(NOT UA_BUILD_OSS_FUZZ)\n    link_libraries("-fsanitize=address,undefined,fuzzer")\nendif()|' "$FUZZ_CMAKE"
+    fi
+
     # Use a separate cmake build directory per source tree
     local WORK_DIR="$WORK/open62541${SUFFIX}"
     mkdir -p "$WORK_DIR"

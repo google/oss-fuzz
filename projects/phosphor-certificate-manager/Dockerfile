@@ -15,7 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake make
-RUN git clone --depth 1 https://github.com/ibireme/yyjson.git
-WORKDIR yyjson
-COPY build.sh generate_patch_corpora.py $SRC/
+RUN apt-get update && apt-get install -y pkg-config libsystemd-dev libssl-dev libboost-all-dev systemd
+RUN pip3 install Inflection Mako meson ninja PyYAML jsonschema
+
+RUN git clone --depth 1 https://github.com/openbmc/phosphor-certificate-manager.git phosphor-certificate-manager
+WORKDIR phosphor-certificate-manager
+COPY build.sh sdbusplus.patch stdplus.patch meson.patch parse_cert_fuzzer.cpp fuzzing_meson.build $SRC/
+COPY corpus $SRC/corpus/
