@@ -37,6 +37,16 @@ export CXXFLAGS="$CXXFLAGS -DU_STATIC_IMPLEMENTATION"
 export ICU_ROOT=$DEPS_PATH
 
 cd $SRC/WebKit
+
+# Upstream bug: Source/WTF/wtf/linux/RealTimeThreads.cpp calls getpid() but does
+# not include <unistd.h>. It used to compile via a transitive include that newer
+# libc++/glibc headers no longer provide, so the build now fails with
+# "use of undeclared identifier 'getpid'". Add the missing include directly.
+RTT=Source/WTF/wtf/linux/RealTimeThreads.cpp
+if ! grep -q '#include <unistd.h>' "$RTT"; then
+  sed -i 's/#include <sched.h>/#include <sched.h>\n#include <unistd.h>/' "$RTT"
+fi
+
 Tools/Scripts/build-jsc \
   --debug \
   --jsc-only \
