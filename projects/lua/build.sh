@@ -22,7 +22,7 @@ if [ "$SANITIZER" == "introspector" ]; then
   export CXXFLAGS="${CXXFLAGS} -fsanitize=address"
 fi
 
-PACKAGES="build-essential ninja-build cmake make luarocks"
+PACKAGES="build-essential ninja-build cmake make"
 if [ "$ARCHITECTURE" = "i386" ]; then
     PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386 libstdc++6:i386 g++-multilib"
 elif [ "$ARCHITECTURE" = "aarch64" ]; then
@@ -150,7 +150,24 @@ if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
   exit
 fi
 
-luarocks --local install luarocks
+# NOTE: Ubuntu 22.04 has an outdated luarocks version and it is
+# not possible to upgrade it because a current luarocks does not
+# support rockspec 3.0 format. So we should install the latest
+# luarocks using sources.
+apt install build-essential libreadline-dev unzip libssl-dev
+ver=3.13.0
+curl -O https://luarocks.github.io/luarocks/releases/luarocks-$ver.tar.gz
+tar zxpf luarocks-$ver.tar.gz
+pushd luarocks-$ver
+./configure \
+  --with-lua-include=$LUALIB_PATH \
+  --with-lua-bin=$LUALIB_PATH \
+  --with-lua-lib=$LUALIB_PATH \
+  --with-lua-interpreter=lua
+make -j
+make install
+popd
+
 eval $(luarocks path)
 
 # Build luarocks config for PUC Rio Lua 5.5, see [1] and [2].
