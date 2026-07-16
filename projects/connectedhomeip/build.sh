@@ -24,6 +24,33 @@ fi
 
 cd $SRC/connectedhomeip
 
+# The Dockerfile moved third_party out of the source tree so Fuzz Introspector's analysis (which
+# runs before build.sh) skips it and stays within the build deadline (see the Dockerfile / oss-fuzz
+# #13153). Restore it now -- before `gn gen` -- so every build (asan/msan/coverage/introspector)
+# compiles normally. The introspector analysis has already run by this point.
+if [ -d /opt/chip-third-party-stash ] && [ ! -e third_party ]; then
+  mv /opt/chip-third-party-stash third_party
+fi
+
+# Preserve the OSS-Fuzz-provided toolchain settings. The pw_fuzzer / FuzzTest toolchain
+# (//build/toolchain/pw_fuzzer) reads $CC/$CXX/$CFLAGS/$CXXFLAGS at `gn gen` time so its
+# libFuzzer runtime matches OSS-Fuzz's instrumentation; Pigweed's activate.sh may change
+# the environment, so capture these first and restore them before `gn gen`.
+OSS_FUZZ_CC="${CC:-}"
+OSS_FUZZ_CXX="${CXX:-}"
+OSS_FUZZ_CFLAGS="${CFLAGS:-}"
+OSS_FUZZ_CXXFLAGS="${CXXFLAGS:-}"
+
+# MSAN needs every linked dependency instrumented. Build the MSAN-instrumented sysroot
+# (GLib/OpenSSL/zlib/libffi/pcre2) here -- before activate.sh, so it uses OSS-Fuzz's clang and
+# $CFLAGS. Not in the Dockerfile: the deps' configure/meson run instrumented test binaries that
+# need vm.mmap_rnd_bits=28, which only the privileged `compile` step provides. libc++ is skipped
+# (OSS-Fuzz ships an instrumented one at /usr/msan). Adds ~5-15 min to the memory build.
+MSAN_SYSROOT="$SRC/msan-sysroot"
+if [ "${SANITIZER:-}" == "memory" ]; then
+  scripts/build/build_msan_sysroot.sh --oss-fuzz --out-dir "$MSAN_SYSROOT"
+fi
+
 # Activate Pigweed environment
 set +u
 PW_ENVSETUP_QUIET=1 source scripts/activate.sh
@@ -32,10 +59,32 @@ set -u
 #This adds zap-cli to PATH, needed for fuzzing all-clusters-app
 export PATH="/src/connectedhomeip/.environment/cipd/packages/zap/:$PATH"
 
+# Restore the OSS-Fuzz toolchain settings so `gn gen` (run below while the Pigweed
+# environment is active) sees them.
+export CC="$OSS_FUZZ_CC"
+export CXX="$OSS_FUZZ_CXX"
+export CFLAGS="$OSS_FUZZ_CFLAGS"
+export CXXFLAGS="$OSS_FUZZ_CXXFLAGS"
+
+# Point pkg-config at the instrumented sysroot (before `gn gen`) so Matter links the instrumented
+# static deps, not the uninstrumented system libs, and apply the MSAN ignorelist -- otherwise MSAN
+# drowns in false positives from uninstrumented deps (why it was disabled here before).
+# -DCHIP_MEMORY_SANITIZER_ENABLED=1 enables Matter's in-tree MSan guards (e.g. if_nameindex
+# unpoisoning); the GN sanitize_memory config normally defines it, but OSS-Fuzz drives MSan via
+# $CFLAGS, so set it here.
+if [ "${SANITIZER:-}" == "memory" ]; then
+  export PKG_CONFIG_PATH="$MSAN_SYSROOT/lib/pkgconfig:$MSAN_SYSROOT/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
+  msan_ignorelist="$SRC/connectedhomeip/build/config/compiler/msan_ignorelist.txt"
+  export CFLAGS="$CFLAGS -fsanitize-ignorelist=$msan_ignorelist -DCHIP_MEMORY_SANITIZER_ENABLED=1"
+  export CXXFLAGS="$CXXFLAGS -fsanitize-ignorelist=$msan_ignorelist -DCHIP_MEMORY_SANITIZER_ENABLED=1"
+fi
+
 # Create a build directory with the following options:
 # - `oss_fuzz` enables OSS-Fuzz build
 # - `is_clang` selects clang toolchains (does not support AFL fuzzing engine)
 # - `enable_rrti` enables RTTI to support UBSan build
+# - `pw_enable_fuzz_test_targets` builds the pw_fuzzer / Google FuzzTest targets in
+#   libFuzzer-compatibility mode, in addition to the legacy libFuzzer targets.
 # - `chip_enable_thread_safety_checks` disabled since OSS-Fuzz clang does not
 #   seem to currently support or need this analysis
 # - `chip_enable_openthread` disabled since OSS-Fuzz clang issues a compile
@@ -48,6 +97,7 @@ gn gen out/fuzz_targets \
     oss_fuzz=true \
     is_clang=true \
     enable_rtti=true \
+    pw_enable_fuzz_test_targets=true \
     chip_enable_thread_safety_checks=false \
     chip_enable_thread=false \
     target_ldflags=[\"-fuse-ld=lld\"]"
@@ -55,20 +105,50 @@ gn gen out/fuzz_targets \
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains
 deactivate
 
-# Compile fuzz targets
+# Compile the legacy libFuzzer fuzz targets
 ninja -C out/fuzz_targets fuzz_tests
 
 cp out/fuzz_targets/tests/* $OUT/
 
-# Copy some GLib and GIO runtime libraries into $OUT so fuzzed all-clusters app can run under OSS-Fuzz base-runner, which does not provide these libraries.
-mkdir -p $OUT/lib
-cp /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0 $OUT/lib/
-cp /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0 $OUT/lib/
-cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0 $OUT/lib/
-cp /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 $OUT/lib/
+# Compile the pw_fuzzer / Google FuzzTest targets and generate one OSS-Fuzz fuzz target per
+# FUZZ_TEST case. A FuzzTest binary hosts many cases and is run one case at a time
+# (--fuzz=<Suite.Case>), so gen_pw_fuzztest_oss_fuzz_wrappers.sh emits a detectable wrapper
+# per case (see that script). FuzzTest binaries are libFuzzer-compatible, so only build them
+# for the libFuzzer engine; honggfuzz/centipede cannot drive a libFuzzer-compatibility binary.
+if [[ "${FUZZING_ENGINE:-libfuzzer}" == "libfuzzer" ]]; then
+  ninja -C out/fuzz_targets pw_fuzz_tests
+  bash "$SRC/connectedhomeip/scripts/build/gen_pw_fuzztest_oss_fuzz_wrappers.sh" \
+    "$OUT" out/fuzz_targets/chip_pw_fuzztest/tests/fuzz-*-pw
 
-for f in $OUT/fuzz-*; do
-    file "$f" | grep -q "ELF" && patchelf --set-rpath '$ORIGIN/lib' "$f"
-done
-patchelf --set-rpath '$ORIGIN' $OUT/lib/*.so* 2>/dev/null
-	
+  # The FuzzChipCert harness seeds from a source-tree directory that is not present in the
+  # OSS-Fuzz runner (which runs fuzzers without the build tree). Provide those seeds the
+  # location-independent OSS-Fuzz way -- one <target>_seed_corpus.zip per generated chip-cert
+  # target -- so libFuzzer uses them as the initial corpus. (The harness itself tolerates the
+  # directory being absent.)
+  chip_cert_seeds=credentials/test/operational-certificates-error-cases
+  if [ -d "$chip_cert_seeds" ]; then
+    for wrapper in "$OUT"/fuzz-chip-cert-pw@*; do
+      [ -e "$wrapper" ] || continue
+      python3 -m zipfile -c "${wrapper}_seed_corpus.zip" "$chip_cert_seeds"/
+    done
+  fi
+fi
+
+# Copy GLib/GIO runtime libs into $OUT so the all-clusters app runs under base-runner (which lacks
+# them). Skipped for MSAN: these uninstrumented libs would reintroduce the false positives MSAN
+# was disabled for -- the MSAN build links instrumented GLib statically from the sysroot instead.
+if [ "${SANITIZER:-}" != "memory" ]; then
+  mkdir -p $OUT/lib
+  cp /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0 $OUT/lib/
+  cp /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0 $OUT/lib/
+  cp /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0 $OUT/lib/
+  cp /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 $OUT/lib/
+
+  # Set an rpath on the fuzz target binaries (ELF only; the FuzzTest wrapper scripts and the
+  # non-executable shared FuzzTest binaries are matched too — patchelf on the shared ELF, the
+  # `file ... ELF` guard skips the shell-script wrappers).
+  for f in $OUT/fuzz-*; do
+      file "$f" | grep -q "ELF" && patchelf --set-rpath '$ORIGIN/lib' "$f"
+  done
+  patchelf --set-rpath '$ORIGIN' $OUT/lib/*.so* 2>/dev/null
+fi

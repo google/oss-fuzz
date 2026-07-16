@@ -25,6 +25,12 @@ export AFL_NOOPT=1
 # But we need libc++
 export CXXFLAGS="-stdlib=libc++"
 
+# theora (>=1.2) now requires autoconf >=2.71, but the OSS-Fuzz base image
+# (Ubuntu 20.04) ships autoconf 2.69. Build a newer autoconf locally via
+# VLC's extras/tools and prepend it to PATH so contrib autoreconf calls find it.
+(cd extras/tools && ./bootstrap && make -j$(nproc) .autoconf)
+export PATH="$SRC/vlc/extras/tools/build/bin:$PATH"
+
 mkdir contrib/contrib-build
 cd contrib/contrib-build
 ../bootstrap
@@ -44,7 +50,16 @@ sed -i 's|LDFLAGS="$(VPX_LDFLAGS)" CROSS=$(VPX_CROSS)|LDFLAGS="$(VPX_LDFLAGS)" L
 make V=1 -j$(nproc) \
     .flac \
     .libxml2 \
-    .ffmpeg
+    .ffmpeg \
+    .freetype2 \
+    .fribidi \
+    .harfbuzz \
+    .fontconfig
+# libass's dependency chain (freetype2/fribidi/harfbuzz/fontconfig) is built
+# here, uninstrumented: fribidi/fontconfig compile build-time codegen tools
+# (e.g. gen-unicode-version) that fail to link under -fsanitize=fuzzer when the
+# sanitizer runtime isn't pulled in. Only libass itself (.ass) is built with
+# instrumentation below, since the SSA/ASS parser is the actual fuzz target.
 
 cd ../../
 
@@ -72,7 +87,43 @@ make V=1 -j$(nproc) \
     .vorbis \
     .speex \
     .speexdsp \
-    .dvbpsi
+    .dvbpsi \
+    .modplug \
+    .faad2 \
+    .jpeg \
+    .png \
+    .ass \
+    .kate
+
+# libbpg ships a hand-written Makefile that hardcodes CC=gcc, but the OSS-Fuzz
+# CFLAGS are clang-only (-gline-tables-only, -fsanitize=fuzzer-no-link), which
+# gcc rejects. Build it in its own make so a command-line CC/CXX override (which
+# beats the Makefile's CC=gcc and propagates to the inner libbpg sub-make)
+# forces clang, keeping libbpg instrumented.
+make V=1 -j$(nproc) CC="$CC" CXX="$CXX" .bpg
+
+# libbpg bundles a forked libavcodec/libavutil. VLC normally builds each plugin
+# as a separate .so, so those symbols never clash with the ffmpeg contrib; but
+# the OSS-Fuzz static build links every plugin into one binary, where libbpg's
+# av_*/ff_*/avcodec_* duplicate ffmpeg's ("multiple definition" link errors).
+# Merge libbpg.a into a single relocatable object and localize every symbol
+# except the public bpg_* API: libbpg then resolves its own libav internally
+# while ffmpeg's symbols stay global for the avcodec plugin.
+for bpg_a in ../*/lib/libbpg.a; do
+    [ -f "$bpg_a" ] || continue
+    ld -r --whole-archive "$bpg_a" -o "${bpg_a}.merged.o"
+    objcopy --wildcard --keep-global-symbol='bpg_*' "${bpg_a}.merged.o" "${bpg_a}.local.o"
+    rm -f "$bpg_a" "${bpg_a}.merged.o"
+    ar crs "$bpg_a" "${bpg_a}.local.o"
+    rm -f "${bpg_a}.local.o"
+done
+
+# libgme's CMake compiles with -fno-rtti, which is incompatible with the
+# -fsanitize=vptr check implied by SANITIZER=undefined ("invalid argument
+# '-fsanitize=vptr' not allowed with '-fno-rtti'"). Build it with that single
+# UBSan sub-check disabled; this is a no-op under the address sanitizer.
+CFLAGS="$CFLAGS -fno-sanitize=vptr" CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
+    make V=1 -j$(nproc) .gme
 cd ../../
 
 # Use OSS-Fuzz environment rather than hardcoded setup.
@@ -125,71 +176,19 @@ sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
             --disable-xcb \
             --disable-alsa \
             --disable-libva \
+            --enable-bpg \
             --with-libfuzzer
 make V=1 -j$(nproc)
 
 cp ./test/vlc-demux-dec-libfuzzer $OUT/
 
-# Add MPEG-I/II video ES fuzzer target (mpgv.c) which lacks a dedicated corpus.
-# The mpgv module is linked via fuzzing-modules.patch and registered in the PLUGINS
-# list, but without a seed corpus directory no vlc-demux-dec-libfuzzer-mpgv binary
-# is produced. This directly exercises modules/demux/mpeg/mpgv.c and the MPEG video
-# packetizer (modules/packetizer/mpegvideo.c).
-mkdir -p fuzz-corpus/seeds/mpgv
-python3 -c "
-# Minimal MPEG-1 video elementary stream seed.
-# The sequence_header_code (0x000001B3) passes CheckMPEGStartCode in mpgv.c:
-#   0xB3 is not in {0xB0, 0xB1, 0xB6} and 0xB3 <= 0xB9, so VLC_SUCCESS is returned.
-# The demuxer opens without force and the Demux loop feeds data to the mpegvideo
-# packetizer, exercising parsing logic for MPEG-I/II video bitstreams.
-#
-# Sequence header structure (ISO/IEC 11172-2 / ISO/IEC 13818-2):
-#   start code (4B) | width(12b)/height(12b) | aspect(4b)/framerate(4b) |
-#   bitrate(18b)/marker(1b)/vbv_size(10b)/constrained(1b)/load_flags(2b)
-seed = bytes([
-    # Sequence header: 352x240, 1:1 aspect, 29.97fps, VBR, vbv=0
-    0x00, 0x00, 0x01, 0xB3,  # sequence_header_code
-    0x16, 0x00, 0xF0,        # width=352(12b)|height=240(12b): 0001 0110 0000 | 0000 1111 0000
-    0x15,                    # aspect=1(4b)|framerate=5(4b) = 0001 0101
-    0xFF, 0xFF, 0xE0, 0x00,  # bitrate(18b)=0x3FFFF(VBR) marker=1 vbv(10b)=0 flags=0
-    # Group of Pictures header: closed GOP, 00:00:00:00
-    0x00, 0x00, 0x01, 0xB8,  # group_start_code
-    0x00, 0x00, 0x01,        # time_code(25b)=0 closed_gop=0 broken_link=0
-    # Picture header: temporal_ref=0, I-frame, no extra vbv_delay
-    0x00, 0x00, 0x01, 0x00,  # picture_start_code
-    0x00, 0x10, 0xFF, 0xFF,  # temporal_ref(10b)=0 picture_type(3b)=0x1(I) vbv_delay(16b)=0xFFFF
-    # Slice: slice_vertical_position=1, quantiser_scale=1
-    0x00, 0x00, 0x01, 0x01,  # slice_start_code (row 1)
-    0x22, 0x00, 0x00,        # quantiser_scale=1, intra_slice=0, slice_data
-])
-open('fuzz-corpus/seeds/mpgv/minimal.mpgv', 'wb').write(seed)
-print('Created mpgv seed: {} bytes'.format(len(seed)))
-"
-
-# MPEG video start-code dictionary for the mpgv fuzzer.
-# These tokens help libFuzzer reach specific parsing branches in mpgv.c,
-# mpegvideo packetizer, and the MPEG-4 IOD parser (mpeg4_iod.c via TS).
-cat > fuzz-corpus/dictionaries/mpgv.dict << 'DICT_EOF'
-# MPEG-1/2 video start codes (ISO/IEC 11172-2 / ISO/IEC 13818-2)
-# libFuzzer dictionary format: one token per line, inline comments not allowed.
-"\x00\x00\x01\xB3"
-"\x00\x00\x01\xB7"
-"\x00\x00\x01\xB8"
-"\x00\x00\x01\x00"
-"\x00\x00\x01\xB5"
-"\x00\x00\x01\xB2"
-"\x00\x00\x01\x01"
-"\x00\x00\x01\xAF"
-"\x00\x00\x01"
-DICT_EOF
-
-# Replace the existing TS seeds (which are all null-packets only and do not
-# exercise any PAT/PMT/PES parsing) with proper structured TS streams.
-# generate_ts_seeds.py builds 12 minimal TS files that each contain a valid
-# PAT + PMT + at least one PES packet, directly exercising ts_psi.c, ts_pes.c,
-# ts_pid.c, ts_streams.c, ts_decoders.c, ts_si.c, ts_scte.c in
-# modules/demux/mpeg/.
-python3 $SRC/generate_ts_seeds.py fuzz-corpus/seeds/ts
+# Generate structured seeds + libFuzzer dictionaries for the demux/codec
+# fuzz targets that either had no dedicated corpus or whose upstream seeds
+# fail to exercise the target code. See generate_seeds.py for per-target
+# rationale; the script writes:
+#   seeds/{ts,ps,heif,rawdv,vc1,cdg,mus,mpgv}/* and a CEA-708 SEI seed
+#   appended to the upstream seeds/h264/ corpus, plus matching dictionaries.
+python3 $SRC/generate_seeds.py fuzz-corpus
 
 # Prepare for removing sdp.dict without breaking the build
 rm fuzz-corpus/dictionaries/sdp.dict || true

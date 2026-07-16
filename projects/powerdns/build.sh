@@ -78,8 +78,10 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
         build_dir='build'
         CC_LD=lld CXX_LD=lld meson setup \
           -D fuzz-targets=true \
+          -D fuzzer_ldflags=${LIB_FUZZING_ENGINE} \
           -D b_pie=false \
           -D yaml=disabled \
+          -D libedit=disabled \
           ${build_dir}
         meson compile -C ${build_dir} fuzz-targets
         # copy the fuzzing target binaries
