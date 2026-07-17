@@ -31,16 +31,16 @@ RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-ta
 RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz -O $SRC/gcloud.tar.gz
 RUN tar zxf $SRC/gcloud.tar.gz
 ENV PATH="${PATH}:$SRC/google-cloud-sdk/bin"
-RUN gcloud storage cp gs://bearssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bearssl_cryptofuzz-bearssl/public.zip $SRC/corpus_bearssl.zip
-RUN gcloud storage cp gs://libecc-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libecc_cryptofuzz-libecc/public.zip $SRC/corpus_libecc.zip
-RUN gcloud storage cp gs://relic-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/relic_cryptofuzz-relic/public.zip $SRC/corpus_relic.zip
-RUN gcloud storage cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-openssl/public.zip $SRC/corpus_cryptofuzz-openssl.zip
-RUN gcloud storage cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-boringssl/public.zip $SRC/corpus_cryptofuzz-boringssl.zip
-RUN gcloud storage cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-nss/public.zip $SRC/corpus_cryptofuzz-nss.zip
+RUN wget gs://bearssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bearssl_cryptofuzz-bearssl/public.zip $SRC/corpus_bearssl.zip
+RUN wget gs://libecc-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libecc_cryptofuzz-libecc/public.zip $SRC/corpus_libecc.zip
+RUN wget gs://relic-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/relic_cryptofuzz-relic/public.zip $SRC/corpus_relic.zip
+RUN wget gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-openssl/public.zip $SRC/corpus_cryptofuzz-openssl.zip
+RUN wget gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-boringssl/public.zip $SRC/corpus_cryptofuzz-boringssl.zip
+RUN wget gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-nss/public.zip $SRC/corpus_cryptofuzz-nss.zip
 
 # OpenSSL/LibreSSL corpora, which require a special import procedure
-RUN gcloud storage cp gs://openssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/openssl_bignum/public.zip $SRC/corpus_openssl_expmod.zip
-RUN gcloud storage cp gs://libressl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libressl_bignum/public.zip $SRC/corpus_libressl_expmod.zip
+RUN wget gs://openssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/openssl_bignum/public.zip $SRC/corpus_openssl_expmod.zip
+RUN wget gs://libressl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libressl_bignum/public.zip $SRC/corpus_libressl_expmod.zip
 
 WORKDIR wolfssl
 
