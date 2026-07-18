@@ -17,11 +17,10 @@
 
 cd "$SRC"
 
-wget -qO- https://botan.randombit.net/releases/Botan-3.4.0.tar.xz | tar xJ
-cd Botan-3.4.0
-# Botan 3.5.0 has compilation issue with deprecated Curve25519, so we should update to 3.6.0 once it is released.
-# That would require to add the following below:  | sed 's/curve25519/x25519/g'
-BOTAN_MODULES=$(<"$SRC/rnp/ci/botan3-pqc-modules" tr '\n' ',')
+wget -qO- https://botan.randombit.net/releases/Botan-3.6.0.tar.xz | tar xJ
+cd Botan-3.6.0
+# Botan 3.5.0 renamed the curve25519 module to x25519, so adjust the module list.
+BOTAN_MODULES=$(<"$SRC/rnp/ci/botan3-pqc-modules" tr '\n' ',' | sed 's/curve25519/x25519/g')
 ./configure.py --prefix=/usr --cc-bin="$CXX" --cc-abi-flags="$CXXFLAGS" \
                --unsafe-fuzzer-mode \
                --with-fuzzer-lib='FuzzingEngine' \
