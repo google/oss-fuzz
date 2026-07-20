@@ -17,5 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder-go
 RUN git clone --depth 1 https://github.com/opencontainers/runc
 RUN git clone --depth 1 https://github.com/cncf/cncf-fuzzing
-COPY build.sh $SRC/
+COPY build.sh prepare_harnesses.py intelrdt_fuzzer.go $SRC/
 WORKDIR $SRC/runc
