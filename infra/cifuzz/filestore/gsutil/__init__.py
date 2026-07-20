@@ -30,8 +30,6 @@ def _gsutil_execute(*args, parallel=True):
   """Executes a gcloud storage command, passing |*args| to gcloud storage and returns the
   stdout, stderr and returncode. Exceptions on failure."""
   command = ['gcloud', 'storage']
-  if parallel:
-    pass
   command += list(args)
   logging.info('Executing gcloud storage command: %s', command)
   return utils.execute(command, check_result=True)
