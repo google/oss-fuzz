@@ -2,7 +2,7 @@ fuzzing_engines:
 - libfuzzer
 homepage: https://foss.heptapod.net/openpyxl/openpyxl
 language: python
-main_repo: https://foss.heptapod.net/openpyxl/openpyxl
+main_repo: "https://github.com/ericgazoni/openpyxl"
 primary_contact: charlie.clark@clark-consulting.eu
 sanitizers:
 - address

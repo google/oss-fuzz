@@ -17,4 +17,4 @@ architectures:
 
 # 'https://svn.code.sf.net/p/gnucobol/code/trunk' is the "next big version" (unstable),
 # code installed in OS package managers is found in 3.x branch
-main_repo: 'https://svn.code.sf.net/p/gnucobol/code/branches/gnucobol-3.x'
+main_repo: "https://github.com/OCamlPro/gnucobol"

@@ -6,7 +6,7 @@ auto_ccs:
   - "even.rouault@gmail.com"
   - "pramsey@cleverelephant.ca"
   - "komzpa@gmail.com"
-main_repo: 'https://git.osgeo.org/gitea/postgis/postgis.git'
+main_repo: "https://github.com/postgis/postgis"
 
 fuzzing_engines:
   - afl

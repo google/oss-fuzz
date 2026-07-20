@@ -9,4 +9,4 @@ sanitizers:
   - address
   - undefined
   - memory
-main_repo: 'http://svn.freebsd.org/base/head/sys/teken/'
+main_repo: "https://github.com/freebsd/freebsd-src"

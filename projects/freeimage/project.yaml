@@ -1,5 +1,5 @@
 homepage: "http://freeimage.sourceforge.net/"
-main_repo: 'https://svn.code.sf.net/p/freeimage/svn/'
+main_repo: "https://github.com/WinMerge/freeimage"
 language: c++
 primary_contact: "drolon@infonie.fr"
 

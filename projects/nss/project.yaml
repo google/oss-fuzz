@@ -16,7 +16,7 @@ auto_ccs:
   - mdauer@mozilla.com
 vendor_ccs:
   - oss-fuzz@mozilla-fuzzing.iam.gserviceaccount.com
-main_repo: "https://hg.mozilla.org/projects/nss"
+main_repo: "https://github.com/nss-dev/nss"
 
 fuzzing_engines:
   - afl

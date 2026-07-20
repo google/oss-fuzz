@@ -1,7 +1,7 @@
 homepage: "https://android.googlesource.com/platform/external/cbor-java/+/refs/heads/master"
 language: jvm
 primary_contact: "constantin.rack@gmail.com"
-main_repo: "https://android.googlesource.com/platform/external/cbor-java/+/refs/heads/master"
+main_repo: "https://android.googlesource.com/platform/external/cbor-java"
 auto_ccs:
   - "david@adalogics.com"
 fuzzing_engines:

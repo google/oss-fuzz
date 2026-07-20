@@ -1,5 +1,5 @@
 homepage: http://github.com/matthewwithanm/python-markdownify
-main_repo: http://github.com/matthewwithanm/python-markdownify
+main_repo: "https://github.com/matthewwithanm/python-markdownify"
 language: python
 fuzzing_engines:
 - libfuzzer

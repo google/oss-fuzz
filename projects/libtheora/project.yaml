@@ -1,7 +1,7 @@
 homepage: "https://www.theora.org/"
 language: c++
 primary_contact: "guidovranken@gmail.com"
-main_repo: "https://git.xiph.org/theora.git"
+main_repo: "https://gitlab.xiph.org/xiph/theora"
 auto_ccs:
   - "le.businessman@gmail.com"
 vendor_ccs:

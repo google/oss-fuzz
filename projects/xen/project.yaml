@@ -1,6 +1,6 @@
 homepage: https://xenproject.org
 language: c
-main_repo: https://xenbits.xen.org/git-http/xen.git
+main_repo: "https://github.com/xen-project/xen"
 auto_ccs:
   - "tamas.k.lengyel@gmail.com"
   - "jbeulich@suse.com"

@@ -1,6 +1,6 @@
 homepage: "https://github.com/google/jimfs"
 language: jvm
-main_repo: "git@github.com:google/jimfs.git"
+main_repo: "https://github.com/google/jimfs"
 primary_contact: "cgdecker@google.com"
 fuzzing_engines:
   - libfuzzer

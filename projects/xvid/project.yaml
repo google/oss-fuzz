@@ -1,5 +1,5 @@
 homepage: "https://www.xvid.com/"
-main_repo: "http://svn.xvid.org/trunk"
+main_repo: "https://github.com/Distrotech/xvidcore"
 language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:

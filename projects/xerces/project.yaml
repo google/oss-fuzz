@@ -1,6 +1,6 @@
 homepage: "https://xerces.apache.org/index.html"
 language: jvm
-main_repo: "http://svn.apache.org/repos/asf/xerces/java/trunk"
+main_repo: "https://github.com/apache/xerces2-j"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
