@@ -40,12 +40,14 @@ A useful approach for extending a project is to study the latest code coverage r
 
 **Critical: avoid targeting already-covered code.** The most common mistake when extending an OSS-Fuzz project is writing harnesses that target functions already well-exercised by the existing production fuzzer corpus. Before selecting any target function:
 
-1. Fetch the public `summary.json` (see the code_coverage reference).
-2. Parse the per-file line coverage percentages.
-3. Build an explicit blocklist of files with ≥ 50% line coverage — do NOT write harnesses whose primary target lives in one of these files.
-4. Only select targets from files with genuinely low coverage (< 30% lines hit).
+1. Fetch the latest public `summary.json` via the `latest_report_info/<project>.json` pointer (never guess the date). See the [code coverage reference](references/code_coverage.md) for the pointer, the JSON schema, and how to read it.
+2. Parse the per-file metrics. Line % is triage only — use the **functions** metric (which functions are never entered ⇒ a new harness may be needed) and the **regions/branches** metric (reached function, dark branches ⇒ a corpus/seed problem) to decide *what kind* of gap each file has. Relying on line % alone throws away the signals that tell harness-work from seed-work apart.
+3. Build an explicit blocklist of already-covered files (≥ 50% lines with most functions covered) — do NOT write harnesses whose primary target lives in one of these files.
+4. Only select targets from files with genuinely low coverage (< 30% lines hit), and classify the gap with the functions-vs-branches split before acting.
 
-Reading the source code and identifying "important-looking" functions is not sufficient — important functions are frequently already covered. Coverage data from `summary.json` is the authoritative source of truth for what needs work.
+Reading the source code and identifying "important-looking" functions is not sufficient — important functions are frequently already covered. Coverage data is the authoritative source of truth for what needs work, and Fuzz Introspector (<https://introspector.oss-fuzz.com>) additionally surfaces reachable-but-unfuzzed functions — see the code coverage reference for the full workflow.
+
+**Structured seed generation.** Adding a new harness is not the only way to extend coverage — often the existing harnesses already reach dark code, but the corpus never produces inputs valid enough to enter it. When a target parses a structured format (binary containers, codec/network bitstreams, text grammars), a script that constructs structurally-valid inputs from scratch is frequently the highest-leverage, lowest-review-cost improvement: random bytes rarely pass a parser's early magic/length/checksum checks, so the deep logic stays dark until seeded. Drive this the same coverage-first way: pick reachable files that are dark in `summary.json`, generate seeds that target them, validate each one actually parses, append them to the existing corpora (never replace), and confirm the union does not digress. See the [structured seed generation reference](references/structured_seed_generation.md) for the full workflow, construction techniques, per-fuzzer tailoring, and pitfalls, and `projects/vlc/generate_seeds.py` for a worked example.
 
 Use the local code coverage feature of the `python3 infra/helper.py` tool to generate code coverage reports for fuzz targets locally, for example to validate the code coverage achieved by a new fuzz target. This can be done by running `python3 infra/helper.py introspector --coverage-only PROJECT_NAME` and then studying the generated report in e.g. build/out/PROJECT_NAME/report. Some examples of this include:
 

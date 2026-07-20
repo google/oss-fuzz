@@ -34,8 +34,12 @@
 
 import os
 import re
+import shutil
 import struct
+import subprocess
 import sys
+import tempfile
+import zlib
 
 
 # ──────────────────────────────────────────────────
@@ -69,9 +73,8 @@ def make_ts_packet(pid: int, payload: bytes, pusi: bool = False, cc: int = 0,
     """Assemble a 188-byte TS packet.
 
     If ``pcr_90khz`` is given, an adaptation field with the PCR flag is added.
-    Without PCR delivery, the TS demuxer holds blocks in its prepcr queue and
-    never forwards them to decoders, masking the coverage of subtitle/audio
-    decoders that depend on the PES path (e.g. modules/codec/dvbsub.c).
+    PCR delivery is required for the TS demuxer to forward blocks from its
+    prepcr queue to the PES path (e.g. modules/codec/dvbsub.c).
     """
     assert 0 <= pid <= 0x1FFF
     b1 = (0x40 if pusi else 0x00) | ((pid >> 8) & 0x1F)
@@ -123,8 +126,7 @@ def psi_packet(section: bytes, pid: int) -> bytes:
        Continuity counters are tracked per-PID in a module-level dict so
        that successive PSI packets on the same PID present a valid CC
        sequence — dvbpsi otherwise reports "TS discontinuity" and drops
-       sections (the cause of seed_atsc_psip's atsc_a65.c coverage being
-       zero before this fix)."""
+       sections."""
     payload = bytes([0x00]) + section   # pointer_field = 0
     assert len(payload) <= 184, "Section too large for one TS packet"
     cc = _PSI_CC_STATE.get(pid, 0)
@@ -147,9 +149,13 @@ def make_pat(programs: list) -> bytes:
     return psi_section(0x00, 0x0001, body)
 
 
-def make_pmt(program_num: int, pcr_pid: int, streams: list) -> bytes:
-    """Build a PMT section.  streams = [(stream_type, es_pid, descriptors), ...]"""
-    body = struct.pack('>H', 0xE000 | pcr_pid) + struct.pack('>H', 0xF000)
+def make_pmt(program_num: int, pcr_pid: int, streams: list,
+             program_descs: bytes = b'') -> bytes:
+    """Build a PMT section.  streams = [(stream_type, es_pid, descriptors), ...].
+       program_descs are program-level (program_info) descriptors, e.g. an IOD
+       descriptor (tag 0x1d)."""
+    body = (struct.pack('>H', 0xE000 | pcr_pid)
+            + struct.pack('>H', 0xF000 | len(program_descs)) + program_descs)
     for stype, es_pid, descs in streams:
         body += bytes([stype])
         body += struct.pack('>H', 0xE000 | es_pid)
@@ -354,8 +360,8 @@ DVB_SUB_PAYLOAD = DVB_SUB_PAYLOAD + bytes(
 #  DVB subtitle — extended payloads exercising the
 #  decode_object / dvbsub_render_pdata / dvbsub_pdataNbpp
 #  RLE paths plus alternative_CLUT depth/gamut branches.
-#  See modules/codec/dvbsub.c (~1800 lines, 7.2% in 2026-05-16
-#  report).  All segment formats below follow ETSI EN 300-743.
+#  See modules/codec/dvbsub.c.  All segment formats below follow
+#  ETSI EN 300-743.
 # ──────────────────────────────────────────────────
 
 # CLUT definition section.  Each entry header is:
@@ -1454,24 +1460,22 @@ def seed_scte27_segmented() -> bytes:
 
 
 # ──────────────────────────────────────────────────
-#  TS extensions targeting 0%-covered PMT setup paths in
+#  TS extensions exercising PMT setup paths in
 #  modules/demux/mpeg/ts_psi.c and the dependent
 #  ts_metadata.c / ts_arib.c files.
 # ──────────────────────────────────────────────────
 #
-# As of the 2026-05-20 OSS-Fuzz report ts_psi.c sat at 44% line coverage
-# and the following PMT-stream-setup functions were entirely 0%:
+# These target the following PMT-stream-setup functions:
 #
 #   * PMTSetupEsHDMV          — Blu-ray HDMV registration, dispatches by
 #                               stream type 0x80…0x92/0xEA/0xA1/0xA2
 #   * PMTSetupEs0x83, 0xA0, 0xD1, 0xEA — non-HDMV variants of those types
 #   * SetupMetadataDescriptors / Metadata_stream_processor_New
 #                             — Metadata descriptor (0x26) driving
-#                               ts_metadata.c (whole file at 0%)
+#                               ts_metadata.c
 #   * ParsePMTPrivateRegistrations + TS_PMT_REGISTRATION_ARIB branch
 #                             — ARIB STD-B10 detection (descriptors 0x09
-#                               CA_id=0x05, 0xC1, 0xF6); ts_arib.c is
-#                               also 0%.
+#                               CA_id=0x05, 0xC1, 0xF6); ts_arib.c
 #
 # The seeds below build minimal valid TS streams that walk those branches
 # during PMT parsing. They reuse the existing make_ts_packet / psi_packet
@@ -1619,9 +1623,9 @@ def seed_ts_private_stream_types() -> bytes:
     """PMT without a Blu-ray registration but with stream types 0x83
        (LPCM), 0xA0 (MS-CODEC), 0xD1 (Dirac), 0xEA (VC-1) and 0x21
        (JPEG 2000 video) — each routes through its own per-type
-       PMTSetupEs0xXX setup function, all of which sit at 0% coverage
-       outside the HDMV path. The 0x21 stream carries a J2K_video
-       descriptor (tag 0x32) so SetupJ2KDescriptors also fires."""
+       PMTSetupEs0xXX setup function outside the HDMV path. The 0x21
+       stream carries a J2K_video descriptor (tag 0x32) so
+       SetupJ2KDescriptors also fires."""
     pat = make_pat([(0x0001, PMT_PID)])
     j2k_dr = bytes([0x32, 0x18,
                     0x10, 0x00,                # profile_and_level
@@ -1648,14 +1652,145 @@ def seed_ts_private_stream_types() -> bytes:
     return _ts_pad_to_min_packets(stream)
 
 
+def _mp4_od_desc(tag: int, body: bytes) -> bytes:
+    """MPEG-4 expandable descriptor: tag + length + body (single-byte length
+    suffices for <128-byte bodies, top bit clear = no continuation)."""
+    assert len(body) < 128
+    return bytes([tag, len(body)]) + body
+
+
+def _ts_iod_descriptor() -> bytes:
+    """A PMT program-level IOD descriptor (tag 0x1d) carrying a full MPEG-4
+    InitialObjectDescriptor -> ES_Descriptor -> DecoderConfigDescriptor
+    (+ DecoderSpecificInfo) + SLConfigDescriptor, for mpeg4_iod.c::IODNew and
+    the nested OD_*_Read descriptor parsers."""
+    decspecific = _mp4_od_desc(0x05, b'\x12\x10')          # DecoderSpecificInfo
+    deccfg_body = (bytes([0x40, 0x15])                     # objectType=AAC, flags
+                   + b'\x00\x18\x00'                       # bufferSizeDB (3)
+                   + b'\x00\x01\xf4\x00'                   # maxBitrate (4)
+                   + b'\x00\x01\xf4\x00'                   # avgBitrate (4)
+                   + decspecific)
+    deccfg = _mp4_od_desc(0x04, deccfg_body)               # DecoderConfigDescr
+    sl = _mp4_od_desc(0x06, bytes([0x02]))                 # SLConfig predefined=MP4
+    es_body = b'\x00\x01' + b'\x00' + deccfg + sl          # ES_ID=1, flags=0
+    esdescr = _mp4_od_desc(0x03, es_body)                  # ES_Descriptor
+    iod_body = (bytes([0x00, 0x00])                        # ODID + flags (no URL/inline)
+                + b'\xff\xff\xff\xff\xff'                  # OD/scene/audio/visual/graphics PLI
+                + esdescr)
+    iod = _mp4_od_desc(0x02, iod_body)                     # InitialObjectDescriptor
+    payload = bytes([0x10, 0x01]) + iod                    # iod_scope=0x10, iod_label=0x01
+    return bytes([0x1d, len(payload)]) + payload           # PMT descriptor tag 0x1d
+
+
+def seed_ts_iod() -> bytes:
+    pat = make_pat([(0x0001, PMT_PID)])
+    # stream_type 0x12 = ISO/IEC 14496-1 SL-packetized stream carried in PES.
+    pmt = make_pmt(0x0001, VIDEO_PID, [(0x12, VIDEO_PID, b'')],
+                   program_descs=_ts_iod_descriptor())
+    # Repeat PAT/PMT and carry several PES packets: the TS demuxer parses the
+    # PMT (and its descriptor loop) only after locking onto the PSI cadence.
+    out = b''
+    for _ in range(3):
+        out += psi_packet(pat, 0x0000)
+        out += psi_packet(pmt, PMT_PID)
+        out += pes_ts_packets(make_ts_pes(0xE0, MPGV_PAYLOAD * 4, pts_90khz=0),
+                              VIDEO_PID)
+    return out
+
+
+# ──────────────────────────────────────────────────
+#  DVB teletext (modules/codec/telx.c), carried over MPEG-TS
+# ──────────────────────────────────────────────────
+#
+# telx is a built-in "spu decoder" for VLC_CODEC_TELETEXT that was never
+# registered in the fuzz harness, so codec/telx.c is entirely absent from the
+# coverage report. The TS demux routes a stream into it when the PMT carries a
+# teletext_descriptor (tag 0x56). The PES payload is EBU teletext: a 1-byte
+# data_identifier followed by 46-byte data units. telx.c (Decode) skips the
+# first byte, then for each 46-byte unit reads the magazine/packet address from
+# two hamming-8/4-coded bytes and dispatches row 0 -> DecodePageHeaderPacket and
+# rows 1..25 -> DecodeNormalPacket. We emit a page header plus two normal rows
+# so the decoder parses and renders a page.
+
+# hamming 8/4 *encode* table: _TELX_HAM[v] is the byte that telx's hamming_8_4()
+# decodes back to nibble v (inverse of the switch table in codec/telx.c).
+_TELX_HAM = [0xA8, 0x0B, 0x26, 0x85, 0x92, 0x31, 0x1C, 0xBF,
+             0x40, 0xE3, 0xCE, 0x6D, 0x7A, 0xD9, 0xF4, 0x57]
+
+
+def _telx_bytereverse(n: int) -> int:
+    """Mirror telx.c's bytereverse() so we can choose magazine/packet bytes."""
+    n = ((n >> 1) & 0x55) | ((n << 1) & 0xAA)
+    n = ((n >> 2) & 0x33) | ((n << 2) & 0xCC)
+    n = ((n >> 4) & 0x0F) | ((n << 4) & 0xF0)
+    return n & 0xFF
+
+
+def _telx_unit(row: int, magazine: int, payload40: bytes,
+               data_unit_id: int = 0x02) -> bytes:
+    """One 46-byte EBU teletext data unit for the given row/magazine.
+
+    telx derives them from mpag = (hamming_8_4(b4)<<4)|hamming_8_4(b5) via
+    row_raw = bytereverse(mpag); magazine = row_raw & 7; row = row_raw >> 3.
+    We invert that to pick the two hamming-coded address bytes."""
+    assert len(payload40) == 40
+    mpag = _telx_bytereverse(((row & 0x1F) << 3) | (magazine & 0x07))
+    return bytes([
+        data_unit_id,             # != 0xFF (0xFF = stuffing, skipped by telx)
+        0x2C,                     # data_unit_length = 44
+        0x00,                     # field parity / line offset (unused by telx)
+        0xE4,                     # framing code
+        _TELX_HAM[(mpag >> 4) & 0x0F],
+        _TELX_HAM[mpag & 0x0F],
+    ]) + payload40
+
+
+def _telx_pes_payload() -> bytes:
+    # Page header packet (row 0, magazine 1): page tens/units and the six
+    # control-flag bytes are hamming-coded; the remainder is header line text.
+    header = _telx_unit(0, 1,
+                        bytes([_TELX_HAM[0], _TELX_HAM[0]])   # page units/tens
+                        + bytes([_TELX_HAM[0]] * 6)           # control flags
+                        + bytes([0x20] * 32))                 # header text
+    row1 = _telx_unit(1, 1, bytes([0x20] * 40))               # normal packet
+    row2 = _telx_unit(2, 1, bytes([0x20] * 40))               # normal packet
+    return bytes([0x10]) + header + row1 + row2               # 0x10 = data_id
+
+
+def _ts_teletext_descriptor(teletext_type: int = 0x02, magazine: int = 1,
+                            page: int = 0x00) -> bytes:
+    """teletext_descriptor (tag 0x56), one language entry. teletext_type must
+    be < 0x06 or the TS demux skips the page (ts_psi.c PMTSetupEsTeletext)."""
+    return bytes([0x56, 0x05, 0x65, 0x6E, 0x67,               # 'eng'
+                  ((teletext_type & 0x1F) << 3) | (magazine & 0x07),
+                  page & 0xFF])
+
+
+def seed_teletext() -> bytes:
+    TELX_PID = 0x0105
+    pat = make_pat([(0x0001, PMT_PID)])
+    pmt = make_pmt(0x0001, VIDEO_PID, [
+        (0x02, VIDEO_PID, b''),                              # video (for PCR)
+        (0x06, TELX_PID, _ts_teletext_descriptor()),         # teletext ES
+    ])
+    video_pes = make_ts_pes(0xE0, MPGV_PAYLOAD, pts_90khz=900)
+    telx_pes = make_ts_pes(0xBD, _telx_pes_payload(), pts_90khz=1800)
+    return (psi_packet(pat, 0x0000) +
+            psi_packet(pmt, PMT_PID) +
+            pes_ts_packets(video_pes, VIDEO_PID, pcr_90khz=450) +
+            pes_ts_packets(telx_pes, TELX_PID))
+
+
 TS_SEEDS = {
     'mpeg2_video.ts':  seed_mpeg2_video,
+    'mpeg4_iod.ts':    seed_ts_iod,
     'h264_video.ts':   seed_h264_video,
     'hevc_video.ts':   seed_hevc_video,
     'mpeg1_audio.ts':  seed_mpeg1_audio,
     'aac_audio.ts':    seed_aac_audio,
     'ac3_audio.ts':    seed_ac3_audio,
     'dts_audio.ts':    seed_dts_audio,
+    'teletext.ts':     seed_teletext,
     'dvb_subtitle.ts': seed_dvb_subtitle,
     'dvb_subtitle_rich.ts':    seed_dvb_subtitle_rich,
     'dvb_subtitle_altclut.ts': seed_dvb_subtitle_altclut,
@@ -1990,6 +2125,282 @@ def _write(path, data):
     print(f"  wrote {path}: {len(data)} bytes")
 
 
+def gen_avi(root):
+    """Structured AVI (RIFF) seeds for modules/demux/avi.
+
+    The upstream vlc-fuzz-corpus seeds/avi/* (divx/h264/mjpg/mp3/pcm/mono8 ...)
+    exercise compressed-codec video and PCM audio. These seeds additionally
+    drive the following stream *type* branches:
+
+      - Uncompressed RGB (BI_RGB 24/8bpp + palette) and BI_BITFIELDS video,
+        exercising ParseBitmapInfoHeader's RGB/palette/mask paths
+        (bitmapinfoheader.h) and the bottom-up "flipped" frame handling.
+      - DXSB (DivX/XSUB) subtitle track: SPU_ES setup plus the demux-time
+        Xsub timestamp parser (ExtractXsubSampleInfo / AVI_PeekSample /
+        AVI_GetXsubSampleTimeAt).
+      - 'txts' subtitle attachment -> AVI_ExtractSubtitle.
+      - 'iavs'/'ivas' DV stream -> AVI_DvHandleAudio.
+      - WAVE_FORMAT_EXTENSIBLE audio -> WAVEFORMATEXTENSIBLE SubFormat branch.
+      - QNAP proprietary fourcc ('w264' ...) -> IsQNAPCodec + AVI_SendFrame
+        header stripping (needs INFO meta so p_sys->meta is set).
+      - 'vprp' chunk -> aspect-ratio handling.
+      - OpenDML multi-RIFF ('AVIX') -> the AVI_ChunkReadRoot multi-RIFF path.
+
+    Note: the fuzz harness' memory stream is always (fast)seekable and demux
+    controls are off, so avi.c Seek()/Demux_UnSeekable() and the AVI_IndexLoad
+    superindex parser are unreachable here regardless of input -- these seeds
+    deliberately do not target them.
+    """
+    def fcc(s):
+        b = s.encode("latin-1"); assert len(b) == 4; return b
+
+    def chunk(cid, data):
+        out = fcc(cid) + struct.pack("<I", len(data)) + data
+        return out + b"\x00" if (len(data) & 1) else out  # word alignment
+
+    def lst(listtype, *chunks):
+        body = fcc(listtype) + b"".join(chunks)
+        return fcc("LIST") + struct.pack("<I", len(body)) + body
+
+    def riff(fourcc, *chunks):
+        body = fcc(fourcc) + b"".join(chunks)
+        return fcc("RIFF") + struct.pack("<I", len(body)) + body
+
+    def avih(width, height, streams, totalframes=1, usperframe=40000):
+        return struct.pack("<14I", usperframe, 0, 0, 0x10, totalframes, 0,
+                           streams, 0, width, height, 0, 0, 0, 0)
+
+    def strh(typ, handler, scale=1, rate=25, length=1, samplesize=0):
+        # 12 dwords (48B read by libavi) + rcFrame (4x int16) = 56B canonical
+        return (fcc(typ) + fcc(handler) +
+                struct.pack("<11I", 0, 0, 0, scale, rate, 0, length, 0, 0,
+                            samplesize, 0) +
+                struct.pack("<4h", 0, 0, 0, 0))
+
+    def bih(width, height, bitcount, compression, extra=b"", clrused=0):
+        comp = (compression if isinstance(compression, int)
+                else struct.unpack("<I", fcc(compression))[0])
+        return (struct.pack("<I", 40 + len(extra)) +          # biSize
+                struct.pack("<ii", width, height) +
+                struct.pack("<HH", 1, bitcount) +
+                struct.pack("<I", comp) +
+                struct.pack("<I", 0) +                        # biSizeImage
+                struct.pack("<ii", 0, 0) +
+                struct.pack("<II", clrused, 0) + extra)
+
+    def wfx(fmttag, channels=2, rate=44100, bits=16, blockalign=4, extra=b""):
+        body = (struct.pack("<H", fmttag) + struct.pack("<H", channels) +
+                struct.pack("<I", rate) + struct.pack("<I", rate * blockalign) +
+                struct.pack("<H", blockalign) + struct.pack("<H", bits))
+        if fmttag != 0x0001 or extra:                         # non-PCM -> cbSize
+            body += struct.pack("<H", len(extra)) + extra
+        return body
+
+    def strl(strh_data, strf_id, strf_data, extra_chunks=b""):
+        return lst("strl", chunk("strh", strh_data),
+                   chunk(strf_id, strf_data), extra_chunks)
+
+    def movi_chunk(stream, twocc, data):
+        return chunk(f"{stream:02d}{twocc}", data)
+
+    def build(streams, movi_chunks, extra_hdrl=b"", width=64, height=48,
+              nframes=1):
+        hdrl = lst("hdrl", chunk("avih", avih(width, height, len(streams),
+                                              nframes)),
+                   *streams, extra_hdrl)
+        return riff("AVI ", hdrl, lst("movi", *movi_chunks))
+
+    seeds = {}
+
+    # BI_RGB 24bpp, positive height -> b_flipped + BGR24 chroma
+    seeds["rgb24_flipped.avi"] = build(
+        [strl(strh("vids", "DIB "), "strf", bih(8, 6, 24, 0))],
+        [movi_chunk(0, "db", bytes([0x10, 0x20, 0x30]) * (8 * 6))],
+        width=8, height=6)
+
+    # BI_RGB 8bpp + 256-colour palette -> RGBP palette branch
+    pal = b"".join(struct.pack("<BBBB", i, i, i, 0) for i in range(256))
+    seeds["rgb8_palette.avi"] = build(
+        [strl(strh("vids", "DIB "), "strf", bih(8, 6, 8, 0, extra=pal,
+                                                clrused=256))],
+        [movi_chunk(0, "db", bytes(range(48)))], width=8, height=6)
+
+    # BI_BITFIELDS 16bpp + RGB565 masks -> known_chroma match
+    seeds["bitfields_565.avi"] = build(
+        [strl(strh("vids", "\x00\x00\x00\x00"), "strf",
+              bih(8, 6, 16, 3, extra=struct.pack("<III", 0xF800, 0x07E0, 0x001F)))],
+        [movi_chunk(0, "db", b"\x00" * 96)], width=8, height=6)
+
+    # BI_BITFIELDS with extra < 12 bytes -> "bogus mask size, assume BI_RGB"
+    seeds["bitfields_bogus.avi"] = build(
+        [strl(strh("vids", "\x00\x00\x00\x00"), "strf",
+              bih(8, 6, 16, 3, extra=b"\x00\x00\x00\x00"))],
+        [movi_chunk(0, "db", b"\x00" * 96)], width=8, height=6)
+
+    # DXSB subtitle: stream0 real video so AVI_GetVideoTrackForXsub succeeds,
+    # stream1 DXSB -> SPU_ES + demux-time Xsub timestamp parsing.
+    xsub = b"\x00" * 8 + b"[00:00:01.000-00:00:05.000]" + b"\x00" * 16
+    seeds["dxsb_xsub.avi"] = build(
+        [strl(strh("vids", "MJPG", length=2), "strf", bih(64, 48, 24, "MJPG")),
+         strl(strh("vids", "DXSB", length=2), "strf", bih(720, 480, 24, "DXSB"))],
+        [movi_chunk(0, "dc", b"\xff\xd8\xff\xd9"), movi_chunk(1, "dc", xsub),
+         movi_chunk(0, "dc", b"\xff\xd8\xff\xd9"), movi_chunk(1, "dc", xsub)],
+        width=720, height=480, nframes=2)
+
+    # 'txts' subtitle attachment -> AVI_ExtractSubtitle (needs strn name)
+    seeds["txts_attachment.avi"] = build(
+        [strl(strh("txts", "\x00\x00\x00\x00"), "strf", bih(0, 0, 0, 0),
+              extra_chunks=chunk("strn", b"subtitle track\x00"))],
+        [movi_chunk(0, "tx", b"Hello subtitle\x00")])
+
+    # 'iavs' DV stream -> VLC_CODEC_DV + AVI_DvHandleAudio
+    seeds["dv_iavs.avi"] = build(
+        [strl(strh("iavs", "dvsd"), "strf", bih(720, 480, 24, "dvsd"))],
+        [movi_chunk(0, "dc", b"\x1f\x07\x00" * 40)], width=720, height=480)
+
+    # WAVE_FORMAT_EXTENSIBLE audio -> WAVEFORMATEXTENSIBLE SubFormat branch
+    guid = (struct.pack("<I", 0x0001) +
+            b"\x00\x00\x10\x00\x80\x00\x00\xaa\x00\x38\x9b\x71")
+    ext = struct.pack("<H", 16) + struct.pack("<I", 0x3) + guid
+    seeds["extensible_audio.avi"] = build(
+        [strl(strh("auds", "\x00\x00\x00\x00", samplesize=4), "strf",
+              wfx(0xFFFE, channels=2, rate=48000, blockalign=4, extra=ext))],
+        [movi_chunk(0, "wb", b"\x00" * 64)])
+
+    # QNAP fourcc -> IsQNAPCodec + AVI_SendFrame header strip (INFO sets meta)
+    qframe = b"QVR\x00" + b"\x00" * 52 + b"\x00\x00\x00\x01\x67"
+    seeds["qnap_w264.avi"] = build(
+        [strl(strh("vids", "w264"), "strf", bih(320, 240, 24, "w264"))],
+        [movi_chunk(0, "dc", qframe)],
+        extra_hdrl=lst("INFO", chunk("ISFT", b"QNAP\x00")),
+        width=320, height=240)
+
+    # 'vprp' chunk -> aspect-ratio handling
+    vprp = chunk("vprp", struct.pack("<9I", 0, 0, 0, 0x00040003, 64, 48, 0, 0, 1) +
+                 struct.pack("<4I", 0, 0, 0, 0))
+    seeds["vprp_video.avi"] = build(
+        [strl(strh("vids", "MJPG"), "strf", bih(64, 48, 24, "MJPG"),
+              extra_chunks=vprp)],
+        [movi_chunk(0, "dc", b"\xff\xd8\xff\xd9")])
+
+    # OpenDML: a trailing RIFF 'AVIX' segment -> multi-RIFF detection
+    avix = riff("AVIX", lst("movi", movi_chunk(0, "db", b"\x10\x20\x30" * 48)))
+    seeds["multi_riff.avi"] = seeds["rgb24_flipped.avi"] + avix
+
+    for name, data in seeds.items():
+        _write(os.path.join(root, "seeds/avi", name), data)
+
+    # Extend (not replace) the upstream avi.dict with tokens for the new paths.
+    dict_path = os.path.join(root, "dictionaries", "avi.dict")
+    os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+    with open(dict_path, "a") as f:
+        f.write("\n# --- appended by generate_seeds.gen_avi ---\n")
+        for tok in ["strn", "vprp", "DXSB", "iavs", "ivas", "txts",
+                    "DIB ", "w264", "q264", "Q264", "wMP4", "dvsd"]:
+            f.write('"%s"\n' % tok)
+        f.write('"\\x03\\x00\\x00\\x00"\n')   # BI_BITFIELDS compression
+        f.write('"\\xfe\\xff"\n')             # WAVE_FORMAT_EXTENSIBLE tag
+        f.write('"[00:00:00.000-00:00:00.000]"\n')  # Xsub timestamp template
+
+
+def gen_es(root):
+    """Raw elementary-stream audio seeds for modules/demux/mpeg/es.c.
+
+    es.c registers the "Audio ES" demuxer with shortcuts mpga/mp3/m4a/mp4a/
+    aac/ac3/a52/eac3/dts/mlp/thd and probes each codec via AacProbe / MpgaProbe
+    / A52Probe / EA52Probe / DtsProbe / MlpProbe / ThdProbe. The upstream
+    vlc-fuzz-corpus ships seeds/mp3 and seeds/dts; these add seeds for the
+    AAC, AC-3, E-AC-3, MLP and TrueHD probe + demux paths.
+
+    Each seed dir name matches an es.c shortcut, so the OSS-Fuzz harness
+    (target name -> demux_New name) force-selects es.c with that hint; the
+    probe is then taken as forced, and valid sync frames drive OpenCommon()
+    and the Demux() loop. Header fields are crafted to satisfy the sync
+    checks exactly:
+      - AC-3 (a52): 0x0B77, byte5>>3 == bsid 8 (<=10 -> AC-3); fscod=0,
+        frmsizcod=0 -> 128-byte frames.
+      - E-AC-3 (eac3): 0x0B77, bsid 16 (11..16 -> E-AC-3); frmsiz=63 ->
+        i_size = 2*(63+1) = 128.
+      - AAC (aac): 7-byte ADTS headers (0xFFF sync, no CRC), valid
+        frame_length, fed to the mpeg4audio packetizer.
+      - MLP/TrueHD (mlp/thd): MlpCheckSync/ThdCheckSync require bytes[4..7]
+        == F8 72 6F BB / BA.
+    These header parsers compute frame sizes / sample counts from the input
+    bytes, exercising es.c and the audio packetizers it instantiates.
+    """
+    def adts_frame(payload_len=24, freq_idx=4, chan=2, profile=1):
+        frame_len = 7 + payload_len
+        h = bytearray(7)
+        h[0] = 0xFF
+        h[1] = 0xF1                                  # MPEG-4, layer 0, no CRC
+        h[2] = ((profile & 3) << 6) | ((freq_idx & 0xF) << 2) | ((chan >> 2) & 1)
+        h[3] = ((chan & 3) << 6) | ((frame_len >> 11) & 3)
+        h[4] = (frame_len >> 3) & 0xFF
+        h[5] = ((frame_len & 7) << 5) | 0x1F
+        h[6] = 0xFC
+        return bytes(h) + bytes(payload_len)
+
+    def ac3_frame():
+        # fscod=0, frmsizcod=0 -> 128-byte frame; bsid 8 -> AC-3 dispatch
+        return bytes([0x0B, 0x77, 0, 0, 0, 0x40, 0, 0]) + bytes(120)
+
+    def eac3_frame():
+        bits = []
+        def put(val, n):
+            for i in range(n - 1, -1, -1):
+                bits.append((val >> i) & 1)
+        put(0x0B77, 16)   # syncword
+        put(0, 2)         # strmtyp
+        put(0, 3)         # substreamid
+        put(63, 11)       # frmsiz -> i_size = 128
+        put(0, 2)         # fscod (48k)
+        put(3, 2)         # numblkscod
+        put(0, 3)         # acmod
+        put(0, 1)         # lfeon
+        put(16, 5)        # bsid (11..16 -> E-AC-3)
+        while len(bits) % 8:
+            bits.append(0)
+        out = bytearray()
+        for i in range(0, len(bits), 8):
+            b = 0
+            for k in range(8):
+                b = (b << 1) | bits[i + k]
+            out.append(b)
+        return bytes(out).ljust(128, b"\x00")
+
+    def mlp_frame(sync_last):
+        f = bytearray(128)
+        f[0] = 0xF0; f[1] = 0x40                     # check-nibble + au_length
+        f[4] = 0xF8; f[5] = 0x72; f[6] = 0x6F; f[7] = sync_last
+        return bytes(f)
+
+    def rep(fn, n):
+        return b"".join(fn() for _ in range(n))
+
+    seeds = {
+        "aac":  {"adts.aac": rep(lambda: adts_frame(24), 16),
+                 "adts_small.aac": rep(lambda: adts_frame(8), 24)},
+        "a52":  {"ac3.a52": rep(ac3_frame, 12)},
+        "eac3": {"eac3.eac3": rep(eac3_frame, 12)},
+        "mlp":  {"mlp.mlp": rep(lambda: mlp_frame(0xBB), 8)},
+        "thd":  {"truehd.thd": rep(lambda: mlp_frame(0xBA), 8)},
+    }
+    dicts = {
+        "aac":  ['"\\xff\\xf1"', '"\\xff\\xf9"', '"ADIF"'],
+        "a52":  ['"\\x0b\\x77"'],
+        "eac3": ['"\\x0b\\x77"'],
+        "mlp":  ['"\\xf8\\x72\\x6f\\xbb"'],
+        "thd":  ['"\\xf8\\x72\\x6f\\xba"'],
+    }
+    for tgt, files in seeds.items():
+        for name, data in files.items():
+            _write(os.path.join(root, "seeds", tgt, name), data)
+        dict_path = os.path.join(root, "dictionaries", tgt + ".dict")
+        os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+        with open(dict_path, "w") as f:
+            f.write("\n".join(dicts[tgt]) + "\n")
+
+
 def gen_rawdv(root):
     # modules/demux/rawdv.c: NTSC frame = 120000 bytes, PAL = 144000.
     DV_NTSC_FRAME_SIZE = 10 * 150 * 80
@@ -2008,6 +2419,188 @@ def gen_rawdv(root):
         for tag in [0x50, 0x51, 0x52, 0x53, 0x60, 0x61, 0x62, 0x63]:
             f.write(f'"\\x{tag:02x}"\n')
     print(f"  wrote {dict_path}")
+
+
+# ──────────────────────────────────────────────────
+#  TiVo TY streams (modules/demux/ty.c)
+# ──────────────────────────────────────────────────
+#
+# A TY stream large enough to clear probe_stream() (which peeks 3 * 128 KiB):
+#   chunk 0   : 128 KiB master/PART chunk (fileid 0xf5467abd, type 0x02,
+#               chunk size 0x20000); 32-byte header + SEQ table fill it exactly
+#               so parse_master() ends on the next chunk boundary.
+#   chunks 1-3: 128 KiB data chunks, >=5 records each, including 0x6e0
+#               (Series-1 video) and 0x9c0 (AC-3 audio / DTivo) for
+#               analyze_chunk() classification, a 0x3c0 MPEG-audio record,
+#               extended 0x01/0x02 closed-caption/XDS records, and a 0x03
+#               data-service record. Video/audio payloads carry PES start codes.
+
+_TY_CHUNK_SIZE = 128 * 1024
+_TY_FILEID = 0xF5467ABD
+
+
+def _ty_master_chunk() -> bytes:
+    """A 128 KiB master chunk. i_map_size=8 and SEQ-table byte count chosen so
+    the header (32 B) + table consume exactly CHUNK_SIZE and parse_master()
+    ends on the next 128 KiB boundary."""
+    entries = (_TY_CHUNK_SIZE - 32) // 16        # 16 B per SEQ entry (8+8)
+    seq_bytes = entries * 16
+    hdr = bytearray(32)
+    hdr[0:4] = struct.pack('>I', _TY_FILEID)
+    hdr[4:8] = struct.pack('>I', 0x02)
+    hdr[8:12] = struct.pack('>I', _TY_CHUNK_SIZE)
+    hdr[20:24] = struct.pack('>I', 8)            # i_map_size (bytes per bitmask)
+    hdr[28:32] = struct.pack('>I', seq_bytes)    # SEQ table size in bytes
+    chunk = bytes(hdr) + b'\x00' * seq_bytes
+    assert len(chunk) == _TY_CHUNK_SIZE
+    return chunk
+
+
+def _ty_rec_hdr(rec_type: int, subrec: int, size: int = 0,
+                pts: int = 0, ext: bytes = None) -> bytes:
+    """Build a 16-byte TY record header. With ext=(b1,b2) the record is
+    'extended' (no payload; data lives in the header). Otherwise it carries a
+    payload of `size` bytes encoded in the size field, plus a TY PTS."""
+    h = bytearray(16)
+    h[3] = rec_type & 0xFF
+    if ext is not None:
+        b1, b2 = ext[0], ext[1]
+        h[0] = 0x80 | ((b1 >> 4) & 0x0F)
+        h[1] = ((b1 & 0x0F) << 4) | ((b2 >> 4) & 0x0F)
+        h[2] = ((b2 & 0x0F) << 4) | (subrec & 0x0F)
+    else:
+        assert size < 0x80000
+        h[0] = (size >> 12) & 0x7F               # top bit clear -> non-extended
+        h[1] = (size >> 4) & 0xFF
+        h[2] = ((size & 0x0F) << 4) | (subrec & 0x0F)
+        h[8:16] = struct.pack('>Q', pts & 0xFFFFFFFFFFFFFFFF)
+    return bytes(h)
+
+
+def _ty_pes(stream_id: int, payload: bytes, with_pts: bool = True) -> bytes:
+    """A minimal MPEG-1/2 PES packet with an optional PTS, so the TY record
+    demuxers find a start code and exercise their PTS extraction."""
+    if with_pts:
+        pts = 0x100000
+        flags = bytes([0x80, 0x80, 0x05])        # '10', PTS_DTS_flags=10, hdrlen=5
+        p = ((0x21 | ((pts >> 29) & 0x0E)))
+        pts_bytes = bytes([0x20 | ((pts >> 29) & 0x0E) | 0x01,
+                           (pts >> 22) & 0xFF,
+                           ((pts >> 14) & 0xFE) | 0x01,
+                           (pts >> 7) & 0xFF,
+                           ((pts << 1) & 0xFE) | 0x01])
+        hdr = flags + pts_bytes
+    else:
+        hdr = bytes([0x80, 0x00, 0x00])
+    body = hdr + payload
+    return bytes([0x00, 0x00, 0x01, stream_id]) + struct.pack('>H', len(body)) + body
+
+
+def _ty_data_chunk() -> bytes:
+    """A 128 KiB TY data chunk with a representative record mix."""
+    video = b'\x00\x00\x01\xb3' + bytes(8) + _ty_pes(0xE0, b'\x00\x00\x01\x00' + bytes(32))
+    video2 = b'\x00\x00\x01\xb8' + _ty_pes(0xE0, bytes(48))   # GOP start code
+    ac3 = b'\x0b\x77' + bytes(60)                              # AC-3 syncword
+    mpga = _ty_pes(0xC0, b'\xff\xfb' + bytes(40))              # MPEG audio in PES
+
+    records = [
+        (0xE0, 0x06, video),    # 0x6e0 -> Series-1 video; DemuxRecVideo
+        (0xC0, 0x09, ac3),      # 0x9c0 -> AC-3 audio/DTivo; DemuxRecAudio
+        (0xE0, 0x06, video2),   # more video
+        (0xC0, 0x03, mpga),     # 0x3c0 -> MPEG audio
+        (0x03, 0x00, bytes(24)),# tivo data service record
+    ]
+
+    hdrs = b''
+    payloads = b''
+    pts = 0x100000
+    for rt, sub, payload in records:
+        hdrs += _ty_rec_hdr(rt, sub, size=len(payload), pts=pts)
+        payloads += payload
+        pts += 0x1000
+    # Extended closed-caption / XDS records (no payload; data in the header).
+    hdrs += _ty_rec_hdr(0x01, 0x00, ext=(0x14, 0x2C))   # 608 control pair
+    hdrs += _ty_rec_hdr(0x02, 0x01, ext=(0x01, 0x42))   # XDS class byte + data
+
+    num_recs = len(records) + 2
+    chunk_hdr = bytes([num_recs & 0xFF, 0x00, 0x00, 0x00])  # 8-bit rec count
+    body = chunk_hdr + hdrs + payloads
+    assert len(body) <= _TY_CHUNK_SIZE, len(body)
+    body += b'\x00' * (_TY_CHUNK_SIZE - len(body))          # stuff bytes
+    return body
+
+
+def gen_ty(root):
+    out = os.path.join(root, 'seeds', 'ty')
+    os.makedirs(out, exist_ok=True)
+    # master + 3 data chunks: >=3 chunks satisfies the 384 KiB probe peek and
+    # leaves data chunks for Demux to iterate over.
+    data = _ty_master_chunk() + _ty_data_chunk() * 3
+    _write(os.path.join(out, 'structured_dtivo.ty'), data)
+
+
+# ──────────────────────────────────────────────────
+#  Nullsoft NSV streams (modules/demux/nsv.c)
+# ──────────────────────────────────────────────────
+#
+# A dedicated seeds/nsv/ target exercising: ReadNSVf (metadata chunk), ReadNSVs
+# (video/audio codec setup, two stream-header variants), the per-frame 5-byte
+# header math, the SUBT auxiliary-data subtitle path, the 0xbeef inter-frame
+# continuation marker, and the 'araw' audio per-frame 4-byte (channels/rate)
+# header branch.
+
+def _nsv_frame(video=b'', audio=b'', subt=None):
+    """One NSV frame: 5-byte header + optional SUBT aux + video + audio.
+    The header's video size field counts the aux region too (nsv.c subtracts
+    6 + i_aux after parsing it)."""
+    if subt is not None:
+        # aux: WLE(i_aux) + 'SUBT' + payload(i_aux). nsv.c skips the first 2
+        # payload bytes then treats the rest as "<lang>\0<text>".
+        apay = b'\x00\x00' + subt
+        aux = struct.pack('<H', len(apay)) + b'SUBT' + apay
+        vsize = 6 + len(apay) + len(video)
+        num_aux = 1
+    else:
+        aux = b''
+        vsize = len(video)
+        num_aux = 0
+    asize = len(audio)
+    hdr = bytes([
+        ((vsize & 0x0F) << 4) | (num_aux & 0x0F),
+        (vsize >> 4) & 0xFF,
+        (vsize >> 12) & 0xFF,
+        asize & 0xFF,
+        (asize >> 8) & 0xFF,
+    ])
+    return hdr + aux + video + audio
+
+
+def _nsvs_header(vfcc: bytes, afcc: bytes, w: int, h: int) -> bytes:
+    assert len(vfcc) == 4 and len(afcc) == 4
+    return (b'NSVs' + vfcc + afcc + struct.pack('<HH', w, h)
+            + bytes([0x00, 0x00, 0x00]))           # framerate + 2 sync bytes = 19 B total
+
+
+def gen_nsv(root):
+    # NSVf metadata chunk: ReadNSVf skips i_header_size bytes total.
+    nsvf = b'NSVf' + struct.pack('<II', 24, 0) + bytes(12)   # 24-byte chunk
+
+    # Stream 1: VP6 video + MP3 audio. Frame with a SUBT subtitle aux block,
+    # then a 0xbeef continuation frame.
+    s1 = _nsvs_header(b'VP60', b'MP3 ', 320, 240)
+    f1 = _nsv_frame(video=bytes(32), audio=bytes(32),
+                    subt=b'en\x00NSV subtitle\x00')
+    beef = struct.pack('<H', 0xbeef)
+    f2 = _nsv_frame(video=bytes(40), audio=bytes(24))
+
+    # Stream 2: H264 video + PCM audio -> 'araw' triggers the 4-byte per-frame
+    # audio header (channels/rate) branch; audio field = 4 header + 32 data.
+    s2 = _nsvs_header(b'H264', b'PCM ', 640, 480)
+    araw_audio = bytes([0x00, 0x02]) + struct.pack('<H', 44100) + bytes(32)
+    f3 = _nsv_frame(video=bytes(48), audio=araw_audio)
+
+    data = nsvf + s1 + f1 + beef + f2 + s2 + f3
+    _write(os.path.join(root, 'seeds/nsv/structured.nsv'), data)
 
 
 def gen_vc1(root):
@@ -2268,8 +2861,8 @@ def _rbsp(payload: bytes) -> bytes:
 # ──────────────────────────────────────────────────
 # CEA-708 DTVCC packet construction
 # ──────────────────────────────────────────────────
-# modules/codec/cea708.c (~1200 lines, 9.3% in 2026-05-16 coverage report)
-# is fed via H.264 SEI user_data_registered_itu_t_t35 → cc_data records
+# modules/codec/cea708.c is fed via H.264 SEI
+# user_data_registered_itu_t_t35 → cc_data records
 # (3 bytes each, ATSC A/53). Each record:
 #   bits 7-3: marker (0x1F), bit 2: valid, bits 1-0: cc_type
 #   cc_type 3 = DTVCC packet header (data[2] is first packet byte)
@@ -2475,10 +3068,9 @@ def gen_h264(root):
 #  TTA (True Audio) seeds (modules/demux/tta.c)
 # ──────────────────────────────────────────────────
 #
-# The vlc-fuzz-corpus tree has no seeds/tta directory, so the
-# vlc-demux-dec-libfuzzer-tta target starts every campaign with an empty
-# corpus and the TTA1 magic check at modules/demux/tta.c:96 fails on every
-# random byte. Public report (2026-05-13): 21/161 lines (13.0%).
+# The vlc-fuzz-corpus tree has no seeds/tta directory; these seeds provide a
+# starting corpus that passes the TTA1 magic check at modules/demux/tta.c:96
+# (which otherwise fails on random bytes).
 #
 # tta.c Open() requires:
 #   off  0  "TTA1"          (4)
@@ -2526,6 +3118,281 @@ def gen_tta(root):
         f.write('"\\x22\\x56\\x00\\x00"\n')
         f.write('"\\x40\\x1F\\x00\\x00"\n')
     print(f"  wrote {dict_path}")
+
+
+# ──────────────────────────────────────────────────
+#  CAF (Apple Core Audio File Format) seeds for modules/demux/caf.c.
+#  Upstream vlc-fuzz-corpus seeds/caf/* exercise the PCM/LPCM path plus a
+#  minimal AAC-with-kuki and a stub pakt. These add seeds for:
+#    * ProcessALACCookie (both 24- and 36-byte kuki shapes)
+#    * ProcessAACCookie branches behind ES_Descriptor flag bits 0x80/0x40/0x20
+#    * ReadKukiChunk's generic non-ALAC/non-AAC branch (i_codec != 0)
+#    * Demux()'s VBR/packet-table branch + FrameSpanAddDescription's two
+#      var-len-integer parsing paths (bytes-only and bytes+samples)
+#  Each seed below is the smallest synthetic CAF that drives one of those
+#  paths end-to-end through Open() and at least one Demux() iteration.
+# ──────────────────────────────────────────────────
+def _caf_varint(n):
+    """CAF/ESDS variable-length integer (7 bits/byte, MSB=continuation)."""
+    if n == 0:
+        return b'\x00'
+    out = []
+    while n:
+        out.append(n & 0x7f)
+        n >>= 7
+    out.reverse()
+    return bytes([b | 0x80 for b in out[:-1]] + [out[-1]])
+
+
+def _caf_chunk(fourcc, body):
+    assert len(fourcc) == 4
+    return fourcc + struct.pack('>q', len(body)) + body
+
+
+def _caf_desc(rate, fmt_id, fmt_flags=0,
+              bytes_per_packet=0, frames_per_packet=0,
+              channels=2, bits=16):
+    assert len(fmt_id) == 4
+    return (struct.pack('>d', float(rate)) + fmt_id +
+            struct.pack('>IIIII', fmt_flags, bytes_per_packet,
+                        frames_per_packet, channels, bits))
+
+
+_CAF_HEADER = b'caff' + struct.pack('>HH', 1, 0)
+
+
+def _caf_aac_esds_basic():
+    """24-byte AAC ESDS magic cookie, no optional flags — same shape as the
+    upstream aac_with_kuki.caf seed. ProcessAACCookie walks all the mandatory
+    descriptors and extracts the 2-byte AudioSpecificConfig."""
+    return (b'\x03\x16'                  # ES_DESCR_TAG, len=22
+            b'\x00\x01'                  # ES_ID
+            b'\x00'                      # flags=0 (no 0x80/0x40/0x20)
+            b'\x04\x11'                  # DEC_CONFIG_DESCR_TAG, len=17
+            b'\x40\x15\x00\x00\x00\x00\x01\xf4\x00\x00\x01\xf4\x00'
+            b'\x05\x02'                  # DEC_SPEC_INFO_TAG, len=2
+            b'\x11\x90')                 # AudioSpecificConfig (AAC LC, 44.1k stereo)
+
+
+def _caf_aac_esds_full_flags():
+    """ESDS exercising the dependence (0x80), URL (0x40) and OCR (0x20) bits.
+    These three branches in ProcessAACCookie are unreached by upstream seeds."""
+    return (b'\x03\x1b'                  # ES_DESCR_TAG, len=27
+            b'\x00\x01'                  # ES_ID
+            b'\xe0'                      # flags=0x80|0x40|0x20
+            b'\x00\x00'                  # 2 bytes dependence (0x80)
+            b'\x00'                      # URL length=0 (0x40)
+            b'\x00\x00'                  # 2 bytes OCR (0x20)
+            b'\x04\x0d'                  # DEC_CONFIG_DESCR_TAG, len=13
+            b'\x40\x15\x00\x00\x00\x00\x01\xf4\x00\x00\x01\xf4\x00'
+            b'\x05\x02'
+            b'\x11\x90')
+
+
+def _caf_alac_cookie24():
+    """24-byte ALAC magic cookie (the "new" shape libavformat documents).
+    ProcessALACCookie expands this to 36 bytes by prefixing size+"alac"+ver."""
+    return struct.pack('>I', 4096) + bytes([
+        0,      # compatibleVersion
+        16,     # bitDepth
+        40,     # pb
+        14,     # mb
+        10,     # kb
+        2,      # numChannels
+    ]) + struct.pack('>H', 255) + struct.pack('>III', 0, 0, 44100)
+
+
+def _caf_alac_cookie36():
+    """36-byte ALAC magic cookie (size + 'alac' + version + 24-byte config)."""
+    return (struct.pack('>I', 36) + b'alac' + struct.pack('>I', 0)
+            + _caf_alac_cookie24())
+
+
+def _caf_build(chunks):
+    return _CAF_HEADER + b''.join(chunks)
+
+
+def gen_caf(root):
+    # 1) VBR-style AAC with full packet table: bytes_per_packet=0 AND
+    #    frames_per_packet=0 forces NeedsPacketTable=true and makes
+    #    FrameSpanAddDescription parse a var-len integer for *both* the byte
+    #    count and the sample count of each packet.
+    aac_kuki = _caf_aac_esds_basic()
+    descs = []
+    for nbytes, nsamples in [(50, 1024), (30, 1024), (20, 1024)]:
+        descs.append(_caf_varint(nbytes) + _caf_varint(nsamples))
+    pakt_body = (struct.pack('>q', 3)        # num_packets
+                 + struct.pack('>q', 3072)   # valid_frames
+                 + struct.pack('>i', 0)      # priming
+                 + struct.pack('>i', 0)      # remainder
+                 + b''.join(descs))
+    data_payload = bytes(50 + 30 + 20)
+    vbr_caf = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=0, frames_per_packet=0,
+                                      channels=2, bits=0)),
+        _caf_chunk(b'kuki', aac_kuki),
+        _caf_chunk(b'pakt', pakt_body),
+        _caf_chunk(b'data', struct.pack('>I', 0) + data_payload),
+    ])
+    _write(os.path.join(root, 'seeds/caf/vbr_aac_full_pakt.caf'), vbr_caf)
+
+    # 2) ALAC with 24-byte cookie. desc has bytes_per_packet=0 AND
+    #    frames_per_packet=4096, so Demux() takes the packet-table branch but
+    #    FrameSpanAddDescription's *bytes-only* path runs (frame_length is
+    #    known, byte count comes from a var-len integer).
+    alac24_descs = b''.join(_caf_varint(n) for n in (200, 180, 160))
+    alac24_pakt = (struct.pack('>q', 3)
+                   + struct.pack('>q', 3 * 4096)
+                   + struct.pack('>i', 0) + struct.pack('>i', 0)
+                   + alac24_descs)
+    alac24 = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'alac',
+                                      bytes_per_packet=0,
+                                      frames_per_packet=4096,
+                                      channels=2, bits=16)),
+        _caf_chunk(b'kuki', _caf_alac_cookie24()),
+        _caf_chunk(b'pakt', alac24_pakt),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(200 + 180 + 160)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/alac_kuki24.caf'), alac24)
+
+    # 3) ALAC with 36-byte cookie — same shape, hits the direct memcpy path
+    #    of ProcessALACCookie instead of the size-prefix expansion path.
+    alac36 = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(48000, b'alac',
+                                      bytes_per_packet=0,
+                                      frames_per_packet=4096,
+                                      channels=2, bits=24)),
+        _caf_chunk(b'kuki', _caf_alac_cookie36()),
+        _caf_chunk(b'pakt', alac24_pakt),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(200 + 180 + 160)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/alac_kuki36.caf'), alac36)
+
+    # 4) AAC with ESDS dependence/URL/OCR bits set — drives the three
+    #    optional-block branches at lines ~630-645 of caf.c.
+    aac_full = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=240,
+                                      frames_per_packet=1024,
+                                      channels=2, bits=0)),
+        _caf_chunk(b'kuki', _caf_aac_esds_full_flags()),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(240 * 2)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/aac_full_esds_flags.caf'), aac_full)
+
+    # 5) lpcm + kuki — non-ALAC, non-AAC codec with a non-zero i_codec, so
+    #    ReadKukiChunk takes the generic else branch that copies the cookie
+    #    verbatim into fmt.p_extra.
+    lpcm_kuki = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'lpcm',
+                                      fmt_flags=0x0c,   # signed/be
+                                      bytes_per_packet=4,
+                                      frames_per_packet=1,
+                                      channels=2, bits=16)),
+        _caf_chunk(b'kuki', b'GENERICCOOKIE' + bytes(8)),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(64)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/lpcm_with_kuki.caf'), lpcm_kuki)
+
+
+# ──────────────────────────────────────────────────
+#  WAV / AIFF / CAF seeds for araw.c (raw-audio decoder), modules/codec/araw.c.
+#  The native araw module wins decoder selection over avcodec (capability 100
+#  vs 70) for the listed fourccs, so blocks flow into the per-format Decode*
+#  helpers. Upstream wav/aiff corpora cover S16L (16-bit PCM), S24L (24-bit
+#  PCM), F32L (IEEE float 32) plus big-endian S24B and S16B via AIFF. These add
+#  seeds for the remaining araw branches:
+#    * FL64  / F64L            ← 64-bit IEEE float
+#    * S32N  (= S32L on LE)    ← 32-bit signed PCM
+#    * extensible-PCM dispatch in wav.c that consumes sf_tag_to_fourcc paths
+#  Each seed below is a minimal, well-formed container that resolves to one
+#  of these codec branches via vlc_fourcc_GetCodecAudio.
+# ──────────────────────────────────────────────────
+def _riff_chunk(fourcc, body):
+    assert len(fourcc) == 4
+    return fourcc + struct.pack('<I', len(body)) + body
+
+
+def _wav_fmt_basic(fmt_tag, channels, rate, bits, block_align=None):
+    if block_align is None:
+        block_align = channels * (bits // 8)
+    avg_bps = rate * block_align
+    return struct.pack('<HHIIHH', fmt_tag, channels, rate, avg_bps,
+                       block_align, bits)
+
+
+def _wav_fmt_extensible(channels, rate, bits, channel_mask, subformat_guid):
+    assert len(subformat_guid) == 16
+    block_align = channels * (bits // 8)
+    avg_bps = rate * block_align
+    cb_size = 22                          # remainder after WAVEFORMATEX
+    # WAVEFORMATEX(16) + cbSize(2) + wValidBitsPerSample(2) + dwChannelMask(4) + GUID(16)
+    return (struct.pack('<HHIIHH', 0xFFFE, channels, rate, avg_bps,
+                        block_align, bits)
+            + struct.pack('<HHI', cb_size, bits, channel_mask)
+            + subformat_guid)
+
+
+def _wav_file(fmt_body, data_body):
+    fmt_chunk = _riff_chunk(b'fmt ', fmt_body)
+    data_chunk = _riff_chunk(b'data', data_body)
+    payload = b'WAVE' + fmt_chunk + data_chunk
+    return b'RIFF' + struct.pack('<I', len(payload)) + payload
+
+
+# KSDATAFORMAT_SUBTYPE_PCM / IEEE_FLOAT GUIDs (Microsoft).
+_GUID_PCM        = bytes.fromhex('0100000000001000800000aa00389b71')
+_GUID_IEEE_FLOAT = bytes.fromhex('0300000000001000800000aa00389b71')
+
+
+def gen_araw(root):
+    # 1) WAVE_FORMAT_IEEE_FLOAT, 64-bit, stereo. wav.c maps this to fourcc
+    #    'aflt'; vlc_fourcc_GetCodecAudio('aflt', 64) → VLC_CODEC_FL64
+    #    → araw.c case VLC_CODEC_FL64 (line 137).
+    f64_data = bytes(8 * 2 * 16)          # 16 stereo float64 frames
+    _write(os.path.join(root, 'seeds/wav/ieee_float64_stereo.wav'),
+           _wav_file(_wav_fmt_basic(0x0003, channels=2, rate=44100, bits=64),
+                     f64_data))
+
+    # 2) WAVE_FORMAT_PCM, 32-bit, stereo. wav.c maps PCM to 'araw';
+    #    vlc_fourcc_GetCodecAudio('araw', 32) → VLC_CODEC_S32L → on LE the
+    #    araw case VLC_CODEC_S32N (line 168) fires.
+    s32_data = bytes(4 * 2 * 64)
+    _write(os.path.join(root, 'seeds/wav/pcm_32bit_stereo.wav'),
+           _wav_file(_wav_fmt_basic(0x0001, channels=2, rate=48000, bits=32),
+                     s32_data))
+
+    # 3) WAVE_FORMAT_EXTENSIBLE with KSDATAFORMAT_SUBTYPE_PCM and 32-bit
+    #    samples. Exercises the GUID-resolution branch in wav.c
+    #    (sf_tag_to_fourcc) on top of the same araw S32N codepath. This is
+    #    additionally interesting because EXTENSIBLE wires up the channel
+    #    layout / chans_to_reorder branch that plain WAVE_FORMAT_PCM skips.
+    _write(os.path.join(root, 'seeds/wav/extensible_pcm32_quad.wav'),
+           _wav_file(_wav_fmt_extensible(channels=4, rate=48000, bits=32,
+                                         channel_mask=0x33,  # FL FR BL BR
+                                         subformat_guid=_GUID_PCM),
+                     bytes(4 * 4 * 32)))
+
+    # 4) WAVE_FORMAT_EXTENSIBLE with KSDATAFORMAT_SUBTYPE_IEEE_FLOAT and
+    #    64-bit samples — drives the same EXTENSIBLE/GUID code in wav.c but
+    #    resolves to FL64 in araw, complementing seed (1).
+    _write(os.path.join(root, 'seeds/wav/extensible_float64_stereo.wav'),
+           _wav_file(_wav_fmt_extensible(channels=2, rate=96000, bits=64,
+                                         channel_mask=0x3,
+                                         subformat_guid=_GUID_IEEE_FLOAT),
+                     bytes(8 * 2 * 16)))
+
+    # 5) WAV PCM 8-channel surround at 32-bit. Stresses both the channel-mask
+    #    fan-out in wav.c (>2 channels triggers the pi_default_channels
+    #    fill-in loop, which is mostly unhit) and the per-frame size math in
+    #    araw's main Decode entry. Block-align is 8 channels × 4 bytes = 32.
+    _write(os.path.join(root, 'seeds/wav/pcm_32bit_8ch.wav'),
+           _wav_file(_wav_fmt_extensible(channels=8, rate=48000, bits=32,
+                                         channel_mask=0x63F,
+                                         subformat_guid=_GUID_PCM),
+                     bytes(32 * 16)))
 
 
 # ──────────────────────────────────────────────────
@@ -2816,7 +3683,7 @@ def seed_speex_full() -> bytes:
                  serial=serial, page_seq=1, granule=0),
     ]
     # Several short audio packets — random-ish bit patterns that exercise
-    # the frame-decode error paths in libspeex/nb_celp.c without crashing.
+    # the frame-decode paths in libspeex/nb_celp.c.
     frames = [
         bytes.fromhex('36ff83e00018'),
         bytes.fromhex('36ff83e00018' '24008000'),
@@ -2885,10 +3752,9 @@ def gen_ogg(root):
 #  MKV seed — Matroska with DVD chapter codec commands
 # ──────────────────────────────────────────────────
 #
-# modules/demux/mkv/chapter_command_dvd.cpp (~700 lines, 0 % in
-# 2026-05-16 coverage report).  The native upstream seeds carry plain
-# chapters with no ChapterProcess, so dvd_chapter_codec_c is never
-# instantiated and its Enter / Interpret entry-points never run.
+# modules/demux/mkv/chapter_command_dvd.cpp.  The native upstream seeds
+# carry plain chapters with no ChapterProcess, so dvd_chapter_codec_c is not
+# instantiated and its Enter / Interpret entry-points do not run.
 #
 # When matroska_segment_c::ParseChapterAtom encounters a ChapterProcess
 # with ChapProcessCodecID == 1 it instantiates dvd_chapter_codec_c and
@@ -2964,6 +3830,7 @@ _MKV_TRACK_NUMBER    = 0xD7
 _MKV_TRACK_UID       = 0x73C5
 _MKV_TRACK_TYPE      = 0x83
 _MKV_CODEC_ID        = 0x86
+_MKV_CODEC_PRIVATE   = 0x63A2
 _MKV_FLAG_LACING     = 0x9C
 
 _MKV_CHAPTERS        = 0x1043A770
@@ -3124,7 +3991,7 @@ def _build_mkv_dvd_chapters_seed() -> bytes:
     chap_atom_2 = _mkv_elem(_MKV_CHAPTER_ATOM, chap_atom_2_body)
 
     # A third ChapterAtom carrying a native (Matroska script) codec_id=0
-    # so chapter_command_script.cpp also picks up coverage.
+    # so chapter_command_script.cpp is also exercised.
     chap_process_3_body  = _mkv_uint(_MKV_CHAP_PROC_CODEC_ID, 0)
     chap_process_3_body += _mkv_bin(_MKV_CHAP_PROC_PRIVATE, b'')
     chap_process_3_body += _make_command(0, b'\x01' + _mkv_dvd_command(0x0000))
@@ -3161,11 +4028,100 @@ def _build_mkv_dvd_chapters_seed() -> bytes:
     return ebml + segment
 
 
+# ──────────────────────────────────────────────────
+#  USF subtitles in Matroska (modules/codec/subsusf.c)
+# ──────────────────────────────────────────────────
+#
+# VLC_CODEC_USF is produced only by the Matroska parser (CodecID "S_TEXT/USF").
+# This seed drives both halves of subsusf.c:
+#   * Track CodecPrivate = <USFSubtitles> header XML (ParseUSFHeader): metadata/
+#     resolution, <styles>/<style> (incl. a "Default" style for the default-copy
+#     branch), <fontstyle> (face/size/italic/weight/underline/color/outline/
+#     shadow/spacing) and <position> (alignment values + %/absolute margins).
+#   * Each SimpleBlock = a USF body (ParseUSFString): a <karaoke> run with <k>
+#     tags, an <image> with a colorkey, and a formatted text line for StripTags
+#     (font/bold/italic, <br/>, &lt;/&gt;/&amp;/&quot;) + SetupPositions.
+# Placed in seeds/mkv/ so the existing "mkv" target picks it up.
+
+_USF_HEADER = (
+    b'<?xml version="1.0" encoding="UTF-8"?>'
+    b'<USFSubtitles version="1.0">'
+    b'<metadata><title>fuzz</title><resolution x="1280" y="720"/></metadata>'
+    b'<styles>'
+    b'<style name="Default">'
+    b'<fontstyle face="Sans" size="24" italic="yes" weight="bold"'
+    b' underline="yes" color="#80ff0000" outline-color="#ff00ff00"'
+    b' outline-level="2" shadow-color="#ff0000ff" shadow-level="1"'
+    b' spacing="3"/>'
+    b'<position alignment="BottomCenter" horizontal-margin="10%"'
+    b' vertical-margin="20"/>'
+    b'</style>'
+    b'<style name="Top">'
+    b'<fontstyle face="Serif" size="+3" italic="no" weight="normal"/>'
+    b'<position alignment="TopLeft" horizontal-margin="5"'
+    b' vertical-margin="8%"/>'
+    b'</style>'
+    b'</styles>'
+    b'</USFSubtitles>'
+)
+
+# A handful of USF body strings, one per SimpleBlock, each hitting a
+# different branch of ParseUSFString / StripTags.
+_USF_BODIES = [
+    b'<text style="Default"><b>Hello</b> <i>world</i> &amp; '
+    b'more &lt;ok&gt;<br/>second &quot;line&quot;</text>',
+    b'<karaoke><k t="50"/>Sing <k t="50"/>a <k t="50"/>song</karaoke>',
+    b'<image colorkey="#ff00ff">embedded.png</image>',
+    b'<text><font color="#00ff00" face="Mono">positioned</font></text>'
+    b'<position alignment="MiddleRight" horizontal-margin="2%"/>',
+]
+
+
+def _build_mkv_usf_seed() -> bytes:
+    """A Matroska file with a single S_TEXT/USF subtitle track whose
+    CodecPrivate is a USF header and whose cluster carries several USF
+    subtitle blocks. Drives modules/codec/subsusf.c end to end."""
+
+    ebml_body  = _mkv_uint(_MKV_EBML_VERSION, 1)
+    ebml_body += _mkv_uint(_MKV_EBML_READVER, 1)
+    ebml_body += _mkv_str(_MKV_DOCTYPE, b'matroska')
+    ebml_body += _mkv_uint(_MKV_DOCTYPE_VER, 4)
+    ebml_body += _mkv_uint(_MKV_DOCTYPE_RDVER, 2)
+    ebml = _mkv_elem(_MKV_EBML, ebml_body)
+
+    info_body  = _mkv_bin(_MKV_TIMECODE_SCALE, (1_000_000).to_bytes(3, 'big'))
+    info_body += _mkv_bin(_MKV_DURATION, struct.pack('>d', 1000.0))
+    info_body += _mkv_str(_MKV_MUXAPP, b'oss-fuzz-vlc')
+    info = _mkv_elem(_MKV_INFO, info_body)
+
+    track_body  = _mkv_uint(_MKV_TRACK_NUMBER, 1)
+    track_body += _mkv_bin(_MKV_TRACK_UID, (1).to_bytes(4, 'big'))
+    track_body += _mkv_uint(_MKV_TRACK_TYPE, 0x11)            # subtitle
+    track_body += _mkv_str(_MKV_CODEC_ID, b'S_TEXT/USF')
+    track_body += _mkv_bin(_MKV_CODEC_PRIVATE, _USF_HEADER)   # USF header XML
+    track_body += _mkv_uint(_MKV_FLAG_LACING, 0)
+    tracks = _mkv_elem(_MKV_TRACKS, _mkv_elem(_MKV_TRACK_ENTRY, track_body))
+
+    # Cluster — one SimpleBlock per USF body, spaced 100 ms apart so each
+    # gets a distinct, valid PTS (ParseText rejects VLC_TICK_INVALID).
+    cluster_body = _mkv_uint(_MKV_TIMECODE, 0)
+    for i, body in enumerate(_USF_BODIES):
+        ts = i * 100
+        block = bytes([0x81]) + struct.pack('>h', ts) + bytes([0x00]) + body
+        cluster_body += _mkv_bin(_MKV_SIMPLEBLOCK, block)
+    cluster = _mkv_elem(_MKV_CLUSTER, cluster_body)
+
+    segment = _mkv_elem(_MKV_SEGMENT, info + tracks + cluster)
+    return ebml + segment
+
+
 def gen_mkv(root):
     out = os.path.join(root, 'seeds', 'mkv')
     os.makedirs(out, exist_ok=True)
     _write(os.path.join(out, 'dvd_chapter_commands.mkv'),
            _build_mkv_dvd_chapters_seed())
+    _write(os.path.join(out, 'usf_subtitles.mkv'),
+           _build_mkv_usf_seed())
 
 
 # ──────────────────────────────────────────────────
@@ -3174,8 +4130,8 @@ def gen_mkv(root):
 #
 # The upstream vlc-fuzz-corpus seeds in seeds/mp4/ (aac_audio.mp4,
 # avc_video.mp4, fragmented.mp4, with_sidx.mp4, …) exercise the common
-# ftyp/moov/trak/mdia/stbl tree, leaving several specialized libmp4.c
-# parsers at 0% coverage in the production OSS-Fuzz report:
+# ftyp/moov/trak/mdia/stbl tree. These add seeds for several specialized
+# libmp4.c box parsers:
 #
 #   * MP4_ReadBox_st3d / prhd / equi / cbmp   — spherical/VR metadata
 #     (sv3d > proj > {prhd,equi,cbmp}; st3d at any depth)
@@ -3248,9 +4204,8 @@ def seed_mp4_spherical() -> bytes:
 
 def seed_mp4_uuid_boxes() -> bytes:
     """Hits MP4_ReadBox_uuid's UUID-dispatch ladder for the three
-       handled extended types: TfrfBoxUUID, TfxdBoxUUID, XML360BoxUUID.
-       MP4_ReadBox_tfrf / tfxd / XML360 are all 0% covered in the
-       production report."""
+       handled extended types: TfrfBoxUUID, TfxdBoxUUID, XML360BoxUUID
+       (MP4_ReadBox_tfrf / tfxd / XML360)."""
     tfrf_payload = (bytes([0x00, 0x00, 0x00, 0x00])
                     + bytes([0x01])
                     + struct.pack('>II', 0, 100))
@@ -3388,6 +4343,160 @@ def mp4_dictionary() -> str:
     return '\n'.join(lines) + '\n'
 
 
+# ──────────────────────────────────────────────────
+#  CEA-708 caption seeds (modules/codec/cea708.c)
+# ──────────────────────────────────────────────────
+#
+# cea708.c (the DTVCC service-block / window command decoder) is reached only
+# via a real cc.c decoder loaded on a caption ES, NOT via the SEI cc_data extracted by
+# the H.264/H.265 packetizers — the test harness discards packetizer pf_get_cc
+# output (test/src/input/decoder.c). The one container that emits a standalone
+# VLC_CODEC_CEA708 ES is MP4: a 'clcp' handler track with a 'c708' sample entry
+# (modules/demux/mp4/{essetup,mp4}.c). The full reachable path is:
+#
+#   mp4 demux (clcp/c708 track) -> SPU ES VLC_CODEC_CEA708 -> cc.c spu decoder
+#   -> MP4_CDP_Convert: each sample is a QuickTime 'ccdp' atom wrapping an
+#      ST334-2 CDP, parsed by cc.h cc_Extract(CC_PAYLOAD_CDP) into cc triplets
+#   -> cc.c Convert(): triplets with cc_type 3/2 -> CEA708 DTVCC demuxer
+#   -> service blocks (service #1, matching c708 default cc.i_channel 0)
+#   -> CEA708_Decoder_Push -> the C0/C1/G0/G1/G2G3/P16 command parser.
+#
+# These seeds emit valid MP4 c708 tracks whose samples carry DTVCC service
+# blocks exercising DefineWindow (DF0..DF7), SetPen{Attributes,Color,Location},
+# SetWindowAttributes, window display/clear/toggle/hide/delete, delays, reset,
+# G0/G1/G2-G3/P16 text, and rows filled to the screen edge in all four
+# print/scroll directions to drive Window_{Forward,CarriageReturn,Scroll,
+# Truncate,MaxCol,MinCol}. They land in seeds/mp4/ (the mp4 demux target).
+
+def _cea_mvhd():
+    p = struct.pack('>IIII', 0, 0, 1000, 0) + struct.pack('>I', 0x10000)
+    p += struct.pack('>H', 0x0100) + b'\x00' * 10
+    p += struct.pack('>9i', 0x10000,0,0, 0,0x10000,0, 0,0,0x40000000)
+    p += b'\x00' * 24 + struct.pack('>I', 2)
+    return fullbox(b'mvhd', 0, 0, p)
+
+def _cea_tkhd():
+    p = struct.pack('>IIIII', 0,0,1,0,0) + b'\x00' * 8
+    p += struct.pack('>hhhh', 0,0,0,0)
+    p += struct.pack('>9i', 0x10000,0,0, 0,0x10000,0, 0,0,0x40000000)
+    p += struct.pack('>II', 0, 0)
+    return fullbox(b'tkhd', 0, 0x000007, p)   # enabled | in movie | in preview
+
+def _cea_mdhd():
+    return fullbox(b'mdhd', 0, 0, struct.pack('>IIII', 0,0,1000,0) +
+                   struct.pack('>HH', 0x55c4, 0))
+
+def _cea_stsd_c708():
+    entry = box(b'c708', b'\x00' * 6 + struct.pack('>H', 1))  # 6 reserved + dref idx
+    return fullbox(b'stsd', 0, 0, struct.pack('>I', 1) + entry)
+
+def _cea_build_mp4(samples):
+    sizes = [len(s) for s in samples]
+    n = len(samples)
+    def stbl(chunk_off):
+        return box(b'stbl',
+            _cea_stsd_c708() +
+            fullbox(b'stts',0,0, struct.pack('>I',1) + struct.pack('>II', n, 1000)) +
+            fullbox(b'stsc',0,0, struct.pack('>I',1) + struct.pack('>III', 1, n, 1)) +
+            fullbox(b'stsz',0,0, struct.pack('>II', 0, n) +
+                    b''.join(struct.pack('>I', s) for s in sizes)) +
+            fullbox(b'stco',0,0, struct.pack('>I',1) + struct.pack('>I', chunk_off)))
+    def moov(chunk_off):
+        minf = box(b'minf', box(b'dinf', fullbox(b'dref',0,0, struct.pack('>I',1) +
+                   fullbox(b'url ',0,1,b''))) + stbl(chunk_off))
+        mdia = box(b'mdia', _cea_mdhd() + hdlr(b'clcp') + minf)
+        return box(b'moov', _cea_mvhd() + box(b'trak', _cea_tkhd() + mdia))
+    ftypb = ftyp(b'isom', [b'isom', b'mp42'])
+    chunk_off = len(ftypb) + len(moov(0)) + 8     # moov size is offset-independent
+    return ftypb + moov(chunk_off) + box(b'mdat', b''.join(samples))
+
+# DTVCC cc-triplet byte0: marker bits | valid bit (0x04) | cc_type. type 3 =
+# DTVCC packet header, type 2 = continuation (cc.c routes both to the 708 demux).
+def _cea_cdp_sample(command_block, seq):
+    sb = bytes([(1 << 5) | len(command_block)]) + command_block   # service #1
+    P = bytearray(sb)
+    if len(P) % 2 == 0:
+        P.append(0x00)                            # odd length -> clean packing
+    code = (len(P) + 1) // 2
+    trips = [bytes([0xFF, code, P[0]])]           # 0xFF: valid, cc_type 3
+    i = 1
+    while i < len(P):
+        trips.append(bytes([0xFE, P[i], P[i+1]])) # 0xFE: valid, cc_type 2
+        i += 2
+    assert len(trips) <= 31
+    ccdata = bytes([0x72, 0xE0 | len(trips)]) + b''.join(trips)
+    cdp = bytearray([0x96, 0x69, 0, 0x3F, 0x40, (seq >> 8) & 0xFF, seq & 0xFF]) + ccdata
+    cdp[2] = len(cdp) & 0xFF                       # cdp_length
+    return box(b'ccdp', bytes(cdp))
+
+def _cea_command_blocks():
+    DF0, DF7 = 0x98, 0x9F
+    blocks = [
+        # DefineWindow 0, pen/window attributes, pen location, text, flush.
+        bytes([DF0,0x27,0x00,0x00,0x12,0x20,0x09, 0x90,0x4A,0xC5, 0x91,0x7F,0x80,0x2A,
+               0x97,0x40,0x00,0x3C,0x21, 0x92,0x01,0x02, 0x48,0x69, 0x03]),
+        # Window visibility ops + delay/cancel.
+        bytes([0x89,0x01, 0x80, 0x88,0x01, 0x8B,0x01, 0x8A,0x01, 0x8D,0x05, 0x8E]),
+        # DefineWindow 1 (relative), G1 / EXT1+G2 / P16 / C0 controls.
+        bytes([0x99,0x20,0x80,0x10,0x23,0x10,0x12, 0xA1, 0x10,0x30, 0x18,0x00,0x41,
+               0x08, 0x0C, 0x0D, 0x0E, 0x7F, 0x03]),
+        # DefineWindow 7, text, display, delete-all, reset.
+        bytes([DF7,0x20,0x00,0x00,0x11,0x10,0x00, 0x87, 0x54,0x56, 0x89,0x80,
+               0x8C,0xFF, 0x8F]),
+    ]
+    # Small windows in all 4 print/scroll directions, filled with text + CRs to
+    # drive Forward/CarriageReturn/Scroll/Truncate across every direction branch.
+    for d in range(4):
+        win = 2 + d
+        blocks += [
+            bytes([0x98 + win, 0x27,0x00,0x00,0x11,0x04,0x09]),
+            bytes([0x97, 0x00,0x00, 0x40 | (d << 4) | (d << 2), 0x12]),
+            bytes([0x80 + win]),
+            bytes([0x41,0x42,0x43,0x20,0x44,0x45,0x20,0x46, 0x0D,0x0D,0x0D,0x08,0x0C,0x03]),
+            bytes([0x47,0x48,0x49,0x20,0x4A,0x4B, 0x0D,0x0D,0x0E,0x03]),
+        ]
+    # LTR row filled to the right edge (col 41) -> Truncate(LTR) + MaxCol.
+    blocks += [
+        bytes([0x9E,0x27,0x00,0x00,0x11,0x20,0x09]),
+        bytes([0x97,0x00,0x00,0x00,0x00]),
+        bytes([0x86, 0x92,0x00,0x00]),
+        bytes([0x41]*28), bytes([0x41]*28),
+        bytes([0x0D, 0x03]),
+    ]
+    # RTL row filled to the left edge (col 0) -> Truncate(RTL) + MinCol.
+    blocks += [
+        bytes([0x9D,0x27,0x00,0x00,0x11,0x20,0x09]),
+        bytes([0x97,0x00,0x00,0x14,0x00]),
+        bytes([0x85, 0x92,0x00,0x29]),
+        bytes([0x42]*28), bytes([0x42]*28),
+        bytes([0x0D, 0x03]),
+    ]
+    # P16 across all three UTF-8 width branches, then display everything.
+    blocks += [
+        bytes([0x18,0x00,0x41, 0x18,0x04,0x00, 0x18,0x30,0x42, 0x03]),
+        bytes([0x89, 0xFF, 0x03]),
+    ]
+    return blocks
+
+
+def gen_cea708(root):
+    seed_dir = os.path.join(root, 'seeds', 'mp4')
+    os.makedirs(seed_dir, exist_ok=True)
+    blocks = _cea_command_blocks()
+    # One full program seed (all commands), plus a couple of split variants so
+    # the fuzzer has shorter, easily-mutable caption samples to start from.
+    variants = {
+        'cea708_dtvcc_full.mp4': blocks,
+        'cea708_dtvcc_windows.mp4': blocks[:4],
+        'cea708_dtvcc_scroll.mp4': blocks[4:24],
+    }
+    for name, blks in variants.items():
+        samples = [_cea_cdp_sample(b, i) for i, b in enumerate(blks)]
+        data = _cea_build_mp4(samples)
+        _write(os.path.join(seed_dir, name), data)
+        print(f'  seeds/mp4/{name}: {len(data)} bytes, {len(samples)} CDP samples')
+
+
 def gen_mp4_extras(root):
     seed_dir = os.path.join(root, 'seeds', 'mp4')
     dict_dir = os.path.join(root, 'dictionaries')
@@ -3402,8 +4511,974 @@ def gen_mp4_extras(root):
 
 
 # ──────────────────────────────────────────────────
+#  GME seeds (modules/demux/gme.c -> contrib libgme)
+# ──────────────────────────────────────────────────
+#
+# gme.c Open() peeks only the first 4 bytes and accepts the file when
+# gme_identify_header() recognises the magic; libgme then parses the format
+# header and emulates the embedded CPU/sound chip in Demux(). The existing
+# corpus has no gme seeds at all, so the plugin and the libgme loaders and
+# CPU cores (6502/Z80/SPC700/GB/HuC6280…) are currently unreached.
+#
+# We emit one minimal but magic-valid file per supported format. A bare header
+# passes Open() and starts the emulator; the fuzzer mutates outward from these
+# into the per-format parsers and the CPU/APU cores.
+
+def _gme_nsf():
+    """NSF (NES, 6502 core)."""
+    h = bytearray(128)
+    h[0:5] = b"NESM\x1a"
+    h[5] = 1                                   # version
+    h[6] = 1                                   # total songs
+    h[7] = 1                                   # starting song (1-based)
+    h[8:10]   = (0x8000).to_bytes(2, "little") # load addr
+    h[10:12]  = (0x8000).to_bytes(2, "little") # init addr
+    h[12:14]  = (0x8000).to_bytes(2, "little") # play addr
+    h[110:112] = (0x411A).to_bytes(2, "little")# NTSC speed
+    h[120:122] = (0x4E20).to_bytes(2, "little")# PAL speed
+    return bytes(h) + bytes([0x60]) * 64       # program: RTS sled at $8000
+
+
+def _gme_gbs():
+    """GBS (Game Boy, LR35902 core)."""
+    h = bytearray(0x70)
+    h[0:4] = b"GBS\x01"
+    h[4] = 1                                    # song count
+    h[5] = 1                                    # first song
+    for off, val in [(6, 0x0400), (8, 0x0400), (10, 0x0400), (12, 0xFFFE)]:
+        h[off:off+2] = val.to_bytes(2, "little")  # load/init/play/sp
+    return bytes(h) + bytes(64)
+
+
+def _gme_vgm():
+    """VGM 1.50 (chip command stream)."""
+    h = bytearray(0x40)
+    h[0:4] = b"Vgm "
+    h[8:12]    = (0x150).to_bytes(4, "little")            # version 1.50
+    h[0x34:0x38] = (0x40 - 0x34).to_bytes(4, "little")    # data offset
+    body = bytes([0x66])                                  # end-of-sound marker
+    h[4:8]     = (0x40 + len(body) - 4).to_bytes(4, "little")  # EOF offset
+    return bytes(h) + body
+
+
+def _gme_magic_only(magic: bytes, size: int) -> bytes:
+    return magic + bytes(max(0, size - len(magic)))
+
+
+def gen_gme(root):
+    seed_dir = os.path.join(root, "seeds", "gme")
+    seeds = {
+        "song.nsf": _gme_nsf(),
+        "song.gbs": _gme_gbs(),
+        "song.vgm": _gme_vgm(),
+        # SPC700 RAM dump is fixed-size 0x10200; magic = first 4 bytes "SNES".
+        "song.spc": _gme_magic_only(b"SNES-SPC700 Sound File Data v0.30", 0x10200),
+        "song.ay":  _gme_magic_only(b"ZXAYEMUL", 128),
+        "song.kss": _gme_magic_only(b"KSCC", 128),
+        "song.gym": _gme_magic_only(b"GYMX", 428),
+        # The HES format is exercised via the "HESM" dictionary entry rather
+        # than a dedicated seed.
+    }
+    for name, data in seeds.items():
+        _write(os.path.join(seed_dir, name), data)
+
+    dict_path = os.path.join(root, "dictionaries", "gme.dict")
+    os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+    with open(dict_path, "w") as f:
+        f.write("# libgme format magics recognised by gme_identify_header()\n")
+        for tag in ['NESM\\x1a', 'GBS\\x01', 'Vgm ', 'ZXAYEMUL',
+                    'KSCC', 'KSSX', 'HESM', 'GYMX', 'NSFE', 'SNES-SPC700']:
+            f.write(f'"{tag}"\n')
+    print("  dictionaries/gme.dict written")
+
+
+# ──────────────────────────────────────────────────
+#  MOD seeds (modules/demux/mod.c -> contrib libmodplug)
+# ──────────────────────────────────────────────────
+#
+# The harness forces the "mod" demuxer by name, so demux->obj.force is true and
+# mod.c skips its extension Validate(); any non-empty file < 500MB is handed
+# straight to libmodplug, which probes every loader by content. The existing
+# corpus has no mod seeds, so libmodplug's loaders (load_it/load_s3m/load_mod/
+# load_xm/…) are currently unreached. We provide one minimal file per major
+# loader so each format's parser is seeded; the fuzzer mutates header
+# counts/offsets from here.
+
+def _mod_it():
+    """Impulse Tracker — 'IMPM' magic at offset 0."""
+    h = bytearray(0xC0)
+    h[0:4] = b"IMPM"
+    # song name (26 bytes) left zero
+    h[0x20:0x22] = (0).to_bytes(2, "little")   # OrdNum
+    h[0x22:0x24] = (0).to_bytes(2, "little")   # InsNum
+    h[0x24:0x26] = (0).to_bytes(2, "little")   # SmpNum
+    h[0x26:0x28] = (0).to_bytes(2, "little")   # PatNum
+    h[0x28:0x2A] = (0x0214).to_bytes(2, "little")  # created w/ tracker version
+    h[0x2A:0x2C] = (0x0200).to_bytes(2, "little")  # compatible version
+    h[0x30] = 0x80                              # global volume
+    h[0x32] = 0x80                              # mixing volume
+    h[0x33] = 6                                 # initial speed
+    h[0x34] = 0x7D                              # initial tempo
+    return bytes(h) + b"\xff"                   # one order: end-of-song marker
+
+
+def _mod_s3m():
+    """ScreamTracker 3 — 'SCRM' magic at offset 0x2C."""
+    h = bytearray(0x60)
+    h[0x1C] = 0x1A                              # EOF marker
+    h[0x1D] = 0x10                              # file type (module)
+    h[0x20:0x22] = (0).to_bytes(2, "little")    # OrdNum
+    h[0x22:0x24] = (0).to_bytes(2, "little")    # InsNum
+    h[0x24:0x26] = (0).to_bytes(2, "little")    # PatNum
+    h[0x28:0x2A] = (0x1320).to_bytes(2, "little")  # cwtv
+    h[0x2A:0x2C] = (2).to_bytes(2, "little")    # file format info
+    h[0x2C:0x30] = b"SCRM"
+    h[0x30] = 6                                 # global volume
+    h[0x31] = 6                                 # initial speed
+    h[0x32] = 0x7D                              # initial tempo
+    # 32 channel settings: all disabled (0xFF)
+    return bytes(h) + b"\xff" * 32
+
+
+def _mod_xm():
+    """FastTracker 2 — 'Extended Module: ' magic at offset 0."""
+    h = bytearray()
+    h += b"Extended Module: "                   # 17 bytes
+    h += b"seed".ljust(20, b"\x00")             # module name (20)
+    h += b"\x1a"                                # 0x1A
+    h += b"FastTracker v2.00   "                # tracker name (20)
+    h += (0x0104).to_bytes(2, "little")         # version 1.04
+    h += (0x0114).to_bytes(4, "little")         # header size (276)
+    h += (1).to_bytes(2, "little")              # song length
+    h += (0).to_bytes(2, "little")              # restart position
+    h += (4).to_bytes(2, "little")              # number of channels
+    h += (0).to_bytes(2, "little")              # number of patterns
+    h += (0).to_bytes(2, "little")              # number of instruments
+    h += (1).to_bytes(2, "little")              # flags (linear freq)
+    h += (6).to_bytes(2, "little")              # default tempo
+    h += (125).to_bytes(2, "little")            # default BPM
+    h += bytes(256)                             # pattern order table
+    return bytes(h)
+
+
+def _mod_protracker():
+    """Amiga ProTracker — 'M.K.' tag at offset 1080."""
+    b = bytearray()
+    b += bytes(20)                              # song title
+    for _ in range(31):                         # 31 sample headers (30 bytes)
+        s = bytearray(30)
+        s[22:24] = (0).to_bytes(2, "big")       # sample length (words)
+        s[25] = 64                              # volume
+        b += s
+    b += bytes([1])                             # song length
+    b += bytes([127])                           # restart byte
+    b += bytes(128)                             # pattern order table
+    b += b"M.K."                                # 4-channel magic @1080
+    b += bytes(1024)                            # one empty pattern (64 rows*4ch*4)
+    return bytes(b)
+
+
+def gen_mod(root):
+    seed_dir = os.path.join(root, "seeds", "mod")
+    seeds = {
+        "seed.it":  _mod_it(),
+        "seed.s3m": _mod_s3m(),
+        "seed.xm":  _mod_xm(),
+        "seed.mod": _mod_protracker(),
+    }
+    for name, data in seeds.items():
+        _write(os.path.join(seed_dir, name), data)
+
+    dict_path = os.path.join(root, "dictionaries", "mod.dict")
+    os.makedirs(os.path.dirname(dict_path), exist_ok=True)
+    with open(dict_path, "w") as f:
+        f.write("# libmodplug loader signatures\n")
+        for tag in ['IMPM', 'SCRM', 'Extended Module: ', 'M.K.', 'M!K!',
+                    '4CHN', '6CHN', '8CHN', 'FLT4', 'FLT8',
+                    'MTM\\x10', 'if', 'JN', 'DBM0', 'PSM ', 'FAR\\xfe']:
+            f.write(f'"{tag}"\n')
+    print("  dictionaries/mod.dict written")
+
+
+# ──────────────────────────────────────────────────
+#  Kate-in-Ogg seed (modules/codec/kate.c -> contrib libkate)
+# ──────────────────────────────────────────────────
+#
+# The kate decoder is reached through the ogg demuxer: ogg.c detects a logical
+# stream whose first packet is `\x80kate\0\0\0`, emits a VLC_CODEC_KATE SPU ES,
+# and feeds the backed-up headers + data packets to codec/kate.c (libkate).
+# There is no kate content in the existing ogg corpus, so kate.c + libkate are
+# unreached. This seed is therefore written into seeds/ogg/ (the target that
+# forces the "ogg" demuxer).
+#
+# Header layout consumed by ogg.c:Ogg_ReadKateHeader() (all byte-aligned):
+#   [0]=0x80  [1:8]="kate\0\0\0"  [8:11]=version  [11]=num_headers
+#   [15]=granule_shift  [24:28]=gnum(LE32, must be !=0)  [28:32]=gden(LE32)
+#   [32:48]=language  [48:64]=category   -> minimal valid ID header = 64 bytes.
+
+def _kate_id_header(num_headers: int = 2) -> bytes:
+    h = bytearray(64)
+    h[0] = 0x80
+    h[1:8] = b"kate\x00\x00\x00"
+    h[8] = 0                                  # bitstream version major
+    h[9] = 6                                  # bitstream version minor
+    h[11] = num_headers                       # total number of headers
+    h[15] = 0                                 # granule shift
+    h[24:28] = (1000).to_bytes(4, "little")   # granule rate numerator (!=0)
+    h[28:32] = (1000).to_bytes(4, "little")   # granule rate denominator
+    h[32:35] = b"und"                         # language
+    h[48:57] = b"subtitles"                   # category
+    return bytes(h)
+
+
+def _kate_comment_header() -> bytes:
+    # 0x81 + magic + minimal Vorbis-style comment (empty vendor, 0 comments).
+    return (b"\x81kate\x00\x00\x00"
+            + (0).to_bytes(4, "little")       # vendor length
+            + (0).to_bytes(4, "little"))      # user comment count
+
+
+def _kate_eos_packet() -> bytes:
+    # Kate "end of stream" data packet (packet type 0x7F).
+    return b"\x7fkate\x00\x00\x00"
+
+
+def seed_kate_ogg() -> bytes:
+    serial = 0x6B617465  # "kate"
+    pages = []
+    pages.append(ogg_page([_kate_id_header(num_headers=2)],
+                          serial=serial, page_seq=0, bos=True))
+    pages.append(ogg_page([_kate_comment_header()],
+                          serial=serial, page_seq=1))
+    pages.append(ogg_page([_kate_eos_packet()],
+                          serial=serial, page_seq=2, granule=1, eos=True))
+    return b"".join(pages)
+
+
+def gen_kate(root):
+    out = os.path.join(root, "seeds", "ogg")
+    os.makedirs(out, exist_ok=True)
+    _write(os.path.join(out, "kate_min.ogg"), seed_kate_ogg())
+
+
+# ──────────────────────────────────────────────────
 #  main
 # ──────────────────────────────────────────────────
+
+# ===========================================================================
+# Media seeds: PNG/JPEG images, ffmpeg-generated A/V containers, and extra
+# libmodplug modules. These exercise VLC's native decoder plugins (libpng,
+# libjpeg, dav1d, libvpx, libtheora, libvorbis, opus, speex, flac, faad2,
+# mpg123) and the mod demuxer. PNG generation is pure-stdlib; PIL and ffmpeg
+# are optional and skipped gracefully when absent so the rest of the corpus
+# still builds.
+# ===========================================================================
+
+def _png_chunk(typ: bytes, data: bytes) -> bytes:
+    return (struct.pack('>I', len(data)) + typ + data +
+            struct.pack('>I', zlib.crc32(typ + data) & 0xffffffff))
+
+
+def gen_image(root):
+    """PNG (every colour type/bit depth/interlace/filter/ancillary chunk) and
+    JPEG (baseline/progressive/subsampling/grey/CMYK) for libpng / libjpeg."""
+    O = os.path.join(root, 'seeds', 'image')
+    os.makedirs(O, exist_ok=True)
+
+    # BPG (Better Portable Graphics) -> codec/bpg.c + bundled libbpg, reached
+    # via the image demux, which detects the 4-byte 'BPG\xFB' marker. bpg.c was
+    # never registered in the harness (absent from coverage). A structurally
+    # valid BPG header gets past detection and the libbpg header parse (the
+    # front door); libFuzzer mutates from there into the HEVC-based decoder.
+    def _ue7(v: int) -> bytes:
+        out = bytearray([v & 0x7F])
+        v >>= 7
+        while v:
+            out.insert(0, 0x80 | (v & 0x7F))
+            v >>= 7
+        return bytes(out)
+
+    bpg = (b'BPG\xfb'                 # magic
+           + bytes([0x20])            # pixel_format=4:2:0(1), bit_depth_minus8=0
+           + bytes([0x00])            # color_space=YCbCr, no extension/alpha
+           + _ue7(16) + _ue7(16)      # picture_width, picture_height
+           + _ue7(0))                 # picture_data_length (0 = to end of file)
+    bpg += bytes([0x00, 0x00, 0x01, 0x26, 0x01] + [0x00] * 32)   # HEVC payload
+    with open(os.path.join(O, 'minimal.bpg'), 'wb') as f:
+        f.write(bpg)
+
+    SIG = b'\x89PNG\r\n\x1a\n'
+
+    def png(name, w, h, bd, ct, rows, before=b'', after=b'',
+            palette=None, trns=None, interlace=0):
+        ihdr = struct.pack('>IIBBBBB', w, h, bd, ct, 0, 0, interlace)
+        out = SIG + _png_chunk(b'IHDR', ihdr)
+        if palette is not None:
+            out += _png_chunk(b'PLTE', palette)
+        if trns is not None:
+            out += _png_chunk(b'tRNS', trns)
+        out += before + _png_chunk(b'IDAT', zlib.compress(b''.join(rows), 9))
+        out += after + _png_chunk(b'IEND', b'')
+        with open(os.path.join(O, name), 'wb') as f:
+            f.write(out)
+
+    W, H = 4, 3
+
+    def rgb_rows(fb):
+        r = []
+        for y in range(H):
+            px = b''.join(bytes([(x * 40) & 0xff, (y * 60) & 0xff,
+                                 ((x + y) * 30) & 0xff]) for x in range(W))
+            r.append(bytes([fb]) + px)
+        return r
+
+    # one image per filter type -> png_read_filter_row_{sub,up,avg,paeth}
+    for fb, nm in [(0, 'none'), (1, 'sub'), (2, 'up'), (3, 'avg'), (4, 'paeth')]:
+        png('rgb8_filter_%s.png' % nm, W, H, 8, 2, rgb_rows(fb))
+
+    def gray_rows(bd, w, h):
+        r = []
+        mx = (1 << bd) - 1
+        for y in range(h):
+            if bd == 16:
+                px = b''.join(struct.pack('>H', (x * y) & 0xffff) for x in range(w))
+            elif bd == 8:
+                px = bytes([(x * y) & 0xff for x in range(w)])
+            else:
+                acc = 0
+                n = 0
+                buf = bytearray()
+                for x in range(w):
+                    acc = (acc << bd) | ((x + y) & mx)
+                    n += bd
+                    while n >= 8:
+                        n -= 8
+                        buf.append((acc >> n) & 0xff)
+                if n > 0:
+                    buf.append((acc << (8 - n)) & 0xff)
+                px = bytes(buf)
+            r.append(b'\x00' + px)
+        return r
+
+    for bd in (1, 2, 4, 8, 16):
+        png('gray%d.png' % bd, 8, 4, bd, 0, gray_rows(bd, 8, 4))
+    for bd in (8, 16):
+        rows = []
+        for y in range(4):
+            if bd == 16:
+                px = b''.join(struct.pack('>HH', (x * y) & 0xffff, 0x8000) for x in range(6))
+            else:
+                px = b''.join(bytes([(x * y) & 0xff, 0x80]) for x in range(6))
+            rows.append(b'\x00' + px)
+        png('ga%d.png' % bd, 6, 4, bd, 4, rows)
+    png('rgb16.png', 5, 4, 16, 2,
+        [b'\x00' + b''.join(struct.pack('>HHH', (x * 1000) & 0xffff,
+         (y * 2000) & 0xffff, 0x4000) for x in range(5)) for y in range(4)])
+    png('rgba8.png', 5, 4, 8, 6,
+        [b'\x00' + b''.join(bytes([(x * 30) & 0xff, (y * 40) & 0xff, 0x20,
+         (x * y * 10) & 0xff]) for x in range(5)) for y in range(4)])
+    png('rgba16.png', 4, 4, 16, 6,
+        [b'\x00' + b''.join(struct.pack('>HHHH', (x * 1000) & 0xffff, 0, 0, 0xc000)
+         for x in range(4)) for y in range(4)])
+    pal = bytes([255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 0, 0, 0, 0,
+                 255, 255, 255, 128, 128, 128, 64, 200, 30])
+    for bd in (1, 2, 4, 8):
+        mx = (1 << bd) - 1
+        rows = []
+        for y in range(4):
+            acc = 0
+            n = 0
+            buf = bytearray()
+            for x in range(8):
+                acc = (acc << bd) | ((x + y) & mx)
+                n += bd
+                while n >= 8:
+                    n -= 8
+                    buf.append((acc >> n) & 0xff)
+            if n > 0:
+                buf.append((acc << (8 - n)) & 0xff)
+            rows.append(b'\x00' + bytes(buf))
+        png('palette%d.png' % bd, 8, 4, bd, 3, rows,
+            palette=pal[:((mx + 1) * 3)],
+            trns=bytes([0, 128, 255][:min(3, mx + 1)]))
+    before = _png_chunk(b'gAMA', struct.pack('>I', 45455))
+    before += _png_chunk(b'cHRM', struct.pack('>IIIIIIII', 31270, 32900, 64000,
+                         33000, 30000, 60000, 15000, 6000))
+    before += _png_chunk(b'sRGB', b'\x00') + _png_chunk(b'sBIT', b'\x08\x08\x08')
+    before += _png_chunk(b'bKGD', struct.pack('>HHH', 0, 0, 0))
+    before += _png_chunk(b'pHYs', struct.pack('>IIB', 2835, 2835, 1))
+    before += _png_chunk(b'tIME', struct.pack('>HBBBBB', 2024, 1, 2, 3, 4, 5))
+    before += _png_chunk(b'iCCP', b'icc\x00\x00' +
+                         zlib.compress(b'\x00\x00\x01\x00fake-icc' * 4, 9))
+    before += _png_chunk(b'tEXt', b'Comment\x00hello world')
+    before += _png_chunk(b'zTXt', b'Comment\x00\x00' + zlib.compress(b'compressed', 9))
+    before += _png_chunk(b'iTXt', b'Title\x00\x00\x00\x00\x00UTF8 text')
+    png('ancillary_rich.png', W, H, 8, 2, rgb_rows(0), before=before,
+        after=_png_chunk(b'eXIf', b'II*\x00\x08\x00\x00\x00\x00\x00'))
+    png('gama16_rgb.png', 8, 6, 16, 2,
+        [b'\x00' + b''.join(struct.pack('>HHH', (x * 2000) & 0xffff,
+         (y * 3000) & 0xffff, 0x8000) for x in range(8)) for y in range(6)],
+        before=_png_chunk(b'gAMA', struct.pack('>I', 22222)) +
+        _png_chunk(b'bKGD', struct.pack('>HHH', 0xffff, 0, 0)))
+    pal_rows = [b'\x00' + bytes([x & 0x07 for x in range(8)]) for _ in range(4)]
+    hist = _png_chunk(b'hIST', b''.join(struct.pack('>H', i * 10) for i in range(8)))
+    spl = b'sp\x00\x08' + b''.join(struct.pack('>BBBBH', i * 30, 0, 0, 255, i)
+                                   for i in range(8))
+    png('palette_hist_splt.png', 8, 4, 8, 3, pal_rows, palette=pal,
+        before=hist + _png_chunk(b'sPLT', spl))
+    png('ga16_big.png', 8, 6, 16, 4,
+        [b'\x00' + b''.join(struct.pack('>HH', (x * y * 100) & 0xffff, 0x4000)
+         for x in range(8)) for y in range(6)],
+        before=_png_chunk(b'gAMA', struct.pack('>I', 45455)))
+
+    try:
+        from PIL import Image
+
+        def fill(im):
+            w, h = im.size
+            px = im.load()
+            for y in range(h):
+                for x in range(w):
+                    m = im.mode
+                    if m == 'L':
+                        px[x, y] = (x * 7 + y * 5) & 0xff
+                    elif m == 'LA':
+                        px[x, y] = ((x * 7) & 0xff, (y * 11) & 0xff)
+                    elif m == 'P':
+                        px[x, y] = (x + y) & 0x0f
+                    elif m == 'RGB':
+                        px[x, y] = ((x * 9) & 0xff, (y * 9) & 0xff, (x * y) & 0xff)
+                    elif m == 'RGBA':
+                        px[x, y] = ((x * 9) & 0xff, (y * 9) & 0xff,
+                                    (x * y) & 0xff, (x * 13) & 0xff)
+                    elif m == 'I;16':
+                        px[x, y] = (x * 1000 + y * 777) & 0xffff
+            return im
+
+        for mode in ['L', 'LA', 'P', 'RGB', 'RGBA', 'I;16']:
+            im = fill(Image.new(mode, (32, 24)))
+            tag = mode.replace(';', '')
+            im.save('%s/il_%s.png' % (O, tag), interlace=True)
+            im.save('%s/ni_%s.png' % (O, tag), interlace=False)
+        rgb = fill(Image.new('RGB', (24, 16)))
+        gray = fill(Image.new('L', (24, 16)))
+        cmyk = fill(Image.new('CMYK', (24, 16)))
+        rgb.save(O + '/jpg_q90.jpg', quality=90)
+        rgb.save(O + '/jpg_q20.jpg', quality=20)
+        rgb.save(O + '/jpg_progressive.jpg', quality=85, progressive=True)
+        for ss, n in [(0, '444'), (1, '422'), (2, '420')]:
+            rgb.save('%s/jpg_%s.jpg' % (O, n), quality=85, subsampling=ss)
+        gray.save(O + '/jpg_gray.jpg', quality=85)
+        cmyk.save(O + '/jpg_cmyk.jpg', quality=85)
+        rgb.save(O + '/jpg_restart.jpg', quality=85, restart_marker_blocks=4)
+        rgb.save(O + '/jpg_exif.jpg', quality=85,
+                 exif=b'Exif\x00\x00II*\x00\x08\x00\x00\x00\x00\x00\x00\x00')
+    except Exception as e:  # pragma: no cover - Pillow optional
+        print('generate_seeds: Pillow image seeds skipped:', e, file=sys.stderr)
+
+
+def _ffmpeg():
+    return shutil.which('ffmpeg')
+
+
+def _ff(out_path, *args):
+    """Run ffmpeg to produce out_path; silently skip on any error/absence."""
+    ff = _ffmpeg()
+    if not ff:
+        return
+    cmd = [ff, '-hide_banner', '-loglevel', 'error', '-y'] + list(args) + [out_path]
+    try:
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                       timeout=180)
+    except Exception:
+        pass
+
+
+def gen_av_media(root):
+    """ffmpeg-generated A/V containers driving dav1d/libvpx/libtheora and the
+    audio decoders, plus container/demux features (fragments, chapters, tags,
+    attachments, subtitles). No-op if ffmpeg is unavailable."""
+    if not _ffmpeg():
+        print('generate_seeds: ffmpeg not found, skipping A/V media seeds',
+              file=sys.stderr)
+        return
+    S = os.path.join(root, 'seeds')
+    for d in ('image', 'mkv', 'mp4', 'ogg', 'caf', 'wav', 'aiff', 'flac',
+              'mp3', 'heif', 'avi', 'asf'):
+        os.makedirs(os.path.join(S, d), exist_ok=True)
+
+    def lavfi(spec):
+        return ['-f', 'lavfi', '-i', spec]
+
+    SRCV = lavfi('testsrc2=size=64x48:rate=15:duration=2')
+    SRCA = lavfi('sine=frequency=440:duration=0.5')
+    SRCST = lavfi('aevalsrc=sin(440*2*PI*t)|sin(660*2*PI*t):d=0.5')
+
+    p = lambda *a: os.path.join(S, *a)
+    # AV1 (dav1d): bit depths, subsampling, gop, sizes
+    _ff(p('mp4', 'av1_motion.mp4'), *SRCV, '-c:v', 'libaom-av1', '-cpu-used', '8', '-b:v', '60k', '-an')
+    _ff(p('mkv', 'av1_10bit.mkv'), *SRCV, '-c:v', 'libaom-av1', '-cpu-used', '8', '-pix_fmt', 'yuv420p10le', '-b:v', '60k', '-an')
+    _ff(p('mkv', 'av1_12bit.mkv'), *SRCV, '-c:v', 'libaom-av1', '-cpu-used', '8', '-pix_fmt', 'yuv420p12le', '-crf', '35', '-an')
+    _ff(p('mkv', 'av1_444_10.mkv'), *SRCV, '-c:v', 'libaom-av1', '-cpu-used', '8', '-pix_fmt', 'yuv444p10le', '-crf', '35', '-an')
+    _ff(p('mkv', 'av1_lossless.mkv'), *SRCV, '-c:v', 'libaom-av1', '-cpu-used', '8', '-lossless', '1', '-an')
+    _ff(p('mp4', 'av1_gop16.mp4'), *SRCV, '-c:v', 'libaom-av1', '-cpu-used', '8', '-g', '16', '-crf', '40', '-an')
+    _ff(p('heif', 'pic.avif'), *SRCV, '-frames:v', '1', '-c:v', 'libaom-av1', '-cpu-used', '8', '-crf', '30')
+    # VP9/VP8 (libvpx): profiles + bit depths + segmentation + error-resilient
+    _ff(p('mkv', 'vp9_p0.webm'), *SRCV, '-c:v', 'libvpx-vp9', '-b:v', '60k', '-profile:v', '0', '-an')
+    _ff(p('mkv', 'vp9_p1_444.webm'), *SRCV, '-c:v', 'libvpx-vp9', '-b:v', '60k', '-profile:v', '1', '-pix_fmt', 'yuv444p', '-an')
+    _ff(p('mkv', 'vp9_p2_10b.webm'), *SRCV, '-c:v', 'libvpx-vp9', '-b:v', '60k', '-profile:v', '2', '-pix_fmt', 'yuv420p10le', '-an')
+    _ff(p('mkv', 'vp9_p3.webm'), *SRCV, '-c:v', 'libvpx-vp9', '-profile:v', '3', '-pix_fmt', 'yuv444p10le', '-b:v', '80k', '-an')
+    _ff(p('mkv', 'vp9_aq.webm'), *SRCV, '-c:v', 'libvpx-vp9', '-b:v', '80k', '-aq-mode', '1', '-g', '12', '-an')
+    _ff(p('mkv', 'vp9_lossless.webm'), *SRCV, '-c:v', 'libvpx-vp9', '-lossless', '1', '-an')
+    _ff(p('mkv', 'vp8.webm'), *SRCV, '-c:v', 'libvpx', '-b:v', '60k', '-an')
+    _ff(p('mkv', 'vp8_er.webm'), *SRCV, '-c:v', 'libvpx', '-b:v', '80k', '-error-resilient', '1', '-g', '8', '-an')
+    # Diverse content/resolutions -> more block/transform/prediction paths
+    sources = ['mandelbrot=size=128x96:rate=10', 'life=size=96x64:rate=10:mold=10',
+               'rgbtestsrc=size=64x64:rate=10', 'yuvtestsrc=size=80x64:rate=10',
+               'smptebars=size=96x64:rate=10', 'testsrc2=size=160x120:rate=10',
+               'testsrc2=size=32x32:rate=12', 'gradients=size=64x48:rate=10',
+               'cellauto=size=96x64:rate=10', 'mptestsrc=size=64x64:rate=10',
+               'pal75bars=size=96x64:rate=10', 'allrgb=rate=10',
+               'testsrc=size=176x144:rate=10', 'rgbtestsrc=size=128x128:rate=10']
+    for i, s in enumerate(sources, 1):
+        _ff(p('mkv', 'vp9_div%d.webm' % i), *lavfi(s), '-t', '1', '-c:v', 'libvpx-vp9', '-b:v', '100k', '-g', '8', '-an')
+        _ff(p('mkv', 'av1_div%d.mkv' % i), *lavfi(s), '-t', '0.8', '-c:v', 'libaom-av1', '-cpu-used', '8', '-crf', '32', '-an')
+    # Theora
+    _ff(p('ogg', 'theora.ogv'), *SRCV, '-c:v', 'libtheora', '-q:v', '6', '-an')
+    _ff(p('ogg', 'theora_mandel.ogv'), *lavfi('mandelbrot=size=128x96:rate=12'), '-t', '1.5', '-c:v', 'libtheora', '-q:v', '8', '-an')
+    # Audio decoders
+    _ff(p('ogg', 'opus.ogg'), *SRCST, '-c:a', 'libopus', '-b:a', '32k')
+    _ff(p('mkv', 'opus.webm'), *SRCST, '-c:a', 'libopus', '-b:a', '64k')
+    _ff(p('ogg', 'opus_mono.ogg'), *SRCST, '-c:a', 'libopus', '-ar', '48000', '-ac', '1', '-b:a', '24k')
+    _ff(p('ogg', 'vorbis.ogg'), *SRCST, '-c:a', 'libvorbis', '-q:a', '3')
+    _ff(p('mkv', 'vorbis.mkv'), *SRCST, '-c:a', 'libvorbis', '-q:a', '3')
+    _ff(p('ogg', 'vorbis_8k.ogg'), *SRCST, '-c:a', 'libvorbis', '-ar', '8000', '-q:a', '1')
+    _ff(p('flac', 'audio.flac'), *SRCST, '-c:a', 'flac')
+    _ff(p('ogg', 'flac.ogg'), *SRCST, '-c:a', 'flac')
+    _ff(p('mkv', 'flac.mka'), *SRCST, '-c:a', 'flac')
+    _ff(p('ogg', 'speex.ogg'), *SRCA, '-c:a', 'libspeex')
+    _ff(p('mp3', 'cbr.mp3'), *SRCST, '-c:a', 'libmp3lame', '-b:a', '64k')
+    _ff(p('mp3', 'vbr.mp3'), *SRCST, '-c:a', 'libmp3lame', '-q:a', '4')
+    _ff(p('mp4', 'aac.m4a'), *SRCST, '-c:a', 'aac', '-b:a', '64k')
+    _ff(p('mp3', 'aac.aac'), *SRCST, '-c:a', 'aac', '-b:a', '64k', '-f', 'adts')
+    # ALAC / PCM / ADPCM / G711 -> araw, adpcm, alac
+    _ff(p('mp4', 'alac.m4a'), *SRCST, '-c:a', 'alac')
+    _ff(p('caf', 'alac.caf'), *SRCST, '-c:a', 'alac', '-f', 'caf')
+    for fmt in ('pcm_s16le', 'pcm_u8', 'pcm_s24le', 'pcm_s32le', 'pcm_f32le', 'pcm_alaw', 'pcm_mulaw'):
+        _ff(p('wav', '%s.wav' % fmt), *SRCST, '-c:a', fmt)
+    _ff(p('wav', 'adpcm_ms.wav'), *SRCST, '-c:a', 'adpcm_ms', '-f', 'wav')
+    _ff(p('wav', 'adpcm_ima.wav'), *SRCST, '-c:a', 'adpcm_ima_wav', '-f', 'wav')
+    _ff(p('wav', 'adpcm_yamaha.wav'), *SRCST, '-c:a', 'adpcm_yamaha', '-f', 'wav')
+    _ff(p('caf', 'f32.caf'), *SRCST, '-c:a', 'pcm_f32be', '-f', 'caf')
+    _ff(p('caf', 's24.caf'), *SRCST, '-c:a', 'pcm_s24be', '-f', 'caf')
+    _ff(p('caf', 'ima4.caf'), *SRCST, '-c:a', 'adpcm_ima_qt', '-f', 'caf')
+    for fmt in ('pcm_s16be', 'pcm_s24be', 'pcm_f32be', 'pcm_s8', 'pcm_alaw', 'pcm_mulaw'):
+        _ff(p('aiff', '%s.aiff' % fmt), *SRCST, '-c:a', fmt, '-f', 'aiff')
+    # Container/demux features
+    _ff(p('mp4', 'h264_aac.mp4'), *SRCV, *SRCST, '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'aac', '-shortest')
+    _ff(p('mp4', 'fragmented.mp4'), *SRCV, *SRCST, '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'aac', '-shortest', '-movflags', 'frag_keyframe+empty_moov')
+    _ff(p('mp4', 'faststart.mov'), *SRCV, *SRCST, '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'aac', '-shortest', '-movflags', '+faststart')
+    _ff(p('mp4', 'hevc.mp4'), *SRCV, '-c:v', 'libx265', '-preset', 'ultrafast', '-x265-params', 'log-level=none', '-an')
+    _ff(p('mp4', 'multitrack.mp4'), *SRCV, *SRCST, *SRCA, '-map', '0:v', '-map', '1:a', '-map', '2:a', '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'aac', '-shortest')
+    _ff(p('mp4', 'clip.3gp'), *SRCV, *SRCST, '-c:v', 'mpeg4', '-c:a', 'aac', '-shortest', '-f', '3gp')
+    _ff(p('mp4', 'multifrag.mp4'), *SRCV, *SRCST, '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'aac', '-shortest', '-movflags', 'frag_keyframe+empty_moov+default_base_moof', '-frag_duration', '200000')
+    _ff(p('mp4', 'dualvideo.mov'), *SRCV, *SRCST, *SRCA, '-map', '0:v', '-map', '0:v', '-map', '1:a', '-map', '2:a', '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'alac', '-shortest')
+    _ff(p('mp4', 'editlist.mp4'), '-ss', '0.3', *SRCV, '-c:v', 'libx264', '-preset', 'ultrafast', '-an', '-movflags', '+faststart')
+    _ff(p('mp4', 'mjpeg_in_mov.mov'), *lavfi('testsrc2=size=48x48:rate=10:duration=1'), '-c:v', 'mjpeg', '-an')
+    _ff(p('mkv', 'opus_51.mka'), *lavfi('aevalsrc=0.3*sin(300*t)|0.3*sin(500*t):d=1:c=stereo'), '-af', 'pan=5.1|c0=c0|c1=c1|c2=0.5*c0|c3=0.2*c0|c4=c1|c5=0.5*c1', '-c:a', 'libopus', '-b:a', '96k')
+    _ff(p('ogg', 'vorbis_noise.ogg'), *lavfi('anoisesrc=d=1:c=pink'), '-c:a', 'libvorbis', '-q:a', '6')
+    _ff(p('ogg', 'opus_noise.ogg'), *lavfi('anoisesrc=d=1:c=pink'), '-c:a', 'libopus', '-b:a', '64k')
+    # ffmpeg-produced JPEG variants -> libjpeg
+    _ff(p('image', 'ff_mjpeg.jpg'), *lavfi('testsrc2=size=32x24'), '-frames:v', '1', '-c:v', 'mjpeg', '-q:v', '3')
+    _ff(p('image', 'ff_mjpeg444.jpg'), *lavfi('testsrc2=size=32x24'), '-frames:v', '1', '-pix_fmt', 'yuvj444p', '-c:v', 'mjpeg')
+    # subtitle / chapter / attachment side inputs
+    tmp = tempfile.mkdtemp(prefix='vlcseed_')
+    srt = os.path.join(tmp, 's.srt')
+    meta = os.path.join(tmp, 'm.txt')
+    ass = os.path.join(tmp, 's.ass')
+    with open(srt, 'w') as f:
+        f.write('1\n00:00:00,000 --> 00:00:01,000\nHello tx3g\n\n'
+                '2\n00:00:01,000 --> 00:00:02,000\n<i>second</i>\n')
+    with open(meta, 'w') as f:
+        f.write(';FFMETADATA1\ntitle=T\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=0\n'
+                'END=500\ntitle=c1\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=500\n'
+                'END=1000\ntitle=c2\n')
+    with open(ass, 'w') as f:
+        f.write('[Script Info]\nScriptType: v4.00+\n[V4+ Styles]\nFormat: Name\n'
+                'Style: Default\n[Events]\nFormat: Layer, Start, End, Text\n'
+                'Dialogue: 0,0:00:00.00,0:00:01.00,Default,hi\n')
+    _ff(p('mp4', 'with_tx3g.mp4'), *SRCV, '-i', srt, '-map', '0:v', '-map', '1', '-c:v', 'libx264', '-preset', 'ultrafast', '-c:s', 'mov_text')
+    _ff(p('mkv', 'chapters_tags.mkv'), *SRCV, *SRCST, '-i', meta, '-map', '0:v', '-map', '1:a', '-map_metadata', '2', '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'libvorbis', '-shortest')
+    _ff(p('mkv', 'with_ass_sub.mkv'), *SRCV, '-i', ass, '-map', '0:v', '-map', '1', '-c:v', 'libvpx-vp9', '-b:v', '50k', '-c:s', 'ass')
+    _ff(p('mkv', 'attachment.webm'), *lavfi('testsrc2=size=48x48:rate=10:duration=1'), '-attach', ass, '-metadata:s:t', 'mimetype=text/plain', '-c:v', 'libvpx', '-b:v', '40k')
+    _ff(p('avi', 'mpeg4_mp3.avi'), *SRCV, *SRCST, '-c:v', 'mpeg4', '-c:a', 'libmp3lame', '-shortest')
+    _ff(p('avi', 'h264.avi'), *SRCV, *SRCST, '-c:v', 'libx264', '-preset', 'ultrafast', '-c:a', 'aac', '-shortest')
+    _ff(p('asf', 'wmv.asf'), *SRCV, *SRCST, '-c:v', 'msmpeg4', '-c:a', 'libmp3lame', '-shortest')
+    shutil.rmtree(tmp, ignore_errors=True)
+
+
+# ABC notation tunes (text) parsed by libmodplug's load_abc.cpp.
+_ABC_TUNES = {
+    'rich.abc': """X:1
+T:Comprehensive Test Tune
+C:Generator
+M:4/4
+L:1/8
+Q:1/4=120
+K:C
+V:1 clef=treble
+V:2 clef=bass
+[V:1] |: CDEF GABc | [CEG]2 [DFA]2 z2 z2 | (3CDE (3FGA c4 | "C"c2 "G7"d2 "Am"e4 :|
+w: la la la la
+[V:2] |: C,2 G,2 C,2 G,2 | E,4 G,4 | C,8 | C,8 :|
+[V:1] !p! c>d e>f | g4 a4 | {/g}f2 e2 d2 c2 | B,8 |]
+""",
+    'gchord.abc': """X:1
+T:Guitar Chords And Drums
+M:4/4
+L:1/8
+%%MIDI gchord fzczfzcz
+%%MIDI chordprog 24
+%%MIDI drum dddd 36 38 36 38
+%%MIDI drumon
+%%MIDI beat 90 80 65 1
+%%MIDI beatstring fmpmfmpm
+K:C
+"C"C2 E2 "G7"G2 B2 | "Am"A2 c2 "F"F2 A2 | "C"c4 "G"B4 | "C"C8 |]
+""",
+    'macros.abc': """X:1
+M:3/4
+L:1/8
+U:n=!trill!
+%%MIDI chordname sus4 0 5 7
+%%MIDI chordname min7b5 0 3 6 10
+K:G
+nG2 A2 B2 | "Gsus4"d3 "Dmin7b5"c3 | [GBd]2 [Ace]2 [dfa]2 |]
+""",
+    'parts.abc': """X:1
+M:2/4
+L:1/8
+P:A2B
+%%MIDI droneon
+%%MIDI drone 70 45 50 80 90
+K:Dmaj
+[P:A] A2 B2 |[1 c2 d2 :|[2 e2 f2 |]
+[P:B] (3ABc (5defga | d>e f<g | a4 |]
+""",
+    'rhythm.abc': """X:1
+M:C
+L:1/16
+%%MIDI transpose 2
+K:Eb
+a>b c<d (3:2:2 efg (7:2:7 abcdefg | A2-A2 B2-B2 | z4 x4 |]
+""",
+    'edge.abc': """X:1
+T:Symbols And Octaves
+M:C
+L:1/8
+K:C
+!fff! !accent! C !staccato! D !slide! E !roll! F | !turn! G !upbow! A !breath! c |
+C,,, C,, C, C c c' c'' c''' | [CEGc]2 [C,E,G,]2 z2 x2 |]
+""",
+    'multi.abc': """X:1
+T:Tune One
+K:D
+A2B2 c2d2 | e4 f4 |]
+X:2
+T:Tune Two
+M:3/4
+K:Am
+A,2 C2 E2 | A4 z2 |]
+""",
+    'features1.abc': """X:1
+T:Feature Set 1
+C:Composer Name
+O:Origin
+R:reel
+M:9/8
+L:1/16
+Q:3/8=80
+P:ABAB
+K:Eb major
+%%MIDI program 40
+[P:A] |:: ^A,2 _B,2 =C2 D2 | E2F2 G2A2 :|1 B4 z4 :|2 c8 ::|
+[P:B] (3:2:3 def (3abc' | d'2 c'2 b2 a2 | [GBd]4 [Ace]4 |]
+W:This is a words line
+""",
+    'features2.abc': """X:1
+T:Voices And Lyrics
+M:3/4
+L:1/8
+K:D
+V:S clef=treble
+V:A clef=alto
+V:T clef=tenor
+V:B clef=bass
+[V:S] A>B c2 d>e | f4 z2 |
+w: one two three- four five
+[V:A] F2 E2 D2 | A,4 z2 |
+[V:B] D,2 A,2 F,2 | D,4 z2 |
+""",
+    'features3.abc': """X:1
+T:Decorations Grace Ties Slurs
+M:C|
+L:1/8
+K:Gmix
+!trill!G {ag}f !fermata!e2 | (de fg) | a-a b-b | "Am7"c'2 "D/F#"d'2 |
+[K:F] CDEF GABc |]
+""",
+    'inline.abc': """X:1
+T:Inline Tempo Voice Overlay
+M:4/4
+L:1/8
+K:G
+[V:1] G2A2 B2c2 & d2e2 f2g2 | a4 g4 |
+[Q:1/4=200] c2d2 e2f2 |
+[M:3/4] GAB | [L:1/16] cccc dddd |
+""",
+    'rests.abc': """X:1
+M:C
+L:1/4
+K:C
+Z4 | Z2 | x2 y2 | C D E F | A2-|A2 B>c d<e |]
+""",
+    'grace.abc': """X:1
+T:Grace And Tuplets
+M:6/8
+L:1/8
+K:D
+{ABc}d2e f2g | (3abc (3def (3gfe | {/g}A2 {gege}B2 c2 | .a.b.c .d.e.f |]
+""",
+    'variants.abc': """X:1
+M:2/2
+L:1/4
+Q:1/2=100
+K:Bb
+|: B2 c2 | d2 e2 |1,3 f4 :|2,4 g4 |]
+%%score (1 2)
+""",
+}
+
+
+def _midi_vlq(n):
+    b = [n & 0x7f]
+    n >>= 7
+    while n:
+        b.insert(0, (n & 0x7f) | 0x80)
+        n >>= 7
+    return bytes(b)
+
+
+def _midi_track(ev):
+    return b'MTrk' + struct.pack('>I', len(ev)) + ev
+
+
+def _mod_with_effects(effects):
+    out = b'testmod'.ljust(20, b'\x00')
+    for i in range(31):
+        out += ((b's%d' % i).ljust(22, b'\x00') +
+                struct.pack('>H', 16 if i == 0 else 0) + bytes([1, 48]) +
+                struct.pack('>HH', 0, 2))
+    npat = 2 if effects else 1
+    order = ([0, 1][:npat] + [0] * (128 - npat))
+    out += bytes([npat, 0]) + bytes(order) + b'M.K.'
+
+    def cell(smp, per, eff, par):
+        return bytes([(smp & 0xf0) | ((per >> 8) & 0x0f), per & 0xff,
+                      ((smp & 0x0f) << 4) | (eff & 0x0f), par])
+
+    periods = [856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453,
+               428, 404, 381, 360]
+    effs = [(0, 0x37), (1, 3), (2, 3), (3, 0x10), (4, 0x47), (5, 0x11),
+            (6, 0x22), (7, 0x48), (9, 0x10), (0xA, 0x40), (0xB, 0), (0xC, 0x20),
+            (0xD, 0), (0xE, 0x91), (0xE, 0xA4), (0xF, 6)]
+    pat = bytearray()
+    for _ in range(npat):
+        for row in range(64):
+            for ch in range(4):
+                if ch == 0:
+                    e, par = effs[row % len(effs)] if effects else (0, 0)
+                    pat += cell(1, periods[row % 16], e, par)
+                else:
+                    pat += bytes(4)
+    return out + bytes(pat) + bytes(16)
+
+
+def gen_mod_extra(root):
+    """Add ABC (text), MIDI, and MOD/S3M/669/XM modules to the mod target
+    corpus, complementing the modules generated by gen_mod(). ABC is parsed by
+    load_abc.cpp, MIDI by load_mid.cpp, and the binary trackers exercise the
+    respective loaders and the libmodplug mixer."""
+    O = os.path.join(root, 'seeds', 'mod')
+    os.makedirs(O, exist_ok=True)
+    for name, body in _ABC_TUNES.items():
+        with open(os.path.join(O, name), 'w') as f:
+            f.write(body)
+
+    vlq = _midi_vlq
+    # format 0 MIDI
+    ev = (vlq(0) + b'\xff\x51\x03\x07\xa1\x20' + vlq(0) + b'\xc0\x00' +
+          vlq(0) + b'\xb0\x07\x64')
+    for pitch in [60, 62, 64, 65, 67, 69, 71, 72]:
+        ev += vlq(0) + bytes([0x90, pitch, 0x60]) + vlq(96) + bytes([0x80, pitch, 0x40])
+    ev += vlq(0) + b'\xe0\x00\x40' + vlq(0) + b'\xff\x2f\x00'
+    with open(os.path.join(O, 'tune.mid'), 'wb') as f:
+        f.write(b'MThd' + struct.pack('>IHHH', 6, 0, 1, 96) + _midi_track(ev))
+    # format 1 MIDI with meta + sysex + running status
+    t0 = b''.join([vlq(0) + b'\xff\x03\x05Title',
+                   vlq(0) + b'\xff\x58\x04\x03\x02\x18\x08',
+                   vlq(0) + b'\xff\x59\x02\x02\x00',
+                   vlq(0) + b'\xff\x51\x03\x07\xa1\x20',
+                   vlq(0) + b'\xff\x2f\x00'])
+    t1 = (vlq(0) + b'\xf0\x04\x7e\x7f\x09\xf7' + vlq(0) + b'\xc1\x14' +
+          vlq(0) + b'\xb1\x0a\x40' + vlq(0) + b'\x07\x7f')
+    for pitch in [48, 52, 55, 59, 62, 65, 69, 72]:
+        t1 += vlq(0) + bytes([0x91, pitch, 0x55]) + vlq(48) + bytes([0x81, pitch, 0x30])
+    t1 += (vlq(0) + b'\xd1\x40' + vlq(0) + b'\xa1\x3c\x20' +
+           vlq(0) + b'\xe1\x20\x50' + vlq(0) + b'\xff\x2f\x00')
+    with open(os.path.join(O, 'multi.mid'), 'wb') as f:
+        f.write(b'MThd' + struct.pack('>IHHH', 6, 1, 2, 192) +
+                _midi_track(t0) + _midi_track(t1))
+
+    with open(os.path.join(O, 'test.mod'), 'wb') as f:
+        f.write(_mod_with_effects(False))
+    with open(os.path.join(O, 'effects.mod'), 'wb') as f:
+        f.write(_mod_with_effects(True))
+
+    # Composer 669
+    b = bytearray(b'if' + b'fuzz 669 module'.ljust(108, b'\x00') +
+                  bytes([1, 1, 0]) + bytes([0] + [0xff] * 127) +
+                  bytes([128] * 128) + bytes([0] * 128))
+    b += b'smp'.ljust(13, b'\x00') + struct.pack('<III', 0, 0, 0) + bytes(64 * 8 * 3)
+    with open(os.path.join(O, 'test.669'), 'wb') as f:
+        f.write(bytes(b))
+
+    # ScreamTracker 3 S3M (minimal)
+    hdr = bytearray(b'test'.ljust(28, b'\x00') + bytes([0x1a, 16]) + b'\x00\x00')
+    hdr += (struct.pack('<HHH', 2, 1, 1) + struct.pack('<HHH', 0, 0, 0x1300) +
+            b'SCRM' + bytes([64, 0, 0, 16, 0, 0, 0]) + bytes(8))
+    hdr += bytes([0] + [255] * 31) + bytes([0, 1])
+    base = len(hdr) + 4
+    ins_para = (base + 32 + 15) // 16
+    pat_para = ins_para + (0x50 // 16) + 1
+    hdr += struct.pack('<H', ins_para) + struct.pack('<H', pat_para) + bytes(32)
+    b = bytearray(hdr)
+    while len(b) < ins_para * 16:
+        b += b'\x00'
+    ins = bytearray(0x50)
+    ins[0] = 1
+    ins[0x4b] = 64
+    ins[0x4c:0x50] = b'SCRS'
+    b += ins
+    while len(b) < pat_para * 16:
+        b += b'\x00'
+    b += struct.pack('<H', 64) + bytes(64)
+    with open(os.path.join(O, 'test.s3m'), 'wb') as f:
+        f.write(bytes(b))
+
+    # FastTracker 2 XM (minimal)
+    x = bytearray(b'Extended Module: ' + b'fuzztest'.ljust(20, b'\x00') +
+                  bytes([0x1a]) + b'FastTracker v2.00   '[:20] +
+                  struct.pack('<H', 0x0104))
+    h = (struct.pack('<I', 276) + struct.pack('<H', 1) + struct.pack('<H', 0) +
+         struct.pack('<H', 4) + struct.pack('<H', 1) + struct.pack('<H', 1) +
+         struct.pack('<H', 0) + struct.pack('<H', 6) + struct.pack('<H', 125))
+    x += (h + bytearray(256) +
+          (struct.pack('<I', 9) + bytes([0]) + struct.pack('<H', 64) + struct.pack('<H', 0)) +
+          (struct.pack('<I', 29) + b'inst'.ljust(22, b'\x00') + bytes([0]) + struct.pack('<H', 0)))
+    with open(os.path.join(O, 'test.xm'), 'wb') as f:
+        f.write(bytes(x))
+
+
+def gen_voc(root):
+    """Structured seeds for the Creative Voice File demuxer
+    (modules/demux/voc.c).
+
+    A VOC file is:
+      * a 26-byte header: "Creative Voice File\\x1a" + WLE data_offset(>=26)
+        + WLE version + WLE checksum, where checksum == (0x1234 + ~version).
+      * a sequence of blocks: 1 type byte + 3-byte LE size + <size> payload
+        bytes, terminated by a type-0 block.
+
+    Random bytes never satisfy the magic + checksum, so the block parser is
+    only reachable from a structurally valid header. Each seed carries a valid
+    header and a different set of blocks so that ReadBlockHeader()'s switch,
+    the codec-id table (block 1), the silence/repeat/stereo-kludge blocks and
+    the modern block-9 format decoder are each exercised.
+    """
+    def hdr(version=0x010A, data_offset=26):
+        checksum = (0x1234 + (~version)) & 0xFFFF
+        return (b"Creative Voice File\x1a" +
+                struct.pack('<HHH', data_offset, version, checksum))
+
+    def block(btype, payload=b''):
+        return bytes([btype]) + struct.pack('<I', len(payload))[:3] + payload
+
+    def term():
+        return bytes([0])
+
+    def blk1(sr_code, codec_id, data=b'\x00\x00\x00\x00'):
+        # block 1: [sr_code][codec_id] + audio data (size counts both headers)
+        return block(1, bytes([sr_code, codec_id]) + data)
+
+    def w(name, *chunks):
+        _write(os.path.join(root, "seeds", "voc", name),
+               hdr() + b''.join(chunks) + term())
+
+    # Block 1, unsigned 8-bit PCM (codec id 0) -- the common minimal case.
+    w("u8.voc", blk1(0xa5, 0x0))
+
+    # Block 1 across every supported codec id (ADPCM SB-Pro 4/3/2, S16L, ALAW,
+    # MULAW) plus a block 2 (continue with previous format).
+    w("codecs.voc",
+      blk1(0xa5, 0x1), blk1(0xa5, 0x2), blk1(0xa5, 0x3),
+      blk1(0xd0, 0x4), blk1(0xd0, 0x6), blk1(0xd0, 0x7),
+      block(2, b'\x11\x22\x33\x44'))
+
+    # Silence (3), marker (4, skipped), text (5, skipped) blocks.
+    w("silence_marker_text.voc",
+      block(3, struct.pack('<H', 100) + b'\xa5'),        # count + sr byte
+      block(4, struct.pack('<H', 1)),                    # marker id (skipped)
+      block(5, b"info text\x00"))                         # text (skipped)
+
+    # Repeat (6) / repeat-end (7) loop around a block 1.
+    w("repeat.voc",
+      block(6, struct.pack('<H', 2)),                    # loop count
+      blk1(0xa5, 0x0),
+      block(7))                                           # repeat end (size 0)
+
+    # Block 8 (stereo kludge): must be followed by a block 1 with comp 0.
+    # rate = 256000000 / ((65536 - tc) * channels); tc=60000, channels=2.
+    w("stereo8.voc",
+      block(8, struct.pack('<H', 60000) + bytes([0x00, 0x01])),
+      blk1(0xa5, 0x0))
+
+    # Block 9 (modern): rate DWLE, bits, channels, format WLE, + 4 reserved.
+    # PCM 8-bit, PCM 16-bit, and signed 16-bit variants.
+    def blk9(rate, bits, chans, fmt, data=b'\x00\x00'):
+        payload = (struct.pack('<I', rate) + bytes([bits, chans]) +
+                   struct.pack('<H', fmt) + b'\x00\x00\x00\x00' + data)
+        return block(9, payload)
+    w("block9.voc",
+      blk9(44100, 8, 1, 0x0000),
+      blk9(48000, 16, 2, 0x0000),
+      blk9(22050, 16, 1, 0x0004))
+
+    # Unknown block type (default branch: skipped) followed by valid audio.
+    w("unknown_block.voc",
+      block(0x40, b'\xde\xad\xbe\xef'),
+      blk1(0xa5, 0x0))
+
+    # A libFuzzer dictionary: the magic and block-type tokens.
+    dpath = os.path.join(root, "dictionaries", "voc.dict")
+    os.makedirs(os.path.dirname(dpath), exist_ok=True)
+    with open(dpath, "w") as f:
+        f.write('# Creative Voice File (modules/demux/voc.c) tokens\n')
+        f.write('"Creative Voice File\\x1a"\n')
+        for i in range(10):
+            f.write('"\\x%02x"\n' % i)
+    print(f"  wrote {dpath}")
+
 
 def main():
     if len(sys.argv) != 2:
@@ -3414,17 +5489,31 @@ def main():
     gen_ts(root)
     gen_ps(root)
     gen_heif(root)
+    gen_avi(root)
+    gen_es(root)
     gen_rawdv(root)
+    gen_ty(root)
+    gen_nsv(root)
     gen_vc1(root)
     gen_cdg(root)
     gen_mus(root)
     gen_mpgv(root)
     gen_h264(root)
     gen_tta(root)
+    gen_caf(root)
+    gen_araw(root)
     gen_heif_extra(root)
     gen_ogg(root)
     gen_mkv(root)
     gen_mp4_extras(root)
+    gen_cea708(root)
+    gen_gme(root)
+    gen_mod(root)
+    gen_kate(root)
+    gen_image(root)
+    gen_av_media(root)
+    gen_mod_extra(root)
+    gen_voc(root)
 
 
 if __name__ == '__main__':

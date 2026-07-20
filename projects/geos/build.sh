@@ -21,3 +21,7 @@ cd build
 cmake -DBUILD_SHARED_LIBS=OFF ..
 make -j$(nproc)
 cp bin/fuzz* $OUT/
+
+# Seed corpus and dictionary for the GeoJSON reader fuzzer.
+cp $SRC/geos/tests/fuzz/geojson.dict $OUT/fuzz_geojson.dict
+zip -j $OUT/fuzz_geojson_seed_corpus.zip $SRC/geos/tests/fuzz/geojson_seed_corpus/*

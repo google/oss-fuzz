@@ -25,3 +25,5 @@ COPY run_tests.sh build.sh replay_build.sh $SRC/
 COPY augeas_escape_name_fuzzer.cc $SRC/
 COPY augeas_fa_fuzzer.cc $SRC/
 COPY augeas_api_fuzzer.cc $SRC/
+COPY augeas_lens_fuzzer.cc $SRC/
+COPY augeas_lens_fuzzer.options $SRC/
