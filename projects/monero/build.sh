@@ -62,6 +62,7 @@ fi
 make -j$(nproc) -C tests/fuzz $TESTS
 
 cd /src/monero/monero/build/tests/fuzz
+./gen_corpus/gen_corpus --force
 for fuzzer in *fuzz*
 do
   cp "$fuzzer" "$OUT"
