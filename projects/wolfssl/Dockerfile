@@ -28,9 +28,6 @@ RUN wget https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.bz2
 RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
 
 # Retrieve corpora from other projects
-RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz -O $SRC/gcloud.tar.gz
-RUN tar zxf $SRC/gcloud.tar.gz
-ENV PATH="${PATH}:$SRC/google-cloud-sdk/bin"
 RUN wget https://storage.googleapis.com/bearssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bearssl_cryptofuzz-bearssl/public.zip -O $SRC/corpus_bearssl.zip
 RUN wget https://storage.googleapis.com/libecc-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libecc_cryptofuzz-libecc/public.zip -O $SRC/corpus_libecc.zip
 RUN wget https://storage.googleapis.com/relic-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/relic_cryptofuzz-relic/public.zip -O $SRC/corpus_relic.zip
