@@ -100,7 +100,8 @@ echo "Configuring target Ruby with static linking..."
     --without-gmp \
     --disable-dtrace \
     --disable-jit-support \
-    --with-baseruby="$BASERUBY"
+    --with-baseruby="$BASERUBY" \
+    ac_cv_func_backtrace=no
 
 # Build Ruby static library
 echo "Building Ruby static library..."
@@ -182,4 +183,8 @@ else
 	find "$SRC/ruby" -type f -name '*.json' | head -n 100 | zip -@ "$OUT/fuzz_json_seed_corpus.zip"
 fi
 
-cp $SRC/fuzz_prism.options $OUT/
+# Copy ruby.options to each fuzzer
+ALL_FUZZERS="fuzz_regex fuzz_string fuzz_hash fuzz_bignum fuzz_array fuzz_iseq fuzz_pack fuzz_ruby_parser fuzz_prism fuzz_json"
+for fuzzer in $ALL_FUZZERS; do
+    cp "$SRC/ruby.options" "$OUT/${fuzzer}.options"
+done

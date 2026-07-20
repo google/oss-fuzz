@@ -19,3 +19,4 @@ RUN apt-get update && apt-get install -y openssl libssl-dev git make cmake libss
 RUN git clone --depth 1 https://github.com/pocoproject/poco
 RUN cp $SRC/poco/build/script/oss-fuzz-build.sh $SRC/build.sh
 WORKDIR $SRC/poco
+COPY run_tests.sh $SRC

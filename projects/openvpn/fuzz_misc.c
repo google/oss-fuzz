@@ -28,7 +28,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   int total_to_fuzz = fuzz_randomizer_get_int(1, 9);
   for (int i = 0; i <total_to_fuzz; i++) {
-    int type = fuzz_randomizer_get_int(0, 4);
+    int type = fuzz_randomizer_get_int(0, 3);
     char *tmp1 = get_random_string();
     char *tmp2 = get_random_string();
 
@@ -46,9 +46,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       if (strlen(tmp1) > 1 && strlen(tmp2) > 1) {
         setenv_str(es, tmp2, tmp1);
       }
-      break;
-    case 4:
-      hostname_randomize(tmp1, &gc);
       break;
     default:
       sanitize_control_message(tmp1, &gc);

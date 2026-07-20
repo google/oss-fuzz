@@ -14,16 +14,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import java.io.IOException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 public class XmlFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
-    ObjectMapper mapper = new XmlMapper();
+    ObjectMapper mapper = XmlMapper.builder().build();
     try {
       mapper.readTree(input);
-    } catch (IOException ignored) {
+    } catch (RuntimeException ignored) {
     }
   }
 }

@@ -22,10 +22,15 @@ if [ "$ARCHITECTURE" = 'i386' ]; then
   rm /usr/lib/i386-linux-gnu/libz.so*
   rm /usr/lib/i386-linux-gnu/libbz2.so*
   rm /usr/lib/i386-linux-gnu/liblzma.so*
+  # Also remove the x86_64 libssl/libcrypto libraries so CMake/ld don't pick
+  # them up for i386 builds (other libs like libz.so.1 must stay since clang
+  # depends on them at runtime).
+  rm -f /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libssl.a
+  rm -f /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libcrypto.a
 fi
 
 # Build project
-cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DMZ_BUILD_FUZZ_TESTS=ON
+cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DMZ_BUILD_FUZZ_TESTS=ON -DMZ_BUILD_TESTS=ON -DMZ_BUILD_UNIT_TESTS=ON -DMZ_FETCH_LIBS=OFF -DXZ_SANDBOX=no
 make clean
 make -j$(nproc)
 

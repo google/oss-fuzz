@@ -34,6 +34,8 @@ limitations under the License.
 
 static int ruby_initialized = 0;
 
+extern "C" VALUE ruby_verbose;
+
 // Wrapper functions for rb_protect - necessary to catch exceptions
 // Array operations can raise exceptions (e.g., index errors, frozen arrays)
 static VALUE call_array_aref(VALUE args) {
@@ -105,6 +107,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (!ruby_initialized) {
         ruby_init();
         ruby_initialized = 1;
+        
+        // Suppress Ruby warnings to avoid log noise
+        ruby_verbose = Qfalse;
     }
     
     if (size < 2) return 0;

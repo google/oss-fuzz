@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install -y autoconf automake libtool pkg-config texinfo \
         gnutls-dev gnutls-bin
-RUN git clone https://git.gnunet.org/libmicrohttpd2.git mhd2
+RUN git clone git://git.gnunet.org/libmicrohttpd2.git mhd2
 WORKDIR mhd2
 COPY build.sh *.cpp *.h $SRC/
 COPY *.options *.dict $SRC/

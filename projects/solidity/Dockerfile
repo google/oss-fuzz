@@ -14,16 +14,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:19782f7fe8092843368894dbc471ce9b30dd6a2813946071a36e8b05f5b1e27e
-# ! This project was pinned after a clang bump. Please remove the pin, Try to fix any build warnings and errors, as well as runtime errors
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    build-essential libbz2-dev ninja-build zlib1g-dev wget python python-dev \
+    build-essential libbz2-dev ninja-build zlib1g-dev wget python3 python3-dev \
     liblzma-dev uuid-dev pkg-config openjdk-8-jdk unzip mlton bison texinfo
 
 RUN git clone --recursive -b develop https://github.com/ethereum/solidity.git solidity
 RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
 RUN git clone https://github.com/google/libprotobuf-mutator.git
-RUN git clone --branch="v0.11.0" --recurse-submodules \
+RUN git clone --branch="v0.16.0" --recurse-submodules \
     https://github.com/ethereum/evmone.git
 
 # Install statically built dependencies in "/usr" directory
@@ -34,9 +33,14 @@ RUN cd $SRC && \
     tar -xf boost.tar.bz2 && \
     rm boost.tar.bz2 && \
     cd boost_1_83_0 && \
-    CXXFLAGS="-stdlib=libc++ -pthread" LDFLAGS="-stdlib=libc++" ./bootstrap.sh --with-toolset=clang --prefix=/usr && \
-    ./b2 toolset=clang cxxflags="-stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" headers && \
-    ./b2 toolset=clang cxxflags="-stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" \
+    # Boost's b2 overrides clang's target triple (to x86_64-pc-linux), which
+    # makes clang look for libc++'s generated <__config_site> header in a
+    # triple-specific include dir that does not match the real one. Point it
+    # at the actual per-triple libc++ include dir so <__config_site> is found.
+    LIBCXX_CONFIG_INC="-I/usr/local/include/$(clang -dumpmachine)/c++/v1" && \
+    CXXFLAGS="-stdlib=libc++ -pthread ${LIBCXX_CONFIG_INC}" LDFLAGS="-stdlib=libc++" ./bootstrap.sh --with-toolset=clang --prefix=/usr && \
+    ./b2 toolset=clang cxxflags="-stdlib=libc++ -pthread ${LIBCXX_CONFIG_INC}" linkflags="-stdlib=libc++ -pthread" headers && \
+    ./b2 toolset=clang cxxflags="-stdlib=libc++ -pthread ${LIBCXX_CONFIG_INC}" linkflags="-stdlib=libc++ -pthread" \
         link=static variant=release runtime-link=static \
         system filesystem unit_test_framework program_options \
         install -j $(($(nproc)/2)) && \

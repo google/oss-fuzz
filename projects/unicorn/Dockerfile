@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y cmake pkg-config make python3
 RUN git clone -b dev --depth 1 https://github.com/unicorn-engine/unicorn.git
 WORKDIR $SRC
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

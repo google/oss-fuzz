@@ -29,7 +29,7 @@ jobs:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
     - name: 'Checkout code'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         # Fetch all history so we can diff against the base branch.
         fetch-depth: 0

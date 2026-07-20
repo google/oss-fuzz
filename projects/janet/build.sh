@@ -15,8 +15,16 @@
 #
 ################################################################################
 export CFLAGS="$CFLAGS -fPIC"
-cd janet
 make
 
 $CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_dostring.o -c ./test/fuzzers/fuzz_dostring.c
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_dostring.o build/libjanet.a -o $OUT/fuzz_dostring
+
+$CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_unmarshal.o -c ./test/fuzzers/fuzz_unmarshal.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_unmarshal.o build/libjanet.a -o $OUT/fuzz_unmarshal
+
+$CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_dobytes.o -c ./test/fuzzers/fuzz_dobytes.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_dobytes.o build/libjanet.a -o $OUT/fuzz_dobytes
+
+$CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_compile.o -c ./test/fuzzers/fuzz_compile.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_compile.o build/libjanet.a -o $OUT/fuzz_compile

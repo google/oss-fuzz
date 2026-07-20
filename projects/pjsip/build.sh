@@ -14,15 +14,20 @@
 # limitations under the License.
 #
 ################################################################################
-export CFLAGS="$CFLAGS -DPJMEDIA_HAS_VIDEO=1"
+export CFLAGS="$CFLAGS -DPJMEDIA_HAS_VIDEO=1 -DPJMEDIA_HAS_RTCP_XR=1"
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS="$CFLAGS"
 
 ./configure \
 --disable-ffmpeg --disable-ssl \
---disable-speex-aec --disable-speex-codec \
---disable-g7221-codec --disable-gsm-codec --disable-ilbc-codec \
---disable-resample --disable-libsrtp --disable-libwebrtc --disable-libyuv
+--disable-speex-aec --disable-g7221-codec \
+--disable-resample --disable-libwebrtc --disable-libyuv
+
+# Force static linking of libvpx and libopus so the fuzzers do not depend on
+# .so files that are absent from the OSS-Fuzz runner image. libvpx-dev and
+# libopus-dev both ship .a archives in /usr/lib/x86_64-linux-gnu/.
+sed -i 's|-lvpx|/usr/lib/x86_64-linux-gnu/libvpx.a|g' build.mak
+sed -i 's|-lopus|/usr/lib/x86_64-linux-gnu/libopus.a|g' build.mak
 
 make dep
 make -j$(nproc) --ignore-errors
@@ -34,13 +39,9 @@ FuzzBins=$(find . -name "*.c")
 for File in $FuzzBins; do
     FuzzBin=$(basename $File .c)
     cp $FuzzBin $OUT/$FuzzBin
+    echo -e "[libfuzzer]\nmax_len=16384" > $OUT/${FuzzBin}.options
 done
 popd
 
-pushd tests/fuzz/seed/
-FuzzSeed=$(find . -name "*.zip")
-
-for Seed in $FuzzSeed; do
-    cp $Seed $OUT/$Seed
-done
-popd
+# Copy all seed corpus and dictionaries to $OUT
+cp tests/fuzz/seed/* $OUT/

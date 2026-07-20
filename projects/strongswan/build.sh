@@ -17,10 +17,16 @@
 
 ./autogen.sh
 
-./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE" \
+./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE -DDEBUG_LEVEL=-1" \
 	--enable-imc-test \
 	--enable-tnccs-20 \
+	--enable-libipsec \
+	--enable-eap-radius \
+	--enable-pkcs12 \
+	--enable-hmac \
+	--enable-acert \
 	--enable-fuzzing \
+	--enable-sha1 --enable-sha2 --enable-sha3 --enable-mgf1 --enable-gmp \
 	--with-libfuzzer=$LIB_FUZZING_ENGINE \
 	--enable-monolithic \
 	--disable-shared \
@@ -33,7 +39,12 @@ for f in $fuzzers; do
 	fuzzer=$(basename $f)
 	cp $f $OUT/
 	corpus=${fuzzer#fuzz_}
+	corpus=${corpus%_def}
+	corpus=${corpus%_cus}
 	if [ -d "fuzzing-corpora/${corpus}" ]; then
 		zip -rj $OUT/${fuzzer}_seed_corpus.zip fuzzing-corpora/${corpus}
+	fi
+	if [ -f "fuzzing-corpora/${corpus}.dict" ]; then
+		cp "fuzzing-corpora/${corpus}.dict" "$OUT/${fuzzer}.dict"
 	fi
 done

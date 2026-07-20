@@ -14,10 +14,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.pcollections.PCollectionsModule;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.datatype.pcollections.PCollectionsModule;
 import java.util.ArrayList;
 import java.util.List;
 import org.pcollections.ConsPStack;
@@ -41,7 +42,9 @@ public class PCollectionsFuzzer {
 
   public static void fuzzerInitialize() {
     // Register the PCollectionsModule for fuzzing
-    mapper = new ObjectMapper().registerModule(new PCollectionsModule());
+    mapper = JsonMapper.builder()
+        .addModule(new PCollectionsModule())
+        .build();
     initializeClassChoice();
   }
 
@@ -51,7 +54,7 @@ public class PCollectionsFuzzer {
       TypeReference type = data.pickValue(choice);
       String value = data.consumeRemainingAsString();
       mapper.readValue(value, type);
-    } catch (IOException e) {
+    } catch (JacksonException e) {
       // Known exception
     }
   }

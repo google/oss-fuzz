@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2025 Google LLC.
+# Copyright 2026 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ A snapshot is a tarball containing the following:
 
 import dataclasses
 import enum
+import inspect
 import io
 import json
 import logging
@@ -38,7 +39,6 @@ import urllib.request
 
 import manifest_constants
 import pathlib
-
 
 SRC_DIR = manifest_constants.SRC_DIR
 OBJ_DIR = manifest_constants.OBJ_DIR
@@ -59,8 +59,10 @@ ARCHIVE_VERSION = 5
 # OSS-Fuzz $OUT dir.
 OUT = pathlib.Path(os.getenv("OUT", "/out"))
 # OSS-Fuzz coverage info.
-_COVERAGE_INFO_URL = ("https://storage.googleapis.com/oss-fuzz-coverage/"
-                      f"latest_report_info/{os.getenv('PROJECT_NAME')}.json")
+_COVERAGE_INFO_URL = (
+    "https://storage.googleapis.com/oss-fuzz-coverage/"
+    f"latest_report_info/{os.getenv('PROJECT_NAME')}.json"
+)
 
 
 class RepositoryType(enum.StrEnum):
@@ -88,7 +90,7 @@ class SourceRef:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a SourceRef object from a deserialized dict."""
-    return SourceRef(
+    return SourceRef(  # pyrefly: ignore[bad-return]
         url=data["url"], rev=data["rev"], type=RepositoryType(data["type"])
     )
 
@@ -106,7 +108,7 @@ class Reproducibility:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Reproducibility object from a deserialized dict."""
-    return Reproducibility(
+    return Reproducibility(  # pyrefly: ignore[bad-return]
         success_count=data["success_count"],
         trial_count=data["trial_count"],
     )
@@ -139,6 +141,12 @@ class BinaryConfig:
 
   binary_name: str
 
+  @property
+  def uses_stdin(self) -> bool:
+    """Whether the binary uses stdin."""
+    del self
+    return False
+
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
     """Deserializes the correct `BinaryConfig` subclass from a dict."""
@@ -157,7 +165,7 @@ class BinaryConfig:
           val["binary_args"],
       )
       val = dict(val, binary_args=shlex.split(val["binary_args"]))
-    return mapping[kind].from_dict(val)
+    return mapping[kind].from_dict(val)  # pyrefly: ignore[bad-return]
 
   def to_dict(self) -> dict[str, Any]:
     """Converts a BinaryConfig object to a serializable dict."""
@@ -188,6 +196,11 @@ class CommandLineBinaryConfig(BinaryConfig):
   # some targets like V8 require this to be false, see b/433718862.
   filter_compile_commands: bool = True
 
+  @property
+  def uses_stdin(self) -> bool:
+    """Whether the binary uses stdin."""
+    return manifest_constants.INPUT_FILE not in self.binary_args
+
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
     """Deserializes the `CommandLineBinaryConfig` from a dict."""
@@ -197,7 +210,7 @@ class CommandLineBinaryConfig(BinaryConfig):
     harness_kind = HarnessKind(
         config_dict.get("harness_kind", HarnessKind.BINARY)
     )
-    return CommandLineBinaryConfig(
+    return CommandLineBinaryConfig(  # pyrefly: ignore[bad-return]
         kind=kind,
         harness_kind=harness_kind,
         binary_name=config_dict["binary_name"],
@@ -229,7 +242,7 @@ def _get_sqlite_db_user_version(sqlite_db_path: pathlib.Path) -> int:
     if len(version_bytes) < 4:
       raise too_small_error
 
-    return int.from_bytes(version_bytes, byteorder="big")
+    return int.from_bytes(version_bytes, byteorder="big")  # pyrefly: ignore[bad-argument-type]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -306,18 +319,18 @@ class Manifest:
       logging.warning(
           "Unsupported manifest version %s detected. Not upgrading.", version
       )
-    return Manifest(
+    return Manifest(  # pyrefly: ignore[bad-return]
         version=version,
         index_db_version=data.get("index_db_version"),
         name=data["name"],
         uuid=data["uuid"],
-        lib_mount_path=lib_mount_path,
+        lib_mount_path=lib_mount_path,  # pyrefly: ignore[bad-argument-type]
         source_map=_get_mapped(data, "source_map", source_map_from_dict),
         source_dir_prefix=data.get("source_dir_prefix"),
         reproducibility=_get_mapped(
             data, "reproducibility", Reproducibility.from_dict
         ),
-        binary_config=binary_config,
+        binary_config=binary_config,  # pyrefly: ignore[bad-argument-type]
     )
 
   def to_dict(self) -> dict[str, Any]:
@@ -366,7 +379,7 @@ class Manifest:
               " empty URL. Source map entry: {ref}"
           )
     # check very simple basic types.
-    for k, v in self.__annotations__.items():
+    for k, v in inspect.get_annotations(type(self)).items():
       if not isinstance(v, type):
         continue
       if not isinstance(getattr(self, k), v):
@@ -392,8 +405,27 @@ class Manifest:
       archive_path: pathlib.PurePath,
       out_dir: pathlib.PurePath = pathlib.Path("/out"),
       overwrite: bool = True,
+      sanitize_source_dir: bool = True,
   ) -> Self:
-    """Saves a build archive with this Manifest."""
+    """Saves a build archive with this Manifest.
+
+    Args:
+      source_dir: The directory containing the source code, or None.
+      build_dir: The directory containing the build artifacts.
+      index_dir: The directory containing the source code index files.
+      archive_path: The path where the build archive should be saved.
+      out_dir: The output directory path in the container.
+      overwrite: Whether to overwrite the archive if it already exists.
+      sanitize_source_dir: Whether to sanitize the source directory (excluding
+        large or unnecessary files like .git directories, seed corpora, and
+        build artifacts) when saving.
+
+    Returns:
+      This Manifest instance.
+
+    Raises:
+      FileExistsError: If the archive already exists and overwrite is False.
+    """
     if os.path.exists(archive_path) and not overwrite:
       raise FileExistsError(f"Not overwriting existing archive {archive_path}")
 
@@ -406,39 +438,56 @@ class Manifest:
         def _save_dir(
             path: pathlib.PurePath,
             prefix: pathlib.Path,
+            *,
+            sanitize: bool = True,
             exclude_build_artifacts: bool = False,
             only_include_target: str | None = None,
-        ):
-          prefix = prefix.as_posix() + "/"
+        ) -> None:
+          """Saves a directory to the build archive.
+
+          Args:
+            path: The directory path to save.
+            prefix: The prefix path in the archive.
+            sanitize: Whether to sanitize the directory files.
+            exclude_build_artifacts: Whether to exclude ELF files.
+            only_include_target: If set, only this specific ELF target and .so
+              files are included.
+          """
+          if not sanitize:
+            tar.add(path.as_posix(), arcname=prefix)
+            return
+
+          prefix = prefix.as_posix() + "/"  # pyrefly: ignore[bad-assignment]
           for root, _, files in os.walk(path):
             for file in files:
-              if file.endswith("_seed_corpus.zip"):
+              file_path = pathlib.Path(root, file)
+
+              if file_path.name.endswith("_seed_corpus.zip"):
                 # Don't copy over the seed corpus -- it's not necessary.
                 continue
 
-              if "/.git/" in root or root.endswith("/.git"):
+              if any(p.name == ".git" for p in file_path.parents):
                 # Skip the .git directory -- it can be large.
                 continue
-
-              file = pathlib.Path(root, file)
-              if exclude_build_artifacts and _is_elf(file):
+              if exclude_build_artifacts and _is_elf(file_path):
                 continue
 
-              if only_include_target and _is_elf(file):
-                # Skip ELF files that aren't the relevant target (unless it's a
-                # shared library).
-                if (
-                    file.name != only_include_target
-                    and ".so" not in file.name
-                    and not file.absolute().is_relative_to(out_dir / "lib")
-                ):
-                  continue
+              if (
+                  only_include_target
+                  and _is_elf(file_path)
+                  and file_path.name != only_include_target
+                  and ".so" not in file_path.name
+                  and not file_path.absolute().is_relative_to(out_dir / "lib")
+              ):
+                # Skip ELF files that aren't the relevant target (unless it's
+                # a shared library).
+                continue
 
               tar.add(
                   # Don't try to replicate symlinks in the tarfile, because they
                   # can lead to various issues (e.g. absolute symlinks).
-                  file.resolve().as_posix(),
-                  arcname=prefix + str(file.relative_to(path)),
+                  file_path.resolve().as_posix(),
+                  arcname=f"{prefix}{file_path.relative_to(path)}",
               )
 
         dumped_self = self
@@ -463,16 +512,21 @@ class Manifest:
 
         # Make sure the index databases (the only files directly in `INDEX_DIR`)
         # are early in the archive for the same reason.
-        _save_dir(index_dir, INDEX_DIR)
+        _save_dir(index_dir, INDEX_DIR)  # pyrefly: ignore[bad-argument-type]
 
         if source_dir:
-          _save_dir(source_dir, SRC_DIR, exclude_build_artifacts=True)
+          _save_dir(
+              source_dir,
+              SRC_DIR,  # pyrefly: ignore[bad-argument-type]
+              sanitize=sanitize_source_dir,
+              exclude_build_artifacts=True,
+          )
 
         # Only include the relevant target for the snapshot, to save on disk
         # space.
         _save_dir(
             build_dir,
-            OBJ_DIR,
+            OBJ_DIR,  # pyrefly: ignore[bad-argument-type]
             only_include_target=self.binary_config.binary_name,
         )
 
@@ -491,20 +545,19 @@ class Manifest:
 
 
 def report_missing_source_files(
-    binary_name: str, copied_files: list[str], tar: tarfile.TarFile):
+    binary_name: str, copied_files: list[str], tar: tarfile.TarFile
+):
   """Saves a report of missing source files to the snapshot tarball."""
-  copied_files = {_get_comparable_path(file) for file in copied_files}
+  copied_files = {_get_comparable_path(file) for file in copied_files}  # pyrefly: ignore[bad-assignment]
   covered_files = {
       _get_comparable_path(path): path
       for path in get_covered_files(binary_name)
   }
-  missing = set(covered_files) - copied_files
+  missing = set(covered_files) - copied_files  # pyrefly: ignore[unsupported-operation]
   if not missing:
     return
   logging.info("Reporting missing files: %s", missing)
-  missing_report_lines = sorted([
-      covered_files[k] for k in missing
-  ])
+  missing_report_lines = sorted([covered_files[k] for k in missing])
   report_name = f"{binary_name}_missing_files.txt"
   tar_info = tarfile.TarInfo(name=report_name)
   missing_report = " ".join(missing_report_lines)
@@ -524,15 +577,19 @@ def get_covered_files(target: str) -> Sequence[str]:
     latest_info = json.load(resp)
 
   stats_url = latest_info.get("fuzzer_stats_dir").replace(
-      "gs://", "https://storage.googleapis.com/")
+      "gs://", "https://storage.googleapis.com/"
+  )
 
   target_url = f"{stats_url}/{target}.json"
   with urllib.request.urlopen(target_url) as resp:
     target_cov = json.load(resp)
 
   files = target_cov["data"][0]["files"]
-  return [file["filename"]
-          for file in files if file["summary"]["regions"]["covered"]]
+  return [
+      file["filename"]
+      for file in files
+      if file["summary"]["regions"]["covered"]
+  ]
 
 
 def _get_mapped(

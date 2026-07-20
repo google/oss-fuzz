@@ -27,5 +27,5 @@ RUN git clone -b v3.2.1 --depth 1 https://github.com/AcademySoftwareFoundation/i
 
 RUN git clone --depth 1 https://github.com/alembic/alembic
 
-COPY build.sh *.h *.cc $SRC/
+COPY run_tests.sh build.sh *.h *.cc $SRC/
 WORKDIR $WORK/

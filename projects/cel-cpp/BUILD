@@ -21,3 +21,16 @@ cc_fuzz_test(
 	deps = ["//parser"],
 	srcs = ["fuzz_parse.cc"],
 )
+
+cc_fuzz_test(
+        name = "fuzz_eval",
+        deps = [
+            "//parser",
+            "//eval/public:cel_expr_builder_factory",
+            "//eval/public:builtin_func_registrar",
+            "//eval/public:activation",
+            "//eval/public:cel_expression",
+        ],
+        srcs = ["fuzz_eval.cc"],
+)
+

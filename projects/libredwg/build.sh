@@ -19,9 +19,11 @@
 if [[ "$SANITIZER" == introspector ]]; then
   export CFLAGS="${CFLAGS} -Wno-error"
   export CXXFLAGS="${CXXFLAGS} -Wno-error"
+else
+  export CFLAGS="${CFLAGS} -Wno-default-const-init-field-unsafe -Wno-uninitialized-const-pointer"
+  export CXXFLAGS="${CXXFLAGS} -Wno-default-const-init-field-unsafe -Wno-uninitialized-const-pointer"
 fi
 
-cd libredwg
 sh ./autogen.sh
 # enable-release to skip unstable preR13. bindings are not fuzzed.
 ./configure --disable-shared --disable-bindings --enable-release
@@ -33,3 +35,6 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE llvmfuzz.o src/.libs/libredwg.a \
   -o $OUT/llvmfuzz
 
 cp $SRC/llvmfuzz.options $OUT/llvmfuzz.options
+
+# Build unit test
+make check-prep -C test/unit-testing/ -j$(nproc)

@@ -8,6 +8,6 @@ auto_ccs:
   - "wesmckinn@gmail.com"
 fuzzing_engines:
   - libfuzzer
-main_repo: "https://github.com/apache/arrow.git"
+main_repo: "https://github.com/apache/arrow-java"
 sanitizers:
   - address
