@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build \
     liblzma-dev libzstd-dev pkg-config libglib2.0-dev groff libxml2-dev \
-    libcurl4-openssl-dev libsqlite3-dev flex bison
+    libcurl4-openssl-dev libsqlite3-dev flex bison librrd-dev
 
 # Ntopng
 RUN git clone --depth 1 https://github.com/ntop/ntopng.git ntopng
