@@ -2,7 +2,7 @@ fuzzing_engines:
 - libfuzzer
 homepage: https://docutils.sourceforge.io
 language: python
-main_repo: "https://repo.or.cz/docutils"
+main_repo: https://svn.code.sf.net/p/docutils/code/trunk
 sanitizers:
 - address
 - undefined

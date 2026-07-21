@@ -1,5 +1,5 @@
 homepage: "http://www.graphicsmagick.org/"
-main_repo: "https://github.com/GraphicsMagick/GraphicsMagick"
+main_repo: "https://foss.heptapod.net/graphicsmagick/graphicsmagick"
 language: c++
 primary_contact: "bobjfriesenhahn@gmail.com"
 auto_ccs:
