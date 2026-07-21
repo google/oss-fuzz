@@ -90,7 +90,7 @@ class SourceRef:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a SourceRef object from a deserialized dict."""
-    return SourceRef(  # pyrefly: ignore[bad-return]
+    return cls(
         url=data["url"], rev=data["rev"], type=RepositoryType(data["type"])
     )
 
@@ -108,7 +108,7 @@ class Reproducibility:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Reproducibility object from a deserialized dict."""
-    return Reproducibility(  # pyrefly: ignore[bad-return]
+    return cls(
         success_count=data["success_count"],
         trial_count=data["trial_count"],
     )
@@ -210,7 +210,7 @@ class CommandLineBinaryConfig(BinaryConfig):
     harness_kind = HarnessKind(
         config_dict.get("harness_kind", HarnessKind.BINARY)
     )
-    return CommandLineBinaryConfig(  # pyrefly: ignore[bad-return]
+    return cls(
         kind=kind,
         harness_kind=harness_kind,
         binary_name=config_dict["binary_name"],
@@ -319,7 +319,7 @@ class Manifest:
       logging.warning(
           "Unsupported manifest version %s detected. Not upgrading.", version
       )
-    return Manifest(  # pyrefly: ignore[bad-return]
+    return cls(
         version=version,
         index_db_version=data.get("index_db_version"),
         name=data["name"],
