@@ -7,7 +7,7 @@ auto_ccs:
    - "bvanassche@acm.org"
    - "magfr@lysator.liu.se"
    - "david@adalogics.com"
-main_repo: "https://github.com/net-snmp/net-snmp"
+main_repo: 'git://git.code.sf.net/p/net-snmp/code'
 fuzzing_engines:
   - afl
   - honggfuzz

@@ -3,7 +3,7 @@ language: c++
 primary_contact: "pauldreikossfuzz@gmail.com"
 auto_ccs:
  - "jwakely.gcc@gmail.com"
-main_repo: "https://gcc.gnu.org/git/gcc"
+main_repo: "git://gcc.gnu.org/git/gcc.git"
 file_github_issue: false
 architectures:
  - x86_64

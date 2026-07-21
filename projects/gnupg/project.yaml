@@ -1,7 +1,7 @@
 homepage: "https://www.gnupg.org"
 language: c++
 primary_contact: "p.antoine@catenacyber.fr"
-main_repo: "https://github.com/gpg/gnupg"
+main_repo: 'git://git.gnupg.org/gnupg.git'
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

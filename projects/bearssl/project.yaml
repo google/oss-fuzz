@@ -1,7 +1,7 @@
 homepage: "https://bearssl.org/"
 language: c++
 primary_contact: "guidovranken@gmail.com"
-main_repo: "https://bearssl.org/git/BearSSL"
+main_repo: "https://www.bearssl.org/git/BearSSL"
 auto_ccs:
     - "pornin@gmail.com"
 sanitizers:

@@ -13,4 +13,4 @@ fuzzing_engines:
   - libfuzzer
   - afl
 # FIXME: honggfuzz fails and centipede hangs
-main_repo: "https://github.com/GNOME/libsoup"
+main_repo: 'https://gitlab.gnome.org/GNOME/libsoup.git'

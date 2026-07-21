@@ -7,7 +7,7 @@ auto_ccs:
  - "morten242@gmail.com"
  - "sgaist.qt@gmail.com"
  - "shawn.t.rutledge@gmail.com"
-main_repo: "https://code.qt.io/qt/qt5"
+main_repo: 'git://code.qt.io/qt/qt5.git'
 architectures:
  - x86_64
  - i386

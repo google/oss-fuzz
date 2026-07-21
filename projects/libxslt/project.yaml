@@ -19,7 +19,7 @@ sanitizers:
   - address
   - memory
   - undefined
-main_repo: "https://github.com/GNOME/libxslt"
+main_repo: 'https://gitlab.gnome.org/GNOME/libxslt.git'
 
 fuzzing_engines:
   - afl

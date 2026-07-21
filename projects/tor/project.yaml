@@ -10,4 +10,4 @@ sanitizers:
  - address
  - memory
  - undefined
-main_repo: "https://gitlab.torproject.org/tpo/core/tor"
+main_repo: 'https://git.torproject.org/tor.git'

@@ -4,4 +4,4 @@ primary_contact: sebastian.rasmussen@artifex.com
 sanitizers:
   - address
   - memory
-main_repo: "https://github.com/ArtifexSoftware/jbig2dec"
+main_repo: 'git://git.ghostscript.com/jbig2dec.git'
