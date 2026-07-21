@@ -1,5 +1,5 @@
 homepage: "https://github.com/hyperium/"
-main_repo: "https://github.com/hyperium/"
+main_repo: "https://github.com/hyperium/http"
 primary_contact: "sean.monstar@gmail.com"
 sanitizers:
   - address
