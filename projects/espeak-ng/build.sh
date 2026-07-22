@@ -34,4 +34,11 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/ssml-fuzzer.o \
     build/src/speechPlayer/libspeechPlayer.a \
     build/src/ucd-tools/libucd.a -o $OUT/ssml-fuzzer -lm
 
+# Dictionary-compiler fuzzer (compiledict.c), built like ssml-fuzzer.
+$CC $CFLAGS -Ibuild/src/libespeak-ng/include -I. -Isrc/include -c tests/dict-fuzzer.c -o tests/dict-fuzzer.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/dict-fuzzer.o \
+    build/src/libespeak-ng/libespeak-ng.a \
+    build/src/speechPlayer/libspeechPlayer.a \
+    build/src/ucd-tools/libucd.a -o $OUT/dict-fuzzer -lm
+
 cp -r build/espeak-ng-data/ $OUT/
