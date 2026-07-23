@@ -40,6 +40,10 @@ if [ -n "$CXX" ]; then
   echo "--action_env=CXX=${CXX}"
 fi
 echo "--host_action_env=CC=gcc"
+echo "--copt=-gz=zlib"
+echo "--linkopt=-Wl,--compress-debug-sections=zlib"
+echo "--linkopt=-Wl,--icf=all"
+echo "--linkopt=-Wl,--gc-sections"
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
