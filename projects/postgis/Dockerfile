@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN git clone --depth 1 https://git.osgeo.org/gitea/postgis/postgis.git postgis
+RUN git clone --depth 1 https://gitea.osgeo.org/postgis/postgis postgis
 WORKDIR postgis
 RUN bash ./fuzzers/install_oss_fuzz_build_deps.sh
 RUN apt-get update && \
