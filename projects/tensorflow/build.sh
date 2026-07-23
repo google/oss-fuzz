@@ -209,7 +209,9 @@ export FUZZTEST_DO_SYNC="no"
 
 # Set fuzz targets. Exclude cc/ops and core/kernels/fuzzing as they depend on
 # ops::Placeholder which was removed from TF's C++ ops API.
-export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:all+//tensorflow/cc/saved_model/...+//tensorflow/cc/framework/fuzzing/...+//tensorflow/core/common_runtime/...+//tensorflow/core/framework/..."
+# Includes //tensorflow/security/fuzzing/cc/{lite,graph,checkpoint}:all for the
+# TFLite interpreter, ImportGraphDef, and V2 checkpoint loader fuzz targets.
+export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:all+//tensorflow/security/fuzzing/cc/lite:all+//tensorflow/security/fuzzing/cc/graph:all+//tensorflow/security/fuzzing/cc/checkpoint:all+//tensorflow/cc/saved_model/...+//tensorflow/cc/framework/fuzzing/...+//tensorflow/core/common_runtime/...+//tensorflow/core/framework/..."
 
 # Remove the cc/ops BUILD file - those fuzzers use removed Placeholder API
 rm -f $SRC/tensorflow/tensorflow/security/fuzzing/cc/ops/BUILD
