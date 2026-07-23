@@ -24,6 +24,14 @@ fi
 
 cd $SRC/connectedhomeip
 
+# The Dockerfile moved third_party out of the source tree so Fuzz Introspector's analysis (which
+# runs before build.sh) skips it and stays within the build deadline (see the Dockerfile / oss-fuzz
+# #13153). Restore it now -- before `gn gen` -- so every build (asan/msan/coverage/introspector)
+# compiles normally. The introspector analysis has already run by this point.
+if [ -d /opt/chip-third-party-stash ] && [ ! -e third_party ]; then
+  mv /opt/chip-third-party-stash third_party
+fi
+
 # Preserve the OSS-Fuzz-provided toolchain settings. The pw_fuzzer / FuzzTest toolchain
 # (//build/toolchain/pw_fuzzer) reads $CC/$CXX/$CFLAGS/$CXXFLAGS at `gn gen` time so its
 # libFuzzer runtime matches OSS-Fuzz's instrumentation; Pigweed's activate.sh may change

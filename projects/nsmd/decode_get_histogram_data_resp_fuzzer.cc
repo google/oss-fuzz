@@ -50,27 +50,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         return 0;
     }
 
-    uint8_t completion_code = payload[sizeof(struct nsm_msg_hdr) + 1];
-    if (completion_code == NSM_SUCCESS || completion_code == NSM_ACCEPTED) {
-        if (payload_len >= sizeof(struct nsm_msg_hdr) + sizeof(struct nsm_get_histogram_data_resp)) {
-            const struct nsm_get_histogram_data_resp* resp = reinterpret_cast<const struct nsm_get_histogram_data_resp*>(payload + sizeof(struct nsm_msg_hdr));
-            uint16_t num_of_buckets = le16toh(resp->num_of_buckets);
-            uint8_t type = resp->bucket_data_type;
-            size_t elem_size = 1;
-            switch(type) {
-                case 0: case 1: elem_size = 1; break;
-                case 2: case 3: elem_size = 2; break;
-                case 4: case 5: elem_size = 4; break;
-                case 6: case 7: elem_size = 8; break;
-                case 8: elem_size = 4; break; // NvS24_8 is float (4 bytes)
-                default: elem_size = 1; break;
-            }
-            size_t header_size = sizeof(struct nsm_msg_hdr) + offsetof(struct nsm_get_histogram_data_resp, bucket_data);
-            if (payload_len < header_size || (size_t)num_of_buckets * elem_size > payload_len - header_size) {
-                return 0;
-            }
-        }
-    }
 
     std::vector<uint8_t> out_buf(65536, 0);
     uint8_t fuzz_cc = 0;
