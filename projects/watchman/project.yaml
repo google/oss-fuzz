@@ -1,0 +1,5 @@
+base_os_version: ubuntu-24-04
+homepage: "https://facebook.github.io/watchman/"
+language: c++
+primary_contact: "rbarnes@meta.com"
+main_repo: "https://github.com/facebook/watchman.git"
