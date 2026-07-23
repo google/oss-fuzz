@@ -1,0 +1,8 @@
+homepage: "https://github.com/ruddro-roy/sindook"
+language: go
+main_repo: "https://github.com/ruddro-roy/sindook"
+primary_contact: "roy@ruddro.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
