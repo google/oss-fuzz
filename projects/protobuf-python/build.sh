@@ -20,6 +20,10 @@ if [[ $CFLAGS = *sanitize=address* ]]
 then
     BAZEL_FLAGS="$BAZEL_FLAGS --config=asan"
 fi
+if [[ $CFLAGS = *sanitize=fuzzer-no-link* ]]
+then
+    BAZEL_FLAGS="$BAZEL_FLAGS --copt=-fsanitize=fuzzer-no-link"
+fi
 
 # Build protoc with default options.
 unset CFLAGS CXXFLAGS
