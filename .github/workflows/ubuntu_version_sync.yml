@@ -20,6 +20,9 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+
 jobs:
   check-sync:
     name: Ubuntu File Synchronization Check
