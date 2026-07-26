@@ -14,9 +14,25 @@
 # limitations under the License.
 #
 ################################################################################
+
+cp Makefile Makefile.backup
 sed -i 's/CFLAGS += -g -fsanitize=address,fuzzer,undefined/#CFLAGS += -g -fsanitize=address,fuzzer,undefined/' ./Makefile
 export LDFLAGS="${LIB_FUZZING_ENGINE} ${CFLAGS}"
 
 chmod +x ./fuzztest/build.sh
 ./fuzztest/build.sh
 mv civetweb_fuzz* $OUT/
+
+# Build unit tests with clean compiler flags (without fuzzing instrumentation)
+mv Makefile.backup Makefile
+export LDFLAGS=
+mkdir build-test
+gcc unittest/cgi_test.c -o build-test/cgi_test.cgi
+cd build-test
+
+cmake -DCIVETWEB_ENABLE_SSL=YES \
+      -DCIVETWEB_DISABLE_CGI=NO \
+      -DCIVETWEB_ENABLE_WEBSOCKETS=YES \
+      -DCIVETWEB_ENABLE_SERVER_STATS=YES \
+      -DCIVETWEB_ENABLE_IPV6=YES ..
+make all
