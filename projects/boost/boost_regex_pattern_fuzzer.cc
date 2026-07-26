@@ -20,19 +20,31 @@ limitations under the License.
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     FuzzedDataProvider fdp(Data, Size);
-    // Currently, we just consume all the fuzzed corpus into the regex pattern
-    std::string regex_string = fdp.ConsumeRemainingBytesAsString();
-    const uint8_t where_array[] = {0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48,0x48};
-    std::string random(where_array, where_array + sizeof(where_array));
-    std::string empty("");
-    std::string spaces("                         ");
+    
+    // Consume a portion of data for regex pattern
+    size_t pattern_size = fdp.ConsumeIntegralInRange<size_t>(0, Size);
+    std::string regex_string = fdp.ConsumeBytesAsString(pattern_size);
+    
+    // Use remaining data to generate multiple test strings
+    std::vector<std::string> wheres;
+    while (fdp.remaining_bytes() > 0) {
+        // Consume random length strings from remaining data
+        size_t str_len = fdp.ConsumeIntegralInRange<size_t>(0, fdp.remaining_bytes());
+        wheres.push_back(fdp.ConsumeBytesAsString(str_len));
+        
+        // Limit to reasonable number of test strings
+        if (wheres.size() >= 10) {
+            break;
+        }
+    }
+    
+    // Always include empty string as a test case
+    if (wheres.empty() || std::find(wheres.begin(), wheres.end(), std::string("")) == wheres.end()) {
+        wheres.push_back("");
+    }
+    
     try {
-        std::vector<std::string> wheres;
-        wheres.push_back(random);
-        wheres.push_back(empty);
-        wheres.push_back(spaces);
         boost::regex e(regex_string);
-        // We're using multiple texts to be matched.
 #ifdef DEBUG
         std::cout << "Regexp string: " << regex_string << "Size: " << regex_string.size() << std::endl;
 #endif
