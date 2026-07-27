@@ -17,7 +17,7 @@ if (angle_has_build) {
       "-g",
       "-fprofile-instr-generate",
       "-fcoverage-mapping",
-      "-resource-dir=/usr/local/lib/clang/22",
+      "-resource-dir=/usr/local/lib/clang/23",
       "-fcoverage-prefix-map=../../src/=/src/angle/src/",
       "-fcoverage-prefix-map=../../include/=/src/angle/include/",
       "-fdebug-compilation-dir=/src/angle",
@@ -39,21 +39,17 @@ if (angle_has_build) {
       ]
     } else if (getenv("FUZZING_ENGINE") == "libfuzzer") {
       cflags += [ "-fsanitize=fuzzer-no-link" ]
-      ldflags += [ getenv("LIB_FUZZING_ENGINE_DEPRECATED") ]
+      ldflags += [ getenv("LIB_FUZZING_ENGINE") ]
     } else {
       cflags += [ "-fsanitize=fuzzer-no-link" ]
       ldflags += [ getenv("LIB_FUZZING_ENGINE") ]
     }
 
     configs -= ["//build/config/compiler:thin_archive"]
-
-    libs = [
-      "/usr/local/lib/clang/22/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer.a",
-    ]
   }
 
   executable("fuzz_translator") {
-    sources = [ "src/compiler/fuzz/translator_fuzzer.cpp" ]
+    sources = [ "src/fuzz/fuzz_translator.cc" ]
 
     include_dirs = [
       "include",
@@ -62,6 +58,7 @@ if (angle_has_build) {
 
     deps = [
       ":translator",
+      ":angle_common",
     ]
 
     cflags = [
@@ -72,7 +69,7 @@ if (angle_has_build) {
       "-fprofile-instr-generate",
       "-fcoverage-mapping",
       "-fsanitize=fuzzer-no-link",
-      "-resource-dir=/usr/local/lib/clang/22",
+      "-resource-dir=/usr/local/lib/clang/23",
       "-UANGLE_USE_ABSEIL",
       "-fcoverage-prefix-map=../../src/=/src/angle/src/",
       "-fcoverage-prefix-map=../../include/=/src/angle/include/",
@@ -82,12 +79,121 @@ if (angle_has_build) {
     ldflags = [
       "-fsanitize=" + getenv("SANITIZER"),
       "-fprofile-instr-generate",
+      getenv("LIB_FUZZING_ENGINE"),
     ]
 
     configs -= ["//build/config/compiler:thin_archive"]
+  }
 
-    libs = [
-      "/usr/local/lib/clang/22/lib/x86_64-unknown-linux-gnu/libclang_rt.fuzzer.a",
+  executable("fuzz_spirv_transform") {
+    sources = [ "src/fuzz/fuzz_spirv_transform.cc" ]
+
+    include_dirs = [
+      "include",
+      "src",
     ]
+
+    deps = [
+      ":angle_static",
+      ":angle_common",
+    ]
+
+    cflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-O1",
+      "-fno-omit-frame-pointer",
+      "-g",
+      "-fprofile-instr-generate",
+      "-fcoverage-mapping",
+      "-fsanitize=fuzzer-no-link",
+      "-resource-dir=/usr/local/lib/clang/23",
+      "-UANGLE_USE_ABSEIL",
+      "-fcoverage-prefix-map=../../src/=/src/angle/src/",
+      "-fcoverage-prefix-map=../../include/=/src/angle/include/",
+      "-fdebug-compilation-dir=/src/angle",
+    ]
+
+    ldflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-fprofile-instr-generate",
+      getenv("LIB_FUZZING_ENGINE"),
+    ]
+
+    configs -= ["//build/config/compiler:thin_archive"]
+  }
+
+  executable("fuzz_spirv_parser") {
+    sources = [ "src/fuzz/fuzz_spirv_parser.cc" ]
+
+    include_dirs = [
+      "include",
+      "src",
+      "third_party/spirv-headers/src/include",
+    ]
+
+    deps = [
+      "src/common/spirv:angle_spirv_parser",
+      ":angle_common",
+    ]
+
+    cflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-O1",
+      "-fno-omit-frame-pointer",
+      "-g",
+      "-fprofile-instr-generate",
+      "-fcoverage-mapping",
+      "-fsanitize=fuzzer-no-link",
+      "-resource-dir=/usr/local/lib/clang/23",
+      "-UANGLE_USE_ABSEIL",
+      "-fcoverage-prefix-map=../../src/=/src/angle/src/",
+      "-fcoverage-prefix-map=../../include/=/src/angle/include/",
+      "-fdebug-compilation-dir=/src/angle",
+    ]
+
+    ldflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-fprofile-instr-generate",
+      getenv("LIB_FUZZING_ENGINE"),
+    ]
+
+    configs -= ["//build/config/compiler:thin_archive"]
+  }
+
+  executable("fuzz_preprocessor") {
+    sources = [ "src/fuzz/fuzz_preprocessor.cc" ]
+
+    include_dirs = [
+      "include",
+      "src",
+    ]
+
+    deps = [
+      ":preprocessor",
+      ":angle_common",
+    ]
+
+    cflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-O1",
+      "-fno-omit-frame-pointer",
+      "-g",
+      "-fprofile-instr-generate",
+      "-fcoverage-mapping",
+      "-fsanitize=fuzzer-no-link",
+      "-resource-dir=/usr/local/lib/clang/23",
+      "-UANGLE_USE_ABSEIL",
+      "-fcoverage-prefix-map=../../src/=/src/angle/src/",
+      "-fcoverage-prefix-map=../../include/=/src/angle/include/",
+      "-fdebug-compilation-dir=/src/angle",
+    ]
+
+    ldflags = [
+      "-fsanitize=" + getenv("SANITIZER"),
+      "-fprofile-instr-generate",
+      getenv("LIB_FUZZING_ENGINE"),
+    ]
+
+    configs -= ["//build/config/compiler:thin_archive"]
   }
 }

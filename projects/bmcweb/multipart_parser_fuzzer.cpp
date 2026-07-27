@@ -10,14 +10,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "http_request.hpp"
 #include "multipart_parser.hpp"
 
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <string_view>
-#include <system_error>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
@@ -26,7 +24,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         return 0;
     }
 
-    // Use first two bytes to determine boundary length (1-64 chars)
+    // Use first byte to determine boundary length (1-64 chars)
     uint8_t boundaryLen =
         static_cast<uint8_t>((data[0] % 64) + 1); // 1-64 chars
     size_t offset = 1;
@@ -43,15 +41,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     std::string_view body(reinterpret_cast<const char*>(data + offset),
                           size - offset);
 
-    std::error_code ec;
-    crow::Request req(body, ec);
-
     std::string contentType = "multipart/form-data; boundary=";
     contentType += boundary;
-    req.addHeader("Content-Type", contentType);
 
     MultipartParser parser;
-    parser.parse(req);
+    parser.parse(contentType, body);
 
     return 0;
 }

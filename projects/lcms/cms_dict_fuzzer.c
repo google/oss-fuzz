@@ -18,15 +18,17 @@ wchar_t* generateWideString(const char* characters, const uint8_t *data){
     if (!characters){
         return NULL;
     }
-    
+
     char stringToWide[10];
     for (int i = 0; i < 9; i++){
         stringToWide[i] = characters[data[i] % 95];
     }
     stringToWide[9] = '\0';
-    
+
     int requiredSize = mbstowcs(NULL, stringToWide, 0);
+    if (requiredSize < 0) return NULL;
     wchar_t* wideString = (wchar_t *)malloc((requiredSize + 1) * sizeof(wchar_t));
+    if (!wideString) return NULL;
     mbstowcs(wideString, stringToWide, requiredSize + 1);
     return wideString;
 }
@@ -44,21 +46,30 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     // Create a Dictionary handle
     cmsHANDLE hDict = cmsDictAlloc(context);
     if (!hDict) {
+        cmsDeleteContext(context);
         return 0;
     }
-    
 
-    cmsMLU *mlu = cmsMLUalloc(hDict, 0);
+
+    cmsMLU *mlu = cmsMLUalloc(context, 0);
     if (!mlu) {
+        cmsDictFree(hDict);
+        cmsDeleteContext(context);
         return 0;
     }
-    
+
     char* characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
     wchar_t* wideString = generateWideString(characters, data);
+    if (!wideString) {
+        cmsMLUfree(mlu);
+        cmsDictFree(hDict);
+        cmsDeleteContext(context);
+        return 0;
+    }
     cmsMLUsetWide(mlu, "en", "US", wideString);
     free(wideString);
-    
-    
+
+
     char ObtainedLanguage[3], ObtainedCountry[3];
     ObtainedLanguage[0] = characters[*(data+1) % 95];
     ObtainedLanguage[1] = characters[*(data+2) % 95];
@@ -77,7 +88,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     //cmsDictAddEntry
     wchar_t* name = generateWideString(characters, data + 9);
     wchar_t* value = generateWideString(characters, data + 18);
-    cmsDictAddEntry(hDict, name, value, displayName, displayValue);
+    if (name && value) {
+        cmsDictAddEntry(hDict, name, value, displayName, displayValue);
+    }
     free(name);
     free(value);
 
@@ -91,5 +104,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cmsDictNextEntry(entry);
     cmsMLUfree(mlu);
     cmsDictFree(hDict);
+    cmsDeleteContext(context);
     return 0;
 }

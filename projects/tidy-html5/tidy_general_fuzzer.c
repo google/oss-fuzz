@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <unistd.h>
 #include "tidybuffio.h"
 #include "tidy.h"
@@ -40,9 +41,8 @@ TidyOptionId bool_options[] = {
   TidyXmlTags, 
   TidyMakeClean,
   TidyAnchorAsName, 
-  TidyMergeEmphasis, 
-  TidyMakeBare, 
-  TidyMetaCharset, 
+  TidyMergeEmphasis,
+  TidyMetaCharset,
   TidyMuteShow, 
   TidyNCR, 
   TidyNumEntities, 
@@ -89,6 +89,9 @@ int TidyXhtml(const uint8_t* data, size_t size, TidyBuffer* output, TidyBuffer* 
   }
 
   TidyDoc tdoc = tidyCreate();
+  if (!tdoc) {
+    return 0;
+  }
 
   // Decide output format
   decider = *data;
@@ -120,6 +123,7 @@ int TidyXhtml(const uint8_t* data, size_t size, TidyBuffer* output, TidyBuffer* 
 
       FILE *fp = fopen(filename, "wb");
       if (!fp) {
+          tidyRelease(tdoc);
           return 0;
       }
       fwrite(data, size, 1, fp);
@@ -137,6 +141,12 @@ int TidyXhtml(const uint8_t* data, size_t size, TidyBuffer* output, TidyBuffer* 
       free(inp);
     }
   }
+
+  // Process and save output like other tidy fuzzers
+  tidyCleanAndRepair(tdoc);
+  tidyRunDiagnostics(tdoc);
+  tidyOptSetBool(tdoc, TidyForceOutput, yes);
+  tidySaveBuffer(tdoc, output);
 
   // Cleanup
   tidyRelease( tdoc );

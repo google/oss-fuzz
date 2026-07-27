@@ -144,6 +144,7 @@ int fuzz_gs_device(
 	ret = gsapi_exit(gs);
 	if (ret < 0 && ret != gs_error_Quit) {
 		fprintf(stderr, "gsapi_exit: error %d\n", ret);
+		gsapi_delete_instance(gs);
 		return ret;
 	}
 

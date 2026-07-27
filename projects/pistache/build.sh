@@ -22,3 +22,13 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parsers \
     -std=c++17 -I../include/ ../tests/fuzzers/fuzz_parser.cpp ./src/libpistache.a
 
 zip -q -r -j $OUT/fuzz_parsers_seed_corpus.zip ../tests/fuzzers/corpus
+
+# Build the project tests for Chronos
+mkdir -p $SRC/pistache/build-tests
+cd $SRC/pistache/build-tests
+cmake -DBUILD_SHARED_LIBS=OFF \
+      -DPISTACHE_BUILD_TESTS=ON \
+      -DBUILD_GMOCK=ON \
+      -DPISTACHE_ENABLE_NETWORK_TESTS=OFF \
+      ..
+make -j$(nproc)

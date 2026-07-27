@@ -25,7 +25,7 @@ CXXFLAGS="$CXXFLAGS -std=c++17"
 
 cd $SRC/leveldb
 mkdir -p build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DLEVELDB_BUILD_TESTS=0 \
+cmake -DCMAKE_BUILD_TYPE=Release -DLEVELDB_BUILD_TESTS=1 \
     -DLEVELDB_BUILD_BENCHMARKS=0 -DCMAKE_CXX_STANDARD=17 .. && cmake --build .
 
 for fuzzer in fuzz_db; do

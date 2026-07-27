@@ -21,4 +21,4 @@ RUN git clone https://code.vinyl-cache.org/vtest/VTest2
 WORKDIR $SRC/haproxy
 
 COPY build.sh run_tests.sh $SRC/
-COPY fuzz* $SRC/
+COPY fuzz* *.dict $SRC/

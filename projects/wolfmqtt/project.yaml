@@ -1,6 +1,8 @@
 homepage: "https://www.wolfssl.com/products/wolfmqtt/"
 language: c
-primary_contact: "guidovranken@gmail.com"
+# For Fuzzer issues: contact david
+# For WolfMQTT issues contact support@wolfMQTT.com
+primary_contact: "david@adalogics.com"
 main_repo: "https://github.com/wolfSSL/wolfMQTT"
 auto_ccs:
     - "eric@wolfssl.com"

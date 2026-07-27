@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build \
     liblzma-dev libzstd-dev pkg-config libglib2.0-dev groff libxml2-dev \
-    libcurl4-openssl-dev libsqlite3-dev flex bison
+    libcurl4-openssl-dev libsqlite3-dev flex bison autopoint
 
 # Ntopng
 RUN git clone --depth 1 https://github.com/ntop/ntopng.git ntopng
@@ -42,6 +42,8 @@ ADD https://github.com/json-c/json-c/archive/refs/tags/json-c-0.17-20230812.tar.
 RUN tar -xvzf json-c-0.17-20230812.tar.gz
 ADD https://github.com/maxmind/libmaxminddb/releases/download/1.7.1/libmaxminddb-1.7.1.tar.gz libmaxminddb-1.7.1.tar.gz
 RUN tar -xvzf libmaxminddb-1.7.1.tar.gz;
+ADD https://github.com/oetiker/rrdtool-1.x/archive/refs/tags/v1.10.3.tar.gz rrdtool-1.10.3.tar.gz
+RUN tar -xvzf rrdtool-1.10.3.tar.gz
 
 ### ntopng dependecies ###
 

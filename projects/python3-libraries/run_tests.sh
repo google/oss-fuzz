@@ -18,5 +18,5 @@
 # Disable leak sanitizer
 export ASAN_OPTIONS="detect_leaks=0"
 
-# Run unit test (2 unit tests that required network connection are skipped)
-ctest --test-dir $SRC/cpython -j$(nproc) -E "test_urllib2|test_urllibnet"
+# Skip network related unit test case
+make test TESTOPTS="-u all,-network,-urlfetch"

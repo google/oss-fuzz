@@ -12,6 +12,7 @@ auto_ccs:
   - omosnacek@gmail.com
   - jwcart2@gmail.com
   - cgzones@googlemail.com
+  - stephen.smalley.work@gmail.com
 main_repo: 'https://github.com/SELinuxProject/selinux'
 
 fuzzing_engines:

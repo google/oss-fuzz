@@ -22,7 +22,8 @@ unset CFLAGS
 unset CXXFLAGS
 export AFL_NOOPT=1
 # This is needed because oss-fuzz always uses it
-export CXXFLAGS="-stdlib=libc++"
+export CFLAGS="-Wno-error=unused-command-line-argument"
+export CXXFLAGS="-stdlib=libc++ -Wno-error=unused-command-line-argument"
 
 ### Dependencies that need static linking ###
 
@@ -36,7 +37,7 @@ make install
 cd $SRC/zeromq-4.3.5
 ./autogen.sh
 (
-export CXXFLAGS="-Wno-error=missing-braces -stdlib=libc++"
+export CXXFLAGS="-Wno-error=missing-braces -Wno-error=unused-command-line-argument -stdlib=libc++"
 ./configure --without-documentation --without-libsodium --enable-static --disable-shared
 make -j$(nproc)
 make install
@@ -69,12 +70,15 @@ make -j$(nproc)
 make -C $NTOPNG_HOME/third-party/lua-5.4.6 generic
 
 # Build librrdtool
-cd $NTOPNG_HOME/third-party/rrdtool-1.4.8
+cd $SRC/rrdtool-1.x-1.10.3
+./bootstrap
 ./configure --disable-libdbi --disable-libwrap --disable-rrdcgi --disable-libtool-lock \
     --disable-nls --disable-rpath --disable-perl --disable-ruby --disable-lua \
-    --disable-tcl --disable-python --disable-dependency-tracking --disable-rrd_graph
+    --disable-tcl --disable-python --disable-dependency-tracking --disable-rrd_graph \
+    --disable-shared --enable-static --prefix=/usr/
 cd src
-make librrd_th.la
+make -j$(nproc)
+make install
 
 
 # Re-enable code instrumentation
@@ -88,6 +92,7 @@ cd $NTOPNG_HOME
 
 ./autogen.sh
 
+export LDFLAGS="-lglib-2.0"
 ./configure --enable-fuzztargets --without-hiredis --with-zmq-static \
     --with-json-c-static --with-maxminddb-static
 

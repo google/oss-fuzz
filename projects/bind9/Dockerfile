@@ -26,6 +26,7 @@ RUN apt-get -y install		\
 	libcap-dev		\
 	libnghttp2-dev		\
 	libssl-dev		\
+	liblmdb-dev     \
 	libtool			\
 	libtool-bin		\
 	liburcu-dev		\

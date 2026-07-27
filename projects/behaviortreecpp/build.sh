@@ -36,6 +36,11 @@ make -j"$(nproc)"
 make install
 cd ../..
 
+# ===== Apply patch: replace std::from_chars for double (not in GCC 9 libstdc++) =====
+# GCC 9 libstdc++ does not implement the floating-point overloads of std::from_chars
+# (only added in GCC 11). Replace with std::strtod which is universally available.
+patch -p1 < $SRC/fix_float_from_chars.patch
+
 # ===== Build BehaviorTree.CPP =====
 mkdir build && cd build
 

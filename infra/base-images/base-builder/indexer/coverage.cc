@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ static CoverageData* coverage_data;
 
 bool IsStandardLibrary(const char* file_path) {
   return (strstr(file_path, "include/c++/v1") ||
+          strstr(file_path, "src/libcxx/include") ||
+          strstr(file_path, "src/libcxx/staging/include") ||
           strncmp(file_path, "/usr/include", 12) == 0 ||
           strstr(file_path, "libc++/src/include") ||
           strstr(file_path, "/absl/"));

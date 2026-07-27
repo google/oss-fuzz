@@ -19,12 +19,12 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install -y wget xz-utils autoconf automake libtool pkg-config \
         gperf libglm-dev patch libboost-dev
-ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
-    https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
-    https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \
-    https://dev-www.libreoffice.org/src/libxml2-2.9.7.tar.gz \
-    https://dev-www.libreoffice.org/src/icu4c-60_2-src.tgz \
-    https://dev-www.libreoffice.org/src/mdds-1.3.1.tar.bz2 \
+ADD https://dev-www.libreoffice.org/src/lcms2-2.18.tar.gz \
+    https://dev-www.libreoffice.org/src/zlib-1.3.2.tar.xz \
+    https://dev-www.libreoffice.org/src/libpng-1.6.56.tar.xz \
+    https://dev-www.libreoffice.org/src/libxml2-2.14.6.tar.xz \
+    https://dev-www.libreoffice.org/src/icu4c-78.2-sources.tgz \
+    https://dev-www.libreoffice.org/src/mdds-3.1.0.tar.xz \
     $SRC/
 # download fuzzing corpora
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
@@ -109,7 +109,8 @@ RUN git clone --depth 1 git://gerrit.libreoffice.org/libpagemaker
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libfreehand
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/code libwpd
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpg/code libwpg
-RUN git clone --depth 1 https://github.com/fosnola/libstaroffice
+RUN git clone --depth 1 https://github.com/fosnola/libstaroffice && \
+    sed -i 's/AC_PREREQ(\[2\.72\])/AC_PREREQ([2.71])/' libstaroffice/configure.ac
 RUN git clone --depth 1 git://git.code.sf.net/p/libwps/code libwps
 RUN git clone --depth 1 git://git.code.sf.net/p/libmwaw/libmwaw
 RUN git clone --depth 1 git://git.code.sf.net/p/libebook/code libe-book
