@@ -15,15 +15,13 @@
 #
 ################################################################################
 
-git apply $SRC/netty-patch.diff
-
 CFLAGS=
 CXXFLAGS=
 
 export CXXFLAGS="$CXXFLAGS -std=c++14"
 
 MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 --update-snapshots"
-$MVN clean package $MAVEN_ARGS
+$MVN clean -pl '!boringssl-static' package $MAVEN_ARGS
 
 cp openssl-dynamic/target/native-jar-work/META-INF/native/libnetty_tcnative_linux_x86_64.so $OUT
 
@@ -37,7 +35,7 @@ do
   RUNTIME_CLASSPATH=$RUNTIME_CLASSPATH\$this_dir/$(basename $JARFILE):
 done
 
-for fuzzer in $(find $SRC -name '*Fuzzer.java')
+for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
   fuzzer_basename=$(basename -s .java $fuzzer)
   javac -cp $BUILD_CLASSPATH:$JAZZER_API_PATH $fuzzer
