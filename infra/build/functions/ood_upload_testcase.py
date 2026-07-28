@@ -50,24 +50,22 @@ def get_headers(access_token_path):
 
 def upload_testcase(upload_url, testcase_path, job, target, access_token_path):
   """Make an upload testcase request."""
-  files = {
-      'file': open(testcase_path, 'rb'),
-  }
   data = {
       'job': job,
       'target': target,
   }
   try:
-    resp = requests.post(upload_url,
-                         files=files,
-                         data=data,
-                         headers=get_headers(access_token_path))
+    with open(testcase_path, 'rb') as f:
+      files = {'file': f}
+      resp = requests.post(upload_url,
+                           files=files,
+                           data=data,
+                           headers=get_headers(access_token_path))
     resp.raise_for_status()
     result = json.loads(resp.text)
     print('Upload succeeded. Testcase ID is', result['id'])
-  except:
-    print('Failed to upload with status', resp.status_code)
-    print(resp.text)
+  except requests.RequestException as e:
+    print('Failed to upload:', e)
 
 
 def get_crash_file_path(dir_path):
