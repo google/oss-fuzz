@@ -1,0 +1,14 @@
+homepage: "https://xiph.org/ogg/"
+language: c
+primary_contact: "ogg-dev@xiph.org"
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+  - i386
+main_repo: "https://gitlab.xiph.org/xiph/ogg.git"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
