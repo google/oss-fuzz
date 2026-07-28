@@ -103,3 +103,5 @@ cd $SRC/openssl35/
 build_fuzzers "_35" "no-apps no-docs" "engines"
 cd $SRC/openssl36/
 build_fuzzers "_36" "no-apps no-docs" "engines"
+cd $SRC/openssl40/
+build_fuzzers "_40" "no-apps no-docs" "engines"
