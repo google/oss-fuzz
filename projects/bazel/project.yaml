@@ -1,0 +1,18 @@
+homepage: "https://bazel.build/"
+language: c++
+main_repo: "https://github.com/bazelbuild/bazel"
+primary_contact: "aminalemi02@gmail.com"   # replace with your OSS-Fuzz-registered contact
+vendor_ccs:
+  - "aminalemi02@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+# ijar is a small standalone C++ tool vendored at third_party/ijar. This
+# integration adds a class-parser fuzz target (ijar_strip_fuzzer) over
+# StripClass(), the build-time entry point for compilation-avoidance.
