@@ -1,0 +1,6 @@
+
+INCLUDE(../router/cmake/fuzzer.cmake)
+IF(LIBFUZZER_COMPILE_FLAGS)
+       ADD_SUBDIRECTORY(fuzz)
+ENDIF()
+
