@@ -15,6 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
+RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 RUN git clone --depth 1 https://github.com/agronholm/cbor2.git
 WORKDIR cbor2
 COPY build.sh $SRC/
