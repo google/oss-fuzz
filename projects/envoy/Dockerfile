@@ -15,7 +15,7 @@
 ################################################################################
 
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 
 RUN apt-get update && apt-get -y install  \
@@ -30,7 +30,7 @@ RUN apt-get update && apt-get -y install  \
     golang          \
     rsync           \
     python3         \
-    libtinfo5
+    libtinfo6
 
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/
