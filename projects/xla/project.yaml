@@ -1,0 +1,9 @@
+homepage: "https://openxla.org/xla"
+language: c++
+primary_contact: "xla-team@google.com"
+main_repo: "https://github.com/openxla/xla"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+file_github_issue: True
