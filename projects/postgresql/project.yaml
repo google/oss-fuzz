@@ -1,6 +1,6 @@
 base_os_version: ubuntu-24-04
 homepage: "https://postgresql.org"
-main_repo: "https://git.postgresql.org/git/postgresql"
+main_repo: "https://github.com/postgres/postgres"
 primary_contact: "sfrost@snowman.net"
 language: c
 auto_ccs:
