@@ -10,7 +10,7 @@ class WolfSSLHack(ProjectHack):
     """Fix WolfSSL Dockerfile issues."""
     # Replace gcloud storage cp command with a simple touch and zip
     dft.str_replace(
-        'RUN gcloud storage cp '
+        'RUN wget '
         'gs://wolfssl-backup.clusterfuzz-external.appspot.com/'
         'corpus/libFuzzer/wolfssl_cryptofuzz-disable-fastmath/public.zip '
         '$SRC/corpus_wolfssl_disable-fastmath.zip', "RUN touch 0xdeadbeef && "
