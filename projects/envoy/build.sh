@@ -35,14 +35,12 @@ declare -r EXTRA_BAZEL_FLAGS="$(
 echo "--features=-layering_check"
 if [ -n "$CC" ]; then
   echo "--action_env=CC=${CC}"
-  echo "--repo_env=CC=${CC}"
 fi
 if [ -n "$CXX" ]; then
   echo "--action_env=CXX=${CXX}"
-  echo "--repo_env=CXX=${CXX}"
 fi
-echo "--host_action_env=CC=${CC:-clang}"
-echo "--host_action_env=CXX=${CXX:-clang++}"
+echo "--host_action_env=CC=gcc"
+echo "--host_action_env=CXX=g++"
 echo "--copt=-gz=zlib"
 echo "--linkopt=-Wl,--compress-debug-sections=zlib"
 echo "--linkopt=-Wl,--icf=all"
