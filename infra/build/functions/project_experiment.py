@@ -84,6 +84,7 @@ def run_experiment(project_name, command, output_path, experiment_name):
       {
           'name': 'gcr.io/cloud-builders/gcloud',
           'args': [
+              'storage',
               'cp',
               '-r',
               '/workspace/out/*',
