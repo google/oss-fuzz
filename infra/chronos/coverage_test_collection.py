@@ -108,9 +108,8 @@ def run_llvm_html_generation(objects, out_dir, workdir=COV_WORKDIR):
       f'-instr-profile={instr_profile}',
       objects,
   ]
-  stdout_fp = open(os.path.join(out_dir, 'summary.json'), 'w')
-  subprocess.check_call(' '.join(cmd), shell=True, stdout=stdout_fp)
-  stdout_fp.close()
+  with open(os.path.join(out_dir, 'summary.json'), 'w') as stdout_fp:
+    subprocess.check_call(' '.join(cmd), shell=True, stdout=stdout_fp)
 
 
 def reset_cov_workdir():

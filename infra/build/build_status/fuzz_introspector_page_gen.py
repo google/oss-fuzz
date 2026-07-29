@@ -231,8 +231,8 @@ def fetch_fuzz_introspector_summary(report_url):
   """
   # Extract json summary file.
   summary_url = report_url.replace('fuzz_report.html', 'summary.json')
-  response = urlopen(summary_url)
-  json_data = json.loads(response.read())
+  with urlopen(summary_url) as response:
+    json_data = json.loads(response.read())
 
   # 1) Extract fuzzer count. This corresponds to all but two elements at the
   # top level of the dictionary.
@@ -251,7 +251,8 @@ def fetch_fuzz_introspector_summary(report_url):
   # Momentarily, we will get this from the HTML page because it's not yet
   # in the summary.json. This will change in the near future, but in the
   # spirit of time we keep it like this for now.
-  fuzz_report_html = urlopen(report_url).read()
+  with urlopen(report_url) as resp:
+    fuzz_report_html = resp.read()
   soup = BeautifulSoup(fuzz_report_html, 'html.parser')
   target_divs = soup.findAll('text', {'class': 'percentage'})
 
