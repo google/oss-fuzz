@@ -8,7 +8,6 @@ class WolfSSLHack(ProjectHack):
 
   def apply_dockerfile_fixes(self, dft) -> bool:
     """Fix WolfSSL Dockerfile issues."""
-    # Replace gcloud storage cp command with a simple touch and zip
     dft.str_replace(
         'RUN wget '
         'gs://wolfssl-backup.clusterfuzz-external.appspot.com/'
