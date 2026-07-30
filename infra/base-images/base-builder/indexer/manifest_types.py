@@ -38,6 +38,7 @@ from typing import Any, Callable, Mapping, Self, Sequence
 import urllib.request
 
 import manifest_constants
+
 import pathlib
 
 SRC_DIR = manifest_constants.SRC_DIR
@@ -433,7 +434,7 @@ class Manifest:
 
     with tempfile.NamedTemporaryFile() as tmp:
       mode = "w:gz" if archive_path.suffix.endswith("gz") else "w"
-      with tarfile.open(tmp.name, mode) as tar:
+      with tarfile.open(tmp.name, mode, dereference=True) as tar:
 
         def _save_dir(
             path: pathlib.PurePath,
