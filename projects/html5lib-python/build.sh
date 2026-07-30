@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-pip3 install .
+pip3 install --no-build-isolation .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
