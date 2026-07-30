@@ -18,7 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 RUN git clone --depth 1 https://github.com/google/mdbook-i18n-helpers.git
 
-# See https://github.com/serde-rs/serde/issues/2770#issuecomment-2212162225
-ENV RUSTUP_TOOLCHAIN nightly-2024-07-07
+ENV RUSTUP_TOOLCHAIN nightly
 WORKDIR mdbook-i18n-helpers
 COPY build.sh $SRC/
