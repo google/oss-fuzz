@@ -8,4 +8,4 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - centipede
-disabled: true
+disabled: false
