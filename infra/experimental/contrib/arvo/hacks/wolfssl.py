@@ -1,4 +1,5 @@
 """WolfSSL project-specific hacks."""
+"""http://www.apache.org/licenses/LICENSE-2.0"""
 
 from . import ProjectHack
 
