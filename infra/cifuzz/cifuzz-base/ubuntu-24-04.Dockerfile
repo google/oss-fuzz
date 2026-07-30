@@ -17,13 +17,23 @@
 FROM gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04
 
 RUN apt-get update && \
-    apt-get install -y systemd wget gnupg && \
+    apt-get install -y systemd wget gnupg apt-transport-https ca-certificates curl && \
     install -m 0755 -d /etc/apt/keyrings && \
+    # Docker GPG Key & Repository setup
     wget -qO- https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list && \
+    # Google Cloud SDK GPG Key & Repository setup
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /etc/apt/keyrings/cloud.google.gpg && \
+    chmod a+r /etc/apt/keyrings/cloud.google.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" > /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    # Install Docker CLI and Google Cloud SDK
     apt-get update && \
-    apt-get install -y docker-ce-cli
+    apt-get install -y docker-ce-cli google-cloud-cli && \
+    # Explicitly remove legacy gsutil and bq CLI binaries
+    rm -f /usr/bin/gsutil /usr/bin/bq /opt/gcloud/google-cloud-sdk/bin/gsutil /opt/gcloud/google-cloud-sdk/bin/bq && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV PATH=/opt/gcloud/google-cloud-sdk/bin/:$PATH
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
@@ -37,7 +47,6 @@ ADD . ${OSS_FUZZ_ROOT}
 # This means javascript needed by cifuzz/clusterfuzzlite must be executed in
 # OSS_FUZZ_ROOT.
 RUN cd ${OSS_FUZZ_ROOT} && npm install ${OSS_FUZZ_ROOT}/infra/cifuzz
-
 
 ENV PYTHONUNBUFFERED=1
 
