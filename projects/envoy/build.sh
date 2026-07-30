@@ -35,7 +35,6 @@ declare -r EXTRA_BAZEL_FLAGS="$(
 echo "--features=-layering_check"
 echo "--repo_env=BAZEL_LLVM_PATH=/usr/local"
 echo "--repo_env=BAZEL_USE_LIBSTDCPP=True"
-echo "--repo_env=BAZEL_USE_HOST_SYSROOT=True"
 echo "--copt=-Wno-nullability-completeness"
 if [ -n "$CC" ]; then
   echo "--action_env=CC=${CC}"
