@@ -30,7 +30,12 @@ RUN apt-get update && apt-get -y install  \
     golang          \
     rsync           \
     python3         \
-    libtinfo5
+    libtinfo5       \
+    libunwind-dev   \
+    libclang-dev
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libunwind.a /usr/local/lib/libunwind.a && \
+    ln -s /usr/lib/llvm-10/lib/libclang.so /usr/local/lib/libclang.so
 
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/
