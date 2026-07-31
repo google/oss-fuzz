@@ -15,4 +15,5 @@
 #
 ################################################################################
 
+sed -i 's/main\\\.cpp/main\\\.cpp|msgpack_roundtrip_string\\\.cpp/' fuzzing/ossfuzz.sh
 fuzzing/ossfuzz.sh
