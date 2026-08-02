@@ -13,7 +13,15 @@ homepage: "https://tcpreplay.appneta.com/"
 main_repo: "https://github.com/appneta/tcpreplay.git"
 language: c
 primary_contact: "tcpreplay.dev@gmail.com"
-file_github_issue: true
+# false, deliberately (flagged in review on the submission PR, #1092): true
+# means OSS-Fuzz auto-files a *public* GitHub issue the moment it finds a
+# crash - for a project whose whole reason for being here is 15 externally
+# reported CVEs in one year, that discloses a vulnerability before anyone
+# has had a chance to look at it privately. false routes findings to
+# primary_contact/auto_ccs by email instead, which is what OSS-Fuzz's own
+# responsible-disclosure timeline (private, then public after a fix or 90
+# days) assumes.
+file_github_issue: false
 # memory (MSan) deliberately excluded: fuzz_fragroute/fuzz_pcap link against
 # the base image's apt-installed libpcap/libdumbnet, not rebuilt from source
 # with MSan instrumentation, so MSan would flag uninitialized-value use
