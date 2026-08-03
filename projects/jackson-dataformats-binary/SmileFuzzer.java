@@ -14,16 +14,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
-import java.io.IOException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.smile.SmileMapper;
+
 
 public class SmileFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     ObjectMapper mapper = new SmileMapper();
     try {
       mapper.readTree(input);
-    } catch (IOException ignored) {
+    } catch (RuntimeException ignored) {
     }
   }
 }

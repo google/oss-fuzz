@@ -16,7 +16,12 @@
 #
 ################################################################################
 
-./autogen.sh --without-cython --enable-debug --without-tests
+if [[ "$SANITIZER" != "coverage" && "$SANITIZER" != "introspector" ]]
+then
+  ./autogen.sh --without-cython --enable-debug
+else
+  ./autogen.sh --without-cython --enable-debug --without-tests
+fi
 make -j$(nproc) clean
 make -j$(nproc) all
 

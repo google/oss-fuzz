@@ -18,7 +18,7 @@
 cp $SRC/s2_fuzzer.cc $SRC/s2geometry/src/
 
 cd $SRC/
-git clone --depth=1 https://github.com/abseil/abseil-cpp
+git clone --depth=1 --branch 20260107.1 https://github.com/abseil/abseil-cpp
 cd abseil-cpp
 mkdir build && cd build
 cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ../  && make && make install
@@ -29,6 +29,8 @@ mkdir build && cd build
 
 cmake -DBUILD_SHARED_LIBS=OFF \
       -DABSL_MIN_LOG_LEVEL=4 \
-      -DBUILD_TESTS=OFF ..
+      -DGOOGLETEST_ROOT=/usr/src/googletest \
+      -DCMAKE_EXE_LINKER_FLAGS="-lssl -lcrypto" \
+      -DBUILD_TESTS=ON ..
 make -j$(nproc)
 find . -name "s2fuzzer" -exec cp {} $OUT/s2_fuzzer \;

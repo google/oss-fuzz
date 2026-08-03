@@ -17,18 +17,26 @@
 
 find $SRC/spring* -name *.dict -o -name *zip -exec cp {} $OUT/ \;
 
-export JAVA_HOME="$OUT/open-jdk-17"
+export JAVA_HOME="$OUT/open-jdk-25"
 mkdir -p $JAVA_HOME
-rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
+rsync -aL --exclude=*.zip "/usr/lib/jvm/java-25-openjdk-amd64/" "$JAVA_HOME"
 
-export CURRENT_VERSION=$(./gradlew properties --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+# Disable build scan publishing for all gradle commands
+export GRADLE_OPTS="-Dscan.disabled=true -Dorg.gradle.daemon=false"
+
+# Try to get version from gradle.properties first, fallback to gradlew
+CURRENT_VERSION=$(grep -E "^version\s*=" gradle.properties 2>/dev/null | sed 's/version\s*=\s*//')
+if [ -z "$CURRENT_VERSION" ]; then
+    CURRENT_VERSION=$(timeout 120 ./gradlew properties --console=plain --no-scan --no-daemon -q 2>/dev/null | sed -nr "s/^version:\ (.*)/\1/p")
+fi
+export CURRENT_VERSION
 
 function install_shadowJar {
     if grep -q shadow $1/$1.gradle; then
-	    ./gradlew shadowJar --build-file $1/$1.gradle -x javadoc -x test
+	    ./gradlew :$1:shadowJar -x javadoc -x test --no-scan --no-daemon
     	install -v "$1/build/libs/$1-$CURRENT_VERSION-all.jar" "$OUT/$1.jar";
     else
-        ./gradlew build -x javadoc -x test
+        ./gradlew :$1:build -x javadoc -x test --no-scan --no-daemon
         install -v "$1/build/libs/$1-$CURRENT_VERSION.jar" "$OUT/$1.jar";
     fi
 }
@@ -59,7 +67,11 @@ export RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$
 function create_fuzz_targets() {
     mkdir -p $SRC/$1
     mkdir -p $OUT/$1
-    javac -cp $BUILD_CLASSPATH --release 17 $(find $SRC/$1/ -name "*.java" -print)
+    # Use -d $OUT to place class files (including packaged classes) in the output directory
+    javac -cp $BUILD_CLASSPATH -d $OUT --release 25 $(find $SRC/$1/ -name "*.java" -print)
+
+    # Save the original classpath
+    local ORIGINAL_CLASSPATH=$RUNTIME_CLASSPATH
 
     # Overwrite class path for some projects
     if [ $# -eq 2 ]; then
@@ -69,28 +81,42 @@ function create_fuzz_targets() {
     for fuzzer in $SRC/$1/*Fuzzer.java; do
         fuzzer_basename=$(basename -s .java $fuzzer)
 
+        # Add special flags for specific fuzzers
+        EXTRA_JAZZER_ARGS=""
+        if [ "$fuzzer_basename" = "XStreamMarshallerFuzzer" ]; then
+            # Disable UnsafeSanitizer which conflicts with XStream's use of sun.misc.Unsafe
+            EXTRA_JAZZER_ARGS="--disabled_hooks=com.code_intelligence.jazzer.sanitizers.UnsafeSanitizer"
+        elif [ "$fuzzer_basename" = "JdbcCoreMapperFuzzer" ]; then
+            # Disable SSRF sanitizer - XML schema validation requires network access to springframework.org
+            EXTRA_JAZZER_ARGS="--disabled_hooks=com.code_intelligence.jazzer.sanitizers.ServerSideRequestForgery"
+        fi
+
         # Create an execution wrapper that executes Jazzer with the correct arguments.
         echo "#!/bin/bash
-        # LLVMFuzzerTestOneInput for fuzzer detection.
-        this_dir=\$(dirname \"\$0\")
-        JAVA_OPTS=\"-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog\" \
-        JAVA_HOME=\"\$this_dir/open-jdk-17/\" \
-        LD_LIBRARY_PATH=\"\$this_dir/open-jdk-17/lib/server\":\$this_dir \
-        if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
-            mem_settings='-Xmx1900m:-Xss900k'
-        else
-            mem_settings='-Xmx2048m:-Xss1024k'
-        fi
-        \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
-        --cp=$RUNTIME_CLASSPATH \
-        --target_class=$fuzzer_basename \
-        --instrumentation_includes=org.springframework.** \
-        --jvm_args=\"\$mem_settings:-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog\" \
-        \$@" > $OUT/$fuzzer_basename
+# LLVMFuzzerTestOneInput for fuzzer detection.
+this_dir=\$(dirname \"\$0\")
+export JAVA_OPTS=\"-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog\"
+export JAVA_HOME=\"\$this_dir/open-jdk-25/\"
+export LD_LIBRARY_PATH=\"\$this_dir/open-jdk-25/lib/server\":\$this_dir
+if [[ \"\$@\" =~ (^| )-runs=[0-9]+($| ) ]]; then
+    mem_settings='-Xmx1900m:-Xss900k'
+else
+    mem_settings='-Xmx2048m:-Xss1024k'
+fi
+\$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \\
+    --cp=$RUNTIME_CLASSPATH \\
+    --target_class=$fuzzer_basename \\
+    --instrumentation_includes=org.springframework.** \\
+    --jvm_args=\"\$mem_settings:-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog\" \\
+    $EXTRA_JAZZER_ARGS \\
+    \$@" > $OUT/$fuzzer_basename
         chmod u+x $OUT/$fuzzer_basename
     done
 
-    cp $SRC/$1/*.class $OUT/
+    # Restore the original classpath
+    RUNTIME_CLASSPATH=$ORIGINAL_CLASSPATH
+
+    # Note: Class files are already in $OUT from javac -d $OUT
 }
 
 create_fuzz_targets spring-aop
@@ -99,7 +125,7 @@ create_fuzz_targets spring-context
 create_fuzz_targets spring-expression
 create_fuzz_targets spring-tx
 create_fuzz_targets spring-web
-create_fuzz_targets spring-jdbc
+create_fuzz_targets spring-jdbc "\$this_dir/spring-jdbc:$RUNTIME_CLASSPATH"
 create_fuzz_targets spring-messaging
 create_fuzz_targets spring-jms
 create_fuzz_targets spring-webflux

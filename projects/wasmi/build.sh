@@ -20,7 +20,7 @@ nightly="+$RUSTUP_TOOLCHAIN"
 
 cargo $nightly fuzz build translate -O
 cargo $nightly fuzz build execute -O
-cargo $nightly fuzz build differential --features=differential -O
+cargo $nightly fuzz build differential --all-features -O
 
 FUZZ_TARGET_OUTPUT_DIR=target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs

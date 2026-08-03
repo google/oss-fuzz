@@ -21,16 +21,16 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.Base64Variant;
-import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.json.UTF8JsonGenerator;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonGenerator.Feature;
-import com.fasterxml.jackson.core.SerializableString;
-import com.fasterxml.jackson.core.io.SerializedString;
+import tools.jackson.core.Base64Variant;
+import tools.jackson.core.Base64Variants;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.json.UTF8JsonGenerator;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.StreamWriteFeature;
+import tools.jackson.core.SerializableString;
+import tools.jackson.core.io.SerializedString;
 
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
 
 public class UTF8GeneratorFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
@@ -42,29 +42,25 @@ public class UTF8GeneratorFuzzer {
     byte[] b;
     Base64Variant b64v;
 
-    Feature[] features = new Feature[]{
-        Feature.AUTO_CLOSE_TARGET,
-        Feature.AUTO_CLOSE_JSON_CONTENT,
-        Feature.FLUSH_PASSED_TO_STREAM,
-        Feature.QUOTE_FIELD_NAMES,
-        Feature.QUOTE_NON_NUMERIC_NUMBERS,
-        Feature.ESCAPE_NON_ASCII,
-        Feature.WRITE_NUMBERS_AS_STRINGS,
-        Feature.WRITE_BIGDECIMAL_AS_PLAIN,
-        Feature.STRICT_DUPLICATE_DETECTION,
-        Feature.IGNORE_UNKNOWN,
+    StreamWriteFeature[] features = new StreamWriteFeature[]{
+        StreamWriteFeature.AUTO_CLOSE_TARGET,
+        StreamWriteFeature.AUTO_CLOSE_CONTENT,
+        StreamWriteFeature.FLUSH_PASSED_TO_STREAM,
+        StreamWriteFeature.WRITE_BIGDECIMAL_AS_PLAIN,
+        StreamWriteFeature.STRICT_DUPLICATE_DETECTION,
+        StreamWriteFeature.IGNORE_UNKNOWN,
     };
 
     try {
       g = jf.createGenerator(out);
       for (int i = 0; i < features.length; i++) {
         if (data.consumeBoolean()) {
-          g.enable(features[i]);
+          g.configure(features[i], true);
         } else {
-          g.disable(features[i]);
+          g.configure(features[i], false);
         }
       }
-    } catch (IOException ignored) {
+    } catch (JacksonException ignored) {
       return;
     }
 
@@ -105,7 +101,7 @@ public class UTF8GeneratorFuzzer {
           String key = data.consumeString(1000000);
           String value = data.consumeString(1000000);
           g.writeStartObject();
-          g.writeStringField(key, value);
+          g.writeStringProperty(key, value);
           g.writeEndObject();
         case 6:
           b64v = Base64Variants.getDefaultVariant();
@@ -142,13 +138,13 @@ public class UTF8GeneratorFuzzer {
           fuzzString = data.consumeString(100000);
           g.writeNumber(fuzzString);
         }
-      } catch (IOException | IllegalArgumentException ignored) {
+      } catch (JacksonException | IllegalArgumentException ignored) {
       }
     }
 
     try {
       g.close();
-    } catch (IOException ignored) {
+    } catch (JacksonException ignored) {
     }
     
   }

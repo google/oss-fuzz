@@ -21,9 +21,10 @@ rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
 patch build.gradle build.patch
 
-./gradlew shadowJar
+./gradlew shadowJar --no-daemon
 
-SPRING_WEBFLOW_VERSION=$(./gradlew properties --no-daemon --console=plain | sed -nr "s/^version:\ (.*)/\1/p")
+# Extract version from the built JAR filename instead of running gradlew properties (which can hang)
+SPRING_WEBFLOW_VERSION=$(ls $SRC/spring-webflow/spring-webflow/build/libs/spring-webflow-*-all.jar | sed -nr 's/.*spring-webflow-(.+)-all\.jar/\1/p')
 
 cp $SRC/spring-webflow/spring-webflow/build/libs/spring-webflow-$SPRING_WEBFLOW_VERSION-all.jar $OUT/spring-webflow.jar
 cp $SRC/spring-webflow/spring-binding/build/libs/spring-binding-$SPRING_WEBFLOW_VERSION-all.jar $OUT/spring-binding.jar

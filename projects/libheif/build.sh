@@ -15,82 +15,20 @@
 #
 ################################################################################
 
-# Build dependencies.
-export DEPS_PATH=$SRC/deps
-mkdir -p $DEPS_PATH
+# Delegate actual building to the script provided by libheif.
+./scripts/build-oss-fuzz.sh
 
-cd $SRC/x265/build/linux
-cmake -G "Unix Makefiles" \
-    -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
-    -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-    -DCMAKE_INSTALL_PREFIX="$DEPS_PATH" \
-    -DENABLE_SHARED:bool=off \
-    ../../source
-make clean
-make -j$(nproc) x265-static
-make install
+# Structured HEIF/ISOBMFF seeds (see generate_seeds.py). These exercise the
+# box / item-property / derivation (grid, iovl) parsing in box.cc and the
+# movie-box path in seq_boxes.cc that the shipped .heic corpus does not carry.
+# box_fuzzer and tile_fuzzer ship no corpus at all, so they gain the most.
+python3 "$SRC/generate_seeds.py" "$SRC/generated_heif_seeds"
 
-cd $SRC/libde265
-./autogen.sh
-./configure \
-    --prefix="$DEPS_PATH" \
-    --disable-shared \
-    --enable-static \
-    --disable-dec265 \
-    --disable-sherlock265 \
-    --disable-hdrcopy \
-    --disable-enc265 \
-    --disable-acceleration_speed
-make clean
-make -j$(nproc)
-make install
-
-mkdir -p $SRC/aom/build/linux
-cd $SRC/aom/build/linux
-cmake -G "Unix Makefiles" \
-  -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
-  -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-  -DCMAKE_INSTALL_PREFIX="$DEPS_PATH" \
-  -DENABLE_SHARED:bool=off -DCONFIG_PIC=1 \
-  -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
-  -DCONFIG_SIZE_LIMIT=1 \
-  -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
-  -DDO_RANGE_CHECK_CLAMP=1 \
-  -DAOM_MAX_ALLOCABLE_MEMORY=536870912 \
-  -DAOM_TARGET_CPU=generic \
-  ../../
-make clean
-make -j$(nproc)
-make install
-
-# Remove shared libraries to avoid accidental linking against them.
-rm -f $DEPS_PATH/lib/*.so
-rm -f $DEPS_PATH/lib/*.so.*
-
-cd $SRC/libheif
-mkdir build
-cd build
-cmake .. --preset=fuzzing \
-      -DFUZZING_COMPILE_OPTIONS="" \
-      -DFUZZING_LINKER_OPTIONS="$LIB_FUZZING_ENGINE" \
-      -DFUZZING_C_COMPILER=$CC -DFUZZING_CXX_COMPILER=$CXX \
-      -DWITH_DEFLATE_HEADER_COMPRESSION=OFF
-
-make -j$(nproc)
-
-#./autogen.sh
-#PKG_CONFIG="pkg-config --static" PKG_CONFIG_PATH="$DEPS_PATH/lib/pkgconfig" ./configure \
-#    --disable-shared \
-#    --enable-static \
-#    --disable-examples \
-#    --disable-go \
-#    --enable-libfuzzer="$LIB_FUZZING_ENGINE" \
-#    CPPFLAGS="-I$DEPS_PATH/include"
-#make clean
-#make -j$(nproc)
-
-cp fuzzing/*_fuzzer $OUT
-cp ../fuzzing/data/dictionary.txt $OUT/box-fuzzer.dict
-cp ../fuzzing/data/dictionary.txt $OUT/file-fuzzer.dict
-
-zip -r $OUT/file-fuzzer_seed_corpus.zip ../fuzzing/data/corpus/*.heic
+# Name corpora with the underscore convention OSS-Fuzz actually loads
+# (<fuzz_target>_seed_corpus.zip); the binaries are file_fuzzer / box_fuzzer /
+# tile_fuzzer.
+zip -j -q "$OUT/box_fuzzer_seed_corpus.zip" "$SRC"/generated_heif_seeds/*.heif
+zip -j -q "$OUT/tile_fuzzer_seed_corpus.zip" "$SRC"/generated_heif_seeds/*.heif
+# file_fuzzer: the stock .heic corpus plus the generated container seeds.
+cp "$SRC"/libheif/fuzzing/data/corpus/*.heic "$SRC"/generated_heif_seeds/ 2>/dev/null || true
+zip -j -q "$OUT/file_fuzzer_seed_corpus.zip" "$SRC"/generated_heif_seeds/*

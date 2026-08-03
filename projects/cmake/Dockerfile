@@ -15,9 +15,20 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
-  pkg-config libssl-dev
+
+# Install minimal build dependencies
+# Note: We don't install libssl-dev because it would break MSan
+# (all code must be instrumented for MSan to work properly)
+RUN apt-get update && apt-get install -y \
+    make \
+    autoconf \
+    automake \
+    libtool \
+    pkg-config
+
+# Clone official CMake repository (fuzzing support merged in fad74f77)
 RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake CMake
 RUN git clone --depth 1 https://github.com/strongcourage/fuzzing-corpus
+
 WORKDIR CMake
 COPY build.sh $SRC/

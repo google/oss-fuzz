@@ -14,7 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone https://github.com/ipython/ipython
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+RUN apt-get update && apt-get install -y python3.12 python3.12-dev python3.12-venv && \
+    rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED && \
+    update-alternatives --install /usr/local/bin/python3 python3 /usr/bin/python3.12 1 && \
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3 && \
+    python3 -m pip install pyinstaller atheris
+RUN git clone --depth 1 https://github.com/ipython/ipython
 WORKDIR $SRC
 COPY build.sh fuzz_* $SRC/

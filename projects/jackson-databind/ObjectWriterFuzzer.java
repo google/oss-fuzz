@@ -18,85 +18,83 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
 import java.util.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.core.JacksonException;
 
 public class ObjectWriterFuzzer {
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
 
-        MapperFeature[] mapperfeatures = new MapperFeature[]{MapperFeature.AUTO_DETECT_CREATORS,
-                                        MapperFeature.AUTO_DETECT_FIELDS,
-                                        MapperFeature.AUTO_DETECT_GETTERS,
-                                        MapperFeature.AUTO_DETECT_IS_GETTERS,
-                                        MapperFeature.AUTO_DETECT_SETTERS,
-                                        MapperFeature.REQUIRE_SETTERS_FOR_GETTERS,
-                                        MapperFeature.USE_GETTERS_AS_SETTERS,
-                                        MapperFeature.INFER_CREATOR_FROM_CONSTRUCTOR_PROPERTIES,
-                                        MapperFeature.INFER_PROPERTY_MUTATORS,
-                                        MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS,
-                                        MapperFeature.ALLOW_VOID_VALUED_PROPERTIES,
-                                        MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS,
-                                        MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS,
-                                        MapperFeature.SORT_PROPERTIES_ALPHABETICALLY,
-                                        MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME,
-                                        MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS,
-                                        MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS,
-                                        MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES,
-                                        MapperFeature.ACCEPT_CASE_INSENSITIVE_VALUES,
-                                        MapperFeature.ALLOW_EXPLICIT_PROPERTY_RENAMING,
-                                        MapperFeature.USE_STD_BEAN_NAMING,
-                                        MapperFeature.ALLOW_COERCION_OF_SCALARS,
-                                        MapperFeature.DEFAULT_VIEW_INCLUSION,
-                                        MapperFeature.IGNORE_DUPLICATE_MODULE_REGISTRATIONS,
-                                        MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE,
-                                        MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL,
-                                        MapperFeature.USE_STATIC_TYPING,
-                                        MapperFeature.BLOCK_UNSAFE_POLYMORPHIC_BASE_TYPES};
+        MapperFeature[] mapperfeatures = new MapperFeature[]{
+            MapperFeature.USE_ANNOTATIONS,
+            MapperFeature.USE_GETTERS_AS_SETTERS,
+            MapperFeature.PROPAGATE_TRANSIENT_MARKER,
+            MapperFeature.REQUIRE_SETTERS_FOR_GETTERS,
+            MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS,
+            MapperFeature.INFER_PROPERTY_MUTATORS,
+            MapperFeature.INFER_CREATOR_FROM_CONSTRUCTOR_PROPERTIES,
+            MapperFeature.ALLOW_VOID_VALUED_PROPERTIES,
+            MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS,
+            MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS,
+            MapperFeature.USE_STATIC_TYPING,
+            MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL,
+            MapperFeature.DEFAULT_VIEW_INCLUSION,
+            MapperFeature.SORT_PROPERTIES_ALPHABETICALLY,
+            MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES,
+            MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS,
+            MapperFeature.ACCEPT_CASE_INSENSITIVE_VALUES,
+            MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME,
+            MapperFeature.ALLOW_EXPLICIT_PROPERTY_RENAMING,
+            MapperFeature.ALLOW_COERCION_OF_SCALARS,
+            MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE,
+            MapperFeature.APPLY_DEFAULT_VALUES
+        };
 
-        SerializationFeature[] serializationfeatures = new SerializationFeature[]{SerializationFeature.INDENT_OUTPUT,
-                                        SerializationFeature.CLOSE_CLOSEABLE,
-                                        SerializationFeature.WRAP_ROOT_VALUE,
-                                        SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS,
-                                        SerializationFeature.WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS,
-                                        SerializationFeature.WRITE_ENUMS_USING_TO_STRING,
-                                        SerializationFeature.WRITE_ENUMS_USING_INDEX,
-                                        SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED,
-                                        SerializationFeature.WRITE_BIGDECIMAL_AS_PLAIN,
-                                        SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,
-                                        SerializationFeature.USE_EQUALITY_FOR_OBJECT_ID,
-                                        SerializationFeature.FAIL_ON_EMPTY_BEANS,
-                                        SerializationFeature.WRAP_EXCEPTIONS,
-                                        SerializationFeature.FLUSH_AFTER_WRITE_VALUE,
-                                        SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
-                                        SerializationFeature.WRITE_NULL_MAP_VALUES,
-                                        SerializationFeature.WRITE_EMPTY_JSON_ARRAYS,
-                                        SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS,
-                                        SerializationFeature.EAGER_SERIALIZER_FETCH};
+        SerializationFeature[] serializationfeatures = new SerializationFeature[]{
+            SerializationFeature.WRAP_ROOT_VALUE,
+            SerializationFeature.INDENT_OUTPUT,
+            SerializationFeature.FAIL_ON_EMPTY_BEANS,
+            SerializationFeature.FAIL_ON_SELF_REFERENCES,
+            SerializationFeature.WRAP_EXCEPTIONS,
+            SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS,
+            SerializationFeature.WRITE_SELF_REFERENCES_AS_NULL,
+            SerializationFeature.CLOSE_CLOSEABLE,
+            SerializationFeature.FLUSH_AFTER_WRITE_VALUE,
+            SerializationFeature.WRITE_CHAR_ARRAYS_AS_JSON_ARRAYS,
+            SerializationFeature.WRITE_EMPTY_JSON_ARRAYS,
+            SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED,
+            SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,
+            SerializationFeature.EAGER_SERIALIZER_FETCH,
+            SerializationFeature.USE_EQUALITY_FOR_OBJECT_ID
+        };
 
-        ObjectMapper mapper = new ObjectMapper();
-
+        // Build mapper with features via builder (Jackson 3.x style)
+        JsonMapper.Builder builder = JsonMapper.builder();
+        
         for (int i = 0; i < mapperfeatures.length; i++) {
             if (data.consumeBoolean()) {
-                mapper.enable(mapperfeatures[i]);
+                builder.enable(mapperfeatures[i]);
             } else {
-                mapper.disable(mapperfeatures[i]);
+                builder.disable(mapperfeatures[i]);
             }
         }
 
         for (int i = 0; i < serializationfeatures.length; i++) {
             if (data.consumeBoolean()) {
-                mapper.enable(serializationfeatures[i]);
+                builder.enable(serializationfeatures[i]);
             } else {
-                mapper.disable(serializationfeatures[i]);
+                builder.disable(serializationfeatures[i]);
             }
         }
+
+        ObjectMapper mapper = builder.build();
 
         try {
             DummyClass dc = mapper.readValue(data.consumeRemainingAsString(), DummyClass.class);
             byte[] jb = mapper.writeValueAsBytes(dc);
-        } catch (JsonProcessingException e) { }
+        } catch (JacksonException e) { }
     }
 
     public static class DummyClass {

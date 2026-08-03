@@ -3,6 +3,7 @@ fuzzing_engines:
 homepage: ipython.readthedocs.org
 language: python
 main_repo: https://github.com/ipython/ipython
+base_os_version: ubuntu-24-04
 sanitizers:
 - address
 vendor_ccs:

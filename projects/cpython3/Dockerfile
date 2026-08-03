@@ -23,4 +23,4 @@ RUN apt-get update && \
 
 RUN git clone https://github.com/python/cpython.git cpython3
 WORKDIR cpython3
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

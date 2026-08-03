@@ -28,11 +28,10 @@ pushd "${SRC}/commons-logging"
 	ALL_JARS="${ALL_JARS} commons-logging.jar"
 popd
 
-LOG4J_VERSION=$(echo $(curl -s 'https://api.github.com/repos/apache/logging-log4j2/tags?per_page=1' | jq -r .[].name) | sed 's/^[^0-9]*//')
-curl "https://dlcdn.apache.org/logging/log4j/$LOG4J_VERSION/apache-log4j-$LOG4J_VERSION-bin.tar.gz" -o apache-log4j-bin.tar.gz
-tar xf apache-log4j-bin.tar.gz
-unlink apache-log4j-bin.tar.gz
-mv apache-log4j-$LOG4J_VERSION-bin $SRC
+LOG4J_VERSION=$(curl -s 'https://api.github.com/repos/apache/logging-log4j2/tags?per_page=20' | jq -r '.[].name' | grep -E '^rel/2\.[0-9]+\.[0-9]+$' | head -1 | sed 's/^rel\///')
+curl "https://archive.apache.org/dist/logging/log4j/$LOG4J_VERSION/apache-log4j-$LOG4J_VERSION-bin.zip" -o apache-log4j-bin.zip
+unzip -q -o apache-log4j-bin.zip -d $SRC/apache-log4j-$LOG4J_VERSION-bin
+unlink apache-log4j-bin.zip
 
 for jarFile in ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-api-$LOG4J_VERSION.jar ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-core-$LOG4J_VERSION.jar ${SRC}/apache-log4j-$LOG4J_VERSION-bin/log4j-1.2-api-$LOG4J_VERSION.jar ; do
 	cp -v ${jarFile} "$OUT/$(basename ${jarFile})"

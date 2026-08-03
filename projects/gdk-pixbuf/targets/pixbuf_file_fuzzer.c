@@ -21,7 +21,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (size < 1) {
         return 0;
     }
-    GdkPixbuf *pixbuf;
+    GdkPixbuf *pixbuf, *rotated, *scaled;
     GError *error = NULL;
 
     char *tmpfile = fuzzer_get_tmpfile(data, size);
@@ -39,14 +39,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     gdk_pixbuf_get_width(pixbuf);
     gdk_pixbuf_get_height(pixbuf);
     gdk_pixbuf_get_bits_per_sample(pixbuf);
-    gdk_pixbuf_scale(pixbuf, pixbuf,
-            0, 0, 
-            gdk_pixbuf_get_width(pixbuf) / 4, 
+
+    scaled = gdk_pixbuf_scale_simple(pixbuf,
+            gdk_pixbuf_get_width(pixbuf) / 4,
             gdk_pixbuf_get_height(pixbuf) / 4,
-            0, 0, 0.5, 0.5,
             GDK_INTERP_NEAREST);
+    if (scaled) g_object_unref(scaled);
+
     unsigned int rot_amount = ((unsigned int) data[0]) % 4;
-    pixbuf = gdk_pixbuf_rotate_simple(pixbuf, rot_amount * 90);
+    rotated = gdk_pixbuf_rotate_simple(pixbuf, rot_amount * 90);
+    g_object_unref(pixbuf);
+    pixbuf = rotated;
+
     gdk_pixbuf_set_option(pixbuf, buf, buf);
     gdk_pixbuf_get_option(pixbuf, buf);
 

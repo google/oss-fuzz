@@ -32,23 +32,26 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     if (size == 0) {
         return 0;
     }
-    
-    // Initialize parser with default options
-    pm_options_t options = {0};
-    pm_options_frozen_string_literal_set(&options, false);
-    
-    pm_parser_t parser;
-    pm_parser_init(&parser, data, size, &options);
-    
-    // Parse the input
-    pm_node_t *node = pm_parse(&parser);
-    
-    // Clean up
-    if (node) {
-        pm_node_destroy(&parser, node);
+
+    // Create arena for AST-lifetime allocations
+    pm_arena_t *arena = pm_arena_new();
+    if (!arena) {
+        return 0;
     }
-    pm_parser_free(&parser);
-    pm_options_free(&options);
-    
+
+    // Initialize parser with default options
+    pm_parser_t *parser = pm_parser_new(arena, data, size, NULL);
+    if (!parser) {
+        pm_arena_free(arena);
+        return 0;
+    }
+
+    // Parse the input
+    pm_parse(parser);
+
+    // Clean up
+    pm_parser_free(parser);
+    pm_arena_free(arena);
+
     return 0;
 }

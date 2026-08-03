@@ -15,27 +15,36 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN echo "deb http://packages.networkradius.com/extras/ubuntu/focal focal  main" > /etc/apt/sources.list.d/networkradius-extras.list
-RUN apt-get install -y gnupg
+RUN apt-get update && apt-get install -y gnupg
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BE18FC5A41382202
-RUN apt-get update
-RUN apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev
+RUN echo "deb http://packages.networkradius.com/extras/ubuntu/focal focal  main" > /etc/apt/sources.list.d/networkradius-extras.list
+RUN apt-get update && apt-get install -y libtalloc-dev libkqueue-dev libunwind-dev cmake
 
-# OpenSSL 1.1
-ARG OPENSSL_VERSION=1.1.1g
-ARG OPENSSL_HASH=ddb04774f1e32f0c49751e21b67216ac87852ceb056b75209af2443400636d46
+# json-c source — built statically with sanitizer instrumentation in build.sh
+ARG JSONC_VERSION=0.18
+ARG JSONC_HASH=876ab046479166b869afc6896d288183bbc0e5843f141200c677b3e8dfb11724
 RUN set -ex \
-    && curl -s -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
+    && curl -s -L -o json-c-${JSONC_VERSION}.tar.gz https://s3.amazonaws.com/json-c_releases/releases/json-c-${JSONC_VERSION}.tar.gz \
+    && echo "${JSONC_HASH}  json-c-${JSONC_VERSION}.tar.gz" | sha256sum -c \
+    && tar -xzf json-c-${JSONC_VERSION}.tar.gz \
+    && mv json-c-${JSONC_VERSION} $SRC/json-c
+ENV JSONC_PREFIX=/src/json-c-install
+
+# OpenSSL 3.0
+ARG OPENSSL_VERSION=3.0.15
+ARG OPENSSL_HASH=23c666d0edf20f14249b3d8f0368acaee9ab585b09e1de82107c66e1f3ec9533
+RUN set -ex \
+    && curl -s -L -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
     && echo "${OPENSSL_HASH}  openssl-${OPENSSL_VERSION}.tar.gz" | sha256sum -c \
     && tar -xzf openssl-${OPENSSL_VERSION}.tar.gz \
     && cd openssl-${OPENSSL_VERSION} \
-    && ./Configure linux-x86_64 no-shared --static "$CFLAGS" \
+    && ./Configure linux-x86_64 no-shared no-module --static "$CFLAGS" \
     && make build_generated \
     && make libcrypto.a \
     && make install
 ENV OPENSSL_ROOT_DIR=/usr/local/openssl-${OPENSSL_VERSION}
 
 RUN git clone --depth 1 https://github.com/FreeRADIUS/freeradius-server.git
-COPY build.sh $SRC
+COPY build.sh generate_seeds.py $SRC/
 # COPY patch.diff $SRC
 WORKDIR $SRC/freeradius-server

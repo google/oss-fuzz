@@ -16,13 +16,13 @@
 #include <string>
 #include "fuzzer/FuzzedDataProvider.h"
 
-extern "C" {
-  #include "microhttpd2.h"
-  #include "mhd_connection.h"
-  #include "mhd_daemon.h"
-  #include "mhd_post_parser.h"
-  #include "request_funcs.h"
-}
+#include "mhd_sys_options.h"
+#include "microhttpd2.h"
+#include "mhd_connection.h"
+#include "mhd_daemon.h"
+#include "mhd_post_parser.h"
+#include "request_funcs.h"
+
 
 extern struct mhd_MemoryPool *g_pool;
 extern const size_t g_pool_size;

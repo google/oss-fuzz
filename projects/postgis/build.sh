@@ -15,12 +15,7 @@
 #
 ################################################################################
 
-./autogen.sh
-./configure --enable-static --without-raster --without-protobuf --without-wagyu --enable-debug
-cd liblwgeom
-make clean -s
-make -j$(nproc) -s
-cd ..
-
-bash ./fuzzers/build_google_oss_fuzzers.sh
-bash ./fuzzers/build_seed_corpus.sh
+# OSS-Fuzz invokes $SRC/build.sh inside the builder image.
+# Keep this file as a thin wrapper into the PostGIS-owned build script.
+cd "$SRC/postgis"
+exec bash ./fuzzers/build_oss_fuzz.sh

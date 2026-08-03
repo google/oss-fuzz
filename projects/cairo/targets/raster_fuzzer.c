@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include <cairo.h>
-#include <cairo-pdf.h>
 #include "fuzzer_temp_file.h"
 
 static cairo_surface_t *
@@ -58,8 +57,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     pattern = cairo_pattern_create_raster_source(buf, content, w, h);
     cairo_raster_source_pattern_set_acquire (pattern, acquire, release);
     cairo_set_source(cr, pattern);
-    cairo_pdf_surface_set_page_label(surface, buf);
-    cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_KEYWORDS, buf);
     cairo_paint(cr);
 
     cairo_destroy(cr);

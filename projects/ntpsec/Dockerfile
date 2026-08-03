@@ -14,10 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y autoconf automake build-essential bison libssl-dev libcap-dev libseccomp-dev libavahi-compat-libdnssd-dev pps-tools python3-dev
 RUN git clone https://gitlab.com/NTPsec/ntpsec
 RUN git clone https://github.com/pkillarjun/oss-fuzz-bloat
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 COPY fuzz/ $SRC/ntpsec/fuzz/
 WORKDIR $SRC/ntpsec/
+

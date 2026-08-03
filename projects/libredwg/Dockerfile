@@ -18,6 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf libtool texinfo
 RUN git clone https://github.com/LibreDWG/libredwg
 
-WORKDIR $SRC
-COPY build.sh $SRC/
+WORKDIR $SRC/libredwg
+COPY run_tests.sh build.sh $SRC/
 COPY llvmfuzz.options $SRC/

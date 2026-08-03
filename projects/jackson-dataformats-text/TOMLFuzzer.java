@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlMapper;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.toml.TomlMapper;
 
 public class TOMLFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     ObjectMapper mapper = new TomlMapper();
     try {
       mapper.readTree(input);
-    } catch (IOException ignored) {
+    } catch (JacksonException ignored) {
     }
   }
 }

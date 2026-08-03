@@ -18,3 +18,8 @@
 # Run the OSS-Fuzz script in the project
 $SRC/miniz/tests/ossfuzz.sh
 
+# Build test
+mkdir build-test
+cd build-test
+cmake -DBUILD_TESTS=ON ..
+make

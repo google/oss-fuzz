@@ -17,3 +17,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/nginx/unit.git
 RUN cp $SRC/unit/fuzzing/oss-fuzz.sh $SRC/build.sh
 WORKDIR $SRC/unit/
+COPY run_tests.sh $SRC/
+
+# Necessary as upstream repository has been archived
+RUN sed -i 's/--no-regex/--no-regex --tests/g' $SRC/build.sh
+RUN sed -i 's/make fuzz/make fuzz tests/g' $SRC/build.sh

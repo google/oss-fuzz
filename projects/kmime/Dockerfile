@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
+FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone --depth 1 -b master https://invent.kde.org/pim/kmime.git
 RUN $SRC/kmime/autotests/ossfuzz/prepare_build.sh

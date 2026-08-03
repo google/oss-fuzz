@@ -105,11 +105,11 @@ make -j$(nproc) install
 
 cd $SRC/libvpx
 if [[ "$SANITIZER" == "memory" ]] || [[ "$FUZZING_ENGINE" == "centipede" ]]; then
-      TARGET="--target=generic-gnu"
+      LIBVPX_BUILD_ARGS="--disable-x86-asm"
 elif [[ "$ARCHITECTURE" == i386 ]]; then
-      TARGET="--target=x86-linux-gcc"
+      LIBVPX_BUILD_ARGS="--target=x86-linux-gcc"
 else
-      TARGET=""
+      LIBVPX_BUILD_ARGS=""
 fi
 
 LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
@@ -117,7 +117,7 @@ LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
         --enable-vp9-highbitdepth \
         --size-limit=12288x12288 \
         --extra-cflags="-DVPX_MAX_ALLOCABLE_MEMORY=1073741824" \
-        $TARGET
+        $LIBVPX_BUILD_ARGS
 
 make -j$(nproc) install
 
@@ -162,7 +162,7 @@ if [[ "$ARCHITECTURE" == i386 ]]; then
 
       FFMPEG_BUILD_ARGS='--arch="i386" --cpu="i386" --disable-inline-asm --disable-asm'
 else
-      FFMPEG_BUILD_ARGS=''
+      FFMPEG_BUILD_ARGS='--disable-asm'
 fi
 
 if [ "$SANITIZER" = "memory" ] || [ "$FUZZING_ENGINE" = "centipede" ]; then

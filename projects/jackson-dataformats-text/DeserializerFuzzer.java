@@ -19,21 +19,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvFactory;
-import com.fasterxml.jackson.dataformat.csv.CsvGenerator;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.javaprop.JavaPropsFactory;
-import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlFactory;
-import com.fasterxml.jackson.dataformat.toml.TomlMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlReadFeature;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.csv.CsvFactory;
+import tools.jackson.dataformat.csv.CsvMapper;
+import tools.jackson.dataformat.javaprop.JavaPropsFactory;
+import tools.jackson.dataformat.javaprop.JavaPropsMapper;
+import tools.jackson.dataformat.toml.TomlFactory;
+import tools.jackson.dataformat.toml.TomlMapper;
+import tools.jackson.dataformat.toml.TomlReadFeature;
+import tools.jackson.dataformat.yaml.YAMLFactory;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.DateTimeException;
@@ -61,12 +59,7 @@ public class DeserializerFuzzer {
       // Initialize ObjectMapper object
       switch (data.consumeInt(1, 4)) {
         case 1:
-          mapper =
-              CsvMapper.builder(
-                      CsvFactory.builder()
-                          .enable(data.pickValue(EnumSet.allOf(CsvGenerator.Feature.class)))
-                          .build())
-                  .build();
+          mapper = CsvMapper.builder(CsvFactory.builder().build()).build();
           break;
         case 2:
           mapper = JavaPropsMapper.builder(JavaPropsFactory.builder().build()).build();
@@ -80,12 +73,7 @@ public class DeserializerFuzzer {
                   .build();
           break;
         case 4:
-          mapper =
-              YAMLMapper.builder(
-                      YAMLFactory.builder()
-                          .enable(data.pickValue(EnumSet.allOf(YAMLGenerator.Feature.class)))
-                          .build())
-                  .build();
+          mapper = YAMLMapper.builder(YAMLFactory.builder().build()).build();
           break;
       }
 
@@ -97,7 +85,7 @@ public class DeserializerFuzzer {
       // Fuzz the deserialize methods for different Yaml/Toml/JavaProps/Csv objects
       if (data.consumeBoolean()) {
         byte[] output = new byte[data.remainingBytes()];
-        parser = mapper.getFactory().createParser(output);
+        parser = mapper.tokenStreamFactory().createParser(output);
         mapper.readTree(parser);
       } else {
         Class type = data.pickValue(choice);
@@ -107,14 +95,14 @@ public class DeserializerFuzzer {
         }
         mapper.readValue(value, type);
       }
-    } catch (IOException | IllegalArgumentException | DateTimeException | IllegalStateException e) {
+    } catch (JacksonException | IllegalArgumentException | DateTimeException | IllegalStateException e) {
       // Known exception
     } finally {
       try {
         if (parser != null) {
           parser.close();
         }
-      } catch (IOException e) {
+      } catch (JacksonException e) {
         // Ignore exceptions for closing JsonParser object
       }
     }

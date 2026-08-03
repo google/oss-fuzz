@@ -22,13 +22,12 @@
 #include "fuzzer/FuzzedDataProvider.h"
 #include "connection_helper.h"
 
-extern "C" {
-  #include "conn_tls_check.h"
-  #include "mempool_funcs.h"
-  #include "mhd_send.h"
-  #include "stream_process_request.h"
-  #include "stream_process_states.h"
-}
+#include "conn_tls_check.h"
+#include "mempool_funcs.h"
+#include "mhd_send.h"
+#include "stream_process_request.h"
+#include "stream_process_states.h"
+
 
 // Initialising the memory pool
 extern "C" int LLVMFuzzerInitialize() {
@@ -96,16 +95,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         }
         break;
       }
-      case 3: {
+      default: case 3: {
         mhd_conn_tls_check(&connection);
-        break;
-      }
-      case 4: {
-        mhd_connection_set_nodelay_state(&connection, is_nodelay);
-        break;
-      }
-      default: case 5: {
-        mhd_connection_set_cork_state(&connection, is_cork);
         break;
       }
     }

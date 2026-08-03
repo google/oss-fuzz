@@ -20,4 +20,9 @@ cd tests/fuzzer/
 meson build
 cd build
 ninja -j$(nproc)
-cp fuzz_gltf $OUT/
+cp fuzz_gltf_customjson fuzz_gltf $OUT/
+
+# Build unit test
+cd $SRC/tinygltf
+cmake .
+make -C tests

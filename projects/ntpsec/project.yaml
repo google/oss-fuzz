@@ -17,3 +17,4 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://gitlab.com/NTPsec/ntpsec'
+base_os_version: ubuntu-24-04

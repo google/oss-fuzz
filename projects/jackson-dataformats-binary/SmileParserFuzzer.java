@@ -14,10 +14,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.fasterxml.jackson.dataformat.smile.SmileParser;
-import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
-import java.io.IOException;
+import tools.jackson.dataformat.smile.SmileFactory;
+import tools.jackson.dataformat.smile.SmileParser;
+import tools.jackson.dataformat.smile.SmileMapper;
+import tools.jackson.dataformat.smile.SmileReadFeature;
+
 import java.util.EnumSet;
 
 /** This fuzzer targets the methods of SmileParser */
@@ -26,8 +27,8 @@ public class SmileParserFuzzer {
     try {
       int[] choices = data.consumeInts(data.consumeInt(1, 100));
 
-      // Retrieve set of SmileParser.Feature
-      EnumSet<SmileParser.Feature> featureSet = EnumSet.allOf(SmileParser.Feature.class);
+      // Retrieve set of SmileReadFeature
+      EnumSet<SmileReadFeature> featureSet = EnumSet.allOf(SmileReadFeature.class);
 
       // Create and configure SmileMapper
       SmileMapper mapper =
@@ -44,7 +45,7 @@ public class SmileParserFuzzer {
 
       // Create and configure SmileParser
       SmileParser parser =
-          ((SmileMapper) mapper).getFactory().createParser(data.consumeRemainingAsBytes());
+          (SmileParser) ((SmileMapper) mapper).tokenStreamFactory().createParser(data.consumeRemainingAsBytes());
 
       // Fuzz methods of SmileParser
       for (Integer choice : choices) {
@@ -68,7 +69,7 @@ public class SmileParserFuzzer {
             parser.nextToken();
             break;
           case 7:
-            parser.nextTextValue();
+            parser.nextStringValue();
             break;
           case 8:
             parser.getText();
@@ -110,7 +111,7 @@ public class SmileParserFuzzer {
       }
 
       parser.close();
-    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

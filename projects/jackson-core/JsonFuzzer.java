@@ -15,30 +15,38 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.json.JsonFactoryBuilder;
 
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
 
 public class JsonFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
-    ObjectMapper mapper = new ObjectMapper();
+    // Configure JsonFactory with features using builder pattern
+    JsonFactoryBuilder builder = JsonFactory.builder();
+    
     if (data.consumeBoolean())
-      mapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
+      builder.enable(JsonReadFeature.ALLOW_JAVA_COMMENTS);
     if (data.consumeBoolean())
-      mapper.enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+      builder.enable(JsonReadFeature.ALLOW_SINGLE_QUOTES);
     if (data.consumeBoolean())
-      mapper.enable(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES);
+      builder.enable(JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES);
     if (data.consumeBoolean())
-      mapper.enable(JsonParser.Feature.ALLOW_YAML_COMMENTS);
+      builder.enable(JsonReadFeature.ALLOW_YAML_COMMENTS);
     if (data.consumeBoolean())
-      mapper.enable(JsonParser.Feature.IGNORE_UNDEFINED);
+      builder.enable(JsonReadFeature.ALLOW_TRAILING_COMMA);
     if (data.consumeBoolean())
-      mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
-
+      builder.enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS);
+    
+    JsonFactory factory = builder.build();
+    ObjectMapper mapper = new ObjectMapper(factory);
+    
     try {
       mapper.readTree(data.consumeRemainingAsBytes());
-    } catch (IOException ignored) {
+    } catch (JacksonException ignored) {
     }
   }
 }

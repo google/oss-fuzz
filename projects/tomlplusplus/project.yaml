@@ -4,3 +4,5 @@ primary_contact: "mark.gillard@outlook.com.au"
 auto_ccs:
   - "capuanobailey@gmail.com"
 main_repo: "https://github.com/marzer/tomlplusplus.git"
+
+base_os_version: ubuntu-24-04

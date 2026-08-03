@@ -20,3 +20,4 @@ fuzzing_engines:
   - libfuzzer
 file_github_issue: True
 builds_per_day: 4
+base_os_version: ubuntu-24-04

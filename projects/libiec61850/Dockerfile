@@ -19,4 +19,3 @@ RUN git clone https://github.com/mz-automation/libiec61850
 
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_decode.options $SRC/fuzz_decode.options

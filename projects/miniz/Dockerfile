@@ -22,4 +22,4 @@ RUN apt-get update && \
 RUN git clone --depth 1 https://github.com/richgel999/miniz.git
 
 WORKDIR miniz
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

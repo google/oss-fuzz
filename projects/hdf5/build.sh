@@ -47,3 +47,9 @@ $CC $CFLAGS  -std=c99 -c \
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE h5_extended_fuzzer.o ./build-dir/bin/libhdf5.a -lz -o $OUT/h5_extended_fuzzer
 
 zip -j $OUT/h5_extended_fuzzer_seed_corpus.zip $SRC/hdf5/test/testfiles/*.h5
+
+# Build test
+mkdir $SRC/hdf5/build-test
+cd $SRC/hdf5/build-test
+cmake -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_TESTING:BOOL=ON ..
+cmake --build . --verbose --config Release -j$(nproc)

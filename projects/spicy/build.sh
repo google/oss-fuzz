@@ -21,7 +21,7 @@ export LIBFUZZER_LIB=$( echo /usr/local/lib/clang/*/lib/$ARCHITECTURE-unknown-li
 
 CXXFLAGS="${CXXFLAGS} -DHILTI_HAVE_SANITIZER" ./configure --generator=Ninja --build-type=Release || (cat build/config.log && exit)
 mapfile -t FUZZ_TARGETS < <(ninja -C build -t targets | grep fuzz- | cut -d: -f1)
-ninja -j"$(nproc)" -C build "${FUZZ_TARGETS[@]}"
+ninja -j"$(nproc)" -C build "${FUZZ_TARGETS[@]}" tests
 
 cp build/bin/fuzz-* "${OUT}"
 cp -r build "${OUT}"

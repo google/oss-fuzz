@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/znc/znc
 WORKDIR $SRC/znc
-COPY build.sh msg_parse_fuzzer.cpp $SRC/
+COPY run_tests.sh build.sh msg_parse_fuzzer.cpp $SRC/

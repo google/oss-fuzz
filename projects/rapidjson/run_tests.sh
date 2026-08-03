@@ -15,8 +15,4 @@
 #
 ###############################################################################
 
-./build/bin/unittest
-
-# The below fails when run in OSS-Fuzz.
-# TODO: adjust so this runs in a regular ASAN OSS-Fuzz build environment.
-#./build/bin/perftest
+$SRC/rapidjson/build/bin/unittest && $SRC/rapidjson/build/bin/perftest

@@ -13,21 +13,11 @@
 # limitations under the License.
 ################################################################################
 
-# build fuzz targets
 cd $SRC/opendal/core
 cargo fuzz build -O --debug-assertions
 
-# copy fuzz targets to $OUT
-targets=(
-  fuzz_reader
-  fuzz_writer
-)
+FUZZ_TARGET_OUTPUT_DIR=$SRC/opendal/core/target/x86_64-unknown-linux-gnu/release
 
-cp $SRC/.fs.env $OUT/.fs.env
-cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_fs
-cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_fs
-
-cp $SRC/.memory.env $OUT/.memory.env
-cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_reader_memory
-cp $SRC/opendal/core/target/x86_64-unknown-linux-gnu/release/fuzz_reader $OUT/fuzz_writer_memory
-
+for target in fuzz_from_uri fuzz_path fuzz_reader fuzz_writer; do
+  cp $FUZZ_TARGET_OUTPUT_DIR/$target $OUT/$target
+done

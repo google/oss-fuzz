@@ -53,8 +53,21 @@ else
     export ION_JAVA_VERSION=$(cat ./project.version)
   popd
 
-  #install
-  (cd $PROJECT && ./gradlew publishToMavenLocal --info --stacktrace -x javadoc -Dmaven.repo.local=$OUT/m2)
+  #install - use shadowJar instead of publishToMavenLocal to avoid ProGuard issues
+  # The ProGuard minifyJar task fails because Gradle toolchain downloads a different JDK
+  # than the one running Gradle, causing library jars to be missing.
+  (cd $PROJECT && ./gradlew shadowJar --info --stacktrace -x javadoc)
+  
+  # Manually install the shadowJar to local Maven repository
+  # The shadowJar uses "shaded" classifier, so the file is named ion-java-VERSION-shaded.jar
+  $MVN install:install-file \
+    -Dfile=$PROJECT/build/libs/ion-java-$ION_JAVA_VERSION-shaded.jar \
+    -DgroupId=com.amazon.ion \
+    -DartifactId=ion-java \
+    -Dversion=$ION_JAVA_VERSION \
+    -Dpackaging=jar \
+    -Dmaven.repo.local=$OUT/m2
+
   $MVN -pl fuzz-targets install -Dmaven.repo.local=$OUT/m2
 
   # build classpath

@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "description": "Fully featured Debug build",
+      "inherits": [
+        "common-flags"
+      ],
+      "binaryDir": "${sourceDir}/build-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "",
+        "CMAKE_EXE_LINKER_FLAGS": "-pthread -ldl -lrt -rpath '$ORIGIN/lib'",
+        "USERVER_SANITIZE_old": "addr;ub",
+        "USERVER_SANITIZE": "addr"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "description": "Fully featured Release build",
+      "inherits": [
+        "common-flags"
+      ],
+      "binaryDir": "${sourceDir}/build-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "common-flags",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ]
+}

@@ -15,8 +15,17 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
+RUN apt-get update && apt-get install -y make automake libtool \
   pkg-config cmake nasm
+# Install autoconf 2.71+ required by libtiff
+RUN curl -LO http://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz && \
+    tar xzf autoconf-2.71.tar.gz && \
+    cd autoconf-2.71 && \
+    ./configure && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf autoconf-2.71 autoconf-2.71.tar.gz
 RUN git clone --depth 1 https://github.com/DanBloomberg/leptonica.git leptonica
 RUN git clone --depth 1 https://github.com/madler/zlib.git zlib
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff libtiff

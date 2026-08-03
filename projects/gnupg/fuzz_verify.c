@@ -20,7 +20,6 @@ limitations under the License.
 #include <stdbool.h>
 #include <ftw.h>
 
-#define INCLUDED_BY_MAIN_MODULE 1
 #include "config.h"
 #include "gpg.h"
 #include "../common/types.h"
@@ -29,7 +28,6 @@ limitations under the License.
 #include "keyedit.h"
 #include "../common/util.h"
 #include "main.h"
-#include "call-dirmngr.h"
 #include "trustdb.h"
 
 #include <sys/stat.h>
@@ -44,14 +42,18 @@ int fd;
 char *filename;
 
 //hack not to include gpg.c which has main function
-int g10_errors_seen = 0;
+extern int g10_errors_seen;
+extern int assert_signer_true;
+extern int assert_pubkey_algo_false;
 
 void
 g10_exit( int rc )
 {
     gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
     gcry_control (GCRYCTL_TERM_SECMEM );
-    exit (rc);
+    /* Don't exit in fuzzer - just return to allow fuzzing to continue */
+    (void)rc;
+    return;
 }
 
 static void
@@ -131,7 +133,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         //no output for stderr
         log_set_file("/dev/null");
         gcry_set_log_handler (my_gcry_logger, NULL);
-        gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
+        //gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
         initialized = true;
     }
 
@@ -157,3 +159,4 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
     return 0;
 }
+

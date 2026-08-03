@@ -14,10 +14,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufFactory;
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
-import com.fasterxml.jackson.dataformat.protobuf.ProtobufParser;
-import java.io.IOException;
+import tools.jackson.dataformat.protobuf.ProtobufFactory;
+import tools.jackson.dataformat.protobuf.ProtobufMapper;
+import tools.jackson.dataformat.protobuf.ProtobufParser;
 
 /** This fuzzer targets the methods of ProtobufParser */
 public class ProtobufParserFuzzer {
@@ -34,13 +33,13 @@ public class ProtobufParserFuzzer {
 
       // Create and configure ProtobufParser
       ProtobufParser parser =
-          ((ProtobufMapper) mapper).getFactory().createParser(data.consumeRemainingAsBytes());
+          (ProtobufParser) ((ProtobufMapper) mapper).tokenStreamFactory().createParser(data.consumeRemainingAsBytes());
 
       parser.setSchema(mapper.generateSchemaFor(ProtobufParserFuzzer.class));
 
       // Fuzz methods of ProtobufParser
       for (Integer choice : choices) {
-        switch (Math.abs(choice) % 19) {
+        switch (Math.abs(choice) % 18) {
           case 1:
             parser.currentName();
             break;
@@ -60,39 +59,36 @@ public class ProtobufParserFuzzer {
             parser.nextToken();
             break;
           case 7:
-            parser.nextTextValue();
-            break;
-          case 8:
             parser.getText();
             break;
-          case 9:
+          case 8:
             parser.getTextCharacters();
             break;
-          case 10:
+          case 9:
             parser.getTextLength();
             break;
-          case 11:
+          case 10:
             parser.getTextOffset();
             break;
-          case 12:
+          case 11:
             parser.getNumberType();
             break;
-          case 13:
+          case 12:
             parser.getNumberValue();
             break;
-          case 14:
+          case 13:
             parser.getIntValue();
             break;
-          case 15:
+          case 14:
             parser.getLongValue();
             break;
-          case 16:
+          case 15:
             parser.getBigIntegerValue();
             break;
-          case 17:
+          case 16:
             parser.getFloatValue();
             break;
-          case 18:
+          case 17:
             parser.getDoubleValue();
             break;
           default:
@@ -102,7 +98,7 @@ public class ProtobufParserFuzzer {
       }
 
       parser.close();
-    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

@@ -20,6 +20,11 @@
 export CFLAGS="$CFLAGS -fno-sanitize=vptr -DHB_NO_VISIBILITY"
 export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr -DHB_NO_VISIBILITY"
 
+# Use i386 pkg-config paths for 32-bit builds so meson finds the right libraries
+if [ "$ARCHITECTURE" = "i386" ]; then
+  export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
+fi
+
 # setup
 build=$WORK/build
 
@@ -28,18 +33,18 @@ rm -rf $build
 mkdir -p $build
 
 # Build the library.
-meson --default-library=static --wrap-mode=nodownload \
+meson --default-library=static --prefer-static --wrap-mode=nodownload \
       -Dexperimental_api=true \
       -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
       $build \
   || (cat build/meson-logs/meson-log.txt && false)
 
 # Build the fuzzers.
-ninja -v -j$(nproc) -C $build test/fuzzing/hb-{shape,draw,repacker,subset,set}-fuzzer
-mv $build/test/fuzzing/hb-{shape,draw,repacker,subset,set}-fuzzer $OUT/
+ninja -v -j$(nproc) -C $build test/fuzzing/hb-{shape,raster,vector,gpu,subset,repacker}-fuzzer
+mv $build/test/fuzzing/hb-{shape,raster,vector,gpu,subset,repacker}-fuzzer $OUT/
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
-mkdir all-fonts
+mkdir -p all-fonts
 for d in \
 	test/shape/data/in-house/fonts \
 	test/shape/data/aots/fonts \
@@ -52,8 +57,9 @@ for d in \
 done
 
 zip $OUT/hb-shape-fuzzer_seed_corpus.zip all-fonts/*
-cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-draw-fuzzer_seed_corpus.zip
+cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-raster-fuzzer_seed_corpus.zip
+cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-vector-fuzzer_seed_corpus.zip
+cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-gpu-fuzzer_seed_corpus.zip
 cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-subset-fuzzer_seed_corpus.zip
-zip $OUT/hb-set-fuzzer_seed_corpus.zip ./test/fuzzing/sets/*
 zip $OUT/hb-repacker-fuzzer_seed_corpus.zip ./test/fuzzing/graphs/*
 

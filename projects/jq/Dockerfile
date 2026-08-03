@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone --depth 1 https://github.com/jqlang/jq
 WORKDIR $SRC/jq
-COPY build.sh *.dict $SRC/
+COPY run_tests.sh build.sh *.dict $SRC/

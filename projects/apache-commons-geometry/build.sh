@@ -16,10 +16,12 @@
 ################################################################################
 
 pushd "$SRC/commons-geometry"
-  MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=8 -Djavac.target.version=8"
-  $MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
+  MAVEN_ARGS="-DskipTests -Djavac.src.version=8 -Djavac.target.version=8"
+  $MVN install $MAVEN_ARGS
   CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
    -Dexpression=project.version -q -DforceStdout)
+  # Run shade plugin on io-euclidean module specifically with package phase
+  $MVN -pl commons-geometry-io-euclidean package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
   cp "commons-geometry-io-euclidean/target/commons-geometry-io-euclidean-$CURRENT_VERSION.jar" $OUT/commons-geometry.jar
 popd
 

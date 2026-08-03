@@ -39,8 +39,8 @@ then
 fi
 
 ./config no-shared --prefix=${TOR_DEPS} \
-    enable-tls1_3 enable-rc5 enable-md2 enable-ec_nistp_64_gcc_128 enable-ssl3 \
-    enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers $CFLAGS \
+    enable-tls1_3 enable-rc5 enable-md2 enable-ec_nistp_64_gcc_128 \
+    enable-weak-ssl-ciphers $CFLAGS \
     -fno-sanitize=alignment $OPENSSL_CONFIGURE_FLAGS
 
 make -j$(nproc) LDCMD="$CXX $CXXFLAGS"

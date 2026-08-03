@@ -46,10 +46,14 @@ make -j$(nproc)
 make install
 
 cd $SRC/xmlsec
-git apply  --ignore-space-change --ignore-whitespace $SRC/patch.diff
 sed -i 's/-pedantic-errors//g' configure.ac
 sed -i 's/-pedantic//g' configure.ac
 autoreconf -vfi
+
+# Add non-standard search path
+export CFLAGS="$CFLAGS -I$XMLSEC_DEPS_PATH/include"
+export CXXFLAGS="$CXXFLAGS -I$XMLSEC_DEPS_PATH/include"
+
 ./configure \
   --enable-static-linking \
   --enable-development \
@@ -58,15 +62,23 @@ autoreconf -vfi
 make -j$(nproc) clean
 make -j$(nproc) all V=1
 
-for file in $SRC/xmlsec/tests/oss-fuzz/*_target.c; do
+for file in $SRC/xmlsec/apps/oss-fuzz/*_target.c; do
     b=$(basename $file _target.c)
-    echo -e "#include <stdint.h>\n$(cat $file)" > $file
     $CC $CFLAGS -c $file -I${XMLSEC_DEPS_PATH=}/include/libxml2 -I${XMLSEC_DEPS_PATH=}/include/ -I ./include/ \
     -o $OUT/${b}_target.o
-    $CXX $CXXFLAGS $OUT/${b}_target.o ./src/.libs/libxmlsec1.a \
-    ./src/openssl/.libs/libxmlsec1-openssl.a $LIB_FUZZING_ENGINE \
+    $CXX $CXXFLAGS $OUT/${b}_target.o \
+    -Wl,--start-group ./src/.libs/libxmlsec1.a \
+    ./src/openssl/.libs/libxmlsec1-openssl.a -Wl,--end-group \
+    $LIB_FUZZING_ENGINE \
     "$XMLSEC_DEPS_PATH"/lib/libxslt.a "$XMLSEC_DEPS_PATH"/lib/libxml2.a \
-    -lz -llzma -o $OUT/${b}_fuzzer
+    -lz -llzma -lcrypto -lssl -o $OUT/${b}_fuzzer
 done
-cp $SRC/xmlsec/tests/oss-fuzz/config/*.options $OUT/
+cp $SRC/xmlsec/apps/oss-fuzz/config/*.options $OUT/
 wget -O $OUT/xml.dict https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/xml.dict
+
+# Seed corpus for the DSig verification fuzzer
+zip -j $OUT/xmlsec_dsig_verify_fuzzer_seed_corpus.zip \
+    $SRC/xmlsec/tests/phaos-xmldsig-three/signature*.xml \
+    $SRC/xmlsec/tests/merlin-exc-c14n-one/*.xml \
+    $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature*.xml \
+    2>/dev/null || true

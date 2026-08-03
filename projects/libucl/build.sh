@@ -16,9 +16,6 @@
 #
 ################################################################################
 
-cp $SRC/ucl_add_string_fuzzer.options $OUT/
-
-cd libucl
 ./autogen.sh --force && ./configure
 make
 
@@ -27,3 +24,10 @@ $CC $CFLAGS -c tests/fuzzers/ucl_add_string_fuzzer.c \
   -o $OUT/ucl_add_string_fuzzer.o
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $OUT/ucl_add_string_fuzzer.o -DHAVE_CONFIG_H -I./src -I./include src/.libs/libucl.a -I. -o $OUT/ucl_add_string_fuzzer
+
+$CC $CFLAGS -c tests/fuzzers/ucl_msgpack_fuzzer.c \
+  -DHAVE_CONFIG_H -I./src -I./include -I./ \
+  -o $OUT/ucl_msgpack_fuzzer.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $OUT/ucl_msgpack_fuzzer.o -DHAVE_CONFIG_H -I./src -I./include src/.libs/libucl.a -I. -o $OUT/ucl_msgpack_fuzzer
+
+cp $SRC/*.options $OUT/

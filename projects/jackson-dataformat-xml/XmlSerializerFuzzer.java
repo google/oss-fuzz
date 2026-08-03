@@ -18,14 +18,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.dataformat.xml.XmlWriteFeature;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import tools.jackson.dataformat.xml.ser.ToXmlGenerator;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -42,8 +41,8 @@ public class XmlSerializerFuzzer {
   private static ObjectWriter writer;
 
   public static void fuzzerInitialize() {
-    // Register the JacksonXmlModule for the serialization
-    writer = new XmlMapper(new JacksonXmlModule()).writer();
+    // Register the XmlModule for the serialization
+    writer = XmlMapper.builder().build().writer();
   }
 
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
@@ -54,7 +53,7 @@ public class XmlSerializerFuzzer {
       if (data.consumeBoolean()) {
         writer = writer.withDefaultPrettyPrinter();
       }
-      writer = writer.with(data.pickValue(EnumSet.allOf(ToXmlGenerator.Feature.class)));
+      writer = writer.with(data.pickValue(EnumSet.allOf(XmlWriteFeature.class)));
       switch (data.consumeInt(1, 24)) {
         case 1:
           object = new ByteArrayContainer(data.consumeRemainingAsBytes());
@@ -138,7 +137,7 @@ public class XmlSerializerFuzzer {
 
       writer.writeValueAsString(object);
       writer.writeValueAsBytes(object);
-    } catch (IOException | NumberFormatException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

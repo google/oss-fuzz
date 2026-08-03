@@ -15,8 +15,12 @@
 #
 ################################################################################
 
-cd sql-parser
+# Build fuzzers
 sed 's/static ?= no/LIB_CFLAGS += ${CXXFLAGS}\nstatic ?= no/g' -i Makefile
-make static=yes
+make static=yes -j$(nproc)
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
     fuzz_sql_parse.cpp libsqlparser.a -I./src -o $OUT/fuzz_sql_parse
+
+# Build unit tests
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:.
+make bin/tests static=yes TEST_CFLAGS="-std=c++1z -Wall -Werror -Isrc/ -Itest/ -L./ $CXXFLAGS" -j$(nproc)

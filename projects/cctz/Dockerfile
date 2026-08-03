@@ -14,11 +14,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf libgtest-dev
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y make autoconf libgtest-dev libgmock-dev
 RUN git clone --depth 1 https://github.com/google/cctz
-WORKDIR $SRC/cctz
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 COPY fuzz_* $SRC/
 
+RUN mkdir -p gtest-build && cd gtest-build && \
+      cmake /usr/src/googletest && \
+      make install && rm -rf gtest-build
+
+WORKDIR $SRC/cctz

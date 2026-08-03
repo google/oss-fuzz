@@ -28,6 +28,7 @@ limitations under the License.
 extern "C" {
 extern VALUE rb_parser_new(void);
 extern VALUE rb_parser_compile_string(VALUE vparser, const char *f, VALUE s, int line);
+extern VALUE ruby_verbose;
 }
 
 /* Silence stderr output during fuzzing */
@@ -52,6 +53,9 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         ruby_init();
         ruby_init_loadpath();
         initialized = 1;
+        
+        // Suppress Ruby warnings to avoid log noise
+        ruby_verbose = Qfalse;
     }
     
     if (size == 0) {

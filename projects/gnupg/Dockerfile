@@ -15,11 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool bzip2 gnupg bison flex gettext
+RUN apt-get update && apt-get install -y make autoconf libtool bzip2 bison flex gettext pkg-config
 
-# Install automake 1.16.3 from future. See:
-RUN wget http://ftp.de.debian.org/debian/pool/main/a/automake-1.16/automake_1.16.3-2_all.deb && \
-   apt install $SRC/automake_1.16.3-2_all.deb
+RUN wget http://ftp.de.debian.org/debian/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
+   apt install -y ./automake_1.16.5-1.3_all.deb
 
 RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error
 RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git libgcrypt
@@ -27,12 +26,34 @@ RUN git clone --depth 1 git://git.gnupg.org/libassuan.git libassuan
 RUN git clone --depth 1 git://git.gnupg.org/libksba.git libksba
 RUN git clone --depth 1 git://git.gnupg.org/npth.git npth
 
-RUN git clone --depth 1 git://git.gnupg.org/gnupg.git gnupg
+# Build dependencies once in the Docker image
+RUN cd libgpg-error && ./autogen.sh && \
+    ./configure --enable-static --disable-shared --disable-doc --disable-tests CFLAGS="-O0" && \
+    make -j$(nproc) && make install
 
-WORKDIR gnupg
-COPY fuzzgnupg.diff $SRC/fuzz.diff
+RUN cd libgcrypt && ./autogen.sh && \
+    ./configure --enable-static --disable-shared --disable-doc --disable-tests --disable-asm CFLAGS="-O0" && \
+    make -j$(nproc) && make install
+
+RUN cd libassuan && ./autogen.sh && \
+    ./configure --enable-static --disable-shared --disable-doc CFLAGS="-O0" && \
+    make -j$(nproc) && make install
+
+RUN cd libksba && ./autogen.sh && \
+    ./configure --enable-static --disable-shared --disable-doc CFLAGS="-O0" && \
+    make -j$(nproc) && make install
+
+RUN cd npth && ./autogen.sh && \
+    ./configure --enable-static --disable-shared CFLAGS="-O0" && \
+    make -j$(nproc) && make install
+
+RUN git clone --depth 1 git://git.gnupg.org/gnupg.git $SRC/gnupg
+
+WORKDIR $SRC/gnupg
 COPY fuzz_* $SRC/
+COPY fuzzer_stubs.c $SRC/
 COPY build.sh $SRC/
 # This is to fix Fuzz Introspector build by using LLVM old pass manager
 # re https://github.com/ossf/fuzz-introspector/issues/305
 ENV OLD_LLVMPASS 1
+

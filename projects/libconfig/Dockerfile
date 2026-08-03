@@ -19,4 +19,6 @@ RUN apt-get update && apt-get install -y cmake make
 
 RUN git clone --depth 1 https://github.com/hyperrealm/libconfig.git libconfig \
         && cp libconfig/fuzz/build.sh $SRC/
+RUN sed -i 's/-DBUILD_TESTS=Off/-DBUILD_TESTS=On/g' $SRC/build.sh
+COPY run_tests.sh $SRC
 WORKDIR libconfig

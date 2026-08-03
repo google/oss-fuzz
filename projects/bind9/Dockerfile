@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -y update && apt-get -y dist-upgrade
 RUN apt-get -y install		\
@@ -26,6 +26,7 @@ RUN apt-get -y install		\
 	libcap-dev		\
 	libnghttp2-dev		\
 	libssl-dev		\
+	liblmdb-dev     \
 	libtool			\
 	libtool-bin		\
 	liburcu-dev		\

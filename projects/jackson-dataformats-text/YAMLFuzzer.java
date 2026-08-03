@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 public class YAMLFuzzer {
   public static void fuzzerTestOneInput(byte[] input) {
     ObjectMapper mapper = new YAMLMapper();
     try {
       mapper.readTree(input);
-    } catch (IOException ignored) {
+    } catch (JacksonException ignored) {
     }
   }
 }

@@ -752,14 +752,16 @@ req_cb_stream(void*,
               const struct MHD_String* MHD_RESTRICT path,
               enum MHD_HTTP_Method method,
               uint_fast64_t upload_size) {
+  struct MHD_StringNullable out;
+
   // Fuzz MHD_request_get_value for different parameters on random request
-  MHD_request_get_value(request, MHD_VK_HEADER, "host");
-  MHD_request_get_value(request, MHD_VK_HEADER, "content-type");
-  MHD_request_get_value(request, MHD_VK_COOKIE, "cookie");
-  MHD_request_get_value(request, MHD_VK_GET_ARGUMENT, "q");
+  MHD_request_get_value(request, MHD_VK_HEADER, "host", &out);
+  MHD_request_get_value(request, MHD_VK_HEADER, "content-type", &out);
+  MHD_request_get_value(request, MHD_VK_COOKIE, "cookie", &out);
+  MHD_request_get_value(request, MHD_VK_URI_QUERY_PARAM, "q", &out);
   MHD_request_get_values_cb(request, MHD_VK_HEADER, kv_cb, nullptr);
   MHD_request_get_values_cb(request, MHD_VK_COOKIE, kv_cb, nullptr);
-  MHD_request_get_values_cb(request, MHD_VK_GET_ARGUMENT, kv_cb, nullptr);
+  MHD_request_get_values_cb(request, MHD_VK_URI_QUERY_PARAM, kv_cb, nullptr);
 
   // Fuzz MHD_request_get_post_data_cb on random request
   MHD_request_get_post_data_cb(request, post_cb, nullptr);

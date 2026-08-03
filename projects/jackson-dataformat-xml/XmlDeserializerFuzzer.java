@@ -19,11 +19,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import tools.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -39,7 +37,7 @@ public class XmlDeserializerFuzzer {
 
   public static void fuzzerInitialize() {
     // Register the XmlModule for the deserialization
-    mapper = new XmlMapper(new JacksonXmlModule());
+    mapper = XmlMapper.builder().build();
     initializeClassChoice();
   }
 
@@ -49,7 +47,7 @@ public class XmlDeserializerFuzzer {
       Class type = data.pickValue(choice);
       String value = data.consumeRemainingAsString();
       mapper.readValue(value, type);
-    } catch (IOException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

@@ -6,7 +6,7 @@ index 25c6f7ce78..aba0c7f1cb 100644
  
  description = "Spring Core"
  
-+apply plugin: "com.github.johnrengelman.shadow"
++apply plugin: "com.gradleup.shadow"
  apply plugin: "kotlin"
  apply plugin: "kotlinx-serialization"
  

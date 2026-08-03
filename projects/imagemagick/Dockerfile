@@ -15,8 +15,17 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+
+# Install build tools
 RUN apt-get update && \
     apt-get install -y make autoconf automake groff libtool pkg-config cmake nasm autopoint
+
+# Due to libtiff requirements, build requires autoconf 2.71 (or later)
+# Can probably be removed once base-builder switches to Ubuntu 22.04
+RUN curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/main/a/autoconf/autoconf_2.72-3.1ubuntu1_all.deb && \
+    apt install ./autoconf_2.72-3.1ubuntu1_all.deb
+
+# Clone dependencies
 RUN git clone --depth 1 https://github.com/imagemagick/imagemagick
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://github.com/strukturag/libde265
@@ -34,6 +43,8 @@ RUN git clone --depth 1 https://github.com/freetype/freetype
 RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
 RUN git clone --depth 1 --recursive https://github.com/libjxl/libjxl
 RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit # does not support shallow
+
 ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
+
 WORKDIR imagemagick
 COPY build.sh run_tests.sh replay_build.sh $SRC/
