@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,64 +13,116 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
+# Build script for OSS-Fuzz: compiles the TF Serving JSON tensor fuzzer.
 
-synchronize_coverage_directories() {
-  # For coverage, we need to remap source files to correspond to the Bazel build
-  # paths. We also need to resolve all symlinks that Bazel creates.
-  if [ "$SANITIZER" = "coverage" ]
-  then
-    declare -r RSYNC_CMD="rsync -aLkR"
-    declare -r REMAP_PATH=${OUT}/proc/self/cwd/
-    mkdir -p ${REMAP_PATH}
+cd /src/tensorflow-serving
 
-    # Synchronize the folder bazel-BAZEL_OUT_PROJECT.
-    declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
-      "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--include" "*.inc" \
-      "--exclude" "*")
+# -------------------------------------------------------------------------
+# Translate OSS-Fuzz sanitizer flags into Bazel config flags.
+# -------------------------------------------------------------------------
+EXTRA_BAZEL_FLAGS=""
 
-    # Sync existing code.
-    ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" tensorflow_serving/ ${REMAP_PATH}
+case "$SANITIZER" in
+  address)
+    EXTRA_BAZEL_FLAGS="--copt=-fsanitize=address \
+                       --copt=-fsanitize-address-use-after-scope \
+                       --linkopt=-fsanitize=address"
+    ;;
+  memory)
+    EXTRA_BAZEL_FLAGS="--copt=-fsanitize=memory \
+                       --linkopt=-fsanitize=memory"
+    ;;
+  undefined)
+    EXTRA_BAZEL_FLAGS="--copt=-fsanitize=undefined \
+                       --linkopt=-fsanitize=undefined"
+    ;;
+  coverage)
+    EXTRA_BAZEL_FLAGS="--copt=-fprofile-instr-generate \
+                       --copt=-fcoverage-mapping \
+                       --linkopt=-fprofile-instr-generate"
+    ;;
+esac
 
-    # Sync generated proto files.
-    if [ -d "./bazel-out/k8-opt/bin/tensorflow/" ]
-    then
-      ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/tensorflow_serving/ ${REMAP_PATH}
-    fi
-    if [ -d "./bazel-out/k8-opt/bin/external" ]
-    then
-      ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/external/ ${REMAP_PATH}
-    fi
-    if [ -d "./bazel-out/k8-opt/bin/third_party" ]
-    then
-      ${RSYNC_CMD} "${RSYNC_FILTER_ARGS[@]}" ./bazel-out/k8-opt/bin/third_party/ ${REMAP_PATH}
-    fi
+# libFuzzer link flag — required for all sanitizer builds.
+EXTRA_BAZEL_FLAGS="${EXTRA_BAZEL_FLAGS} \
+  --copt=-fsanitize=fuzzer-no-link \
+  --linkopt=-fsanitize=fuzzer \
+  --copt=-g \
+  --strip=never"
 
-    # Sync external dependencies. We don't need to include `bazel-tensorflow`.
-    # Also, remove `external/org_tensorflow` which is a copy of the entire source
-    # code that Bazel creates. Not removing this would cause `rsync` to expand a
-    # symlink that ends up pointing to itself!
-    pushd bazel-serving
-    [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
-    ${RSYNC_CMD} external/ ${REMAP_PATH}
-    popd
-  fi
-}
+# -------------------------------------------------------------------------
+# Build the fuzzer target using Bazel.
+# -------------------------------------------------------------------------
+bazel build \
+  --spawn_strategy=standalone \
+  --genrule_strategy=standalone \
+  --compilation_mode=opt \
+  --copt=-O1 \
+  --jobs="$(nproc)" \
+  --noshow_progress \
+  --show_result=0 \
+  ${EXTRA_BAZEL_FLAGS} \
+  //tensorflow_serving/util:json_tensor_fuzzer
 
-git apply  --ignore-space-change --ignore-whitespace $SRC/tensorflow-serving.diff
+# -------------------------------------------------------------------------
+# Copy the fuzzer binary to $OUT (required by OSS-Fuzz).
+# -------------------------------------------------------------------------
+cp bazel-bin/tensorflow_serving/util/json_tensor_fuzzer \
+   "${OUT}/json_tensor_fuzzer"
 
-bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
-bazel build --config=oss-fuzz --subcommands --spawn_strategy=sandboxed //tensorflow_serving/util:json_tensor_test_fuzz
+# -------------------------------------------------------------------------
+# Package the seed corpus.
+# Corpus files are valid JSON payloads representative of each API endpoint.
+# -------------------------------------------------------------------------
+mkdir -p /tmp/json_tensor_fuzzer_corpus
 
-cp bazel-bin/tensorflow_serving/util/json_tensor_test_fuzz $OUT/json_tensor_test_fuzz
+# Predict endpoint — "inputs" (columnar) format
+cat > /tmp/json_tensor_fuzzer_corpus/predict_inputs_float.json << 'EOF'
+{"inputs": [[1.0, 2.0], [3.0, 4.0]]}
+EOF
 
-TARGET_FUZZER="json_tensor_test_fuzz@JsonFuzzTest.TheF"
-echo "#!/bin/sh
-# LLVMFuzzerTestOneInput for fuzzer detection.
-this_dir=\$(dirname \"\$0\")
-chmod +x \$this_dir/json_tensor_test_fuzz
-\$this_dir/json_tensor_test_fuzz --fuzz=JsonFuzzTest.TheF -- \$@" > $OUT/${TARGET_FUZZER}
-chmod +x $OUT/${TARGET_FUZZER}
+# Predict endpoint — "instances" (row) format
+cat > /tmp/json_tensor_fuzzer_corpus/predict_instances_float.json << 'EOF'
+{"instances": [1.0, 2.0, 3.0]}
+EOF
 
-# Synchronize coverage folders
-synchronize_coverage_directories
+# Predict endpoint — nested array (triggers GetDenseTensorShape recursion path)
+cat > /tmp/json_tensor_fuzzer_corpus/predict_nested.json << 'EOF'
+{"inputs": [[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]]}
+EOF
+
+# Predict endpoint — base64 bytes
+cat > /tmp/json_tensor_fuzzer_corpus/predict_b64.json << 'EOF'
+{"inputs": [{"b64": "aGVsbG8="}]}
+EOF
+
+# Predict endpoint — with signature_name
+cat > /tmp/json_tensor_fuzzer_corpus/predict_with_sig.json << 'EOF'
+{"signature_name": "serving_default", "inputs": [1.0]}
+EOF
+
+# Classify endpoint
+cat > /tmp/json_tensor_fuzzer_corpus/classify.json << 'EOF'
+{"examples": [{"feature_a": 1.0, "feature_b": [2.0, 3.0]}]}
+EOF
+
+# Classify endpoint — with context
+cat > /tmp/json_tensor_fuzzer_corpus/classify_context.json << 'EOF'
+{"context": {"global": "foo"}, "examples": [{"feature": 1.0}]}
+EOF
+
+# Regress endpoint
+cat > /tmp/json_tensor_fuzzer_corpus/regress.json << 'EOF'
+{"examples": [{"x": 1.0}, {"x": 2.0}]}
+EOF
+
+# Empty / edge cases
+echo '{}' > /tmp/json_tensor_fuzzer_corpus/empty_object.json
+echo '{"inputs": []}' > /tmp/json_tensor_fuzzer_corpus/empty_inputs.json
+echo '{"instances": []}' > /tmp/json_tensor_fuzzer_corpus/empty_instances.json
+
+zip -j "${OUT}/json_tensor_fuzzer_seed_corpus.zip" \
+    /tmp/json_tensor_fuzzer_corpus/*.json
+
+echo "Build complete. Fuzzer: ${OUT}/json_tensor_fuzzer"
+echo "Corpus: ${OUT}/json_tensor_fuzzer_seed_corpus.zip"
