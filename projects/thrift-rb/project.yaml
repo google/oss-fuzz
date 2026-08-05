@@ -9,4 +9,4 @@ fuzzing_engines:
 sanitizers:
   - address
 
-main_repo: "https://github.com/apache/thrift"
+main_repo: "https://github.com/apache/thrift.git"
