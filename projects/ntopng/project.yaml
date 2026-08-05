@@ -8,6 +8,7 @@ main_repo: "https://github.com/ntop/ntopng.git"
 
 sanitizers:
   - address
+  - undefined
 
 fuzzing_engines:
   - libfuzzer
