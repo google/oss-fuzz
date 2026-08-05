@@ -332,8 +332,8 @@ def get_extract_crashes_steps(fuzzing_engine, project, env_dict):
 
   build_uri, build_filename = get_latest_libfuzzer_build(project.name)
   download_libfuzzer_build_step = {
-      'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', '-r', build_uri, libfuzzer_build_dir]
+      'name': 'gcr.io/cloud-builders/gcloud',
+      'args': ['storage', 'cp', '--recursive', build_uri, libfuzzer_build_dir]
   }
   steps.append(download_libfuzzer_build_step)
 
