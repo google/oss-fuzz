@@ -1,11 +1,11 @@
 base_os_version: ubuntu-24-04
 homepage: "https://postgresql.org"
 main_repo: "https://github.com/postgres/postgres"
-primary_contact: "sfrost@snowman.net"
+primary_contact: "daniel@yesql.se"
 language: c
 auto_ccs:
   - "ouyangyunshu@google.com"
-  - "frost.stephen.p@gmail.com"
+  - "dgustafssonpgeu@gmail.com"
   - "aseering@google.com"
 fuzzing_engines:
   - libfuzzer
