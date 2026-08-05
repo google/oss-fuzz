@@ -83,10 +83,11 @@ FUZZER_ARGS=""
 #
 # 1. https://github.com/ligurio/lunapark/issues/180.
 LAPI_TESTING="ON"
-if [[ "$FUZZING_ENGINE" != "libfuzzer" ]] ||
-   [[ "$SANITIZER" == "coverage" ]]; then
+if [[ "$FUZZING_ENGINE" != "libfuzzer" ]]; then
   FUZZER_ARGS="-DDISABLE_LIBFUZZER_STATIC_LINKAGE=ON"
   LAPI_TESTING="OFF"
+elif [[ "$SANITIZER" == "coverage" ]]; then
+  FUZZER_ARGS="-DDISABLE_LIBFUZZER_STATIC_LINKAGE=ON"
 fi
 
 cmake_args=(
@@ -142,10 +143,7 @@ done
 
 # Finish execution if libFuzzer is not used, because luzer
 # is libFuzzer-based.
-# Code coverage is not supported,
-# see https://github.com/google/oss-fuzz/issues/14859.
-if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
-   [[ "$SANITIZER" == "coverage" ]]; then
+if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
   echo "Lua API testing is not supported."
   exit
 fi
