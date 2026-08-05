@@ -15,7 +15,7 @@
 import sys
 import atheris
 import ipykernel
-from ipykernel.serialize import deserialize_object, serialize_object
+from ipyparallel_serialize_loader import deserialize_object, serialize_object
 
 
 def ConsumeRandomLengthBufferList(fdp):
