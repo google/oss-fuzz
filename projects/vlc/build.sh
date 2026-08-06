@@ -38,14 +38,26 @@ cd contrib/contrib-build
 # Disable X11/xlib in FFmpeg to avoid runtime dependency on libX11
 sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-x86asm' ../src/ffmpeg/rules.mak
 
-# VPX's configure uses the raw 'ld' linker for its toolchain link test.
-# When objects are compiled with -fsanitize=address, raw ld cannot resolve
-# the ASan runtime symbols, failing with "Toolchain is unable to link
-# executables". Fix: propagate sanitizer CFLAGS into LDFLAGS and override LD
-# to use the compiler driver (clang/CC), which automatically links the correct
-# sanitizer runtimes.
-sed -i 's|VPX_LDFLAGS := $(LDFLAGS)|VPX_LDFLAGS = $(LDFLAGS) $(filter -fsanitize%,$(CFLAGS))|' ../src/vpx/rules.mak
-sed -i 's|LDFLAGS="$(VPX_LDFLAGS)" CROSS=$(VPX_CROSS)|LDFLAGS="$(VPX_LDFLAGS)" LD=$(CC) CROSS=$(VPX_CROSS)|' ../src/vpx/rules.mak
+# VPX's configure link-tests the toolchain with "${LD} ${LDFLAGS}" (see
+# check_ld() in libvpx's build/make/configure.sh) while compiling the test
+# object with CFLAGS. Contrib's HOSTVARS sets LD to the raw binutils 'ld',
+# which cannot resolve the sanitizer runtime symbols pulled in by
+# -fsanitize=..., so configure aborts with "Toolchain is unable to link
+# executables". Fix: override LD with the compiler driver (which links the
+# correct sanitizer runtimes) and propagate the sanitizer CFLAGS into LDFLAGS.
+# VPX_HOSTVARS is expanded as a shell environment-assignment prefix to
+# configure, so these later assignments win over the ones from HOSTVARS.
+sed -i '/^VPX_HOSTVARS = \$(HOSTVARS)$/a VPX_HOSTVARS += LD="$(CC)" LDFLAGS="$(LDFLAGS) $(filter -fsanitize%,$(CFLAGS))"' ../src/vpx/rules.mak
+
+# The sed above silently does nothing if upstream renames or restructures
+# VPX_HOSTVARS, which reintroduces the configure failure with no clue as to
+# why (exactly what happened when VLC commit 9d34ed99e2 removed the
+# VPX_LDFLAGS variable this fix used to patch). Fail loudly instead.
+grep -qF 'VPX_HOSTVARS += LD="$(CC)"' ../src/vpx/rules.mak || {
+    echo "ERROR: could not patch contrib/src/vpx/rules.mak for sanitizer linking;" >&2
+    echo "       VPX_HOSTVARS is gone or renamed upstream, re-do this fix." >&2
+    exit 1
+}
 
 make V=1 -j$(nproc) \
     .flac \
