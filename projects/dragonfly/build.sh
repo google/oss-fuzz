@@ -15,5 +15,63 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/dragonflyoss/Dragonfly/dfget/core/uploader FuzzParseParams uploader_fuzz
-compile_go_fuzzer github.com/dragonflyoss/Dragonfly/supernode/daemon/mgr/cdn Fuzz cdn_fuzz
+cd /src/Dragonfly
+cat > pkg/digest/fuzz.go << 'FUZZ_EOF'
+package digest
+
+import (
+	"strings"
+)
+
+func FuzzParse(data []byte) int {
+	s := string(data)
+	s = strings.TrimSpace(s)
+	_, err := Parse(s)
+	if err != nil {
+		return 0
+	}
+	return 1
+}
+FUZZ_EOF
+
+cat > pkg/net/http/fuzz.go << 'FUZZ_EOF'
+package http
+
+import (
+	"strconv"
+	"strings"
+)
+
+func FuzzParseRange(data []byte) int {
+	s := string(data)
+	parts := strings.SplitN(s, "\n", 2)
+	if len(parts) < 2 {
+		return 0
+	}
+	rangeStr := parts[0]
+	sizeStr := strings.TrimSpace(parts[1])
+	size, err := strconv.ParseInt(sizeStr, 10, 64)
+	if err != nil {
+		return 0
+	}
+	_, _ = ParseRange(rangeStr, size)
+	_, _ = ParseURLMetaRange(rangeStr, size)
+	return 1
+}
+FUZZ_EOF
+
+cat > pkg/dfnet/fuzz.go << 'FUZZ_EOF'
+package dfnet
+
+func FuzzNetAddrJSON(data []byte) int {
+	var addr NetAddr
+	if err := addr.UnmarshalJSON(data); err != nil {
+		return 0
+	}
+	return 1
+}
+FUZZ_EOF
+
+compile_go_fuzzer d7y.io/dragonfly/v2/pkg/digest FuzzParse fuzz_digest_parse
+compile_go_fuzzer d7y.io/dragonfly/v2/pkg/net/http FuzzParseRange fuzz_http_range
+compile_go_fuzzer d7y.io/dragonfly/v2/pkg/dfnet FuzzNetAddrJSON fuzz_dfnet_json
