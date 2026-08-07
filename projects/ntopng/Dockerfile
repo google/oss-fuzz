@@ -27,10 +27,11 @@ ENV NTOPNG_HOME=$SRC/ntopng
 ### Fuzzing dependencies ###
 
 # Build libprotobuf-mutator
-RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-RUN mkdir libprotobuf-mutator/build; cd libprotobuf-mutator/build; \
-    cmake .. -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release; \
-    ninja;
+# We never use protobuf on fuzzers, yet
+#RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
+#RUN mkdir libprotobuf-mutator/build; cd libprotobuf-mutator/build; \
+#    cmake .. -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release; \
+#    ninja;
 
 ### Dependencies that need static linking ###
 
