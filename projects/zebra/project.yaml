@@ -1,0 +1,12 @@
+homepage: "https://github.com/ZcashFoundation/zebra"
+language: rust
+primary_contact: "ucgygah@gmail.com"
+auto_ccs:
+  - "ucgygah@gmail.com"
+main_repo: "https://github.com/robustfengbin/zebra-fuzz-m3"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+architectures:
+  - x86_64
