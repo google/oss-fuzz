@@ -1,0 +1,12 @@
+homepage: "https://nanomq.io"
+language: c
+primary_contact: "jaylin@emqx.io"
+auto_ccs:
+  - "lihj@emqx.io"
+  - "saberrg@gmail.com"
+main_repo: "https://github.com/nanomq/nanomq"
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
