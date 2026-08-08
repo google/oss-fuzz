@@ -1,0 +1,15 @@
+# OSS-Fuzz project manifest for quicz.
+# See https://google.github.io/oss-fuzz/getting-started/new-project-guide/
+homepage: "https://github.com/venjiang/quicz"
+language: c++   # libFuzzer harness is C++; the target under test is pure Zig.
+primary_contact: "venjiang@gmail.com"
+auto_ccs:
+  - "venjiang@gmail.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+architectures:
+  - x86_64
+  - aarch64
