@@ -19,6 +19,6 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool-bin cmak
 RUN git clone --depth 1 https://github.com/madler/zlib.git zlib
 
 RUN git clone --depth 1 https://github.com/tbeu/matio.git matio
-RUN git clone --depth 1 --branch hdf5_2_1_1 https://github.com/HDFGroup/hdf5.git hdf5
+RUN git clone --depth 1 --revision 49df1b4e5ca4108d56e80f06321a749da1535268 https://github.com/HDFGroup/hdf5.git hdf5
 WORKDIR matio
 COPY build.sh $SRC/
