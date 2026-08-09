@@ -1,0 +1,9 @@
+homepage: https://github.com/phihag/ipaddress
+main_repo: https://github.com/phihag/ipaddress
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

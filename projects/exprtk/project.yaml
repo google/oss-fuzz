@@ -1,0 +1,14 @@
+homepage: "https://www.partow.net/programming/exprtk/index.html"
+language: c++
+primary_contact: "exprtk.dev@gmail.com"
+auto_ccs:
+    - "exprtk.dev@gmail.com"
+fuzzing_engines:
+    - libfuzzer
+    - afl
+    - honggfuzz
+sanitizers:
+    - address
+    - undefined
+    - memory
+main_repo: 'https://github.com/ArashPartow/exprtk.git'

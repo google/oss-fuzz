@@ -1,0 +1,9 @@
+homepage: "https://github.com/uber-go/multierr"
+language: go
+main_repo: "https://github.com/uber-go/multierr"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

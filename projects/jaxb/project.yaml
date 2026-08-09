@@ -1,0 +1,11 @@
+homepage: "https://eclipse-ee4j.github.io/jaxb-ri/"
+language: jvm
+main_repo: "https://github.com/eclipse-ee4j/jaxb-ri.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+run_tests: False

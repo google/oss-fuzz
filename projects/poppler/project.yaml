@@ -1,0 +1,15 @@
+homepage: https://poppler.freedesktop.org/
+language: c++
+primary_contact: tsdgeos@gmail.com
+sanitizers:
+  - address
+  - memory
+  - undefined
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+auto_ccs:
+  - jonathan@titanous.com
+  - adam.reichold@t-online.de
+main_repo: "https://gitlab.freedesktop.org/poppler/poppler"

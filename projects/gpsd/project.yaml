@@ -1,0 +1,15 @@
+homepage: "https://gpsd.io"
+language: c
+primary_contact: "gem@rellim.com"
+auto_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+main_repo: 'https://gitlab.com/gpsd/gpsd'

@@ -1,0 +1,7 @@
+homepage: "https://www.jbig2dec.com"
+language: c++
+primary_contact: sebastian.rasmussen@artifex.com
+sanitizers:
+  - address
+  - memory
+main_repo: 'git://git.ghostscript.com/jbig2dec.git'

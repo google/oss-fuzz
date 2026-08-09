@@ -1,0 +1,10 @@
+homepage: "https://github.com/Geal/nom"
+main_repo: "https://github.com/Geal/nom"
+primary_contact: "geo.couprie@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"

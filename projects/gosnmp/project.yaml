@@ -1,0 +1,11 @@
+homepage: "https://github.com/gosnmp/gosnmp"
+language: go
+primary_contact: "tim.rots@protonmail.ch"
+auto_ccs:
+  - "superq@gmail.com"
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/gosnmp/gosnmp"

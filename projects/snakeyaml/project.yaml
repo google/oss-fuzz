@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://bitbucket.org/snakeyaml/snakeyaml/src/master/
+language: jvm
+main_repo: https://bitbucket.org/snakeyaml/snakeyaml.git
+sanitizers:
+- address
+vendor_ccs:
+- patrice.salathe@code-intelligence.com
+- yakdan@code-intelligence.com

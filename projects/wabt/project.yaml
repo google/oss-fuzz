@@ -1,0 +1,22 @@
+homepage: "https://github.com/WebAssembly/wabt"
+language: c++
+primary_contact: "sbc@chromium.org"
+auto_ccs:
+  - "binji@chromium.org"
+  - "winstein@gmail.com"
+  - "shravanrn@gmail.com"
+  - "endermoneymod@gmail.com"
+sanitizers:
+ - address
+ - memory
+ - undefined
+architectures:
+ - x86_64
+ - i386
+main_repo: 'https://github.com/WebAssembly/wabt'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

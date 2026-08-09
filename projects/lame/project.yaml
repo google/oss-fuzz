@@ -1,0 +1,19 @@
+homepage: "https://sourceforge.net/projects/lame/"
+main_repo: "https://svn.code.sf.net/p/lame/svn/trunk/lame"
+language: c++
+primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+    - "bouvigne@gmail.com"
+sanitizers:
+ - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+architectures:
+ - x86_64
+ - i386
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

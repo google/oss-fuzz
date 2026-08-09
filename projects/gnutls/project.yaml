@@ -1,0 +1,21 @@
+homepage: "https://www.gnutls.org"
+language: c++
+primary_contact: "daiki.ueno@gmail.com"
+auto_ccs:
+  - "rockdaboot@gmail.com"
+  - "nisse@lysator.liu.se"
+  - "anderjuaristi.cictg@gmail.com"
+  - "dbaryshkov@gmail.com"
+  - "zfridric@redhat.com"
+
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://gitlab.com/gnutls/gnutls.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

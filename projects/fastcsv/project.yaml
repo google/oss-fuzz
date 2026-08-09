@@ -1,0 +1,8 @@
+homepage: "https://github.com/osiegmar/FastCSV"
+language: jvm
+primary_contact: "oliver@siegmar.de"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/osiegmar/FastCSV.git"

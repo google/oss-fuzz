@@ -1,0 +1,11 @@
+homepage: "https://xerces.apache.org/index.html"
+language: jvm
+main_repo: "http://svn.apache.org/repos/asf/xerces/java/trunk"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"

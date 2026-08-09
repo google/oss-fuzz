@@ -1,0 +1,6 @@
+homepage: "https://www.snort.org/snort3"
+language: c++
+primary_contact: "rucombs@cisco.com"
+auto_ccs:
+  - "capuanobailey@gmail.com"
+main_repo: "https://github.com/snort3/snort3.git"

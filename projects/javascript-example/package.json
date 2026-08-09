@@ -1,0 +1,5 @@
+{
+	"name": "jazzerjs-examples",
+	"version": "1.0.0",
+	"description": "Examples of fuzz tests for Jazzer.js"
+}

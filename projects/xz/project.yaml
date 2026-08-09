@@ -1,0 +1,14 @@
+homepage: "https://tukaani.org/xz/"
+language: c++
+primary_contact: "lasse.collin@tukaani.org"
+auto_ccs:
+  - "bshas3@gmail.com"
+  - "samjd1024@gmail.com"
+architectures:
+  - x86_64
+  - i386
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/tukaani-project/xz.git'

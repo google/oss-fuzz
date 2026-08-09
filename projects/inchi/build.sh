@@ -1,0 +1,42 @@
+#!/bin/bash -eu
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+pushd INCHI-1-SRC
+# Compile library sources (exclude ichimain.c which is the standalone program main)
+# Remove -ansi flag since upstream now uses C99 features (loop-scoped variables)
+SRC_FILES=$(ls INCHI_BASE/src/*.c INCHI_API/libinchi/src/*.c INCHI_API/libinchi/src/ixa/*.c | grep -v ichimain.c)
+$CC $CFLAGS -Wno-everything -DTARGET_API_LIB -c $SRC_FILES
+
+ar rcs $WORK/libinchi.a *.o
+
+for fuzzer in $SRC/*_fuzzer.c; do
+  fuzzer_basename=$(basename -s .c $fuzzer)
+
+  $CC $CFLAGS \
+      -I INCHI_BASE/src/ \
+      -I INCHI_API/libinchi/src/ \
+      -I INCHI_API/libinchi/src/ixa/ \
+      $fuzzer -c -o ${fuzzer_basename}.o
+
+  $CXX $CXXFLAGS \
+      ${fuzzer_basename}.o -o $OUT/$fuzzer_basename \
+      $LIB_FUZZING_ENGINE $WORK/libinchi.a
+done
+popd
+
+# Build test
+INCHI-1-TEST/build_with_cmake.sh all

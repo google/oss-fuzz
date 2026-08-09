@@ -1,0 +1,23 @@
+homepage: "https://wasmtime.dev/"
+primary_contact: "tsc@bytecodealliance.org"
+auto_ccs:
+  - "fitzgen@gmail.com"
+  - "alex@alexcrichton.com"
+  - "till@tillschneidereit.net"
+  - "cfallin@gmail.com"
+  - "andrew.s.brown2@gmail.com"
+  - "saule.cabrera@gmail.com"
+  - "jeff.charles@shopify.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+main_repo: 'https://github.com/bytecodealliance/wasmtime'
+
+# Ignore some ocaml files that show up, dependencies on crates.io, and the
+# standard library itself.
+coverage_extra_args: >
+  -ignore-filename-regex=.*/root/.opam/.*
+  -ignore-filename-regex=.*/registry/src/.*crates.io.*/.*
+  -ignore-filename-regex=.*/rustc/.*

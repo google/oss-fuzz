@@ -1,0 +1,12 @@
+homepage: "http://svn.freebsd.org/base/head/sys/teken/"
+language: c++
+primary_contact: "ed@nuxi.nl"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'http://svn.freebsd.org/base/head/sys/teken/'

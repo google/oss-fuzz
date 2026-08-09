@@ -1,0 +1,18 @@
+diff --git a/spring-boot-project/spring-boot-tools/spring-boot-configuration-metadata/build.gradle b/spring-boot-project/spring-boot-tools/spring-boot-configuration-metadata/build.gradle
+index 7b8fbb1..a3027b4 100644
+--- a/spring-boot-project/spring-boot-tools/spring-boot-configuration-metadata/build.gradle
++++ b/spring-boot-project/spring-boot-tools/spring-boot-configuration-metadata/build.gradle
+@@ -2,10 +2,13 @@ plugins {
+ 	id "java-library"
+ 	id "org.springframework.boot.conventions"
+ 	id "org.springframework.boot.deployed"
++	id "com.github.johnrengelman.shadow" version "7.1.2"
+ }
+ 
+ description = "Spring Boot Configuration Metadata"
+ 
++apply plugin: "com.github.johnrengelman.shadow"
++
+ dependencies {
+ 	implementation("com.vaadin.external.google:android-json")
+ 

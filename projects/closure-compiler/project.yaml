@@ -1,0 +1,11 @@
+base_os_version: ubuntu-24-04
+homepage: "https://developers.google.com/closure/compiler/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/google/closure-compiler/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

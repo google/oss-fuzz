@@ -1,0 +1,14 @@
+homepage: "https://github.com/cfengine/core"
+main_repo: "https://github.com/cfengine/core"
+language: c++
+primary_contact: "vratislav.podzimek@northern.tech"
+auto_ccs:
+  - "Adam@adalogics.com"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+  - memory

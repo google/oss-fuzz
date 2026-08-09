@@ -1,0 +1,12 @@
+homepage: "https://poi.apache.org/"
+language: jvm
+main_repo: "https://github.com/apache/poi.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "centic@apache.org"
+  - "dominik.stadler@gmail.com"

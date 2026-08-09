@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://groovy-lang.org/
+language: jvm
+main_repo: https://github.com/apache/groovy.git
+sanitizers:
+- address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

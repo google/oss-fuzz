@@ -1,0 +1,11 @@
+homepage: https://github.com/kiegroup/kie-soup
+main_repo: https://github.com/kiegroup/kie-soup
+language: jvm
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- arthur.chan@adalogics.com

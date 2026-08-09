@@ -1,0 +1,10 @@
+homepage: "https://github.com/redis/go-redis"
+main_repo: "https://github.com/redis/go-redis"
+primary_contact: "vladimir.webdev@gmail.com"
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

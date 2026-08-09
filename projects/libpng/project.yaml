@@ -1,0 +1,23 @@
+homepage: "http://www.libpng.org/pub/png/libpng.html"
+language: c++
+primary_contact: "ctruta@gmail.com"
+auto_ccs:
+  - "barbaro.alberto@gmail.com"
+  - "oss-fuzz@jbowler.com"
+vendor_ccs:
+  - "aosmond@mozilla.com"
+  - "tnikkel@mozilla.com"
+  - "twsmith@mozilla.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+main_repo: 'https://github.com/pnggroup/libpng.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -1,0 +1,10 @@
+homepage: https://bitbucket.org/nielsenb/aniso8601
+main_repo: https://bitbucket.org/nielsenb/aniso8601
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

@@ -1,0 +1,18 @@
+homepage: "https://github.com/google/libultrahdr"
+language: c++
+primary_contact: "dichenzhang@google.com"
+sanitizers:
+  - address
+  - memory
+  - undefined:
+     experimental: True
+auto_ccs:
+  - arifdikici@google.com
+  - dichenzhang@google.com
+  - harish.mahendrakar@ittiam.com
+  - ram.mohan@ittiam.com
+  - umang.saini@ittiam.com
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/google/libultrahdr.git'

@@ -1,0 +1,5 @@
+homepage: "https://github.com/google/XNNPACK"
+main_repo: "https://github.com/google/XNNPACK"
+language: c++
+vendor_ccs:
+- david@adalogics.com

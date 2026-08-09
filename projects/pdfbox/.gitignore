@@ -1,0 +1,3 @@
+project-parent/pdfbox
+project-parent/fuzz-targets/target
+project-parent/fuzz-targets/pom.xml.versionsBackup

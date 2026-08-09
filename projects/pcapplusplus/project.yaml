@@ -1,0 +1,17 @@
+homepage: "https://github.com/seladb/PcapPlusPlus"
+language: c++
+primary_contact: "pcapplusplus@gmail.com"
+auto_ccs:
+  - "zlowram@gmail.com"
+  - "aleksandrosansan@gmail.com"
+  - "peron.clem@gmail.com"
+  - "egecetin97@gmail.com"
+fuzzing_engines:
+  - afl
+  - libfuzzer
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/seladb/PcapPlusPlus'
+coverage_extra_args: -ignore-filename-regex=/libpcap/ -ignore-filename-regex=/PcapPlusPlus/3rdParty/

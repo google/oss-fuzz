@@ -1,0 +1,14 @@
+homepage: "https://frrouting.org"
+language: c++
+primary_contact: "security@lists.frrouting.org"
+auto_ccs:
+- "qlyoung@qlyoung.net"
+- "equinox-ossfuzz@diac24.net"
+- "menotdonald@gmail.com"
+- "mjs.ietf@gmail.com"
+- "rwgbsd@gmail.com"
+fuzzing_engines:
+ - libfuzzer
+sanitizers:
+ - address
+main_repo: 'https://github.com/FRRouting/frr'

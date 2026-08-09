@@ -1,0 +1,10 @@
+homepage: http://hamcrest.org/
+language: jvm
+main_repo: https://github.com/hamcrest/JavaHamcrest.git
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

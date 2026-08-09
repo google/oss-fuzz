@@ -1,0 +1,5 @@
+indexes:
+  - kind: BuildsHistory
+    properties:
+      - name: build_tag
+      - name: project

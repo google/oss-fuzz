@@ -1,0 +1,17 @@
+homepage: "https://github.com/FasterXML/jackson-dataformats-text"
+language: jvm
+primary_contact: "tatu@fasterxml.com"
+main_repo: "https://github.com/FasterXML/jackson-dataformats-text"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+auto_ccs:
+  - "fanningpj@gmail.com"
+  - "me@yawk.at"
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+  - "arthur.chan@adalogics.com"

@@ -1,0 +1,62 @@
+Dictionary: 3 entries
+2024-05-07 18:49:02,343 - root - INFO - Fuzzer: do_stuff_fuzzer. Detected bug.
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1337
+INFO: Loaded 1 modules   (83 inline 8-bit counters): 83 [0x563ff0e03e98, 0x563ff0e03eeb), 
+INFO: Loaded 1 PC tables (83 PCs): 83 [0x563ff0e03ef0,0x563ff0e04420), 
+INFO:        0 files found in /github/workspace/cifuzz-corpus/do_stuff_fuzzer
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: A corpus is not provided, starting from an empty corpus
+#2	INITED cov: 2 ft: 2 corp: 1/1b exec/s: 0 rss: 69Mb
+#4	NEW    cov: 3 ft: 3 corp: 2/3b lim: 4096 exec/s: 0 rss: 69Mb L: 2/2 MS: 2 ChangeBit-InsertByte-
+==23==WARNING: MemorySanitizer: use-of-uninitialized-value
+    #0 0x563ff0d278f0 in LLVMFuzzerTestOneInput /src/cifuzz-external-example/do_stuff_fuzzer.cpp:24:1
+    #1 0x563ff0c24340 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:614:13
+    #2 0x563ff0c23b65 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:516:7
+    #3 0x563ff0c25335 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:760:19
+    #4 0x563ff0c26125 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile>>&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:905:5
+    #5 0x563ff0c14436 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:914:6
+    #6 0x563ff0c40962 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #7 0x7f4c156ed082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 87b331c034a6458c64ce09c03939e947212e18ce)
+    #8 0x563ff0c055ad in _start (build-out/do_stuff_fuzzer+0x4a5ad)
+
+DEDUP_TOKEN: LLVMFuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)--fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*)
+  Uninitialized value was stored to memory at
+    #0 0x563ff0d278e9 in LLVMFuzzerTestOneInput /src/cifuzz-external-example/do_stuff_fuzzer.cpp
+    #1 0x563ff0c24340 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:614:13
+    #2 0x563ff0c23b65 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:516:7
+    #3 0x563ff0c25335 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:760:19
+    #4 0x563ff0c26125 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile>>&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:905:5
+    #5 0x563ff0c14436 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:914:6
+    #6 0x563ff0c40962 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #7 0x7f4c156ed082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 87b331c034a6458c64ce09c03939e947212e18ce)
+
+DEDUP_TOKEN: LLVMFuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)--fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*)
+  Uninitialized value was created by a heap deallocation
+    #0 0x563ff0cc7480 in free /src/llvm-project/compiler-rt/lib/msan/msan_interceptors.cpp:218:3
+    #1 0x563ff0d27800 in LLVMFuzzerTestOneInput /src/cifuzz-external-example/do_stuff_fuzzer.cpp:21:5
+    #2 0x563ff0c24340 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:614:13
+    #3 0x563ff0c23b65 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:516:7
+    #4 0x563ff0c25335 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:760:19
+    #5 0x563ff0c26125 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile>>&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:905:5
+    #6 0x563ff0c14436 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:914:6
+    #7 0x563ff0c40962 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #8 0x7f4c156ed082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 87b331c034a6458c64ce09c03939e947212e18ce)
+
+DEDUP_TOKEN: __interceptor_free--LLVMFuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)
+SUMMARY: MemorySanitizer: use-of-uninitialized-value /src/cifuzz-external-example/do_stuff_fuzzer.cpp:24:1 in LLVMFuzzerTestOneInput
+Unique heap origins: 201
+Stack depot allocated bytes: 9764880
+Unique origin histories: 181
+History depot allocated bytes: 196608
+Exiting
+MS: 5 ShuffleBytes-CopyPart-InsertByte-CopyPart-ManualDict- DE: "bar"-; base unit: adc83b19e793491b1c6ea0fd8b46cd9f32e592fc
+0xa,0x62,0x61,0x72,0xa,
+\012bar\012
+artifact_prefix='/tmp/tmp1tc5b3m2/'; Test unit written to /tmp/tmp1tc5b3m2/crash-c935b6724d7e27401ac9af3773700ca86ac38dea
+Base64: CmJhcgo=
+stat::number_of_executed_units: 159
+stat::average_exec_per_sec:     0
+stat::new_units_added:          1
+stat::slowest_unit_time_sec:    0
+stat::peak_rss_mb:              69

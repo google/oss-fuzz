@@ -1,0 +1,13 @@
+homepage: "https://github.com/apache/struts"
+language: jvm
+main_repo: "https://github.com/apache/struts.git"
+primary_contact: "lukasz.lenart@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+auto_ccs:
+  - "security@struts.apache.org"
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

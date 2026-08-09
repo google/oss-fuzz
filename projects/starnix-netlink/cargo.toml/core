@@ -1,0 +1,13 @@
+[package]
+name = "netlink_packet_core"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+anyhow = { path = "/src/fuchsia/third_party/rust_crates/vendor/anyhow-1.0.86" }
+byteorder = "1.5"
+netlink_packet_utils = { path = "../netlink_packet_utils" }
+
+[lib]
+name = "netlink_packet_core"
+path = "src/lib.rs"

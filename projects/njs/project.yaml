@@ -1,0 +1,17 @@
+homepage: "https://nginx.org/en/docs/njs/"
+language: c++
+primary_contact: "xeioexception@gmail.com"
+auto_ccs:
+ - "devrep@nginx.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+coverage_extra_args: -ignore-filename-regex=.*/pcre2/.*
+main_repo: 'https://github.com/nginx/njs.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

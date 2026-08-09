@@ -1,0 +1,18 @@
+homepage: "https://github.com/irssi/irssi"
+language: c++
+primary_contact: "ahf@irssi.org"
+auto_ccs:
+  - "dx@dxzone.com.ar"
+  - "joseph.bisch@gmail.com"
+  - "ailin.nemui@gmail.com"
+  - "staff@irssi.org"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/irssi/irssi'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

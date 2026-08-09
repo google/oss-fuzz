@@ -1,0 +1,13 @@
+homepage: "https://github.com/google/wuffs"
+language: c++
+primary_contact: "nigeltao@golang.org"
+auto_ccs:
+  - "raph.levien@gmail.com"
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/google/wuffs.git'
+file_github_issue: True

@@ -1,0 +1,13 @@
+base_os_version: ubuntu-24-04
+homepage: "https://github.com/drewnoakes/metadata-extractor"
+language: jvm
+primary_contact: ""
+fuzzing_engines:
+  - "libfuzzer"
+sanitizers:
+  - "address"
+main_repo: "https://github.com/drewnoakes/metadata-extractor.git"
+vendor_ccs:
+  - "patrice.salathe@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"

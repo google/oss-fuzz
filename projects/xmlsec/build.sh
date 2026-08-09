@@ -1,0 +1,84 @@
+#!/bin/bash -eu
+#
+# Copyright 2016 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# Build dependencies.
+export XMLSEC_DEPS_PATH=$SRC/xmlsec_deps
+mkdir -p $XMLSEC_DEPS_PATH
+
+cd $SRC/libxml2
+./autogen.sh \
+    --without-legacy \
+    --without-python \
+    --without-zlib \
+    --without-lzma \
+    --enable-static \
+    --prefix="$XMLSEC_DEPS_PATH"
+make -j$(nproc) all
+make install
+
+cd $SRC/libxslt
+cd ../libxslt
+./autogen.sh \
+    --with-libxml-src=../libxml2 \
+    --without-python \
+    --without-debug \
+    --without-debugger \
+    --without-profiler \
+    --enable-static \
+    --prefix="$XMLSEC_DEPS_PATH"
+
+make -j$(nproc)
+make install
+
+cd $SRC/xmlsec
+sed -i 's/-pedantic-errors//g' configure.ac
+sed -i 's/-pedantic//g' configure.ac
+autoreconf -vfi
+
+# Add non-standard search path
+export CFLAGS="$CFLAGS -I$XMLSEC_DEPS_PATH/include"
+export CXXFLAGS="$CXXFLAGS -I$XMLSEC_DEPS_PATH/include"
+
+./configure \
+  --enable-static-linking \
+  --enable-development \
+  --with-libxml="$XMLSEC_DEPS_PATH" \
+  --with-libxslt="$XMLSEC_DEPS_PATH"
+make -j$(nproc) clean
+make -j$(nproc) all V=1
+
+for file in $SRC/xmlsec/apps/oss-fuzz/*_target.c; do
+    b=$(basename $file _target.c)
+    $CC $CFLAGS -c $file -I${XMLSEC_DEPS_PATH=}/include/libxml2 -I${XMLSEC_DEPS_PATH=}/include/ -I ./include/ \
+    -o $OUT/${b}_target.o
+    $CXX $CXXFLAGS $OUT/${b}_target.o \
+    -Wl,--start-group ./src/.libs/libxmlsec1.a \
+    ./src/openssl/.libs/libxmlsec1-openssl.a -Wl,--end-group \
+    $LIB_FUZZING_ENGINE \
+    "$XMLSEC_DEPS_PATH"/lib/libxslt.a "$XMLSEC_DEPS_PATH"/lib/libxml2.a \
+    -lz -llzma -lcrypto -lssl -o $OUT/${b}_fuzzer
+done
+cp $SRC/xmlsec/apps/oss-fuzz/config/*.options $OUT/
+wget -O $OUT/xml.dict https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/xml.dict
+
+# Seed corpus for the DSig verification fuzzer
+zip -j $OUT/xmlsec_dsig_verify_fuzzer_seed_corpus.zip \
+    $SRC/xmlsec/tests/phaos-xmldsig-three/signature*.xml \
+    $SRC/xmlsec/tests/merlin-exc-c14n-one/*.xml \
+    $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature*.xml \
+    2>/dev/null || true

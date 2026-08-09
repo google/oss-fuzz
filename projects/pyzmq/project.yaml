@@ -1,0 +1,10 @@
+homepage: https://github.com/zeromq/pyzmq
+main_repo: https://github.com/zeromq/pyzmq
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

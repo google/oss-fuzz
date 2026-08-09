@@ -1,0 +1,15 @@
+homepage: "https://mosh.org"
+primary_contact: "keithw@cs.stanford.edu"
+auto_ccs:
+  - "cgull@glup.org"
+  - "andersk@mit.edu"
+  - "alex@achernya.com"
+  - "bbarenblat@gmail.com"
+  - "mosh-security@mit.edu"
+language: c++
+main_repo: "https://github.com/mobile-shell/mosh.git"
+file_github_issue: true
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

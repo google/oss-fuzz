@@ -1,0 +1,14 @@
+homepage: https://xenproject.org
+language: c
+main_repo: https://xenbits.xen.org/git-http/xen.git
+auto_ccs:
+  - "tamas.k.lengyel@gmail.com"
+  - "jbeulich@suse.com"
+  - "andrew.cooper@cloud.com"
+  - "roger.pau@cloud.com"
+  - "sstabellini@kernel.org"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer

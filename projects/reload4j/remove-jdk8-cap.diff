@@ -1,0 +1,29 @@
+--- a/pom.xml
++++ b/pom.xml
+@@ -470,26 +470,6 @@
+             </plugin>
+           </plugins>
+         </pluginManagement>
+-        <plugins>
+-          <plugin>
+-            <groupId>org.apache.maven.plugins</groupId>
+-            <artifactId>maven-toolchains-plugin</artifactId>
+-            <executions>
+-              <execution>
+-                <goals>
+-                  <goal>toolchain</goal>
+-                </goals>
+-              </execution>
+-            </executions>
+-            <configuration>
+-              <toolchains>
+-                <jdk>
+-                  <version>[1.5, 8]</version>
+-                </jdk>
+-              </toolchains>
+-            </configuration>
+-          </plugin>
+-        </plugins>
+       </build>
+     </profile>
+   </profiles>

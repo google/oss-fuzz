@@ -1,0 +1,14 @@
+homepage: "https://github.com/project-oak/oak"
+language: rust
+primary_contact: "tzn@google.com"
+auto_ccs:
+  - "project-oak-team@google.com"
+  - "grobler@google.com"
+  - "ivanpetrov@google.com"
+  - "razieh@google.com"
+  - "mgamdou@google.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/project-oak/oak'

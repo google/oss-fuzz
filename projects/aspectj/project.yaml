@@ -1,0 +1,11 @@
+base_os_version: ubuntu-24-04
+homepage: "https://www.eclipse.org/aspectj/"
+language: jvm
+main_repo: "https://github.com/eclipse/org.aspectj"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

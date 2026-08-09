@@ -1,0 +1,75 @@
+# action.yml
+name: 'build-fuzzers'
+description: "Builds an OSS-Fuzz project's fuzzers."
+inputs:
+  language:
+    description: 'Programming language project is written in.'
+    required: false
+    default: 'c++'
+  dry-run:
+    description: 'If set, run the action without actually reporting a failure.'
+    default: false
+  allowed-broken-targets-percentage:
+    description: 'The percentage of broken targets allowed in bad_build_check.'
+    required: false
+  sanitizer:
+    description: 'The sanitizer to build the fuzzers with.'
+    default: 'address'
+  project-src-path:
+    description: "The path to the project's source code checkout."
+    required: false
+  bad-build-check:
+    description: "Whether or not OSS-Fuzz's check for bad builds should be done."
+    required: false
+    default: true
+  keep-unaffected-fuzz-targets:
+    description: "Whether to keep unaffected fuzzers or delete them."
+    required: false
+    default: false
+  storage-repo:
+    description: |
+      The git repo to use for storing certain artifacts from fuzzing.
+    required: false
+  storage-repo-branch:
+    description: |
+      The branch of the git repo to use for storing certain artifacts from
+      fuzzing.
+    required: false
+  storage-repo-branch-coverage:
+    description: |
+      The branch of the git repo to use for storing coverage reports.
+    required: false
+  upload-build:
+    description: |
+      If set, will upload the build.
+    default: false
+  github-token:
+    description: |
+      Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
+      You should use "secrets.GITHUB_TOKEN" in your workflow file, do not
+      hardcode the token.
+      TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
+      Document locking this down.
+    required: false
+  output-sarif:
+    description: "Whether to output fuzzing results to SARIF."
+    required: false
+    default: false
+runs:
+  using: 'docker'
+  image: '../../../build_fuzzers.Dockerfile'
+  env:
+    OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
+    LANGUAGE: ${{ inputs.language }}
+    DRY_RUN: ${{ inputs.dry-run}}
+    ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
+    SANITIZER: ${{ inputs.sanitizer }}
+    PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
+    LOW_DISK_SPACE: 'True'
+    BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
+    UPLOAD_BUILD: ${{ inputs.upload-build }}
+    CIFUZZ_DEBUG: 'True'
+    CFL_PLATFORM: 'github'
+    KEEP_UNAFFECTED_FUZZ_TARGETS: ${{ inputs.keep-unaffected-fuzz-targets }}
+    OUTPUT_SARIF: ${{ inputs.output-sarif }}

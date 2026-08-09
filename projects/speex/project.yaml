@@ -1,0 +1,16 @@
+homepage: "https://speex.org/"
+language: c++
+primary_contact: "tmatth@videolan.org"
+auto_ccs:
+  - "twsmith@mozilla.com"
+  - "le.businessman@gmail.com"
+  - "jmvalin@jmvalin.ca"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://gitlab.xiph.org/xiph/speex.git'

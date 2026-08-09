@@ -1,0 +1,13 @@
+homepage: "https://github.com/google/go-containerregistry"
+language: go
+primary_contact: "jason@chainguard.dev"
+main_repo: "https://github.com/google/go-containerregistry"
+auto_ccs:
+  - "go-containerregistry@chainguard.dev"
+vendor_ccs:
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

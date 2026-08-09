@@ -1,0 +1,16 @@
+base_os_version: ubuntu-24-04
+homepage: "https://github.com/wasmerio/wasmer"
+language: rust
+main_repo: "https://github.com/wasmerio/wasmer"
+primary_contact: "martin@wasmer.io"
+auto_ccs:
+  - syrus@wasmer.io
+  - christoph@wasmer.io
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+  - maxnair.dev@gmail.com
+coverage_extra_args: >
+  -ignore-filename-regex=.*/rustc/.*

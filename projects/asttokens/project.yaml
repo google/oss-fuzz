@@ -1,0 +1,10 @@
+homepage: https://github.com/gristlabs/asttokens
+main_repo: https://github.com/gristlabs/asttokens
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

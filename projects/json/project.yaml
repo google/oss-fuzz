@@ -1,0 +1,16 @@
+homepage: "https://github.com/nlohmann/json"
+language: c++
+primary_contact: "niels.lohmann@gmail.com"
+auto_ccs:
+  - "tanujgarg@google.com"
+sanitizers:
+ - address
+ - undefined
+ - memory
+main_repo: 'https://github.com/nlohmann/json.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

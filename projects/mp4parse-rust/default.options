@@ -1,0 +1,2 @@
+[asan]
+max_allocation_size_mb=512

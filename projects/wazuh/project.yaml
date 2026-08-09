@@ -1,0 +1,12 @@
+homepage: "https://wazuh.com/"
+main_repo: 'https://github.com/wazuh/wazuh'
+primary_contact: "devel@wazuh.com"
+language: c
+auto_ccs:
+  - "david@adalogics.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

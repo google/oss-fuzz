@@ -1,0 +1,550 @@
+From 8ef6bed7380397195d952573b206fb2f83d28a84 Mon Sep 17 00:00:00 2001
+Message-Id: <8ef6bed7380397195d952573b206fb2f83d28a84.1717588949.git.tamas.lengyel@intel.com>
+From: Tamas K Lengyel <tamas.lengyel@intel.com>
+Date: Thu, 15 Jun 2023 15:28:24 +0000
+Subject: [PATCH] Fuzzing harness for the TPM2 CMD interface
+
+This is a crude attempt at structure aware fuzzing of TPM2 commands. We fix up
+command header to have correct session tag, size and valid command code if the
+fuzzer didn't manage to generate a valid one. The fuzzer will exercises the
+rest of the command body as it chooses.
+
+The real trick to get deep into the TPM2 is to issue startups & shutdowns.
+Sending commands to a TPM that's not started will have limited reach
+(but can still find bugs).
+
+Signed-off-by: Tamas K Lengyel <tamas.lengyel@intel.com>
+---
+ TPMCmd/Makefile.am      |  24 ++-
+ TPMCmd/configure.ac     |  18 ++
+ TPMCmd/fuzzer/tpm_cmd.c | 442 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 483 insertions(+), 1 deletion(-)
+ create mode 100644 TPMCmd/fuzzer/tpm_cmd.c
+
+diff --git a/TPMCmd/Makefile.am b/TPMCmd/Makefile.am
+index 1df7a5e..0cf316f 100644
+--- a/TPMCmd/Makefile.am
++++ b/TPMCmd/Makefile.am
+@@ -43,12 +43,32 @@ libplatform = Platform/src/libplatform.a
+ libtpm = tpm/src/libtpm.a
+ tpm2_simulator = Simulator/src/tpm2-simulator
+ 
+-bin_PROGRAMS = $(tpm2_simulator)
++bin_PROGRAMS =
+ noinst_LIBRARIES = $(libplatform) $(libtpm)
+ 
+ Platform_src_libplatform_a_CFLAGS = $(EXTRA_CFLAGS) $(PLATFORM_INC) $(TPM_INC)
+ Platform_src_libplatform_a_SOURCES = $(PLATFORM_C) $(PLATFORM_H)
+ 
++if LIBFUZZER
++bin_PROGRAMS += fuzzer/tpm_cmd
++fuzzer_tpm_cmd_CFLAGS = $(EXTRA_CFLAGS) $(PLATFORM_INC) \
++    $(TPM_INC) $(LIBCRYPTO_CFLAGS) $(PTHREAD_CFLAGS) \
++    -DLIBFUZZER
++fuzzer_tpm_cmd_LDADD = $(libplatform) $(libtpm) \
++    $(libplatform) $(LIBCRYPTO_LIBS) $(PTHREAD_LIBS) @ADDITIONAL_LIBS@
++fuzzer_tpm_cmd_LDFLAGS = -fsanitize=fuzzer
++fuzzer_tpm_cmd_SOURCES = fuzzer/tpm_cmd.c
++else
++if COVERAGE
++bin_PROGRAMS += fuzzer/tpm_cmd
++fuzzer_tpm_cmd_CFLAGS = $(EXTRA_CFLAGS) $(PLATFORM_INC) \
++    $(TPM_INC) $(LIBCRYPTO_CFLAGS) $(PTHREAD_CFLAGS) \
++    -DCOVERAGE
++fuzzer_tpm_cmd_LDADD = $(libplatform) $(libtpm) \
++    $(libplatform) $(LIBCRYPTO_LIBS) $(PTHREAD_LIBS) @ADDITIONAL_LIBS@
++fuzzer_tpm_cmd_SOURCES = fuzzer/tpm_cmd.c
++else
++bin_PROGRAMS += $(tpm2_simulator)
+ Simulator_src_tpm2_simulator_CFLAGS = $(EXTRA_CFLAGS) $(PLATFORM_INC) \
+     $(TPM_INC) $(SIMULATOR_INC) $(LIBCRYPTO_CFLAGS) $(PTHREAD_CFLAGS)
+ # the weird / duplicate static library is necessary for dealing with the
+@@ -56,6 +76,8 @@ Simulator_src_tpm2_simulator_CFLAGS = $(EXTRA_CFLAGS) $(PLATFORM_INC) \
+ Simulator_src_tpm2_simulator_LDADD = $(libplatform) $(libtpm) \
+     $(libplatform) $(LIBCRYPTO_LIBS) $(PTHREAD_LIBS) @ADDITIONAL_LIBS@
+ Simulator_src_tpm2_simulator_SOURCES = $(SIMULATOR_C) $(SIMULATOR_H)
++endif
++endif
+ 
+ tpm_src_libtpm_a_CFLAGS = $(EXTRA_CFLAGS) $(PLATFORM_INC) $(TPM_INC) \
+     $(LIBCRYPTO_CFLAGS)
+diff --git a/TPMCmd/configure.ac b/TPMCmd/configure.ac
+index 58a74b4..fb3ea57 100644
+--- a/TPMCmd/configure.ac
++++ b/TPMCmd/configure.ac
+@@ -75,6 +75,24 @@ ADD_COMPILER_FLAG([-Wno-error=pointer-to-int-cast])
+ ADD_COMPILER_FLAG([-Wno-error=missing-braces])
+ ADD_COMPILER_FLAG([-Wno-error=unused-result])
+ 
++AC_ARG_ENABLE(libfuzzer,
++    AS_HELP_STRING([--enable-libfuzzer],
++    [Build libfuzzer driver with ASAN/UBSAN/LEAKSAN]))
++AM_CONDITIONAL([LIBFUZZER], [test x$enable_libfuzzer = xyes])
++
++AS_IF([test "x$enable_libfuzzer" = "xyes"], [
++    ADD_COMPILER_FLAG([-DNDEBUG])
++])
++
++AC_ARG_ENABLE(coverage,
++    AS_HELP_STRING([--enable-coverage],
++    [Build tpm_cmd with coverage]))
++AM_CONDITIONAL([COVERAGE], [test x$enable_coverage = xyes])
++
++AS_IF([test "x$enable_coverage" = "xyes"], [
++    ADD_COMPILER_FLAG([-DNDEBUG])
++])
++
+ AS_IF([test "x$enable_usedeviceid" = "xyes"], [
+     ADD_COMPILER_FLAG([-DNDEBUG])
+     ADD_COMPILER_FLAG([-g])
+diff --git a/TPMCmd/fuzzer/tpm_cmd.c b/TPMCmd/fuzzer/tpm_cmd.c
+new file mode 100644
+index 0000000..1fe6f8f
+--- /dev/null
++++ b/TPMCmd/fuzzer/tpm_cmd.c
+@@ -0,0 +1,442 @@
++// Copyright 2024 Google LLC
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++#include "TpmBuildSwitches.h"
++#include <stdlib.h>
++#include <stdio.h>
++#include <stdint.h>
++#include <stdbool.h>
++#include <ctype.h>
++#include <string.h>
++#include <sys/types.h>
++#include <unistd.h>
++
++#include "Manufacture_fp.h"
++#include "Platform_fp.h"
++
++#define TPM_ST_NO_SESSIONS 0x8001
++#define TPM_ST_SESSIONS 0x8002
++
++enum tpm_cc {
++    TPM_CC_NV_UndefineSpaceSpecial,
++    TPM_CC_EvictControl,
++    TPM_CC_HierarchyControl,
++    TPM_CC_NV_UndefineSpace,
++    TPM_CC_ChangeEPS,
++    TPM_CC_ChangePPS,
++    TPM_CC_Clear,
++    TPM_CC_ClearControl,
++    TPM_CC_ClockSet,
++    TPM_CC_HierarchyChangeAuth,
++    TPM_CC_NV_DefineSpace,
++    TPM_CC_PCR_Allocate,
++    TPM_CC_PCR_SetAuthPolicy,
++    TPM_CC_PP_Commands,
++    TPM_CC_SetPrimaryPolicy,
++    TPM_CC_FieldUpgradeStart,
++    TPM_CC_ClockRateAdjust,
++    TPM_CC_CreatePrimary,
++    TPM_CC_NV_GlobalWriteLock,
++    TPM_CC_GetCommandAuditDigest,
++    TPM_CC_NV_Increment,
++    TPM_CC_NV_SetBits,
++    TPM_CC_NV_Extend,
++    TPM_CC_NV_Write,
++    TPM_CC_NV_WriteLock,
++    TPM_CC_DictionaryAttackLockReset,
++    TPM_CC_DictionaryAttackParameters,
++    TPM_CC_NV_ChangeAuth,
++    TPM_CC_PCR_Event,
++    TPM_CC_PCR_Reset,
++    TPM_CC_SequenceComplete,
++    TPM_CC_SetAlgorithmSet,
++    TPM_CC_SetCommandCodeAuditStatus,
++    TPM_CC_FieldUpgradeData,
++    TPM_CC_IncrementalSelfTest,
++    TPM_CC_SelfTest,
++    TPM_CC_Startup,
++    TPM_CC_Shutdown,
++    TPM_CC_StirRandom,
++    TPM_CC_ActivateCredential,
++    TPM_CC_Certify,
++    TPM_CC_PolicyNV,
++    TPM_CC_CertifyCreation,
++    TPM_CC_Duplicate,
++    TPM_CC_GetTime,
++    TPM_CC_GetSessionAuditDigest,
++    TPM_CC_NV_Read,
++    TPM_CC_NV_ReadLock,
++    TPM_CC_ObjectChangeAuth,
++    TPM_CC_PolicySecret,
++    TPM_CC_Rewrap,
++    TPM_CC_Create,
++    TPM_CC_ECDH_ZGen,
++    TPM_CC_HMAC,
++    TPM_CC_MAC,
++    TPM_CC_Import,
++    TPM_CC_Load,
++    TPM_CC_Quote,
++    TPM_CC_RSA_Decrypt,
++    TPM_CC_HMAC_Start,
++    TPM_CC_MAC_Start,
++    TPM_CC_SequenceUpdate,
++    TPM_CC_Sign,
++    TPM_CC_Unseal,
++    TPM_CC_PolicySigned,
++    TPM_CC_ContextLoad,
++    TPM_CC_ContextSave,
++    TPM_CC_ECDH_KeyGen,
++    TPM_CC_EncryptDecrypt,
++    TPM_CC_FlushContext,
++    TPM_CC_LoadExternal,
++    TPM_CC_MakeCredential,
++    TPM_CC_NV_ReadPublic,
++    TPM_CC_PolicyAuthorize,
++    TPM_CC_PolicyAuthValue,
++    TPM_CC_PolicyCommandCode,
++    TPM_CC_PolicyCounterTimer,
++    TPM_CC_PolicyCpHash,
++    TPM_CC_PolicyLocality,
++    TPM_CC_PolicyNameHash,
++    TPM_CC_PolicyOR,
++    TPM_CC_PolicyTicket,
++    TPM_CC_ReadPublic,
++    TPM_CC_RSA_Encrypt,
++    TPM_CC_StartAuthSession,
++    TPM_CC_VerifySignature,
++    TPM_CC_ECC_Parameters,
++    TPM_CC_FirmwareRead,
++    TPM_CC_GetCapability,
++    TPM_CC_GetRandom,
++    TPM_CC_GetTestResult,
++    TPM_CC_Hash,
++    TPM_CC_PCR_Read,
++    TPM_CC_PolicyPCR,
++    TPM_CC_PolicyRestart,
++    TPM_CC_ReadClock,
++    TPM_CC_PCR_Extend,
++    TPM_CC_PCR_SetAuthValue,
++    TPM_CC_NV_Certify,
++    TPM_CC_EventSequenceComplete,
++    TPM_CC_HashSequenceStart,
++    TPM_CC_PolicyPhysicalPresence,
++    TPM_CC_PolicyDuplicationSelect,
++    TPM_CC_PolicyGetDigest,
++    TPM_CC_TestParms,
++    TPM_CC_Commit,
++    TPM_CC_PolicyPassword,
++    TPM_CC_ZGen_2Phase,
++    TPM_CC_EC_Ephemeral,
++    TPM_CC_PolicyNvWritten,
++    TPM_CC_PolicyTemplate,
++    TPM_CC_CreateLoaded,
++    TPM_CC_PolicyAuthorizeNV,
++    TPM_CC_EncryptDecrypt2,
++    TPM_CC_AC_GetCapability,
++    TPM_CC_AC_Send,
++    TPM_CC_Policy_AC_SendSelect,
++    TPM_CC_CertifyX509,
++    TPM_CC_ACT_SetTimeout,
++    TPM_CC_ECC_Encrypt,
++    TPM_CC_ECC_Decrypt,
++
++    __TPM_CC_MAX
++};
++
++uint32_t tpm_cc_lookup[__TPM_CC_MAX] = {
++    [TPM_CC_NV_UndefineSpaceSpecial   ] = 0x0000011F,
++    [TPM_CC_EvictControl              ] = 0x00000120,
++    [TPM_CC_HierarchyControl          ] = 0x00000121,
++    [TPM_CC_NV_UndefineSpace          ] = 0x00000122,
++    [TPM_CC_ChangeEPS                 ] = 0x00000124,
++    [TPM_CC_ChangePPS                 ] = 0x00000125,
++    [TPM_CC_Clear                     ] = 0x00000126,
++    [TPM_CC_ClearControl              ] = 0x00000127,
++    [TPM_CC_ClockSet                  ] = 0x00000128,
++    [TPM_CC_HierarchyChangeAuth       ] = 0x00000129,
++    [TPM_CC_NV_DefineSpace            ] = 0x0000012A,
++    [TPM_CC_PCR_Allocate              ] = 0x0000012B,
++    [TPM_CC_PCR_SetAuthPolicy         ] = 0x0000012C,
++    [TPM_CC_PP_Commands               ] = 0x0000012D,
++    [TPM_CC_SetPrimaryPolicy          ] = 0x0000012E,
++    [TPM_CC_FieldUpgradeStart         ] = 0x0000012F,
++    [TPM_CC_ClockRateAdjust           ] = 0x00000130,
++    [TPM_CC_CreatePrimary             ] = 0x00000131,
++    [TPM_CC_NV_GlobalWriteLock        ] = 0x00000132,
++    [TPM_CC_GetCommandAuditDigest     ] = 0x00000133,
++    [TPM_CC_NV_Increment              ] = 0x00000134,
++    [TPM_CC_NV_SetBits                ] = 0x00000135,
++    [TPM_CC_NV_Extend                 ] = 0x00000136,
++    [TPM_CC_NV_Write                  ] = 0x00000137,
++    [TPM_CC_NV_WriteLock              ] = 0x00000138,
++    [TPM_CC_DictionaryAttackLockReset ] = 0x00000139,
++    [TPM_CC_DictionaryAttackParameters] = 0x0000013A,
++    [TPM_CC_NV_ChangeAuth             ] = 0x0000013B,
++    [TPM_CC_PCR_Event                 ] = 0x0000013C,
++    [TPM_CC_PCR_Reset                 ] = 0x0000013D,
++    [TPM_CC_SequenceComplete          ] = 0x0000013E,
++    [TPM_CC_SetAlgorithmSet           ] = 0x0000013F,
++    [TPM_CC_SetCommandCodeAuditStatus ] = 0x00000140,
++    [TPM_CC_FieldUpgradeData          ] = 0x00000141,
++    [TPM_CC_IncrementalSelfTest       ] = 0x00000142,
++    [TPM_CC_SelfTest                  ] = 0x00000143,
++    [TPM_CC_Startup                   ] = 0x00000144,
++    [TPM_CC_Shutdown                  ] = 0x00000145,
++    [TPM_CC_StirRandom                ] = 0x00000146,
++    [TPM_CC_ActivateCredential        ] = 0x00000147,
++    [TPM_CC_Certify                   ] = 0x00000148,
++    [TPM_CC_PolicyNV                  ] = 0x00000149,
++    [TPM_CC_CertifyCreation           ] = 0x0000014A,
++    [TPM_CC_Duplicate                 ] = 0x0000014B,
++    [TPM_CC_GetTime                   ] = 0x0000014C,
++    [TPM_CC_GetSessionAuditDigest     ] = 0x0000014D,
++    [TPM_CC_NV_Read                   ] = 0x0000014E,
++    [TPM_CC_NV_ReadLock               ] = 0x0000014F,
++    [TPM_CC_ObjectChangeAuth          ] = 0x00000150,
++    [TPM_CC_PolicySecret              ] = 0x00000151,
++    [TPM_CC_Rewrap                    ] = 0x00000152,
++    [TPM_CC_Create                    ] = 0x00000153,
++    [TPM_CC_ECDH_ZGen                 ] = 0x00000154,
++    [TPM_CC_HMAC                      ] = 0x00000155,
++    [TPM_CC_MAC                       ] = 0x00000155,
++    [TPM_CC_Import                    ] = 0x00000156,
++    [TPM_CC_Load                      ] = 0x00000157,
++    [TPM_CC_Quote                     ] = 0x00000158,
++    [TPM_CC_RSA_Decrypt               ] = 0x00000159,
++    [TPM_CC_HMAC_Start                ] = 0x0000015B,
++    [TPM_CC_MAC_Start                 ] = 0x0000015B,
++    [TPM_CC_SequenceUpdate            ] = 0x0000015C,
++    [TPM_CC_Sign                      ] = 0x0000015D,
++    [TPM_CC_Unseal                    ] = 0x0000015E,
++    [TPM_CC_PolicySigned              ] = 0x00000160,
++    [TPM_CC_ContextLoad               ] = 0x00000161,
++    [TPM_CC_ContextSave               ] = 0x00000162,
++    [TPM_CC_ECDH_KeyGen               ] = 0x00000163,
++    [TPM_CC_EncryptDecrypt            ] = 0x00000164,
++    [TPM_CC_FlushContext              ] = 0x00000165,
++    [TPM_CC_LoadExternal              ] = 0x00000167,
++    [TPM_CC_MakeCredential            ] = 0x00000168,
++    [TPM_CC_NV_ReadPublic             ] = 0x00000169,
++    [TPM_CC_PolicyAuthorize           ] = 0x0000016A,
++    [TPM_CC_PolicyAuthValue           ] = 0x0000016B,
++    [TPM_CC_PolicyCommandCode         ] = 0x0000016C,
++    [TPM_CC_PolicyCounterTimer        ] = 0x0000016D,
++    [TPM_CC_PolicyCpHash              ] = 0x0000016E,
++    [TPM_CC_PolicyLocality            ] = 0x0000016F,
++    [TPM_CC_PolicyNameHash            ] = 0x00000170,
++    [TPM_CC_PolicyOR                  ] = 0x00000171,
++    [TPM_CC_PolicyTicket              ] = 0x00000172,
++    [TPM_CC_ReadPublic                ] = 0x00000173,
++    [TPM_CC_RSA_Encrypt               ] = 0x00000174,
++    [TPM_CC_StartAuthSession          ] = 0x00000176,
++    [TPM_CC_VerifySignature           ] = 0x00000177,
++    [TPM_CC_ECC_Parameters            ] = 0x00000178,
++    [TPM_CC_FirmwareRead              ] = 0x00000179,
++    [TPM_CC_GetCapability             ] = 0x0000017A,
++    [TPM_CC_GetRandom                 ] = 0x0000017B,
++    [TPM_CC_GetTestResult             ] = 0x0000017C,
++    [TPM_CC_Hash                      ] = 0x0000017D,
++    [TPM_CC_PCR_Read                  ] = 0x0000017E,
++    [TPM_CC_PolicyPCR                 ] = 0x0000017F,
++    [TPM_CC_PolicyRestart             ] = 0x00000180,
++    [TPM_CC_ReadClock                 ] = 0x00000181,
++    [TPM_CC_PCR_Extend                ] = 0x00000182,
++    [TPM_CC_PCR_SetAuthValue          ] = 0x00000183,
++    [TPM_CC_NV_Certify                ] = 0x00000184,
++    [TPM_CC_EventSequenceComplete     ] = 0x00000185,
++    [TPM_CC_HashSequenceStart         ] = 0x00000186,
++    [TPM_CC_PolicyPhysicalPresence    ] = 0x00000187,
++    [TPM_CC_PolicyDuplicationSelect   ] = 0x00000188,
++    [TPM_CC_PolicyGetDigest           ] = 0x00000189,
++    [TPM_CC_TestParms                 ] = 0x0000018A,
++    [TPM_CC_Commit                    ] = 0x0000018B,
++    [TPM_CC_PolicyPassword            ] = 0x0000018C,
++    [TPM_CC_ZGen_2Phase               ] = 0x0000018D,
++    [TPM_CC_EC_Ephemeral              ] = 0x0000018E,
++    [TPM_CC_PolicyNvWritten           ] = 0x0000018F,
++    [TPM_CC_PolicyTemplate            ] = 0x00000190,
++    [TPM_CC_CreateLoaded              ] = 0x00000191,
++    [TPM_CC_PolicyAuthorizeNV         ] = 0x00000192,
++    [TPM_CC_EncryptDecrypt2           ] = 0x00000193,
++    [TPM_CC_AC_GetCapability          ] = 0x00000194,
++    [TPM_CC_AC_Send                   ] = 0x00000195,
++    [TPM_CC_Policy_AC_SendSelect      ] = 0x00000196,
++    [TPM_CC_CertifyX509               ] = 0x00000197,
++    [TPM_CC_ACT_SetTimeout            ] = 0x00000198,
++    [TPM_CC_ECC_Encrypt               ] = 0x00000199,
++    [TPM_CC_ECC_Decrypt               ] = 0x0000019A,
++};
++
++struct __attribute__((__packed__)) tpm2_cmd {
++  uint16_t tag;
++  uint32_t size; // sizeof(struct tpm2_cmd) + sizeof(buf)
++  uint32_t command_code; // tpm_cc
++  uint32_t buf[];
++};
++
++static inline uint16_t reverse2(uint16_t _in) {
++    uint8_t *in = (uint8_t*)&_in;
++    return (in[0] << 8) | in[1];
++}
++
++static inline uint32_t reverse4(uint32_t _in) {
++    uint8_t *in = (uint8_t*)&_in;
++    return ((uint32_t)in[0] << 24) | (in[1] << 16) | (in[2] << 8) | in[3];
++}
++
++// tpm2_startup -c
++unsigned char tpm2_startup[] = {
++    0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x01
++};
++unsigned char tpm2_startup_c[] = {
++    0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x44, 0x00, 0x00
++};
++unsigned char tpm2_shutdown[] = {
++    0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x45, 0x00, 0x01
++};
++unsigned char tpm2_shutdown_c[] = {
++    0x80, 0x01, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x01, 0x45, 0x00, 0x00
++};
++
++uint32_t responseSize = 4096;
++unsigned char response[4096];
++unsigned char cmd_buffer[4096];
++unsigned char cmd2_buffer[4096];
++
++int LLVMFuzzerInitialize(int *argc, char ***argv)
++{
++    _plat__NVEnable(NULL);
++    TPM_Manufacture(1);
++    _plat__Signal_PowerOn();
++    _plat__LocalitySet(3);
++    fprintf(stderr, "TPM initialized, let the fuzzing COMMENCE!\n");
++    return 0;
++}
++
++static inline void fixup_tag(struct tpm2_cmd *cmd)
++{
++    if ( reverse2(cmd->tag) % 2 )
++        cmd->tag = reverse2(TPM_ST_NO_SESSIONS);
++    else
++        cmd->tag = reverse2(TPM_ST_SESSIONS);
++}
++
++static inline void fixup_size(struct tpm2_cmd *cmd, uint32_t size)
++{
++    cmd->size = reverse4(size);
++}
++
++static inline void fixup_cc(struct tpm2_cmd *cmd)
++{
++    uint32_t cc = reverse4(cmd->command_code);
++    if ( cc < tpm_cc_lookup[0] || cc >= tpm_cc_lookup[__TPM_CC_MAX-1] )
++    {
++        uint8_t selector = cc % __TPM_CC_MAX;
++        cc = tpm_cc_lookup[selector];
++        cmd->command_code = reverse4(cc);
++    }
++}
++
++int LLVMFuzzerTestOneInput(const uint8_t *const Data, size_t Size) {
++    if (Data == NULL || Size < sizeof(struct tpm2_cmd)) {
++        return 0;
++    }
++
++    unsigned char *r = &response[0];
++    unsigned char **_response = &r;
++
++    struct tpm2_cmd *cmd = NULL;
++    struct tpm2_cmd *cmd2 = NULL;
++
++    if ( Size > 4096 )
++    {
++        if ( Size > 4096 + sizeof(struct tpm2_cmd) )
++        {
++            size_t size2 = Size - 4096;
++            if ( size2 > 4096 )
++                size2 = 4096;
++
++            memcpy(&cmd2_buffer, Data + 4096, size2);
++
++            cmd2 = (struct tpm2_cmd *)&cmd2_buffer;
++            fixup_tag(cmd2);
++            fixup_size(cmd2, size2);
++            fixup_cc(cmd2);
++        }
++
++        Size = 4096;
++    }
++
++    memcpy(&cmd_buffer, Data, Size);
++    cmd = (struct tpm2_cmd *)&cmd_buffer;
++
++    // Fixups
++    fixup_tag(cmd);
++    fixup_size(cmd, Size);
++    fixup_cc(cmd);
++
++    _plat__Signal_Reset();
++    _plat__SetNvAvail();
++
++    // Start the TPM
++    _plat__RunCommand(12, (unsigned char*)&tpm2_startup_c, &responseSize, _response);
++
++    // Run the command(s)
++    _plat__RunCommand(reverse4(cmd->size), (unsigned char*)cmd, &responseSize, _response);
++    if ( cmd2 )
++        _plat__RunCommand(reverse4(cmd2->size), (unsigned char*)cmd2, &responseSize, _response);
++
++    // Restart the TPM with state saved */
++    _plat__RunCommand(12, (unsigned char*)&tpm2_shutdown, &responseSize, _response);
++    _plat__RunCommand(12, (unsigned char*)&tpm2_startup, &responseSize, _response);
++
++    // Re-run the commands
++    _plat__RunCommand(reverse4(cmd->size), (unsigned char*)cmd, &responseSize, _response);
++    if ( cmd2 )
++        _plat__RunCommand(reverse4(cmd2->size), (unsigned char*)cmd2, &responseSize, _response);
++
++    // Shut down the TPM
++    _plat__RunCommand(12, (unsigned char*)&tpm2_shutdown_c, &responseSize, _response);
++
++    // Try running the commands on the shutdown TPM
++    _plat__RunCommand(reverse4(cmd->size), (unsigned char*)cmd, &responseSize, _response);
++    if ( cmd2 )
++        _plat__RunCommand(reverse4(cmd2->size), (unsigned char*)cmd2, &responseSize, _response);
++
++    _plat__ClearNvAvail();
++
++    return 0;
++}
++
++#ifdef COVERAGE
++int main(int argc, char **argv)
++{
++    if ( argc != 2 )
++        return 0;
++
++    FILE *f = fopen(argv[1], "rb");
++    fseek(f, 0, SEEK_END);
++    long fsize = ftell(f);
++    fseek(f, 0, SEEK_SET);
++
++    char *buf = malloc(fsize);
++    fread(buf, fsize, 1, f);
++    fclose(f);
++
++    LLVMFuzzerInitialize(0,NULL);
++    LLVMFuzzerTestOneInput((uint8_t*)buf, fsize);
++
++    free(buf);
++}
++#endif
+-- 
+2.34.1
+

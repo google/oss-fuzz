@@ -1,0 +1,6 @@
+homepage: "https://github.com/Neargye/magic_enum"
+language: c++
+main_repo: "https://github.com/Neargye/magic_enum.git"
+vendor_ccs:
+- david@adalogics.com
+- arthur.chan@adalogics.com

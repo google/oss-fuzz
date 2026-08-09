@@ -1,0 +1,67 @@
+diff --git a/src/backend/tcop/postgres.c b/src/backend/tcop/postgres.c
+index b6bdfe2..229c785 100644
+--- a/src/backend/tcop/postgres.c
++++ b/src/backend/tcop/postgres.c
+@@ -110,6 +110,10 @@ int			client_connection_check_interval = 0;
+ /* flags for non-system relation kinds to restrict use */
+ int			restrict_nonsystem_relation_kind;
+ 
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++bool		fuzzer_first_run = true;
++#endif
++
+ /*
+  * Include signal sender PID/UID in the server log when available
+  * (SA_SIGINFO). The caller must supply the already-captured pid and uid
+@@ -495,10 +499,14 @@ ReadCommand(StringInfo inBuf)
+ {
+ 	int			result;
+ 
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++	result = SocketBackend(inBuf);
++#else
+ 	if (whereToSendOutput == DestRemote)
+ 		result = SocketBackend(inBuf);
+ 	else
+ 		result = InteractiveBackend(inBuf);
++#endif
+ 	return result;
+ }
+ 
+@@ -4370,6 +4378,11 @@ PostgresMain(const char *dbname, const char *username)
+ 	volatile bool idle_in_transaction_timeout_enabled = false;
+ 	volatile bool idle_session_timeout_enabled = false;
+ 
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++	if (fuzzer_first_run)
++	{
++#endif							/* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
++
+ 	Assert(dbname != NULL);
+ 	Assert(username != NULL);
+ 
+@@ -4689,6 +4702,11 @@ PostgresMain(const char *dbname, const char *username)
+ 	if (!ignore_till_sync)
+ 		send_ready_for_query = true;	/* initially, or after error */
+ 
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++	fuzzer_first_run = false;
++	}
++#endif							/* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
++
+ 	/*
+ 	 * Non-error queries loop here.
+ 	 */
+diff --git a/src/backend/utils/error/elog.c b/src/backend/utils/error/elog.c
+index b9d2c96..fbf3921 100644
+--- a/src/backend/utils/error/elog.c
++++ b/src/backend/utils/error/elog.c
+@@ -552,7 +552,7 @@ errfinish(const char *filename, int lineno, const char *funcname)
+ 	}
+ 
+ 	/* Emit the message to the right places */
+-	EmitErrorReport();
++	/* EmitErrorReport(); -- disabled for fuzzing */
+ 
+ 	/*
+ 	 * If this is the outermost recursion level, we can clean up by resetting

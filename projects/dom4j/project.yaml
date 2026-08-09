@@ -1,0 +1,10 @@
+homepage: "https://github.com/dom4j/dom4j"
+language: jvm
+main_repo: "https://github.com/dom4j/dom4j.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

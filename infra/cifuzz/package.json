@@ -1,0 +1,10 @@
+{
+  "name": "cifuzz",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Google",
+  "license": "Apache2",
+  "dependencies": {
+    "@actions/artifact": "^2.2.0"
+  }
+}

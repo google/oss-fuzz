@@ -1,0 +1,111 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ac15329b..dba7e5f5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -336,10 +336,87 @@ if(Threads_FOUND)
+     target_link_libraries(upx Threads::Threads)
+ endif()
+ 
++set(fuzzers "")
++
++file(GLOB fuzzers_files "fuzzers/*_fuzzer.cpp")
++
++foreach(file ${fuzzers_files})
++    get_filename_component(fuzzer_name "${file}" NAME_WLE)
++    list(APPEND fuzzers ${fuzzer_name})
++
++    add_executable(${fuzzer_name} ${file} ${upx_SOURCES})
++
++    target_compile_definitions(${fuzzer_name} PUBLIC FUZZING_TESTS=1)
++
++    target_link_options(${fuzzer_name} PUBLIC -v)
++
++    # if(NOT "$ENV{SANITIZER}" STREQUAL "introspector")
++    message(ENV_SANITIZER=$ENV{SANITIZER})
++    target_link_options(${fuzzer_name} PUBLIC $ENV{LIB_FUZZING_ENGINE})
++    # endif()
++
++    if(NOT UPX_CONFIG_DISABLE_CXX_STANDARD)
++        set_property(TARGET ${fuzzer_name} PROPERTY CXX_STANDARD 17)
++    endif()
++    target_link_libraries(${fuzzer_name} upx_vendor_ucl upx_vendor_zlib)
++    if(NOT UPX_CONFIG_DISABLE_BZIP2)
++        target_link_libraries(${fuzzer_name} upx_vendor_bzip2)
++    endif()
++    if(NOT UPX_CONFIG_DISABLE_ZSTD)
++        target_link_libraries(${fuzzer_name} upx_vendor_zstd)
++    endif()
++    if(Threads_FOUND)
++        target_link_libraries(${fuzzer_name} Threads::Threads)
++    endif()
++endforeach()
++
+ #***********************************************************************
+ # target compilation flags
+ #***********************************************************************
+ 
++foreach(fuzzer ${fuzzers})
++    set(t ${fuzzer})
++    target_include_directories(${t} PRIVATE vendor)
++    target_compile_definitions(${t} PRIVATE $<$<CONFIG:Debug>:DEBUG=1>)
++    if(GITREV_SHORT)
++        target_compile_definitions(${t} PRIVATE UPX_VERSION_GITREV="${GITREV_SHORT}${GITREV_PLUS}")
++        if(GIT_DESCRIBE)
++            target_compile_definitions(${t} PRIVATE UPX_VERSION_GIT_DESCRIBE="${GIT_DESCRIBE}")
++        endif()
++    endif()
++    if(Threads_FOUND)
++        target_compile_definitions(${t} PRIVATE WITH_THREADS=1)
++    endif()
++    if(NOT UPX_CONFIG_DISABLE_WSTRICT)
++        target_compile_definitions(${t} PRIVATE UPX_CONFIG_DISABLE_WSTRICT=0)
++    endif()
++    if(NOT UPX_CONFIG_DISABLE_WERROR)
++        target_compile_definitions(${t} PRIVATE UPX_CONFIG_DISABLE_WERROR=0)
++    endif()
++    if(NOT UPX_CONFIG_DISABLE_BZIP2)
++        target_compile_definitions(${t} PRIVATE WITH_BZIP2=0) # FIXME TODO
++    endif()
++    if(NOT UPX_CONFIG_DISABLE_ZSTD)
++        target_compile_definitions(${t} PRIVATE WITH_ZSTD=1)
++    endif()
++    if(HAVE_UTIMENSAT)
++        target_compile_definitions(${t} PRIVATE USE_UTIMENSAT=1)
++        if(HAVE_STRUCT_STAT_ST_MTIMESPEC_TV_NSEC)
++            target_compile_definitions(${t} PRIVATE HAVE_STRUCT_STAT_ST_MTIMESPEC_TV_NSEC=1)
++        endif()
++    endif()
++    # improve speed of the Debug versions
++    upx_compile_source_debug_with_O2(src/compress/compress_lzma.cpp)
++    upx_compile_source_debug_with_O2(src/filter/filter_impl.cpp)
++    #upx_compile_target_debug_with_O2(${t})
++    upx_sanitize_target(${t})
++    if(MSVC_FRONTEND)
++        target_compile_options(${t} PRIVATE -EHsc ${warn_WN} ${warn_WX})
++    else()
++        target_compile_options(${t} PRIVATE ${warn_Wall} ${warn_Werror})
++    endif()
++endforeach()
++
+ upx_cmake_include_hook(5_target_compilation_flags)
+ 
+ if(NOT UPX_CONFIG_DISABLE_BZIP2)
+diff --git a/src/main.cpp b/src/main.cpp
+index 2d181687..ccb14660 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -1341,6 +1341,7 @@ int upx_main(int argc, char *argv[]) may_throw {
+ // real entry point
+ **************************************************************************/
+ 
++#if !(FUZZING_TESTS)
+ #if !(WITH_GUI)
+ 
+ #if 1 && (ACC_OS_DOS32) && defined(__DJGPP__)
+@@ -1394,5 +1395,6 @@ int __acc_cdecl_main main(int argc, char *argv[]) /*noexcept*/ {
+ }
+ 
+ #endif /* !(WITH_GUI) */
++#endif /* !(FUZZING_TESTS) */
+ 
+ /* vim:set ts=4 sw=4 et: */

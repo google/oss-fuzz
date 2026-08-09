@@ -1,0 +1,13 @@
+homepage: "https://www.xvid.com/"
+main_repo: "http://svn.xvid.org/trunk"
+language: c++
+primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+ - "mm@xvid.org"
+ - "xvidsolutions@gmail.com"
+sanitizers:
+ - address
+ - memory
+architectures:
+ - x86_64
+ - i386

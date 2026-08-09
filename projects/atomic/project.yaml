@@ -1,0 +1,9 @@
+homepage: "https://github.com/uber-go/atomic"
+language: go
+main_repo: "https://github.com/uber-go/atomic"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

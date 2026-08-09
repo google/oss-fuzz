@@ -1,0 +1,16 @@
+homepage: "https://www.tcpdump.org"
+language: c++
+primary_contact: "security@tcpdump.org"
+auto_ccs :
+  - "p.antoine@catenacyber.fr"
+  - "infra.station@gmail.com"
+  - "gharris@sonic.net"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/the-tcpdump-group/libpcap.git'

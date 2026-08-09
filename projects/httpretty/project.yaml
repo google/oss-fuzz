@@ -1,0 +1,10 @@
+homepage: https://github.com/gabrielfalcao/httpretty
+main_repo: https://github.com/gabrielfalcao/httpretty
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

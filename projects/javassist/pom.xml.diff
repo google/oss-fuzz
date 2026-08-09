@@ -1,0 +1,28 @@
+diff --git a/pom.xml b/pom.xml
+index d13fee2..4157d4f 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -155,11 +155,11 @@
+   </dependencies>
+ 
+   <build>
+-    <sourceDirectory>src/main/</sourceDirectory>
+-    <testSourceDirectory>src/test/</testSourceDirectory>
++    <sourceDirectory>src/main/java</sourceDirectory>
++    <testSourceDirectory>src/test/java</testSourceDirectory>
+     <testResources>
+       <testResource>
+-        <directory>src/test/resources</directory>
++        <directory>src/test/java/resources</directory>
+       </testResource>
+     </testResources>
+     <plugins>
+@@ -200,7 +200,7 @@
+               <mainClass>javassist.CtClass</mainClass>
+               <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+             </manifest>
+-            <manifestFile>src/main/META-INF/MANIFEST.MF</manifestFile>
++            <manifestFile>src/main/java/META-INF/MANIFEST.MF</manifestFile>
+           </archive>
+         </configuration>
+       </plugin>

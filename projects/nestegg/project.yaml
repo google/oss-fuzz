@@ -1,0 +1,15 @@
+homepage: "https://github.com/kinetiknz/nestegg"
+language: c++
+primary_contact: "mgregan@mozilla.com"
+fuzzing_engines:
+  - afl
+  - libfuzzer
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+vendor_ccs:
+  - "media-alerts@mozilla.com"
+  - "twsmith@mozilla.com"
+main_repo: 'https://github.com/kinetiknz/nestegg.git'

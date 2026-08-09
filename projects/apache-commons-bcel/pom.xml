@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>ossfuzz</groupId>
+	<artifactId>bcel-fuzzer</artifactId>
+	<version>${bcelVersion}</version>
+	<packaging>jar</packaging>
+
+	<properties>
+		<maven.compiler.source>15</maven.compiler.source>
+		<maven.compiler.target>15</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<exec.mainClass>ossfuzz.BcelFuzzer</exec.mainClass>
+	</properties>
+
+	<dependencies>
+		<!--
+			On the CI, install the jazzer file with
+		
+				mvn install:install-file -Dfile=${JAZZER_API_PATH} \
+					-DgroupId="com.code-intelligence" \
+					-DartifactId="jazzer-api" \
+					-Dversion="0.12.0" \
+					-Dpackaging=jar
+		
+			in order to avoid mismatching driver/api versions.
+		-->
+		<dependency>
+			<groupId>com.code-intelligence</groupId>
+			<artifactId>jazzer-api</artifactId>
+			<version>0.12.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.bcel</groupId>
+			<artifactId>bcel</artifactId>
+			<version>${bcelVersion}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

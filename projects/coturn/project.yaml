@@ -1,0 +1,16 @@
+homepage: "https://github.com/coturn/coturn"
+language: c
+base_os_version: ubuntu-24-04
+primary_contact: "eakraly@gmail.com"
+auto_ccs:
+  - "eakraly@gmail.com"
+  - "gustavogb@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/coturn/coturn'

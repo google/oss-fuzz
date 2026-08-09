@@ -1,0 +1,11 @@
+homepage: "https://crates.io/crates/json5format"
+main_repo: "https://github.com/google/json5format"
+primary_contact: "richkadel@google.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
+file_github_issue: True

@@ -1,0 +1,20 @@
+diff --git a/build.gradle b/build.gradle
+index 6032f3a72cc..c85d3534544 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -27,6 +27,7 @@ plugins {
+   id "net.ltgt.errorprone" version "3.0.1" apply false
+   id 'com.diffplug.spotless' version "6.5.2" apply false
+   id 'org.barfuin.gradle.jacocolog' version "3.0.0-RC2" apply false
++  id 'com.github.johnrengelman.shadow' version '7.1.2'
+ }
+ 
+ apply from: file('gradle/globals.gradle')
+@@ -52,6 +53,7 @@ description = 'Grandparent project for Apache Lucene Core'
+ // Propagate version and derived properties across projects.
+ allprojects {
+   version = rootProject.version
++  apply plugin: 'com.github.johnrengelman.shadow'
+ }
+ 
+ ext {

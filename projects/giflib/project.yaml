@@ -1,0 +1,13 @@
+homepage: "http://giflib.sourceforge.net/"
+main_repo: "https://git.code.sf.net/p/giflib/code"
+language: c++
+primary_contact: "esr@thyrsus.com"
+auto_ccs:
+  - "vincent.ulitzsch@live.de"
+  - "bshas3@gmail.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+coverage_extra_args: -ignore-filename-regex=.*/LPM/.*

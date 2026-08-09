@@ -1,0 +1,363 @@
+<!-- Copyright 2020 Google Inc.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. -->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+
+<dom-module id="build-status">
+  <template>
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <app-route route="{{route}}"
+      pattern=":project_name"
+      data="{{routeData}}">
+    </app-route>
+    <style is="custom-style" include="iron-flex iron-flex-alignment">
+    <style>
+      .paper-item-link {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      a {
+        text-decoration: none;
+      }
+
+      app-header {
+        background-color: #2ba4ad;
+        color: #fff;
+      }
+
+      paper-button {
+        font-weight: normal;
+        font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      paper-button.green:hover {
+        background-color: var(--paper-green-400);
+      }
+
+      paper-button.green {
+        background-color: var(--paper-green-500);
+        color: white;
+      }
+
+      paper-card {
+        margin: 0.5em;
+      }
+
+      paper-item {
+        cursor: pointer;
+      }
+
+      paper-tabs {
+        -webkit-font-smoothing: antialiased;
+        width: 100%;
+        margin-bottom: 1px;
+        height: 40px;
+      }
+
+      :host {
+        display: block;
+      }
+
+      .icon-error {
+        color: #e83030;
+        margin-right: 0.2em;
+      }
+
+      .icon-success {
+        color: var(--paper-green-500);
+        margin-right: 0.2em;
+      }
+
+      .icon-waiting {
+        color: var(--paper-yellow-500);
+        margin-right: 0.2em;
+      }
+
+      .projects {
+        min-width: 10em;
+      }
+
+      .log {
+        width: 80%;
+        display: inline;
+      }
+
+      .buildHistory {
+        margin: 20px 0;
+      }
+
+      pre {
+        white-space: pre-wrap;
+      }
+    </style>
+    <app-header reveals>
+      <app-toolbar>
+        <div main-title>OSS-Fuzz build status</div>
+        <div><small>(Updated every 30 minutes)</small></div>
+      </app-toolbar>
+    </app-header>
+    <div class="layout horizontal">
+      <paper-card class="projects">
+        <div class="card-tabs">
+          <paper-tabs selected="fuzzing" id="build_type" attr-for-selected="type" on-click="onChanged">
+            <paper-tab type="fuzzing">Fuzzing Builds</paper-tab>
+            <paper-tab type="coverage">Coverage Builds</paper-tab>
+            <paper-tab type="introspector">Introspector Builds</paper-tab>
+          </paper-tabs>
+        </div>
+        <div class="card-content">
+          <template is="dom-repeat" items="[[status.projects]]" as="project">
+            <paper-item on-tap="onTap">
+              <paper-item-body two-line>
+                <div>
+                  <template is="dom-if" if="[[!isSuccessful(project)]]">
+                    <iron-icon class="icon-error" icon="icons:error"></iron-icon>
+                  </template>
+                  <template is="dom-if" if="[[!project.history.length]]">
+                    <iron-icon class="icon-waiting" icon="icons:error"></iron-icon>
+                  </template>
+                  [[project.name]]
+                </div>
+                <template is="dom-if" if="[[project.history.length]]">
+                 <div secondary title$="Last built [[toLocalDate(project.finish_time)]]">
+                    Last built [[toLocalDate(project.history.0.finish_time)]]
+                 </div>
+                </template>
+                <template is="dom-if" if="[[!project.history.length]]">
+                  <div secondary title$="Not built yet">
+                    Not built yet
+                  </div>
+                </template>
+              </paper-item-body>
+            </paper-item>
+          </template>
+        </div>
+      </paper-card>
+      <paper-card class="log">
+        <div class="card-content">
+          <template is="dom-if" if="[[!project]]">
+            Select a project to see logs.
+          </template>
+          <template is="dom-if" if="[[build_history.length]]">
+            Last Successful build:
+            <template is="dom-if" if="[[last_successful_build]]">
+              <paper-button raised on-click="onLastBuildSuccessful" class="green">
+                [[getLocalDate(last_successful_build.finish_time)]]
+              </paper-button>
+            </template>
+            <template is="dom-if" if="[[!last_successful_build]]">
+              None yet.
+            </template>
+              <div class="buildHistory">
+                Build History: <br>
+                <template is="dom-repeat" items="[[build_history]]" as="history">
+                  <paper-button raised on-click="onBuildHistory">
+                    <template is="dom-if" if="[[history.success]]">
+                      <iron-icon class="icon-success" icon="icons:done"></iron-icon>
+                    </template>
+                    <template is="dom-if" if="[[!history.success]]">
+                      <iron-icon class="icon-error" icon="icons:error"></iron-icon>
+                    </template>
+                    [[getLocalDate(history.finish_time)]]
+                  </paper-button>
+                </template>
+              </div>
+              <template is="dom-if" if=[[!finish_time]]>
+              <pre>Select a build to see logs.</pre>
+            </template>
+              <template is="dom-if" if="[[finish_time]]">
+                <a href="/log-[[build_id]].txt" target="_blank" tabindex="-1">
+                  <paper-button raised>
+                    Open in new tab
+                    <iron-icon icon="icons:link"></iron-iron>
+                  </paper-button>
+                </a>
+                <pre>Finish Time : [[finish_time]]</pre>
+              </template>
+          </template>
+          <template is="dom-if" if="[[loading_log]]">
+            Loading...
+          </template>
+          <pre>[[log]]</pre>
+        </div>
+      </paper-card>
+    </div>
+      <iron-ajax id="status_fuzzing" auto handle-as="json" url="/status.json" on-response="onResponseForFuzzing"></iron-ajax>
+      <iron-ajax id="status_coverage" auto handle-as="json" url="/status-coverage.json" on-response="onResponseForCoverage"></iron-ajax>
+      <iron-ajax id="status_introspector" auto handle-as="json" url="/status-introspector.json" on-response="onResponseForIntrospector"></iron-ajax>
+    <iron-ajax id="logxhr" handle-as="text" on-response="onLogResponse"></iron-ajax>
+  </template>
+
+  <script>
+    /** @polymerElement */
+    class BuildStatus extends Polymer.Element {
+      static get is() {
+        return "build-status";
+      }
+      static get properties() {
+        return {
+          log: {
+            type: String,
+            value: '',
+          },
+          loading_log: {
+            type: Boolean,
+            value: false,
+          },
+          finish_time: {
+            type: String,
+            value: '',
+          }
+        }
+      }
+      static get observers() {
+        return ["_routeChanged(route.*)"]
+      }
+
+      _routeChanged() {
+        if(!this.routeData.project_name)
+          this.project = "";
+        if (!this.status || !this.routeData.project_name) {
+          // If our status json is loaded and there is a project_name specified
+          // in the URL, we can proceed to load that project's log.
+          return
+        }
+        this.project = this.getProjectByName(this.routeData.project_name);
+        this.build_history = this.project.history;
+        if (this.project['last_successful_build']){
+          this.last_successful_build = this.project.last_successful_build;
+        } else{
+          this.last_successful_build = "";
+        }
+        this.log = "";
+        this.finish_time = "";
+      }
+
+      getProjectByName(project_name) {
+        return this.status.projects.find(
+          p => p.name === project_name
+        );
+      }
+
+      onResponseForFuzzing(e) {
+        this.status_fuzzing = e.detail.response;
+        if (!this.status) {
+          // Show status of the fuzzing builds by default.
+          this.status = this.status_fuzzing;
+          // Manually invoke a _routeChanged call, in order to load the log for
+          // someone going directly to a project's URL.
+          this._routeChanged();
+        }
+      }
+
+      onResponseForCoverage(e) {
+        this.status_coverage = e.detail.response;
+      }
+
+      onResponseForIntrospector(e) {
+        this.status_introspector = e.detail.response;
+      }
+
+      onLogResponse(e) {
+        this.log = e.detail.response;
+        this.loading_log = false;
+      }
+
+      onTap(e) {
+        // Change the route, this should auto-magically update the url in the
+        // browser and invoke the _routeChanged method.
+        this.set("route.path", e.model.project.name);
+      }
+
+      onChanged(e) {
+        if (this.$.build_type.selected == "coverage") {
+          this.status = this.status_coverage;
+        } else if (this.$.build_type.selected == "introspector") {
+          this.status = this.status_introspector;
+        } else {
+          this.status = this.status_fuzzing;
+        }
+      }
+
+      requestLog() {
+        var ajax = this.$.logxhr;
+        ajax.url = "/log-" + this.build_id + ".txt";
+        ajax.generateRequest();
+        this.loading_log = true;
+        this.log = "";
+        this.finish_time = this.toLocalDate(this.finish_time);
+      }
+
+      onLastBuildSuccessful(e) {
+        this.build_id = this.last_successful_build.build_id
+        this.finish_time = this.last_successful_build.finish_time
+        this.requestLog()
+      }
+
+      onBuildHistory(e) {
+        this.build_id = e.model.history.build_id
+        this.finish_time = e.model.history.finish_time
+        this.requestLog()
+      }
+
+      showLog(log) {
+        return log !== "";
+      }
+
+      showTabs() {
+        return this.tab_count !== 0;
+      }
+
+      toLocalDate(str) {
+        let date = new Date(str);
+        let ds = date.toString();
+        let timezone = ds.substring(ds.indexOf("("));
+        return date.toLocaleString() + " " + timezone;
+      }
+
+      pad(n) {
+        return n<10 ? '0'+n : n;
+      }
+
+      getLocalDate(str) {
+        let date = new Date(str);
+        return date.toLocaleString()
+      }
+
+      isSuccessful(project) {
+        return (!project.history.length || project.history[0].success)
+      }
+    }
+
+    window.customElements.define(BuildStatus.is, BuildStatus)
+  </script>
+</dom-module>

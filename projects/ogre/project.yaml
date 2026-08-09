@@ -1,0 +1,6 @@
+homepage: "https://www.ogre3d.org/"
+language: c++
+main_repo: "https://github.com/OGRECave/ogre"
+primary_contact: rojtberg@gmail.com
+vendor_ccs:
+- david@adalogics.com

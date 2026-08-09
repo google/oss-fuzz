@@ -1,0 +1,14 @@
+homepage: "https://kubevirt.io"
+primary_contact: "adam@adalogics.com"
+auto_ccs :
+  - "david@adalogics.com"
+  - "cncf-kubevirt-maintainers@lists.cncf.io"
+  - "vromanso@redhat.com"
+  - "rhallisey@nvidia.com"
+  - "bcarey@redhat.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/kubevirt/kubevirt'

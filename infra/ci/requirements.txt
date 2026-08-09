@@ -1,0 +1,9 @@
+# Requirements for submitting code changes to infra/ (needed by presubmit.py).
+parameterized==0.7.4
+pyfakefs==5.8.0
+pylint==3.3.7
+pytest==7.1.2
+pytest-xdist==2.5.0
+PyYAML==6.0.2
+requests==2.31.0
+yapf==0.43.0

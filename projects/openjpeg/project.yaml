@@ -1,0 +1,13 @@
+homepage: "http://www.openjpeg.org/"
+language: c++
+primary_contact: "antonin@gmail.com"
+auto_ccs:
+  - "even.rouault@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+main_repo: 'https://github.com/uclouvain/openjpeg'

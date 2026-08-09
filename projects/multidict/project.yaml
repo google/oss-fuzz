@@ -1,0 +1,10 @@
+homepage: https://github.com/aio-libs/multidict
+main_repo: https://github.com/aio-libs/multidict
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

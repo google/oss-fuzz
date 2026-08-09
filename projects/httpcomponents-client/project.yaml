@@ -1,0 +1,11 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/apache/httpcomponents-client
+language: jvm
+main_repo: https://github.com/apache/httpcomponents-client.git
+sanitizers:
+- address
+vendor_ccs:
+- patrice.salathe@code-intelligence.com
+- yakdan@code-intelligence.com
+- yoshi.weber@gmail.com

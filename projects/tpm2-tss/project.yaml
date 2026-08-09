@@ -1,0 +1,16 @@
+homepage: "https://github.com/tpm2-software/tpm2-tss"
+language: c++
+primary_contact: "william.c.roberts@intel.com"
+auto_ccs:
+  - "andreas.fuchs@sit.fraunhofer.de"
+  - "tstruk@gmail.com"
+fuzzing_engines:
+  - "afl"
+  - "honggfuzz"
+  - "libfuzzer"
+sanitizers:
+  - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+  - undefined
+main_repo: 'https://github.com/tstruk/tpm2-tss.git'

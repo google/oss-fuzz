@@ -1,0 +1,4 @@
+homepage: "https://networkmanager.dev/"
+main_repo: "https://gitlab.freedesktop.org/NetworkManager/NetworkManager.git"
+language: c
+primary_contact: "jvaclav@redhat.com"

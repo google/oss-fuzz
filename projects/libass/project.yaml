@@ -1,0 +1,17 @@
+homepage: "https://github.com/libass/libass"
+language: c++
+primary_contact: "chortos@inbox.lv"
+auto_ccs:
+  - "greg@kinoho.net"
+  - "rcombs@rcombs.me"
+  - "vabnick@gmail.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/libass/libass.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

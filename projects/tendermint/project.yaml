@@ -1,0 +1,15 @@
+homepage: "https://github.com/cometbft/cometbft"
+primary_contact: "security@interchain.io"
+auto_ccs:
+  - fuzzing@orijtech.com
+  - emmanuel@orijtech.com
+  - elias@orijtech.com
+  - thane@informal.systems
+  - sergio@informal.systems
+  - adi@informal.systems
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/cometbft/cometbft"

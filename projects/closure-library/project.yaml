@@ -1,0 +1,10 @@
+homepage: https://developers.google.com/closure/library/
+language: javascript
+main_repo: https://github.com/google/closure-library
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

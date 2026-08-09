@@ -1,0 +1,5 @@
+homepage: "https://www.gnu.org/s/libmicrohttpd/"
+main_repo: "https://git.gnunet.org/libmicrohttpd.git"
+primary_contact: "christian@grothoff.org"
+auto_ccs:
+         - "k2k@narod.ru"

@@ -1,0 +1,18 @@
+homepage: "https://sourceware.org/bzip2/"
+language: c++
+primary_contact: "bzip2fuzzer@gmail.com"
+auto_ccs:
+  - "bshas3@gmail.com"
+vendor_ccs:
+  - "twsmith@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386

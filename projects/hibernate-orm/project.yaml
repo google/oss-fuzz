@@ -1,0 +1,10 @@
+homepage: "https://hibernate.org/"
+language: jvm
+main_repo: "https://github.com/hibernate/hibernate-orm"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

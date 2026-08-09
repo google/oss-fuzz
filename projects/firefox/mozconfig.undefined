@@ -1,0 +1,4 @@
+. $SRC/mozconfig.coverage
+
+ac_add_options --enable-undefined-sanitizer=bool,bounds,return,pointer-overflow,signed-integer-overflow,vla-bound
+mk_add_options CFLAGS= CXXFLAGS=

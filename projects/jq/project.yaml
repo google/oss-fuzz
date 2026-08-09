@@ -1,0 +1,9 @@
+homepage: "https://jqlang.github.io/jq"
+main_repo: "https://github.com/jqlang/jq"
+language: c
+primary_contact: "cryptonector@gmail.com"
+auto_ccs :
+ - "torreemanuele6@gmail.com"
+ - "pkoppstein@gmail.com"
+ - "david@adalogics.com"
+ - "mattias.wadman@gmail.com"

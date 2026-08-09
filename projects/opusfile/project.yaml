@@ -1,0 +1,12 @@
+homepage: "https://opus-codec.org/"
+main_repo: "https://gitlab.xiph.org/xiph/opusfile.git"
+language: c
+primary_contact: "jmvalin@jmvalin.ca"
+auto_ccs:
+  - "le.businessman@gmail.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

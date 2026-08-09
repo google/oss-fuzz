@@ -1,0 +1,23 @@
+homepage: "https://buildwithmatter.com/"
+language: c++
+primary_contact: "andreilitvin@google.com"
+base_os_version: ubuntu-24-04
+auto_ccs:
+  - "asad_haque@comcast.com"
+  - "lalabdulkarim@csa-iot.org"
+  - "mboyington@google.com"
+  - "szewczyk@google.com"
+  - "tennessee@google.com"
+  - "aalami@csa-iot.org"
+sanitizers:
+  - address
+  - undefined
+  # MemorySanitizer: the dependencies (GLib, OpenSSL, zlib, libffi, pcre2) are built
+  # instrumented in build.sh via build_msan_sysroot.sh --oss-fuzz, resolving the prior
+  # GLib-related false positives that previously had MSan disabled here.
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - centipede
+main_repo: 'https://github.com/project-chip/connectedhomeip.git'

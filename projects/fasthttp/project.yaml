@@ -1,0 +1,10 @@
+homepage: "https://github.com/valyala/fasthttp"
+primary_contact: "erik@dubbelboer.com"
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/valyala/fasthttp'

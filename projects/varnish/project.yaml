@@ -1,0 +1,12 @@
+homepage: "https://varnish-cache.org/"
+language: c
+primary_contact: "phk@varnish.org"
+auto_ccs:
+  - "bsdphk@gmail.com"
+  - "nils.goroll@uplex.de"
+  - "martin@varnish-software.com"
+main_repo: 'https://github.com/varnishcache/varnish-cache'
+fuzzing_engines:
+  - "afl"
+  - "honggfuzz"
+  - "libfuzzer"

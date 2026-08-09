@@ -1,0 +1,10 @@
+homepage: "https://github.com/auth0/java-jwt/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/auth0/java-jwt/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

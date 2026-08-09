@@ -1,0 +1,68 @@
+AddressSanitizer: heap-buffer-overflow on address 0x62500001b530 at pc 0x00000052138a bp 0x7ffe62db2c10 sp 0x7ffe62db23d8
+READ of size 52 at 0x62500001b530 thread T0
+SCARINESS: 26 (multi-byte-read-heap-buffer-overflow)
+    #0 0x521389 in __asan_memcpy /src/llvm-project/compiler-rt/lib/asan/asan_interceptors_memintrinsics.cpp:22:3
+    #1 0x567590 in yr_object_set_string /src/yara/libyara/object.c:1122:5
+    #2 0x5afced in dex_parse /src/yara/libyara/modules/dex/dex.c:781:5
+    #3 0x5b4a8b in dex__load /src/yara/libyara/modules/dex/dex.c:1218:7
+    #4 0x56537c in yr_modules_load /src/yara/libyara/modules.c:179:16
+    #5 0x5d6583 in yr_execute_code /src/yara/libyara/exec.c:1276:18
+    #6 0x56f5c0 in yr_scanner_scan_mem_blocks /src/yara/libyara/scanner.c:444:3
+    #7 0x56bf23 in yr_rules_scan_mem_blocks /src/yara/libyara/rules.c:235:12
+    #8 0x56c182 in yr_rules_scan_mem /src/yara/libyara/rules.c:285:10
+    #9 0x5548d2 in LLVMFuzzerTestOneInput /src/yara/tests/oss-fuzz/dex_fuzzer.cc:40:3
+    #10 0x45a3b1 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:556:15
+    #11 0x459ad5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:470:3
+    #12 0x45be77 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:698:19
+    #13 0x45cc05 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:830:5
+    #14 0x44ac88 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:824:6
+    #15 0x474ab2 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:19:10
+    #16 0x7f4409b7a82f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2082f)
+    #17 0x41e348 in _start (out/dex_fuzzer+0x41e348)
+
+0x62500001b530 is located 0 bytes to the right of 9264-byte region [0x625000019100,0x62500001b530)
+allocated by thread T0 here:
+    #0 0x521f4d in malloc /src/llvm-project/compiler-rt/lib/asan/asan_malloc_linux.cpp:145:3
+    #1 0x4331b7 in operator new(unsigned long) (out/dex_fuzzer+0x4331b7)
+    #2 0x459ad5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:470:3
+    #3 0x45be77 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:698:19
+    #4 0x45cc05 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:830:5
+    #5 0x44ac88 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:824:6
+    #6 0x474ab2 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:19:10
+    #7 0x7f4409b7a82f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2082f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /src/llvm-project/compiler-rt/lib/asan/asan_interceptors_memintrinsics.cpp:22:3 in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0c4a7fffb650: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c4a7fffb660: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c4a7fffb670: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c4a7fffb680: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c4a7fffb690: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c4a7fffb6a0: 00 00 00 00 00 00[fa]fa fa fa fa fa fa fa fa fa
+  0x0c4a7fffb6b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fffb6c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fffb6d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fffb6e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fffb6f0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==12==ABORTING

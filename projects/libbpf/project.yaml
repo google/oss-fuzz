@@ -1,0 +1,26 @@
+homepage: "https://github.com/libbpf/libbpf"
+language: c
+primary_contact: "andrii.nakryiko@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+architectures:
+  - x86_64
+  - i386
+auto_ccs:
+  - hengqi.chen@gmail.com
+  - yulia.kartseva@gmail.com
+  - evverx@gmail.com
+  - shunghsiyu@gmail.com
+  - eddyz87@gmail.com
+main_repo: "https://github.com/libbpf/libbpf"
+builds_per_day: 4
+view_restrictions: none
+file_github_issue: True
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -1,0 +1,11 @@
+homepage: "https://crates.io/crates/fips203"
+main_repo: "https://github.com/integritychain/fips203"
+language: rust
+primary_contact: "eschorn@integritychain.com"
+auto_ccs:
+  - "eschorn@gmail.com"
+file_github_issue: true
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

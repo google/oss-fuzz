@@ -1,0 +1,11 @@
+homepage: "https://grpc.io/"
+primary_contact: "menghanl@google.com"
+auto_ccs:
+  - "dfawley@google.com"
+  - "p.antoine@catenacyber.fr"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/grpc/grpc-go'

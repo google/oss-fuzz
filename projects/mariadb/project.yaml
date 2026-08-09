@@ -1,0 +1,7 @@
+homepage: "https://mariadb.org/"
+main_repo: 'https://github.com/MariaDB/server'
+language: c++
+vendor_ccs:
+- "david@adalogics.com"
+sanitizers:
+- address

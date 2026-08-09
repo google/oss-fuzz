@@ -1,0 +1,8 @@
+homepage: "http://www.boost.org/"
+language: c++
+primary_contact: "pauldreikossfuzz@gmail.com"
+auto_ccs:
+   - "vinnie.falco@gmail.com"
+   - "grisumbras@gmail.com"
+   - "pdimov@gmail.com"
+main_repo: 'https://github.com/boostorg/json.git'

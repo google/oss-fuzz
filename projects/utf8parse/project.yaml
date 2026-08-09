@@ -1,0 +1,10 @@
+homepage: "https://docs.rs/vte/"
+main_repo: "https://github.com/alacritty/vte.git"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"

@@ -1,0 +1,14 @@
+homepage: "https://github.com/uber/h3"
+language: c
+primary_contact: "isaacnf0x@gmail.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+  - "h3-dev@googlegroups.com"
+  - "isv.damocles@gmail.com"
+  - "ajfriend@gmail.com"
+  - "nick.rabinowitz@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://github.com/uber/h3'

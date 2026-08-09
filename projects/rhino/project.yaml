@@ -1,0 +1,11 @@
+homepage: "https://github.com/mozilla/rhino"
+language: jvm
+main_repo: "https://github.com/mozilla/rhino.git"
+primary_contact: "ronaldbrill@googlemail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

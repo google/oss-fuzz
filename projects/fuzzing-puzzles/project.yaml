@@ -1,0 +1,15 @@
+homepage: https://github.com/google/fuzzer-test-suite
+language: c++
+primary_contact: kcc@google.com
+main_repo: https://github.com/google/fuzzer-test-suite
+auto_ccs:
+  - "metzman@google.com"
+  - "mmoroz@google.com"
+
+sanitizers:
+  - address
+
+fuzzing_engines:
+  - honggfuzz
+
+disabled: True

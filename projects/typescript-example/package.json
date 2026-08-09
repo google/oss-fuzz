@@ -1,0 +1,12 @@
+{
+	"name": "jazzerjs-typescript-example",
+	"version": "1.0.0",
+	"description": "An example how to fuzz TypeScript projects with Jazzer.js",
+	"scripts": {
+		"build": "tsc"
+	},
+	"devDependencies": {
+		"@types/node": "^18.11.18",
+		"typescript": "^4.7.4"
+	}
+}

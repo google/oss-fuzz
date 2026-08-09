@@ -1,0 +1,15 @@
+homepage: "https://github.com/mongodb/mongo-go-driver"
+language: go
+main_repo: "https://github.com/mongodb/mongo-go-driver"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+primary_contact: "dbx-go@mongodb.com"
+auto_ccs:
+  - qingyang.hu@mongodb.com
+  - matt.dale@mongodb.com
+  - preston.vasquez@mongodb.com
+  - steve.silvester@mongodb.com
+vendor_ccs:
+  - maxnair.dev@gmail.com

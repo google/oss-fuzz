@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for binary in $(find $OUT/ -executable -type f); do
+  [[ "$binary" != *.so ]] || continue
+  [[ $(basename "$binary") != jazzer_driver* ]] || continue
+  file "$binary" | grep -e ELF -e "shell script" > /dev/null 2>&1 || continue
+  grep "LLVMFuzzerTestOneInput" "$binary" > /dev/null 2>&1 || continue
+
+  basename "$binary"
+done

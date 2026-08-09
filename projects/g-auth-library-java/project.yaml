@@ -1,0 +1,10 @@
+homepage: "developers.google.com/identity"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/googleapis/google-auth-library-java/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

@@ -1,0 +1,11 @@
+homepage: "https://github.com/HdrHistogram/HdrHistogram.git"
+language: jvm
+primary_contact: "gil@azul.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/HdrHistogram/HdrHistogram.git"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

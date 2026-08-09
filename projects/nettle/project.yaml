@@ -1,0 +1,19 @@
+homepage: "https://www.lysator.liu.se/~nisse/nettle/"
+language: c++
+primary_contact: guidovranken@gmail.com
+auto_ccs:
+    - "nisse@lysator.liu.se"
+sanitizers:
+ - address
+ - undefined
+ - memory
+architectures:
+ - x86_64
+ - i386
+main_repo: 'https://git.lysator.liu.se/nettle/nettle'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

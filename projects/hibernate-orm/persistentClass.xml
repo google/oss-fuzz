@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping SYSTEM
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+
+	<class name="PersistentClass" table="PersistentClassStore">
+	    <id name="id" column="Id_Member" type="int" >
+			<generator class="native"></generator>
+		</id>
+		<property name="integerMember" column="a" type="int"/>
+		<property name="stringMember" column="b" type="string"/>
+		<property name="bigDecimalMember" column="c" type="big_decimal"/>
+		<property name="longMember" column="e" type="long"/>
+		<property name="shortMember" column="f" type="short"/>
+		<property name="byteMember" column="g" type="byte"/>
+		<property name="booleanMember" column="h" type="boolean"/>
+		<property name="dateMember" column="i" type="date"/>
+		<property name="timeMember" column="j" type="time"/>
+		<property name="timestampMember" column="k" type="timestamp"/>
+		<property name="serializableClassMember" column="l" type="serializable"/>
+	</class>
+</hibernate-mapping>

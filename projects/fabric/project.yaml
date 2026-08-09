@@ -1,0 +1,13 @@
+homepage: "https://www.hyperledger.org"
+main_repo: "https://github.com/hyperledger/fabric"
+primary_contact: "ale.linux@sopit.net"
+auto_ccs:
+  - "gari.r.singh@gmail.com"
+vendor_ccs:
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

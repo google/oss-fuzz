@@ -1,0 +1,17 @@
+homepage: "https://www.qubes-os.org/"
+main_repo: "https://github.com/QubesOS/qubes-app-linux-input-proxy"
+language: c++
+primary_contact: "jpo@vt.edu"
+auto_ccs:
+ - "marmarek@invisiblethingslab.com"
+ - "pawel@invisiblethingslab.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+  - i386

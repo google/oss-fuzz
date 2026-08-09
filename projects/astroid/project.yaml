@@ -1,0 +1,12 @@
+homepage: https://github.com/pylint-dev/astroid
+main_repo: https://github.com/pylint-dev/astroid
+language: python
+primary_contact: "jacobtylerwalls@gmail.com"
+auto_ccs:
+  - "correctmost@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "david@adalogics.com"

@@ -1,0 +1,11 @@
+homepage: "https://nodejs.org"
+primary_contact: "security@nodejs.org"
+language: c++
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+auto_ccs:
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
+main_repo: 'https://github.com/nodejs/node'

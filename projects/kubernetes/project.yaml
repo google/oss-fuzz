@@ -1,0 +1,14 @@
+homepage: "https://kubernetes.io"
+primary_contact: "security@kubernetes.io"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "aojea@google.com"
+  - "david@adalogics.com"
+  - "mikedanese@google.com"
+  - "tabitha.c.sable@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+language: go
+main_repo: 'https://github.com/kubernetes/kubernetes.git'

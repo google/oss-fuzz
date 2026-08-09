@@ -1,0 +1,9 @@
+homepage: "https://github.com/ronmamo/reflections"
+language: jvm
+primary_contact: "irali@google.com"
+main_repo: "https://github.com/ronmamo/reflections.git"
+file_github_issue: false
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

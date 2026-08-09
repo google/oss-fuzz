@@ -1,0 +1,10 @@
+homepage: "https://github.com/valyala/fastjson"
+primary_contact: "valyala@gmail.com"
+auto_ccs :
+- "adam@adalogics.com"
+language: go
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+main_repo: 'https://github.com/valyala/fastjson'

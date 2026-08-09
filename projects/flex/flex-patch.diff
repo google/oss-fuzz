@@ -1,0 +1,52 @@
+diff --git a/src/main.c b/src/main.c
+index eb2c09f..bab11db 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -38,7 +38,7 @@
+ #include "tables.h"
+ #include "parse.h"
+ 
+-static char flex_version[] = FLEX_VERSION;
++static char flex_version[] ="ran";// FLEX_VERSION;
+ 
+ /* declare functions that have forward references */
+ 
+@@ -144,17 +144,18 @@ int flex_main (int argc, char *argv[])
+ 			fflush(stdout);
+ 			fclose(stdout);
+ 		}
++		return 0;
++		/*
+ 		while (wait(&child_status) > 0){
+ 			if (!WIFEXITED (child_status)
+ 			    || WEXITSTATUS (child_status) != 0){
+-				/* report an error of a child
+-				 */
+ 				if( exit_status <= 1 )
+ 					exit_status = 2;
+ 
+ 			}
+ 		}
+ 		return exit_status - 1;
++		*/
+ 	}
+ 
+ 	flexinit (argc, argv);
+@@ -271,7 +272,7 @@ int flex_main (int argc, char *argv[])
+ }
+ 
+ /* Wrapper around flex_main, so flex_main can be built as a library. */
+-int main (int argc, char *argv[])
++int main2 (int argc, char *argv[])
+ {
+ #if defined(ENABLE_NLS) && ENABLE_NLS
+ #if HAVE_LOCALE_H
+@@ -293,7 +294,7 @@ void initialize_output_filters(void)
+ 
+ 	output_chain = filter_create_int(NULL, filter_tee_header, env.headerfilename);
+ 	if ( !(m4 = getenv("M4"))) {
+-		m4 = M4;
++		m4 = NULL;
+ 	}
+ 	filter_create_ext(output_chain, m4, "-P", (char *) 0);
+ 	filter_create_int(output_chain, filter_fix_linedirs, NULL);

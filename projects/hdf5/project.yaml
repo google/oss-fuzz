@@ -1,0 +1,18 @@
+homepage: "https://www.hdfgroup.org/solutions/hdf5/"
+main_repo: "https://github.com/HDFGroup/hdf5"
+language: c
+primary_contact: "derobins@hdfgroup.org"
+vendor_ccs:
+  - "Adam@adalogics.com"
+  - "David@adalogics.com"
+  - "jhenderson@hdfgroup.org"
+  - "nfortne2@hdfgroup.org"
+  - "hyoklee@hdfgroup.org"  
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+# - afl  # Temporarily disabled after a clang-18 bump, to avoid link errors "undefined reference to [...]"
+  - honggfuzz
+  - libfuzzer

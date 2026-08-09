@@ -1,0 +1,10 @@
+homepage: "https://github.com/mozilla/pdf.js"
+language: javascript
+primary_contact: "mcastelluccio@mozilla.com"
+main_repo: "https://github.com/mozilla/pdf.js"
+vendor_ccs:
+  - maxnair.dev@gmail.com
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - none

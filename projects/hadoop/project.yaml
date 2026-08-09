@@ -1,0 +1,10 @@
+homepage: "https://hadoop.apache.org/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/apache/hadoop/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

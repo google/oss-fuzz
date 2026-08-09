@@ -1,0 +1,14 @@
+homepage: "http://www.gfwx.org/"
+language: c++
+primary_contact: "fyffe@google.com"
+main_repo: "https://github.com/kalcutter/gfwx"
+sanitizers:
+ - address
+ - undefined
+ - memory
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

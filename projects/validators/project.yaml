@@ -1,0 +1,10 @@
+homepage: https://github.com/python-validators/validators
+main_repo: https://github.com/python-validators/validators
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

@@ -1,0 +1,24 @@
+diff --git a/api/pom.xml b/api/pom.xml
+index 5d29ee4d..b72b3395 100644
+--- a/api/pom.xml
++++ b/api/pom.xml
+@@ -194,6 +194,7 @@
+             <plugin>
+                 <groupId>org.apache.felix</groupId>
+                 <artifactId>maven-bundle-plugin</artifactId>
++		<version>5.1.8</version>
+                 <configuration>
+                     <instructions>
+                         <Main-Class>org.xnio.Version</Main-Class>
+diff --git a/nio-impl/pom.xml b/nio-impl/pom.xml
+index 2f229929..f3e6c388 100644
+--- a/nio-impl/pom.xml
++++ b/nio-impl/pom.xml
+@@ -176,6 +176,7 @@
+             <plugin>
+                 <groupId>org.apache.felix</groupId>
+                 <artifactId>maven-bundle-plugin</artifactId>
++		<version>5.1.8</version>
+                 <configuration>
+                     <instructions>
+                         <Main-Class>org.xnio.Version</Main-Class>

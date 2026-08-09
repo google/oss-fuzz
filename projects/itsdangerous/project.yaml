@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/pallets/itsdangerous
+language: python
+main_repo: https://github.com/pallets/itsdangerous
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

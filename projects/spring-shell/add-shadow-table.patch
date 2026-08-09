@@ -1,0 +1,17 @@
+diff --git a/spring-shell-table/spring-shell-table.gradle b/spring-shell-table/spring-shell-table.gradle
+index 1e17209..f554308 100644
+--- a/spring-shell-table/spring-shell-table.gradle
++++ b/spring-shell-table/spring-shell-table.gradle
+@@ -1,5 +1,6 @@
+ plugins {
+ 	id 'org.springframework.shell.module'
++        id 'com.github.johnrengelman.shadow' version '7.1.2'
+ }
+ 
+ description = 'Spring Shell Table'
+@@ -10,4 +11,5 @@ dependencies {
+ 	api('org.springframework:spring-context')
+ 	compileOnly 'com.google.code.findbugs:jsr305'
+ 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
++        apply plugin: 'com.github.johnrengelman.shadow'
+ }

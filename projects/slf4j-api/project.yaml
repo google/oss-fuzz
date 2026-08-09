@@ -1,0 +1,11 @@
+homepage: "https://www.slf4j.org/"
+language: jvm
+primary_contact: "dev.qos.ch@gmail.com"
+fuzzing_engines:
+  - "libfuzzer"
+sanitizers:
+  - "address"
+main_repo: "https://github.com/qos-ch/slf4j.git"
+vendor_ccs:
+  - "patrice.salathe@code-intelligence.com"
+  - "yakdan@code-intelligence.com"

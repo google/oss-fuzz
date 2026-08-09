@@ -1,0 +1,14 @@
+homepage: "https://sigstore.dev"
+main_repo: "https://github.com/sigstore/rekor"
+primary_contact: "bcallaway@sigstore.dev"
+auto_ccs:
+  - lhinds@sigstore.dev
+  - hblauzvern@sigstore.dev
+  - codysoyland@sigstore.dev
+  - adam@adalogics.com
+  - david@adalogics.com
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

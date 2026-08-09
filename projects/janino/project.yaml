@@ -1,0 +1,10 @@
+homepage: "http://janino-compiler.github.io/janino/"
+language: jvm
+main_repo: "https://github.com/janino-compiler/janino.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

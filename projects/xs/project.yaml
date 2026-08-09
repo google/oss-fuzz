@@ -1,0 +1,21 @@
+homepage: "https://github.com/Moddable-OpenSource/moddable"
+language: c
+primary_contact: "peter.hoddie@gmail.com"
+auto_ccs:
+  - peter@moddable.com
+  - ps@moddable.com
+  - raphael@agoric.com
+  - kris@agoric.com
+  - gibson@agoric.com
+sanitizers:
+  - address
+  - memory
+  - undefined:
+      experimental: True 
+main_repo: 'https://github.com/Moddable-OpenSource/moddable.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

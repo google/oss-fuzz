@@ -1,0 +1,17 @@
+homepage: "https://github.com/go-gitea/gitea"
+primary_contact: "security@gitea.io"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "xiaolunwen@gmail.com"
+  - "lauris@nix.lv"
+  - "techknowlogick@gitea.io"
+  - "sapk@sapk.fr"
+  - "zeripath@gmail.com"
+  - "john.olheiser@gmail.com"
+  - "the6543dev@gmail.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/go-gitea/gitea"

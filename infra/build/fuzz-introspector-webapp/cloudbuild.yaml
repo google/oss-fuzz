@@ -1,0 +1,36 @@
+# Builds and deploys the fuzz introspector webapp.
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '-t'
+  - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
+  - 'infra/build/fuzz-introspector-webapp'
+
+# Push the image here so we deploy the latest build.
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'push'
+  - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+    - 'run'
+    - 'deploy'
+    - 'fuzz-introspector-webapp'
+    - '--image'
+    - 'gcr.io/oss-fuzz-base/fuzz-introspector-webapp'
+    - '--region'
+    - 'us-central1'
+    - '--min-instances'
+    - '1'
+    - '--max-instances'
+    - '100'
+    - '--cpu'
+    - '6'
+    - '--memory'
+    - '24Gi'
+options:
+  machineType: 'E2_HIGHCPU_32'
+timeout: 21600s  # 6 hours

@@ -1,0 +1,10 @@
+homepage: "https://github.com/dtolnay/ryu"
+main_repo: "https://github.com/dtolnay/ryu"
+primary_contact: "dtolnay@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "adetaylor@chromium.org"

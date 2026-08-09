@@ -1,0 +1,5 @@
+homepage: "https://github.com/ryanhaining/cppitertools"
+main_repo: "https://github.com/ryanhaining/cppitertools"
+language: c++
+vendor_ccs:
+- david@adalogics.com

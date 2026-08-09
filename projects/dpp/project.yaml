@@ -1,0 +1,12 @@
+homepage: "https://github.com/brainboxdotcc/DPP"
+language: c++
+primary_contact: "craigedwardsbrainbox@gmail.com"
+auto_ccs:
+  - "craigedwards@brainbox.cc"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/brainboxdotcc/DPP.git'
+
