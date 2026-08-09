@@ -30,11 +30,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         return 0;
     }
 
-    char *tmpfile = fuzzer_get_tmpfile(data, size);
-    surface = cairo_pdf_surface_create(tmpfile, width_in_points, height_in_points);
+    surface = cairo_pdf_surface_create(NULL, width_in_points, height_in_points);
     status = cairo_surface_status(surface);
     if (status != CAIRO_STATUS_SUCCESS) {
-        fuzzer_release_tmpfile(tmpfile);
         return 0;
     }
 
@@ -50,6 +48,5 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
     free(buf);
-    fuzzer_release_tmpfile(tmpfile);
     return 0;
 }
