@@ -1,0 +1,20 @@
+homepage: "https://www.openidc.com/"
+language: c
+primary_contact: "hans.zandbelt@openidc.com"
+auto_ccs:
+  - "support@openidc.com"
+main_repo: "https://github.com/OpenIDC/mod_auth_openidc"
+
+# ASan + UBSan only. MemorySanitizer requires every linked library to be
+# instrumented; apr, apr-util, curl and openssl come from the distro here (see
+# the note in build.sh), so MSan would report uninitialised reads inside them.
+sanitizers:
+  - address
+  - undefined
+
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+
+base_os_version: ubuntu-24-04
