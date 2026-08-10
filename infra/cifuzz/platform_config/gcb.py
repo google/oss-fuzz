@@ -37,4 +37,4 @@ class PlatformConfig(platform_config.BasePlatformConfig):
   @property
   def filestore(self):
     """Returns the filestore used to store persistent data."""
-    return os.environ.get('FILESTORE', 'gcloud storage')
+    return os.environ.get('FILESTORE', 'gsutil')
