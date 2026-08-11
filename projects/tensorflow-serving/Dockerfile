@@ -35,5 +35,6 @@ RUN wget https://github.com/bazelbuild/buildtools/releases/download/4.2.5/buildi
 
 RUN git clone https://github.com/tensorflow/serving serving
 
-COPY build.sh *.diff $SRC/
+COPY build.sh *.diff *.dict $SRC/
+COPY seed_corpus $SRC/seed_corpus/
 WORKDIR $SRC/serving
