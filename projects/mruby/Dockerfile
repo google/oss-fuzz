@@ -20,14 +20,11 @@ RUN apt-get update && apt-get install -y build-essential ruby bison ninja-build 
 RUN git clone --depth 1 https://github.com/mruby/mruby mruby
 RUN git clone --depth 1 https://github.com/bshastry/mruby_seeds.git mruby_seeds
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-# CMAKE_CXX_STANDARD=14 matches the standard libprotobuf-mutator hard-codes for
-# the protobuf/abseil it downloads (see cmake/external/protobuf.cmake). Without
-# it, libprotobuf-mutator's own objects build at the compiler default of C++17
-# while protobuf builds at C++14, and abseil then disagrees with itself over
-# whether absl::string_view is std::string_view - which surfaces as undefined
-# references to google::protobuf symbols taking std::__1::basic_string_view when
-# linking mruby_proto_fuzzer. build.sh passes the same standard for the
-# translation units it compiles against these headers.
+# CMAKE_CXX_STANDARD must match the standard libprotobuf-mutator builds its
+# bundled protobuf/abseil with (see cmake/external/protobuf.cmake). Otherwise
+# abseil disagrees with itself over whether absl::string_view is
+# std::string_view and mruby_proto_fuzzer fails to link. build.sh passes the
+# same standard.
 RUN mkdir LPM; \
   cd LPM; \
   cmake $SRC/libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14; \

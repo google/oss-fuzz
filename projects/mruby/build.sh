@@ -22,8 +22,8 @@ export LD=$CC
 export LDFLAGS="$CFLAGS"
 rake all
 
-# Build the test driver so that run_tests.sh has something to run. Allowed to
-# fail; run_tests.sh is what gates on the test results.
+# Build the test driver for run_tests.sh. Allowed to fail; run_tests.sh is what
+# gates on the test results.
 rake test:build || true
 
 # build fuzzers
@@ -44,34 +44,16 @@ only_ascii = 1
 EOF
 cp $SRC/mruby/oss-fuzz/config/mruby_fuzzer.options $SRC/mruby/oss-fuzz/config/mruby_proto_fuzzer.options
 
-# Build the proto fuzzer, for libFuzzer with ASan or UBSan only.
-#
-# libprotobuf-mutator drives this target through LLVMFuzzerCustomMutator, which
-# is a libFuzzer-only interface. Under AFL++ or honggfuzz that hook is never
-# called, so the target degrades to byte mutation of a serialized protobuf,
-# where almost every input fails to parse and never reaches mruby at all. It is
-# therefore not worth building for the other engines, and building it there
-# drags libprotobuf-mutator and the whole protobuf/absl static link surface into
-# those links, which is where the AFL build breaks with undefined references to
-# google::protobuf symbols taking std::__1::basic_string_view: the mutator and
-# its bundled protobuf disagree on whether absl::string_view is std::string_view.
-#
-# MemorySanitizer is excluded because neither protobuf nor libprotobuf-mutator
-# is MSan-instrumented, which would produce false reports.
+# libprotobuf-mutator only mutates through libFuzzer's custom mutator hook, so
+# this target does nothing useful under the other engines. MSan is excluded
+# because protobuf and libprotobuf-mutator are not instrumented for it.
 if [[ $FUZZING_ENGINE == libfuzzer && $CFLAGS != *sanitize=memory* ]]; then
     PROTO_FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_proto_fuzzer.cpp
     PROTO_CONVERTER=$SRC/mruby/oss-fuzz/proto_to_ruby.cpp
     rm -rf $SRC/mruby/genfiles
     mkdir $SRC/mruby/genfiles
-    # Everything that touches protobuf headers must agree with the C++ standard
-    # the bundled protobuf and abseil were compiled with, which
-    # libprotobuf-mutator hard-codes to 14 in
-    # cmake/external/protobuf.cmake (-DCMAKE_CXX_STANDARD=14). Abseil selects
-    # between its own absl::string_view and std::string_view based on that
-    # standard, so a C++17 consumer of a C++14 build looks for
-    # google::protobuf symbols taking std::__1::basic_string_view and fails to
-    # link. The Dockerfile pins libprotobuf-mutator itself to the same
-    # standard; PROTO_STD keeps these translation units in step.
+    # Must match the standard the bundled protobuf/abseil were built with; see
+    # the Dockerfile.
     PROTO_STD="-std=c++14"
     $SRC/LPM/external.protobuf/bin/protoc --proto_path=$SRC/mruby/oss-fuzz ruby.proto --cpp_out=$SRC/mruby/genfiles
     $CXX -c $CXXFLAGS $PROTO_STD $SRC/mruby/genfiles/ruby.pb.cc -DNDEBUG -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include

@@ -15,20 +15,15 @@
 #
 ################################################################################
 #
-# mruby's test suite passes cleanly in this build, so there is nothing here to
-# interpret: test/assert.rb reports success only when both KO (assertion
-# failures) and Crash (tests raising an unexpected exception) are zero, and
-# both test runners exit non-zero otherwise. `set -e` turns that into a failed
-# run_tests.sh, which is exactly the signal Chronos needs.
+# Both test runners exit non-zero when a test fails, so `set -e` is the whole
+# gate; there is nothing to parse.
 #
-# The two batches are invoked separately rather than through `rake test`.
-# `rake test` depends on test:build, which is free to decide something needs
-# relinking. The sanitizer flags exist in $CFLAGS only while OSS-Fuzz's
-# `compile` is running and are not persisted into the Chronos cached image, so
-# a relink here would fail on undefined __asan_* symbols. These two tasks have
-# no build prerequisites and only run what build.sh already produced.
+# The batches run as two separate tasks rather than via `rake test`, which
+# depends on test:build and may decide to relink. Sanitizer flags are only in
+# $CFLAGS while OSS-Fuzz's `compile` runs, so a relink here would fail on
+# undefined __asan_* symbols. Building is build.sh's job; these tasks only run.
 #
-# No network access is required or used.
+# Requires no network access.
 
 (
 cd $SRC/mruby
