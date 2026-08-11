@@ -16,6 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool-bin cmake git
+# Upgrade Git to support --revision flag (requires Git 2.49+)
+RUN apt-get install -y software-properties-common && \
+    add-apt-repository ppa:git-core/ppa && \
+    apt-get update && apt-get install -y --only-upgrade git
 RUN git clone --depth 1 https://github.com/madler/zlib.git zlib
 
 RUN git clone --depth 1 https://github.com/tbeu/matio.git matio
