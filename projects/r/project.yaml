@@ -1,9 +1,9 @@
 homepage: "https://www.r-project.org/"
 language: c
-primary_contact: "kevin@posit.co"
+primary_contact: "simon.urbanek@r-project.org"
 auto_ccs:
-  - "simon.urbanek@r-project.org"
-  - "heather.turner@r-project.org"
+  - "R-core@R-project.org"
+  - "kevin@posit.co"
 main_repo: "https://svn.r-project.org/R/trunk"
 sanitizers:
   - address
