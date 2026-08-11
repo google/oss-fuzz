@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool-bin cmake
+RUN apt-get update && apt-get install -y make autoconf automake libtool-bin cmake git
 RUN git clone --depth 1 https://github.com/madler/zlib.git zlib
 
 RUN git clone --depth 1 https://github.com/tbeu/matio.git matio
