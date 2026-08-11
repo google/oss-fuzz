@@ -44,8 +44,21 @@ only_ascii = 1
 EOF
 cp $SRC/mruby/oss-fuzz/config/mruby_fuzzer.options $SRC/mruby/oss-fuzz/config/mruby_proto_fuzzer.options
 
-# Build proto fuzzer: ASan and UBSan
-if [[ $CFLAGS != *sanitize=memory* ]]; then
+# Build the proto fuzzer, for libFuzzer with ASan or UBSan only.
+#
+# libprotobuf-mutator drives this target through LLVMFuzzerCustomMutator, which
+# is a libFuzzer-only interface. Under AFL++ or honggfuzz that hook is never
+# called, so the target degrades to byte mutation of a serialized protobuf,
+# where almost every input fails to parse and never reaches mruby at all. It is
+# therefore not worth building for the other engines, and building it there
+# drags libprotobuf-mutator and the whole protobuf/absl static link surface into
+# those links, which is where the AFL build breaks with undefined references to
+# google::protobuf symbols taking std::__1::basic_string_view: the mutator and
+# its bundled protobuf disagree on whether absl::string_view is std::string_view.
+#
+# MemorySanitizer is excluded because neither protobuf nor libprotobuf-mutator
+# is MSan-instrumented, which would produce false reports.
+if [[ $FUZZING_ENGINE == libfuzzer && $CFLAGS != *sanitize=memory* ]]; then
     PROTO_FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_proto_fuzzer.cpp
     PROTO_CONVERTER=$SRC/mruby/oss-fuzz/proto_to_ruby.cpp
     rm -rf $SRC/mruby/genfiles
