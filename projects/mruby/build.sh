@@ -63,9 +63,19 @@ if [[ $FUZZING_ENGINE == libfuzzer && $CFLAGS != *sanitize=memory* ]]; then
     PROTO_CONVERTER=$SRC/mruby/oss-fuzz/proto_to_ruby.cpp
     rm -rf $SRC/mruby/genfiles
     mkdir $SRC/mruby/genfiles
+    # Everything that touches protobuf headers must agree with the C++ standard
+    # the bundled protobuf and abseil were compiled with, which
+    # libprotobuf-mutator hard-codes to 14 in
+    # cmake/external/protobuf.cmake (-DCMAKE_CXX_STANDARD=14). Abseil selects
+    # between its own absl::string_view and std::string_view based on that
+    # standard, so a C++17 consumer of a C++14 build looks for
+    # google::protobuf symbols taking std::__1::basic_string_view and fails to
+    # link. The Dockerfile pins libprotobuf-mutator itself to the same
+    # standard; PROTO_STD keeps these translation units in step.
+    PROTO_STD="-std=c++14"
     $SRC/LPM/external.protobuf/bin/protoc --proto_path=$SRC/mruby/oss-fuzz ruby.proto --cpp_out=$SRC/mruby/genfiles
-    $CXX -c $CXXFLAGS $SRC/mruby/genfiles/ruby.pb.cc -DNDEBUG -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include
-    $CXX -I $SRC/mruby/include -I $SRC/mruby/build/host/include -I $SRC/LPM/external.protobuf/include $CXXFLAGS $PROTO_FUZZ_TARGET $SRC/mruby/genfiles/ruby.pb.o $PROTO_CONVERTER \
+    $CXX -c $CXXFLAGS $PROTO_STD $SRC/mruby/genfiles/ruby.pb.cc -DNDEBUG -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include
+    $CXX -I $SRC/mruby/include -I $SRC/mruby/build/host/include -I $SRC/LPM/external.protobuf/include $CXXFLAGS $PROTO_STD $PROTO_FUZZ_TARGET $SRC/mruby/genfiles/ruby.pb.o $PROTO_CONVERTER \
       -I $SRC/mruby/genfiles \
       -I $SRC/libprotobuf-mutator \
       -lz -lm \
