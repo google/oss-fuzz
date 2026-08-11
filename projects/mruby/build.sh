@@ -22,8 +22,31 @@ export LD=$CC
 export LDFLAGS="$CFLAGS"
 rake all
 
-# This should be allowed to fail. So long as it does not fail in `run_tests.sh`
-rake test || true
+# Build the test driver. This is allowed to fail; `run_tests.sh` is what gates
+# on the test results.
+rake test:build || true
+
+# Record how the pristine tree scores, so that run_tests.sh has a reference
+# point instead of hard-coded test counts that go stale whenever upstream adds
+# or removes tests. Per batch: the number of passing tests, and the number of
+# problems (KO + Crash + Warning) that are already present before any patch.
+#
+# Written only when absent. Chronos evaluates a patch by re-running build.sh
+# over the patched tree, and overwriting the baseline there would compare the
+# patched tree against itself and detect nothing. The Chronos cached image is
+# built from a pristine checkout, so the file it captures is the pristine one.
+if [ ! -f $SRC/mruby_test_baseline ]; then
+  for batch in lib bin; do
+    rake test:run:$batch > /tmp/baseline_${batch}.out 2>&1 || true
+    awk -v batch="$batch" '
+      /^ *OK: [0-9]+$/      { ok = $NF }
+      /^ *KO: [0-9]+$/      { ko = $NF }
+      /^ *Crash: [0-9]+$/   { crash = $NF }
+      /^ *Warning: [0-9]+$/ { warning = $NF }
+      END { if (ok != "") printf "%s %d %d\n", batch, ok, ko + crash + warning }
+    ' /tmp/baseline_${batch}.out >> $SRC/mruby_test_baseline
+  done
+fi
 
 # build fuzzers
 FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_fuzzer.c
