@@ -22,5 +22,6 @@ WORKDIR opencv/
 
 COPY build.sh $SRC/
 COPY *.cc *.h $SRC/
+COPY *.zip $SRC/
 # Runner have memory limit 2048Mb, set imread pixel limit 712Mpix ~ 2037Mb (BGR)
 ENV OPENCV_IO_MAX_IMAGE_PIXELS=712000000
