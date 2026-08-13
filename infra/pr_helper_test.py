@@ -247,5 +247,90 @@ class IsKnownContributorTest(unittest.TestCase):
                                                     'user@example.com'))
 
 
+class GithubHandlerTest(unittest.TestCase):
+  """Verify GithubHandler handles GitHub API edge cases."""
+
+  def setUp(self):
+    self.patcher = mock.patch.dict(os.environ, {
+        'PRAUTHOR': 'test-author',
+        'GITHUBTOKEN': 'test-token',
+        'PRNUMBER': '123',
+    })
+    self.patcher.start()
+
+  def tearDown(self):
+    self.patcher.stop()
+
+  def test_get_pull_request_number_from_commit(self):
+    """The associated PR number is returned when GitHub reports one."""
+    response = mock.Mock(ok=True)
+    response.json.return_value = [{'number': 12345}]
+
+    with mock.patch('pr_helper.requests.get', return_value=response):
+      self.assertEqual(
+          pr_helper.GithubHandler().get_pull_request_number('abc123'), 12345)
+
+  def test_get_pull_request_number_no_associated_pr(self):
+    """Commits without associated PRs are treated as commit-only history."""
+    response = mock.Mock(ok=True)
+    response.json.return_value = []
+
+    with mock.patch('pr_helper.requests.get', return_value=response):
+      self.assertIsNone(
+          pr_helper.GithubHandler().get_pull_request_number('abc123'))
+
+  def test_get_pull_request_number_request_failure(self):
+    """Failed GitHub API requests do not produce a PR number."""
+    response = mock.Mock(ok=False)
+
+    with mock.patch('pr_helper.requests.get', return_value=response):
+      self.assertIsNone(
+          pr_helper.GithubHandler().get_pull_request_number('abc123'))
+
+
+class MainTest(unittest.TestCase):
+  """Verify PR helper message generation paths."""
+
+  def setUp(self):
+    self.env_file = tempfile.NamedTemporaryFile(mode='w',
+                                                delete=False,
+                                                suffix='.env')
+    self.env_file.close()
+    self.patcher = mock.patch.dict(os.environ,
+                                   {'GITHUB_ENV': self.env_file.name})
+    self.patcher.start()
+
+  def tearDown(self):
+    self.patcher.stop()
+    os.unlink(self.env_file.name)
+
+  def _read_env_vars(self):
+    with open(self.env_file.name, 'r', encoding='utf-8') as env_file:
+      return _parse_github_env(env_file.read())
+
+  def test_main_uses_commit_fallback_without_associated_pr(self):
+    """Commit-only history produces the existing previous-commit message."""
+    github = mock.Mock()
+    github.is_author_internal_member.return_value = False
+    github.get_pr_author.return_value = 'test-author'
+    github.get_projects_path.return_value = ['projects/example']
+    github.get_author_email.return_value = (False, None)
+    github.get_project_yaml.return_value = {'main_repo': 'https://example.com'}
+    github.has_author_modified_project.return_value = 'abc123'
+    github.get_pull_request_number.return_value = None
+
+    with mock.patch('pr_helper.GithubHandler', return_value=github):
+      pr_helper.main()
+
+    env_vars = self._read_env_vars()
+    self.assertEqual(env_vars['IS_READY_FOR_MERGE'], 'True')
+    self.assertEqual(env_vars['IS_INTERNAL'], 'False')
+    self.assertIn('test-author has previously contributed', env_vars['MESSAGE'])
+    self.assertIn(f'{pr_helper.GITHUB_NONREF_URL}/commit/abc123',
+                  env_vars['MESSAGE'])
+    self.assertNotIn('/pull/', env_vars['MESSAGE'])
+    github.get_past_contributors.assert_not_called()
+
+
 if __name__ == '__main__':
   unittest.main()
