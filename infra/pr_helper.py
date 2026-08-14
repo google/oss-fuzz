@@ -19,6 +19,9 @@ import base64
 import json
 import os
 import subprocess
+import uuid
+
+from urllib.parse import urlparse
 
 import requests
 import yaml
@@ -62,12 +65,31 @@ def is_known_contributor(content, email):
           email in content.get('auto_ccs', []))
 
 
+def _sanitize_repo_url(url):
+  """Sanitizes a repository URL from project.yaml."""
+  if url is None:
+    return None
+  url = str(url)
+  for char in ('\n', '\r', '\x00'):
+    url = url.replace(char, '')
+  # Support SSH-style URLs (git@host:path).
+  if url.startswith('git@'):
+    return url
+  parsed = urlparse(url)
+  if parsed.scheme not in ('https', 'http', 'git') or not parsed.netloc:
+    return None
+  return parsed.geturl()
+
+
 def save_env(message, is_ready_for_merge, is_internal=False):
   """Saves the outputs as environment variables."""
+  delimiter = uuid.uuid4().hex
   with open(os.environ['GITHUB_ENV'], 'a') as github_env:
-    github_env.write(f'MESSAGE={message}\n')
-    github_env.write(f'IS_READY_FOR_MERGE={is_ready_for_merge}\n')
-    github_env.write(f'IS_INTERNAL={is_internal}')
+    github_env.write(f'MESSAGE<<{delimiter}\n{message}\n{delimiter}\n')
+    github_env.write(f'IS_READY_FOR_MERGE<<{delimiter}\n'
+                     f'{is_ready_for_merge}\n{delimiter}\n')
+    github_env.write(f'IS_INTERNAL<<{delimiter}\n'
+                     f'{is_internal}\n{delimiter}\n')
 
 
 def main():
@@ -94,7 +116,7 @@ def main():
     if not content_dict:
       is_ready_for_merge = False
       new_project = github.get_integrated_project_info()
-      repo_url = new_project.get('main_repo')
+      repo_url = _sanitize_repo_url(new_project.get('main_repo'))
       if repo_url is None:
         message += (f'{pr_author} is integrating a new project, '
                     'but the `main_repo` is missing. '

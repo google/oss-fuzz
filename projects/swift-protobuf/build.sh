@@ -19,6 +19,29 @@
 . precompile_swift
 cd FuzzTesting
 
+
+# Normally one would use `$SWIFTFLAGS` (from `precompile_swift``) on this
+# invocations, but as we found in
+# https://github.com/apple/swift-protobuf/pull/2037, the flags needs depend on
+# *both* the Swift Toolchain version *and& the `swift-tools-version` in the
+# `Package.swift`.
+#
+# So, for now, manually recode `precompile_swift` with the flags needed since
+# swift-protobuf uses a 6.2+ `swift-tools-version`.
+export SWIFTFLAGS="-Xswiftc -static-stdlib --static-swift-stdlib"
+if [ "$SANITIZER" = "coverage" ] ; then
+    export SWIFTFLAGS="$SWIFTFLAGS -Xswiftc -profile-generate -Xswiftc -profile-coverage-mapping --sanitize=fuzzer"
+else
+    export SWIFTFLAGS="$SWIFTFLAGS --sanitize=fuzzer --sanitize=$SANITIZER"
+    for f in $CFLAGS; do
+        export SWIFTFLAGS="$SWIFTFLAGS -Xcc=$f"
+    done
+
+    for f in $CXXFLAGS; do
+        export SWIFTFLAGS="$SWIFTFLAGS -Xcxx=$f"
+    done
+fi
+
 # debug build
 swift build -c debug $SWIFTFLAGS
 (

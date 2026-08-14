@@ -22,15 +22,27 @@ if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
   return
 fi
 
-# Install dependencies:
-# 1. The libraries required for building luzer module.
-# 2. PUC Rio Lua executable, required for running tests itself.
-# 3. The Lua package manager.
-apt install -y cmake liblua5.1-0 liblua5.1-0-dev lua5.1 luarocks
+# Install Lua package manager.
+apt install -y cmake luarocks
 
-export OSS_FUZZ=1
+relver=5.5.0
+name=lua-$relver
+curl -O https://www.lua.org/ftp/$name.tar.gz
+tar xvzf $name.tar.gz
+pushd "$(pwd)"
+cd $name
+make linux MYCFLAGS="-g -Og -fPIC"
+popd
+LUA_DIR=$(realpath $name)/src
+
 # Install Lua libraries.
-luarocks install --lua-version 5.1 --server=https://luarocks.org/dev --tree=lua_modules luzer
+luarocks install \
+  --lua-version 5.1 \
+  --server=https://luarocks.org/dev \
+  --tree=lua_modules luzer \
+  LUA_LIBRARIES="$LUA_DIR/liblua.a" \
+  LUA_INCLUDE_DIR="$LUA_DIR" \
+  OSS_FUZZ=ON
 
 LUA_RUNTIME_NAME=lua
 
@@ -38,5 +50,5 @@ LUA_RUNTIME_NAME=lua
 $SRC/compile_lua_fuzzer $LUA_RUNTIME_NAME fuzz_basic.lua
 
 cp fuzz_basic.lua "$OUT/"
-cp /usr/bin/lua5.1 "$OUT/$LUA_RUNTIME_NAME"
+cp $LUA_DIR/lua "$OUT/$LUA_RUNTIME_NAME"
 cp -R lua_modules "$OUT/"

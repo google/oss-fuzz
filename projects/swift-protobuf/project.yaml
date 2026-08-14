@@ -15,3 +15,4 @@ coverage_extra_args: >
   -ignore-filename-regex=.*\.pb\.swift
   -ignore-filename-regex=.*/\.build/.*
 main_repo: 'https://github.com/apple/swift-protobuf.git'
+base_os_version: ubuntu-24-04

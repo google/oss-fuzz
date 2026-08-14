@@ -49,8 +49,10 @@ xxd -i models/ggml-vocab-deepseek-coder.gguf > model_header_deepseek_coder.h
 xxd -i models/ggml-vocab-falcon.gguf > model_header_falcon.h
 
 # Configure flags and libraries
-# Note: -lcommon must come before -lllama, and -lllama before -lggml
-LIBS="-Lbuild/common -lcommon -Lbuild/src -lllama -Lbuild/ggml/src -lggml -lggml-cpu -lggml-base -Lbuild/vendor/cpp-httplib -lcpp-httplib"
+# Note: -lllama-common must come before -lllama, and -lllama before -lggml
+# Upstream renamed the common library target from `common` (libcommon.a) to
+# `llama-common` (libllama-common.a).
+LIBS="-Lbuild/common -lllama-common -lllama-common-base -Lbuild/src -lllama -Lbuild/ggml/src -lggml -lggml-cpu -lggml-base -Lbuild/vendor/cpp-httplib -lcpp-httplib"
 FLAGS="-std=c++17 -Iggml/include -Iggml/src -Iinclude -Isrc -Icommon -Ivendor -I./ -DNDEBUG -DGGML_USE_LLAMAFILE"
 
 $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${FLAGS} fuzzers/fuzz_json_to_grammar.cpp -o $OUT/fuzz_json_to_grammar $LIBS

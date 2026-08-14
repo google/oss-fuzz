@@ -9,10 +9,4 @@ sanitizers:
  - memory:
     experimental: True
  - undefined
-main_repo: 'https://github.com/eclipse/mosquitto'
-
-fuzzing_engines:
-  - afl
-  - honggfuzz
-  - libfuzzer
-
+main_repo: 'https://github.com/eclipse-mosquitto/mosquitto'

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-hg import $SRC/add_fuzzers.diff --no-commit
+git apply $SRC/add_fuzzers.diff || patch -p1 < $SRC/add_fuzzers.diff
 
 cp -r $SRC/fuzz src/
 cp $SRC/make_fuzzers auto/make_fuzzers

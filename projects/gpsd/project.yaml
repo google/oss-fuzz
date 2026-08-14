@@ -1,8 +1,7 @@
 homepage: "https://gpsd.io"
 language: c
-primary_contact: "gpsd-dev@nongnu.org"
+primary_contact: "gem@rellim.com"
 auto_ccs:
-  - "gem@rellim.com"
   - "arthur.chan@adalogics.com"
   - "david@adalogics.com"
   - "adam@adalogics.com"

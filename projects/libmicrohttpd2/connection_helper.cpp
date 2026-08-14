@@ -174,8 +174,8 @@ void init_daemon_connection(FuzzedDataProvider& fdp,
   // Configure connection request and general settings
   c.discard_request = false;
   c.suspended = false;
-  c.connection_timeout_ms = fdp.ConsumeIntegralInRange<uint32_t>(0, 4096);
-  c.last_activity = 0;
+  c.timeout.milsec = fdp.ConsumeIntegralInRange<uint32_t>(0, 4096);
+  c.timeout.last_act = 0;
 
   // Add dummy callback function
   d.req_cfg.cb = dummy_request_cb;

@@ -58,11 +58,20 @@ find / -name "libicu*.so" -exec rm {} \;
 find / -name "libicu*.so.66" -exec rm {} \;
 find / -name "libicu*.so.66.1" -exec rm {} \;
 
+# Use Bazel 8 for compatibility with quiche's MODULE.bazel setup
+export USE_BAZEL_VERSION=8.2.1
+
 git apply $SRC/quiche-patch.diff
 export CXXFLAGS="${CXXFLAGS} -DNDEBUG=1"
 export CFLAGS="${CFLAGS} -DNDEBUG=1"
-bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
-bazel build --config=oss-fuzz --subcommands --spawn_strategy=sandboxed //quiche:http_frame_fuzzer
+bazel run @fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
+# Remove the fuzzer_no_main linkopt from bazelrc (link order issue) and re-add
+# it with --whole-archive to ensure LLVMFuzzerRunDriver is resolved.
+FUZZER_NO_MAIN=$(find /usr/local/lib -name 'libclang_rt.fuzzer_no_main*' | grep x86_64 | head -1)
+sed -i "\|--linkopt=.*fuzzer_no_main|d" /etc/bazel.bazelrc
+bazel build --config=oss-fuzz --subcommands --spawn_strategy=sandboxed \
+  --linkopt=-Wl,--whole-archive --linkopt="${FUZZER_NO_MAIN}" --linkopt=-Wl,--no-whole-archive \
+  //quiche:http_frame_fuzzer
 
 cp bazel-bin/quiche/http_frame_fuzzer $OUT/
 

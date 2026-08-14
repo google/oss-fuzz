@@ -37,6 +37,11 @@ export CC=$CXX
     mhd_cv_cc_attr_visibility_default="no" \
     mhd_cv_cc_attr_visibility_internal="no" \
     mhd_cv_cc_attr_visibility_hidden="no"
+# Upstream bug in configure.ac: AC_DEFINE_UNQUOTED wraps the restrict fallback
+# keyword in double quotes, producing '#define restrict "__restrict__"' instead
+# of '#define restrict __restrict__', causing parse errors when CC=clang++.
+sed -i 's|#define restrict "\([^"]*\)"|#define restrict \1|' \
+    src/incl_priv/config/mhd_config.h
 ASAN_OPTIONS=detect_leaks=0 make -j$(nproc)
 make install
 
@@ -74,6 +79,9 @@ done
     mhd_cv_cc_attr_visibility_default="no" \
     mhd_cv_cc_attr_visibility_internal="no" \
     mhd_cv_cc_attr_visibility_hidden="no"
+# Same upstream bug workaround as above (second configure run for external crypto)
+sed -i 's|#define restrict "\([^"]*\)"|#define restrict \1|' \
+    src/incl_priv/config/mhd_config.h
 make clean
 make -j$(nproc)
 make install

@@ -18,11 +18,10 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        cmake ninja-build ruby-full && \
+        cmake ninja-build && \
     apt-get clean
 
 RUN git clone -b next --single-branch \
     https://github.com/htacg/tidy-html5.git tidy-html5
 WORKDIR tidy-html5
-RUN cd regression_testing && bundle2.7 install
 COPY *.sh *.c *.h *.options $SRC/

@@ -24,7 +24,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         return 0;
     }
     const gchar *profile;
-    GdkPixbuf *pixbuf, *tmp;
+    GdkPixbuf *pixbuf, *tmp, *tmp2;
     GBytes *bytes;
     bytes = g_bytes_new_static(data, size);
     pixbuf = g_object_new(GDK_TYPE_PIXBUF,
@@ -36,25 +36,32 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             "pixel-bytes", bytes,
             NULL);
     if (pixbuf == NULL) {
+        g_bytes_unref(bytes);
         return 0;
     }
-    gdk_pixbuf_scale(pixbuf, pixbuf,
-            0, 0, 
-            gdk_pixbuf_get_width(pixbuf) / 4, 
+
+    tmp = gdk_pixbuf_scale_simple(pixbuf,
+            gdk_pixbuf_get_width(pixbuf) / 4,
             gdk_pixbuf_get_height(pixbuf) / 4,
-            0, 0, 0.5, 0.5,
             GDK_INTERP_NEAREST);
+    if (tmp) g_object_unref(tmp);
+
     unsigned int rot_amount = ((unsigned int) data[0]) % 4;
     tmp = gdk_pixbuf_rotate_simple(pixbuf, rot_amount * 90);
+    if (tmp) g_object_unref(tmp);
+
     tmp = gdk_pixbuf_flip(pixbuf, TRUE);
+    if (tmp) g_object_unref(tmp);
+
     tmp = gdk_pixbuf_composite_color_simple(pixbuf,
-            gdk_pixbuf_get_width(pixbuf) / 4, 
+            gdk_pixbuf_get_width(pixbuf) / 4,
             gdk_pixbuf_get_height(pixbuf) / 4,
             GDK_INTERP_NEAREST,
             128,
             8,
             G_MAXUINT32,
             G_MAXUINT32/2);
+    if (tmp) g_object_unref(tmp);
 
     char *buf = (char *) calloc(size + 1, sizeof(char));
     memcpy(buf, data, size);
@@ -66,15 +73,17 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             GDK_COLORSPACE_RGB,
             FALSE,
             gdk_pixbuf_get_bits_per_sample(pixbuf),
-            gdk_pixbuf_get_width(pixbuf), 
+            gdk_pixbuf_get_width(pixbuf),
             gdk_pixbuf_get_height(pixbuf),
             gdk_pixbuf_get_rowstride(pixbuf),
             NULL,
             NULL);
-    tmp = gdk_pixbuf_flip(tmp, TRUE);
+    tmp2 = gdk_pixbuf_flip(tmp, TRUE);
+    if (tmp) g_object_unref(tmp);
 
     free(buf);
+    g_bytes_unref(bytes);
     g_object_unref(pixbuf);
-    g_object_unref(tmp);
+    if (tmp2) g_object_unref(tmp2);
     return 0;
 }

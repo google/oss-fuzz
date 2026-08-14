@@ -1,9 +1,7 @@
 homepage: "https://thrift.apache.org/"
 language: go
-primary_contact: "mhlakhani@apache.org"
+primary_contact: "m.hasnain.lakhani@gmail.com"
 auto_ccs:
-- "jensg@apache.org"
-- "m.hasnain.lakhani@gmail.com"
 - "p.antoine@catenacyber.fr"
 
 fuzzing_engines:

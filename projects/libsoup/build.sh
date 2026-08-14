@@ -21,8 +21,32 @@ if [ "$SANITIZER" = "address" ] || [ "$SANITIZER" = "undefined" ]; then
     MESON_SANITIZER_ARG="-Db_sanitize=$SANITIZER"
 fi
 
-meson setup "$WORK" --wipe --buildtype=debug -Db_lundef=false -Dtls_check=false -Dsysprof=disabled -Dfuzzing=enabled -Dprefer_static=true -Ddefault_library=static -Dintrospection=disabled -Ddocs=disabled -Dtests=false $MESON_SANITIZER_ARG
+MESON_FUZZING_ARG="-Dfuzzing=enabled"
+if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    MESON_FUZZING_ARG="-Dfuzzing=disabled"
+fi
+
+meson setup "$WORK" --wipe --buildtype=debug -Db_lundef=false -Dtls_check=false -Dsysprof=disabled $MESON_FUZZING_ARG -Dprefer_static=true -Ddefault_library=static -Dintrospection=disabled -Ddocs=disabled -Dtests=false $MESON_SANITIZER_ARG
 meson compile -C "$WORK"
 
-find "$WORK/fuzzing" -perm /a+x -type f -exec cp {} "$OUT" \;
+if [ "$FUZZING_ENGINE" = "libfuzzer" ]; then
+    find "$WORK/fuzzing" -perm /a+x -type f -exec cp {} "$OUT" \;
+else
+    # For non-libfuzzer engines (e.g. AFL), manually compile fuzz targets
+    # using $LIB_FUZZING_ENGINE since meson's fuzzing support requires libfuzzer.
+    export PKG_CONFIG_PATH="$WORK/meson-uninstalled:${PKG_CONFIG_PATH:-}"
+    LIBSOUP_CFLAGS=$(pkg-config --cflags libsoup-3.0)
+    LIBSOUP_LIBS=$(pkg-config --static --libs libsoup-3.0)
+
+    for target in fuzz_decode_data_uri fuzz_cookie_parse fuzz_content_sniffer fuzz_date_time fuzz_header_parsing fuzz_headers_parse_request fuzz_headers_parse_response; do
+        $CC $CFLAGS -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION \
+            $LIBSOUP_CFLAGS \
+            -c "$SRC/libsoup/fuzzing/${target}.c" -o "$WORK/${target}.o"
+        $CXX $CXXFLAGS \
+            "$WORK/${target}.o" -o "$OUT/${target}" \
+            $LIB_FUZZING_ENGINE \
+            -Wl,--start-group $LIBSOUP_LIBS -Wl,--end-group
+    done
+fi
+
 find "$SRC/libsoup/fuzzing" -name '*.dict' -exec cp {} "$OUT" \;

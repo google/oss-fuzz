@@ -13,5 +13,6 @@ architectures:
   - x86_64
   - i386
 auto_ccs:
+  - "carenas@gmail.com"
   - "me@addisoncrump.info"
   - "philip.hazel@gmail.com"

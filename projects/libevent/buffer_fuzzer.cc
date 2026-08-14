@@ -15,6 +15,8 @@ limitations under the License.
 #include <stdlib.h>
 #include <string>
 #include <sys/socket.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <fuzzer/FuzzedDataProvider.h>
 
@@ -58,6 +60,30 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   evbuffer_commit_space(buf, vec, 1);
   evbuffer_add_buffer_reference(buf, buf2);
   evbuffer_remove_buffer(buf, buf3, 10);
+
+  /* Logic from buffer_add_file_fuzzer.cc */
+  if (data_provider.remaining_bytes() > 0) {
+    std::string file_content = data_provider.ConsumeRandomLengthString();
+    uint32_t flags = data_provider.ConsumeIntegral<uint32_t>();
+    char bufferFile[50];
+    sprintf(bufferFile, "/tmp/buffer.%d", getpid());
+    FILE *fp = fopen(bufferFile, "wb");
+    if (fp) {
+      fwrite(file_content.c_str(), file_content.size(), 1, fp);
+      fclose(fp);
+
+      fp = fopen(bufferFile, "rb");
+      if (fp) {
+        int fd = fileno(fp);
+        struct stat st;
+        fstat(fd, &st);
+        evbuffer_set_flags(buf, flags);
+        evbuffer_add_file(buf, fd, 0, st.st_size);
+        fclose(fp);
+      }
+      unlink(bufferFile);
+    }
+  }
 
   evbuffer_free(buf);
   evbuffer_free(buf2);

@@ -20,7 +20,11 @@ mkdir -p $JAVA_HOME
 rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 JVM_LD_LIBRARY_PATH="${JAVA_HOME}/lib/server"
 
-git apply $SRC/*.patch
+# Replace git patch with sed commands (patch no longer applies to latest code)
+# Add shadow plugin to root plugins block
+sed -i '/^plugins {/a\    id "com.gradleup.shadow" version "8.3.0"' build.gradle
+# Apply shadow plugin to spring-integration-core subproject
+sed -i "/description = 'Spring Integration Core'/a\\    apply plugin: 'com.gradleup.shadow'" build.gradle
 
 ./gradlew shadowJar -p spring-integration-core/ -x test -x javadoc
 

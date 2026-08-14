@@ -34,7 +34,7 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE -Ivendor/liburing/src/include \
     memcached-util.o memcached-cache.o memcached-bipbuffer.o memcached-base64.o \
     memcached-logger.o memcached-crawler.o memcached-itoa_ljust.o memcached-slab_automove.o \
     memcached-slabs_mover.o memcached-authfile.o memcached-restart.o memcached-proto_text.o \
-    memcached-proto_bin.o memcached-proto_proxy.o memcached-mcmc.o memcached-proxy_xxhash.o \
+    memcached-proto_bin.o memcached-proto_parser.o memcached-proto_proxy.o memcached-mcmc.o memcached-proxy_xxhash.o \
     memcached-proxy_ustats.o memcached-proxy_ratelim.o memcached-proxy_jump_hash.o \
     memcached-proxy_request.o memcached-proxy_result.o memcached-proxy_inspector.o \
     memcached-proxy_mutator.o memcached-proxy_network.o memcached-proxy_lua.o \

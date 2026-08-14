@@ -7,6 +7,7 @@ auto_ccs:
  - "dmitrystogov@gmail.com"
  - "tovilo.ilija@gmail.com"
  - "github@derickrethans.nl"
+ - "jakub.php@gmail.com"
 fuzzing_engines:
   - "afl"
   - "honggfuzz"

@@ -6,6 +6,9 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+auto_ccs:
+  - "fanningpj@gmail.com"
+  - "me@yawk.at"
 vendor_ccs:
   - "yakdan@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"

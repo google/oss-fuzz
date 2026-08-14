@@ -17,10 +17,13 @@
 FROM gcr.io/oss-fuzz-base/base-runner:ubuntu-24-04
 
 RUN apt-get update && \
-    apt-get install -y systemd && \
-    wget https://download.docker.com/linux/ubuntu/dists/noble/pool/stable/amd64/docker-ce-cli_26.0.0-1~ubuntu.24.04~noble_amd64.deb -O /tmp/docker-ce.deb && \
-    dpkg -i /tmp/docker-ce.deb && \
-    rm /tmp/docker-ce.deb
+    apt-get install -y systemd wget gnupg && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    wget -qO- https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli
 
 ENV PATH=/opt/gcloud/google-cloud-sdk/bin/:$PATH
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz

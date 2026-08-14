@@ -16,36 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-
-RUN apt-get update && apt-get install -y \
-    autoconf \
-    automake \
-    build-essential \
-    cmake \
-    libbrotli-dev \
-    libtool \
-    make \
-    mercurial \
-    pkg-config \
-    yasm \
-    zlib1g-dev
-
-RUN git clone \
-    --depth 1 \
-    --branch master \
-    https://github.com/strukturag/libde265.git \
-    libde265
-
-RUN git clone \
-    https://bitbucket.org/multicoreware/x265_git/src/stable/ \
-    x265
-
-RUN git clone \
-    --depth 1 \
-    --branch master \
-    https://aomedia.googlesource.com/aom \
-    aom
-
 RUN git clone \
     --depth 1 \
     --branch master \
@@ -54,4 +24,4 @@ RUN git clone \
 
 WORKDIR libheif
 
-COPY build.sh $SRC/
+COPY build.sh generate_seeds.py $SRC/

@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-clang:ubuntu-20-04
 
-COPY install_deps_ubuntu-20-04.sh install_swift_ubuntu_20_04.sh /
+COPY install_deps_ubuntu-20-04.sh install_swift_ubuntu-20-04.sh /
 RUN /install_deps_ubuntu-20-04.sh
 
 # Build and install latest Python 3.11.
@@ -180,7 +180,7 @@ COPY bazel_build_fuzz_tests \
     install_python.sh \
     install_ruby.sh \
     install_rust.sh \
-    install_swift_ubuntu_20_04.sh \
+    install_swift_ubuntu-20-04.sh \
     make_build_replayable.py \
     python_coverage_helper.py \
     replay_build.sh \
