@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2024 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# OSS-Fuzz build script for libmongocrypt
-# This script is called by OSS-Fuzz to build the fuzzing targets
-
 cd $SRC/libmongocrypt
 
 # Build the library
@@ -26,41 +23,22 @@ cd build
 
 # Configure with CMake
 # Note: OSS-Fuzz sets CC, CXX, CFLAGS, CXXFLAGS, LIB_FUZZING_ENGINE
+# ENABLE_FUZZING defines the fuzz_mongocrypt and fuzz_kms targets
 cmake .. \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
     -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
     -DENABLE_ONLINE_TESTS=OFF \
-    -DENABLE_STATIC=ON
+    -DENABLE_STATIC=ON \
+    -DENABLE_FUZZING=ON
 
-# Build the library
-make -j$(nproc) mongocrypt_static
+# Build the fuzzing targets using the CMake fuzzing targets.
+make -j$(nproc) fuzz_mongocrypt fuzz_kms
+cp fuzz_mongocrypt $OUT/fuzz_mongocrypt
+cp fuzz_kms $OUT/fuzz_kms
 
-# Build the fuzzers
-# fuzz_kms - existing KMS fuzzer
-$CC $CFLAGS -c ../test/fuzz_kms.c -I../kms-message -I../kms-message/src -I../src -o fuzz_kms.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_kms.o \
-    -o $OUT/fuzz_kms \
-    libmongocrypt-static.a \
-    kms-message/libkms_message-static.a \
-    -Wl,--start-group \
-    _mongo-c-driver/src/libbson/libbson-static-for-libmongocrypt.a \
-    -Wl,--end-group \
-    -lcrypto
-
-# fuzz_mongocrypt - main libmongocrypt fuzzer (placeholder)
-$CC $CFLAGS -c ../test/fuzz_mongocrypt.c -I../src -I. -I./src -o fuzz_mongocrypt.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_mongocrypt.o \
-    -o $OUT/fuzz_mongocrypt \
-    libmongocrypt-static.a \
-    kms-message/libkms_message-static.a \
-    -Wl,--start-group \
-    _mongo-c-driver/src/libbson/libbson-static-for-libmongocrypt.a \
-    -Wl,--end-group \
-    -lcrypto
-
-# Package seed corpus for fuzz_mongocrypt (only if corpus directory exists)
-if [ -d "../test/data/fuzz_mongocrypt_corpus" ]; then
-    zip -j $OUT/fuzz_mongocrypt_seed_corpus.zip ../test/data/fuzz_mongocrypt_corpus/*
-fi
+# Package seed corpus for fuzz_mongocrypt
+mkdir -p $OUT/fuzz_mongocrypt_seed_corpus
+cp ../test/data/fuzz_mongocrypt_corpus/* $OUT/fuzz_mongocrypt_seed_corpus/
+zip -j $OUT/fuzz_mongocrypt_seed_corpus.zip $OUT/fuzz_mongocrypt_seed_corpus/*
 

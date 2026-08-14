@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev
 
 # Clone the repository
-RUN git clone --branch oss-fuzz --depth 1 https://github.com/mdb-ad/libmongocrypt.git libmongocrypt
+RUN git clone --branch master --depth 1 https://github.com/mongodb/libmongocrypt.git libmongocrypt
 
 # Set working directory
 WORKDIR $SRC/libmongocrypt
