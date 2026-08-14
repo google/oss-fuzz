@@ -1,0 +1,9 @@
+homepage: "https://github.com/dunglas/httpsfv"
+primary_contact: "kevin@les-tilleuls.coop"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/dunglas/httpsfv.git"
+file_github_issue: True
