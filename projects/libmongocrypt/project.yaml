@@ -17,7 +17,7 @@
 homepage: "https://github.com/mongodb/libmongocrypt"
 language: c
 primary_contact: "security@mongodb.com"
-main_repo: "https://github.com/mdb-ad/libmongocrypt.git"
+main_repo: "https://github.com/mongodb/libmongocrypt.git"
 
 sanitizers:
   - address
