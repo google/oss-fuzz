@@ -29,6 +29,7 @@ import sys
 
 import google.auth
 
+from base_image_defs import BASE_IMAGE_DEFS
 import build_lib
 
 BASE_PROJECT = 'oss-fuzz-base'
@@ -118,55 +119,6 @@ class ImageConfig:
   def full_image_name_with_tag(self) -> str:
     """Returns the full GCR image name with the final tag."""
     return f'{IMAGE_NAME_PREFIX}{self.name}:{self.final_tag}'
-
-
-# Definitions of the base images to be built.
-BASE_IMAGE_DEFS = [
-    {
-        'name': 'base-image'
-    },
-    {
-        'name': 'base-clang'
-    },
-    {
-        'name': 'base-clang-full',
-        'path': 'infra/base-images/base-clang',
-        'build_args': ('FULL_LLVM_BUILD=1',)
-    },
-    {
-        'name': 'indexer'
-    },
-    {
-        'name': 'base-builder'
-    },
-    {
-        'name': 'base-builder-go'
-    },
-    {
-        'name': 'base-builder-javascript'
-    },
-    {
-        'name': 'base-builder-jvm'
-    },
-    {
-        'name': 'base-builder-python'
-    },
-    {
-        'name': 'base-builder-ruby'
-    },
-    {
-        'name': 'base-builder-rust'
-    },
-    {
-        'name': 'base-builder-swift'
-    },
-    {
-        'name': 'base-runner'
-    },
-    {
-        'name': 'base-runner-debug'
-    },
-]
 
 
 def get_base_image_steps(images: Sequence[ImageConfig]) -> list[dict]:
