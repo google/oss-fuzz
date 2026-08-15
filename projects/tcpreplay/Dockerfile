@@ -30,11 +30,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
     automake autoconf libtool python3 asciidoctor libpcap-dev libdumbnet-dev \
     cmake flex bison zip
-# Branch pinned to 4.6.1-beta1 rather than the default branch: the fuzz
-# targets this builds haven't reached tcpreplay's master yet. Update this to
-# drop "-b 4.6.1-beta1" (tracking the default branch again) once that
-# release merges there - see the comment in project.yaml.
-RUN git clone -b 4.6.1-beta1 --depth 1 https://github.com/appneta/tcpreplay.git tcpreplay
+
+RUN git clone --depth 1 https://github.com/appneta/tcpreplay.git tcpreplay
 # Built from source in build.sh, deliberately not the apt package above - see
 # the comment there for why.
 RUN git clone --depth 1 https://github.com/the-tcpdump-group/libpcap.git libpcap
