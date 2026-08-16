@@ -1,0 +1,11 @@
+homepage: "https://kinegrant.com"
+language: python
+primary_contact: "kinegrant-security@googlegroups.com"
+auto_ccs:
+  - "kinegrant-security@googlegroups.com"
+main_repo: "https://github.com/zoahdev/kinegrant-protocol.git"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
