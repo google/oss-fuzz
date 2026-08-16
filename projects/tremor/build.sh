@@ -32,7 +32,15 @@ make -j$(nproc)
 make install
 popd
 
-# Build the fuzz target
+# Build the fuzz targets
 $CXX $CXXFLAGS -I"$WORK/include" -L"$WORK/lib" \
     /src/tremor/decode_fuzzer.cc -o $OUT/decode_fuzzer \
     $LIB_FUZZING_ENGINE -lvorbisidec -logg
+
+$CXX $CXXFLAGS -I"$WORK/include" -L"$WORK/lib" \
+    /src/tremor/vorbis_synthesis_fuzzer.cc -o $OUT/vorbis_synthesis_fuzzer \
+    $LIB_FUZZING_ENGINE -lvorbisidec -logg
+
+$CXX $CXXFLAGS -I"$WORK/include" -L"$WORK/lib" \
+    /src/tremor/ogg_fuzzer.cc -o $OUT/ogg_fuzzer \
+    $LIB_FUZZING_ENGINE -logg

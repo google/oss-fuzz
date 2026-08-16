@@ -70,7 +70,8 @@ RUN mkdir -p $SRC/skia_data && \
     wget -q -O $SRC/skia_data/skcolorspace_seed_corpus.zip https://cdn.skia.org/oss-fuzz/skcolorspace_seed_corpus.zip && \
     wget -q -O $SRC/skia_data/hdr_agtm_seed_corpus.zip https://cdn.skia.org/oss-fuzz/hdr_agtm_seed_corpus.zip && \
     wget -q -O $SRC/skia_data/svg_dom_seed_corpus.zip https://cdn.skia.org/oss-fuzz/svg_seed_corpus.zip && \
-    wget -q -O $SRC/skia_data/parse_path_seed_corpus.zip https://cdn.skia.org/oss-fuzz/parse_path_corpus.zip
+    wget -q -O $SRC/skia_data/parse_path_seed_corpus.zip https://cdn.skia.org/oss-fuzz/parse_path_corpus.zip && \
+    wget -q -O $SRC/skia_data/skregion_deserialize_seed_corpus.zip https://cdn.skia.org/oss-fuzz/skregion_deserialize_seed_corpus.zip
 
 COPY image_filter_deserialize_width.options json.dict sksl.dict $SRC/skia_data/
 

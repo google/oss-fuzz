@@ -57,14 +57,12 @@ class Location {
     return Location(path, /*start_line=*/0, /*end_line=*/0);
   }
 
-  inline const std::string& path() const { return path_; }
-  inline uint32_t start_line() const { return start_line_; }
-  inline uint32_t end_line() const { return end_line_; }
+  const std::string& path() const { return path_; }
+  uint32_t start_line() const { return start_line_; }
+  uint32_t end_line() const { return end_line_; }
 
-  inline bool is_real() const { return IsRealPath(path()); }
-  inline bool is_whole_file() const {
-    return start_line_ == 0 && end_line_ == 0;
-  }
+  bool is_real() const { return IsRealPath(path()); }
+  bool is_whole_file() const { return start_line_ == 0 && end_line_ == 0; }
 
  private:
   friend class InMemoryIndex;
@@ -201,29 +199,24 @@ class Entity {
         SubstituteRelationship::Kind::kIsInheritedFrom, inherited_entity_id);
   }
 
-  inline Kind kind() const { return kind_; }
-  inline bool is_incomplete() const { return is_incomplete_; }
-  inline bool is_weak() const { return is_weak_; }
-  inline const std::string& name_prefix() const { return name_prefix_; }
-  inline const std::string& name() const { return name_; }
-  inline const std::string& name_suffix() const { return name_suffix_; }
-  inline std::string full_name() const {
+  Kind kind() const { return kind_; }
+  bool is_incomplete() const { return is_incomplete_; }
+  bool is_weak() const { return is_weak_; }
+  const std::string& name_prefix() const { return name_prefix_; }
+  const std::string& name() const { return name_; }
+  const std::string& name_suffix() const { return name_suffix_; }
+  std::string full_name() const {
     return name_prefix() + name() + name_suffix();
   }
-  inline LocationId location_id() const { return location_id_; }
-  inline const std::optional<SubstituteRelationship>& substitute_relationship()
-      const {
+  LocationId location_id() const { return location_id_; }
+  const std::optional<SubstituteRelationship>& substitute_relationship() const {
     return substitute_relationship_;
   }
-  inline const std::optional<std::string>& enum_value() const {
-    return enum_value_;
-  }
-  inline bool is_virtual_method() const {
+  const std::optional<std::string>& enum_value() const { return enum_value_; }
+  bool is_virtual_method() const {
     return virtual_method_kind_ != VirtualMethodKind::kNotAVirtualMethod;
   }
-  inline VirtualMethodKind virtual_method_kind() const {
-    return virtual_method_kind_;
-  }
+  VirtualMethodKind virtual_method_kind() const { return virtual_method_kind_; }
 
  private:
   friend class InMemoryIndex;

@@ -36,13 +36,26 @@ listed project, producing local changes and a per-project report.
 
 import argparse
 import concurrent.futures
+import glob
+import json
 import os
+import shutil
 import subprocess
 import sys
 import textwrap
+import urllib.error
+import urllib.request
 from datetime import datetime, timedelta
 
 DEFAULT_MAX_PARALLEL = 2
+
+# Public OSS-Fuzz build status. Used by fix-broken-builds to auto-discover
+# projects whose most recent build failed.
+BUILD_STATUS_URL = (
+    'https://oss-fuzz-build-logs.storage.googleapis.com/status.json')
+
+# Default set of languages fix-broken-builds targets.
+DEFAULT_FIX_LANGUAGES = 'c,c++'
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OSS_FUZZ_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
@@ -99,11 +112,20 @@ EXPAND_ROUND_CONTEXT_TEMPLATE = textwrap.dedent("""\
        per-file hit/total line counts — use this to find files that are still
        poorly covered.
 
+       **Also re-fetch the latest public OSS-Fuzz coverage report** (same URL
+       pattern as step 1 of the main workflow) before selecting any new target.
+       Files and functions already well-covered in the public report (≥ 50%
+       lines) must NOT be targeted — they are already exercised by the
+       production fuzzer corpus. Build an explicit blocklist of well-covered
+       files from the public `summary.json` and cross-check every candidate
+       against it before writing any harness.
+
     3. **Candidate functions not yet targeted** — read the "Remaining coverage
        gaps" section. The previous round identified under-covered functions
        but may not have targeted all of them. Pick from that list first before
        doing fresh analysis, prioritising functions with the lowest hit ratio
-       that sit on a security-relevant code path.
+       that sit on a security-relevant code path. Cross-check each candidate
+       against the public coverage report before committing to it.
 
     4. **Threat model notes** — read the "Threat model" section. The previous
        round reasoned about which input paths reach security-sensitive code.
@@ -124,6 +146,11 @@ EXPAND_ROUND_CONTEXT_TEMPLATE = textwrap.dedent("""\
       has the harnesses, Dockerfile changes, and build.sh edits from that
       round. Do not undo or re-apply them.
     - Target the coverage gaps and candidate functions surfaced above.
+    - **Do not target functions in well-covered files.** Read the
+      "Already-covered files (blocklist)" section from the previous report
+      and cross-check every candidate against the public `summary.json`
+      before writing a harness. Targeting already-covered code is the most
+      common way expansion rounds fail to produce real gains.
     - If coverage stalled completely in the previous round despite multiple
       attempts, change subsystem — pick the next-highest-risk area from the
       threat model notes rather than hammering the same code paths.
@@ -159,9 +186,16 @@ EXPAND_PROMPT_TEMPLATE = textwrap.dedent("""\
          reports are at:
          `https://storage.googleapis.com/oss-fuzz-coverage/{project}/reports/YYYYMMDD/linux/summary.json`
          Try recent dates (last few days) until you find one.
+       - **Parse the per-file coverage data** from `summary.json`. Build an
+         explicit list of source files with low line coverage (< 30% lines hit)
+         — these are your candidate targets. Also note which files already have
+         high coverage (≥ 50%) so you can avoid wasting effort on them.
        - Identify under-covered source files and functions that sit on the
          attack surface (parsers, network handlers, file I/O, APIs exposed to
-         untrusted input).
+         untrusted input). **Only consider files/functions that appear in the
+         low-coverage list derived from `summary.json`** — do not rely solely
+         on reading the source structure to judge what is "important", because
+         important functions are often already covered by existing harnesses.
 
     2. **Clone the target source locally**
        - Study the Dockerfile to find the upstream repository URL.
@@ -170,7 +204,13 @@ EXPAND_PROMPT_TEMPLATE = textwrap.dedent("""\
          of `git clone` so you can iterate quickly.
 
     3. **Design and write new harness(es)**
-       - Pick the most impactful under-covered area and write a new
+       - **Before selecting any target function**, verify it has genuinely low
+         coverage in the public `summary.json` (< 30% lines hit for its source
+         file). Do NOT write a harness targeting a function whose source file is
+         already well-covered — this is the most common cause of wasted effort.
+         If you cannot confirm a function is poorly covered in the public report,
+         skip it and pick another candidate from the low-coverage file list.
+       - Pick the most impactful genuinely-uncovered area and write a new
          libFuzzer-style harness targeting it.
        - Follow the best practices from the *fuzzing-memory-unsafe-expert*
          skill: simplicity, determinism, enough entropy, matching the threat
@@ -240,6 +280,12 @@ EXPAND_PROMPT_TEMPLATE = textwrap.dedent("""\
          under-covered functions (name, file, hit/total line ratio) that were
          identified but NOT targeted this round, ordered by security
          relevance. The next round picks from this list first.
+
+       - **Already-covered files (blocklist)** *(hand-off)*: the list of
+         source files that had ≥ 50% line coverage in the public OSS-Fuzz
+         report at the time of this round (file path and coverage %). Future
+         rounds must not write harnesses whose primary target belongs to one
+         of these files.
 
        - **Approaches tried and abandoned** *(hand-off)*: any harness designs
          that were attempted but discarded (e.g. zero coverage gain, false
@@ -771,6 +817,26 @@ CONSOLIDATE_PROMPT_TEMPLATE = textwrap.dedent("""\
 
 Once consolidation is complete, exit.
 """)
+
+
+def cleanup_project_artifacts(project):
+  """Remove Docker image and local build/coverage artifacts for a project."""
+  image = f'gcr.io/oss-fuzz/{project}'
+  print(f'    [cleanup] Removing Docker image {image}')
+  subprocess.run(['docker', 'rmi', '--force', image],
+                 capture_output=True,
+                 check=False)
+
+  for subdir in ('out', 'work'):
+    path = os.path.join(OSS_FUZZ_ROOT, 'build', subdir, project)
+    if os.path.isdir(path):
+      print(f'    [cleanup] Removing {path}')
+      shutil.rmtree(path, ignore_errors=True)
+
+  for path in glob.glob(os.path.join(OSS_FUZZ_ROOT, f'{project}-cov-*')):
+    if os.path.isdir(path):
+      print(f'    [cleanup] Removing {path}')
+      shutil.rmtree(path, ignore_errors=True)
 
 
 def get_recent_date_str(days_ago=1):
@@ -1355,6 +1421,7 @@ def _run_expand_sessions(args):
     sys.exit(1)
 
   max_parallel = args.max_parallel
+  do_cleanup = not args.no_cleanup
 
   print(f'[*] Using agent CLI: {agent_cli}')
   print(f'[*] Task: expand')
@@ -1363,6 +1430,7 @@ def _run_expand_sessions(args):
   print(f'[*] Expansion size: {expansion_size}')
   print(f'[*] Consolidation agent: {"yes" if run_consolidate else "no"}')
   print(f'[*] Summary agent: {"yes" if run_summary else "no"}')
+  print(f'[*] Cleanup after completion: {"yes" if do_cleanup else "no"}')
   print(f'[*] Max parallel sessions: {max_parallel}')
   print()
 
@@ -1398,6 +1466,10 @@ def _run_expand_sessions(args):
       summary_result = _run_single_summary_session(agent_cli, project,
                                                    completed_rounds)
       results.append(summary_result)
+
+    if do_cleanup:
+      print(f'[*] {project}: cleaning up build artifacts ...')
+      cleanup_project_artifacts(project)
 
     return results
 
@@ -1455,6 +1527,116 @@ def cmd_fix_builds(args):
   _run_sessions('fix-build', args)
 
 
+def read_project_language(project):
+  """Return the lower-cased `language` from a project's project.yaml, or None.
+
+  Uses a minimal line parse so no YAML dependency is required.
+  """
+  path = os.path.join(OSS_FUZZ_ROOT, 'projects', project, 'project.yaml')
+  try:
+    with open(path, encoding='utf-8') as f:
+      for line in f:
+        stripped = line.strip()
+        if stripped.startswith('language:'):
+          return stripped.split(':', 1)[1].strip().strip('"\'').lower()
+  except OSError:
+    return None
+  return None
+
+
+def fetch_build_status():
+  """Fetch and parse the public OSS-Fuzz build status JSON. Exits on failure."""
+  print(f'[*] Fetching build status from {BUILD_STATUS_URL} ...')
+  try:
+    with urllib.request.urlopen(BUILD_STATUS_URL, timeout=60) as resp:
+      return json.load(resp)
+  except (urllib.error.URLError, json.JSONDecodeError, TimeoutError) as e:
+    print(f'[!] Failed to fetch build status: {e}', file=sys.stderr)
+    sys.exit(1)
+
+
+def discover_broken_projects(languages, limit, regressions_only=True):
+  """Discover projects whose most recent build failed, filtered by language.
+
+  A project is considered broken when the newest entry in its build history
+  (by finish_time) has success == false. Only projects that (a) exist locally
+  under projects/ and (b) match one of the requested languages are returned.
+
+  By default only *regressions* are returned — projects that have a recorded
+  last successful build and have since broken. This skips projects that have
+  never built (new/incomplete integrations and OSS-Fuzz's intentionally-broken
+  example projects such as `bad_example`), which are rarely a fruitful target
+  for an automated fix. Pass regressions_only=False to include them.
+
+  Args:
+    languages: iterable of language strings to include (case-insensitive).
+    limit: maximum number of projects to return; 0 or None means no limit.
+    regressions_only: if True, only include projects with a prior successful
+      build.
+
+  Returns:
+    (selected, total_matching) where selected is the capped, name-sorted list
+    and total_matching is how many broken projects matched before the cap.
+  """
+  status = fetch_build_status()
+  wanted = {lang.lower() for lang in languages}
+  broken = []
+  for entry in status.get('projects', []):
+    name = entry.get('name')
+    history = entry.get('history') or []
+    if not name or not history:
+      continue
+    latest = max(history, key=lambda h: h.get('finish_time', ''))
+    if latest.get('success', True):
+      continue  # Most recent build is green.
+    if regressions_only and not entry.get('last_successful_build'):
+      continue  # Never built successfully — skip unless explicitly included.
+    if not os.path.isdir(os.path.join(OSS_FUZZ_ROOT, 'projects', name)):
+      continue  # No local project directory to work on.
+    if read_project_language(name) not in wanted:
+      continue
+    broken.append(name)
+
+  broken.sort()
+  total_matching = len(broken)
+  if limit and limit > 0:
+    broken = broken[:limit]
+  return broken, total_matching
+
+
+def cmd_fix_broken_builds(args):
+  """Handle the fix-broken-builds subcommand.
+
+  Auto-discovers broken projects from the public build status, filters to the
+  requested languages (C/C++ by default), caps at --limit, and drives the
+  existing fix-build session machinery over them.
+  """
+  languages = [
+      lang.strip() for lang in args.language.split(',') if lang.strip()
+  ]
+  if not languages:
+    print('[!] --language must name at least one language.', file=sys.stderr)
+    sys.exit(1)
+
+  selected, total_matching = discover_broken_projects(
+      languages, args.limit, regressions_only=not args.include_never_built)
+
+  scope = ('broken (any)' if args.include_never_built else 'broken regressions')
+  print(f'[*] Found {total_matching} {scope} project(s) '
+        f'for language(s): {", ".join(languages)}')
+  if not selected:
+    print('[*] Nothing to fix.')
+    return
+  if len(selected) < total_matching:
+    print(f'[*] Fixing the first {len(selected)} (of {total_matching}); '
+          f'raise --limit to do more.')
+  print(f'[*] Selected: {", ".join(selected)}\n')
+
+  # Feed the discovered projects into the shared fix-build session runner.
+  args.projects = selected
+  _run_sessions('fix-build', args)
+
+
 def cmd_run_task(args):
   """Handle the run-task subcommand."""
   _run_sessions('free-task', args)
@@ -1468,6 +1650,15 @@ def cmd_add_chronos(args):
 def cmd_integrate_project(args):
   """Handle the integrate-project subcommand."""
   _run_integrate_sessions(args)
+
+
+def cmd_clean(args):
+  """Handle the clean subcommand."""
+  _validate_projects(args.projects)
+  for project in args.projects:
+    print(f'[*] Cleaning artifacts for: {project}')
+    cleanup_project_artifacts(project)
+  print('\n[*] Done.')
 
 
 def cmd_show_prompt(args):
@@ -1519,6 +1710,15 @@ def main():
               # Fix broken builds for two projects:
               python %(prog)s fix-builds open62541 json-c
 
+              # Auto-discover and fix up to 50 broken C/C++ projects:
+              python %(prog)s fix-broken-builds
+
+              # Fix up to 10 broken projects, C/C++ or Rust:
+              python %(prog)s fix-broken-builds --limit 10 --language c,c++,rust
+
+              # Preview which projects would be fixed (no agent launched):
+              python %(prog)s fix-broken-builds --print-only
+
               # Run a free-form task on one or more projects:
               python %(prog)s run-task \\
                   --task-description "Investigate why the XML parser harness \\
@@ -1546,6 +1746,12 @@ def main():
               # Preview the integration prompt without running an agent:
               python %(prog)s integrate-project --print-only \\
                   https://github.com/owner/repo
+
+              # Skip post-run cleanup (Docker image + build/coverage dirs):
+              python %(prog)s expand-oss-fuzz-projects --no-cleanup open62541
+
+              # Manually clean up artifacts from a previous run:
+              python %(prog)s clean open62541 json-c
 
               # Use a specific agent CLI:
               python %(prog)s expand-oss-fuzz-projects --agent gemini htslib
@@ -1642,6 +1848,13 @@ def main():
       action='store_false',
       help='Skip the summary agent even when running multiple rounds.',
   )
+  expand_parser.add_argument(
+      '--no-cleanup',
+      action='store_true',
+      default=False,
+      help='Skip cleanup of Docker images and build/coverage artifacts after '
+      'each project completes (default: cleanup is on).',
+  )
   expand_parser.set_defaults(func=cmd_expand)
 
   # fix-builds
@@ -1651,6 +1864,58 @@ def main():
       help='Launch agent sessions to fix broken OSS-Fuzz project builds.',
   )
   fix_parser.set_defaults(func=cmd_fix_builds)
+
+  # fix-broken-builds (auto-discover from the public build status)
+  fix_broken_parser = subparsers.add_parser(
+      'fix-broken-builds',
+      help='Discover broken projects from the public OSS-Fuzz build status '
+      'and fix up to --limit of them (default: C/C++ only).',
+  )
+  fix_broken_parser.add_argument(
+      '--limit',
+      type=int,
+      default=50,
+      metavar='N',
+      help='Maximum number of broken projects to fix (default: 50). '
+      'Use 0 for no limit.',
+  )
+  fix_broken_parser.add_argument(
+      '--language',
+      default=DEFAULT_FIX_LANGUAGES,
+      metavar='LANGS',
+      help='Comma-separated project languages to include '
+      f'(default: "{DEFAULT_FIX_LANGUAGES}").',
+  )
+  fix_broken_parser.add_argument(
+      '--include-never-built',
+      action='store_true',
+      help='Also include projects that have never built successfully. By '
+      'default only regressions (projects with a prior successful build) are '
+      'fixed, which skips new/incomplete integrations and intentionally-broken '
+      'example projects.',
+  )
+  fix_broken_parser.add_argument(
+      '--agent',
+      choices=SUPPORTED_AGENTS,
+      default=None,
+      help='Agent CLI to use (default: auto-detect).',
+  )
+  fix_broken_parser.add_argument(
+      '--print-only',
+      action='store_true',
+      help='Print the prompts (and the discovered project list) without '
+      'launching agent sessions.',
+  )
+  fix_broken_parser.add_argument(
+      '-j',
+      '--max-parallel',
+      type=int,
+      default=DEFAULT_MAX_PARALLEL,
+      metavar='N',
+      help='Maximum number of agent sessions to run in parallel '
+      f'(default: {DEFAULT_MAX_PARALLEL}).',
+  )
+  fix_broken_parser.set_defaults(func=cmd_fix_broken_builds)
 
   # run-task
   run_task_parser = subparsers.add_parser(
@@ -1709,6 +1974,19 @@ def main():
       f'(default: {DEFAULT_MAX_PARALLEL}).',
   )
   integrate_parser.set_defaults(func=cmd_integrate_project)
+
+  # clean
+  clean_parser = subparsers.add_parser(
+      'clean',
+      help='Remove Docker images and build/coverage artifacts for one or more '
+      'projects.',
+  )
+  clean_parser.add_argument(
+      'projects',
+      nargs='+',
+      help='One or more OSS-Fuzz project names to clean up.',
+  )
+  clean_parser.set_defaults(func=cmd_clean)
 
   # show-prompt
   show_parser = subparsers.add_parser(

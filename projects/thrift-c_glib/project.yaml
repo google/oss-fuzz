@@ -4,8 +4,6 @@ primary_contact: "m.hasnain.lakhani@gmail.com"
 
 fuzzing_engines:
   - libfuzzer
-  - afl
-  - centipede
 sanitizers:
   - address
   - undefined

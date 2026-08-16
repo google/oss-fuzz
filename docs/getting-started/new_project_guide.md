@@ -87,6 +87,7 @@ This configuration file stores project metadata. The following attributes are su
 - [builds_per_day](#build_frequency) (optional)
 - [file_github_issue](#file_github_issue) (optional)
 - [disable_remediation](#disable_remediation) (optional)
+- [disable_remediation_pre_review](#disable_remediation_pre_review) (optional)
 
 ### homepage
 You project's homepage.
@@ -217,6 +218,13 @@ is disabled, all disclosure notifications will not include any proposed code
 changes. If enabled (default), proposed code changes and comments to remediate
 bugs may be automatically included in disclosure that is private during the
 embargo of each issue on a case-by-case basis basis.
+
+### disable_remediation_pre_review (optional) {#disable_remediation_pre_review}
+Opt out of human-in-the-loop pre-review for proposed remediation code changes.
+If this is enabled, proposed code changes will be included in disclosure
+notifications without prior manual review by the OSS-Fuzz team. If disabled
+(default), all proposed remediation changes will be reviewed by a human before
+being shared.
 
 ## Dockerfile {#dockerfile}
 

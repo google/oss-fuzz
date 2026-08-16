@@ -52,15 +52,6 @@ if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
   FUZZER_ARGS="-DENABLE_LIBFUZZER_STATIC_LINKAGE=ON"
 fi
 
-# Apply potential fix for the problem described in
-# google/oss-fuzz#13226.
-# See https://github.com/ossf/fuzz-introspector/pull/2278
-if [[ "$SANITIZER" = "introspector" ]]; then
-  curl -O https://patch-diff.githubusercontent.com/raw/ossf/fuzz-introspector/pull/2278.patch
-  patch -p1 --directory=/fuzz-introspector/ < 2278.patch
-  export FUZZ_INTROSPECTOR_PARALLEL=false
-fi
-
 cmake_args=(
     # Specific to Tarantool
     # Tarantool executable binary is needed for running Lua tests,
@@ -170,10 +161,13 @@ do
   cp "$test_path" "$OUT/"
   corpus_dir="test/static/corpus/$module_name"
   if [ -e "$corpus_dir" ]; then
-    zip -j $OUT/"$test_name_we"_seed_corpus.zip $corpus_dir/*
+    zip --quiet -j $OUT/"$test_name_we"_seed_corpus.zip $corpus_dir/*
     echo "Build corpus '$OUT/"$test_name_we"_seed_corpus.zip' for the test '$test_name_we'"
   fi
 done
 
 cp $TARANTOOL_PATH "$OUT/$LUA_RUNTIME_NAME"
 cp -R $LUA_MODULES_DIR "$OUT/"
+
+# Don't consider compile_lua_fuzzer as a test.
+rm -f "$OUT/compile_lua_fuzzer" "$SRC/compile_lua_fuzzer"

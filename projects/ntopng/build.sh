@@ -29,7 +29,7 @@ export CXXFLAGS="-stdlib=libc++ -Wno-error=unused-command-line-argument"
 
 # libpcap
 cd $SRC/libpcap-1.9.1
-./configure --disable-shared
+./configure --disable-shared --disable-dbus --without-libnl --disable-rdma --disable-usb
 make -j$(nproc)
 make install
 
@@ -38,7 +38,7 @@ cd $SRC/zeromq-4.3.5
 ./autogen.sh
 (
 export CXXFLAGS="-Wno-error=missing-braces -Wno-error=unused-command-line-argument -stdlib=libc++"
-./configure --without-documentation --without-libsodium --enable-static --disable-shared
+./configure --without-docs --without-libsodium --enable-static --disable-shared --disable-perf
 make -j$(nproc)
 make install
 )
@@ -47,13 +47,13 @@ make install
 cd $SRC/json-c-json-c-0.17-20230812
 mkdir build
 cd build
-cmake -DBUILD_SHARED_LIBS=OFF ..
+cmake -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF ..
 make -j$(nproc)
 make install
 
 # libmaxminddb
 cd $SRC/libmaxminddb-1.7.1
-./configure --disable-shared --enable-static
+./configure --disable-shared --enable-static --disable-binaries --disable-tests
 make -j$(nproc)
 make install
 
@@ -63,19 +63,23 @@ make install
 # Build nDPI
 cd $NDPI_HOME
 ./autogen.sh
-./configure
+./configure --with-only-libndpi --disable-shared
 make -j$(nproc)
 
 # Build LUA
-make -C $NTOPNG_HOME/third-party/lua-5.4.6 generic
+make -C $NTOPNG_HOME/third-party/lua-5.4.6 generic -j$(nproc)
 
 # Build librrdtool
-cd $NTOPNG_HOME/third-party/rrdtool-1.4.8
+cd $SRC/rrdtool-1.x-1.10.3
+./bootstrap
 ./configure --disable-libdbi --disable-libwrap --disable-rrdcgi --disable-libtool-lock \
     --disable-nls --disable-rpath --disable-perl --disable-ruby --disable-lua \
-    --disable-tcl --disable-python --disable-dependency-tracking --disable-rrd_graph
+    --disable-tcl --disable-python --disable-dependency-tracking --disable-rrd_graph \
+    --disable-rrdcached --enable-docs=no --disable-librados \
+    --disable-shared --enable-static --prefix=/usr/
 cd src
-make librrd_th.la
+make -j$(nproc)
+make install
 
 
 # Re-enable code instrumentation
@@ -89,6 +93,7 @@ cd $NTOPNG_HOME
 
 ./autogen.sh
 
+export LDFLAGS="-lglib-2.0"
 ./configure --enable-fuzztargets --without-hiredis --with-zmq-static \
     --with-json-c-static --with-maxminddb-static
 

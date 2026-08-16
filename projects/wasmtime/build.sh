@@ -32,12 +32,15 @@ build() {
   shift
   PROJECT_DIR=$SRC/$project
 
-  # ensure we get absolute paths for the coverage report
+  # Ensure we get absolute paths for the coverage report.
   cd $PROJECT_DIR
   crate_src_abspath=`cargo metadata --no-deps --format-version 1 | jq -r '.workspace_root'`
   while read i; do
     export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
   done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
+
+  # Enable `cfg(arc_try_new)` for the OOM-handling fuzzer.
+  export RUSTFLAGS="$RUSTFLAGS --cfg=arc_try_new"
 
   cd $PROJECT_DIR/fuzz && cargo fuzz build --sanitizer none --strip-dead-code -O --debug-assertions "$@"
 

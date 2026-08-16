@@ -16,41 +16,18 @@
 
 mkdir -p build
 cd build
-cmake -DOGRE_STATIC=TRUE ..
+cmake -DOGRE_STATIC=TRUE -DOGRE_BUILD_FUZZERS=TRUE -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DOGRE_BUILD_DEPENDENCIES=FALSE -DOGRE_BUILD_SAMPLES=FALSE  ..
 make -j$(nproc)
 
-COMMON_INCLUDES="-I../OgreMain/include/ -I./include/ -I../PlugIns/STBICodec/include/ -I../Components/Bites/include/"
-COMMON_LIBS="-Wl,--start-group \
-	./lib/libOgreOverlayStatic.a            \
-	./lib/libOgreRTShaderSystemStatic.a     \
-	./lib/libOgreBulletStatic.a             \
-	./lib/libPlugin_PCZSceneManagerStatic.a \
-	./lib/libOgreMainStatic.a               \
-	./lib/libOgreTerrainStatic.a            \
-	./lib/libPlugin_OctreeZoneStatic.a      \
-	./lib/libOgrePropertyStatic.a           \
-	./lib/libCodec_STBIStatic.a             \
-	./lib/libOgreMeshLodGeneratorStatic.a \
-	./lib/libOgreVolumeStatic.a \
-	./lib/libOgrePagingStatic.a \
-	./lib/libPlugin_BSPSceneManagerStatic.a \
-	./lib/libPlugin_OctreeSceneManagerStatic.a \
-	./lib/libDefaultSamples.a \
-	./lib/libOgreBitesStatic.a \
-	./lib/libPlugin_DotSceneStatic.a \
-	./lib/libPlugin_ParticleFXStatic.a \
-	$(find . -name 'libpugixml.a' -print -quit) \
-      -Wl,--end-group"
-
-# Build the existing fuzzers
-for fuzzer in image_fuzz stream_fuzz; do
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/${fuzzer}.cpp -o $OUT/${fuzzer} \
-    $COMMON_INCLUDES -pthread $COMMON_LIBS
+# copy the fuzzers
+for fuzzer in image_fuzz stream_fuzz zip_fuzz ogre_deep_fuzz script_fuzz; do 
+  cp bin/${fuzzer} $OUT/${fuzzer}
 done
 
-# Build the deep fuzzer with extra include path for codec headers in src/
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/ogre_deep_fuzz.cpp -o $OUT/ogre_deep_fuzz \
-  $COMMON_INCLUDES -I../OgreMain/src/ -pthread $COMMON_LIBS
+# Copy dictionary
+cp ../Tests/fuzz/ogre_deep_fuzz.dict $OUT/ogre_deep_fuzz.dict 2>/dev/null || true
+cp ../Tests/fuzz/script_fuzz.dict $OUT/script_fuzz.dict 2>/dev/null || true
 
 # Create seed corpus for the deep fuzzer from Ogre's test/sample media files
 mkdir -p /tmp/ogre_deep_seeds
@@ -70,7 +47,13 @@ for f in $(find .. -name '*.cfg' | head -3); do
   printf '\x03' | cat - "$f" > "/tmp/ogre_deep_seeds/cfg_${base}"
 done
 
-cd /tmp/ogre_deep_seeds && zip -q $OUT/ogre_deep_fuzz_seed_corpus.zip * 2>/dev/null || true
+# Create seed corpus for the script fuzzer.
+mkdir -p /tmp/ogre_script_seeds
+for f in $(find .. -name '*.material' -o -name '*.program' \
+    -o -name '*.particle' -o -name '*.compositor'); do
+  base=$(basename "$f")
+  cp "$f" "/tmp/ogre_script_seeds/$base"
+done
 
-# Copy dictionary
-cp $SRC/ogre_deep_fuzz.dict $OUT/ogre_deep_fuzz.dict 2>/dev/null || true
+cd /tmp/ogre_deep_seeds && zip -q $OUT/ogre_deep_fuzz_seed_corpus.zip * 2>/dev/null || true
+cd /tmp/ogre_script_seeds && zip -q $OUT/script_fuzz_seed_corpus.zip * 2>/dev/null || true

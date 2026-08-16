@@ -87,7 +87,6 @@ $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
   jpeg_encoder \
   path_deserialize \
   png_encoder \
-  region_deserialize \
   region_set_path \
   skdescriptor_deserialize \
   skjson \
@@ -116,6 +115,7 @@ $SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
   hdr_agtm \
   parse_path \
   quad_roots \
+  region_deserialize \
   skmeshspecification \
   skruntimeblender \
   skruntimecolorfilter \
@@ -130,7 +130,8 @@ $SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
 rm -rf $OUT/data
 mkdir $OUT/data
 
-mv out/Fuzz/region_deserialize $OUT/region_deserialize
+mv out/FuzzDebug/region_deserialize $OUT/region_deserialize
+mv ../skia_data/skregion_deserialize_seed_corpus.zip $OUT/region_deserialize_seed_corpus.zip
 
 mv out/Fuzz/region_set_path $OUT/region_set_path
 mv ../skia_data/region_set_path_seed_corpus.zip $OUT/region_set_path_seed_corpus.zip

@@ -27,9 +27,16 @@ RUN apt-get update && \
     nasm \
     pkg-config \
     po4a \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
     ninja-build \
     libgflags-dev \
     yasm
+
+# Get latest meson
+RUN apt purge meson
+RUN pip3 install --upgrade pip meson --root-user-action ignore
 
 # Due to libtiff requirements, build requires autoconf 2.71 (or later)
 RUN curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/main/a/autoconf/autoconf_2.72-3.1ubuntu1_all.deb && \
@@ -53,9 +60,6 @@ RUN git clone --depth 1 https://github.com/Esri/lerc
 # Libdeflate
 RUN git clone --depth 1 https://github.com/ebiggers/libdeflate
 
-# libgeotiff
-RUN git clone --depth 1 https://github.com/OSGeo/libgeotiff
-
 # h.265 codec implementation needed by libheif
 RUN git clone --depth 1 https://github.com/strukturag/libde265 || \
     printf "https://github.com/strukturag/libde265 is not available!\n"
@@ -69,6 +73,10 @@ RUN git clone --depth 1 https://bitbucket.org/multicoreware/x265_git/src/stable/
 # AV1 Codec Library needed by libheif
 RUN git clone --depth 1 https://aomedia.googlesource.com/aom aom || \
     printf "https://aomedia.googlesource.com/aom is not available!\n"
+
+# Dav1d Codec Library needed by libheif
+RUN git clone --depth 1 https://code.videolan.org/videolan/dav1d || \
+    printf "https://code.videolan.org/videolan/dav1d is not available!\n"
 
 # AVC (OpenH264) Codec Library needed by libheif
 RUN git clone --depth 1 https://github.com/cisco/openh264 openh264
