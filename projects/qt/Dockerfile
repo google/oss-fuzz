@@ -30,5 +30,6 @@ RUN git clone --depth 1 --branch dev git://code.qt.io/qt/qt5.git .
 
 RUN ./init-repository --force \
     --module-subset=qtbase,qtqa,qtimageformats,qtsvg \
+    --depth 1 \
     --no-optional-deps
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
