@@ -16,7 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN apt-get update && apt-get install -y libssl-dev ninja-build libc6-dev:i386
+RUN apt-get update && apt-get install -y libssl-dev ninja-build libc6-dev:i386 \
+    libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev \
+    libpulse-dev libpipewire-0.3-dev
 
 RUN git clone --depth 1 https://github.com/AFLplusplus/AFLplusplus.git myaflplusplus && \
     cp -r myaflplusplus/dictionaries afldictionaries && \
@@ -29,7 +31,7 @@ WORKDIR $SRC/qt
 RUN git clone --depth 1 --branch dev git://code.qt.io/qt/qt5.git .
 
 RUN ./init-repository --force \
-    --module-subset=qtbase,qtqa,qtimageformats,qtsvg \
+    --module-subset=qtbase,qtqa,qtimageformats,qtsvg,qtmultimedia \
     --depth 1 \
     --no-optional-deps
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
