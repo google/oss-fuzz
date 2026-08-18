@@ -20,12 +20,13 @@
 # Runs inside the base-builder-rust container; $OUT / $SRC / $CC / $CXX /
 # $LIB_FUZZING_ENGINE are provided by the build environment.
 
-# The repo is cloned to $SRC/zebra-fuzz by the Dockerfile.
+# Zebra is cloned to $SRC/zebra and the seed archives to $SRC/corpora by the
+# Dockerfile.
 # Non-standard layout: the cargo-fuzz harnesses live at zebra-fuzz/fuzz/, NOT at
 # the workspace root. cargo-fuzz must run from the workspace root WITH
 # --fuzz-dir; otherwise it resolves the manifest to the (non-existent)
 # workspace-root fuzz/ and dies with "could not read manifest .../fuzz/Cargo.toml".
-cd "$SRC/zebra-fuzz"
+cd "$SRC/zebra"
 
 # The OSS-Fuzz coverage build's cargo wrapper hard-codes `cd fuzz` (verified by
 # reading /usr/local/bin/cargo in the image: `cd fuzz || true; cargo build --bins`),
@@ -45,11 +46,17 @@ cargo fuzz build -O --fuzz-dir zebra-fuzz/fuzz
 
 FUZZ_OUT="zebra-fuzz/fuzz/target/x86_64-unknown-linux-gnu/release"
 
-# Explicit white-list — only the 15 shipped targets (M1 5 + M2 7 + M3 3 Ironwood)
-# are copied to $OUT. We do NOT glob fuzz/fuzz_targets/*.rs, so no held-back /
-# out-of-scope target can leak into the published fuzzer set.
+# Explicit white-list — only these 14 targets are copied to $OUT. We do NOT glob
+# fuzz/fuzz_targets/*.rs, so no held-back / out-of-scope target can leak into the
+# published fuzzer set.
+#
+# Zebra ships 15 harnesses; block_deep_fuzz is deliberately held out of the
+# initial enrolment. block_deserialize already covers the same parse surface,
+# and OSS-Fuzz splits a project's compute across its targets, so enrolling both
+# would spend the working targets' budget on redundant coverage at the most
+# expensive target's rate. It is re-enrolled by adding one line here once the
+# restructuring tracked in ZcashFoundation/zebra#11261 lands.
 WHITELIST=(
-    # M2 (7)
     rpc_handler_fuzz
     jsonrpsee_envelope_fuzz
     script_verify_fuzz
@@ -57,13 +64,10 @@ WHITELIST=(
     address_fuzz
     note_commitment_tree_fuzz
     equihash_fuzz
-    # M1 (5)
     block_deserialize
-    block_deep_fuzz
     p2p_message_parse
     p2p_deep_fuzz
     addr_message_fuzz
-    # M3 Ironwood (3)
     v6_transaction_fuzz
     v6_transaction_semantic_fuzz
     ironwood_value_balance_codec_fuzz
@@ -71,11 +75,12 @@ WHITELIST=(
 
 for t in "${WHITELIST[@]}"; do
     cp "$FUZZ_OUT/$t" "$OUT/"
-    # Ship a seed corpus alongside each target if one was staged under
-    # fuzz/corpus/<target>/ (mainnet-derived public bytes; safe to publish).
-    if [ -d "zebra-fuzz/fuzz/corpus/$t" ]; then
-        (cd "zebra-fuzz/fuzz/corpus/$t" && zip -q -r "$OUT/${t}_seed_corpus.zip" .)
-    fi
+    # Ship the target's seed corpus, from ZcashFoundation/zebra-fuzz-corpora
+    # (mainnet-derived public bytes; safe to publish). Deliberately unguarded: a
+    # missing archive must fail the build under `set -e` rather than silently
+    # producing a seedless target, which is how a target can run for months
+    # without seeds and without anyone noticing.
+    cp "$SRC/corpora/seeds/${t}_seed_corpus.zip" "$OUT/${t}_seed_corpus.zip"
     # Ship a dictionary if one exists under zebra-fuzz/fuzz/dicts/<target>.dict.
     if [ -f "zebra-fuzz/fuzz/dicts/${t}.dict" ]; then
         cp "zebra-fuzz/fuzz/dicts/${t}.dict" "$OUT/${t}.dict"

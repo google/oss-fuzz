@@ -31,6 +31,11 @@ RUN apt-get update && \
         cmake clang libclang-dev protobuf-compiler && \
     rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth 1 https://github.com/robustfengbin/zebra-fuzz-m3 $SRC/zebra-fuzz
-WORKDIR $SRC/zebra-fuzz
+# Two clones: the harnesses are versioned in Zebra alongside the code they
+# exercise, while the binary seed archives live in a separate repository so that
+# ~17 MB of opaque compressed data stays out of the consensus node's git
+# history. build.sh reads seeds from $SRC/corpora/seeds/.
+RUN git clone --depth 1 https://github.com/ZcashFoundation/zebra $SRC/zebra
+RUN git clone --depth 1 https://github.com/ZcashFoundation/zebra-fuzz-corpora $SRC/corpora
+WORKDIR $SRC/zebra
 COPY build.sh $SRC/
