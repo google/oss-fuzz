@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,5 +15,6 @@
 #
 ################################################################################
 
-# Run build script.
-"${SRC}/kea/src/fuzz/build.sh"
+# Deliberately thin: the real recipe lives in the project's own tree, so adding
+# or renaming a fuzz target never needs a PR against oss-fuzz.
+"$SRC/mod_auth_openidc/test/fuzz/oss-fuzz-build.sh"
