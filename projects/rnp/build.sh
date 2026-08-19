@@ -17,7 +17,7 @@
 
 cd "$SRC"
 
-wget -qO- https://botan.randombit.net/releases/Botan-3.6.0.tar.xz | tar xJ
+wget -qO- https://botan.randombit.net/releases/Botan-3.12.0.tar.xz | tar xJ
 BOTAN_VERSION=$(ls -d Botan-* | head -n1 | sed 's/Botan-//')
 cd "Botan-${BOTAN_VERSION}"
 # Botan 3.5.0 renamed the curve25519 module to x25519; only apply the rename
