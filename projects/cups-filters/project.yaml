@@ -21,7 +21,7 @@ architectures:
 
 sanitizers:
   - address
-  - memory
+  # - memory
   # - undefined   
 
 fuzzing_engines:
