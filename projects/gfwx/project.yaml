@@ -11,4 +11,4 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
+disabled: true
