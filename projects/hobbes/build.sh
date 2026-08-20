@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
-
-RUN git clone --recursive --depth 1 https://github.com/GrokImageCompression/grok.git grok
-RUN git clone --depth 1 https://github.com/GrokImageCompression/grok-test-data.git grok-data
-WORKDIR grok
-COPY run_tests.sh build.sh $SRC/
+# The build lives in the hobbes tree so that harness changes and build changes
+# stay in one commit. See fuzz/README.md there.
+exec "$SRC/hobbes/fuzz/oss-fuzz-build.sh"
