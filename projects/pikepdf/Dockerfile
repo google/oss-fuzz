@@ -28,9 +28,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends\
 RUN apt-get purge -y gcc && apt-get autoremove -y && apt-get clean
 
 RUN pip3 install --upgrade pip
-RUN git clone --depth 1 https://github.com/pikepdf/pikepdf.git pikepdf \
-        && cp pikepdf/fuzzing/build.sh $SRC/
+RUN git clone --depth 1 https://github.com/pikepdf/pikepdf.git pikepdf
 RUN git clone --depth 1 https://github.com/qpdf/qpdf.git qpdf
 
-WORKDIR pikepdf
+COPY build.sh asan_deque_annotations_stub.c $SRC/
+
+WORKDIR $SRC/pikepdf
 
