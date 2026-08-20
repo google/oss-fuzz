@@ -82,3 +82,14 @@ zip -j $OUT/xmlsec_dsig_verify_fuzzer_seed_corpus.zip \
     $SRC/xmlsec/tests/merlin-exc-c14n-one/*.xml \
     $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature*.xml \
     2>/dev/null || true
+
+# Seed corpus for the KeyInfo fuzzer: test files whose <KeyInfo> covers KeyName,
+# the X509Data variants, RetrievalMethod and EncryptedKey
+zip -j $OUT/xmlsec_keyinfo_fuzzer_seed_corpus.zip \
+    $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature-keyname.* \
+    $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature-x509-*.* \
+    $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature-retrievalmethod-*.* \
+    $SRC/xmlsec/tests/phaos-xmldsig-three/signature-rsa-manifest-x509-data-*.xml \
+    $SRC/xmlsec/tests/phaos-xmldsig-three/signature-rsa-*x509-data-crl.xml \
+    $SRC/xmlsec/tests/merlin-xmlenc-five/encrypt-*.xml \
+    2>/dev/null || true
