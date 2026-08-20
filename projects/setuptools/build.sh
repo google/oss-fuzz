@@ -37,6 +37,7 @@ pip3 install .
 popd
 
 pip3 install .
+pip3 install 'setuptools<82'
 
 cd ../
 mkdir forbuilding
