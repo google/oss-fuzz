@@ -25,6 +25,18 @@ if [ "$ARCHITECTURE" = "i386" ]; then
   export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
 fi
 
+# MSan: the system zlib is not instrumented, so stores done inside its
+# inflate() are invisible to MSan and inflated buffers look uninitialized,
+# producing false use-of-uninitialized-value reports.  Build an
+# MSan-instrumented zlib from source and make meson pick it up instead.
+if [ "${SANITIZER:-}" = "memory" ]; then
+  pushd $SRC/zlib
+  ./configure --static --prefix=$WORK/zlib
+  make -j$(nproc) install
+  popd
+  export PKG_CONFIG_PATH="$WORK/zlib/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+fi
+
 # setup
 build=$WORK/build
 

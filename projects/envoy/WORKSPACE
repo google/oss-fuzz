@@ -35,3 +35,7 @@ envoy_repo()
 load("//bazel:toolchains.bzl", "envoy_toolchains")
 
 envoy_toolchains()
+
+load("//bazel:dependency_imports_extra.bzl", "envoy_dependency_imports_extra")
+
+envoy_dependency_imports_extra()

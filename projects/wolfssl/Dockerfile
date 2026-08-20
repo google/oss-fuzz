@@ -28,19 +28,16 @@ RUN wget https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.bz2
 RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
 
 # Retrieve corpora from other projects
-RUN wget https://storage.googleapis.com/pub/gsutil.tar.gz -O $SRC/gsutil.tar.gz
-RUN tar zxf $SRC/gsutil.tar.gz
-ENV PATH="${PATH}:$SRC/gsutil"
-RUN gsutil cp gs://bearssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bearssl_cryptofuzz-bearssl/public.zip $SRC/corpus_bearssl.zip
-RUN gsutil cp gs://libecc-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libecc_cryptofuzz-libecc/public.zip $SRC/corpus_libecc.zip
-RUN gsutil cp gs://relic-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/relic_cryptofuzz-relic/public.zip $SRC/corpus_relic.zip
-RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-openssl/public.zip $SRC/corpus_cryptofuzz-openssl.zip
-RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-boringssl/public.zip $SRC/corpus_cryptofuzz-boringssl.zip
-RUN gsutil cp gs://cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-nss/public.zip $SRC/corpus_cryptofuzz-nss.zip
+RUN wget https://storage.googleapis.com/bearssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bearssl_cryptofuzz-bearssl/public.zip -O $SRC/corpus_bearssl.zip
+RUN wget https://storage.googleapis.com/libecc-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libecc_cryptofuzz-libecc/public.zip -O $SRC/corpus_libecc.zip
+RUN wget https://storage.googleapis.com/relic-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/relic_cryptofuzz-relic/public.zip -O $SRC/corpus_relic.zip
+RUN wget https://storage.googleapis.com/cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-openssl/public.zip -O $SRC/corpus_cryptofuzz-openssl.zip
+RUN wget https://storage.googleapis.com/cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-boringssl/public.zip -O $SRC/corpus_cryptofuzz-boringssl.zip
+RUN wget https://storage.googleapis.com/cryptofuzz-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/cryptofuzz_cryptofuzz-nss/public.zip -O $SRC/corpus_cryptofuzz-nss.zip
 
 # OpenSSL/LibreSSL corpora, which require a special import procedure
-RUN gsutil cp gs://openssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/openssl_bignum/public.zip $SRC/corpus_openssl_expmod.zip
-RUN gsutil cp gs://libressl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libressl_bignum/public.zip $SRC/corpus_libressl_expmod.zip
+RUN wget https://storage.googleapis.com/openssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/openssl_bignum/public.zip -O $SRC/corpus_openssl_expmod.zip
+RUN wget https://storage.googleapis.com/libressl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/libressl_bignum/public.zip -O $SRC/corpus_libressl_expmod.zip
 
 WORKDIR wolfssl
 

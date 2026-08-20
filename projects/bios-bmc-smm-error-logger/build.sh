@@ -47,7 +47,7 @@ meson setup build \
     -Dtests=enabled \
     -Ddefault_library=static \
     -Dgoogletest:default_library=static \
-    -Dcpp_args="-stdlib=libc++ -Wno-error=character-conversion -Wno-error=deprecated-declarations $CXXFLAGS" \
+    -Dcpp_args="-stdlib=libc++ -Wno-error=character-conversion -Wno-error=deprecated-declarations -Wno-error=c99-extensions $CXXFLAGS" \
     -Dc_args="$CFLAGS" \
     -Dcpp_link_args="${LDFLAGS:-$CXXFLAGS}" \
     -Dfuzz_engine="$LIB_FUZZING_ENGINE"
