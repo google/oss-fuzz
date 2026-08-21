@@ -29,6 +29,7 @@ echo "using clang : ossfuzz : $CXX : <compileflags>\"$CXXFLAGS\" <linkflags>\"$C
 $CXX $CXXFLAGS -I . ../boost_regex_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_fuzzer
 $CXX $CXXFLAGS -I . ../boost_regex_pattern_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_pattern_fuzzer
 $CXX $CXXFLAGS -I . ../boost_regex_replace_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_replace_fuzzer
+$CXX $CXXFLAGS -I . ../boost_regex_c_traits_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_c_traits_fuzzer
 
 #boost property tree parsers
 $CXX $CXXFLAGS -I . ../boost_ptree_xmlread_fuzzer.cc  $LIB_FUZZING_ENGINE -o boost_ptree_xmlread_fuzzer
