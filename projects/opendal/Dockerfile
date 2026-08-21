@@ -15,9 +15,7 @@
 ##########################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-rust
 
-RUN git clone --depth 1 https://github.com/apache/incubator-opendal.git opendal
+RUN git clone --depth 1 https://github.com/apache/opendal.git opendal
 WORKDIR $SRC
 
 COPY build.sh $SRC/
-COPY .fs.env $SRC/
-COPY .memory.env $SRC/

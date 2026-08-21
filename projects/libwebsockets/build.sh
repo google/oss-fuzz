@@ -20,8 +20,13 @@ DIR=$SRC/libwebsockets/
 cd $DIR
 sed -i 's/-Werror//g' ./CMakeLists.txt
 mkdir build && cd build
+# Upstream now defaults LWS_WITH_HTTP3 (QUIC) to ON, which in turn forces
+# LWS_WITH_GNUTLS=ON and fails configuration because GnuTLS dev packages are
+# not installed (this project uses OpenSSL). The fuzz target only exercises
+# the upng/gunzip inflate code, so disable HTTP3 to restore the prior config.
 cmake -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-      -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$CFLAGS" ..
+      -DCMAKE_EXE_LINKER_FLAGS="$CFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$CFLAGS" \
+      -DLWS_WITH_HTTP3=OFF ..
 make -j8
 
 cd $DIR

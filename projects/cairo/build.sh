@@ -73,8 +73,8 @@ if [ ! -f "${OUT}/cairo.dict" ]; then
 fi
 
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -pthread -lrt -lpthread"
-DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 cairo cairo-gobject"
-BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
+DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 cairo cairo-gobject cairo-script-interpreter"
+BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS` -I$SRC/fuzz"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
 fuzzers=$(find $SRC/fuzz/ -name "*_fuzzer.c")

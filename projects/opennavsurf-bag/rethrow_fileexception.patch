@@ -1,0 +1,16 @@
+diff --git a/api/bag_dataset.cpp b/api/bag_dataset.cpp
+index 730d442..476f4fa 100644
+--- a/api/bag_dataset.cpp
++++ b/api/bag_dataset.cpp
+@@ -1106,6 +1106,11 @@ void Dataset::readDataset(
+     {
+         std::cerr << "Unable to read BAG file, error was: " << e.getCDetailMsg() << std::endl;
+         e.printErrorStack();
++        // Propagate the failure: without this, readDataset() continues with a
++        // null m_pH5file and Metadata::Metadata() dereferences it, causing a
++        // SEGV on any non-BAG input. Rethrowing lets Dataset::open() catch the
++        // FileIException and return nullptr, which the callers already handle.
++        throw;
+     }
+ 
+     m_pMetadata = std::make_unique<Metadata>(*this);

@@ -23,6 +23,7 @@ cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
 make -j$(nproc)
 
 cp fuzzer/FuzzIxml $OUT/FuzzIxml
+cp fuzzer/FuzzHttp $OUT/FuzzHttp
 
 pushd $SRC/oss-fuzz-bloat/pupnp/
 cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip

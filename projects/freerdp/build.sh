@@ -68,6 +68,11 @@ do
     cp $f $OUT/
 done
 
+# Disable leak detection for the RAIL fuzzer (rail_order_recv stream-ownership leak).
+if [ -f $OUT/TestFuzzChannelRail ]; then
+    printf '[asan]\ndetect_leaks=0\n' > $OUT/TestFuzzChannelRail.options
+fi
+
 # Build test
 mkdir $SRC/FreeRDP/build-test
 cd $SRC/FreeRDP/build-test

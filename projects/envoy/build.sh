@@ -15,12 +15,6 @@
 #
 ################################################################################
 
-# Overcome missing dependency declaration with path mapping issue. This is
-# similar to the current abseil build (see
-# https://github.com/google/oss-fuzz/pull/12858), to overcome the issue
-# mentioned in https://github.com/bazelbuild/bazel/issues/23681.
-export USE_BAZEL_VERSION=7.4.0
-
 declare -r FUZZ_TARGET_QUERY='
   let all_fuzz_tests = attr(tags, "fuzz_target", "test/...") in
   $all_fuzz_tests - attr(tags, "no_fuzz", $all_fuzz_tests)
@@ -39,6 +33,9 @@ declare -r EXTRA_BAZEL_FLAGS="$(
 # Disabling layering_check because it breaks the abseil build. See
 # https://github.com/google/oss-fuzz/blob/f0fa8b5cd3f99b5905e91b336d07a870ca1bc2e3/projects/abseil-cpp/build.sh#L17-L21.
 echo "--features=-layering_check"
+echo "--repo_env=BAZEL_LLVM_PATH=/usr/local"
+echo "--repo_env=BAZEL_USE_LIBSTDCPP=True"
+echo "--copt=-Wno-nullability-completeness"
 if [ -n "$CC" ]; then
   echo "--action_env=CC=${CC}"
 fi
@@ -46,6 +43,11 @@ if [ -n "$CXX" ]; then
   echo "--action_env=CXX=${CXX}"
 fi
 echo "--host_action_env=CC=gcc"
+echo "--host_action_env=CXX=g++"
+echo "--copt=-gz=zlib"
+echo "--linkopt=-Wl,--compress-debug-sections=zlib"
+echo "--linkopt=-Wl,--icf=all"
+echo "--linkopt=-Wl,--gc-sections"
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
@@ -54,7 +56,7 @@ then
   echo "--linkopt=-fsanitize=undefined"
 elif [ "$SANITIZER" = "address" ]
 then
-  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
+  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address" "--copt=-fno-sanitize-ignorelist"
 fi
 )"
 
@@ -95,28 +97,25 @@ then
   echo " --per_file_copt=^.*test/.*\.cc\$@-fsanitize-coverage=0"
 
 # External dependencies. Disable all instrumentation.
-  echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-  echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-  echo " --per_file_copt=^.*com_github_grpc_grpc.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*boringssl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_googlesource_code_re2.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*upb.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*org_brotli.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_github_jbeder_yaml_cpp.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*proxy_wasm_cpp_host/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-  echo " --per_file_copt=^.*com_github_google_libprotobuf_mutator/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_github_google_libprotobuf_mutator/.*\.cc\$@-fsanitize-coverage=0"
   echo " --per_file_copt=^.*com_googlesource_googleurl/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_lightstep_tracer_cpp/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
 
-# External dependency which needs to be compiled with sanitizers. Disable
-# coverage instrumentation.
+# External dependencies which need to be compiled with sanitizers (to avoid ASan container poisoning shadow memory mismatches). Disable coverage instrumentation.
+  echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0"
+  echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0"
+  echo " --per_file_copt=^.*com_github_grpc_grpc.*\.cc\$@-fsanitize-coverage=0"
   echo " --per_file_copt=^.*com_google_cel_cpp.*\.cpp\$@-fsanitize-coverage=0"
   echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0"
   echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0"
-
-# All protobuf code and code in bazel-out
-  echo " --per_file_copt=^.*\.pb\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
-  echo " --per_file_copt=^.*bazel-out/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*\.pb\.cc\$@-fsanitize-coverage=0"
+  echo " --per_file_copt=^.*bazel-out/.*\.cc\$@-fsanitize-coverage=0"
 fi
 )"
 
@@ -168,6 +167,30 @@ fi
 
 for oss_fuzz_archive in $(find bazel-bin/ -name '*_oss_fuzz.tar'); do
     tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
+done
+
+# Explicitly copy LLVM toolchain C++ runtime shared libraries into $OUT/lib so they are available at runtime.
+mkdir -p "${OUT}/lib"
+find $(bazel info output_base) \( -name "libc++.so*" -o -name "libc++abi.so*" -o -name "libunwind.so*" \) -exec cp -a {} "${OUT}/lib/" \; 2>/dev/null || true
+if [ -d "${OUT}/lib" ]; then
+  (cd "${OUT}/lib" && \
+   [ -f libc++.so.1.0 ] && [ ! -e libc++.so.1 ] && ln -sf libc++.so.1.0 libc++.so.1; \
+   [ -f libc++abi.so.1.0 ] && [ ! -e libc++abi.so.1 ] && ln -sf libc++abi.so.1.0 libc++abi.so.1; \
+   [ -f libunwind.so.1.0 ] && [ ! -e libunwind.so.1 ] && ln -sf libunwind.so.1.0 libunwind.so.1) || true
+fi
+
+# 1. Fix inter-library dependencies among prebuilt toolchain shared libraries in $OUT/lib
+if [ -d "${OUT}/lib" ]; then
+  for so in "${OUT}"/lib/*.so*; do
+    [ -e "$so" ] && patchelf --set-rpath '$ORIGIN' "$so" 2>/dev/null || true
+  done
+fi
+
+# 2. Ensure all extracted fuzz targets can locate shared libraries in $OUT/lib at runtime
+for f in "${OUT}"/*; do
+  if [ -f "$f" ] && [ -x "$f" ] && file "$f" | grep -q "ELF"; then
+    patchelf --set-rpath '$ORIGIN/lib:$ORIGIN' "$f" 2>/dev/null || true
+  fi
 done
 
 # Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build

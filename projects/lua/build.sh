@@ -24,7 +24,7 @@ fi
 
 PACKAGES="build-essential ninja-build cmake make luarocks"
 if [ "$ARCHITECTURE" = "i386" ]; then
-    PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386"
+    PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386 libstdc++6:i386 g++-multilib"
 elif [ "$ARCHITECTURE" = "aarch64" ]; then
     PACKAGES="$PACKAGES zlib1g-dev:arm64 libreadline-dev:arm64 libunwind-dev:arm64"
 else
@@ -75,8 +75,7 @@ fi
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
 FUZZER_ARGS=""
-# The static linkage with libFuzzer is unsupported on i386 [1] and
-# the source code coverage tools can conflict with LibFuzzer,
+# The source code coverage tools can conflict with LibFuzzer,
 # typically resulting in drastically slower execution speeds,
 # crash reproduction failures, or inaccurate coverage reports, so
 # libFuzzer static linkage is disabled when code coverage is
@@ -85,7 +84,6 @@ FUZZER_ARGS=""
 # 1. https://github.com/ligurio/lunapark/issues/180.
 LAPI_TESTING="ON"
 if [[ "$FUZZING_ENGINE" != "libfuzzer" ]] ||
-   [[ "$ARCHITECTURE" == "i386" ]] ||
    [[ "$SANITIZER" == "coverage" ]]; then
   FUZZER_ARGS="-DDISABLE_LIBFUZZER_STATIC_LINKAGE=ON"
   LAPI_TESTING="OFF"
@@ -139,18 +137,15 @@ do
   corpus_dir="corpus_dir/$module"
   echo "Copying for $module";
   cp $f $OUT/
-  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$name"_seed_corpus.zip
+  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip --quiet -@ -j $OUT/"$name"_seed_corpus.zip
 done
 
 # Finish execution if libFuzzer is not used, because luzer
 # is libFuzzer-based.
 # Code coverage is not supported,
 # see https://github.com/google/oss-fuzz/issues/14859.
-# Building luzer on i386 is unsupported,
-# https://github.com/ligurio/luzer/issues/83.
 if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
-   [[ "$SANITIZER" == "coverage" ]] ||
-   [[ "$ARCHITECTURE" == "i386" ]]; then
+   [[ "$SANITIZER" == "coverage" ]]; then
   echo "Lua API testing is not supported."
   exit
 fi
@@ -177,7 +172,7 @@ for fuzzer in $(find $SRC -name '*_test.lua'); do
   test_name_we="${test_file%.*}";
   module_name=$(echo $test_name_we | sed 's/_test//' )
   corpus_dir="corpus_dir/$module_name"
-  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip -@ -j $OUT/"$test_name_we"_seed_corpus.zip
+  [[ -e $corpus_dir ]] && find "$corpus_dir" -mindepth 1 -maxdepth 1 | zip --quiet -@ -j $OUT/"$test_name_we"_seed_corpus.zip
 done
 cp $SRC/testdir/tests/lapi/lib*.lua "$OUT/"
 
