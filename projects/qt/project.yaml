@@ -2,7 +2,7 @@ homepage: "http://qt-project.org"
 language: c++
 primary_contact: "rlohningqt@gmail.com"
 auto_ccs:
-  - eirik.aavitsland.qt@gmail.com
+ - eirik.aavitsland.qt@gmail.com
  - "jimis@gmx.net"
  - "haelkharashy@gmail.com"
  - "morten242@gmail.com"
