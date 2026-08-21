@@ -18,6 +18,19 @@ export TARGET_PACKAGE_PREFIX="com.puppycrawl.tools.checkstyle."
 
 MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15 --update-snapshots"
 $MVN clean package $MAVEN_ARGS
+BUNDLED_JAVA_HOME=$OUT/$(basename $JAVA_HOME)
+rm -rf $BUNDLED_JAVA_HOME
+cp -a $JAVA_HOME $OUT/
+while read -r LINK
+do
+  TARGET=$(readlink "$LINK")
+  case "$TARGET" in
+    /etc/java-21-openjdk/*|/etc/ssl/certs/java/*)
+      rm -f "$LINK"
+      cp -a "$TARGET" "$LINK"
+      ;;
+  esac
+done < <(find $BUNDLED_JAVA_HOME -type l)
 
 BUILD_CLASSPATH=
 RUNTIME_CLASSPATH=
@@ -61,7 +74,10 @@ do
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
 
-  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
+  export JAVA_HOME=\$this_dir/$(basename $JAVA_HOME)
+  export LD_LIBRARY_PATH=\"\$JAVA_HOME/lib/server\":\$this_dir
+  export PATH=\$JAVA_HOME/bin:\$PATH
+
   \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
   --cp=$RUNTIME_CLASSPATH \
   --target_class=$fuzzer_basename \
