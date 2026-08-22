@@ -13,6 +13,7 @@ architectures:
  - x86_64
  - i386
 help_url: "https://code.qt.io/cgit/qt/qtbase.git/plain/tests/libfuzzer/README"
+base_os_version: ubuntu-24-04
 
 fuzzing_engines:
   - honggfuzz
