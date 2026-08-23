@@ -1,0 +1,11 @@
+homepage: "https://github.com/protocgen/proto2mcp"
+language: go
+primary_contact: "brucearctor@users.noreply.github.com"
+auto_ccs:
+- "brucearctor@users.noreply.github.com"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+main_repo: "https://github.com/protocgen/proto2mcp"
+vendor_ccs: []
