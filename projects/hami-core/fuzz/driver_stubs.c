@@ -1,3 +1,7 @@
+/* Copyright 2026 Reza Jelveh
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 /* Weak stubs for driver/NVML symbols the TU references but fuzz targets
  * never call. NVML_NO_UNVERSIONED_FUNC_DEFS matches nvml_prefix.h so the
  * plain names match the TU's references. */

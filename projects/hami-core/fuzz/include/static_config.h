@@ -1,3 +1,7 @@
+/* Copyright 2026 Reza Jelveh
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef FUZZ_STATIC_CONFIG_H
 #define FUZZ_STATIC_CONFIG_H
 
