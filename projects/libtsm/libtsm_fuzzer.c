@@ -18,7 +18,7 @@ static void terminal_write_fn(struct tsm_vte *vte,
     out[len % sizeof(out)] = u8[len];
 }
 
-static int term_draw_cell(struct tsm_screen *screen, uint32_t id,
+static int term_draw_cell(struct tsm_screen *screen, uint64_t id,
                           const uint32_t *ch, size_t len,
                           unsigned int cwidth, unsigned int posx,
                           unsigned int posy,
