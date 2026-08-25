@@ -1,0 +1,11 @@
+homepage: "https://github.com/alam00000/bentopdf-hyper-compress"
+language: c++
+primary_contact: "abdullahtapadar01@gmail.com"
+main_repo: "https://github.com/alam00000/bentopdf-hyper-compress"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
