@@ -1,0 +1,96 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Magic numbers and markers for the file formats taglib parses.
+
+# ID3v2 / ID3v1
+"ID3"
+"TAG"
+"APETAGEX"
+
+# MPEG audio frame sync
+"\xFF\xFB"
+"\xFF\xFA"
+"\xFF\xF3"
+"\xFF\xF2"
+
+# Ogg (Vorbis, Opus, Speex, FLAC-in-Ogg)
+"OggS"
+"\x01vorbis"
+"OpusTags"
+"\x80Speex"
+
+# FLAC
+"fLaC"
+
+# MP4 / M4A / iTunes
+"ftyp"
+"M4A "
+"mp42"
+"isom"
+"moov"
+"udta"
+"meta"
+"ilst"
+"covr"
+"free"
+
+# RIFF / WAV
+"RIFF"
+"WAVE"
+"fmt "
+"data"
+"LIST"
+"ID3 "
+
+# AIFF
+"FORM"
+"AIFF"
+"AIFC"
+"COMM"
+"SSND"
+
+# APE / MPC / WavPack
+"MAC "
+"MP+"
+"wvpk"
+
+# DSF / DSDIFF
+"DSD "
+"FRM8"
+"DSd "
+"DSD"
+
+# Matroska / WebM (EBML)
+"\x1A\x45\xDF\xA3"
+"matroska"
+"webm"
+"Segment"
+"Tags"
+
+# Tracker modules (IT, XM, S3M, MOD)
+"IMPM"
+"Extended Module"
+"SCRM"
+"M.K."
+"M!K!"
+"FLT4"
+"4CHN"
+"6CHN"
+
+# TrueAudio
+"TTA1"
+
+# Shorten (ajkg magic)
+"ajkg"
