@@ -6,3 +6,59 @@ add_subdirectory(.. tink-cc)
 
 add_executable(tink_encrypt_fuzzer tink_encrypt_decrypt_fuzzer.cc)
 target_link_libraries(tink_encrypt_fuzzer tink::static $ENV{LIB_FUZZING_ENGINE})
+
+# Parsers of the per-key-type proto serialization implementations. The fuzzer
+# supplies the serialized key proto; type_url/output prefix/id are fixed, so
+# the input reaches ParseKeyWithLegacyFallback without dying on the envelope.
+add_executable(tink_parse_keys_fuzzer tink_parse_keys_fuzzer.cc)
+target_link_libraries(tink_parse_keys_fuzzer
+  tink::static
+  tink::mac::mac_config
+  tink::aead::aead_config
+  tink::daead::deterministic_aead_config
+  tink::prf::prf_config
+  tink::signature::signature_config
+  tink::hybrid::hybrid_config
+  tink::hybrid::hpke_config
+  tink::jwt::jwt_mac_config
+  tink::jwt::jwt_signature_config
+  tink::streamingaead::streaming_aead_config
+  tink::keyderivation::key_derivation_config
+  tink::proto::tink_cc_proto
+  tink::proto::hmac_cc_proto
+  tink::proto::aes_gcm_cc_proto
+  tink::proto::x_aes_gcm_cc_proto
+  tink::proto::ecdsa_cc_proto
+  tink::proto::ed25519_cc_proto
+  tink::proto::ml_dsa_cc_proto
+  tink::proto::slh_dsa_cc_proto
+  tink::proto::hpke_cc_proto
+  $ENV{LIB_FUZZING_ENGINE})
+
+# Full no-secret keyset import path (public keysets).
+add_executable(tink_keyset_fuzzer tink_keyset_fuzzer.cc)
+target_link_libraries(tink_keyset_fuzzer
+  tink::static
+  tink::core::proto_keyset_format
+  tink::mac::mac_config
+  tink::aead::aead_config
+  tink::daead::deterministic_aead_config
+  tink::prf::prf_config
+  tink::signature::signature_config
+  tink::hybrid::hybrid_config
+  tink::hybrid::hpke_config
+  tink::jwt::jwt_mac_config
+  tink::jwt::jwt_signature_config
+  tink::streamingaead::streaming_aead_config
+  tink::keyderivation::key_derivation_config
+  tink::proto::tink_cc_proto
+  $ENV{LIB_FUZZING_ENGINE})
+
+# ML-KEM / X-Wing private-key expansion utilities (post-quantum KEM glue).
+add_executable(tink_mlkem_fuzzer tink_mlkem_fuzzer.cc)
+target_link_libraries(tink_mlkem_fuzzer
+  tink::static
+  tink::internal::mlkem_util
+  tink::internal::xwing_util
+  tink::util::secret_data
+  $ENV{LIB_FUZZING_ENGINE})

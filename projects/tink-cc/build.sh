@@ -18,9 +18,12 @@
 cd $SRC/tink-cc/fuzzing && cmake .
 make -j$(nproc)
 mv tink_encrypt_fuzzer $OUT/
+mv tink_parse_keys_fuzzer $OUT/
+mv tink_keyset_fuzzer $OUT/
+mv tink_mlkem_fuzzer $OUT/
 
-# Hack to get coverage to work. We need this due to /src/tink/cc/fuzzing/tink/__include_alias/tink
-# being an symbolic link. Instead, we exchange it with the actual contents.
+# Hack to get coverage to work. We need this due to /src/tink/cc/fuzzing/tink/__include_alias/tink
+# being an symbolic link. Instead, we exchange it with the actual contents.
 rm /src/tink-cc/fuzzing/tink-cc/__include_alias/tink
 mkdir /src/tinktmp
 cp -rf /src/tink-cc/ /src/tinktmp/tink
