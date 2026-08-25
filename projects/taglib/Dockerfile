@@ -17,5 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make zlib1g-dev
 RUN git clone --depth 1 --recurse-submodules https://github.com/taglib/taglib.git
-WORKDIR taglib
+WORKDIR $SRC/taglib
 COPY build.sh taglib_fileref_fuzzer.cpp taglib.dict $SRC/
