@@ -2,7 +2,7 @@ homepage: "https://www.r-project.org/"
 language: c
 primary_contact: "simon.urbanek@r-project.org"
 auto_ccs:
-  - "R-core@R-project.org"
+  - "r-oss-fuzz@R-project.org"
   - "kevin@posit.co"
 main_repo: "https://svn.r-project.org/R/trunk"
 sanitizers:
