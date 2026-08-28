@@ -1,0 +1,9 @@
+homepage: "https://github.com/gs1/gs1-syntax-engine"
+language: c
+main_repo: "https://github.com/gs1/gs1-syntax-engine.git"
+primary_contact: "terry.burton@gmail.com"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined
