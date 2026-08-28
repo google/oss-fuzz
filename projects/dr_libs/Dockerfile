@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,36 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-
 FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
-RUN pwd
-RUN ls
-RUN git -C boost submodule update --init libs/json
-RUN git -C boost/libs/json checkout develop
-RUN git -C boost submodule update --init --depth 1 \
-libs/assert \
-libs/charconv \
-libs/config/ \
-libs/compat \
-libs/container \
-libs/container_hash/ \
-libs/core \
-libs/describe \
-libs/endian \
-libs/headers/ \
-libs/intrusive/ \
-libs/move/ \
-libs/mp11/ \
-libs/predef/ \
-libs/system/ \
-libs/throw_exception/ \
-libs/winapi/ \
-libs/variant2/ \
-tools/boost_install \
-tools/build
-
-WORKDIR boost
+RUN git clone --depth 1 https://github.com/mackron/dr_libs.git
 COPY build.sh $SRC/
-
+WORKDIR $SRC/dr_libs

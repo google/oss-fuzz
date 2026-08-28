@@ -1,4 +1,5 @@
-# Copyright 2021 Google LLC
+#!/bin/bash -eu
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make curl yasm autoconf libtool nasm ninja-build
-RUN pip3 install --upgrade pip meson jinja2 tabulate pyyaml
-RUN git clone --depth 1 https://github.com/spdk/spdk && \
-    cd spdk && \
-    git submodule update --init
-WORKDIR $SRC/spdk
-COPY build.sh parse_json_fuzzer.cc $SRC/
+# The build lives in the hobbes tree so that harness changes and build changes
+# stay in one commit. See fuzz/README.md there.
+exec "$SRC/hobbes/fuzz/oss-fuzz-build.sh"

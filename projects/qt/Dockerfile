@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y libssl-dev ninja-build libc6-dev:i386
 
@@ -30,7 +30,7 @@ WORKDIR $SRC/qt
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qt5.git && \
     cp -r qt5/cmake . && \
     rm -rf qt5
-RUN git clone --branch dev --depth 5000 git://code.qt.io/qt/qtbase.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtbase.git
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtimageformats.git
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtsvg.git
 RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
