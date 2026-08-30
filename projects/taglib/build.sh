@@ -28,15 +28,18 @@ cmake -S . -B build \
     -DVISIBILITY_HIDDEN=OFF
 cmake --build build -j$(nproc)
 
-# Compile the fuzz target against the freshly built static library.
+# Compile the fuzz target maintained in taglib's own tests/fuzzing directory.
 $CXX $CXXFLAGS -std=c++17 \
     -I $SRC/taglib/taglib \
     -I $SRC/taglib/taglib/toolkit \
     -I $SRC/taglib/build \
-    $SRC/taglib_fileref_fuzzer.cpp \
+    $SRC/taglib/tests/fuzzing/taglib_fileref_fuzzer.cpp \
     $SRC/taglib/build/taglib/libtag.a -lz \
     $LIB_FUZZING_ENGINE \
     -o $OUT/taglib_fileref_fuzzer
+
+# Format dictionary, also maintained upstream.
+cp $SRC/taglib/tests/fuzzing/taglib.dict $OUT/taglib_fileref_fuzzer.dict
 
 # Seed corpus built from taglib's own test data (LGPL/MPL, same project).
 zip -j -q $OUT/taglib_fileref_fuzzer_seed_corpus.zip $SRC/taglib/tests/data/*
