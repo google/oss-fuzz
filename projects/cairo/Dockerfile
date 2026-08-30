@@ -16,10 +16,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y python3-pip gtk-doc-tools libffi-dev autotools-dev libtool gperf
-RUN pip3 install -U meson==1.4.0 ninja packaging
+RUN pip3 install -U meson==1.6.0 ninja packaging
 
-RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib
 RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git && \
     zip -q $SRC/cairo_seed_corpus.zip $SRC/cairo/test/reference/* && \
     zip -q $SRC/svg-render-fuzzer_seed_corpus.zip $SRC/cairo/test/svg/*.svg
