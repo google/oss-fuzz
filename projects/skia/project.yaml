@@ -18,6 +18,15 @@ sanitizers:
  - address
  - undefined
  - memory
+# Temporary: Skia's build exceeds the 20h Cloud Build timeout, which leaves the
+# last configuration in the matrix (libfuzzer/undefined) never uploading a fresh
+# build. Dropping centipede removes two of the seven configurations
+# (centipede/address and the unsanitized centipede/none that it requires) and
+# buys back roughly 20% of the build. Restore this once the build is faster.
+fuzzing_engines:
+ - libfuzzer
+ - afl
+ - honggfuzz
 help_url: "https://skia.org/docs/dev/testing/fuzz/"
 builds_per_day: 4
 main_repo: 'https://skia.googlesource.com/skia.git'
