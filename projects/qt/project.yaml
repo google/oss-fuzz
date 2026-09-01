@@ -2,6 +2,7 @@ homepage: "http://qt-project.org"
 language: c++
 primary_contact: "rlohningqt@gmail.com"
 auto_ccs:
+ - eirik.aavitsland.qt@gmail.com
  - "jimis@gmx.net"
  - "haelkharashy@gmail.com"
  - "morten242@gmail.com"
@@ -12,6 +13,7 @@ architectures:
  - x86_64
  - i386
 help_url: "https://code.qt.io/cgit/qt/qtbase.git/plain/tests/libfuzzer/README"
+base_os_version: ubuntu-24-04
 
 fuzzing_engines:
   - honggfuzz
