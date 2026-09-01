@@ -1,0 +1,6 @@
+homepage: "https://fuchsia.googlesource.com"
+language: rust
+sanitizers:
+  - address
+primary_contact: "security@google.com"
+main_repo: "https://fuchsia.googlesource.com/fuchsia"
