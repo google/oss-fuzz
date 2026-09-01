@@ -16,6 +16,9 @@
 ################################################################################
 
 # Build the fuzzers and project source code
+rustup toolchain install nightly --profile minimal
+export RUSTUP_TOOLCHAIN=nightly
+RUSTFLAGS= cargo install cargo-fuzz
 cargo fuzz build
 
 # Copy built fuzzer binaries to $OUT
