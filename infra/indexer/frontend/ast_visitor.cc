@@ -36,17 +36,7 @@
 #include "clang/AST/PrettyPrinter.h"
 #include "clang/AST/TemplateBase.h"
 #include "clang/AST/Type.h"
-// Upstream renamed clang/Basic/TypeTraits.h to clang/Basic/BuiltinTraits.h
-// during LLVM 24 development. The indexer is integrated against a newer LLVM
-// than the revision base-clang pins (see OUR_LLVM_REVISION in
-// infra/base-images/base-clang/checkout_build_install_llvm.sh), so accept
-// either spelling instead of requiring the two to move in lockstep.
-// Ref: https://github.com/google/oss-fuzz/commit/0f4d4d3004beb4946db46905163b1638777395a9#commitcomment-198554014
-#if __has_include("clang/Basic/BuiltinTraits.h")
 #include "clang/Basic/BuiltinTraits.h"
-#else
-#include "clang/Basic/TypeTraits.h"
-#endif
 #include "clang/Basic/FileEntry.h"
 #include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/SourceLocation.h"
