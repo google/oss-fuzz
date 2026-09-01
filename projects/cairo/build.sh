@@ -40,12 +40,14 @@ if [[ "$SANITIZER" == introspector ]]; then
     # https://github.com/mesonbuild/meson/issues/6377#issuecomment-575977919
     MESON_CFLAGS="${CFLAGS//-fuse-ld=gold/ }"
     MESON_CXXFLAGS="${CXXFLAGS//-fuse-ld=gold/ }"
+    MESON_OPTIONS="-Db_lto=true"
 
     export CC_LD=gold
     export CXX_LD=gold
 else
     MESON_CFLAGS=$CFLAGS
     MESON_CXXFLAGS=$CXXFLAGS
+    MESON_OPTIONS=""
 fi
 
 # Build cairo
@@ -58,6 +60,7 @@ CXXFLAGS=MESON_CXXFLAGS meson \
     --default-library=static \
     -Db_lundef=false \
     --wrap-mode=nofallback \
+    $MESON_OPTIONS \
     _builddir
 ninja -C _builddir
 ninja -C _builddir install
