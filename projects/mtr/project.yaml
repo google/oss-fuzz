@@ -1,0 +1,9 @@
+homepage: https://github.com/traviscross/mtr
+main_repo: https://github.com/traviscross/mtr.git
+language: c
+primary_contact: R.E.Wolff@bitwizard.nl
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
