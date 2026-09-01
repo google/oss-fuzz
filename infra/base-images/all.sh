@@ -35,6 +35,7 @@ VERSION_TAG=${1:-latest}
 
 # Get the directory where this script is located to find the helper script.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." >/dev/null 2>&1 && pwd)"
 
 # Fetch the official list of images from the Python source of truth.
 # This avoids duplicating the image list and ensures this script is always
@@ -46,7 +47,11 @@ echo "Images to build: ${IMAGE_LIST}"
 
 # Loop through the official list of images and build each one.
 for image_name in ${IMAGE_LIST}; do
-  image_dir="infra/base-images/${image_name}"
+  if [ "${image_name}" == "indexer" ]; then
+    image_dir="${REPO_ROOT}/infra/indexer"
+  else
+    image_dir="${REPO_ROOT}/infra/base-images/${image_name}"
+  fi
   
   if [ "${VERSION_TAG}" == "latest" ]; then
     dockerfile="${image_dir}/Dockerfile"
