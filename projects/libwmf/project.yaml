@@ -1,0 +1,12 @@
+homepage: "https://github.com/caolanm/libwmf"
+language: c++
+primary_contact: "caolanm@gmail.com"
+main_repo: 'https://github.com/caolanm/libwmf.git'
+
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+
+sanitizers:
+  - address
+  - undefined
