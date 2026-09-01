@@ -19,19 +19,20 @@
 export FUZZ_INTROSPECTOR_CONFIG=$SRC/fuzz_introspector_exclusion.config
 cat > $FUZZ_INTROSPECTOR_CONFIG <<EOF
 FILES_TO_AVOID
-cairo/subprojects
+subprojects
 EOF
 
 PREFIX=$WORK/prefix
+CAIRO_DEPS=/deps
 
 export PKG_CONFIG="`which pkg-config` --static"
-export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
-export PATH=$PREFIX/bin:$PATH
+export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$CAIRO_DEPS/lib/pkgconfig
+export PATH=$PREFIX/bin:$CAIRO_DEPS/bin:$PATH
 
 # BUILD=$WORK/build
 rm -rf $WORK/*
 
-# dirty fix #1: tell meson to use gold on fuzz-introspector builds
+# workaround: tell meson to use gold on fuzz-introspector builds
 # https://github.com/google/oss-fuzz/pull/7583#issuecomment-1104011067
 if [[ "$SANITIZER" == introspector ]]; then
     # -fuse-ld=gold can't be passed via CFLAGS/CXXFLAGS/LDFLAGS due to
@@ -56,6 +57,7 @@ CXXFLAGS=MESON_CXXFLAGS meson \
     --libdir=lib \
     --default-library=static \
     -Db_lundef=false \
+    --wrap-mode=nofallback \
     _builddir
 ninja -C _builddir
 ninja -C _builddir install
@@ -106,5 +108,5 @@ for f in $SRC/cairo/test/svg/fuzzer/svg-render-fuzzer.c ; do
     -Wl,-Bdynamic
 done
 
-# dirty fix #2: delete subprojects to speed up analysis
-rm -rf $SRC/cairo/subprojects/*
+# copy deps into $OUT so fuzz-introspector can see the header files
+rsync -avr $CAIRO_DEPS/ $OUT/deps
