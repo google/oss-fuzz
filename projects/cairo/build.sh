@@ -53,7 +53,7 @@ fi
 # Build cairo
 pushd $SRC/cairo
 CFLAGS="-DDEBUG_SVG_RENDER $MESON_CFLAGS" \
-CXXFLAGS=MESON_CXXFLAGS meson \
+CXXFLAGS=$MESON_CXXFLAGS meson \
     setup \
     --prefix=$PREFIX \
     --libdir=lib \
