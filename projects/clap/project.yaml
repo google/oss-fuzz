@@ -1,0 +1,11 @@
+homepage: "https://github.com/clap-rs/clap"
+language: rust
+primary_contact: "clap-rs@googlegroups.com"
+auto_ccs:
+  - "jaredreyespt@gmail.com"
+sanitizers:
+  - address
+  - undefined
+vendor_ccs:
+  - "jaredreyespt@gmail.com"
+main_repo: 'https://github.com/clap-rs/clap.git'
