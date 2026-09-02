@@ -91,6 +91,9 @@ fi
 #   error on GenericConnectivityManagerImpl_Thread.ipp and current fuzzing
 #   does not differentiate between thread/Wifi/TCP/UDP/BLE connectivity
 #   implementations.
+# - `chip_enable_icd_server` / `chip_enable_icd_lit` enable the ICD server and the
+#   Check-In Protocol, without which the ICD Management cluster command handlers
+#   are not compiled and the fuzz target covering them is configured out.
 # - `target_ldflags` forces compiler to use LLVM's linker
 gn gen out/fuzz_targets \
   --args="
@@ -100,6 +103,8 @@ gn gen out/fuzz_targets \
     pw_enable_fuzz_test_targets=true \
     chip_enable_thread_safety_checks=false \
     chip_enable_thread=false \
+    chip_enable_icd_server=true \
+    chip_enable_icd_lit=true \
     target_ldflags=[\"-fuse-ld=lld\"]"
 
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains
