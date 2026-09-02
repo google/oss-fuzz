@@ -1,0 +1,9 @@
+homepage: "https://github.com/sebastienrousseau/noyalib"
+main_repo: "https://github.com/sebastienrousseau/noyalib"
+language: rust
+primary_contact: "sebastian.rousseau@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs: []
