@@ -16,10 +16,8 @@
 from pathlib import Path, PosixPath
 import re
 import sys
-import os
-import fnmatch
+import json
 from typing import List, Set
-import shutil
 
 excluded_CVEs_or_CRBugs = ["CR410030", "CR445267", "CR1150371"]
 
@@ -47,20 +45,24 @@ if __name__ == "__main__":
     flow_tests = get_js_files("./hermes/external/flowtest/test/flow")
     mjsunit_tests = get_js_files("./v8/test/mjsunit")
 
-    hermes_skiplist_path = Path("./hermes/utils/testsuite/testsuite_skiplist.py")
-    if not hermes_skiplist_path.is_file():
-        for file in os.listdir("./hermes"):
-            if fnmatch.fnmatch(file, "testsuite_skiplist.py"):
-                hermes_skiplist_path = Path(file)
-                break
+    skiplist_path = Path("./hermes/utils/testsuite/skiplist.json")
+    with skiplist_path.open("rb") as f:
+        skiplist = json.load(f)
 
-    shutil.copy(hermes_skiplist_path, "./testsuite_skiplist.py")
-    from testsuite_skiplist import (
-        SKIP_LIST,
-        PERMANENT_SKIP_LIST,
-        UNSUPPORTED_FEATURES,
-        PERMANENT_UNSUPPORTED_FEATURES,
-    )
+    def skip_entries(category: str) -> List[str]:
+        """Flatten one category. An entry is a path string, or a dict of several."""
+        entries: List[str] = []
+        for entry in skiplist.get(category, []):
+            if isinstance(entry, dict):
+                entries.extend(entry.get("paths", []))
+            else:
+                entries.append(entry)
+        return entries
+
+    SKIP_LIST = skip_entries("skip_list")
+    PERMANENT_SKIP_LIST = skip_entries("permanent_skip_list")
+    UNSUPPORTED_FEATURES = skip_entries("unsupported_features")
+    PERMANENT_UNSUPPORTED_FEATURES = skip_entries("permanent_unsupported_features")
 
     # Exclude tests in mjsunit using v8 runtime functions
     for test in mjsunit_tests.copy():
@@ -70,37 +72,14 @@ if __name__ == "__main__":
             test.unlink()
             mjsunit_tests.discard(test)
 
-    # Exclude tests marked explicitly to skip in Hermes test suite
-    tests_to_remove = (
-        {test_name for test_name in test262_tests if str(test_name) in SKIP_LIST}
-        | {test_name for test_name in esprima_tests if str(test_name) in SKIP_LIST}
-        | {test_name for test_name in flow_tests if str(test_name) in SKIP_LIST}
-        | {
-            test_name
-            for test_name in mjsunit_tests
-            if str(test_name).lstrip("v8/test/") in SKIP_LIST
-        }
-        | {
-            test_name
-            for test_name in test262_tests
-            if str(test_name) in PERMANENT_SKIP_LIST
-        }
-        | {
-            test_name
-            for test_name in esprima_tests
-            if str(test_name) in PERMANENT_SKIP_LIST
-        }
-        | {
-            test_name
-            for test_name in flow_tests
-            if str(test_name) in PERMANENT_SKIP_LIST
-        }
-        | {
-            test_name
-            for test_name in mjsunit_tests
-            if str(test_name).lstrip("v8/test/") in PERMANENT_SKIP_LIST
-        }
-    )
+    # Exclude tests marked explicitly to skip in Hermes test suite.
+    skipped_paths = SKIP_LIST + PERMANENT_SKIP_LIST
+    all_tests = test262_tests | esprima_tests | flow_tests | mjsunit_tests
+    tests_to_remove = {
+        test_name
+        for test_name in all_tests
+        if any(path in str(test_name) for path in skipped_paths)
+    }
     for test in tests_to_remove:
         print(f"Removed: {test}")
         test.unlink()
