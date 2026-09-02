@@ -1,0 +1,3 @@
+CT:urlencoded
+MAX:16
+BODY:a=1&b=2
