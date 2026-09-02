@@ -82,3 +82,34 @@ zip -j $OUT/xmlsec_dsig_verify_fuzzer_seed_corpus.zip \
     $SRC/xmlsec/tests/merlin-exc-c14n-one/*.xml \
     $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature*.xml \
     2>/dev/null || true
+
+# Seed corpus for the KeyInfo fuzzer: test files whose <KeyInfo> covers KeyName,
+# the X509Data variants, RetrievalMethod and EncryptedKey
+zip -j $OUT/xmlsec_keyinfo_fuzzer_seed_corpus.zip \
+    $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature-keyname.* \
+    $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature-x509-*.* \
+    $SRC/xmlsec/tests/merlin-xmldsig-twenty-three/signature-retrievalmethod-*.* \
+    $SRC/xmlsec/tests/phaos-xmldsig-three/signature-rsa-manifest-x509-data-*.xml \
+    $SRC/xmlsec/tests/phaos-xmldsig-three/signature-rsa-*x509-data-crl.xml \
+    $SRC/xmlsec/tests/merlin-xmlenc-five/encrypt-*.xml \
+    2>/dev/null || true
+
+# Seed corpus for the key loader fuzzer with specific format
+keyload_corpus="$WORK/keyload_corpus"
+rm -rf "$keyload_corpus"
+mkdir -p "$keyload_corpus"
+prefix_seed() {
+    # $1 = format byte, $2 = source file
+    printf "$1" > "$keyload_corpus/$(basename $2).seed"
+    cat "$2" >> "$keyload_corpus/$(basename $2).seed"
+}
+for f in $SRC/xmlsec/tests/keys/*.pem $SRC/xmlsec/tests/keys/*/*.pem; do
+    [ -f "$f" ] && prefix_seed '\x01' "$f"
+done
+for f in $SRC/xmlsec/tests/keys/*.der $SRC/xmlsec/tests/keys/*/*.der; do
+    [ -f "$f" ] && prefix_seed '\x02' "$f"
+done
+for f in $SRC/xmlsec/tests/keys/*.p12 $SRC/xmlsec/tests/keys/*/*.p12; do
+    [ -f "$f" ] && prefix_seed '\x05' "$f"
+done
+zip -j $OUT/xmlsec_keyload_fuzzer_seed_corpus.zip "$keyload_corpus"/* 2>/dev/null || true
