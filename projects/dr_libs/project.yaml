@@ -1,6 +1,6 @@
 homepage: "https://github.com/mackron/dr_libs/"
 language: c++
-primary_contact: "tim.blechmann@gmail.io"
+primary_contact: "tim.blechmann@gmail.com"
 main_repo: 'https://github.com/mackron/dr_libs.git'
 sanitizers:
   - address
