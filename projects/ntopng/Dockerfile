@@ -27,10 +27,11 @@ ENV NTOPNG_HOME=$SRC/ntopng
 ### Fuzzing dependencies ###
 
 # Build libprotobuf-mutator
-RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-RUN mkdir libprotobuf-mutator/build; cd libprotobuf-mutator/build; \
-    cmake .. -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release; \
-    ninja;
+# We never use protobuf on fuzzers, yet
+#RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
+#RUN mkdir libprotobuf-mutator/build; cd libprotobuf-mutator/build; \
+#    cmake .. -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release; \
+#    ninja;
 
 ### Dependencies that need static linking ###
 
@@ -44,6 +45,8 @@ ADD https://github.com/maxmind/libmaxminddb/releases/download/1.7.1/libmaxminddb
 RUN tar -xvzf libmaxminddb-1.7.1.tar.gz;
 ADD https://github.com/oetiker/rrdtool-1.x/archive/refs/tags/v1.10.3.tar.gz rrdtool-1.10.3.tar.gz
 RUN tar -xvzf rrdtool-1.10.3.tar.gz
+ADD https://github.com/net-snmp/net-snmp/archive/refs/tags/v5.9.5.2.tar.gz net-snmp-5.9.5.2.tar.gz
+RUN tar -xzvf net-snmp-5.9.5.2.tar.gz
 
 ### ntopng dependecies ###
 

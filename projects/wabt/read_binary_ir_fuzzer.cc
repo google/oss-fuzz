@@ -36,7 +36,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 #include "wabt/feature.def"
 #undef WABT_FEATURE
   // Add only feature related options, but no logging, stop_on_first_error, etc.
-  wabt::ReadBinaryOptions options(features, nullptr, false, false, false);
+  wabt::ReadBinaryOptions options(features, nullptr,
+                                  /*read_debug_names=*/false,
+                                  /*stop_on_first_error=*/true,
+                                  /*fail_on_custom_section_error=*/false);
   std::vector<uint8_t> text = data_provider.ConsumeRemainingBytes<uint8_t>();
   if (wabt::Succeeded(wabt::ReadBinaryIr("", text.data(), text.size(), options, &errors, &module))) {
     wabt::ValidateOptions validate_options(features);
