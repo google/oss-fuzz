@@ -68,6 +68,7 @@ cp $SRC/dec_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
 cp $SRC/aom/examples/av1_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
 
 # build AV1 encoder public API fuzzer.
+# The fuzzer harness lives upstream in examples/av1_enc_fuzzer.cc.
 fuzzer_src_name=av1_enc_fuzzer
 fuzzer_name=${fuzzer_src_name}
 
@@ -76,5 +77,5 @@ $CXX $CXXFLAGS -std=c++11 \
   -I${build_dir} \
   -Wl,--start-group \
   $LIB_FUZZING_ENGINE \
-  $SRC/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
+  $SRC/aom/examples/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
   ${build_dir}/libaom.a -Wl,--end-group
