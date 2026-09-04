@@ -45,6 +45,7 @@ RUN git clone --depth 1 https://github.com/libyal/libolecf.git libolecf
 RUN git clone --depth 1 https://github.com/libyal/libpff.git libpff
 RUN git clone --depth 1 https://github.com/libyal/libregf.git libregf
 RUN git clone --depth 1 https://github.com/libyal/libscca.git libscca
+RUN git clone --depth 1 https://github.com/libyal/libwtcdb.git libwtcdb
 
 RUN git clone --depth 1 https://github.com/libyal/libwrc.git libwrc
 

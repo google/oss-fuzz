@@ -45,6 +45,6 @@ RUN set -ex \
 ENV OPENSSL_ROOT_DIR=/usr/local/openssl-${OPENSSL_VERSION}
 
 RUN git clone --depth 1 https://github.com/FreeRADIUS/freeradius-server.git
-COPY build.sh $SRC/
+COPY build.sh generate_seeds.py $SRC/
 # COPY patch.diff $SRC
 WORKDIR $SRC/freeradius-server

@@ -59,7 +59,12 @@ echo "using clang : : /tmp/clang_wrapper.sh ;" > ~/user-config.jam && \
 cd $SRC/rdkit
 
 mkdir -p build && cd build
-cmake -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_FREETYPE_SUPPORT=OFF -DLIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE} -DRDK_BUILD_FUZZ_TARGETS=ON -DRDK_INSTALL_STATIC_LIBS=ON -DBoost_USE_STATIC_LIBS=ON ..
+# RDK_BUILD_CHEMDRAW_SUPPORT is ON by default and its CMakeLists links
+# EXPAT::EXPAT, but only does a non-REQUIRED find_package(EXPAT); with no expat
+# in the image the target is missing and CMake generation fails. None of the
+# fuzz targets in Code/Fuzz touch ChemDraw, so turn the component off rather
+# than pulling in an uninstrumented system expat.
+cmake -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DRDK_BUILD_FREETYPE_SUPPORT=OFF -DRDK_BUILD_CHEMDRAW_SUPPORT=OFF -DLIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE} -DRDK_BUILD_FUZZ_TARGETS=ON -DRDK_INSTALL_STATIC_LIBS=ON -DBoost_USE_STATIC_LIBS=ON ..
 # Use -k to keep going past shared library link failures (coverage sanitizer
 # causes __llvm_prf section errors in .so files). Fuzzers only need static libs.
 make -j$(nproc) -k || true

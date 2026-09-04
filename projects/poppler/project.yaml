@@ -12,8 +12,4 @@ fuzzing_engines:
 auto_ccs:
   - jonathan@titanous.com
   - adam.reichold@t-online.de
-main_repo: 'https://anongit.freedesktop.org/git/poppler/poppler.git'
-fuzzing_engines:
- - afl
- - honggfuzz
- - libfuzzer
+main_repo: "https://gitlab.freedesktop.org/poppler/poppler"

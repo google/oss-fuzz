@@ -271,15 +271,12 @@ artifact.
 To download the artifact, do the following steps:
 1. Click on the summary from the run, as illustrated in the screenshot below:
 
-![github-actions-summary]
+![GitHub Actions summary](https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-summary.png)
 
 2. Click on the artifact you wish to download from the summary page, as
    illustrated in the screenshot below:
 
-![github-actions-download-crash]
-
-[github-actions-summary]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-summary.png)
-[github-actions-download-crash]: (https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-download-crash.png)
+![GitHub Actions download crash](https://raw.githubusercontent.com/google/clusterfuzzlite/refs/heads/bucket/images/github-actions-download-crash.png)
 
 ## Feedback/Questions/Issues
 

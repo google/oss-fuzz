@@ -34,7 +34,8 @@ cmake -GNinja -Bbuild -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   .
 ninja -C build
 cp -a build/lib/api/libwasmedge*.so* build/tools/fuzz/wasmedge-fuzz* "$OUT"/
-patchelf --set-rpath \$ORIGIN "$OUT"/libwasmedge*.so*
+# Patch regular .so files
+find "$OUT" -maxdepth 1 -type f -name 'libwasmedge*.so*' -exec patchelf --set-rpath '$ORIGIN' {} +
 cd utils/corpus/po
 zip -9 "$OUT/wasmedge-fuzzpo_seed_corpus.zip" -R '*.txt'
 cd -
@@ -42,6 +43,12 @@ cd -
 cd "$SRC/WasmEdge-unittest"
 zip -9 "$OUT/wasmedge-fuzztool_seed_corpus.zip" -R '*.wasm'
 cd -
+
+# Seed the component fuzzer with a minimal Component Model preamble
+seeddir="$(mktemp -d)"
+printf '\x00\x61\x73\x6d\x0d\x00\x01\x00' > "$seeddir/empty_component.wasm"
+(cd "$seeddir" && zip -9 "$OUT/wasmedge-fuzzcomponent_seed_corpus.zip" empty_component.wasm)
+rm -rf "$seeddir"
 
 for i in build/tools/fuzz/wasmedge-fuzz*; do
   j="$(basename "$i")"

@@ -18,8 +18,8 @@
 
 go build jcc.go
 go build jcc2.go
-gsutil cp jcc gs://clusterfuzz-builds/jcc/clang++-jcc
-gsutil cp jcc gs://clusterfuzz-builds/jcc/clang-jcc
+gcloud storage cp jcc gs://clusterfuzz-builds/jcc/clang++-jcc
+gcloud storage cp jcc gs://clusterfuzz-builds/jcc/clang-jcc
 
-gsutil cp jcc2 gs://clusterfuzz-builds/jcc/clang++-jcc2
-gsutil cp jcc2 gs://clusterfuzz-builds/jcc/clang-jcc2
+gcloud storage cp jcc2 gs://clusterfuzz-builds/jcc/clang++-jcc2
+gcloud storage cp jcc2 gs://clusterfuzz-builds/jcc/clang-jcc2

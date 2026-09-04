@@ -61,12 +61,28 @@ cmake_args=(
 # Build the project and fuzzers.
 rm -rf build
 cmake "${cmake_args[@]}" -S . -B build -G Ninja -C ci/cmake-preloads/config-oss-fuzz.cmake
-cmake --build build --parallel --target fuzzers
+cmake --build build --parallel --target fuzzers TestFuzzServerSeedGen
 
-for f in $(find build/Testing/ -name 'TestFuzz*' -type f);
+for f in $(find build/Testing/ -name 'TestFuzz*' ! -name 'TestFuzzServerSeedGen' -type f);
 do
     cp $f $OUT/
 done
+
+# Generate the seed corpus for TestFuzzServer and package it as
+# $OUT/TestFuzzServer_seed_corpus.zip.
+mkdir -p $WORK/TestFuzzServer_corpus/input $WORK/TestFuzzServer_corpus/noinput $WORK/TestFuzzServer_corpus/stage
+# With post-connect input PDUs:
+./build/Testing/TestFuzzServerSeedGen $WORK/TestFuzzServer_corpus/input 1
+# Handshake only:
+./build/Testing/TestFuzzServerSeedGen $WORK/TestFuzzServer_corpus/noinput 0
+cp $WORK/TestFuzzServer_corpus/input/handshake $WORK/TestFuzzServer_corpus/stage/handshake_input
+cp $WORK/TestFuzzServer_corpus/noinput/handshake $WORK/TestFuzzServer_corpus/stage/handshake_noinput
+cp $WORK/TestFuzzServer_corpus/input/handshake_cut* $WORK/TestFuzzServer_corpus/stage/
+zip --junk-paths --quiet $OUT/TestFuzzServer_seed_corpus.zip $WORK/TestFuzzServer_corpus/stage/*
+# Disable leak detection for the RAIL fuzzer (rail_order_recv stream-ownership leak).
+if [ -f $OUT/TestFuzzChannelRail ]; then
+    printf '[asan]\ndetect_leaks=0\n' > $OUT/TestFuzzChannelRail.options
+fi
 
 # Build test
 mkdir $SRC/FreeRDP/build-test

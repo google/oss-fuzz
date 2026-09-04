@@ -1,5 +1,5 @@
 homepage: "https://www.crummy.com/software/BeautifulSoup/"
-main_repo: "https://code.launchpad.net/~leonardr/beautifulsoup/bs4"
+main_repo: "https://git.launchpad.net/beautifulsoup"
 language: python
 primary_contact: "leonard.richardson@gmail.com"
 auto_ccs:
