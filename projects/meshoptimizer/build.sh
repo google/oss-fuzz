@@ -20,5 +20,6 @@ cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
 make -j$(nproc)
 
 cd ..
-find . -name "*.o" -exec ar rcs fuzz_lib.a {} \;
-$CXX $CXXFLAGS tools/codecfuzz.cpp -o $OUT/codecfuzzer $LIB_FUZZING_ENGINE fuzz_lib.a
+$CXX $CXXFLAGS tools/codecfuzz.cpp -o $OUT/codecfuzzer $LIB_FUZZING_ENGINE build/libmeshoptimizer.a
+$CXX $CXXFLAGS tools/clusterfuzz.cpp -o $OUT/clusterfuzzer $LIB_FUZZING_ENGINE build/libmeshoptimizer.a
+$CXX $CXXFLAGS tools/simplifyfuzz.cpp -o $OUT/simplifyfuzzer $LIB_FUZZING_ENGINE build/libmeshoptimizer.a
