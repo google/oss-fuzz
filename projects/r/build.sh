@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,7 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CFLAGS"
-
-mkdir build
-cd build
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
-make -j$(nproc)
-
-cp fuzzer/Fuzz* $OUT/
-
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+# The R fuzz targets and their build logic are maintained in a separate
+# repository (https://github.com/r-devel/r-oss-fuzz), cloned into
+# $SRC/r-oss-fuzz by the Dockerfile. Delegate the build to it.
+exec "$SRC/r-oss-fuzz/ossfuzz.sh"

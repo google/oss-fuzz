@@ -30,8 +30,8 @@ make -j$( nproc )
 
 static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
 
-# Build the fuzzers
-for fuzzname in utils parse tokenize addr_parse uri request preq; do
+# Build the fuzzers.
+for fuzzname in utils parse tokenize addr_parse uri request; do
   $CC $CFLAGS -c \
     -I$SRC/fuzz-headers/lang/c -I./include -I./os/unix \
     -I./srclib/apr/include -I./srclib/apr-util/include/ \
