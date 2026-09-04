@@ -32,7 +32,7 @@ export CXXFLAGS="${CXXFLAGS} -fPIC -DBOOST_NO_INCLASS_MEMBER_INITIALIZATION"
 # Boost_USE_STATIC_RUNTIME is ON. Re-supply it here to match the image's Boost.
 cmake -D OSSFUZZ=ON -D STATIC=ON -D BUILD_TESTS=ON -D USE_LTO=OFF -D ARCH="default" -D Boost_USE_STATIC_RUNTIME=ON ..
 
-TESTS="\
+TARGETS="\
   base58_fuzz_tests \
   block_fuzz_tests \
   transaction_fuzz_tests \
@@ -47,28 +47,30 @@ TESTS="\
   fuzz_rpc_full \
   fuzz_rpc_full_no_exceptions \
   fuzz_zmq \
+  gen_corpus \
 "
 
 # only libfuzzer can run the slow to start ones
 if test "x$FUZZING_ENGINE" == 'xlibfuzzer'
 then
-  TESTS="$TESTS \
+  TARGETS="$TARGETS \
     signature_fuzz_tests \
     cold-outputs_fuzz_tests \
     cold-transaction_fuzz_tests \
   "
 fi
 
-make -j$(nproc) -C tests/fuzz $TESTS
+make -j$(nproc) $TARGETS
 
 cd /src/monero/monero/build/tests/fuzz
+./gen_corpus/gen_corpus --force
 for fuzzer in *fuzz*
 do
   cp "$fuzzer" "$OUT"
   base=$(echo $fuzzer | sed -e s/_fuzz_tests//)
-  basedir="/src/monero/monero/tests/data/fuzz/$base"
+  basedir="/src/monero/monero/build/tests/data/fuzz/$base"
   if [ -d "$basedir" ]; then
-    pushd "/src/monero/monero/tests/data/fuzz/$base"
+    pushd $basedir
     rm -f "${OUT}/${fuzzer}_seed_corpus.zip"
     for f in *
     do
