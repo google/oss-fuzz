@@ -79,6 +79,12 @@ cp $WORK/TestFuzzServer_corpus/input/handshake $WORK/TestFuzzServer_corpus/stage
 cp $WORK/TestFuzzServer_corpus/noinput/handshake $WORK/TestFuzzServer_corpus/stage/handshake_noinput
 cp $WORK/TestFuzzServer_corpus/input/handshake_cut* $WORK/TestFuzzServer_corpus/stage/
 zip --junk-paths --quiet $OUT/TestFuzzServer_seed_corpus.zip $WORK/TestFuzzServer_corpus/stage/*
+
+# Pack seed corpora for TestFuzzClientRdpFile
+if [ -f $OUT/TestFuzzClientRdpFile ]; then
+    zip --junk-paths --quiet $OUT/TestFuzzClientRdpFile_seed_corpus.zip \
+        client/common/test/rdp-testcases/*.rdp
+fi
 # Disable leak detection for the RAIL fuzzer (rail_order_recv stream-ownership leak).
 if [ -f $OUT/TestFuzzChannelRail ]; then
     printf '[asan]\ndetect_leaks=0\n' > $OUT/TestFuzzChannelRail.options
