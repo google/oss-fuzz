@@ -20,7 +20,7 @@ autoconf
 autoheader
 export LDFLAGS="$CFLAGS"
 ./configure LIBS="-lz -lm -lbz2 -llzma -lcurl -lcrypto -lpthread"
-make -j$(nproc) libhts.a bgzip htsfile tabix annot-tsv test/fuzz/hts_open_fuzzer.o
+make -j$(nproc) libhts.a bgzip htsfile tabix annot-tsv test/fuzz/hts_open_fuzzer.o test/fuzz/fai_build_fuzzer.o
 
 # Build tests
 make -j$(nproc) test/hts_endian test/fieldarith test/hfile test/pileup test/pileup_mod \
@@ -33,3 +33,4 @@ make -j$(nproc) test/hts_endian test/fieldarith test/hfile test/pileup test/pile
 
 # build fuzzers
 $CXX $CXXFLAGS -o "$OUT/hts_open_fuzzer" test/fuzz/hts_open_fuzzer.o $LIB_FUZZING_ENGINE libhts.a -lz -lbz2 -llzma -lcurl -lcrypto -lpthread
+$CXX $CXXFLAGS -o "$OUT/fai_build_fuzzer" test/fuzz/fai_build_fuzzer.o $LIB_FUZZING_ENGINE libhts.a -lz -lbz2 -llzma -lcurl -lcrypto -lpthread
