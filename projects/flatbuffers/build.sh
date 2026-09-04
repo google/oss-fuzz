@@ -26,6 +26,12 @@ cp ../tests/fuzzer/*.dict $OUT/
 cp *.bfbs $OUT/
 cp *_fuzzer $OUT/
 
+# Build our custom fuzzer for FlatBufferBuilder (Integer Overflow / Heap OOBW)
+$CXX $CXXFLAGS -std=c++17 -I../include \
+    $SRC/flatbuffers/projects/flatbuffers/fuzz_test.cpp \
+    -o $OUT/fuzz_test \
+    $LIB_FUZZING_ENGINE
+
 # Build unit test
 mkdir $SRC/flatbuffers/build-tests
 cd $SRC/flatbuffers/build-tests
