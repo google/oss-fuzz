@@ -26,3 +26,10 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -rdynamic fuzz_regex.o -o fuzzer \
     ./src-cpp/librdkafka++.a ./src/librdkafka.a -lm -lssl -lcrypto \
     -lcrypto -lz -ldl -lpthread -lrt
 cp fuzzer $OUT/fuzz_regex
+
+$CC -g -fPIC $CFLAGS -I$SRC/librdkafka/src -Igenerated/dummy \
+    -c $SRC/librdkafka/tests/fuzzers/fuzz_protocol.c -o fuzz_protocol.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -rdynamic fuzz_protocol.o -o fuzzer_protocol \
+    ./src-cpp/librdkafka++.a ./src/librdkafka.a -lm -lssl -lcrypto \
+    -lcrypto -lz -lcurl -ldl -lpthread -lrt
+cp fuzzer_protocol $OUT/fuzz_protocol
