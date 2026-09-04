@@ -20,10 +20,12 @@ make all
 
 cp FuzzClient $OUT/FuzzClient
 cp FuzzExtens $OUT/FuzzExtens
+cp FuzzExtensClient $OUT/FuzzExtensClient
 cp FuzzServer $OUT/FuzzServer
 
 pushd $SRC/oss-fuzz-bloat/ntpsec/
 cp FuzzClient_seed_corpus.zip $OUT/FuzzClient_seed_corpus.zip
 cp FuzzExtens_seed_corpus.zip $OUT/FuzzExtens_seed_corpus.zip
+cp FuzzExtens_seed_corpus.zip $OUT/FuzzExtensClient_seed_corpus.zip
 cp FuzzServer_seed_corpus.zip $OUT/FuzzServer_seed_corpus.zip
 popd
