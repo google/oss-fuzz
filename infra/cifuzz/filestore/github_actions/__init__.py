@@ -14,6 +14,7 @@
 """Implementation of a filestore using Github actions artifacts."""
 import logging
 import os
+from pathlib import PurePosixPath
 import shutil
 import sys
 import tarfile
@@ -127,10 +128,12 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         logging.error('Artifact zip did not contain a tarfile.')
         return False
 
-      # TODO(jonathanmetzman): Replace this with archive.unpack from
-      # libClusterFuzz so we can avoid path traversal issues.
       with tarfile.TarFile(artifact_tarfile_path) as artifact_tarfile:
-        artifact_tarfile.extractall(dst_directory)
+        try:
+          _safe_extract_tar(artifact_tarfile, dst_directory)
+        except tarfile.TarError as error:
+          logging.error('Unsafe artifact tarfile: %s', error)
+          return False
     return True
 
   def _raw_download_artifact(self, name, dst_directory):
@@ -157,6 +160,31 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def download_coverage(self, name, dst_directory):
     """Downloads the latest project coverage report."""
     return self._download_artifact(self.COVERAGE_PREFIX + name, dst_directory)
+
+
+def _is_safe_tar_member(member):
+  """Returns whether |member| is safe to extract."""
+  member_path = PurePosixPath(member.name)
+
+  if member_path.is_absolute():
+    return False
+
+  if '..' in member_path.parts:
+    return False
+
+  if member.issym() or member.islnk():
+    return False
+
+  return True
+
+
+def _safe_extract_tar(artifact_tarfile, dst_directory):
+  """Safely extracts |artifact_tarfile| into |dst_directory|."""
+  for member in artifact_tarfile.getmembers():
+    if not _is_safe_tar_member(member):
+      raise tarfile.TarError(f'Unsafe tar member: {member.name}')
+
+  artifact_tarfile.extractall(dst_directory)
 
 
 def _upload_artifact_with_upload_js(name, artifact_paths, directory):
