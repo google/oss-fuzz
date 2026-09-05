@@ -1,0 +1,6 @@
+ubuntu
+library/ubuntu:24.04
+alpine:latest
+registry.example.com:5000/team/app:v1.2.3
+ghcr.io/owner/repo@sha256:5b0bcabd1ed22e9fb1310cf6502d710ba6e5c794d2f9d2f0e4c85e3d0e9d0d1c
+docker.io/library/nginx:1.27@sha256:11116507a9e2e1f5d3a8f4c0a8b7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d

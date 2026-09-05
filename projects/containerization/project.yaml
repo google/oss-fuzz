@@ -1,0 +1,13 @@
+homepage: "https://github.com/apple/containerization"
+language: swift
+primary_contact: "danny_canter@apple.com"
+auto_ccs:
+ - "dkovba@apple.com"
+ - "roshaen09@gmail.com"
+fuzzing_engines:
+ - libfuzzer
+sanitizers:
+ - address
+ - thread
+main_repo: 'https://github.com/apple/containerization.git'
+base_os_version: ubuntu-24-04

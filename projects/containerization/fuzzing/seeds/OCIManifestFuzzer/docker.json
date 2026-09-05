@@ -1,0 +1,1 @@
+{"schemaVersion":1,"mediaType":"application/vnd.docker.distribution.manifest.v2+json","config":{"mediaType":"b","digest":"sha256:aaaa","size":2},"layers":[{"mediaType":"c","digest":"sha256:bbbb","size":3}]}
