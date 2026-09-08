@@ -15,6 +15,35 @@
 #
 ################################################################################
 
+# Ensure Bazelisk uses the version in .bazelversion even without WORKSPACE
+if [ -f .bazelversion ]; then
+  export USE_BAZEL_VERSION="$(cat .bazelversion)"
+fi
+
+# Add rules_fuzzing_oss_fuzz repo definition for bzlmod if not present
+if ! grep -q "rules_fuzzing_oss_fuzz" MODULE.bazel; then
+cat << 'EOF' >> MODULE.bazel
+rules_fuzzing_deps = use_extension("@rules_fuzzing//fuzzing/private:extensions.bzl", "non_module_dependencies")
+use_repo(rules_fuzzing_deps, "rules_fuzzing_oss_fuzz")
+EOF
+fi
+
+# Point LLVM toolchain root to local /usr/local clang so prebuilt glibc 2.34 binaries are not used.
+# This is needed so the fuzzer will use the LLVM toolchain that is supported by
+# the OSS-Fuzz prebuilt image.
+python3 -c '
+import re
+content = open("MODULE.bazel").read()
+pattern = r"llvm\.toolchain_root\(.*?targets = \[\"darwin-aarch64\"\],?\s*\)"
+replacement = """llvm.toolchain_root(
+    name = "llvm_toolchain",
+    path = "/usr/local",
+)"""
+new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
+if new_content != content:
+    open("MODULE.bazel", "w").write(new_content)
+'
+
 declare -r FUZZ_TARGET_QUERY='
   let all_fuzz_tests = attr(tags, "fuzz_target", "test/...") in
   $all_fuzz_tests - attr(tags, "no_fuzz", $all_fuzz_tests)
