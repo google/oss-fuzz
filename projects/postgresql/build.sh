@@ -71,4 +71,9 @@ make -j$(nproc) fuzzer
 rm protocol_fuzzer
 #fi
 cp *_fuzzer $OUT/
+# Upstream fuzzing harnesses (see fuzzer/Makefile).
+# https://git.postgresql.org/gitweb/?p=postgresql.git;a=commitdiff;h=4a18907b412e77684bf888ad6d1b4844d220196a
+cp fuzz_json fuzz_json_incremental fuzz_conninfo fuzz_pglz fuzz_unescapebytea \
+   fuzz_b64decode fuzz_saslprep fuzz_parsepgarray fuzz_pgbench_expr \
+   fuzz_rawparser fuzz_regex fuzz_typeinput $OUT/
 cp $SRC/postgresql_fuzzer_seed_corpus.zip $OUT/
