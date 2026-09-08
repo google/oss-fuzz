@@ -1,8 +1,8 @@
 homepage: "https://github.com/AOMediaCodec/avm"
 language: c++
-primary_contact: "wtc@google.com"
+primary_contact: "urvang@google.com"
 auto_ccs:
-  - "urvang@google.com"
+  - "wtc@google.com"
   - "leolzhao@global.tencent.com"
   - "yunqingwang@google.com"
   - "jzern@google.com"
@@ -12,3 +12,4 @@ fuzzing_engines:
 sanitizers:
   - address
   - undefined
+  - memory
