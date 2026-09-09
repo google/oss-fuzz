@@ -1,5 +1,5 @@
 homepage: https://bitbucket.org/nielsenb/aniso8601
-main_repo: https://bitbucket.org/nielsenb/aniso8601
+main_repo: https://codeberg.org/nielsenb-jf/aniso8601
 language: python
 fuzzing_engines:
 - libfuzzer
