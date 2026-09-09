@@ -35,6 +35,9 @@ $CXX $CXXFLAGS -Wall -c -I giflib-code egif_target.cc -o egif_target.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11  -I giflib-code egif_fuzz_common.cc egif_target.o  \
         -o $OUT/egif_target giflib-code/libgif.a
 
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 -Wall -I giflib-code gif_roundtrip_target.cc \
+        -o $OUT/gif_roundtrip_target giflib-code/libgif.a
+
 rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc gif_fuzz_proto.proto --cpp_out=genfiles
 
 $CXX $CXXFLAGS -DNDEBUG -Wall -c -I giflib-code dgif_protobuf_target.cc -I libprotobuf-mutator/ \
@@ -59,3 +62,4 @@ wget -O $OUT/gif.dict \
 cp $SRC/*.options $OUT/
 find $SRC/giflib-code -iname "*.gif" -exec \
   zip -ujq $OUT/dgif_target_seed_corpus.zip "{}" \;
+cp $OUT/dgif_target_seed_corpus.zip $OUT/gif_roundtrip_target_seed_corpus.zip
