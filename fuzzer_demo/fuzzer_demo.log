@@ -1,0 +1,13 @@
+=== FUZZER DEMONSTRATION LOGS ===
+
+Friday, September 5, 2025 1:56:32 AM
+
+=== Testing fuzz_json_decoder ===
+C:\Python312\python.exe: can't open file 'C:\\Users\\recon\\Desktop\\fuz\\oss-fuzz\\fuzzer_demo\\infra\\helper.py': [Errno 2] No such file or directory
+=== Testing fuzz_proxy_security ===
+C:\Python312\python.exe: can't open file 'C:\\Users\\recon\\Desktop\\fuz\\oss-fuzz\\fuzzer_demo\\infra\\helper.py': [Errno 2] No such file or directory
+=== Testing fuzz_url ===
+C:\Python312\python.exe: can't open file 'C:\\Users\\recon\\Desktop\\fuz\\oss-fuzz\\fuzzer_demo\\infra\\helper.py': [Errno 2] No such file or directory
+=== Short fuzzing campaign (fuzz_json_decoder) ===
+ERROR: Invalid syntax. Default option is not allowed more than '1' time(s).
+Type "TIMEOUT /?" for usage.
