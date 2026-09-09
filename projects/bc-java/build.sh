@@ -35,8 +35,8 @@ allprojects {
 }
 EOF
 
-# Build only Java 8/11/15/17 compatible versions, skip Java 25 tasks
-$GRADLE jar -x compileJava25Java -x java25Classes --init-script /tmp/disable-errorprone.gradle
+# Build only Java 8/11/15/17 compatible versions, skip Java 25 & Java 21 tasks
+$GRADLE jar -x compileJava25Java -x java25Classes -x compileJava21Java -x java21Classes --init-script /tmp/disable-errorprone.gradle
 find . -name "core*.jar" -exec cp {} $OUT/core.jar \;
 find . -name "bcpkix*.jar" -exec cp {} $OUT/bcpkix.jar \;
 find . -name "bcutil*.jar" -exec cp {} $OUT/bcutil.jar \;
