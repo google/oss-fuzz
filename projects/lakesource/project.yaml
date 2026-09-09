@@ -1,0 +1,16 @@
+# LakeSource OSS-Fuzz project manifest.
+#
+# LakeSource is a clean-room engine rewrite (MIT, see ENGINE_LICENSE.md in
+# the repo). The fuzz targets link only clean-room MIT code: the VTF parser,
+# the net client/handshake decoders, and the entity/physics snapshot
+# replication decoders. Valve-licensed Source SDK trees (sp/, mp/) are not
+# part of any fuzz target.
+
+homepage: "https://github.com/Cisne-047/lakesource"
+language: c++
+main_repo: "https://github.com/Cisne-047/lakesource"
+
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
