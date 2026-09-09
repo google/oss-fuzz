@@ -19,7 +19,11 @@ mkdir -p $WORK/boringssl
 cd $WORK/boringssl
 
 CFLAGS="$CFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
-CXXFLAGS="$CXXFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
+CXXFLAGS="$CXXFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE -stdlib=libc++"
+
+# Remove -stdlib=libc++ from CXXFLAGS since boringssl cmake adds it later
+# and we need consistent stdlib across all compilation units
+CXXFLAGS="${CXXFLAGS//-stdlib=libc++/}"
 
 CMAKE_DEFINES="-DBORINGSSL_ALLOW_CXX_RUNTIME=1"
 if [[ $CFLAGS = *sanitize=memory* ]]
@@ -27,8 +31,14 @@ then
   CMAKE_DEFINES+=" -DOPENSSL_NO_ASM=1"
 fi
 
+# Ensure stdlib=libc++ is in the link flags as well for consistent ABI
+LDFLAGS="${LDFLAGS:-}"
+LDFLAGS="${LDFLAGS//-stdlib=libc++/}"
+
 cmake -GNinja -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
       -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+      -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
+      -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
       $CMAKE_DEFINES $SRC/boringssl/
 ninja
 
@@ -42,7 +52,7 @@ for F in $fuzzerFiles; do
   $CXX $CXXFLAGS \
       -D_BORINGSSL_LIBPKI_ -std=c++1z \
       -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
-      -I $SRC/boringssl/include ./libpki.a ./libssl.a  ./libcrypto.a
+      -I $SRC/boringssl/include ./libpki.a ./libssl.a ./libcrypto.a
 
   if [ -d "$SRC/boringssl/fuzz/${fuzzerName}_corpus" ]; then
     zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/boringssl/fuzz/${fuzzerName}_corpus/*
