@@ -1,0 +1,11 @@
+homepage: "https://github.com/libdeflate/libdeflate"
+language: c++
+primary_contact: "ebiggers3@gmail.com"
+auto_ccs:
+  - "chloe.cano@protonmail.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/libdeflate/libdeflate.git'
