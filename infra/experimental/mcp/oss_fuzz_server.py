@@ -109,10 +109,8 @@ async def check_if_oss_fuzz_project_builds() -> bool:
 
   try:
     logger.info('Building OSS-Fuzz project: %s', project_name)
-    subprocess.check_call('python3 infra/helper.py build_fuzzers ' +
-                          project_name,
+    subprocess.check_call(['python3', 'infra/helper.py', 'build_fuzzers', project_name],
                           cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                          shell=True,
                           stdout=subprocess.DEVNULL,
                           stderr=subprocess.STDOUT,
                           timeout=60 * 20)
@@ -163,10 +161,8 @@ async def build_and_get_build_logs_from_oss_fuzz() -> str:
 
   try:
     logger.info("Building OSS-Fuzz project: '%s'", project_name)
-    subprocess.check_call('python3 infra/helper.py build_fuzzers ' +
-                          project_name,
+    subprocess.check_call(['python3', 'infra/helper.py', 'build_fuzzers', project_name],
                           cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                          shell=True,
                           stdout=log_stdout,
                           stderr=subprocess.STDOUT,
                           timeout=60 * 20)
@@ -257,9 +253,8 @@ async def check_run_tests(
   log_stdout = open(target_logs, 'w', encoding='utf-8')
   try:
     subprocess.check_call(
-        f'infra/experimental/chronos/check_tests.sh {project_name} c++',
+        ['infra/experimental/chronos/check_tests.sh', project_name, 'c++'],
         cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-        shell=True,
         stdout=log_stdout,
         stderr=subprocess.STDOUT,
         timeout=60 * 20)
@@ -305,10 +300,8 @@ async def check_oss_fuzz_fuzzers() -> str:
     os.remove(target_logs)
   log_stdout = open(target_logs, 'w', encoding='utf-8')
   try:
-    subprocess.check_call('python3 infra/helper.py build_fuzzers ' +
-                          project_name,
+    subprocess.check_call(['python3', 'infra/helper.py', 'build_fuzzers', project_name],
                           cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                          shell=True,
                           stdout=log_stdout,
                           stderr=subprocess.STDOUT,
                           timeout=60 * 20)
@@ -329,9 +322,8 @@ async def check_oss_fuzz_fuzzers() -> str:
     os.remove(check_target_logs)
   log_stdout = open(check_target_logs, 'w', encoding='utf-8')
   try:
-    subprocess.check_call('python3 infra/helper.py check_build ' + project_name,
+    subprocess.check_call(['python3', 'infra/helper.py', 'check_build', project_name],
                           cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-                          shell=True,
                           stdout=log_stdout,
                           stderr=subprocess.STDOUT,
                           timeout=60 * 30)
@@ -600,10 +592,8 @@ async def get_coverage_of_oss_fuzz_project(project_name):
   try:
     logger.info("Building OSS-Fuzz project: '%s'", project_name)
     subprocess.check_call(
-        'python3 infra/helper.py introspector --coverage-only --seconds=10 ' +
-        project_name,
+        ['python3', 'infra/helper.py', 'introspector', '--coverage-only', '--seconds=10', project_name],
         cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-        shell=True,
         stdout=log_stdout,
         stderr=subprocess.STDOUT,
         timeout=60 * 20)
