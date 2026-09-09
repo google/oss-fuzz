@@ -41,4 +41,4 @@ RUN wget https://storage.googleapis.com/libressl-backup.clusterfuzz-external.app
 
 WORKDIR wolfssl
 
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
