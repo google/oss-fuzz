@@ -29,3 +29,9 @@ mkdir -p $JAVA_15_HOME
 tar -xz --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_15_HOME && \
 rm -f openjdk-15.0.2_linux-x64_bin.tar.gz
 rm -rf $JAVA_15_HOME/jmods $JAVA_15_HOME/lib/src.zip
+
+curl --silent -L -O https://corretto.aws/downloads/latest/amazon-corretto-25-x64-linux-jdk.tar.gz && \
+mkdir -p $JAVA_25_HOME
+tar -xz --strip-components=1 -f amazon-corretto-25-x64-linux-jdk.tar.gz --directory $JAVA_25_HOME && \
+rm -f amazon-corretto-25-x64-linux-jdk.tar.gz
+rm -rf $JAVA_25_HOME/jmods $JAVA_25_HOME/lib/src.zip
