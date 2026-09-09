@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
@@ -21,22 +21,20 @@ import org.jdom2.Document;
 import java.io.StringReader;
 import org.jdom2.JDOMException;
 import java.io.IOException;
-import org.jdom2.IllegalNameException;
-import org.jdom2.IllegalTargetException;
 
 public class SAXBuilderFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     
     SAXBuilder sax = new SAXBuilder();
     sax.setValidation(data.consumeBoolean());
-    sax.setIgnoringElementContentWhitespace(data.consumeBoolean());
-    sax.setIgnoringBoundaryWhitespace(data.consumeBoolean());
+    sax.setIgnorgingElementContentWhitespace(data.consumeBoolean());
+    sax.setIgnorgingBoundaryWhitespace(data.consumeBoolean());
     StringReader xml_input = new StringReader(data.consumeRemainingAsString());
     
     try{    
       Document doc = sax.build(xml_input);
     }
-    catch (JDOMException | IOException | IllegalNameException | IllegalTargetException e){
+    catch (JDOMException | IOException | IllegalArgumentException e){
       return;
     }
   }
