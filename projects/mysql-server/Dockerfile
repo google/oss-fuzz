@@ -19,7 +19,9 @@ RUN apt-get update && apt-get install -y build-essential libssl-dev libncurses5-
 RUN git clone --depth 1 https://github.com/mysql/mysql-server
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fix.diff $SRC/
+COPY patch $SRC/patch
+COPY addfuzzdir.patch $SRC/
+#COPY fix.diff $SRC/
 #TODO merge custom targets upstream
 #COPY targets $SRC/mysql-server/fuzz
 #RUN cd mysql-server && git apply ../fix.diff
