@@ -28,7 +28,7 @@ module.exports.fuzz = function(data) {
       const memLevel = fdp.consumeIntegral(1);
       const strategy = fdp.consumeIntegral(1);
       const raw = fdp.consumeBoolean();
-      const input = fdp.consumeRemainingAsBytes();
+      const input = new Uint8Array(fdp.consumeRemainingAsBytes());
       const options = {
         level: comprLevel,
         windowBits: windowBits,
@@ -49,7 +49,7 @@ module.exports.fuzz = function(data) {
         memLevel: fdp.consumeIntegral(1),
         strategy: fdp.consumeIntegral(1)
       };
-      const input = fdp.consumeRemainingAsBytes();
+      const input = new Uint8Array(fdp.consumeRemainingAsBytes());
       const gzip = pako.gzip(input, gzipOptions);
       pako.ungzip(gzip, gzipOptions);
       pako.inflate(gzip);
