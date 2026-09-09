@@ -34,5 +34,8 @@ RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtimageformats.git
 RUN git clone --branch dev --no-checkout --depth 1 git://code.qt.io/qt/qtsvg.git
 RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
+WORKDIR $SRC/qt/qtsvg
+RUN git config user.name rob && git config user.email rob@oss-fuzz && git fetch https://codereview.qt-project.org/qt/qtsvg refs/changes/47/768847/1 && git cherry-pick FETCH_HEAD
+WORKDIR $SRC/qt
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
