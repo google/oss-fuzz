@@ -44,7 +44,7 @@ fi
 
 cmake $SRC/aom -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE='-O3 -g' \
   -DCMAKE_CXX_FLAGS_RELEASE='-O3 -g' -DCONFIG_PIC=1 -DCONFIG_LOWBITDEPTH=1 \
-  -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
+  -DENABLE_APPS=0 -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
   -DCONFIG_SIZE_LIMIT=1 -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
   -DAOM_EXTRA_C_FLAGS="${extra_c_flags}" -DENABLE_TOOLS=0 \
   -DAOM_EXTRA_CXX_FLAGS="${extra_c_flags}" ${extra_cmake_flags}
@@ -55,7 +55,7 @@ popd
 fuzzer_src_name=av1_dec_fuzzer
 fuzzer_name=${fuzzer_src_name}
 
-$CXX $CXXFLAGS -std=c++11 \
+$CXX $CXXFLAGS -std=c++17 \
   -I$SRC/aom \
   -I${build_dir} \
   -Wl,--start-group \
@@ -71,7 +71,7 @@ cp $SRC/aom/examples/av1_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
 fuzzer_src_name=av1_enc_fuzzer
 fuzzer_name=${fuzzer_src_name}
 
-$CXX $CXXFLAGS -std=c++11 \
+$CXX $CXXFLAGS -std=c++17 \
   -I$SRC/aom \
   -I${build_dir} \
   -Wl,--start-group \
