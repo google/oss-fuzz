@@ -14,11 +14,28 @@
 # limitations under the License.
 #
 ################################################################################
+#
+# OSS-Fuzz build script for tmux.
+#
+# This script:
+#   1. Builds tmux from upstream master with the existing in-tree fuzzers
+#      (input-fuzzer, cmd-parse-fuzzer, format-fuzzer, style-fuzzer).
+#   2. Builds 6 additional, hand-picked harnesses from the tmux-oss-fuzz
+#      project — one per parser/processing surface that achieved the
+#      best evaluation coverage.
+#   3. Generates the seed corpus for input-fuzzer.
 
-# Ensure libevent can be found
+set -u
+
 export PKG_CONFIG_PATH="/usr/local/lib/"
 
+cd "${SRC}/tmux"
+
+# ---------------------------------------------------------------------------
+# Step 1: Build tmux's in-tree fuzzers
+# ---------------------------------------------------------------------------
 ./autogen.sh
+
 ./configure \
     --enable-fuzzing \
     FUZZING_LIBS="${LIB_FUZZING_ENGINE} -lc++" \
@@ -26,27 +43,88 @@ export PKG_CONFIG_PATH="/usr/local/lib/"
     LIBTINFO_LIBS=" -l:libtinfo.a "
 
 make -j"$(nproc)" check
-find "${SRC}/tmux/fuzz/" -name '*-fuzzer' -exec cp -v '{}' "${OUT}"/ \;
-find "${SRC}/tmux/fuzz/" -name '*-fuzzer.options' -exec cp -v '{}' "${OUT}"/ \;
-find "${SRC}/tmux/fuzz/" -name '*-fuzzer.dict' -exec cp -v '{}' "${OUT}"/ \;
 
-MAXLEN=$(grep -Po 'max_len\s+=\s+\K\d+' "${OUT}/input-fuzzer.options")
+find "${SRC}/tmux/fuzz/" -name '*-fuzzer'         -exec cp -v '{}' "${OUT}/" \;
+find "${SRC}/tmux/fuzz/" -name '*-fuzzer.options' -exec cp -v '{}' "${OUT}/" \;
+find "${SRC}/tmux/fuzz/" -name '*-fuzzer.dict'    -exec cp -v '{}' "${OUT}/" \;
 
-if [ ! -d "${WORK}/fuzzing_corpus" ]; then
-    mkdir "${WORK}/fuzzing_corpus"
-    cd "${WORK}/fuzzing_corpus"
-    bash "${SRC}/tmux/tools/24-bit-color.sh" | \
-        split -a4 -db$MAXLEN - 24-bit-color.out.
-    perl "${SRC}/tmux/tools/256colors.pl" | \
-        split -a4 -db$MAXLEN - 256colors.out.
-    cat "${SRC}/tmux/tools/UTF-8-demo.txt" | \
-        split -a4 -db$MAXLEN - UTF-8-demo.txt.
-    cat "${SRC}/tmux-fuzzing-corpus/alacritty"/* | \
-        split -a4 -db$MAXLEN - alacritty.
-    cat "${SRC}/tmux-fuzzing-corpus/esctest"/* | \
-        split -a4 -db$MAXLEN - esctest.
-    cat "${SRC}/tmux-fuzzing-corpus/iterm2"/* | \
-        split -a5 -db$MAXLEN - iterm2.
-    zip -q -j -r "${OUT}/input-fuzzer_seed_corpus.zip" \
-        "${WORK}/fuzzing_corpus/"
+# ---------------------------------------------------------------------------
+# Step 2: Build the additional best-of-breed harnesses
+# ---------------------------------------------------------------------------
+# Each entry below is the single best harness for its target, chosen
+# from the comparative evaluation in tmux-oss-fuzz/docs/results.md.
+# Format: "<source-relative-path-under-harnesses/> <output-target-name>".
+
+EXTRA_DIR="${SRC}/tmux-oss-fuzz"
+if [ -d "${EXTRA_DIR}/harnesses" ]; then
+    echo "Building additional best-of-breed harnesses from ${EXTRA_DIR}..."
+
+    # All tmux objects. We INCLUDE tmux.o because tmux's
+    # --enable-fuzzing path marks main() as weak so libFuzzer's main
+    # wins, and tmux.o provides global helpers used by other objects.
+    # Exclude in-tree fuzzer objects (they each define their own
+    # LLVMFuzzerTestOneInput which would collide).
+    TMUX_OBJS=$(find "${SRC}/tmux" -name "*.o" \
+        ! -path "*/fuzz/*" \
+        | tr '\n' ' ')
+
+    if [ -z "${TMUX_OBJS}" ]; then
+        echo "ERROR: no tmux object files found; tmux build may have failed" >&2
+        exit 1
+    fi
+
+    build_harness() {
+        local src="$1"
+        local out_name="$2"
+
+        if [ ! -f "${src}" ]; then
+            echo "  SKIP ${out_name}: source missing (${src})"
+            return
+        fi
+        echo "  Building ${out_name}..."
+        $CC $CFLAGS \
+            -I"${SRC}/tmux" \
+            "${src}" \
+            ${TMUX_OBJS} \
+            ${LIB_FUZZING_ENGINE} \
+            -levent -lncurses -lutil -lm -lresolv \
+            -o "${OUT}/${out_name}"
+    }
+
+    # One harness per target.
+    for harness in input-parse  cmd-parse  layout-parse  utf8  format  style; do
+        build_harness "${EXTRA_DIR}/harnesses/${harness}-fuzzer-extra.c" \
+                      "${harness}-fuzzer-extra"
+    done
+fi
+
+# ---------------------------------------------------------------------------
+# Step 3: Build seed corpus for input-fuzzer
+# ---------------------------------------------------------------------------
+OPTIONS_FILE="${OUT}/input-fuzzer.options"
+if [ -f "${OPTIONS_FILE}" ]; then
+    MAXLEN=$(grep -Po 'max_len\s*=\s*\K\d+' "${OPTIONS_FILE}" || echo "8192")
+
+    if [ ! -d "${WORK}/fuzzing_corpus" ]; then
+        mkdir "${WORK}/fuzzing_corpus"
+        cd "${WORK}/fuzzing_corpus"
+
+        bash "${SRC}/tmux/tools/24-bit-color.sh" 2>/dev/null | \
+            split -a4 -db"${MAXLEN}" - 24-bit-color.out. || true
+        perl "${SRC}/tmux/tools/256colors.pl"    2>/dev/null | \
+            split -a4 -db"${MAXLEN}" - 256colors.out.    || true
+        cat "${SRC}/tmux/tools/UTF-8-demo.txt"   2>/dev/null | \
+            split -a4 -db"${MAXLEN}" - UTF-8-demo.txt.   || true
+
+        if [ -d "${SRC}/tmux-fuzzing-corpus" ]; then
+            for src_dir in alacritty esctest iterm2; do
+                [ -d "${SRC}/tmux-fuzzing-corpus/${src_dir}" ] || continue
+                cat "${SRC}/tmux-fuzzing-corpus/${src_dir}"/* 2>/dev/null | \
+                    split -a5 -db"${MAXLEN}" - "${src_dir}." || true
+            done
+        fi
+
+        zip -q -j -r "${OUT}/input-fuzzer_seed_corpus.zip" \
+            "${WORK}/fuzzing_corpus/"
+    fi
 fi
