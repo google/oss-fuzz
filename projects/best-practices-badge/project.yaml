@@ -1,0 +1,17 @@
+homepage: https://www.bestpractices.dev
+language: ruby
+primary_contact: dwheeler@linuxfoundation.org
+main_repo: https://github.com/coreinfrastructure/best-practices-badge
+file_github_issue: true
+help_url: https://github.com/coreinfrastructure/best-practices-badge/security/advisories/new
+
+# Ruzzy (the Ruby fuzzing library) is built on libFuzzer.
+# AFL, honggfuzz, and centipede are not compatible with Ruzzy harnesses.
+fuzzing_engines:
+  - libfuzzer
+
+# MemorySanitizer requires every dependency to be fully instrumented and
+# is not compatible with Ruby's native C/Rust extensions.
+sanitizers:
+  - address
+  - undefined
