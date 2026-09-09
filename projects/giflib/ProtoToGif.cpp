@@ -255,7 +255,7 @@ uint16_t ProtoConverter::extractWordFromUInt32(uint32_t a)
 
 uint8_t ProtoConverter::extractByteFromUInt32(uint32_t a)
 {
-	uint8_t byte = a & 0x80;
+	uint8_t byte = a & 0xFF;
 	return byte;
 }
 
