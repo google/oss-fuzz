@@ -54,6 +54,13 @@ for i in fuzz_disassemble fuzz_bfd fuzz_bfd_ext; do
     $CXX $CXXFLAGS $i.o -o $OUT/$i $LIB_FUZZING_ENGINE -Wl,--start-group ${LIBS} -Wl,--end-group
 done
 
+# Build sframe fuzzer
+$CC $CFLAGS -I ../include -I ../libsframe -c fuzz_sframe.c -o fuzz_sframe.o
+$CXX $CXXFLAGS fuzz_sframe.o -o $OUT/fuzz_sframe $LIB_FUZZING_ENGINE \
+  ../libsframe/.libs/libsframe.a ../libiberty/libiberty.a
+echo "[libfuzzer]" > $OUT/fuzz_sframe.options
+echo "detect_leaks=0" >> $OUT/fuzz_sframe.options
+
 # Build targeted disassembly fuzzers
 if [ -n "${OSS_FUZZ_CI-}" ]
 then
