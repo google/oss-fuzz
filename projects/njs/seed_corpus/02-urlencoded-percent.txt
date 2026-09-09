@@ -1,0 +1,3 @@
+CT:urlencoded
+MAX:16
+BODY:a=%20%26&b=%3D
