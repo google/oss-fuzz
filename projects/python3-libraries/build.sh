@@ -23,6 +23,14 @@ export MSAN_OPTIONS="halt_on_error=0:exitcode=0:report_umrs=0"
 # which thinks pthreads are available without any CLI flags
 CFLAGS=${CFLAGS//"-pthread"/}
 
+# Ensure assert statements are enabled. It may help identify problems
+# earlier if those fire.
+CFLAGS="${CFLAGS} -UNDEBUG"
+
+# Some fuzz tests in fuzzer.c use CPython internal API. Carried over from
+# the former cpython3 project.
+CFLAGS="${CFLAGS} -I${SRC}/cpython/Include/internal/"
+
 FLAGS=()
 case $SANITIZER in
   address)
@@ -30,6 +38,9 @@ case $SANITIZER in
     ;;
   memory)
     FLAGS+=("--with-memory-sanitizer")
+    # installing ensurepip takes a while with MSAN instrumentation, so
+    # we disable it here
+    FLAGS+=("--without-ensurepip")
     # -msan-keep-going is needed to allow MSAN's halt_on_error to function
     FLAGS+=("CFLAGS=-mllvm -msan-keep-going=1")
     ;;
@@ -59,6 +70,7 @@ $OUT/cpython-install/bin/python3 -m pip install hypothesis
 cd $SRC/library-fuzzers
 make
 
+# ------------------------- Python harness fuzzers ----------------------------#
 while read -r name fuzzer; do
   cp $SRC/library-fuzzers/fuzzer-$name $OUT/
   cp $SRC/library-fuzzers/$fuzzer $OUT/
@@ -72,8 +84,32 @@ done < $SRC/library-fuzzers/fuzz_targets.txt
 
 cp $SRC/library-fuzzers/fuzzeddataprovider.py $OUT/
 
-# Use CPython source code as seed corpus and use dict from cpython3
-cp $SRC/cpython/Modules/_xxtestfuzz/dictionaries/fuzz_pycompile.dict $OUT/fuzzer-ast.dict
+# Use CPython source code as seed corpus
+cp $SRC/library-fuzzers/dictionaries/fuzz_pycompile.dict $OUT/fuzzer-ast.dict
 mkdir corp-ast/
 find $SRC/cpython -type f -name '*.py' -size -4097c -exec cp {} corp-ast/ \;
 zip -j $OUT/fuzzer-ast_seed_corpus.zip corp-ast/*
+
+# ---------------------------- C harness fuzzers ------------------------------#
+while read -r fuzz_test; do
+  cp $SRC/library-fuzzers/$fuzz_test $OUT/
+
+  # Zip up and copy any seed corpus
+  if [ -d "$SRC/library-fuzzers/${fuzz_test}_corpus" ]; then
+    zip -j "$OUT/${fuzz_test}_seed_corpus.zip" $SRC/library-fuzzers/${fuzz_test}_corpus/*
+  fi
+  # Copy over the dictionary for this test
+  if [ -e "$SRC/library-fuzzers/dictionaries/${fuzz_test}.dict" ]; then
+    cp "$SRC/library-fuzzers/dictionaries/${fuzz_test}.dict" "$OUT/${fuzz_test}.dict"
+  fi
+done < $SRC/library-fuzzers/fuzz_tests.txt
+
+# A little bit hacky but we have to copy $OUT/include to
+# $OUT/$OUT/include as the coverage build needs all source
+# files used in execution and expects it to be there.
+#   See projects/tensorflow/build.sh for prior art
+if [ "$SANITIZER" = "coverage" ]
+then
+  mkdir -p $OUT/$OUT
+  cp -r $OUT/cpython-install/include $OUT/$OUT/
+fi
