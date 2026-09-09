@@ -25,6 +25,7 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 COPY gosigfuzz.c $GOPATH/gosigfuzz/
 
+RUN apt-get install -y gcc # used to enable CGO in Go
 RUN install_go.sh
 
 # TODO(jonathanmetzman): Install this file using install_go.sh.
