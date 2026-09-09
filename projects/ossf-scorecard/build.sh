@@ -28,23 +28,29 @@ find ./probes -type f -name 'def.yml' -exec bash -c '
         packageName=$(basename $dirPath)
         yaml_contents=$(cat $dirPath/def.yml)
         yaml_file_contents="package ${packageName}\n\nvar YmlFile=\`${yaml_contents//\`/}\`"
-        echo -e "${yaml_file_contents}" >> "${dirPath}/def.go"
+        echo -e "${yaml_file_contents}" > "${dirPath}/def.go"
         gofmt -w "${dirPath}/def.go"
     done
 ' _ {} +
 
-# Here we rewrite the path from which we read the def.yml file.
-sed -i '19i "os"' finding/probe.go
-sed -i 's|content, err := loc.ReadFile("def.yml")|content, err := os.ReadFile(fmt.Sprintf("/tmp/probedefinitions/%s/def.yml", probeID))|' finding/probe.go
-gofmt -w finding/probe.go
-
 # End of doing the workaround of the def.yml files.
 #############################
 
-mv $SRC/probes_fuzzer.go $SRC/scorecard/probes/
+[ -f "$SRC/probes_fuzzer.go" ] && mv $SRC/probes_fuzzer.go $SRC/scorecard/probes/
 #printf "package probes \nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./probes/fuzz-register.go
 go mod tidy
+GOMODCACHE_DIR="$(go env GOMODCACHE)"
+GO_REQUIRED="$(awk '/^go /{print $2; exit}' go.mod)"
+TOOLCHAIN_DIR="$GOMODCACHE_DIR/golang.org/toolchain@v0.0.1-go${GO_REQUIRED}.linux-amd64"
+if [ -d "$TOOLCHAIN_DIR" ]; then
+  cp -r "$TOOLCHAIN_DIR" "/tmp/go-toolchain-$$"
+  if [ -x "/tmp/go-toolchain-$$/bin/go" ]; then
+    export GOROOT="/tmp/go-toolchain-$$"
+    export GOTOOLCHAIN=local
+    export PATH="/tmp/go-toolchain-$$/bin:$PATH"
+  fi
+fi
 compile_native_go_fuzzer_v2 github.com/ossf/scorecard/v5/probes FuzzProbes FuzzProbes gofuzz
 
-mv $SRC/yaml_fuzzer.go $SRC/scorecard/policy/
+[ -f "$SRC/yaml_fuzzer.go" ] && mv $SRC/yaml_fuzzer.go $SRC/scorecard/policy/
 compile_go_fuzzer github.com/ossf/scorecard/v5/policy FuzzParseFromYAML fuzz_parse_from_yaml gofuzz
