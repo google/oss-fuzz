@@ -1,0 +1,11 @@
+homepage: "https://py-pdf.github.io/fpdf2/"
+language: python
+primary_contact: "andersonhc@gmail.com"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/py-pdf/fpdf2.git"
