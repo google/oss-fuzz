@@ -21,7 +21,16 @@
 	--enable-imc-test \
 	--enable-tnccs-20 \
 	--enable-libipsec \
+	--enable-dnscert \
+	--enable-ipseckey \
 	--enable-eap-radius \
+	--enable-eap-aka \
+	--enable-eap-sim \
+	--enable-eap-md5 \
+	--enable-eap-mschapv2 \
+	--enable-eap-identity \
+	--enable-md4 \
+	--enable-md5 \
 	--enable-pkcs12 \
 	--enable-hmac \
 	--enable-acert \
