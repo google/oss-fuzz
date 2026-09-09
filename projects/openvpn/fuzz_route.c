@@ -196,6 +196,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (route_list_inited) {
     gc_free(&rl.gc);
   }
+  if (route_list_ipv6_inited) {
+    gc_free(&rl6.gc);
+  }
   env_set_destroy(c.es);
   context_gc_free(&c);
 
