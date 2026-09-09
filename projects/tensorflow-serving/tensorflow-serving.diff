@@ -79,3 +79,76 @@ index de1203a7..dd18da94 100644
      # ==== TensorFlow Decision Forests ===
      http_archive(
          name = "org_tensorflow_decision_forests",
+
+diff --git a/third_party/tensorflow/tensorflow.patch b/third_party/tensorflow/tensorflow.patch
+index bf11ed6..35feb0a 100644
+--- a/third_party/tensorflow/tensorflow.patch
++++ b/third_party/tensorflow/tensorflow.patch
+@@ -59,18 +59,6 @@ diff --git a/tensorflow/core/platform/rules_cc.bzl b/tensorflow/core/platform/ru
+ +cc_library = cc_library_oss
+  cc_shared_library = _cc_shared_library
+  cc_test = _cc_test
+-diff --git a/tensorflow/core/tfrt/graph_executor/graph_execution_options.h b/tensorflow/core/tfrt/graph_executor/graph_execution_options.h
+---- a/tensorflow/core/tfrt/graph_executor/graph_execution_options.h
+-+++ b/tensorflow/core/tfrt/graph_executor/graph_execution_options.h
+-@@ -144,6 +144,8 @@
+-   // The optional name for debugging purposes. If empty, the runtime will pick a
+-   // name e.g. the joined string of input names and output names.
+-   std::string name;
+-+  std::optional<absl::Time> rpc_deadline_for_batching_task_cancellation;
+-+  std::function<bool()> is_rpc_cancelled_callback;
+- };
+- 
+- // Creates the default `SessionOptions` from a `GraphExecutionOptions`.
+ diff --git a/tensorflow/tensorflow.bzl b/tensorflow/tensorflow.bzl
+ --- a/tensorflow/tensorflow.bzl
+ +++ b/tensorflow/tensorflow.bzl
+@@ -97,32 +85,6 @@ diff --git a/tensorflow/workspace3.bzl b/tensorflow/workspace3.bzl
+  
+      tf_http_archive(
+          name = "io_bazel_rules_closure",
+-diff --git a/third_party/tf_runtime/workspace.bzl b/third_party/tf_runtime/workspace.bzl
+---- a/third_party/tf_runtime/workspace.bzl
+-+++ b/third_party/tf_runtime/workspace.bzl
+-@@ -15,8 +15,8 @@
+-         strip_prefix = "runtime-{commit}".format(commit = TFRT_COMMIT),
+-         urls = tf_mirror_urls("https://github.com/tensorflow/runtime/archive/{commit}.tar.gz".format(commit = TFRT_COMMIT)),
+-         repo_mapping = {
+--            "@tsl": "@tsl",
+--            "@xla": "@xla",
+-+            "@tsl": "@local_tsl",
+-+            "@xla": "@local_xla",
+-         },
+-         # A patch file can be provided for atomic commits to both TF and TFRT.
+-         # The job that bumps the TFRT_COMMIT also resets patch_file to 'None'.
+-diff --git a/third_party/xla/xla/backends/gpu/collectives/gpu_communicator.h b/third_party/xla/xla/backends/gpu/collectives/gpu_communicator.h
+---- a/third_party/xla/xla/backends/gpu/collectives/gpu_communicator.h
+-+++ b/third_party/xla/xla/backends/gpu/collectives/gpu_communicator.h
+-@@ -91,7 +91,7 @@
+- 
+-   // A packed kernel argument type for passing device communicator to device
+-   // kernels (byte storage appropriately sized to fit platform-specific handle).
+--  using PackedKernelArg = std::array<std::byte, 200>;
+-+  using PackedKernelArg = std::array<std::byte, 256>;
+-   virtual PackedKernelArg PackKernelArg() const = 0;
+- 
+-   template <typename Sink>
+ diff --git a/third_party/xla/xla/tsl/cuda/BUILD.bazel b/third_party/xla/xla/tsl/cuda/BUILD.bazel
+ --- a/third_party/xla/xla/tsl/cuda/BUILD.bazel
+ +++ b/third_party/xla/xla/tsl/cuda/BUILD.bazel
+@@ -207,13 +169,14 @@ diff --git a/third_party/xla/xla/tsl/cuda/BUILD.bazel b/third_party/xla/xla/tsl/
+          "@com_google_absl//absl/container:flat_hash_set",
+          "@local_config_cuda//cuda:cuda_headers",
+          "@tsl//tsl/platform:dso_loader",
+-@@ -376,7 +376,7 @@
++@@ -391,8 +391,8 @@
+      visibility = ["//visibility:public"],
+      deps = if_cuda_is_configured([
+          # keep sorted
+ -        "//xla/tsl/platform:logging",
+ +        "//xla/tsl/platform:logging", "//xla/tsl/platform/default:dso_loader",
+          "@com_google_absl//absl/container:flat_hash_set",
++         "@com_google_absl//absl/strings:string_view",
+          "@local_config_cuda//cuda:cuda_headers",
+          "@local_config_nccl//:nccl_headers",
+ @@ -411,7 +411,7 @@
