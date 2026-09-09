@@ -1,0 +1,6 @@
+homepage: "https://github.com/rafagafe/tiny-json"
+main_repo: https://github.com/rafagafe/tiny-json
+language: c
+primary_contact: "void@lessvoid.com"
+auto_ccs:
+  - "xhanzalikj@stuba.sk"
