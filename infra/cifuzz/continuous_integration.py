@@ -125,11 +125,12 @@ class BaseCi:
         repo_name=repo_name,
         username=self.config.actor,
         password=self.config.token)
-    self._checkout_specified_commit(manager)
+    if not self._checkout_specified_commit(manager):
+      return None
     return manager
 
   def _checkout_specified_commit(self, manager):
-    checkout_specified_commit(manager, self.config.pr_ref, self.config.git_sha)
+    return checkout_specified_commit(manager, self.config.pr_ref, self.config.git_sha)
 
   def _detect_main_repo(self):
     """Helper for child classes that detects the main repo and returns a tuple
@@ -198,10 +199,12 @@ def checkout_specified_commit(repo_manager_obj, pr_ref, git_sha):
       repo_manager_obj.checkout_pr(pr_ref)
     else:
       repo_manager_obj.checkout_commit(git_sha)
+    return True
   except (RuntimeError, ValueError):
     logging.error(
         'Can not check out requested state %s. '
         'Using current repo state.', pr_ref or git_sha)
+    return False
 
 
 class GithubCiMixin:
@@ -264,7 +267,8 @@ class InternalGithub(GithubCiMixin, BaseCi):
 
     # Use the same name used in the docker image so we can overwrite it.
     manager = self._copy_repo_from_image(image_repo_path)
-    self._checkout_specified_commit(manager)
+    if not self._checkout_specified_commit(manager):
+      return get_build_preparation_failure()
     return BuildPreparationResult(success=True,
                                   image_repo_path=image_repo_path,
                                   repo_manager=manager)
@@ -370,6 +374,8 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     # TODO(metzman): Figure out if we want second copy at all.
     manager = self._clone_repo_and_checkout(self.config.git_url,
                                             self.config.project_repo_name)
+    if not manager:
+      return get_build_preparation_failure()
     return self._build_external_project_docker_image(manager)
 
   def get_build_command(self, host_repo_path, image_repo_path):  # pylint: disable=no-self-use
