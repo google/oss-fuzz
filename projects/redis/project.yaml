@@ -1,0 +1,15 @@
+homepage: "https://redis.io/"
+language: c
+primary_contact: "redis@redis.io"
+auto_ccs:
+  - "antirez@gmail.com"
+  - "oran@redislabs.com"
+main_repo: "https://github.com/redis/redis"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+architectures:
+  - x86_64
+  - i386
