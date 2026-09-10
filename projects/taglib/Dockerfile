@@ -1,4 +1,4 @@
-# Copyright 2021 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
-
-# The Go version is intentionally not pinned here. tailscale's go.mod (`go`
-# directive) is the single source of truth; GOTOOLCHAIN=auto fetches a matching
-# toolchain at build time if the base image's bundled Go is older, and
-# fuzz/oss-fuzz.sh copies it to a writable dir so go-118-fuzz-build_v2 can
-# overlay its testing/fuzz.go. Bumping Go = editing go.mod in the tailscale repo;
-# this Dockerfile stays untouched.
-
-RUN git clone --depth 1 https://github.com/tailscale/tailscale
-
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make zlib1g-dev
+RUN git clone --depth 1 --recurse-submodules https://github.com/taglib/taglib.git
+WORKDIR $SRC/taglib
 COPY build.sh $SRC/
-WORKDIR $SRC/tailscale
