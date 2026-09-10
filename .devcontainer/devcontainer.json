@@ -1,0 +1,8 @@
+{
+    "name": "Default",
+    "build": {
+      "dockerfile": "Dockerfile"
+    },
+    "runArgs": ["--privileged"],
+    "overrideCommand": false
+  }
