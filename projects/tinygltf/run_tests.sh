@@ -16,5 +16,10 @@
 #
 ################################################################################
 
-# Enter tests directory and run the two unit test cases
-cd tests && ./tester && ./tester_noexcept
+# Enter tests directory and run the v3 unit test cases. Upstream replaced the
+# old tester/tester_noexcept binaries with the tester_v3_* set.
+cd tests
+./tester_v3_c
+./tester_v3_c_v1port
+./tester_v3_json_c
+./tester_v3_freestanding

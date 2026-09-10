@@ -14,11 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
     cmake \
+    libaudit-dev \
+    libcap-dev \
     python3-pip \
     libpam0g-dev \
     libsystemd-dev \
@@ -27,22 +29,8 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip3 install -U meson ninja inflection pyyaml mako
 
-# Build nghttp2 >= 1.66.0 from source so meson finds it via pkg-config
-# and does not fall back to the CMake subproject (which triggers a meson
-# cycle-detection bug with nghttp2 1.68.x doc targets).
-RUN curl -sL https://github.com/nghttp2/nghttp2/releases/download/v1.68.1/nghttp2-1.68.1.tar.xz \
-      | tar -xJ -C $SRC && \
-    cd $SRC/nghttp2-1.68.1 && \
-    cmake -B build -DENABLE_LIB_ONLY=ON -DENABLE_STATIC_LIB=ON \
-      -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" && \
-    cmake --build build -j$(nproc) && \
-    cmake --install build && \
-    rm -rf $SRC/nghttp2-1.68.1
-
 RUN git clone --depth 1 https://github.com/openbmc/bmcweb $SRC/bmcweb
 
 COPY build.sh $SRC/
-COPY *_fuzzer.cpp $SRC/
 
 WORKDIR $SRC/bmcweb

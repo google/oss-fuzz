@@ -33,19 +33,26 @@
 # The first argument is the version tag, e.g., 'latest', 'ubuntu-20-04'.
 VERSION_TAG=${1:-latest}
 
-# Get the directory where this script is located to find the helper script.
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-
-# Fetch the official list of images from the Python source of truth.
-# This avoids duplicating the image list and ensures this script is always
-# up-to-date.
-IMAGE_LIST=$(python3 "${SCRIPT_DIR}/list_images.py")
+IMAGE_LIST=(
+    "base-clang"
+    "base-builder"
+    "base-builder-go"
+    "base-builder-javascript"
+    "base-builder-jvm"
+    "base-builder-python"
+    "base-builder-ruby"
+    "base-builder-rust"
+    "base-builder-swift"
+    "base-runner"
+    "base-runner-debug"
+    "indexer"
+)
 
 echo "Building version: ${VERSION_TAG}"
 echo "Images to build: ${IMAGE_LIST}"
 
 # Loop through the official list of images and build each one.
-for image_name in ${IMAGE_LIST}; do
+for image_name in ${IMAGE_LIST[@]}; do
   image_dir="infra/base-images/${image_name}"
   
   if [ "${VERSION_TAG}" == "latest" ]; then

@@ -87,7 +87,7 @@ void init() {
 
   auto mparams = llama_model_default_params();
   mparams.vocab_only = true;
-  model = llama_load_model_from_file(filename, mparams);
+  model = llama_model_load_from_file(filename, mparams);
 
   if (model == NULL) {
     printf("Failed to load vocab\n");
@@ -97,7 +97,7 @@ void init() {
   auto cparams = llama_context_default_params();
   ctx = llama_new_context_with_model(model, cparams);
   if (ctx == NULL) {
-    llama_free_model(model);
+    llama_model_free(model);
     exit(1);
   }
 }

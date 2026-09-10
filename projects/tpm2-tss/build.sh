@@ -32,7 +32,8 @@ export GEN_FUZZ=1
   --disable-tcti-mssim \
   --disable-tcti-swtpm \
   --disable-tcti-spi-ftdi \
-  --disable-tcti-spi-lt2go \
+  --disable-tcti-spi-ltt2go \
+  --disable-tcti-i2c-ftdi \
   --disable-doxygen-doc \
   --disable-shared \
   --disable-fapi \

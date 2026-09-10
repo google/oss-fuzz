@@ -21,17 +21,16 @@ RUN apt-get update && \
       libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev \
       libpq-dev libmariadb-dev libkrb5-dev
 RUN mkdir -p /opt/boost-headers && \
-    wget https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz && \
+    wget --progress=dot:giga https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz && \
     tar -xzf boost_1_83_0.tar.gz -C /opt/boost-headers --strip-components=1 && \
     rm -f boost_1_83_0.tar.gz && mkdir -p /usr/local/include && \
     ln -s /opt/boost-headers/boost /usr/local/include/boost
 RUN mkdir -p /src/log4cplus && \
-    wget https://github.com/log4cplus/log4cplus/releases/download/REL_2_1_2/log4cplus-2.1.2.tar.gz && \
+    wget --progress=dot:giga https://github.com/log4cplus/log4cplus/releases/download/REL_2_1_2/log4cplus-2.1.2.tar.gz && \
     tar -xzf log4cplus-2.1.2.tar.gz -C /src/log4cplus --strip-components=1 && \
     rm -f log4cplus-2.1.2.tar.gz
 RUN python3 -m pip install --no-cache-dir --upgrade "meson>=1.1,<2"
 
 RUN git clone https://gitlab.isc.org/isc-projects/kea kea
-RUN git clone https://github.com/AdaLogics/ada-fuzzers ada-fuzzers
 COPY build.sh $SRC/
 WORKDIR kea

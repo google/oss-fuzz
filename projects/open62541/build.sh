@@ -71,7 +71,7 @@ function build_open62541_fuzzers() {
         -DBUILD_SHARED_LIBS=OFF \
         -DUA_BUILD_EXAMPLES=OFF \
         -DUA_LOGLEVEL=600 \
-        -DUA_ENABLE_ENCRYPTION=ON \
+        -DUA_ENABLE_ENCRYPTION=OPENSSL \
         -DUA_BUILD_OSS_FUZZ=ON \
         "$SRC_DIR/"
 

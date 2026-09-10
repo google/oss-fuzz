@@ -1,0 +1,16 @@
+base_os_version: ubuntu-24-04
+homepage: "ocudu.org"
+language: c++
+primary_contact: "security@ocudu.org"
+auto_ccs:
+  - "andre.puschmann@srs.io"
+  - "ismael.gomez@srs.io"
+  - "pedro.alvarez@srs.io"
+  - "robert.falkenberg@srs.io"
+  - "fabian.eckermann@srs.io"
+  - "francisco.paisana@srs.io"
+main_repo: 'https://gitlab.com/ocudu/ocudu.git'
+sanitizers:
+  - address
+  - undefined
+  - memory

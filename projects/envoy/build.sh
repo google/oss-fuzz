@@ -33,6 +33,9 @@ declare -r EXTRA_BAZEL_FLAGS="$(
 # Disabling layering_check because it breaks the abseil build. See
 # https://github.com/google/oss-fuzz/blob/f0fa8b5cd3f99b5905e91b336d07a870ca1bc2e3/projects/abseil-cpp/build.sh#L17-L21.
 echo "--features=-layering_check"
+echo "--repo_env=BAZEL_LLVM_PATH=/usr/local"
+echo "--repo_env=BAZEL_USE_LIBSTDCPP=True"
+echo "--copt=-Wno-nullability-completeness"
 if [ -n "$CC" ]; then
   echo "--action_env=CC=${CC}"
 fi
@@ -40,6 +43,7 @@ if [ -n "$CXX" ]; then
   echo "--action_env=CXX=${CXX}"
 fi
 echo "--host_action_env=CC=gcc"
+echo "--host_action_env=CXX=g++"
 echo "--copt=-gz=zlib"
 echo "--linkopt=-Wl,--compress-debug-sections=zlib"
 echo "--linkopt=-Wl,--icf=all"

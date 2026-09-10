@@ -95,11 +95,11 @@ fi
 
 cd $SRC/openssl30/
 build_fuzzers "_30" "" "engines"
-cd $SRC/openssl33/
-build_fuzzers "_33" "no-apps no-docs" "engines"
 cd $SRC/openssl34/
 build_fuzzers "_34" "no-apps no-docs" "engines"
 cd $SRC/openssl35/
 build_fuzzers "_35" "no-apps no-docs" "engines"
 cd $SRC/openssl36/
 build_fuzzers "_36" "no-apps no-docs" "engines"
+cd $SRC/openssl40/
+build_fuzzers "_40" "no-apps no-docs" ""

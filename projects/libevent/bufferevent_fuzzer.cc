@@ -167,6 +167,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 cleanup:
   if (bev3) bufferevent_free(bev3);
   if (bev4) bufferevent_free(bev4);
+  /* the filters are created without BEV_OPT_CLOSE_ON_FREE, so freeing them
+     does not free the underlying bufferevents */
+  if (bev1 && bev3 != bev1) bufferevent_free(bev1);
+  if (bev2 && bev4 != bev2) bufferevent_free(bev2);
   if (conn_bucket_cfg) ev_token_bucket_cfg_free(conn_bucket_cfg);
   if (bev_rate_group) bufferevent_rate_limit_group_free(bev_rate_group);
   if (base) event_base_free(base);

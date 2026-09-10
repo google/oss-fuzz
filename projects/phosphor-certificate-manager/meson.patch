@@ -1,17 +1,8 @@
 diff --git a/meson.build b/meson.build
-index 03f3031..1db67d5 100644
+index ff7c480..7b6dde1 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -27,7 +27,7 @@ has_cli11 = meson.get_compiler('cpp').has_header_symbol(
- if not has_cli11
-     cli11_proj = subproject('cli11', required: false)
-     assert(cli11_proj.found(), 'CLI11 is required')
--    cli11_dep = cli11_proj.get_variable('CLI11_dep')
-+    cli11_dep = cli11_proj.get_variable('cli11_dep')
- endif
- 
- systemd_dep = dependency('systemd')
-@@ -87,9 +87,17 @@ if get_option('ca-cert-extension').allowed()
+@@ -79,8 +79,14 @@ if get_option('ca-cert-extension').allowed()
      subdir('bmc-vmi-ca')
  endif
  
@@ -19,22 +10,19 @@ index 03f3031..1db67d5 100644
 +if not get_option('fuzzing').allowed()
 +    subdir('dist')
 +endif
-+
  
  if get_option('tests').allowed()
      subdir('test')
  endif
- 
++
 +if get_option('fuzzing').allowed()
 +    subdir('fuzzing')
 +endif
-+
-+
 diff --git a/meson.options b/meson.options
-index 35752e6..7298697 100644
+index 35752e6..aeffbec 100644
 --- a/meson.options
 +++ b/meson.options
-@@ -38,3 +38,18 @@ option(
+@@ -38,3 +38,17 @@ option(
      value: 'enabled',
      description: 'Allow expired certificates',
  )
@@ -52,4 +40,3 @@ index 35752e6..7298697 100644
 +    value: '-fsanitize=fuzzer',
 +    description: 'Fuzzing engine link arguments',
 +)
-+
