@@ -45,6 +45,7 @@
 #include "clang/Sema/Sema.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/MapVector.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallSet.h"
@@ -139,9 +140,9 @@ const clang::ClassTemplateSpecializationDecl* FindSpecialization(
   // lead to loading external specializations. Arguably this could have been
   // handled through `mutable` fields because logically this doesn't affect the
   // forthcoming behavior of the object.
-  void* insert_pos = nullptr;
+  llvm::FoldingSetInsertToken insert_token;
   return const_cast<clang::ClassTemplateDecl*>(class_template_decl)
-      ->findSpecialization(canonical_args, insert_pos);
+      ->findSpecialization(canonical_args, insert_token);
 }
 
 // Helper functions to find the closest explicit template specialization that
