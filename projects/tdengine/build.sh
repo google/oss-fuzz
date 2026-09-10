@@ -39,9 +39,9 @@ if [[ $SANITIZER = *coverage* ]]; then
   ln -f -s /usr/bin/gold /usr/bin/ld
 fi
 
-cmake -DBUILD_HTTP=true -DBUILD_TEST=false ..
 # Build parser and all libraries it depends on at link time
-cmake --build . --target parser nodes catalog function scalar -- -j$(nproc)
+cmake -DBUILD_HTTP=true -DBUILD_TEST=false -DBUILD_LIBGSASL=false ..
+cmake --build . --target parser nodes catalog function scalar extconnector -- -j$(nproc)
 
 # Short-hand base directories
 TDENGINE_SRC=/src/tdengine
@@ -70,6 +70,7 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE sql-fuzzer.o -o $OUT/sql-fuzzer \
      ${BUILDLIB}/libparser.a \
      ${BUILDLIB}/libplanner.a \
      ${BUILDLIB}/libcatalog.a \
+     ${BUILDLIB}/libextconnector.a \
      ${BUILDLIB}/libfunction.a \
      ${BUILDLIB}/libscalar.a \
      ${BUILDLIB}/libnodes.a \

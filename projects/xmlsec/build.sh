@@ -94,6 +94,20 @@ zip -j $OUT/xmlsec_keyinfo_fuzzer_seed_corpus.zip \
     $SRC/xmlsec/tests/merlin-xmlenc-five/encrypt-*.xml \
     2>/dev/null || true
 
+# Seed corpus for the XML Encryption fuzzer: encrypted documents covering the
+# cipher, key wrap, RSA key transport and key agreement variants. Each name is
+# prefixed with its test directory because zip -j refuses a repeated name and
+# more than one of these directories holds a keys.xml.
+enc_corpus="$WORK/enc_corpus"
+rm -rf "$enc_corpus"
+mkdir -p "$enc_corpus"
+for d in merlin-xmlenc-five 01-phaos-xmlenc-3 aleksey-xmlenc-01; do
+    for f in $SRC/xmlsec/tests/$d/*.xml; do
+        [ -f "$f" ] && cp "$f" "$enc_corpus/$d-$(basename $f)"
+    done
+done
+zip -j $OUT/xmlsec_enc_fuzzer_seed_corpus.zip "$enc_corpus"/* 2>/dev/null || true
+
 # Seed corpus for the key loader fuzzer with specific format
 keyload_corpus="$WORK/keyload_corpus"
 rm -rf "$keyload_corpus"

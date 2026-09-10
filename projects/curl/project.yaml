@@ -17,4 +17,5 @@ fuzzing_engines:
 architectures:
   - x86_64
   - i386
+coverage_extra_args: -ignore-filename-regex=.*curl_fuzzer/build/.*
 main_repo: 'https://github.com/curl/curl.git'

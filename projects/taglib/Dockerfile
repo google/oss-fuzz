@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2022 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +14,8 @@
 #
 ################################################################################
 
-export CXXFLAGS="$CFLAGS"
-
-mkdir build
-cd build
-cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
-make -j$(nproc)
-
-cp fuzzer/Fuzz* $OUT/
-
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make zlib1g-dev
+RUN git clone --depth 1 --recurse-submodules https://github.com/taglib/taglib.git
+WORKDIR $SRC/taglib
+COPY build.sh $SRC/
