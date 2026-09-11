@@ -138,6 +138,9 @@ build_fuzzer "cmGccDepfileFuzzer" "cmGccDepfileFuzzer.cxx"
 # 15. Glob Fuzzer
 build_fuzzer "cmGlobFuzzer" "cmGlobFuzzer.cxx"
 
+# 16. Fortran dependency scanner fuzzer
+build_fuzzer "cmFortranParserFuzzer" "cmFortranParserFuzzer.cxx"
+
 # Build seed corpora
 echo "Building seed corpora..."
 
@@ -169,6 +172,7 @@ build_corpus "cmStringAlgorithmsFuzzer" "corpus/string"
 build_corpus "cmVersionFuzzer" "corpus/version"
 build_corpus "cmCMakePathFuzzer" "corpus/path"
 build_corpus "cmGccDepfileFuzzer" "corpus/depfile"
+build_corpus "cmFortranParserFuzzer" "corpus/fortran"
 # Note: No corpus/glob directory in upstream - glob patterns are simple strings
 
 # Copy dictionaries (cmFoo.dict -> cmFooFuzzer.dict)
