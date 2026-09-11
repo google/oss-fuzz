@@ -101,10 +101,10 @@ COPY install_java.sh /
 RUN /install_java.sh && rm /install_java.sh
 
 # Install JaCoCo for JVM coverage.
-RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.7/org.jacoco.cli-0.8.7-nodeps.jar -O /opt/jacoco-cli.jar && \
-    wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.7/org.jacoco.agent-0.8.7-runtime.jar -O /opt/jacoco-agent.jar && \
-    echo "37df187b76888101ecd745282e9cd1ad4ea508d6  /opt/jacoco-agent.jar" | shasum --check && \
-    echo "c1814e7bba5fd8786224b09b43c84fd6156db690  /opt/jacoco-cli.jar" | shasum --check
+RUN wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.15/org.jacoco.cli-0.8.15-nodeps.jar -O /opt/jacoco-cli.jar && \
+    wget https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.15/org.jacoco.agent-0.8.15-runtime.jar -O /opt/jacoco-agent.jar && \
+    echo "fb5b0036a0899ea97edfa0fc2c7985b55f3f7c5695028163e5e60d4f3cf6075d  /opt/jacoco-agent.jar" | sha256sum --check && \
+    echo "d2b74b20b415163c1f53261e7c5ef4445b788327094208ff821e0c2baf9bc8f1  /opt/jacoco-cli.jar" | sha256sum --check
 
 COPY install_javascript.sh /
 RUN /install_javascript.sh && rm /install_javascript.sh
