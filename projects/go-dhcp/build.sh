@@ -23,3 +23,4 @@ sed -i '58s/^/\/\//g' dhcpv6/dhcpv6_test.go
 compile_native_go_fuzzer github.com/insomniacslk/dhcp/dhcpv4       FuzzDHCPv4    fuzz_DHCPv4
 compile_native_go_fuzzer github.com/insomniacslk/dhcp/dhcpv6       FuzzDHCPv6    fuzz_DHCPv6
 compile_native_go_fuzzer github.com/insomniacslk/dhcp/rfc1035label FuzzLabel     fuzz_Label
+compile_native_go_fuzzer github.com/insomniacslk/dhcp/dhcpv4/nclient4 FuzzBroadcastRawUDPConnReadFrom fuzz_BroadcastRawUDPConnReadFrom
