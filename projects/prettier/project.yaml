@@ -1,0 +1,8 @@
+homepage: "https://prettier.io/"
+language: javascript
+main_repo: "https://github.com/prettier/prettier"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - none
+primary_contact: "lionkay@gmail.com"
