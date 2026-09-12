@@ -1,0 +1,75 @@
+# HDF5 file format dictionary
+
+# HDF5 file signature (magic bytes)
+hdf5_magic="\x89\x48\x44\x46\x0d\x0a\x1a\x0a"
+
+# Superblock versions
+sbver_0="\x00"
+sbver_1="\x01"
+sbver_2="\x02"
+sbver_3="\x03"
+
+# Object header magic
+ohdr_magic="OHDR"
+
+# B-tree magic
+btree_magic="TREE"
+bthd_magic="BTHD"
+
+# Fractal heap
+frhp_magic="FRHP"
+
+# Free space manager
+fshd_magic="FSHD"
+fsse_magic="FSSE"
+
+# Symbol table node
+snod_magic="SNOD"
+
+# Global heap
+gcol_magic="GCOL"
+
+# Shared object header message table
+smtb_magic="SMTB"
+
+# Local heap
+heap_magic="HEAP"
+
+# B-tree v2 internal/leaf
+btin_magic="BTIN"
+btlf_magic="BTLF"
+
+# Chunk signatures
+ochk_magic="OCHK"
+
+# Cache image
+mdci_magic="MDCI"
+
+# Common sizes
+size_4="\x04\x00\x00\x00"
+size_8="\x08\x00\x00\x00"
+
+# NULL and small integers
+null_2="\x00\x00"
+null_4="\x00\x00\x00\x00"
+null_8="\x00\x00\x00\x00\x00\x00\x00\x00"
+one_4="\x01\x00\x00\x00"
+ff_4="\xff\xff\xff\xff"
+ff_8="\xff\xff\xff\xff\xff\xff\xff\xff"
+
+# Datatype classes
+dt_integer="\x00\x00\x00\x08"
+dt_float="\x01\x00\x00\x08"
+dt_string="\x03\x00\x00\x01"
+dt_compound="\x06"
+dt_array="\x0a"
+
+# Common offset/length sizes
+offlen_88="\x08\x08"
+offlen_44="\x04\x04"
+
+# Dataset layout message types
+layout_compact="\x00"
+layout_contiguous="\x01"
+layout_chunked="\x02"
+layout_virtual="\x03"
