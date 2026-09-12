@@ -27,7 +27,7 @@ make generate_corpus
 zip $OUT/fuzz_format_dta_seed_corpus.zip ./fuzz/corpus/dta*/test-case-*
 zip $OUT/fuzz_format_por_seed_corpus.zip ./fuzz/corpus/por/test-case-*
 zip $OUT/fuzz_format_sav_seed_corpus.zip ./fuzz/corpus/sav*/test-case-* ./fuzz/corpus/zsav/test-case-*
-zip $OUT/fuzz_format_sas7bcat_seed_corpus.zip ./fuzz/corpus/sas7bcat/test-case-*
+zip $OUT/fuzz_format_sas7bcat_seed_corpus.zip ./fuzz/corpus/sas7bcat*/test-case-*
 zip $OUT/fuzz_format_sas7bdat_seed_corpus.zip ./fuzz/corpus/sas7bdat*/test-case-*
 zip $OUT/fuzz_format_xport_seed_corpus.zip ./fuzz/corpus/xpt*/test-case-*
 
