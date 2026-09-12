@@ -27,8 +27,9 @@ RUN apt-get update && \
         zlib1g-dev libncurses-dev libzstd-dev libreadline-dev \
         wget gnupg lsb-release software-properties-common && \
     wget -qO- https://apt.llvm.org/llvm.sh | bash -s -- $HOBBES_LLVM_VERSION && \
-    apt-get install -y --no-install-recommends llvm-$HOBBES_LLVM_VERSION-dev && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends llvm-$HOBBES_LLVM_VERSION-dev
+# The package lists are kept: the introspector build installs a few packages
+# from the compile script without running apt-get update first.
 
 RUN git clone --depth 1 https://github.com/morganstanley/hobbes.git $SRC/hobbes
 
