@@ -30,7 +30,7 @@ jobs:
           python-version: 3.11
 
       - name: Get latest indexer binary
-        run: curl -O https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer && chmod +x indexer
+        run: curl -O https://clusterfuzz-builds.storage.googleapis.com/oss-fuzz-artifacts/indexer && chmod +x indexer && whoami
         working-directory: 'infra/base-images/base-builder/indexer'
 
       - name: Run indexer tests
