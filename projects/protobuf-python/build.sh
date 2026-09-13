@@ -20,6 +20,10 @@ if [[ $CFLAGS = *sanitize=address* ]]
 then
     BAZEL_FLAGS="$BAZEL_FLAGS --config=asan"
 fi
+if [[ $CFLAGS = *sanitize=fuzzer-no-link* ]]
+then
+    BAZEL_FLAGS="$BAZEL_FLAGS --copt=-fsanitize=fuzzer-no-link"
+fi
 
 # Build protoc with default options.
 unset CFLAGS CXXFLAGS
@@ -30,7 +34,7 @@ cd $SRC/protobuf
   type -a python3
   /usr/bin/python3 --version
 )
-bazel build $BAZEL_FLAGS //:protoc //python/dist:binary_wheel --noenable_bzlmod
+bazel build $BAZEL_FLAGS //:protoc //python/dist:binary_wheel
 PROTOC=$(realpath bazel-bin/protoc)
 
 # Install the protobuf python runtime.
