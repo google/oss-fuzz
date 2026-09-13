@@ -1,0 +1,10 @@
+homepage: "https://github.com/ilgrad/lexindex"
+language: rust
+primary_contact: "ilia.gradina@gmail.com"
+main_repo: "https://github.com/ilgrad/lexindex"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+architectures:
+  - x86_64
