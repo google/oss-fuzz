@@ -36,6 +36,12 @@ make -j"$(nproc)"
 make install
 cd ../..
 
+# NOTE: BehaviorTree.CPP used to be patched here to avoid the floating-point
+# overloads of std::from_chars, which GCC 9's libstdc++ does not implement (they
+# arrived in GCC 11). Upstream now routes all double parsing through
+# parseDouble() in src/basic_types.cpp, which selects a strtod_l fallback when
+# __cpp_lib_to_chars is unavailable. The patch is therefore obsolete.
+
 # ===== Build BehaviorTree.CPP =====
 mkdir build && cd build
 

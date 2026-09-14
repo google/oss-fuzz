@@ -16,5 +16,5 @@
 ################################################################################
 
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
-compile_native_go_fuzzer code.gitea.io/gitea/tests/fuzz FuzzMarkdownRenderRaw fuzz_markdown_render_raw gofuzz
-compile_native_go_fuzzer code.gitea.io/gitea/tests/fuzz FuzzMarkupPostProcess fuzz_markup_post_process gofuzz
+compile_native_go_fuzzer gitea.dev/tests/fuzz FuzzMarkdownRenderRaw fuzz_markdown_render_raw gofuzz
+compile_native_go_fuzzer gitea.dev/tests/fuzz FuzzMarkupPostProcess fuzz_markup_post_process gofuzz

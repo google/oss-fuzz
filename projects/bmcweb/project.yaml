@@ -1,5 +1,7 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/openbmc/bmcweb"
 language: c++
+primary_contact: ed@tanous.net
 fuzzing_engines:
   - libfuzzer
 sanitizers:

@@ -39,7 +39,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   FuzzedDataProvider fdp(data, size);
+
   LibRaw lib_raw;
+  lib_raw.imgdata.rawparams.max_raw_memory_mb = 300;
 
   for(int i =0; i < 4; i++)
     lib_raw.output_params_ptr()->aber[i] = fdp.ConsumeFloatingPoint<double>();

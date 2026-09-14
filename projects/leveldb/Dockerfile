@@ -21,6 +21,6 @@ RUN git clone --recurse-submodules https://github.com/google/leveldb.git
 WORKDIR $SRC/
 
 # Copy in our files
-COPY build.sh $SRC/
+COPY build.sh run_tests.sh $SRC/
 COPY *.cc $SRC/leveldb/
 COPY *.options $SRC/

@@ -18,7 +18,7 @@
 MVN_FLAGS="--no-transfer-progress -DskipTests"
 ALL_JARS=""
 LIBRARY_NAME="poi"
-GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_11 --console=plain"
+GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.installations.fromEnv=JAVA_HOME_17 --console=plain"
 
 echo Copy libraries for java.awt in place
 ls /usr/lib/x86_64-linux-gnu/
@@ -37,15 +37,15 @@ cp /usr/lib/x86_64-linux-gnu/libXext.so.6* \
 echo Main Java
 ${JAVA_HOME}/bin/java -version
 
-echo Java 11
-${JAVA_HOME_11}/bin/java -version
+echo Java 17
+${JAVA_HOME_17}/bin/java -version
 
 # Install the build servers' jazzer-api into the maven repository.
 pushd "/tmp"
 	${MVN} install:install-file -Dfile=${JAZZER_API_PATH} \
 		-DgroupId="com.code-intelligence" \
 		-DartifactId="jazzer-api" \
-		-Dversion="0.29.1" \
+		-Dversion="0.30.0" \
 		-Dpackaging=jar \
 		 ${MVN_FLAGS}
 popd

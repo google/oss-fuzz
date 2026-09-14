@@ -1,6 +1,7 @@
 homepage: "https://github.com/mity/md4c"
 main_repo: "https://github.com/mity/md4c"
 primary_contact: "mity.ossfuzz@gmail.com"
+base_os_version: ubuntu-24-04
 language: c
 file_github_issue: true
 auto_ccs:

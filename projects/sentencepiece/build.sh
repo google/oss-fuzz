@@ -23,14 +23,80 @@ cd build
 cmake ../ -B ./ -DSPM_ENABLE_SHARED=ON -DCMAKE_INSTALL_PREFIX=./root -DSPM_BUILD_TEST=ON
 cmake --build ./ --config Release --target install --parallel $(nproc)
 
+# Collect absl static libraries produced during the build. Upstream now
+# depends on abseil (logging, hashing, random, containers); the installed
+# libsentencepiece*.a archives reference absl symbols but do not bundle
+# them, so fuzzers (and the helper generate_model binary) must link them
+# explicitly.
+# Upstream no longer vendors abseil in third_party/abseil-cpp; it is pulled in
+# with FetchContent, so the archives land under the CMake build tree (_deps/)
+# and, since sentencepiece forces ABSL_ENABLE_INSTALL=ON, under ./root/lib.
+ABSL_LIBS=$(find ./root/lib _deps -name 'libabsl_*.a' 2>/dev/null | sort -u)
+
+# protobuf is fetched the same way. Its generated headers pull in the real
+# protobuf runtime headers plus utf8_range's utf8_validity.h, and the
+# archives are only in the build tree, so both have to be named explicitly.
+PROTOBUF_INC="-I_deps/protobuf-src/src -I_deps/protobuf-src/third_party/utf8_range"
+PROTOBUF_LIBS=$(find _deps/protobuf-build -name 'libprotobuf*.a' -o -name 'libutf8_*.a' 2>/dev/null | sort -u)
+
+# Everything below builds at -std=c++20: the fetched abseil configures itself
+# as C++20 (ABSL_INTERNAL_AT_LEAST_CXX20), and headers such as
+# absl/types/compare.h then require std::weak_ordering and friends, which are
+# not visible under C++17.
+#
+# Generate a minimal sentencepiece model for the processor_text_fuzzer.
+# Use the sanitized compiler but link without the fuzzer engine since
+# this is a regular executable, not a fuzzer.
+$CXX $CXXFLAGS -std=c++20 \
+    -I../src -I../src/builtin_pb -I../third_party/protobuf-lite \
+    $PROTOBUF_INC \
+    -I. -I./root/include \
+    $SRC/generate_model.cc \
+    -Wl,--start-group \
+    ./root/lib/libsentencepiece_train.a ./root/lib/libsentencepiece.a \
+    $PROTOBUF_LIBS $ABSL_LIBS \
+    -Wl,--end-group \
+    -lpthread \
+    -o generate_model
+
+# Generate the unigram model and convert it to a C header for embedding
+./generate_model /tmp/embedded_model.bin unigram
+
+# Create embedded_model.h with the model as a byte array
+python3 -c "
+import sys
+data = open('/tmp/embedded_model.bin', 'rb').read()
+with open('embedded_model.h', 'w') as f:
+    f.write('// Auto-generated embedded model data\\n')
+    f.write('#pragma once\\n')
+    f.write('static const unsigned char kEmbeddedModelData[] = {\\n')
+    for i in range(0, len(data), 16):
+        chunk = data[i:i+16]
+        f.write('  ' + ', '.join(f'0x{b:02x}' for b in chunk) + ',\\n')
+    f.write('};\\n')
+    f.write(f'static const size_t kEmbeddedModelSize = {len(data)};\\n')
+print(f'Generated embedded_model.h ({len(data)} bytes)')
+"
+
+# Create seed corpus for model_load_fuzzer with models of all types
+mkdir -p /tmp/model_seeds
+./generate_model /tmp/model_seeds/unigram.model unigram
+./generate_model /tmp/model_seeds/bpe.model bpe
+./generate_model /tmp/model_seeds/word.model word
+./generate_model /tmp/model_seeds/char.model char
+cd /tmp/model_seeds && zip -j $OUT/model_load_fuzzer_seed_corpus.zip *.model && cd -
+
 # build fuzzers
-fuzzers=$(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party')
-echo "Found fuzzers: ${fuzzers[@]}"
-for fuzzer in "${fuzzers[@]}"; do
+for fuzzer in $(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party'); do
   fuzz_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -std=c++17 \
-      -I. -I./root/include \
+  echo "Building fuzzer: $fuzz_basename"
+  $CXX $CXXFLAGS -std=c++20 \
+      -I. -I./root/include -I../third_party $PROTOBUF_INC \
       $fuzzer $LIB_FUZZING_ENGINE \
-      ./root/lib/*.a \
+      -Wl,--start-group \
+      ./root/lib/libsentencepiece_train.a ./root/lib/libsentencepiece.a \
+      $PROTOBUF_LIBS $ABSL_LIBS \
+      -Wl,--end-group \
+      -lpthread \
       -o $OUT/$fuzz_basename
 done

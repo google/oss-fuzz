@@ -1,0 +1,12 @@
+homepage: "https://github.com/openbmc/phosphor-certificate-manager"
+language: c++
+primary_contact: "pedroysb@google.com" # Using your LDAP as contact
+main_repo: "https://github.com/openbmc/phosphor-certificate-manager.git"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+auto_ccs:
+  - javanlacerda@google.com
+  - cloud-ti-fuzzing+bugs@google.com

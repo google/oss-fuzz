@@ -37,9 +37,9 @@ The `language` attribute must be specified.
 language: swift
 ```
 
-The only supported fuzzing engine is `libfuzzer`
+The only supported fuzzing engine is `libfuzzer`.
 
-The supported sanitizers are and `address`, `thread`
+The supported sanitizers are `address` and `thread`.
 
 [Example](https://github.com/google/oss-fuzz/blob/2a15c3c88b21f4f1be2a7ff115f72bd7a08e34ac/projects/swift-nio/project.yaml#L9):
 

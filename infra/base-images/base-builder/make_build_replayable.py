@@ -50,6 +50,7 @@ def main():
       '/usr/bin/autoupdate',
       # Applying patches is not idempotent.
       '/usr/bin/patch',
+      '/usr/bin/wget',
   ]
 
   for script_path in dummy_scripts:

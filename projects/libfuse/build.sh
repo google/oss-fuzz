@@ -18,8 +18,8 @@
 mkdir build
 cd build
 meson setup ..
-meson configure -D default_library=static
-ninja
+meson configure -D default_library=static -D examples=false -D tests=false -D utils=false
+ninja lib/libfuse3.a
 
 $CC $CFLAGS -c $SRC/fuzz_optparse.c -o fuzz_optparse.o \
   -I$SRC/libfuse/lib/ -I$SRC/libfuse/include -I./ \

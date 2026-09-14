@@ -52,15 +52,6 @@ if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
   FUZZER_ARGS="-DENABLE_LIBFUZZER_STATIC_LINKAGE=ON"
 fi
 
-# Apply potential fix for the problem described in
-# google/oss-fuzz#13226.
-# See https://github.com/ossf/fuzz-introspector/pull/2278
-if [[ "$SANITIZER" = "introspector" ]]; then
-  curl -O https://patch-diff.githubusercontent.com/raw/ossf/fuzz-introspector/pull/2278.patch
-  patch -p1 --directory=/fuzz-introspector/ < 2278.patch
-  export FUZZ_INTROSPECTOR_PARALLEL=false
-fi
-
 cmake_args=(
     # Specific to Tarantool
     # Tarantool executable binary is needed for running Lua tests,
@@ -145,16 +136,15 @@ LUA_RUNTIME_NAME=tarantool
 TARANTOOL_PATH=build/src/$LUA_RUNTIME_NAME
 LUA_MODULES_DIR=lua_modules
 
-apt install -y luarocks liblua5.1-0 liblua5.1-0-dev liblua5.1-0-dbg lua5.1
+apt install -y luarocks
 
-# Required by luzer installed using luarocks.
-export OSS_FUZZ=1
-luarocks install --lua-version 5.1 --server=https://luarocks.org/dev --tree=$LUA_MODULES_DIR luzer
-unset OSS_FUZZ
+LUA_LIBRARIES=$(realpath build/third_party/luajit/src/libluajit.a)
+LUA_INCLUDE_DIR=$(realpath third_party/luajit/src)
+luarocks install --lua-version 5.1 --server=https://luarocks.org/dev --tree=$LUA_MODULES_DIR luzer LUA_LIBRARIES="$LUA_LIBRARIES" LUA_INCLUDE_DIR="$LUA_INCLUDE_DIR" OSS_FUZZ=ON ENABLE_LUAJIT=ON LUAJIT_FRIENDLY_MODE=ON
 
-# This Lua module exists only when target `lua-tests` is used,
+# These Lua modules exists only when target `lua-tests` is used,
 # see cmake/BuildLuaTests.cmake.
-lua_lib_path="build/test/fuzz/lua-tests/src/tests/lapi/lib.lua"
+lua_lib_path="build/test/fuzz/lua-tests/src/tests/lapi/lib*.lua"
 if [ -f $lua_lib_path ]; then
     cp $lua_lib_path $OUT
 fi
@@ -171,10 +161,13 @@ do
   cp "$test_path" "$OUT/"
   corpus_dir="test/static/corpus/$module_name"
   if [ -e "$corpus_dir" ]; then
-    zip -j $OUT/"$test_name_we"_seed_corpus.zip $corpus_dir/*
+    zip --quiet -j $OUT/"$test_name_we"_seed_corpus.zip $corpus_dir/*
     echo "Build corpus '$OUT/"$test_name_we"_seed_corpus.zip' for the test '$test_name_we'"
   fi
 done
 
 cp $TARANTOOL_PATH "$OUT/$LUA_RUNTIME_NAME"
 cp -R $LUA_MODULES_DIR "$OUT/"
+
+# Don't consider compile_lua_fuzzer as a test.
+rm -f "$OUT/compile_lua_fuzzer" "$SRC/compile_lua_fuzzer"

@@ -18,3 +18,21 @@
 make build
 $CC $CFLAGS -c ./test/fuzz/fuzz_parser.c ./libpg_query.a -I./
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parser.o ./libpg_query.a -I./ -o $OUT/fuzz_parser
+
+# Protobuf parse + deparse + fingerprint/normalize/scan harness
+$CC $CFLAGS -c ./test/fuzz/fuzz_protobuf.c ./libpg_query.a -I./
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_protobuf.o ./libpg_query.a -I./ -o $OUT/fuzz_protobuf
+
+# PL/pgSQL function-body parser harness (separate grammar/scanner)
+$CC $CFLAGS -c ./test/fuzz/fuzz_plpgsql.c ./libpg_query.a -I./
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_plpgsql.o ./libpg_query.a -I./ -o $OUT/fuzz_plpgsql
+
+# Seed with the PL/pgSQL sample functions so the grammar is reached quickly.
+zip -j $OUT/fuzz_plpgsql_seed_corpus.zip ./test/plpgsql_samples.sql
+
+# The PL/pgSQL parse path can retain allocations that LeakSanitizer reports as
+# leaks; disable leak detection for this target.
+cat > $OUT/fuzz_plpgsql.options <<EOF
+[libfuzzer]
+detect_leaks = 0
+EOF

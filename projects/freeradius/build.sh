@@ -24,9 +24,52 @@ function copy_lib
 
 mkdir -p $OUT/lib
 
+# Normalize source-tree timestamps. Without this, host/container clock skew
+# can leave files dated in the future, which makes the FreeRADIUS build system
+# loop forever printing "all.mk is out of date. Please re-run configure".
+find . -exec touch {} +
+
+# Build json-c statically with the current sanitizer CFLAGS so it is
+# instrumented and gets linked into fuzzer_json with no runtime shared
+# library dependency on libjson-c.so.
+mkdir -p $SRC/json-c-build
+pushd $SRC/json-c-build
+cmake $SRC/json-c \
+    -DCMAKE_INSTALL_PREFIX=${JSONC_PREFIX} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_STATIC_LIBS=ON \
+    -DDISABLE_WERROR=ON \
+    -DBUILD_TESTING=OFF \
+    -DCMAKE_C_COMPILER="$CC" \
+    -DCMAKE_C_FLAGS="$CFLAGS -fPIC"
+make -j$(nproc)
+make install
+popd
+
 # git apply --ignore-whitespace $SRC/patch.diff
-# build project
-./configure --enable-fuzzer --enable-coverage --enable-address-sanitizer
+# fuzzer_json.mk doesn't pull in the json-c include path; inject it and
+# force static linking against our instrumented libjson-c.a.
+FUZZER_JSON_MK=src/fuzzer/fuzzer_json.mk
+sed -i \
+    -e "s|^SRC_CFLAGS\s*+= -I\$(top_builddir)/src/lib/json/|SRC_CFLAGS += -I\$(top_builddir)/src/lib/json/ -I${JSONC_PREFIX}/include|" \
+    -e "s|-ljson-c|${JSONC_PREFIX}/lib/libjson-c.a|" \
+    "$FUZZER_JSON_MK"
+cat "$FUZZER_JSON_MK"
+
+# fuzzer_cf.mk and fuzzer_value.mk are missing TGT_LDLIBS, so on ld linkers that
+# refuse indirect DSO references (ubuntu-24-04) they fail to link against
+# libtalloc. Append the same TGT_LDLIBS line the protocol/xlat fuzzers use.
+for mk in src/fuzzer/fuzzer_cf.mk src/fuzzer/fuzzer_value.mk src/fuzzer/fuzzer_xlat.mk; do
+    if ! grep -q '^TGT_LDLIBS' "$mk"; then
+        echo 'TGT_LDLIBS		:= $(LIBS)' >> "$mk"
+    fi
+done
+
+# build project — point FreeRADIUS' json-c probe at our static build
+./configure --enable-fuzzer --enable-coverage --enable-address-sanitizer \
+    --with-jsonc-include-dir=${JSONC_PREFIX}/include \
+    --with-jsonc-lib-dir=${JSONC_PREFIX}/lib
 # make tries to compile regular programs as fuzz targets
 # so -i flag ignores these errors
 make -i -j$(nproc)
@@ -44,3 +87,12 @@ done
 cp -r /usr/local/share/freeradius/dictionary $OUT/dict
 # export FR_DICTIONARY_DIR=/out/dictionary/
 # export FR_LIBRARY_PATH=/out/lib/
+
+# Structured seed generation (see generate_seeds.py).
+python3 $SRC/generate_seeds.py $SRC/generated_seeds
+for seeddir in $SRC/generated_seeds/*/; do
+    proto=$(basename "$seeddir")
+    if [ -f "$OUT/fuzzer_${proto}" ]; then
+        zip -j -q "$OUT/fuzzer_${proto}_seed_corpus.zip" "$seeddir"/* || true
+    fi
+done

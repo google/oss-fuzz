@@ -14,11 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
     cmake \
+    libaudit-dev \
+    libcap-dev \
     python3-pip \
     libpam0g-dev \
     libsystemd-dev \
@@ -30,6 +32,5 @@ RUN pip3 install -U meson ninja inflection pyyaml mako
 RUN git clone --depth 1 https://github.com/openbmc/bmcweb $SRC/bmcweb
 
 COPY build.sh $SRC/
-COPY *_fuzzer.cpp $SRC/
 
 WORKDIR $SRC/bmcweb

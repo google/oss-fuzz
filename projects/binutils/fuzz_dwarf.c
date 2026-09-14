@@ -36,8 +36,17 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     {
       if (bfd_check_format (file, bfd_object))
 	{
-	  load_separate_debug_files (file, bfd_get_filename (file));
-	  free_debug_memory ();
+	  if (bfd_big_endian (file))
+	    byte_get = byte_get_big_endian;
+	  else if (bfd_little_endian (file))
+	    byte_get = byte_get_little_endian;
+	  else
+	    byte_get = NULL;
+	  if (byte_get != NULL)
+	    {
+	      load_separate_debug_files (file, bfd_get_filename (file));
+	      free_debug_memory ();
+	    }
 	}
       bfd_close_all_done (file);
     }

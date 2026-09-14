@@ -20,6 +20,14 @@ cd $SRC/phosphor-host-ipmid
 # Apply fuzz patch (adds fuzz_engine option to meson.options)
 git apply --ignore-space-change --ignore-whitespace $SRC/fuzz-patch.diff
 
+# Upstream uses std::from_chars in include/ipmid/utils.hpp without including
+# <charconv>. This compiles under libstdc++ (transitive include) but fails
+# under libc++ (used for fuzzing) with "no member named 'from_chars'".
+# Inject the missing include. (Upstream bug — should add #include <charconv>.)
+if ! grep -q '#include <charconv>' include/ipmid/utils.hpp; then
+    sed -i '/#include <chrono>/i #include <charconv>' include/ipmid/utils.hpp
+fi
+
 # Disable transport/serialbridge build (needs systemd pkg-config we don't have)
 sed -i "s|subdir('transport/serialbridge')|# subdir('transport/serialbridge')|" meson.build
 

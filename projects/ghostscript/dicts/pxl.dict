@@ -1,0 +1,140 @@
+# PCL XL (PXL / PCL6) tokens and binary operators
+# PXL is a binary tagged protocol
+
+# Stream header
+") HP-PCL XL"
+") HP-PCL XL;2;0\x0a"
+") HP-PCL XL;2;1\x0a"
+") HP-PCL XL;3;0\x0a"
+
+# PXL attribute tags (single bytes)
+"\xf8"
+"\xf9"
+"\xfa"
+
+# PXL data type tags
+"\xc0"
+"\xc1"
+"\xc2"
+"\xc3"
+"\xc4"
+"\xc5"
+"\xc8"
+"\xd0"
+"\xd1"
+"\xd2"
+"\xd3"
+"\xd4"
+"\xd5"
+"\xe0"
+"\xe1"
+"\xe2"
+"\xe3"
+"\xe4"
+"\xe5"
+
+# PXL operator tags - Session
+"\x41"
+"\x42"
+"\x43"
+
+# PXL operator tags - Page
+"\x44"
+"\x45"
+"\x46"
+"\x47"
+
+# PXL operator tags - Path
+"\x52"
+"\x53"
+"\x54"
+"\x55"
+"\x56"
+"\x57"
+"\x59"
+"\x5a"
+"\x5b"
+"\x5c"
+
+# PXL operator tags - Drawing
+"\x60"
+"\x61"
+"\x62"
+"\x63"
+"\x64"
+"\x65"
+"\x66"
+"\x67"
+"\x68"
+"\x69"
+"\x6a"
+"\x6b"
+"\x6c"
+
+# PXL operator tags - Bitmap
+"\x6e"
+"\x6f"
+"\x70"
+"\x71"
+
+# PXL operator tags - Scan line
+"\x72"
+"\x73"
+
+# PXL operator tags - Font
+"\x85"
+"\x86"
+
+# PXL operator tags - State
+"\x74"
+"\x75"
+"\x76"
+"\x77"
+"\x78"
+"\x79"
+"\x7a"
+"\x7b"
+"\x7c"
+
+# PXL embedded data tag
+"\xfa"
+"\xfb"
+
+# PXL attribute IDs (2-byte: tag + id)
+"\xf8\x00"
+"\xf8\x01"
+"\xf8\x02"
+"\xf8\x03"
+"\xf8\x04"
+"\xf8\x05"
+"\xf8\x06"
+"\xf8\x07"
+"\xf8\x21"
+"\xf8\x22"
+"\xf8\x23"
+"\xf8\x24"
+"\xf8\x25"
+"\xf8\x26"
+"\xf8\x27"
+"\xf8\x28"
+"\xf8\x2c"
+"\xf8\x2d"
+"\xf8\x30"
+"\xf8\x31"
+"\xf8\x32"
+"\xf8\x33"
+"\xf8\x34"
+"\xf8\x6b"
+"\xf8\x6c"
+"\xf8\x6d"
+"\xf8\x6e"
+"\xf8\x6f"
+"\xf8\x75"
+"\xf8\x78"
+"\xf8\x79"
+"\xf8\x98"
+"\xf8\x99"
+"\xf8\x9a"
+"\xf8\x9b"
+"\xf8\xa8"
+"\xf8\xa9"

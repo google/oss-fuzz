@@ -1,0 +1,8 @@
+homepage: https://postcss.org/
+language: javascript
+primary_contact: "andrey@sitnik.ru"
+main_repo: https://github.com/postcss/postcss
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none

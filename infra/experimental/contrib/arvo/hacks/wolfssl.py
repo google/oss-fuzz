@@ -1,4 +1,5 @@
 """WolfSSL project-specific hacks."""
+"""http://www.apache.org/licenses/LICENSE-2.0"""
 
 from . import ProjectHack
 
@@ -8,9 +9,8 @@ class WolfSSLHack(ProjectHack):
 
   def apply_dockerfile_fixes(self, dft) -> bool:
     """Fix WolfSSL Dockerfile issues."""
-    # Replace gsutil cp command with a simple touch and zip
     dft.str_replace(
-        'RUN gsutil cp '
+        'RUN wget '
         'gs://wolfssl-backup.clusterfuzz-external.appspot.com/'
         'corpus/libFuzzer/wolfssl_cryptofuzz-disable-fastmath/public.zip '
         '$SRC/corpus_wolfssl_disable-fastmath.zip', "RUN touch 0xdeadbeef && "

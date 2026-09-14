@@ -1,0 +1,16 @@
+homepage: "https://github.com/openbmc/dbus-sensors"
+language: c++
+primary_contact: "javanlacerda@google.com"
+auto_ccs:
+  - pedroysb@google.com
+  - cloud-ti-fuzzing+bugs@google.com
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+main_repo: "https://github.com/openbmc/dbus-sensors"
+
+base_os_version: ubuntu-24-04

@@ -26,10 +26,13 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {//ntpsec/te
 
 	int aead;
 	struct BufCtl_t buf;
+	char errbuf[1024];
+	const char *errtxt = NULL;
 
 	aead = NO_AEAD;
 	buf.next = (uint8_t*)Data;
-	buf.left = Size;	
+	buf.left = Size;
 
-	return nts_ke_process_receive(&buf, &aead);
+	nts_ke_process_receive(&buf, &aead, errbuf, sizeof(errbuf), &errtxt);
+	return 0;
 }

@@ -38,7 +38,7 @@ make install
 
 # Compile the shared fuzzer_utils.c
 $CC $CFLAGS -c \
-    -I./src -I./src/util -I./include/ -I./include/git2 \
+    -I./src -I./src/util -I./include/ -I./gen_headers \
     -I../src/libgit2 -I../src/util -I../include \
     -I../fuzzers \
     ../fuzzers/fuzzer_utils.c -o "$WORK/fuzzer_utils.o"
@@ -48,7 +48,7 @@ do
     fuzzer_name=$(basename "${fuzzer%.c}")
 
     $CC $CFLAGS -c \
-        -I./src -I./src/util -I./include/ -I./include/git2 \
+        -I./src -I./src/util -I./include/ -I./gen_headers \
         -I../src/libgit2 -I../src/util -I../include \
         -I../fuzzers \
         "$fuzzer" -o "$WORK/$fuzzer_name.o"

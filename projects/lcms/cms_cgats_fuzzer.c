@@ -20,8 +20,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         return 0;
     }
 
-    cmsContext context = cmsCreateContext(NULL, (void *)data);
-
     uint32_t Row = *((uint32_t *)data);
     uint32_t Col = *((uint32_t *)data+1);
 
@@ -72,5 +70,5 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cmsIT8GetDataDbl(it8, "P3", "RGB_G");
 
     cmsIT8Free(it8);
-    return 1;
+    return 0;
 }

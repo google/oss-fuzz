@@ -1,5 +1,5 @@
-homepage: "https://github.com/ctz/rustls"
-main_repo: "https://github.com/ctz/rustls"
+homepage: "https://github.com/rustls/rustls"
+main_repo: "https://github.com/rustls/rustls"
 primary_contact: "jpixton@gmail.com"
 sanitizers:
   - address

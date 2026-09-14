@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-git pull --all
-git checkout dev_minor
-
 # Enable null cipher
 sed -i 's/#define CFLAG_INTERNAL.*/#define CFLAG_INTERNAL 0/' cipher.c
 

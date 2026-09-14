@@ -20,8 +20,8 @@
 ./autogen.sh
 ./configure --enable-oss-fuzz PCRE2_LIBS=-l:libpcre2-8.a
 make -j2 -C include/
-make -j2 -C lib/libvarnish/
+make -j2 -C lib/libvinyl/
 make -j2 -C lib/libvgz/
 make -j2 -C lib/libvsc/
-make -j2 -C bin/varnishd/ esi_parse_fuzzer
-cp bin/varnishd/*_fuzzer $OUT/
+make -j2 -C bin/vinyld/ esi_parse_fuzzer
+cp bin/vinyld/*_fuzzer $OUT/

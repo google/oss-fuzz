@@ -39,7 +39,7 @@ fi
     --without-pcre-jit \
     --disable-phpdbg \
     --disable-cgi \
-    --with-pic
+    --enable-pic
 make -j$(nproc)
 
 # Generate corpuses and dictionaries.

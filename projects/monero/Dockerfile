@@ -124,7 +124,12 @@ RUN set -ex \
     && make install
 
 RUN git clone https://github.com/NLnetLabs/unbound && \
-    cd unbound && ./configure && make && make install
+    cd unbound && ./configure && \
+    make libunbound.la && \
+    cp .libs/libunbound.a /usr/local/lib/ && \
+    cp .libs/libunbound.so* /usr/local/lib/ && \
+    find . -name 'unbound.h' -exec cp {} /usr/local/include/ \; && \
+    ldconfig
 
 RUN git clone --depth 1 https://github.com/monero-project/monero.git monero
 COPY build.sh *.options $SRC/

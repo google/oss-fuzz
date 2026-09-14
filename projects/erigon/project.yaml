@@ -1,0 +1,13 @@
+homepage: "https://erigon.tech/"
+language: go
+primary_contact: "oleksandr.lystopad@erigon.tech"
+auto_ccs:
+  - "andrew.ashikhmin@erigon.tech"
+  - "alex.sharov@erigon.tech"
+main_repo: "https://github.com/erigontech/erigon"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+architectures:
+  - x86_64
