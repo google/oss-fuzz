@@ -1,0 +1,13 @@
+homepage: "https://github.com/ljh-sh/zhhz"
+main_repo: "https://github.com/ljh-sh/zhhz.git"
+primary_contact: "lijunhao@x-cmd.com"
+language: rust
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - memory
+  - undefined
+auto_ccs:
+  - "lijunhao@x-cmd.com"
+file_github_issue: true
