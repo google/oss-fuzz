@@ -1,9 +1,10 @@
-homepage: "https://github.com/ossf/scorecard-webapp"
-main_repo: "https://github.com/ossf/scorecard-webapp"
-primary_contact: "naveensrinivasan@protonmail.com"
+homepage: "https://github.com/ossf/scorecard-infra"
+main_repo: "https://github.com/ossf/scorecard-infra"
+# Maintainers: https://github.com/ossf/scorecard-infra/blob/main/MAINTAINERS.md
+primary_contact: "hey@auggie.dev"
 auto_ccs:
-  - azeems@google.com
-  - laurentsimon@google.com
+  - jlm@jlm.name
+  - sschrock@google.com
 language: go
 fuzzing_engines:
   - libfuzzer
