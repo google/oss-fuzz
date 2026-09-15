@@ -21,9 +21,13 @@ cmake -DOGRE_STATIC=TRUE -DOGRE_BUILD_FUZZERS=TRUE -DCMAKE_CXX_FLAGS="$CXXFLAGS"
 make -j$(nproc)
 
 # copy the fuzzers
-for fuzzer in image_fuzz stream_fuzz zip_fuzz ogre_deep_fuzz; do 
+for fuzzer in image_fuzz stream_fuzz zip_fuzz ogre_deep_fuzz script_fuzz; do 
   cp bin/${fuzzer} $OUT/${fuzzer}
 done
+
+# Copy dictionary
+cp ../Tests/fuzz/ogre_deep_fuzz.dict $OUT/ogre_deep_fuzz.dict 2>/dev/null || true
+cp ../Tests/fuzz/script_fuzz.dict $OUT/script_fuzz.dict 2>/dev/null || true
 
 # Create seed corpus for the deep fuzzer from Ogre's test/sample media files
 mkdir -p /tmp/ogre_deep_seeds
@@ -43,7 +47,13 @@ for f in $(find .. -name '*.cfg' | head -3); do
   printf '\x03' | cat - "$f" > "/tmp/ogre_deep_seeds/cfg_${base}"
 done
 
-cd /tmp/ogre_deep_seeds && zip -q $OUT/ogre_deep_fuzz_seed_corpus.zip * 2>/dev/null || true
+# Create seed corpus for the script fuzzer.
+mkdir -p /tmp/ogre_script_seeds
+for f in $(find .. -name '*.material' -o -name '*.program' \
+    -o -name '*.particle' -o -name '*.compositor'); do
+  base=$(basename "$f")
+  cp "$f" "/tmp/ogre_script_seeds/$base"
+done
 
-# Copy dictionary
-cp ../Tests/fuzz/ogre_deep_fuzz.dict $OUT/ogre_deep_fuzz.dict 2>/dev/null || true
+cd /tmp/ogre_deep_seeds && zip -q $OUT/ogre_deep_fuzz_seed_corpus.zip * 2>/dev/null || true
+cd /tmp/ogre_script_seeds && zip -q $OUT/script_fuzz_seed_corpus.zip * 2>/dev/null || true

@@ -1,0 +1,8 @@
+base_os_version: ubuntu-24-04
+homepage: "https://github.com/openbmc/phosphor-state-manager"
+language: c++
+primary_contact: "pedroysb@google.com"
+main_repo: 'https://github.com/openbmc/phosphor-state-manager.git'
+auto_ccs:
+- javanlacerda@google.com
+- cloud-ti-fuzzing+bugs@google.com

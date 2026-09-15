@@ -69,5 +69,14 @@ WORKDIR $SRC
 RUN git clone --depth 1 https://github.com/OpenNavigationSurface/BAG bag
 RUN pip install -r bag/requirements.txt
 
+# Fix an upstream regression (BAG 2.0.5, commit 772e7c9) where
+# Dataset::readDataset() swallows the HDF5 FileIException instead of
+# propagating it, then dereferences the null m_pH5file in Metadata::Metadata(),
+# crashing (SEGV) on any non-BAG input. This makes every fuzz target crash
+# immediately and fails check_build. See rethrow_fileexception.patch.
+# We fix it like this because we are trying to catch more severe issues
+COPY rethrow_fileexception.patch $SRC/
+RUN cd $SRC/bag && git apply $SRC/rethrow_fileexception.patch
+
 RUN cp $SRC/bag/fuzzers/build.sh $SRC/
 COPY replay_build.sh run_tests.sh $SRC/

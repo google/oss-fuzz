@@ -16,7 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && \
-   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex patchelf nasm
+   apt-get install -y make autoconf automake libtool build-essential pkg-config bison flex patchelf nasm gperf
 
 RUN pip3 install --disable-pip-version-check --no-cache-dir \
         pip==25.1.1
@@ -29,4 +29,4 @@ RUN pip3 install --disable-pip-version-check --no-cache-dir \
 RUN git clone --depth 1 --recursive https://gitlab.freedesktop.org/gstreamer/gstreamer.git gstreamer
 
 WORKDIR gstreamer
-COPY build.sh $SRC/
+COPY build.sh generate_seeds.py $SRC/

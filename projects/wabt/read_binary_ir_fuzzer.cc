@@ -20,7 +20,6 @@
 #include "wabt/binary-reader-ir.h"
 #include "wabt/binary-reader.h"
 #include "wabt/binary-writer.h"
-#include "wabt/decompiler.h"
 #include "wabt/ir.h"
 #include "wabt/option-parser.h"
 #include "wabt/stream.h"
@@ -37,14 +36,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 #include "wabt/feature.def"
 #undef WABT_FEATURE
   // Add only feature related options, but no logging, stop_on_first_error, etc.
-  wabt::ReadBinaryOptions options(features, nullptr, false, false, false);
+  wabt::ReadBinaryOptions options(features, nullptr,
+                                  /*read_debug_names=*/false,
+                                  /*stop_on_first_error=*/true,
+                                  /*fail_on_custom_section_error=*/false);
   std::vector<uint8_t> text = data_provider.ConsumeRemainingBytes<uint8_t>();
   if (wabt::Succeeded(wabt::ReadBinaryIr("", text.data(), text.size(), options, &errors, &module))) {
     wabt::ValidateOptions validate_options(features);
     if (wabt::Succeeded(wabt::ValidateModule(&module, &errors, validate_options))) {
-      wabt::DecompileOptions decompile_options;
-      wabt::Decompile(module, decompile_options);
-
       wabt::MemoryStream stream;
       wabt::WriteBinaryOptions write_binary_options;
       wabt::WriteBinaryModule(&stream, &module, write_binary_options);

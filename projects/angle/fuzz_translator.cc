@@ -128,7 +128,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         case SH_GLSL_440_CORE_OUTPUT:
         case SH_GLSL_450_CORE_OUTPUT:
         case SH_SPIRV_VULKAN_OUTPUT:
-        case SH_HLSL_3_0_OUTPUT:
         case SH_HLSL_4_1_OUTPUT:
         case SH_MSL_METAL_OUTPUT:
         case SH_WGSL_OUTPUT:
@@ -164,7 +163,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     if (!IsOutputSPIRV(shaderOutput))
     {
         hasUnsupportedOptions = hasUnsupportedOptions || options.addVulkanXfbEmulationSupportCode ||
-                                options.roundOutputAfterDithering ||
                                 options.addAdvancedBlendEquationsEmulation;
     }
     if (!IsOutputHLSL(shaderOutput))

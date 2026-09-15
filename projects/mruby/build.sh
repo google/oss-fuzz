@@ -22,8 +22,9 @@ export LD=$CC
 export LDFLAGS="$CFLAGS"
 rake all
 
-# This should be allowed to fail. So long as it does not fail in `run_tests.sh`
-rake test || true
+# Build the test driver for run_tests.sh. Allowed to fail; run_tests.sh is what
+# gates on the test results.
+rake test:build || true
 
 # build fuzzers
 FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_fuzzer.c
@@ -43,15 +44,20 @@ only_ascii = 1
 EOF
 cp $SRC/mruby/oss-fuzz/config/mruby_fuzzer.options $SRC/mruby/oss-fuzz/config/mruby_proto_fuzzer.options
 
-# Build proto fuzzer: ASan and UBSan
-if [[ $CFLAGS != *sanitize=memory* ]]; then
+# libprotobuf-mutator only mutates through libFuzzer's custom mutator hook, so
+# this target does nothing useful under the other engines. MSan is excluded
+# because protobuf and libprotobuf-mutator are not instrumented for it.
+if [[ $FUZZING_ENGINE == libfuzzer && $CFLAGS != *sanitize=memory* ]]; then
     PROTO_FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_proto_fuzzer.cpp
     PROTO_CONVERTER=$SRC/mruby/oss-fuzz/proto_to_ruby.cpp
     rm -rf $SRC/mruby/genfiles
     mkdir $SRC/mruby/genfiles
+    # Must match the standard the bundled protobuf/abseil were built with; see
+    # the Dockerfile.
+    PROTO_STD="-std=c++14"
     $SRC/LPM/external.protobuf/bin/protoc --proto_path=$SRC/mruby/oss-fuzz ruby.proto --cpp_out=$SRC/mruby/genfiles
-    $CXX -c $CXXFLAGS $SRC/mruby/genfiles/ruby.pb.cc -DNDEBUG -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include
-    $CXX -I $SRC/mruby/include -I $SRC/mruby/build/host/include -I $SRC/LPM/external.protobuf/include $CXXFLAGS $PROTO_FUZZ_TARGET $SRC/mruby/genfiles/ruby.pb.o $PROTO_CONVERTER \
+    $CXX -c $CXXFLAGS $PROTO_STD $SRC/mruby/genfiles/ruby.pb.cc -DNDEBUG -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include
+    $CXX -I $SRC/mruby/include -I $SRC/mruby/build/host/include -I $SRC/LPM/external.protobuf/include $CXXFLAGS $PROTO_STD $PROTO_FUZZ_TARGET $SRC/mruby/genfiles/ruby.pb.o $PROTO_CONVERTER \
       -I $SRC/mruby/genfiles \
       -I $SRC/libprotobuf-mutator \
       -lz -lm \

@@ -1,5 +1,5 @@
 homepage: "https://libcoap.net/"
-language: c++
+language: c
 primary_contact: "bergmann@tzi.org"
 auto_ccs:
     - "libcoap@gmail.com"
@@ -8,3 +8,6 @@ auto_ccs:
     - "david@adalogics.com"
     - "adam@adalogics.com"
 main_repo: 'https://github.com/obgm/libcoap.git'
+architectures:
+    - x86_64
+    - i386

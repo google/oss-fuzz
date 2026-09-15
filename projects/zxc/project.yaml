@@ -1,0 +1,14 @@
+homepage: "https://github.com/hellobertrand/zxc"
+language: c
+primary_contact: "zxc.codec@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+main_repo: "https://github.com/hellobertrand/zxc"

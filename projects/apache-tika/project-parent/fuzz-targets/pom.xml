@@ -31,6 +31,10 @@
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers-standard-package</artifactId>
             <version>Fuzzing-SNAPSHOT</version>
+            <!-- Upstream changed this module from jar to pom packaging
+                 (TIKA-4740). Declaring type=pom pulls in all standard parser
+                 modules transitively instead of resolving a non-existent jar. -->
+            <type>pom</type>
         </dependency>
     </dependencies>
     <build>

@@ -23,7 +23,7 @@ index 613cfab..e977d39 100644
  	../modules/libfilesystem_plugin.la \
  	../modules/libxml_plugin.la \
  	../modules/libogg_plugin.la \
-@@ -537,13 +549,33 @@ libvlc_demux_dec_run_la_LIBADD += \
+@@ -537,13 +549,35 @@ libvlc_demux_dec_run_la_LIBADD += \
  	../modules/libsubsusf_plugin.la \
  	../modules/libsvcdsub_plugin.la \
  	../modules/libtextst_plugin.la \
@@ -44,7 +44,9 @@ index 613cfab..e977d39 100644
 +	../modules/libjpeg_plugin.la \
 +	../modules/libpng_plugin.la \
 +	../modules/liblibass_plugin.la \
-+	../modules/libkate_plugin.la
++	../modules/libkate_plugin.la \
++	../modules/libtelx_plugin.la \
++	../modules/libbpg_plugin.la
  if HAVE_ZVBI
  libvlc_demux_dec_run_la_LIBADD += ../modules/libzvbi_plugin.la
  endif
@@ -62,7 +64,7 @@ diff --git a/test/src/input/demux-run.c b/test/src/input/demux-run.c
 index 92a5d92..1486f79 100644
 --- a/test/src/input/demux-run.c
 +++ b/test/src/input/demux-run.c
-@@ -417,7 +417,23 @@ int vlc_demux_process_memory(const struct vlc_run_args *args,
+@@ -417,7 +417,25 @@ int vlc_demux_process_memory(const struct vlc_run_args *args,
      f(codec_subsusf) \
      f(codec_svcdsub) \
      f(codec_textst) \
@@ -83,7 +85,9 @@ index 92a5d92..1486f79 100644
 +    f(codec_jpeg) \
 +    f(codec_png) \
 +    f(codec_ass) \
-+    f(codec_kate)
++    f(codec_kate) \
++    f(codec_telx) \
++    f(codec_bpg)
  #else
  #define DECODER_PLUGINS(f)
  #endif
@@ -119,3 +123,13 @@ index 92a5d92..1486f79 100644
  #ifdef HAVE_DVBPSI
  # define PLUGIN_TS(f) f(demux_mpeg_ts)
  #else
+--- a/modules/demux/mp4/mp4.c
++++ b/modules/demux/mp4/mp4.c
+@@ -86,6 +86,7 @@
+         set_subcategory( SUBCAT_INPUT_DEMUX )
+         set_description( N_("HEIF demuxer") )
+         set_shortname( "heif" )
++        add_shortcut( "heif" )
+         set_capability( "demux", 239 )
+         set_callbacks( OpenHEIF, CloseHEIF )
+         set_section( N_("HEIF demuxer"), NULL )

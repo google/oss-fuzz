@@ -43,3 +43,14 @@ void dns_take_pool(struct peer *a, sockaddr_u *b) {
 	UNUSED_ARG(b);
 	return;
 }
+
+/* Stub the only daemon symbol the NTS parsers reference, to avoid pulling
+ * ntp_util/ntp_filegen/ntp_control out of libntpd_lib.a */
+void record_ntske_log(NTSKE_Status tag, const char *from, const char *msg,
+		      double wall, double usr, double sys, const char *errbuf)
+{
+	UNUSED_ARG(tag); UNUSED_ARG(from); UNUSED_ARG(msg);
+	UNUSED_ARG(wall); UNUSED_ARG(usr); UNUSED_ARG(sys);
+	UNUSED_ARG(errbuf);
+	return;
+}

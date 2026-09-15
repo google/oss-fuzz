@@ -143,6 +143,10 @@ and adjust JAR paths accordingly.
 
 - Zip seed files to `$OUT/<fuzzer_name>_seed_corpus.zip`.
 - Place dictionaries at `$OUT/<fuzzer_name>.dict`.
+- For targets that parse a structured format, generating seeds with a script
+  beats hand-picking a few files — random mutation rarely passes the parser's
+  early checks. See the [structured seed generation
+  reference](../oss-fuzz-engineer/references/structured_seed_generation.md).
 
 ## Characteristics of good JVM fuzzing harnesses
 

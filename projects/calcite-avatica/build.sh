@@ -15,31 +15,40 @@
 #
 ##########################################################################
 
-# Gradle build with gradle wrapper
+# Clean up caches
 rm -rf $HOME/.gradle/caches/
-./gradlew clean build shadowJar -x test
+
+# Build project and copy dependencies
+./gradlew clean :core:jar :core:testClasses :core:copyFuzzDependencies -x test
 ./gradlew --stop
 
+# Find version
 CURRENT_VERSION=$(./gradlew properties | grep ^version: | cut -d" " -f2)
-cp "./shaded/core/build/libs/avatica-$CURRENT_VERSION-shadow.jar" $OUT/avatica.jar
-ALL_JARS="avatica.jar"
 
-# The classpath at build-time includes the project jars in $OUT as well as the
-# Jazzer API.
-BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
+# Copy jars to $OUT
+cp core/build/fuzz-dependencies/*.jar $OUT/
+cp core/build/libs/avatica-core-$CURRENT_VERSION.jar $OUT/avatica-core.jar
+cp metrics/build/libs/avatica-metrics-$CURRENT_VERSION.jar $OUT/avatica-metrics.jar
 
-# All .jar and .class files lie in the same directory as the fuzzer at runtime.
+# Copy fuzzer classes to $OUT (preserving package structure)
+cp -r core/build/classes/java/test/* $OUT/
+
+# Create a consolidated list of all jars for the classpath
+ALL_JARS=$(find $OUT -maxdepth 1 -name "*.jar" | xargs -n1 basename)
+
+# The runtime classpath will include all jars in $OUT and the this_dir itself for classes
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
-for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
+# Dynamically find all fuzzer classes in the specified package
+FUZZER_CLASSES_DIR="$OUT/org/apache/calcite/avatica/fuzz"
+FUZZERS=$(find "$FUZZER_CLASSES_DIR" -maxdepth 1 -name "*Fuzzer.class" -exec basename {} .class \;)
+
+# For each fuzzer, create a wrapper script
+for fuzzer_basename in $FUZZERS
 do
-  fuzzer_basename=$(basename -s .java $fuzzer)
-  javac -cp $BUILD_CLASSPATH $fuzzer
-  cp $SRC/$fuzzer_basename.class $OUT/
-
-  # Create an execution wrapper that executes Jazzer with the correct arguments.
+  target_class="org.apache.calcite.avatica.fuzz.$fuzzer_basename"
+  
   echo "#!/bin/bash
-
   # LLVMFuzzerTestOneInput for fuzzer detection.
   this_dir=\$(dirname "\$0")
   if [[ "\$@" =~ (^| )-runs=[0-9]+($| ) ]]
@@ -49,13 +58,13 @@ do
     mem_settings='-Xmx2048m:-Xss1024k'
   fi
 
-  LD_LIBRARY_PATH="$JVM_LD_LIBRARY_PATH":\$this_dir \
+  LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
     \$this_dir/jazzer_driver                        \
     --agent_path=\$this_dir/jazzer_agent_deploy.jar \
     --cp=$RUNTIME_CLASSPATH                         \
-    --target_class=$fuzzer_basename                 \
-    --jvm_args="\$mem_settings"                     \
+    --target_class=$target_class                 \
+    --jvm_args=\"\$mem_settings\"                     \
     \$@" > $OUT/$fuzzer_basename
 
-    chmod u+x $OUT/$fuzzer_basename
+  chmod u+x $OUT/$fuzzer_basename
 done
