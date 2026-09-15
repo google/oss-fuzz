@@ -18,7 +18,7 @@
 autoreconf -i
 ./configure --enable-shared=no --enable-static=yes
 make
-$CC $CFLAGS $LIB_FUZZING_ENGINE -I./include -c $SRC/fuzz_libunwind.c \
+$CC $CFLAGS $LIB_FUZZING_ENGINE -I./include -I./include/api -c $SRC/fuzz_libunwind.c \
     -o fuzz_libunwind.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_libunwind.o \
     ./src/.libs/libunwind-x86_64.a ./src/.libs/libunwind.a \
