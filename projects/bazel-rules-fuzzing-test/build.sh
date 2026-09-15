@@ -19,6 +19,17 @@
 # Work around https://github.com/bazelbuild/bazel/issues/21592: 
 # The `layering_check` feature does not work with `--spawn_strategy=standalone`,
 # which is the default for OSS-Fuzz builds.
-export BAZEL_EXTRA_BUILD_FLAGS="--spawn_strategy=sandboxed"
+AFLPP_RT=""
+for f in /src/aflplusplus/afl-llvm-rt.o /src/aflplusplus/llvm_mode/afl-llvm-rt.o /src/aflplusplus/afl-compiler-rt.o; do
+    if [ -f "$f" ]; then
+        AFLPP_RT="$f"
+        break
+    fi
+done
+if [ -n "$AFLPP_RT" ]; then
+    export BAZEL_EXTRA_BUILD_FLAGS="--spawn_strategy=sandboxed --linkopt=${AFLPP_RT}"
+else
+    export BAZEL_EXTRA_BUILD_FLAGS="--spawn_strategy=sandboxed"
+fi
 
 bazel_build_fuzz_tests
