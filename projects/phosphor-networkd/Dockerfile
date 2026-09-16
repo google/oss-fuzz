@@ -18,13 +18,9 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install --reinstall -y \
     ninja-build cmake pkg-config \
-    libsystemd-dev libboost-all-dev libssl-dev libnl-3-dev libnl-genl-3-dev \
+    libsystemd-dev systemd-dev libboost-all-dev libssl-dev libnl-3-dev libnl-genl-3-dev \
     python3-pip zip && \
     pip3 install --break-system-packages meson inflection pyyaml mako jsonschema
-
-# Provide systemd pkg-config file expected by phosphor-networkd
-RUN mkdir -p /usr/share/pkgconfig && \
-    printf 'Name: systemd\nDescription: systemd System and Service Manager\nVersion: 255\nsystemdutildir=/usr/lib/systemd\nsystemdsystemunitdir=/usr/lib/systemd/system\nsystemd_system_unit_dir=/usr/lib/systemd/system\nsystemduserunitdir=/usr/lib/systemd/user\nsystemd_user_unit_dir=/usr/lib/systemd/user\n' > /usr/share/pkgconfig/systemd.pc
 
 RUN git clone --depth 1 https://github.com/openbmc/phosphor-networkd.git phosphor-networkd
 
