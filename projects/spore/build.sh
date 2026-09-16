@@ -14,7 +14,7 @@
 # limitations under the License.
 ################################################################################
 # Build the SPR2 wire parser fuzz targets as libFuzzer binaries via
-# compile_native_go_fuzzer_v2 (go-118-fuzz-build v2).
+# compile_native_go_fuzzer (go-118-fuzz-build, v1 import-rewrite flow).
 #
 # Required preamble (see
 # https://google.github.io/oss-fuzz/getting-started/new-project-guide/go-lang/):
