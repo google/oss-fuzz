@@ -24,3 +24,6 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_burl.o lighttpd-burl.o lighttpd-buffer.o
 
 $CC $CFLAGS -c $SRC/fuzz_utils.c -I. -I../include
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_utils.o lighttpd-buffer.o lighttpd-base64.o lighttpd-ck.o -o $OUT/fuzz_utils
+
+$CC $CFLAGS -DHAVE_CONFIG_H -c $SRC/fuzz_request.c -I. -I.. -I../include
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_request.o lighttpd-request.o lighttpd-burl.o lighttpd-buffer.o lighttpd-base64.o lighttpd-array.o lighttpd-http_header.o lighttpd-http_kv.o lighttpd-ck.o lighttpd-log.o lighttpd-sock_addr.o -o $OUT/fuzz_request

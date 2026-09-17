@@ -1,0 +1,9 @@
+homepage: "https://taglib.org/"
+language: c++
+primary_contact: "ufleisch@users.sourceforge.net"
+auto_ccs:
+ - "roshaen09@gmail.com"
+sanitizers:
+ - address
+ - undefined
+main_repo: 'https://github.com/taglib/taglib.git'

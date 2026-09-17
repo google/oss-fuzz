@@ -118,6 +118,7 @@ build_fuzzer "cmPkgConfigParserFuzzer" "cmPkgConfigParserFuzzer.cxx"
 
 # 9. JSON Parser Fuzzer
 build_fuzzer "cmJSONParserFuzzer" "cmJSONParserFuzzer.cxx"
+build_fuzzer "cmCMakePresetsFuzzer" "cmCMakePresetsFuzzer.cxx"
 
 # 10. Script Fuzzer (highest coverage - executes CMake scripts)
 build_fuzzer "cmScriptFuzzer" "cmScriptFuzzer.cxx"
@@ -136,6 +137,9 @@ build_fuzzer "cmGccDepfileFuzzer" "cmGccDepfileFuzzer.cxx"
 
 # 15. Glob Fuzzer
 build_fuzzer "cmGlobFuzzer" "cmGlobFuzzer.cxx"
+
+# 16. Fortran dependency scanner fuzzer
+build_fuzzer "cmFortranParserFuzzer" "cmFortranParserFuzzer.cxx"
 
 # Build seed corpora
 echo "Building seed corpora..."
@@ -162,11 +166,13 @@ build_corpus "cmFileLockFuzzer" "corpus/filelock"
 build_corpus "cmExprParserFuzzer" "corpus/expr"
 build_corpus "cmPkgConfigParserFuzzer" "corpus/pkgconfig"
 build_corpus "cmJSONParserFuzzer" "corpus/json"
+build_corpus "cmCMakePresetsFuzzer" "corpus/presets"
 build_corpus "cmScriptFuzzer" "corpus/script"
 build_corpus "cmStringAlgorithmsFuzzer" "corpus/string"
 build_corpus "cmVersionFuzzer" "corpus/version"
 build_corpus "cmCMakePathFuzzer" "corpus/path"
 build_corpus "cmGccDepfileFuzzer" "corpus/depfile"
+build_corpus "cmFortranParserFuzzer" "corpus/fortran"
 # Note: No corpus/glob directory in upstream - glob patterns are simple strings
 
 # Copy dictionaries (cmFoo.dict -> cmFooFuzzer.dict)

@@ -18,21 +18,18 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # apache2-dev is needed for the httpd headers and apxs that configure probes for;
 # the module's Apache server symbols are stubbed by test/stub.c, so the server
-# itself is never linked. The rest are the module's link dependencies.
+# itself is never linked. The rest are the module's link dependencies, cjose and
+# jansson included: those two used to be built from source for instrumentation,
+# but that tied the nightly build to their upstream build systems (cjose's main
+# branch dropped autotools on 2026-09-12 and every build failed from then on).
+# The distro packages are what the module is built and tested against elsewhere.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         make autoconf automake libtool pkg-config wget \
         apache2-dev \
         libapr1-dev libaprutil1-dev \
+        libcjose-dev libjansson-dev \
         libcurl4-openssl-dev libssl-dev libpcre2-dev \
         zlib1g-dev
-
-# jansson and cjose sit directly on the JSON/JOSE parse paths that fuzz_json and
-# fuzz_jwt drive, so both are built from source under $CFLAGS rather than taken
-# from the distro -- otherwise the sanitizers see nothing inside them and the
-# coverage report stops at the library boundary. cjose is not itself an OSS-Fuzz
-# project, so this is the only instrumented build it gets.
-RUN git clone --depth=1 https://github.com/akheron/jansson $SRC/jansson
-RUN git clone --depth=1 https://github.com/OpenIDC/cjose $SRC/cjose
 
 RUN git clone --depth=1 https://github.com/OpenIDC/mod_auth_openidc $SRC/mod_auth_openidc
 WORKDIR $SRC/mod_auth_openidc
