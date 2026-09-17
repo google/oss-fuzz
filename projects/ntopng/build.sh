@@ -57,6 +57,26 @@ cd $SRC/libmaxminddb-1.7.1
 make -j$(nproc)
 make install
 
+# net-snmp
+cd $SRC/net-snmp-5.9.5.2
+./configure \
+  --enable-static \
+  --disable-shared \
+  --disable-agent \
+  --disable-applications \
+  --disable-manuals \
+  --disable-scripts \
+  --disable-mibs \
+  --disable-embedded-perl \
+  --without-perl-modules \
+  --with-default-snmp-version="3" \
+  --with-sys-contact="@@no.where" \
+  --with-sys-location="Unknown" \
+  --with-logfile="none" \
+  --with-persistent-directory="/var/net-snmp"
+make -j$(nproc)
+make install
+
 
 ### ntopng dependecies ###
 
@@ -94,6 +114,7 @@ cd $NTOPNG_HOME
 ./autogen.sh
 
 export LDFLAGS="-lglib-2.0"
+export LIBS="$(net-snmp-config --libs | sed 's/-L[^ ]*//g; s/-lnetsnmp//')" # For auto-detection of net-snmp *static* library
 ./configure --enable-fuzztargets --without-hiredis --with-zmq-static \
     --with-json-c-static --with-maxminddb-static
 
