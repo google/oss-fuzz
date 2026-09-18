@@ -1,4 +1,6 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +16,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake gettext libtool autopoint pkg-config gengetopt curl gperf rsync wget
-
-RUN git clone --recursive https://gitlab.com/libidn/libidn2.git
-
-WORKDIR libidn2
-COPY run_tests.sh build.sh replay_build.sh $SRC/
+export ASAN_OPTIONS="detect_leaks=0"
+make check
