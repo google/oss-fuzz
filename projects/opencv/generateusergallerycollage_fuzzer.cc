@@ -58,11 +58,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // Ensure that all 3D vectors are fully populated,
   // even if fuzz_provider is exhausted.
   for (int i = 0; i < 3; i++) {
-    color_scalar_vals.insert(color_scalar_vals.begin(),
-                             fuzz_provider.ConsumeIntegralInRange(0, 255));
-    canvas_fill_scalar_vals.insert(
-        canvas_fill_scalar_vals.begin(),
-        fuzz_provider.ConsumeIntegralInRange(0, 255));
+    color_scalar_vals.push_back(fuzz_provider.ConsumeIntegralInRange(0, 255));
+    canvas_fill_scalar_vals.push_back(fuzz_provider.ConsumeIntegralInRange(0, 255));
   }
 
   cv::Scalar fuzz_color(color_scalar_vals[0], color_scalar_vals[1],
@@ -77,7 +74,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   std::basic_string<char> fuzz_annotation =
       fuzz_provider.ConsumeRemainingBytesAsString();
 
-  cv::putText(fuzz_canvas, fuzz_annotation, fuzz_text_pos, fuzz_font_face,
-              fuzz_font_scale, fuzz_color, fuzz_thickness, fuzz_linetype);
+  try {
+    cv::putText(fuzz_canvas, fuzz_annotation, fuzz_text_pos, fuzz_font_face,
+                fuzz_font_scale, fuzz_color, fuzz_thickness, fuzz_linetype);
+  } catch (cv::Exception e) {
+    // Do nothing.
+  }
   return 0;
 }
