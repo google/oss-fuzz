@@ -13,8 +13,10 @@
 # limitations under the License.
 """Tests for helper.py"""
 
+import argparse
 import datetime
 import os
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -242,3 +244,287 @@ class ProjectTest(fake_filesystem_unittest.TestCase):
   def test_language_external_project(self):
     """Tests that language works as intended for an external project."""
     self.assertEqual(self.external_project.language, 'c++')
+
+
+class _SyncPool:  # pylint: disable=too-few-public-methods
+  """Synchronous pool double that maps over all items without
+  short-circuiting."""
+
+  def map(self, func, iterable):
+    """Synchronously maps func over iterable."""
+    return list(map(func, iterable))
+
+
+class DownloadCorporaTest(unittest.TestCase):
+  """Tests for download_corpora failure propagation and compatibility."""
+
+  def setUp(self):
+    self.temp_dir = tempfile.TemporaryDirectory()
+    self.original_cwd = os.getcwd()
+    os.chdir(self.temp_dir.name)
+
+  def tearDown(self):
+    os.chdir(self.original_cwd)
+    self.temp_dir.cleanup()
+
+  def _make_args(self, fuzz_targets, public=True):
+
+    class DummyProject:  # pylint: disable=too-few-public-methods
+      """Dummy project for testing."""
+      name = 'test-project'
+      corpus = os.path.join(self.temp_dir.name, 'corpus')
+
+    return argparse.Namespace(
+        project=DummyProject(),
+        public=public,
+        fuzz_target=fuzz_targets,
+    )
+
+  def _target_zip(self, project_name, fuzzer):
+    target_corpus_dir = f'build/corpus/{project_name}'
+    return os.path.join(target_corpus_dir, fuzzer + '.zip')
+
+  def _target_fuzzer_dir(self, project_name, fuzzer):
+    target_corpus_dir = f'build/corpus/{project_name}'
+    return os.path.join(target_corpus_dir, fuzzer)
+
+  @mock.patch('helper.logger.error')
+  @mock.patch('helper.ThreadPool', side_effect=_SyncPool)
+  @mock.patch('helper.common_utils.check_project_exists', return_value=True)
+  @mock.patch('helper.subprocess.check_call')
+  def test_public_missing_unzip_fails(self, mock_check_call, _, __,
+                                      mock_logger_error):
+    """Tests that missing unzip executable fails operation and skips cleanup."""
+    args = self._make_args(['fuzzer1'], public=True)
+    target_zip = self._target_zip(args.project.name, 'fuzzer1')
+
+    def check_call_side_effect(cmd, stdout=None):
+      del stdout
+      if cmd[:2] == ['wget', '--version']:
+        return 0
+      if cmd[0] == 'wget':
+        with open(target_zip, 'wb') as f:
+          f.write(b'dummy-zip-data')
+        return 0
+      if cmd[0] == 'unzip':
+        raise FileNotFoundError("No such file or directory: 'unzip'")
+      raise AssertionError(f'Unexpected command: {cmd}')
+
+    mock_check_call.side_effect = check_call_side_effect
+
+    result = helper.download_corpora(args)
+
+    self.assertFalse(result)
+    self.assertEqual(helper.bool_to_retcode(result), 1)
+    # Target failure is logged
+    self.assertTrue(
+        any('fuzzer1' in str(call)
+            for call in mock_logger_error.call_args_list))
+    # Success-path archive removal is not reached
+    self.assertTrue(os.path.exists(target_zip))
+
+  @mock.patch('helper.logger.error')
+  @mock.patch('helper.ThreadPool', side_effect=_SyncPool)
+  @mock.patch('helper.common_utils.check_project_exists', return_value=True)
+  @mock.patch('helper.subprocess.check_call')
+  def test_public_download_oserror_fails(self, mock_check_call, _, __,
+                                         mock_logger_error):
+    """Tests that OSError during download fails operation and skips
+    extraction."""
+    args = self._make_args(['fuzzer1'], public=True)
+    target_zip = self._target_zip(args.project.name, 'fuzzer1')
+
+    def check_call_side_effect(cmd, stdout=None):
+      del stdout
+      if cmd[:2] == ['wget', '--version']:
+        return 0
+      if cmd[0] == 'wget':
+        raise OSError('Download execution failed')
+      if cmd[0] == 'unzip':
+        return 0
+      raise AssertionError(f'Unexpected command: {cmd}')
+
+    mock_check_call.side_effect = check_call_side_effect
+
+    result = helper.download_corpora(args)
+
+    self.assertFalse(result)
+    self.assertEqual(helper.bool_to_retcode(result), 1)
+    # Extraction is never attempted
+    self.assertFalse(
+        any(call[0][0][0] == 'unzip'
+            for call in mock_check_call.call_args_list))
+    # Archive file does not exist / cleanup not reached
+    self.assertFalse(os.path.exists(target_zip))
+    # Target failure is logged
+    self.assertTrue(
+        any('fuzzer1' in str(call)
+            for call in mock_logger_error.call_args_list))
+
+  @mock.patch('helper.logger.error')
+  @mock.patch('helper.ThreadPool', side_effect=_SyncPool)
+  @mock.patch('helper.common_utils.check_project_exists', return_value=True)
+  @mock.patch('helper.subprocess.check_call')
+  def test_public_download_nonzero_exit_fails(self, mock_check_call, _, __,
+                                              mock_logger_error):
+    """Tests that nonzero download exit code fails operation and skips
+    extraction."""
+    args = self._make_args(['fuzzer1'], public=True)
+
+    def check_call_side_effect(cmd, stdout=None):
+      del stdout
+      if cmd[:2] == ['wget', '--version']:
+        return 0
+      if cmd[0] == 'wget':
+        raise subprocess.CalledProcessError(1, cmd)
+      if cmd[0] == 'unzip':
+        return 0
+      raise AssertionError(f'Unexpected command: {cmd}')
+
+    mock_check_call.side_effect = check_call_side_effect
+
+    result = helper.download_corpora(args)
+
+    self.assertFalse(result)
+    self.assertEqual(helper.bool_to_retcode(result), 1)
+    # Extraction is not attempted
+    self.assertFalse(
+        any(call[0][0][0] == 'unzip'
+            for call in mock_check_call.call_args_list))
+    # Failure reporting logged target
+    self.assertTrue(
+        any('fuzzer1' in str(call)
+            for call in mock_logger_error.call_args_list))
+
+  @mock.patch('helper.logger.error')
+  @mock.patch('helper.ThreadPool', side_effect=_SyncPool)
+  @mock.patch('helper.common_utils.check_project_exists', return_value=True)
+  @mock.patch('helper.subprocess.check_call')
+  def test_public_extraction_nonzero_exit_fails(self, mock_check_call, _, __,
+                                                mock_logger_error):
+    """Tests that nonzero extraction exit code fails operation without archive
+    removal."""
+    del mock_logger_error
+    args = self._make_args(['fuzzer1'], public=True)
+    target_zip = self._target_zip(args.project.name, 'fuzzer1')
+
+    def check_call_side_effect(cmd, stdout=None):
+      del stdout
+      if cmd[:2] == ['wget', '--version']:
+        return 0
+      if cmd[0] == 'wget':
+        with open(target_zip, 'wb') as f:
+          f.write(b'dummy-zip-data')
+        return 0
+      if cmd[0] == 'unzip':
+        raise subprocess.CalledProcessError(1, cmd)
+      raise AssertionError(f'Unexpected command: {cmd}')
+
+    mock_check_call.side_effect = check_call_side_effect
+
+    result = helper.download_corpora(args)
+
+    self.assertFalse(result)
+    self.assertEqual(helper.bool_to_retcode(result), 1)
+    # Success-path archive removal is not reached
+    self.assertTrue(os.path.exists(target_zip))
+
+  @mock.patch('helper.ThreadPool', side_effect=_SyncPool)
+  @mock.patch('helper.common_utils.check_project_exists', return_value=True)
+  @mock.patch('helper.subprocess.check_call')
+  def test_public_success(self, mock_check_call, _, __):
+    """Tests that successful download and extraction returns True and cleans
+    archive."""
+    args = self._make_args(['fuzzer1'], public=True)
+    target_zip = self._target_zip(args.project.name, 'fuzzer1')
+    expected_dest = self._target_fuzzer_dir(args.project.name, 'fuzzer1')
+
+    def check_call_side_effect(cmd, stdout=None):
+      del stdout
+      if cmd[:2] == ['wget', '--version']:
+        return 0
+      if cmd[0] == 'wget':
+        with open(target_zip, 'wb') as f:
+          f.write(b'dummy-zip-data')
+        return 0
+      if cmd[0] == 'unzip':
+        return 0
+      raise AssertionError(f'Unexpected command: {cmd}')
+
+    mock_check_call.side_effect = check_call_side_effect
+
+    result = helper.download_corpora(args)
+
+    self.assertTrue(result)
+    self.assertEqual(helper.bool_to_retcode(result), 0)
+    # Extraction invoked with expected archive and destination
+    mock_check_call.assert_any_call(
+        ['unzip', '-q', '-o', target_zip, '-d', expected_dest], stdout=mock.ANY)
+    # Success-path archive removal occurs
+    self.assertFalse(os.path.exists(target_zip))
+
+  @mock.patch('helper.logger.error')
+  @mock.patch('helper.ThreadPool', side_effect=_SyncPool)
+  @mock.patch('helper.common_utils.check_project_exists', return_value=True)
+  @mock.patch('helper.subprocess.check_call')
+  def test_mixed_target_results(self, mock_check_call, _, __,
+                                mock_logger_error):
+    """Tests that if any target fails, aggregate is False and all targets are
+    processed."""
+    args = self._make_args(['target1', 'target2'], public=True)
+    processed_targets = []
+
+    def check_call_side_effect(cmd, stdout=None):
+      del stdout
+      if cmd[:2] == ['wget', '--version']:
+        return 0
+      if cmd[0] == 'wget':
+        zip_path = cmd[3]
+        if 'target1' in zip_path:
+          processed_targets.append('target1')
+          with open(zip_path, 'wb') as f:
+            f.write(b'data1')
+          return 0
+        if 'target2' in zip_path:
+          processed_targets.append('target2')
+          raise OSError('Download failed for target2')
+      if cmd[0] == 'unzip':
+        return 0
+      raise AssertionError(f'Unexpected command: {cmd}')
+
+    mock_check_call.side_effect = check_call_side_effect
+
+    result = helper.download_corpora(args)
+
+    self.assertFalse(result)
+    self.assertEqual(helper.bool_to_retcode(result), 1)
+    # Both targets were processed
+    self.assertEqual(set(processed_targets), {'target1', 'target2'})
+    # Target failure is logged for target2
+    self.assertTrue(
+        any('target2' in str(call)
+            for call in mock_logger_error.call_args_list))
+
+  @mock.patch('helper._get_latest_corpus', return_value=None)
+  @mock.patch('helper.ThreadPool', side_effect=_SyncPool)
+  @mock.patch('helper.common_utils.check_project_exists', return_value=True)
+  @mock.patch('helper.subprocess.check_call')
+  def test_private_path_compatibility(self, mock_check_call, _, __,
+                                      mock_get_latest_corpus):
+    """Tests that private download returning None without raising is treated
+    as success."""
+    args = self._make_args(['fuzzer1'], public=False)
+
+    def check_call_side_effect(cmd, stdout=None):
+      del stdout
+      if cmd[:2] == ['gsutil', '--version']:
+        return 0
+      raise AssertionError(f'Unexpected command: {cmd}')
+
+    mock_check_call.side_effect = check_call_side_effect
+
+    result = helper.download_corpora(args)
+
+    self.assertTrue(result)
+    self.assertEqual(helper.bool_to_retcode(result), 0)
+    mock_get_latest_corpus.assert_called_once()
