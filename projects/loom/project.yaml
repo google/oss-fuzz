@@ -1,0 +1,10 @@
+homepage: "https://github.com/pulseengine/loom"
+main_repo: "https://github.com/pulseengine/loom"
+primary_contact: "rainer@2020.work"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+language: rust
+vendor: true
