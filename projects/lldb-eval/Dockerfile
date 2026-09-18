@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update \
-    && apt-get install -y wget git patchelf zlib1g-dev python libtinfo-dev --no-install-recommends
+    && apt-get install -y wget git patchelf zlib1g-dev python3 libtinfo-dev --no-install-recommends
 
 RUN git clone --depth 1 https://github.com/google/lldb-eval
 
