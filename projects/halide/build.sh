@@ -26,9 +26,10 @@ else
   LLVM_SANITIZER_FLAG=""
 fi
 
-cmake -DCMAKE_BUILD_TYPE=Release \
-        -DLLVM_ENABLE_PROJECTS="clang" \
-        -DLLVM_TARGETS_TO_BUILD="X86" \
+rm -rf $WORK/llvm-build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+        -DLLVM_ENABLE_PROJECTS="clang;lld" \
+        -DLLVM_TARGETS_TO_BUILD="X86;WebAssembly" \
         $LLVM_SANITIZER_FLAG \
         -DLLVM_ENABLE_TERMINFO=OFF \
         -DLLVM_ENABLE_ASSERTIONS=ON \
@@ -49,6 +50,8 @@ rm -rf $WORK/llvm-build $SRC/llvm-project
 export LLVM_DIR=$WORK/llvm-install
 
 cmake -G Ninja  -S . -B build -DCMAKE_BUILD_TYPE=Release \
+  -DHalide_WASM_BACKEND=OFF \
+  -DHAVE_LIBFUZZER_FLAGS=ON \
   -DTARGET_WEBASSEMBLY=OFF \
   -DWITH_TUTORIALS=OFF \
   -DWITH_UTILS=OFF \
@@ -66,4 +69,4 @@ cmake -G Ninja  -S . -B build -DCMAKE_BUILD_TYPE=Release \
 
 cmake --build ./build --target build_fuzz -j$(nproc)
 
-cp ./build/test/fuzz/fuzz_* $OUT
+cp -v ./build/test/fuzz/fuzz_* $OUT
