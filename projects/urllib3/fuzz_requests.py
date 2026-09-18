@@ -57,9 +57,12 @@ def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     global GLOBAL_RESPONSE_BODY, GLOBAL_RESPONSE_CODE, GLOBAL_CONTENT_TYPE
-    GLOBAL_RESPONSE_BODY = fdp.ConsumeBytes(sys.maxsize)
+
+    body_len = fdp.ConsumeIntInRange(0, 65536)
+    GLOBAL_RESPONSE_BODY = fdp.ConsumeBytes(body_len)
     GLOBAL_RESPONSE_CODE = fdp.ConsumeIntInRange(200, 599)
-    GLOBAL_CONTENT_TYPE = fdp.ConsumeBytes(sys.maxsize)
+    content_type_len = fdp.ConsumeIntInRange(0, 256)
+    GLOBAL_CONTENT_TYPE = fdp.ConsumeBytes(content_type_len)
 
     requestType = fdp.PickValueInList(REQUEST_METHODS)
 
