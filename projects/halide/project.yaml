@@ -1,9 +1,9 @@
 base_os_version: ubuntu-24-04
 homepage: "https://halide-lang.org/"
 language: c++
-primary_contact: "srj@google.com"
+primary_contact: "areinking@adobe.com"
 main_repo: "https://github.com/halide/Halide"
-file_github_issue: false
+file_github_issue: true
 auto_ccs:
   - alex.reinking@gmail.com
   - nathaniel.brough@gmail.com
@@ -14,5 +14,6 @@ fuzzing_engines:
 
 sanitizers:
  - address
- # LLVM isn't building with Undefined sanitizer
- # - undefined
+# LLVM 22.1.2 fails to build with:
+# /src/llvm-project/llvm/include/llvm/ADT/DenseMap.h:850:70: runtime error: unsigned integer overflow: 0 - 1 cannot be represented in type 'unsigned int'
+# - undefined
