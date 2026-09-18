@@ -1,8 +1,6 @@
 homepage: "https://github.com/ZcashFoundation/zebra"
 language: rust
 primary_contact: "security@zfnd.org"
-auto_ccs:
-  - "security@zfnd.org"
 main_repo: "https://github.com/ZcashFoundation/zebra"
 fuzzing_engines:
   - libfuzzer
