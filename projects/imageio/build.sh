@@ -15,9 +15,9 @@
 #
 ################################################################################
 
-python3 setup.py build install
+python3 -m pip install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find . -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --copy-metadata imageio
 done
