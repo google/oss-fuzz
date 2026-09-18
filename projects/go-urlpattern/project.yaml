@@ -1,0 +1,8 @@
+homepage: "https://github.com/dunglas/go-urlpattern"
+language: go
+primary_contact: "kevin@les-tilleuls.coop"
+main_repo: "https://github.com/dunglas/go-urlpattern"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
