@@ -1,0 +1,17 @@
+homepage: "https://skupper.io/"
+language: c
+primary_contact: "jross@apache.org"
+auto_ccs:
+ - "gmurthy@apache.org"
+ - "astitcher@apache.org"
+sanitizers:
+ - address
+ - memory
+ - undefined
+main_repo: 'https://github.com/skupperproject/skupper-router.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+
