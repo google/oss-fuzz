@@ -1,0 +1,24 @@
+[package]
+name = "safetensors-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.safetensors]
+path = ".."
+
+[[bin]]
+name = "deserialize"
+path = "fuzz_targets/deserialize.rs"
+test = false
+doc = false
+bench = false
+
+[profile.release]
+debug = 1
