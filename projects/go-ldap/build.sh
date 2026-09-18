@@ -17,6 +17,6 @@
 
 go get github.com/AdamKorcz/go-118-fuzz-build/testing
 
-compile_native_go_fuzzer github.com/go-ldap/ldap    FuzzParseDN                 fuzz_parse_dn
-compile_native_go_fuzzer github.com/go-ldap/ldap    FuzzDecodeEscapedSymbols    fuzz_decode_escaped_symbols
-compile_native_go_fuzzer github.com/go-ldap/ldap    FuzzEscapeDN                fuzz_escape_dn
+compile_native_go_fuzzer github.com/go-ldap/ldap/v3 FuzzParseDN fuzz_parse_dn
+compile_native_go_fuzzer github.com/go-ldap/ldap/v3 FuzzDecodeEscapedSymbols fuzz_decode_escaped_symbols
+compile_native_go_fuzzer github.com/go-ldap/ldap/v3 FuzzEscapeDN fuzz_escape_dn
