@@ -58,8 +58,12 @@ instead of using the simple base-builder
 
 ### build.sh
 
-A `precompile_swift` generates an environment variable `SWIFTFLAGS`
-This can then be used in the building command such as `swift build -c release $SWIFTFLAGS`
+A `precompile_swift` generates two environment variables `SWIFTFLAGS` and
+`SWIFT6_2FLAGS`. These can then be used in the building command such as `swift
+build -c release $SWIFTFLAGS`. If your `Package.swift` uses
+`// swift-tools-version:6.2` or higher, then use `SWIFT6_2FLAGS` if us using
+something lower, you'll want to use `SWIFTFLAGS`. If you get errors like
+_undefined symbol '[BINARY\_NAME]\_main'_ then you likely need the 6_2 version.
 
 
 A usage example from swift-protobuf project is
