@@ -1,7 +1,10 @@
 base_os_version: ubuntu-24-04
 homepage: "https://www.documentliberation.org"
+main_repo: 'https://git.code.sf.net/p/libwpd/librevenge'
 language: c++
 primary_contact: "dtardon@redhat.com"
+auto_ccs:
+  - "caolanm@gmail.com"
 sanitizers:
   - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
