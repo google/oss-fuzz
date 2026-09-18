@@ -1,0 +1,13 @@
+homepage: "https://gitlab.freedesktop.org/xdg/xdgmime/"
+language: c++
+primary_contact: "bugzilla@tecnocode.co.uk"
+auto_ccs:
+- philip.withnall@gmail.com
+- mcatanza@redhat.com
+- ville.skytta@iki.fi
+sanitizers:
+- address
+- undefined
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+main_repo: 'https://gitlab.freedesktop.org/xdg/xdgmime/'
