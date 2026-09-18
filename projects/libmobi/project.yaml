@@ -1,0 +1,11 @@
+homepage: https://github.com/bfabiszewski/libmobi
+main_repo: https://github.com/bfabiszewski/libmobi.git
+language: c
+primary_contact: bfabiszewski@gmail.com
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
