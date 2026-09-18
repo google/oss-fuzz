@@ -33,18 +33,26 @@ import java.security.cert.X509Certificate;
 import java.security.KeyPair;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateEncodingException;
+import java.security.Security;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class CMSEnvelopedDataParserFuzzer {
+  public static void fuzzerInitialize() {
+    Security.addProvider(new BouncyCastleProvider());
+  }
+
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     X509Certificate _reciCert;
     String _signDN   = "O=Bouncy Castle, C=AU";
-    KeyPair _signKP   = CMSTestUtil.makeKeyPair();
+    KeyPair _signKP;
     String _reciDN   = "CN=Doug, OU=Sales, O=Bouncy Castle, C=AU";
-    KeyPair _reciKP   = CMSTestUtil.makeKeyPair();
+    KeyPair _reciKP;
     try{
+        _signKP   = CMSTestUtil.makeKeyPair();
+        _reciKP   = CMSTestUtil.makeKeyPair();
 	    _reciCert = CMSTestUtil.makeCertificate(_reciKP, _reciDN, _signKP, _signDN);
     }
-    catch(GeneralSecurityException | IOException | OperatorCreationException e){
+    catch(Throwable e){
     	return;
     }
   
