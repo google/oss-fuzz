@@ -1,0 +1,11 @@
+homepage: "https://github.com/ohler55/oj"
+language: ruby
+primary_contact: "peter@ohler.com"
+auto_ccs:
+  - "tranquac0312@gmail.com"
+main_repo: "https://github.com/ohler55/oj"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
