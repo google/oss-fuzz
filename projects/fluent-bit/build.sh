@@ -137,3 +137,19 @@ mkdir -p $SRC/config_yaml_seeds
 cd $SRC/config_yaml_seeds
 find $SRC/fluent-bit/tests/internal/data/config_format/yaml -name "*.yaml" -exec cp {} . \;
 zip -rj $OUT/flb-it-fuzz-config_yaml_fuzzer_OSSFUZZ_seed_corpus.zip $SRC/config_yaml_seeds/*
+
+# Add seeds to the OTLP JSON fuzzer. The upstream fixtures are dictionaries of
+# named test cases, so split out each payload and prefix the signal selector
+# byte the fuzzer reads from data[0] (0 = logs, 1 = metrics, 2 = traces).
+mkdir -p $SRC/otlp_json_seeds
+python3 -c '
+import json, os, sys
+src, dst = sys.argv[1], sys.argv[2]
+for signal, sel in (("logs", 0), ("metrics", 1), ("traces", 2)):
+    cases = json.load(open(os.path.join(src, signal + ".json")))
+    for name, case in cases.items():
+        payload = case.get("input", case) if isinstance(case, dict) else case
+        open(os.path.join(dst, signal + "-" + name), "wb").write(
+            bytes([sel]) + json.dumps(payload).encode())
+' $SRC/fluent-bit/tests/internal/data/opentelemetry $SRC/otlp_json_seeds
+zip -rj $OUT/flb-it-fuzz-otlp_json_fuzzer_OSSFUZZ_seed_corpus.zip $SRC/otlp_json_seeds/*
