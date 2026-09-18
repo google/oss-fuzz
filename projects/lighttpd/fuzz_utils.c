@@ -22,6 +22,9 @@ limitations under the License.
 #include "buffer.h"
 #include "base64.h"
 
+/* buffer_is_valid_UTF8() is __attribute_pure__: a discarded result removes the call */
+static volatile int utf8_sink;
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (size < 2) {
         return 0;
@@ -42,7 +45,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             buffer_path_simplify(b);
             break;
         case 2:
-            buffer_is_valid_UTF8(b);
+            utf8_sink = buffer_is_valid_UTF8(b);
             break;
         case 3:
             buffer_to_lower(b);
