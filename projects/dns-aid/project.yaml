@@ -1,0 +1,11 @@
+auto_ccs:
+- iracic82@gmail.com
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/dns-aid/dns-aid-core
+language: python
+main_repo: https://github.com/dns-aid/dns-aid-core
+primary_contact: ingmar.vg@gmail.com
+sanitizers:
+- address
+- undefined
