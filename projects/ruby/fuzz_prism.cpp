@@ -22,8 +22,19 @@ limitations under the License.
 #include <string>
 #include <fuzzer/FuzzedDataProvider.h>
 
+#include "ruby.h"
+
 extern "C" {
 #include "prism.h"
+}
+
+extern "C" int
+LLVMFuzzerInitialize(int *argc, char ***argv)
+{
+    ruby_init();
+    ruby_init_loadpath();
+    ruby_verbose = Qfalse;
+    return 0;
 }
 
 extern "C" int
