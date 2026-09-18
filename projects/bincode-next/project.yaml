@@ -1,0 +1,6 @@
+homepage: "https://bincode-next.apich.org/"
+language: rust
+primary_contact: "yxy3690@gmail.com"
+auto_ccs:
+  - "Xinyu.Yang@apich.org"
+main_repo: 'https://github.com/Apich-Organization/bincode.git'
