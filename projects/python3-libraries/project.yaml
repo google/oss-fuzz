@@ -1,6 +1,6 @@
 homepage: "https://www.python.org/"
 main_repo: "https://github.com/python/cpython"
-language: c
+language: c++
 primary_contact: "seth@python.org"
 auto_ccs:
  - "greg@krypto.org"
@@ -9,11 +9,10 @@ auto_ccs:
  - "pablogsal@python.org"
  - "stanulbrych@gmail.com"
 fuzzing_engines:
-  - libfuzzer
+  - afl
   - honggfuzz
+  - libfuzzer
 sanitizers:
  - address
- - memory:
-    experimental: True
- - undefined:
-    experimental: True
+ - memory
+ - undefined
