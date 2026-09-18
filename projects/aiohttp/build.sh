@@ -25,14 +25,40 @@ popd # "$SRC/aiohttp/vendor/llhttp/"
 make cythonize
 make install-dev
 
-# Duplicate fuzzers to use Pure python code (in addition
-# to the existing C-compiled code).
-cp fuzz_http_parser.py fuzz_http_parser_pure_python.py
-sed -i 's/AIOHTTP_VAL=0/AIOHTTP_VAL=1/g' fuzz_http_parser_pure_python.py
-cp fuzz_http_payload_parser.py fuzz_http_payload_parser_pure_python.py
-sed -i 's/AIOHTTP_VAL=0/AIOHTTP_VAL=1/g' fuzz_http_payload_parser_pure_python.py
-
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+# Build fuzzers in $OUT. The fuzzers live in aiohttp/fuzzers/ (not at the repo root),
+# so PyInstaller needs an explicit path to find aiohttp,
+# which is only installed as an editable package.
+for fuzzer in $(find $SRC/aiohttp/fuzzers -name '*.py'); do
+  compile_python_fuzzer $fuzzer --paths $SRC/aiohttp
 done
+
+# Some fuzzers are also run against aiohttp's pure-Python implementation
+# (AIOHTTP_NO_EXTENSIONS=1), in addition to the default C-compiled one.
+# aiohttp controls which ones by listing them in aiohttp/fuzzers/no_extensions.txt
+# (one fuzzer target per line, matching the $OUT binary name, i.e. the fuzzer
+# basename without the .py suffix; blank lines and # comments are allowed).
+# Each listed fuzzer reuses the already-built binary: we create a
+# <name>_pure_python wrapper that exports the env var. aiohttp reads
+# AIOHTTP_NO_EXTENSIONS at import time in aiohttp/helpers.py, so the fuzzer
+# source is identical in both cases. compile_python_fuzzer generates an sh
+# wrapper whose first line is the shebang, so we insert the export right
+# after it.
+no_extensions_file="$SRC/aiohttp/fuzzers/no_extensions.txt"
+if [[ -f "$no_extensions_file" ]]; then
+  while read -r fuzzer_name; do
+    # Tolerate CRLF line endings.
+    fuzzer_name=${fuzzer_name%$'\r'}
+    # Skip blank lines and comments.
+    if [[ -z "$fuzzer_name" || "$fuzzer_name" == \#* ]]; then
+      continue
+    fi
+    # Accept either the fuzzer basename or its source file name.
+    fuzzer_name=${fuzzer_name%.py}
+    if [[ ! -f "$OUT/$fuzzer_name" ]]; then
+      echo "ERROR: '$fuzzer_name' is listed in $no_extensions_file but no fuzzer with that name was built." >&2
+      exit 1
+    fi
+    cp "$OUT/$fuzzer_name" "$OUT/${fuzzer_name}_pure_python"
+    sed -i '2i export AIOHTTP_NO_EXTENSIONS=1' "$OUT/${fuzzer_name}_pure_python"
+  done < "$no_extensions_file"
+fi
