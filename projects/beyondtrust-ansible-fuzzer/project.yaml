@@ -1,0 +1,8 @@
+language: python
+primary_contact: support@beyondtrust.com
+main_repo: https://github.com/BeyondTrust/ps-integration-ansible
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
