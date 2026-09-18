@@ -15,7 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get install -y make autoconf automake libtool libffi-dev
+RUN pip3 install -U pip
+RUN pip3 install cryptography
 RUN git clone --depth 1 https://github.com/jpadilla/pyjwt
 WORKDIR pyjwt
 COPY build.sh *.py $SRC/
