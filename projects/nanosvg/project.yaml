@@ -1,0 +1,5 @@
+homepage: https://github.com/memononen/nanosvg
+language: c
+main_repo: https://github.com/memononen/nanosvg
+vendor_ccs:
+- david@adalogics.com
