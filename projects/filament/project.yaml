@@ -1,0 +1,14 @@
+homepage: "https://github.com/google/filament"
+language: c++
+primary_contact: "pelannes007@gmail.com"
+main_repo: "https://github.com/google/filament.git"
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+  - i386
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
