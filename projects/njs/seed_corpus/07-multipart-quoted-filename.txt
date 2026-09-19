@@ -1,0 +1,4 @@
+CT:multipart
+MAX:16
+BOUNDARY:X
+BODY:--X\r\nContent-Disposition: form-data; name="upload"; filename="a\\\"b;[]?.txt"\r\n\r\nABC\r\n--X--\r\n
