@@ -1,5 +1,5 @@
 homepage: "https://git-scm.com"
-language: c++
+language: rust
 primary_contact: "steadmon@google.com"
 auto_ccs:
   - "git-fuzz-reports@google.com"
