@@ -48,6 +48,7 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_use_freetype=true
            skia_use_system_freetype2=false
            skia_use_wuffs=true
+           skia_use_partition_alloc=false
            skia_provide_default_fuzz_engine=false"
 
 # Even though GPU is "enabled" for all these builds, none really

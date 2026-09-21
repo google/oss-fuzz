@@ -28,7 +28,10 @@ for f in charset meta idna entities unescape filters url; do
     $CC $CFLAGS -DHAVE_CONFIG_H -I. -Isrc -Isrc/coucal \
         -c "fuzz/fuzz-$f.c" -o "fuzz-$f.o"
     # shellcheck disable=SC2086
-    $CXX $CXXFLAGS "fuzz-$f.o" -o "$OUT/fuzz-$f" \
+    # -fuse-ld=lld: afl-clang-fast emits LLVM bitcode objects, which end up in
+    # libhttrack.a; the default GNU ld rejects them ("file format not
+    # recognized"), lld reads them directly.
+    $CXX $CXXFLAGS -fuse-ld=lld "fuzz-$f.o" -o "$OUT/fuzz-$f" \
         $LIB_FUZZING_ENGINE src/.libs/libhttrack.a -lz -lpthread
     zip -j "$OUT/fuzz-${f}_seed_corpus.zip" fuzz/corpus/"$f"/*
 done

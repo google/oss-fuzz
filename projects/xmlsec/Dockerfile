@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-conf
 RUN git clone --depth 1 https://github.com/lsh123/xmlsec
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxslt.git
-COPY run_tests.sh build.sh *.diff $SRC/
+COPY run_tests.sh build.sh $SRC/

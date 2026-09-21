@@ -18,9 +18,9 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 # Packages taken from:
 # * https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#dependencies
-# * https://github.com/bitcoin/bitcoin/blob/master/depends/README.md#for-linux-including-i386-arm-cross-compilation
+# * https://github.com/bitcoin/bitcoin/blob/master/depends/README.md#ubuntu--debian
 RUN apt-get update && apt-get install -y \
-  build-essential curl g++-multilib make \
+  build-essential curl g++-10 make \
   patch python3 zip
 
 RUN git clone --depth=1 https://github.com/bitcoin/bitcoin.git bitcoin-core
