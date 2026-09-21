@@ -14,7 +14,6 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder-rust
-RUN git clone --depth 1 https://github.com/huggingface/safetensors safetensors
-COPY fuzz "$SRC/safetensors/safetensors/fuzz"
-COPY build.sh "$SRC/"
-WORKDIR "$SRC/safetensors"
+RUN git clone --depth 1 https://github.com/safetensors/safetensors safetensors
+COPY build.sh $SRC/
+WORKDIR $SRC/safetensors

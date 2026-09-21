@@ -15,8 +15,12 @@
 #
 ################################################################################
 cd "$SRC/safetensors/safetensors"
-cargo fuzz build -O
+
+# The fuzz targets live in the upstream repository (safetensors/fuzz), so this
+# builds whatever that crate declares rather than pinning names here.
+cargo fuzz build -O --debug-assertions
+
 FUZZ_RELEASE="fuzz/target/x86_64-unknown-linux-gnu/release"
-for target in deserialize; do
+for target in $(cargo fuzz list); do
   cp "$FUZZ_RELEASE/$target" "$OUT/"
 done
