@@ -1,0 +1,18 @@
+# The projects/pimd/project.yaml of google/oss-fuzz, kept here so that it is
+# reviewed and changed beside the harnesses it describes.
+#
+# sanitizers: address and undefined are what sanitize.yml already runs the
+# labs under, so a crash the fleet reports reproduces here with the build
+# this tree documents.  memory is deliberately not here yet: it wants an
+# instrumented libc, which is one of the things the fleet has and this tree
+# does not, so it is worth a pull request of its own once the project builds
+# there, rather than a reason for the first one to be rejected.
+homepage: "https://github.com/ocochard/pimd"
+main_repo: "https://github.com/ocochard/pimd.git"
+language: c
+primary_contact: "cochard@gmail.com"
+auto_ccs:
+  - "olivier@cochard.me"
+sanitizers:
+  - address
+  - undefined
