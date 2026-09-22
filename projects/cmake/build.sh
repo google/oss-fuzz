@@ -141,6 +141,9 @@ build_fuzzer "cmGlobFuzzer" "cmGlobFuzzer.cxx"
 # 16. Fortran dependency scanner fuzzer
 build_fuzzer "cmFortranParserFuzzer" "cmFortranParserFuzzer.cxx"
 
+# 17. CPS package-info reader fuzzer
+build_fuzzer "cmPackageInfoReaderFuzzer" "cmPackageInfoReaderFuzzer.cxx"
+
 # Build seed corpora
 echo "Building seed corpora..."
 
@@ -173,6 +176,7 @@ build_corpus "cmVersionFuzzer" "corpus/version"
 build_corpus "cmCMakePathFuzzer" "corpus/path"
 build_corpus "cmGccDepfileFuzzer" "corpus/depfile"
 build_corpus "cmFortranParserFuzzer" "corpus/fortran"
+build_corpus "cmPackageInfoReaderFuzzer" "corpus/cps"
 # Note: No corpus/glob directory in upstream - glob patterns are simple strings
 
 # Copy dictionaries (cmFoo.dict -> cmFooFuzzer.dict)
@@ -196,4 +200,4 @@ for opts in *.options; do
     fi
 done
 
-echo "Build complete! Built 15 fuzzers with corpora, dictionaries, and options."
+echo "Build complete! Built 18 fuzzers with corpora, dictionaries, and options."
