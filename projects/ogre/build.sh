@@ -21,7 +21,7 @@ cmake -DOGRE_STATIC=TRUE -DOGRE_BUILD_FUZZERS=TRUE -DCMAKE_CXX_FLAGS="$CXXFLAGS"
 make -j$(nproc)
 
 # copy the fuzzers
-for fuzzer in image_fuzz stream_fuzz zip_fuzz ogre_deep_fuzz script_fuzz; do 
+for fuzzer in image_fuzz stream_fuzz zip_fuzz ogre_deep_fuzz script_fuzz dds_fuzz; do
   cp bin/${fuzzer} $OUT/${fuzzer}
 done
 
@@ -55,5 +55,12 @@ for f in $(find .. -name '*.material' -o -name '*.program' \
   cp "$f" "/tmp/ogre_script_seeds/$base"
 done
 
+# Seed corpus for the DDS codec fuzzer
+mkdir -p /tmp/ogre_dds_seeds
+for f in $(find .. -iname '*.dds'); do
+  cp "$f" "/tmp/ogre_dds_seeds/$(echo "${f#../}" | tr '/' '_')"
+done
+
 cd /tmp/ogre_deep_seeds && zip -q $OUT/ogre_deep_fuzz_seed_corpus.zip * 2>/dev/null || true
 cd /tmp/ogre_script_seeds && zip -q $OUT/script_fuzz_seed_corpus.zip * 2>/dev/null || true
+cd /tmp/ogre_dds_seeds && zip -q $OUT/dds_fuzz_seed_corpus.zip * 2>/dev/null || true
