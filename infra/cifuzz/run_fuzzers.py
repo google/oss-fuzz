@@ -119,6 +119,12 @@ class BaseFuzzTargetRunner:
 
     min_seconds_per_fuzzer = fuzz_seconds // fuzzers_left_to_run
     bug_found = False
+    # The result of the first fuzz target that crashed, and the path of that
+    # target. They are what gets reported in SARIF, since the result of the
+    # last target to run has no crash in it unless that target is the one that
+    # crashed.
+    crash_result = None
+    crash_target_path = None
     for target_path in self.fuzz_target_paths:
       # By doing this, we can ensure that every fuzz target runs for at least
       # min_seconds_per_fuzzer, but that other fuzzers will have longer to run
@@ -142,16 +148,25 @@ class BaseFuzzTargetRunner:
         continue
 
       bug_found = True
+      if crash_result is None:
+        crash_result = result
+        crash_target_path = target_path
       if self.quit_on_bug_found:
         logging.info('Bug found. Stopping fuzzing.')
         break
 
-    # pylint: disable=undefined-loop-variable
-    if not target_path:
+    if not self.fuzz_target_paths:
       logging.error('Ran no fuzz targets.')
     elif self.config.output_sarif:
       # TODO(metzman): Handle multiple crashes.
-      write_fuzz_result_to_sarif(result, target_path, self.workspace)
+      if crash_result is None:
+        # Nothing crashed. Write the (crashless) result of the last target so
+        # that a SARIF file is always produced.
+        # pylint: disable=undefined-loop-variable
+        write_fuzz_result_to_sarif(result, target_path, self.workspace)
+      else:
+        write_fuzz_result_to_sarif(crash_result, crash_target_path,
+                                   self.workspace)
     self.clusterfuzz_deployment.upload_crashes()
     return bug_found
 
