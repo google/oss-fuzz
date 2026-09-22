@@ -15,10 +15,10 @@
 #
 ################################################################################
 
-# 1. Bundle a trimmed OpenJDK 21 for runner execution
-export RUNTIME_JDK="$OUT/openjdk-21"
+# 1. Bundle a trimmed OpenJDK for runner execution
+export RUNTIME_JDK="$OUT/openjdk"
 mkdir -p "$RUNTIME_JDK"
-rsync -aL --exclude="*.zip" "/usr/lib/jvm/java-21-openjdk-amd64/" "$RUNTIME_JDK"
+rsync -aL --exclude="*.zip" "$JAVA_HOME/" "$RUNTIME_JDK"
 rm -rf "$RUNTIME_JDK/jmods" "$RUNTIME_JDK/lib/src.zip" "$RUNTIME_JDK/man"
 
 # 2. Build and install SafeRE core, and compile fuzz targets
@@ -62,8 +62,8 @@ if [[ "\$@" =~ (^| )-runs=[0-9]+(\$| ) ]]; then
 else
   mem_settings='-Xmx2048m:-Xss1024k'
 fi
-JAVA_HOME="\$this_dir/openjdk-21" \
-LD_LIBRARY_PATH="\$this_dir/openjdk-21/lib/server":\$this_dir \
+JAVA_HOME="\$this_dir/openjdk" \
+LD_LIBRARY_PATH="\$this_dir/openjdk/lib/server":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
 --target_class=$target_class \
