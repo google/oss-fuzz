@@ -50,3 +50,33 @@ if [ ! -d "${WORK}/fuzzing_corpus" ]; then
     zip -q -j -r "${OUT}/input-fuzzer_seed_corpus.zip" \
         "${WORK}/fuzzing_corpus/"
 fi
+
+# Seed corpus for the layout fuzzer.
+mkdir -p "${WORK}/layout_corpus"
+python3 - "${WORK}/layout_corpus" <<'EOF'
+import os
+import sys
+
+
+def checksum(body):
+    csum = 0
+    for ch in body.encode():
+        csum = ((csum >> 1) + ((csum & 1) << 15)) & 0xFFFF
+        csum = (csum + ch) & 0xFFFF
+    return csum
+
+
+bodies = [
+    "80x24,0,0{39x24,0,0,0,40x24,40,0,1}",
+    "80x24,0,0[80x11,0,0,0,80x12,0,12,1]",
+    "80x24,0,0{39x24,0,0,0,40x24,40,0[40x11,40,0,1,40x12,40,12,2]}",
+    "80x24,0,0{19x24,0,0,0,19x24,20,0,1,19x24,40,0,2,20x24,60,0,3}",
+    "80x24,0,0,0",
+]
+
+for i, body in enumerate(bodies):
+    path = os.path.join(sys.argv[1], "layout_%d" % i)
+    with open(path, "w") as f:
+        f.write("%04x,%s" % (checksum(body), body))
+EOF
+zip -q -j -r "${OUT}/layout-fuzzer_seed_corpus.zip" "${WORK}/layout_corpus/"
