@@ -21,19 +21,23 @@ mkdir -p "$RUNTIME_JDK"
 rsync -aL --exclude="*.zip" "/usr/lib/jvm/java-21-openjdk-amd64/" "$RUNTIME_JDK"
 rm -rf "$RUNTIME_JDK/jmods" "$RUNTIME_JDK/lib/src.zip" "$RUNTIME_JDK/man"
 
-# 2. Build SafeRE core and compile fuzz targets
-mvn --batch-mode clean package test-compile -DskipTests -pl safere,safere-fuzz -am
+# 2. Build and install SafeRE core, and compile fuzz targets
+mvn --batch-mode clean install -DskipTests -pl safere,safere-fuzz -am
 
 cp safere/target/safere-*.jar "$OUT/safere.jar"
 jar -cf "$OUT/safere-fuzz.jar" -C safere-fuzz/target/test-classes .
 
-# 3. Copy runtime test dependencies (excluding jazzer which is supplied by the runtime)
-mvn -pl safere-fuzz dependency:copy-dependencies -DoutputDirectory="$OUT" -DincludeScope=test -DexcludeGroupIds=com.code-intelligence
+# 3. Copy runtime test dependencies and include Jazzer JUnit integration
+cp -f "${JAZZER_JUNIT_PATH:-/usr/local/bin/jazzer_junit.jar}" "$OUT/jazzer_junit.jar" 2>/dev/null || true
+mvn -pl safere-fuzz dependency:copy-dependencies -DoutputDirectory="$OUT" -DincludeScope=test \
+  -DexcludeGroupIds=com.code-intelligence -DexcludeArtifactIds=safere
 
-PROJECT_JARS="safere.jar safere-fuzz.jar"
+PROJECT_JARS="safere.jar safere-fuzz.jar jazzer_junit.jar"
 for dep in "$OUT"/*.jar; do
   dep_name=$(basename "$dep")
-  if [[ "$dep_name" != "safere.jar" && "$dep_name" != "safere-fuzz.jar" && "$dep_name" != jazzer* ]]; then
+  if [[ "$dep_name" != "safere.jar" && "$dep_name" != "safere-fuzz.jar" \
+        && "$dep_name" != "jazzer_junit.jar" && "$dep_name" != "jazzer_agent_deploy.jar" \
+        && "$dep_name" != safere-* ]]; then
     PROJECT_JARS="$PROJECT_JARS $dep_name"
   fi
 done

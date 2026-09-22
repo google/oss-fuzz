@@ -1,7 +1,7 @@
 homepage: "https://safere.org"
 language: jvm
 main_repo: "https://github.com/eaftan/safere.git"
-primary_contact: "eaftan@gmail.com"
+primary_contact: "aftandilian@gmail.com"
 auto_ccs:
   - "cushon@google.com"
 fuzzing_engines:
