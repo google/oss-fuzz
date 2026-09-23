@@ -389,6 +389,7 @@ int file_compress(char  *file, char  *mode)
     out = gzopen(outfile, mode);
     if (out == NULL) {
         fprintf(stderr, "%s: can't gzopen %s\n", prog, outfile);
+        fclose(in);
         return 0;
     }
     gz_compress(in, out);
@@ -433,6 +434,7 @@ int file_uncompress(char  *file)
     out = fopen(outfile, "wb");
     if (out == NULL) {
         perror(file);
+        gzclose(in);
         return 0;
     }
 
@@ -465,7 +467,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   snprintf(outmode, sizeof(outmode), "%s", "wb");
 
   /* Compression level: [0..9]. */
-  outmode[2] = data[0] % 10;
+  outmode[2] = '0' + data[0] % 10;
 
   switch (data[0] % 4) {
   default:
