@@ -20,3 +20,4 @@ RUN python3 -m pip install --upgrade pip
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_* $SRC/
+COPY pyyaml_fuzzer.options yaml.dict $SRC/
