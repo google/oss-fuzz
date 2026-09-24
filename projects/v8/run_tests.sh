@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-./tools/dev/gm.py quiet x64.release.check --progress=dots --exit-after-n-failures=5
+./tools/dev/gm.py quiet x64.optdebug.check --progress=dots --exit-after-n-failures=5
 #./tools/dev/gm.py x64.release test262
 #./tools/dev/gm.py x64.release mozilla
 #./tools/dev/gm.py x64.release webkit
