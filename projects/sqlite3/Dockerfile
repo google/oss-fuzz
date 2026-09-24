@@ -26,5 +26,8 @@ RUN mkdir $SRC/sqlite3 && \
 
 RUN find $SRC/sqlite3 -name "*.test" | xargs zip $SRC/ossfuzz_seed_corpus.zip
 
+RUN apt-get update && apt-get install -y cmake liblzma-dev
+RUN git clone https://github.com/ligurio/sqlsmith_proto $SRC/sqlsmith_proto
+
 WORKDIR sqlite3
 COPY build.sh *.dict *.options run_tests.sh $SRC/
