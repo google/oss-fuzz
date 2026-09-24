@@ -19,8 +19,14 @@ import java.io.IOException;
 import org.bouncycastle.x509.util.StreamParsingException;
 import org.bouncycastle.jce.provider.X509CertPairParser;
 import java.io.ByteArrayInputStream;
+import java.security.Security;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class X509CertPairParserFuzzer {
+  public static void fuzzerInitialize() {
+    Security.addProvider(new BouncyCastleProvider());
+  }
+
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     X509CertPairParser xcpp = new X509CertPairParser();
     xcpp.engineInit(new ByteArrayInputStream(data.consumeRemainingAsBytes()));
