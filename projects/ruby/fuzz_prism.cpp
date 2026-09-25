@@ -21,16 +21,24 @@ limitations under the License.
 #include <string.h>
 #include <string>
 #include <fuzzer/FuzzedDataProvider.h>
+#include "ruby.h"
 
 extern "C" {
 #include "prism.h"
 }
+
+static int ruby_initialized = 0;
 
 extern "C" int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     if (size == 0) {
         return 0;
+    }
+
+    if (!ruby_initialized) {
+        ruby_init();
+        ruby_initialized = 1;
     }
 
     // Create arena for AST-lifetime allocations
