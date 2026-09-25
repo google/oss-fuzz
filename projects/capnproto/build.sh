@@ -20,5 +20,5 @@ cd c++
 autoreconf -i
 ./configure --disable-shared
 make -j$(nproc)
-make -j$(nproc) capnp-llvm-fuzzer-testcase
+make -j$(nproc) capnp-llvm-fuzzer-testcase capnp-json-fuzzer-testcase
 cp *fuzzer* $OUT/
