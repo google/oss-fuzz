@@ -250,7 +250,10 @@ class GithubHandler:
                                headers=self._headers)
     if not pr_response.ok:
       return None
-    return pr_response.json()[0]['number']
+    pull_requests = pr_response.json()
+    if not pull_requests:
+      return None
+    return pull_requests[0]['number']
 
   def get_past_contributors(self, project_path):
     """Returns a list of past contributors of a certain project."""
