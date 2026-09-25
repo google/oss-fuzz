@@ -18,12 +18,18 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-
       -o maven.zip && \
       unzip maven.zip -d $SRC/maven && \
       rm maven.zip
-RUN curl -L https://download.java.net/openjdk/jdk11.0.0.1/ri/openjdk-11.0.0.1_linux-x64_bin.tar.gz \
+RUN apt-get update && apt-get install -y ca-certificates-java && \
+    update-ca-certificates -f
+RUN curl -L https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.22%2B7/OpenJDK11U-jdk_x64_linux_hotspot_11.0.22_7.tar.gz \
       -o jdk.tar.gz && \
-      tar zxf jdk.tar.gz && \
-      rm jdk.tar.gz
+    JDK_DIR=$(tar -tf jdk.tar.gz | head -1 | cut -d/ -f1) && \
+    tar zxf jdk.tar.gz && \
+    rm jdk.tar.gz && \
+    mv "$JDK_DIR" "$SRC/jdk11" && \
+    rm -f "$SRC/jdk11/lib/security/cacerts" && \
+    ln -s /etc/ssl/certs/java/cacerts "$SRC/jdk11/lib/security/cacerts"
 ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
-ENV JAVA_HOME="$SRC/jdk-11.0.0.1"
+ENV JAVA_HOME=$SRC/jdk11
 ENV PATH="$JAVA_HOME/bin:$PATH"
 RUN git clone --depth 1 https://github.com/ThreeTen/threetenbp threetenbp
 COPY *.sh *.java $SRC/
