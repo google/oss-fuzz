@@ -3,7 +3,7 @@ package cel
 import (
 	"google.golang.org/protobuf/proto"
 
-	"github.com/google/cel-go/checker/decls"
+	"cel.dev/cel-go/checker/decls"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
