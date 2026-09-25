@@ -11,218 +11,104 @@ limitations under the License.
 */
 
 #include "config.h"
-#include <sys/time.h>
-#include "syshead.h"
-#include "interval.h"
-#include "init.h"
+
+#include <stdint.h>
+#include <string.h>
+
 #include "buffer.h"
+#include "error.h"
 #include "forward.h"
+#include "init.h"
+#include "socket.h"
 
-#include "fuzz_randomizer.h"
+static const size_t kMaxPacketSize = 4096;
 
+static void init_context(struct context *ctx, struct link_socket *sock,
+                         struct link_socket_addr *socket_addr,
+                         struct link_socket_info **socket_infos,
+                         struct tuntap *tuntap) {
+  memset(ctx, 0, sizeof(*ctx));
+  memset(sock, 0, sizeof(*sock));
+  memset(socket_addr, 0, sizeof(*socket_addr));
+  memset(tuntap, 0, sizeof(*tuntap));
 
-static int init_c2_outgoing_link(struct context_2 *c2, struct gc_arena *gc) {
-  struct link_socket_actual *to_link_addr = NULL;
-  struct link_socket *link_socket = NULL;
-  struct socks_proxy_info *socks_proxy = NULL;
-  struct buffer buf;
+  ctx->options.mode = MODE_POINT_TO_POINT;
+  ctx->options.allow_recursive_routing = true;
+  ctx->options.disable_dco = true;
+  ctx->options.ce.mssfix = 1200;
+  ctx->c1.tuntap = tuntap;
 
-  c2->tun_write_bytes = 0;
-  ALLOC_ARRAY_GC(link_socket, struct link_socket, 1, gc);
-  memset(link_socket, 0, sizeof(*link_socket));
+  set_check_status(D_LINK_ERRORS, D_LINK_RW);
 
-  c2->link_socket = link_socket;
+  ctx->c2.frame.buf.payload_size = kMaxPacketSize;
+  ctx->c2.frame.buf.headroom = 256;
+  ctx->c2.frame.buf.tailroom = 256;
+  ctx->c2.frame.mss_fix = 1200;
+  ctx->c2.frame.tun_mtu = 1500;
+  ctx->c2.frame.tun_max_mtu = kMaxPacketSize;
+  ctx->c2.buffers = init_context_buffers(&ctx->c2.frame);
 
-  if (fuzz_randomizer_get_int(0, 2) != 0) {
-    c2->link_socket->info.proto = PROTO_UDP;
-  } else {
-    c2->link_socket->info.proto = PROTO_TCP_SERVER;
-  }
+  sock->sd = SOCKET_UNDEFINED;
+  sock->info.lsa = socket_addr;
+  sock->info.connection_established = true;
+  sock->info.proto = PROTO_UDP;
+  sock->info.af = AF_INET;
 
-  ALLOC_ARRAY_GC(socks_proxy, struct socks_proxy_info, 1, gc);
-  memset(socks_proxy, 0, sizeof(*socks_proxy));
-  c2->link_socket->socks_proxy = socks_proxy;
+  socket_addr->actual.dest.addr.in4.sin_family = AF_INET;
+  socket_addr->actual.dest.addr.in4.sin_port = htons(1194);
+  socket_addr->actual.dest.addr.in4.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
-  c2->frame.link_mtu_dynamic = fuzz_randomizer_get_int(0, 0xfffffff);
-  c2->frame.extra_frame = fuzz_randomizer_get_int(0, 0xfffffff);
-  c2->frame.extra_tun = fuzz_randomizer_get_int(0, 0xfffffff);
-  c2->frame.link_mtu = fuzz_randomizer_get_int(0, 0xfffffff);
-
-  ALLOC_ARRAY_GC(to_link_addr, struct link_socket_actual, 1, gc);
-  memset(to_link_addr, 0, sizeof(*to_link_addr));
-  c2->to_link_addr = to_link_addr;
-
-  c2->to_link_addr->dest.addr.sa.sa_family = AF_INET;
-  c2->to_link_addr->dest.addr.in4.sin_addr.s_addr = 1;
-
-  char *tmp = get_random_string();
-  buf = alloc_buf_gc(strlen(tmp), gc);
-  buf_write(&buf, tmp, strlen(tmp));
-  int val = fuzz_randomizer_get_int(0, strlen(tmp));
-  buf.offset = val;
-  free(tmp);
-
-  c2->link_socket->stream_buf.maxlen = BLEN(&buf);
-  c2->to_link = buf;
-
-  if (buf.offset < 10) {
-    return -1;
-  }
-  return 0;
-}
-
-void fuzz_process_outgoing_link(const uint8_t *data, size_t size) {
-  struct context ctx;
-  struct gc_arena gc = gc_new();
-  memset(&ctx, 0, sizeof(ctx));
-
-  if (init_c2_outgoing_link(&ctx.c2, &gc) == 0) {
-    process_outgoing_link(&ctx);
-  }
-
-  gc_free(&gc);
-}
-
-static int _init_options(struct options *options, struct client_nat_entry **cne,
-                         struct gc_arena *gc) {
-  options->passtos = false;
-  options->mode = MODE_POINT_TO_POINT;
-  options->allow_recursive_routing = true;
-  options->client_nat = new_client_nat_list(gc);
-
-  struct client_nat_entry *_cne;
-  ALLOC_ARRAY_GC(cne[0], struct client_nat_entry, 1, gc);
-  _cne = cne[0];
-  memset(_cne, 0, sizeof(struct client_nat_entry));
-
-  struct client_nat_option_list clist;
-  clist.n = 1;
-  clist.entries[0] = *_cne;
-  copy_client_nat_option_list(options->client_nat, &clist);
-  options->route_gateway_via_dhcp = false;
-
-  return 0;
-}
-
-static int init_c2_incoming_tun(struct context_2 *c2, struct gc_arena *gc) {
-  struct buffer buf;
-  memset(&buf, 0, sizeof(buf));
-
-  struct link_socket *link_socket = NULL;
-  ALLOC_ARRAY_GC(link_socket, struct link_socket, 1, gc);
-  c2->link_socket = link_socket;
-
-  ALLOC_OBJ_GC(c2->link_socket_info, struct link_socket_info, gc);
-  ALLOC_OBJ_GC(c2->link_socket_info->lsa, struct link_socket_addr, gc);
-  c2->link_socket_info->lsa->bind_local = NULL;
-  c2->link_socket_info->lsa->remote_list = NULL;
-  c2->link_socket_info->lsa->current_remote = NULL;
-  c2->link_socket_info->lsa->remote_list = NULL;
-  c2->es = env_set_create(gc);
-
-  c2->frame.link_mtu_dynamic = 0;
-  c2->frame.extra_frame = 0;
-  c2->frame.extra_tun = 0;
-  c2->to_link_addr = NULL;
-
-  char *tmp = get_random_string();
-  buf = alloc_buf(strlen(tmp));
-  buf_write(&buf, tmp, strlen(tmp));
-
-  int retval;
-  if (strlen(tmp) > 5) {
-    retval = 0;
-  } else {
-    retval = 1;
-  }
-
-  free(tmp);
-
-  c2->buf = buf;
-  c2->buffers = init_context_buffers(&c2->frame);
-  c2->log_rw = false;
-
-  return retval;
-}
-
-int run_process_incoming_tun(const uint8_t *data, size_t size) {
-  struct gc_arena gc;
-  struct context ctx;
-  struct client_nat_entry *cne[MAX_CLIENT_NAT];
-  struct route_list route_list;
-
-  memset(&ctx, 0, sizeof(ctx));
-  memset(cne, 0, sizeof(cne));
-
-  gc = gc_new();
-
-  _init_options(&ctx.options, cne, &gc);
-
-  // Init tuntap
-  struct tuntap tuntap;
-  tuntap.type = DEV_TYPE_TAP;
-
-  ctx.c1.tuntap = &tuntap;
-
-  int retval = init_c2_incoming_tun(&ctx.c2, &gc);
-  ctx.c1.route_list = &route_list;
-  if (retval == 0) {
-    process_incoming_tun(&ctx);
-  }
-
-  free(ctx.c2.buf.data);
-  free_context_buffers(ctx.c2.buffers);
-  gc_free(&gc);
-}
-
-static int init_c2_outgoing_tun(struct context_2 *c2, struct gc_arena *gc) {
-  struct buffer buf;
-
-  c2->tun_write_bytes = 0;
-  c2->frame.link_mtu_dynamic = fuzz_randomizer_get_int(0, 0xfffffff);
-  c2->frame.extra_frame = fuzz_randomizer_get_int(0, 0xfffffff);
-  c2->frame.extra_tun = fuzz_randomizer_get_int(0, 0xfffffff);
-
-  char *tmp = get_random_string();
-  buf = alloc_buf_gc(strlen(tmp), gc);
-  buf_write(&buf, tmp, strlen(tmp));
-  free(tmp);
-
-  c2->to_tun = buf;
-  return 0;
-}
-
-void run_process_outgoing_tun(uint8_t *data, size_t size) {
-  struct gc_arena gc;
-  struct context ctx;
-  struct tuntap tuntap;
-
-  memset(&ctx, 0, sizeof(ctx));
-  gc = gc_new();
-
-  tuntap.type = DEV_TYPE_TAP;
-  ctx.c1.tuntap = &tuntap;
-
-  init_c2_outgoing_tun(&ctx.c2, &gc);
-  process_outgoing_tun(&ctx);
-
-  gc_free(&gc);
+  socket_infos[0] = &sock->info;
+  ctx->c2.link_socket_infos = socket_infos;
+  ctx->c2.to_link_addr = &socket_addr->actual;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  fuzz_random_init(data, size);
-
-  int dec = fuzz_randomizer_get_int(0, 2);
-  if (dec == 0) {
-    run_process_incoming_tun(data, size);
-  }
-	else if (dec == 1) {
-		run_process_outgoing_tun(data, size);
-	}
-  else {
-    fuzz_process_outgoing_link(data, size);
+  if (size == 0) {
+    return 0;
   }
 
-  fuzz_random_destroy();
+  const uint8_t selector = data[0];
+  data++;
+  size--;
+  if (size > kMaxPacketSize) {
+    size = kMaxPacketSize;
+  }
+
+  struct context ctx;
+  struct link_socket sock;
+  struct link_socket_addr socket_addr;
+  struct link_socket_info *socket_infos[1];
+  struct tuntap tuntap;
+  init_context(&ctx, &sock, &socket_addr, socket_infos, &tuntap);
+
+  tuntap.type = (selector & 4) ? DEV_TYPE_TAP : DEV_TYPE_TUN;
+  ctx.options.block_ipv6 = (selector & 8) != 0;
+
+  ctx.c2.buf = ctx.c2.buffers->read_tun_buf;
+  if (!buf_init(&ctx.c2.buf, ctx.c2.frame.buf.headroom)
+      || !buf_write(&ctx.c2.buf, data, size)) {
+    free_context_buffers(ctx.c2.buffers);
+    return 0;
+  }
+
+  switch (selector % 3) {
+    case 0:
+      process_ip_header(
+          &ctx,
+          PIP_MSSFIX | PIPV4_PASSTOS | PIPV6_ICMP_NOHOST_CLIENT,
+          &ctx.c2.buf,
+          &sock);
+      break;
+    case 1:
+      process_incoming_tun(&ctx, &sock);
+      break;
+    default:
+      ctx.c2.to_link = ctx.c2.buf;
+      process_outgoing_link(&ctx, &sock);
+      break;
+  }
+
+  free_context_buffers(ctx.c2.buffers);
   return 0;
 }
