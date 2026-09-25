@@ -1,0 +1,12 @@
+homepage: "https://github.com/safetensors/safetensors"
+language: rust
+main_repo: "https://github.com/safetensors/safetensors"
+primary_contact: "ahkarl13@gmail.com"
+auto_ccs:
+  - "ahkarl13@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+architectures:
+  - x86_64
