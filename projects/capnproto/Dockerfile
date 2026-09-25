@@ -18,4 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf automake libtool zlib1g-dev
 RUN git clone --depth 1 https://github.com/capnproto/capnproto
 WORKDIR $SRC/capnproto
-COPY build.sh $SRC/
+COPY build.sh capnp-packed-fuzzer.c++ capnp-json-fuzzer.c++ \
+     capnp-schema-parser-fuzzer.c++ capnp-text-fuzzer.c++ $SRC/
+COPY seeds $SRC/seeds
