@@ -217,8 +217,7 @@ def initialize_oss_fuzz() -> None:
   if not os.path.exists(oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR):
     logger.info('Cloning OSS-Fuzz repository...')
     subprocess.check_call(
-        f'git clone https://github.com/google/oss-fuzz.git {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}',
-        shell=True)
+        ['git', 'clone', 'https://github.com/google/oss-fuzz.git', oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR])
 
   os.makedirs(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, exist_ok=True)
 
@@ -316,9 +315,7 @@ def prepare_oss_fuzz_project(project_name: str) -> bool:
 
   try:
     subprocess.check_call(
-        'git clone ' + main_repo + ' ' +
-        os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name),
-        shell=True,
+        ['git', 'clone', main_repo, os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name)],
         timeout=60 * 10)
   except subprocess.CalledProcessError as e:
     logger.info(f"Error cloning project {project_name}: {e}")
@@ -336,10 +333,8 @@ async def does_project_build(project: str) -> bool:
   successful"""
   try:
     subprocess.check_call(
-        f'python3 {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/infra/helper.py build_fuzzers '
-        + project,
+        ['python3', f'{oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/infra/helper.py', 'build_fuzzers', project],
         cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-        shell=True,
         timeout=60 * 20)
   except subprocess.CalledProcessError:
     return False
@@ -349,10 +344,8 @@ async def does_project_build(project: str) -> bool:
 
   try:
     subprocess.check_call(
-        f'python3 {oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/infra/helper.py check_build '
-        + project,
+        ['python3', f'{oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR}/infra/helper.py', 'check_build', project],
         cwd=oss_fuzz_mcp_config.BASE_OSS_FUZZ_DIR,
-        shell=True,
         timeout=60 * 10)
 
   except subprocess.CalledProcessError:
@@ -785,9 +778,7 @@ def prepare_new_oss_fuzz_project(project_name: str, project_url: str) -> bool:
 
   try:
     subprocess.check_call(
-        'git clone ' + project_url + ' ' +
-        os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name),
-        shell=True,
+        ['git', 'clone', project_url, os.path.join(oss_fuzz_mcp_config.BASE_PROJECTS_DIR, project_name)],
         timeout=60 * 10)
   except subprocess.CalledProcessError as e:
     logger.info("Error cloning project %s: %s", project_name, e)
