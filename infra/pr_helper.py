@@ -65,18 +65,60 @@ def is_known_contributor(content, email):
           email in content.get('auto_ccs', []))
 
 
+# Trusted repository hosting domains for OSS-Fuzz projects.
+# The criticality_score tool fetches data from these URLs; restricting to
+# known-good domains prevents SSRF via attacker-controlled project.yaml.
+_TRUSTED_REPO_DOMAINS = frozenset([
+    'github.com',
+    'gitlab.com',
+    'bitbucket.org',
+    'chromium.googlesource.com',
+    'android.googlesource.com',
+    'boringssl.googlesource.com',
+    'fuchsia.googlesource.com',
+    'dart.googlesource.com',
+    'go.googlesource.com',
+    'skia.googlesource.com',
+    'swiftpackageindex.com',
+    'savannah.gnu.org',
+    'git.savannah.gnu.org',
+    'sourceware.org',
+])
+
+
 def _sanitize_repo_url(url):
-  """Sanitizes a repository URL from project.yaml."""
+  """Sanitizes and validates a repository URL from project.yaml.
+
+  Security: restricts repo URLs to trusted hosting domains to prevent SSRF.
+  The criticality_score subprocess makes outbound HTTP requests to the
+  supplied URL; an attacker controlling project.yaml in a PR could supply
+  an arbitrary URL to probe internal network resources or exfiltrate runner
+  metadata.
+  """
   if url is None:
     return None
   url = str(url)
   for char in ('\n', '\r', '\x00'):
     url = url.replace(char, '')
-  # Support SSH-style URLs (git@host:path).
+  # Support SSH-style URLs (git@host:path) for known domains only.
   if url.startswith('git@'):
+    host = url[4:].split(':')[0]
+    if host not in _TRUSTED_REPO_DOMAINS:
+      return None
     return url
   parsed = urlparse(url)
   if parsed.scheme not in ('https', 'http', 'git') or not parsed.netloc:
+    return None
+  # Restrict to trusted repository hosting domains.
+  netloc = parsed.netloc.lower()
+  # Strip port if present.
+  hostname = netloc.split(':')[0]
+  # Allow exact matches and subdomains of trusted domains.
+  is_trusted = any(
+      hostname == domain or hostname.endswith('.' + domain)
+      for domain in _TRUSTED_REPO_DOMAINS
+  )
+  if not is_trusted:
     return None
   return parsed.geturl()
 
