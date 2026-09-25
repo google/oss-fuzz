@@ -15,6 +15,7 @@
 #
 ################################################################################
 pip3 install .
+IPYPARALLEL_SERIALIZE_DIR=$(python3 -c 'import importlib.metadata, pathlib; print(pathlib.Path(importlib.metadata.distribution("ipyparallel").locate_file("ipyparallel/serialize")).as_posix())')
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+  compile_python_fuzzer $fuzzer --add-data "$IPYPARALLEL_SERIALIZE_DIR:ipyparallel_serialize"
 done
