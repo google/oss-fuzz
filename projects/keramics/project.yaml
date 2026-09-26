@@ -1,0 +1,8 @@
+homepage: "https://keramics.github.io/"
+main_repo: "https://github.com/keramics/keramics.git"
+primary_contact: "joachim.metz@gmail.com"
+language: rust
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
