@@ -94,6 +94,7 @@ RUN /install_go.sh && rm -rf /install_go.sh /root/.go
 # Install OpenJDK 15 and trim its size by removing unused components.
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV JAVA_15_HOME=/usr/lib/jvm/java-15-openjdk-amd64
+ENV JAVA_25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
 ENV PATH=$PATH:$JAVA_HOME/bin
 
