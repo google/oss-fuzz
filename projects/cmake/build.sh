@@ -116,6 +116,9 @@ build_fuzzer "cmExprParserFuzzer" "cmExprParserFuzzer.cxx"
 # 8. PkgConfig Parser Fuzzer
 build_fuzzer "cmPkgConfigParserFuzzer" "cmPkgConfigParserFuzzer.cxx"
 
+# 8b. PkgConfig Resolver Fuzzer (interpolation, fragments, Requires specs)
+build_fuzzer "cmPkgConfigResolverFuzzer" "cmPkgConfigResolverFuzzer.cxx"
+
 # 9. JSON Parser Fuzzer
 build_fuzzer "cmJSONParserFuzzer" "cmJSONParserFuzzer.cxx"
 build_fuzzer "cmCMakePresetsFuzzer" "cmCMakePresetsFuzzer.cxx"
@@ -165,6 +168,7 @@ build_corpus "cmArchiveExtractFuzzer" "corpus/archive"
 build_corpus "cmFileLockFuzzer" "corpus/filelock"
 build_corpus "cmExprParserFuzzer" "corpus/expr"
 build_corpus "cmPkgConfigParserFuzzer" "corpus/pkgconfig"
+build_corpus "cmPkgConfigResolverFuzzer" "corpus/pkgconfig"
 build_corpus "cmJSONParserFuzzer" "corpus/json"
 build_corpus "cmCMakePresetsFuzzer" "corpus/presets"
 build_corpus "cmScriptFuzzer" "corpus/script"
