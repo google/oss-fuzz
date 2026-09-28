@@ -94,7 +94,7 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
     self.assertTrue('address' in latest_build_name)
 
   @parameterized.parameterized.expand([
-      ('upload_build', ('commit',), None,
+      ('upload_build', ('commit',), True,
        'Not uploading latest build because on OSS-Fuzz.'),
       ('upload_corpus', ('target', 'corpus-dir'), True,
        'Not uploading corpus because on OSS-Fuzz.'),
@@ -218,7 +218,7 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
     self.assertTrue(os.path.exists(self.corpus_dir))
 
   @parameterized.parameterized.expand([
-      ('upload_build', ('commit',), None,
+      ('upload_build', ('commit',), True,
        'Not uploading latest build because no ClusterFuzz deployment.'),
       ('upload_corpus', ('target', 'corpus-dir'), True,
        'Not uploading corpus because no ClusterFuzz deployment.'),

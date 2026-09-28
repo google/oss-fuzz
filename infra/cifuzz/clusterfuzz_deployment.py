@@ -47,7 +47,7 @@ class BaseClusterFuzzDeployment:
     raise NotImplementedError('Child class must implement method.')
 
   def upload_build(self, commit):
-    """Uploads the build with the given commit sha to the filestore."""
+    """Uploads the build for |commit|. Returns True on success."""
     raise NotImplementedError('Child class must implement method.')
 
   def download_corpus(self, target_name, corpus_dir):
@@ -177,12 +177,13 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     logging.info('Uploading latest build in %s.', self.workspace.out)
     build_name = self._get_build_name(commit)
     try:
-      result = self.filestore.upload_build(build_name, self.workspace.out)
+      self.filestore.upload_build(build_name, self.workspace.out)
       logging.info('Done uploading latest build.')
-      return result
+      return True
     except Exception as err:  # pylint: disable=broad-except
       logging.error('Failed to upload latest build: %s. Error: %s',
                     self.workspace.out, err)
+      return False
 
   def upload_crashes(self):
     """Uploads crashes."""
@@ -286,6 +287,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
   def upload_build(self, commit):  # pylint: disable=no-self-use
     """Noop Implementation of upload_build."""
     logging.info('Not uploading latest build because on OSS-Fuzz.')
+    return True
 
   def upload_corpus(self, target_name, corpus_dir, replace=False):  # pylint: disable=no-self-use,unused-argument
     """Noop Implementation of upload_corpus."""
@@ -339,6 +341,7 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
     """Noop Implementation of upload_build."""
     logging.info('Not uploading latest build because no ClusterFuzz '
                  'deployment.')
+    return True
 
   def upload_corpus(self, target_name, corpus_dir, replace=False):  # pylint: disable=no-self-use,unused-argument
     """Noop Implementation of upload_corpus."""
