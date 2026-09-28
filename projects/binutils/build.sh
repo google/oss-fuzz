@@ -175,6 +175,25 @@ fi
 for fuzzname in readelf_pef readelf_elf32_csky readelf_elf64_mmix readelf_elf32_littlearm readelf_elf32_bigarm objdump objdump_safe nm objcopy bfd windres addr2line dwarf; do
   cp $SRC/binary-samples/oss-fuzz-binutils/general_seeds.zip $OUT/fuzz_${fuzzname}_seed_corpus.zip
 done
+
+# Generate structured seeds (see generate_seeds.py) and append them to the
+# relevant corpora; existing seeds are retained.
+python3 $SRC/generate_seeds.py $SRC/generated_seeds
+
+# Object-file seeds -> object-consuming fuzzers.
+GEN_OBJ_SEEDS=$(find $SRC/generated_seeds/seeds/elf_reloc \
+    $SRC/generated_seeds/seeds/dwarf $SRC/generated_seeds/seeds/elf_meta \
+    $SRC/generated_seeds/seeds/archive -type f)
+for fuzzname in readelf readelf_pef readelf_elf32_csky readelf_elf64_mmix \
+    readelf_elf32_littlearm readelf_elf32_bigarm objdump objdump_safe nm \
+    objcopy bfd addr2line dwarf; do
+  zip -j $OUT/fuzz_${fuzzname}_seed_corpus.zip $GEN_OBJ_SEEDS
+done
+
+# Format-specific seeds for the otherwise-unseeded fuzz_as and fuzz_dlltool.
+zip -j $OUT/fuzz_as_seed_corpus.zip $SRC/generated_seeds/seeds/gas/seed.s
+zip -j $OUT/fuzz_dlltool_seed_corpus.zip \
+    $SRC/generated_seeds/seeds/dlltool/seed.def
 # Seed targeted the pef file format
 cp $SRC/binary-samples/oss-fuzz-binutils/fuzz_bfd_ext_seed_corpus.zip $OUT/fuzz_bfd_ext_seed_corpus.zip
 

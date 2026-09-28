@@ -85,7 +85,7 @@ fi
 fuzz_branches=("")
 if [[ "$SANITIZER" != "memory" ]] && [[ ! -v CIFUZZ ]]
 then
-    fuzz_branches+=("7")
+    fuzz_branches+=("8")
 fi
 
 if [[ `shuf -i 0-9 -n 1` -eq 0 ]]
@@ -97,8 +97,6 @@ then
 fi
 
 for branch in "${fuzz_branches[@]}"; do
-#we did not put libhtp there before so that cifuzz does not remove it
-cp -r libhtp suricata$branch/
 # build project
 (
 cd suricata$branch

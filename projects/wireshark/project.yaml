@@ -10,6 +10,7 @@ auto_ccs:
  - "rknall@gmail.com"
  - "jbwzawadzki@gmail.com"
  - "gerald.combs@gmail.com"
+ - "johnthacker@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz

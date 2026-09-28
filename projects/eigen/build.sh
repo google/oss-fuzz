@@ -17,7 +17,7 @@
 
 # build project
 mkdir build_dir && cd build_dir
-cmake ..
+cmake .. -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF
 make install
 cd ..
 

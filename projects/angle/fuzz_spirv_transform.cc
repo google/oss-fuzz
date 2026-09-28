@@ -39,7 +39,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     options.enableSampleShading = fuzzedData.ConsumeBool();
     options.validate = fuzzedData.ConsumeBool();
     options.useSpirvVaryingPrecisionFixer = fuzzedData.ConsumeBool();
-    options.removeDepthStencilInput = fuzzedData.ConsumeBool();
+    options.removeDepthInput = fuzzedData.ConsumeBool();
+    options.removeStencilInput = fuzzedData.ConsumeBool();
 
     ShaderInterfaceVariableInfoMap variableInfoMap;
     

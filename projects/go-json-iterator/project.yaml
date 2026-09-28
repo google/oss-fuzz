@@ -9,3 +9,4 @@ fuzzing_engines:
 - libfuzzer
 sanitizers:
 - address
+disabled: true

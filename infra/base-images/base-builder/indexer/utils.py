@@ -132,6 +132,7 @@ def patch_binary_rpath_and_interpreter(
     lib_mount_path: pathlib.Path,
     ld_binary_path: pathlib.Path = LD_BINARY_PATH_X86_64,
     extra_rpath_entries: Sequence[pathlib.Path] = (),
+    patch_interpreter: bool = True,
 ):
   """Patches the binary rpath and interpreter.
 
@@ -142,6 +143,7 @@ def patch_binary_rpath_and_interpreter(
     ld_binary_path: Basename / path of the dynamic linker.
     extra_rpath_entries: Additional directories prepended to the RPATH (searched
       before ``lib_mount_path``).
+    patch_interpreter: Whether to patch the ELF interpreter.
   """
   rpath = ":".join(p.as_posix() for p in [*extra_rpath_entries, lib_mount_path])
   subprocess.run(
@@ -155,15 +157,16 @@ def patch_binary_rpath_and_interpreter(
       check=True,
   )
 
-  subprocess.run(
-      [
-          "patchelf",
-          "--set-interpreter",
-          (lib_mount_path / ld_binary_path.name).as_posix(),
-          binary_path,
-      ],
-      check=True,
-  )
+  if patch_interpreter:
+    subprocess.run(
+        [
+            "patchelf",
+            "--set-interpreter",
+            (lib_mount_path / ld_binary_path.name).as_posix(),
+            binary_path,
+        ],
+        check=True,
+    )
 
 
 def get_library_mount_path(binary_id: str) -> pathlib.Path:

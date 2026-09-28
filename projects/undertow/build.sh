@@ -22,10 +22,9 @@ CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate
 
 cp "./servlet/target/undertow-servlet-$CURRENT_VERSION.jar" $OUT/servlet.jar
 cp "./core/target/undertow-core-$CURRENT_VERSION.jar" $OUT/undertow.jar
-cp "./parser-generator/target/undertow-parser-generator-$CURRENT_VERSION.jar" $OUT/parser.jar
 cp "./websockets-jsr/target/undertow-websockets-jsr-$CURRENT_VERSION.jar" $OUT/websockets.jar
 
-ALL_JARS='servlet.jar undertow.jar parser.jar websockets.jar'
+ALL_JARS='servlet.jar undertow.jar websockets.jar'
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.

@@ -32,6 +32,11 @@ test -e Makefile || ./configure
 
 make -j$(nproc) core
 
+# xml_fuzzer validates and upgrades the input against real schemas, which the
+# schema cache reads from disk. Ship the schema tree beside the fuzzers; the
+# harness points PCMK_schema_directory at it.
+cp -r xml "$OUT/pacemaker-schemas"
+
 for FUZZER_SOURCE in lib/*/fuzzers/*.c; do
   FUZZER="$(basename "$FUZZER_SOURCE" .c)"
 
@@ -47,4 +52,10 @@ for FUZZER_SOURCE in lib/*/fuzzers/*.c; do
    ./lib/common/.libs/libcrmcommon.a -l:libqb.a                            \
    -l:libxslt.a -l:libxml2.a -l:libglib-2.0.a -l:libuuid.a -l:libicuuc.a   \
    -l:libz.a -lgnutls -lbz2 -lpcre -lrt -ldl -lc
+
+  # A fuzzer ships its seed corpus as a sibling <name>_corpus directory
+  if [ -d "$(dirname "$FUZZER_SOURCE")/${FUZZER}_corpus" ]; then
+    zip -j -q "$OUT/${FUZZER}_seed_corpus.zip"                               \
+     "$(dirname "$FUZZER_SOURCE")/${FUZZER}_corpus"/*
+  fi
 done

@@ -38,19 +38,40 @@ cd contrib/contrib-build
 # Disable X11/xlib in FFmpeg to avoid runtime dependency on libX11
 sed -i '/--target-os=linux --enable-pic/a FFMPEGCONF += --disable-xlib --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-x86asm' ../src/ffmpeg/rules.mak
 
-# VPX's configure uses the raw 'ld' linker for its toolchain link test.
-# When objects are compiled with -fsanitize=address, raw ld cannot resolve
-# the ASan runtime symbols, failing with "Toolchain is unable to link
-# executables". Fix: propagate sanitizer CFLAGS into LDFLAGS and override LD
-# to use the compiler driver (clang/CC), which automatically links the correct
-# sanitizer runtimes.
-sed -i 's|VPX_LDFLAGS := $(LDFLAGS)|VPX_LDFLAGS = $(LDFLAGS) $(filter -fsanitize%,$(CFLAGS))|' ../src/vpx/rules.mak
-sed -i 's|LDFLAGS="$(VPX_LDFLAGS)" CROSS=$(VPX_CROSS)|LDFLAGS="$(VPX_LDFLAGS)" LD=$(CC) CROSS=$(VPX_CROSS)|' ../src/vpx/rules.mak
+# VPX's configure link-tests the toolchain with "${LD} ${LDFLAGS}" (see
+# check_ld() in libvpx's build/make/configure.sh) while compiling the test
+# object with CFLAGS. Contrib's HOSTVARS sets LD to the raw binutils 'ld',
+# which cannot resolve the sanitizer runtime symbols pulled in by
+# -fsanitize=..., so configure aborts with "Toolchain is unable to link
+# executables". Fix: override LD with the compiler driver (which links the
+# correct sanitizer runtimes) and propagate the sanitizer CFLAGS into LDFLAGS.
+# VPX_HOSTVARS is expanded as a shell environment-assignment prefix to
+# configure, so these later assignments win over the ones from HOSTVARS.
+sed -i '/^VPX_HOSTVARS = \$(HOSTVARS)$/a VPX_HOSTVARS += LD="$(CC)" LDFLAGS="$(LDFLAGS) $(filter -fsanitize%,$(CFLAGS))"' ../src/vpx/rules.mak
+
+# The sed above silently does nothing if upstream renames or restructures
+# VPX_HOSTVARS, which reintroduces the configure failure with no clue as to
+# why (exactly what happened when VLC commit 9d34ed99e2 removed the
+# VPX_LDFLAGS variable this fix used to patch). Fail loudly instead.
+grep -qF 'VPX_HOSTVARS += LD="$(CC)"' ../src/vpx/rules.mak || {
+    echo "ERROR: could not patch contrib/src/vpx/rules.mak for sanitizer linking;" >&2
+    echo "       VPX_HOSTVARS is gone or renamed upstream, re-do this fix." >&2
+    exit 1
+}
 
 make V=1 -j$(nproc) \
     .flac \
     .libxml2 \
-    .ffmpeg
+    .ffmpeg \
+    .freetype2 \
+    .fribidi \
+    .harfbuzz \
+    .fontconfig
+# libass's dependency chain (freetype2/fribidi/harfbuzz/fontconfig) is built
+# here, uninstrumented: fribidi/fontconfig compile build-time codegen tools
+# (e.g. gen-unicode-version) that fail to link under -fsanitize=fuzzer when the
+# sanitizer runtime isn't pulled in. Only libass itself (.ass) is built with
+# instrumentation below, since the SSA/ASS parser is the actual fuzz target.
 
 cd ../../
 
@@ -78,7 +99,43 @@ make V=1 -j$(nproc) \
     .vorbis \
     .speex \
     .speexdsp \
-    .dvbpsi
+    .dvbpsi \
+    .modplug \
+    .faad2 \
+    .jpeg \
+    .png \
+    .ass \
+    .kate
+
+# libbpg ships a hand-written Makefile that hardcodes CC=gcc, but the OSS-Fuzz
+# CFLAGS are clang-only (-gline-tables-only, -fsanitize=fuzzer-no-link), which
+# gcc rejects. Build it in its own make so a command-line CC/CXX override (which
+# beats the Makefile's CC=gcc and propagates to the inner libbpg sub-make)
+# forces clang, keeping libbpg instrumented.
+make V=1 -j$(nproc) CC="$CC" CXX="$CXX" .bpg
+
+# libbpg bundles a forked libavcodec/libavutil. VLC normally builds each plugin
+# as a separate .so, so those symbols never clash with the ffmpeg contrib; but
+# the OSS-Fuzz static build links every plugin into one binary, where libbpg's
+# av_*/ff_*/avcodec_* duplicate ffmpeg's ("multiple definition" link errors).
+# Merge libbpg.a into a single relocatable object and localize every symbol
+# except the public bpg_* API: libbpg then resolves its own libav internally
+# while ffmpeg's symbols stay global for the avcodec plugin.
+for bpg_a in ../*/lib/libbpg.a; do
+    [ -f "$bpg_a" ] || continue
+    ld -r --whole-archive "$bpg_a" -o "${bpg_a}.merged.o"
+    objcopy --wildcard --keep-global-symbol='bpg_*' "${bpg_a}.merged.o" "${bpg_a}.local.o"
+    rm -f "$bpg_a" "${bpg_a}.merged.o"
+    ar crs "$bpg_a" "${bpg_a}.local.o"
+    rm -f "${bpg_a}.local.o"
+done
+
+# libgme's CMake compiles with -fno-rtti, which is incompatible with the
+# -fsanitize=vptr check implied by SANITIZER=undefined ("invalid argument
+# '-fsanitize=vptr' not allowed with '-fno-rtti'"). Build it with that single
+# UBSan sub-check disabled; this is a no-op under the address sanitizer.
+CFLAGS="$CFLAGS -fno-sanitize=vptr" CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
+    make V=1 -j$(nproc) .gme
 cd ../../
 
 # Use OSS-Fuzz environment rather than hardcoded setup.
@@ -131,6 +188,7 @@ sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
             --disable-xcb \
             --disable-alsa \
             --disable-libva \
+            --enable-bpg \
             --with-libfuzzer
 make V=1 -j$(nproc)
 

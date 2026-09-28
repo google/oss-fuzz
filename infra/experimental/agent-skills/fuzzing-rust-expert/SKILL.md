@@ -115,6 +115,11 @@ ENV RUSTUP_TOOLCHAIN=nightly-2025-07-03
   automatically picked up by cargo-fuzz and can be zipped for OSS-Fuzz.
 - To ship a corpus with OSS-Fuzz copy a zip to `$OUT/<target_name>_seed_corpus.zip`.
 - Dictionaries go to `$OUT/<target_name>.dict`.
+- For targets that parse a structured format, generating seeds with a script
+  beats hand-picking a few files — random mutation rarely passes the parser's
+  early checks (note: cargo-fuzz's `arbitrary` is the better route when the
+  target takes typed data rather than a byte format). See the [structured seed
+  generation reference](../oss-fuzz-engineer/references/structured_seed_generation.md).
 
 ## Characteristics of good Rust fuzzing harnesses
 

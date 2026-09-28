@@ -22,8 +22,10 @@ cd build
 cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
 make -j$(nproc)
 
-cp fuzzer/FuzzIxml $OUT/FuzzIxml
+cp fuzzer/Fuzz* $OUT/
 
 pushd $SRC/oss-fuzz-bloat/pupnp/
 cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
+cp FuzzIxml_seed_corpus.zip $OUT/FuzzServiceTable_seed_corpus.zip
+cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxmlDom_seed_corpus.zip
 popd

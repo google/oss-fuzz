@@ -112,6 +112,10 @@ produces an executable in `$OUT` named after the `.py` file.
   `$OUT/<fuzzer_name>_seed_corpus.zip`.
 - Dictionaries go to `$OUT/<fuzzer_name>.dict` — especially valuable for
   text-format parsers (JSON, XML, YAML, CSV, etc.).
+- For targets that parse a structured format, generating seeds with a script
+  beats hand-picking a few files — random mutation rarely passes the parser's
+  early checks. See the [structured seed generation
+  reference](../oss-fuzz-engineer/references/structured_seed_generation.md).
 
 ## Characteristics of good Python fuzzing harnesses
 

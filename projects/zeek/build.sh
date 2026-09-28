@@ -15,15 +15,20 @@
 #
 ################################################################################
 
-CFLAGS="${CFLAGS} -pthread" CXXFLAGS="${CXXFLAGS} -pthread" \
-    ./configure --prefix=$(pwd)/build/install-root \
-                --build-type=debug \
-                --generator=Ninja \
-                --enable-fuzzers \
-                --disable-python \
-                --disable-zeekctl \
-                --disable-auxtools \
-                --disable-broker-tests
+export CFLAGS="${CFLAGS} -pthread"
+export CXXFLAGS="${CXXFLAGS} -pthread -D_GLIBCXX_ASSERTIONS"
+
+# Selected UB checks only for now.
+export ZEEK_TAILORED_UB_CHECKS=1
+
+./configure --prefix=$(pwd)/build/install-root \
+            --build-type=debug \
+            --generator=Ninja \
+            --enable-fuzzers \
+            --disable-python \
+            --disable-zeekctl \
+            --disable-auxtools \
+            --disable-broker-tests
 
 cd build
 ninja install

@@ -22,6 +22,9 @@
 	--enable-tnccs-20 \
 	--enable-libipsec \
 	--enable-eap-radius \
+	--enable-pkcs12 \
+	--enable-hmac \
+	--enable-acert \
 	--enable-fuzzing \
 	--enable-sha1 --enable-sha2 --enable-sha3 --enable-mgf1 --enable-gmp \
 	--with-libfuzzer=$LIB_FUZZING_ENGINE \
@@ -40,5 +43,8 @@ for f in $fuzzers; do
 	corpus=${corpus%_cus}
 	if [ -d "fuzzing-corpora/${corpus}" ]; then
 		zip -rj $OUT/${fuzzer}_seed_corpus.zip fuzzing-corpora/${corpus}
+	fi
+	if [ -f "fuzzing-corpora/${corpus}.dict" ]; then
+		cp "fuzzing-corpora/${corpus}.dict" "$OUT/${fuzzer}.dict"
 	fi
 done

@@ -1,6 +1,10 @@
 homepage: "https://docs.rs/symphonia/"
 main_repo: "https://github.com/pdeljanov/Symphonia.git"
 language: rust
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
 primary_contact: "jophba@chromium.org"
 auto_ccs:
   - philip.deljanov@gmail.com

@@ -48,5 +48,14 @@ RUN git clone --depth 1 https://github.com/dloebl/cgif.git
 RUN git clone --depth 1 https://github.com/google/highway.git
 RUN git clone --depth 1 https://github.com/google/libultrahdr.git
 
+# Prevent fuzz-introspector from analyzing harnesses in sub-dependencies
+RUN find "$SRC" -type f \( -name '*.c' -o -name '*.cc' -o -name '*.cpp' \) \
+  -not -path "$SRC/aflplusplus/*" \
+  -not -path "$SRC/fuzztest/*" \
+  -not -path "$SRC/honggfuzz/*" \
+  -not -path "$SRC/libfuzzer/*" \
+  -not -path "$SRC/libvips/*" \
+  -exec sed -i 's/LLVMFuzzerTestOneInput/DisableFuzzerTestOneInput/g' {} +
+
 WORKDIR libvips
 COPY build.sh $SRC/

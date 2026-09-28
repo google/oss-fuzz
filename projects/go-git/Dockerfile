@@ -24,7 +24,7 @@ RUN mkdir -p "${ORG_ROOT}"
 # The fuzzed components are scattered around multiple repositories.
 # Here we clone all of them and cache their go dependencies.
 # The build process happens as build.sh iterate over each one of them.
-ARG REPOSITORIES="go-git go-billy"
+ARG REPOSITORIES="go-git go-billy reftable"
 RUN for repo in ${REPOSITORIES}; do \
     git clone --depth 1 "https://github.com/go-git/${repo}" "${ORG_ROOT}/${repo}"; \
     cd "${ORG_ROOT}/${repo}"; \

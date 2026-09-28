@@ -28,4 +28,4 @@ COPY dicts $SRC/dicts
 WORKDIR ghostpdl
 
 COPY *.cc *.options *.h $SRC/
-COPY build.sh $SRC/
+COPY build.sh generate_seeds.py $SRC/

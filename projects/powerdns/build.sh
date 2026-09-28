@@ -36,6 +36,16 @@ sed -i 's/AC_CC_PIE//' configure.ac
  touch /usr/lib/libboost_bogus.so
 )
 
+# Build and install LuaJIT, needed for DNSdist fuzzing targets
+(
+  cd $SRC/luajit
+  git checkout v2.1
+  CFLAGS="" CXXFLAGS="" make -j$(nproc)
+  make install
+  # remove the shared library files to ensure we link statically
+  rm /usr/local/lib/libluajit*.so
+)
+
 # build fuzzing targets
 autoreconf -vi
 ./configure \
@@ -81,6 +91,7 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
           -D fuzzer_ldflags=${LIB_FUZZING_ENGINE} \
           -D b_pie=false \
           -D yaml=disabled \
+          -D libedit=disabled \
           ${build_dir}
         meson compile -C ${build_dir} fuzz-targets
         # copy the fuzzing target binaries

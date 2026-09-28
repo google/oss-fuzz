@@ -24,12 +24,13 @@ rm -rf maven.zip
 ENV MVN $SRC/maven-3.9.12/apache-maven-3.9.12/bin/mvn
 ENV TARGET_PACKAGE_PREFIX org.apache.poi.*:org.apache.xmlbeans.*
 
-# Newer JDK releases are listed at https://github.com/adoptium/temurin11-binaries/releases/
-RUN curl -L https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.29%2B7/OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz -o OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz && \
-  tar xvf OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz && \
-  rm -rf OpenJDK11U-jdk_x64_linux_hotspot_11.0.29_7.tar.gz
+# Newer JDK releases are listed at https://adoptium.net/en-GB/temurin/releases?version=17&os=linux&arch=x64&package=jdk
+# https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.19%2B10/OpenJDK17U-jdk_x64_linux_hotspot_17.0.19_10.tar.gz
+RUN curl -L https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.19%2B10/OpenJDK17U-jdk_x64_linux_hotspot_17.0.19_10.tar.gz -o OpenJDK17U-jdk_x64_linux_hotspot_17.0.19_10.tar.gz && \
+  tar xvf OpenJDK17U-jdk_x64_linux_hotspot_17.0.19_10.tar.gz && \
+  rm -rf OpenJDK17U-jdk_x64_linux_hotspot_17.0.19_10.tar.gz
 
-ENV JAVA_HOME_11 $SRC/jdk-11.0.29+7
+ENV JAVA_HOME_17 $SRC/jdk-17.0.19+10
 
 WORKDIR ${SRC}
 #
@@ -59,7 +60,7 @@ RUN cd ${SRC}/poi && rm `find \
 
 # run a small Gradle task to perform the downloading of Gradle distribution here
 # this avoids this step when using the Docker image later
-RUN cd ${SRC}/poi && chmod a+x gradlew && JAVA_HOME=$JAVA_HOME_11 ./gradlew wrapper
+RUN cd ${SRC}/poi && chmod a+x gradlew && JAVA_HOME=$JAVA_HOME_17 ./gradlew wrapper
 
 ADD pom.xml build.sh ${SRC}/
 ADD src/ ${SRC}/src/

@@ -116,9 +116,22 @@ for f in examples/ridt91.eps examples/snowflak.ps $SRC/pdf_seeds/pdf.pdf; do
 done
 zip -j "$OUT/gs_device_pdfwrite_opts_fuzzer_seed_corpus.zip" "$WORK"/gs_device_pdfwrite_opts_fuzzer_seeds/*
 
+# Generate structured PostScript / PCL-XL / PCL seeds (see generate_seeds.py).
+# The stock examples lean on DeviceRGB/Gray and basic operators; the generated
+# PostScript exercises the colour-space / CIE / ICC machinery (zcolor.c,
+# gsicc_create.c, zcie.c), smooth shadings, the PDF1.4 transparency compositor,
+# halftones (zht2.c), images and DSC parsing (dscparse.c) across every device.
+python3 $SRC/generate_seeds.py "$WORK/generated_gs_seeds"
+
 # Create seeds for gstoraster_fuzzer
 mkdir -p "$WORK/seeds"
 for f in examples/*.{ps,pdf}; do
+  s=$(sha1sum "$f" | awk '{print $1}')
+  cp "$f" "$WORK/seeds/$s"
+done
+# Add the generated PostScript seeds so they propagate to every device fuzzer
+# corpus copied from gstoraster_fuzzer below.
+for f in "$WORK"/generated_gs_seeds/ps/*.ps; do
   s=$(sha1sum "$f" | awk '{print $1}')
   cp "$f" "$WORK/seeds/$s"
 done
@@ -157,6 +170,7 @@ for f in pcl/examples/*.pcl; do
   s=$(sha1sum "$f" | awk '{print $1}')
   cp "$f" "$WORK/pcl_seeds/$s"
 done
+cp "$WORK"/generated_gs_seeds/pcl/* "$WORK/pcl_seeds/" 2>/dev/null || true
 zip -j "$OUT/gs_pcl_fuzzer_seed_corpus.zip" "$WORK"/pcl_seeds/*
 
 # Create PXL seed corpus from example PXL files
@@ -165,6 +179,7 @@ for f in pcl/examples/*.pxl pcl/examples/*.px3; do
   s=$(sha1sum "$f" | awk '{print $1}')
   cp "$f" "$WORK/pxl_seeds/$s"
 done
+cp "$WORK"/generated_gs_seeds/pxl/* "$WORK/pxl_seeds/" 2>/dev/null || true
 zip -j "$OUT/gs_pxl_fuzzer_seed_corpus.zip" "$WORK"/pxl_seeds/*
 
 # Create XPS seed corpus from example XPS files
@@ -175,6 +190,7 @@ for f in pcl/examples/*.xps xps/tools/*.xps; do
     cp "$f" "$WORK/xps_seeds/$s"
   fi
 done
+cp "$WORK"/generated_gs_seeds/xps/* "$WORK/xps_seeds/" 2>/dev/null || true
 zip -j "$OUT/gs_xps_fuzzer_seed_corpus.zip" "$WORK"/xps_seeds/*
 
 # Copy dictionaries for new fuzzers
