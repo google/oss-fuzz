@@ -226,6 +226,44 @@ class GithubActionsFilestoreTest(unittest.TestCase):
               os.path.join(artifact_download_dst_dir,
                            os.path.basename(self.testcase))))
 
+  @mock.patch('filestore.github_actions.GithubActionsFilestore._find_artifact')
+  @mock.patch('http_utils.download_and_unpack_zip')
+  def test_download_build_rejects_traversal_tar_member(
+      self, mock_download_and_unpack_zip, mock_find_artifact):
+    """Tests that traversal tar entries are rejected."""
+    artifact_name = 'cifuzz-build-address-commit'
+
+    def fake_download_and_unpack_zip(download_url, dst_directory, headers=None):
+      del download_url, headers
+      tar_path = os.path.join(dst_directory, artifact_name + '.tar')
+      safe_file = os.path.join(dst_directory, 'demo_fuzzer')
+      traversal_file = os.path.join(dst_directory, 'escape.txt')
+
+      with open(safe_file, 'w', encoding='utf-8') as file_handle:
+        file_handle.write('demo')
+
+      with open(traversal_file, 'w', encoding='utf-8') as file_handle:
+        file_handle.write('escape')
+
+      with tarfile.open(tar_path, 'w') as tar_handle:
+        tar_handle.add(safe_file, arcname='demo_fuzzer')
+        tar_handle.add(traversal_file, arcname='../escape.txt')
+      return True
+
+    mock_download_and_unpack_zip.side_effect = fake_download_and_unpack_zip
+    mock_find_artifact.return_value = {
+        'expired': False,
+        'name': artifact_name,
+        'archive_download_url': 'http://example.com/download'
+    }
+
+    filestore = github_actions.GithubActionsFilestore(self.config)
+    result = filestore.download_build('address-commit', self.local_dir)
+
+    self.assertFalse(result)
+    self.assertFalse(
+        os.path.exists(os.path.join(self.local_dir, 'demo_fuzzer')))
+
   @mock.patch('filestore.github_actions.github_api.list_artifacts')
   def test_find_artifact(self, mock_list_artifacts):
     """Tests that _find_artifact works as intended."""
