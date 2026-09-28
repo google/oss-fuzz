@@ -16,11 +16,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder-rust as builder
 
 ## Install build dependencies.
-RUN apt-get update
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends qemu-utils && \
+    rm -rf /var/lib/apt/lists/*
 RUN git clone --depth 1 https://github.com/cloud-hypervisor/cloud-hypervisor.git
-
-# Always use the latest nightly toolchain since that's the version being
-# validated with Cloud Hypervisor CI
-ENV RUSTUP_TOOLCHAIN nightly
 
 COPY build.sh $SRC/
