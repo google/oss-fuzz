@@ -103,6 +103,30 @@ class GitFilestoreTest(unittest.TestCase):
         'coverage/latest/b/c',
     ], self.get_repo_filelist('cov-branch'))
 
+  @mock.patch('retry.sleep')
+  def test_upload_corpus_retries_failed_first_push(self, _):
+    """Tests that a failed push to a new branch is retried."""
+    marker = os.path.join(self.git_dir.name, 'rejected')
+    hook_path = os.path.join(self.git_dir.name, 'hooks', 'pre-receive')
+    with open(hook_path, 'w', encoding='utf-8') as handle:
+      handle.write(
+          f'#!/bin/sh\n[ -e {marker} ] || {{ touch {marker}; exit 1; }}\n')
+    os.chmod(hook_path, 0o755)
+    self.git_store.upload_corpus('target', self.local_dir.name)
+    self.assertCountEqual([
+        'corpus/target/a',
+        'corpus/target/b/c',
+    ], self.get_repo_filelist('main'))
+
+  def test_new_branch_starts_empty(self):
+    """Tests that a new branch does not inherit the previous checkout."""
+    self.git_store.upload_corpus('target', self.local_dir.name)
+    self.git_store.upload_coverage('latest', self.local_dir.name)
+    self.assertCountEqual([
+        'coverage/latest/a',
+        'coverage/latest/b/c',
+    ], self.get_repo_filelist('cov-branch'))
+
   def test_upload_crashes(self):
     """Tests uploading crashes."""
     self.git_store.upload_crashes('current', self.local_dir.name)
