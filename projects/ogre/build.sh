@@ -16,14 +16,32 @@
 
 mkdir -p build
 cd build
+
 cmake -DOGRE_STATIC=TRUE -DOGRE_BUILD_FUZZERS=TRUE -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-  -DOGRE_BUILD_DEPENDENCIES=FALSE -DOGRE_BUILD_SAMPLES=FALSE  ..
+  -DOGRE_BUILD_DEPENDENCIES=FALSE -DOGRE_BUILD_SAMPLES=FALSE \
+  -DOGRE_CONFIG_ENABLE_PVRTC=TRUE -DOGRE_CONFIG_ENABLE_ETC=TRUE \
+  -DOGRE_CONFIG_ENABLE_ASTC=TRUE ..
 make -j$(nproc)
 
 # copy the fuzzers
-for fuzzer in image_fuzz stream_fuzz zip_fuzz ogre_deep_fuzz script_fuzz; do 
+for fuzzer in image_fuzz stream_fuzz zip_fuzz texture_codec_fuzz ogre_deep_fuzz script_fuzz; do
   cp bin/${fuzzer} $OUT/${fuzzer}
 done
+
+# Seed the selector-based texture fuzzer with one sample per codec.
+mkdir -p /tmp/ogre_texture_seeds
+for spec in '0:Tests/Media/Earth-Color10x6.astc' \
+            '1:Tests/Media/Texture.pkm' \
+            '2:Tests/Media/etc2-rgba8.ktx' \
+            '3:Tests/Media/ogreborderUp_pvr4.pvr'; do
+  selector=${spec%%:*}
+  sample=${spec#*:}
+  if [ -f "../$sample" ]; then
+    printf "\\x$(printf '%02x' "$selector")" > "/tmp/ogre_texture_seeds/$(basename "$sample")"
+    cat "../$sample" >> "/tmp/ogre_texture_seeds/$(basename "$sample")"
+  fi
+done
+(cd /tmp/ogre_texture_seeds && zip -q "$OUT/texture_codec_fuzz_seed_corpus.zip" * 2>/dev/null || true)
 
 # Copy dictionary
 cp ../Tests/fuzz/ogre_deep_fuzz.dict $OUT/ogre_deep_fuzz.dict 2>/dev/null || true
