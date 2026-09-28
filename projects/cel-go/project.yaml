@@ -7,5 +7,5 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-main_repo: 'https://github.com/google/cel-go'
+main_repo: 'https://github.com/cel-expr/cel-go'
 file_github_issue: True
