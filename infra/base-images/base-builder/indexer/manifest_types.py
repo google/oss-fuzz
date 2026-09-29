@@ -196,6 +196,10 @@ class CommandLineBinaryConfig(BinaryConfig):
   # are directly linked into the target binary. Should usually be true but
   # some targets like V8 require this to be false, see b/433718862.
   filter_compile_commands: bool = True
+  # Whether to enforce a strict flag allowlist for custom flags specified via
+  # `// Flags:` comments (when harness_kind is JS). Mostly needed for historic
+  # V8 builds that lack flag hardening (e.g. `--disallow-unsafe-flags`).
+  strict_flag_check: bool = False
 
   @property
   def uses_stdin(self) -> bool:
@@ -220,6 +224,7 @@ class CommandLineBinaryConfig(BinaryConfig):
         filter_compile_commands=config_dict.get(
             "filter_compile_commands", True
         ),
+        strict_flag_check=config_dict.get("strict_flag_check", False),
     )
 
 
