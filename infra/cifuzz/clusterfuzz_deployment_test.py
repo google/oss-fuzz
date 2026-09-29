@@ -94,17 +94,19 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
     self.assertTrue('address' in latest_build_name)
 
   @parameterized.parameterized.expand([
-      ('upload_build', ('commit',),
+      ('upload_build', ('commit',), None,
        'Not uploading latest build because on OSS-Fuzz.'),
-      ('upload_corpus', ('target', 'corpus-dir'),
+      ('upload_corpus', ('target', 'corpus-dir'), True,
        'Not uploading corpus because on OSS-Fuzz.'),
-      ('upload_crashes', tuple(), 'Not uploading crashes because on OSS-Fuzz.'),
+      ('upload_crashes', tuple(), None,
+       'Not uploading crashes because on OSS-Fuzz.'),
   ])
-  def test_noop_methods(self, method, method_args, expected_message):
+  def test_noop_methods(self, method, method_args, expected_result,
+                        expected_message):
     """Tests that certain methods are noops for OSS-Fuzz."""
     with mock.patch('logging.info') as mock_info:
       method = getattr(self.deployment, method)
-      self.assertIsNone(method(*method_args))
+      self.assertEqual(method(*method_args), expected_result)
       mock_info.assert_called_with(expected_message)
 
   @mock.patch('http_utils.download_and_unpack_zip', return_value=True)
@@ -216,20 +218,21 @@ class NoClusterFuzzDeploymentTest(fake_filesystem_unittest.TestCase):
     self.assertTrue(os.path.exists(self.corpus_dir))
 
   @parameterized.parameterized.expand([
-      ('upload_build', ('commit',),
+      ('upload_build', ('commit',), None,
        'Not uploading latest build because no ClusterFuzz deployment.'),
-      ('upload_corpus', ('target', 'corpus-dir'),
+      ('upload_corpus', ('target', 'corpus-dir'), True,
        'Not uploading corpus because no ClusterFuzz deployment.'),
-      ('upload_crashes', tuple(),
+      ('upload_crashes', tuple(), None,
        'Not uploading crashes because no ClusterFuzz deployment.'),
-      ('download_latest_build', tuple(),
+      ('download_latest_build', tuple(), None,
        'Not downloading latest build because no ClusterFuzz deployment.')
   ])
-  def test_noop_methods(self, method, method_args, expected_message):
+  def test_noop_methods(self, method, method_args, expected_result,
+                        expected_message):
     """Tests that certain methods are noops for NoClusterFuzzDeployment."""
     with mock.patch('logging.info') as mock_info:
       method = getattr(self.deployment, method)
-      self.assertIsNone(method(*method_args))
+      self.assertEqual(method(*method_args), expected_result)
       mock_info.assert_called_with(expected_message)
 
 
