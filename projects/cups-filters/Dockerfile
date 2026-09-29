@@ -17,20 +17,19 @@
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool build-essential patchelf
 
-### for cups-filters-2.x
-# RUN sed --in-place 's/focal/noble/g' /etc/apt/sources.list
-# RUN apt update && apt-get install -y chrpath gnutls-dev libppd-dev libavahi-common-dev libavahi-client-dev autopoint gettext libcups2-dev ghostscript mupdf-tools 
-# RUN git clone --depth 1 https://github.com/OpenPrinting/cups-filters.git
+RUN apt update && apt-get install -y zlib1g-dev libjpeg-dev libpng-dev libtiff-dev \
+liblcms2-dev libfreetype6-dev libfontconfig1-dev fonts-dejavu-core libexif-dev libglib2.0-dev \
+libavahi-glib-dev libavahi-client-dev libdbus-1-dev libqpdf-dev libunistring-dev libsystemd-dev \
+libcap-dev gettext autopoint poppler-utils
 
-### for cups-filters-1.x
-RUN apt update && apt-get install -y libexif-dev libglib2.0-dev libavahi-glib-dev liblcms2-dev libfreetype6-dev libfontconfig1-dev libqpdf-dev libpoppler-cpp-dev poppler-utils \
-libunistring-dev libsystemd-dev libcap-dev gettext autopoint libcups2-dev libavahi-client-dev ghostscript mupdf-tools 
-
-RUN git clone --depth 1 -b "1.x" https://github.com/OpenPrinting/cups-filters.git
+RUN git clone --depth 1 https://github.com/OpenPrinting/cups.git
+RUN git clone --depth 1 --recurse-submodules https://github.com/michaelrsweet/pdfio.git
+RUN git clone --depth 1 https://github.com/OpenPrinting/libcupsfilters.git
+RUN git clone --depth 1 https://github.com/OpenPrinting/libppd.git
+RUN git clone --depth 1 https://github.com/OpenPrinting/cups-filters.git
 RUN git clone --depth 1 https://github.com/OpenPrinting/fuzzing.git
 
 RUN cp $SRC/fuzzing/projects/cups-filters/oss_fuzz_build.sh $SRC/build.sh
 
-WORKDIR $SRC/cups-filters                   
+WORKDIR $SRC/cups-filters
 COPY run_tests.sh $SRC/
-
