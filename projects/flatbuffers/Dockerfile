@@ -14,9 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# base-builder-rust is base-builder plus a Rust toolchain and cargo-fuzz, so the
+# C++ fuzzers below keep building exactly as before.
+FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN apt-get update && apt-get install -y make cmake
 RUN git clone https://github.com/google/flatbuffers
 
 WORKDIR $SRC/
 COPY run_tests.sh build.sh $SRC/
+COPY rust_verifier_fuzzer $SRC/rust_verifier_fuzzer

@@ -1,0 +1,4 @@
+# Generated at build time by build.sh with the flatc built from the checkout:
+#
+#   flatc --rust -o src flatbuffers_rust_verifier.fbs
+flatbuffers_rust_verifier_generated.rs

@@ -1,0 +1,75 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Schema used by the Rust verifier fuzz target.
+//
+// The target feeds arbitrary bytes to `flatbuffers::root::<Root>()` (the
+// official Rust verifier) and, when that succeeds, walks every safe accessor of
+// the resulting object graph.  The schema is therefore deliberately broad: it
+// contains every construct whose verifier and reader code paths can disagree --
+// scalars, strings, vectors of scalars/structs/tables, nested tables, structs,
+// an enum and a union of tables.
+//
+// Keep this file in sync with src/flatbuffers_rust_verifier_generated.rs, which
+// is checked in to keep build.sh free of a flatc bootstrap step:
+//
+//   flatc --rust -o rust_verifier_fuzzer/src flatbuffers_rust_verifier.fbs
+
+namespace flatbuffers_rust_verifier;
+
+enum Color : byte { Red = 0, Green, Blue, Purple }
+
+struct Vec3 { x:float; y:float; z:float; }
+struct Abc  { a:int; b:short; c:byte; }
+
+union Any { Leaf, Inner }
+
+table Leaf {
+  id: int;
+  name: string;
+  flags: [ubyte];
+  color: Color = Green;
+  pos: Vec3;
+  weights: [float];
+}
+
+table Inner {
+  label: string;
+  values: [long];
+  leaves: [Leaf];
+  tags: [string];
+  doubles: [double];
+  opt: int;
+  blobs: [bool];
+  small: [short];
+}
+
+table Root {
+  name: string;
+  ids: [int];
+  child: Inner;
+  kids: [Inner];
+  raw: [ubyte];
+  abc: Abc;
+  vecs: [Vec3];
+  choice: Any;
+  bytes8: [byte];
+  boolv: [bool];
+  req_str: string (required);
+  nest: Inner;
+  ushortv: [ushort];
+  ulongv: [ulong];
+}
+
+root_type Root;

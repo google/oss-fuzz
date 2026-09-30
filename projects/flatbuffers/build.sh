@@ -31,3 +31,31 @@ mkdir $SRC/flatbuffers/build-tests
 cd $SRC/flatbuffers/build-tests
 cmake -DFLATBUFFERS_BUILD_FLATC=ON -DFLATBUFFERS_BUILD_TESTS=ON ..
 make flattests -j$(nproc)
+
+# Build the Rust fuzzer only
+#
+# The Rust runtime's verifier and the generated safe accessors are a separate
+# implementation from the C++ one fuzzed above, so they get a target of their own.
+#
+# The Rust tooling supports the address sanitizer and libFuzzer only (see
+# docs/getting-started/new-project-guide/rust_lang.md), so the target is built
+# for that combination only and the existing MSan/UBSan/AFL builds of the C++
+# fuzzers above are left exactly as they were.
+if [ "$SANITIZER" = "address" ] && [ "$FUZZING_ENGINE" = "libfuzzer" ]; then
+  # The bindings for rust_verifier_fuzzer/*.fbs are generated here, with the
+  # flatc built from this same checkout, so that the target always exercises the
+  # current code generator: a checked-in copy of the generated code would keep
+  # testing whatever the generator produced on the day it was copied.
+  cd $SRC/flatbuffers/build-tests
+  make flatc -j$(nproc)
+  ./flatc --rust -o $SRC/rust_verifier_fuzzer/src \
+      $SRC/rust_verifier_fuzzer/flatbuffers_rust_verifier.fbs
+
+  cd $SRC/rust_verifier_fuzzer
+  cargo fuzz build -O
+  cp fuzz/target/x86_64-unknown-linux-gnu/release/flatbuffers_rust_verifier $OUT/
+
+  # Start the fuzzer off from well formed buffers of the schema above, so it does
+  # not have to rediscover the wire format from an empty corpus.
+  zip -j $OUT/flatbuffers_rust_verifier_seed_corpus.zip $SRC/rust_verifier_fuzzer/seed/*
+fi

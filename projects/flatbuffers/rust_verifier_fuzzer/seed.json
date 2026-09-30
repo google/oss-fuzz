@@ -1,0 +1,26 @@
+{
+  "name": "flatbuffers rust verifier fuzz target",
+  "ids": [1, 2, 3],
+  "child": {
+    "label": "child",
+    "values": [1, 2],
+    "leaves": [{ "id": 7, "name": "leaf", "flags": [1, 2], "color": "Blue", "weights": [1.0, 2.0] }],
+    "tags": ["a", "b"],
+    "doubles": [1.5],
+    "opt": 42,
+    "blobs": [true, false],
+    "small": [3, 4]
+  },
+  "kids": [{ "label": "kid0" }, { "label": "kid1" }],
+  "raw": [1, 2, 3, 4],
+  "abc": { "a": 1, "b": 2, "c": 3 },
+  "vecs": [{ "x": 1.0, "y": 2.0, "z": 3.0 }],
+  "choice_type": "Leaf",
+  "choice": { "id": 9, "name": "chosen", "flags": [3], "color": "Purple", "weights": [0.5] },
+  "bytes8": [-1, 0, 1],
+  "boolv": [true, false],
+  "req_str": "required",
+  "nest": { "label": "nested", "values": [5] },
+  "ushortv": [1, 2],
+  "ulongv": [1, 2]
+}
