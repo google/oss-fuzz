@@ -55,6 +55,7 @@ then
     signature_fuzz_tests \
     cold-outputs_fuzz_tests \
     cold-transaction_fuzz_tests \
+    wallet-cache_fuzz_tests \
   "
 fi
 
@@ -80,5 +81,26 @@ do
     popd
   fi
 done
+
+# The wallet cache format changes with the source, so the harness dumps its
+# own seed.  Fail the build with a clear error if seed generation fails or
+# leaves a missing or empty baseline: the cache loader is only reached with a
+# valid archive, so an empty seed would give the fuzzer no usable input.
+if [ -x "$OUT/wallet-cache_fuzz_tests" ]; then
+  seed_dir=$(mktemp -d)
+  touch "$seed_dir/empty"
+  if ! WALLET_CACHE_FUZZ_WRITE_SEED="$seed_dir/baseline" \
+      "$OUT/wallet-cache_fuzz_tests" "$seed_dir/empty"; then
+    echo "ERROR: wallet-cache harness failed to generate a seed archive" >&2
+    exit 1
+  fi
+  if [ ! -s "$seed_dir/baseline" ]; then
+    echo "ERROR: wallet-cache seed generation left a missing or empty baseline" >&2
+    exit 1
+  fi
+  rm -f "$OUT/wallet-cache_fuzz_tests_seed_corpus.zip"
+  zip -j "$OUT/wallet-cache_fuzz_tests_seed_corpus.zip" "$seed_dir/baseline"
+  rm -rf "$seed_dir"
+fi
 
 cp $SRC/*.options $OUT/
