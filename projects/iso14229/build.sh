@@ -21,4 +21,8 @@ export BAZEL_FUZZ_TEST_QUERY='let t = attr(generator_function, "^cc_fuzz_test$",
 
 export BAZEL_EXTRA_BUILD_FLAGS='--@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:oss_fuzz --@rules_fuzzing//fuzzing:java_engine=@rules_fuzzing//fuzzing/engines:oss_fuzz_java'
 
+if [[ "$ARCHITECTURE" == "i386" ]]; then
+  BAZEL_EXTRA_BUILD_FLAGS+=' --copt=-m32 --cxxopt=-m32 --linkopt=-m32  --linkopt=-L/usr/i386/lib'
+fi
+
 exec bazel_build_fuzz_tests
