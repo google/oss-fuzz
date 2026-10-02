@@ -1,0 +1,14 @@
+homepage: "https://www.zephyrproject.org/"
+language: c
+main_repo: "https://github.com/zephyrproject-rtos/zephyr.git"
+primary_contact: "vulnerabilities@zephyrproject.org"
+
+fuzzing_engines:
+  - libfuzzer
+
+sanitizers:
+  - address
+  - undefined
+
+architectures:
+  - x86_64
