@@ -13,7 +13,11 @@
 # limitations under the License.
 """Tests for http_utils.py"""
 
+import io
+import os
+import tempfile
 import unittest
+import zipfile
 from unittest import mock
 
 from pyfakefs import fake_filesystem_unittest
@@ -21,6 +25,47 @@ from pyfakefs import fake_filesystem_unittest
 import http_utils
 
 mock_get_response = mock.MagicMock(status_code=200, content=b'')
+
+
+class SafeExtractTest(unittest.TestCase):
+  """Tests for _safe_extract (Zip Slip defence)."""
+
+  def _make_zip(self, members):
+    """Returns a BytesIO holding a ZIP archive with the given member names."""
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w') as zf:
+      for name in members:
+        zf.writestr(name, 'data')
+    buf.seek(0)
+    return buf
+
+  def test_normal_member_extracted(self):
+    """Normal members inside the target directory are extracted without error."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+      buf = self._make_zip(['subdir/file.txt', 'root.txt'])
+      with zipfile.ZipFile(buf) as zf:
+        http_utils._safe_extract(zf, tmpdir)
+      self.assertTrue(os.path.exists(os.path.join(tmpdir, 'root.txt')))
+      self.assertTrue(
+          os.path.exists(os.path.join(tmpdir, 'subdir', 'file.txt')))
+
+  def test_zip_slip_path_traversal_blocked(self):
+    """A member with '../' path traversal raises ValueError."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+      buf = self._make_zip(['../../../../tmp/evil.txt'])
+      with zipfile.ZipFile(buf) as zf:
+        with self.assertRaises(ValueError) as ctx:
+          http_utils._safe_extract(zf, tmpdir)
+      self.assertIn('Zip Slip blocked', str(ctx.exception))
+
+  def test_absolute_member_path_blocked(self):
+    """A member with an absolute path outside the target dir is blocked."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+      buf = self._make_zip(['/etc/passwd'])
+      with zipfile.ZipFile(buf) as zf:
+        with self.assertRaises(ValueError) as ctx:
+          http_utils._safe_extract(zf, tmpdir)
+      self.assertIn('Zip Slip blocked', str(ctx.exception))
 
 
 class DownloadUrlTest(unittest.TestCase):
