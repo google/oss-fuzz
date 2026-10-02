@@ -34,3 +34,17 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzz_model.cc \
     ./build/pthreadpool/libpthreadpool.a ./build/cpuinfo/libcpuinfo.a \
     ./build/libxnnpack-microkernels-all.a ./build/libxnnpack-microkernels-prod.a \
     -o $OUT/fuzz_model
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzz_conv_dims.cc \
+    -DFXDIV_USE_INLINE_ASSEMBLY=0 -DPTHREADPOOL_NO_DEPRECATED_API=1 \
+    -DXNN_ENABLE_ARM_BF16=1 -DXNN_ENABLE_ARM_DOTPROD=1 \
+    -DXNN_ENABLE_ARM_FP16_SCALAR=1 -DXNN_ENABLE_ARM_FP16_VECTOR=1 \
+    -DXNN_ENABLE_ASSEMBLY=1 -DXNN_ENABLE_DWCONV_MULTIPASS=0 \
+    -DXNN_ENABLE_GEMM_M_SPECIALIZATION=1 -DXNN_ENABLE_JIT=0 \
+    -DXNN_ENABLE_MEMOPT=1 -DXNN_ENABLE_RISCV_VECTOR=1 -DXNN_ENABLE_SPARSE=1 \
+    -I/src/xnnpack/src -I/src/xnnpack/build/pthreadpool-source/include \
+    -I/src/xnnpack/build/FXdiv-source/include -I/src/xnnpack/include/ \
+    -I/src/xnnpack/build/FP16-source/include ./build/libXNNPACK.a \
+    ./build/pthreadpool/libpthreadpool.a ./build/cpuinfo/libcpuinfo.a \
+    ./build/libxnnpack-microkernels-all.a ./build/libxnnpack-microkernels-prod.a \
+    -o $OUT/fuzz_conv_dims
