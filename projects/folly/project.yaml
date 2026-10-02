@@ -1,0 +1,16 @@
+homepage: "https://github.com/facebook/folly"
+language: c++
+primary_contact: "yfeldblum@meta.com"
+main_repo: "https://github.com/facebook/folly.git"
+auto_ccs:
+  - "yuxizhangrex@meta.com"
+  - "drollman@meta.com"
+  - "mzlee@meta.com"
+vendor_ccs:
+  - "oss-fuzz@fb.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+base_os_version: ubuntu-24-04
