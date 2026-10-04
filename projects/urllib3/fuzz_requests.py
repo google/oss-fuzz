@@ -52,14 +52,27 @@ class ServerThread(threading.Thread):
 
 
 REQUEST_METHODS = ["POST", "GET", "HEAD", "PUT"]
+MAX_RESPONSE_BODY_SIZE = 64 * 1024
+MAX_CONTENT_TYPE_SIZE = 256
+MAX_HEADER_SIZE = 1024
+MAX_FORM_FIELD_SIZE = 4096
+
+
+def ConsumeBoundedBytes(fdp, max_size):
+    return fdp.ConsumeBytes(fdp.ConsumeIntInRange(0, max_size))
+
+
+def ConsumeBoundedString(fdp, max_size):
+    return fdp.ConsumeString(fdp.ConsumeIntInRange(0, max_size))
+
 
 def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     global GLOBAL_RESPONSE_BODY, GLOBAL_RESPONSE_CODE, GLOBAL_CONTENT_TYPE
-    GLOBAL_RESPONSE_BODY = fdp.ConsumeBytes(sys.maxsize)
+    GLOBAL_RESPONSE_BODY = ConsumeBoundedBytes(fdp, MAX_RESPONSE_BODY_SIZE)
     GLOBAL_RESPONSE_CODE = fdp.ConsumeIntInRange(200, 599)
-    GLOBAL_CONTENT_TYPE = fdp.ConsumeBytes(sys.maxsize)
+    GLOBAL_CONTENT_TYPE = ConsumeBoundedBytes(fdp, MAX_CONTENT_TYPE_SIZE)
 
     requestType = fdp.PickValueInList(REQUEST_METHODS)
 
@@ -67,14 +80,17 @@ def TestOneInput(data):
     requestHeaders = urllib3._collections.HTTPHeaderDict({})
     for i in range(0, fdp.ConsumeIntInRange(0, 10)):
         requestHeaders.add(
-            fdp.ConsumeString(sys.maxsize), fdp.ConsumeString(sys.maxsize)
+            ConsumeBoundedString(fdp, MAX_HEADER_SIZE),
+            ConsumeBoundedString(fdp, MAX_HEADER_SIZE),
         )
     requestHeaders = None if fdp.ConsumeBool() else requestHeaders
 
     # Optionally generate form data
     formData = {}
     for i in range(0, fdp.ConsumeIntInRange(0, 100)):
-        formData[fdp.ConsumeString(sys.maxsize)] = fdp.ConsumeString(sys.maxsize)
+        formData[ConsumeBoundedString(fdp, MAX_FORM_FIELD_SIZE)] = (
+            ConsumeBoundedString(fdp, MAX_FORM_FIELD_SIZE)
+        )
     formData = None if fdp.ConsumeBool() else formData
 
     timeout = urllib3.util.Timeout(connect=0.1, read=0.1)
