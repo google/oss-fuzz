@@ -105,7 +105,7 @@ sh autogen.sh
 ./src/tests/fuzz/oss-fuzz-configure.sh
 make -j$(nproc)
 
-./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse"$branch"_$i; done
++SC_LOG_OP_IFACE=file SC_LOG_FILE=/dev/null ./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse"$branch"_$i; done
 
 (
 cd src
