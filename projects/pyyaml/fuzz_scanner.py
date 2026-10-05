@@ -1,5 +1,6 @@
-#!/bin/bash -eu
-# Copyright 2020 Google LLC
+#!/usr/bin/python3
+
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +13,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-cd pyyaml
-echo 'Cython < 3.0' > /tmp/constraint.txt
-PIP_BUILD_CONSTRAINT=/tmp/constraint.txt pip3 install .
+import sys
+import atheris
+with atheris.instrument_imports():
+  import yaml
 
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
-  fuzzer_basename=$(basename -s .py $fuzzer)
-  cp $SRC/pyyaml_fuzzer.options "${OUT}/${fuzzer_basename}.options"
-done
+@atheris.instrument_func
+def TestOneInput(data):
+    if len(data) < 1:
+        return 
+    try:
+        tokens = list(yaml.scan(data))
+    except (yaml.reader.ReaderError, yaml.scanner.ScannerError):
+        None
+    except RecursionError:
+        pass
 
-cp $SRC/yaml.dict "${OUT}/"
+    return 
+
+def main():
+    atheris.Setup(sys.argv, TestOneInput)
+    atheris.Fuzz()
+
+if __name__ == "__main__":
+    main()
