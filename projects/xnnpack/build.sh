@@ -21,6 +21,7 @@ cmake -DXNNPACK_BUILD_BENCHMARKS=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DXNNPACK_
 make V=1 -j8
 cd ../
 
+# Existing fuzz target
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzz_model.cc \
     -DFXDIV_USE_INLINE_ASSEMBLY=0 -DPTHREADPOOL_NO_DEPRECATED_API=1 \
     -DXNN_ENABLE_ARM_BF16=1 -DXNN_ENABLE_ARM_DOTPROD=1 \
@@ -34,3 +35,18 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzz_model.cc \
     ./build/pthreadpool/libpthreadpool.a ./build/cpuinfo/libcpuinfo.a \
     ./build/libxnnpack-microkernels-all.a ./build/libxnnpack-microkernels-prod.a \
     -o $OUT/fuzz_model
+
+# New: operator reshape indirection-buffer fuzzer
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzz_reshape_operators.cc \
+    -I/src/xnnpack/include -I/src/xnnpack/src \
+    -I/src/xnnpack/build/pthreadpool-source/include \
+    -I/src/xnnpack/build/FXdiv-source/include \
+    -I/src/xnnpack/build/cpuinfo-source/include \
+    ./build/libXNNPACK.a \
+    ./build/pthreadpool/libpthreadpool.a ./build/cpuinfo/libcpuinfo.a \
+    ./build/libxnnpack-microkernels-all.a ./build/libxnnpack-microkernels-prod.a \
+    -o $OUT/fuzz_reshape_operators
+
+# Copy seed testcases
+mkdir -p $OUT/fuzz_reshape_operators_seed_corpus
+cp ../fuzz_reshape_operators_seeds/* $OUT/fuzz_reshape_operators_seed_corpus/ 2>/dev/null || true
