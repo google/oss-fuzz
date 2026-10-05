@@ -126,6 +126,12 @@ cat generic.dict >> $OUT/fuzz_sigpcap$branch.dict
 cat generic.dict >> $OUT/fuzz_sigpcap_aware$branch.dict
 
 # build corpuses
+if [ "$branch" = "" ]
+then
+    mkdir corpus_datasets
+    python3 ../suricata/scripts/fuzz_gen_corpus_datasets.py --sv-root $SRC/suricata-verify corpus_datasets
+    zip -r $OUT/fuzz_dataset"$branch"_seed_corpus.zip corpus_datasets
+fi
 # default configuration file
 zip -r $OUT/fuzz_confyamlloadstring"$branch"_seed_corpus.zip suricata.yaml
 # rebuilds rules corpus with only one rule by file
