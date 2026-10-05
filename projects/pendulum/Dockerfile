@@ -17,3 +17,5 @@ RUN pip3 install --upgrade pip tzdata
 RUN git clone https://github.com/sdispater/pendulum pendulum
 COPY *.sh *py $SRC/
 WORKDIR $SRC/pendulum
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+ENV PATH="/root/.cargo/bin:${PATH}"

@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
+unset RUSTFLAGS
+unset CARGO_ENCODED_RUSTFLAGS
 pip3 install .
 
 # Build fuzzers in $OUT.
