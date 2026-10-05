@@ -1,0 +1,10 @@
+homepage: 'https://docs.spyder-ide.org/current/index.html'
+language: python
+primary_contact: "spyderlib@googlegroups.com"
+auto_ccs:
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/spyder-ide/spyder-kernels'
