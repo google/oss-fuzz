@@ -1,4 +1,6 @@
-# Copyright 2022 Google LLC
+#!/bin/bash
+#
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +15,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake
-RUN git clone https://github.com/pupnp/pupnp
-COPY run_tests.sh build.sh $SRC/
-WORKDIR $SRC/pupnp/
+
+set -euo pipefail
+
+exec bash "$GOPATH/src/github.com/quic-go/connect-ip-go/oss-fuzz.sh" "$@"
