@@ -17,9 +17,22 @@ import logging
 import os
 
 
+class FuzzerOutputFormatter(logging.Formatter):
+  """Includes structured engine output in console logs."""
+
+  def format(self, record):
+    message = super().format(record)
+    output = getattr(record, 'extras', {}).get('fuzzer_output')
+    if output:
+      message += '\n' + output
+    return message
+
+
 def init():
   """Initialize logging."""
   log_level = logging.DEBUG if os.getenv('CIFUZZ_DEBUG') else logging.INFO
-  logging.basicConfig(
-      format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-      level=log_level)
+  handler = logging.StreamHandler()
+  handler.setFormatter(
+      FuzzerOutputFormatter(
+          '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+  logging.basicConfig(handlers=[handler], level=log_level)

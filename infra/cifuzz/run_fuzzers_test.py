@@ -12,20 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for running fuzzers."""
+import io
 import json
+import logging
 import os
 import shutil
 import stat
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest import mock
 
 import parameterized
 from pyfakefs import fake_filesystem_unittest
+from clusterfuzz._internal.bot.fuzzers.libFuzzer import (engine as
+                                                         libfuzzer_engine)
 
 import build_fuzzers
 import fuzz_target
+import logs
 import run_fuzzers
 
 # pylint: disable=wrong-import-position
@@ -302,6 +308,104 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.assertTrue(runner.run_fuzz_targets())
     self.assertEqual(mock_run_fuzz_target.call_count, 2)
     self.assertEqual(mock_upload_crashes.call_count, 1)
+
+
+class PruneTargetRunnerTest(unittest.TestCase):
+  """Tests pruning completion and corpus preservation."""
+  TARGETS = ['first', 'slow', 'last']
+
+  def setUp(self):
+    self.tmp_dir = self.enterContext(tempfile.TemporaryDirectory())
+    self.store = os.path.join(self.tmp_dir, 'store')
+    with mock.patch.dict(os.environ, {
+        'FILESTORE_ROOT_DIR': self.store,
+        'CFL_PLATFORM': 'standalone'
+    }):
+      self.config = test_helpers.create_run_config(mode='prune',
+                                                   fuzz_seconds=30,
+                                                   workspace=self.tmp_dir,
+                                                   cfl_platform='standalone',
+                                                   low_disk_space=True)
+      self.runner = run_fuzzers.PruneTargetRunner(self.config)
+    self.paths = [
+        os.path.join(self.runner.workspace.out, name) for name in self.TARGETS
+    ]
+    os.makedirs(self.runner.workspace.out)
+    for path, name in zip(self.paths, self.TARGETS):
+      with open(path, 'wb') as handle:
+        handle.write(b'target')
+      corpus = os.path.join(self.store, 'corpus', name)
+      os.makedirs(corpus)
+      for filename in ['selected', 'discarded']:
+        with open(os.path.join(corpus, filename), 'wb') as handle:
+          handle.write(filename.encode())
+
+  @parameterized.parameterized.expand([
+      ('success', ()),
+      ('first_timeout', ('first',)),
+      ('middle_timeout', ('slow',)),
+      ('last_timeout', ('last',)),
+      ('all_time_out', ('first', 'slow', 'last')),
+  ])
+  def test_pruning_timeouts(self, _, timed_out_targets):
+    """Only complete minimized corpora replace stored corpora."""
+    durations = {}
+
+    def merge(corpus_dirs, **kwargs):
+      name = os.path.basename(corpus_dirs[0])
+      durations[name] = kwargs['merge_timeout']
+      self.assertGreaterEqual(durations[name], 10)
+      shutil.copy(os.path.join(corpus_dirs[1], 'selected'), corpus_dirs[0])
+      return SimpleNamespace(timed_out=name in timed_out_targets,
+                             return_code=0,
+                             output=f'MERGE OUTPUT {name}',
+                             command=[],
+                             time_executed=0)
+
+    output = io.StringIO()
+    root = logging.getLogger()
+    with (
+        mock.patch('run_fuzzers.get_fuzz_target_runner',
+                   return_value=self.runner),
+        mock.patch.object(self.runner,
+                          'get_fuzz_targets',
+                          return_value=self.paths),
+        mock.patch.object(libfuzzer_engine.libfuzzer, 'get_runner') as
+        get_runner,
+        mock.patch.object(libfuzzer_engine.Engine,
+                          '_create_temp_corpus_dir',
+                          return_value=self.tmp_dir),
+        mock.patch.object(libfuzzer_engine.logs, '_logger', None),
+        mock.patch.object(root, 'handlers', []),
+        mock.patch.object(root, 'level', logging.INFO),
+        mock.patch('sys.stderr', output),
+        mock.patch('sys.excepthook'),
+    ):
+      logs.init()
+      get_runner.return_value.merge.side_effect = merge
+      result = run_fuzzers.run_fuzzers(self.config)
+
+    expected = (run_fuzzers.RunFuzzersResult.ERROR if timed_out_targets else
+                run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
+    self.assertEqual(result, expected)
+    for name, path in zip(self.TARGETS, self.paths):
+      corpus = os.path.join(self.store, 'corpus', name)
+      expected_files = (['discarded', 'selected']
+                        if name in timed_out_targets else ['selected'])
+      self.assertEqual(sorted(os.listdir(corpus)), expected_files)
+      for filename in expected_files:
+        with open(os.path.join(corpus, filename), 'rb') as handle:
+          self.assertEqual(handle.read(), filename.encode())
+      self.assertFalse(os.path.exists(path))
+      self.assertFalse(
+          os.path.exists(os.path.join(self.runner.workspace.corpora, name)))
+      self.assertFalse(
+          os.path.exists(
+              os.path.join(self.runner.workspace.pruned_corpora, name)))
+      if name in timed_out_targets:
+        self.assertRegex(output.getvalue(),
+                         rf'{name}.*\b{durations[name]} seconds\b')
+        self.assertIn(f'MERGE OUTPUT {name}', output.getvalue())
 
 
 class GetCoverageTargetsTest(unittest.TestCase):

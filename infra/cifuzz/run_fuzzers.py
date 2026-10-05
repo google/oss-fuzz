@@ -166,13 +166,29 @@ def write_fuzz_result_to_sarif(fuzz_result, target_path, workspace):
 class PruneTargetRunner(BaseFuzzTargetRunner):
   """Runner that prunes corpora."""
 
+  def __init__(self, config):
+    super().__init__(config)
+    self.prune_timeout = None
+
   @property
   def quit_on_bug_found(self):
     return False
 
+  def run_fuzz_targets(self):
+    """Prunes all targets before reporting minimization timeouts."""
+    self.prune_timeout = None
+    result = super().run_fuzz_targets()
+    if self.prune_timeout:
+      raise self.prune_timeout
+    return result
+
   def run_fuzz_target(self, fuzz_target_obj):
     """Prunes with |fuzz_target_obj| and returns the result."""
-    result = fuzz_target_obj.prune()
+    try:
+      result = fuzz_target_obj.prune()
+    except fuzz_target.PruneTimeoutError as error:
+      self.prune_timeout = error
+      return fuzz_target.FuzzResult(None, None, None)
     logging.debug('Corpus path contents: %s.', os.listdir(result.corpus_path))
     self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
                                               result.corpus_path,
@@ -313,7 +329,12 @@ def run_fuzzers(config):  # pylint: disable=too-many-locals
     # find any bugs.
     return RunFuzzersResult.ERROR
 
-  if not fuzz_target_runner.run_fuzz_targets():
+  try:
+    bug_found = fuzz_target_runner.run_fuzz_targets()
+  except fuzz_target.PruneTimeoutError:
+    return RunFuzzersResult.ERROR
+
+  if not bug_found:
     # We fuzzed successfully, but didn't find any bugs (in the fuzz target).
     return RunFuzzersResult.NO_BUG_FOUND
 
