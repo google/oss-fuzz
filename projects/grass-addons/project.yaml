@@ -1,0 +1,11 @@
+homepage: "https://grass.osgeo.org/"
+language: c++
+primary_contact: "neteler@osgeo.org"
+main_repo: "https://github.com/OSGeo/grass-addons"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+architectures:
+  - x86_64
+
