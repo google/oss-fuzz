@@ -20,12 +20,12 @@ RUN apt-get update && \
 
 # Build a newer version of HDF5 than what Ubuntu 20.04 has (which is version 1.10.x)
 WORKDIR /tmp
-RUN wget https://github.com/HDFGroup/hdf5/releases/download/hdf5-1_14_3/hdf5-1_14_3.tar.gz
-RUN echo "126b800e9b87f65e7e7ffa58ee006607bab03a8e11e5209ea3d5c0c331321d43  hdf5-1_14_3.tar.gz" > hdf5.sum
+RUN wget https://github.com/HDFGroup/hdf5/releases/download/hdf5_1.14.6/hdf5-1.14.6.tar.gz
+RUN echo "e4defbac30f50d64e1556374aa49e574417c9e72c6b1de7a4ff88c4b1bea6e9b  hdf5-1.14.6.tar.gz" > hdf5.sum
 RUN shasum -a 256 -c hdf5.sum
-RUN tar xf hdf5-1_14_3.tar.gz
-RUN mkdir -p hdfsrc/build
-WORKDIR /tmp/hdfsrc/build
+RUN tar xf hdf5-1.14.6.tar.gz
+RUN mkdir -p hdf5-1.14.6/build
+WORKDIR /tmp/hdf5-1.14.6/build
 RUN cmake -G "Unix Makefiles" \
     -DCMAKE_INSTALL_PREFIX:PATH=/opt \
     -DBUILD_SHARED_LIBS:BOOL=OFF \
@@ -34,7 +34,7 @@ RUN cmake -G "Unix Makefiles" \
     -DHDF5_BUILD_EXAMPLES:BOOL=OFF \
     -DHDF5_BUILD_TOOLS:BOOL=OFF \
     -DHDF5_ENABLE_SANITIZERS:BOOL=ON \
-    -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON \
+    -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=OFF \
     -DHDF5_BUILD_CPP_LIB=ON \
     -DHDF5_BUILD_HL_LIB:BOOL=ON \
     -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF \
