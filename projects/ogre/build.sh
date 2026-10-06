@@ -17,7 +17,8 @@
 mkdir -p build
 cd build
 cmake -DOGRE_STATIC=TRUE -DOGRE_BUILD_FUZZERS=TRUE -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-  -DOGRE_BUILD_DEPENDENCIES=FALSE -DOGRE_BUILD_SAMPLES=FALSE  ..
+  -DOGRE_BUILD_DEPENDENCIES=FALSE -DOGRE_BUILD_SAMPLES=FALSE \
+  -DOGRE_CONFIG_ENABLE_PVRTC=TRUE ..
 make -j$(nproc)
 
 # copy the fuzzers
@@ -55,9 +56,10 @@ for f in $(find .. -name '*.material' -o -name '*.program' \
   cp "$f" "/tmp/ogre_script_seeds/$base"
 done
 
-# Seed corpus for the DDS codec fuzzer
+# Seed corpus for dds_fuzz, which also handles ASTC, PKM, KTX and PVR
 mkdir -p /tmp/ogre_dds_seeds
-for f in $(find .. -iname '*.dds'); do
+for f in $(find .. \( -iname '*.dds' -o -iname '*.astc' -o -iname '*.pkm' \
+    -o -iname '*.ktx' -o -iname '*.pvr' \)); do
   cp "$f" "/tmp/ogre_dds_seeds/$(echo "${f#../}" | tr '/' '_')"
 done
 
