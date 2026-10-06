@@ -59,6 +59,7 @@ then
     wallet-cache_fuzz_tests \
     wallet-scan_fuzz_tests \
     wallet-proof-uri_fuzz_tests \
+    wallet-refresh_fuzz_tests \
   "
 fi
 
