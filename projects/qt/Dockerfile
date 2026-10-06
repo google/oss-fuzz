@@ -31,8 +31,18 @@ RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qt5.git && \
     cp -r qt5/cmake . && \
     rm -rf qt5
 RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtbase.git
-RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtimageformats.git
-RUN git clone --branch dev --no-checkout --depth 1 git://code.qt.io/qt/qtsvg.git
-RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
+RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtimageformats.git
+RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtlanguageserver.git
+RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtshadertools.git
+RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtsvg.git
+RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtdeclarative.git
+RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtquicktimeline.git
+RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtquick3d.git
+RUN git clone --branch dev --no-checkout --depth 1 git://code.qt.io/qt/qtmultimedia.git
+RUN cmake -DSYNC_TO_MODULE=qtmultimedia -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
+RUN pushd qtqa && \
+    git config user.name qt && git config user.email qt@oss-fuzz && \
+    git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/06/777906/1 && \
+    git cherry-pick --allow-empty FETCH_HEAD && popd
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
