@@ -19,10 +19,14 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ninja-build \
     pkg-config \
-    libmbedtls-dev \
     libsctp-dev \
     libyaml-cpp-dev
 
+# MbedTLS is built from source in build.sh rather than installed from apt, so
+# that it carries the same sanitizer instrumentation as the fuzz targets. MSan
+# otherwise reports every key derived through it as uninitialized. Pinned to
+# the version Ubuntu 24.04 ships, so the targets keep the non-PSA code path.
+RUN git clone --depth 1 --branch v2.28.8 https://github.com/Mbed-TLS/mbedtls.git mbedtls
 RUN git clone --depth 1 https://gitlab.com/ocudu/ocudu.git ocudu
 WORKDIR ocudu
 COPY build.sh $SRC/

@@ -20,6 +20,30 @@
 python3 tests/fuzz/ofh/gen_corpus.py
 python3 tests/fuzz/ngap/gen_corpus.py
 
+# Build MbedTLS as a static library with the sanitizer flags of this build, so
+# that MSan sees the memory it writes (see Dockerfile). FindMbedTLS.cmake picks
+# it up through $MBEDTLS_DIR.
+if [[ "$SANITIZER" == "memory" ]]; then
+    # MSan cannot see the stores made by the AES-NI and PadLock assembly, so use
+    # the portable C implementation instead.
+    python3 "$SRC/mbedtls/scripts/config.py" -f "$SRC/mbedtls/include/mbedtls/config.h" unset MBEDTLS_AESNI_C
+    python3 "$SRC/mbedtls/scripts/config.py" -f "$SRC/mbedtls/include/mbedtls/config.h" unset MBEDTLS_PADLOCK_C
+fi
+cmake -S "$SRC/mbedtls" -B "$WORK/mbedtls-build" \
+    -GNinja \
+    -DCMAKE_C_COMPILER="$CC" \
+    -DCMAKE_C_FLAGS="$CFLAGS" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$WORK/mbedtls" \
+    -DLIB_INSTALL_DIR=lib \
+    -DUSE_STATIC_MBEDTLS_LIBRARY=ON \
+    -DUSE_SHARED_MBEDTLS_LIBRARY=OFF \
+    -DENABLE_PROGRAMS=OFF \
+    -DENABLE_TESTING=OFF \
+    -DMBEDTLS_FATAL_WARNINGS=OFF
+ninja -C "$WORK/mbedtls-build" install
+export MBEDTLS_DIR="$WORK/mbedtls"
+
 # Configure the fuzz harnesses via OCUDU's own ENABLE_FUZZTESTS CMake option
 # (see tests/fuzz/CMakeLists.txt). Sanitizer and coverage instrumentation is
 # left entirely to $CFLAGS/$CXXFLAGS, which OSS-Fuzz already sets for the
@@ -54,10 +78,10 @@ ninja -C "$WORK/build" fuzz_targets
 find "$WORK/build/tests/fuzz" -maxdepth 2 -type f -name '*_fuzzer' \
     -exec cp -v '{}' "$OUT" ';'
 
-# ngap_cu_cp_fuzzer links ocudu_cu_cp, which pulls in lib/security (MbedTLS)
-# and lib/gateways (SCTP) transitively (yaml-cpp is a build dep of other
-# subsystems and may end up linked too, depending on what else a harness
-# pulls in). Those come from apt packages installed only in this builder
+# ngap_cu_cp_fuzzer links ocudu_cu_cp, which pulls in lib/gateways (SCTP)
+# transitively (yaml-cpp is a build dep of other subsystems and may end up
+# linked too, depending on what else a harness pulls in; MbedTLS is linked
+# statically, see above). Those come from apt packages installed only in this builder
 # image and are dynamically linked by default, so they won't exist wherever
 # OSS-Fuzz later copies the binary to run it. Ship the .so files alongside
 # each fuzzer that actually needs them and point RPATH at $ORIGIN so the
@@ -68,7 +92,7 @@ for fuzzer in "$OUT"/*_fuzzer; do
         [[ -z "$lib" ]] && continue
         cp -vn "$lib" "$OUT/"
         needs_rpath=1
-    done < <(ldd "$fuzzer" | awk '/=>/ { print $3 }' | grep -E '/lib(mbedcrypto|mbedtls|mbedx509|sctp|yaml-cpp)[.-]' || true)
+    done < <(ldd "$fuzzer" | awk '/=>/ { print $3 }' | grep -E '/lib(sctp|yaml-cpp)[.-]' || true)
     if [[ "$needs_rpath" -eq 1 ]]; then
         patchelf --set-rpath '$ORIGIN' "$fuzzer"
     fi
