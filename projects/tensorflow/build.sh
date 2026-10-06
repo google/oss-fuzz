@@ -209,7 +209,7 @@ export FUZZTEST_DO_SYNC="no"
 
 # Set fuzz targets. Exclude cc/ops and core/kernels/fuzzing as they depend on
 # ops::Placeholder which was removed from TF's C++ ops API.
-export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:all+//tensorflow/cc/saved_model/...+//tensorflow/cc/framework/fuzzing/...+//tensorflow/core/common_runtime/...+//tensorflow/core/framework/..."
+export FUZZTEST_TARGET_FOLDER="//tensorflow/security/fuzzing/cc:all+//tensorflow/cc/saved_model/...+//tensorflow/cc/framework/fuzzing/...+//tensorflow/core/common_runtime/...+//tensorflow/core/framework/...+//tensorflow/lite/fuzzing:all"
 
 # Remove the cc/ops BUILD file - those fuzzers use removed Placeholder API
 rm -f $SRC/tensorflow/tensorflow/security/fuzzing/cc/ops/BUILD
