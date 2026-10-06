@@ -182,6 +182,13 @@ class HarnessKind(enum.StrEnum):
   JS = enum.auto()
 
 
+class InstrumentationKind(enum.StrEnum):
+  """The sanitizer/instrumentation kind of the binary."""
+
+  ASAN = enum.auto()
+  SIGNAL_HANDLER = enum.auto()
+
+
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class CommandLineBinaryConfig(BinaryConfig):
   """Configuration for a command-line userspace binary."""
@@ -196,6 +203,12 @@ class CommandLineBinaryConfig(BinaryConfig):
   # are directly linked into the target binary. Should usually be true but
   # some targets like V8 require this to be false, see b/433718862.
   filter_compile_commands: bool = True
+  # Whether to enforce a strict flag allowlist for custom flags specified via
+  # `// Flags:` comments (when harness_kind is JS). Mostly needed for historic
+  # V8 builds that lack flag hardening (e.g. `--disallow-unsafe-flags`).
+  strict_flag_check: bool = False
+  # The sanitizer/instrumentation kind of the binary.
+  instrumentation_kind: InstrumentationKind = InstrumentationKind.ASAN
 
   @property
   def uses_stdin(self) -> bool:
@@ -219,6 +232,10 @@ class CommandLineBinaryConfig(BinaryConfig):
         binary_env=config_dict.get("binary_env", {}),
         filter_compile_commands=config_dict.get(
             "filter_compile_commands", True
+        ),
+        strict_flag_check=config_dict.get("strict_flag_check", False),
+        instrumentation_kind=InstrumentationKind(
+            config_dict.get("instrumentation_kind", InstrumentationKind.ASAN)
         ),
     )
 

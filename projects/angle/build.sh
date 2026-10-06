@@ -22,11 +22,9 @@ if [ "$SANITIZER" = "coverage" ] || [ "$SANITIZER" = "introspector" ] || [ "$SAN
     export SANITIZER="address"
 fi
 
-# Hack to fix clang version mismatch
-# The build system somehow thinks clang version is 23, but it's 22 in /usr/local
-if [ ! -d /usr/local/lib/clang/23 ]; then
-    ln -s /usr/local/lib/clang/22 /usr/local/lib/clang/23 || true
-fi
+CLANG_RESOURCE_DIR="$($CC --print-resource-dir)"
+export CLANG_RESOURCE_DIR
+CLANG_VERSION="$(basename "$CLANG_RESOURCE_DIR")"
 
 # Remove flags not supported by OSS-Fuzz's clang version
 sed -i '/-fdiagnostics-show-inlining-chain/d' build/config/compiler/BUILD.gn
@@ -38,7 +36,7 @@ sed -i '/-fsanitize-ignore-for-ubsan-feature=${invoker.sanitizer}/d' build/confi
 # Configure arguments for gn build
 ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_debug=false"
 ARGS+=" use_custom_libcxx=true use_sysroot=true ozone_platform_x11=false"
-ARGS+=" is_clang=true clang_use_chrome_plugins=false clang_base_path=\"/usr/local\""
+ARGS+=" is_clang=true clang_use_chrome_plugins=false clang_base_path=\"/usr/local\" clang_version=\"$CLANG_VERSION\""
 # Enable MSL and WGSL translators specifically, without enabling the full Metal renderer
 ARGS+=" angle_enable_msl=true angle_enable_wgpu=true"
 

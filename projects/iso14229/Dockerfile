@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
+
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y cmake
-RUN git clone https://github.com/pupnp/pupnp
-COPY run_tests.sh build.sh $SRC/
-WORKDIR $SRC/pupnp/
+RUN git clone --depth 1 https://github.com/driftregion/iso14229 iso14229 && \
+    git -C iso14229 submodule update --init --depth 1 src/tp/isotp-c
+WORKDIR iso14229
+COPY build.sh $SRC/
