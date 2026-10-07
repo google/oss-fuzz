@@ -1,0 +1,29 @@
+homepage: "https://www.mozilla.org/firefox/"
+language: c++
+main_repo: https://hg.mozilla.org/mozilla-central/
+primary_contact: "choller@mozilla.com"
+auto_ccs:
+  - twsmith@mozilla.com
+  - sledru@mozilla.com
+vendor_ccs:
+  - oss-fuzz@mozilla-fuzzing.iam.gserviceaccount.com
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+run_tests: False
+# libraries from $OUT/firefox/dependentlibs.list
+coverage_extra_args: >
+ -object firefox/firefox
+ -object firefox/libnspr4.so
+ -object firefox/libplc4.so
+ -object firefox/libplds4.so
+ -object firefox/libmozsandbox.so
+ -object firefox/liblgpllibs.so
+ -object firefox/libnssutil3.so
+ -object firefox/libnss3.so
+ -object firefox/libsmime3.so
+ -object firefox/libmozsqlite3.so
+ -object firefox/libssl3.so
+ -object firefox/libmozgtk.so
+ -object firefox/libxul.so

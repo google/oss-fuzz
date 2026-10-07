@@ -1,0 +1,9 @@
+homepage: "https://solidity.readthedocs.io"
+language: c++
+primary_contact: "solidity@argot.org"
+auto_ccs:
+  - "axic@ethereum.org"
+  - "christian@ethereum.org"
+  - "martin.swende@ethereum.org"
+  - "bhargava.shastry@ethereum.org"
+main_repo: 'https://github.com/ethereum/solidity.git'

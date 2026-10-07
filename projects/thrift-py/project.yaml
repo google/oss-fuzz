@@ -1,0 +1,10 @@
+homepage: "https://thrift.apache.org/"
+language: python
+primary_contact: "m.hasnain.lakhani@gmail.com"
+
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+
+main_repo: 'https://github.com/apache/thrift' 

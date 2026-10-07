@@ -1,0 +1,30 @@
+homepage: "https://www.chromium.org"
+language: rust
+primary_contact: "cujomalainey@chromium.org"
+auto_ccs:
+  - "hychao@chromium.org"
+  - "cychiang@chromium.org"
+  - "yuhsuan@chromium.org"
+  - "enshuo@chromium.org"
+  - "judyhsiao@chromium.org"
+  - "johnylin@chromium.org"
+  - "aaronyu@google.com"
+  - "hunghsienchen@chromium.org"
+  - "htcheong@chromium.org"
+  - "jrwu@chromium.org"
+  - "cranelw@google.com"
+  - "eddyhsu@google.com"
+  - "andyross@google.com"
+  - "bailideng@google.com"
+  - "normanbt@google.com"
+  - "pteerapong@google.com"
+  - "whalechang@google.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+builds_per_day: 4
+main_repo: 'https://chromium.googlesource.com/chromiumos/third_party/adhd'

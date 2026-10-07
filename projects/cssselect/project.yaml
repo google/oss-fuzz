@@ -1,0 +1,9 @@
+homepage: https://github.com/scrapy/cssselect
+main_repo: https://github.com/scrapy/cssselect
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

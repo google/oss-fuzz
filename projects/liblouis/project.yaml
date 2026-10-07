@@ -1,0 +1,18 @@
+homepage: "https://github.com/liblouis/liblouis"
+main_repo: "https://github.com/liblouis/liblouis"
+language: c
+primary_contact: "christian.egli@sbs.ch"
+auto_ccs:
+  - "bertfrees@gmail.com"
+  - "david@adalogics.com"
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

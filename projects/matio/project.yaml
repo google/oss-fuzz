@@ -1,0 +1,16 @@
+homepage: "https://github.com/tbeu/matio"
+language: c++
+primary_contact: "t-beu@users.sourceforge.net"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+main_repo: 'https://github.com/tbeu/matio'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

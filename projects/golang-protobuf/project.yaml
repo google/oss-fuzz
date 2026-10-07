@@ -1,0 +1,12 @@
+homepage: "https://github.com/protocolbuffers/protobuf-go"
+main_repo: "https://github.com/protocolbuffers/protobuf-go"
+primary_contact: "stapelberg@google.com"
+auto_ccs:
+ - "lassefolger@google.com"
+ - "stapelberg@google.com"
+ - "dneil@google.com"
+sanitizers:
+ - address
+fuzzing_engines:
+ - libfuzzer
+language: go

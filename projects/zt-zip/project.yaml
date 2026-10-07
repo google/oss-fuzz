@@ -1,0 +1,10 @@
+homepage: "https://github.com/zeroturnaround/zt-zip/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/zeroturnaround/zt-zip/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

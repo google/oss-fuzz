@@ -1,0 +1,9 @@
+homepage: https://github.com/jazzband/pathlib2
+main_repo: https://github.com/jazzband/pathlib2
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

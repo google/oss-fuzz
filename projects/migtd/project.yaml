@@ -1,0 +1,11 @@
+homepage: "https://github.com/intel/MigTD"
+language: rust
+primary_contact: "wei3.liu@intel.com"
+auto_ccs:
+  - "jiewen.yao@intel.com"
+  - "jiaqi.gao@intel.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/intel/MigTD.git'

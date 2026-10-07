@@ -1,0 +1,19 @@
+homepage: "https://sqlite.org/"
+main_repo: "https://github.com/sqlite/sqlite"
+language: c++
+primary_contact: "drhsqlite@gmail.com"
+auto_ccs:
+  - "sboydps@gmail.com"
+  - "twsmith@mozilla.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

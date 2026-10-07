@@ -1,0 +1,53 @@
+#!/bin/bash -eu
+# Copyright 2016 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# If LLVM once again does weird changes then enable this:
+#export AFL_LLVM_INSTRUMENT=LLVM-NATIVE
+
+# AFL++ setup
+echo "Copying precompiled AFL++"
+
+# Copy AFL++ tools necessary for fuzzing.
+pushd $SRC/aflplusplus > /dev/null
+
+cp -f libAFLDriver.a $LIB_FUZZING_ENGINE
+
+# Some important projects include libraries, copy those even when they don't
+# start with "afl-". Use "sort -u" to avoid a warning about duplicates.
+ls afl-* *.txt *.a *.o *.so | sort -u | xargs cp -t $OUT
+export CC="$SRC/aflplusplus/afl-clang-fast"
+export CXX="$SRC/aflplusplus/afl-clang-fast++"
+
+# Set sane AFL++ environment defaults:
+# Be quiet, otherwise this can break some builds.
+export AFL_QUIET=1
+# No leak errors during builds.
+export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_error=1"
+# Do not abort on any problems (because this is during build where it is ok)
+export AFL_IGNORE_PROBLEMS=1
+# No complain on unknown AFL environment variables
+export AFL_IGNORE_UNKNOWN_ENVS=1
+
+# Provide a way to document the AFL++ options used in this build:
+echo
+echo AFL++ target compilation setup:
+env | egrep '^AFL_' | tee "$OUT/afl_options.txt"
+echo
+
+popd > /dev/null
+
+echo " done."

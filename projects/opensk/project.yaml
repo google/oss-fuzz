@@ -1,0 +1,15 @@
+homepage: "https://github.com/google/OpenSK"
+main_repo: "https://github.com/google/OpenSK"
+primary_contact: "opensk@google.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "jmichel@google.com"
+  - "kaczmarczyck@google.com"
+  - "cretin@google.com"
+  - "david@adalogics.com"
+  - "hcyang@google.com"
+file_github_issue: True

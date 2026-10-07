@@ -1,0 +1,9 @@
+fuzzing_engines:
+- libfuzzer
+homepage: http://www.javassist.org/
+language: jvm
+main_repo: https://github.com/jboss-javassist/javassist
+sanitizers:
+- address
+vendor_ccs:
+- yakdan@code-intelligence.com

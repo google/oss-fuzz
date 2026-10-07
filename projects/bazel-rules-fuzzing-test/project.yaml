@@ -1,0 +1,17 @@
+homepage: "https://github.com/bazelbuild/rules_fuzzing"
+main_repo: "https://github.com/bazelbuild/rules_fuzzing"
+language: c++
+primary_contact: "test@example.com"
+
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+
+sanitizers:
+  - address
+  - undefined
+  - memory
+
+# This is a test project.
+disabled: true

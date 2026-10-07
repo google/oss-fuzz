@@ -1,0 +1,21 @@
+[package]
+name = "netlink_packet_route"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+anyhow = { path = "/src/fuchsia/third_party/rust_crates/vendor/anyhow-1.0.86" }
+bitflags = { path = "/src/fuchsia/third_party/rust_crates/vendor/bitflags-2.4.1" }
+byteorder = "1.5"
+libc = "0.2.158"
+log = { path = "/src/fuchsia/third_party/rust_crates/vendor/log-0.4.22", features = ["std"] }
+thiserror = { path = "/src/fuchsia/third_party/rust_crates/vendor/thiserror-1.0.57" }
+netlink_packet_core = { path = "../netlink_packet_core" }
+netlink_packet_utils = { path = "../netlink_packet_utils" }
+
+[lib]
+name = "netlink_packet_route"
+path = "src/lib.rs"
+
+[features]
+rich_nlas = []

@@ -1,0 +1,17 @@
+/.vscode/
+*.pyc
+/build/
+*~
+.DS_Store
+*.swp
+.venv
+.gdb_history
+infra/base-images/base-builder/indexer/indexer
+infra/base-images/base-builder/indexer/fuzzing_engine.a
+
+# IntelliJ IDEA
+/.idea
+**/*.iml
+
+# Chronos
+ccaches/

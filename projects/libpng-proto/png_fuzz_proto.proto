@@ -1,0 +1,46 @@
+syntax = "proto2";
+// Very simple proto description of the PNG format,
+// described at https://en.wikipedia.org/wiki/Portable_Network_Graphics
+
+message IHDR {
+  required uint32 width = 1;
+  required uint32 height = 2;
+  required uint32 other1 = 3;
+  required uint32 other2 = 4;  // Only 1 byte used.
+}
+
+message PLTE {
+  required bytes data = 1;
+}
+
+message IDAT {
+  required bytes data = 1;
+}
+
+message iCCP  {
+  required bytes data = 2;
+}
+
+message OtherChunk {
+  oneof type {
+    uint32 known_type = 1;
+    uint32 unknown_type = 2;
+  }
+  required bytes data = 3;
+}
+
+message PngChunk {
+  oneof chunk {
+    PLTE plte = 1;
+    IDAT idat = 2;
+    iCCP iccp = 3;
+    OtherChunk other_chunk = 10000;
+  }
+}
+
+message PngProto {
+  required IHDR ihdr = 1;
+  repeated PngChunk chunks = 2;
+}
+
+// package fuzzer_examples;

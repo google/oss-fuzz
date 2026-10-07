@@ -1,0 +1,19 @@
+homepage: "https://github.com/lxc/lxc"
+language: c
+primary_contact: "christian@brauner.io"
+builds_per_day: 4
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - stgraber@stgraber.org
+  - evverx@gmail.com
+main_repo: "https://github.com/lxc/lxc"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+  # - centipede
+  # Don't use centipede because it can't handle fuzz targets with "config" in
+  # the name.

@@ -1,0 +1,28 @@
+homepage: "http://www.xmlsoft.org/libxslt/"
+language: c++
+vendor_ccs:
+  - "ddkilzer@apple.com"
+  - "product-security@apple.com"
+  - "schenney@chromium.org"
+  - "dkishore@apple.com"
+  - "phan@apple.com"
+  - "ebanniettis@apple.com"
+  - "jm.park@apple.com"
+  - "james_e_kim@apple.com"
+  - "rding23@apple.com"
+  - "albassam@apple.com"
+  - "zakr@apple.com"
+  - "roberto_rodriguez2@apple.com"
+  - "k_monsen@apple.com"
+  - "nnothstine@apple.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://gitlab.gnome.org/GNOME/libxslt.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

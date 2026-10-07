@@ -1,0 +1,51 @@
+diff --git a/validator/WORKSPACE b/validator/WORKSPACE
+index 0510b05..26e878c 100644
+--- a/validator/WORKSPACE
++++ b/validator/WORKSPACE
+@@ -101,3 +101,10 @@ local_repository(
+     name = "amphtml-extensions",
+     path = "../extensions",
+ )
++
++http_archive(
++    name = "com_google_fuzztest",
++    sha256 = "c75f224b34c3c62ee901381fb743f6326f7b91caae0ceb8fe62f3fd36f187627",
++    strip_prefix = "fuzztest-58b4e7065924f1a284952b84ea827ce35a87e4dc",
++    urls = ["https://github.com/google/fuzztest/archive/58b4e7065924f1a284952b84ea827ce35a87e4dc.zip"],
++)
+diff --git a/validator/cpp/htmlparser/BUILD b/validator/cpp/htmlparser/BUILD
+index 3d31520..41bfd93 100644
+--- a/validator/cpp/htmlparser/BUILD
++++ b/validator/cpp/htmlparser/BUILD
+@@ -555,3 +555,15 @@ cc_test(
+         "@com_google_absl//absl/flags:flag",
+     ],
+ )
++
++cc_test(
++    name = "parser_fuzz_test",
++    srcs = ["parser_fuzz_test.cc"],
++    deps = [
++        ":parser",
++        "@com_google_fuzztest//fuzztest",
++        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
++        "@com_google_googletest//:gtest_main",
++    ],
++)
++
+diff --git a/validator/cpp/htmlparser/parser_fuzz_test.cc b/validator/cpp/htmlparser/parser_fuzz_test.cc
+new file mode 100644
+index 0000000..2ad7194
+--- /dev/null
++++ b/validator/cpp/htmlparser/parser_fuzz_test.cc
+@@ -0,0 +1,10 @@
++#include "cpp/htmlparser/parser.h"
++
++#include "fuzztest/fuzztest.h"
++
++void FuzzParser(std::string raw_html) {
++  htmlparser::Parser parser(raw_html);
++  parser.Parse();
++}
++
++FUZZ_TEST(CC_FUZZING, FuzzParser);

@@ -1,0 +1,10 @@
+homepage: "https://github.com/holiman/uint256"
+language: go
+primary_contact: "martin.swende@ethereum.org"
+auto_ccs:
+  - "pawel@ethereum.org"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/holiman/uint256.git'

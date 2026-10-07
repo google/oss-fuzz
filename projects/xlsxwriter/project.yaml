@@ -1,0 +1,11 @@
+homepage: "https://xlsxwriter.readthedocs.io/"
+language: python
+primary_contact: "jmcnamara@cpan.org"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/jmcnamara/XlsxWriter.git"

@@ -1,0 +1,17 @@
+homepage: "https://bellard.org/quickjs/"
+language: c
+primary_contact: "fabrice.bellard@gmail.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- memory
+
+main_repo: 'https://github.com/bellard/quickjs'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

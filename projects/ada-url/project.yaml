@@ -1,0 +1,16 @@
+homepage: "https://ada-url.github.io/ada"
+language: c++
+primary_contact: "yagiz@nizipli.com"
+auto_ccs:
+  - "daniel@lemire.me"
+main_repo: "https://github.com/ada-url/ada.git"
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - centipede
+file_github_issue: true

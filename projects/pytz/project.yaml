@@ -1,0 +1,12 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/stub42/pytz
+language: python
+main_repo: https://github.com/stub42/pytz
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com
+- athur.chan@adalogics.com

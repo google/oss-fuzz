@@ -1,0 +1,11 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/alculquicondor/psqlparse
+language: python
+main_repo: https://github.com/alculquicondor/psqlparse
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com
+- adam@adalogics.com

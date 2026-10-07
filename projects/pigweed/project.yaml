@@ -1,0 +1,45 @@
+base_os_version: ubuntu-24-04
+homepage: "https://pigweed.dev/"
+language: c++
+primary_contact: "keir@google.com"
+auto_ccs:
+  - "aarongreen@google.com"
+  - "alizhang@google.com"
+  - "amituttam@google.com"
+  - "amontanez@google.com"
+  - "asadmemon@google.com"
+  - "benlawson@google.com"
+  - "cachinchilla@google.com"
+  - "chadnorvell@google.com"
+  - "davidroth@google.com"
+  - "drees@google.com"
+  - "erahm@google.com"
+  - "ewout@google.com"
+  - "frolv@google.com"
+  - "fsareshwala@google.com"
+  - "hayala@google.com"
+  - "hepler@google.com"
+  - "jamuraa@google.com"
+  - "jgraff@google.com"
+  - "joshconner@google.com"
+  - "kayce@google.com"
+  - "keir@google.com"
+  - "konkers@google.com"
+  - "phosek@google.com"
+  - "prabhukr@google.com"
+  - "mohrr@google.com"
+  - "saeedali@google.com"
+  - "tonymd@google.com"
+  - "tpudlik@google.com"
+  - "vaas@google.com"
+  - "zyecheng@google.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://pigweed.googlesource.com/pigweed/pigweed'
+fuzzing_engines:
+  - afl
+  - centipede
+  - honggfuzz
+  - libfuzzer

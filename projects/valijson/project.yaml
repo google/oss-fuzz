@@ -1,0 +1,16 @@
+homepage: "https://github.com/tristanpenman/valijson"
+main_repo: "https://github.com/tristanpenman/valijson"
+language: c++
+primary_contact: "tristan@tristanpenman.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

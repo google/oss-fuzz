@@ -1,0 +1,10 @@
+homepage: https://github.com/dpranke/pyjson5
+main_repo: https://github.com/dpranke/pyjson5
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

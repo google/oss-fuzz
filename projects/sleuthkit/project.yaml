@@ -1,0 +1,12 @@
+homepage: "https://sleuthkit.org"
+language: c++
+primary_contact: "carrier@sleuthkit.org"
+auto_ccs:
+ - "simsong@gmail.com"
+main_repo: 'https://github.com/sleuthkit/sleuthkit'
+file_github_issue: true
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

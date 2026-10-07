@@ -1,0 +1,11 @@
+homepage: "https://jupytext.readthedocs.io/en/latest/developing.html"
+language: python
+primary_contact: "marc.wouts@gmail.com"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/mwouts/jupytext.git"

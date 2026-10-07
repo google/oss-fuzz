@@ -1,0 +1,10 @@
+homepage: "https://github.com/Alexhuszagh/rust-lexical"
+language: rust
+primary_contact: "ahuszagh@gmail.com"
+auto_ccs:
+  - "self@myrrlyn.dev"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/Alexhuszagh/rust-lexical'

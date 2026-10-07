@@ -1,0 +1,10 @@
+homepage: https://github.com/alexmojaki/stack_data
+main_repo: https://github.com/alexmojaki/stack_data
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

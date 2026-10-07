@@ -1,0 +1,2 @@
+[libfuzzer]
+dict = net_processing.dict

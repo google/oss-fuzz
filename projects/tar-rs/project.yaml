@@ -1,0 +1,12 @@
+homepage: "https://github.com/alexcrichton/tar-rs"
+main_repo: "https://github.com/alexcrichton/tar-rs.git"
+primary_contact: "cgwalters@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
+  - "fuzzing@fuchsia.dev"

@@ -1,0 +1,12 @@
+homepage: "https://linkerd.io/"
+main_repo: "https://github.com/linkerd/linkerd2-proxy"
+primary_contact: "ver@buoyant.io"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "eliza@buoyant.io"
+  - "kevinl@buoyant.io"
+  - "david@adalogics.com"

@@ -1,0 +1,17 @@
+homepage: "https://github.com/spdk/spdk"
+main_repo: "https://github.com/spdk/spdk"
+language: c
+primary_contact: "james.r.harris@intel.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+  - "tomasz.zawadzki@intel.com"
+  - "konrad.sztyber@intel.com"
+  - "michal.berger@intel.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

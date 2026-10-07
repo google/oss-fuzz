@@ -1,0 +1,9 @@
+homepage: "https://github.com/bufbuild/protoc-gen-validate"
+language: go
+main_repo: "https://github.com/bufbuild/protoc-gen-validate"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

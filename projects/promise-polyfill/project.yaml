@@ -1,0 +1,10 @@
+homepage: https://github.com/taylorhakes/promise-polyfill
+language: javascript
+main_repo: https://github.com/taylorhakes/promise-polyfill
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

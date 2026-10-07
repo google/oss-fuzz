@@ -1,0 +1,55 @@
+# action.yml
+name: 'build-fuzzers'
+description: "Builds an OSS-Fuzz project's fuzzers."
+inputs:
+  oss-fuzz-project-name:
+    description: 'Name of the corresponding OSS-Fuzz project.'
+    required: true
+  language:
+    description: 'Programming language project is written in.'
+    required: false
+    default: 'c++'
+  dry-run:
+    description: 'If set, run the action without actually reporting a failure.'
+    default: false
+  allowed-broken-targets-percentage:
+    description: 'The percentage of broken targets allowed in bad_build_check.'
+    required: false
+  sanitizer:
+    description: 'The sanitizer to build the fuzzers with.'
+    default: 'address'
+  architecture:
+    description: 'The architecture used to build the fuzzers.'
+    default: 'x86_64'
+  project-src-path:
+    description: "The path to the project's source code checkout."
+    required: false
+  bad-build-check:
+    description: "Whether or not OSS-Fuzz's check for bad builds should be done."
+    required: false
+    default: true
+  keep-unaffected-fuzz-targets:
+    description: "Whether to keep unaffected fuzzers or delete them."
+    required: false
+    default: false
+  output-sarif:
+    description: "Whether to output fuzzing results to SARIF."
+    required: false
+    default: false
+runs:
+  using: 'docker'
+  image: '../../../build_fuzzers.Dockerfile'
+  env:
+    OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
+    LANGUAGE: ${{ inputs.language }}
+    DRY_RUN: ${{ inputs.dry-run}}
+    ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
+    SANITIZER: ${{ inputs.sanitizer }}
+    ARCHITECTURE: ${{ inputs.architecture }}
+    PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
+    LOW_DISK_SPACE: 'True'
+    BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
+    CIFUZZ_DEBUG: 'True'
+    CFL_PLATFORM: 'github'
+    KEEP_UNAFFECTED_FUZZ_TARGETS: ${{ inputs.keep-unaffected-fuzz-targets }}
+    OUTPUT_SARIF: ${{ inputs.output-sarif }}

@@ -1,0 +1,11 @@
+homepage: "https://crates.io/crates/prost"
+main_repo: "https://github.com/tokio-rs/prost"
+primary_contact: "luciofranco14@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
+  - "casper@meijn.net"

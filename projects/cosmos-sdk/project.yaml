@@ -1,0 +1,12 @@
+homepage: "https://github.com/cosmos/cosmos-sdk"
+primary_contact: "fuzzing@orijtech.com"
+auto_ccs:
+  - emmanuel@orijtech.com
+  - cuong@orijtech.com
+  - elias@orijtech.com
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/cosmos/cosmos-sdk"

@@ -1,0 +1,15 @@
+homepage: "https://www.unidata.ucar.edu/software/netcdf/docs/index.html"
+language: c++
+primary_contact: "wfisher@ucar.edu"
+auto_ccs:
+- "p.antoine@catenacyber.fr"
+- "dmh@ucar.edu"
+
+sanitizers:
+- address
+- undefined
+main_repo: 'https://github.com/Unidata/netcdf-c'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

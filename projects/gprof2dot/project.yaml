@@ -1,0 +1,9 @@
+homepage: https://github.com/jrfonseca/gprof2dot
+main_repo: https://github.com/jrfonseca/gprof2dot
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

@@ -1,0 +1,12 @@
+homepage: "https://wasmi-labs.github.io/blog/"
+main_repo: "https://github.com/wasmi-labs/wasmi"
+primary_contact: "robin.freyler@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+# Ignore dependencies on crates.io, and the Rust standard library itself.
+coverage_extra_args: >
+  -ignore-filename-regex=.*/registry/src/.*crates.io.*/.*
+  -ignore-filename-regex=.*/rustc/.*

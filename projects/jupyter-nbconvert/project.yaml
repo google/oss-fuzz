@@ -1,0 +1,10 @@
+homepage: https://github.com/jupyter/nbconvert
+language: python
+main_repo: https://github.com/jupyter/nbconvert
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

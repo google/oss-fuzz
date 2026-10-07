@@ -1,0 +1,10 @@
+homepage: "https://jtablesaw.github.io/tablesaw/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/jtablesaw/tablesaw/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

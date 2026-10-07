@@ -1,0 +1,10 @@
+homepage: https://github.com/jimp-dev/jimp
+language: javascript
+main_repo: https://github.com/jimp-dev/jimp
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

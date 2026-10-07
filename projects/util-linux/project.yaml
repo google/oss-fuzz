@@ -1,0 +1,25 @@
+homepage: "https://github.com/util-linux/util-linux"
+primary_contact: "ruediger.meier@ga-group.nl"
+language: c
+builds_per_day: 4
+auto_ccs:
+  - "kzak@redhat.com"
+  - "evverx@gmail.com"
+  - "kerolasa@gmail.com"
+  - "gmazyland@gmail.com"
+  - "thomas@t-8ch.de"
+architectures:
+  - x86_64
+  - i386
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://github.com/util-linux/util-linux'
+file_github_issue: True
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+  - centipede

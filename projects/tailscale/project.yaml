@@ -1,0 +1,11 @@
+homepage: "https://tailscale.com/"
+main_repo: "https://github.com/tailscale/tailscale"
+primary_contact: "mikej@tailscale.com"
+auto_ccs :
+  - "bradfitz@tailscale.com"
+  - "danderson@tailscale.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

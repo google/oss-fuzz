@@ -1,0 +1,8 @@
+homepage: "https://github.com/pulldown-cmark/pulldown-cmark"
+main_repo: "https://github.com/pulldown-cmark/pulldown-cmark.git"
+language: rust
+primary_contact: "pulldowncmark@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer

@@ -1,0 +1,12 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/urllib3/urllib3
+language: python
+main_repo: https://github.com/urllib3/urllib3
+sanitizers:
+- address
+- undefined
+primary_contact: "illia.volochii@gmail.com"
+vendor_ccs:
+- david@adalogics.com
+- sean@compactcloud.co.uk

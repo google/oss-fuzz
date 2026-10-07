@@ -1,0 +1,10 @@
+homepage: https://angular.io/
+language: javascript
+main_repo: https://github.com/angular/angular.git
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
+vendor_ccs:
+- "yakdan@code-intelligence.com"
+- "patrice.salathe@code-intelligence.com"

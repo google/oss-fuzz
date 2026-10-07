@@ -1,0 +1,9 @@
+homepage: https://swc.rs
+language: rust
+primary_contact: "kdy1997.dev@gmail.com"
+auto_ccs:
+  - kdy1997.dev@gmail.com
+sanitizers:
+  - address
+  - undefined
+main_repo: https://github.com/swc-project/swc

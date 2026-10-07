@@ -1,0 +1,14 @@
+homepage: "https://www.freedesktop.org/wiki/Software/kmscon/libtsm/"
+language: c++
+primary_contact: "dh.herrmann@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'git://people.freedesktop.org/~dvdhrm/libtsm'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

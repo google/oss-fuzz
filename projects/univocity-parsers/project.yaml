@@ -1,0 +1,10 @@
+homepage: "https://github.com/univocity/univocity-parsers/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/univocity/univocity-parsers/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

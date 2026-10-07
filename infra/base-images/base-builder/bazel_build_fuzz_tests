@@ -1,0 +1,90 @@
+#!/bin/bash -eu
+#
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+: "${BAZEL_FUZZ_TEST_TAG:=fuzz-test}"
+: "${BAZEL_FUZZ_TEST_EXCLUDE_TAG:=no-oss-fuzz}"
+: "${BAZEL_PACKAGE_SUFFIX:=_oss_fuzz}"
+: "${BAZEL_TOOL:=bazel}"
+: "${BAZEL_EXTRA_BUILD_FLAGS:=}"
+
+if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+    BAZEL_LANGUAGE=java
+else
+    BAZEL_LANGUAGE=cc
+fi
+
+if [[ -z "${BAZEL_FUZZ_TEST_QUERY:-}" ]]; then
+    BAZEL_FUZZ_TEST_QUERY="
+        let all_fuzz_tests = attr(tags, \"${BAZEL_FUZZ_TEST_TAG}\", \"//...\") in
+        let lang_fuzz_tests = attr(generator_function, \"^${BAZEL_LANGUAGE}_fuzz_test\$\", \$all_fuzz_tests) in
+        \$lang_fuzz_tests - attr(tags, \"${BAZEL_FUZZ_TEST_EXCLUDE_TAG}\", \$lang_fuzz_tests)
+    "
+fi
+
+echo "Using Bazel query to find fuzz targets: ${BAZEL_FUZZ_TEST_QUERY}"
+
+declare -r OSS_FUZZ_TESTS=(
+    $(bazel query "${BAZEL_FUZZ_TEST_QUERY}" | sed "s/$/${BAZEL_PACKAGE_SUFFIX}/")
+)
+
+echo "Found ${#OSS_FUZZ_TESTS[@]} fuzz test packages:"
+for oss_fuzz_test in "${OSS_FUZZ_TESTS[@]}"; do
+    echo "  ${oss_fuzz_test}"
+done
+
+declare -r BAZEL_BUILD_FLAGS=(
+    "--@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine" \
+    "--@rules_fuzzing//fuzzing:java_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_java_engine" \
+    "--@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz" \
+    "--@rules_fuzzing//fuzzing:cc_engine_sanitizer=none" \
+    "--cxxopt=-stdlib=libc++" \
+    "--linkopt=-lc++" \
+    "--verbose_failures" \
+    "--spawn_strategy=standalone" \
+    "--action_env=CC=${CC}" "--action_env=CXX=${CXX}" \
+    ${BAZEL_EXTRA_BUILD_FLAGS[*]}
+)
+
+echo "Building the fuzz tests with the following Bazel options:"
+echo "  ${BAZEL_BUILD_FLAGS[@]}"
+
+${BAZEL_TOOL} build "${BAZEL_BUILD_FLAGS[@]}" "${OSS_FUZZ_TESTS[@]}"
+
+echo "Extracting the fuzz test packages in the output directory."
+for oss_fuzz_archive in $(find bazel-bin/ -name "*${BAZEL_PACKAGE_SUFFIX}.tar"); do
+    tar --no-same-owner -xvf "${oss_fuzz_archive}" -C "${OUT}"
+done
+
+if [ "$SANITIZER" = "coverage" ]; then
+    echo "Collecting the repository source files for coverage tracking."
+    declare -r COVERAGE_SOURCES="${OUT}/proc/self/cwd"
+    mkdir -p "${COVERAGE_SOURCES}"
+    declare -r RSYNC_FILTER_ARGS=(
+        "--include" "*.h"
+        "--include" "*.cc"
+        "--include" "*.hpp"
+        "--include" "*.cpp"
+        "--include" "*.c"
+        "--include" "*.inc"
+        "--include" "*/"
+        "--exclude" "*"
+    )
+    rsync -avLk "${RSYNC_FILTER_ARGS[@]}" \
+        "$(bazel info execution_root)/" \
+        "${COVERAGE_SOURCES}/"
+fi

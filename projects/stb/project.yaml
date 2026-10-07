@@ -1,0 +1,10 @@
+homepage: "https://github.com/nothings/stb"
+language: c++
+primary_contact: "nothings.org@gmail.com"
+auto_ccs:
+  - "randy440088@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://github.com/nothings/stb.git'

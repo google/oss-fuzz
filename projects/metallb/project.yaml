@@ -1,0 +1,11 @@
+homepage: "https://metallb.universe.tf"
+language: go
+primary_contact: "fpaoline@redhat.com"
+auto_ccs:
+  - "obraunsh@redhat.com"
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/metallb/metallb.git"

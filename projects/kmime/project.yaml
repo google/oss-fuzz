@@ -1,0 +1,8 @@
+homepage: https://invent.kde.org/pim/kmime.git/
+language: c++
+primary_contact: tsdgeos@gmail.com
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://invent.kde.org/pim/kmime.git"

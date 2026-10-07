@@ -1,0 +1,17 @@
+homepage: "https://github.com/fribidi/fribidi"
+language: c
+primary_contact: "dov.grobgeld@gmail.com"
+auto_ccs:
+  - "behdad.esfahbod@gmail.com"
+  - "behdad@gnu.org"
+  - "ebrahim@gnu.org"
+  - "dr.khaled.hosny@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://github.com/fribidi/fribidi.git'

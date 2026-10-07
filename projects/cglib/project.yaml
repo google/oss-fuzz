@@ -1,0 +1,10 @@
+homepage: "https://github.com/cglib/cglib/wiki"
+language: jvm
+main_repo: "https://github.com/cglib/cglib"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

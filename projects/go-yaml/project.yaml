@@ -1,0 +1,9 @@
+homepage: "https://github.com/go-yaml/yaml"
+language: go
+main_repo: "https://github.com/go-yaml/yaml"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

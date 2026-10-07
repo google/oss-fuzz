@@ -1,0 +1,9 @@
+homepage: https://github.com/psf/black
+main_repo: https://github.com/psf/black
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+vendor_ccs:
+- david@adalogics.com

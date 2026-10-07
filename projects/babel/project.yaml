@@ -1,0 +1,10 @@
+homepage: https://github.com/python-babel/babel
+main_repo: https://github.com/python-babel/babel
+language: python
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

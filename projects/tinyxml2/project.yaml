@@ -1,0 +1,16 @@
+homepage: "www.grinninglizard.com/tinyxml2"
+language: c++
+primary_contact: "leethomason@gmail.com"
+auto_ccs:
+  - "pranjal.jumde@gmail.com"
+  - "kiddo.pwn@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/leethomason/tinyxml2'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

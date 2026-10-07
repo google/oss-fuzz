@@ -1,0 +1,17 @@
+homepage: "https://proj.org/"
+language: c++
+main_repo: "https://github.com/OSGeo/PROJ"
+primary_contact: "even.rouault@gmail.com"
+auto_ccs:
+  - "hobu.inc@gmail.com"
+  - "kristianevers@gmail.com"
+  - "knudsen.thomas@gmail.com"
+architectures:
+  - x86_64
+  - i386
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

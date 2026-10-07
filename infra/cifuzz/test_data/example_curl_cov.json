@@ -1,0 +1,1 @@
+{"report_summary_path": "gs://oss-fuzz-coverage/curl/reports/20200226/linux/summary.json", "html_report_url": "https://storage.googleapis.com/oss-fuzz-coverage/curl/reports/20200226/linux/index.html", "report_date": "20200226", "fuzzer_stats_dir": "gs://oss-fuzz-coverage/curl/fuzzer_stats/20200226"}

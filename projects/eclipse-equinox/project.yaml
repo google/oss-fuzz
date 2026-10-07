@@ -1,0 +1,10 @@
+homepage: "https://github.com/eclipse-equinox/equinox"
+language: jvm
+main_repo: "https://github.com/eclipse-equinox/equinox"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

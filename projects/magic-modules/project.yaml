@@ -1,0 +1,4 @@
+homepage: https://github.com/GoogleCloudPlatform/magic-modules
+main_repo: https://github.com/GoogleCloudPlatform/magic-modules
+language: go
+primary_contact: "stephenrlewis@google.com"

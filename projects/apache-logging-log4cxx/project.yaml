@@ -1,0 +1,26 @@
+homepage: "https://logging.apache.org/log4cxx"
+main_repo: "https://github.com/apache/logging-log4cxx"
+language: c++
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+  - centipede
+
+sanitizers:
+  - address
+  - undefined
+
+# Apache Logging Services PMC members[1] that contribute the fuzz tests.
+# We cannot share `security@logging.apache.org` here, since it must be associated with a Google account[2].
+#
+# [1] https://logging.apache.org/team-list.html
+# [2] https://google.github.io/oss-fuzz/getting-started/new-project-guide/#primary
+primary_contact: volkan@yazi.ci
+auto_ccs:
+  - piotr.karwasz@gmail.com
+  - osfan6313@gmail.com
+  - adam@adalogics.com
+  - swebb2066@gmail.com
+

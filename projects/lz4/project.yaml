@@ -1,0 +1,27 @@
+homepage: "https://github.com/lz4/lz4"
+language: c++
+primary_contact: "Yann.collet.73@gmail.com"
+auto_ccs:
+  - "NickRTerrell@gmail.com"
+  - "cyan@fb.com"
+  - "terrelln@fb.com"
+  - "felixh@fb.com"
+  - "hmf@fb.com"
+  - "yaohway@fb.com"
+  - "axxu@fb.com"
+  - "embg@fb.com"
+  - "yoniko@fb.com"
+  - "sangelov@fb.com"
+vendor_ccs:
+  - "oss-fuzz@fb.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+main_repo: 'https://github.com/lz4/lz4.git'

@@ -1,0 +1,17 @@
+homepage: "http://www.boost.org/"
+language: c++
+primary_contact: "mclow@boost.org"
+auto_ccs:  
+   - "jz.maddock@googlemail.com"
+   - "bshas3@gmail.com"
+   - "jking@apache.org"
+   - "jeremy.william.murphy@gmail.com"
+   - "christian.mazakas@gmail.com"
+   - "research@shielder.it"
+main_repo: 'https://github.com/boostorg/boost.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

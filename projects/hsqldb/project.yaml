@@ -1,0 +1,11 @@
+homepage: "www.hsqldb.org"
+language: jvm
+main_repo: "https://svn.code.sf.net/p/hsqldb/svn/"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+primary_contact: "ft@cluedup.com"
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

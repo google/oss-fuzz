@@ -1,0 +1,6 @@
+# A dictionary for more efficient fuzzing of DoStuff(). 
+# If the inputs contain multi-byte tokens, list them here.
+# See https://llvm.org/docs/LibFuzzer.html#dictionaries
+"foo"
+"bar"
+"ouch"

@@ -1,0 +1,12 @@
+homepage: "https://github.com/google/snappy"
+language: c++
+primary_contact: "costan@google.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+sanitizers:
+  - address
+main_repo: 'https://github.com/google/snappy'
+file_github_issue: True

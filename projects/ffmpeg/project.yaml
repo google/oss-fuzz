@@ -1,0 +1,26 @@
+homepage: "https://www.ffmpeg.org"
+language: c++
+primary_contact: "ffmpeg-security@ffmpeg.org"
+architectures:
+ - x86_64
+ - i386
+auto_ccs:
+ - "michaelni@gmx.at"
+ - "michael@niedermayer.cc"
+ - "tfoucu@google.com"
+ - "twsmith@mozilla.com"
+ - "kempfjb@gmail.com"
+ - "jordyzomer@google.com"
+ - "epirat07@gmail.com"
+ - "kasper93@gmail.com"
+ - "jzern@google.com"
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+sanitizers:
+ - address
+ - memory
+ - undefined
+selective_unpack: true
+main_repo: 'https://github.com/FFmpeg/FFmpeg'

@@ -1,0 +1,14 @@
+homepage: "https://www.tianocore.org"
+language: c
+fuzzing_engines:
+   - libfuzzer
+sanitizers:
+   - address
+   - undefined
+primary_contact: "tamas.k.lengyel@gmail.com"
+auto_ccs:
+   - "rowanbhart@gmail.com"
+vendor_ccs:
+   - "edk2-hbfa-ossfuzz@intel.com"
+main_repo: "https://github.com/tianocore/edk2"
+file_github_issue: false

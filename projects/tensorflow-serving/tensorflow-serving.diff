@@ -1,0 +1,81 @@
+diff --git a/tensorflow_serving/util/BUILD b/tensorflow_serving/util/BUILD
+index 4802a79f..f7d596dc 100644
+--- a/tensorflow_serving/util/BUILD
++++ b/tensorflow_serving/util/BUILD
+@@ -345,6 +345,28 @@ cc_test(
+     ],
+ )
+ 
++cc_test(
++    name = "json_tensor_test_fuzz",
++    srcs = ["json_tensor_test.cc"],
++    deps = [
++        ":json_tensor",
++        "//tensorflow_serving/apis:classification_cc_proto",
++        "//tensorflow_serving/apis:model_cc_proto",
++        "//tensorflow_serving/apis:predict_cc_proto",
++        "//tensorflow_serving/apis:regression_cc_proto",
++        # "//tensorflow_serving/core/test_util:test_main",
++	"@org_tensorflow//tensorflow/core:testlib",
++        "//tensorflow_serving/test_util",
++	"@com_google_fuzztest//fuzztest",
++	"@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
++        "@com_google_protobuf//:protobuf",
++        "@org_tensorflow//tensorflow/core:framework",
++        "@org_tensorflow//tensorflow/core:lib",
++        "@org_tensorflow//tensorflow/core:protos_all_cc",
++        "@org_tensorflow//tensorflow/core:test",
++    ],
++)
++
+ cc_library(
+     name = "proto_util",
+     srcs = ["proto_util.h"],
+diff --git a/tensorflow_serving/util/json_tensor_test.cc b/tensorflow_serving/util/json_tensor_test.cc
+index b8145986..2b6a464b 100644
+--- a/tensorflow_serving/util/json_tensor_test.cc
++++ b/tensorflow_serving/util/json_tensor_test.cc
+@@ -23,6 +23,9 @@ limitations under the License.
+ #include <gmock/gmock.h>
+ #include <gtest/gtest.h>
+ #include "absl/strings/substitute.h"
++
++#include "fuzztest/fuzztest.h"
++
+ #include "tensorflow/core/lib/core/errors.h"
+ #include "tensorflow/core/lib/core/status_test_util.h"
+ #include "tensorflow/core/platform/protobuf.h"
+@@ -184,6 +187,15 @@ TEST(JsontensorTest, FloatTensorWithPrecisionLoss) {
+               )"));
+ }
+ 
++
++void TheF(const std::string &s1) {
++	if (s1.size() > 120){
++	  TensorInfoMap infomap;
++	      TextFormat::ParseFromString(s1, &infomap["default"]);
++	}
++}
++FUZZ_TEST(JsonFuzzTest, TheF);
++
+ TEST(JsontensorTest, FloatTensorThatExceedsMaxReturnsInf) {
+   TensorInfoMap infomap;
+   ASSERT_TRUE(
+diff --git a/tensorflow_serving/workspace.bzl b/tensorflow_serving/workspace.bzl
+index de1203a7..dd18da94 100644
+--- a/tensorflow_serving/workspace.bzl
++++ b/tensorflow_serving/workspace.bzl
+@@ -104,6 +104,13 @@ def tf_serving_workspace():
+         ],
+     )
+ 
++    http_archive(
++        name = "com_google_fuzztest",
++	sha256 = "c75f224b34c3c62ee901381fb743f6326f7b91caae0ceb8fe62f3fd36f187627",
++	strip_prefix = "fuzztest-58b4e7065924f1a284952b84ea827ce35a87e4dc",
++	urls = ["https://github.com/google/fuzztest/archive/58b4e7065924f1a284952b84ea827ce35a87e4dc.zip"],
++    )
++
+     # ==== TensorFlow Decision Forests ===
+     http_archive(
+         name = "org_tensorflow_decision_forests",

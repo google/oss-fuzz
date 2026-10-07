@@ -1,0 +1,12 @@
+homepage: "https://boringssl.googlesource.com/boringssl/"
+language: c++
+primary_contact: "agl@google.com"
+auto_ccs:
+ - "bbe@google.com"
+ - "davidben@google.com"
+ - "svaldez@google.com"
+sanitizers:
+- address
+- undefined
+- memory
+main_repo: 'https://boringssl.googlesource.com/boringssl'

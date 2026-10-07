@@ -1,0 +1,26 @@
+homepage: "https://www.openh264.org"
+language: c++
+primary_contact: "huili2@cisco.com"
+auto_ccs:
+  - "guangwwa@cisco.com"
+  - "openh264-review@cisco.com"
+  - "sijchen@cisco.com"
+  - "yanqian@cisco.com"
+  - "xiaotianshimail@gmail.com"
+vendor_ccs:
+  - "jmuizelaar@mozilla.com"
+  - "media-alerts@mozilla.com"
+  - "twsmith@mozilla.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+ - i386
+ - x86_64
+main_repo: 'https://github.com/cisco/openh264.git'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

@@ -1,0 +1,18 @@
+homepage: "http://freeimage.sourceforge.net/"
+main_repo: 'https://svn.code.sf.net/p/freeimage/svn/'
+language: c++
+primary_contact: "drolon@infonie.fr"
+
+sanitizers:
+  - address
+  - undefined
+
+labels:
+  load_from_memory_fuzzer:
+    - sundew
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

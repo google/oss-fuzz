@@ -1,0 +1,11 @@
+homepage: "https://github.com/google/oss-fuzz/pull/8244"
+language: python
+primary_contact: "gaborjbernat@gmail.com"
+main_repo: "https://github.com/tox-dev/py-filelock"
+auto_ccs:
+- "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined

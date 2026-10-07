@@ -1,0 +1,12 @@
+homepage: "https://github.com/istio/ztunnel"
+main_repo: 'https://github.com/istio/ztunnel'
+primary_contact: "istio-security-vulnerability-reports@googlegroups.com"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "howardjohn@google.com"
+  - "gregory.hanson@solo.io"
+language: rust
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

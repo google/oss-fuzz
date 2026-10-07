@@ -1,0 +1,11 @@
+homepage: "https://github.com/catenacyber/elliptic-curve-differential-fuzzer"
+language: c++
+primary_contact: "p.antoine@catenacyber.fr"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+main_repo: https://github.com/catenacyber/elliptic-curve-differential-fuzzer
+architectures:
+- x86_64
+- i386

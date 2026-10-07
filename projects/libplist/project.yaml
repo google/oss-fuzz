@@ -1,0 +1,14 @@
+homepage: "https://github.com/libimobiledevice/libplist"
+language: c++
+primary_contact: "nikias.bassen@gmail.com"
+auto_ccs:
+  - "nikias@gmx.li"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/libimobiledevice/libplist'

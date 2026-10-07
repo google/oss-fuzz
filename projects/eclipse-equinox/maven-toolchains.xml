@@ -1,0 +1,30 @@
+<toolchains>
+	<!-- JDK toolchains -->
+	<toolchain>
+		<type>jdk</type>
+		<provides>
+			<id>JavaSE-1.8</id>
+		</provides>
+		<configuration>
+			<jdkHome>/usr/lib/jvm/java-8-openjdk-amd64</jdkHome>
+		</configuration>
+	</toolchain>
+	<toolchain>
+		<type>jdk</type>
+		<provides>
+			<version>11</version>
+		</provides>
+		<configuration>
+			<jdkHome>/usr/lib/jvm/java-11-openjdk-amd64</jdkHome>
+		</configuration>
+	</toolchain>
+	<toolchain>
+		<type>jdk</type>
+		<provides>
+			<version>17</version>
+		</provides>
+		<configuration>
+			<jdkHome>/usr/lib/jvm/java-17-openjdk-amd64</jdkHome>
+		</configuration>
+	</toolchain>
+</toolchains>

@@ -1,0 +1,10 @@
+homepage: "http://esotericsoftware.com/"
+language: jvm
+primary_contact: "thomas@umschalt.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/EsotericSoftware/kryo"
+sanitizers:
+  - address
+vendor_ccs:
+  - "norbert.schneider@code-intelligence.com"

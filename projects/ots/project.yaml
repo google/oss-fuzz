@@ -1,0 +1,22 @@
+homepage: "https://github.com/khaledhosny/ots"
+language: c++
+primary_contact: "dr.khaled.hosny@gmail.com"
+auto_ccs:
+  - "kevin899@gmail.com"
+  - "jfkthame@gmail.com"
+vendor_ccs:
+  - "jmuizelaar@mozilla.com"
+  - "lsalzman@mozilla.com"
+  - "twsmith@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/khaledhosny/ots.git'

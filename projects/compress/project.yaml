@@ -1,0 +1,10 @@
+homepage: "https://github.com/klauspost/compress"
+language: go
+primary_contact: "klauspost@gmail.com"
+main_repo: "https://github.com/klauspost/compress"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

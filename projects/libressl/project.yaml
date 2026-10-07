@@ -1,0 +1,15 @@
+homepage: "https://www.libressl.org/"
+language: c++
+primary_contact: "busterb@gmail.com"
+auto_ccs:
+ - "beck@obtuse.com"
+ - "theorbuehler@gmail.com"
+ - "joel.sing@gmail.com"
+ - "kinichiro.inoguchi@gmail.com"
+ - "ted.unangst@gmail.com"
+ - "miwaxe@gmail.com"
+ - "guidovranken@gmail.com"
+sanitizers:
+ - address
+ - undefined
+main_repo: 'https://github.com/libressl/portable.git'

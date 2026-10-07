@@ -1,0 +1,66 @@
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+steps:
+- id: 'Build the trial-build image'
+  name: 'gcr.io/cloud-builders/docker'
+  args:
+  - build
+  - '-t'
+  - gcr.io/oss-fuzz-base/trial-build
+  - '-f'
+  - infra/build/functions/trial_build/Dockerfile
+  - .
+- id: 'Legacy'
+  name: 'gcr.io/oss-fuzz-base/trial-build'
+  args: ['--version-tag', 'legacy']
+  waitFor: ['Build the trial-build image']
+  allowFailure: true
+  env:
+    - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+    - 'BRANCH=${_HEAD_BRANCH}'
+    - 'REPO=${_HEAD_REPO_URL}'
+    - 'TIMEOUT=25200'
+  timeout: 25200s
+- id: 'Ubuntu 20.04'
+  name: 'gcr.io/oss-fuzz-base/trial-build'
+  args: ['--version-tag', 'ubuntu-20-04']
+  waitFor: ['Build the trial-build image']
+  allowFailure: true
+  env:
+    - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+    - 'BRANCH=${_HEAD_BRANCH}'
+    - 'REPO=${_HEAD_REPO_URL}'
+    - 'TIMEOUT=25200'
+  timeout: 25200s
+- id: 'Ubuntu 24.04'
+  name: 'gcr.io/oss-fuzz-base/trial-build'
+  args: ['--version-tag', 'ubuntu-24-04']
+  waitFor: ['Build the trial-build image']
+  allowFailure: true
+  env:
+    - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
+    - 'BRANCH=${_HEAD_BRANCH}'
+    - 'REPO=${_HEAD_REPO_URL}'
+    - 'TIMEOUT=25200'
+  timeout: 25200s
+- id: 'Generate Report'
+  name: 'gcr.io/oss-fuzz-base/trial-build'
+  entrypoint: 'python3'
+  args: ['infra/build/functions/report_generator.py']
+  waitFor: ['Legacy', 'Ubuntu 20.04', 'Ubuntu 24.04']
+logsBucket: gs://oss-fuzz-trialbuild-logs
+timeout: 25200s

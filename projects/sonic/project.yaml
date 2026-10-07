@@ -1,0 +1,11 @@
+homepage: "https://github.com/bytedance/sonic"
+main_repo: "https://github.com/bytedance/sonic.git"
+language: go
+primary_contact: "dysghappy@163.com"
+auto_ccs:
+  - "byone.heng@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - memory

@@ -1,0 +1,17 @@
+diff --git a/spring-shell-core/spring-shell-core.gradle b/spring-shell-core/spring-shell-core.gradle
+index bc3c8dc..16a4aaa 100644
+--- a/spring-shell-core/spring-shell-core.gradle
++++ b/spring-shell-core/spring-shell-core.gradle
+@@ -1,5 +1,6 @@
+ plugins {
+ 	id 'org.springframework.shell.module'
++        id 'com.github.johnrengelman.shadow' version '7.1.2'
+ }
+ 
+ description = 'Spring Shell Core'
+@@ -16,4 +17,5 @@ dependencies {
+ 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+ 	testImplementation 'org.awaitility:awaitility'
+ 	testImplementation 'com.google.jimfs:jimfs'
++        apply plugin: 'com.github.johnrengelman.shadow'
+ }

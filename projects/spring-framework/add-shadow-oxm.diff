@@ -1,0 +1,11 @@
+diff --git a/spring-oxm/spring-oxm.gradle b/spring-oxm/spring-oxm.gradle
+--- a/spring-oxm/spring-oxm.gradle
++++ b/spring-oxm/spring-oxm.gradle
+@@ -1,6 +1,7 @@
+ plugins {
+ 	id "com.github.bjornvester.xjc"
++	id "com.gradleup.shadow"
+ }
+ 
+ description = "Spring Object/XML Marshalling"
+ 

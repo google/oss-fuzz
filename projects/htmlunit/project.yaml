@@ -1,0 +1,11 @@
+homepage: "https://htmlunit.sourceforge.io"
+language: jvm
+main_repo: "https://github.com/HtmlUnit/htmlunit.git"
+primary_contact: "ronaldbrill@googlemail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

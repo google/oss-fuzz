@@ -1,0 +1,19 @@
+homepage: "https://github.com/facebook/rocksdb"
+primary_contact: "rocksdb.dev@gmail.com"
+language: c++
+vendor_ccs:
+  - "oss-fuzz@fb.com"
+auto_ccs:
+  - "david@adalogics.com"
+  - "hmf@fb.com"
+  - "yaohway@fb.com"
+  - "axxu@fb.com"
+sanitizers:
+  - "address"
+main_repo: 'https://github.com/facebook/rocksdb'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -1,0 +1,17 @@
+homepage: https://github.com/yaml/libyaml
+language: c++
+primary_contact: ingy@ingy.net
+auto_ccs:
+- perlpunks@googlemail.com
+fuzzing_engines:
+- libfuzzer
+- afl
+- honggfuzz
+sanitizers:
+- address
+- memory
+- undefined
+architectures:
+- x86_64
+- i386
+main_repo: https://github.com/yaml/libyaml

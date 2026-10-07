@@ -1,0 +1,39 @@
+Dictionary: 3 entries
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1337
+INFO: Loaded 1 modules   (184 inline 8-bit counters): 184 [0x829300, 0x8293b8), 
+INFO: Loaded 1 PC tables (184 PCs): 184 [0x5dc910,0x5dd490), 
+INFO:        5 files found in /tmp/do_stuff_fuzzer_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+==13==WARNING: MemorySanitizer: use-of-uninitialized-value
+#0 0x52675f in LLVMFuzzerTestOneInput /src/cifuzz-example/do_stuff_fuzzer.cpp:13:7
+#1 0x45a431 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:599:15
+#2 0x45ba46 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:792:3
+#3 0x45bed9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:845:3
+#4 0x44a4bc in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:906:6
+#5 0x474432 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+#6 0x7eff5562683f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2083f)
+#7 0x41eab8 in _start (out/do_stuff_fuzzer+0x41eab8)
+
+DEDUP_TOKEN: LLVMFuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)--fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&)
+Uninitialized value was created by a heap allocation
+#0 0x4d57ad in malloc /src/llvm-project/compiler-rt/lib/msan/msan_interceptors.cpp:901:3
+#1 0x437c07 in operator new(unsigned long) (out/do_stuff_fuzzer+0x437c07)
+#2 0x45ba46 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:792:3
+#3 0x45bed9 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:845:3
+#4 0x44a4bc in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:906:6
+#5 0x474432 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+#6 0x7eff5562683f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2083f)
+DEDUP_TOKEN: malloc--operator new(unsigned long)--fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&)
+
+SUMMARY: MemorySanitizer: use-of-uninitialized-value /src/cifuzz-example/do_stuff_fuzzer.cpp:13:7 in LLVMFuzzerTestOneInput
+Unique heap origins: 65
+Stack depot allocated bytes: 4424
+Unique origin histories: 29
+History depot allocated bytes: 696
+Exiting
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+
+
+artifact_prefix='./'; Test unit written to ./crash-da39a3ee5e6b4b0d3255bfef95601890afd80709
+Base64: 

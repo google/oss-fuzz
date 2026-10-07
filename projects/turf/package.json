@@ -1,0 +1,12 @@
+{
+  "name": "turf-fuzz",
+  "version": "1.0.0",
+  "description": "Fuzzing the geojson library turf.js",
+  "main": "fuzz.js",
+  "author": "Christopher Krah <christopher.krah@code-intelligence.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@turf/turf": "*"
+  }
+}
+

@@ -1,0 +1,11 @@
+homepage: "https://calcite.apache.org/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/apache/calcite/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+base_os_version: ubuntu-24-04

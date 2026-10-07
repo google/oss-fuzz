@@ -1,0 +1,19 @@
+base_os_version: ubuntu-24-04
+homepage: "https://gitlab.isc.org/isc-projects/kea"
+language: c++
+primary_contact: "tomek@isc.org"
+auto_ccs:
+  - "razvan@isc.org"
+  - "andrei@isc.org"
+  - "wlodek.wencel@gmail.com"
+vendor_ccs:
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
+  - "arthur.chan@adalogics.com"
+main_repo: "https://gitlab.isc.org/isc-projects/kea"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - thread
+  - undefined

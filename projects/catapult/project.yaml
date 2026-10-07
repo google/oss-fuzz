@@ -1,0 +1,10 @@
+homepage: "https://github.com/nemtech/catapult-server"
+main_repo: "https://github.com/nemtech/catapult-server"
+primary_contact: "wayonb@gmail.com"
+auto_ccs:
+  - "gimer.outer.space@gmail.com"
+  - "jaguar5pow4@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

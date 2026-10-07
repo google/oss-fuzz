@@ -1,0 +1,10 @@
+homepage: "https://openjdk.org/projects/code-tools/jmh/"
+language: jvm
+main_repo: "https://github.com/openjdk/jmh"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

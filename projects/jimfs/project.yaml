@@ -1,0 +1,12 @@
+homepage: "https://github.com/google/jimfs"
+language: jvm
+main_repo: "git@github.com:google/jimfs.git"
+primary_contact: "cgdecker@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"
+  - "jacek.trossen@code-intelligence.com"

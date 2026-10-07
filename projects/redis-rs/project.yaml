@@ -1,0 +1,16 @@
+homepage: "https://github.com/redis-rs/redis-rs"
+language: rust
+primary_contact: "armin.ronacher@active-4.com"
+auto_ccs:
+  - "armin.ronacher@active-4.com"
+  - "g@leirbag.net"
+  - "djc.ochtman@gmail.com"
+  - "mail@bargen.dev"
+  - "bonet@hey.com"
+  - "XWraithanX@gmail.com"
+  - "jamesmlucas@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/redis-rs/redis-rs'

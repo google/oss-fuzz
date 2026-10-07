@@ -1,0 +1,14 @@
+homepage: "https://opensips.org/"
+main_repo: "https://github.com/OpenSIPS/opensips"
+primary_contact: "liviu@opensips.org"
+language: c
+auto_ccs:
+  - "david@adalogics.com"
+  - "liviu.chircu@gmail.com"
+  - "bogdan.andrei.iancu@gmail.com"
+  - "rvlad.patrascu@gmail.com"
+  - "razvan.crainea@gmail.com"
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

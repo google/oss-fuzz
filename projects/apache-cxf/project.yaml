@@ -1,0 +1,10 @@
+homepage: "https://cxf.apache.org/"
+language: jvm
+main_repo: "https://github.com/apache/cxf/"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

@@ -1,0 +1,10 @@
+homepage: "https://dateparser.readthedocs.io/en/latest/"
+language: python
+primary_contact: "opensource@zyte.com"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+main_repo: "https://github.com/scrapinghub/dateparser.git"

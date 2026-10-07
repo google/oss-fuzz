@@ -1,0 +1,29 @@
+name: indexer build tests
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - 'infra/indexer/**'
+      - '.github/workflows/indexer_build.yml'
+
+jobs:
+  indexer:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v6
+        with:  # Needed for git diff to work. (get_changed_files)
+          fetch-depth: 0
+      - run: |
+          git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+
+      - name: Build indexer
+        run: docker build -t indexer .
+        working-directory: 'infra/indexer'

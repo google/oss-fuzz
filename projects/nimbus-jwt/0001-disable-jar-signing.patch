@@ -1,0 +1,28 @@
+diff --git a/pom.xml b/pom.xml
+index 4b188bdc..8d0e4c04 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -263,23 +263,6 @@
+                     <goals>deploy</goals>
+                 </configuration>
+             </plugin>
+-            <plugin>
+-                <groupId>org.apache.maven.plugins</groupId>
+-                <artifactId>maven-gpg-plugin</artifactId>
+-                <version>1.6</version>
+-                <!-- Pass password with
+-                    mvn release:prepare|perform -Darguments=-Dgpg.passphrase=thephrase
+-                -->
+-                <executions>
+-                    <execution>
+-                        <id>sign-artifacts</id>
+-                        <phase>verify</phase>
+-                        <goals>
+-                            <goal>sign</goal>
+-                        </goals>
+-                    </execution>
+-                </executions>
+-            </plugin>
+             <plugin>
+                 <groupId>org.codehaus.mojo</groupId>
+                 <artifactId>buildnumber-maven-plugin</artifactId>

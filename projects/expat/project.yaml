@@ -1,0 +1,21 @@
+homepage: "https://github.com/libexpat/libexpat"
+language: c++
+primary_contact: "sebastian@pipping.org"
+auto_ccs:
+ - "berkay.ueruen@siemens.com"
+ - "hanno@hboeck.de"
+ - "webmaster@hartwork.org"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/libexpat/libexpat'
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

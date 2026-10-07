@@ -1,0 +1,153 @@
+# PCL5 escape sequences and commands
+# ESC is 0x1b
+
+# Printer reset
+"\x1bE"
+
+# Two-character escape sequences
+"\x1b9"
+"\x1b="
+
+# Parameterized escape sequences - Job control
+"\x1b&l0A"
+"\x1b&l1A"
+"\x1b&l2A"
+"\x1b&l26A"
+"\x1b&l0H"
+"\x1b&l1H"
+"\x1b&l2H"
+"\x1b&l0O"
+"\x1b&l1O"
+"\x1b&l0S"
+"\x1b&l1S"
+"\x1b&l0U"
+"\x1b&l0L"
+
+# Page control
+"\x1b&a0R"
+"\x1b&a0C"
+"\x1b&l0E"
+"\x1b&l1E"
+
+# Cursor positioning
+"\x1b&a0H"
+"\x1b&a0V"
+"\x1b*p0X"
+"\x1b*p0Y"
+
+# Font selection
+"\x1b(s0P"
+"\x1b(s0S"
+"\x1b(s3T"
+"\x1b(s12H"
+"\x1b(s12V"
+"\x1b(s0B"
+"\x1b(0N"
+"\x1b(10U"
+
+# Font management
+"\x1b*c0D"
+"\x1b*c0E"
+"\x1b*c0F"
+
+# Raster graphics
+"\x1b*t75R"
+"\x1b*t100R"
+"\x1b*t150R"
+"\x1b*t300R"
+"\x1b*t600R"
+"\x1b*r0A"
+"\x1b*r1A"
+"\x1b*r0F"
+"\x1b*r1F"
+"\x1b*rB"
+"\x1b*rC"
+"\x1b*b0M"
+"\x1b*b1M"
+"\x1b*b2M"
+"\x1b*b3M"
+"\x1b*b5M"
+
+# Print model / pattern
+"\x1b*v0N"
+"\x1b*v1N"
+"\x1b*v0O"
+"\x1b*v0T"
+"\x1b*c0G"
+"\x1b*c1G"
+"\x1b*c0P"
+"\x1b*c0Q"
+
+# Color
+"\x1b*r-3U"
+"\x1b*v0A"
+"\x1b*v0B"
+"\x1b*v0C"
+"\x1b*v0I"
+"\x1b*v0S"
+
+# Macros
+"\x1b&f0X"
+"\x1b&f1X"
+"\x1b&f2X"
+"\x1b&f0Y"
+
+# HP-GL/2 enter/exit
+"\x1b%0B"
+"\x1b%1B"
+"\x1b%0A"
+"\x1b%1A"
+
+# HP-GL/2 commands
+"IN;"
+"SP1;"
+"PA0,0;"
+"PD;"
+"PU;"
+"AA0,0,90;"
+"AR0,0,90;"
+"CI100;"
+"DF;"
+"DT\x03;"
+"EA100,100;"
+"EP;"
+"ER100,100;"
+"EW100,0,90;"
+"FP;"
+"FT1;"
+"IP0,0,100,100;"
+"IW0,0,100,100;"
+"LB"
+"LT;"
+"NP4;"
+"PA0,0;"
+"PD0,0,100,100;"
+"PE;"
+"PM0;"
+"PR100,100;"
+"PU0,0;"
+"PW1;"
+"RA100,100;"
+"RO0;"
+"RR100,100;"
+"SA;"
+"SC0,100,0,100;"
+"SD;"
+"SI0.2,0.3;"
+"SL0;"
+"SM;"
+"SP1;"
+"SS;"
+"TD0;"
+"TL1;"
+"WG100,0,90;"
+"WU0;"
+
+# UEL (Universal Exit Language)
+"\x1b%-12345X"
+
+# PJL commands
+"@PJL\x0d\x0a"
+"@PJL ENTER LANGUAGE=PCL\x0d\x0a"
+"@PJL SET RESOLUTION=600\x0d\x0a"
+"@PJL SET COPIES=1\x0d\x0a"

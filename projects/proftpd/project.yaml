@@ -1,0 +1,13 @@
+homepage: "http://www.proftpd.org/"
+main_repo: "https://github.com/proftpd/proftpd"
+language: c
+primary_contact: "castaglian@gmail.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - "afl"
+  - "honggfuzz"
+  - "libfuzzer"

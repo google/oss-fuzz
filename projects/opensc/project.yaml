@@ -1,0 +1,17 @@
+homepage: "https://github.com/OpenSC/OpenSC/"
+language: c++
+primary_contact: "frankmorgner@gmail.com"
+auto_ccs:
+  - "martin.paljak@gmail.com"
+  - "viktor.tarasov@gmail.com"
+  - "ludovic.rousseau@gmail.com"
+  - "andreas.schwier@cardcontact.de"
+  - "deengert@gmail.com"
+  - "jakuje@gmail.com"
+  - "xhanulik@gmail.com"
+  - "popovec.peter@gmail.com"
+main_repo: 'https://github.com/OpenSC/OpenSC'
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

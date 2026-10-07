@@ -1,0 +1,8 @@
+homepage: "https://github.com/khronosgroup/Vulkan-Loader"
+main_repo: "https://github.com/khronosgroup/Vulkan-Loader.git"
+primary_contact: "charles@lunarg.com"
+language: c
+vendor_ccs:
+- "david@adalogics.com"
+- "arthur.chan@adalogics.com"
+- "fuzzing@fuchsia.dev"

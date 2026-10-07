@@ -1,0 +1,16 @@
+homepage: "https://pupnp.github.io/pupnp/"
+language: c
+primary_contact: "mroberto@users.sourceforge.net"
+vendor_ccs:
+  - "virtual_worlds@gmx.de"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/pupnp/pupnp'

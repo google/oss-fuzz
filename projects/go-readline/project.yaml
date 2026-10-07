@@ -1,0 +1,9 @@
+homepage: "https://github.com/chzyer/readline"
+language: go
+main_repo: "https://github.com/chzyer/readline"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

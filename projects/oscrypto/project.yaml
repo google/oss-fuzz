@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/wbond/oscrypto
+language: python
+main_repo: https://github.com/wbond/oscrypto
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

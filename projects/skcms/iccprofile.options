@@ -1,0 +1,4 @@
+[libfuzzer]
+max_len = 200000
+timeout = 10
+dict = iccprofile.dict

@@ -1,0 +1,15 @@
+homepage: "https://libcxxabi.llvm.org/"
+language: c++
+primary_contact: "kcc@google.com"
+main_repo: https://github.com/llvm/llvm-project
+auto_ccs:
+  - "Erik.Pilkington@gmail.com"
+  - "akilsrin@apple.com"
+  - "bigcheesegs@gmail.com"
+  - "eric@efcs.ca"
+  - "nikolasklauser@berlin.de"
+  - "koraq@xs4all.nl"
+sanitizers:
+  - address
+  - memory
+  - undefined

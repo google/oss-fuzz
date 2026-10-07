@@ -1,0 +1,16 @@
+homepage: "https://github.com/uxlfoundation/oneDNN"
+main_repo: "https://github.com/uxlfoundation/oneDNN"
+language: c++
+auto_ccs:
+  - "ankit.v.manerikar@intel.com"
+  - "vadim.o.pirogov@intel.com"
+  - "dmitry.zarukin@intel.com"
+  - "mourad.gouicem@intel.com"
+  - "stefan.palicki@intel.com"
+  - "denis.samoylov@intel.com"
+vendor_ccs:
+- david@adalogics.com
+fuzzing_engines:
+- libfuzzer
+- honggfuzz
+- centipede

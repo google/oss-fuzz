@@ -1,0 +1,11 @@
+homepage: "https://engineering.salesforce.com/tls-fingerprinting-with-ja3-and-ja3s-247362855967/"
+language: python
+primary_contact: "jalthouse@salesforce.com"
+auto_ccs: 
+  - "ennamarie19@gmail.com"
+fuzzing_engines: 
+  - libfuzzer
+sanitizers: 
+  - address
+  - undefined
+main_repo: "https://github.com/salesforce/ja3.git"

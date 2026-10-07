@@ -1,0 +1,11 @@
+homepage: "https://www.prevanders.net/dwarf.html"
+language: c
+primary_contact: "davea42@gmail.com"
+main_repo: "https://github.com/davea42/libdwarf-code"
+auto_ccs:
+  - "david@adalogics.com"
+fuzzing_engines:
+ - afl
+ - honggfuzz
+ - libfuzzer
+

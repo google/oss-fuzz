@@ -1,0 +1,10 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/abseil/abseil-py
+language: python
+main_repo: https://github.com/abseil/abseil-py
+sanitizers:
+- address
+- undefined
+vendor_ccs:
+- david@adalogics.com

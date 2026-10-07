@@ -1,0 +1,15 @@
+homepage: "https://www.rnpgp.com/"
+language: c++
+primary_contact: "tse@ribose.com"
+auto_ccs:
+  - "o.nickolay@gmail.com"
+  - "daniel.wyatt@gmail.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - afl
+  - centipede
+main_repo: 'https://github.com/rnpgp/rnp.git'

@@ -1,0 +1,11 @@
+homepage: "https://github.com/image-rs/image-png"
+main_repo: "https://github.com/image-rs/image-png"
+primary_contact: "andreas.molzer@gmx.de"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
+file_github_issue: True

@@ -1,0 +1,20 @@
+homepage: "https://github.com/libevent/libevent"
+language: c++
+primary_contact: "a3at.mail@gmail.com"
+sanitizers:
+  - address
+# Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
+#  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/libevent/libevent.git'
+auto_ccs:
+  - "david@adalogics.com"
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

@@ -1,0 +1,10 @@
+homepage: "https://github.com/ohler55/ox"
+language: ruby
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/ohler55/ox'
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+  - david@adalogics.com

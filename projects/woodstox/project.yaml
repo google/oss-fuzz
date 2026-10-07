@@ -1,0 +1,10 @@
+homepage: "https://github.com/FasterXML/woodstox"
+language: jvm
+primary_contact: "tatu@fasterxml.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/FasterXML/woodstox"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"

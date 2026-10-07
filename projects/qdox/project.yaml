@@ -1,0 +1,10 @@
+homepage: "https://github.com/paul-hammant/qdox/"
+language: jvm
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/paul-hammant/qdox/"
+sanitizers:
+  - address
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

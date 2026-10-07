@@ -1,0 +1,6 @@
+homepage: "https://github.com/microsoft/mfcmapi"
+language: c++
+primary_contact: "mfcmapi@gmail.com"
+auto_ccs:
+  - "sgriffin@microsoft.com"
+main_repo: 'https://github.com/microsoft/mfcmapi.git'

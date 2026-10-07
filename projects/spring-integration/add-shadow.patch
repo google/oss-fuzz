@@ -1,0 +1,20 @@
+diff --git a/build.gradle b/build.gradle
+index 516e780..15d678d 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -22,6 +22,7 @@ plugins {
+     id 'org.asciidoctor.jvm.pdf' version '3.3.2'
+     id 'org.asciidoctor.jvm.gems' version '3.3.2'
+     id 'org.asciidoctor.jvm.convert' version '3.3.2'
++    id 'com.github.johnrengelman.shadow' version '7.1.2'
+ }
+ 
+ if (isCI) {
+@@ -495,6 +496,7 @@ project('spring-integration-core') {
+     description = 'Spring Integration Core'
+ 
+     apply plugin: 'org.jetbrains.dokka'
++    apply plugin: 'com.github.johnrengelman.shadow'
+ 
+     dependencies {
+         api 'org.springframework:spring-aop'

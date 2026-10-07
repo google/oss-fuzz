@@ -1,0 +1,9 @@
+homepage: "http://www.libpng.org/pub/png/libpng.html"
+main_repo: "https://github.com/pnggroup/libpng.git"
+language: c++
+primary_contact: "kcc@google.com"
+sanitizers:
+  - undefined
+  - address
+fuzzing_engines:
+  - libfuzzer

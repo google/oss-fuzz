@@ -1,0 +1,63 @@
+diff --git a/quiche/BUILD.bazel b/quiche/BUILD.bazel
+index c5b2064..5d0bb17 100644
+--- a/quiche/BUILD.bazel
++++ b/quiche/BUILD.bazel
+@@ -305,6 +305,30 @@ cc_library(
+     ],
+ )
+ 
++cc_test(
++    name = "http_frame_fuzzer",
++    srcs = ["http2/decoder/http2_frame_decoder_test.cc"],
++    deps = [
++        ":binary_http",
++        ":quiche_core",
++        ":quiche_protobufs_testonly_cc_proto",
++        ":quiche_tool_support",
++        ":quiche_test_support",
++        "@boringssl//:crypto",
++        "@boringssl//:ssl",
++        "@com_google_absl//absl/base:core_headers",
++        "@com_google_absl//absl/container:flat_hash_map",
++        "@com_google_absl//absl/container:flat_hash_set",
++        "@com_google_absl//absl/memory",
++        "@com_google_absl//absl/strings",
++        "@com_google_absl//absl/strings:str_format",
++        "@com_google_absl//absl/types:optional",
++        "@fuzztest//fuzztest",
++        "@fuzztest//fuzztest:fuzztest_gtest_main",
++        "@com_google_googleurl//url",
++    ],
++)
++
+ test_suite_from_source_list(
+     name = "quiche_tests",
+     srcs = quiche_tests_srcs,
+diff --git a/quiche/http2/decoder/http2_frame_decoder_test.cc b/quiche/http2/decoder/http2_frame_decoder_test.cc
+index a6dbf1a..0e279b8 100644
+--- a/quiche/http2/decoder/http2_frame_decoder_test.cc
++++ b/quiche/http2/decoder/http2_frame_decoder_test.cc
+@@ -18,6 +18,7 @@
+ #include "quiche/http2/test_tools/random_decoder_test_base.h"
+ #include "quiche/http2/test_tools/verify_macros.h"
+ #include "quiche/common/platform/api/quiche_logging.h"
++#include "fuzztest/fuzztest.h"
+ 
+ using ::testing::AssertionSuccess;
+ 
+@@ -915,6 +916,15 @@ TEST_F(Http2FrameDecoderTest, WindowUpdateTooLong) {
+   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
+ }
+ 
++void fuzz_frame_decoder(const std::string &s1) {
++  http2::Http2FrameDecoderNoOpListener listener;
++  http2::Http2FrameDecoder decoder(&listener);
++  http2::DecodeBuffer db(reinterpret_cast<const char *>(s1.c_str()), s1.size());
++  decoder.DecodeFrame(&db);
++}
++
++FUZZ_TEST(Http2FrameDecoderFuzzTest, fuzz_frame_decoder);
++
+ }  // namespace
+ }  // namespace test
+ }  // namespace http2

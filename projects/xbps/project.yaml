@@ -1,0 +1,13 @@
+homepage: "https://github.com/void-linux/xbps"
+primary_contact: "miwaxe@gmail.com"
+auto_ccs:
+  - "gottox@voidlinux.eu"
+  - "xtraeme@voidlinux.eu"
+main_repo: "https://github.com/void-linux/xbps"
+language: c
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

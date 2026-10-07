@@ -1,0 +1,10 @@
+homepage: https://naturalintelligence.github.io/fast-xml-parser/
+language: javascript
+main_repo: https://github.com/NaturalIntelligence/fast-xml-parser
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
+vendor_ccs:
+  - "yakdan@code-intelligence.com"
+  - "patrice.salathe@code-intelligence.com"

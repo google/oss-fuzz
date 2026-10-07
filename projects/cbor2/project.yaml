@@ -1,0 +1,9 @@
+homepage: "https://github.com/agronholm/cbor2"
+main_repo: "https://github.com/agronholm/cbor2"
+language: python
+primary_contact: "alex.gronholm@nextday.fi"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined

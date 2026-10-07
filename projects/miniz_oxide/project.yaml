@@ -1,0 +1,9 @@
+homepage: "https://github.com/Frommi/miniz_oxide"
+language: rust
+main_repo: "https://github.com/Frommi/miniz_oxide"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+  - maxnair.dev@gmail.com

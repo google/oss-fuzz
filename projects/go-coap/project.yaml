@@ -1,0 +1,10 @@
+homepage: "https://plgd.dev"
+language: go
+primary_contact: "daniel.adam@plgd.dev"
+auto_ccs:
+  - "ajsinghyadav00@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/plgd-dev/go-coap"

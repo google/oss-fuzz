@@ -1,0 +1,18 @@
+homepage: "https://developers.google.com/speed/webp/"
+language: c++
+primary_contact: "jzern@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - pascal.massimino@gmail.com
+  - vrabaud@google.com
+  - yguyon@google.com
+vendor_ccs:
+  - aosmond@mozilla.com
+  - tnikkel@mozilla.com
+  - twsmith@mozilla.com
+main_repo: 'https://chromium.googlesource.com/webm/libwebp'

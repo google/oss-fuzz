@@ -1,0 +1,21 @@
+base_os_version: ubuntu-24-04
+homepage: "https://curl.haxx.se/"
+language: c++
+primary_contact: "daniel@haxx.se"
+auto_ccs:
+  - "daniel.haxx@gmail.com"
+  - "cmeister2@gmail.com"
+  - "stefan.eissing@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+architectures:
+  - x86_64
+  - i386
+coverage_extra_args: -ignore-filename-regex=.*curl_fuzzer/build/.*
+main_repo: 'https://github.com/curl/curl.git'

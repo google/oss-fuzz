@@ -1,0 +1,12 @@
+diff --git a/jaxrpc-ri/pom.xml b/jaxrpc-ri/pom.xml
+--- a/jaxrpc-ri/pom.xml
++++ b/jaxrpc-ri/pom.xml
+@@ -49,6 +49,8 @@
+         <fastInfoset.version>1.2.16</fastInfoset.version>
+         <saaj.api.version>1.4.2</saaj.api.version>
+         <ant.version>1.9.13</ant.version>
++		<maven.compiler.target>1.8</maven.compiler.target>
++		<maven.compiler.source>1.8</maven.compiler.source>
+ 
+         <legal.doc.source>${maven.multiModuleProjectDirectory}/..</legal.doc.source>
+ 

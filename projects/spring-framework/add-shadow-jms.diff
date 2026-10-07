@@ -1,0 +1,28 @@
+diff --git a/spring-jms/spring-jms.gradle b/spring-jms/spring-jms.gradle
+--- a/spring-jms/spring-jms.gradle
++++ b/spring-jms/spring-jms.gradle
+@@ -1,5 +1,16 @@
+ description = "Spring JMS"
+ 
++apply plugin: "com.gradleup.shadow"
++
++configurations {
++	shadow
++}
++
++shadowJar {
++	configurations = [project.configurations.shadow, project.configurations.runtimeClasspath]
++	mergeServiceFiles()
++}
++
+ dependencies {
+ 	api(project(":spring-beans"))
+ 	api(project(":spring-core"))
+@@ -8,6 +19,7 @@ dependencies {
+ 	api("io.micrometer:micrometer-observation")
+ 	compileOnly("jakarta.jms:jakarta.jms-api")
+ 	optional(project(":spring-aop"))
++	shadow("jakarta.jms:jakarta.jms-api:3.1.0")
+ 	optional(project(":spring-context"))
+ 	optional(project(":spring-oxm"))
+ 	optional("com.fasterxml.jackson.core:jackson-databind")

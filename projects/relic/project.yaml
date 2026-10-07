@@ -1,0 +1,18 @@
+homepage: "https://github.com/relic-toolkit/relic"
+language: c++
+primary_contact: "guidovranken@gmail.com"
+main_repo: "https://github.com/relic-toolkit/relic"
+auto_ccs:
+    - "dfaranha@gmail.com"
+sanitizers:
+ - address
+ - undefined
+architectures:
+ - x86_64
+ - i386
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+

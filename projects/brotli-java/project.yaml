@@ -1,0 +1,11 @@
+homepage: "https://github.com/google/brotli/tree/master/java"
+language: jvm
+primary_contact: "eustas@chromium.org"
+main_repo: "https://github.com/google/brotli"
+auto_ccs:
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+file_github_issue: True

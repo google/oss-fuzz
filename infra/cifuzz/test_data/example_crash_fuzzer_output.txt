@@ -1,0 +1,202 @@
+/github/workspace/build-out/do_stuff_fuzzer -timeout=25 -rss_limit_mb=2560 -dict=/github/workspace/build-out/do_stuff_fuzzer.dict -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmp9p1w4p8r/ -max_total_time=600 -print_final_stats=1 /github/workspace/cifuzz-corpus/do_stuff_fuzzer >fuzz-0.log 2>&1
+================== Job 0 exited with exit code 77 ============
+Dictionary: 3 entries
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1337
+INFO: Loaded 1 modules   (86 inline 8-bit counters): 86 [0x6150e0, 0x615136), 
+INFO: Loaded 1 PC tables (86 PCs): 86 [0x5c8b08,0x5c9068), 
+INFO:        5 files found in /github/workspace/cifuzz-corpus/do_stuff_fuzzer
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 5 min: 3b max: 44b total: 64b rss: 31Mb
+#6	INITED cov: 64 ft: 70 corp: 5/64b exec/s: 0 rss: 32Mb
+#9	NEW    cov: 64 ft: 72 corp: 6/74b lim: 4096 exec/s: 0 rss: 32Mb L: 10/44 MS: 3 ChangeBit-InsertByte-ManualDict- DE: "foo"-
+#17	NEW    cov: 64 ft: 74 corp: 7/86b lim: 4096 exec/s: 0 rss: 32Mb L: 12/44 MS: 3 ChangeBit-ManualDict-PersAutoDict- DE: "ouch"-"foo"-
+#18	NEW    cov: 64 ft: 76 corp: 8/100b lim: 4096 exec/s: 0 rss: 32Mb L: 14/44 MS: 1 CrossOver-
+#22	NEW    cov: 64 ft: 78 corp: 9/141b lim: 4096 exec/s: 0 rss: 32Mb L: 41/44 MS: 4 InsertRepeatedBytes-CopyPart-ChangeBinInt-ChangeBit-
+#24	NEW    cov: 64 ft: 80 corp: 10/151b lim: 4096 exec/s: 0 rss: 32Mb L: 10/44 MS: 2 CrossOver-CopyPart-
+#28	NEW    cov: 64 ft: 81 corp: 11/171b lim: 4096 exec/s: 0 rss: 32Mb L: 20/44 MS: 4 InsertByte-PersAutoDict-ShuffleBytes-ManualDict- DE: "foo"-"ouch"-
+#43	NEW    cov: 65 ft: 83 corp: 12/175b lim: 4096 exec/s: 0 rss: 32Mb L: 4/44 MS: 5 InsertByte-ChangeBit-ManualDict-ManualDict-EraseBytes- DE: "bar"-"bar"-
+#54	NEW    cov: 65 ft: 84 corp: 13/191b lim: 4096 exec/s: 0 rss: 32Mb L: 16/44 MS: 1 CrossOver-
+#64	NEW    cov: 65 ft: 86 corp: 14/209b lim: 4096 exec/s: 0 rss: 32Mb L: 18/44 MS: 5 InsertByte-ChangeBinInt-CMP-PersAutoDict-CopyPart- DE: "\000\000"-"foo"-
+#75	REDUCE cov: 65 ft: 86 corp: 14/203b lim: 4096 exec/s: 0 rss: 32Mb L: 35/44 MS: 1 EraseBytes-
+#76	REDUCE cov: 65 ft: 86 corp: 14/195b lim: 4096 exec/s: 0 rss: 32Mb L: 36/36 MS: 1 EraseBytes-
+=================================================================
+==26==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000003114 at pc 0x00000056d1db bp 0x7fffd6a72bf0 sp 0x7fffd6a72be8
+READ of size 4 at 0x603000003114 thread T0
+SCARINESS: 17 (4-byte-read-heap-buffer-overflow)
+    #0 0x56d1da in DoStuff(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) /src/cifuzz-example/my_api.cpp:26:10
+    #1 0x56c5d6 in LLVMFuzzerTestOneInput /src/cifuzz-example/do_stuff_fuzzer.cpp:15:3
+    #2 0x43de23 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #3 0x43d60a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #4 0x43ecd9 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:757:19
+    #5 0x43f9a5 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:895:5
+    #6 0x42ed0f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #7 0x458362 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #8 0x7fcfaa2aa082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+    #9 0x41f74d in _start (build-out/do_stuff_fuzzer+0x41f74d)
+
+DEDUP_TOKEN: DoStuff(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)--LLVMFuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)
+0x603000003114 is located 0 bytes to the right of 20-byte region [0x603000003100,0x603000003114)
+allocated by thread T0 here:
+    #0 0x569dfd in operator new(unsigned long) /src/llvm-project/compiler-rt/lib/asan/asan_new_delete.cpp:95:3
+    #1 0x56c9d4 in __libcpp_operator_new<unsigned long> /usr/local/bin/../include/c++/v1/new:245:10
+    #2 0x56c9d4 in __libcpp_allocate /usr/local/bin/../include/c++/v1/new:271:10
+    #3 0x56c9d4 in allocate /usr/local/bin/../include/c++/v1/__memory/allocator.h:105:38
+    #4 0x56c9d4 in allocate /usr/local/bin/../include/c++/v1/__memory/allocator_traits.h:262:20
+    #5 0x56c9d4 in __vallocate /usr/local/bin/../include/c++/v1/vector:931:37
+    #6 0x56c9d4 in vector /usr/local/bin/../include/c++/v1/vector:1236:9
+    #7 0x56c9d4 in DoStuff(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) /src/cifuzz-example/my_api.cpp:14:20
+    #8 0x56c5d6 in LLVMFuzzerTestOneInput /src/cifuzz-example/do_stuff_fuzzer.cpp:15:3
+    #9 0x43de23 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #10 0x43d60a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #11 0x43ecd9 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:757:19
+    #12 0x43f9a5 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:895:5
+    #13 0x42ed0f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #14 0x458362 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #15 0x7fcfaa2aa082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+
+DEDUP_TOKEN: operator new(unsigned long)--__libcpp_operator_new<unsigned long>--__libcpp_allocate
+SUMMARY: AddressSanitizer: heap-buffer-overflow /src/cifuzz-example/my_api.cpp:26:10 in DoStuff(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)
+Shadow bytes around the buggy address:
+  0x0c067fff85d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff85e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff85f0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8600: fa fa fd fd fd fa fa fa fd fd fd fa fa fa fd fd
+  0x0c067fff8610: fd fa fa fa fd fd fd fa fa fa 00 00 00 00 fa fa
+=>0x0c067fff8620: 00 00[04]fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8630: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8640: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8650: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8660: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8670: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==26==ABORTING
+MS: 4 PersAutoDict-ManualDict-CrossOver-PersAutoDict- DE: "foo"-"ouch"-"bar"-; base unit: 1a25c32303e03f997166aee1c665b5ae9f66ec7d
+0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0x66,0x6f,0x6f,0xff,0x1,0x62,0x61,0x72,0x63,0x68,0x6f,0x75,0x63,0x68,0x66,0x6f,0x66,0x6e,0x6f,0x6d,0x67,0x6d,
+\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377foo\377\001barchouchfofnomgm
+artifact_prefix='/tmp/tmp9p1w4p8r/'; Test unit written to /tmp/tmp9p1w4p8r/crash-1c750df432fe458b738987ba69cd20a598708775
+Base64: //////////////////////9mb2//AWJhcmNob3VjaGZvZm5vbWdt
+stat::number_of_executed_units: 90
+stat::average_exec_per_sec:     0
+stat::new_units_added:          11
+stat::slowest_unit_time_sec:    0
+stat::peak_rss_mb:              33
+/github/workspace/build-out/do_stuff_fuzzer -timeout=25 -rss_limit_mb=2560 -dict=/github/workspace/build-out/do_stuff_fuzzer.dict -len_control=0 -seed=1337 -artifact_prefix=/tmp/tmp9p1w4p8r/ -max_total_time=600 -print_final_stats=1 /github/workspace/cifuzz-corpus/do_stuff_fuzzer >fuzz-1.log 2>&1
+================== Job 1 exited with exit code 77 ============
+Dictionary: 3 entries
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1337
+INFO: Loaded 1 modules   (86 inline 8-bit counters): 86 [0x6150e0, 0x615136), 
+INFO: Loaded 1 PC tables (86 PCs): 86 [0x5c8b08,0x5c9068), 
+INFO:       15 files found in /github/workspace/cifuzz-corpus/do_stuff_fuzzer
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 15 min: 3b max: 44b total: 239b rss: 31Mb
+#16	INITED cov: 65 ft: 86 corp: 13/159b exec/s: 0 rss: 32Mb
+#38	NEW    cov: 65 ft: 88 corp: 14/188b lim: 4096 exec/s: 0 rss: 32Mb L: 29/35 MS: 2 InsertByte-CopyPart-
+#43	REDUCE cov: 65 ft: 88 corp: 14/187b lim: 4096 exec/s: 0 rss: 32Mb L: 2/35 MS: 5 InsertByte-ChangeByte-ChangeBinInt-EraseBytes-EraseBytes-
+#64	NEW    cov: 66 ft: 89 corp: 15/191b lim: 4096 exec/s: 0 rss: 32Mb L: 4/35 MS: 1 ChangeByte-
+#78	REDUCE cov: 66 ft: 89 corp: 15/190b lim: 4096 exec/s: 0 rss: 32Mb L: 15/35 MS: 4 ChangeBinInt-CopyPart-EraseBytes-EraseBytes-
+#95	REDUCE cov: 66 ft: 89 corp: 15/188b lim: 4096 exec/s: 0 rss: 32Mb L: 16/35 MS: 2 ChangeBinInt-EraseBytes-
+#110	REDUCE cov: 66 ft: 89 corp: 15/184b lim: 4096 exec/s: 0 rss: 32Mb L: 31/31 MS: 5 CrossOver-ChangeByte-ShuffleBytes-InsertByte-EraseBytes-
+#146	REDUCE cov: 66 ft: 89 corp: 15/183b lim: 4096 exec/s: 0 rss: 32Mb L: 1/31 MS: 1 EraseBytes-
+#157	NEW    cov: 66 ft: 90 corp: 16/210b lim: 4096 exec/s: 0 rss: 32Mb L: 27/31 MS: 1 CrossOver-
+#230	REDUCE cov: 66 ft: 92 corp: 17/318b lim: 4096 exec/s: 0 rss: 32Mb L: 108/108 MS: 3 CopyPart-InsertRepeatedBytes-CrossOver-
+#277	NEW    cov: 66 ft: 94 corp: 18/429b lim: 4096 exec/s: 0 rss: 32Mb L: 111/111 MS: 2 ManualDict-CMP- DE: "bar"-"\000\000\000\000"-
+#337	NEW    cov: 67 ft: 95 corp: 19/439b lim: 4096 exec/s: 0 rss: 32Mb L: 10/111 MS: 5 ChangeByte-ChangeBit-ManualDict-CopyPart-EraseBytes- DE: "bar"-
+=================================================================
+==30==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000007d94 at pc 0x00000056d1db bp 0x7ffdb9da4b50 sp 0x7ffdb9da4b48
+READ of size 4 at 0x603000007d94 thread T0
+SCARINESS: 17 (4-byte-read-heap-buffer-overflow)
+    #0 0x56d1da in DoStuff(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) /src/cifuzz-example/my_api.cpp:26:10
+    #1 0x56c5d6 in LLVMFuzzerTestOneInput /src/cifuzz-example/do_stuff_fuzzer.cpp:15:3
+    #2 0x43de23 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #3 0x43d60a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #4 0x43ecd9 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:757:19
+    #5 0x43f9a5 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:895:5
+    #6 0x42ed0f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #7 0x458362 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #8 0x7fc2c6bd3082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+    #9 0x41f74d in _start (build-out/do_stuff_fuzzer+0x41f74d)
+
+DEDUP_TOKEN: DoStuff(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)--LLVMFuzzerTestOneInput--fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long)
+0x603000007d94 is located 0 bytes to the right of 20-byte region [0x603000007d80,0x603000007d94)
+allocated by thread T0 here:
+    #0 0x569dfd in operator new(unsigned long) /src/llvm-project/compiler-rt/lib/asan/asan_new_delete.cpp:95:3
+    #1 0x56c9d4 in __libcpp_operator_new<unsigned long> /usr/local/bin/../include/c++/v1/new:245:10
+    #2 0x56c9d4 in __libcpp_allocate /usr/local/bin/../include/c++/v1/new:271:10
+    #3 0x56c9d4 in allocate /usr/local/bin/../include/c++/v1/__memory/allocator.h:105:38
+    #4 0x56c9d4 in allocate /usr/local/bin/../include/c++/v1/__memory/allocator_traits.h:262:20
+    #5 0x56c9d4 in __vallocate /usr/local/bin/../include/c++/v1/vector:931:37
+    #6 0x56c9d4 in vector /usr/local/bin/../include/c++/v1/vector:1236:9
+    #7 0x56c9d4 in DoStuff(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) /src/cifuzz-example/my_api.cpp:14:20
+    #8 0x56c5d6 in LLVMFuzzerTestOneInput /src/cifuzz-example/do_stuff_fuzzer.cpp:15:3
+    #9 0x43de23 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:611:15
+    #10 0x43d60a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:514:3
+    #11 0x43ecd9 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:757:19
+    #12 0x43f9a5 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, std::__Fuzzer::allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:895:5
+    #13 0x42ed0f in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:912:6
+    #14 0x458362 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #15 0x7fc2c6bd3082 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x24082) (BuildId: 1878e6b475720c7c51969e69ab2d276fae6d1dee)
+
+DEDUP_TOKEN: operator new(unsigned long)--__libcpp_operator_new<unsigned long>--__libcpp_allocate
+SUMMARY: AddressSanitizer: heap-buffer-overflow /src/cifuzz-example/my_api.cpp:26:10 in DoStuff(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)
+Shadow bytes around the buggy address:
+  0x0c067fff8f60: fa fa fd fd fd fa fa fa fd fd fd fa fa fa fd fd
+  0x0c067fff8f70: fd fa fa fa fd fd fd fa fa fa fd fd fd fa fa fa
+  0x0c067fff8f80: fd fd fd fa fa fa fd fd fd fa fa fa fd fd fd fa
+  0x0c067fff8f90: fa fa fd fd fd fa fa fa fd fd fd fa fa fa fd fd
+  0x0c067fff8fa0: fd fa fa fa fd fd fd fa fa fa fd fd fd fa fa fa
+=>0x0c067fff8fb0: 00 00[04]fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8fc0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8fd0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8fe0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8ff0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff9000: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==30==ABORTING
+MS: 4 ShuffleBytes-ManualDict-CrossOver-PersAutoDict- DE: "foo"-"bar"-; base unit: 8fc7da8d952ed1aa5c7415e21b3d52b42402973d
+0x66,0x6f,0x6f,0x63,0x6f,0x75,0x6f,0x75,0x63,0x68,0x63,0x68,0x66,0x62,0x61,0x72,0x6f,0x6f,0x6d,0x67,0x66,0x6f,0x6f,0x2f,0x99,0x6f,0x6f,0x90,0x6f,0x6f,0x6d,0x0,0x0,0x67,0x2f,
+foocououchchfbaroomgfoo/\231oo\220oom\000\000g/
+artifact_prefix='/tmp/tmp9p1w4p8r/'; Test unit written to /tmp/tmp9p1w4p8r/crash-f8a2a1e84f58a2d676e5ad8078119a39b78df901
+Base64: Zm9vY291b3VjaGNoZmJhcm9vbWdmb28vmW9vkG9vbQAAZy8=
+stat::number_of_executed_units: 366
+stat::average_exec_per_sec:     0
+stat::new_units_added:          11
+stat::slowest_unit_time_sec:    0
+stat::peak_rss_mb:              33

@@ -1,0 +1,17 @@
+homepage: "https://xiph.org/vorbis/"
+language: c++
+primary_contact: "daede003@umn.edu"
+auto_ccs:
+  - "le.businessman@gmail.com"
+  - "paul.l.kehrer@gmail.com"
+vendor_ccs:
+  - "twsmith@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://gitlab.xiph.org/xiph/tremor.git'

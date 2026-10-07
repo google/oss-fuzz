@@ -1,0 +1,18 @@
+homepage: "https://github.com/OpenNavigationSurface/BAG"
+language: c++
+primary_contact: "selimnairb@gmail.com"
+auto_ccs:
+  - "bmiles@ccom.unh.edu"
+  - "brc@ccom.unh.edu"
+  - "glen.rice@noaa.gov"
+  - "dongpengxu.unh@gmail.com"
+  - "akshitamavurapu@gmail.com"
+  - "giuseppemasetti@gmail.com"
+  - "apapetti@outlook.com"
+architectures:
+  - x86_64
+main_repo: 'https://github.com/OpenNavigationSurface/BAG'
+sanitizers:
+  - address
+  - undefined
+  - memory

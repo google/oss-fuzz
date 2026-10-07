@@ -1,0 +1,9 @@
+homepage: "https://github.com/publicsuffix/list"
+language: go
+main_repo: "https://github.com/publicsuffix/list"
+auto_ccs:
+  - "adam@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
