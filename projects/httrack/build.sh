@@ -24,14 +24,41 @@ ax_cv_check_cflags___fcf_protection=no \
     ./configure --disable-shared --disable-https AR=llvm-ar RANLIB=llvm-ranlib
 make -j"$(nproc)" -C src libhttrack.la
 
-for f in charset meta idna entities unescape filters url; do
-    $CC $CFLAGS -DHAVE_CONFIG_H -I. -Isrc -Isrc/coucal \
+for f in charset codepage meta idna entities unescape filters url header \
+    cachendx htsparse singlefile sitemap arc; do
+    # Extras mirroring fuzz/Makefile.am: fuzz-codepage needs a second
+    # htscharset.c forced onto the built-in codepage tables an iconv build never
+    # compiles, and the two cache readers need proxytrack's store, which does
+    # not link libhttrack.
+    defs=()
+    srcs=()
+    case "$f" in
+    codepage)
+        defs=(-DDISABLE_ICONV)
+        srcs=(src/htscharset.c)
+        ;;
+    cachendx | arc)
+        defs=(-DZLIB_CONST)
+        srcs=(src/proxy/store.c)
+        ;;
+    esac
+
+    objs=("fuzz-$f.o")
+    # shellcheck disable=SC2086
+    $CC $CFLAGS "${defs[@]}" -DHAVE_CONFIG_H -I. -Isrc -Isrc/coucal \
         -c "fuzz/fuzz-$f.c" -o "fuzz-$f.o"
+    for src in "${srcs[@]}"; do
+        obj="extra-$f-$(basename "$src" .c).o"
+        # shellcheck disable=SC2086
+        $CC $CFLAGS "${defs[@]}" -DHAVE_CONFIG_H -I. -Isrc -Isrc/coucal \
+            -c "$src" -o "$obj"
+        objs+=("$obj")
+    done
     # shellcheck disable=SC2086
     # -fuse-ld=lld: afl-clang-fast emits LLVM bitcode objects, which end up in
     # libhttrack.a; the default GNU ld rejects them ("file format not
     # recognized"), lld reads them directly.
-    $CXX $CXXFLAGS -fuse-ld=lld "fuzz-$f.o" -o "$OUT/fuzz-$f" \
+    $CXX $CXXFLAGS -fuse-ld=lld "${objs[@]}" -o "$OUT/fuzz-$f" \
         $LIB_FUZZING_ENGINE src/.libs/libhttrack.a -lz -lpthread
     zip -j "$OUT/fuzz-${f}_seed_corpus.zip" fuzz/corpus/"$f"/*
 done
