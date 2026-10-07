@@ -26,21 +26,12 @@ make -j"$(nproc)" -C src libhttrack.la
 
 for f in charset codepage meta idna entities unescape filters url header \
     cachendx htsparse singlefile sitemap arc; do
-    # Extras mirroring fuzz/Makefile.am: fuzz-codepage needs a second
-    # htscharset.c forced onto the built-in codepage tables an iconv build never
-    # compiles, and the two cache readers need proxytrack's store, which does
-    # not link libhttrack.
+    # Three targets need an extra source, as fuzz/Makefile.am lists them.
     defs=()
     srcs=()
     case "$f" in
-    codepage)
-        defs=(-DDISABLE_ICONV)
-        srcs=(src/htscharset.c)
-        ;;
-    cachendx | arc)
-        defs=(-DZLIB_CONST)
-        srcs=(src/proxy/store.c)
-        ;;
+    codepage) defs=(-DDISABLE_ICONV) srcs=(src/htscharset.c) ;;
+    cachendx | arc) defs=(-DZLIB_CONST) srcs=(src/proxy/store.c) ;;
     esac
 
     objs=("fuzz-$f.o")
