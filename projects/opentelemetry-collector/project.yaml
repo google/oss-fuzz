@@ -1,9 +1,10 @@
 homepage: "https://opentelemetry.io/"
 language: go
 primary_contact: "cncf-opentelemetry-tc@lists.cncf.io"
-main_repo: "https://github.com/open-telemetry/community"
+main_repo: "https://github.com/open-telemetry/opentelemetry-collector"
 auto_ccs:
-  - "adam@adalogics.com"
+  - "alex.boten+ossfuzz@grafana.com"
+  - "pablo.baeyens@datadoghq.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
