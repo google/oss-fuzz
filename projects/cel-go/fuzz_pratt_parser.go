@@ -20,6 +20,7 @@ import (
 
 	"cel.dev/cel-go/common"
 	"cel.dev/cel-go/common/ast"
+	"cel.dev/cel-go/common/runes"
 	"cel.dev/cel-go/parser"
 	"google.golang.org/protobuf/proto"
 
@@ -114,10 +115,11 @@ func hasEmptyCollectionWithComma(antlrAST *ast.AST, text string) bool {
 		return false
 	}
 	sourceInfo := antlrAST.SourceInfo()
+	rbuf := runes.NewBuffer(text)
 	for _, node := range getAllNodes(antlrAST) {
 		expr := node
 		isEmptyCollection := false
-		closeChar := byte('}')
+		closeChar := '}'
 		switch expr.Kind() {
 		case ast.ListKind:
 			if expr.AsList().Size() == 0 {
@@ -137,14 +139,21 @@ func hasEmptyCollectionWithComma(antlrAST *ast.AST, text string) bool {
 			continue
 		}
 		offsetRange, found := sourceInfo.GetOffsetRange(expr.ID())
-		if !found || offsetRange.Start < 0 || int(offsetRange.Start) >= len(text) {
+		if !found || offsetRange.Start < 0 || int(offsetRange.Start) >= rbuf.Len() {
 			continue
 		}
 		openPos := int(offsetRange.Start)
-		closePos := strings.IndexByte(text[openPos+1:], closeChar)
-		if closePos != -1 {
-			if strings.Contains(text[openPos+1:openPos+1+closePos], ",") {
-				return true
+		hasComma := false
+		for i := openPos + 1; i < rbuf.Len(); i++ {
+			r := rbuf.Get(i)
+			if r == closeChar {
+				if hasComma {
+					return true
+				}
+				break
+			}
+			if r == ',' {
+				hasComma = true
 			}
 		}
 	}
