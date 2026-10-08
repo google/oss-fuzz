@@ -3,7 +3,7 @@ language: go
 primary_contact: "cncf-opentelemetry-tc@lists.cncf.io"
 main_repo: "https://github.com/open-telemetry/opentelemetry-collector-contrib"
 auto_ccs:
-  - "alex.boten+ossfuzz@grafana.com"
+  - "alex.boten@grafana.com"
   - "braydonk@google.com"
   - "pablo.baeyens@datadoghq.com"
 fuzzing_engines:
