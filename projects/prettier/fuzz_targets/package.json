@@ -1,0 +1,5 @@
+{
+  "name": "prettier-fuzz-targets",
+  "private": true,
+  "type": "commonjs"
+}
