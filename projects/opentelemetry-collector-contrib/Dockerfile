@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/open-telemetry/opentelemetry-collector-contrib --branch=fuzz
+RUN git clone --depth 1 https://github.com/open-telemetry/opentelemetry-collector-contrib
 WORKDIR $SRC/opentelemetry-collector-contrib
 COPY build.sh dict $SRC/
