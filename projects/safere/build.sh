@@ -15,6 +15,23 @@
 #
 ################################################################################
 
+cd "$SRC/safere"
+
+# Once safere-fuzz/targets.json and its adapter land upstream
+# (https://github.com/eaftan/safere/pull/967), SafeRE owns target enrollment:
+# only targets it marks as OSS-Fuzz-eligible get launchers.
+if [[ -f safere-fuzz/oss-fuzz/build.sh ]]; then
+  exec bash safere-fuzz/oss-fuzz/build.sh
+fi
+
+# Until then, enroll an explicit allowlist instead of every *Fuzzer class.
+# The other targets compare against java.util.regex across inputs that reach
+# documented intentional divergences and known JDK bugs.
+FUZZERS=(
+  ParserStackSafetyFuzzer
+  Utf8InputFuzzer
+)
+
 # 1. Bundle a trimmed OpenJDK for runner execution
 export RUNTIME_JDK="$OUT/openjdk"
 mkdir -p "$RUNTIME_JDK"
@@ -49,8 +66,11 @@ FUZZ_TARGET_DIR="$SRC/safere/safere-fuzz/src/test/java/org/safere/fuzz"
 RESOURCES_DIR="$SRC/safere/safere-fuzz/src/test/resources/org/safere/fuzz"
 REGEXP_DICT="$SRC/google-fuzzing/dictionaries/regexp.dict"
 
-for fuzzer_file in "$FUZZ_TARGET_DIR"/*Fuzzer.java; do
-  fuzzer_name=$(basename -s .java "$fuzzer_file")
+for fuzzer_name in "${FUZZERS[@]}"; do
+  if [[ ! -f "$FUZZ_TARGET_DIR/$fuzzer_name.java" ]]; then
+    echo "error: allowlisted fuzz target $fuzzer_name not found" >&2
+    exit 1
+  fi
   target_class="org.safere.fuzz.$fuzzer_name"
 
   cat <<EOF > "$OUT/$fuzzer_name"
