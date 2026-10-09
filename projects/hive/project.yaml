@@ -3,7 +3,7 @@ homepage: "https://hive.apache.org/"
 language: jvm
 fuzzing_engines:
   - libfuzzer
-main_repo: "https://github.com/apache/hive/tree/master/"
+main_repo: "https://github.com/apache/hive"
 sanitizers:
   - address
 vendor_ccs:

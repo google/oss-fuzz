@@ -58,6 +58,24 @@ build_fuzzer "assimp_fuzzer" "../fuzz/assimp_fuzzer.cc"
 cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_fuzzer.dict || true
 
 
+# 1b. Round-trip Fuzzer (import any format, then export to every supported
+#     format to exercise the otherwise-uncovered exporter back-ends).
+build_fuzzer "assimp_roundtrip_fuzzer" "../fuzz/assimp_roundtrip_fuzzer.cc"
+# Reuse the generic all-models corpus and dictionary.
+(cd ../test/models && zip -q -r $OUT/assimp_roundtrip_fuzzer_seed_corpus.zip .)
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_roundtrip_fuzzer.dict || true
+
+
+# 1c. Post-processing Fuzzer (import any format with no post-processing, then
+#     apply a fuzz-selected subset of the post-processing steps that are not in
+#     aiProcessPreset_TargetRealtime_Quality and not enforced by any exporter,
+#     exercising the otherwise-uncovered geometry/graph transform back-ends).
+build_fuzzer "assimp_postprocess_fuzzer" "../fuzz/assimp_postprocess_fuzzer.cc"
+# Reuse the generic all-models corpus and dictionary.
+(cd ../test/models && zip -q -r $OUT/assimp_postprocess_fuzzer_seed_corpus.zip .)
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_postprocess_fuzzer.dict || true
+
+
 # 2. OBJ Fuzzer
 build_fuzzer "assimp_fuzzer_obj" "../fuzz/assimp_fuzzer_obj.cc"
 if [ -d "../test/models/OBJ" ]; then

@@ -1,5 +1,5 @@
 homepage: "http://unicode-rs.github.io/"
-main_repo: "https://github.com/unicode-rs"
+main_repo: "https://github.com/unicode-rs/unicode-normalization"
 primary_contact: "manishsmail@gmail.com"
 sanitizers:
   - address

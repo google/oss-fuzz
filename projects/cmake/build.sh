@@ -116,8 +116,12 @@ build_fuzzer "cmExprParserFuzzer" "cmExprParserFuzzer.cxx"
 # 8. PkgConfig Parser Fuzzer
 build_fuzzer "cmPkgConfigParserFuzzer" "cmPkgConfigParserFuzzer.cxx"
 
+# 8b. PkgConfig Resolver Fuzzer (interpolation, fragments, Requires specs)
+build_fuzzer "cmPkgConfigResolverFuzzer" "cmPkgConfigResolverFuzzer.cxx"
+
 # 9. JSON Parser Fuzzer
 build_fuzzer "cmJSONParserFuzzer" "cmJSONParserFuzzer.cxx"
+build_fuzzer "cmCMakePresetsFuzzer" "cmCMakePresetsFuzzer.cxx"
 
 # 10. Script Fuzzer (highest coverage - executes CMake scripts)
 build_fuzzer "cmScriptFuzzer" "cmScriptFuzzer.cxx"
@@ -136,6 +140,12 @@ build_fuzzer "cmGccDepfileFuzzer" "cmGccDepfileFuzzer.cxx"
 
 # 15. Glob Fuzzer
 build_fuzzer "cmGlobFuzzer" "cmGlobFuzzer.cxx"
+
+# 16. Fortran dependency scanner fuzzer
+build_fuzzer "cmFortranParserFuzzer" "cmFortranParserFuzzer.cxx"
+
+# 17. CPS package-info reader fuzzer
+build_fuzzer "cmPackageInfoReaderFuzzer" "cmPackageInfoReaderFuzzer.cxx"
 
 # Build seed corpora
 echo "Building seed corpora..."
@@ -161,12 +171,16 @@ build_corpus "cmArchiveExtractFuzzer" "corpus/archive"
 build_corpus "cmFileLockFuzzer" "corpus/filelock"
 build_corpus "cmExprParserFuzzer" "corpus/expr"
 build_corpus "cmPkgConfigParserFuzzer" "corpus/pkgconfig"
+build_corpus "cmPkgConfigResolverFuzzer" "corpus/pkgconfig"
 build_corpus "cmJSONParserFuzzer" "corpus/json"
+build_corpus "cmCMakePresetsFuzzer" "corpus/presets"
 build_corpus "cmScriptFuzzer" "corpus/script"
 build_corpus "cmStringAlgorithmsFuzzer" "corpus/string"
 build_corpus "cmVersionFuzzer" "corpus/version"
 build_corpus "cmCMakePathFuzzer" "corpus/path"
 build_corpus "cmGccDepfileFuzzer" "corpus/depfile"
+build_corpus "cmFortranParserFuzzer" "corpus/fortran"
+build_corpus "cmPackageInfoReaderFuzzer" "corpus/cps"
 # Note: No corpus/glob directory in upstream - glob patterns are simple strings
 
 # Copy dictionaries (cmFoo.dict -> cmFooFuzzer.dict)
@@ -190,4 +204,4 @@ for opts in *.options; do
     fi
 done
 
-echo "Build complete! Built 15 fuzzers with corpora, dictionaries, and options."
+echo "Build complete! Built 18 fuzzers with corpora, dictionaries, and options."

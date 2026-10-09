@@ -32,7 +32,18 @@ cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
     -DBUILD_SHARED_LIBS=OFF -DWITH_INSECURE_NONE=ON -DWITH_EXEC=OFF \
     -DUNIT_TESTING=ON -DWITH_EXAMPLES=OFF $SRC/libssh
-make "-j$(nproc)"
+
+# Build only the static archive the fuzzers link against.
+#
+# UNIT_TESTING=ON forces BUILD_STATIC_LIB=ON, which adds the `ssh-static`
+# target with OUTPUT_NAME "ssh" and ARCHIVE_OUTPUT_DIRECTORY src/. With
+# BUILD_SHARED_LIBS=OFF the default `ssh` target is *also* a static library at
+# src/libssh.a, so both targets write the same archive. Under `make -jN` they
+# race: one target's `rm -f libssh.a` lands between the other's ar and ranlib
+# steps, and the build dies with "llvm-ranlib: unable to load 'libssh.a'".
+# Naming ssh-static explicitly avoids the race entirely (and halves the build,
+# since the two targets compile identical objects).
+make "-j$(nproc)" ssh-static
 
 # Build the shared mock server object (needed by ssh_scp_fuzzer)
 MOCK_SRC="$SRC/libssh/tests/fuzz/ssh_server_mock.c"
