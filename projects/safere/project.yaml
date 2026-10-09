@@ -4,6 +4,8 @@ main_repo: "https://github.com/eaftan/safere.git"
 primary_contact: "aftandilian@gmail.com"
 auto_ccs:
   - "cushon@google.com"
+# Bug reports are public by default:
+view_restrictions: none
 fuzzing_engines:
   - libfuzzer
 sanitizers:

@@ -34,3 +34,6 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_peg.o build/libjanet.a -o $OUT/fuzz_peg
 
 $CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_asm.o -c ./test/fuzzers/fuzz_asm.c
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_peg.o build/libjanet.a -o $OUT/fuzz_asm
+
+$CC -D_XOPEN_SOURCE=600 $CFLAGS -DJANET_BOOTSTRAP -Isrc/include -Isrc/conf -std=c99 -fPIC -o fuzz_fiber.o -c ./test/fuzzers/fuzz_fiber.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_peg.o build/libjanet.a -o $OUT/fuzz_fiber
