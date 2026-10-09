@@ -8,10 +8,7 @@ fuzzing_engines:
 sanitizers:
   - address
 vendor_ccs:
-  - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
-  - "glendowne@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
-  - "hlin@code-intelligence.com"
   - "jacek.trossen@code-intelligence.com"
   - "peter.samarin@code-intelligence.com"

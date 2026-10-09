@@ -15,4 +15,13 @@
 #
 ###############################################################################
 
-make test
+# Offline unit tests of the project.
+# Brunsli tests don't require network access.
+
+# Run tests using ctest, showing output of failed tests.
+ctest --output-on-failure
+
+# Cleanup any artifacts to ensure idempotency.
+rm -rf Testing/
+# Since the build artifacts are already in the source tree from build.sh,
+# we don't remove them. They are not 'new' changes in the context of run_tests.sh.

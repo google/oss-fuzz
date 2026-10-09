@@ -24,3 +24,7 @@ make
 $CC $CFLAGS -c ../test/fuzzers/fuzz-mdhtml.c -I../src
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-mdhtml.o -o $OUT/fuzz-mdhtml \
     ./src/libmd4c-html.a ./src/libmd4c.a
+
+if [ -d "$SRC/test/fuzzers/seed-corpus" ]; then
+    zip -j $OUT/fuzz-mdhtml_seed_corpus.zip $SRC/test/fuzzers/seed-corpus/*
+fi

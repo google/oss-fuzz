@@ -36,7 +36,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   memset(&c, 0, sizeof(struct context));
   gc_init(&c.gc);
   c.es = env_set_create(&c.gc);
-  init_options(&c.options, true);
+  init_options(&c.options);
   net_ctx_init(&c, &c.net_ctx);
   init_verb_mute(&c, IVM_LEVEL_1);
 

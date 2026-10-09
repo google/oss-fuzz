@@ -25,6 +25,9 @@ limitations under the License.
 
 static int ruby_initialized = 0;
 
+// External declaration for ruby_verbose
+extern VALUE ruby_verbose;
+
 // JSON parser wrapper - parses JSON string with default config
 static VALUE json_fuzzer_parse(VALUE json_str) {
     JSON_ParserConfig config = {
@@ -65,6 +68,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (!ruby_initialized) {
         ruby_init();
         ruby_initialized = 1;
+        
+        // Suppress Ruby warnings to avoid log noise
+        ruby_verbose = Qfalse;
     }
     
     if (size == 0) {

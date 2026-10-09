@@ -57,3 +57,9 @@ build_fuzzer() {
 # Build fuzzers.
 build_fuzzer REAL
 build_fuzzer COMPLEX
+
+# Build unit test
+$CXX $CXXFLAGS -x c -o $SRC/test_pffft_real -DTRANSFORM_REAL -msse2 \
+  $SRC/pffft/pffft.c $SRC/pffft/test_pffft.c $SRC/pffft/fftpack.c
+$CXX $CXXFLAGS -x c -o $SRC/test_pffft_complex -DTRANSFORM_COMPLEX -msse2 \
+  $SRC/pffft/pffft.c $SRC/pffft/test_pffft.c $SRC/pffft/fftpack.c

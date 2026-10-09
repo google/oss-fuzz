@@ -15,4 +15,8 @@
 #
 ################################################################################
 
+# Fix include path for generated headers (tpm_library.h is generated in builddir)
+# Also add libtpms subdir for relative includes within the headers
+sed -i 's|AM_CFLAGS = -I$(top_srcdir)/include|AM_CFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/include/libtpms|' tests/Makefile.am
+
 tests/oss-fuzz.sh

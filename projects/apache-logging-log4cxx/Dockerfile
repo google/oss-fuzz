@@ -19,6 +19,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 # Log4cxx build dependencies: https://logging.apache.org/log4cxx/latest_stable/build-cmake.html
 RUN apt-get update && apt-get install -y build-essential libapr1-dev libaprutil1-dev gzip zip
 
-COPY build.sh $SRC/
+RUN git clone --quiet --depth 1 --branch master --single-branch https://github.com/apache/logging-log4cxx
 
-WORKDIR $SRC
+COPY run_tests.sh build.sh $SRC/
+
+WORKDIR $SRC/logging-log4cxx

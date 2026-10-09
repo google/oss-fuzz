@@ -6,9 +6,6 @@ main_repo: "https://github.com/apache/calcite/"
 sanitizers:
   - address
 vendor_ccs:
-  - "wagner@code-intelligence.com"
   - "yakdan@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
-  - "hlin@code-intelligence.com"
-  - "bug-disclosure@code-intelligence.com"
 base_os_version: ubuntu-24-04

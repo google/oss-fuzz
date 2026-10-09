@@ -15,17 +15,11 @@
 #
 ################################################################################
 
-# Build glib with sanitizer support
-cd glib
-mkdir build
-cd build
-meson --prefix=/usr --buildtype=release -Db_lundef=false -Ddefault_library=static -Dlibmount=disabled
-ninja
-ninja install
-
 # Build libostree
 cd $SRC/ostree
 env NOCONFIGURE=1 ./autogen.sh
+# Fix missing include for uintptr_t
+sed -i '26i #include <stdint.h>' src/libostree/ostree-bootloader-aboot.c
 ./configure --enable-static --without-selinux
 make V=1
 
@@ -83,7 +77,7 @@ FUZZ_DEFINES="-DHAVE_CONFIG_H \
 
 FUZZ_WERROR=""
 
-for fuzz in repo bsdiff; do
+for fuzz in repo bsdiff bootconfig content-stream rfc2616-date; do
   $CC $CFLAGS $FUZZ_DEFINES $FUZZ_INCLUDES -o tests/fuzz-$fuzz.o -c tests/fuzz-$fuzz.c
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $FUZZ_INCLUDES -o $OUT/fuzz-$fuzz  tests/fuzz-$fuzz.o $FUZZ_LIBS
 done

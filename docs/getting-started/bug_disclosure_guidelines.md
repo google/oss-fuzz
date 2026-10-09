@@ -2,7 +2,7 @@
 layout: default
 title: Bug disclosure guidelines
 parent: Getting started
-nav_order: 4
+nav_order: 3
 permalink: /getting-started/bug-disclosure-guidelines/
 ---
 

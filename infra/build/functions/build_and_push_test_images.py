@@ -96,6 +96,7 @@ def _run_cloudbuild(build_body):
 
 def wait_for_build_and_report_summary(build_id, cloud_project='oss-fuzz-base'):
   """Waits for a GCB build to complete and reports a detailed summary."""
+  logs_url = build_lib.get_logs_url(build_id)
   credentials, _ = google.auth.default()
   cloudbuild = cloud_build('cloudbuild',
                            'v1',

@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
-RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake llvm-dev libclang-dev clang
-ENV RUSTUP_TOOLCHAIN nightly-2025-07-16
+FROM gcr.io/oss-fuzz-base/base-builder-rust
+RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
+
 RUN git clone --depth 1 --recursive https://github.com/mozilla/mp4parse-rust mp4parse-rust
 WORKDIR mp4parse-rust
 

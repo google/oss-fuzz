@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
 #include "llvm/Support/ErrorOr.h"
+#include "llvm/Support/VirtualFileSystem.h"
 
 namespace oss_fuzz {
 namespace indexer {

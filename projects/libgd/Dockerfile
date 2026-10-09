@@ -14,10 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# ubuntu-24-04: libgd's configure.ac now requires autoconf >= 2.71, and
+# ./bootstrap.sh dies with "configure.ac:4: error: Autoconf version 2.71 or
+# higher is required" on the default (Ubuntu 20.04) base image, which only has
+# autoconf 2.69. Ubuntu 24.04 packages autoconf 2.71.
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool pkg-config libz-dev
 RUN git clone --depth 1 https://github.com/libgd/libgd
 ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/afl_testcases.tgz
 WORKDIR libgd
-COPY build.sh *.cc $SRC/
+COPY run_tests.sh build.sh *.cc $SRC/

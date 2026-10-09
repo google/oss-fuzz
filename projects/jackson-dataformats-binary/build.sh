@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-MAVEN_ARGS="-P!java14+ -Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
+MAVEN_ARGS="-Dmaven.test.skip=true"
 
 mvn package dependency:copy-dependencies $MAVEN_ARGS
 CURRENT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \

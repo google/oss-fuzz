@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
 # Ensure Java 11 is installed
 RUN apt-get update && \

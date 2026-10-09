@@ -18,7 +18,13 @@
 cp $SRC/s2_fuzzer.cc $SRC/s2geometry/src/
 
 cd $SRC/
-git clone --depth=1 https://github.com/abseil/abseil-cpp
+# Keep this tag in sync with the abseil version s2geometry itself pins in its
+# CMakeLists.txt FETCH_ABSEIL block, which is what upstream CI builds against.
+# s2geometry now includes "absl/base/throw_delegate.h" (via
+# src/s2/util/gtl/compact_array.h), a header that only exists from abseil
+# 20260526.0 onwards -- with the older 20260107.1 pin every s2 translation unit
+# failed with "'absl/base/throw_delegate.h' file not found".
+git clone --depth=1 --branch 20260526.0 https://github.com/abseil/abseil-cpp
 cd abseil-cpp
 mkdir build && cd build
 cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ../  && make && make install
@@ -29,6 +35,8 @@ mkdir build && cd build
 
 cmake -DBUILD_SHARED_LIBS=OFF \
       -DABSL_MIN_LOG_LEVEL=4 \
-      -DBUILD_TESTS=OFF ..
+      -DGOOGLETEST_ROOT=/usr/src/googletest \
+      -DCMAKE_EXE_LINKER_FLAGS="-lssl -lcrypto" \
+      -DBUILD_TESTS=ON ..
 make -j$(nproc)
 find . -name "s2fuzzer" -exec cp {} $OUT/s2_fuzzer \;

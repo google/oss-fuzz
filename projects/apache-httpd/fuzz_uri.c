@@ -48,15 +48,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // Fuzz URI routines
   if (cstr && apr_pool_initialize() == APR_SUCCESS) {
     apr_pool_t *pool = NULL;
-    apr_pool_create(&pool, NULL);
+    if (apr_pool_create(&pool, NULL) == APR_SUCCESS) {
+      apr_uri_t tmp_uri;
+      if (apr_uri_parse(pool, cstr, &tmp_uri) == APR_SUCCESS) {
+        apr_uri_unparse(pool, &tmp_uri, 0);
+      }
+      apr_uri_parse_hostinfo(pool, cstr, &tmp_uri);
 
-    apr_uri_t tmp_uri;
-    if (apr_uri_parse(pool, cstr, &tmp_uri) == APR_SUCCESS) {
-      apr_uri_unparse(pool, &tmp_uri, 0);
+      // Cleanup pool
+      apr_pool_destroy(pool);
     }
-    apr_uri_parse_hostinfo(pool, cstr, &tmp_uri);
-
-    // Cleanup
     apr_pool_terminate();
   }
 

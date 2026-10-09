@@ -27,8 +27,8 @@ If you don't do this, most of the links below won't work.
 
 The corpora for fuzz targets are stored on [Google Cloud
 Storage](https://cloud.google.com/storage/). To access them, you need to
-[install the gsutil
-tool](https://cloud.google.com/storage/docs/gsutil_install), which is part of
+[install the gcloud
+tool](https://docs.cloud.google.com/sdk/docs/install-sdk, which is part of
 the Google Cloud SDK. Follow the instructions on the installation page to
 login with the Google account listed in your project's `project.yaml` file.
 
@@ -53,12 +53,12 @@ Copy the corpus to a directory on your
 machine by running the following command:
 
 ```bash
-$ gsutil -m cp -r gs://<bucket_path> <local_directory>
+$ gcloud storage cp -r gs://<bucket_path> <local_directory>
 ```
 Using the expat example above, this would be:
 
 ```bash
-$ gsutil -m cp -r \
+$ gcloud storage cp -r \
     gs://expat-corpus.clusterfuzz-external.appspot.com/libFuzzer/expat_parse_fuzzer \
     <local_directory>
 ```
@@ -67,4 +67,4 @@ $ gsutil -m cp -r \
 
 We keep daily zipped backups of your corpora. These can be accessed from the
 **corpus_backup** column of the fuzzer statistics page. Downloading these can
-be significantly faster than running `gsutil -m cp -r` on the corpus bucket.
+be significantly faster than running `gcloud storage cp -r` on the corpus bucket.

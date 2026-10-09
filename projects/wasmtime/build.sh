@@ -32,12 +32,15 @@ build() {
   shift
   PROJECT_DIR=$SRC/$project
 
-  # ensure we get absolute paths for the coverage report
+  # Ensure we get absolute paths for the coverage report.
   cd $PROJECT_DIR
   crate_src_abspath=`cargo metadata --no-deps --format-version 1 | jq -r '.workspace_root'`
   while read i; do
     export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
   done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
+
+  # Enable `cfg(arc_try_new)` for the OOM-handling fuzzer.
+  export RUSTFLAGS="$RUSTFLAGS --cfg=arc_try_new"
 
   cd $PROJECT_DIR/fuzz && cargo fuzz build --sanitizer none --strip-dead-code -O --debug-assertions "$@"
 
@@ -62,6 +65,15 @@ build() {
 
 # Ensure OCaml environment is set up prior to Wasmtime build.
 eval $(opam env)
+
+# Needed for Wasmtime's adapter/test builds
+rustup target add wasm32-unknown-unknown wasm32-wasip1 wasm32-wasip2
+
+# Shrink builds to take up less disk space
+export CARGO_INCREMENTAL=0
+export CARGO_PROFILE_DEV_DEBUG=0
+export CARGO_PROFILE_DEV_STRIP=debuginfo
+export CARGO_PROFILE_RELEASE_DEBUG=0
 
 build wasmtime "" "" target
 build wasm-tools wasm-tools- "" target --features wasmtime

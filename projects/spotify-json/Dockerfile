@@ -15,7 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y libboost-dev libboost-test-dev \
+      libboost-system-dev libboost-chrono-dev
 RUN git clone https://github.com/spotify/spotify-json
 
 WORKDIR $SRC/spotify-json
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/

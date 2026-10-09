@@ -16,11 +16,16 @@
 #
 ################################################################################
 
-./autogen.sh --without-cython --enable-debug --without-tests
+if [[ "$SANITIZER" != "coverage" && "$SANITIZER" != "introspector" ]]
+then
+  ./autogen.sh --without-cython --enable-debug
+else
+  ./autogen.sh --without-cython --enable-debug --without-tests
+fi
 make -j$(nproc) clean
 make -j$(nproc) all
 
-for fuzzer in bplist_fuzzer xplist_fuzzer jplist_fuzzer oplist_fuzzer; do
+for fuzzer in bplist_fuzzer xplist_fuzzer jplist_fuzzer oplist_fuzzer plist_write_fuzzer; do
   $CXX $CXXFLAGS -std=c++11 -Iinclude/ \
       fuzz/$fuzzer.cc -o $OUT/$fuzzer \
       $LIB_FUZZING_ENGINE src/.libs/libplist-2.0.a
@@ -30,5 +35,10 @@ zip -j $OUT/bplist_fuzzer_seed_corpus.zip test/data/*.bplist
 zip -j $OUT/xplist_fuzzer_seed_corpus.zip test/data/*.plist
 zip -j $OUT/jplist_fuzzer_seed_corpus.zip test/data/*.json
 zip -j $OUT/oplist_fuzzer_seed_corpus.zip test/data/*.ostep
+zip -j $OUT/plist_write_fuzzer_seed_corpus.zip \
+  test/data/*.bplist \
+  test/data/*.plist \
+  test/data/*.json \
+  test/data/*.ostep
 
 cp fuzz/*.dict fuzz/*.options $OUT/

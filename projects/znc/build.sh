@@ -31,3 +31,6 @@ $CXX $CXXFLAGS -DGTEST_HAS_POSIX_RE=0 \
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
 	msg_parse_fuzzer.o -o $OUT/msg_parse_fuzzer \
 	/src/znc/build/src/libznc.a 
+
+# Build unit test
+make unittest_bin -j$(nproc)

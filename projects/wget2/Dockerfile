@@ -46,14 +46,26 @@ RUN cd /usr/src && \
     ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var && \
     make install
 
+RUN cd /usr/src && \
+    curl -ogettext-0.22.5.tar.gz https://ftp.gnu.org/gnu/gettext/gettext-0.22.5.tar.gz && \
+    tar xf gettext-0.22.5.tar.gz && \
+    cd gettext-0.22.5 && \
+    ./configure --prefix=/usr && \
+    make -j$(nproc) install
+
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 ENV GNULIB_SRCDIR $SRC/gnulib
-RUN git clone https://gitlab.com/gnuwget/gnulib-mirror.git gnulib
+RUN git clone https://git.savannah.gnu.org/git/gnulib.git gnulib
 RUN wget -qO- https://ftp.gnu.org/gnu/libunistring/libunistring-latest.tar.gz | tar xz && mv libunistring-* libunistring
 RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar xz && mv libidn2-* libidn2
 RUN wget -qO- https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.gz | tar xz && mv gmp-* gmp
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 RUN wget -qO- https://ftp.gnu.org/gnu/nettle/nettle-3.10.tar.gz | tar xz && mv nettle-3.10 nettle
+# gnutls dropped its bundled libtasn1 (the --with-included-libtasn1 configure
+# option is gone), so it now needs libtasn1 >= 4.9 from outside. Without it the
+# static libgnutls.a is left with undefined asn1_* references at link time.
+# Build it into the same static dep prefix as everything else.
+RUN wget -qO- https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.21.0.tar.gz | tar xz && mv libtasn1-* libtasn1
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN wget -O- https://ftp.gnu.org/pub/gnu/libmicrohttpd/libmicrohttpd-latest.tar.gz | tar xz
 

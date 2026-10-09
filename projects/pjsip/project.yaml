@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "www.pjsip.org"
 language: c
 primary_contact: "security@pjsip.org"
@@ -5,6 +6,9 @@ auto_ccs:
   - "nanang@teluu.com"
   - "ming@teluu.com"
   - "riza@teluu.com"
+  - "arthur.chan@adalogics.com"
+  - "david@adalogics.com"
+  - "adam@adalogics.com"
 fuzzing_engines:
   - libfuzzer
   - afl

@@ -21,9 +21,9 @@ RUN git clone https://github.com/libevent/libevent.git && \
     cd libevent && \
     mkdir build && \
     cd build && \
-    cmake -DEVENT__DISABLE_MBEDTLS=ON -DEVENT__DISABLE_OPENSSL=ON -DEVENT__LIBRARY_TYPE=STATIC ../ && \
+    cmake -DEVENT__DISABLE_MBEDTLS=ON -DEVENT__DISABLE_OPENSSL=ON -DEVENT__LIBRARY_TYPE=STATIC -DEVENT__DISABLE_TESTS=ON -DEVENT__DISABLE_SAMPLES=ON ../ && \
     make && make install
 
-RUN git clone --depth 1 --branch 1.6.22 https://github.com/memcached/memcached memcached
+RUN git clone --depth 1 https://github.com/memcached/memcached memcached
 WORKDIR memcached
 COPY build.sh generate_corpus.py *.c *.diff *.options $SRC/

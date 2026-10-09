@@ -1,4 +1,4 @@
-homepage: "https://github.com/google/skia"
+homepage: "https://skia.googlesource.com/skia"
 language: c++
 primary_contact: "kjlubick@chromium.org"
 auto_ccs:
@@ -9,7 +9,6 @@ auto_ccs:
   - "skia-gpu-wrangler@google.com"
   - "skia-bugs-central@skia-public.iam.gserviceaccount.com"
   - "fuzz@skia.org"
-  - "drott@chromium.org"
   - "fmalita@chromium.org"
 vendor_ccs:
   - "lsalzman@mozilla.com"

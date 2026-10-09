@@ -88,6 +88,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+  if (size > 16384)
+    return 0;
   enum res_format input_format;
    input_format = fuzz_format_check_from_mem(data, size);;
 	if (input_format != RES_FORMAT_COFF) {

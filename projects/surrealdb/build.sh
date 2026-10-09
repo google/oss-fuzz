@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-cd crates
 
 # Copy dictionaries, but don't fail if there aren't any.
 cp fuzz/fuzz_targets/*.dict $OUT/ || true

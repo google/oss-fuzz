@@ -5,6 +5,9 @@ primary_contact: "a.cudbardb@gmail.com"
 auto_ccs:
 - "adekok@gmail.com"
 - "p.antoine@catenacyber.fr"
+- "arthur.chan@adalogics.com"
+- "david@adalogics.com"
+- "adam@adalogics.com"
 main_repo: 'https://github.com/FreeRADIUS/freeradius-server.git'
 fuzzing_engines:
 - libfuzzer

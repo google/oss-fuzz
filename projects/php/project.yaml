@@ -7,6 +7,7 @@ auto_ccs:
  - "dmitrystogov@gmail.com"
  - "tovilo.ilija@gmail.com"
  - "github@derickrethans.nl"
+ - "jakub.php@gmail.com"
 fuzzing_engines:
   - "afl"
   - "honggfuzz"
@@ -20,3 +21,4 @@ architectures:
  - i386
 view_restrictions: none
 main_repo: 'https://github.com/php/php-src.git'
+base_os_version: ubuntu-24-04

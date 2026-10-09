@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y \
 	build-essential cmake make coreutils sed lld \
 	autoconf automake libtool zlib1g-dev \
@@ -30,3 +30,4 @@ RUN rm -rf test/static
 RUN git clone https://github.com/ligurio/tarantool-corpus test/static
 
 COPY build.sh $SRC/
+COPY compile_lua_fuzzer $SRC/

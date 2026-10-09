@@ -115,7 +115,10 @@ run_test(const uint8_t *data,
 
   cmsCloseProfile(srcProfile);
   cmsCloseProfile(dstProfile);
-  if (!hTransform) return;
+  if (!hTransform) {
+    cmsDeleteContext(ctx);
+    return;
+  }
 
 
   // Do transformation.
@@ -127,7 +130,7 @@ run_test(const uint8_t *data,
     double input[nSrcComponents];
     for (uint32_t i = 0; i < nSrcComponents; i++) input[i] = 0.5f;
     cmsDoTransform(hTransform, input, output, 1);
-  } 
+  }
   else {
     uint8_t input[nSrcComponents];
     for (uint32_t i = 0; i < nSrcComponents; i++) input[i] = 128;
@@ -150,6 +153,7 @@ run_test(const uint8_t *data,
     }
   }
   cmsDeleteTransform(hTransform);
+  cmsDeleteContext(ctx);
 }
 
 

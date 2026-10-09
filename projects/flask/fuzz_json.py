@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import atheris
-import sys
+import sys, os
 
 with atheris.instrument_imports():
   import flask

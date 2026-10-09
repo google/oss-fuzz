@@ -1,0 +1,13 @@
+homepage: "https://dicom.offis.de/dcmtk.php.en"
+main_repo: "https://github.com/DCMTK/dcmtk.git"
+language: c++
+primary_contact: "bugs@dcmtk.org"
+auto_ccs:
+  - "arash.vre@gmail.com"
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+fuzzing_engines:
+  - libfuzzer

@@ -7,3 +7,5 @@ sanitizers:
   - address
 vendor_ccs:
   - "dev-owner@tika.apache.org"
+  - "tallison@apache.org"
+  - "tallison314159@gmail.com"

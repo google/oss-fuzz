@@ -15,25 +15,41 @@
 # limitations under the License.
 
 import atheris
-import httpretty
+import socket
 import sys
+import threading
+import time
 
 import urllib3
 
 # Setup http mocking
-GLOBAL_RESPONSE_BODY = ""
+GLOBAL_RESPONSE_BODY = b""
 GLOBAL_RESPONSE_CODE = 0
-GLOBAL_CONTENT_TYPE = ""
+GLOBAL_CONTENT_TYPE = b""
 
-def request_callback(request, uri, headers):
-    headers['Content-Type'] = GLOBAL_CONTENT_TYPE
-    return [GLOBAL_RESPONSE_CODE, headers, GLOBAL_RESPONSE_BODY]
 
-httpretty.enable(verbose=True, allow_net_connect=False)
-httpretty.register_uri(httpretty.GET, "http://www.test.com", body=request_callback)
-httpretty.register_uri(httpretty.POST, "http://www.test.com", body=request_callback)
-httpretty.register_uri(httpretty.HEAD, "http://www.test.com", body=request_callback)
-httpretty.register_uri(httpretty.PUT, "http://www.test.com", body=request_callback)
+class ServerThread(threading.Thread):
+    def __init__(self) -> None:
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.bind(("127.0.0.1", 8001))
+        self.s.listen(1)
+        super().__init__()
+
+    def run(self) -> None:
+        global GLOBAL_RESPONSE_CODE, GLOBAL_CONTENT_TYPE, GLOBAL_RESPONSE_BODY
+        conn, addr = self.s.accept()
+        conn.recv(1024)
+        conn.send(
+            b"HTTP/1.1 %d FOO\r\nContent-Type: %b\r\n\r\n%b"
+            % (GLOBAL_RESPONSE_CODE, GLOBAL_CONTENT_TYPE, GLOBAL_RESPONSE_BODY)
+        )
+        time.sleep(0.005)
+        conn.close()
+        self.s.shutdown(1)
+        self.s.close()
+        time.sleep(0.01)
+
 
 REQUEST_METHODS = ["POST", "GET", "HEAD", "PUT"]
 
@@ -41,9 +57,9 @@ def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     global GLOBAL_RESPONSE_BODY, GLOBAL_RESPONSE_CODE, GLOBAL_CONTENT_TYPE
-    GLOBAL_RESPONSE_BODY = fdp.ConsumeUnicodeNoSurrogates(sys.maxsize)
+    GLOBAL_RESPONSE_BODY = fdp.ConsumeBytes(sys.maxsize)
     GLOBAL_RESPONSE_CODE = fdp.ConsumeIntInRange(200, 599)
-    GLOBAL_CONTENT_TYPE = fdp.ConsumeString(sys.maxsize)
+    GLOBAL_CONTENT_TYPE = fdp.ConsumeBytes(sys.maxsize)
 
     requestType = fdp.PickValueInList(REQUEST_METHODS)
 
@@ -64,9 +80,12 @@ def TestOneInput(data):
     timeout = urllib3.util.Timeout(connect=0.1, read=0.1)
     urllib_pool = urllib3.poolmanager.PoolManager(timeout=timeout)
 
+    t1 = ServerThread()
+    t1.start()
+
     response = urllib_pool.request(
         requestType,
-        "http://www.test.com",
+        "http://localhost:8001/", 
         headers=requestHeaders,
         fields=formData
     )
@@ -74,6 +93,9 @@ def TestOneInput(data):
     response.status
     response.data
     response.headers
+
+    t1.join()
+
 
 def main():
     atheris.instrument_all()

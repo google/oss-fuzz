@@ -25,12 +25,6 @@ export CPPFLAGS="-I$DEPS_PATH/include"
 export LDFLAGS="-L$DEPS_PATH/lib"
 export GNULIB_SRCDIR=$SRC/gnulib
 
-cd $SRC/libunistring
-./autogen.sh
-./configure --enable-static --disable-shared --prefix=$DEPS_PATH
-make -j$(nproc)
-make install
-
 GNUTLS_CONFIGURE_FLAGS=""
 NETTLE_CONFIGURE_FLAGS="--disable-assembler"  # Temporarily disalbe asm to work around error "Libnettle 3.6 was not found."
 if [[ $CFLAGS = *sanitize=memory* ]]; then
@@ -46,7 +40,6 @@ bash .bootstrap
 cd $SRC/gnutls
 touch .submodule.stamp
 ./bootstrap
-LIBS="-lunistring" \
 ./configure --with-nettle-mini --disable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
     --disable-maintainer-mode --disable-libdane --disable-full-test-suite --prefix=$DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
@@ -67,10 +60,9 @@ autoreconf -if
 make -j$(nproc)
 cd $SRC/knot-dns/tests-fuzz
 make check
-/bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner fuzz_dname_to_str fuzz_dname_from_str "$OUT"
+/bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner fuzz_dname_to_str fuzz_dname_from_str fuzz_dnssec_verify fuzz_tsig "$OUT"
 
 # Set up fuzzing seeds
-
 git submodule update --init -- ./fuzz_packet.in
 git submodule update --init -- ./fuzz_zscanner.in
 # ./fuzz_dname_to_str.in/ and ./fuzz_dname_from_str.in/ are stored in the base repository

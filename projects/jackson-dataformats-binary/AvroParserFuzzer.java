@@ -15,12 +15,13 @@
 ///////////////////////////////////////////////////////////////////////////
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.dataformat.avro.AvroFactory;
-import com.fasterxml.jackson.dataformat.avro.AvroFactoryBuilder;
-import com.fasterxml.jackson.dataformat.avro.AvroMapper;
-import com.fasterxml.jackson.dataformat.avro.AvroParser;
-import com.fasterxml.jackson.dataformat.avro.schema.AvroSchemaGenerator;
-import java.io.IOException;
+import tools.jackson.dataformat.avro.AvroFactory;
+import tools.jackson.dataformat.avro.AvroFactoryBuilder;
+import tools.jackson.dataformat.avro.AvroMapper;
+import tools.jackson.dataformat.avro.AvroParser;
+import tools.jackson.dataformat.avro.AvroReadFeature;
+import tools.jackson.dataformat.avro.schema.AvroSchemaGenerator;
+
 import java.util.EnumSet;
 import java.util.List;
 
@@ -30,8 +31,8 @@ public class AvroParserFuzzer {
     try {
       int[] choices = data.consumeInts(data.consumeInt(1, 100));
 
-      // Retrieve set of AvroMapper.Feature
-      EnumSet<AvroParser.Feature> featureSet = EnumSet.allOf(AvroParser.Feature.class);
+      // Retrieve set of AvroReadFeature
+      EnumSet<AvroReadFeature> featureSet = EnumSet.allOf(AvroReadFeature.class);
 
       // Create and configure AvroMapper
       AvroFactoryBuilder avroFactoryBuilder;
@@ -52,14 +53,15 @@ public class AvroParserFuzzer {
         return;
       }
 
-      // Create and configure AvroParser
-      AvroParser parser =
-          ((AvroMapper) mapper).getFactory().createParser(data.consumeRemainingAsBytes());
-
+      // Generate schema for RootType
       AvroSchemaGenerator schemaGenerator = new AvroSchemaGenerator();
       mapper.acceptJsonFormatVisitor(RootType.class, schemaGenerator);
 
-      parser.setSchema(schemaGenerator.getGeneratedSchema());
+      byte[] inputBytes = data.consumeRemainingAsBytes();
+      AvroParser parser =
+          (AvroParser) mapper.reader()
+              .with(schemaGenerator.getGeneratedSchema())
+              .createParser(inputBytes);
 
       // Fuzz methods of AvroParser
       for (Integer choice : choices) {
@@ -83,7 +85,7 @@ public class AvroParserFuzzer {
             parser.nextToken();
             break;
           case 7:
-            parser.nextTextValue();
+            parser.nextStringValue();
             break;
           case 8:
             parser.getText();
@@ -125,7 +127,7 @@ public class AvroParserFuzzer {
       }
 
       parser.close();
-    } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+    } catch (RuntimeException e) {
       // Known exception
     }
   }

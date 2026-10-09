@@ -1,0 +1,173 @@
+diff --git a/include/stdplus/debug/lifetime.hpp b/include/stdplus/debug/lifetime.hpp
+index e63e640..17cf8e4 100644
+--- a/include/stdplus/debug/lifetime.hpp
++++ b/include/stdplus/debug/lifetime.hpp
+@@ -1,4 +1,5 @@
+ #pragma once
++#include <cstddef>
+ #include <source_location>
+ 
+ namespace stdplus::debug
+diff --git a/include/stdplus/function_view.hpp b/include/stdplus/function_view.hpp
+index 58a8333..3fdbbd9 100644
+--- a/include/stdplus/function_view.hpp
++++ b/include/stdplus/function_view.hpp
+@@ -1,5 +1,9 @@
+ #pragma once
++#include <concepts>
++#include <cstddef>
+ #include <cstdint>
++#include <memory>
++#include <type_traits>
+ #include <utility>
+ 
+ namespace stdplus
+diff --git a/include/stdplus/hash.hpp b/include/stdplus/hash.hpp
+index 28b8fca..393d7bb 100644
+--- a/include/stdplus/hash.hpp
++++ b/include/stdplus/hash.hpp
+@@ -1,15 +1,10 @@
+ #pragma once
+ #include <array>
+ #include <cstddef>
++#include <functional>
+ #include <tuple>
+ #include <utility>
+ 
+-namespace std
+-{
+-template <class Key>
+-struct hash;
+-}
+-
+ namespace stdplus
+ {
+ 
+diff --git a/include/stdplus/net/addr/ether.hpp b/include/stdplus/net/addr/ether.hpp
+index 2d3851f..f12152f 100644
+--- a/include/stdplus/net/addr/ether.hpp
++++ b/include/stdplus/net/addr/ether.hpp
+@@ -1,3 +1,4 @@
++#include <format>
+ #pragma once
+ #include <fmt/core.h>
+ #include <net/ethernet.h>
+@@ -120,8 +121,6 @@ struct fmt::formatter<stdplus::EtherAddr, CharT> :
+ 
+ namespace std
+ {
+-template <typename T, typename CharT>
+-struct formatter;
+ 
+ template <typename CharT>
+ struct formatter<stdplus::EtherAddr, CharT> :
+diff --git a/include/stdplus/net/addr/ip.hpp b/include/stdplus/net/addr/ip.hpp
+index 711d3d5..cc4f41d 100644
+--- a/include/stdplus/net/addr/ip.hpp
++++ b/include/stdplus/net/addr/ip.hpp
+@@ -9,6 +9,7 @@
+ #include <stdplus/variant.hpp>
+ 
+ #include <algorithm>
++#include <format>
+ #include <array>
+ #include <stdexcept>
+ #include <variant>
+@@ -606,9 +607,6 @@ struct fmt::formatter<Addr, CharT> :
+ 
+ namespace std
+ {
+-template <typename T, typename CharT>
+-struct formatter;
+-
+ template <stdplus::InAddr Addr, typename CharT>
+ struct formatter<Addr, CharT> : stdplus::Format<stdplus::ToStr<Addr>, CharT>
+ {};
+diff --git a/include/stdplus/net/addr/subnet.hpp b/include/stdplus/net/addr/subnet.hpp
+index 3273ec7..5f21c21 100644
+--- a/include/stdplus/net/addr/subnet.hpp
++++ b/include/stdplus/net/addr/subnet.hpp
+@@ -8,6 +8,7 @@
+ #include <bit>
+ #include <limits>
+ #include <type_traits>
++#include <format>
+ 
+ namespace stdplus
+ {
+@@ -369,9 +370,6 @@ struct std::hash<Sub>
+ 
+ namespace std
+ {
+-template <typename T, typename CharT>
+-struct formatter;
+-
+ template <stdplus::Subnet Sub, typename CharT>
+ struct formatter<Sub, CharT> : stdplus::Format<stdplus::ToStr<Sub>, CharT>
+ {};
+diff --git a/include/stdplus/numeric/endian.hpp b/include/stdplus/numeric/endian.hpp
+index c517ec4..1c5c2fb 100644
+--- a/include/stdplus/numeric/endian.hpp
++++ b/include/stdplus/numeric/endian.hpp
+@@ -1,3 +1,4 @@
++#include <format>
+ #pragma once
+ #include <algorithm>
+ #include <bit>
+diff --git a/include/stdplus/raw.hpp b/include/stdplus/raw.hpp
+index c9dbf74..1ddbfa1 100644
+--- a/include/stdplus/raw.hpp
++++ b/include/stdplus/raw.hpp
+@@ -213,3 +213,42 @@ constexpr std::span<IntTp> asSpan(Container&& c) noexcept
+ 
+ } // namespace raw
+ } // namespace stdplus
++
++template <>
++struct std::char_traits<unsigned char> {
++    using char_type = unsigned char;
++    using int_type = int;
++    using off_type = std::streamoff;
++    using pos_type = std::streampos;
++    using state_type = std::mbstate_t;
++    static constexpr void assign(char_type& r, const char_type& a) noexcept { r = a; }
++    static constexpr bool eq(char_type c1, char_type c2) noexcept { return c1 == c2; }
++    static constexpr bool lt(char_type c1, char_type c2) noexcept { return c1 < c2; }
++    static constexpr int compare(const char_type* s1, const char_type* s2, size_t n) {
++        return __builtin_memcmp(s1, s2, n);
++    }
++    static constexpr size_t length(const char_type* s) {
++        size_t l = 0; while (s[l]) ++l; return l;
++    }
++    static constexpr const char_type* find(const char_type* s, size_t n, const char_type& a) {
++        for (; n > 0; --n, ++s) if (*s == a) return s; return nullptr;
++    }
++    static constexpr char_type* move(char_type* s1, const char_type* s2, size_t n) {
++        return static_cast<char_type*>(__builtin_memmove(s1, s2, n));
++    }
++    static constexpr char_type* copy(char_type* s1, const char_type* s2, size_t n) {
++        return static_cast<char_type*>(__builtin_memcpy(s1, s2, n));
++    }
++    static constexpr char_type* assign(char_type* s, size_t n, char_type a) {
++        return static_cast<char_type*>(__builtin_memset(s, a, n));
++    }
++    static constexpr int_type not_eof(int_type c) noexcept { return eq_int_type(c, eof()) ? 0 : c; }
++    static constexpr char_type to_char_type(int_type c) noexcept { return static_cast<char_type>(c); }
++    static constexpr int_type to_int_type(char_type c) noexcept { return static_cast<int_type>(c); }
++    static constexpr bool eq_int_type(int_type c1, int_type c2) noexcept { return c1 == c2; }
++    static constexpr int_type eof() noexcept { return -1; }
++};
++template <>
++struct std::char_traits<const unsigned char> : std::char_traits<unsigned char> {
++    using char_type = const unsigned char;
++};
+diff --git a/include/stdplus/str/cat.hpp b/include/stdplus/str/cat.hpp
+index f717abc..0e413bc 100644
+--- a/include/stdplus/str/cat.hpp
++++ b/include/stdplus/str/cat.hpp
+@@ -1,4 +1,5 @@
+ #pragma once
++#include <algorithm>
+ #include <string>
+ #include <string_view>
+ #include <utility>

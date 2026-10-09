@@ -43,7 +43,7 @@ rm $OUT/fuzz_seed_corpus.zip
 # Build fuzzers
 mkdir build
 cd build
-cmake ../
+cmake ../ -DDO_TESTING=ON
 make
 
 for fuzzFile in $FUZZER_DIR/fuzz*.c; do

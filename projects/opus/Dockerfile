@@ -20,6 +20,6 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 RUN git clone --single-branch --branch ossfuzz https://gitlab.xiph.org/xiph/opus.git
 RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
 WORKDIR opus
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
 COPY *.cc tests/
 COPY *.h tests/

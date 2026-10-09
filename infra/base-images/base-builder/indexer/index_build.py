@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2025 Google LLC.
+# Copyright 2026 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -350,7 +350,7 @@ def enumerate_build_targets(
 
         build_id_matches = build_id == get_build_id(binary_path)
         target_binary_config = manifest_types.CommandLineBinaryConfig(
-            **dict(binary_config.to_dict(), binary_name=name)
+            **dict(binary_config.to_dict(), binary_name=name)  # pyrefly: ignore[bad-argument-type]
         )
         binary_to_build_metadata[name] = BinaryMetadata(
             binary_config=target_binary_config,
@@ -369,7 +369,7 @@ def enumerate_build_targets(
         for binary_path in binary_paths:
           compile_commands = data['compile_commands']
           target_binary_config = manifest_types.CommandLineBinaryConfig(
-              **dict(binary_config.to_dict(), binary_name=binary_path.name)
+              **dict(binary_config.to_dict(), binary_name=binary_path.name)  # pyrefly: ignore[bad-argument-type]
           )
           binary_to_build_metadata[binary_path.name] = BinaryMetadata(
               binary_config=target_binary_config,

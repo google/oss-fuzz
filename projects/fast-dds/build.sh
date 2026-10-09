@@ -47,6 +47,8 @@ cmake --build . --target install
 )
 
 # build project
+export CFLAGS="${CFLAGS} -Wno-error=nonnull"
+export CXXFLAGS="${CXXFLAGS} -Wno-error=nonnull"
 mkdir build && cd build
 cmake .. -DBUILD_SHARED_LIBS=OFF
 make -j $(nproc)

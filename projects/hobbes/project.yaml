@@ -1,0 +1,18 @@
+homepage: "https://github.com/morganstanley/hobbes"
+main_repo: "https://github.com/morganstanley/hobbes.git"
+language: c++
+primary_contact: "brianegge@gmail.com"
+# MemorySanitizer is omitted deliberately: hobbes links LLVM from a
+# distribution package, and MSan requires every dependency to be instrumented.
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+# Centipede is omitted deliberately: its prebuilt runner is compiled against
+# libc++, and this build has to drop -stdlib=libc++ to match the libstdc++ LLVM
+# it links (see fuzz/oss-fuzz-build.sh), so the two cannot be linked together.
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz

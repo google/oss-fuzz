@@ -1,5 +1,6 @@
+base_os_version: ubuntu-24-04
 homepage: "http://www.pcre.org/"
-language: c++
+language: c
 primary_contact: "nicholas@nickcwilson.co.uk"
 main_repo: "https://github.com/PCRE2Project/pcre2"
 fuzzing_engines:
@@ -13,5 +14,6 @@ architectures:
   - x86_64
   - i386
 auto_ccs:
+  - "carenas@gmail.com"
   - "me@addisoncrump.info"
   - "philip.hazel@gmail.com"

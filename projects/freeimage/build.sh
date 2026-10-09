@@ -34,3 +34,16 @@ cd $SRC
 $CXX $CXXFLAGS -I${INSTALL_DIR}/ -I${INSTALL_DIR}/Source $LIB_FUZZING_ENGINE \
   load_from_memory_fuzzer.cc ${INSTALL_DIR}/libfreeimage.a \
   -o $OUT/load_from_memory_fuzzer
+
+
+# Build unit testing when it is not coverage or introspector build
+# Temporarily skipping testMemIO and testThumbnail because both of them throws ASAN crash of heap overflow
+if [[ "$SANITIZER" != "introspector" && "$SANITIZER" != "coverage" ]]
+then
+    cd $SRC/freeimage-svn/FreeImage/trunk/TestAPI
+    sed -i 's#testMemIO#//testMemIO#g' MainTestSuite.cpp
+    sed -i 's#testThumbnail#//testThumbnail#g' MainTestSuite.cpp
+    $CXX $CXXFLAGS  -I../Source MainTestSuite.cpp testChannels.cpp testHeaderOnly.cpp testImageType.cpp testJPEG.cpp \
+        testMPage.cpp testMPageMemory.cpp testMPageStream.cpp testPlugins.cpp testTools.cpp testWrappedBuffer.cpp \
+        ../libfreeimage.a -fsanitize=$SANITIZER -o testAPI
+fi

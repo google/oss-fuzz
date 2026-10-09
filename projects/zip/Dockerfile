@@ -20,3 +20,4 @@ RUN apt-get update && apt-get install -y cmake make
 RUN git clone --depth 1 https://github.com/kuba--/zip.git zip \
         && cp zip/fuzz/build.sh $SRC/
 WORKDIR zip
+COPY run_tests.sh $SRC/

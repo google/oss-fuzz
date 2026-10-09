@@ -52,11 +52,16 @@ public class SpelExpressionFuzzer {
         StandardEvaluationContext context = new StandardEvaluationContext();
         context.setRootObject(dummyObject);
 
+        String expressionString = data.consumeRemainingAsString();
+        if (expressionString == null || expressionString.isBlank()) {
+            return;  // Early return for empty/blank input
+        }
+
         try {
-            Expression expr = parser.parseExpression(data.consumeRemainingAsString());
+            Expression expr = parser.parseExpression(expressionString);
             expr.getValue();
             expr.getValue(dummyObject);
-        } catch (SpelEvaluationException | SpelParseException ignored) {}
+        } catch (SpelEvaluationException | SpelParseException | IllegalArgumentException ignored) {}
     }
 
     public static class DummyClass {

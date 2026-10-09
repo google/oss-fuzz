@@ -18,7 +18,7 @@
 # Build spdk
 export LDFLAGS="${CFLAGS}"
 ./scripts/pkgdep.sh
-./configure --without-shared
+./configure --without-shared --disable-tests --disable-unit-tests
 make -j$(nproc)
 
 # Build fuzzers

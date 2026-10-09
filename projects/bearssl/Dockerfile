@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
 RUN git clone --depth 1 https://www.bearssl.org/git/BearSSL
-RUN git clone --depth 1 https://github.com/randombit/botan.git
+RUN git clone --depth 1 --branch 3.10.0 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
 RUN wget https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.bz2
 COPY build.sh $SRC/

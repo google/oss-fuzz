@@ -16,12 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN apt-get update && apt-get install --reinstall -y patchelf libboost-all-dev git python3-pip python3-venv libmount-dev libcap-dev gperf vim clang-18 libc++-18-dev lsb-release wget software-properties-common gnupg systemd make pkg-config libsystemd-dev libfmt-dev cmake ninja-build
-RUN python3 -m venv /env && . /env/bin/activate && pip install meson mako inflection pyyaml jinja2 jsonschema
+RUN apt-get update && apt-get install --reinstall -y patchelf make ninja-build meson libgtest-dev libgmock-dev pkg-config libsystemd-dev python3-pip libboost-all-dev && pip3 install inflection pyyaml mako jsonschema --break-system-packages
 
-ENV CC=clang-18 
-ENV CXX=clang++-18
-
-RUN git clone --branch fuzzing https://github.com/javanlacerda/bios-bmc-smm-error-logger
-COPY build.sh $SRC/
+RUN git clone https://github.com/openbmc/bios-bmc-smm-error-logger
+COPY *.sh *.diff $SRC/
 WORKDIR $SRC/bios-bmc-smm-error-logger
+
+RUN git clone https://github.com/google/googletest.git --branch v1.15.2 subprojects/googletest
+RUN git clone https://github.com/openbmc/libbej subprojects/libbej
+RUN git clone https://github.com/nlohmann/json.git subprojects/nlohmann_json
+RUN git clone https://github.com/openbmc/phosphor-dbus-interfaces.git subprojects/phosphor-dbus-interfaces
+

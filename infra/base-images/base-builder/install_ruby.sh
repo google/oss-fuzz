@@ -22,7 +22,7 @@ apt update && apt install -y $RUBY_DEPS
 curl -O https://cache.ruby-lang.org/pub/ruby/3.3/ruby-$RUBY_VERSION.tar.gz
 tar -xvf ruby-$RUBY_VERSION.tar.gz
 cd ruby-$RUBY_VERSION
-./configure
+./configure --disable-install-doc --disable-install-rdoc --disable-install-capi
 make -j$(nproc)
 make install
 cd ../

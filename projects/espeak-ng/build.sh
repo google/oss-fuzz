@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +15,23 @@
 #
 ################################################################################
 
-
-# build project
+# build project with cmake
 export ASAN_OPTIONS=detect_leaks=0
-./autogen.sh
-./configure --with-libfuzzer=yes --disable-shared --with-speechplayer=no
-make check || true
-cp tests/ssml-fuzzer.test $OUT/ssml-fuzzer
-cp -r espeak-ng-data/ $OUT/
+mkdir -p build
+cd build
+cmake .. -DCMAKE_C_COMPILER="$CC" \
+         -DCMAKE_CXX_COMPILER="$CXX" \
+         -DCMAKE_C_FLAGS="$CFLAGS" \
+         -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+         -DBUILD_SHARED_LIBS=OFF
+make -j$(nproc)
+cd ..
+
+# Build the ssml-fuzzer manually with $LIB_FUZZING_ENGINE
+$CC $CFLAGS -Ibuild/src/libespeak-ng/include -I. -Isrc/include -c tests/ssml-fuzzer.c -o tests/ssml-fuzzer.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE tests/ssml-fuzzer.o \
+    build/src/libespeak-ng/libespeak-ng.a \
+    build/src/speechPlayer/libspeechPlayer.a \
+    build/src/ucd-tools/libucd.a -o $OUT/ssml-fuzzer -lm
+
+cp -r build/espeak-ng-data/ $OUT/

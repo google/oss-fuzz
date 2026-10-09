@@ -10,5 +10,3 @@ sanitizers:
 
 # opencensus is being archived cf https://opentelemetry.io/blog/2023/sunsetting-opencensus/
 disabled: true
-
-base_os_version: ubuntu-24-04

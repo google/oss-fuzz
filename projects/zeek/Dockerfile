@@ -14,19 +14,20 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        patchelf \
-        cmake \
-        ninja-build \
-        flex \
         bison \
+        cmake \
+        flex \
         libfl-dev \
-        libpcap-dev \
-        libssl-dev \
-        libmaxminddb-dev \
         libkrb5-dev \
+        libmaxminddb-dev \
+        libpcap-dev \
+        libzmq3-dev \
+        libssl-dev \
+        ninja-build \
+        patchelf \
         zlib1g-dev \
   && rm -rf /var/lib/apt/lists/*
 

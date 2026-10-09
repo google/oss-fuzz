@@ -25,4 +25,4 @@ npm install --save-dev @jazzer.js/core
 #compile_javascript_fuzzer example fuzz_promise.js
 #compile_javascript_fuzzer example fuzz_string_compare.js --sync
 #compile_javascript_fuzzer example fuzz_value_profiling.js --sync
-compile_javascript_fuzzer ua-parser-js test/jazzer-fuzz-test.js --sync
+compile_javascript_fuzzer ua-parser-js test/fuzz/redos.js --sync

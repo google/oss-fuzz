@@ -3,7 +3,7 @@ homepage: https://github.com/KhronosGroup/SPIRV-Tools
 language: c++
 primary_contact: rharrison@google.com
 auto_ccs:
-  - "afdx@google.com"
+  - "dneto@google.com"
   - "alanbaker@google.com"
   - "stevenperron@google.com"
   - "nathangauer@google.com"

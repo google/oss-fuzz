@@ -33,7 +33,8 @@ make -j$(nproc)
 make install
 
 cd $SRC/fuzzing-headers/
-./install.sh
+rm -rf /usr/include/fuzzing
+cp -R include/fuzzing/ /usr/include/
 
 cd $SRC/libtheora/
 # patch configure since the baseimage is using an older autoconf

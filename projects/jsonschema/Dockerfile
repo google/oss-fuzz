@@ -15,9 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
-RUN pip3 install --upgrade pip hypothesis rpds
+RUN pip3 install --upgrade pip hypothesis rpds-py
 
-RUN git clone --depth=1 https://github.com/Julian/jsonschema
+RUN git clone --depth=1 https://github.com/python-jsonschema/jsonschema.git
 RUN git clone --depth=1 https://github.com/python-jsonschema/jsonschema-specifications jsonschema_specifications
 WORKDIR $SRC/jsonschema
 

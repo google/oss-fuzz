@@ -3,13 +3,13 @@ primary_contact: "johnylin@google.com"
 language: c
 auto_ccs:
   - "andyross@google.com"
-  - "ranjani.sridharan@intel.corp-partner.google.com"
   - "lgirdwood@gmail.com"
   - "sathyanarayana.nujella@intel.corp-partner.google.com"
   - "adrian.bonislawski@intel.com"
   - "jyri.sarha@intel.com"
   - "rander.wang@intel.com"
-  - "flavio.ceolin@intel.com"
+  - "tomasz.m.leman@intel.com"
+  - "kai.vehmanen@linux.intel.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
@@ -18,3 +18,4 @@ sanitizers:
 architectures:
   - i386
 main_repo: "https://github.com/thesofproject/sof"
+base_os_version: ubuntu-24-04

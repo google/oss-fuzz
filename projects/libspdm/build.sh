@@ -16,10 +16,24 @@
 ################################################################################
 
 # build project
-cd $SRC/libspdm
 mkdir build
-cd build
+pushd build
 cmake -DARCH=x64 -DTOOLCHAIN=LIBFUZZER -DTARGET=Release -DCRYPTO=mbedtls -DGCOV=ON ..
-make copy_sample_key
-make
+make copy_sample_key -j$(nproc)
+make -j$(nproc)
 cp -r ./bin/* $OUT
+popd
+
+# build unit testing that requires different TOOLCHAIN
+# Unset CFLAGS that incompatible with unit testing build
+unset CFLAGS
+mkdir build-test
+pushd build-test
+cmake -DARCH=x64 -DTOOLCHAIN="CLANG" -DTARGET=Release -DCRYPTO=mbedtls ..
+make -j$(nproc)
+popd
+
+# Prepare sample key and unit testing binary
+mkdir $SRC/unit_testing
+cp -r $SRC/libspdm/unit_test/sample_key/* $SRC/unit_testing/
+cp $SRC/libspdm/build-test/bin/* $SRC/unit_testing/

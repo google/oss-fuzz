@@ -14,21 +14,55 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 #include <opencv2/opencv.hpp>
 #include "fuzzer_temp_file.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Tests reading from a file using cv::FileStorage, which attempts to parse
-  // JSON, XML, and YAML, using the first few bytes of a file to determine which
-  // type to parse it as.
   const FuzzerTemporaryFile temp_file(data, size);
-  cv::FileStorage storage;
+
   try {
-    // TODO: enabling the following crashes right away.
-//    storage.open(temp_file.filename(), cv::FileStorage::READ);
-  } catch (cv::Exception e) {
-    // Do nothing.
+    cv::FileStorage storage;
+    if (!storage.open(temp_file.filename(), cv::FileStorage::READ)) {
+      return 0;
+    }
+
+    cv::FileNode root = storage.root();
+    for (cv::FileNodeIterator it = root.begin(); it != root.end(); ++it) {
+      cv::FileNode node = *it;
+      const std::string node_name = node.name();
+      const int node_type = node.type();
+
+      switch (node_type) {
+        case cv::FileNode::INT:
+          (void)static_cast<int>(node);
+          break;
+        case cv::FileNode::REAL:
+          (void)static_cast<double>(node);
+          break;
+        case cv::FileNode::STRING:
+          (void)static_cast<std::string>(node);
+          break;
+        case cv::FileNode::SEQ:
+        case cv::FileNode::MAP: {
+          for (cv::FileNodeIterator child_it = node.begin();
+               child_it != node.end(); ++child_it) {
+            cv::FileNode child = *child_it;
+            (void)child.name();
+            (void)child.type();
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+
+    storage.release();
+  } catch (const cv::Exception&) {
+  } catch (...) {
   }
+
   return 0;
 }

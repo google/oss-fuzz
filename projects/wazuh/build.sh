@@ -19,8 +19,15 @@ cd src
 export LDFLAGS="$CFLAGS"
 sed -i 's/CC=gcc/CC=clang/g' Makefile
 
-make deps
-make libwazuh.a
-$CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_xml.c -o $OUT/fuzz_xml -I./ -I./os_xml \
-    ./libwazuh.a ./external/sqlite/libsqlite3.a ./external/cJSON/libcjson.a \
-    ./external/zlib/libz.a ./external/bzip2/libbz2.a
+make deps TARGET=agent
+mkdir -p build && cd build
+cmake .. -DTARGET=agent
+make wazuh -j$(nproc)
+cd ..
+
+$CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_xml.c -o $OUT/fuzz_xml \
+    -I./ -I./shared -I./shared/include \
+    ./build/lib/libwazuh.a \
+    ./external/sqlite/libsqlite3.a ./external/cJSON/libcjson.a \
+    ./external/zlib/libz.a ./external/bzip2/libbz2.a \
+    -lpthread -ldl -lrt -lm

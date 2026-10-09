@@ -32,6 +32,8 @@ limitations under the License.
 
 static int ruby_initialized = 0;
 
+extern "C" VALUE ruby_verbose;
+
 // Test Array#pack with fuzzer-provided template
 static VALUE call_array_pack(VALUE arg) {
     VALUE *args = (VALUE *)arg;
@@ -77,6 +79,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (!ruby_initialized) {
         ruby_init();
         ruby_initialized = 1;
+        
+        // Suppress Ruby warnings to avoid log noise
+        ruby_verbose = Qfalse;
     }
     
     if (size < 2) {

@@ -14,10 +14,9 @@
 //
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import org.jxls.common.Context;
 import org.jxls.common.JxlsException;
 import org.jxls.util.CannotOpenWorkbookException;
-import org.jxls.util.JxlsHelper;
+import org.jxls.transform.poi.JxlsPoiTemplateFillerBuilder;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -92,7 +91,7 @@ public class ProcessTemplateFuzzer {
             return;
         }
 
-        Context context = new Context(ProcessTemplateFuzzer.generateHashMap(data));
+        Map<String, Object> contextData = ProcessTemplateFuzzer.generateHashMap(data);
         OutputStream os = new ByteArrayOutputStream();
         InputStream in = null;
         try {
@@ -102,17 +101,9 @@ public class ProcessTemplateFuzzer {
         }
 
         try {
-            if (data.consumeBoolean()) {
-                JxlsHelper.getInstance().processTemplate(in, os, context);
-            } else {
-                JxlsHelper.getInstance().processGridTemplateAtCell(
-                    in,
-                    os,
-                    context,
-                    data.consumeString(50),
-                    data.consumeString(50)
-                );
-            }
-        } catch (IOException | JxlsException e) {}
+            JxlsPoiTemplateFillerBuilder.newInstance()
+                .withTemplate(in)
+                .buildAndFill(contextData, () -> os);
+        } catch (JxlsException e) {}
     }
 }

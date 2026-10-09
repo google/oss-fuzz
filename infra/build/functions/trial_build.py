@@ -28,6 +28,7 @@ import sys
 import textwrap
 import time
 import urllib.request
+import urllib.error
 import yaml
 import oauth2client.client
 from googleapiclient.discovery import build as cloud_build
@@ -62,6 +63,9 @@ BUILD_TYPES = {
         BuildType('introspector',
                   build_and_run_coverage.get_fuzz_introspector_steps,
                   'status-introspector.json'),
+    'indexer':
+        BuildType('indexer', build_project.get_indexer_build_steps,
+                  'status.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
@@ -71,10 +75,16 @@ def _get_production_build_statuses(build_type):
   """Gets the statuses for |build_type| that is reported by build-status.
   Returns a dictionary mapping projects to bools indicating whether the last
   build of |build_type| succeeded."""
-  request = urllib.request.urlopen(
-      'https://oss-fuzz-build-logs.storage.googleapis.com/'
-      f'{build_type.status_filename}')
-  project_statuses = json.load(request)['projects']
+  try:
+    request = urllib.request.urlopen(
+        'https://oss-fuzz-build-logs.storage.googleapis.com/'
+        f'{build_type.status_filename}')
+    project_statuses = json.load(request)['projects']
+  except urllib.error.URLError:
+    # It is not a critical error if the status file cannot be found.
+    # This is expected for indexer.
+    return {}
+
   results = {}
   for project in project_statuses:
     name = project['name']
@@ -135,12 +145,14 @@ def get_args(args=None):
   parser.add_argument('projects',
                       help='Projects. "all" for all projects',
                       nargs='+')
-  parser.add_argument(
-      '--sanitizers',
-      required=False,
-      default=['address', 'memory', 'undefined', 'coverage', 'introspector'],
-      nargs='+',
-      help='Sanitizers.')
+  parser.add_argument('--sanitizers',
+                      required=False,
+                      default=[
+                          'address', 'memory', 'undefined', 'coverage',
+                          'introspector', 'indexer'
+                      ],
+                      nargs='+',
+                      help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
                       required=False,
                       default=['afl', 'libfuzzer', 'honggfuzz', 'centipede'],
@@ -282,6 +294,9 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
   if 'introspector' in sanitizers:
     sanitizers.pop(sanitizers.index('introspector'))
     build_types.append(BUILD_TYPES['introspector'])
+  if 'indexer' in sanitizers:
+    sanitizers.pop(sanitizers.index('indexer'))
+    build_types.append(BUILD_TYPES['indexer'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
 
@@ -304,7 +319,7 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
       unselected_projects = set(specified_projects) - set(projects_to_build)
       for project in unselected_projects:
         skipped_projects[build_type.type_name].append(
-            (project, 'Production build succeeded'))
+            (project, 'Production build failed'))
 
       logging.info('Build type: %s', build_type.type_name)
       logging.info(
@@ -405,7 +420,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers']) + ['coverage', 'introspector']
+        project_yaml['sanitizers']) + ['coverage', 'introspector', 'indexer']
     project_yaml['sanitizers'] = list(
         set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 
@@ -416,6 +431,16 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
     if not project_yaml['sanitizers'] or not project_yaml['fuzzing_engines']:
       skipped_projects.append(
           (project_name, 'No compatible sanitizers or engines'))
+      continue
+
+    # Check if project's base_os_version matches the current build version.
+    project_base_os = project_yaml.get('base_os_version', 'legacy')
+    current_build_version = config.base_image_tag or 'legacy'
+
+    if project_base_os != current_build_version:
+      skipped_projects.append(
+          (project_name, f'Project requires {project_base_os}, but '
+           f'build version is {current_build_version}'))
       continue
 
     steps, reason = build_type.get_build_steps_func(project_name, project_yaml,
@@ -447,18 +472,18 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
 def _print_summary_box(title, lines):
   """Prints a formatted box for summarizing build results."""
   box_width = 80
-  title_line = f'║ {title.center(box_width - 4)} ║'
-  separator = '╟' + '─' * (box_width - 2) + '╢'
+  title_line = f'| {title.center(box_width - 4)} |'
+  separator = '+' + '-' * (box_width - 2) + '+'
   summary_lines = [
-      '╔' + '═' * (box_width - 2) + '╗',
+      '+' + '-' * (box_width - 2) + '+',
       title_line,
-      '╠' + '═' * (box_width - 2) + '╣',
+      '+' + '-' * (box_width - 2) + '+',
   ]
   for line in lines:
     wrapped_lines = textwrap.wrap(line, box_width - 6)
     for i, sub_line in enumerate(wrapped_lines):
-      summary_lines.append(f'║  {sub_line.ljust(box_width - 6)}  ║')
-  summary_lines.append('╚' + '═' * (box_width - 2) + '╝')
+      summary_lines.append(f'|  {sub_line.ljust(box_width - 6)}  |')
+  summary_lines.append('+' + '-' * (box_width - 2) + '+')
   print('\n'.join(summary_lines))
 
 

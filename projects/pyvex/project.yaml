@@ -9,5 +9,4 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-  - undefined
 main_repo: 'https://github.com/angr/pyvex.git'

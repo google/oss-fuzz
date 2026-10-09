@@ -13,6 +13,7 @@ auto_ccs:
  - "jordyzomer@google.com"
  - "epirat07@gmail.com"
  - "kasper93@gmail.com"
+ - "jzern@google.com"
 fuzzing_engines:
  - afl
  - honggfuzz

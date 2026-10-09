@@ -19,7 +19,7 @@ export JAVA_HOME="$OUT/open-jdk-17"
 mkdir -p $JAVA_HOME
 rsync -aL --exclude=*.zip "/usr/lib/jvm/java-17-openjdk-amd64/" "$JAVA_HOME"
 
-MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -DskipTests -Dcheckstyle.skip=true"
+MAVEN_ARGS="-Djavac.src.version=17 -Djavac.target.version=17 -Dmaven.test.skip=true -Dcheckstyle.skip=true"
 CURRENT_VERSION=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
  -Dexpression=project.version -q -DforceStdout)
 

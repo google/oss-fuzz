@@ -18,6 +18,8 @@ limitations under the License.
 #include "ruby.h"
 
 static int ruby_initialized = 0;
+
+extern "C" VALUE ruby_verbose;
 static VALUE cInstructionSequence = Qnil;
 static ID id_load_from_binary = 0;
 

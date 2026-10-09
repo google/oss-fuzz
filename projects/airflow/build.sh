@@ -24,4 +24,4 @@ pip3 install ./task-sdk ./airflow-core .
 # Build fuzzers in $OUT.
 cd $SRC
 CONFIG_TEMPLATES_PATH=$(python3 -c "import os, airflow; print(os.path.join(os.path.dirname(airflow.__file__), 'config_templates'))")
-compile_python_fuzzer dag_fuzz.py --add-data "$CONFIG_TEMPLATES_PATH:airflow/config_templates" --hidden-import="airflow.utils.log.timezone_aware" --hidden-import="aiosqlite"
+compile_python_fuzzer dag_fuzz.py --add-data "$CONFIG_TEMPLATES_PATH:airflow/config_templates" --hidden-import="airflow.utils.log.timezone_aware" --hidden-import="aiosqlite" --hidden-import="airflow.sdk.serde.serializers"

@@ -1,6 +1,6 @@
 homepage: "https://github.com/SELinuxProject/selinux"
 language: c
-primary_contact: "nicolas.iooss_ossfuzzselinux@m4x.org"
+primary_contact: "stephen.smalley.work@gmail.com"
 builds_per_day: 4
 sanitizers:
   - address
@@ -8,10 +8,12 @@ sanitizers:
   - memory
 auto_ccs:
   - evverx@gmail.com
-  - nicolas.iooss.ossfuzz@gmail.com
   - omosnacek@gmail.com
   - jwcart2@gmail.com
   - cgzones@googlemail.com
+  - stephen.smalley.work@gmail.com
+  - paul@paul-moore.com
+  - jason@perfinion.com
 main_repo: 'https://github.com/SELinuxProject/selinux'
 
 fuzzing_engines:

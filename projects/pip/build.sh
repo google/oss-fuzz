@@ -17,7 +17,6 @@
 
 cd $SRC/pip
 pip3 install .
-python3 setup.py install
 
 cd $SRC/pip/src
 

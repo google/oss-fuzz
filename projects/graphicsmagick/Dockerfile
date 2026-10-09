@@ -27,13 +27,24 @@ RUN apt-get update && \
     nasm \
     pkg-config \
     po4a \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
     ninja-build \
     libgflags-dev \
     yasm
 
+# Get latest meson
+RUN apt purge meson
+RUN pip3 install --upgrade pip meson --root-user-action ignore
+
+# Due to libtiff requirements, build requires autoconf 2.71 (or later)
+RUN curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/main/a/autoconf/autoconf_2.72-3.1ubuntu1_all.deb && \
+    apt install ./autoconf_2.72-3.1ubuntu1_all.deb
+
 # Due to libxml2 requirements, build requires automake 1.16.3 (or later)
-RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
-    apt install ./automake_1.16.5-1.3_all.deb
+RUN curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/main/a/automake-1.17/automake_1.17-4ubuntu1_all.deb && \
+    apt install ./automake_1.17-4ubuntu1_all.deb
 
 # GraphicsMagick
 RUN hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
@@ -42,6 +53,12 @@ RUN hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphics
 
 # Libtiff
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
+
+# Lerc
+RUN git clone --depth 1 https://github.com/Esri/lerc
+
+# Libdeflate
+RUN git clone --depth 1 https://github.com/ebiggers/libdeflate
 
 # h.265 codec implementation needed by libheif
 RUN git clone --depth 1 https://github.com/strukturag/libde265 || \
@@ -54,8 +71,12 @@ RUN git clone --depth 1 https://bitbucket.org/multicoreware/x265_git/src/stable/
     printf "https://bitbucket.org/multicoreware/x265_git/src/stable/ is not available!\n"
 
 # AV1 Codec Library needed by libheif
-RUN git clone --depth 1 --branch master https://aomedia.googlesource.com/aom aom || \
+RUN git clone --depth 1 https://aomedia.googlesource.com/aom aom || \
     printf "https://aomedia.googlesource.com/aom is not available!\n"
+
+# Dav1d Codec Library needed by libheif
+RUN git clone --depth 1 https://code.videolan.org/videolan/dav1d || \
+    printf "https://code.videolan.org/videolan/dav1d is not available!\n"
 
 # AVC (OpenH264) Codec Library needed by libheif
 RUN git clone --depth 1 https://github.com/cisco/openh264 openh264
@@ -120,6 +141,18 @@ RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit # does not support sha
 
 # libwmf
 RUN git clone --depth 1 https://github.com/caolanm/libwmf.git
+
+# vvdec
+RUN git clone --depth 1 https://github.com/fraunhoferhhi/vvdec.git
+
+# vvenc
+RUN git clone --depth 1 https://github.com/fraunhoferhhi/vvenc.git
+
+# x264
+RUN git clone --depth 1 https://code.videolan.org/videolan/x264.git
+
+# OpenJPH
+RUN git clone --depth 1 https://github.com/aous72/OpenJPH.git
 
 # Build!
 WORKDIR $SRC/graphicsmagick

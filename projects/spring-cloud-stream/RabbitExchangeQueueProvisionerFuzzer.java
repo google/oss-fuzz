@@ -91,6 +91,11 @@ public class RabbitExchangeQueueProvisionerFuzzer {
 		public boolean removeBlockedListener(BlockedListener blockedListener) {
 			return false;
 		}
+
+		@Override
+		public com.rabbitmq.client.Connection getDelegate() {
+			return null;
+		}
 	}
 
 	public class DummyConnectionFactory implements ConnectionFactory {
