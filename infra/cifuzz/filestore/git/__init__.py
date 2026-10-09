@@ -74,13 +74,16 @@ class GitFilestore(filestore.BaseFilestore):
     self._git('config', '--local', 'user.name', _GIT_NAME)
 
   def _reset_git(self, branch):
-    """Resets the git repo."""
+    """Resets the repo to origin's |branch|, or to an empty |branch|."""
     self._git('fetch', 'origin')
     try:
       self._git('checkout', '-B', branch, 'origin/' + branch)
       self._git('reset', '--hard', 'HEAD')
     except subprocess.CalledProcessError:
-      self._git('checkout', '--orphan', branch)
+      # Start an unborn |branch| with an empty index, dropping local commits.
+      self._git('symbolic-ref', 'HEAD', 'refs/heads/' + branch)
+      self._git('update-ref', '-d', 'refs/heads/' + branch)
+      self._git('read-tree', '--empty')
 
     self._git('clean', '-fxd')
 
