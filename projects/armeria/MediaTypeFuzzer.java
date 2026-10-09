@@ -19,10 +19,17 @@ import com.linecorp.armeria.common.MediaType;
 
 public class MediaTypeFuzzer {
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+        final MediaType mediaType;
         try {
-            MediaType mediaType = MediaType.parse(data.consumeRemainingAsString());
+            mediaType = MediaType.parse(data.consumeRemainingAsString());
         } catch (IllegalArgumentException e) {
             // Known exception
+            return;
+        }
+
+        final MediaType reparsed = MediaType.parse(mediaType.toString());
+        if (!mediaType.equals(reparsed)) {
+            throw new IllegalStateException("Round trip mismatch: " + mediaType + " != " + reparsed);
         }
     }
 }
