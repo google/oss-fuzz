@@ -1,4 +1,4 @@
-# Copyright 2026 Atomicorp, Inc. / Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make zip
-# Prefer the harness branch until https://github.com/ossec/ossec-hids/pull/2342 merges.
-RUN git clone --depth 1 --branch feature/1789-oss-fuzz \
-      https://github.com/atomicturtle/ossec-hids.git ossec-hids \
-  || git clone --depth 1 https://github.com/ossec/ossec-hids.git ossec-hids
+RUN git clone --depth 1 https://github.com/ossec/ossec-hids.git ossec-hids
 WORKDIR $SRC/ossec-hids
 COPY build.sh $SRC/

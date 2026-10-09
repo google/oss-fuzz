@@ -2,8 +2,6 @@ homepage: "https://www.ossec.net/"
 main_repo: "https://github.com/ossec/ossec-hids"
 primary_contact: "scott@atomicorp.com"
 language: c
-auto_ccs:
-  - "scott@atomicorp.com"
 
 fuzzing_engines:
   - afl
