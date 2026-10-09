@@ -52,6 +52,7 @@ do
     --cp=$RUNTIME_CLASSPATH                         \
     --target_class=$fuzzer_basename                 \
     --jvm_args="\$mem_settings"                     \
+    --disabled_hooks=com.code_intelligence.jazzer.sanitizers.UnsafeSanitizer \
     \$@" > $OUT/$fuzzer_basename
 
   chmod u+x $OUT/$fuzzer_basename
