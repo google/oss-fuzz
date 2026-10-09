@@ -163,8 +163,7 @@ def _upload_artifact_with_upload_js(name, artifact_paths, directory):
   """Uploads the artifacts in |artifact_paths| that are located in |directory|
   to |name|, using the upload.js script."""
   command = [UPLOAD_JS, name, directory] + artifact_paths
-  _, _, retcode = utils.execute(command, location=OSS_FUZZ_ROOT_DIR)
-  return retcode == 0
+  utils.execute(command, location=OSS_FUZZ_ROOT_DIR, check_result=True)
 
 
 def _raw_upload_directory(name, directory):
@@ -176,4 +175,4 @@ def _raw_upload_directory(name, directory):
     for file_path in curr_file_paths:
       artifact_paths.append(os.path.join(root, file_path))
   logging.debug('Artifact paths: %s.', artifact_paths)
-  return _upload_artifact_with_upload_js(name, artifact_paths, directory)
+  _upload_artifact_with_upload_js(name, artifact_paths, directory)
