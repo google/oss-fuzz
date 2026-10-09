@@ -15,36 +15,20 @@
 #
 ################################################################################
 
-./gradlew clean shadedJar trimShadedJar -x shadedTestJar -PnoLint
+cat >> gradle.properties << EOF
+org.gradle.java.installations.auto-download=false
+org.gradle.java.installations.paths=$SRC/graalvm17,$SRC/zulu17
+EOF
 
-JARFILE_LIST=
-for JARFILE in $(find ./ -name *.jar)
-do
-  if [[ "$JARFILE" == *"target/"* ]] || [[ "$JARFILE" == *"build/"* ]] || [[ "$JARFILE" == *"dist/"* ]]
-  then
-    if [[ "$JARFILE" != *sources.jar ]] \
-      && [[ "$JARFILE" != *javadoc.jar ]] \
-      && [[ "$JARFILE" != *tests.jar ]] \
-      && [[ "$JARFILE" != *untrimmed*.jar ]]
-    then
-      cp $JARFILE $OUT/
-      JARFILE_LIST="$JARFILE_LIST$(basename $JARFILE) "
-    fi
-  fi
-done
+./gradlew -I $SRC/copy-deps.gradle :core:jar :core:copyRuntimeDeps -PnoLint -PnoWeb --no-daemon
 
-curr_dir=$(pwd)
-rm -rf $OUT/jar_temp
-mkdir $OUT/jar_temp
-cd $OUT/jar_temp
-for JARFILE in $JARFILE_LIST
-do
-  jar -xf $OUT/$JARFILE
-done
-cd $curr_dir
+cp core/build/libs/armeria-*.jar $OUT/armeria.jar
+rm -rf $OUT/deps
+cp -r build/fuzz-deps $OUT/deps
 
-BUILD_CLASSPATH=$JAZZER_API_PATH:$OUT/jar_temp
-RUNTIME_CLASSPATH=\$this_dir/jar_temp:\$this_dir
+DEPS=$(ls $OUT/deps)
+BUILD_CLASSPATH=$JAZZER_API_PATH:$OUT/armeria.jar$(printf ":$OUT/deps/%s" $DEPS)
+RUNTIME_CLASSPATH=\$this_dir/armeria.jar$(printf ":\$this_dir/deps/%s" $DEPS):\$this_dir
 
 for fuzzer in $(find $SRC -maxdepth 1 -name '*Fuzzer.java')
 do
