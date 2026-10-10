@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake git curl
-
-# Sources and dependencies
-RUN git clone --depth 1 https://gitlab.com/systerel/S2OPC
-RUN git clone --depth 1 https://gitlab.com/systerel/S2OPC-fuzzing-data
-RUN curl -L https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.6/mbedtls-3.6.6.tar.bz2 -o $SRC/mbedtls.tbz2
-RUN curl -L https://github.com/libcheck/check/releases/download/0.14.0/check-0.14.0.tar.gz -o $SRC/check.tgz
-RUN curl -L https://github.com/libexpat/libexpat/releases/download/R_2_8_1/expat-2.8.1.tar.gz -o $SRC/expat.tgz
-
-WORKDIR S2OPC
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	bison flex libssl-dev pkg-config lzop lz4
+RUN git clone --depth 1 --branch master \
+	https://github.com/barebox/barebox barebox && \
+    git clone --depth 1 --branch master \
+	https://github.com/barebox/barebox-fuzz-corpora barebox-fuzz-corpora
+WORKDIR barebox
 COPY build.sh $SRC/
