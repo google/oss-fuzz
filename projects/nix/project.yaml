@@ -1,0 +1,13 @@
+homepage: "https://nixos.org/"
+language: c++
+primary_contact: "sergei@zimmerman.foo"
+main_repo: "https://github.com/NixOS/nix"
+base_os_version: ubuntu-24-04
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer
+  - centipede
