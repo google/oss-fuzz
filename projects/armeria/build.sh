@@ -17,10 +17,10 @@
 
 cat >> gradle.properties << EOF
 org.gradle.java.installations.auto-download=false
-org.gradle.java.installations.paths=$SRC/graalvm17,$SRC/zulu17
+org.gradle.java.installations.paths=$SRC/graalvm17,$SRC/zulu25
 EOF
 
-./gradlew -I $SRC/copy-deps.gradle :core:jar :core:copyRuntimeDeps -PnoLint -PnoWeb --no-daemon
+./gradlew -I $SRC/copy-deps.gradle :core:jar :core:copyRuntimeDeps -PbuildJdkVersion=25 -PnoLint -PnoWeb --no-daemon
 
 cp core/build/libs/armeria-*.jar $OUT/armeria.jar
 rm -rf $OUT/deps
