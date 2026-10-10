@@ -1,0 +1,12 @@
+homepage: "https://github.com/egorribun/university_ecosystem"
+language: rust
+primary_contact: "egorribun@gmail.com"
+main_repo: "https://github.com/egorribun/university_ecosystem"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+
