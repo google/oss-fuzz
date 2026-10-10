@@ -17,46 +17,56 @@
 */
 
 #include "bzlib.h"
-#include <stdint.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
 #include <limits.h>
+#include <stdint.h>
+#include <string.h>
 
-extern int BZ2_bzBuffToBuffDecompress(char* dest,
-                                      unsigned int* destLen,
-                                      char*         source,
-                                      unsigned int  sourceLen,
-                                      int           small,
-                                      int           verbosity);
+#define OUTPUT_BUFFER_SIZE 4096
+/* Bound work on valid decompression bombs without limiting the input ratio. */
+#define MAX_OUTPUT_SIZE (16 * 1024 * 1024)
+
+static void
+decompress(const uint8_t *data, size_t size, int small)
+{
+    bz_stream stream;
+    char outbuf[OUTPUT_BUFFER_SIZE];
+    size_t total_out = 0;
+    int r;
+
+    memset(&stream, 0, sizeof(stream));
+    r = BZ2_bzDecompressInit(&stream, /*verbosity=*/0, small);
+    if (r != BZ_OK) {
+        return;
+    }
+
+    stream.next_in = (char *)data;
+    stream.avail_in = (unsigned int)size;
+    do {
+        unsigned int before_in = stream.avail_in;
+
+        stream.next_out = outbuf;
+        stream.avail_out = sizeof(outbuf);
+        r = BZ2_bzDecompress(&stream);
+        total_out += sizeof(outbuf) - stream.avail_out;
+
+        /* BZ_OK without consuming input or producing output needs more data. */
+        if (r == BZ_OK && before_in == stream.avail_in &&
+                stream.avail_out == sizeof(outbuf)) {
+            break;
+        }
+    } while (r == BZ_OK && total_out < MAX_OUTPUT_SIZE &&
+            (stream.avail_in != 0 || stream.avail_out == 0));
+
+    BZ2_bzDecompressEnd(&stream);
+}
 
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    int r, small;
-    unsigned int nOut;
-
-    // Reject inputs that would cause integer overflow in size*2
-    // since nOut is unsigned int and the API uses unsigned int for sizes
-    if (size > UINT_MAX / 2) {
+    if (size > UINT_MAX) {
         return 0;
     }
 
-    // See: https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L39
-    nOut = (unsigned int)(size * 2);
-    char *outbuf = malloc(nOut);
-    if (!outbuf) {
-        return 0;
-    }
-    small = size % 2;
-    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, (char *)data, (unsigned int)size,
-            small, /*verbosity=*/0);
-
-    if (r != BZ_OK) {
-#ifdef __DEBUG__
-        fprintf(stdout, "Decompression error: %d\n", r);
-#endif
-    }
-    free(outbuf);
+    decompress(data, size, /*small=*/size % 2);
     return 0;
 }
