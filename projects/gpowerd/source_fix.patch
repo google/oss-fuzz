@@ -1,0 +1,25 @@
+diff --git a/daemon_context.cc b/daemon_context.cc
+index f601846..efc8423 100644
+--- a/daemon_context.cc
++++ b/daemon_context.cc
+@@ -12,20 +12,6 @@ namespace safepower_agent {
+ void LogCondensedNodeEntities(
+     const production_msv::node_entities_proto::OfflineNodeEntityInformation&
+         info) {
+-  LOG(INFO) << "offline_node_entities (condensed): "
+-            << "machine_name: \"" << info.resolved_config().machine_name()
+-            << "\" entity_configuration_tag: \""
+-            << info.resolved_config().entity_configuration_tag()
+-            << "\" entity_tag: \"" << info.entity_tag() << "\"";
+-
+-  for (const auto& [node, entity] : info.resolved_config().entities()) {
+-    LOG(INFO) << "node: \"" << node << "\" hostname: \"" << entity.hostname()
+-              << "\" tag: \"" << entity.tag() << "\" is_control: "
+-              << (entity.node_type_info().is_control() ? "true" : "false")
+-              << " os_type: "
+-              << net_model_unm::proto::NodeOperatingSystemType_Name(
+-                     entity.node_type_info().os_type());
+-  }
+ }
+
+ DaemonContext*  DaemonContext::instance_ = nullptr;
