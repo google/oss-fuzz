@@ -29,11 +29,12 @@ RUN mkdir -p ~/.m2 && \
 #
 # install maven and gradle
 #
-RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.zip -o maven.zip && \
-	unzip maven.zip -d $SRC/maven-3.8.7 && \
+# Axis2 master requires Maven 3.9+ (maven-enforcer-plugin)
+RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip && \
+	unzip maven.zip -d $SRC/maven-3.9.11 && \
 	rm -rf maven.zip
 
-ENV MVN $SRC/maven-3.8.7/apache-maven-3.8.7/bin/mvn
+ENV MVN $SRC/maven-3.9.11/apache-maven-3.9.11/bin/mvn
 
 RUN curl -L https://services.gradle.org/distributions/gradle-7.6-bin.zip -o gradle.zip && \
     unzip gradle.zip -d $SRC/gradle && \

@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-MVN_FLAGS="-DskipTests"
+# -DskipTests alone still runs the integration tests of systests/webapp-tests.
+MVN_FLAGS="-DskipTests -DskipITs -Dmaven.javadoc.skip=true"
 ALL_JARS=""
 
 # Install the build servers' jazzer-api into the maven repository.
@@ -36,6 +37,13 @@ pushd "${SRC}/${LIBRARY_NAME}-fuzzer"
 	${MVN} package -DfuzzedLibaryVersion="${CURRENT_VERSION}" ${MVN_FLAGS}
 	install -v target/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar ${OUT}/${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar
 	ALL_JARS="${ALL_JARS} ${LIBRARY_NAME}-fuzzer-${CURRENT_VERSION}.jar"
+
+	# The dependencies stay separate jars (see the comment in the pom).
+	mkdir -p ${OUT}/lib
+	for jar in target/lib/*.jar; do
+		install -v ${jar} ${OUT}/lib/
+		ALL_JARS="${ALL_JARS} lib/$(basename ${jar})"
+	done
 popd
 
 
@@ -47,9 +55,18 @@ BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 # All .jar and .class files lie in the same directory as the fuzzer at runtime.
 RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):\$this_dir
 
+# Only instrument the libraries under test, not the harness or the rest of the dependencies.
+INSTRUMENTATION_INCLUDES="org.apache.axis2.**:org.apache.axiom.**:org.apache.commons.fileupload2.**:com.ctc.wstx.**:com.google.gson.**:com.squareup.moshi.**:org.codehaus.jettison.**:org.apache.ws.commons.schema.**:org.apache.james.mime4j.**"
+
+# Fuzzer class -> seed/dictionary directory and max input length (name, dir, max_len).
+declare -A SUPPORT=(
+	[PipelineFuzzer]="pipeline 65536"
+	[DispatchFuzzer]="dispatch 4096"
+)
+
 MVN_FUZZERS_PREFIX="src/main/java"
 
-for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
+for fuzzer in $(find ${SRC}/${LIBRARY_NAME}-fuzzer -name '*Fuzzer.java'); do
 	# Find our fuzzer inside the maven structure
 	stripped_path=$(echo ${fuzzer} | sed \
 		-e 's|^.*src/main/java/\(.*\).java$|\1|' \
@@ -59,12 +76,12 @@ for fuzzer in $(find ${SRC} -name '*Fuzzer.java'); do
 	if (echo ${stripped_path} | grep ".java$"); then
 		continue;
 	fi
-	
+
 	fuzzer_basename=$(basename -s .java $fuzzer)
 	fuzzer_classname=$(echo ${stripped_path} | sed 's|/|.|g');
-	
+
 	# Create an execution wrapper that executes Jazzer with the correct arguments.
-	
+
 	echo "#!/bin/sh
 # LLVMFuzzerTestOneInput Magic String required for infra/base-images/base-runner/test_all.py. DO NOT REMOVE
 
@@ -74,7 +91,16 @@ LD_LIBRARY_PATH=\"\$JVM_LD_LIBRARY_PATH\":\$this_dir \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=${RUNTIME_CLASSPATH} \
 --target_class=${fuzzer_classname} \
+--instrumentation_includes=\"${INSTRUMENTATION_INCLUDES}\" \
 --jvm_args=\"-Xmx2048m\" \
 \$@" > $OUT/${fuzzer_basename}
 	chmod u+x $OUT/${fuzzer_basename}
+
+	# Seed corpus, dictionary and input length of the fuzzers that have them.
+	if [ -n "${SUPPORT[${fuzzer_basename}]:-}" ]; then
+		read -r support_dir max_len <<< "${SUPPORT[${fuzzer_basename}]}"
+		zip -j -q $OUT/${fuzzer_basename}_seed_corpus.zip ${SRC}/${LIBRARY_NAME}-fuzzer/seeds/${support_dir}/*
+		cp ${SRC}/${LIBRARY_NAME}-fuzzer/dict/${support_dir}.dict $OUT/${fuzzer_basename}.dict
+		printf '[libfuzzer]\nmax_len = %s\n' ${max_len} > $OUT/${fuzzer_basename}.options
+	fi
 done
