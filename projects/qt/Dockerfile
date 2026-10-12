@@ -18,8 +18,9 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y libssl-dev ninja-build libc6-dev:i386
 # codecs for qtmultimedia
-RUN apt-get install -y libavcodec-dev libavformat-dev libavutil-dev libswscale-dev \
-                       libswresample-dev libpulse-dev libpipewire-0.3-dev
+RUN apt-get update && apt-get install -y libavcodec-dev libavformat-dev libavutil-dev \
+                                         libswscale-dev libswresample-dev libpulse-dev \
+                                         libpipewire-0.3-dev
 
 RUN git clone --depth 1 https://github.com/AFLplusplus/AFLplusplus.git myaflplusplus && \
     cp -r myaflplusplus/dictionaries afldictionaries && \
