@@ -1,0 +1,17 @@
+homepage: "https://www.gnu.org/software/cpio/"
+language: c
+primary_contact: "ghost789j@gmail.com"
+auto_ccs:
+  - "bug-cpio@gnu.org"
+main_repo: "https://git.savannah.gnu.org/git/cpio.git"
+file_github_issue: true
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+architectures:
+  - x86_64
