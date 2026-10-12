@@ -48,7 +48,7 @@ RUN cmake -DSYNC_TO_MODULE=qtmultimedia -DSYNC_TO_BRANCH=dev -P cmake/QtSynchron
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 WORKDIR qtqa
 RUN git config user.name qt && git config user.email qt@oss-fuzz && \
-    git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/45/779545/2 && \
+    git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/45/779545/3 && \
     git cherry-pick --allow-empty FETCH_HEAD && \
     git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/06/777906/2 && \
     git cherry-pick --allow-empty FETCH_HEAD
