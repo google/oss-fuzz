@@ -1,0 +1,8 @@
+fuzzing_engines:
+- libfuzzer
+homepage: https://github.com/MarcinWolnyEU/Staan-MCP
+language: python
+main_repo: https://github.com/MarcinWolnyEU/Staan-MCP
+sanitizers:
+- address
+primary_contact: "marcin@marcinwolny.net"
