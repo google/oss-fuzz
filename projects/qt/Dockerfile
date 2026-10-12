@@ -34,18 +34,16 @@ WORKDIR $SRC/qt
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qt5.git && \
     cp -r qt5/cmake . && \
     rm -rf qt5
-RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtbase.git
-RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtimageformats.git
-RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtlanguageserver.git
-RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtshadertools.git
-RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtsvg.git
-RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtdeclarative.git
-RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtquicktimeline.git
-RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtquick3d.git
-RUN git clone --branch dev --no-checkout --depth 1 git://code.qt.io/qt/qtmultimedia.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtbase.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtimageformats.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtlanguageserver.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtshadertools.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtsvg.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtdeclarative.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtquicktimeline.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtquick3d.git
+RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtmultimedia.git
 # TODO: Before merging this, pin qtsvg to a fixed revision so it doesn't return to an older state
-# To make sure that qtimageformats gets checked out, check out qtdeclarative first
-RUN cmake -DSYNC_TO_MODULE=qtdeclarative -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
 RUN cmake -DSYNC_TO_MODULE=qtmultimedia -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 WORKDIR qtqa
