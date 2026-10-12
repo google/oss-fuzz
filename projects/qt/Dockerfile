@@ -44,8 +44,9 @@ RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.
 RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtquick3d.git
 RUN git clone --branch dev --no-checkout --depth 1 git://code.qt.io/qt/qtmultimedia.git
 # TODO: Before merging this, pin qtsvg to a fixed revision so it doesn't return to an older state
+# To make sure that qtimageformats gets checked out, check out qtdeclarative first
+RUN cmake -DSYNC_TO_MODULE=qtdeclarative -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
 RUN cmake -DSYNC_TO_MODULE=qtmultimedia -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
-RUN cmake -DSYNC_TO_MODULE=qtdeclarative -DSYNC_TO_BRANCH=HEAD -P cmake/QtSynchronizeRepo.cmake
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 WORKDIR qtqa
 RUN git config user.name qt && git config user.email qt@oss-fuzz && \
