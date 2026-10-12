@@ -37,6 +37,7 @@ ninja -C builddir -k 0 \
     tests/fuzzing/ngap_message_fuzz \
     tests/fuzzing/s1ap_message_fuzz \
     tests/fuzzing/pfcp_message_fuzz \
+    tests/fuzzing/pfcp_packet_match_fuzz \
     tests/fuzzing/nas_5gs_message_fuzz \
     tests/fuzzing/sbi_nf_profile_fuzz \
     tests/fuzzing/sbi_sm_context_fuzz \
@@ -48,6 +49,7 @@ cp builddir/tests/fuzzing/nas_message_fuzz $OUT/nas_message_fuzz
 cp builddir/tests/fuzzing/ngap_message_fuzz $OUT/ngap_message_fuzz
 cp builddir/tests/fuzzing/s1ap_message_fuzz $OUT/s1ap_message_fuzz
 cp builddir/tests/fuzzing/pfcp_message_fuzz $OUT/pfcp_message_fuzz
+cp builddir/tests/fuzzing/pfcp_packet_match_fuzz $OUT/pfcp_packet_match_fuzz
 cp builddir/tests/fuzzing/nas_5gs_message_fuzz $OUT/nas_5gs_message_fuzz
 
 mkdir -p $OUT/lib/
