@@ -2,7 +2,6 @@ homepage: "http://qt-project.org"
 language: c++
 primary_contact: "rlohningqt@gmail.com"
 auto_ccs:
-# TODO: Get someone for qtmultimedia
  - eirik.aavitsland.qt@gmail.com
  - "jimis@gmx.net"
  - "haelkharashy@gmail.com"
