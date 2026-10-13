@@ -24,6 +24,14 @@ fi
 
 cd $SRC/connectedhomeip
 
+# The Dockerfile moved third_party out of the source tree so Fuzz Introspector's analysis (which
+# runs before build.sh) skips it and stays within the build deadline (see the Dockerfile / oss-fuzz
+# #13153). Restore it now -- before `gn gen` -- so every build (asan/msan/coverage/introspector)
+# compiles normally. The introspector analysis has already run by this point.
+if [ -d /opt/chip-third-party-stash ] && [ ! -e third_party ]; then
+  mv /opt/chip-third-party-stash third_party
+fi
+
 # Preserve the OSS-Fuzz-provided toolchain settings. The pw_fuzzer / FuzzTest toolchain
 # (//build/toolchain/pw_fuzzer) reads $CC/$CXX/$CFLAGS/$CXXFLAGS at `gn gen` time so its
 # libFuzzer runtime matches OSS-Fuzz's instrumentation; Pigweed's activate.sh may change
@@ -83,6 +91,9 @@ fi
 #   error on GenericConnectivityManagerImpl_Thread.ipp and current fuzzing
 #   does not differentiate between thread/Wifi/TCP/UDP/BLE connectivity
 #   implementations.
+# - `chip_enable_icd_server` / `chip_enable_icd_checkin` enable the ICD server and
+#   the Check-In Protocol, without which the ICD Management cluster command
+#   handlers are not compiled and the fuzz target covering them is configured out.
 # - `target_ldflags` forces compiler to use LLVM's linker
 gn gen out/fuzz_targets \
   --args="
@@ -92,6 +103,8 @@ gn gen out/fuzz_targets \
     pw_enable_fuzz_test_targets=true \
     chip_enable_thread_safety_checks=false \
     chip_enable_thread=false \
+    chip_enable_icd_server=true \
+    chip_enable_icd_checkin=true \
     target_ldflags=[\"-fuse-ld=lld\"]"
 
 # Deactivate Pigweed environment to use OSS-Fuzz toolchains

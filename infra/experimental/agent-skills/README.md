@@ -82,6 +82,7 @@ full flag listings. A summary of the available subcommands:
 |---|---|---|
 | `expand-oss-fuzz-projects` | Add new harnesses / improve coverage on existing projects | `python infra/experimental/agent-skills/helper.py expand-oss-fuzz-projects open62541 json-c` |
 | `fix-builds` | Diagnose and fix broken project builds | `python infra/experimental/agent-skills/helper.py fix-builds htslib` |
+| `fix-broken-builds` | Auto-discover broken projects from the public build status and fix up to `--limit` of them (C/C++ by default) | `python infra/experimental/agent-skills/helper.py fix-broken-builds --limit 50` |
 | `run-task` | Run an arbitrary `--task` string per project | `python infra/experimental/agent-skills/helper.py run-task --task "Add a harness for the XML attribute parser" open62541` |
 | `add-chronos-support` | Add Chronos support to a project | `python infra/experimental/agent-skills/helper.py add-chronos-support json-c` |
 | `integrate-project` | Onboard a new project from a Git URL | `python infra/experimental/agent-skills/helper.py integrate-project https://github.com/org/repo` |
@@ -108,6 +109,26 @@ full flag listings. A summary of the available subcommands:
 ```bash
 python infra/experimental/agent-skills/helper.py show-prompt fix-builds proj1 proj2
 python infra/experimental/agent-skills/helper.py fix-builds proj1 proj2
+# Review the diff and per-project reports, then commit manually.
+```
+
+**Fix a whole batch of broken builds automatically**
+
+Instead of naming projects, let the helper discover them from the public
+build status. By default it fixes up to 50 broken **C/C++** *regressions*
+(projects that built before and have since broken), skipping new/incomplete
+integrations and intentionally-broken example projects:
+
+```bash
+# Preview which projects would be selected (no agent launched):
+python infra/experimental/agent-skills/helper.py fix-broken-builds --print-only
+
+# Fix up to 50 broken C/C++ projects (2 in parallel by default):
+python infra/experimental/agent-skills/helper.py fix-broken-builds --limit 50
+
+# Widen the language set or raise parallelism:
+python infra/experimental/agent-skills/helper.py fix-broken-builds \
+    --language c,c++,rust --limit 20 -j 4
 # Review the diff and per-project reports, then commit manually.
 ```
 

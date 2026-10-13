@@ -99,9 +99,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   std::vector<std::string> sampled;
   processor.SampleEncode(test_text, 1, 0.5, &sampled);
 
-  // Encode as serialized proto
-  processor.EncodeAsSerializedProto(test_text);
-  processor.SampleEncodeAsSerializedProto(test_text, 1, 0.5);
+  // Upstream dropped EncodeAsSerializedProto/SampleEncodeAsSerializedProto.
+  // The piece-returning overloads reach the same encode paths; they are
+  // [[nodiscard]], so keep the results alive.
+  const auto encoded_pieces = processor.EncodeAsPieces(test_text);
+  const auto sampled_pieces = processor.SampleEncodeAsPieces(test_text, 1, 0.5);
+  (void)encoded_pieces.size();
+  (void)sampled_pieces.size();
 
   // Get serialized model
   processor.serialized_model_proto();

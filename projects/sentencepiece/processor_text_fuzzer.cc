@@ -102,15 +102,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   if (ops & 0x10) {
-    // Encode as serialized proto (exercises protobuf serialization path)
-    auto serialized = g_processor->EncodeAsSerializedProto(text);
-    (void)serialized;
+    // Upstream removed the *AsSerializedProto family; the piece-returning
+    // overloads reach the same encode paths. They are [[nodiscard]], so the
+    // results are kept alive.
+    auto pieces = g_processor->EncodeAsPieces(text);
+    (void)pieces;
 
-    auto nb_serialized = g_processor->NBestEncodeAsSerializedProto(text, 2);
-    (void)nb_serialized;
+    auto nb_pieces = g_processor->NBestEncodeAsPieces(text, 2);
+    (void)nb_pieces;
 
-    auto sample_serialized = g_processor->SampleEncodeAsSerializedProto(text, -1, 0.5);
-    (void)sample_serialized;
+    auto sample_pieces = g_processor->SampleEncodeAsPieces(text, -1, 0.5);
+    (void)sample_pieces;
   }
 
   // === Normalization ===
@@ -146,11 +148,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
   }
 
-  // === Entropy calculation ===
+  // Upstream removed CalculateEntropy(). Exercise the sampling path it used
+  // to sit on instead, so this branch still does work.
   if (ops & 0x80) {
     if (text.size() > 0 && text.size() < 256) {
-      float entropy = g_processor->CalculateEntropy(text, 0.5);
-      (void)entropy;
+      auto sampled_pieces = g_processor->SampleEncodeAsPieces(text, 8, 0.5);
+      (void)sampled_pieces;
     }
   }
 

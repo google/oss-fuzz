@@ -1,0 +1,9 @@
+homepage: "https://github.com/sahlberg/libnfs"
+language: c
+primary_contact: "ronniesahlberg@gmail.com"
+auto_ccs:
+ - "roshaen09@gmail.com"
+sanitizers:
+ - address
+ - undefined
+main_repo: 'https://github.com/sahlberg/libnfs.git'

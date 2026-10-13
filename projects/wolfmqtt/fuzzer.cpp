@@ -406,7 +406,13 @@ bool wolfMQTTFuzzer::Initialize(void) {
         }
 
         /* connect */
+        /* Zero-initialize: only a subset of lwt_msg's fields are set below when
+         * LWT is enabled, and the MQTT v5 encoder in MqttEncode_Connect reads
+         * other members (e.g. props). Leaving them uninitialized is a harness
+         * bug that MSAN reports as a use-of-uninitialized-value inside
+         * MqttEncode_Connect. */
         MqttMessage lwt_msg;
+        memset(&lwt_msg, 0, sizeof(lwt_msg));
         {
             memset(&connect, 0, sizeof(connect));
 

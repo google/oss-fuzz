@@ -37,14 +37,25 @@ listed project, producing local changes and a per-project report.
 import argparse
 import concurrent.futures
 import glob
+import json
 import os
 import shutil
 import subprocess
 import sys
 import textwrap
+import urllib.error
+import urllib.request
 from datetime import datetime, timedelta
 
 DEFAULT_MAX_PARALLEL = 2
+
+# Public OSS-Fuzz build status. Used by fix-broken-builds to auto-discover
+# projects whose most recent build failed.
+BUILD_STATUS_URL = (
+    'https://oss-fuzz-build-logs.storage.googleapis.com/status.json')
+
+# Default set of languages fix-broken-builds targets.
+DEFAULT_FIX_LANGUAGES = 'c,c++'
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OSS_FUZZ_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
@@ -1516,6 +1527,116 @@ def cmd_fix_builds(args):
   _run_sessions('fix-build', args)
 
 
+def read_project_language(project):
+  """Return the lower-cased `language` from a project's project.yaml, or None.
+
+  Uses a minimal line parse so no YAML dependency is required.
+  """
+  path = os.path.join(OSS_FUZZ_ROOT, 'projects', project, 'project.yaml')
+  try:
+    with open(path, encoding='utf-8') as f:
+      for line in f:
+        stripped = line.strip()
+        if stripped.startswith('language:'):
+          return stripped.split(':', 1)[1].strip().strip('"\'').lower()
+  except OSError:
+    return None
+  return None
+
+
+def fetch_build_status():
+  """Fetch and parse the public OSS-Fuzz build status JSON. Exits on failure."""
+  print(f'[*] Fetching build status from {BUILD_STATUS_URL} ...')
+  try:
+    with urllib.request.urlopen(BUILD_STATUS_URL, timeout=60) as resp:
+      return json.load(resp)
+  except (urllib.error.URLError, json.JSONDecodeError, TimeoutError) as e:
+    print(f'[!] Failed to fetch build status: {e}', file=sys.stderr)
+    sys.exit(1)
+
+
+def discover_broken_projects(languages, limit, regressions_only=True):
+  """Discover projects whose most recent build failed, filtered by language.
+
+  A project is considered broken when the newest entry in its build history
+  (by finish_time) has success == false. Only projects that (a) exist locally
+  under projects/ and (b) match one of the requested languages are returned.
+
+  By default only *regressions* are returned — projects that have a recorded
+  last successful build and have since broken. This skips projects that have
+  never built (new/incomplete integrations and OSS-Fuzz's intentionally-broken
+  example projects such as `bad_example`), which are rarely a fruitful target
+  for an automated fix. Pass regressions_only=False to include them.
+
+  Args:
+    languages: iterable of language strings to include (case-insensitive).
+    limit: maximum number of projects to return; 0 or None means no limit.
+    regressions_only: if True, only include projects with a prior successful
+      build.
+
+  Returns:
+    (selected, total_matching) where selected is the capped, name-sorted list
+    and total_matching is how many broken projects matched before the cap.
+  """
+  status = fetch_build_status()
+  wanted = {lang.lower() for lang in languages}
+  broken = []
+  for entry in status.get('projects', []):
+    name = entry.get('name')
+    history = entry.get('history') or []
+    if not name or not history:
+      continue
+    latest = max(history, key=lambda h: h.get('finish_time', ''))
+    if latest.get('success', True):
+      continue  # Most recent build is green.
+    if regressions_only and not entry.get('last_successful_build'):
+      continue  # Never built successfully — skip unless explicitly included.
+    if not os.path.isdir(os.path.join(OSS_FUZZ_ROOT, 'projects', name)):
+      continue  # No local project directory to work on.
+    if read_project_language(name) not in wanted:
+      continue
+    broken.append(name)
+
+  broken.sort()
+  total_matching = len(broken)
+  if limit and limit > 0:
+    broken = broken[:limit]
+  return broken, total_matching
+
+
+def cmd_fix_broken_builds(args):
+  """Handle the fix-broken-builds subcommand.
+
+  Auto-discovers broken projects from the public build status, filters to the
+  requested languages (C/C++ by default), caps at --limit, and drives the
+  existing fix-build session machinery over them.
+  """
+  languages = [
+      lang.strip() for lang in args.language.split(',') if lang.strip()
+  ]
+  if not languages:
+    print('[!] --language must name at least one language.', file=sys.stderr)
+    sys.exit(1)
+
+  selected, total_matching = discover_broken_projects(
+      languages, args.limit, regressions_only=not args.include_never_built)
+
+  scope = ('broken (any)' if args.include_never_built else 'broken regressions')
+  print(f'[*] Found {total_matching} {scope} project(s) '
+        f'for language(s): {", ".join(languages)}')
+  if not selected:
+    print('[*] Nothing to fix.')
+    return
+  if len(selected) < total_matching:
+    print(f'[*] Fixing the first {len(selected)} (of {total_matching}); '
+          f'raise --limit to do more.')
+  print(f'[*] Selected: {", ".join(selected)}\n')
+
+  # Feed the discovered projects into the shared fix-build session runner.
+  args.projects = selected
+  _run_sessions('fix-build', args)
+
+
 def cmd_run_task(args):
   """Handle the run-task subcommand."""
   _run_sessions('free-task', args)
@@ -1588,6 +1709,15 @@ def main():
 
               # Fix broken builds for two projects:
               python %(prog)s fix-builds open62541 json-c
+
+              # Auto-discover and fix up to 50 broken C/C++ projects:
+              python %(prog)s fix-broken-builds
+
+              # Fix up to 10 broken projects, C/C++ or Rust:
+              python %(prog)s fix-broken-builds --limit 10 --language c,c++,rust
+
+              # Preview which projects would be fixed (no agent launched):
+              python %(prog)s fix-broken-builds --print-only
 
               # Run a free-form task on one or more projects:
               python %(prog)s run-task \\
@@ -1734,6 +1864,58 @@ def main():
       help='Launch agent sessions to fix broken OSS-Fuzz project builds.',
   )
   fix_parser.set_defaults(func=cmd_fix_builds)
+
+  # fix-broken-builds (auto-discover from the public build status)
+  fix_broken_parser = subparsers.add_parser(
+      'fix-broken-builds',
+      help='Discover broken projects from the public OSS-Fuzz build status '
+      'and fix up to --limit of them (default: C/C++ only).',
+  )
+  fix_broken_parser.add_argument(
+      '--limit',
+      type=int,
+      default=50,
+      metavar='N',
+      help='Maximum number of broken projects to fix (default: 50). '
+      'Use 0 for no limit.',
+  )
+  fix_broken_parser.add_argument(
+      '--language',
+      default=DEFAULT_FIX_LANGUAGES,
+      metavar='LANGS',
+      help='Comma-separated project languages to include '
+      f'(default: "{DEFAULT_FIX_LANGUAGES}").',
+  )
+  fix_broken_parser.add_argument(
+      '--include-never-built',
+      action='store_true',
+      help='Also include projects that have never built successfully. By '
+      'default only regressions (projects with a prior successful build) are '
+      'fixed, which skips new/incomplete integrations and intentionally-broken '
+      'example projects.',
+  )
+  fix_broken_parser.add_argument(
+      '--agent',
+      choices=SUPPORTED_AGENTS,
+      default=None,
+      help='Agent CLI to use (default: auto-detect).',
+  )
+  fix_broken_parser.add_argument(
+      '--print-only',
+      action='store_true',
+      help='Print the prompts (and the discovered project list) without '
+      'launching agent sessions.',
+  )
+  fix_broken_parser.add_argument(
+      '-j',
+      '--max-parallel',
+      type=int,
+      default=DEFAULT_MAX_PARALLEL,
+      metavar='N',
+      help='Maximum number of agent sessions to run in parallel '
+      f'(default: {DEFAULT_MAX_PARALLEL}).',
+  )
+  fix_broken_parser.set_defaults(func=cmd_fix_broken_builds)
 
   # run-task
   run_task_parser = subparsers.add_parser(

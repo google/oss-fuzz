@@ -354,10 +354,19 @@ function check_mixed_sanitizers {
     echo "UNSUPPORTED ARCHITECTURE"
     exit 1
   fi
-  local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__asan" -c)
-  local DFSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__dfsan" -c)
-  local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
-  local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__ubsan" -c)
+  # Disassemble once and count all four sanitizers in the same pass. Running
+  # `objdump -dC` four times over the same binary is wasteful: fuzz targets are
+  # frequently hundreds of MB, and the disassembly dominates the cost of this
+  # check.
+  local ASAN_CALLS DFSAN_CALLS MSAN_CALLS UBSAN_CALLS
+  read ASAN_CALLS DFSAN_CALLS MSAN_CALLS UBSAN_CALLS < <(
+      objdump -dC $FUZZER | \
+          grep -Eo "${CALL_INSN}__(asan|dfsan|msan|ubsan)" | \
+          awk '/__asan$/  { a++ }
+               /__dfsan$/ { d++ }
+               /__msan$/  { m++ }
+               /__ubsan$/ { u++ }
+               END        { print a+0, d+0, m+0, u+0 }')
 
 
   if [[ "$SANITIZER" = address ]]; then

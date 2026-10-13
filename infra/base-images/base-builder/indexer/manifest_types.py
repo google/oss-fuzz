@@ -38,6 +38,7 @@ from typing import Any, Callable, Mapping, Self, Sequence
 import urllib.request
 
 import manifest_constants
+
 import pathlib
 
 SRC_DIR = manifest_constants.SRC_DIR
@@ -90,7 +91,7 @@ class SourceRef:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a SourceRef object from a deserialized dict."""
-    return SourceRef(  # pyrefly: ignore[bad-return]
+    return cls(
         url=data["url"], rev=data["rev"], type=RepositoryType(data["type"])
     )
 
@@ -108,7 +109,7 @@ class Reproducibility:
   @classmethod
   def from_dict(cls, data: dict[str, Any]) -> Self:
     """Creates a Reproducibility object from a deserialized dict."""
-    return Reproducibility(  # pyrefly: ignore[bad-return]
+    return cls(
         success_count=data["success_count"],
         trial_count=data["trial_count"],
     )
@@ -181,6 +182,13 @@ class HarnessKind(enum.StrEnum):
   JS = enum.auto()
 
 
+class InstrumentationKind(enum.StrEnum):
+  """The sanitizer/instrumentation kind of the binary."""
+
+  ASAN = enum.auto()
+  SIGNAL_HANDLER = enum.auto()
+
+
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class CommandLineBinaryConfig(BinaryConfig):
   """Configuration for a command-line userspace binary."""
@@ -195,6 +203,12 @@ class CommandLineBinaryConfig(BinaryConfig):
   # are directly linked into the target binary. Should usually be true but
   # some targets like V8 require this to be false, see b/433718862.
   filter_compile_commands: bool = True
+  # Whether to enforce a strict flag allowlist for custom flags specified via
+  # `// Flags:` comments (when harness_kind is JS). Mostly needed for historic
+  # V8 builds that lack flag hardening (e.g. `--disallow-unsafe-flags`).
+  strict_flag_check: bool = False
+  # The sanitizer/instrumentation kind of the binary.
+  instrumentation_kind: InstrumentationKind = InstrumentationKind.ASAN
 
   @property
   def uses_stdin(self) -> bool:
@@ -210,7 +224,7 @@ class CommandLineBinaryConfig(BinaryConfig):
     harness_kind = HarnessKind(
         config_dict.get("harness_kind", HarnessKind.BINARY)
     )
-    return CommandLineBinaryConfig(  # pyrefly: ignore[bad-return]
+    return cls(
         kind=kind,
         harness_kind=harness_kind,
         binary_name=config_dict["binary_name"],
@@ -218,6 +232,10 @@ class CommandLineBinaryConfig(BinaryConfig):
         binary_env=config_dict.get("binary_env", {}),
         filter_compile_commands=config_dict.get(
             "filter_compile_commands", True
+        ),
+        strict_flag_check=config_dict.get("strict_flag_check", False),
+        instrumentation_kind=InstrumentationKind(
+            config_dict.get("instrumentation_kind", InstrumentationKind.ASAN)
         ),
     )
 
@@ -319,7 +337,7 @@ class Manifest:
       logging.warning(
           "Unsupported manifest version %s detected. Not upgrading.", version
       )
-    return Manifest(  # pyrefly: ignore[bad-return]
+    return cls(
         version=version,
         index_db_version=data.get("index_db_version"),
         name=data["name"],
@@ -433,7 +451,7 @@ class Manifest:
 
     with tempfile.NamedTemporaryFile() as tmp:
       mode = "w:gz" if archive_path.suffix.endswith("gz") else "w"
-      with tarfile.open(tmp.name, mode) as tar:
+      with tarfile.open(tmp.name, mode, dereference=True) as tar:
 
         def _save_dir(
             path: pathlib.PurePath,

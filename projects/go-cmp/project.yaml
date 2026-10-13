@@ -1,6 +1,6 @@
 homepage: "https://github.com/google/go-cmp/cmp"
 language: go
-main_repo: "https://github.com/google/go-cmp/cmp"
+main_repo: "https://github.com/google/go-cmp"
 auto_ccs:
   - "adam@adalogics.com"
 fuzzing_engines:

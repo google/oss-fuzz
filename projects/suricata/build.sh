@@ -85,7 +85,7 @@ fi
 fuzz_branches=("")
 if [[ "$SANITIZER" != "memory" ]] && [[ ! -v CIFUZZ ]]
 then
-    fuzz_branches+=("7")
+    fuzz_branches+=("8")
 fi
 
 if [[ `shuf -i 0-9 -n 1` -eq 0 ]]
@@ -97,8 +97,6 @@ then
 fi
 
 for branch in "${fuzz_branches[@]}"; do
-#we did not put libhtp there before so that cifuzz does not remove it
-cp -r libhtp suricata$branch/
 # build project
 (
 cd suricata$branch
@@ -107,7 +105,7 @@ sh autogen.sh
 ./src/tests/fuzz/oss-fuzz-configure.sh
 make -j$(nproc)
 
-./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse"$branch"_$i; done
++SC_LOG_OP_IFACE=file SC_LOG_FILE=/dev/null ./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse"$branch"_$i; done
 
 (
 cd src
@@ -128,6 +126,12 @@ cat generic.dict >> $OUT/fuzz_sigpcap$branch.dict
 cat generic.dict >> $OUT/fuzz_sigpcap_aware$branch.dict
 
 # build corpuses
+if [ "$branch" = "" ]
+then
+    mkdir corpus_datasets
+    python3 ../suricata/scripts/fuzz_gen_corpus_datasets.py --sv-root $SRC/suricata-verify corpus_datasets
+    zip -r $OUT/fuzz_dataset"$branch"_seed_corpus.zip corpus_datasets
+fi
 # default configuration file
 zip -r $OUT/fuzz_confyamlloadstring"$branch"_seed_corpus.zip suricata.yaml
 # rebuilds rules corpus with only one rule by file

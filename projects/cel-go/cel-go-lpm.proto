@@ -17,7 +17,7 @@
 syntax = "proto3";
 package celgolpm;
 
-option go_package = "github.com/google/cel-go/cel";
+option go_package = "cel.dev/cel-go/cel";
 
 message FuzzVariables {
   string expr = 1;
