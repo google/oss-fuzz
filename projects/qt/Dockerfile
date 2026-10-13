@@ -51,9 +51,7 @@ WORKDIR qtmultimedia
 RUN git fetch https://codereview.qt-project.org/qt/qtmultimedia refs/changes/94/779594/3 && \
     git cherry-pick --allow-empty FETCH_HEAD
 WORKDIR $SRC/qt/qtqa
-RUN git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/45/779545/3 && \
-    git cherry-pick --allow-empty FETCH_HEAD && \
-    git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/06/777906/2 && \
+RUN git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/06/777906/2 && \
     git cherry-pick --allow-empty FETCH_HEAD
 WORKDIR $SRC/qt
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
