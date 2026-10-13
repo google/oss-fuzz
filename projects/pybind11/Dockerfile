@@ -19,6 +19,6 @@ RUN apt-get update && \
     apt-get install -y build-essential
 
 RUN git clone https://github.com/pybind/pybind11
-COPY build.sh *_fuzzer.cc $SRC/
+COPY build.sh $SRC/
 
 WORKDIR $SRC/pybind11
