@@ -14,9 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-ln -s /usr/local/bin/python3 /usr/local/bin/python
-sed -i "s/__version__/compiled=\"hack\"\n__version__/g" pydantic/__init__.py
-make install
+ln -sf /usr/local/bin/python3 /usr/local/bin/python
+pip install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
