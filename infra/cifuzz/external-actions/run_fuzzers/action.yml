@@ -36,6 +36,7 @@ inputs:
   storage-repo:
     description: |
       The git repo to use for storing certain artifacts from fuzzing.
+      Plain HTTPS GitHub URLs use `github-token`, which must have write access to the storage repository.
     required: false
   storage-repo-branch:
     description: |
