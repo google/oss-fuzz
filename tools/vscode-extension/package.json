@@ -9,6 +9,8 @@
     "vscode": "^1.76.0"
   },
   "repository": "https://github.com/google/oss-fuzz",
+  "license": "Apache-2.0",
+  "homepage": "https://google.github.io/oss-fuzz/",
   "categories": [
     "Other"
   ],
