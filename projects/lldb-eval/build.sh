@@ -55,7 +55,8 @@ then
 fi
 
 # Undefine NDEBUG to enable asserts.
-export BAZEL_EXTRA_BUILD_FLAGS="--copt=-UNDEBUG"
+export BAZEL_EXTRA_BUILD_FLAGS="--copt=-UNDEBUG --cxxopt=-std=c++17 --cxxopt=-fno-rtti"
+export USE_BAZEL_VERSION=6.4.0
 
 # Run the build!
 bazel_build_fuzz_tests
