@@ -44,6 +44,7 @@ TESTS="\
   levin_fuzz_tests \
   bulletproof_fuzz_tests \
   tx-extra_fuzz_tests \
+  fcmp-pp-curve-trees_fuzz_tests \
   fuzz_rpc \
   fuzz_rpc_full \
   fuzz_rpc_full_no_exceptions \
