@@ -1,0 +1,12 @@
+homepage: "https://github.com/common-workflow-language/cwltool"
+main_repo: "https://github.com/common-workflow-language/cwltool"
+language: python
+primary_contact: "michael.crusoe@gmail.com"
+auto_ccs:
+  - "security@commonwl.org"
+  - "brunodepaulak@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
