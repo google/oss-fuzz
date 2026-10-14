@@ -31,3 +31,7 @@ make -f objs/Makefile fuzzers
 
 cp objs/*_fuzzer $OUT/
 cp $SRC/fuzz/*.dict $OUT/
+
+# mp4_fuzzer seed corpus (a faststart clip prefixed with the 8 crop bytes
+# the harness strips), so the stts/stsc/stco crop pass is reachable early.
+cp $SRC/fuzz/mp4_fuzzer_seed_corpus.zip $OUT/
