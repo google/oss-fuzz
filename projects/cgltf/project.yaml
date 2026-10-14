@@ -1,0 +1,14 @@
+homepage: "https://github.com/jkuhlmann/cgltf"
+language: c
+primary_contact: "dirk.farin@gmail.com"
+vendor_ccs:
+  - "jkuhlmann@users.noreply.github.com"
+main_repo: "https://github.com/jkuhlmann/cgltf.git"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
