@@ -1,0 +1,160 @@
+# vgmstream_bnk_dict.txt
+#
+# libFuzzer dictionary for the Phase 1 PS BNK campaign.
+# Tokens drawn from src/meta/bnk_sony.c (1359 LOC, 21 versions).
+#
+# AFL/libFuzzer dict format: name="value" with C-style escapes.
+# SOP: fresh per-target file. No reuse.
+
+# ============================================================================
+# BNK file-header magics (offset 0x00)
+# ============================================================================
+# Container version 1 — little-endian uint32 = 1
+container_v1_le="\x01\x00\x00\x00"
+# Container version 3 — little-endian uint32 = 3
+container_v3_le="\x03\x00\x00\x00"
+# Big-endian variants (rare PS3 cases)
+container_v1_be="\x00\x00\x00\x01"
+container_v3_be="\x00\x00\x00\x03"
+
+# ============================================================================
+# SBlk subblock magics (at sblk_offset)
+# ============================================================================
+sblk_magic="SBlk"
+sbv2_magic="SBv2"
+# Reversed (BE platforms with flipped IDs)
+sblk_be="klBS"
+sbv2_be="2vBS"
+zlsd_magic="ZLSD"
+data_magic="DATA"
+mmid_magic="MMID"
+
+# ============================================================================
+# sblk_version values from bnk_sony.c switch statements
+# ============================================================================
+ver_01="\x01\x00\x00\x00"
+ver_02="\x02\x00\x00\x00"
+ver_02_be="\x02\x00\x00\x00"
+ver_03="\x03\x00\x00\x00"
+ver_04="\x04\x00\x00\x00"
+ver_05="\x05\x00\x00\x00"
+ver_08="\x08\x00\x00\x00"
+ver_09="\x09\x00\x00\x00"
+ver_0c="\x0c\x00\x00\x00"
+ver_0d="\x0d\x00\x00\x00"
+ver_0e="\x0e\x00\x00\x00"
+ver_0f="\x0f\x00\x00\x00"
+ver_10="\x10\x00\x00\x00"
+ver_1a="\x1a\x00\x00\x00"
+ver_1c="\x1c\x00\x00\x00"
+ver_23="\x23\x00\x00\x00"
+
+# ============================================================================
+# Section count values
+# ============================================================================
+sections_2="\x02\x00\x00\x00"
+sections_3="\x03\x00\x00\x00"
+
+# ============================================================================
+# Common offset constants used in process_tables() switch
+# ============================================================================
+off_0x14="\x14\x00\x00\x00"
+off_0x16="\x16\x00\x00\x00"
+off_0x18="\x18\x00\x00\x00"
+off_0x1a="\x1a\x00\x00\x00"
+off_0x1c="\x1c\x00\x00\x00"
+off_0x20="\x20\x00\x00\x00"
+off_0x24="\x24\x00\x00\x00"
+off_0x28="\x28\x00\x00\x00"
+off_0x2c="\x2c\x00\x00\x00"
+off_0x30="\x30\x00\x00\x00"
+off_0x34="\x34\x00\x00\x00"
+off_0x38="\x38\x00\x00\x00"
+off_0x3c="\x3c\x00\x00\x00"
+off_0x120="\x20\x01\x00\x00"
+off_0x128="\x28\x01\x00\x00"
+off_0x98="\x98\x00\x00\x00"
+off_0xb0="\xb0\x00\x00\x00"
+
+# ============================================================================
+# Boundary values for entry counts (uint16) — likely to trigger int overflow
+# ============================================================================
+count_max="\xff\xff"
+count_high="\xff\x7f"
+count_zero="\x00\x00"
+count_one="\x01\x00"
+count_2k="\x00\x08"
+
+# ============================================================================
+# Boundary values for offsets (uint32)
+# ============================================================================
+offset_max="\xff\xff\xff\xff"
+offset_neg1="\xff\xff\xff\xff"
+offset_high="\x00\x00\x00\x80"
+offset_2g="\x00\x00\x00\x80"
+
+# ============================================================================
+# Codec enum values from bnk_codec enum (NONE..XVAG_ATRAC9)
+# ============================================================================
+codec_NONE="\x00\x00\x00\x00"
+codec_DUMMY="\x01\x00\x00\x00"
+codec_EXTERNAL="\x02\x00\x00\x00"
+codec_PSX="\x03\x00\x00\x00"
+codec_PCM16="\x04\x00\x00\x00"
+codec_MPEG="\x05\x00\x00\x00"
+codec_ATRAC9="\x06\x00\x00\x00"
+codec_HEVAG="\x07\x00\x00\x00"
+codec_RIFF_ATRAC9="\x08\x00\x00\x00"
+codec_XVAG_ATRAC9="\x09\x00\x00\x00"
+
+# ============================================================================
+# Tokens libFuzzer auto-discovered during quick sanity run (cross-format)
+# ============================================================================
+csbh_magic="CSBH"
+dbw_magic="_DBW"
+common_le_zero="\x00\x00\x00\x02"
+mask_03="\xff\xff\xff\x03"
+mask_00="\xff\xff\xff\x00"
+
+# ============================================================================
+# RIFF/WAV markers (for cross-format mutation since the harness covers all
+# 447 demuxers and many container parsers RIFF-derive)
+# ============================================================================
+riff_magic="RIFF"
+wave_magic="WAVE"
+fmt_magic="fmt "
+data_chunk="data"
+list_chunk="LIST"
+fact_chunk="fact"
+smpl_chunk="smpl"
+
+# ============================================================================
+# Subsong / cuesheet markers (CRI ACB, EA SCHl, etc.)
+# ============================================================================
+acb_magic="@UTF"
+cri_magic="CRID"
+schl_magic="SCHl"
+schb_magic="SCHb"
+sche_magic="SCHe"
+
+# ============================================================================
+# Wwise markers
+# ============================================================================
+bkhd_magic="BKHD"
+didx_magic="DIDX"
+wem_magic="\x46\x53\x42\x35"
+
+# ============================================================================
+# Nintendo DSP / GameCube markers
+# ============================================================================
+dsp_magic="DSP "
+ngc_magic="NGC1"
+brstm_magic="RSTM"
+brwav_magic="RWAV"
+fwav_magic="FWAV"
+
+# ============================================================================
+# Ubisoft Soundbank
+# ============================================================================
+ubi_sb_magic="UbiB"
+ubi_bao_magic="\x40\x42\x4f\x4e"
