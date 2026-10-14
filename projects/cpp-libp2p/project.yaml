@@ -1,0 +1,7 @@
+homepage: "https://github.com/libp2p/cpp-libp2p"
+language: c++
+main_repo: "https://github.com/libp2p/cpp-libp2p"
+sanitizers:
+  - address
+  - undefined
+  # MemorySanitizer often requires sanitized third-party deps; omit for now.
