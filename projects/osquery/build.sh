@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export CXXFLAGS="${CXXFLAGS} -DBOOST_NO_INCLASS_MEMBER_INITIALIZATION"
+
 PROJECT=osquery
 
 # Ensure xlocale.h is found.
