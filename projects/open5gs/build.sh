@@ -32,6 +32,7 @@ sed -i '/^rule STATIC_LINKER$/,/^$/{
 
 ninja -C builddir -k 0 \
     tests/fuzzing/gtp_message_fuzz \
+    tests/fuzzing/gtpu_header_fuzz \
     tests/fuzzing/ipfw_rule_fuzz \
     tests/fuzzing/nas_message_fuzz \
     tests/fuzzing/ngap_message_fuzz \
@@ -44,6 +45,7 @@ ninja -C builddir -k 0 \
     tests/fuzzing/sbi_request_fuzz
 
 cp builddir/tests/fuzzing/gtp_message_fuzz $OUT/gtp_message_fuzz
+cp builddir/tests/fuzzing/gtpu_header_fuzz $OUT/gtpu_header_fuzz
 cp builddir/tests/fuzzing/nas_message_fuzz $OUT/nas_message_fuzz
 cp builddir/tests/fuzzing/ngap_message_fuzz $OUT/ngap_message_fuzz
 cp builddir/tests/fuzzing/s1ap_message_fuzz $OUT/s1ap_message_fuzz
