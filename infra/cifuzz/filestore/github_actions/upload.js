@@ -22,17 +22,11 @@ const artifactClient = new DefaultArtifactClient();
 const artifactName = process.argv[2];
 const rootDirectory = process.argv[3]
 const files = process.argv.slice(4);
-const options = {
-    continueOnError: true
-};
 
 async function uploadArtifact() {
     try {
-        const uploadResult = await artifactClient.uploadArtifact(artifactName, files, rootDirectory, options);
+        const uploadResult = await artifactClient.uploadArtifact(artifactName, files, rootDirectory);
         console.log(uploadResult);
-        if (uploadResult.failedItems.length > 0) {
-            return 1;
-        }
         return 0;
     } catch (error) {
         console.error('Error uploading artifact:', error);
