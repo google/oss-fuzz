@@ -1,0 +1,13 @@
+homepage: "https://github.com/rustledger/rustledger"
+language: rust
+primary_contact: "security@rustledger.dev"
+main_repo: "https://github.com/rustledger/rustledger"
+vendor_ccs:
+  - "maintainers@rustledger.dev"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - memory
+architectures:
+  - x86_64
