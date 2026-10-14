@@ -30,6 +30,12 @@ def TestOneInput(input_bytes):
     return
   except RecursionError:
     return
+  
+  try:
+      yaml.safe_load(input_bytes)
+  except Exception:
+      pass
+  
   # Anything that is loadable should be emitable.
   try:
     listed_context = list(context)
