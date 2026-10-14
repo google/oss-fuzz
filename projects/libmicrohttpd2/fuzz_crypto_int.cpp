@@ -21,14 +21,14 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
-#include "md5_int.h"
-#include "sha256_int.h"
-#include "sha512_256_int.h"
+#include "md5_builtin.h"
+#include "sha256_builtin.h"
+#include "sha512_256_builtin.h"
 
 
 // Fuzzing target function pointer types for the internal hash APIs
 template <typename HashType> using InitFn   = void (*)(HashType*);
-template <typename HashType> using UpdateFn = void (*)(HashType*, size_t, const uint8_t*);
+template <typename HashType> using UpdateFn = void (*)(HashType*, size_t, const void*);
 template <typename HashType> using FinishFn = void (*)(HashType*, uint8_t*);
 
 // Generic hashing flow that fuzz same hashing procedure for different algorithm
@@ -177,20 +177,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   for (int i = 0; i < fdp.ConsumeIntegralInRange<unsigned>(1, 4); i++) {
     switch (fdp.ConsumeIntegralInRange<int>(0, 2)) {
       case 0:
-        fuzz_hash_int_multi<struct mhd_Md5CtxInt>(
+        fuzz_hash_int_multi<struct mhd_Md5CtxBlti>(
           fdp, mhd_MD5_BLOCK_SIZE,
-          mhd_MD5_init, mhd_MD5_update, mhd_MD5_finish, mhd_MD5_DIGEST_SIZE);
+          mhd_MD5_blti_init, mhd_MD5_blti_update, mhd_MD5_blti_finish, mhd_MD5_DIGEST_SIZE);
         break;
       case 1:
-        fuzz_hash_int_multi<struct mhd_Sha256CtxInt>(
+        fuzz_hash_int_multi<struct mhd_Sha256CtxBlti>(
           fdp, mhd_SHA256_BLOCK_SIZE,
-          mhd_SHA256_init, mhd_SHA256_update, mhd_SHA256_finish, mhd_SHA256_DIGEST_SIZE);
+          mhd_SHA256_blti_init, mhd_SHA256_blti_update, mhd_SHA256_blti_finish, mhd_SHA256_DIGEST_SIZE);
         break;
       case 2:
       default:
-        fuzz_hash_int_multi<struct mhd_Sha512_256CtxInt>(
+        fuzz_hash_int_multi<struct mhd_Sha512_256CtxBlti>(
           fdp, mhd_SHA512_256_BLOCK_SIZE,
-          mhd_SHA512_256_init, mhd_SHA512_256_update, mhd_SHA512_256_finish, mhd_SHA512_256_DIGEST_SIZE);
+          mhd_SHA512_256_blti_init, mhd_SHA512_256_blti_update, mhd_SHA512_256_blti_finish, mhd_SHA512_256_DIGEST_SIZE);
         break;
     }
   }
