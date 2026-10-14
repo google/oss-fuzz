@@ -15,6 +15,7 @@
 import sys
 import atheris
 
+from google.cloud.bigquery_storage_v1.reader import _AvroStreamParser
 from google.cloud.bigquery_storage_v1.types import ReadSession
 from google.protobuf.json_format import Parse
 
