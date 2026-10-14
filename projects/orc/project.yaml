@@ -1,0 +1,13 @@
+homepage: "https://orc.apache.org/"
+main_repo: "https://github.com/apache/orc"
+language: c++
+primary_contact: dongjoon.hyun@gmail.com
+auto_ccs:
+  - dev@orc.apache.org
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
