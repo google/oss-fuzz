@@ -23,30 +23,32 @@ extern "C" {
 #endif
 
 template<unsigned parseFlags>
-void fuzzWithFlags(const std::string &s)
-{
-    /* Parse input to rapidjson::Document */
+void fuzzWithFlags(const std::string &s) {
     rapidjson::Document document;
     rapidjson::ParseResult pr = document.Parse<parseFlags>(s.c_str());
-    if ( !pr ) {
+    if (!pr) {
         return;
     }
 
-    /* Convert from rapidjson::Document to string */
     rapidjson::StringBuffer sb;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
     document.Accept(writer);
-    std::string str = sb.GetString();
+    std::string_view result(sb.GetString(), sb.GetSize());
+
 #ifdef MSAN
-    if ( str.size() ) {
-        __msan_check_mem_is_initialized(str.data(), str.size());
+    if (!result.empty()) {
+        __msan_check_mem_is_initialized(result.data(), result.size());
     }
 #endif
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
-{
-    const std::string s(data, data + size);
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    if (size == 0) {
+        return 0;
+    }
+
+    // Ensure the input is null-terminated by copying it into a std::string
+    std::string s(reinterpret_cast<const char*>(data), size);
 
     fuzzWithFlags<rapidjson::kParseDefaultFlags>(s);
     fuzzWithFlags<rapidjson::kParseFullPrecisionFlag>(s);
