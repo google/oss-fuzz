@@ -48,7 +48,7 @@ RUN cmake -DSYNC_TO_MODULE=qtmultimedia -DSYNC_TO_BRANCH=dev -P cmake/QtSynchron
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 RUN git config --global user.name qt && git config --global user.email qt@oss-fuzz
 WORKDIR $SRC/qt/qtqa
-RUN git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/06/777906/2 && \
+RUN git fetch https://codereview.qt-project.org/qt/qtqa refs/changes/06/777906/4 && \
     git cherry-pick --allow-empty FETCH_HEAD
 WORKDIR $SRC/qt
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
