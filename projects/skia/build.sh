@@ -22,7 +22,8 @@ DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
 export CFLAGS="$CFLAGS $DISABLE \
  -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -DSK_BUILD_FOR_FUZZER"
 export CXXFLAGS="$CXXFLAGS $DISABLE \
- -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -D SK_BUILD_FOR_FUZZER"
+ -fno-sanitize=vptr -DSK_BUILD_FOR_LIBFUZZER -D SK_BUILD_FOR_FUZZER \
+ -DSK_SHAPER_HARFBUZZ_AVAILABLE -DSK_SHAPER_UNICODE_AVAILABLE"
 export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -fuse-ld=lld"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
