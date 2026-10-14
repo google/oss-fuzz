@@ -57,6 +57,7 @@ then
     signature_fuzz_tests \
     cold-outputs_fuzz_tests \
     cold-transaction_fuzz_tests \
+    wallet-cache_fuzz_tests \
   "
 fi
 
@@ -81,5 +82,18 @@ do
     popd
   fi
 done
+
+# The wallet cache format changes with the source, so the harness dumps its own seed.
+if [ -x "$OUT/wallet-cache_fuzz_tests" ]; then
+  seed_dir=$(mktemp -d)
+  touch "$seed_dir/empty"
+  WALLET_CACHE_FUZZ_WRITE_SEED="$seed_dir/baseline" \
+    "$OUT/wallet-cache_fuzz_tests" "$seed_dir/empty" || true
+  if [ -f "$seed_dir/baseline" ]; then
+    rm -f "$OUT/wallet-cache_fuzz_tests_seed_corpus.zip"
+    zip -j "$OUT/wallet-cache_fuzz_tests_seed_corpus.zip" "$seed_dir/baseline"
+  fi
+  rm -rf "$seed_dir"
+fi
 
 cp $SRC/*.options $OUT/
