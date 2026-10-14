@@ -16,40 +16,30 @@
 ################################################################################
 
 export LDFLAGS="${CFLAGS}"
-export CMAKE_C_FLAGS="${CC} ${CFLAGS}"
-export CMAKE_CXX_FLAGS="${CXX} ${CXXFLAGS}"
+SRC_DIR="$SRC/hdf5"
 
-mkdir build-dir
-cd build-dir
+mkdir -p "$SRC_DIR/build-dir"
+cd "$SRC_DIR/build-dir"
 cmake -G "Unix Makefiles" \
+    -DCMAKE_C_COMPILER="${CC}" \
+    -DCMAKE_CXX_COMPILER="${CXX}" \
+    -DCMAKE_C_FLAGS="${CFLAGS}" \
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
     -DCMAKE_BUILD_TYPE:STRING=Release \
     -DBUILD_SHARED_LIBS:BOOL=OFF \
     -DBUILD_TESTING:BOOL=OFF \
-    -DCMAKE_VERBOSE_MAKEFILES:BOOL=ON \
     -DHDF5_BUILD_EXAMPLES:BOOL=OFF \
     -DHDF5_BUILD_TOOLS:BOOL=OFF \
     -DHDF5_ENABLE_SANITIZERS:BOOL=ON \
     -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON \
+    -DHDF5_ENABLE_FUZZERS:BOOL=ON \
     ..
+cmake --build . --target oss-fuzz-fuzzers --config Release -j"$(nproc)"
 
-# Make the build verbose for easy logging inspection
-cmake --build . --verbose --config Release -j$(nproc)
-cd $SRC/hdf5
+# Stage every built fuzzer binary into $OUT (CMake leaves them in the build
+# tree). Auto-detect by name: any executable ending in _fuzzer.
+find "$SRC_DIR/build-dir" -type f -executable -name '*_fuzzer' -exec cp -v {} "$OUT/" \;
 
-$CC $CFLAGS  -std=c99 -c \
-  -I/src/hdf5/src -I/src/hdf5/build-dir/src -I./src/H5FDsubfiling/ \
-  $SRC/h5_read_fuzzer.c
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE h5_read_fuzzer.o ./build-dir/bin/libhdf5.a -lz -o $OUT/h5_read_fuzzer
-
-$CC $CFLAGS  -std=c99 -c \
-  -I/src/hdf5/src -I/src/hdf5/build-dir/src -I./src/H5FDsubfiling/ \
-  $SRC/h5_extended_fuzzer.c
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE h5_extended_fuzzer.o ./build-dir/bin/libhdf5.a -lz -o $OUT/h5_extended_fuzzer
-
-zip -j $OUT/h5_extended_fuzzer_seed_corpus.zip $SRC/hdf5/test/testfiles/*.h5
-
-# Build test
-mkdir $SRC/hdf5/build-test
-cd $SRC/hdf5/build-test
-cmake -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_TESTING:BOOL=ON ..
-cmake --build . --verbose --config Release -j$(nproc)
+# Seed corpora and any per-fuzzer options shipped with the harnesses.
+zip -j "$OUT/h5_extended_fuzzer_seed_corpus.zip" "$SRC_DIR/test/testfiles/"*.h5
+cp "$SRC_DIR/test/fuzzing/"*.options "$OUT/" 2>/dev/null || true
