@@ -19,6 +19,7 @@
 # test vectors (tests/fuzz/{ofh,ngap}/gen_corpus.py). No build dependencies.
 python3 tests/fuzz/ofh/gen_corpus.py
 python3 tests/fuzz/ngap/gen_corpus.py
+python3 tests/fuzz/e1ap/gen_corpus.py
 
 # Build MbedTLS as a static library with the sanitizer flags of this build, so
 # that MSan sees the memory it writes (see Dockerfile). FindMbedTLS.cmake picks
@@ -106,3 +107,4 @@ zip -j "$OUT/ofh_ecpri_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ofh/corpus/ecp
 zip -j "$OUT/ofh_vlan_frame_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ofh/corpus/vlan/*
 zip -j "$OUT/ngap_pdu_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ngap/corpus/ngap/*
 zip -j "$OUT/ngap_cu_cp_fuzzer_seed_corpus.zip" tests/fuzz/ngap/corpus/ngap/*
+zip -j "$OUT/e1ap_pdu_decoder_fuzzer_seed_corpus.zip" tests/fuzz/e1ap/corpus/*
