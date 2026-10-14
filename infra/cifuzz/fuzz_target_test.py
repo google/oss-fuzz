@@ -264,6 +264,22 @@ class FuzzTest(fake_filesystem_unittest.TestCase):
     self.assertEqual('/workspace/out/artifacts/fuzz-target/address',
                      fuzz_target_artifact)
 
+  @parameterized.parameterized.expand([
+      ('download_timeout', TimeoutError('download failed')),
+      ('merge_failure', engine.Error('merge failed')),
+  ])
+  def test_prune_unrelated_errors(self, source, error):
+    """Pruning recovery excludes downloads and non-timeout merge failures."""
+    with mock.patch.object(self.fuzz_target, '_download_corpus') as download, \
+         mock.patch('clusterfuzz.fuzz.get_engine') as get_engine:
+      if source == 'download_timeout':
+        download.side_effect = error
+      else:
+        get_engine.return_value.minimize_corpus.side_effect = error
+      with self.assertRaises(type(error)) as caught:
+        self.fuzz_target.prune()
+    self.assertIs(caught.exception, error)
+
 
 class TimeoutIntegrationTest(unittest.TestCase):
   """Tests handling of fuzzer timeout (timeout crashes reported by
