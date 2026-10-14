@@ -263,7 +263,7 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     if not self.config.low_disk_space:
       logging.info('Not freeing disk space after running fuzz target.')
       return
-    logging.info('Deleting corpus and seed corpus of %s to save disk.',
+    logging.info('Deleting corpus and seed corpus of %s to save disk space.',
                  self.target_name)
 
     # Delete the seed corpus, corpus, and fuzz target.
