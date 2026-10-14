@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
-
 pip3 install .
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
+
+find . -name '*.json' -exec zip $OUT/fuzz_jwt_seed_corpus.zip {} \; 
