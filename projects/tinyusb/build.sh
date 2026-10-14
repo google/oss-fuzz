@@ -43,13 +43,13 @@ do
   name=$(basename $h)
   make -C $h get-deps
 
-  if [ "$name" = "net_ncm" ]; then
-    # net_ncm is the one harness that does not include the shared
+  if [ "$name" = "net_ncm" ] || [ "$name" = "msc_bot" ]; then
+    # Standalone harnesses do not include the shared
     # make.mk/rules.mk. It is a standalone single-file harness whose Makefile
     # sets its own flags outright:
     #   CFLAGS += $(addprefix -I,$(INC)) -g -O1 -fsanitize=address
     #   FUZZ_FLAGS := -fsanitize=fuzzer
-    # so it never consults $LIB_FUZZING_ENGINE and linked libFuzzer's main() no
+    # so they never consult $LIB_FUZZING_ENGINE and link libFuzzer's main() no
     # matter which engine was requested. Under centipede the resulting binary
     # cannot dump a PC table, so check_build reported net_ncm as a broken target
     # ("Could not get PCTable") and failed the whole project; the hardcoded
