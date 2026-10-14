@@ -70,3 +70,5 @@ find ./fuzz_packet.in/         -type f -exec zip -u $OUT/fuzz_packet_seed_corpus
 find ./fuzz_zscanner.in/       -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
 find ./fuzz_dname_to_str.in/   -type f -exec zip -u $OUT/fuzz_dname_to_str_seed_corpus.zip {} \;
 find ./fuzz_dname_from_str.in/ -type f -exec zip -u $OUT/fuzz_dname_from_str_seed_corpus.zip {} \;
+find ./fuzz_tsig.in/ -type f -exec zip -u $OUT/fuzz_tsig_seed_corpus.zip {} \;
+find ./fuzz_dnssec_verify.in/ -type f -exec zip -u $OUT/fuzz_dnssec_verify_seed_corpus.zip {} \;
