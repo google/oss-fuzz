@@ -21,7 +21,6 @@ limitations under the License.
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "system.h"
 
 
 void fuzz_logic_one(char *filename, int compression_type) {
@@ -37,6 +36,8 @@ void fuzz_logic_one(char *filename, int compression_type) {
     while ((scn = elf_nextscn(elf, scn)) != NULL) {
       GElf_Shdr mem;
       GElf_Shdr *shdr = gelf_getshdr(scn, &mem);
+      if (shdr == NULL)  /* FIX: P1 - NULL check */
+        continue;
       const char *name = elf_strptr(elf, strndx, shdr->sh_name);
 
       // Two options for reading sections. We keep the code structure
@@ -79,7 +80,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fd = mkstemp(filename);
   assert(fd >= 0);
 
-  n = write_retry(fd, data, size);
+  /* FIX: P1 - use standard write() instead of internal write_retry() */
+  n = write(fd, data, size);
   assert(n == (ssize_t) size);
 
   close(fd);
@@ -87,9 +89,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fuzz_logic_one(filename, 0);
   fuzz_logic_one(filename, 1);
   fuzz_logic_twice(filename, O_RDONLY, ELF_C_READ);
-  fuzz_logic_twice(filename, O_RDONLY | O_WRONLY, ELF_C_RDWR);
+  fuzz_logic_twice(filename, O_RDWR, ELF_C_RDWR);  /* FIX: P1 - O_RDWR instead of O_RDONLY|O_WRONLY */
   fuzz_logic_twice(filename, O_RDONLY, ELF_C_READ_MMAP);
-  fuzz_logic_twice(filename, O_RDONLY | O_WRONLY, ELF_C_RDWR_MMAP);
+  fuzz_logic_twice(filename, O_RDWR, ELF_C_RDWR_MMAP);  /* FIX: P1 - O_RDWR */
 
   unlink(filename);
   return 0;
