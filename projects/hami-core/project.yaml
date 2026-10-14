@@ -1,0 +1,6 @@
+homepage: "https://github.com/Project-HAMi/HAMi-core"
+main_repo: "https://github.com/Project-HAMi/HAMi-core.git"
+language: c
+primary_contact: "archlitchi@gmail.com"
+auto_ccs:
+  - "reza.jelveh+git@gmail.com"
