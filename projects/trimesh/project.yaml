@@ -1,0 +1,11 @@
+homepage: "https://trimesh.org"
+main_repo: "https://github.com/mikedh/trimesh"
+language: python
+primary_contact: "mikedh@kerfed.com"
+auto_ccs:
+  - "kms721082@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
