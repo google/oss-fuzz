@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y make autoconf automake gettext libtool 
 RUN git clone --recursive https://gitlab.com/libidn/libidn2.git
 
 WORKDIR libidn2
-COPY build.sh replay_build.sh $SRC/
+COPY run_tests.sh build.sh replay_build.sh $SRC/
