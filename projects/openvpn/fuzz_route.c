@@ -77,7 +77,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         rl.flags = fuzz_randomizer_get_int(0, 0xffffff);
 
         init_route_list(&rl, opt, remote_endpoint, default_metric, remote_host,
-                        c.es, &c);
+                        c.es, &c.net_ctx);
         route_list_inited = 1;
       }
       break;
@@ -91,7 +91,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       if (route_list_inited && route_list_ipv6_inited) {
         struct tuntap tt;
         memset(&tt, 0, sizeof(tt));
-        add_routes(&rl, &rl6, &tt, 0, c.es, &c);
+        add_routes(&rl, &rl6, &tt, 0, c.es, &c.net_ctx);
       }
       break;
     case 3:
@@ -112,7 +112,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         memset(&r, 0, sizeof(struct route_ipv4));
         r.option = &ro;
         r.flags = RT_DEFINED;
-        add_route(&r, NULL, 0, NULL, c.es, &c);
+        add_route(&r, NULL, 0, NULL, c.es, &c.net_ctx);
       }
       break;
     case 5:
@@ -139,7 +139,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         }
 
         init_route_ipv6_list(&rl6, opt6, remote_endpoint, 0, &remote_host, c.es,
-                             &c);
+                             &c.net_ctx);
         route_list_ipv6_inited = 1;
       }
       break;
@@ -156,11 +156,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
       r6.next = NULL;
 
-      add_route_ipv6(&r6, &tt, 0, c.es, &c);
+      add_route_ipv6(&r6, &tt, 0, c.es, &c.net_ctx);
     } break;
     case 8:
       if (route_list_ipv6_inited && route_list_inited) {
-        delete_routes(&rl, &rl6, NULL, 0, c.es, &c);
+        delete_routes(&rl, &rl6, NULL, 0, c.es, &c.net_ctx);
         route_list_ipv6_inited = 0;
         route_list_inited = 0;
       }
@@ -195,6 +195,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (route_list_inited) {
     gc_free(&rl.gc);
+  }
+  if (route_list_ipv6_inited) {
+    gc_free(&rl6.gc);
   }
   env_set_destroy(c.es);
   context_gc_free(&c);
