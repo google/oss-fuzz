@@ -1,0 +1,10 @@
+homepage: "https://github.com/emscripten-core/emscripten"
+main_repo: "https://github.com/emscripten-core/emscripten"
+language: javascript
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- none
+vendor_ccs:
+  - "david@adalogics.com"
+  - "arthur.chan@adalogics.com"
