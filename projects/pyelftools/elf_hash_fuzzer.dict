@@ -1,0 +1,8 @@
+# Hash-related sections and tokens
+".gnu.hash"
+".hash"
+".dynsym"
+".symtab"
+"\x7fELF"
+"\x01\x00"
+"\x02\x00"

@@ -1,0 +1,9 @@
+homepage: "https://github.com/eliben/pyelftools"
+main_repo: "https://github.com/eliben/pyelftools"
+primary_contact: "shemtorga@gmail.com"
+language: python
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
