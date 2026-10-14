@@ -16,6 +16,8 @@
 ################################################################################
 
 # Build and install project (using current CFLAGS, CXXFLAGS).
+# build.sh runs with cwd=$SRC, not Dockerfile WORKDIR.
+cd "$SRC/acme2certifier"
 pip3 install .
 
 # Build fuzzers into $OUT.
