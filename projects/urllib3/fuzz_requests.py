@@ -57,9 +57,11 @@ def TestOneInput(data):
     fdp = atheris.FuzzedDataProvider(data)
 
     global GLOBAL_RESPONSE_BODY, GLOBAL_RESPONSE_CODE, GLOBAL_CONTENT_TYPE
-    GLOBAL_RESPONSE_BODY = fdp.ConsumeBytes(sys.maxsize)
+    body_len = fdp.ConsumeIntInRange(0, 65536)
+    GLOBAL_RESPONSE_BODY = fdp.ConsumeBytes(body_len)
     GLOBAL_RESPONSE_CODE = fdp.ConsumeIntInRange(200, 599)
-    GLOBAL_CONTENT_TYPE = fdp.ConsumeBytes(sys.maxsize)
+    content_type_len = fdp.ConsumeIntInRange(0, 256)
+    GLOBAL_CONTENT_TYPE = fdp.ConsumeBytes(content_type_len)
 
     requestType = fdp.PickValueInList(REQUEST_METHODS)
 
@@ -67,14 +69,14 @@ def TestOneInput(data):
     requestHeaders = urllib3._collections.HTTPHeaderDict({})
     for i in range(0, fdp.ConsumeIntInRange(0, 10)):
         requestHeaders.add(
-            fdp.ConsumeString(sys.maxsize), fdp.ConsumeString(sys.maxsize)
+            fdp.ConsumeString(64), fdp.ConsumeString(64)
         )
     requestHeaders = None if fdp.ConsumeBool() else requestHeaders
 
     # Optionally generate form data
     formData = {}
     for i in range(0, fdp.ConsumeIntInRange(0, 100)):
-        formData[fdp.ConsumeString(sys.maxsize)] = fdp.ConsumeString(sys.maxsize)
+        formData[fdp.ConsumeString(64)] = fdp.ConsumeString(64)
     formData = None if fdp.ConsumeBool() else formData
 
     timeout = urllib3.util.Timeout(connect=0.1, read=0.1)
