@@ -47,11 +47,20 @@ cd $SRC/gpowerd
 # Translate Protobuf Editions (2023) to proto2
 python3 $SRC/translate_protos.py
 
+# Empty LogCondensedNodeEntities(): its body uses google3-internal protos
+# (one/node_entities_api.pb.h / one/resolved_entities.pb.h) that are not
+# exported to the OSS repo; the shims satisfy the includes only.
+if grep -q 'offline_node_entities (condensed)' daemon_context.cc; then
+  patch -p1 < $SRC/source_fix.patch
+fi
+
 # Fix compatibility issues in source files
 # Convert absl::string_view to std::string for set_message in convert_proto.cc
+sed -i 's/std::string(status.message())/status.message()/g' convert_proto.cc
 sed -i 's/status.message()/std::string(status.message())/g' convert_proto.cc
 
 # Convert absl::string_view to std::string for map find() in action_validation.cc
+sed -i 's/find(std::string(node_entity_tag))/find(node_entity_tag)/g' action_validation.cc
 sed -i 's/find(node_entity_tag)/find(std::string(node_entity_tag))/g' action_validation.cc
 
 # Fix absl::StrFormat of absl::Time in action_validation.cc
@@ -73,9 +82,10 @@ sed -i 's/listeners_mutex_.try_lock()/listeners_mutex_.WriterTryLock()/g' state_
 sed -i 's/listeners_mutex_.unlock()/listeners_mutex_.WriterUnlock()/g' state_updater.h
 
 # Add & to MutexLock calls in all C++ files (older Abseil MutexLock takes a pointer)
-sed -i 's/\(absl::\)\?MutexLock\s\+\([a-zA-Z0-9_]*\)\s*(\([^)]*\))/\1MutexLock \2(\&\3)/g' *.cc *.h
+sed -i 's/\(absl::\)\?MutexLock\s\+\([a-zA-Z0-9_]*\)\s*(\([^&)]*\))/\1MutexLock \2(\&\3)/g' *.cc *.h
 
 # Use ShortDebugString() for protobuf messages in absl::StrCat in condition.cc
+sed -i 's/condition\.ShortDebugString()/condition/g' condition.cc
 sed -i 's/Abort condition matched: ", condition/Abort condition matched: ", condition.ShortDebugString()/g' condition.cc
 sed -i 's/Unknown timeout type: ", condition/Unknown timeout type: ", condition.ShortDebugString()/g' condition.cc
 sed -i 's/Unknown condition type: ", condition/Unknown condition type: ", condition.ShortDebugString()/g' condition.cc
