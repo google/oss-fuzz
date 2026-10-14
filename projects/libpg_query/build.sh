@@ -23,6 +23,10 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parser.o ./libpg_query.a -I./ -o $OUT/fu
 $CC $CFLAGS -c ./test/fuzz/fuzz_protobuf.c ./libpg_query.a -I./
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_protobuf.o ./libpg_query.a -I./ -o $OUT/fuzz_protobuf
 
+$CC $CFLAGS -c ./test/fuzz/fuzz_deparse.c -I./ -o fuzz_deparse.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_deparse.o ./libpg_query.a -I./ -o $OUT/fuzz_deparse
+zip -j $OUT/fuzz_deparse_seed_corpus.zip ./test/sql/deparse/*.sql
+
 # PL/pgSQL function-body parser harness (separate grammar/scanner)
 $CC $CFLAGS -c ./test/fuzz/fuzz_plpgsql.c ./libpg_query.a -I./
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_plpgsql.o ./libpg_query.a -I./ -o $OUT/fuzz_plpgsql
