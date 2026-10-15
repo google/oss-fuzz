@@ -699,7 +699,13 @@ def build_image(args):
   elif args.no_pull:
     pull = False
   else:
-    y_or_n = raw_input('Pull latest base images (compiler/runtime)? (y/N): ')
+    try:
+      y_or_n = raw_input('Pull latest base images (compiler/runtime)? (y/N): ')
+    except EOFError:
+      print(flush=True)
+      logger.error('No input available for base image pull decision. '
+                   'Pass --pull or --no-pull when running non-interactively.')
+      return False
     pull = y_or_n.lower() == 'y'
 
   if pull:
