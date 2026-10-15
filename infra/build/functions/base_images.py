@@ -50,7 +50,7 @@ DEFAULT_VERSION = 'legacy'
 
 # Prefix of the unique tag added to every pushed base image. Google's public
 # image scanning treats images with this tag prefix as build infrastructure
-# and doesn't file vulnerability reports for them. 
+# and doesn't file vulnerability reports for them.
 LIFECYCLE_TAG_PREFIX = 'infrastructure-public-image'
 
 # Defines the dependency graph for base images.
