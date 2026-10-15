@@ -18,19 +18,7 @@
 # build alembic
 mkdir -p $WORK/build_alembic
 cd $WORK/build_alembic
-cmake $SRC/alembic -DALEMBIC_SHARED_LIBS=OFF
+cmake $SRC/alembic -DALEMBIC_SHARED_LIBS=OFF -DALEMBIC_BUILD_FUZZERS=ON
 make -j$(nproc)
 
-INCLUDES=(
-  "-I $SRC"
-  "-I ${SRC}/alembic/lib"
-  "-I ${WORK}/build_alembic/lib"
-  "-I /usr/local/include/Imath"
-)
-
-for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
-  fuzzer_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -std=c++11 ${INCLUDES[@]} \
-    $fuzzer $WORK/build_alembic/lib/Alembic/libAlembic.a $LIB_FUZZING_ENGINE \
-    -o $OUT/$fuzzer_basename $SRC/imath/build/src/Imath/libImath-3_2.a
-done
+cp tests/fuzz/alembic_dump_info_fuzzer $OUT/
