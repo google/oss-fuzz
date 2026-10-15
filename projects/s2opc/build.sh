@@ -27,15 +27,20 @@ SAMPLES=$SRC/S2OPC-fuzzing-data
 
 # Build the dependencies
 ## Configure mbedtls to disable support of the AES-NI instructions, known to cause error with some sanitizers
+## Also disable inline assembly support (MBEDTLS_HAVE_ASM): MemorySanitizer cannot instrument hand-written
+## assembly, and mbedtls refuses to build (#error "MemorySanitizer does not support assembly implementation")
+## when both are enabled together.
 tar xjf $SRC/mbedtls.tbz2 -C $WORK
-sed 's,#define MBEDTLS_AESNI_C,//#define MBEDTLS_AESNI_C,' -i $WORK/mbedtls-2.*/include/mbedtls/config.h
+sed -e 's,#define MBEDTLS_AESNI_C,//#define MBEDTLS_AESNI_C,' \
+    -e 's,#define MBEDTLS_HAVE_ASM,//#define MBEDTLS_HAVE_ASM,' \
+    -i $WORK/mbedtls-3.*/include/mbedtls/mbedtls_config.h
 
 mkdir -p $MBEDTLS_BUILD
 cd $MBEDTLS_BUILD
 cmake -DPYTHON_EXECUTABLE="/usr/bin/python3" \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-      $WORK/mbedtls-2.*
+      $WORK/mbedtls-3.*
 make -j$(nproc)
 make -j$(nproc) install
 

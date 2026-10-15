@@ -54,7 +54,7 @@ if [[ $FUZZING_ENGINE == libfuzzer && $CFLAGS != *sanitize=memory* ]]; then
     mkdir $SRC/mruby/genfiles
     # Must match the standard the bundled protobuf/abseil were built with; see
     # the Dockerfile.
-    PROTO_STD="-std=c++14"
+    PROTO_STD="-std=c++17"
     $SRC/LPM/external.protobuf/bin/protoc --proto_path=$SRC/mruby/oss-fuzz ruby.proto --cpp_out=$SRC/mruby/genfiles
     $CXX -c $CXXFLAGS $PROTO_STD $SRC/mruby/genfiles/ruby.pb.cc -DNDEBUG -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include
     $CXX -I $SRC/mruby/include -I $SRC/mruby/build/host/include -I $SRC/LPM/external.protobuf/include $CXXFLAGS $PROTO_STD $PROTO_FUZZ_TARGET $SRC/mruby/genfiles/ruby.pb.o $PROTO_CONVERTER \

@@ -9,7 +9,6 @@ auto_ccs:
   - "skia-gpu-wrangler@google.com"
   - "skia-bugs-central@skia-public.iam.gserviceaccount.com"
   - "fuzz@skia.org"
-  - "drott@chromium.org"
   - "fmalita@chromium.org"
 vendor_ccs:
   - "lsalzman@mozilla.com"
