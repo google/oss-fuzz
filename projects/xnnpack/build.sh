@@ -15,22 +15,12 @@
 #
 ################################################################################
 
-mkdir build
-cd build
-cmake -DXNNPACK_BUILD_BENCHMARKS=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DXNNPACK_BUILD_TESTS=ON ../
-make V=1 -j8
-cd ../
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzz_model.cc \
-    -DFXDIV_USE_INLINE_ASSEMBLY=0 -DPTHREADPOOL_NO_DEPRECATED_API=1 \
-    -DXNN_ENABLE_ARM_BF16=1 -DXNN_ENABLE_ARM_DOTPROD=1 \
-    -DXNN_ENABLE_ARM_FP16_SCALAR=1 -DXNN_ENABLE_ARM_FP16_VECTOR=1 \
-    -DXNN_ENABLE_ASSEMBLY=1 -DXNN_ENABLE_DWCONV_MULTIPASS=0 \
-    -DXNN_ENABLE_GEMM_M_SPECIALIZATION=1 -DXNN_ENABLE_JIT=0 \
-    -DXNN_ENABLE_MEMOPT=1 -DXNN_ENABLE_RISCV_VECTOR=1 -DXNN_ENABLE_SPARSE=1 \
-    -I/src/xnnpack/src -I/src/xnnpack/build/pthreadpool-source/include \
-    -I/src/xnnpack/build/FXdiv-source/include -I/src/xnnpack/include/ \
-    -I/src/xnnpack/build/FP16-source/include ./build/libXNNPACK.a \
-    ./build/pthreadpool/libpthreadpool.a ./build/cpuinfo/libcpuinfo.a \
-    ./build/libxnnpack-microkernels-all.a ./build/libxnnpack-microkernels-prod.a \
-    -o $OUT/fuzz_model
+cmake -S . -B build \
+    -DXNNPACK_BUILD_BENCHMARKS=OFF \
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+    -DXNNPACK_BUILD_TESTS=ON \
+    -DXNNPACK_LIBRARY_TYPE=static \
+    -DXNNPACK_BUILD_FUZZERS=ON \
+    -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE"
+cmake --build build --parallel 8
+cp build/fuzz/fuzz_model "$OUT/fuzz_model"
