@@ -20,5 +20,4 @@ RUN pip3 install Inflection Mako meson ninja PyYAML jsonschema
 
 RUN git clone --depth 1 https://github.com/openbmc/phosphor-certificate-manager.git phosphor-certificate-manager
 WORKDIR phosphor-certificate-manager
-COPY build.sh sdbusplus.patch stdplus.patch meson.patch parse_cert_fuzzer.cpp fuzzing_meson.build $SRC/
-COPY corpus $SRC/corpus/
+COPY build.sh sdbusplus.patch stdplus.patch $SRC/

@@ -25,14 +25,6 @@ meson subprojects download
 if [ -d subprojects/sdbusplus ]; then git -C subprojects/sdbusplus checkout -- .; fi
 if [ -d subprojects/stdplus ]; then git -C subprojects/stdplus checkout -- .; fi
 
-# Apply patch to meson.build and meson.options to enable fuzzing
-git apply $SRC/meson.patch
-
-# Copy fuzzer files into the source tree
-mkdir -p fuzzing
-cp $SRC/parse_cert_fuzzer.cpp fuzzing/
-cp $SRC/fuzzing_meson.build fuzzing/meson.build
-
 # Clean build directory
 rm -rf builddir
 
@@ -63,4 +55,4 @@ ninja -C builddir fuzzing/parse_cert_fuzzer
 cp builddir/fuzzing/parse_cert_fuzzer $OUT/
 
 # Package seed corpus
-zip -j $OUT/parse_cert_fuzzer_seed_corpus.zip $SRC/corpus/*
+zip -j $OUT/parse_cert_fuzzer_seed_corpus.zip fuzzing/corpus/parse_cert_fuzzer/*
