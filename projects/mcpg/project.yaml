@@ -1,0 +1,9 @@
+homepage: "https://github.com/devopam/MCPg"
+language: python
+primary_contact: "devopam@gmail.com"
+main_repo: "https://github.com/devopam/MCPg"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
