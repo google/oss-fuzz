@@ -18,13 +18,13 @@ load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
 cc_fuzz_test(
     name = "string_escape_fuzzer",
-    srcs = ["string_escape_fuzzer.cc"],
+    srcs = ["@com_google_absl//fuzz:string_escape_fuzzer_src"],
     deps = ["@com_google_absl//absl/strings"],
 )
 
 cc_fuzz_test(
     name = "string_utilities_fuzzer",
-    srcs = ["string_utilities_fuzzer.cc"],
+    srcs = ["@com_google_absl//fuzz:string_utilities_fuzzer_src"],
     deps = [
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:cord",
