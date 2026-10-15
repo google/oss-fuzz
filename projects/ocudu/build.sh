@@ -106,3 +106,4 @@ zip -j "$OUT/ofh_ecpri_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ofh/corpus/ecp
 zip -j "$OUT/ofh_vlan_frame_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ofh/corpus/vlan/*
 zip -j "$OUT/ngap_pdu_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ngap/corpus/ngap/*
 zip -j "$OUT/ngap_cu_cp_fuzzer_seed_corpus.zip" tests/fuzz/ngap/corpus/ngap/*
+zip -j "$OUT/f1ap_pdu_decoder_fuzzer_seed_corpus.zip" tests/fuzz/f1ap/corpus/*
