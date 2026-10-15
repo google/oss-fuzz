@@ -4,8 +4,6 @@ primary_contact: "alxndr@bu.edu"
 auto_ccs:
   - "pbonzini@redhat.com"
   - "stefanha@redhat.com"
-  - "darren.kenny@oracle.com"
-  - "lichenca2020@gmail.com"
 sanitizers:
   - address
   - undefined
