@@ -15,5 +15,6 @@
 #
 ################################################################################
 
-make unit_test
-
+make njs_fuzzer ngx_js_form_fuzzer unit_test
+./build/njs_process_script_fuzzer -runs=1
+./build/ngx_js_form_fuzzer -runs=1
