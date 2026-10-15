@@ -18,15 +18,10 @@
 
 mkdir build && cd build
 cmake ../prj/cmake \
-	-DCMAKE_BUILD_TYPE="Release"
+	-DCMAKE_BUILD_TYPE="Release" \
+	-DSIMD_FUZZ=ON
 
 # Force simd to only use a single core, as otherwise memory will be exhausted
 make -j1
 
-$CXX $CXXFLAGS -I/src/Simd/src -O3 -DNDEBUG -fPIC \
-        -c $SRC/simd_load_fuzzer.cpp -o simd_load_fuzzer.o \
-        -std=c++11 -ferror-limit=5 -m64  -mtune=native
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE simd_load_fuzzer.o \
-        -o $OUT/simd_load_fuzzer \
-        $(find $SRC -name "libSimd.a")
+find . -name *_fuzzer -exec cp {} "$OUT/" \;
