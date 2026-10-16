@@ -15,48 +15,6 @@
 #
 ################################################################################
 
-cd $SRC/opentelemetry-collector-contrib
-cd processor/groupbyattrsprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzProcessTraces FuzzProcessTraces_groupbyattrsprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzProcessLogs FuzzProcessLogs_groupbyattrsprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzProcessMetrics FuzzProcessMetrics_groupbyattrsprocessor
-
-cd ../logdedupprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzConsumeLogs FuzzConsumeLogs_logdedupprocessor
-
-cd ../probabilisticsamplerprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzConsumeTraces FuzzConsumeTraces_probabilisticsamplerprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzConsumeLogs FuzzConsumeLogs__probabilisticsamplerprocessor
-
-cd ../sumologicprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzProcessTraces FuzzProcessTraces_sumologicprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzProcessLogs FuzzProcessLogs_sumologicprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzProcessMetrics FuzzProcessMetrics_sumologicprocessor
-
-cd ../tailsamplingprocessor
-compile_native_go_fuzzer_v2 $(go list) FuzzConsumeTraces FuzzConsumeTraces_tailsamplingprocessor
-
-cd ../../receiver/lokireceiver/internal
-compile_native_go_fuzzer_v2 $(go list) FuzzParseRequest FuzzParseRequest_loki
-
-cd ../../mongodbatlasreceiver
-compile_native_go_fuzzer_v2 $(go list) FuzzHandleReq FuzzHandleReq_mongodbatlasreceiver
-
-cd ../sapmreceiver
-compile_native_go_fuzzer_v2 $(go list) FuzzParseTraceV2Request FuzzParseTraceV2Request_sapmreceiver
-
-cd ../signalfxreceiver
-compile_native_go_fuzzer_v2 $(go list) FuzzHandleDatapointReq FuzzHandleDatapointReq_signalfxreceiver
-
-cd ../splunkhecreceiver
-compile_native_go_fuzzer_v2 $(go list) FuzzHandleRawReq FuzzHandleRawReq_splunkhecreceiver
-
-cd ../cloudflarereceiver
-compile_native_go_fuzzer_v2 $(go list) FuzzHandleReq FuzzHandleReq_cloudflarereceiver
-
-cd ../webhookeventreceiver
-compile_native_go_fuzzer_v2 $(go list) FuzzHandleReq FuzzHandleReq_webhookeventreceiver
-
 cd $SRC/opentelemetry-collector
 cd receiver/otlpreceiver
 compile_native_go_fuzzer_v2 go.opentelemetry.io/collector/receiver/otlpreceiver FuzzReceiverHandlers FuzzReceiverHandlers
