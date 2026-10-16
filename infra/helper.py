@@ -702,7 +702,8 @@ def build_image(args):
     try:
       y_or_n = raw_input('Pull latest base images (compiler/runtime)? (y/N): ')
     except EOFError:
-      print(flush=True)
+      sys.stdout.write('\n')
+      sys.stdout.flush()
       logger.error('No input available for base image pull decision. '
                    'Pass --pull or --no-pull when running non-interactively.')
       return False
