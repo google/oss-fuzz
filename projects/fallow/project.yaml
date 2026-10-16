@@ -1,0 +1,10 @@
+homepage: "https://fallow.tools"
+language: rust
+main_repo: "https://github.com/fallow-rs/fallow"
+primary_contact: "bart@fallow.tools"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+coverage_extra_args: >
+  -ignore-filename-regex=.*/rustc/.*
