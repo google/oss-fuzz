@@ -34,7 +34,9 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		// Exact-sized, unterminated copy so ASan catches over-reads.
 		char *packet = malloc(size ? size : 1);
 		if (packet != NULL) {
-			memcpy(packet, data, size);
+			if (size > 0) {
+				memcpy(packet, data, size);
+			}
 			sip_message_parser(packet, size, event, config);
 			free(packet);
 		}

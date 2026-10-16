@@ -39,13 +39,17 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		sentrypeer_config_destroy(&config);
 		return 0;
 	}
-	memcpy(str, data, size);
+	if (size > 0) {
+		memcpy(str, data, size);
+	}
 	str[size] = '\0';
 
 	char *matched = NULL;
 	if (regex_match(str, IP_ADDRESS_ROUTE, &matched, config) ==
 	    EXIT_SUCCESS) {
-		valid_ip_address_format(matched);
+		if (matched != NULL) {
+			valid_ip_address_format(matched);
+		}
 		free(matched);
 	}
 

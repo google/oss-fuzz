@@ -35,7 +35,9 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 		sentrypeer_config_destroy(&config);
 		return 0;
 	}
-	memcpy(json, data, size);
+	if (size > 0) {
+		memcpy(json, data, size);
+	}
 	json[size] = '\0';
 
 	bad_actor *event = json_to_bad_actor(config, json);
