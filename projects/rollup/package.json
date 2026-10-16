@@ -1,0 +1,9 @@
+{
+  "name": "rollup-fuzz",
+  "version": "1.0.0",
+  "description": "OSS-Fuzz fuzz targets for Rollup",
+  "private": true,
+  "dependencies": {
+    "rollup": "latest"
+  }
+}
