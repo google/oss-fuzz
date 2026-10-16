@@ -28,6 +28,7 @@ echo "#!/bin/bash
 
 # LLVMFuzzerTestOneInput so that the wrapper script is recognized
 # as a fuzz target for 'check_build'.
+# LUA_RUNTIME_BINARY: $lua_runtime
 project_dir=\$(dirname \$(realpath \"\$0\"))
 
 luarocks=\$(type -p luarocks)
