@@ -1,0 +1,4 @@
+POST /axis2/services/FuzzService/echo HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+args0=form%20value&x=1
