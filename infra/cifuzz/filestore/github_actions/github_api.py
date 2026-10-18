@@ -86,7 +86,11 @@ def _get_items(url, headers):
     assert len(keys) == 1, keys
     items_key = keys[0]
 
-    for item in response_json[items_key]:
+    items = response_json[items_key]
+    if not items:
+      break
+
+    for item in items:
       yield item
       item_num += 1
 
