@@ -1,0 +1,1 @@
+{"instances": [{"int_tensor": [[1,2],[3,4]], "str_tensor": ["foo", "bar"]}]}
