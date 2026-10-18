@@ -40,4 +40,3 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libunwind.a /usr/local/lib/libunwind.a && \
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/
 COPY build.sh $SRC/
-COPY WORKSPACE $SRC/envoy/

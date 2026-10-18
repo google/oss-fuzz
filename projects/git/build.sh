@@ -37,11 +37,20 @@ else
   FUZZING_ENGINE_FLAGS="$LIB_FUZZING_ENGINE"
 fi
 
+# Add the rust library to the build as git is migrating to rust
+RUST_LIB="$(make -s --no-print-directory \
+  --eval='print-rust-lib: ; @echo $(RUST_LIB)' print-rust-lib)"
+if [ -z "$RUST_LIB" ]; then
+  echo "ERROR: could not determine RUST_LIB from the git Makefile" >&2
+  exit 1
+fi
+echo "Linking Rust library: $RUST_LIB"
+
 # build fuzzers
 make -j$(nproc) CC=$CC CXX=$CXX CFLAGS="$CFLAGS" \
   FUZZ_CXXFLAGS="$CXXFLAGS" \
   LIB_FUZZING_ENGINE="$FUZZING_ENGINE_FLAGS" \
-  GITLIBS=libgit.a fuzz-all
+  GITLIBS="libgit.a $RUST_LIB" fuzz-all
 
 FUZZERS=""
 FUZZERS="$FUZZERS fuzz-commit-graph"

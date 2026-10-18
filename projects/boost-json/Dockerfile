@@ -23,6 +23,7 @@ RUN git -C boost submodule update --init libs/json
 RUN git -C boost/libs/json checkout develop
 RUN git -C boost submodule update --init --depth 1 \
 libs/assert \
+libs/charconv \
 libs/config/ \
 libs/compat \
 libs/container \
