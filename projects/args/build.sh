@@ -19,14 +19,20 @@
 mkdir build
 cd build
 
-cmake -DCMAKE_BUILD_TYPE=Release -DARGS_BUILD_TESTS=ON ..
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_FUZZERS=ON ..
 make -j4
 
 for fuzzer in $(find $SRC/args/fuzz/ -name "*_fuzzer.cpp"); do
     fuzzer_basename=$(basename -s .cpp $fuzzer)
-    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
-        -I$SRC/args \
-        $fuzzer \
-        -o $OUT/$fuzzer_basename
+    if [ -f "$fuzzer_basename" ]; then
+        cp "$fuzzer_basename" "$OUT/$fuzzer_basename"
+    fi
+
+    # Package the per-fuzzer seed corpora kept in-tree under
+    # fuzz/corpus/<fuzzer>/ as OSS-Fuzz seed corpus archives.
+    corpus_dir="$SRC/args/fuzz/corpus/$fuzzer_basename"
+    if [ -d "$corpus_dir" ]; then
+        find "$corpus_dir" -maxdepth 1 -type f -exec zip -j "$OUT/${fuzzer_basename}_seed_corpus.zip" {} +
+    fi
 done
 
