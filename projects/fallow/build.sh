@@ -21,6 +21,9 @@ cargo fuzz build -O --debug-assertions
 fuzz_release=$SRC/fallow/fuzz/target/x86_64-unknown-linux-gnu/release
 for target in $(cargo fuzz list); do
   cp "$fuzz_release/$target" "$OUT/"
+  if [ -f "fuzz/dicts/$target.dict" ]; then
+    cp "fuzz/dicts/$target.dict" "$OUT/$target.dict"
+  fi
   seeds=(fuzz/corpus/$target/*)
   if [ -e "${seeds[0]}" ]; then
     zip -jq "$OUT/${target}_seed_corpus.zip" "${seeds[@]}"
