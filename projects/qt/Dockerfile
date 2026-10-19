@@ -22,6 +22,10 @@ RUN git clone --depth 1 https://github.com/AFLplusplus/AFLplusplus.git myaflplus
     cp -r myaflplusplus/dictionaries afldictionaries && \
     cp -r myaflplusplus/testcases afltestcases && \
     rm -rf myaflplusplus
+# codecs for qtmultimedia
+RUN apt-get update && apt-get install -y libavcodec-dev libavformat-dev libavutil-dev \
+                                         libswscale-dev libswresample-dev libpulse-dev \
+                                         libpipewire-0.3-dev
 
 # Simulate a classic Qt folder structure
 RUN mkdir qt
