@@ -22,7 +22,7 @@ sed -i 's/-Werror//g' ./configure.ac
 # https://github.com/libgd/libgd/issues/422
 sed -i'' -e 's/INT_MAX/100000/' "$SRC/libgd/src/gd_security.c"
 
-./configure --prefix="$WORK" --disable-shared
+./configure --prefix="$WORK" --disable-shared --enable-gd-formats
 make -j$(nproc) install
 
 export CXXFLAGS="${CXXFLAGS} -std=c++17"
