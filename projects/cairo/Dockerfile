@@ -43,5 +43,4 @@ ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dic
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/svg.dict $SRC/svg-render-fuzzer.dict
 
 WORKDIR $SRC/cairo
-COPY targets $SRC/fuzz
 COPY build.sh $SRC/
