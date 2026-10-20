@@ -146,6 +146,11 @@ func hasEmptyCollectionWithComma(antlrAST *ast.AST, text string) bool {
 		hasComma := false
 		for i := openPos + 1; i < rbuf.Len(); i++ {
 			r := rbuf.Get(i)
+			if r == '/' && i+1 < rbuf.Len() && rbuf.Get(i+1) == '/' {
+				for i += 2; i < rbuf.Len() && rbuf.Get(i) != '\n'; i++ {
+				}
+				continue
+			}
 			if r == closeChar {
 				if hasComma {
 					return true
