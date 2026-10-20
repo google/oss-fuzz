@@ -17,32 +17,7 @@
 
 cd $SRC/cel-rust
 
-cp fuzz/Cargo.toml fuzz/Cargo.toml.bak
-cleanup() {
-    mv -f fuzz/Cargo.toml.bak fuzz/Cargo.toml || true
-    rm -f fuzz/fuzz_targets/fuzz_pratt_parser.rs
-}
-trap cleanup EXIT
-
-cp $SRC/fuzz_pratt_parser.rs fuzz/fuzz_targets/fuzz_pratt_parser.rs
-
-if ! grep -q "parser_pratt" fuzz/Cargo.toml; then
-    sed -i '/\[dependencies\.cel\]/a features = ["parser_pratt"]' fuzz/Cargo.toml
-fi
-
-if ! grep -q 'name = "fuzz_pratt_parser"' fuzz/Cargo.toml; then
-    cat << 'TOML' >> fuzz/Cargo.toml
-
-[[bin]]
-name = "fuzz_pratt_parser"
-path = "fuzz_targets/fuzz_pratt_parser.rs"
-test = false
-doc = false
-bench = false
-TOML
-fi
-
-cargo fuzz build -O --sanitizer $SANITIZER
+cargo fuzz build -O
 
 FUZZ_TARGET_OUTPUT_DIR=target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs; do

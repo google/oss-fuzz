@@ -18,5 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 RUN git clone --depth 1 https://github.com/cel-rust/cel-rust cel-rust
 WORKDIR $SRC/cel-rust
 COPY build.sh $SRC/
-COPY fuzz_pratt_parser.rs $SRC/
 COPY fuzz_pratt_parser.options $SRC/
