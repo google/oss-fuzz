@@ -35,6 +35,8 @@ package_seed_corpora() {
 run_corpus_generator() {
     local target_dir="$1"
     shift
+    local toolchain="$1"
+    shift
 
     # OSS-Fuzz sets sanitizer-specific RUSTFLAGS/CFLAGS/CXXFLAGS for fuzz
     # builds. The corpus generators are regular helper binaries, and building
@@ -49,24 +51,27 @@ run_corpus_generator() {
         -u CFLAGS \
         -u CXXFLAGS \
         CARGO_TARGET_DIR="${target_dir}" \
-        cargo +nightly run "$@"
+        cargo "${toolchain}" run "$@"
 }
+
+# Needed for coverage to work.
+nightly="+$RUSTUP_TOOLCHAIN"
 
 # Enter the zenoh folder
 cd zenoh
 
 # zenoh-codec
 cd commons/zenoh-codec/fuzz
-run_corpus_generator /tmp/zenoh-codec-corpus --bin gen_all_corpora
-cargo +nightly fuzz build
+run_corpus_generator /tmp/zenoh-codec-corpus "$nightly" --bin gen_all_corpora
+cargo "$nightly" fuzz build
 
 package_seed_corpora
 cd ../../../
 
 # zenoh-protocol
 cd commons/zenoh-protocol/fuzz
-run_corpus_generator /tmp/zenoh-protocol-corpus --bin gen_endpoint_corpus
-cargo +nightly fuzz build
+run_corpus_generator /tmp/zenoh-protocol-corpus "$nightly" --bin gen_endpoint_corpus
+cargo "$nightly" fuzz build
 
 package_seed_corpora
 cd ../../../

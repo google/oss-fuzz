@@ -1,5 +1,5 @@
 homepage: "http://www.libpng.org/pub/png/libpng.html"
-main_repo: "https://git.code.sf.net/p/libpng/code libpng-code"
+main_repo: "https://github.com/pnggroup/libpng.git"
 language: c++
 primary_contact: "kcc@google.com"
 sanitizers:

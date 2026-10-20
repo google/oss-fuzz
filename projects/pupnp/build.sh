@@ -22,8 +22,9 @@ cd build
 cmake -DFUZZER=ON -DLIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE" ../
 make -j$(nproc)
 
-cp fuzzer/FuzzIxml $OUT/FuzzIxml
+cp fuzzer/Fuzz* $OUT/
 
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-popd
+for dir in $SRC/pupnp/fuzzer/corpus/*/; do
+    [ -d "$dir" ] || continue
+    zip -j -q $OUT/$(basename $dir)_seed_corpus.zip $dir*
+done

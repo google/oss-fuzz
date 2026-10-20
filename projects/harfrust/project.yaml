@@ -1,0 +1,16 @@
+homepage: "https://github.com/harfbuzz/harfrust"
+language: rust
+primary_contact: "behdad.esfahbod@gmail.com"
+auto_ccs:
+  - "rsheeter@google.com"
+  - "colin.rofls@gmail.com"
+  - "cbrokaw@gmail.com"
+  - "drott@google.com"
+  - "grieger@google.com"
+  - "clupo@google.com"
+  - "qxliu@google.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+main_repo: 'https://github.com/harfbuzz/harfrust'

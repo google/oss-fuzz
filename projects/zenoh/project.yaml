@@ -6,6 +6,9 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 language: rust
+coverage_extra_args: >
+  -ignore-filename-regex=.*/registry/src/.*crates.io.*/.*
+  -ignore-filename-regex=.*/rustc/.*
 auto_ccs:
   - "sasha@zettascale.space"
   - "julien@zettascale.space"

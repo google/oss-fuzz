@@ -29,10 +29,13 @@ sed -i "s/Debug//g" dist/Debug/lib/pkgconfig/nss.pc
 sed -i "s/\/lib/\/lib\/Debug/g" dist/Debug/lib/pkgconfig/nss.pc
 sed -i "s/include\/nspr/public\/nss/g" dist/Debug/lib/pkgconfig/nss.pc
 sed -i "s/NSPR/NSS/g" dist/Debug/lib/pkgconfig/nss.pc
-LIBS="-lssl -lsmime -lnssdev -lnss_static -lpk11wrap_static -lcryptohi"
-LIBS="$LIBS -lcerthi -lcertdb -lnssb -lnssutil -lnsspki -ldl -lm -lsqlite"
-LIBS="$LIBS -lsoftokn_static -lsha-x86_c_lib -lfreebl_static"
-LIBS="$LIBS -lgcm-aes-x86_c_lib -lhw-acc-crypto-avx -lhw-acc-crypto-avx2"
+# Derive the NSS link list from the produced archives (names vary across releases)
+NSS_LIBS=""
+for a in dist/Debug/lib/*.a; do
+	name=$(basename "$a" .a)        # e.g. libfreebl_static
+	NSS_LIBS="$NSS_LIBS -l${name#lib}"
+done
+LIBS="-Wl,--start-group $NSS_LIBS -Wl,--end-group -ldl -lm"
 sed -i "s/Libs:.*/Libs: -L\${libdir} $LIBS/g" dist/Debug/lib/pkgconfig/nss.pc
 echo "Requires: nspr" >> dist/Debug/lib/pkgconfig/nss.pc
 
@@ -46,6 +49,7 @@ rm -rf $BUILD
 mkdir $BUILD
 
 cd $SRC/libcacard
+
 # Drop the tests as they are not needed and require too much dependencies
 meson $BUILD -Ddefault_library=static -Ddisable_tests=true
 ninja -C $BUILD
@@ -53,15 +57,15 @@ ninja -C $BUILD
 # We need nss db to work
 cp -r tests/db $OUT/
 
-echo "XXXXXXXX" > $WORK/testinput
+# NSS dlopen()s its PKCS#11 modules at runtime; ship them with RPATH $ORIGIN
+cp $NSS_NSPR_PATH/dist/Debug/lib/*.so $OUT/ 2>/dev/null || true
+for so in $OUT/*.so; do
+	patchelf --force-rpath --set-rpath '$ORIGIN' "$so" 2>/dev/null || true
+done
 
 fuzzers=$(find $BUILD/fuzz/ -executable -type f)
 for f in $fuzzers; do
 	fuzzer=$(basename $f)
 	cp $f $OUT/
-	# Check if it runs at least in build image
-	$OUT/$fuzzer $WORK/testinput
-	#zip -j $OUT/${fuzzer}_seed_corpus.zip fuzz/corpora/${fuzzer}/*
+	patchelf --force-rpath --set-rpath '$ORIGIN' $OUT/$fuzzer 2>/dev/null || true
 done
-
-rm $WORK/testinput

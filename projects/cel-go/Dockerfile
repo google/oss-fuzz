@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/google/cel-go
+RUN git clone --depth 1 https://github.com/cel-expr/cel-go
 
 RUN apt-get update && apt-get install -y protobuf-compiler libprotobuf-dev binutils cmake \
    ninja-build liblzma-dev libz-dev pkg-config autoconf libtool
@@ -31,7 +31,7 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
 COPY go-lpm.cc $SRC/
 
-COPY fuzz*.go $SRC/cel-go/cel/
+COPY fuzz*.go $SRC/
 COPY build.sh $SRC/
 COPY *.proto $SRC/
 WORKDIR $SRC/cel-go

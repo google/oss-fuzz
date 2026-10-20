@@ -19,7 +19,9 @@ python3 -m pip install -U  .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
-  compile_python_fuzzer $fuzzer --hidden-import=_cffi_backend
+  compile_python_fuzzer $fuzzer \
+    --hidden-import=_cffi_backend \
+    --hidden-import=numpy._core._exceptions
 done
 
 zip -j $OUT/pcap_fuzzer_seed_corpus.zip tests/pcaps/*

@@ -23,10 +23,15 @@ make
 
 static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
 
-for fuzzer in lyd_parse_mem_json lyd_parse_mem_xml lys_parse_mem; do
+for fuzzer in lys_parse_mem lyd_parse_mem_xml lyd_parse_mem_json lyd_parse_lyb lyd_parse_schema_mount_xml yang_parse_module; do
   $CC $CFLAGS -c ../tests/fuzz/${fuzzer}.c -I./libyang -I./compat
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ${fuzzer}.o -o $OUT/${fuzzer} \
     ./libyang.a ${static_pcre}
+
+  if [[ -d ../tests/fuzz/corpus/${fuzzer} ]]; then
+    find ../tests/fuzz/corpus/${fuzzer} -type f -exec \
+      zip -qj $OUT/${fuzzer}_seed_corpus.zip {} +
+  fi
 done
 
 # Build test

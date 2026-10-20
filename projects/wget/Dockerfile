@@ -52,6 +52,11 @@ RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar xz && m
 RUN wget -qO- https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.gz | tar xz && mv gmp-* gmp
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git --branch=nettle_3.10_release_20240616
+# gnutls dropped its bundled libtasn1 (the --with-included-libtasn1 configure
+# option is gone), so it now needs libtasn1 >= 4.9 from outside. Build it from
+# source into the same static dep prefix as everything else rather than relying
+# on a distro package, so the static link keeps working.
+RUN wget -qO- https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.21.0.tar.gz | tar xz && mv libtasn1-* libtasn1
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 
 RUN git clone https://git.savannah.gnu.org/git/wget.git

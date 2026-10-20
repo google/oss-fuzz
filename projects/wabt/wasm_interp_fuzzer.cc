@@ -33,7 +33,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   store.setFeatures(features);
 
   wabt::interp::ModuleDesc module_desc;
-  wabt::ReadBinaryOptions options(features, nullptr, true, true, true);
+  wabt::ReadBinaryOptions options(features, nullptr,
+                                  /*read_debug_names=*/true,
+                                  /*stop_on_first_error=*/true,
+                                  /*fail_on_custom_section_error=*/true);
   if (wabt::Succeeded(wabt::interp::ReadBinaryInterp("<fuzzer>", data, size, options, &errors, &module_desc))) {
     // Check for excessive memory allocation to avoid OOM.
     for (auto&& mem : module_desc.memories) {
