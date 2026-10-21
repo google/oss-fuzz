@@ -35,8 +35,8 @@ plus their references (`code_coverage.md`, `structured_seed_generation.md`, `hel
 
 The result of a run, all inside the marked working area (see [references/worktree_delivery.md](references/worktree_delivery.md)):
 
-1. The list of surviving worktree branch duo pairs: OSS-Fuzz side `oss-fuzz-<project>-<suffix>`, upstream side `<project>-<suffix>`, with their worktree paths and base commit SHAs recorded.
-2. A final summary in markdown table form, one row per duo pair: project, language, duo branches, worktree paths, summary of work, coverage delta, status.
+1. The list of surviving worktree branch duo pairs: OSS-Fuzz side `oss-fuzz-<project>-<suffix>`, upstream side `<project>-<suffix>`, with their worktree paths and base commit SHAs recorded. A project may contribute several pairs (fuzzer pairs, a standalone corpus pair, a build-fix pair), grouped per the Phase 4 rules.
+2. A final summary in markdown table form, one row per duo pair: project, language, duo branches, depends-on, worktree paths, summary of work, coverage delta, status.
 3. Skipped or unprocessable projects listed in the same summary with the concrete reason.
 4. Rejected duo pairs (still failing after the fix budget) moved into the rejected area, kept intact, and marked clearly in the summary with the failure reason and what was attempted.
 
@@ -68,7 +68,7 @@ Stopping is mandatory in every case; it is never agent judgement. Then create (o
 | project | language | status | duo branches | worktree paths | base SHAs | report | notes |
 |---|---|---|---|---|---|---|---|
 
-Statuses: `selected`, `viable`, `builds-green`, `triaged`, `improved`, `validated`, `delivered`, `rejected`, or `blocked(<reason>)`. Update the row at the end of every phase; a fresh session resumes work by reading the manifest.
+Statuses: `selected`, `viable`, `builds-green`, `triaged`, `improved`, `validated`, `delivered`, `rejected`, or `blocked(<reason>)`. Update the row at the end of every phase; a fresh session resumes work by reading the manifest. When a project yields several pairs, give each pair its own manifest row (same project, its own suffix and duo branches), with a `tested-with: <project>-build-fix` note in the notes column when it depends on the build fix.
 
 Multi-project discipline: process **one project at a time** (builds of the same project share Docker image names). With 1,300+ projects in OSS-Fuzz (~600 C/C++), prefer prioritised subsets over `*`: broken builds first (fast wins that also unlock coverage data), then the lowest own-code coverage on security-sensitive surface.
 
@@ -83,8 +83,8 @@ python3 infra/helper.py build_fuzzers --sanitizer introspector <project>
 python3 infra/helper.py check_build <project>
 ```
 
-- The main fuzzer build fix is **always mandatory**: minimal, targeted changes only.
-- Coverage and introspector build fixes are expected, but are **optional when the failure cause is missing corpora or an OOM/timeout**. Record the exemption with evidence, then proceed using the most recent successful historical report (Phase 2 date walk-back).
+- The main fuzzer build fix is **always mandatory**: minimal, targeted changes only. When the main build is broken, the fix becomes its own `-build-fix` duo pair, created and validated before any dependent pair (see Phase 4 and the worktree reference).
+- Coverage and introspector build fixes are expected, but are **optional when the failure cause is missing corpora or an OOM/timeout**. Record the exemption with evidence, then proceed using the most recent successful historical report (Phase 2 date walk-back). These failures do not trigger the build-fix protocol.
 - `check_build` failures mean a harness is defective (it crashes immediately); fix that too (see the failure triage in the worktree reference).
 - The full `helper.py introspector` chain is heavy; reserve it for when an actual Introspector report is needed (see `code_coverage.md` section 7).
 
@@ -130,6 +130,15 @@ Follow [references/worktree_delivery.md](references/worktree_delivery.md) precis
 - The **temporary copy bridge** copies the changed upstream files over the cloned source at Docker build time, simulating a merged upstream without any commits: tagged BEGIN/END blocks in the Dockerfile plus a marked bridge staging folder inside the OSS-Fuzz worktree. Never remove bridges automatically; they are part of the delivered result.
 - Leave changes as plain working-tree files: no staging by default, no commits, no pushes, ever.
 
+**Grouping rules, one project and several pairs:**
+
+- A single delivered pair is the minimum bar, but when worthwhile, develop **multiple pairs per project**: lower-priority targets from the Phase 2 list that still carry worth, in your own judgement backed by the written rationale, are developed in the same run, each as its own pair.
+- A pair that fixes or adds a fuzzer **carries that fuzzer's corpora, dictionaries and options in the same pair**: a harness never ships separately from its own seeds and settings.
+- All remaining corpora, dictionaries and options changes with no fuzzer change are consolidated into a **single standalone pair** with the suffix `-corpus-dict-options`.
+- A general build fix not tied to one fuzzer gets its own pair with the suffix `-build-fix`; build-configuration changes a specific fuzzer needs ride inside that fuzzer's pair.
+
+For a project whose main build was failing, the build-fix protocol in [references/worktree_delivery.md](references/worktree_delivery.md) applies: the fix pair is created and validated first, and every later pair copies the fix in purely as a testing scaffold, removing it again after conclusion.
+
 ### Phase 5: Validate, reject or deliver
 
 Validate each duo pair independently and one at a time, always through `infra/helper.py`:
@@ -139,7 +148,7 @@ Validate each duo pair independently and one at a time, always through `infra/he
 3. **Fuzzing-quality gate (beyond check_build)**: for every new or updated fuzzer, corpus, dictionary or option change, actually fuzz and require no fast crash (nothing within the first 60 seconds) and coverage that keeps increasing rather than going stale (no growth in the final half of the run counts as stale). Minimum run 120 seconds per target, 300 seconds for corpus-heavy changes. A crash is either a finding (document it with a reproducer; it is a deliverable, not an obstacle) or a harness defect (fix it); never silence a crash without justification.
 4. **Coverage delta, like-for-like** (same flags, same corpus source, before versus after): targeted files gain covered lines and no project-own file digresses.
 5. **Fix budget of 3 rounds**: fix, retest, and at most three attempts per gate failure. A pair still failing after the third round (compile failure, staleness, early crash or any other gate) is **rejected**: move both worktrees into the rejected area with `git worktree move` (never delete), keep the branches, and record the failure reason, what was attempted and the new paths.
-6. Deliver: finalise the per-project report and the manifest row, and add the row to the final summary table.
+6. Deliver: remove any copied build-fix changes and verify the remaining diff is purely this pair's own work (see the worktree reference), finalise the per-project report and the manifest row, and add the row to the final summary table.
 
 ## Definition of done
 
@@ -147,5 +156,6 @@ Validate each duo pair independently and one at a time, always through `infra/he
 - [ ] Quality gate clean for every new or changed target: 120 s minimum, no fast crash, no staleness.
 - [ ] Coverage: documented gains on targeted files and zero digression on other project-own files (like-for-like measurement).
 - [ ] Duo pairs hold plain working-tree changes; nothing staged (unless justified and recorded), nothing committed, nothing pushed.
+- [ ] Grouping respected: fuzzer pairs carry their own corpora, dictionaries and options; standalone corpus work sits in one pair; dependent pairs have their copied build-fix changes removed and verified.
 - [ ] Bridges present and tagged; rejected pairs moved to the rejected area (not deleted); skipped projects recorded with reasons.
 - [ ] Final summary table complete (delivered, rejected and skipped), per-project reports written, manifest rows final.
