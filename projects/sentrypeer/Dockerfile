@@ -25,4 +25,4 @@ RUN git clone --depth 1 https://git.savannah.gnu.org/git/osip.git osip
 RUN git clone --depth 1 https://github.com/SentryPeer/SentryPeer.git sentrypeer
 
 WORKDIR $SRC/sentrypeer
-COPY build.sh fuzz_sip_parser.c fuzz_http_input.c fuzz_json_bad_actor.c sip.dict $SRC/
+COPY build.sh $SRC/
