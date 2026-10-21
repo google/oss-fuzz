@@ -121,14 +121,14 @@ Multiple projects:
 1. Fix builds through `infra/helper.py` only: the main fuzzer build fix is always mandatory; coverage and introspector build fixes are optional only when the failure cause is missing corpora or an OOM/timeout, with the exemption recorded.
 2. Triage live coverage using the canonical report URLs (overall `reports/<YYYYMMDD>/linux/report.html` and per target `reports-by-target/<YYYYMMDD>/<fuzzer>/linux/report.html`), walking the date back up to 30 days when coverage builds failed, plus the Introspector project profile. It verifies build scope before trusting percentages, treats statically-reached-but-dynamically-unreached functions as prime targets, and filters to security-sensitive attack surface.
 3. Act: new or updated harnesses, structured seed corpora, dictionaries, enabling missing modules and build-configuration fixes, via the language-appropriate skill.
-4. Stage a **worktree branch duo pair** (OSS-Fuzz side `oss-fuzz-<project>-<suffix>`, upstream side `<project>-<suffix>`, always both, even with no OSS-Fuzz changes), created from pristine default-branch clones inside one marked working area, with a tagged **temporary copy bridge** in the Dockerfile simulating the merged upstream. Changes stay as plain working-tree files: no staging by default, never a commit, never a push.
+4. Stage a **worktree branch duo pair** (OSS-Fuzz side `oss-fuzz-<project>-<suffix>`, upstream side `<project>-<suffix>`, always both, even with no OSS-Fuzz changes), created from pristine default-branch clones inside one marked working area, with a tagged **temporary copy bridge** in the Dockerfile simulating the merged upstream. Changes stay as plain working-tree files: no staging by default, never a commit, never a push. A project may yield several pairs when worthwhile: fuzzer pairs, each carrying its harness plus that harness's corpora, dictionaries and options; one consolidated standalone corpus/dict/options pair (`-corpus-dict-options`); and, when the main build was broken, a `-build-fix` pair created first, whose changes later pairs copy in purely as a testing scaffold and remove again after conclusion.
 5. Validate each pair through `infra/helper.py`: the full sanitizer and engine matrix declared in `project.yaml`; `check_build` per new or updated fuzzer (mandatory); a fuzzing-quality gate (120 seconds minimum, 300 for corpus-heavy changes, no crash within the first 60 seconds, no stale coverage in the final half); and a like-for-like coverage delta. After a fix budget of 3 rounds, pairs still failing are moved to the rejected area, never deleted.
 
 Crashes found along the way are treated as **findings** (documented with reproducers), not as failures to hide.
 
 ### 5.4 The deliverables
 
-- The list of surviving worktree branch duo pairs, with paths and base commit SHAs recorded.
+- The list of surviving worktree branch duo pairs (possibly several per project, grouped by the Phase 4 rules: fuzzer pairs with their own corpora, dictionaries and options, one standalone corpus pair, and a build-fix pair when needed), with paths and base commit SHAs recorded.
 - `summary.md` in the marked working area: one markdown table row per duo pair (project, language, duo branches, worktree paths, summary of work, coverage delta, status).
 - Skipped or unprocessable projects in the same table with the concrete reason.
 - Rejected duo pairs moved into the rejected area and marked clearly, with the failure reason and what was attempted.
@@ -150,7 +150,7 @@ python3 infra/experimental/agent-skills/helper.py run-task --task "..." proj1
 | Artifact | Where | What "good" looks like |
 |---|---|---|
 | Run manifest | `build/coverage-pipeline/manifest.md` (oss-fuzz root) | A row per project with language, status, duo branches, worktree paths, base SHAs and report link |
-| Final summary | `<working-area>/summary.md` | One table covering every selected project: delivered, rejected (moved to rejected area) and skipped, each with its reason where relevant |
+| Final summary | `<working-area>/summary.md` | One table covering every selected project and every pair: delivered, rejected (moved to rejected area) and skipped, each with its reason where relevant, and a depends-on column recording pairs tested with a copied build fix |
 | Duo pairs | `<working-area>/worktrees/oss-fuzz/` and `worktrees/upstream/` | Both branches exist (`oss-fuzz-<project>-<suffix>` and `<project>-<suffix>`), each holding plain working-tree changes |
 | Git safety | both worktrees | Nothing staged (unless justified and recorded), nothing committed, nothing pushed, anywhere |
 | Bridge | OSS-Fuzz worktree Dockerfile | Tagged `OSS-FUZZ-AGENT-BRIDGE:BEGIN/END` blocks plus the marked staging folder, kept intact for your manual removal later |
@@ -204,6 +204,7 @@ After your changes land and OSS-Fuzz production rebuilds (usually within a day):
 | Agent uses old skill behaviour | The installed copy is stale; re-run `copy_to_global.sh` |
 | Project skipped as blocked(...) | That is by design: archived, inactive (24 months), moved and non-git upstreams always stop and notify; the reason is in the summary and manifest |
 | Pair keeps failing the gates | The fix budget is 3 rounds; afterwards the pair is rejected and moved to the rejected area, ready for a later attempt |
+| Dependent pair retains some build-fix content | Entangled same-line edits; the residual fragment is flagged in the report and summary, and is safe because the fix branch commits first |
 | Selector `--broken` fails | It needs network access and curl; check that `status.json` is reachable |
 | Concurrent builds clobber Docker images | Pipeline rule: one project (per project name) at a time |
 | Agent tries to commit, push or stage | Interrupt it; the skill forbids all three (staging only when absolutely necessary); review the branch |
