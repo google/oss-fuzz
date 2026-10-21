@@ -3,7 +3,7 @@
 Skills and tooling that let an agent CLI (Gemini CLI or Claude Code) write,
 build, and extend OSS-Fuzz fuzzing integrations. The folder ships:
 
-- Six skills that give an agent OSS-Fuzz-specific knowledge.
+- Seven skills that give an agent OSS-Fuzz-specific knowledge.
 - `infra/experimental/agent-skills/helper.py`, a wrapper that launches agent
   sessions over one or more OSS-Fuzz projects in parallel.
 - `copy_to_global.sh`, an installer that places the skills where your
@@ -11,6 +11,9 @@ build, and extend OSS-Fuzz fuzzing integrations. The folder ships:
 
 Before running anything in this folder, review the [threat model](#threat-model).
 This tooling is experimental and runs agents in unrestricted modes.
+
+For the full walkthrough — install the skills, run the coverage pipeline,
+verify results — see [USAGE.md](USAGE.md).
 
 ## Contents
 
@@ -22,8 +25,9 @@ This tooling is experimental and runs agents in unrestricted modes.
 | `fuzzing-jvm-expert/` | Skill: fuzz JVM projects (Java/Kotlin/Scala) with Jazzer |
 | `fuzzing-python-expert/` | Skill: fuzz Python projects with Atheris |
 | `oss-fuzz-engineer/` | Skill: OSS-Fuzz infra workflows (integrate, fix, extend) |
+| `oss-fuzz-coverage-pipeline/` | Skill: language-agnostic end-to-end coverage pipeline wrapping the language fuzzing skills — selects projects by glob/wildcard or all, auto-detects language from project.yaml, fixes builds, triages coverage, improves targets, stages paired worktree branches; ships `scripts/select_projects.sh` |
 | `infra/experimental/agent-skills/helper.py` | Driver that launches agent sessions per OSS-Fuzz project |
-| `copy_to_global.sh` | Installs the skills into `~/.gemini/skills` or `~/.claude/skills` |
+| `copy_to_global.sh` | Installs the skills into `~/.gemini/skills`, `~/.claude/skills`, or any skills directory you pass as an argument (e.g. Cline's `.cline/skills`) |
 
 See each skill's `SKILL.md` for the detailed guidance the agent receives.
 
@@ -42,7 +46,13 @@ See each skill's `SKILL.md` for the detailed guidance the agent receives.
 
 ```bash
 # 1. Install the skills into your agent CLI.
-./copy_to_global.sh gemini        # or: ./copy_to_global.sh claude
+./copy_to_global.sh               # defaults to claude; or: ./copy_to_global.sh gemini
+# Any other argument is used as the skills directory itself (any SKILL.md-
+# compatible agent, e.g. Cline's workspace directory; relative paths resolve
+# against your current directory):
+./copy_to_global.sh /path/to/vscode-workspace/.cline/skills
+# Multiple targets in one invocation are fine:
+# ./copy_to_global.sh gemini claude ../.cline/skills
 
 # 2. Confirm the agent CLI is reachable.
 gemini --version                  # or: claude --version

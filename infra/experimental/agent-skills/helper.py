@@ -73,6 +73,9 @@ FUZZING_SKILLS_BLURB = (
     '      - Rust    → **fuzzing-rust-expert**\n'
     '      - Java/Kotlin/JVM → **fuzzing-jvm-expert**\n'
     '      - Python  → **fuzzing-python-expert**\n'
+    '    - For end-to-end coverage work (fix builds, triage coverage, improve\n'
+    '      fuzz targets, stage paired worktree branches for human review),\n'
+    '      follow **oss-fuzz-coverage-pipeline**.\n'
     '    Activate all relevant skills at the start of your session.')
 
 EXPAND_SIZE_GUIDANCE = {
