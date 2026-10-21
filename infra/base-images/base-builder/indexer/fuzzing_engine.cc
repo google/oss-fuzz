@@ -26,6 +26,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t n);
 extern "C" __attribute__((weak)) int LLVMFuzzerInitialize(int* argc,
                                                           char*** argv);
 
+extern "C" __attribute__((weak)) void __sanitizer_cov_dump();
+
 // Projects can call LLVMFuzzerMutate, but should only do it from
 // LLVMFuzzerCustomMutator, which should be called from the fuzzing engine (we
 // don't need to).
@@ -89,6 +91,10 @@ int main(int argc, char* argv[]) {
 
   int res = LLVMFuzzerTestOneInput(data, size);
   free(data);
+
+  if (__sanitizer_cov_dump) {
+    __sanitizer_cov_dump();
+  }
 
   return res;
 }
