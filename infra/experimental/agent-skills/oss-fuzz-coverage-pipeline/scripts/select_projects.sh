@@ -37,8 +37,9 @@
 #   - project must exist locally under projects/ with a project.yaml
 #   - a missing language field counts as 'c++' (the legacy OSS-Fuzz default)
 #
-# Output: "project<TAB>language" per line, sorted and de-duplicated. A
-# summary line goes to stderr. Exits 1 when nothing matches.
+# Output: "project<TAB>language" per line, sorted and de-duplicated, where
+# language is the language DECLARED in project.yaml (not verified against
+# the source). A summary line goes to stderr. Exits 1 when nothing matches.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OSS_FUZZ_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
