@@ -30,6 +30,7 @@ plus their references (`code_coverage.md`, `structured_seed_generation.md`, `hel
 2. **Every build, check, run and coverage measurement goes through `python3 infra/helper.py`** inside the OSS-Fuzz Docker environment. Never validate with bare local toolchains (direct clang, cmake, cargo, gradle and the like). Reading and inspecting cloned source locally is fine.
 3. The worktree duo pairs hold the only copies of the work. Do not run destructive git commands inside a worktree, and do not delete worktrees; rejected pairs are moved to the rejected area, never deleted.
 4. Every claim of improvement must be backed by a measurement: build success, fuzzer run output or coverage numbers. No measurement, no claim.
+5. **Fresh data on every run**: whenever this skill determines any project data, treat it as a new check and never rely on memory from previous runs. Reread `project.yaml` (language, sanitizers, engines, `main_repo`), the Dockerfile, the build status, the coverage report pointers and the upstream state on every run. If a project's language changed since an earlier run (for example C++ to Rust), the new run must see the new value and select the sub-skill accordingly. The manifest carries process state (what is done and pending), not world facts: when a fresh read contradicts something recorded earlier, the fresh read wins and the manifest row is corrected. This matters most on reruns: a project may have been updated by a previous batch of duo pairs (merged and since picked up by production), so earlier coverage data, target lists and assumptions no longer hold. A second run re-derives everything from fresh data and treats earlier findings, including which code was dark or already covered, as history rather than truth.
 
 ## Deliverables
 
@@ -46,7 +47,7 @@ Work the phases strictly in order, and conclude each phase in writing (manifest 
 
 ### Phase 0: Select projects and verify upstream viability
 
-Selection uses the deterministic selector bundled with this skill (`scripts/select_projects.sh` next to this SKILL.md); output is `project<TAB>language`, one per line, where the language is the one **declared** in `project.yaml` (a missing field is the legacy `c++` default), not verified against the source, and the Dockerfile base image is never a language signal. Activate the matching sub-skill per the mapping above.
+Selection uses the deterministic selector bundled with this skill (`scripts/select_projects.sh` next to this SKILL.md); output is `project<TAB>language`, one per line, where the language is the one **declared** in `project.yaml` (a missing field is the legacy `c++` default), not verified against the source, and the Dockerfile base image is never a language signal. Activate the matching sub-skill per the mapping above. Reread this data on every run, even for projects seen before: a project whose `project.yaml` changed since an earlier run (for example its language moving from C++ to Rust) is treated according to the fresh values, never the previous run's memory.
 
 ```sh
 scripts/select_projects.sh '*'                      # all projects (any language)
@@ -68,7 +69,7 @@ Stopping is mandatory in every case; it is never agent judgement. Then create (o
 | project | language | status | duo branches | worktree paths | base SHAs | report | notes |
 |---|---|---|---|---|---|---|---|
 
-Statuses: `selected`, `viable`, `builds-green`, `triaged`, `improved`, `validated`, `delivered`, `rejected`, or `blocked(<reason>)`. Update the row at the end of every phase; a fresh session resumes work by reading the manifest. When a project yields several pairs, give each pair its own manifest row (same project, its own suffix and duo branches), with a `tested-with: <project>-build-fix` note in the notes column when it depends on the build fix. The language column starts as the declared language; after a mid-run language switch (see Phase 2), record it as `declared(X)/actual(Y)`.
+Statuses: `selected`, `viable`, `builds-green`, `triaged`, `improved`, `validated`, `delivered`, `rejected`, or `blocked(<reason>)`. Update the row at the end of every phase; a fresh session resumes work by reading the manifest. When a project yields several pairs, give each pair its own manifest row (same project, its own suffix and duo branches), with a `tested-with: <project>-build-fix` note in the notes column when it depends on the build fix. The language column starts as the declared language; after a mid-run language switch (see Phase 2), record it as `declared(X)/actual(Y)`. A rerun after a previous delivered batch starts fresh rows (or a new dated section) and treats earlier rows as history only; previously rejected pairs may be deliberately retried against the new state.
 
 Multi-project discipline: process **one project at a time** (builds of the same project share Docker image names). With 1,300+ projects in OSS-Fuzz (~600 C/C++), prefer prioritised subsets over `*`: broken builds first (fast wins that also unlock coverage data), then the lowest own-code coverage on security-sensitive surface.
 
@@ -99,7 +100,7 @@ Canonical live coverage references (resolve `YYYYMMDD` with the walk-back rule b
 
 **Date walk-back**: coverage and introspector builds sometimes fail (cross-check the build status on introspector.oss-fuzz.com), so the latest date may have no report. Resolve the date by walking backwards day by day, at most 30 days, until a report exists, and record the date actually used.
 
-Produce a written target list; do not improvise targets later.
+Produce a written target list; do not improvise targets later. On a rerun of a project previously worked on, do not reuse the earlier target list: re-derive it from the fresh reports, because the previous batch of pairs may have shifted coverage (previously dark targets may now be covered and must be dropped; still-dark ones are re-attempted).
 
 **Verify the declared language while analysing**: while reading the source tree, build scripts and existing harnesses, check that the declared language (project.yaml) matches reality. If it does not, switch the active language sub-skill to the matching one and **continue in all cases**, even when the actual language falls outside the run's `--language` filter, recording the discrepancy: manifest `declared(X)/actual(Y)`, evidence in the report, actual language in the summary with the declared one noted. For mixed-language projects, the project-level language stays the corrected declared one, but a pair whose harness targets a module in a different language may activate that language's skill for that pair, noted in the pair's row.
 
