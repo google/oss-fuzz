@@ -11,7 +11,7 @@ End-to-end pipeline for an already-integrated OSS-Fuzz project (any language wit
 This skill is a process wrapper. It defines what to do and in which order; it deliberately does not re-teach the underlying knowledge. While working through the phases you MUST also use:
 
 - **oss-fuzz-engineer**, always: OSS-Fuzz infrastructure, builds, `infra/helper.py`, project layout, public build status and coverage data.
-- the **language-appropriate fuzzing skill**, auto-determined from each project's `project.yaml` `language` field:
+- the **language-appropriate fuzzing skill**, auto-determined from each project's `project.yaml` `language` field, which is the sole source of truth for the language. The Dockerfile base image is toolchain compatibility only and is never a language signal: a C++ project with a Rust module may legitimately sit on the rust base image.
 
 | `project.yaml` language | Sub-skill to activate |
 |---|---|
@@ -46,7 +46,7 @@ Work the phases strictly in order, and conclude each phase in writing (manifest 
 
 ### Phase 0: Select projects and verify upstream viability
 
-Selection uses the deterministic selector bundled with this skill (`scripts/select_projects.sh` next to this SKILL.md); output is `project<TAB>language`, one per line:
+Selection uses the deterministic selector bundled with this skill (`scripts/select_projects.sh` next to this SKILL.md); output is `project<TAB>language`, one per line, where the language is the one **declared** in `project.yaml` (a missing field is the legacy `c++` default), not verified against the source, and the Dockerfile base image is never a language signal. Activate the matching sub-skill per the mapping above.
 
 ```sh
 scripts/select_projects.sh '*'                      # all projects (any language)
@@ -68,7 +68,7 @@ Stopping is mandatory in every case; it is never agent judgement. Then create (o
 | project | language | status | duo branches | worktree paths | base SHAs | report | notes |
 |---|---|---|---|---|---|---|---|
 
-Statuses: `selected`, `viable`, `builds-green`, `triaged`, `improved`, `validated`, `delivered`, `rejected`, or `blocked(<reason>)`. Update the row at the end of every phase; a fresh session resumes work by reading the manifest. When a project yields several pairs, give each pair its own manifest row (same project, its own suffix and duo branches), with a `tested-with: <project>-build-fix` note in the notes column when it depends on the build fix.
+Statuses: `selected`, `viable`, `builds-green`, `triaged`, `improved`, `validated`, `delivered`, `rejected`, or `blocked(<reason>)`. Update the row at the end of every phase; a fresh session resumes work by reading the manifest. When a project yields several pairs, give each pair its own manifest row (same project, its own suffix and duo branches), with a `tested-with: <project>-build-fix` note in the notes column when it depends on the build fix. The language column starts as the declared language; after a mid-run language switch (see Phase 2), record it as `declared(X)/actual(Y)`.
 
 Multi-project discipline: process **one project at a time** (builds of the same project share Docker image names). With 1,300+ projects in OSS-Fuzz (~600 C/C++), prefer prioritised subsets over `*`: broken builds first (fast wins that also unlock coverage data), then the lowest own-code coverage on security-sensitive surface.
 
@@ -100,6 +100,8 @@ Canonical live coverage references (resolve `YYYYMMDD` with the walk-back rule b
 **Date walk-back**: coverage and introspector builds sometimes fail (cross-check the build status on introspector.oss-fuzz.com), so the latest date may have no report. Resolve the date by walking backwards day by day, at most 30 days, until a report exists, and record the date actually used.
 
 Produce a written target list; do not improvise targets later.
+
+**Verify the declared language while analysing**: while reading the source tree, build scripts and existing harnesses, check that the declared language (project.yaml) matches reality. If it does not, switch the active language sub-skill to the matching one and **continue in all cases**, even when the actual language falls outside the run's `--language` filter, recording the discrepancy: manifest `declared(X)/actual(Y)`, evidence in the report, actual language in the summary with the declared one noted. For mixed-language projects, the project-level language stays the corrected declared one, but a pair whose harness targets a module in a different language may activate that language's skill for that pair, noted in the pair's row.
 
 1. Filter to the project's own code (paths under `/src/<project>/`), dropping system headers, vendored dependencies and test files; rank by dark covered-line counts, not percentages.
 2. **Verify build scope before trusting any percentage**: a high percentage can be an artefact of a partial build. Compare the upstream source tree's modules against the files present in the report; flag any module that exists upstream but is absent from the build, and treat "well covered" claims as invalid until the scope is verified. Enabling missing modules is a valid Phase 3 action.

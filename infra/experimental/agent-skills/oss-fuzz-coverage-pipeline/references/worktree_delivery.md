@@ -48,7 +48,7 @@ A project is delivered through one or more duo pairs:
 
 A single delivered pair is the minimum bar; develop multiple pairs when worthwhile. Worth is your own judgement, but it must be backed by the written Phase 2 rationale (dark covered lines, security sensitivity, reachability, expected impact), recorded per pair. Do not fragment trivially: corpus, dictionary and option tweaks that are not fuzzer-related always fold into the standalone pair.
 
-Each pair gets its own worktrees, bridge blocks, validation, fix budget and summary row. A project counts as delivered when at least one of its pairs is delivered; rejected pairs are still recorded individually.
+Each pair gets its own worktrees, bridge blocks, validation, fix budget and summary row. A project counts as delivered when at least one of its pairs is delivered; rejected pairs are still recorded individually. For mixed-language projects, a pair whose harness targets a module in a different language may activate that language's skill, noted in the pair's row.
 
 ## Build-fix dependency protocol (main build failures only)
 
@@ -165,6 +165,7 @@ Write `summary.md` at the working-area root with one markdown table covering eve
 
 - status is `delivered`, `rejected (moved to rejected area)` or `skipped/blocked`;
 - depends on records `tested-with: <project>-build-fix` for pairs validated with a copied build fix; commit those fix branches first;
+- the language column shows the actual language used, with the declared one noted where they differ, for example `rust (declared c++)`;
 - skipped rows carry the concrete reason, for example `blocked(upstream-archived)`;
 - rejected rows carry the failure reason and what was attempted;
 - delivered rows summarise the work (harnesses, corpora, dictionaries, build configuration, bridges) and the like-for-like coverage delta.
