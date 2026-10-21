@@ -26,7 +26,6 @@ import java.lang.IllegalArgumentException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
-import java.util.List;
 
 public class DOMReaderFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
@@ -34,6 +33,11 @@ public class DOMReaderFuzzer {
     try (AutoCloseable ignored = BugDetectors.allowNetworkConnections()) {
 
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      // DOMReader.readTree/readElement recurse once per level of nesting, so an
+      // unbounded document overflows the stack instead of hitting a bug in
+      // dom4j. Refuse anything deeper than what a sane XML consumer accepts.
+      factory.setAttribute(
+          "http://www.oracle.com/xml/jaxp/properties/maxElementDepth", "100");
       DocumentBuilder builder;
       org.w3c.dom.Document doc;
 
