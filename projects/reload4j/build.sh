@@ -28,6 +28,7 @@ pushd "/tmp"
 popd
 
 pushd "${SRC}/reload4j"
+	sed -i '/import sun.rmi.runtime/d' src/main/java/org/apache/log4j/NewAsyncAppender.java
 	${MVN} package ${MVN_FLAGS}
 	${MVN} install ${MVN_FLAGS}
 	CURRENT_VERSION=$(${MVN} org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
