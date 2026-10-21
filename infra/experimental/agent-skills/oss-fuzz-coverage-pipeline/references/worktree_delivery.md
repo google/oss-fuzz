@@ -36,6 +36,39 @@ git -C <working-area>/upstream-clones/<project> worktree add -b <project>-<suffi
 git -C <working-area>/upstream-clones/<project> rev-parse HEAD   # goes into the manifest
 ```
 
+## Pair grouping per project
+
+A project is delivered through one or more duo pairs:
+
+| Pair type | Contents | Count per project |
+|---|---|---|
+| Fuzzer pair | A fixed or new harness plus its own corpora, dictionaries and options, plus any build-configuration change that specific harness needs | Zero or more |
+| Standalone corpus pair | All corpora, dictionaries and options changes with no fuzzer change | Zero or one, suffix `-corpus-dict-options` |
+| Build-fix pair | A general build fix not tied to one fuzzer | Zero or one, suffix `-build-fix` |
+
+A single delivered pair is the minimum bar; develop multiple pairs when worthwhile. Worth is your own judgement, but it must be backed by the written Phase 2 rationale (dark covered lines, security sensitivity, reachability, expected impact), recorded per pair. Do not fragment trivially: corpus, dictionary and option tweaks that are not fuzzer-related always fold into the standalone pair.
+
+Each pair gets its own worktrees, bridge blocks, validation, fix budget and summary row. A project counts as delivered when at least one of its pairs is delivered; rejected pairs are still recorded individually.
+
+## Build-fix dependency protocol (main build failures only)
+
+This protocol applies when the **main fuzzer build** fails. Coverage or introspector build failures do not trigger it; they follow the exemption rule (missing corpora or OOM/timeout) plus the historical-report date walk-back.
+
+1. **Fix pair first**: create the `-build-fix` duo pair from master, fix and validate it. It is a deliverable in its own right.
+2. **Dependent pairs copy the fix in for testing only**: every later fuzzer or corpora pair on the project is created from master as normal, then the build-fix changes are copied into its worktree(s) as a testing scaffold so the project builds and the gates can run. Record `tested-with: <project>-build-fix` in the manifest and summary row; the user's commit order is the fix branch first.
+3. **Remove the copied fix after conclusion**, whether the pair is delivered or rejected. The fix lives exclusively in the build-fix pair; a dependent pair's final diff contains only its own work.
+
+### Copying the fix in, and removing it selectively
+
+At copy time, record the file list and **snapshot the fix-affected files as copied**. Do the dependent work on top. At removal time, for each fix-affected file:
+
+- if the dependent work never touched the file, restore the branch-base version (the simple case);
+- if it did (for example both edited the same Makefile), removal is surgical: compute the delta from the fix snapshot to the current file (exactly the dependent's own edits), restore the branch-base version, then re-apply that delta onto it. Result: base plus own work, fix gone.
+
+Verification after removal is mandatory: re-diff the worktree against the branch base and confirm only the dependent's own work remains. If an edit is genuinely entangled with the fix on the same lines and cannot be separated, preserve the dependent's functional intent, keep the minimal necessary fix fragment, and flag it explicitly in the report and summary (never keep fix content silently). This is safe in practice because the fix branch is committed first.
+
+Rejected dependent pairs: remove the copied fix changes first, then move the pair to the rejected area.
+
 ## Never commit, never push, never stage by default
 
 Leave every change as plain working-tree files (modified or untracked). Commit and push are strictly forbidden. Staging is skipped unless it is absolutely necessary for the task, and any unavoidable staging is recorded with a reason in the report. If a commit happens by accident, stop and notify the user immediately; never try to quietly undo it.
@@ -127,10 +160,11 @@ The `upstream-clones/` repositories are scaffolding: keep them while work is in 
 
 Write `summary.md` at the working-area root with one markdown table covering everything that was selected:
 
-| project | language | status | duo branches | worktree paths | summary of work | coverage delta | reason |
-|---|---|---|---|---|---|---|---|
+| project | language | status | duo branches | depends on | worktree paths | summary of work | coverage delta | reason |
+|---|---|---|---|---|---|---|---|---|
 
 - status is `delivered`, `rejected (moved to rejected area)` or `skipped/blocked`;
+- depends on records `tested-with: <project>-build-fix` for pairs validated with a copied build fix; commit those fix branches first;
 - skipped rows carry the concrete reason, for example `blocked(upstream-archived)`;
 - rejected rows carry the failure reason and what was attempted;
 - delivered rows summarise the work (harnesses, corpora, dictionaries, build configuration, bridges) and the like-for-like coverage delta.
