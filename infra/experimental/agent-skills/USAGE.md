@@ -122,9 +122,9 @@ Multiple projects:
 2. Triage live coverage using the canonical report URLs (overall `reports/<YYYYMMDD>/linux/report.html` and per target `reports-by-target/<YYYYMMDD>/<fuzzer>/linux/report.html`), walking the date back up to 30 days when coverage builds failed, plus the Introspector project profile. It verifies build scope before trusting percentages, treats statically-reached-but-dynamically-unreached functions as prime targets, and filters to security-sensitive attack surface. It also verifies the declared language against reality and switches the language sub-skill if project.yaml is mislabelled, continuing in all cases and recording the discrepancy; a per-pair override applies for mixed-language projects.
 3. Act: new or updated harnesses, structured seed corpora, dictionaries, enabling missing modules and build-configuration fixes, via the language-appropriate skill. It never modifies upstream product code: upstream changes are limited to fuzzers with their corpora, dictionaries and options, fuzz build configuration and `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`-guarded additions; product-code bugs become findings.
 4. Stage a **worktree branch duo pair** (OSS-Fuzz side `oss-fuzz-<project>-<suffix>`, upstream side `<project>-<suffix>`, always both, even with no OSS-Fuzz changes), created from pristine default-branch clones inside one marked working area, with a tagged **temporary copy bridge** in the Dockerfile simulating the merged upstream. Changes stay as plain working-tree files: no staging by default, never a commit, never a push. A project may yield several pairs when worthwhile: fuzzer pairs, each carrying its harness plus that harness's corpora, dictionaries and options; one consolidated standalone corpus/dict/options pair (`-corpus-dict-options`); and, when the main build was broken, a `-build-fix` pair created first, whose changes later pairs copy in purely as a testing scaffold and remove again after conclusion.
-5. Validate each pair through `infra/helper.py`: the full sanitizer and engine matrix declared in `project.yaml`; `check_build` per new or updated fuzzer (mandatory); a fuzzing-quality gate (120 seconds minimum, 300 for corpus-heavy changes, no crash within the first 60 seconds, no stale coverage in the final half); and a like-for-like coverage delta. After a fix budget of 3 rounds, pairs still failing are moved to the rejected area, never deleted.
+5. Validate each pair through `infra/helper.py`: the full sanitizer and engine matrix declared in `project.yaml`; `check_build` per new or updated fuzzer (mandatory, or failing solely due to a marked real finding); a fuzzing-quality gate (120 seconds minimum, 300 for corpus-heavy changes, nothing fuzzer-attributable within the first 60 seconds, no stale coverage in the final half); and a like-for-like coverage delta. Every post-build crash, leak, OOM, timeout or assertion is classified first: real upstream findings keep the pair delivered with the discovery marked, while only fuzzer faults consume the fix budget of 3 rounds, after which the pair is moved to the rejected area, never deleted. Nothing is ever newly silenced, pre-existing suppressions are honoured unchanged, and a timeout from genuinely heavy legitimate processing may receive a measured, light increase delivered as fuzzer options.
 
-Crashes found along the way are treated as **findings** (documented with reproducers), not as failures to hide.
+Crashes, leaks, OOMs, timeouts and assertions are classified (fuzzer fault versus real finding); real findings are **documented with reproducers**, never hidden and never silenced.
 
 ### 5.4 The deliverables
 
@@ -154,7 +154,7 @@ python3 infra/experimental/agent-skills/helper.py run-task --task "..." proj1
 | Duo pairs | `<working-area>/worktrees/oss-fuzz/` and `worktrees/upstream/` | Both branches exist (`oss-fuzz-<project>-<suffix>` and `<project>-<suffix>`), each holding plain working-tree changes |
 | Git safety | both worktrees | Nothing staged (unless justified and recorded), nothing committed, nothing pushed, anywhere |
 | Bridge | OSS-Fuzz worktree Dockerfile | Tagged `OSS-FUZZ-AGENT-BRIDGE:BEGIN/END` blocks plus the marked staging folder, kept intact for your manual removal later |
-| Validation evidence | per-project report | The declared sanitizer/engine matrix built; per-fuzzer `check_build` passes; quality-gate run logs (120 s minimum, no fast crash, no staleness); a like-for-like coverage-delta table |
+| Validation evidence | per-project report | The declared sanitizer/engine matrix built; per-fuzzer `check_build` passes (or fails solely due to a marked real finding); quality-gate run logs (120 s minimum, nothing fuzzer-attributable, no staleness); a like-for-like coverage-delta table |
 
 Handy checks:
 
@@ -172,8 +172,8 @@ ls <working-area>/rejected/
 
 ### 6.2 Definition of done (per project, taken from the skill)
 
-- [ ] All mandatory builds green from the OSS-Fuzz worktree; per-fuzzer `check_build` passes
-- [ ] Quality gate clean for every new or changed target: 120 s minimum, no fast crash, no staleness
+- [ ] All mandatory builds green from the OSS-Fuzz worktree; per-fuzzer `check_build` passes (or fails solely due to a marked real finding)
+- [ ] Quality gate clean for every new or changed target: 120 s minimum, nothing fuzzer-attributable, no staleness; real findings excepted and marked
 - [ ] Coverage: documented gains on the targeted files and zero digression elsewhere
 - [ ] Duo pair holds plain working-tree changes; nothing staged, committed or pushed
 - [ ] Bridge tagged and kept; rejection (if any) moved to the rejected area; manifest row final
@@ -204,6 +204,7 @@ After your changes land and OSS-Fuzz production rebuilds (usually within a day):
 | Agent uses old skill behaviour | The installed copy is stale; re-run `copy_to_global.sh` |
 | Project skipped as blocked(...) | That is by design: archived, inactive (24 months), moved and non-git upstreams always stop and notify; the reason is in the summary and manifest |
 | Pair keeps failing the gates | The fix budget is 3 rounds; afterwards the pair is rejected and moved to the rejected area, ready for a later attempt |
+| Fuzzer crashes but it looks like a genuine bug | Classify first: real findings keep the pair delivered and marked; only fuzzer faults use the fix budget; never silence leaks, OOMs or timeouts |
 | Agent wants to patch upstream product code | Forbidden: upstream changes are limited to fuzzers, fuzz build configuration and macro-guarded additions; product-code bugs are findings |
 | Dependent pair retains some build-fix content | Entangled same-line edits; the residual fragment is flagged in the report and summary, and is safe because the fix branch commits first |
 | Selector `--broken` fails | It needs network access and curl; check that `status.json` is reachable |

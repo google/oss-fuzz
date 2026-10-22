@@ -128,19 +128,40 @@ These libFuzzer-style flags apply to every OSS-Fuzz engine: Jazzer, Atheris and 
 3. Compare per-file `lines.covered` counts on project-own paths: targeted files must gain covered lines, and no other project-own file may lose them. With an identical corpus, locally covered lines can only come from your change, which is what makes small deltas trustworthy.
 4. Never compare a fresh local number with a production report; local short-run coverage is always lower (see `code_coverage.md` section 7 and `structured_seed_generation.md`).
 
-### Failure triage, fix budget and rejection
+### Crash classification (every post-build crash, leak, OOM, timeout or assertion)
 
-| Symptom | Likely cause | Action |
+A crash after a successful build is never an automatic failure, whether it surfaces in `check_build` or in the fuzzing runs. Capture the output and artefact, reproduce it standalone (`run_fuzzer` with the artefact), then classify.
+
+**Fuzzer faults** (fix within the budget):
+
+| Symptom | Cause | Action |
 |---|---|---|
-| Compile failure in the pair | Harness or build-configuration defect | Fix; counts against the budget |
-| Crash immediately, even on trivial input | Harness defect | Fix the harness; re-run |
-| Crash on mutated input only, reproducible | Possibly a real bug | Minimise, verify against latest upstream, document as a finding with a reproducer |
-| Timeout | Pathologically slow path or loop | Bound input, stream with limits, or justify a higher limit in the report |
-| OOM | Unbounded allocation from fuzzed lengths | Bound allocations in the harness |
-| Leak report | Resource owned per iteration | Fix the harness to free or reuse; if the library itself leaks, document it |
-| Stale or non-growing coverage | Weak corpus, weak harness or wrong target | Seeds, dictionaries or harness redesign |
+| Crash on any input | Wrong fuzzer assumptions or an API violation | Fix the harness to match the API contract |
+| Target mishandles the input | The normal flow requires legitimate input | Make the harness construct valid input (structured generation, seeds, validation before the call) |
+| Assertion or abort | The assertion is a precondition legitimate callers guarantee, or it fires on documented unsupported input (accepted production behaviour) | Fix the harness or add input checking so such input is never produced |
+| Leak report | Harness-owned resource per iteration | Fix the harness to free or reuse it |
+| OOM | Unbounded allocation driven by fuzzed lengths in the harness | Bound the allocations |
+| Timeout | Harness-induced pathological slowness from its own unbounded input | Bound input, stream with limits |
 
-The fix budget is **3 rounds** per gate failure: fix, retest, and at most three attempts. A pair still failing after the third round (compile failure, staleness, early crash or any other gate) is rejected. Rejected pairs are **moved, never deleted**, so they can be attempted again later:
+**Real findings** (the pair stays delivered with the discovery marked; no budget consumed):
+
+| Symptom | Cause | Outcome |
+|---|---|---|
+| Sanitizer crash (ASan, MSan, UBSan and related) | Genuine memory-safety or correctness bug in upstream code | Finding with a reproducer |
+| Leak report | Upstream product code allocates on an exercised path and never frees | Finding; never mute detection |
+| OOM | An upstream memleak accumulating across iterations | Finding; never silence it or raise the limit to dodge it |
+| Timeout | Genuine hang, infinite loop or pathological blowup in upstream code on attacker-influenceable input | Finding |
+| Assertion or abort | Unexpected data snuck past earlier checking and reached it, and reaching it is not accepted production behaviour | Finding |
+
+**Timeout exception for legitimately heavy processing**: when the timeout is genuine, heavy but legitimate upstream work, a light increase of the timeout is allowed, but only once it has been determined, by measuring the completion time under the raised limit, that the increase gives the process enough time to finish. Deliver the increase as fuzzer options (for example the `<fuzzer>.options` file) and document the measurement in the report. If that determination cannot be made, no timeout change happens at all: classify normally.
+
+**Silencing rules**: never introduce new silencing, whether leak-detection muting (for example `-detect_leaks=0`), suppression files or annotations, or raised limits to dodge a failure. Pre-existing suppressions in the existing integration or existing fuzzers are honoured unchanged: carried over for new and fixed fuzzers, neither removed nor widened, noted in the report, and only what they already cover is out of scope.
+
+After classifying a real finding: mark it, quarantine the artefact, re-run to confirm the remainder is stable, and measure the coverage delta on the non-crashing run.
+
+### Fix budget and rejection
+
+The fix budget is **3 rounds** per gate failure caused by a fuzzer fault (including compile failures and staleness): fix, retest, and at most three attempts. A pair still failing after the third round is rejected. Rejected pairs are **moved, never deleted**, so they can be attempted again later:
 
 ```sh
 git -C <main-oss-fuzz-checkout> worktree move \
