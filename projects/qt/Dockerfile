@@ -33,6 +33,6 @@ RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qt5.git && \
 RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtbase.git
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtimageformats.git
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtsvg.git
-RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
+RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=666e8958 -P cmake/QtSynchronizeRepo.cmake
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
