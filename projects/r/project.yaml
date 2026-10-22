@@ -1,0 +1,12 @@
+homepage: "https://www.r-project.org/"
+language: c
+primary_contact: "simon.urbanek@r-project.org"
+auto_ccs:
+  - "r-oss-fuzz@R-project.org"
+  - "kevin@posit.co"
+main_repo: "https://svn.r-project.org/R/trunk"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+  - afl
