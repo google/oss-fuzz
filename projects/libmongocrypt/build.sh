@@ -23,14 +23,16 @@ cd build
 
 # Configure with CMake
 # Note: OSS-Fuzz sets CC, CXX, CFLAGS, CXXFLAGS, LIB_FUZZING_ENGINE
-# ENABLE_FUZZING defines the fuzz_mongocrypt and fuzz_kms targets
+# ENABLE_FUZZING defines the fuzz_mongocrypt and fuzz_kms targets, linked
+# against the engine given by LIB_FUZZING_ENGINE.
 cmake .. \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
     -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
     -DENABLE_ONLINE_TESTS=OFF \
     -DENABLE_STATIC=ON \
-    -DENABLE_FUZZING=ON
+    -DENABLE_FUZZING=ON \
+    -DLIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE}"
 
 # Build the fuzzing targets using the CMake fuzzing targets.
 make -j$(nproc) fuzz_mongocrypt fuzz_kms
