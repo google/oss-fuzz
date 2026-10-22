@@ -48,6 +48,8 @@ A project is delivered through one or more duo pairs:
 
 A single delivered pair is the minimum bar; develop multiple pairs when worthwhile. Worth is your own judgement, but it must be backed by the written Phase 2 rationale (dark covered lines, security sensitivity, reachability, expected impact), recorded per pair. Do not fragment trivially: corpus, dictionary and option tweaks that are not fuzzer-related always fold into the standalone pair.
 
+Upstream worktrees contain only allowed changes: fuzzers with their corpora, dictionaries and options, fuzz build configuration, and `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`-guarded additions. Upstream product code is never modified; product-code bugs are findings. The OSS-Fuzz worktrees carry the integration changes (Dockerfile, `build.sh`, `project.yaml`) plus the bridge.
+
 Each pair gets its own worktrees, bridge blocks, validation, fix budget and summary row. A project counts as delivered when at least one of its pairs is delivered; rejected pairs are still recorded individually. For mixed-language projects, a pair whose harness targets a module in a different language may activate that language's skill, noted in the pair's row.
 
 ## Build-fix dependency protocol (main build failures only)
