@@ -1,0 +1,15 @@
+homepage: "https://www.gnugk.org/"
+language: c++
+
+primary_contact: "jan@willamowius.de"
+
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+
+architectures:
+ - x86_64
+
+main_repo: 'https://github.com/willamowius/gnugk.git'
