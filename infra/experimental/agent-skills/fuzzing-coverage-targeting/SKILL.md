@@ -1,6 +1,6 @@
 ---
 name: fuzzing-coverage-targeting
-description:
+description: >-
   Use this skill to decide which fuzz targets a project needs and what shape each harness should take: rank dark reachable regions from coverage data into a diversified portfolio of worthy harnesses (any language), using a worth model, a dark-region taxonomy, harness pattern selection (parser, round-trip, property, stateful, option-matrix, component-API) and overlap-aware diminishing returns with a default cap of 5 pairs per project. Use alongside the language fuzzing skills (which say how to write a harness) and the OSS-Fuzz coverage pipeline (which runs the process).
 ---
 
