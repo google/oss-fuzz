@@ -50,6 +50,10 @@ make -j$n CFLAGS+="$CFLAGS" CXXFLAGS+="$CXXFLAGS"
 for fuzzer in *_fuzzer; do
   cp $fuzzer $OUT
 
+  if [ -f ${fuzzer}.dict ]; then
+    cp ${fuzzer}.dict $OUT
+  fi
+
   corpus=${fuzzer%_fuzzer}_corpus
   if [ -d $corpus ]; then
     zip -j $OUT/${fuzzer}_seed_corpus.zip $corpus/*
