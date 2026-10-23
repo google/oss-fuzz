@@ -101,8 +101,8 @@ Run pairs one at a time (builds of the same project share Docker image names), f
 # 1. Build the declared matrix from projects/<project>/project.yaml:
 python3 infra/helper.py build_fuzzers --sanitizer address <project>
 python3 infra/helper.py build_fuzzers --sanitizer undefined <project>    # as declared
-python3 infra/helper.py build_fuzzers --sanitizer coverage <project>
 #    plus engines where declared, for example: --engine afl
+#    (a --sanitizer coverage build is only needed on the fallback path below)
 
 # 2. Mandatory per-fuzzer gate, for every new or updated fuzzer:
 python3 infra/helper.py check_build <project> <fuzzer_name>
@@ -121,12 +121,18 @@ Quality thresholds, which apply on top of `check_build` passing, and to corpora,
 
 These libFuzzer-style flags apply to every OSS-Fuzz engine: Jazzer, Atheris and Go-native fuzzing all wrap libFuzzer.
 
-### Coverage delta, like-for-like
+### Coverage evaluation: fast path by default
 
-1. Baseline before any change: build the coverage configuration in a clean state and run `python3 infra/helper.py coverage <project>`; copy the resulting `summary.json` to a scratch directory outside the build tree.
-2. Candidate: identical flags and identical corpus source in the duo-pair worktree; save its `summary.json` the same way.
-3. Compare per-file `lines.covered` counts on project-own paths: targeted files must gain covered lines, and no other project-own file may lose them. With an identical corpus, locally covered lines can only come from your change, which is what makes small deltas trustworthy.
-4. Never compare a fresh local number with a production report; local short-run coverage is always lower (see `code_coverage.md` section 7 and `structured_seed_generation.md`).
+Do not build a separate coverage configuration for routine pair evaluation. Use the fuzzing runs the quality gate already performs:
+
+1. Baseline: run the existing fuzzers on the pre-change build for the standard duration with the standard corpus source, and record the final libFuzzer `cov:` value (with `ft:` and `corp:` as supporting signals).
+2. Candidate: the same runs on the pair's build, same corpus and duration; record the final `cov:`.
+3. The pair's fast-path gain is candidate `cov:` versus baseline `cov:`. For a brand-new fuzzer with no baseline binary, the recorded gain is its absolute `cov:` on the standard seeds, noted as an approximation.
+4. Like-for-like still applies: same instrumentation configuration (the normal ASan build already carries SanitizerCoverage, which is what `cov:` reports), same corpus source, same duration. Never compare fresh local numbers with production reports.
+
+The `cov:` trend between libFuzzer checkpoints is also the staleness signal, so one set of runs serves both the quality gate and the coverage check.
+
+**Fallback to a coverage build**, only when the fast path cannot answer: marginal overlap decisions between pairs, ambiguous or flat `cov:` results, or per-file gains the final report must show. Then build with `--sanitizer coverage` and compare per-file `lines.covered` counts on project-own paths (baseline from a clean state versus candidate in the pair worktree, identical flags and corpus source; targeted files must gain and no project-own file may lose), and use those numbers for the ledger decision. The overlap ledger records per-fuzzer `cov:` numbers by default and falls back to per-file data only when a decision is marginal.
 
 ### Crash classification (every post-build crash, leak, OOM, timeout or assertion)
 

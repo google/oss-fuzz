@@ -134,7 +134,7 @@ Multiple projects:
 2. Triage live coverage using the canonical report URLs (overall `reports/<YYYYMMDD>/linux/report.html` and per target `reports-by-target/<YYYYMMDD>/<fuzzer>/linux/report.html`), walking the date back up to 30 days when coverage builds failed, plus the Introspector project profile. It verifies build scope before trusting percentages, treats statically-reached-but-dynamically-unreached functions as prime targets, and filters to security-sensitive attack surface. It also verifies the declared language against reality and switches the language sub-skill if project.yaml is mislabelled, continuing in all cases and recording the discrepancy; a per-pair override applies for mixed-language projects. Target selection and harness shaping come from the architect skill `fuzzing-coverage-targeting`, producing a ranked multi-target portfolio with overlap-aware incremental worth (default cap 5 pairs per project, adjustable in your prompt).
 3. Act: new or updated harnesses, structured seed corpora, dictionaries, enabling missing modules and build-configuration fixes, via the language-appropriate skill. It never modifies upstream product code: upstream changes are limited to fuzzers with their corpora, dictionaries and options, fuzz build configuration and `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`-guarded additions; product-code bugs become findings.
 4. Stage a **worktree branch duo pair** (OSS-Fuzz side `oss-fuzz-<project>-<suffix>`, upstream side `<project>-<suffix>`, always both, even with no OSS-Fuzz changes), created from pristine default-branch clones inside one marked working area, with a tagged **temporary copy bridge** in the Dockerfile simulating the merged upstream. Changes stay as plain working-tree files: no staging by default, never a commit, never a push. A project may yield several pairs when worthwhile: fuzzer pairs, each carrying its harness plus that harness's corpora, dictionaries and options; one consolidated standalone corpus/dict/options pair (`-corpus-dict-options`); and, when the main build was broken, a `-build-fix` pair created first, whose changes later pairs copy in purely as a testing scaffold and remove again after conclusion.
-5. Validate each pair through `infra/helper.py`: the full sanitizer and engine matrix declared in `project.yaml`; `check_build` per new or updated fuzzer (mandatory, or failing solely due to a marked real finding); a fuzzing-quality gate (120 seconds minimum, 300 for corpus-heavy changes, nothing fuzzer-attributable within the first 60 seconds, no stale coverage in the final half); and a like-for-like coverage delta. Every post-build crash, leak, OOM, timeout or assertion is classified first: real upstream findings keep the pair delivered with the discovery marked, while only fuzzer faults consume the fix budget of 3 rounds, after which the pair is moved to the rejected area, never deleted. Nothing is ever newly silenced, pre-existing suppressions are honoured unchanged, and a timeout from genuinely heavy legitimate processing may receive a measured, light increase delivered as fuzzer options.
+5. Validate each pair through `infra/helper.py`: the full sanitizer and engine matrix declared in `project.yaml`; `check_build` per new or updated fuzzer (mandatory, or failing solely due to a marked real finding); a fuzzing-quality gate (120 seconds minimum, 300 for corpus-heavy changes, nothing fuzzer-attributable within the first 60 seconds, no stale coverage in the final half); and a coverage gain read from the runs' libFuzzer `cov:` metric (fast path; a coverage build only as fallback). Every post-build crash, leak, OOM, timeout or assertion is classified first: real upstream findings keep the pair delivered with the discovery marked, while only fuzzer faults consume the fix budget of 3 rounds, after which the pair is moved to the rejected area, never deleted. Nothing is ever newly silenced, pre-existing suppressions are honoured unchanged, and a timeout from genuinely heavy legitimate processing may receive a measured, light increase delivered as fuzzer options.
 
 Crashes, leaks, OOMs, timeouts and assertions are classified (fuzzer fault versus real finding); real findings are **documented with reproducers**, never hidden and never silenced.
 
@@ -155,7 +155,8 @@ Equivalent commands for the manual steps:
 | Manual step (Approach A) | helper.py equivalent |
 |---|---|
 | Preview what will be asked | `python3 infra/experimental/agent-skills/helper.py show-prompt <command> <projects...>` |
-| Full pipeline on named projects | `python3 infra/experimental/agent-skills/helper.py run-task --task "Use the oss-fuzz-coverage-pipeline skill end to end: verify upstream viability, fix builds, triage coverage via fuzzing-coverage-targeting, deliver worktree duo pairs; never commit or push" proj1 proj2` |
+| Full pipeline on named projects | `python3 infra/experimental/agent-skills/helper.py coverage-pipeline proj1 proj2` (the prompt is generated automatically; `--cap N` overrides the pair cap) |
+| Discover broken projects and run the full pipeline | `python3 infra/experimental/agent-skills/helper.py coverage-pipeline --broken --limit 10` |
 | Fix known-broken builds | `python3 infra/experimental/agent-skills/helper.py fix-builds proj1 proj2` |
 | Discover and fix broken builds | `python3 infra/experimental/agent-skills/helper.py fix-broken-builds --language c,c++ --limit 20 -j 2` (add `--print-only` to preview the selection) |
 | Expand coverage on a project | `python3 infra/experimental/agent-skills/helper.py expand-oss-fuzz-projects proj` |
@@ -167,16 +168,16 @@ A typical batch run:
 ```sh
 cd <oss-fuzz-checkout>
 # 1. Dry run: print the exact prompt that would be sent.
-python3 infra/experimental/agent-skills/helper.py show-prompt run-task --task "Use the oss-fuzz-coverage-pipeline skill end to end" htslib
+python3 infra/experimental/agent-skills/helper.py show-prompt --task coverage-pipeline htslib
 # 2. Run it across the batch.
-python3 infra/experimental/agent-skills/helper.py run-task --task "Use the oss-fuzz-coverage-pipeline skill end to end" htslib json-c
+python3 infra/experimental/agent-skills/helper.py coverage-pipeline --cap 5 htslib json-c
 # 3. Watch progress; each session logs here.
 tail -f build/agent-logs/*.log
 ```
 
 Session output lands in `build/agent-logs/<project>-<timestamp>.log`, and each agent writes a per-project report under `projects/<project>/`; verification afterwards is exactly section 6.
 
-Caveats: helper.py only drives the `claude` and `gemini` CLIs (Cline users stay with Approach A); sessions run with permissions skipped, so respect the threat model in README.md and use a sandbox; `fix-builds` and `expand-oss-fuzz-projects` use their own built-in workflows, which are narrower than the full pipeline (for the complete duo-pair protocol use `run-task` with an explicit task string naming the skill); and parallelism is bounded by Docker capacity, so keep `-j 2` unless your machine can take more concurrent builds.
+Caveats: helper.py only drives the `claude` and `gemini` CLIs (Cline users stay with Approach A); sessions run with permissions skipped, so respect the threat model in README.md and use a sandbox; `fix-builds` and `expand-oss-fuzz-projects` use their own built-in workflows, which are narrower than the full pipeline (`coverage-pipeline` is the full-protocol command, and `run-task` remains for free-form work); and parallelism is bounded by Docker capacity, so keep `-j 2` unless your machine can take more concurrent builds.
 
 ## 6. Verify the results
 
@@ -189,7 +190,7 @@ Caveats: helper.py only drives the `claude` and `gemini` CLIs (Cline users stay 
 | Duo pairs | `<working-area>/worktrees/oss-fuzz/` and `worktrees/upstream/` | Both branches exist (`oss-fuzz-<project>-<suffix>` and `<project>-<suffix>`), each holding plain working-tree changes |
 | Git safety | both worktrees | Nothing staged (unless justified and recorded), nothing committed, nothing pushed, anywhere |
 | Bridge | OSS-Fuzz worktree Dockerfile | Tagged `OSS-FUZZ-AGENT-BRIDGE:BEGIN/END` blocks plus the marked staging folder, kept intact for your manual removal later |
-| Validation evidence | per-project report | The declared sanitizer/engine matrix built; per-fuzzer `check_build` passes (or fails solely due to a marked real finding); quality-gate run logs (120 s minimum, nothing fuzzer-attributable, no staleness); a like-for-like coverage-delta table |
+| Validation evidence | per-project report | The declared sanitizer/engine matrix built; per-fuzzer `check_build` passes (or fails solely due to a marked real finding); quality-gate run logs (120 s minimum, nothing fuzzer-attributable, no staleness); fast-path `cov:` deltas (coverage build only as fallback) |
 
 Handy checks:
 
