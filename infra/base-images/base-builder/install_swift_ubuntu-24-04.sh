@@ -59,8 +59,8 @@ elif [[ "$VERSION_ID" == "24.04" ]]; then
             zip \
             unzip \
             zlib1g-dev"
-  SWIFT_URL="https://download.swift.org/swift-6.2.3-release/ubuntu2404/swift-6.2.3-RELEASE/swift-6.2.3-RELEASE-ubuntu24.04.tar.gz"
-  SWIFT_DIR="swift-6.2.3-RELEASE-ubuntu24.04"
+  SWIFT_URL="https://download.swift.org/swift-6.4.0-release/ubuntu2404/swift-6.4.0-RELEASE/swift-6.4.0-RELEASE-ubuntu24.04.tar.gz"
+  SWIFT_DIR="swift-6.4.0-RELEASE-ubuntu24.04"
 else
   echo "Unsupported Ubuntu version: $VERSION_ID"
   exit 1
