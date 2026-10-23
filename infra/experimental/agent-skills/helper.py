@@ -75,7 +75,8 @@ FUZZING_SKILLS_BLURB = (
     '      - Python  → **fuzzing-python-expert**\n'
     '    - For end-to-end coverage work (fix builds, triage coverage, improve\n'
     '      fuzz targets, stage paired worktree branches for human review),\n'
-    '      follow **oss-fuzz-coverage-pipeline**.\n'
+    '      follow **oss-fuzz-coverage-pipeline**, using **fuzzing-coverage-targeting**\n'
+    '      for target selection and portfolio rules.\n'
     '    Activate all relevant skills at the start of your session.')
 
 EXPAND_SIZE_GUIDANCE = {
