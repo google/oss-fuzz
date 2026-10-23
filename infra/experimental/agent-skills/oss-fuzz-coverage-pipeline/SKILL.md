@@ -22,6 +22,8 @@ This skill is a process wrapper. It defines what to do and in which order; it de
 | `python` | **fuzzing-python-expert** |
 | other (javascript, swift, ruby, ...) | none dedicated: rely on oss-fuzz-engineer, or scope the run with `--language` |
 
+- **fuzzing-coverage-targeting**, in Phases 2, 3 and 5: which targets are worth harnessing and what shape each harness takes (worth model, dark-region taxonomy, harness patterns, portfolio cap and overlap rules).
+
 plus their references (`code_coverage.md`, `structured_seed_generation.md`, `helper.md`, `oss_fuzz_project_structure.md`) where pointed to below.
 
 ## Hard guardrails
@@ -102,7 +104,7 @@ Canonical live coverage references (resolve `YYYYMMDD` with the walk-back rule b
 
 **Date walk-back**: coverage and introspector builds sometimes fail (cross-check the build status on introspector.oss-fuzz.com), so the latest date may have no report. Resolve the date by walking backwards day by day, at most 30 days, until a report exists, and record the date actually used.
 
-Produce a written target list; do not improvise targets later. On a rerun of a project previously worked on, do not reuse the earlier target list: re-derive it from the fresh reports, because the previous batch of pairs may have shifted coverage (previously dark targets may now be covered and must be dropped; still-dark ones are re-attempted).
+Produce a written target list via **fuzzing-coverage-targeting** (worth model, dark-region taxonomy, ranked multi-target list) and initialise the run's coverage ledger from the per-target baseline reports (`reports-by-target`); do not improvise targets later. On a rerun of a project previously worked on, do not reuse the earlier target list: re-derive it from the fresh reports, because the previous batch of pairs may have shifted coverage (previously dark targets may now be covered and must be dropped; still-dark ones are re-attempted).
 
 **Verify the declared language while analysing**: while reading the source tree, build scripts and existing harnesses, check that the declared language (project.yaml) matches reality. If it does not, switch the active language sub-skill to the matching one and **continue in all cases**, even when the actual language falls outside the run's `--language` filter, recording the discrepancy: manifest `declared(X)/actual(Y)`, evidence in the report, actual language in the summary with the declared one noted. For mixed-language projects, the project-level language stays the corrected declared one, but a pair whose harness targets a module in a different language may activate that language's skill for that pair, noted in the pair's row.
 
@@ -123,7 +125,7 @@ Produce a written target list; do not improvise targets later. On a rerun of a p
 | Module missing from the build entirely | **Fix the build configuration** to compile it in |
 | Build configuration hides code from fuzzing | **Fix build configuration** (flags, `$LIB_FUZZING_ENGINE` wiring) |
 
-Write and validate harnesses per the language-appropriate skill from the mapping at the top of this skill (threat model first, typed input as the sub-skill prescribes, dictionaries and seed corpora into `$OUT`, and study the project's own existing harnesses for conventions). Never target code that the production corpus already covers well. Fuzz-unfriendly behaviour inside product code (non-determinism, network, real-time limits) is handled by adding `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`-guarded code, never by editing the product code unguarded.
+Choose the harness shape per **fuzzing-coverage-targeting**'s pattern catalogue (round-trip, property, stateful sequence, option-matrix, component-API or classic parser), then write and validate it per the language-appropriate skill from the mapping at the top of this skill (threat model first, typed input as the sub-skill prescribes, dictionaries and seed corpora into `$OUT`, and study the project's own existing harnesses for conventions). Never target code that the production corpus already covers well. Fuzz-unfriendly behaviour inside product code (non-determinism, network, real-time limits) is handled by adding `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`-guarded code, never by editing the product code unguarded.
 
 ### Phase 4: Stage in worktree duo pairs
 
@@ -151,9 +153,11 @@ Validate each duo pair independently and one at a time, always through `infra/he
 1. **Build matrix**: read `sanitizers:` and `fuzzing_engines:` from `projects/<project>/project.yaml` and validate every declared configuration (for example `--sanitizer address`, `undefined`, `memory`, and engines such as `--engine afl` where declared).
 2. **Per-fuzzer gate (mandatory)**: `build_fuzzers` succeeds, and `check_build` passes for every new or updated fuzzer specifically, not just project-wide, **or its failure is solely attributable to a crash classified as a real finding** (documented with a reproducer and marked).
 3. **Fuzzing-quality gate (beyond check_build)**: for every new or updated fuzzer, corpus, dictionary or option change, actually fuzz and require **no crash, leak, OOM or timeout attributable to the fuzzer** (nothing within the first 60 seconds) and coverage that keeps increasing rather than going stale (no growth in the final half of the run counts as stale). Minimum run 120 seconds per target, 300 seconds for corpus-heavy changes. Every post-build crash goes through the classification procedure in the worktree reference: real findings keep the pair delivered with the discovery marked, fuzzer faults consume the fix budget, and a crash rooted in product code is always a finding, never a product-code patch.
-4. **Coverage delta, like-for-like** (same flags, same corpus source, before versus after): targeted files gain covered lines and no project-own file digresses.
+4. **Coverage delta, like-for-like** (same flags, same corpus source, before versus after): targeted files gain covered lines and no project-own file digresses. Update the run's coverage ledger with the pair's measured coverage and compute its **incremental** contribution against what existing fuzzers and previously accepted pairs already cover: a pair whose gains mostly overlap is redesigned toward different dark regions, folded into standalone corpus work, or dropped, with the numbers recorded (rules from fuzzing-coverage-targeting).
 5. **Fix budget of 3 rounds**: fix, retest, and at most three attempts per gate failure. A pair still failing after the third round (compile failure, staleness, early crash or any other gate) is **rejected**: move both worktrees into the rejected area with `git worktree move` (never delete), keep the branches, and record the failure reason, what was attempted and the new paths.
 6. Deliver: remove any copied build-fix changes and verify the remaining diff is purely this pair's own work (see the worktree reference), finalise the per-project report and the manifest row, and add the row to the final summary table.
+
+Portfolio cap: at most **5 pairs per project** by default (fuzzer pairs plus the standalone corpus pair); the user's prompt may raise or lower the threshold, and the run stops adding pairs earlier when the remaining incremental worth is marginal.
 
 ## Definition of done
 
@@ -162,6 +166,7 @@ Validate each duo pair independently and one at a time, always through `infra/he
 - [ ] Coverage: documented gains on targeted files and zero digression on other project-own files (like-for-like measurement).
 - [ ] Duo pairs hold plain working-tree changes; nothing staged (unless justified and recorded), nothing committed, nothing pushed.
 - [ ] Grouping respected: fuzzer pairs carry their own corpora, dictionaries and options; standalone corpus work sits in one pair; dependent pairs have their copied build-fix changes removed and verified.
+- [ ] Portfolio respected: ranked multi-target selection via fuzzing-coverage-targeting, incremental worth and overlap rule applied, cap honoured (default 5 pairs per project unless the user's prompt overrides it).
 - [ ] Upstream diffs contain only allowed changes: fuzzers with their corpora, dictionaries and options, fuzz build configuration, and `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`-guarded additions; no product code touched.
 - [ ] Bridges present and tagged; rejected pairs moved to the rejected area (not deleted); skipped projects recorded with reasons.
 - [ ] Final summary table complete (delivered, rejected and skipped), per-project reports written, manifest rows final.
