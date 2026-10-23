@@ -1,0 +1,9 @@
+homepage: "https://github.com/sentrypeer/sentrypeer"
+language: c
+primary_contact: "ghenry@sentrypeer.org"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/sentrypeer/sentrypeer.git'

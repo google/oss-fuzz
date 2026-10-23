@@ -15,5 +15,9 @@
 #
 ################################################################################
 
+# QEMU requires Python >= 3.12; the base image ships 3.11 as python3, so
+# point configure at the distro python3.12 installed in the Dockerfile.
+export PYTHON=/usr/bin/python3.12
+
 cd $SRC/qemu/
 $SRC/qemu/scripts/oss-fuzz/build.sh
