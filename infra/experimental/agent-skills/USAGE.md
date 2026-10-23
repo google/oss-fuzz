@@ -10,6 +10,7 @@ Companion to [README.md](README.md), which covers the folder overview and the th
 |---|---|
 | Six knowledge skills | `oss-fuzz-engineer` (infrastructure) plus one fuzzing skill per language: `fuzzing-memory-unsafe-expert`, `fuzzing-go-expert`, `fuzzing-rust-expert`, `fuzzing-jvm-expert`, `fuzzing-python-expert` |
 | `oss-fuzz-coverage-pipeline` | The orchestrator skill: project selection with upstream viability checks, build fixes, live coverage triage, harness/corpus/dictionary improvements, and delivery as worktree branch duo pairs validated through a temporary copy bridge. It auto-detects each project's language from `project.yaml` and activates the matching language skill. |
+| `fuzzing-coverage-targeting` | The architect skill: which fuzz targets are worth creating and what shape each harness takes (worth model, taxonomy, patterns, portfolio and overlap rules); used by the pipeline in Phases 2, 3 and 5, and usable on its own |
 | `oss-fuzz-coverage-pipeline/scripts/select_projects.sh` | Deterministic project selector: globs, `--language`, `--broken`, `--limit`, `--exclude`. |
 | `copy_to_global.sh` | Installer: `claude` (the default), `gemini`, or any skills directory you name. |
 | `helper.py` | An optional headless batch driver for the `claude` and `gemini` CLIs only; it is not needed for interactive use. |
@@ -31,7 +32,7 @@ The skills are plain `SKILL.md` markdown, so they are model-agnostic and portabl
 
 The wrapper delegates all domain knowledge to those skills and their references: how to write harnesses in each language, how to drive `infra/helper.py`, how to read coverage reports and how to generate structured seeds. What the wrapper itself contributes is the process layer that none of the six contain: project selection and upstream viability checks, the phase discipline, the git guardrails, worktree duo pairs with the temporary copy bridge, the validation gates with the fix budget, the run manifest, rejection handling and the final summary.
 
-The six knowledge skills remain fully usable on their own; the wrapper simply composes them into one end-to-end delivery pipeline, so nothing in them was duplicated or superseded.
+The six knowledge skills remain fully usable on their own; the wrapper simply composes them into one end-to-end delivery pipeline, so nothing in them was duplicated or superseded. The architect skill `fuzzing-coverage-targeting` joins the composition in Phases 2, 3 and 5 to rank worthy targets and shape harnesses (default cap 5 pairs per project, adjustable in your prompt); the wrapper remains the only boss.
 
 ## 2. Prerequisites
 
@@ -89,7 +90,18 @@ Selected 18 project(s) matching: json*
 
 ## 5. Usage
 
-### 5.1 Select the project set
+There are two ways to run the pipeline. Both use the same installed skills, follow the same phases and produce the same deliverables; they differ only in who drives the agent.
+
+### 5.1 Two ways to run
+
+| | Approach A: interactive | Approach B: helper.py batch |
+|---|---|---|
+| Hosts | any skill-compatible host (Cline, Claude Code, Gemini CLI), any model | the `claude` or `gemini` CLI only |
+| Style | conversational, you approve each step | headless, one prompt per project |
+| Parallelism | one project at a time | parallel sessions, default 2, `-j` to change |
+| Best for | pilots, first runs, learning the flow, tight review | batches of projects and repeated campaigns |
+
+### 5.2 Select the project set (shared by both approaches)
 
 ```sh
 SEL=<oss-fuzz-checkout>/infra/experimental/agent-skills/oss-fuzz-coverage-pipeline/scripts
@@ -103,7 +115,7 @@ $SEL/select_projects.sh --exclude 'curl,wget' --language c,c++ '*'
 
 The recommended order at scale is **broken builds first** (quick wins that also unlock coverage data), followed by the lowest own-code coverage on security-sensitive surface.
 
-### 5.2 Kick off the pipeline (interactive, any host or model)
+### 5.3 Approach A: run interactively (any host or model)
 
 Single project: either phrase it naturally and let the description auto-trigger the skill:
 
@@ -115,18 +127,18 @@ Multiple projects:
 
 > Use the oss-fuzz-coverage-pipeline skill. Phase 0: run scripts/select_projects.sh --broken --limit 5 'lib*', verify upstream viability for each, record the manifest, then run the full pipeline on each viable project, one at a time, resuming from the manifest between sessions.
 
-### 5.3 What the agent will do (Phases 0 to 5)
+### 5.4 What the agent will do in either approach (Phases 0 to 5)
 
 0. Select the projects with the selector, then verify upstream viability by reading the **Dockerfile** (never trusting `main_repo`): archived, inactive for 24 months or more, moved, or not a git repository all mean stop and notify `blocked(...)`. The selector reports the language **declared** in project.yaml; the Dockerfile base image is never a language signal. All project data is reread fresh on every run, so a project whose project.yaml changed since an earlier run is treated according to the new values, never previous memory. Reruns after a previous batch of duo pairs likewise re-derive coverage and targets from fresh data, because the previous batch may have changed the picture. Record a run manifest at `build/coverage-pipeline/manifest.md`.
 1. Fix builds through `infra/helper.py` only: the main fuzzer build fix is always mandatory; coverage and introspector build fixes are optional only when the failure cause is missing corpora or an OOM/timeout, with the exemption recorded.
-2. Triage live coverage using the canonical report URLs (overall `reports/<YYYYMMDD>/linux/report.html` and per target `reports-by-target/<YYYYMMDD>/<fuzzer>/linux/report.html`), walking the date back up to 30 days when coverage builds failed, plus the Introspector project profile. It verifies build scope before trusting percentages, treats statically-reached-but-dynamically-unreached functions as prime targets, and filters to security-sensitive attack surface. It also verifies the declared language against reality and switches the language sub-skill if project.yaml is mislabelled, continuing in all cases and recording the discrepancy; a per-pair override applies for mixed-language projects.
+2. Triage live coverage using the canonical report URLs (overall `reports/<YYYYMMDD>/linux/report.html` and per target `reports-by-target/<YYYYMMDD>/<fuzzer>/linux/report.html`), walking the date back up to 30 days when coverage builds failed, plus the Introspector project profile. It verifies build scope before trusting percentages, treats statically-reached-but-dynamically-unreached functions as prime targets, and filters to security-sensitive attack surface. It also verifies the declared language against reality and switches the language sub-skill if project.yaml is mislabelled, continuing in all cases and recording the discrepancy; a per-pair override applies for mixed-language projects. Target selection and harness shaping come from the architect skill `fuzzing-coverage-targeting`, producing a ranked multi-target portfolio with overlap-aware incremental worth (default cap 5 pairs per project, adjustable in your prompt).
 3. Act: new or updated harnesses, structured seed corpora, dictionaries, enabling missing modules and build-configuration fixes, via the language-appropriate skill. It never modifies upstream product code: upstream changes are limited to fuzzers with their corpora, dictionaries and options, fuzz build configuration and `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`-guarded additions; product-code bugs become findings.
 4. Stage a **worktree branch duo pair** (OSS-Fuzz side `oss-fuzz-<project>-<suffix>`, upstream side `<project>-<suffix>`, always both, even with no OSS-Fuzz changes), created from pristine default-branch clones inside one marked working area, with a tagged **temporary copy bridge** in the Dockerfile simulating the merged upstream. Changes stay as plain working-tree files: no staging by default, never a commit, never a push. A project may yield several pairs when worthwhile: fuzzer pairs, each carrying its harness plus that harness's corpora, dictionaries and options; one consolidated standalone corpus/dict/options pair (`-corpus-dict-options`); and, when the main build was broken, a `-build-fix` pair created first, whose changes later pairs copy in purely as a testing scaffold and remove again after conclusion.
 5. Validate each pair through `infra/helper.py`: the full sanitizer and engine matrix declared in `project.yaml`; `check_build` per new or updated fuzzer (mandatory, or failing solely due to a marked real finding); a fuzzing-quality gate (120 seconds minimum, 300 for corpus-heavy changes, nothing fuzzer-attributable within the first 60 seconds, no stale coverage in the final half); and a like-for-like coverage delta. Every post-build crash, leak, OOM, timeout or assertion is classified first: real upstream findings keep the pair delivered with the discovery marked, while only fuzzer faults consume the fix budget of 3 rounds, after which the pair is moved to the rejected area, never deleted. Nothing is ever newly silenced, pre-existing suppressions are honoured unchanged, and a timeout from genuinely heavy legitimate processing may receive a measured, light increase delivered as fuzzer options.
 
 Crashes, leaks, OOMs, timeouts and assertions are classified (fuzzer fault versus real finding); real findings are **documented with reproducers**, never hidden and never silenced.
 
-### 5.4 The deliverables
+### 5.5 The deliverables (either approach)
 
 - The list of surviving worktree branch duo pairs (possibly several per project, grouped by the Phase 4 rules: fuzzer pairs with their own corpora, dictionaries and options, one standalone corpus pair, and a build-fix pair when needed), with paths and base commit SHAs recorded.
 - `summary.md` in the marked working area: one markdown table row per duo pair (project, language, duo branches, worktree paths, summary of work, coverage delta, status).
@@ -134,14 +146,37 @@ Crashes, leaks, OOMs, timeouts and assertions are classified (fuzzer fault versu
 - Rejected duo pairs moved into the rejected area and marked clearly, with the failure reason and what was attempted.
 - Per-project reports, the manifest, and the next actions for you.
 
-### 5.5 Optional: headless batch (Claude Code and Gemini CLI only)
+### 5.6 Approach B: run the same work with helper.py (headless, Claude Code and Gemini CLI)
+
+`helper.py` drives the same skills without an interactive session: it builds task-specific prompts that reference the skills (including `oss-fuzz-coverage-pipeline` and `fuzzing-coverage-targeting`), auto-detects `claude` or `gemini` on `PATH`, and launches one headless session per project, in parallel (default 2). The skills must be installed for the CLI it drives (`~/.claude/skills` or `~/.gemini/skills`; see section 3).
+
+Equivalent commands for the manual steps:
+
+| Manual step (Approach A) | helper.py equivalent |
+|---|---|
+| Preview what will be asked | `python3 infra/experimental/agent-skills/helper.py show-prompt <command> <projects...>` |
+| Full pipeline on named projects | `python3 infra/experimental/agent-skills/helper.py run-task --task "Use the oss-fuzz-coverage-pipeline skill end to end: verify upstream viability, fix builds, triage coverage via fuzzing-coverage-targeting, deliver worktree duo pairs; never commit or push" proj1 proj2` |
+| Fix known-broken builds | `python3 infra/experimental/agent-skills/helper.py fix-builds proj1 proj2` |
+| Discover and fix broken builds | `python3 infra/experimental/agent-skills/helper.py fix-broken-builds --language c,c++ --limit 20 -j 2` (add `--print-only` to preview the selection) |
+| Expand coverage on a project | `python3 infra/experimental/agent-skills/helper.py expand-oss-fuzz-projects proj` |
+| Onboard a new project | `python3 infra/experimental/agent-skills/helper.py integrate-project https://github.com/org/repo` |
+| Clean local run artefacts | `python3 infra/experimental/agent-skills/helper.py clean proj` |
+
+A typical batch run:
 
 ```sh
-python3 infra/experimental/agent-skills/helper.py show-prompt fix-builds htslib  # dry run
-python3 infra/experimental/agent-skills/helper.py fix-builds proj1 proj2
-python3 infra/experimental/agent-skills/helper.py fix-broken-builds --language c,c++ --limit 20
-python3 infra/experimental/agent-skills/helper.py run-task --task "..." proj1
+cd <oss-fuzz-checkout>
+# 1. Dry run: print the exact prompt that would be sent.
+python3 infra/experimental/agent-skills/helper.py show-prompt run-task --task "Use the oss-fuzz-coverage-pipeline skill end to end" htslib
+# 2. Run it across the batch.
+python3 infra/experimental/agent-skills/helper.py run-task --task "Use the oss-fuzz-coverage-pipeline skill end to end" htslib json-c
+# 3. Watch progress; each session logs here.
+tail -f build/agent-logs/*.log
 ```
+
+Session output lands in `build/agent-logs/<project>-<timestamp>.log`, and each agent writes a per-project report under `projects/<project>/`; verification afterwards is exactly section 6.
+
+Caveats: helper.py only drives the `claude` and `gemini` CLIs (Cline users stay with Approach A); sessions run with permissions skipped, so respect the threat model in README.md and use a sandbox; `fix-builds` and `expand-oss-fuzz-projects` use their own built-in workflows, which are narrower than the full pipeline (for the complete duo-pair protocol use `run-task` with an explicit task string naming the skill); and parallelism is bounded by Docker capacity, so keep `-j 2` unless your machine can take more concurrent builds.
 
 ## 6. Verify the results
 
