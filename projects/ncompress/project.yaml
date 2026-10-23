@@ -1,0 +1,18 @@
+homepage: "https://github.com/vapier/ncompress"
+language: c
+primary_contact: "ghost789j@gmail.com"
+auto_ccs:
+  - "vapier@gmail.com"
+main_repo: "https://github.com/vapier/ncompress.git"
+file_github_issue: true
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+architectures:
+  - x86_64
+  - i386
