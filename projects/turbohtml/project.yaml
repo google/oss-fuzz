@@ -1,0 +1,9 @@
+homepage: "https://github.com/tox-dev/turbohtml"
+language: python
+primary_contact: "gaborjbernat@gmail.com"
+main_repo: "https://github.com/tox-dev/turbohtml"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
