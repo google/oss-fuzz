@@ -31,7 +31,9 @@ export CMAKE_ARGS="-DONNX_BUILD_CUSTOM_PROTOBUF=ON \
 # the runtime PyInstaller bundles all use libstdc++. With libc++ in the
 # extension, ONNX exceptions such as checker::ValidationError terminate the
 # process instead of reaching Python, and libc++'s container annotations need
-# ASan entry points that Atheris' sanitizer runtime does not export.
+# ASan entry points that Atheris' sanitizer runtime does not export. ONNX's
+# printer needs floating-point std::to_chars, which libstdc++ has only from
+# GCC 11, so project.yaml selects the Ubuntu 24.04 base image.
 export CXXFLAGS="${CXXFLAGS//-stdlib=libc++/}"
 pip3 install --no-build-isolation .
 # A `python -c` process puts its working directory first on sys.path. Leave
