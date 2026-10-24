@@ -94,8 +94,10 @@ function run_fuzz_target {
   # Merge should not introduce any significant overhead compared to -runs=0,
   # because (A) corpuses are already minimized; (B) we do not use sancov, and so
   # libFuzzer always finishes merge with an empty output dir.
+  local options
+  options=$(parse_options.py "$OUT/$target.options" libfuzzer)
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
+  local args="-merge=1 -timeout=100 $options $corpus_dummy $corpus_real"
 
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
