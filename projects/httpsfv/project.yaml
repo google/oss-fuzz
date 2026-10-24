@@ -1,5 +1,5 @@
 homepage: "https://github.com/dunglas/httpsfv"
-primary_contact: "kevin@les-tilleuls.coop"
+primary_contact: "kevin@dunglas.fr"
 language: go
 fuzzing_engines:
   - libfuzzer
