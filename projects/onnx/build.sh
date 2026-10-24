@@ -25,8 +25,14 @@ export CMAKE_ARGS="-DONNX_BUILD_CUSTOM_PROTOBUF=ON \
     -DFETCHCONTENT_SOURCE_DIR_ABSL=/deps/abseil-cpp \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON"
 
-# Keep the OSS-Fuzz compiler flags so ONNX's native parser, checker, shape
-# inference, and protobuf code are instrumented as well as the Python harness.
+# Keep the OSS-Fuzz sanitizer and coverage flags so ONNX's native parser,
+# checker, shape inference, and protobuf code are instrumented as well as the
+# Python harness. Drop -stdlib=libc++, though: Python, the Atheris wheel, and
+# the runtime PyInstaller bundles all use libstdc++. With libc++ in the
+# extension, ONNX exceptions such as checker::ValidationError terminate the
+# process instead of reaching Python, and libc++'s container annotations need
+# ASan entry points that Atheris' sanitizer runtime does not export.
+export CXXFLAGS="${CXXFLAGS//-stdlib=libc++/}"
 pip3 install --no-build-isolation .
 # A `python -c` process puts its working directory first on sys.path. Leave
 # the checkout so the source-only onnx/onnx_cpp2py_export stub directory does
