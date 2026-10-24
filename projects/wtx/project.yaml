@@ -1,0 +1,11 @@
+coverage_extra_args: >
+  -ignore-filename-regex=.*/registry/src/.*crates.io.*/.*
+  -ignore-filename-regex=.*/rustc/.*
+fuzzing_engines:
+  - libfuzzer
+homepage: "https://c410-f3r.github.io/wtx/"
+language: rust
+main_repo: "https://github.com/c410-f3r/wtx"
+primary_contact: "c410.f3r@gmail.com"
+sanitizers:
+  - address
