@@ -38,5 +38,5 @@ RUN mkdir /deps && \
   make install && \
   cp .libs/libxml2.a /deps/
 
-COPY run_tests.sh build.sh libarchive_fuzzer.cc $SRC/
+COPY run_tests.sh build.sh $SRC/
 WORKDIR $SRC
