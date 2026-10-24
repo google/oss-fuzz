@@ -28,6 +28,10 @@ export CMAKE_ARGS="-DONNX_BUILD_CUSTOM_PROTOBUF=ON \
 # Keep the OSS-Fuzz compiler flags so ONNX's native parser, checker, shape
 # inference, and protobuf code are instrumented as well as the Python harness.
 pip3 install --no-build-isolation .
+# A `python -c` process puts its working directory first on sys.path. Leave
+# the checkout so the source-only onnx/onnx_cpp2py_export stub directory does
+# not shadow the compiled extension installed by the wheel.
+cd /tmp
 
 # An extension built with -fsanitize=fuzzer-no-link needs Atheris' combined
 # sanitizer/libFuzzer runtime whenever a normal Python process imports it. The
