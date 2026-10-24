@@ -1,0 +1,3 @@
+GET /axis2/services/Meta?xsd=sub/inner.xsd HTTP/1.1
+Host: localhost
+
