@@ -47,11 +47,22 @@ if [[ "$SANITIZER" == "address" || "$SANITIZER" == "undefined" ]]; then
   fi
 fi
 
+seed_outputs=(
+  "$OUT/fuzz_version_converter_seed_corpus.zip"
+  "$OUT/fuzz_parser_seed_corpus.zip"
+  "$OUT/fuzz_checker_seed_corpus.zip"
+  "$OUT/fuzz_shape_inference_seed_corpus.zip"
+)
+# New corpus outputs are optional in ONNX's generator, so keep this build
+# compatible while the corresponding upstream harness changes roll out.
+if [[ -f "$SRC/onnx/onnx/fuzz/fuzz_compose.py" ]]; then
+  seed_outputs+=("$OUT/fuzz_compose_seed_corpus.zip")
+  if [[ -f "$SRC/onnx/onnx/fuzz/fuzz_external_data.py" ]]; then
+    seed_outputs+=("$OUT/fuzz_external_data_seed_corpus.zip")
+  fi
+fi
 "${python_runtime[@]}" python3 "$SRC/onnx/onnx/fuzz/make_seed_corpus.py" \
-    "$OUT/fuzz_version_converter_seed_corpus.zip" \
-    "$OUT/fuzz_parser_seed_corpus.zip" \
-    "$OUT/fuzz_checker_seed_corpus.zip" \
-    "$OUT/fuzz_shape_inference_seed_corpus.zip"
+  "${seed_outputs[@]}"
 
 # Coverage builds: compile_python_fuzzer prepends a stub containing real Python
 # statements (import atexit, import coverage ...) before each fuzzer file.
