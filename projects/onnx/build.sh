@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cd $SRC/onnx
+cd "$SRC/onnx"
 
 # Build ONNX's own protobuf from source so it is compiled with -fPIC,
 # which is required to link into the Python extension .so.
@@ -25,34 +25,49 @@ export CMAKE_ARGS="-DONNX_BUILD_CUSTOM_PROTOBUF=ON \
     -DFETCHCONTENT_SOURCE_DIR_ABSL=/deps/abseil-cpp \
     -DFETCHCONTENT_FULLY_DISCONNECTED=ON"
 
-# Build the Python extension with a clean compiler environment.
-# The OSS-Fuzz CFLAGS contain -fsanitize=fuzzer-no-link which references
-# __sancov_lowest_stack — a symbol only provided by libFuzzer at runtime —
-# causing ImportError when plain Python imports the .so. Atheris handles
-# instrumentation at the Python level, so the extension does not need these
-# flags. This follows the same pattern used by numpy, pyyaml, and others.
-unset CFLAGS CXXFLAGS LIB_FUZZING_ENGINE
+# Keep the OSS-Fuzz compiler flags so ONNX's native parser, checker, shape
+# inference, and protobuf code are instrumented as well as the Python harness.
 pip3 install --no-build-isolation .
 
-python3 $SRC/onnx/onnx/fuzz/make_seed_corpus.py \
-    $OUT/fuzz_version_converter_seed_corpus.zip \
-    $OUT/fuzz_parser_seed_corpus.zip \
-    $OUT/fuzz_checker_seed_corpus.zip \
-    $OUT/fuzz_shape_inference_seed_corpus.zip
+# An extension built with -fsanitize=fuzzer-no-link needs Atheris' combined
+# sanitizer/libFuzzer runtime whenever a normal Python process imports it. The
+# runtime is copied to $OUT by OSS-Fuzz's Python build setup before build.sh is
+# called. Coverage builds do not create or need this library.
+python_runtime=()
+if [[ "$SANITIZER" == "address" || "$SANITIZER" == "undefined" ]]; then
+  python_runtime=(env \
+    LD_PRELOAD="$OUT/sanitizer_with_fuzzer.so${LD_PRELOAD:+:$LD_PRELOAD}" \
+    ASAN_OPTIONS="${ASAN_OPTIONS:+$ASAN_OPTIONS:}detect_leaks=0")
+
+  onnx_extension=$("${python_runtime[@]}" python3 -c \
+    'import onnx.onnx_cpp2py_export as extension; print(extension.__file__)')
+  if ! nm -D "$onnx_extension" | grep -q '__sanitizer_cov_'; then
+    echo "ONNX native extension has no sanitizer-coverage instrumentation" >&2
+    exit 1
+  fi
+fi
+
+"${python_runtime[@]}" python3 "$SRC/onnx/onnx/fuzz/make_seed_corpus.py" \
+    "$OUT/fuzz_version_converter_seed_corpus.zip" \
+    "$OUT/fuzz_parser_seed_corpus.zip" \
+    "$OUT/fuzz_checker_seed_corpus.zip" \
+    "$OUT/fuzz_shape_inference_seed_corpus.zip"
 
 # Coverage builds: compile_python_fuzzer prepends a stub containing real Python
 # statements (import atexit, import coverage ...) before each fuzzer file.
 # Any 'from __future__' import then appears after those statements and causes
 # SyntaxError. Strip them from the in-container copies only.
 if [[ "$SANITIZER" == "coverage" ]]; then
-  for f in $(find $SRC/onnx/onnx/fuzz -maxdepth 1 -name 'fuzz_*.py'); do
-    sed -i '/^from __future__ import/d' "$f"
-  done
+  find "$SRC/onnx/onnx/fuzz" -maxdepth 1 -name 'fuzz_*.py' -print0 | \
+    while IFS= read -r -d '' f; do
+      sed -i '/^from __future__ import/d' "$f"
+    done
 fi
 
 # Build fuzzers in $OUT.
 # --collect-all numpy bundles all numpy C extensions including numpy._core.*
 # which PyInstaller 6.x does not pick up automatically with numpy 2.x.
-for fuzzer in $(find $SRC/onnx/onnx/fuzz -maxdepth 1 -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --collect-all numpy
-done
+find "$SRC/onnx/onnx/fuzz" -maxdepth 1 -name 'fuzz_*.py' -print0 | \
+  while IFS= read -r -d '' fuzzer; do
+    "${python_runtime[@]}" compile_python_fuzzer "$fuzzer" --collect-all numpy
+  done
