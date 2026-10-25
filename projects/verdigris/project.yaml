@@ -1,0 +1,9 @@
+homepage: "https://github.com/frontyard/verdigris"
+main_repo: "https://github.com/frontyard/verdigris"
+language: rust
+primary_contact: "intestellafella@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+# Rust targets only support the address sanitizer today.
