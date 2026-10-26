@@ -83,6 +83,10 @@ with (work / "authcrunch-targets.tsv").open("w") as manifest:
         manifest.write(f'{target["package"]}\t{target["function"]}\t{name}\n')
 PY
 
+# The converter renames its temporary ZIP into OUT. Keep that temporary file
+# on OUT's filesystem, which is a separate Docker mount in local/CI builds.
+corpus_tmp_dir="$OUT/.authcrunch-corpus-tmp"
+mkdir -p "$corpus_tmp_dir"
 while IFS=$'\t' read -r package function name; do
   case "$package" in
     github.com/greenpau/caddy-security*)
@@ -91,9 +95,11 @@ while IFS=$'\t' read -r package function name; do
       cd "$SRC/authcrunch-foundation/go-authcrunch" ;;
     *) echo "Unexpected fuzz package: $package" >&2; exit 1 ;;
   esac
+  rm -f "$OUT/$name"
   compile_native_go_fuzzer_v2 "$package" "$function" "$name"
   # The upstream helper can return success when a function was not found.
   test -s "$OUT/$name"
-  addStdLibCorpusToFuzzer \
+  TMPDIR="$corpus_tmp_dir" addStdLibCorpusToFuzzer \
     -dir "$WORK/authcrunch-seeds/$name" -fuzzer_name "$name"
 done < "$WORK/authcrunch-targets.tsv"
+rmdir "$corpus_tmp_dir"
