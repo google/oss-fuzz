@@ -46,11 +46,15 @@ A project is delivered through one or more duo pairs:
 | Standalone corpus pair | All corpora, dictionaries and options changes with no fuzzer change | Zero or one, suffix `-corpus-dict-options` |
 | Build-fix pair | A general build fix not tied to one fuzzer | Zero or one, suffix `-build-fix` |
 
-A single delivered pair is the minimum bar; develop multiple pairs when worthwhile. Worth is your own judgement, but it must be backed by the written Phase 2 rationale (dark covered lines, security sensitivity, reachability, expected impact), recorded per pair. Do not fragment trivially: corpus, dictionary and option tweaks that are not fuzzer-related always fold into the standalone pair.
+Work the ranked target list top-down per project until the rules are exhausted; a single delivered pair is the floor for delivered status, never a stopping point, and worth is never compared across projects. Worth is your own judgement, but it must be backed by the written Phase 2 rationale (dark covered lines, security sensitivity, reachability, expected impact), recorded per pair. Stop a project only on documented worth exhaustion (with numbers), the 5-pair cap, or genuine budget exhaustion, recorded as deferred entries ("pair N of project X: worth rationale written, not yet attempted"), never as worth decisions. A project with no worthy targets is marked `no-worthy-targets` with its triage evidence; never fabricate a minimal pair. The declaration must be proven, not asserted: list the top rejected candidate regions with their numbers and the reason each fails the worth model, and treat it as seriously as a failure exit. Do not fragment trivially: corpus, dictionary and option tweaks that are not fuzzer-related always fold into the standalone pair.
 
 Upstream worktrees contain only allowed changes: fuzzers with their corpora, dictionaries and options, fuzz build configuration, and `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`-guarded additions. Upstream product code is never modified; product-code bugs are findings. The OSS-Fuzz worktrees carry the integration changes (Dockerfile, `build.sh`, `project.yaml`) plus the bridge.
 
 Each pair gets its own worktrees, bridge blocks, validation, fix budget and summary row. A project counts as delivered when at least one of its pairs is delivered; rejected pairs are still recorded individually. For mixed-language projects, a pair whose harness targets a module in a different language may activate that language's skill, noted in the pair's row.
+
+## Build reuse across pairs of the same project
+
+Every pair must be **runnable solo**: a complete, self-contained OSS-Fuzz build from its own worktrees, never depending on artifacts from another pair. Shared build artifacts across pairs are forbidden. The only permitted saving is Docker cache discipline: build a project's pairs back-to-back, with no `--clean` and no cache-busting between pairs of the same project (clean between projects instead), and keep bridge COPY blocks as late as possible in the Dockerfile so the shared layers (environment setup, clone) stay cached.
 
 ## Build-fix dependency protocol (main build failures only)
 
@@ -95,7 +99,7 @@ Reading, cloning and inspecting upstream code locally is fine as usual; only val
 
 ## The validation loop (per duo pair)
 
-Run pairs one at a time (builds of the same project share Docker image names), from the OSS-Fuzz worktree root, always through `infra/helper.py`:
+Serialise only the real `infra/helper.py` executions (one pair's builds, checks and runs at a time: Docker image names collide); analysis and generation work may proceed in parallel. Commands run from the OSS-Fuzz worktree root, always through `infra/helper.py`:
 
 ```sh
 # 1. Build the declared matrix from projects/<project>/project.yaml:
@@ -121,18 +125,13 @@ Quality thresholds, which apply on top of `check_build` passing, and to corpora,
 
 These libFuzzer-style flags apply to every OSS-Fuzz engine: Jazzer, Atheris and Go-native fuzzing all wrap libFuzzer.
 
-### Coverage evaluation: fast path by default
+### Coverage evaluation: per-fuzzer growth by default
 
-Do not build a separate coverage configuration for routine pair evaluation. Use the fuzzing runs the quality gate already performs:
+For every fuzzer created or modified, the fast path needs no baseline build and no cross-build comparison: record the libFuzzer `cov:` at the start and at the end of its own quality-gate run, and require coverage to increase over the run, with `ft:` (features) and corpus size (`corp:`) as supporting increase signals. This is the same signal as the staleness rule, so one run serves both checks.
 
-1. Baseline: run the existing fuzzers on the pre-change build for the standard duration with the standard corpus source, and record the final libFuzzer `cov:` value (with `ft:` and `corp:` as supporting signals).
-2. Candidate: the same runs on the pair's build, same corpus and duration; record the final `cov:`.
-3. The pair's fast-path gain is candidate `cov:` versus baseline `cov:`. For a brand-new fuzzer with no baseline binary, the recorded gain is its absolute `cov:` on the standard seeds, noted as an approximation.
-4. Like-for-like still applies: same instrumentation configuration (the normal ASan build already carries SanitizerCoverage, which is what `cov:` reports), same corpus source, same duration. Never compare fresh local numbers with production reports.
+**Fallback to a coverage build**, only when file-level numbers are needed: per-file gains the final report must show, or a marginal overlap decision between pairs. Then build with `--sanitizer coverage` and compare per-file `lines.covered` counts on project-own paths (baseline from a clean state versus candidate in the pair worktree, identical flags and corpus source; targeted files must gain and no project-own file may lose), and use those numbers for the ledger decision.
 
-The `cov:` trend between libFuzzer checkpoints is also the staleness signal, so one set of runs serves both the quality gate and the coverage check.
-
-**Fallback to a coverage build**, only when the fast path cannot answer: marginal overlap decisions between pairs, ambiguous or flat `cov:` results, or per-file gains the final report must show. Then build with `--sanitizer coverage` and compare per-file `lines.covered` counts on project-own paths (baseline from a clean state versus candidate in the pair worktree, identical flags and corpus source; targeted files must gain and no project-own file may lose), and use those numbers for the ledger decision. The overlap ledger records per-fuzzer `cov:` numbers by default and falls back to per-file data only when a decision is marginal.
+Like-for-like still applies to the fallback: identical instrumentation configuration, corpus source and duration; never compare fresh local numbers with production reports. The overlap ledger records per-fuzzer growth numbers by default and falls back to per-file data only when a decision is marginal.
 
 ### Crash classification (every post-build crash, leak, OOM, timeout or assertion)
 
@@ -187,12 +186,13 @@ The `upstream-clones/` repositories are scaffolding: keep them while work is in 
 
 ## Final summary and handover
 
-Write `summary.md` at the working-area root with one markdown table covering everything that was selected:
+Write a per-project summary fragment at `build/coverage-pipeline/summary/<project>.md` containing the project's row(s); the batch driver deterministically merges all fragments into `build/coverage-pipeline/summary.md` after the run. The merged table uses one header and covers everything that was selected:
 
-| project | language | status | duo branches | depends on | worktree paths | summary of work | coverage delta | reason |
-|---|---|---|---|---|---|---|---|---|
+| project | language | status | duo branches | depends on | worktree paths | summary of work | coverage delta | remaining (deferred) | reason |
+|---|---|---|---|---|---|---|---|---|---|
 
-- status is `delivered`, `rejected (moved to rejected area)` or `skipped/blocked`;
+- status is `delivered` (with any `deferred(budget)` entries listed alongside as "pair N: worth rationale written, not yet attempted"), `rejected (moved to rejected area)`, `no-worthy-targets`, or `skipped/blocked`;
+- deferred entries and no-worthy-targets rows carry their evidence, so a later run picks them up first;
 - depends on records `tested-with: <project>-build-fix` for pairs validated with a copied build fix; commit those fix branches first;
 - the language column shows the actual language used, with the declared one noted where they differ, for example `rust (declared c++)`;
 - skipped rows carry the concrete reason, for example `blocked(upstream-archived)`;
