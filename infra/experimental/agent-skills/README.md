@@ -95,7 +95,7 @@ full flag listings. A summary of the available subcommands:
 | `fix-builds` | Diagnose and fix broken project builds | `python infra/experimental/agent-skills/helper.py fix-builds htslib` |
 | `fix-broken-builds` | Auto-discover broken projects from the public build status and fix up to `--limit` of them (C/C++ by default) | `python infra/experimental/agent-skills/helper.py fix-broken-builds --limit 50` |
 | `run-task` | Run an arbitrary `--task` string per project | `python infra/experimental/agent-skills/helper.py run-task --task "Add a harness for the XML attribute parser" open62541` |
-| `coverage-pipeline` | Run the full coverage pipeline (skills-driven, prompt generated automatically) over named or `--broken`-discovered projects; `--cap N` sets the pair cap | `python infra/experimental/agent-skills/helper.py coverage-pipeline --broken --limit 10` |
+| `coverage-pipeline` | Run the full coverage pipeline (skills-driven, prompt generated automatically) over named or `--broken`-discovered projects; `--cap N` sets the pair cap; relay continuation sessions via `--max-sessions-per-project` and `--per-project-minutes` | `python infra/experimental/agent-skills/helper.py coverage-pipeline --broken --limit 10` |
 | `add-chronos-support` | Add Chronos support to a project | `python infra/experimental/agent-skills/helper.py add-chronos-support json-c` |
 | `integrate-project` | Onboard a new project from a Git URL | `python infra/experimental/agent-skills/helper.py integrate-project https://github.com/org/repo` |
 | `clean` | Remove local artifacts from previous agent runs | `python infra/experimental/agent-skills/helper.py clean open62541` |
