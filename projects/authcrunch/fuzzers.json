@@ -1,0 +1,102 @@
+[
+  {
+    "name": "caddy_oauth_directives",
+    "package": "github.com/greenpau/caddy-security",
+    "function": "FuzzOAuthDirectiveEncoding",
+    "types": ["string", "string"],
+    "seeds": [
+      ["issuer", "https://idp.example.test"],
+      ["quotes \" and commas,", "back\\slash"],
+      [" leading", "trailing "],
+      ["issuer\u2003", "audience\u00a0"]
+    ]
+  },
+  {
+    "name": "acl_paths",
+    "package": "github.com/greenpau/go-authcrunch/pkg/acl",
+    "function": "FuzzMatchPathBasedACL",
+    "types": ["string", "string"],
+    "seeds": [
+      ["/public/**", "/public/file"],
+      ["/public/*", "/public/a/b"],
+      ["/tenant.v1/**", "/tenantXv1/file"],
+      ["/public/**|/admin", "/admin"],
+      ["/public/(a)[b]+/*", "/public/(a)[b]+/file"]
+    ]
+  },
+  {
+    "name": "jwt_authorization",
+    "package": "github.com/greenpau/go-authcrunch/pkg/kms",
+    "function": "FuzzJWKSAdminTokenParsing",
+    "types": ["string"],
+    "seeds": [
+      [""],
+      ["a.b.c"],
+      ["e30.e30."],
+      ["eyJhbGciOiJub25lIn0.eyJzdWIiOjEyMywiZXhwIjoxfQ."],
+      ["Bearer invalid"]
+    ]
+  },
+  {
+    "name": "oidc_authorization",
+    "package": "github.com/greenpau/go-authcrunch/pkg/oidc",
+    "function": "FuzzOIDCAuthorizationParameters",
+    "types": ["string"],
+    "seeds": [
+      ["client_id=c&response_type=code&scope=openid"],
+      ["redirect_uri=https%3A%2F%2Frp.test%2Fcb"],
+      ["client_id=c&client_id=d"],
+      ["request_uri=http://127.0.0.1/"],
+      ["a=%xx"]
+    ]
+  },
+  {
+    "name": "oidc_request_objects",
+    "package": "github.com/greenpau/go-authcrunch/pkg/oidc",
+    "function": "FuzzOIDCRequestObjects",
+    "types": ["string", "string"],
+    "seeds": [
+      ["{\"alg\":\"none\"}", "{\"client_id\":\"client\",\"response_type\":\"code\",\"scope\":\"openid\"}"],
+      ["{\"alg\":\"none\"}", "{\"exp\":1001,\"aud\":\"https://auth.test\",\"max_age\":60}"],
+      ["{\"alg\":\"none\",\"crit\":[]}", "{\"scope\":\"openid\",\"scope\":\"admin\"}"]
+    ]
+  },
+  {
+    "name": "oidc_loopback_redirects",
+    "package": "github.com/greenpau/go-authcrunch/pkg/oidc",
+    "function": "FuzzOIDCLoopbackRedirect",
+    "types": ["string"],
+    "seeds": [
+      ["http://127.0.0.1:43112/callback?q=a%20b"],
+      ["http://[::1]:43112/callback?q=a%20b"],
+      ["http://localhost:43112/callback?q=a%20b"],
+      ["http://127.0.0.1:65536/callback?q=a%20b"],
+      ["http://127.0.0.1.evil.test:43112/callback?q=a%20b"]
+    ]
+  },
+  {
+    "name": "password_hashes",
+    "package": "github.com/greenpau/go-authcrunch/pkg/identity",
+    "function": "FuzzParseArgon2",
+    "types": ["string"],
+    "seeds": [
+      [""],
+      ["$argon2id$v=19$m=0,t=0,p=0$$"],
+      ["$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHQ$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"],
+      ["$argon2id$v=19$m=4294967295,t=4294967295,p=255$c29tZXNhbHQ$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"]
+    ]
+  },
+  {
+    "name": "oauth_jwks",
+    "package": "github.com/greenpau/go-authcrunch/pkg/idp/oauth",
+    "function": "FuzzOAuthJwks",
+    "types": ["[]byte"],
+    "seeds": [
+      ["{\"keys\":[]}"],
+      ["{\"keys\":[null]}"],
+      ["{\"keys\":[{\"kty\":\"OKP\",\"crv\":\"Ed25519\",\"x\":\"11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo\"}]}"],
+      ["{\"keys\":[{\"kid\":\"rsa\",\"kty\":\"RSA\",\"e\":\"AQAB\",\"n\":\"AQAB\"}]}"],
+      ["{\"keys\":[{\"kty\":\"oct\",\"alg\":\"HS256\",\"k\":\"c2VjcmV0\"}]}"]
+    ]
+  }
+]

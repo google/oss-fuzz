@@ -1,0 +1,8 @@
+homepage: "https://github.com/authcrunch/authcrunch"
+main_repo: "https://github.com/authcrunch/authcrunch.git"
+language: go
+primary_contact: "greenpau.git@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
