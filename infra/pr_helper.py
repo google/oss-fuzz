@@ -44,7 +44,7 @@ def get_criticality_score(repo_url):
     repo_url = repo_url[:-4]
   report = subprocess.run([
       CRITICALITY_SCORE_PATH, '--format', 'json',
-      '-gcp-project-id=clusterfuzz-external', '-depsdev-disable', repo_url
+      '-gcp-project-id=clusterfuzz-external', '-depsdev-disable', '--', repo_url
   ],
                           capture_output=True,
                           text=True)
