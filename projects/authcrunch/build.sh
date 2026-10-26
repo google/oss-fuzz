@@ -47,11 +47,27 @@ done
 python3 - <<'PY'
 import json
 import os
+import re
 from pathlib import Path
 
 src = Path(os.environ["SRC"])
 work = Path(os.environ["WORK"])
 targets = json.loads((src / "fuzzers.json").read_text())
+
+# The v2 address adapter promotes every test file in a target directory into
+# production Go files. Preserve external-package tests outside that directory
+# to avoid mixing, for example, package acl and package acl_test. No target or
+# production code is removed, and native coverage builds keep all test files.
+if os.environ["SANITIZER"] != "coverage":
+    for target in targets:
+        relative = target["package"].removeprefix("github.com/greenpau/")
+        directory = src / "authcrunch-foundation" / relative
+        for test_file in directory.glob("*_test.go"):
+            if re.search(r"(?m)^package \w+_test\b", test_file.read_text()):
+                backup = src / "authcrunch-external-tests" / test_file.relative_to(src)
+                backup.parent.mkdir(parents=True, exist_ok=True)
+                test_file.rename(backup)
+
 with (work / "authcrunch-targets.tsv").open("w") as manifest:
     for target in targets:
         name = target["name"]
