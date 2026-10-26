@@ -34,13 +34,16 @@ $CXX $CXXFLAGS -I../include $LIB_FUZZING_ENGINE \
 # Add dictionary.
 cp $SRC/jsoncpp/src/test_lib_json/fuzz.dict $OUT/jsoncpp_fuzzer.dict
 
-if [[ $CFLAGS != *sanitize=memory* ]]; then
-# Compile json proto.
-rm -rf genfiles && mkdir genfiles && ../LPM/external.protobuf/bin/protoc json.proto --cpp_out=genfiles --proto_path=$SRC
+# Seed corpus from the jsoncpp test data (fuzzers and corpora live upstream).
+zip -j $OUT/jsoncpp_fuzzer_seed_corpus.zip $SRC/jsoncpp/test/data/*.json
 
-# Compile LPM fuzzer.
+if [[ $CFLAGS != *sanitize=memory* ]]; then
+# Compile json proto (schema lives in the jsoncpp repository).
+rm -rf genfiles && mkdir genfiles && ../LPM/external.protobuf/bin/protoc json.proto --cpp_out=genfiles --proto_path=$SRC/jsoncpp/src/test_lib_json
+
+# Compile LPM fuzzer (sources live in the jsoncpp repository).
 $CXX $CXXFLAGS -DNDEBUG -I genfiles -I .. -I ../libprotobuf-mutator/ -I ../LPM/external.protobuf/include -I ../include $LIB_FUZZING_ENGINE \
-    $SRC/jsoncpp_fuzz_proto.cc genfiles/json.pb.cc $SRC/json_proto_converter.cc \
+    ../src/test_lib_json/jsoncpp_fuzz_proto.cc genfiles/json.pb.cc ../src/test_lib_json/json_proto_converter.cc \
     ../LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
     ../LPM/src/libprotobuf-mutator.a \
     -Wl,--start-group ../LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
