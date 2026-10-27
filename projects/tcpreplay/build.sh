@@ -81,7 +81,7 @@ if [ -f src/fragroute/libfragroute.a ]; then
     FRAGROUTE_LIBNET="-Wl,-Bstatic $(sed -n 's/^LDNETLIB = //p' test/fuzz/Makefile) -Wl,-Bdynamic"
 fi
 
-for target in fuzz_services fuzz_pcap fuzz_fragroute; do
+for target in fuzz_services fuzz_pcap fuzz_fragroute fuzz_tcpedit; do
     [ -f "test/fuzz/${target}.c" ] || continue
     if [ "$target" = "fuzz_fragroute" ] && [ -z "$FRAGROUTE_LIB" ]; then
         continue
@@ -92,11 +92,31 @@ for target in fuzz_services fuzz_pcap fuzz_fragroute; do
     # it depends on - libfragroute needs libcommon and libdumbnet, libcommon
     # needs libpcap.
     libs="src/common/libcommon.a $LIBPCAP_A"
+    extra_inc=""
     if [ "$target" = "fuzz_fragroute" ]; then
         libs="$FRAGROUTE_LIB src/common/libcommon.a $LIBPCAP_A $FRAGROUTE_LIBNET"
     fi
+    if [ "$target" = "fuzz_tcpedit" ]; then
+        # Mirror tcprewrite's own link: the DLT plugins reference the
+        # tcpedit_tcpedit_optDesc_p descriptor
+        libopts_cflags=$(grep -m1 '^LIBOPTS_CFLAGS' src/Makefile 2>/dev/null | sed 's/.*= *//')
+        libopts_cflags=${libopts_cflags//\$(top_srcdir)/.}
+        $CC $CFLAGS -DHAVE_CONFIG_H -I. -Isrc -Isrc/tcpedit $libopts_cflags -c src/tcprewrite_opts.c -o "$WORK/tcprewrite_opts.o"
+        libopts=$(grep -m1 '^LIBOPTS_LDADD' src/Makefile 2>/dev/null | sed 's/.*= *//')
+        libopts=${libopts//\$(top_builddir)/.}
+        libopts=${libopts//\$(top_srcdir)/.}
+        # The Makefile names the libtool .la; direct clang linking needs
+        # the underlying static archive.
+        case "$libopts" in
+            *.la) libopts="$(dirname "$libopts")/.libs/libopts.a" ;;
+        esac
+        strl_lib=""
+        [ -f lib/libstrl.a ] && strl_lib="lib/libstrl.a"
+        libs="$WORK/tcprewrite_opts.o src/tcpedit/libtcpedit.a src/common/libcommon.a $strl_lib $LIBPCAP_A $libopts"
+        extra_inc="-Isrc/tcpedit $libopts_cflags"
+    fi
 
-    $CC $CFLAGS -DHAVE_CONFIG_H -I. -Isrc -Itest/fuzz -c "test/fuzz/${target}.c" -o "$WORK/${target}.o"
+    $CC $CFLAGS -DHAVE_CONFIG_H -I. -Isrc -Itest/fuzz $extra_inc -c "test/fuzz/${target}.c" -o "$WORK/${target}.o"
     $CXX $CXXFLAGS "$WORK/${target}.o" $LIB_FUZZING_ENGINE $libs -o "$OUT/${target}"
 
     # ship the seed corpus so the engine starts from valid inputs
