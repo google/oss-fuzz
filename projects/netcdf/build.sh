@@ -24,3 +24,10 @@ cd build
 cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_HDF5=OFF -DENABLE_DAP=OFF ..
 make -j$(nproc)
 cp fuzz/fuzz* $OUT/
+
+./ncgen/ncgen -k cdf5 -o fuzz_read_classic_cdf5.nc ../ncdump/small.cdl
+zip -j "$OUT/fuzz_read_classic_seed_corpus.zip" \
+	../nctest/ref_nctest_classic.nc \
+	../nctest/ref_nctest_64bit_offset.nc \
+	../nc_test/bad_cdf5_begin.nc \
+	fuzz_read_classic_cdf5.nc
