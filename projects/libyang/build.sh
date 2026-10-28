@@ -23,8 +23,16 @@ make
 
 static_pcre=($(find /src/pcre2 -name "libpcre2-8.a"))
 
+# Static builds force ENABLE_TESTS=OFF, so tests/CMakeLists.txt never runs
+# configure_file() and tests_config.h is not generated. Reproduce that call
+# (ESCAPE_QUOTES @ONLY) so TESTS_SRC points at the tests/ source tree.
+mkdir -p tests
+cmake -DPROJECT_SOURCE_DIR="${SRC}/libyang" \
+    -DPROJECT_BINARY_DIR="${SRC}/libyang/build" \
+    -P "${SRC}/libyang_tests_config.cmake"
+
 for fuzzer in lys_parse_mem lyd_parse_mem_xml lyd_parse_mem_json lyd_parse_lyb lyd_parse_schema_mount_xml yang_parse_module; do
-  $CC $CFLAGS -c ../tests/fuzz/${fuzzer}.c -I./libyang -I./compat
+  $CC $CFLAGS -c ../tests/fuzz/${fuzzer}.c -I./libyang -I./compat -I./tests
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ${fuzzer}.o -o $OUT/${fuzzer} \
     ./libyang.a ${static_pcre}
 
