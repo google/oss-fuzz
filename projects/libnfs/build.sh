@@ -49,3 +49,20 @@ $CXX $CXXFLAGS \
 
 # Seed corpus spanning the decoder table.
 zip -j -q $OUT/libnfs_reply_fuzzer_seed_corpus.zip $SRC/libnfs/fuzzing/seeds/*
+
+# nfs:// URL parser fuzzer: pulls libnfs.c (the core) into the link and
+# fuzzes the hand-rolled URL scanner through all three exported variants.
+$CC $CFLAGS -std=c11 \
+    -I $SRC/libnfs/include \
+    -I $SRC/libnfs/include/nfsc \
+    -I $SRC/libnfs/build \
+    -c $SRC/libnfs/fuzzing/libnfs_url_fuzzer.c \
+    -o $WORK/libnfs_url_fuzzer.o
+$CXX $CXXFLAGS \
+    $WORK/libnfs_url_fuzzer.o \
+    $SRC/libnfs/build/lib/libnfs.a \
+    $LIB_FUZZING_ENGINE -lpthread \
+    -o $OUT/libnfs_url_fuzzer
+zip -j -q $OUT/libnfs_url_fuzzer_seed_corpus.zip $SRC/libnfs/fuzzing/seeds_url/*
+cp $SRC/libnfs/fuzzing/libnfs_url.dict $OUT/
+
