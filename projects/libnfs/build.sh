@@ -66,3 +66,28 @@ $CXX $CXXFLAGS \
 zip -j -q $OUT/libnfs_url_fuzzer_seed_corpus.zip $SRC/libnfs/fuzzing/seeds_url/*
 cp $SRC/libnfs/fuzzing/libnfs_url.dict $OUT/
 
+# ZDR round-trip fuzzer: decode -> encode -> decode over the same decoder
+# table, driving the encode half of the ZDR engine and the raw marshallers.
+$CC $CFLAGS -std=c11 \
+    -I $SRC/libnfs/include \
+    -I $SRC/libnfs/include/nfsc \
+    -I $SRC/libnfs/nfs \
+    -I $SRC/libnfs/mount \
+    -I $SRC/libnfs/nlm \
+    -I $SRC/libnfs/rquota \
+    -I $SRC/libnfs/portmap \
+    -I $SRC/libnfs/nfs4 \
+    -I $SRC/libnfs/build \
+    -I $SRC/libnfs/fuzzing \
+    -c $SRC/libnfs/fuzzing/libnfs_zdr_roundtrip_fuzzer.c \
+    -o $WORK/libnfs_zdr_roundtrip_fuzzer.o
+$CXX $CXXFLAGS \
+    $WORK/libnfs_zdr_roundtrip_fuzzer.o \
+    $SRC/libnfs/build/lib/libnfs.a \
+    $LIB_FUZZING_ENGINE -lpthread \
+    -o $OUT/libnfs_zdr_roundtrip_fuzzer
+
+# The reply seeds decode fine and their decoded objects encode, so the same
+# corpus seeds the round trip.
+cp $OUT/libnfs_reply_fuzzer_seed_corpus.zip \
+   $OUT/libnfs_zdr_roundtrip_fuzzer_seed_corpus.zip
