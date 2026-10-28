@@ -39,3 +39,6 @@ RUN git clone --depth=1 --recurse-submodules \
     https://github.com/apache/arrow.git $SRC/arrow
 
 COPY *.sh $SRC/
+# Fuzz target options are also shipped from this directory and copied into
+# $OUT by build.sh.
+COPY *.options $SRC/
