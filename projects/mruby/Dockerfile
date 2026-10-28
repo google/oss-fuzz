@@ -27,7 +27,7 @@ RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 # same standard.
 RUN mkdir LPM; \
   cd LPM; \
-  cmake $SRC/libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14; \
+  cmake $SRC/libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17; \
   ninja;
 
 COPY *.sh $SRC/
