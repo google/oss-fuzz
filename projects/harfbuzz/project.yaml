@@ -11,7 +11,8 @@ auto_ccs:
   - "jfkthame@gmail.com"
   - "qxliu@google.com"
   - "ckitagawa@google.com"
-  - "drott@chromium.org"
+  - "tkent@chromium.org"
+  - "kojii@chromium.org"
   - "fwang@igalia.com"
 vendor_ccs:
   - "jmuizelaar@mozilla.com"

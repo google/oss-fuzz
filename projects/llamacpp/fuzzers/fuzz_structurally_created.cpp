@@ -296,9 +296,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
   llama_backend_init();
 
-  auto params = llama_model_params{};
-  memset(&params, 0x0, sizeof(struct llama_model_params));
-  params.use_mmap = false;
+  auto params = llama_model_default_params();
+  params.load_mode = LLAMA_LOAD_MODE_NONE;
   params.progress_callback = [](float progress, void *ctx) {
     (void)ctx;
     return progress > 0.50;
@@ -310,9 +309,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   create_fuzzed_gguf_file(filename, data, size);
 
   if (setjmp(fuzzing_jmp_buf) == 0) {
-    auto *model = llama_load_model_from_file(filename, params);
+    auto *model = llama_model_load_from_file(filename, params);
     if (model != nullptr) {
-      llama_free_model(model);
+      llama_model_free(model);
     }
   }
   llama_backend_free();

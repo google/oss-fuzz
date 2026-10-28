@@ -37,5 +37,6 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {//ntpsec/te
 	peer.srcadr.sa4.sin_port = htons(9999);
 	peer.srcadr.sa4.sin_addr.s_addr= htonl(0x04030201);
 
-	return nts_client_process_response_core((uint8_t*)Data,Size, &peer);
+	nts_client_process_response_core((uint8_t*)Data,Size, &peer);
+	return 0;
 }

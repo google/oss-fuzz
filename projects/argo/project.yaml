@@ -1,6 +1,6 @@
 base_os_version: ubuntu-24-04
 homepage: "https://argoproj.github.io/"
-main_repo: "https://github.com/argoproj"
+main_repo: "https://github.com/argoproj/argo-cd"
 primary_contact: "terrytangyuan@gmail.com"
 auto_ccs :
   - "adam@adalogics.com"

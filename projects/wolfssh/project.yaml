@@ -5,4 +5,6 @@ primary_contact: "john@wolfssl.com"
 auto_ccs:
 - "david@adalogics.com"
 - "jacob@wolfssl.com"
+- "mark@wolfssl.com"
+- "testing@wolfssl.com"
 base_os_version: ubuntu-24-04

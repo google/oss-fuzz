@@ -44,14 +44,14 @@ $ python3 infra/helper.py build_fuzzers --sanitizer=coverage $PROJECT_NAME
 
 To get a good understanding of fuzz testing quality, you should generate code
 coverage reports by running fuzz targets against the corpus
-aggregated by OSS-Fuzz. Set up `gsutil` and ensure that you have access to the
+aggregated by OSS-Fuzz. Set up `gcloud` and ensure that you have access to the
 corpora by doing the following:
 
-* Install the [gsutil tool].
+* Install the [gcloud tool].
 * Check whether you have access to the corpus for your project:
 
 ```bash
-$ gsutil ls gs://${PROJECT_NAME}-corpus.clusterfuzz-external.appspot.com/
+$ gcloud storage ls gs://${PROJECT_NAME}-corpus.clusterfuzz-external.appspot.com/
 ```
 
 If you see an authorization error from the command above, run this:
@@ -60,7 +60,7 @@ If you see an authorization error from the command above, run this:
 $ gcloud auth login
 ```
 
-and try again. Once `gsutil` works, you can run the report generation.
+and try again. Once `gcloud storage` works, you can run the report generation.
 
 ## Generate code coverage reports
 
@@ -126,5 +126,5 @@ coverage_extra_args: -ignore-filename-regex=.*crc.* -ignore-filename-regex=.*adl
 ```
 
 [Clang's documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
-[gsutil tool]: https://cloud.google.com/storage/docs/gsutil_install
+[gcloud tool]: https://docs.cloud.google.com/sdk/docs/install-sdk
 [llvm-cov tool]: https://llvm.org/docs/CommandGuide/llvm-cov.html

@@ -53,13 +53,30 @@ if test $? != 0;then
         exit 1
 fi
 
+cd $SRC/libtasn1
+./configure --enable-static --disable-shared --disable-doc --prefix=$WGET_DEPS_PATH
+make -j$(nproc)
+make install
+
+# gnutls no longer bundles libtasn1, so libgnutls.a now has undefined asn1_*
+# references. The fuzz target's link list is hardcoded in upstream's
+# fuzz/Makefile.am (XLIBS=...) and every environment hook -- CFLAGS, LIBS,
+# LIB_FUZZING_ENGINE -- lands *before* -lgnutls, which is the wrong side for
+# static archive resolution. Force libtasn1's objects in unconditionally
+# instead, which is order-independent. --allow-multiple-definition goes with
+# it: libtasn1 links its own copy of gnulib, so forcing every object in also
+# brings in c-ctype.o etc., which collide with wget's identical gnulib copy
+# ("multiple definition of `c_tolower'"). They are the same upstream sources,
+# so letting the first definition win is safe.
+export LIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE -Wl,--whole-archive $WGET_DEPS_PATH/lib/libtasn1.a -Wl,--no-whole-archive -Wl,--allow-multiple-definition"
+
 cd $SRC/gnutls
 touch .submodule.stamp
 ./bootstrap
 GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
 LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
-./configure --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
+./configure --enable-gcc-warnings --enable-static --disable-shared \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
     --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite --disable-guile \
     --prefix=$WGET_DEPS_PATH
@@ -79,7 +96,7 @@ sed -i '/GETTEXT_REQUIRE_VERSION/d' configure.ac
 ./bootstrap --skip-po
 
 # build and run non-networking tests
-LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
+LIBS="-lgnutls -ltasn1 -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
 ./configure -C
 make clean
 make -j$(nproc) -C lib
@@ -87,7 +104,7 @@ make -j$(nproc) -C src
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-LIBS="-lgnutls -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
+LIBS="-lgnutls -ltasn1 -lhogweed -lnettle -lgmp -lidn2 -lunistring -lpsl -lz" \
 ./configure --enable-fuzzing -C
 make clean
 make -j$(nproc) -C lib

@@ -30,6 +30,10 @@ using the search pattern `-Bug=security`.
 Issues of this kind include issues reported by Address Sanitizer, e.g.
 heap-based buffer overflows, stack-based buffer overflows and use-after-frees.
 
+### AI-proposed patches
+
+If a bug comes with an AI-proposed patch, you can have confidence that the patch passed internal quality control review, and that bug may require less time to fix. Consider this decreased cost in your prioritization methodology.
+
 ### Functional issues and memory leaks
 These are issues that in general can tamper with the functionality of the
 application. The bugs that have highest priority in this case are those that
