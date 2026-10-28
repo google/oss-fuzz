@@ -1,6 +1,6 @@
 homepage: "https://github.com/OWASP/json-sanitizer"
 language: jvm
-primary_contact: "mikesamuel@gmail.com"
+primary_contact: "jim.manico@owasp.org"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/OWASP/json-sanitizer"
