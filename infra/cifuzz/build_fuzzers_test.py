@@ -178,6 +178,17 @@ class InternalGithubBuildTest(unittest.TestCase):
 
     mock_upload_build.assert_called_with('commit')
 
+  @mock.patch('repo_manager.RepoManager.get_current_commit',
+              return_value='commit')
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.upload_build',
+              side_effect=Exception)
+  def test_upload_build_failure(self, *_):
+    """Tests that a failed build upload fails the build."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      builder = self._create_builder(tmp_dir, oss_fuzz_project_name='')
+      builder.config.upload_build = True
+      self.assertFalse(builder.upload_build())
+
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')
