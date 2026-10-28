@@ -15,14 +15,16 @@
 #
 ################################################################################
 
-MAVEN_ARGS="-Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
-
-$MVN package org.apache.maven.plugins:maven-shade-plugin:3.2.4:shade $MAVEN_ARGS
-current_version=$($MVN org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
+# Build with JDK 25, the fuzzers run on the JDK of the image.
+MVN_JDK25="env JAVA_HOME=$SRC/jdk25 $MVN"
+$MVN_JDK25 -pl main package dependency:copy-dependencies -Dmaven.test.skip=true -DincludeScope=runtime \
+  -DoutputDirectory=$OUT/dependencies
+current_version=$($MVN_JDK25 -pl main org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
 -Dexpression=project.version -q -DforceStdout)
 cp "target/kryo-$current_version.jar" $OUT/kryo.jar
 
-ALL_JARS="kryo.jar"
+# Kryo 5 needs reflectasm, objenesis and minlog at runtime, Kryo 6 has no required dependencies.
+ALL_JARS="kryo.jar $(cd $OUT && ls dependencies/*.jar | tr '\n' ' ')"
 
 # The classpath at build-time includes the project jars in $OUT as well as the
 # Jazzer API.
