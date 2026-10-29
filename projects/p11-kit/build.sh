@@ -21,6 +21,9 @@ make -j$(nproc) common/basic.asn.h common/openssl.asn.h common/pkix.asn.h
 make -j$(nproc) oss-fuzz
 
 cd fuzz
+# Start corpus zips clean: zip -rj only updates, so stale entries from
+# earlier builds would survive seed removal.
+rm -f "$OUT"/*_seed_corpus.zip
 for dir in *.in; do
     fuzzer=$(basename $dir .in)_fuzzer
     zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${dir}/"
