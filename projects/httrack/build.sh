@@ -24,7 +24,7 @@ ax_cv_check_cflags___fcf_protection=no \
     ./configure --disable-shared --disable-https AR=llvm-ar RANLIB=llvm-ranlib
 make -j"$(nproc)" -C src libhttrack.la
 
-for f in charset meta idna entities unescape filters url; do
+for f in charset meta idna entities unescape filters url warc; do
     $CC $CFLAGS -DHAVE_CONFIG_H -I. -Isrc -Isrc/coucal \
         -c "fuzz/fuzz-$f.c" -o "fuzz-$f.o"
     # shellcheck disable=SC2086
