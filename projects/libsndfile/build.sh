@@ -20,7 +20,16 @@ apt-get update
 ./ossfuzz/ossfuzz.sh
 
 # To make CIFuzz fast, see here for details: https://github.com/libsndfile/libsndfile/pull/796
-for fuzzer in sndfile_alt_fuzzer sndfile_fuzzer; do
+for fuzzer in sndfile_alt_fuzzer sndfile_fuzzer sndfile_fmt_fuzzer; do
   echo "[libfuzzer]" > ${OUT}/${fuzzer}.options
   echo "close_fd_mask = 3" >> ${OUT}/${fuzzer}.options
 done
+
+# Seed corpus for the format fuzzer
+fmtseed="$SRC/fmt_seeds"
+mkdir -p "$fmtseed"
+for i in 0 1 2 3 4 5 6 7; do
+  printf "\\x0$i" > "$fmtseed/sel_$i"
+  head -c 512 /dev/urandom >> "$fmtseed/sel_$i"
+done
+zip -j -q "$OUT/sndfile_fmt_fuzzer_seed_corpus.zip" "$fmtseed"/*

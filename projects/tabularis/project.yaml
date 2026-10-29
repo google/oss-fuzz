@@ -1,0 +1,4 @@
+homepage: "https://tabularis.dev"
+main_repo: "https://github.com/TabularisDB/tabularis.git"
+language: rust
+primary_contact: "andrea@debbaweb.it"
