@@ -43,6 +43,8 @@ else
       llvm-parse-assembly-fuzzer \
       llvm-symbol-reader-fuzzer \
       llvm-object-yaml-fuzzer \
+      lldb-target-fuzzer \
+      lldb-corefile-fuzzer \
     )
   else
     readonly FUZZERS=( \
@@ -65,6 +67,8 @@ else
       llvm-parse-assembly-fuzzer \
       llvm-symbol-reader-fuzzer \
       llvm-object-yaml-fuzzer \
+      lldb-target-fuzzer \
+      lldb-corefile-fuzzer \
     )
   fi
 fi
@@ -92,7 +96,7 @@ mkdir build
 cd build
 
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
-    -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" \
+    -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra;lldb" \
     -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;compiler-rt" \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DLLVM_USE_LINKER=lld \
@@ -106,7 +110,15 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly \
     -DCOMPILER_RT_INCLUDE_TESTS=OFF \
     -DLLVM_ENABLE_PCH=OFF \
-    -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+    -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
+    -DLLDB_ENABLE_PYTHON=OFF \
+    -DLLDB_ENABLE_SWIG=OFF \
+    -DLLDB_ENABLE_LUA=OFF \
+    -DLLDB_ENABLE_LIBEDIT=OFF \
+    -DLLDB_ENABLE_CURSES=OFF \
+    -DLLDB_ENABLE_LIBXML2=OFF \
+    -DLLDB_ENABLE_TREESITTER=OFF \
+    -DLLDB_INCLUDE_TESTS=OFF
 
 # Patch certain build rules in code coverage mode, as otherwise the process is killed.
 # Verify we can build some of the troublesome rules by building them.
@@ -187,3 +199,13 @@ done
 zip -j "${OUT}/clang-objc-fuzzer_seed_corpus.zip"  $SRC/$LLVM/../clang/tools/clang-fuzzer/corpus_examples/objc/*
 zip -j "${OUT}/clangd-fuzzer_seed_corpus.zip"  $SRC/$LLVM/../clang-tools-extra/clangd/test/*
 zip -j "${OUT}/clang-fuzzer_seed_corpus.zip" $SRC/llvm-project/clang/test/Parser/*.cpp
+
+# LLDB fuzzer dictionaries and shared library.
+LLDB_FUZZER_DIR=$SRC/llvm-project/lldb/tools/lldb-fuzzer
+cp $LLDB_FUZZER_DIR/lldb-target-fuzzer/target.dict     $OUT/lldb-target-fuzzer.dict
+cp $LLDB_FUZZER_DIR/lldb-corefile-fuzzer/corefile.dict $OUT/lldb-corefile-fuzzer.dict
+
+# lldb-target-fuzzer links the shared liblldb, so ship it next to the binary.
+mkdir -p $OUT/lib
+cp -a lib/liblldb.so* $OUT/lib/
+patchelf --set-rpath '$ORIGIN/lib' $OUT/lldb-target-fuzzer
