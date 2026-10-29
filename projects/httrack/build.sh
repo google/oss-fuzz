@@ -25,7 +25,7 @@ ax_cv_check_cflags___fcf_protection=no \
 make -j"$(nproc)" -C src libhttrack.la
 
 for f in charset codepage meta idna entities unescape filters url header \
-    cachendx htsparse singlefile sitemap arc; do
+    cachendx htsparse singlefile sitemap arc cookie; do
     # Three targets need an extra source, as fuzz/Makefile.am lists them.
     defs=()
     srcs=()
