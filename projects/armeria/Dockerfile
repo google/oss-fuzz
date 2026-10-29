@@ -16,11 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-jvm
 
-# Armeria resolves a GraalVM 17 toolchain at configuration time and requires an Azul JDK 25 toolchain.
-# TODO: Remove GraalVM (here and in build.sh) once Armeria resolves it lazily, only for native image tasks.
-RUN mkdir graalvm17 zulu25 && \
-    curl -sSL https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-17.0.9/graalvm-community-jdk-17.0.9_linux-x64_bin.tar.gz \
-      | tar xz --strip-components=1 -C graalvm17 && \
+# Armeria requires an Azul JDK 25 toolchain.
+RUN mkdir zulu25 && \
     curl -sSL https://cdn.azul.com/zulu/bin/zulu25.36.205-ca-jdk25.0.4.1-linux_x64.tar.gz \
       | tar xz --strip-components=1 -C zulu25
 

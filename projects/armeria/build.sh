@@ -17,7 +17,7 @@
 
 cat >> gradle.properties << EOF
 org.gradle.java.installations.auto-download=false
-org.gradle.java.installations.paths=$SRC/graalvm17,$SRC/zulu25
+org.gradle.java.installations.paths=$SRC/zulu25
 EOF
 
 ./gradlew -I $SRC/copy-deps.gradle :core:jar :core:copyRuntimeDeps -PbuildJdkVersion=25 -PnoLint -PnoWeb --no-daemon
