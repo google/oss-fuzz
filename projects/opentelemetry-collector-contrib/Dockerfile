@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN git clone --depth 1 https://github.com/open-telemetry/opentelemetry-collector
-RUN git clone --depth=1 https://github.com/dvyukov/go-fuzz-corpus
-RUN git clone --depth 1 https://github.com/AdamKorcz/opentelemetry-collector-contrib --branch=fuzz
-WORKDIR opentelemetry-collector
-COPY build.sh dict $SRC/
+RUN git clone --depth 1 https://github.com/open-telemetry/opentelemetry-collector-contrib
+WORKDIR $SRC/opentelemetry-collector-contrib
+COPY build.sh $SRC/
