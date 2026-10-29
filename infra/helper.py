@@ -1066,24 +1066,18 @@ def _get_latest_public_corpus(args, fuzzer):
       fuzz_target=project_qualified_fuzz_target_name)
 
   cmd = ['wget', download_url, '-O', target_zip]
-  try:
-    with open(os.devnull, 'w') as stdout:
-      subprocess.check_call(cmd, stdout=stdout)
-  except OSError:
-    logger.error('Failed to download corpus')
+  with open(os.devnull, 'w') as stdout:
+    subprocess.check_call(cmd, stdout=stdout)
 
   target_fuzzer_dir = os.path.join(target_corpus_dir, fuzzer)
   if not os.path.isdir(target_fuzzer_dir):
     os.mkdir(target_fuzzer_dir)
 
   target_corpus_dir = os.path.join(target_corpus_dir, fuzzer)
-  try:
-    with open(os.devnull, 'w') as stdout:
-      subprocess.check_call(
-          ['unzip', '-q', '-o', target_zip, '-d', target_fuzzer_dir],
-          stdout=stdout)
-  except OSError:
-    logger.error('Failed to unzip corpus')
+  with open(os.devnull, 'w') as stdout:
+    subprocess.check_call(
+        ['unzip', '-q', '-o', target_zip, '-d', target_fuzzer_dir],
+        stdout=stdout)
 
   # Remove the downloaded zip
   os.remove(target_zip)
