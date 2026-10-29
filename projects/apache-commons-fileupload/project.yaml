@@ -1,14 +1,11 @@
-homepage: "https://commons.apache.org/proper/commons-fileupload/"
+homepage: "https://eclipse-ee4j.github.io/mail"
 language: jvm
+primary_contact: "maintainer@example.com"   # ✅ Add real maintainer email
 fuzzing_engines:
-  - libfuzzer
-main_repo: "https://github.com/apache/commons-fileupload.git"
-primary_contact: "fuzz-testing@commons.apache.org"
+  - "libfuzzer"
 sanitizers:
-  - address
-auto_ccs:
-  - "security@commons.apache.org"
+  - "address"
+main_repo: "https://github.com/eclipse-ee4j/angus-mail.git"
 vendor_ccs:
-  - "yakdan@code-intelligence.com"
   - "patrice.salathe@code-intelligence.com"
-  - "jacek.trossen@code-intelligence.com"
+  - "yakdan@code-intelligence.com"
