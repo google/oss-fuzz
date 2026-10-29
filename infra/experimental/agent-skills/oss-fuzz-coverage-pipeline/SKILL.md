@@ -114,6 +114,17 @@ Produce a written target list via **fuzzing-coverage-targeting** (worth model, d
 3. Cross-check Fuzz Introspector for **statically reached but dynamically unreached** functions: reachable from harnesses but never hit in the coverage report. These are prime targets (seeds, dictionaries and harness adjustment to convert static reachability into real coverage).
 4. Classify each candidate security-sensitive or not; the point is attack surface, not raw percentage. In scope: file-format parsers and loaders, wire-protocol handlers, deserialisers, decompression and codec paths, custom string and number parsing on untrusted data, path and filename handling, IPC message handling, state machines driven by untrusted input, crypto primitives. Out of scope, usually: diagnostic logging and printf-style output, UI code, config writing, build tooling and test helpers, unless untrusted data reaches them.
 5. Record per target: the metric that flagged it, whether it is seed-limited or harness-limited, and the expected bug class.
+### Phase 2.5: Coverage improvement obligation (mandatory when coverage is low)
+
+After live coverage triage, apply this gate:
+
+- If the project's own-code line coverage is **below 15%**, the skill **must** produce at least one deliverable improvement pair before the project can be marked `delivered`.
+- The obligation is recorded in the manifest as `coverage-obligation: <threshold=15%>` and the target coverage goal.
+- This overrides any "already viable" early exit. The agent is required to:
+  - Propose and implement at least one new fuzzer targeting a dark security-sensitive area, **or**
+  - Significantly expand the corpus + dictionary for existing fuzzers with measurable coverage gain (documented before/after `summary.json` or `reports-by-target`).
+- Only after this obligation is satisfied (and validated via the quality gate in Phase 5) may the project be marked `delivered`.
+- Projects already above 15% own-code coverage may exit early if no other work is needed.
 
 ### Phase 3: Act on the targets
 
@@ -131,6 +142,9 @@ Choose the harness shape per **fuzzing-coverage-targeting**'s pattern catalogue 
 ### Phase 4: Stage in worktree duo pairs
 
 Follow [references/worktree_delivery.md](references/worktree_delivery.md) precisely. Essentials:
+- All remaining corpora, dictionaries and options changes with no fuzzer change are consolidated into a **single standalone pair** with the suffix `-corpus-dict-options`.
+- A general build fix not tied to one fuzzer gets its own pair with the suffix `-build-fix`; build-configuration changes a specific fuzzer needs ride inside that fuzzer's pair.
+- When the coverage obligation in Phase 2.5 is active, the primary deliverable type becomes **`-coverage-improvement`**. This pair may contain new fuzz targets, expanded corpora + dictionaries, and minor fuzz build configuration changes. It is the only pair type allowed to satisfy the coverage obligation.
 
 - A **duo pair is always created**, even when no OSS-Fuzz changes are needed, because all testing goes through the temporary copy bridge in the OSS-Fuzz side Dockerfile, and the main checkouts must stay clean.
 - Branches: OSS-Fuzz side `oss-fuzz-<project>-<suffix>`, upstream side `<project>-<suffix>`; the identical `<suffix>` is what pairs them.

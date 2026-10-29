@@ -1491,13 +1491,14 @@ def _run_sessions(task, args):
 
   task_description = getattr(args, 'task_description', None)
   pipeline_cap = getattr(args, 'cap', 5)
-  _, report_name = build_prompt(task, projects[0], task_description,
-                                 pipeline_cap=pipeline_cap)
+  _, report_name = build_prompt(task,
+                                projects[0],
+                                task_description,
+                                pipeline_cap=pipeline_cap)
 
   if args.print_only:
     for project in projects:
-      print_prompt(task, project, task_description,
-                   pipeline_cap=pipeline_cap)
+      print_prompt(task, project, task_description, pipeline_cap=pipeline_cap)
     return
 
   agent_cli = args.agent or find_agent_cli()
@@ -1524,8 +1525,7 @@ def _run_sessions(task, args):
   with concurrent.futures.ThreadPoolExecutor(
       max_workers=max_parallel) as executor:
     futures = {
-        executor.submit(_run_single_session, agent_cli, task, project,
-                        task_description, 1, 1, 'medium', pipeline_cap):
+        executor.submit(_run_single_session, agent_cli, task, project, task_description, 1, 1, 'medium', pipeline_cap):
             project for project in projects
     }
     for future in concurrent.futures.as_completed(futures):
@@ -1812,11 +1812,10 @@ def _pipeline_stop_reached(project):
                               'manifest')
   candidates = [
       os.path.join(manifest_dir, f'{project}.md'),
-      os.path.join(OSS_FUZZ_ROOT, 'build', 'coverage-pipeline',
-                   'manifest.md'),
+      os.path.join(OSS_FUZZ_ROOT, 'build', 'coverage-pipeline', 'manifest.md'),
   ]
-  pattern = re.compile(
-      rf'^\s*\**\s*stop\s*:\s*{re.escape(project)}\s*:', re.IGNORECASE)
+  pattern = re.compile(rf'^\s*\**\s*stop\s*:\s*{re.escape(project)}\s*:',
+                       re.IGNORECASE)
   for manifest in candidates:
     if not os.path.isfile(manifest):
       continue
@@ -1837,7 +1836,7 @@ def _disk_space_ok():
     usage = shutil.disk_usage(OSS_FUZZ_ROOT)
   except OSError:
     return True
-  return usage.free >= MIN_FREE_DISK_GB * 1024 ** 3
+  return usage.free >= MIN_FREE_DISK_GB * 1024**3
 
 
 def _collate_fragments(fragment_dir, merged_path, header):
@@ -1872,12 +1871,12 @@ def _run_pipeline_relay(agent_cli, args, project):
             'cleanly. The session should record a budget-exhausted (disk) '
             'stop with deferred entries if it runs at all.')
       return {'project': project, 'returncode': 0, 'log_path': None}
-    task = ('coverage-pipeline' if session_num == 1
-            else 'coverage-pipeline-continue')
+    task = ('coverage-pipeline'
+            if session_num == 1 else 'coverage-pipeline-continue')
     print(f'[*] {project}: launching session {session_num}/{max_sessions} '
           f'({task})')
-    result = _run_single_session(agent_cli, task, project, None, 1, 1,
-                                 'medium', args.cap)
+    result = _run_single_session(agent_cli, task, project, None, 1, 1, 'medium',
+                                 args.cap)
     if _pipeline_stop_reached(project):
       print(f'[*] {project}: terminal stop recorded; relay complete.')
       return result
@@ -1942,8 +1941,7 @@ def cmd_coverage_pipeline(args):
   if args.print_only:
     for project in projects:
       print_prompt('coverage-pipeline', project, pipeline_cap=args.cap)
-      print_prompt('coverage-pipeline-continue', project,
-                   pipeline_cap=args.cap)
+      print_prompt('coverage-pipeline-continue', project, pipeline_cap=args.cap)
     return
 
   agent_cli = args.agent or find_agent_cli()
@@ -1965,8 +1963,8 @@ def cmd_coverage_pipeline(args):
   with concurrent.futures.ThreadPoolExecutor(
       max_workers=args.max_parallel) as executor:
     futures = {
-        executor.submit(_run_pipeline_relay, agent_cli, args, project):
-            project for project in projects
+        executor.submit(_run_pipeline_relay, agent_cli, args, project): project
+        for project in projects
     }
     for future in concurrent.futures.as_completed(futures):
       future.result()
@@ -2457,8 +2455,9 @@ def main():
                            help='OSS-Fuzz project names.')
   show_parser.add_argument(
       '--task',
-      choices=['expand', 'fix-build', 'free-task', 'add-chronos',
-               'coverage-pipeline'],
+      choices=[
+          'expand', 'fix-build', 'free-task', 'add-chronos', 'coverage-pipeline'
+      ],
       default='expand',
       help='Which task prompt to show (default: expand).',
   )
