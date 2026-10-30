@@ -15,5 +15,6 @@
 #
 ################################################################################
 
-# The target list lives with the targets, in the plakar repository.
+# The targets and their list live in PlakarKorp/QA, under plakar/, built
+# against the plakar clone beside it.
 ./fuzz/oss-fuzz-build.sh
