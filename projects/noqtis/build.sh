@@ -29,7 +29,7 @@ for f in fuzz/f*.c; do
   (cd "fuzz/corpus/$t" && zip -q -r "$OUT/${t}_seed_corpus.zip" .)
   case $t in
     fder | fx509 | focsp | ftsp | fcls) cp fuzz/der.dict "$OUT/$t.dict" ;;
-    fjson | fcap) cp fuzz/json.dict "$OUT/$t.dict" ;;
+    fjson | fcap | fproof) cp fuzz/json.dict "$OUT/$t.dict" ;;
     fkey) cp fuzz/key.dict "$OUT/$t.dict" ;;
   esac
 done
