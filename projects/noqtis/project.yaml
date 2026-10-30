@@ -1,0 +1,15 @@
+homepage: "https://github.com/rootcoder007/noqtis"
+main_repo: "https://github.com/rootcoder007/noqtis"
+language: c
+primary_contact: "vsruhela@proton.me"
+vendor_ccs: []
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+architectures:
+  - x86_64
