@@ -1,0 +1,4 @@
+POST /axis2/services/FuzzService HTTP/1.1
+Content-Type: application/soap+xml; charset=UTF-8; action="urn:echoBean"
+
+<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"><soapenv:Body><ns:echoBean xmlns:ns="http://services.axis2.fuzz" xmlns:ax="http://services.axis2.fuzz/xsd"><ns:args0><ax:child><ax:name>c</ax:name></ax:child><ax:data>AAEC</ax:data><ax:flag>true</ax:flag><ax:id>7</ax:id><ax:name>n</ax:name><ax:tags>a</ax:tags><ax:tags>b</ax:tags><ax:value>1.5</ax:value><ax:when>2026-01-01T00:00:00Z</ax:when></ns:args0></ns:echoBean></soapenv:Body></soapenv:Envelope>

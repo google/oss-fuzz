@@ -1,0 +1,3 @@
+GET /axis2/services/FuzzService?xsd=xsd0.xsd HTTP/1.1
+Host: localhost
+

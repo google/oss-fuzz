@@ -1,0 +1,17 @@
+POST /axis2/services/FuzzService HTTP/1.1
+Content-Type: multipart/related; boundary=MB; type="application/xop+xml"; start="<root>"; start-info="text/xml"
+SOAPAction: "urn:upload"
+
+--MB
+Content-Type: application/xop+xml; charset=UTF-8; type="text/xml"
+Content-Transfer-Encoding: binary
+Content-ID: <root>
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body><ns:upload xmlns:ns="http://services.axis2.fuzz"><ns:args0>f.bin</ns:args0><ns:args1><xop:Include xmlns:xop="http://www.w3.org/2004/08/xop/include" href="cid:att"/></ns:args1></ns:upload></soapenv:Body></soapenv:Envelope>
+--MB
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: binary
+Content-ID: <att>
+
+BINARYDATA
+--MB--
