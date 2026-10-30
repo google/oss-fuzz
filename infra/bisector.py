@@ -112,7 +112,7 @@ def main():
     return 1
   if result.commit == args.old_commit:
     logging.error(
-        'Bisection Error: Both the first and the last commits in'
+        'Bisection Error: Both the first and the last commits in '
         'the given range have the same behavior, bisection is not possible. ')
     return 1
   if args.type == 'regressed':

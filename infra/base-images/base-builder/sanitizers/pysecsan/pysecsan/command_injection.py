@@ -84,7 +84,7 @@ def hook_pre_exec_subprocess_Popen(cmd, **kwargs):
         found_dashes = True
       if not found_dashes and check_code_injection_match(cmd[idx]):
         sanlib.abort_with_issue(
-            'command injection likely by way of mercurial. The following'
+            'command injection likely by way of mercurial. The following '
             f'command {str(cmd)} is executed, and if you substitute {cmd[idx]} '
             'with \"--config=alias.init=!touch HELLO_PY\" then you will '
             'create HELLO_PY', 'Command injection')
