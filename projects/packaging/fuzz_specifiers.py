@@ -60,7 +60,7 @@ def fuzz_specifier_set(fdp):
   r2 = s2.to_range()
   for op in (r1.intersection, r1.union, r1.difference):
     result = op(r2)
-    result.is_empty()
+    result.is_empty
     result.to_specifier_set()
   r1.complement()
   r1.is_subset(r2)
