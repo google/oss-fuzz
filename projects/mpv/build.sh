@@ -83,7 +83,7 @@ meson setup build --wrap-mode=nodownload -Dbuildtype=plain -Dbackend_max_links=4
                   -Dlibplacebo:lcms=enabled -Dlibplacebo:xxhash=enabled -Dlibplacebo:demos=false \
                   -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled \
                   -Dlibass:fontconfig=enabled -Dlibass:asm=disabled \
-                  -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS -DMPV_FONTCONFIG_SYSROOT=./$FC_SYSROOT" \
+                  -Dc_args="$CFLAGS -DMPV_FONTCONFIG_SYSROOT=./$FC_SYSROOT" -Dcpp_args="$CXXFLAGS -DMPV_FONTCONFIG_SYSROOT=./$FC_SYSROOT" \
                   -Dc_link_args="$CFLAGS" -Dcpp_link_args="$CXXFLAGS" \
                   --libdir $LIBDIR
 meson compile -C build fuzzers
