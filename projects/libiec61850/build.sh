@@ -31,4 +31,10 @@ for src in ../fuzz/*.c; do
 		-o "$OUT/${fuzzer}" ./src/libiec61850.a ./hal/libhal.a
 	# Disable leak detection for these stateful receive/server harnesses.
 	printf '[asan]\ndetect_leaks=0\n' > "$OUT/${fuzzer}.options"
+       if [ -f "../fuzz/${fuzzer}.dict" ]; then
+               cp "../fuzz/${fuzzer}.dict" "$OUT/${fuzzer}.dict"
+       fi
+       if [ -d "../fuzz/corpus/${fuzzer}" ]; then
+               (cd "../fuzz/corpus/${fuzzer}" && zip -q -r "$OUT/${fuzzer}_seed_corpus.zip" .)
+       fi
 done
