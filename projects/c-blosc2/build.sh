@@ -33,3 +33,11 @@ zip -j $OUT/decompress_frame_fuzzer_seed_corpus.zip tests/fuzz/corpus/*
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';'
+
+# Build the plugin seed-corpus generator
+$CC $CFLAGS -I$SRC/c-blosc2/include -o $SRC/c-blosc2/gen_plugins_corpus \
+    $SRC/c-blosc2/tests/fuzz/gen_plugins_corpus.c \
+    $SRC/c-blosc2/blosc/libblosc2.a -lpthread -lm -ldl
+mkdir -p $SRC/plugins_corpus
+ASAN_OPTIONS=detect_leaks=0 $SRC/c-blosc2/gen_plugins_corpus $SRC/plugins_corpus
+zip -j -q $OUT/plugins_fuzzer_seed_corpus.zip $SRC/plugins_corpus/*
