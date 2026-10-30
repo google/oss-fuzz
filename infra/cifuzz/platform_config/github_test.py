@@ -25,9 +25,14 @@ import test_helpers
 class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
   """Tests for get_project_repo_owner and get_project_repo_name."""
 
-  @mock.patch('platform_config.github._get_event_data', return_value={})
-  def setUp(self, _):
+  def setUp(self):
+    # Fix #1: Use patcher.start() + addCleanup instead of @mock.patch on setUp
     test_helpers.patch_environ(self)
+    patcher = mock.patch(
+        'platform_config.github._get_event_data', return_value={})
+    patcher.start()
+    self.addCleanup(patcher.stop)
+
     self.repo_owner = 'repo-owner'
     self.repo_name = 'repo-name'
     os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
@@ -41,7 +46,7 @@ class GetProjectRepoOwnerAndNameTest(unittest.TestCase):
   def test_github_repository_name(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
-    os.environ['GITHUB_REPOSITORY'] = f'{self.repo_owner}/{self.repo_name}'
+    # Fix #2: Removed redundant os.environ set (already done in setUp)
     self.assertEqual(self.platform_conf.project_repo_name, self.repo_name)
 
 
@@ -74,14 +79,24 @@ class ProjectSrcPathTest(unittest.TestCase):
 class GetGitUrlTest(unittest.TestCase):
   """Tests for GenericPlatformConfig.git_url."""
 
-  @mock.patch('platform_config.github._get_event_data', return_value={})
-  def setUp(self, _):
+  def setUp(self):
+    # Fix #1: Use patcher.start() + addCleanup instead of @mock.patch on setUp
     test_helpers.patch_environ(self)
+    patcher = mock.patch(
+        'platform_config.github._get_event_data', return_value={})
+    patcher.start()
+    self.addCleanup(patcher.stop)
     self.platform_conf = platform_config.github.PlatformConfig()
 
   def test_repository(self):
     """Tests that the correct result is returned when repository contains the
     owner and repo name (as it does on GitHub)."""
-    os.environ['GITHUB_REPOSITORY'] = 'repo/owner'
-    self.assertEqual('https://github.com/repo/owner',
+    # Fix #3: Corrected order to owner/repo (GitHub convention)
+    os.environ['GITHUB_REPOSITORY'] = 'owner/repo'
+    self.assertEqual('https://github.com/owner/repo',
                      self.platform_conf.git_url)
+
+
+# Fix #4: Added standard unittest entry point
+if __name__ == '__main__':
+  unittest.main()
