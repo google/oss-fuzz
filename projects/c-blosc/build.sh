@@ -33,6 +33,17 @@ make -j$(nproc)
 # Package seed corpus
 zip -j $OUT/decompress_fuzzer_seed_corpus.zip compat/*.cdata
 
+# getitem_fuzzer consumes real-versioned frames as seeds; its harness reads
+# start/nitems from 4 trailing bytes, so append a valid tail (start=0,
+# nitems=2048) to each frame instead of shipping the frames bare
+mkdir -p /tmp/getitem-seeds
+for f in compat/*.cdata; do
+    t=/tmp/getitem-seeds/$(basename "$f").tail
+    cp "$f" "$t"
+    printf '\x00\x00\x08\x00' >> "$t"
+done
+zip -j $OUT/getitem_fuzzer_seed_corpus.zip /tmp/getitem-seeds/*
+cp -v $SRC/getitem_fuzzer.options $OUT/
 # Copy the fuzzer executables, zip-ed corpora, and dictionary files to $OUT
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
