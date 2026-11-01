@@ -113,9 +113,9 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     return True
 
   def upload_build(self):
-    """Upload build."""
+    """Upload build. Returns True on success."""
     if self.config.upload_build:
-      self.clusterfuzz_deployment.upload_build(
+      return self.clusterfuzz_deployment.upload_build(
           self.repo_manager.get_current_commit())
 
     return True

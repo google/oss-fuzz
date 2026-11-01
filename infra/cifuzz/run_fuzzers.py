@@ -50,6 +50,8 @@ class BaseFuzzTargetRunner:
     # Set by the initialize method.
     self.fuzz_target_paths = None
 
+    self.failed_corpus_uploads = []
+
   def get_fuzz_targets(self):
     """Returns fuzz targets in out directory."""
     return utils.get_fuzz_targets(self.workspace.out)
@@ -174,9 +176,9 @@ class PruneTargetRunner(BaseFuzzTargetRunner):
     """Prunes with |fuzz_target_obj| and returns the result."""
     result = fuzz_target_obj.prune()
     logging.debug('Corpus path contents: %s.', os.listdir(result.corpus_path))
-    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
-                                              result.corpus_path,
-                                              replace=True)
+    if not self.clusterfuzz_deployment.upload_corpus(
+        fuzz_target_obj.target_name, result.corpus_path, replace=True):
+      self.failed_corpus_uploads.append(fuzz_target_obj.target_name)
     return result
 
   def cleanup_after_fuzz_target_run(self, fuzz_target_obj):  # pylint: disable=no-self-use
@@ -270,8 +272,9 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     """Fuzzes with |fuzz_target_obj| and returns the result."""
     result = fuzz_target_obj.fuzz(batch=True)
     logging.debug('Corpus path contents: %s.', os.listdir(result.corpus_path))
-    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
-                                              result.corpus_path)
+    if not self.clusterfuzz_deployment.upload_corpus(
+        fuzz_target_obj.target_name, result.corpus_path):
+      self.failed_corpus_uploads.append(fuzz_target_obj.target_name)
     return result
 
   def cleanup_after_fuzz_target_run(self, fuzz_target_obj):
@@ -314,6 +317,10 @@ def run_fuzzers(config):  # pylint: disable=too-many-locals
     return RunFuzzersResult.ERROR
 
   if not fuzz_target_runner.run_fuzz_targets():
+    if fuzz_target_runner.failed_corpus_uploads:
+      logging.error('Failed to upload corpus for targets: %s.',
+                    ', '.join(fuzz_target_runner.failed_corpus_uploads))
+      return RunFuzzersResult.ERROR
     # We fuzzed successfully, but didn't find any bugs (in the fuzz target).
     return RunFuzzersResult.NO_BUG_FOUND
 
