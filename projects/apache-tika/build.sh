@@ -46,7 +46,7 @@ for fuzzer in $(find $SRC/project-parent -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
 
   # skip helper class which is not a fuzz-target
-  if [ "$fuzzer_basename" == "ParserFuzzer"]; then
+  if [ "$fuzzer_basename" == "ParserFuzzer" ]; then
     continue;
   fi
 

@@ -13,16 +13,31 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
     apt-get install -y python3-pip gtk-doc-tools libffi-dev autotools-dev libtool gperf
-RUN pip3 install -U meson==1.4.0 ninja packaging
+RUN pip3 install -U meson==1.6.0 ninja packaging
 
-RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib
 RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git && \
     zip -q $SRC/cairo_seed_corpus.zip $SRC/cairo/test/reference/* && \
     zip -q $SRC/svg-render-fuzzer_seed_corpus.zip $SRC/cairo/test/svg/*.svg
+RUN cd cairo && meson subprojects download
+
+# pre-install all dependencies into /deps to exclude them from fuzz-introspector
+RUN mkdir /deps && cd cairo && \
+    meson subprojects foreach \
+        meson setup \
+            --prefix=/deps \
+            --libdir=lib \
+            --default-library=static \
+            -Db_lundef=false \
+            _builddir && \
+    meson subprojects foreach \
+        ninja -C _builddir && \
+    meson subprojects foreach \
+        ninja -C _builddir install
+# *convince* fuzz-introspector not to analyze all harnesses in subprojects
+RUN rm -rf cairo/subprojects/*
 
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $SRC/cairo.dict
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/svg.dict $SRC/svg-render-fuzzer.dict

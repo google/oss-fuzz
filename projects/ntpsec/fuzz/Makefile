@@ -18,7 +18,8 @@ libntp=-L$(LIBINC)/libntp/ -lntp
 libaes_siv=-L$(LIBINC)/libaes_siv/ -laes_siv
 extra_lib=-lssl -lcrypto
 setup_inc=setup.o
-LIB=$(ntpd_lib) $(libntp) $(libaes_siv) $(extra_lib) $(setup_inc)
+# setup.o before ntpd_lib so its stubs win over the archive members
+LIB=$(setup_inc) $(ntpd_lib) $(libntp) $(libaes_siv) $(extra_lib)
 
 all: $(TARGET)
 

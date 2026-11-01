@@ -20,10 +20,10 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    if (size <= 32 || size > 1024) return 0;
-
     angle::base::SecureHashAlgorithm sha;
     sha.Update(data, size);
+    sha.Final();
+    (void)sha.Digest();
 
     return 0;
 }

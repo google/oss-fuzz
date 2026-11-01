@@ -16,4 +16,5 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
+# project is archived
+disabled: true

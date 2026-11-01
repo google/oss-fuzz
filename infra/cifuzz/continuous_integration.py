@@ -156,11 +156,14 @@ def get_replace_repo_and_build_command(host_repo_path, image_repo_path):
   """Returns the command to replace the repo located at |image_repo_path| with
   |host_repo_path| and build the project inside the project builder
   container."""
-  rm_path = os.path.join(image_repo_path, '*')
-  image_src_path = os.path.dirname(image_repo_path)
   build_command = get_build_command()
-  command = (f'cd / && rm -rf {rm_path} && cp -r {host_repo_path} '
-             f'{image_src_path} && cd - && {build_command}')
+  if host_repo_path is None:
+    command = f'{build_command}'
+  else:
+    rm_path = os.path.join(image_repo_path, '*')
+    image_src_path = os.path.dirname(image_repo_path)
+    command = (f'cd / && rm -rf {rm_path} && cp -r {host_repo_path} '
+               f'{image_src_path} && cd - && {build_command}')
   return command
 
 

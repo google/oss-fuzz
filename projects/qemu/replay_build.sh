@@ -31,30 +31,16 @@ rm -rf $DEST_DIR/qemu-bundle/opt/qemu-oss-fuzz/bin
 rm -rf $DEST_DIR/qemu-bundle/opt/qemu-oss-fuzz/libexec
 
 
-# Copy over the librarise needed by the fuzzer.
-# These are the libraries copied from https://github.com/qemu/qemu/blob/88b1716a407459c8189473e4667653cb8e4c3df7/scripts/oss-fuzz/build.sh#L78
-# We do it this way, to avoid calling `configure`, which is called twice in the
-# build.sh.
-# Configure poses problems because it relies on network activity and also
-# performance is a lot better without configure.
-cp /lib/x86_64-linux-gnu/libstdc++.so.6 /out/lib/
-cp /lib/x86_64-linux-gnu/libpixman-1.so.0 /out/lib/
-cp /lib/x86_64-linux-gnu/libz.so.1 /out/lib/
-cp /lib/x86_64-linux-gnu/libfdt.so.1 /out/lib/
-cp /lib/x86_64-linux-gnu/libgio-2.0.so.0 /out/lib/
-cp /lib/x86_64-linux-gnu/libgobject-2.0.so.0 /out/lib/
-cp /lib/x86_64-linux-gnu/libglib-2.0.so.0 /out/lib/
-cp /lib/x86_64-linux-gnu/libslirp.so.0 /out/lib/
-cp /lib/x86_64-linux-gnu/libutil.so.1 /out/lib/
-cp /lib/x86_64-linux-gnu/libgmodule-2.0.so.0 /out/lib/
-cp /lib/x86_64-linux-gnu/libm.so.6 /out/lib/
-cp /lib/x86_64-linux-gnu/libpthread.so.0 /out/lib/
-cp /lib/x86_64-linux-gnu/librt.so.1 /out/lib/
-cp /lib/x86_64-linux-gnu/libdl.so.2 /out/lib/
-cp /lib/x86_64-linux-gnu/libresolv.so.2 /out/lib/
-cp /lib/x86_64-linux-gnu/libgcc_s.so.1 /out/lib/
-cp /lib/x86_64-linux-gnu/libc.so.6 /out/lib/
-cp /lib/x86_64-linux-gnu/libffi.so.7 /out/lib/
+# Copy over the libraries needed by the fuzzer, mirroring what
+# scripts/oss-fuzz/build.sh does:
+# https://github.com/qemu/qemu/blob/master/scripts/oss-fuzz/build.sh
+# We derive the list with ldd rather than hardcoding sonames, which drift
+# between base images (e.g. libffi.so.7 on ubuntu-20-04 vs libffi.so.8 on
+# ubuntu-24-04), and avoid calling `configure`, which needs network access
+# and is much slower.
+for i in $(ldd ./qemu-fuzz-i386 | cut -f3 -d' '); do
+    cp "$i" "$DEST_DIR/lib/"
+done
 
 export ASAN_OPTIONS=detect_leaks=0
 targets=$(./qemu-fuzz-i386 | grep generic-fuzz | awk '$1 ~ /\*/  {print $2}')

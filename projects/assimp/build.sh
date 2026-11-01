@@ -58,6 +58,24 @@ build_fuzzer "assimp_fuzzer" "../fuzz/assimp_fuzzer.cc"
 cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_fuzzer.dict || true
 
 
+# 1b. Round-trip Fuzzer (import any format, then export to every supported
+#     format to exercise the otherwise-uncovered exporter back-ends).
+build_fuzzer "assimp_roundtrip_fuzzer" "../fuzz/assimp_roundtrip_fuzzer.cc"
+# Reuse the generic all-models corpus and dictionary.
+(cd ../test/models && zip -q -r $OUT/assimp_roundtrip_fuzzer_seed_corpus.zip .)
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_roundtrip_fuzzer.dict || true
+
+
+# 1c. Post-processing Fuzzer (import any format with no post-processing, then
+#     apply a fuzz-selected subset of the post-processing steps that are not in
+#     aiProcessPreset_TargetRealtime_Quality and not enforced by any exporter,
+#     exercising the otherwise-uncovered geometry/graph transform back-ends).
+build_fuzzer "assimp_postprocess_fuzzer" "../fuzz/assimp_postprocess_fuzzer.cc"
+# Reuse the generic all-models corpus and dictionary.
+(cd ../test/models && zip -q -r $OUT/assimp_postprocess_fuzzer_seed_corpus.zip .)
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_postprocess_fuzzer.dict || true
+
+
 # 2. OBJ Fuzzer
 build_fuzzer "assimp_fuzzer_obj" "../fuzz/assimp_fuzzer_obj.cc"
 if [ -d "../test/models/OBJ" ]; then
@@ -113,3 +131,51 @@ if [ -d "../test/models/STL" ]; then
     (cd ../test/models/STL && zip -q -r $OUT/assimp_fuzzer_stl_seed_corpus.zip .)
 fi
 cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_fuzzer_stl.dict || true
+
+
+# 8. 3DS Fuzzer
+build_fuzzer "assimp_fuzzer_3ds" "../fuzz/assimp_fuzzer_3ds.cc"
+if [ -d "../test/models/3DS" ]; then
+    (cd ../test/models/3DS && zip -q -r $OUT/assimp_fuzzer_3ds_seed_corpus.zip .)
+fi
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_fuzzer_3ds.dict || true
+
+
+# 9. 3MF Fuzzer
+build_fuzzer "assimp_fuzzer_3mf" "../fuzz/assimp_fuzzer_3mf.cc"
+if [ -d "../test/models/3MF" ]; then
+    (cd ../test/models/3MF && zip -q -r $OUT/assimp_fuzzer_3mf_seed_corpus.zip .)
+fi
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_fuzzer_3mf.dict || true
+
+
+# 10. AMF Fuzzer
+build_fuzzer "assimp_fuzzer_amf" "../fuzz/assimp_fuzzer_amf.cc"
+if [ -d "../test/models/AMF" ]; then
+    (cd ../test/models/AMF && zip -q -r $OUT/assimp_fuzzer_amf_seed_corpus.zip .)
+fi
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_fuzzer_amf.dict || true
+
+
+# 11. ASE Fuzzer
+build_fuzzer "assimp_fuzzer_ase" "../fuzz/assimp_fuzzer_ase.cc"
+if [ -d "../test/models/ASE" ]; then
+    (cd ../test/models/ASE && zip -q -r $OUT/assimp_fuzzer_ase_seed_corpus.zip .)
+fi
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_fuzzer_ase.dict || true
+
+
+# 12. BLEND Fuzzer
+build_fuzzer "assimp_fuzzer_blend" "../fuzz/assimp_fuzzer_blend.cc"
+if [ -d "../test/models/BLEND" ]; then
+    (cd ../test/models/BLEND && zip -q -r $OUT/assimp_fuzzer_blend_seed_corpus.zip .)
+fi
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_fuzzer_blend.dict || true
+
+
+# 13. IFC Fuzzer
+build_fuzzer "assimp_fuzzer_ifc" "../fuzz/assimp_fuzzer_ifc.cc"
+if [ -d "../test/models/IFC" ]; then
+    (cd ../test/models/IFC && zip -q -r $OUT/assimp_fuzzer_ifc_seed_corpus.zip .)
+fi
+cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_fuzzer_ifc.dict || true

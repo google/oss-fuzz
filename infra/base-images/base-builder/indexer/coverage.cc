@@ -46,8 +46,45 @@ bool IsStandardLibrary(const char* file_path) {
           strstr(file_path, "/absl/"));
 }
 
+const char* GetAsanCoverageDir() {
+  const char* asan_opts = getenv("ASAN_OPTIONS");
+  if (!asan_opts) return nullptr;
+  const char* p = strstr(asan_opts, "coverage_dir=");
+  if (!p) return nullptr;
+  p += strlen("coverage_dir=");
+  static char dir[1024];
+  size_t i = 0;
+  while (p[i] != '\0' && p[i] != ',') {
+    if (i < sizeof(dir) - 1) {
+      dir[i] = p[i];
+    }
+    i++;
+  }
+  dir[i] = '\0';
+  return dir;
+}
+
+void WriteSancov(const char* dir) {
+  char path[1024];
+  snprintf(path, sizeof(path), "%s/fuzzer.sancov", dir);
+  int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  if (fd == -1) return;
+  uint64_t magic = 0xC0BFFFFFFFFFFFFF;
+  write(fd, &magic, sizeof(magic));
+  for (size_t i = 0; i < coverage_data->idx; ++i) {
+    uint64_t pc = reinterpret_cast<uint64_t>(coverage_data->pcs[i]);
+    write(fd, &pc, sizeof(pc));
+  }
+  close(fd);
+}
+
 void WriteTrace() {
+  if (!coverage_data) return;
   coverage_data->finished = true;
+  const char* asan_dir = GetAsanCoverageDir();
+  if (asan_dir) {
+    WriteSancov(asan_dir);
+  }
   char* trace_dump_file = getenv("TRACE_DUMP_FILE");
   if (!trace_dump_file) {
     return;
@@ -92,7 +129,6 @@ void Init() {
   atexit(WriteTrace);
   __sanitizer_set_death_callback(WriteTrace);
 }
-
 }  // namespace
 
 extern "C" void __sanitizer_cov_trace_pc_guard_init(uint32_t* start,

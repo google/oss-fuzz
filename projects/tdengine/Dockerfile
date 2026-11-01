@@ -25,3 +25,4 @@ ENV PATH ${PATH}:/tmp/go/bin
 WORKDIR tdengine
 COPY build.sh $SRC/
 COPY *.options $SRC/
+COPY sql-fuzzer.c $SRC/

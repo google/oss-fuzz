@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-# Copy key fuzzers/dict/seeds
-cp -r $SRC/ada-fuzzers/projects/kea $SRC/kea-fuzzer
 
-# Run build script
-$SRC/kea-fuzzer/build.sh
+# Run build script.
+"${SRC}/kea/src/fuzz/build.sh"

@@ -15,11 +15,22 @@
 #
 ################################################################################
 
-mkdir fuzzlpm
-$SRC/LPM/external.protobuf/bin/protoc --cpp_out=fuzzlpm/ -I$SRC/ $SRC/cel-go-lpm.proto
+cd $SRC/cel-go/fuzzing
+
+cp go.mod /tmp/go.mod.bak
+cp go.sum /tmp/go.sum.bak
+cleanup() {
+  mv -f /tmp/go.mod.bak go.mod || true
+  mv -f /tmp/go.sum.bak go.sum || true
+  rm -rf fuzzlpm cel-go-lpm.pb.o go-lpm.o *.a register.go
+}
+trap cleanup EXIT
+
+mkdir -p fuzzlpm
+$SRC/LPM/external.protobuf/bin/protoc --cpp_out=fuzzlpm/ -I$SRC/cel-go/fuzzing $SRC/cel-go/fuzzing/cel-go-lpm.proto
 
 $CXX $CXXFLAGS -DNDEBUG -c -I fuzzlpm/ -I $SRC/LPM/external.protobuf/include fuzzlpm/cel-go-lpm.pb.cc
-$CXX $CXXFLAGS -DNDEBUG -c -I. -I ../libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $SRC/go-lpm.cc
+$CXX $CXXFLAGS -DNDEBUG -c -I. -I $SRC/libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include $SRC/go-lpm.cc
 
 (
 cd $SRC/go114-fuzz-build
@@ -27,10 +38,7 @@ sed -i -e 's/LLVMFuzzerTestOneInput/LPMFuzzerTestOneInput/' main.go
 go build
 )
 
-$SRC/LPM/external.protobuf/bin/protoc --go_out=fuzzlpm/ -I$SRC/ $SRC/cel-go-lpm.proto
-cp fuzzlpm/github.com/google/cel-go/cel/*.pb.go cel/
-
-$SRC/go114-fuzz-build/go114-fuzz-build -func FuzzEval -o fuzz_lpm.a github.com/google/cel-go/cel
+$SRC/go114-fuzz-build/go114-fuzz-build -func FuzzEval -o fuzz_lpm.a cel.dev/cel-go/fuzzing
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE cel-go-lpm.pb.o go-lpm.o \
   fuzz_lpm.a \
   $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
@@ -38,4 +46,11 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE cel-go-lpm.pb.o go-lpm.o \
   -Wl,--start-group $SRC/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
   -o $OUT/fuzz_lpm
 
-compile_go_fuzzer github.com/google/cel-go/cel FuzzCompile fuzz_compile
+printf "package fuzzing\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > register.go
+go mod tidy
+
+compile_native_go_fuzzer cel.dev/cel-go/fuzzing FuzzCompile fuzz_compile
+compile_native_go_fuzzer cel.dev/cel-go/fuzzing FuzzParser fuzz_parser
+compile_native_go_fuzzer cel.dev/cel-go/fuzzing FuzzPrattParser fuzz_pratt_parser
+compile_native_go_fuzzer cel.dev/cel-go/fuzzing FuzzChecker fuzz_checker
+compile_native_go_fuzzer cel.dev/cel-go/fuzzing FuzzInterpreter fuzz_interpreter

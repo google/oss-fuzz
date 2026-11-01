@@ -1,0 +1,10 @@
+# Vorbis header packet signatures (packet type byte + "vorbis")
+ident_header="\x01vorbis"
+comment_header="\x03vorbis"
+setup_header="\x05vorbis"
+# Codebook sync pattern ("BCV")
+codebook_sync="\x42\x43\x56"
+# Vorbis version 0 (only supported version), 32-bit LE
+version="\x00\x00\x00\x00"
+# Framing bit terminator
+framing="\x01"

@@ -22,10 +22,10 @@ echo "using clang : ossfuzz : $CXX : <compileflags>\"$CXXFLAGS\" <linkflags>\"$C
 cat project-config.jam
 cd fuzzers
 # we don't want sanitizers enabled on b2 itself
-ASAN_OPTIONS=detect_leaks=0 b2 clang-ossfuzz -j$(nproc) crypto=openssl fuzz=external sanitize=off stage-large logging=off
+ASAN_OPTIONS=detect_leaks=0 b2 clang-ossfuzz fuzz=external sanitize=off stage-large logging=off webtorrent=on
 cp fuzzers/* $OUT
 
-wget --no-verbose https://github.com/arvidn/libtorrent/releases/download/2.0/corpus.zip
+wget --no-verbose https://github.com/arvidn/libtorrent/releases/download/v2.1.0-rc1/corpus.zip
 unzip -q corpus.zip
 cd corpus
 for f in *; do

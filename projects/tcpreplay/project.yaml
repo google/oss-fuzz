@@ -1,0 +1,34 @@
+# OSS-Fuzz project metadata for tcpreplay.
+#
+# Submit by opening a PR against google/oss-fuzz adding
+# projects/tcpreplay/{project.yaml,Dockerfile,build.sh}, with build.sh being
+# the one alongside this file. See test/fuzz/README.md.
+#
+# This is display metadata only - the Dockerfile is what actually decides
+# which branch gets cloned, currently 4.6.1-beta1 (#1092): the fuzz targets
+# haven't reached master yet, so cloning main_repo's default branch as-is
+# would find no test/fuzz/ at all. Update the Dockerfile, not this file, once
+# that lands on master.
+homepage: "https://tcpreplay.appneta.com/"
+main_repo: "https://github.com/appneta/tcpreplay.git"
+language: c
+primary_contact: "tcpreplay.dev@gmail.com"
+# false, deliberately (flagged in review on the submission PR, #1092): true
+# means OSS-Fuzz auto-files a *public* GitHub issue the moment it finds a
+# crash - for a project whose whole reason for being here is 15 externally
+# reported CVEs in one year, that discloses a vulnerability before anyone
+# has had a chance to look at it privately. false routes findings to
+# primary_contact/auto_ccs by email instead, which is what OSS-Fuzz's own
+# responsible-disclosure timeline (private, then public after a fix or 90
+# days) assumes.
+file_github_issue: false
+# memory (MSan) deliberately excluded: fuzz_fragroute/fuzz_pcap link against
+# the base image's apt-installed libpcap/libdumbnet, not rebuilt from source
+# with MSan instrumentation, so MSan would flag uninitialized-value use
+# inside those libraries that isn't ours to fix - the same reasoning our own
+# CI's asan job uses (ASan+UBSan only, see .github/workflows/github-actions-ci.yml).
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
