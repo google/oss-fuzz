@@ -1,6 +1,6 @@
 homepage: "https://github.com/litespeedtech/lsquic"
 main_repo: "https://github.com/litespeedtech/lsquic.git"
 language: c
-primary_contact: "dtikhonov@live.com"
+primary_contact: "dtikhonov@gmail.com"
 auto_ccs:
   - "gwang@litespeedtech.com"
