@@ -131,7 +131,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     else if (action % 4 == 1) {
         // Fuzz Pattern
         if (fuzz_size < 8) return 0;
-        uint64_t drive_size = *reinterpret_cast<const uint64_t*>(fuzz_data) % (1024 * 1024); // cap at 1MB
+        uint64_t drive_size;
+        std::memcpy(&drive_size, fuzz_data, sizeof(drive_size));
+        drive_size %= 1024 * 1024; // cap at 1MB
         fuzz_data += 8;
         fuzz_size -= 8;
 
@@ -149,7 +151,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     else if (action % 4 == 2) {
         // Fuzz Zero
         if (fuzz_size < 8) return 0;
-        uint64_t drive_size = *reinterpret_cast<const uint64_t*>(fuzz_data) % (1024 * 1024); // cap at 1MB
+        uint64_t drive_size;
+        std::memcpy(&drive_size, fuzz_data, sizeof(drive_size));
+        drive_size %= 1024 * 1024; // cap at 1MB
         fuzz_data += 8;
         fuzz_size -= 8;
 
