@@ -19,10 +19,22 @@ if [ "$SANITIZER" == "introspector" ]; then
   export WARNING_CFLAGS="${CFLAGS}"
 fi
 
+# So the correct architecture specific pkgs are installed.
+# These cant be installed in Dockerfile as they want to overwrite the x86_64 versions.
+if [ a$ARCHITECTURE = ai386 ] ; then
+    NEW_PKGS="pkg-config:i386 libcunit1:i386 libcunit1-dev:i386"
+    apt-get install -y ${NEW_PKGS} > /dev/null
+    ldconfig
+fi
+
 ./autogen.sh && ./configure --disable-doxygen --disable-manpages \
                             --with-openssl --enable-tests        \
                             --disable-thread-safe                \
-    && make -j$(nproc)
+    && make clean > /dev/null && make -j$(nproc)
+
+# Do a sanity check
+tests/testdriver 2>&1 | egrep -v passed
 
 # build all fuzzer targets
+make -C tests/oss-fuzz -f Makefile.oss-fuzz clean
 make -C tests/oss-fuzz -f Makefile.oss-fuzz

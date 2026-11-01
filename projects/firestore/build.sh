@@ -37,6 +37,23 @@ sed -i 's/-Werror=reorder//g' ./FirebaseFirestore.podspec
 sed -i 's/ReadContext context/\/\/ReadContext/g' ./Firestore/fuzzing/serializer_fuzzer.cc
 sed -i 's/serializer.Dec/\/\/serializer/g' ./Firestore/fuzzing/serializer_fuzzer.cc
 
+# Explicitly instantiate util::AppendBytes<bool> so it has external linkage.
+# Without this, the symbol is implicitly instantiated with weak/COMDAT linkage
+# inside ordered_code.cc and gets discarded under some link configurations
+# (e.g. centipede engine with sanitizer=none), causing an undefined reference
+# from leveldb_index_manager.cc -> index_byte_encoder.h.
+cat >> ./Firestore/core/src/util/ordered_code.cc <<'EOF'
+
+namespace firebase {
+namespace firestore {
+namespace util {
+template void AppendBytes<true>(std::string*, const char*, size_t);
+template void AppendBytes<false>(std::string*, const char*, size_t);
+}  // namespace util
+}  // namespace firestore
+}  // namespace firebase
+EOF
+
 mkdir build && cd build
 cmake -DFIREBASE_IOS_BUILD_TESTS=OFF -DFIREBASE_IOS_BUILD_BENCHMARKS=OFF -DFUZZING=ON ..
 make -j$(nproc)

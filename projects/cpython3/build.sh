@@ -30,7 +30,33 @@ CFLAGS="${CFLAGS} -UNDEBUG"
 # We use some internal CPython API.
 CFLAGS="${CFLAGS} -IInclude/internal/"
 
+# Build zlib from source with the sanitizer/coverage flags
+ZLIB_PREFIX=$WORK/zlib
+pushd $SRC/zlib
+./configure --static --prefix=$ZLIB_PREFIX
+# Build as a static library since it's linked into shared extension modules
+make -j$(nproc) CFLAGS="$CFLAGS -fPIC"
+make install
+popd
+
+# Build liblzma from source with the sanitizer/coverage flags
+LZMA_PREFIX=$WORK/xz
+pushd $SRC/xz
+./autogen.sh --no-po4a --no-doxygen
+# Static + PIC for the same reason as zlib. Also, we can skip the command line tools
+./configure --prefix=$LZMA_PREFIX \
+  --enable-static --disable-shared --with-pic --enable-debug \
+  --disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo \
+  --disable-nls --disable-doc
+make -j$(nproc)
+make install
+popd
+
 FLAGS=()
+FLAGS+=("ZLIB_CFLAGS=-I$ZLIB_PREFIX/include")
+FLAGS+=("ZLIB_LIBS=$ZLIB_PREFIX/lib/libz.a")
+FLAGS+=("LIBLZMA_CFLAGS=-I$LZMA_PREFIX/include")
+FLAGS+=("LIBLZMA_LIBS=$LZMA_PREFIX/lib/liblzma.a -lpthread")
 case $SANITIZER in
   address)
     FLAGS+=("--with-address-sanitizer")

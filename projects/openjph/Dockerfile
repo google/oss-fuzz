@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y cmake libtiff-dev zip
 # clone the library
 RUN git clone https://github.com/aous72/OpenJPH.git
 
-# clone the seed corpus
+# import the ojph_expand_fuzz_target seed corpus
 RUN git clone --depth 1 https://github.com/aous72/jp2k_test_codestreams.git
 
 # import the build script

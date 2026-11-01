@@ -1,0 +1,12 @@
+homepage: https://github.com/selkies-project/selkies
+language: python
+main_repo: https://github.com/selkies-project/selkies
+primary_contact: security@linuxserver.io
+auto_ccs:
+- ehfddr@gmail.com
+- ryankuba@gmail.com
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+- undefined

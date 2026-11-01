@@ -18,32 +18,32 @@
 # Suppress C++17 errors from old dependency headers (lcms2 uses 'register')
 export CXXFLAGS="$CXXFLAGS -Wno-register"
 
-tar -xJf $SRC/zlib-1.2.11.tar.xz
-pushd zlib-1.2.11
+tar -xJf $SRC/zlib-1.3.2.tar.xz
+pushd zlib-1.3.2
 ./configure --static
 make -j$(nproc)
 export ZLIB_CFLAGS="-I$(pwd)"
 export ZLIB_LIBS="-L$(pwd) -lz"
 popd
 
-tar -xzf $SRC/lcms2-2.8.tar.gz
-pushd lcms2-2.8
+tar -xzf $SRC/lcms2-2.18.tar.gz
+pushd lcms2-2.18
 ./configure --disable-shared --enable-static --without-jpeg --without-tiff
 make -C src -j$(nproc)
 export LCMS2_CFLAGS="-I$(pwd)/include"
 export LCMS2_LIBS="-L$(pwd)/src -llcms2"
 popd
 
-tar -xJf $SRC/libpng-1.6.34.tar.xz
-pushd libpng-1.6.34
+tar -xJf $SRC/libpng-1.6.56.tar.xz
+pushd libpng-1.6.56
 ./configure --disable-shared --enable-static CPPFLAGS="$ZLIB_CFLAGS" LDFLAGS="$ZLIB_LIBS"
 make -j$(nproc)
 export LIBPNG_CFLAGS="-I$(pwd)"
 export LIBPNG_LIBS="-L$(pwd) -lpng16"
 popd
 
-tar -xzf $SRC/libxml2-2.9.7.tar.gz
-pushd libxml2-2.9.7
+tar -xJf $SRC/libxml2-2.14.6.tar.xz
+pushd libxml2-2.14.6
 ./configure --disable-shared --enable-static --disable-ipv6 --without-python --without-zlib --without-lzma
 make -j$(nproc)
 export LIBXML_CFLAGS="-I$(pwd)/include"
@@ -52,11 +52,8 @@ export XML_CFLAGS="$LIBXML_CFLAGS"
 export XML_LIBS="$LIBXML_LIBS"
 popd
 
-tar -xzf $SRC/icu4c-60_2-src.tgz
+tar -xzf $SRC/icu4c-78.2-sources.tgz
 pushd icu/source
-patch -p2 < $SRC/icu4c-ubsan.patch
-patch -p3 < $SRC/ofz3670.patch
-patch -p3 < $SRC/ofz4860.patch
 ./configure --disable-shared --enable-static --with-data-packaging=static --disable-dyload --disable-strict \
     --disable-layout --disable-samples --disable-extras --disable-icuio --disable-plugins \
     CPPFLAGS=-DU_USE_STRTOD_L=0
@@ -67,8 +64,8 @@ popd
 
 # System boost from libboost-dev package is used (headers in /usr/include/boost/)
 
-tar -xjf $SRC/mdds-1.3.1.tar.bz2
-pushd mdds-1.3.1
+tar -xJf $SRC/mdds-3.1.0.tar.xz
+pushd mdds-3.1.0
 ./configure
 export MDDS_CFLAGS="-I$(pwd)/include"
 export MDDS_LIBS=' '

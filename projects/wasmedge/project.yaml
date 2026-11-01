@@ -6,6 +6,15 @@ auto_ccs:
   - "yiying@secondstate.io"
 sanitizers:
   - address
-  - memory:
-     experimental: True
+# memory: removed. build.sh ships the prebuilt system libLLVM-12.so.1 next to
+# the fuzzers (the LLVM-based AOT runtime needs it), and that library is not
+# MSan-instrumented, so MSan reports use-of-uninitialized-value from inside
+# libLLVM during static initialisation -- before main() -- and check_build
+# fails wasmedge-fuzzcomponent as a startup crash. Those reports are
+# unactionable false positives.
+#
+# -DWASMEDGE_USE_LLVM=OFF is not a way out: lib/driver/fuzzTool.cpp calls
+# WasmEdge::LLVM::Compiler::compile() with no #ifdef WASMEDGE_USE_LLVM guard,
+# so the build then fails to link. Re-enable memory once either WasmEdge
+# guards that call site or an MSan-instrumented LLVM is available.
 main_repo: 'https://github.com/WasmEdge/WasmEdge.git'

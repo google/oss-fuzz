@@ -14,11 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone https://github.com/ligurio/lunapark testdir
-WORKDIR testdir
+WORKDIR $SRC/testdir
+
 RUN git clone --depth 1 --jobs $(nproc) https://github.com/ligurio/lunapark-corpus corpus_dir
 COPY build.sh $SRC/testdir/
+
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_lua.c $SRC/
+COPY compile_lua_fuzzer $SRC/

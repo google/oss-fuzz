@@ -44,10 +44,10 @@ sanitizers:
   - memory
 architectures:
   - x86_64
-main_repo: 'https://github.com/guidovranken/cryptofuzz'
+main_repo: "https://github.com/MozillaSecurity/cryptofuzz"
 
 fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
+disabled: true

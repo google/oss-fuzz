@@ -1,0 +1,42 @@
+diff --git a/meson.build b/meson.build
+index ff7c480..7b6dde1 100644
+--- a/meson.build
++++ b/meson.build
+@@ -79,8 +79,14 @@ if get_option('ca-cert-extension').allowed()
+     subdir('bmc-vmi-ca')
+ endif
+ 
+-subdir('dist')
++if not get_option('fuzzing').allowed()
++    subdir('dist')
++endif
+ 
+ if get_option('tests').allowed()
+     subdir('test')
+ endif
++
++if get_option('fuzzing').allowed()
++    subdir('fuzzing')
++endif
+diff --git a/meson.options b/meson.options
+index 35752e6..aeffbec 100644
+--- a/meson.options
++++ b/meson.options
+@@ -38,3 +38,17 @@ option(
+     value: 'enabled',
+     description: 'Allow expired certificates',
+ )
++
++option(
++    'fuzzing',
++    type: 'feature',
++    value: 'disabled',
++    description: 'Build fuzz targets',
++)
++
++option(
++    'fuzzing_engine',
++    type: 'string',
++    value: '-fsanitize=fuzzer',
++    description: 'Fuzzing engine link arguments',
++)

@@ -18,7 +18,11 @@
 cd $SRC/bmcweb
 
 export CFLAGS="${CFLAGS} -fPIC"
-export CXXFLAGS="${CXXFLAGS} -fPIC"
+
+# OSS-Fuzz's libc++ does not implement std::move_only_function, so go back to libstdc++
+export CXXFLAGS="${CXXFLAGS} -fPIC -stdlib=libstdc++"
+
+CXX_LINK_FLAGS="${CXXFLAGS} -static-libstdc++ -static-libgcc -laudit -lcap"
 
 # Stub systemd.pc – bmcweb only uses it for unit-file install paths.
 mkdir -p $WORK/pkgconfig
@@ -31,13 +35,14 @@ Version: 245
 EOF
 export PKG_CONFIG_PATH="$WORK/pkgconfig:${PKG_CONFIG_PATH:-}"
 
-# Configure with most features disabled – we only need parsing/utility code.
+# Configure with most features disabled
 meson setup build \
   -Ddefault_library=static \
   -Dprefer_static=true \
   -Db_lto=false \
   -Dwerror=false \
   -Dtests=disabled \
+  -Dfuzz-tests=enabled \
   -Dkvm=disabled \
   -Dvm-websocket=disabled \
   -Drest=disabled \
@@ -52,68 +57,25 @@ meson setup build \
   -Dinsecure-disable-auth=enabled \
   -Dbmcweb-logging=disabled \
   -Dcpp_args="${CXXFLAGS}" \
-  -Dcpp_link_args="${CXXFLAGS}" \
+  -Dcpp_link_args="${CXX_LINK_FLAGS}" \
   -Dc_args="${CFLAGS}" \
   -Dc_link_args="${CFLAGS}"
 
-# Build as much as possible. The sdbusplus subproject fails to compile but
-# all bmcweb object files and other subproject libraries succeed.
-ninja -C build -k 0 || true
+# Locate the fuzz targets
+FUZZERS=$(meson introspect build --targets |
+  jq -r --arg prefix "$PWD/build/" '
+    .[]
+    | select(.type == "executable" and (.name | endswith("_fuzzer")))
+    | .filename[]
+    | ltrimstr($prefix)')
 
-# Extract compile flags from meson's compile_commands.json so the fuzzer
-# sources are compiled with exactly the same flags as bmcweb itself.
-COMPILE_FLAGS=$(python3 -c "
-import json, shlex, os
-builddir = os.path.abspath('build')
-with open('build/compile_commands.json') as f:
-    for entry in json.load(f):
-        if 'json_html_serializer.cpp' in entry['file']:
-            args = shlex.split(entry['command'])
-            out = []
-            i = 1  # skip compiler binary
-            while i < len(args):
-                a = args[i]
-                if a in ('-MF', '-MQ', '-o'):
-                    i += 2; continue
-                if a in ('-c', '-MD') or a.endswith('.cpp') or a.endswith('.o') or a.endswith('.d'):
-                    i += 1; continue
-                # Convert relative include paths to absolute
-                for prefix in ('-I', '-isystem'):
-                    if a.startswith(prefix) and not a.startswith(prefix + '/'):
-                        path = a[len(prefix):]
-                        a = prefix + os.path.normpath(os.path.join(builddir, path))
-                        break
-                out.append(a)
-                i += 1
-            print(' '.join(out))
-            break
-")
+if [ -z "$FUZZERS" ]; then
+  echo "ERROR: no *_fuzzer executables found; is -Dfuzz-tests=enabled still valid?"
+  exit 1
+fi
 
-# Find the bmcweb object files produced by ninja that our fuzzers need.
-BMCWEB_OBJS=""
-for name in boost_asio boost_beast json_html_serializer filter_expr_printer; do
-  obj=$(find build -name "*${name}.cpp.o" -print -quit)
-  if [ -z "$obj" ]; then
-    echo "ERROR: object file for $name not found in build dir"
-    exit 1
-  fi
-  BMCWEB_OBJS="$BMCWEB_OBJS $obj"
-done
+ninja -C build $FUZZERS
 
-# Collect all subproject static libraries for linking.
-LINK_LIBS=$(find build/subprojects -name "*.a" 2>/dev/null)
-
-# Build each fuzzer.
-for fuzzer_src in $SRC/*_fuzzer.cpp; do
-  fuzzer_name=$(basename "$fuzzer_src" .cpp)
-
-  $CXX $COMPILE_FLAGS \
-    -I$SRC/bmcweb \
-    -c "$fuzzer_src" -o "$WORK/${fuzzer_name}.o"
-
-  $CXX $CXXFLAGS -std=c++23 \
-    "$WORK/${fuzzer_name}.o" $BMCWEB_OBJS \
-    $LIB_FUZZING_ENGINE $LINK_LIBS \
-    -lsystemd -lz -lzstd -lssl -lcrypto -latomic -lpam \
-    -o "$OUT/${fuzzer_name}"
+for fuzzer in $FUZZERS; do
+  cp "build/$fuzzer" "$OUT/$(basename "$fuzzer")"
 done

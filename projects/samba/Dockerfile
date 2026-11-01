@@ -14,9 +14,17 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone https://gitlab.com/samba-team/samba samba
+
+# Upstream samba dropped ubuntu2004 in commit 313a630 (2026-04-08) and
+# build_image.sh still has DIST=ubuntu2004 hard-coded. The OSS-Fuzz base-builder
+# for this project is Ubuntu 24.04 (see base_os_version in project.yaml), so
+# point build_image.sh at the matching ubuntu2404 generated-dist before running.
+RUN sed -i 's/^DIST=ubuntu2004/DIST=ubuntu2404/' \
+        samba/lib/fuzzing/oss-fuzz/build_image.sh
+
 RUN samba/lib/fuzzing/oss-fuzz/build_image.sh
 
 WORKDIR samba

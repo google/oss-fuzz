@@ -1,7 +1,7 @@
 homepage: "https://knative.dev/"
 language: go
 primary_contact: "security@knative.team"
-main_repo: "https://github.com/knative"
+main_repo: "https://github.com/knative/serving"
 vendor_ccs:
   - "adam@adalogics.com"
   - "david@adalogics.com"

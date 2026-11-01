@@ -2,7 +2,7 @@ base_os_version: ubuntu-24-04
 homepage: "https://dapr.io/"
 language: go
 primary_contact: "schneideryaron@gmail.com"
-main_repo: "https://github.com/dapr"
+main_repo: "https://github.com/dapr/dapr"
 auto_ccs:
   - "artur04@gmail.com"
 vendor_ccs:

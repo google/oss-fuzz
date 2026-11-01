@@ -1,11 +1,12 @@
 homepage: "https://opendal.apache.org/"
-main_repo: "https://github.com/apache/incubator-opendal.git"
+main_repo: "https://github.com/apache/opendal.git"
 language: rust
 primary_contact: "xuanwo.cn@gmail.com"
 auto_ccs:
     - "dqhl76@gmail.com"
     - "ouyangjun1999@gmail.com"
     - "suyanhanx@gmail.com"
+    - "tonghuaroot@gmail.com"
     - "yinmingzhuo@gmail.com"
 vendor_ccs:
     - "commits@opendal.apache.org"

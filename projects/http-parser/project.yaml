@@ -9,4 +9,5 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
+# https://github.com/nodejs/http-parser
+disabled: true

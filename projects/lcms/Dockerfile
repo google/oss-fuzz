@@ -26,7 +26,6 @@ RUN mkdir $SRC/seeds && \
     cp $SRC/lcms/testbed/ibm-t61.icc . && \
     #add more seeds from the testbed dir
     cp $SRC/lcms/testbed/bad_mpe.icc . && \
-    cp $SRC/lcms/testbed/new.icc . && \
     cp $SRC/lcms/testbed/test2.icc . && \
     cp $SRC/lcms/testbed/test3.icc . && \
     cp $SRC/lcms/testbed/test4.icc . && \

@@ -3,6 +3,7 @@ language: c
 primary_contact: "trini@konsulko.com"
 auto_ccs:
   - "adam@adalogics.com"
+  - "david@adalogics.com"
 main_repo: "https://github.com/u-boot/u-boot"
 fuzzing_engines:
   - libfuzzer

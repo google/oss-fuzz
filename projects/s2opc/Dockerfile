@@ -20,9 +20,9 @@ RUN apt-get update && apt-get install -y make cmake git curl
 # Sources and dependencies
 RUN git clone --depth 1 https://gitlab.com/systerel/S2OPC
 RUN git clone --depth 1 https://gitlab.com/systerel/S2OPC-fuzzing-data
-RUN curl -L https://github.com/Mbed-TLS/mbedtls/releases/download/v2.28.8/mbedtls-2.28.8.tar.bz2 -o $SRC/mbedtls.tbz2
+RUN curl -L https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.6/mbedtls-3.6.6.tar.bz2 -o $SRC/mbedtls.tbz2
 RUN curl -L https://github.com/libcheck/check/releases/download/0.14.0/check-0.14.0.tar.gz -o $SRC/check.tgz
-RUN curl -L https://github.com/libexpat/libexpat/releases/download/R_2_4_3/expat-2.4.3.tar.gz -o $SRC/expat.tgz
+RUN curl -L https://github.com/libexpat/libexpat/releases/download/R_2_8_1/expat-2.8.1.tar.gz -o $SRC/expat.tgz
 
 WORKDIR S2OPC
 COPY build.sh $SRC/

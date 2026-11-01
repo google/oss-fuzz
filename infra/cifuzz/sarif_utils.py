@@ -163,7 +163,8 @@ def get_error_frame(crash_info):
     return None
   state = crash_info.crash_state.split('\n')[0]
   logging.info('state: %s frames %s, %s', state, crash_info.frames,
-               [f.function_name for f in crash_info.frames[0]])
+               [f.function_name for f in crash_info.frames[0]]
+               if crash_info.frames else [])
 
   for crash_frames in crash_info.frames:
     for frame in crash_frames:
