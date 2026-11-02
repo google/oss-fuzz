@@ -41,9 +41,6 @@ compile_native_go_fuzzer_v2 $(go list) FuzzParseRequest FuzzParseRequest_loki
 cd $SRC/opentelemetry-collector-contrib/receiver/mongodbatlasreceiver
 compile_native_go_fuzzer_v2 $(go list) FuzzHandleReq FuzzHandleReq_mongodbatlasreceiver
 
-cd $SRC/opentelemetry-collector-contrib/receiver/signalfxreceiver
-compile_native_go_fuzzer_v2 $(go list) FuzzHandleDatapointReq FuzzHandleDatapointReq_signalfxreceiver
-
 cd $SRC/opentelemetry-collector-contrib/receiver/splunkhecreceiver
 compile_native_go_fuzzer_v2 $(go list) FuzzHandleRawReq FuzzHandleRawReq_splunkhecreceiver
 
