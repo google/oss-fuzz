@@ -44,7 +44,10 @@ export RUSTUP_TOOLCHAIN=nightly
 # -O builds the fuzzers in release mode (the OSS-Fuzz Rust convention).
 cargo fuzz build -O --fuzz-dir zebra-fuzz/fuzz
 
-FUZZ_OUT="zebra-fuzz/fuzz/target/x86_64-unknown-linux-gnu/release"
+# Support both a standalone fuzz crate and membership in Zebra's root workspace.
+FUZZ_TARGET_DIR=$(cargo metadata --manifest-path zebra-fuzz/fuzz/Cargo.toml \
+    --no-deps --format-version 1 | jq -er '.target_directory')
+FUZZ_OUT="$FUZZ_TARGET_DIR/x86_64-unknown-linux-gnu/release"
 
 # Explicit white-list — only these 14 targets are copied to $OUT. We do NOT glob
 # fuzz/fuzz_targets/*.rs, so no held-back / out-of-scope target can leak into the
