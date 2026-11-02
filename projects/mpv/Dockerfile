@@ -19,7 +19,7 @@ RUN apt-get update && \
     apt-get clean -y
 
 ENV PYTHONDONTWRITEBYTECODE=1
-ENV VIRTUAL_ENV=$SRC/venv
+ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN python -m venv $VIRTUAL_ENV && \
