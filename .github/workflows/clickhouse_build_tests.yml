@@ -1,0 +1,25 @@
+name: ClickHouse build script tests
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+    - master
+    paths:
+    - projects/clickhouse/**
+    - .github/workflows/clickhouse_build_tests.yml
+
+jobs:
+  build-script-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential binutils clang llvm cmake ninja-build ccache zip
+      - name: Check build script contracts
+        run: python3 projects/clickhouse/build_test.py -v
