@@ -26,9 +26,11 @@ RUN python -m venv $VIRTUAL_ENV && \
     python -m pip --no-cache-dir install meson ninja
 
 RUN git clone --depth 1 https://github.com/mpv-player/mpv mpv
-RUN git clone --depth 1 https://github.com/FFmpeg/FFmpeg ffmpeg
-RUN git clone --depth 1 --recursive https://github.com/haasn/libplacebo mpv/subprojects/libplacebo
-RUN git clone --depth 1 https://github.com/libass/libass mpv/subprojects/libass
+# Fuzz Introspector analyses every source file in $SRC before build.sh runs
+# Keep only the mpv source visible and the rest without a checkout
+RUN git clone --depth 1 --no-checkout https://github.com/FFmpeg/FFmpeg ffmpeg
+RUN git clone --depth 1 --no-checkout https://github.com/haasn/libplacebo mpv/subprojects/libplacebo
+RUN git clone --depth 1 --no-checkout https://github.com/libass/libass mpv/subprojects/libass
 RUN mkdir mpv/subprojects -p && cd mpv && \
     meson wrap install expat && \
     meson wrap install fontconfig && \
@@ -38,7 +40,8 @@ RUN mkdir mpv/subprojects -p && cd mpv && \
     meson wrap install lcms2 && \
     meson wrap install uchardet && \
     meson wrap install xxhash && \
-    meson subprojects download
+    meson subprojects download && \
+    meson subprojects purge --confirm
 
 WORKDIR $SRC/mpv
 COPY build.sh $SRC/

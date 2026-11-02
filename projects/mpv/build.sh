@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Dockerfile clones the dependencies without a checkout
+for repo in ffmpeg mpv/subprojects/libplacebo mpv/subprojects/libass; do
+  git -C $SRC/$repo checkout -q
+  git -C $SRC/$repo submodule -q update --init --recursive --depth 1
+done
+
 if [[ "$ARCHITECTURE" == i386 ]]; then
   export PKG_CONFIG_PATH=/usr/local/lib/i386-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
   LIBDIR='lib/i386-linux-gnu'
