@@ -53,3 +53,11 @@ for f in charset codepage meta idna entities unescape filters url header \
         $LIB_FUZZING_ENGINE src/.libs/libhttrack.a -lz -lpthread
     zip -j "$OUT/fuzz-${f}_seed_corpus.zip" fuzz/corpus/"$f"/*
 done
+
+# libFuzzer dictionaries and per-fuzzer options ship next to the harnesses.
+for d in fuzz/fuzz-*.dict; do
+    [ -f "$d" ] && cp "$d" "$OUT/"
+done
+for o in fuzz/*.options; do
+    [ -f "$o" ] && cp "$o" "$OUT/"
+done
