@@ -26,6 +26,7 @@ from collections.abc import Sequence
 import logging
 import os
 import sys
+import time
 
 import google.auth
 
@@ -46,6 +47,11 @@ SUPPORTED_VERSIONS = ('legacy', 'ubuntu-20-04', 'ubuntu-24-04')
 # Define which of the supported versions is considered the default.
 # This version will receive the ':v1' tag.
 DEFAULT_VERSION = 'legacy'
+
+# Prefix of the unique tag added to every pushed base image. Google's public
+# image scanning treats images with this tag prefix as build infrastructure
+# and doesn't file vulnerability reports for them.
+LIFECYCLE_TAG_PREFIX = 'infrastructure-public-image'
 
 # Defines the dependency graph for base images.
 IMAGE_DEPENDENCIES = {
@@ -169,8 +175,21 @@ BASE_IMAGE_DEFS = [
 ]
 
 
-def get_base_image_steps(images: Sequence[ImageConfig]) -> list[dict]:
-  """Returns build steps for a given list of image configurations."""
+def get_lifecycle_tag(target_tag: str, build_stamp: str) -> str:
+  """Returns the lifecycle tag for one version of one build run.
+
+  The version is part of the tag because each run pushes every image once per
+  version into the same repository, and a tag can only point to one of them.
+  """
+  return f'{LIFECYCLE_TAG_PREFIX}-{target_tag}-{build_stamp}'
+
+
+def get_base_image_steps(images: Sequence[ImageConfig],
+                         lifecycle_tag: str | None = None) -> list[dict]:
+  """Returns build steps for a given list of image configurations.
+
+  If |lifecycle_tag| is set, every image is also tagged with it.
+  """
   steps = [build_lib.get_git_clone_step()]
   build_ids = {}
 
@@ -183,6 +202,9 @@ def get_base_image_steps(images: Sequence[ImageConfig]) -> list[dict]:
     # build steps within the same pipeline.
     if image_config.version == 'legacy':
       tags.append(f'{IMAGE_NAME_PREFIX}{image_config.name}:latest')
+
+    if lifecycle_tag:
+      tags.append(f'{IMAGE_NAME_PREFIX}{image_config.name}:{lifecycle_tag}')
 
     dockerfile_path = os.path.join('oss-fuzz', image_config.dockerfile_path)
     step = build_lib.get_docker_build_step(tags,
@@ -340,13 +362,19 @@ def base_builder(event, context, dry_run: bool = False, no_push: bool = False):
   del event, context
   logging.basicConfig(level=logging.INFO)
 
+  # One stamp per run, shared by all the versions this run builds.
+  build_stamp = time.strftime('%Y%m%d%H%M%S', time.gmtime())
   for version in SUPPORTED_VERSIONS:
     logging.info('Starting build for version: %s', version)
+
+    # Determine the final tag for this build.
+    target_tag = MAJOR_TAG if version == DEFAULT_VERSION else version
+    lifecycle_tag = get_lifecycle_tag(target_tag, build_stamp)
 
     version_images = [
         ImageConfig(version=version, **def_args) for def_args in BASE_IMAGE_DEFS
     ]
-    steps = get_base_image_steps(version_images)
+    steps = get_base_image_steps(version_images, lifecycle_tag)
     images_to_push = [img.full_image_name_with_tag for img in version_images]
 
     # Also push the 'latest' tag for the default build.
@@ -354,8 +382,12 @@ def base_builder(event, context, dry_run: bool = False, no_push: bool = False):
       images_to_push.extend(
           [f'{IMAGE_NAME_PREFIX}{img.name}:latest' for img in version_images])
 
-    # Determine the final tag for this build.
-    target_tag = MAJOR_TAG if version == DEFAULT_VERSION else version
+    # Push every image with its lifecycle tag too.
+    lifecycle_images = [
+        f'{IMAGE_NAME_PREFIX}{img.name}:{lifecycle_tag}'
+        for img in version_images
+    ]
+    images_to_push.extend(lifecycle_images)
 
     # Create a multi-architecture manifest for this version's final tag.
     logging.info('Adding multi-architecture manifest steps for tag: %s',
