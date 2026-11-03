@@ -53,4 +53,8 @@ INPUT_FILE = "<input_file>"
 OUTPUT_FILE = "<output_file>"
 # Will be replaced with any dynamic arguments.
 DYNAMIC_ARGS = "<dynamic_args>"
+# Will be replaced with an ephemeral loopback port for network targets.
+PORT = "<port>"
+# Will be replaced with a fresh per-attempt working directory.
+WORK_DIR = "<work_dir>"
 
