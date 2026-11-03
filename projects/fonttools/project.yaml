@@ -1,0 +1,8 @@
+homepage: "https://github.com/fonttools/fonttools"
+language: python
+primary_contact: "arxhr007@users.noreply.github.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/fonttools/fonttools"
