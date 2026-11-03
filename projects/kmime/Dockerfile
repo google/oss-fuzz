@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone --depth 1 -b master https://invent.kde.org/pim/kmime.git
+RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kmime.git
 RUN $SRC/kmime/autotests/ossfuzz/prepare_build.sh
 RUN cp $SRC/kmime/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
 
