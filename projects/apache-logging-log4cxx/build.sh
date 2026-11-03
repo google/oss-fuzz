@@ -20,6 +20,12 @@
 # Add seed corpus
 zip $OUT/DOMConfiguratorFuzzer_seed_corpus.zip $SRC/logging-log4cxx/src/test/resources/input/xml/*.xml
 
+# PropertyConfiguratorFuzzer: seed corpus and dictionary (pair: property-config)
+zip -j $OUT/PropertyConfiguratorFuzzer-utf-8_seed_corpus.zip $SRC/logging-log4cxx/src/fuzzers/resources/propertyconfigurator-seed-*.properties
+cp $OUT/PropertyConfiguratorFuzzer-utf-8_seed_corpus.zip $OUT/PropertyConfiguratorFuzzer-wchar_t_seed_corpus.zip
+cp $SRC/logging-log4cxx/src/fuzzers/resources/propertyconfigurator.dict $OUT/PropertyConfiguratorFuzzer-utf-8.dict
+cp $SRC/logging-log4cxx/src/fuzzers/resources/propertyconfigurator.dict $OUT/PropertyConfiguratorFuzzer-wchar_t.dict
+
 mkdir build-tests
 cd build-tests
 cmake ..
