@@ -19,7 +19,8 @@
 FROM gcr.io/oss-fuzz-base/base-image:ubuntu-20-04 as temp-runner-binary-builder
 
 RUN apt-get update && apt-get install -y cargo libyaml-dev
-RUN cargo install rustfilt
+# rustfilt 0.2.2 requires edition 2024, which cargo 1.75 does not support.
+RUN cargo install rustfilt --version '=0.2.1'
 
 # Using multi-stage build to copy some LLVM binaries needed in the runner image.
 FROM gcr.io/oss-fuzz-base/base-clang:ubuntu-20-04 AS base-clang
