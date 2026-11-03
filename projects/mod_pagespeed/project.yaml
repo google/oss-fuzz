@@ -1,0 +1,16 @@
+homepage: "https://www.modpagespeed.com"
+language: c++
+main_repo: "https://github.com/We-Amp/mod_pagespeed.git"
+primary_contact: "oschaaf@we-amp.com"
+auto_ccs:
+  - "security@modpagespeed.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - centipede
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
