@@ -124,6 +124,10 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
   ]
 
+  # A missing corpus backup must not fail the whole coverage build, otherwise
+  # a single fuzz target without a corpus archive (e.g. a fuzz target for
+  # which corpus pruning does not finish) blocks coverage for the entire
+  # project. Keep a warning so that the problem stays visible.
   build_steps.append({
       'name':
           build_lib.get_runner_image_name(config.test_image_suffix,
@@ -132,14 +136,16 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           coverage_env,
       'args': [
           'bash', '-c',
-          ('for f in /corpus/*.zip; do unzip -q $f -d ${f%.*} || ('
-           'echo "Failed to unpack the corpus for $(basename ${f%.*}). '
-           'This usually means that corpus backup for a particular fuzz '
-           'target does not exist. If a fuzz target was added in the last '
-           '24 hours, please wait one more day. Otherwise, something is '
-           'wrong with the fuzz target or the infrastructure, and corpus '
-           'pruning task does not finish successfully." && exit 1'
-           '); done && coverage || (echo "' + failure_msg + '" && false)')
+          ('for f in /corpus/*.zip; do '
+           'unzip -q "$f" -d "${f%.*}" || '
+           'echo "WARNING: failed to unpack the corpus for '
+           '$(basename "${f%.*}"). This usually means that corpus backup '
+           'for a particular fuzz target does not exist. If a fuzz target '
+           'was added in the last 24 hours, please wait one more day. '
+           'Otherwise, check that the fuzz target runs and that the corpus '
+           'pruning task finishes successfully. Coverage for this fuzz '
+           'target will be missing from the report."; '
+           'done; coverage || (echo "' + failure_msg + '" && false)')
       ],
       'volumes': [{
           'name': 'corpus',
