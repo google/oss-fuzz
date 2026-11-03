@@ -116,6 +116,8 @@ python3 infra/helper.py run_fuzzer <project> <fuzzer_name> -- \
     -max_total_time=120 -timeout=25 -rss_limit_mb=2560
 ```
 
+Run each command in the background with its output redirected to a log file and poll with one short bounded command (`tail -c 300 <log>`); never hold a tool slot with a multi-minute `sleep`, and never re-read whole build or run logs. A failure costs one bounded extraction of the error region; a passing gate run costs only its `cov:`/`ft:`/`corp:` lines.
+
 Quality thresholds, which apply on top of `check_build` passing, and to corpora, dictionaries and option changes as well as new harnesses:
 
 - minimum run 120 seconds per target, 300 seconds for corpus-heavy changes;
@@ -135,7 +137,7 @@ Like-for-like still applies to the fallback: identical instrumentation configura
 
 ### Crash classification (every post-build crash, leak, OOM, timeout or assertion)
 
-A crash after a successful build is never an automatic failure, whether it surfaces in `check_build` or in the fuzzing runs. Capture the output and artefact, reproduce it standalone (`run_fuzzer` with the artefact), then classify.
+A crash after a successful build is never an automatic failure, whether it surfaces in `check_build` or in the fuzzing runs. Capture the output and artefact, reproduce it standalone (`run_fuzzer` with the artefact), then classify. Save the full sanitizer report and the artefact path under the per-project report area; context keeps only the decisive frames (crash type, top stack frame, allocated-by line for leaks), so fix rounds never re-read a whole report.
 
 **Fuzzer faults** (fix within the budget):
 
