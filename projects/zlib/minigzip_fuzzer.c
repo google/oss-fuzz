@@ -456,6 +456,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     return 0;
 
   in = fopen(inFileName, "w");
+  if (in == NULL) {
+    perror(inFileName);
+    return 0;
+  }
   if (fwrite(data, 1, (unsigned)dataLen, in) != dataLen)
     error("failed fwrite");
   if (fclose(in))
