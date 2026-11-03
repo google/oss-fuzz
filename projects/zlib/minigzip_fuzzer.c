@@ -442,6 +442,7 @@ int file_uncompress(char  *file)
     out = fopen(outfile, "wb");
     if (out == NULL) {
         perror(file);
+        gzclose(in);
         return 0;
     }
 
