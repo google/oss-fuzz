@@ -17,7 +17,13 @@
 
 ./src/fuzzers/bash/oss-fuzz-build.sh "$OUT"
 
-# Add seed corpus
+# Add seed corpus for property configurator fuzzer
+zip -j $OUT/PropertyConfiguratorFuzzer-utf-8_seed_corpus.zip $SRC/logging-log4cxx/src/fuzzers/corpus/propertyconfigurator/propertyconfigurator-seed-*.properties
+cp $OUT/PropertyConfiguratorFuzzer-utf-8_seed_corpus.zip $OUT/PropertyConfiguratorFuzzer-wchar_t_seed_corpus.zip
+cp $SRC/logging-log4cxx/src/fuzzers/resources/propertyconfigurator.dict $OUT/PropertyConfiguratorFuzzer-utf-8.dict
+cp $SRC/logging-log4cxx/src/fuzzers/resources/propertyconfigurator.dict $OUT/PropertyConfiguratorFuzzer-wchar_t.dict
+
+# Add seed corpus for DOM confiurator fuzzer
 zip $OUT/DOMConfiguratorFuzzer_seed_corpus.zip $SRC/logging-log4cxx/src/test/resources/input/xml/*.xml
 
 mkdir build-tests
