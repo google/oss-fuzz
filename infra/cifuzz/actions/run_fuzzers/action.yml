@@ -26,6 +26,7 @@ inputs:
       "batch" is for non-interactive fuzzing of an entire project.
       "coverage" is for coverage generation.
       "prune" is for corpus pruning.
+      A pruning timeout preserves that target's stored corpus, lets the remaining targets run, and fails the action unless `dry-run` is enabled.
     required: false
     default: 'code-change'
   github-token:
