@@ -18,5 +18,14 @@
 cd $WORK
 cmake -G Ninja -DBUILD_TESTING=false $SRC/bloaty
 ninja -j$(nproc)
+
 cp fuzz_target $OUT
+cp config_fuzz_target $OUT
+
 zip -j $OUT/fuzz_target_seed_corpus.zip $SRC/bloaty/tests/testdata/fuzz_corpus/*
+
+# Prepare corpus/dict for config fuzzer
+python3 $SRC/bloaty/tests/generate_config_seeds.py $WORK/config_seeds
+zip -j $OUT/config_fuzz_target_seed_corpus.zip $WORK/config_seeds/*
+cp $SRC/bloaty/tests/config_fuzzer.dict $OUT/
+
