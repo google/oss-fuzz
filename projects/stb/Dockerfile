@@ -20,7 +20,7 @@ RUN apt-get update && \
     apt-get install -y wget tar
 
 
-RUN git clone --depth 1 https://github.com/nothings/stb.git
+RUN git clone --no-single-branch --depth 1 https://github.com/nothings/stb.git
 
 RUN mkdir $SRC/stbi # CIFuzz workaround
 
