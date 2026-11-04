@@ -39,3 +39,9 @@ for i in libs/json/fuzzing/*.cpp; do
    zip -q -r -j $OUT/${fuzzer}_seed_corpus.zip libs/json/fuzzing/old_crashes
 done
 
+# Prepare corpus for pointer fuzzer
+if [ -d libs/json/fuzzing/seeds_pointer ]; then
+   zip -q -r -j $OUT/fuzz_pointer_seed_corpus.zip libs/json/fuzzing/seeds_pointer
+fi
+
+
