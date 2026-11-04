@@ -19,6 +19,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.parse
 
 import filestore
 
@@ -40,11 +41,27 @@ _CORPUS_DIR = 'corpus'
 _COVERAGE_DIR = 'coverage'
 
 
-def git_runner(repo_path):
-  """Returns a gits runner for the repo_path."""
+def git_runner(repo_path, repo_url=None):
+  """Returns a Git runner with scoped GitHub storage credentials."""
+  command = ('git', '-C', repo_path)
+  if repo_url and os.environ.get('GITHUB_TOKEN'):
+    storage = urllib.parse.urlsplit(repo_url)
+    server = urllib.parse.urlsplit(
+        os.environ.get('GITHUB_SERVER_URL', 'https://github.com'))
+    repository = storage.path.strip('/').removesuffix('.git')
+    if (storage.scheme == 'https' and not storage.username and
+        storage.netloc in ('github.com', server.netloc) and
+        server.scheme == 'https' and
+        repository.lower() == os.environ.get('GITHUB_REPOSITORY', '').lower()):
+      credential_key = f'credential.https://{storage.netloc}.helper'
+      helper = ('!f() { if [ "$1" = get ]; then '
+                'printf "%s\\n" "username=x-access-token" '
+                '"password=$GITHUB_TOKEN"; fi; }; f')
+      command += ('-c', credential_key + '=', '-c',
+                  credential_key + '=' + helper)
 
   def func(*args):
-    return subprocess.check_call(('git', '-C', repo_path) + args)
+    return subprocess.check_call(command + args)
 
   return func
 
@@ -58,7 +75,7 @@ class GitFilestore(filestore.BaseFilestore):
   def __init__(self, config, ci_filestore):
     super().__init__(config)
     self.repo_path = tempfile.mkdtemp()
-    self._git = git_runner(self.repo_path)
+    self._git = git_runner(self.repo_path, self.config.git_store_repo)
     self._clone(self.config.git_store_repo)
 
     self._ci_filestore = ci_filestore

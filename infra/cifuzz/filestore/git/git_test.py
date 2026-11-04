@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for git."""
 import filecmp
+import functools
 import os
 import tempfile
 import subprocess
@@ -30,6 +31,81 @@ from filestore import git
 import test_helpers
 
 # pylint: disable=protected-access,no-self-use
+
+
+class GitCredentialsTest(unittest.TestCase):
+  """Tests GitHub storage credentials with Git's credential protocol."""
+
+  def get_credentials(self,
+                      repo_url,
+                      credential_url,
+                      token='test-token',
+                      server_url='https://github.com',
+                      repository='owner/storage'):
+    """Returns credentials resolved by Git for a URL."""
+    fallback = '!f() { echo username=existing; echo password=existing; }; f'
+    env = {
+        'GITHUB_TOKEN': token,
+        'GITHUB_SERVER_URL': server_url,
+        'GITHUB_REPOSITORY': repository,
+        'GIT_CONFIG_NOSYSTEM': '1',
+        'GIT_CONFIG_GLOBAL': os.devnull,
+        'GIT_TERMINAL_PROMPT': '0',
+        'GIT_CONFIG_COUNT': '1',
+        'GIT_CONFIG_KEY_0': 'credential.helper',
+        'GIT_CONFIG_VALUE_0': fallback,
+    }
+    fill = functools.partial(subprocess.check_output,
+                             input=f'url={credential_url}\n\n'.encode(),
+                             timeout=10)
+
+    with tempfile.TemporaryDirectory() as directory:
+      with mock.patch.dict(os.environ, env):
+        with mock.patch.object(git.subprocess, 'check_call', side_effect=fill):
+          credentials = git.git_runner(directory, repo_url)('credential',
+                                                            'fill')
+    return credentials.decode()
+
+  def test_github_credentials(self):
+    """Uses the action token for GitHub and configured Enterprise storage."""
+    for host in ('github.com', 'github.example'):
+      with self.subTest(host=host):
+        url = f'https://{host}/owner/storage.git'
+        credentials = self.get_credentials(url,
+                                           url,
+                                           server_url=f'https://{host}')
+        self.assertIn('username=x-access-token\n', credentials)
+        self.assertIn('password=test-token\n', credentials)
+
+  def test_different_repo(self):
+    """GITHUB_TOKEN isn't authorized for another repo on the same host."""
+    url = 'https://github.com/owner/storage.git'
+    credentials = self.get_credentials(url, url, repository='owner/other')
+    self.assertIn('username=existing\n', credentials)
+    self.assertIn('password=existing\n', credentials)
+
+  def test_preserves_other_credentials(self):
+    """Leaves unrelated hosts and explicit credentials to existing helpers."""
+    for repo_url, credential_url, token in [
+        ('https://github.com/owner/storage.git',
+         'https://other.example/owner/storage.git', 'test-token'),
+        ('https://other.example/owner/storage.git',
+         'https://other.example/owner/storage.git', 'test-token'),
+        ('http://github.com/owner/storage.git',
+         'http://github.com/owner/storage.git', 'test-token'),
+        ('git@github.com:owner/storage.git',
+         'https://github.com/owner/storage.git', 'test-token'),
+        ('https://user@github.com/owner/storage.git',
+         'https://github.com/owner/storage.git', 'test-token'),
+        ('https://github.com/owner/storage.git',
+         'https://github.com/owner/storage.git', ''),
+    ]:
+      with self.subTest(repo_url=repo_url,
+                        credential_url=credential_url,
+                        token=token):
+        credentials = self.get_credentials(repo_url, credential_url, token)
+        self.assertIn('username=existing\n', credentials)
+        self.assertIn('password=existing\n', credentials)
 
 
 class GitFilestoreTest(unittest.TestCase):
