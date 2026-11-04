@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Dockerfile clones the dependencies without a checkout
+for repo in ffmpeg mpv/subprojects/libplacebo mpv/subprojects/libass; do
+  git -C $SRC/$repo checkout -q
+  git -C $SRC/$repo submodule -q update --init --recursive --depth 1
+done
+
 if [[ "$ARCHITECTURE" == i386 ]]; then
   export PKG_CONFIG_PATH=/usr/local/lib/i386-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
   LIBDIR='lib/i386-linux-gnu'
@@ -83,7 +89,7 @@ meson setup build --wrap-mode=nodownload -Dbuildtype=plain -Dbackend_max_links=4
                   -Dlibplacebo:lcms=enabled -Dlibplacebo:xxhash=enabled -Dlibplacebo:demos=false \
                   -Dlcms2:jpeg=disabled -Dlcms2:tiff=disabled \
                   -Dlibass:fontconfig=enabled -Dlibass:asm=disabled \
-                  -Dc_args="$CFLAGS" -Dcpp_args="$CXXFLAGS -DMPV_FONTCONFIG_SYSROOT=./$FC_SYSROOT" \
+                  -Dc_args="$CFLAGS -DMPV_FONTCONFIG_SYSROOT=./$FC_SYSROOT" -Dcpp_args="$CXXFLAGS -DMPV_FONTCONFIG_SYSROOT=./$FC_SYSROOT" \
                   -Dc_link_args="$CFLAGS" -Dcpp_link_args="$CXXFLAGS" \
                   --libdir $LIBDIR
 meson compile -C build fuzzers
