@@ -28,4 +28,8 @@ for i in libs/beast/test/fuzz/*.cpp; do
     if [ -d "libs/beast/test/fuzz/seeds/$fuzzer" ]; then
         zip -q -r -j $OUT/"$fuzzer"_seed_corpus.zip libs/beast/test/fuzz/seeds/$fuzzer
     fi
+
+    if [ -f "libs/beast/test/fuzz/$fuzzer.dict" ]; then
+        cp libs/beast/test/fuzz/$fuzzer.dict $OUT/
+    fi
 done
