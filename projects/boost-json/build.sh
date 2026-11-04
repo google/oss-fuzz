@@ -39,3 +39,13 @@ for i in libs/json/fuzzing/*.cpp; do
    zip -q -r -j $OUT/${fuzzer}_seed_corpus.zip libs/json/fuzzing/old_crashes
 done
 
+# Prepare corpus and dicts for fuzzers
+zip -q -r -j $OUT/fuzz_parse_seed_corpus.zip libs/json/fuzzing/seeds
+zip -q -r -j $OUT/fuzz_basic_parser_seed_corpus.zip libs/json/fuzzing/seeds
+zip -q -r -j $OUT/fuzz_parser_seed_corpus.zip libs/json/fuzzing/seeds_parser
+zip -q -r -j $OUT/fuzz_direct_parse_seed_corpus.zip libs/json/fuzzing/seeds_direct
+for f in fuzz_parse fuzz_parser fuzz_basic_parser fuzz_direct_parse; do
+   cp libs/json/fuzzing/json.dict $OUT/$f.dict
+done
+
+
