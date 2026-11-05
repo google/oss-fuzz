@@ -18,3 +18,8 @@
 export CFLAGS="$CFLAGS -Wno-error=nan-infinity-disabled"
 export CXXFLAGS="$CXXFLAGS -Wno-error=nan-infinity-disabled"
 $SRC/librawspeed/.ci/oss-fuzz.sh
+
+# Prepare corpus seeds for Interpolator fuzzer
+python3 "$SRC/librawspeed/fuzz/librawspeed/fuzz/generate_seeds_cr2sraw.py" --out "$SRC/cr2sraw-seeds"
+zip -q -j "$OUT/Cr2sRawInterpolatorFuzzer_seed_corpus.zip" "$SRC"/cr2sraw-seeds/*
+
