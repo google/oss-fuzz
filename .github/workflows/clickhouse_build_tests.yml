@@ -13,7 +13,7 @@ on:
 
 jobs:
   build-script-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -22,6 +22,8 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential binutils clang llvm cmake ninja-build ccache zip
+          sudo apt-get install -y --no-install-recommends \
+            build-essential binutils clang llvm libclang-rt-21-dev \
+            cmake ninja-build ccache zip
       - name: Check build script contracts
         run: python3 projects/clickhouse/build_test.py -v

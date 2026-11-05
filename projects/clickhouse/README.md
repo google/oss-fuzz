@@ -12,9 +12,10 @@ dependencies. The image installs the Rust toolchain selected by ClickHouse's
 standard-library builds. It does not maintain a separate Rust version pin.
 
 Build objects live under `$WORK/clickhouse`, which the local helper persists
-between containers. Reuse the image cache for build-script edits and keep the
-workspace for same-configuration iterations. Use `--clean` when changing
-sanitizers or when a clean validation build is required.
+between containers. Each invocation replaces the packaged `$OUT` artifacts.
+Reuse the image cache for build-script edits and keep the workspace for
+same-configuration iterations. Use `--clean` when changing sanitizers or when a
+clean validation build is required.
 
 
 ## Fast regression checks
@@ -26,11 +27,11 @@ python3 projects/clickhouse/build_test.py -v
 ```
 
 These tests compile real small executables through the build script. They cover
-the CI target bound, optional targets absent from the configured build,
-missing-dictionary failure and recovery, preservation of the compiler policy,
-and staging every source and header referenced by coverage mappings at the path
-the report generator uses. They do not replace a ClickHouse build, sanitizer
-checks or hosted execution.
+the explicit CI target bound, false-valued CI mode, replacement of stale output,
+optional targets absent from the configured build, missing-dictionary failure
+and recovery, preservation of the compiler policy, and staging every source and
+header referenced by coverage mappings at the path the report generator uses.
+They do not replace a ClickHouse build, sanitizer checks or hosted execution.
 The path-filtered
 `clickhouse_build_tests.yml` workflow runs them for this integration's PR changes;
 general infrastructure test discovery still excludes `projects/`.

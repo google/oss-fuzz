@@ -100,6 +100,24 @@ class BuildTest(unittest.TestCase):
     self.assertEqual(result.returncode, 0, result.stdout)
     self.assertEqual(self.executable_names(), ['b_fuzzer', 'c_fuzzer'])
 
+  def test_ci_zero_builds_all_enabled_targets(self):
+    self.environment['OSS_FUZZ_CI'] = '0'
+    result = self.build()
+    self.assertEqual(result.returncode, 0, result.stdout)
+    self.assertEqual(self.executable_names(),
+                     ['b_fuzzer', 'c_fuzzer', 'd_fuzzer'])
+
+  def test_ci_replaces_outputs_from_previous_daily_build(self):
+    daily = self.build()
+    self.assertEqual(daily.returncode, 0, daily.stdout)
+    self.assertEqual(self.executable_names(),
+                     ['b_fuzzer', 'c_fuzzer', 'd_fuzzer'])
+
+    self.environment['OSS_FUZZ_CI'] = '1'
+    ci = self.build()
+    self.assertEqual(ci.returncode, 0, ci.stdout)
+    self.assertEqual(self.executable_names(), ['b_fuzzer', 'c_fuzzer'])
+
   def test_daily_build_includes_all_enabled_targets(self):
     # Source presence is not sufficient: optional dependencies may disable it.
     (self.source /

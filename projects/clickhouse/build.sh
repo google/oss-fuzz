@@ -19,10 +19,11 @@ CH_SRC="$SRC/ClickHouse"
 CH_BUILD="$WORK/clickhouse"
 
 
-# Number of fuzz targets built when OSS_FUZZ_CI is set.
+# Number of fuzz targets built when OSS_FUZZ_CI=1.
 CI_TARGET_LIMIT=2
 
 mkdir -p "$CH_BUILD" && cd "$CH_BUILD"
+rm -rf "${OUT:?}"/*
 
 rm -f CMakeCache.txt
 
@@ -85,8 +86,8 @@ while IFS= read -r FUZZER_TARGET; do
     fi
 done < <(cd "$CH_SRC" && find src programs -type f -name '*_fuzzer.cpp' ! -name 'gtest_*' -exec basename {} .cpp ';' | LC_ALL=C sort -u)
 
-if [ -n "${OSS_FUZZ_CI-}" ]; then
-    # When running in CI, check the first targets only to save time and disk space
+if [ "${OSS_FUZZ_CI-}" = "1" ]; then
+    # Explicit CI mode checks the first targets only to save time and disk space.
     TARGETS=("${TARGETS[@]:0:$CI_TARGET_LIMIT}")
 fi
 
