@@ -18,3 +18,9 @@
 export CFLAGS="$CFLAGS -Wno-error=nan-infinity-disabled"
 export CXXFLAGS="$CXXFLAGS -Wno-error=nan-infinity-disabled"
 $SRC/librawspeed/.ci/oss-fuzz.sh
+
+# Prepare corpus seeds for raw image post process fuzzer
+python3 "$SRC/librawspeed/fuzz/librawspeed/fuzz/generate_seeds_postprocess.py" --out "$SRC/postprocess-seeds"
+zip -q -j "$OUT/RawImagePostProcessFuzzer_seed_corpus.zip" \
+    "$SRC"/postprocess-seeds/*
+
