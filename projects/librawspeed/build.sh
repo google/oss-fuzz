@@ -18,3 +18,10 @@
 export CFLAGS="$CFLAGS -Wno-error=nan-infinity-disabled"
 export CXXFLAGS="$CXXFLAGS -Wno-error=nan-infinity-disabled"
 $SRC/librawspeed/.ci/oss-fuzz.sh
+
+# Prepare corpus for dng fuzzers
+python3 "$SRC/librawspeed/fuzz/librawspeed/fuzz/generate_seeds_dng.py" --out "$SRC/dng-seeds"
+for t in RawSpeedFuzzer RawParserFuzzer-GetDecoder-Decode RawParserFuzzer-GetDecoder; do
+  zip -q -j "$OUT/${t}_seed_corpus.zip" "$SRC"/dng-seeds/*
+done
+

@@ -19,7 +19,7 @@ RUN apt-get update && \
     apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget && \
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
-    apt-get update && apt-get install -y cmake make
+    apt-get update && apt-get install -y cmake make zlib1g-dev libjpeg-dev
 RUN git clone --depth 1 https://github.com/darktable-org/rawspeed.git librawspeed
 WORKDIR librawspeed
 COPY build.sh $SRC/
