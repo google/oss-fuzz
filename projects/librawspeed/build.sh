@@ -18,3 +18,13 @@
 export CFLAGS="$CFLAGS -Wno-error=nan-infinity-disabled"
 export CXXFLAGS="$CXXFLAGS -Wno-error=nan-infinity-disabled"
 $SRC/librawspeed/.ci/oss-fuzz.sh
+
+# Prepare corpus seeds and dict
+python3 "$SRC/librawspeed/fuzz/librawspeed/fuzz/generate_seeds.py" --out "$SRC/librawspeed-seeds"
+zip -q -j "$OUT/FujiDecompressorFuzzer_seed_corpus.zip" \
+    "$SRC"/librawspeed-seeds/fuji/*
+for t in RawParserFuzzer-GetDecoder-Decode FiffParserFuzzer-GetDecoder-Decode \
+         RawParserFuzzer-GetDecoder FiffParserFuzzer-GetDecoder RawSpeedFuzzer; do
+  zip -q -j "$OUT/${t}_seed_corpus.zip" "$SRC"/librawspeed-seeds/raf/*
+done
+cp "$SRC/librawspeed/fuzz/librawspeed/fuzz/FujiDecompressorFuzzer.dict" "$OUT/FujiDecompressorFuzzer.dict"
