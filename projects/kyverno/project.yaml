@@ -1,6 +1,6 @@
 homepage: "https://www.kyverno.io"
 main_repo: "https://github.com/kyverno/kyverno"
-primary_contact: "chipzoller@gmail.com"
+primary_contact: "kyverno-security@googlegroups.com"
 auto_ccs :
   - "adam@adalogics.com"
 language: go
