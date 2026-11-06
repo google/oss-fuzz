@@ -23,3 +23,13 @@ $CC $CFLAGS -c ./fuzz/fuzz_parse_str.c -o fuzz_parse_str.o -I./
 
 # Link with CXX as this is needed for OSS-Fuzz Centipede
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_str.o ./.libs/libnuma.a -o $OUT/fuzz_parse_str
+
+# numa_parse_bitmap (v1+v2) and *_all node/cpu string parser target
+$CC $CFLAGS -c ./fuzz/fuzz_parse_bitmap.c -o fuzz_parse_bitmap.o -I./
+
+# Link with CXX as this is needed for OSS-Fuzz Centipede
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_bitmap.o ./.libs/libnuma.a -o $OUT/fuzz_parse_bitmap
+
+python3 ./fuzz/gen_parse_bitmap_seeds.py $OUT/fuzz_parse_bitmap_seed_corpus.zip
+cp ./fuzz/parse_bitmap.dict $OUT/fuzz_parse_bitmap.dict
+
