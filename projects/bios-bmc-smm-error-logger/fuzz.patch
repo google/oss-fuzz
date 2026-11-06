@@ -1,0 +1,174 @@
+diff --git a/include/read_loop.hpp b/include/read_loop.hpp
+new file mode 100644
+index 0000000..30d1515
+--- /dev/null
++++ b/include/read_loop.hpp
+@@ -0,0 +1,19 @@
++#pragma once
++
++#include "buffer.hpp"
++#include "rde/rde_handler.hpp"
++
++#include <boost/asio/steady_timer.hpp>
++#include <boost/system/error_code.hpp>
++
++#include <memory>
++
++namespace bios_bmc_smm_error_logger
++{
++
++void readLoop(boost::asio::steady_timer* t,
++              const std::shared_ptr<BufferInterface>& bufferInterface,
++              const std::shared_ptr<rde::RdeCommandHandler>& rdeCommandHandler,
++              const boost::system::error_code& error);
++
++} // namespace bios_bmc_smm_error_logger
+diff --git a/meson.build b/meson.build
+index 9c08597..2873f18 100644
+--- a/meson.build
++++ b/meson.build
+@@ -34,5 +34,11 @@ if get_option('tests').allowed()
+     subdir('test')
+ endif
+ 
++if get_option('fuzzing').allowed()
++    subdir('fuzzing')
++endif
++
+ # installation of systemd service files
+-subdir('service_files')
++if not get_option('fuzzing').allowed()
++    subdir('service_files')
++endif
+diff --git a/meson.options b/meson.options
+index ce07181..2d91f9d 100644
+--- a/meson.options
++++ b/meson.options
+@@ -67,3 +67,17 @@ option(
+     value: 4,
+     description: 'Magic Number array[3] for validity, consists of 4 * uint32_t',
+ )
++
++option(
++    'fuzzing',
++    type: 'feature',
++    value: 'disabled',
++    description: 'Build fuzz targets',
++)
++
++option(
++    'fuzzing_engine',
++    type: 'string',
++    value: '',
++    description: 'Fuzzing engine link arguments',
++)
+diff --git a/src/main.cpp b/src/main.cpp
+index 73d34c3..945b3d3 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -2,6 +2,7 @@
+ 
+ #include "buffer.hpp"
+ #include "pci_handler.hpp"
++#include "read_loop.hpp"
+ #include "rde/external_storer_file.hpp"
+ #include "rde/external_storer_interface.hpp"
+ #include "rde/rde_handler.hpp"
+@@ -24,8 +25,8 @@
+ namespace
+ {
+ constexpr std::chrono::milliseconds readIntervalinMs(READ_INTERVAL_MS);
+-constexpr std::size_t memoryRegionSize = MEMORY_REGION_SIZE;
+-constexpr std::size_t memoryRegionOffset = MEMORY_REGION_OFFSET;
++[[maybe_unused]] constexpr std::size_t memoryRegionSize = MEMORY_REGION_SIZE;
++[[maybe_unused]] constexpr std::size_t memoryRegionOffset = MEMORY_REGION_OFFSET;
+ constexpr uint32_t bmcInterfaceVersion = BMC_INTERFACE_VERSION;
+ constexpr uint16_t queueSize = QUEUE_REGION_SIZE;
+ constexpr uint16_t ueRegionSize = UE_REGION_SIZE;
+@@ -36,6 +37,9 @@ static constexpr std::array<uint32_t, 4> magicNumber = {
+ 
+ using namespace bios_bmc_smm_error_logger;
+ 
++namespace bios_bmc_smm_error_logger
++{
++
+ void readLoop(boost::asio::steady_timer* t,
+               const std::shared_ptr<BufferInterface>& bufferInterface,
+               const std::shared_ptr<rde::RdeCommandHandler>& rdeCommandHandler,
+@@ -168,6 +172,9 @@ void readLoop(boost::asio::steady_timer* t,
+         std::bind_front(readLoop, t, bufferInterface, rdeCommandHandler));
+ }
+ 
++} // namespace bios_bmc_smm_error_logger
++
++#ifndef BIOS_BMC_FUZZING
+ int main()
+ {
+     boost::asio::io_context io;
+@@ -207,3 +214,4 @@ int main()
+ 
+     return 0;
+ }
++#endif
+diff --git a/src/meson.build b/src/meson.build
+index 58a8040..f4a24df 100644
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -1,6 +1,6 @@
+ bios_bmc_smm_error_logger_pre = declare_dependency(
+     include_directories: [root_inc, bios_bmc_smm_error_logger_inc],
+-    dependencies: [dependency('threads'), dependency('stdplus')],
++    dependencies: [dependency('threads'), dependency('stdplus'), dependency('boost')],
+ )
+ 
+ bios_bmc_smm_error_logger_lib = static_library(
+@@ -16,12 +16,14 @@ bios_bmc_smm_error_logger_dep = declare_dependency(
+     dependencies: bios_bmc_smm_error_logger_pre,
+ )
+ 
+-executable(
+-    'bios-bmc-smm-error-logger',
+-    'main.cpp',
+-    conf_h,
+-    implicit_include_directories: false,
+-    dependencies: [bios_bmc_smm_error_logger_dep, rde_dep],
+-    install: true,
+-    install_dir: get_option('bindir'),
+-)
++if not get_option('fuzzing').allowed()
++    executable(
++        'bios-bmc-smm-error-logger',
++        'main.cpp',
++        conf_h,
++        implicit_include_directories: false,
++        dependencies: [bios_bmc_smm_error_logger_dep, rde_dep],
++        install: true,
++        install_dir: get_option('bindir'),
++    )
++endif
+diff --git a/src/rde/external_storer_file.cpp b/src/rde/external_storer_file.cpp
+index e648f67..e8a0b65 100644
+--- a/src/rde/external_storer_file.cpp
++++ b/src/rde/external_storer_file.cpp
+@@ -116,7 +116,8 @@ ExternalStorerFileInterface::ExternalStorerFileInterface(
+     std::unique_ptr<FileHandlerInterface> fileHandler,
+     uint32_t numSavedLogEntries, uint32_t numLogEntries) :
+     rootPath(rootPath), fileHandler(std::move(fileHandler)), logServiceId(""),
+-    cperNotifier(std::make_unique<CperFileNotifierHandler>(conn)),
++    cperNotifier(conn ? std::make_unique<CperFileNotifierHandler>(conn)
++                      : nullptr),
+     maxNumSavedLogEntries(numSavedLogEntries), maxNumLogEntries(numLogEntries)
+ {}
+ 
+@@ -223,7 +224,10 @@ bool ExternalStorerFileInterface::processLogEntry(nlohmann::json& logEntry)
+         return false;
+     }
+ 
+-    cperNotifier->createEntry(rootPath + subPath + "/index.json");
++    if (cperNotifier)
++    {
++        cperNotifier->createEntry(rootPath + subPath + "/index.json");
++    }
+ 
+     // Attempt to push to logEntrySavedQueue first, before pushing to
+     // logEntryQueue that can be popped
