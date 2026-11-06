@@ -19,7 +19,21 @@
 ./configure
 make libnuma.la
 
+# Compile fuzzer
 $CC $CFLAGS -c ./fuzz/fuzz_parse_str.c -o fuzz_parse_str.o -I./
+$CC $CFLAGS -c ./fuzz/fuzz_parse_bitmap.c -o fuzz_parse_bitmap.o -I./
+$CC $CFLAGS -c ./fuzz/fuzz_libnuma_api.c -o fuzz_libnuma_api.o -I./
 
 # Link with CXX as this is needed for OSS-Fuzz Centipede
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_str.o ./.libs/libnuma.a -o $OUT/fuzz_parse_str
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_bitmap.o ./.libs/libnuma.a -o $OUT/fuzz_parse_bitmap
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_libnuma_api.o ./.libs/libnuma.a -o $OUT/fuzz_libnuma_api
+
+# Handle corpus
+python3 ./fuzz/gen_parse_str_seeds.py $OUT/fuzz_parse_str_seed_corpus.zip
+python3 ./fuzz/gen_parse_bitmap_seeds.py $OUT/fuzz_parse_bitmap_seed_corpus.zip
+python3 ./fuzz/gen_libnuma_api_seeds.py $OUT/fuzz_libnuma_api_seed_corpus.zip
+
+# Handle dict
+cp ./fuzz/parse_str.dict $OUT/fuzz_parse_str.dict
+cp ./fuzz/parse_bitmap.dict $OUT/fuzz_parse_bitmap.dict
