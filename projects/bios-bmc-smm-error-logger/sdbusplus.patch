@@ -1,0 +1,66 @@
+diff --git a/include/sdbusplus/asio/connection.hpp b/include/sdbusplus/asio/connection.hpp
+index 432b0b4..17cd13c 100644
+--- a/include/sdbusplus/asio/connection.hpp
++++ b/include/sdbusplus/asio/connection.hpp
+@@ -87,7 +87,7 @@ class connection : public sdbusplus::bus_t
+      */
+ 
+     using callback_t = void(boost::system::error_code, message_t&);
+-    using send_function = std::move_only_function<callback_t>;
++    using send_function = std::function<callback_t>;
+     inline void async_send(message_t& m, send_function&& callback,
+                            uint64_t timeout = 0)
+     {
+@@ -167,7 +167,7 @@ class connection : public sdbusplus::bus_t
+         const std::string& objpath, const std::string& interf,
+         const std::string& method, uint64_t timeout, const InputArgs&... a)
+     {
+-        using callback_t = std::move_only_function<void(
++        using callback_t = std::function<void(
+             boost::system::error_code, message_t&)>;
+         callback_t applyHandler =
+             [handler = std::forward<MessageHandler>(
+diff --git a/include/sdbusplus/event.hpp b/include/sdbusplus/event.hpp
+index 045b367..a69456c 100644
+--- a/include/sdbusplus/event.hpp
++++ b/include/sdbusplus/event.hpp
+@@ -1,6 +1,7 @@
+ #pragma once
+ 
+ #include <systemd/sd-event.h>
++#include <unistd.h>
+ 
+ #include <chrono>
+ #include <mutex>
+diff --git a/include/sdbusplus/message/read.hpp b/include/sdbusplus/message/read.hpp
+index 05b5640..53825b9 100644
+--- a/include/sdbusplus/message/read.hpp
++++ b/include/sdbusplus/message/read.hpp
+@@ -102,8 +102,11 @@ struct read_single
+         auto r = sdbusplus::message::convert_from_string<Td<T>>(value);
+         if (!r)
+         {
+-            throw ::sdbusplus::error::xyz::openbmc_project::sdbusplus::Error::
+-                InvalidEnumString();
++            using err_t = std::conditional_t<
++                sizeof(T) == 0, void,
++                ::sdbusplus::error::xyz::openbmc_project::sdbusplus::Error::
++                    InvalidEnumString>;
++            throw err_t();
+         }
+         t = *r;
+     }
+@@ -384,8 +387,11 @@ struct read_single<std::variant<Args...>>
+ 
+             if (!ret)
+             {
+-                throw ::sdbusplus::error::xyz::openbmc_project::sdbusplus::
+-                    Error::InvalidEnumString();
++                using err_t = std::conditional_t<
++                    sizeof(T1) == 0, void,
++                    ::sdbusplus::error::xyz::openbmc_project::sdbusplus::Error::
++                        InvalidEnumString>;
++                throw err_t();
+             }
+ 
+             t = std::move(*ret);
