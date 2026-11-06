@@ -23,3 +23,8 @@ $CC $CFLAGS -c ./fuzz/fuzz_parse_str.c -o fuzz_parse_str.o -I./
 
 # Link with CXX as this is needed for OSS-Fuzz Centipede
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_str.o ./.libs/libnuma.a -o $OUT/fuzz_parse_str
+
+# corpus + dictionary for the existing fuzz_parse_str (no fuzzer change)
+python3 ./fuzz/gen_parse_str_seeds.py $OUT/fuzz_parse_str_seed_corpus.zip
+cp ./fuzz/parse_str.dict $OUT/fuzz_parse_str.dict
+
