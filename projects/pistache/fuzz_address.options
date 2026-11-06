@@ -1,0 +1,3 @@
+[libfuzzer]
+# Address strings are short; bound them (up to 8 NUL-separated segments).
+max_len = 512
