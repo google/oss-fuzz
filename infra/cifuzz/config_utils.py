@@ -305,7 +305,7 @@ class RunFuzzersConfig(BaseConfig):
         'REPORT_UNREPRODUCIBLE_CRASHES', False)
 
     self.minimize_crashes = environment.get_bool('MINIMIZE_CRASHES', False)
-    if self.mode == 'batch':
+    if self.minimize_crashes and self.mode == 'batch':
       logging.warning(
           'Minimizing crashes reduces fuzzing time in batch fuzzing.')
     self.report_timeouts = environment.get_bool('REPORT_TIMEOUTS', False)
