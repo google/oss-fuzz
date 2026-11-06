@@ -1,0 +1,9 @@
+homepage: https://rollupjs.org
+language: javascript
+primary_contact: "lukas.taegert-atkinson@tngtech.com"
+main_repo: https://github.com/rollup/rollup
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - none
+base_os_version: ubuntu-24-04
