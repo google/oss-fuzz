@@ -1,0 +1,12 @@
+homepage: "https://github.com/espressif/esp-idf"
+language: c
+main_repo: "https://github.com/espressif/esp-idf"
+primary_contact: "bugbounty@espressif.com"
+auto_ccs:
+  - "mahavir@espressif.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+base_os_version: ubuntu-24-04
