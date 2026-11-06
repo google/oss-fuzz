@@ -33,3 +33,12 @@ zip -j $OUT/decompress_frame_fuzzer_seed_corpus.zip tests/fuzz/corpus/*
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';'
+
+# Build the schunk seed-corpus generator.
+$CC $CFLAGS -I$SRC/c-blosc2/include -o $SRC/c-blosc2/gen_schunk_corpus \
+    $SRC/c-blosc2/tests/fuzz/gen_schunk_corpus.c \
+    $SRC/c-blosc2/blosc/libblosc2.a -lpthread -lm -ldl
+mkdir -p $SRC/schunk_corpus
+$SRC/c-blosc2/gen_schunk_corpus $SRC/schunk_corpus
+zip -j -q $OUT/schunk_ops_fuzzer_seed_corpus.zip \
+    $SRC/c-blosc2/tests/fuzz/corpus/*.b2frame $SRC/schunk_corpus/*
