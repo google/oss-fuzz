@@ -1,0 +1,9 @@
+POST /axis2/services/FuzzService/echo HTTP/1.1
+Content-Type: multipart/form-data; boundary=XB
+
+--XB
+Content-Disposition: form-data; name="args0"
+Content-Type: text/plain; charset=UTF-8
+
+field value
+--XB--
