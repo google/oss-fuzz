@@ -59,3 +59,6 @@ do
     zip -j "$OUT/${fuzzer_name}_seed_corpus.zip" \
         ../fuzzers/corpora/${fuzzer_name%_fuzzer}/*
 done
+
+# Prepare dict for fuzzers
+cp ../fuzzers/dictionaries/*.dict $OUT/
