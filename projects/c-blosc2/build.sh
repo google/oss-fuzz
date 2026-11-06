@@ -33,3 +33,11 @@ zip -j $OUT/decompress_frame_fuzzer_seed_corpus.zip tests/fuzz/corpus/*
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';'
+
+# Build the b2nd seed-corpus generator and prepare options file 
+$CC $CFLAGS -I$SRC/c-blosc2/include -o $SRC/c-blosc2/gen_b2nd_corpus \
+    $SRC/c-blosc2/tests/fuzz/gen_b2nd_corpus.c \
+    $SRC/c-blosc2/blosc/libblosc2.a -lpthread -lm -ldl
+mkdir -p $SRC/b2nd_corpus
+ASAN_OPTIONS=detect_leaks=0 $SRC/c-blosc2/gen_b2nd_corpus $SRC/b2nd_corpus
+zip -j -q $OUT/b2nd_fuzzer_seed_corpus.zip $SRC/b2nd_corpus/*
