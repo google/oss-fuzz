@@ -29,7 +29,7 @@ import constants
 import re
 import subprocess
 
-SANITIZERS = ['address', 'memory', 'undefined', 'coverage']
+SANITIZERS = ['address', 'memory', 'undefined', 'coverage', 'thread']
 BASE_OS_VERSION_REGEX = re.compile(r'\s*base_os_version\s*:\s*([^\s]+)')
 
 # TODO(metzman): Set these on config objects so there's one source of truth.
