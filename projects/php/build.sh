@@ -28,6 +28,21 @@ if [ "$ARCHITECTURE" = "i386" ]; then
     BUILD_FLAG="--build=i686-pc-linux-gnu"
 fi
 
+# Build an instrumented libonig for mbregex.
+pushd $SRC/oniguruma
+autoreconf -vfi
+./configure $BUILD_FLAG --disable-shared --enable-static
+make -j$(nproc)
+popd
+export ONIG_CFLAGS="-I$SRC/oniguruma/src"
+export ONIG_LIBS="-L$SRC/oniguruma/src/.libs -l:libonig.a"
+
+# libonig is not clean under ubsan, see sapi/fuzzer/README.md.
+MBREGEX_FLAG=""
+if [ "$SANITIZER" = "undefined" ]; then
+    MBREGEX_FLAG="--disable-mbregex"
+fi
+
 # build project
 ./buildconf
 ./configure $BUILD_FLAG \
@@ -36,6 +51,7 @@ fi
     --enable-option-checking=fatal \
     --enable-fuzzer \
     --enable-exif \
+    --enable-mbstring $MBREGEX_FLAG \
     --without-pcre-jit \
     --disable-phpdbg \
     --disable-cgi \
@@ -49,15 +65,29 @@ sapi/cli/php sapi/fuzzer/generate_all.php
 cp sapi/fuzzer/dict/unserialize $OUT/php-fuzz-unserialize.dict
 cp sapi/fuzzer/dict/parser $OUT/php-fuzz-parser.dict
 cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
+cp sapi/fuzzer/dict/mbstring $OUT/php-fuzz-mbstring.dict
+if [ -f sapi/fuzzer/dict/execute ]; then
+    for fuzzerName in php-fuzz-execute php-fuzz-function-jit php-fuzz-tracing-jit; do
+        cp sapi/fuzzer/dict/execute $OUT/$fuzzerName.dict
+    done
+fi
 
 FUZZERS="php-fuzz-json
 php-fuzz-exif
+php-fuzz-mbstring
 php-fuzz-unserialize
 php-fuzz-unserializehash
 php-fuzz-parser
 php-fuzz-execute"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
+done
+
+# Not built in every configuration or with every php-src version.
+for fuzzerName in php-fuzz-mbregex php-fuzz-uri; do
+	if [ -f sapi/fuzzer/$fuzzerName ]; then
+		cp sapi/fuzzer/$fuzzerName $OUT/
+	fi
 done
 
 # The JIT fuzzer is fundamentally incompatible with memory sanitizer,
