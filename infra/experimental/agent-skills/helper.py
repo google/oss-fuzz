@@ -29,6 +29,9 @@ Usage:
   python infra/experimental/agent-skills/helper.py add-chronos-support \
       open62541 json-c htslib
 
+  python infra/experimental/agent-skills/helper.py coverage-pipeline \
+      open62541 json-c
+
 This will launch parallel agent sessions to expand fuzzing coverage, fix
 broken builds, add Chronos support, or carry out an arbitrary task for each
 listed project, producing local changes and a per-project report.
@@ -36,7 +39,9 @@ listed project, producing local changes and a per-project report.
 
 import argparse
 import concurrent.futures
+import fnmatch
 import glob
+import re
 import json
 import os
 import shutil
@@ -48,6 +53,9 @@ import urllib.request
 from datetime import datetime, timedelta
 
 DEFAULT_MAX_PARALLEL = 2
+
+# Stop launching pipeline sessions when free disk drops below this.
+MIN_FREE_DISK_GB = 20
 
 # Public OSS-Fuzz build status. Used by fix-broken-builds to auto-discover
 # projects whose most recent build failed.
@@ -73,6 +81,10 @@ FUZZING_SKILLS_BLURB = (
     '      - Rust    → **fuzzing-rust-expert**\n'
     '      - Java/Kotlin/JVM → **fuzzing-jvm-expert**\n'
     '      - Python  → **fuzzing-python-expert**\n'
+    '    - For end-to-end coverage work (fix builds, triage coverage, improve\n'
+    '      fuzz targets, stage paired worktree branches for human review),\n'
+    '      follow **oss-fuzz-coverage-pipeline**, using **fuzzing-coverage-targeting**\n'
+    '      for target selection and portfolio rules.\n'
     '    Activate all relevant skills at the start of your session.')
 
 EXPAND_SIZE_GUIDANCE = {
@@ -683,6 +695,137 @@ ADD_CHRONOS_PROMPT_TEMPLATE = textwrap.dedent("""\
 Once the work is done you should exit the process. Do NOT commit or push anything. Leave all changes locally for the security engineer to review.
 """)
 
+PIPELINE_PROMPT_TEMPLATE = textwrap.dedent("""\
+    You are an OSS-Fuzz engineer running the full coverage pipeline for the
+    **{project}** OSS-Fuzz project.
+
+    ## Important: use your skills
+
+    You MUST use the following skills throughout this task:
+    {fuzzing_skills_blurb}
+
+    ## Objective
+
+    Run the **oss-fuzz-coverage-pipeline** skill end to end for **{project}**:
+    verify upstream viability from the Dockerfile, fix the builds, triage live
+    coverage via **fuzzing-coverage-targeting** (ranked multi-target list and
+    coverage ledger), then work the ranked target list **top-down, pair by
+    pair**, writing or fixing harnesses via the language-appropriate skill,
+    staging each pair as a worktree branch duo with the temporary copy bridge,
+    and validating it through the crash classification procedure.
+
+    **One delivered pair is NOT completion.** Portfolio cap: at most {cap}
+    pairs for this project (improvement pairs; a `-build-fix` pair does not
+    count against the cap). Continue the loop until (a) the project's
+    remaining marginal worth is genuinely low (document the numbers), (b) the
+    cap is reached, or (c) your session budget (context or time) truly runs
+    out. Persist the full ranked target list (candidate pairs, suffixes,
+    rationales) in the manifest BEFORE starting the first pair, so later
+    sessions can continue from it.
+
+    ## Hard guardrails (from the skill; they are binding)
+
+    - Never commit, never push; no staging by default.
+    - Never modify upstream product code (fuzzers, fuzz build configuration
+      and FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION-guarded additions only).
+    - Every build, check, run and measurement goes through
+      python3 infra/helper.py.
+    - Classify every post-build crash, leak, OOM and timeout; never
+      introduce new silencing.
+    - Re-read all project data fresh; trust nothing from previous runs.
+    - Validate each pair on the sanitizer/engine matrix from project.yaml,
+      and evaluate coverage from the fuzzer runs' libFuzzer cov: metric
+      (fast path), using a coverage build only as fallback.
+    - Watch your context and time budget: when nearing the limit, checkpoint
+      cleanly (persist progress and deferred entries) instead of wrapping up
+      shallowly; a later session continues from the manifest.
+    - Where sub-skill guidance conflicts with these guardrails or the
+      pipeline skill, the pipeline wins.
+    - If disk space runs low, stop cleanly: record a budget-exhausted (disk)
+      stop with deferred entries; never continue on insufficient disk.
+
+    ## Exit protocol (mandatory)
+
+    Before exiting, update the manifest for **{project}**: the pairs
+    delivered so far, the remaining ranked targets with their worth
+    rationales, and a terminal stop line in exactly this format:
+
+    STOP: {project} : <worth-exhausted|cap-reached|no-worthy-targets|budget-exhausted|blocked(...)>
+
+    Only exit without a STOP line if you truly ran out of context; in that
+    case still record progress and deferred entries ("pair N: worth
+    rationale written, not yet attempted") so the next session continues.
+
+    ## Working directory and outputs
+
+    You are working from: `{oss_fuzz_root}`
+    The project directory is: `{oss_fuzz_root}/projects/{project}`
+    Write the per-project report to: `{report_path}`
+    Record the per-project manifest fragment at
+    `{oss_fuzz_root}/build/coverage-pipeline/manifest/{project}.md` (one
+    authoritative file per project) and the per-project summary fragment at
+    `{oss_fuzz_root}/build/coverage-pipeline/summary/{project}.md`; the
+    batch driver merges combined views after the run.
+
+    Once the work is done you should exit the process. Do NOT commit or push
+    anything. Leave all changes locally for the security engineer to review.
+    """)
+
+PIPELINE_CONTINUATION_PROMPT_TEMPLATE = textwrap.dedent("""\
+    You are an OSS-Fuzz engineer CONTINUING the coverage pipeline for the
+    **{project}** OSS-Fuzz project; a previous session already made progress.
+
+    ## Important: use your skills
+
+    You MUST use the following skills throughout this task:
+    {fuzzing_skills_blurb}
+
+    ## Objective
+
+    First read the per-project manifest fragment at
+    `{oss_fuzz_root}/build/coverage-pipeline/manifest/{project}.md` and the
+    existing
+    report(s) under `{oss_fuzz_root}/projects/{project}/` to see exactly
+    where the previous session stopped (worktree duo pairs already created,
+    ledger state, remaining ranked targets). Then CONTINUE the
+    **oss-fuzz-coverage-pipeline** portfolio loop for **{project}** from that
+    point: work the remaining ranked targets top-down, pair by pair, with the
+    same validation and guardrails as a first session. Portfolio cap: at most
+    {cap} pairs for this project in total across sessions (improvement
+    pairs; a `-build-fix` pair does not count against the cap).
+
+    Re-read all project data fresh per the skill's rules, but do not redo
+    work already delivered: existing delivered pairs and their worktrees are
+    carried forward as recorded in the manifest.
+
+    ## Hard guardrails
+
+    Identical to a first session: never commit, never push, no staging by
+    default; upstream product code off-limits; everything through
+    python3 infra/helper.py; classify every post-build crash; never introduce
+    new silencing; the cov: fast path for coverage evaluation; and when your
+    context or time runs low, checkpoint cleanly instead of wrapping up.
+
+    ## Exit protocol (mandatory)
+
+    Before exiting, update the manifest for **{project}**: the pairs
+    delivered so far (all sessions), the remaining ranked targets with their
+    worth rationales, and a terminal stop line in exactly this format:
+
+    STOP: {project} : <worth-exhausted|cap-reached|no-worthy-targets|budget-exhausted|blocked(...)>
+
+    ## Working directory and outputs
+
+    You are working from: `{oss_fuzz_root}`
+    The project directory is: `{oss_fuzz_root}/projects/{project}`
+    Update the per-project report at: `{report_path}`
+    and the manifest fragment at
+    `{oss_fuzz_root}/build/coverage-pipeline/manifest/{project}.md`.
+
+    Once the work is done you should exit the process. Do NOT commit or push
+    anything. Leave all changes locally for the security engineer to review.
+    """)
+
 EXPAND_SUMMARY_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are an OSS-Fuzz engineer tasked with writing a consolidated summary
     of a multi-round fuzzing expansion that was just completed for the
@@ -988,16 +1131,19 @@ def build_prompt(task,
                  task_description=None,
                  round_num=1,
                  total_rounds=1,
-                 expansion_size='medium'):
+                 expansion_size='medium',
+                 pipeline_cap=5):
   """Build the agent prompt for a given task and project.
 
   Args:
-    task: One of 'expand', 'fix-build', 'free-task', 'add-chronos'.
+    task: One of 'expand', 'fix-build', 'free-task', 'add-chronos',
+      'coverage-pipeline'.
     project: OSS-Fuzz project name.
     task_description: Free-form task description (free-task only).
     round_num: Current expansion round (1-based; expand only).
     total_rounds: Total number of rounds planned (expand only).
     expansion_size: 'small', 'medium', or 'large' (expand only).
+    pipeline_cap: Portfolio cap in pairs (coverage-pipeline only).
   """
   if task == 'expand':
     if total_rounds > 1:
@@ -1014,6 +1160,12 @@ def build_prompt(task,
   elif task == 'add-chronos':
     report_name = 'chronos_report.md'
     template = ADD_CHRONOS_PROMPT_TEMPLATE
+  elif task == 'coverage-pipeline':
+    report_name = 'coverage_pipeline_report.md'
+    template = PIPELINE_PROMPT_TEMPLATE
+  elif task == 'coverage-pipeline-continue':
+    report_name = 'coverage_pipeline_report.md'
+    template = PIPELINE_CONTINUATION_PROMPT_TEMPLATE
   else:
     raise ValueError(f'Unknown task: {task}')
 
@@ -1024,6 +1176,8 @@ def build_prompt(task,
       report_path=report_path,
       fuzzing_skills_blurb=FUZZING_SKILLS_BLURB,
   )
+  if task in ('coverage-pipeline', 'coverage-pipeline-continue'):
+    fmt_kwargs['cap'] = pipeline_cap
   if task == 'expand':
     fmt_kwargs['expansion_size_guidance'] = EXPAND_SIZE_GUIDANCE.get(
         expansion_size, EXPAND_SIZE_GUIDANCE['medium'])
@@ -1056,14 +1210,16 @@ def print_prompt(task,
                  task_description=None,
                  round_num=1,
                  total_rounds=1,
-                 expansion_size='medium'):
+                 expansion_size='medium',
+                 pipeline_cap=5):
   """Print the prompt that would be sent to an agent."""
   prompt, _ = build_prompt(task,
                            project,
                            task_description=task_description,
                            round_num=round_num,
                            total_rounds=total_rounds,
-                           expansion_size=expansion_size)
+                           expansion_size=expansion_size,
+                           pipeline_cap=pipeline_cap)
   label = f'{task}'
   if task == 'expand' and total_rounds > 1:
     label += f' round {round_num}/{total_rounds}'
@@ -1078,7 +1234,8 @@ def launch_agent_session(agent_cli,
                          task_description=None,
                          round_num=1,
                          total_rounds=1,
-                         expansion_size='medium'):
+                         expansion_size='medium',
+                         pipeline_cap=5):
   """Launch an agent session for a single project.
 
     Returns a subprocess.Popen object.
@@ -1088,7 +1245,8 @@ def launch_agent_session(agent_cli,
                            task_description=task_description,
                            round_num=round_num,
                            total_rounds=total_rounds,
-                           expansion_size=expansion_size)
+                           expansion_size=expansion_size,
+                           pipeline_cap=pipeline_cap)
 
   round_label = (f' round {round_num}/{total_rounds}'
                  if task == 'expand' and total_rounds > 1 else '')
@@ -1298,7 +1456,8 @@ def _run_single_session(agent_cli,
                         task_description=None,
                         round_num=1,
                         total_rounds=1,
-                        expansion_size='medium'):
+                        expansion_size='medium',
+                        pipeline_cap=5):
   """Launch an agent session and wait for it to complete.
 
   Returns a dict with the project name, return code, and log path.
@@ -1309,7 +1468,8 @@ def _run_single_session(agent_cli,
                               task_description=task_description,
                               round_num=round_num,
                               total_rounds=total_rounds,
-                              expansion_size=expansion_size)
+                              expansion_size=expansion_size,
+                              pipeline_cap=pipeline_cap)
   if proc is None:
     return {'project': project, 'returncode': -1, 'log_path': None}
 
@@ -1330,11 +1490,15 @@ def _run_sessions(task, args):
   _validate_projects(projects)
 
   task_description = getattr(args, 'task_description', None)
-  _, report_name = build_prompt(task, projects[0], task_description)
+  pipeline_cap = getattr(args, 'cap', 5)
+  _, report_name = build_prompt(task,
+                                projects[0],
+                                task_description,
+                                pipeline_cap=pipeline_cap)
 
   if args.print_only:
     for project in projects:
-      print_prompt(task, project, task_description)
+      print_prompt(task, project, task_description, pipeline_cap=pipeline_cap)
     return
 
   agent_cli = args.agent or find_agent_cli()
@@ -1361,7 +1525,7 @@ def _run_sessions(task, args):
   with concurrent.futures.ThreadPoolExecutor(
       max_workers=max_parallel) as executor:
     futures = {
-        executor.submit(_run_single_session, agent_cli, task, project, task_description):
+        executor.submit(_run_single_session, agent_cli, task, project, task_description, 1, 1, 'medium', pipeline_cap):
             project for project in projects
     }
     for future in concurrent.futures.as_completed(futures):
@@ -1637,6 +1801,196 @@ def cmd_fix_broken_builds(args):
   _run_sessions('fix-build', args)
 
 
+def _pipeline_stop_reached(project):
+  """True if a terminal STOP line is recorded for the project.
+
+  Checks the per-project manifest fragment first, then a legacy single-file
+  manifest. Matching is tolerant: markdown emphasis, case and colon spacing
+  may vary from the requested exact format.
+  """
+  manifest_dir = os.path.join(OSS_FUZZ_ROOT, 'build', 'coverage-pipeline',
+                              'manifest')
+  candidates = [
+      os.path.join(manifest_dir, f'{project}.md'),
+      os.path.join(OSS_FUZZ_ROOT, 'build', 'coverage-pipeline', 'manifest.md'),
+  ]
+  pattern = re.compile(rf'^\s*\**\s*stop\s*:\s*{re.escape(project)}\s*:',
+                       re.IGNORECASE)
+  for manifest in candidates:
+    if not os.path.isfile(manifest):
+      continue
+    try:
+      with open(manifest, encoding='utf-8') as f:
+        content = f.read()
+    except OSError:
+      continue
+    for line in content.splitlines():
+      if pattern.match(line):
+        return True
+  return False
+
+
+def _disk_space_ok():
+  """True when there is enough free disk to keep launching sessions."""
+  try:
+    usage = shutil.disk_usage(OSS_FUZZ_ROOT)
+  except OSError:
+    return True
+  return usage.free >= MIN_FREE_DISK_GB * 1024**3
+
+
+def _collate_fragments(fragment_dir, merged_path, header):
+  """Merge per-project fragment files into one deterministic view."""
+  if not os.path.isdir(fragment_dir):
+    return
+  names = sorted(n for n in os.listdir(fragment_dir) if n.endswith('.md'))
+  if not names:
+    return
+  os.makedirs(os.path.dirname(merged_path), exist_ok=True)
+  with open(merged_path, 'w', encoding='utf-8') as out:
+    out.write(header + '\n\n')
+    for name in names:
+      with open(os.path.join(fragment_dir, name), encoding='utf-8') as f:
+        out.write(f.read().rstrip() + '\n\n')
+
+
+def _run_pipeline_relay(agent_cli, args, project):
+  """Run coverage-pipeline sessions for one project until a terminal stop.
+
+  Sessions run sequentially per project (the relay); projects run in
+  parallel via the executor. A session that exits without recording a
+  terminal STOP line is treated as a checkpoint, and the next session
+  continues from the manifest, up to --max-sessions-per-project.
+  """
+  max_sessions = args.max_sessions_per_project
+  deadline_minutes = args.per_project_minutes  # 0 means no limit.
+  started = datetime.now()
+  for session_num in range(1, max_sessions + 1):
+    if not _disk_space_ok():
+      print(f'[!] {project}: insufficient disk space; stopping the relay '
+            'cleanly. The session should record a budget-exhausted (disk) '
+            'stop with deferred entries if it runs at all.')
+      return {'project': project, 'returncode': 0, 'log_path': None}
+    task = ('coverage-pipeline'
+            if session_num == 1 else 'coverage-pipeline-continue')
+    print(f'[*] {project}: launching session {session_num}/{max_sessions} '
+          f'({task})')
+    result = _run_single_session(agent_cli, task, project, None, 1, 1, 'medium',
+                                 args.cap)
+    if _pipeline_stop_reached(project):
+      print(f'[*] {project}: terminal stop recorded; relay complete.')
+      return result
+    if (result['returncode'] != 0 and session_num == 1):
+      print(f'[*] {project}: first session failed; not relaying.')
+      return result
+    if (deadline_minutes and
+        (datetime.now() - started).total_seconds() > deadline_minutes * 60):
+      print(f'[*] {project}: per-project time budget reached; stopping the '
+            'relay (remaining targets should be recorded as deferred).')
+      return result
+  print(f'[*] {project}: session cap reached without a terminal stop; '
+        'remaining targets should be recorded as deferred.')
+  return result
+
+
+def cmd_coverage_pipeline(args):
+  """Handle the coverage-pipeline subcommand.
+
+  Runs the full coverage pipeline (oss-fuzz-coverage-pipeline skill) over
+  the named projects, or over projects discovered with --broken. The prompt
+  is generated automatically; no task string is needed.
+  """
+  projects = list(args.projects)
+
+  if args.broken:
+    languages = [
+        lang.strip() for lang in args.language.split(',') if lang.strip()
+    ]
+    if not languages:
+      print('[!] --language must name at least one language.', file=sys.stderr)
+      sys.exit(1)
+    limit = args.limit if args.limit else 50
+    selected, total_matching = discover_broken_projects(languages, limit)
+    print(f'[*] Found {total_matching} broken project(s) '
+          f'for language(s): {", ".join(languages)}')
+    if not selected:
+      print('[*] Nothing to run.')
+      return
+    if len(selected) < total_matching:
+      print(f'[*] Taking the first {len(selected)} (of {total_matching}); '
+            f'raise --limit to do more.')
+    projects.extend(p for p in selected if p not in projects)
+
+  if args.exclude:
+    patterns = [p.strip() for p in args.exclude.split(',') if p.strip()]
+    projects = [
+        p for p in projects
+        if not any(fnmatch.fnmatch(p, pat) for pat in patterns)
+    ]
+
+  if not projects:
+    print('[!] No projects to run on (name projects or use --broken).',
+          file=sys.stderr)
+    sys.exit(1)
+
+  if args.limit and not args.broken:
+    projects = projects[:args.limit]
+
+  args.projects = projects
+
+  if args.print_only:
+    for project in projects:
+      print_prompt('coverage-pipeline', project, pipeline_cap=args.cap)
+      print_prompt('coverage-pipeline-continue', project, pipeline_cap=args.cap)
+    return
+
+  agent_cli = args.agent or find_agent_cli()
+  if agent_cli is None:
+    print(
+        '[!] No supported agent CLI found on PATH '
+        f'({", ".join(SUPPORTED_AGENTS)}).\n'
+        '    Install one or use --print-only to see the prompts.',
+        file=sys.stderr)
+    sys.exit(1)
+
+  print(f'[*] Using agent CLI: {agent_cli}')
+  print(f'[*] Task: coverage-pipeline (relay, up to '
+        f'{args.max_sessions_per_project} session(s) per project)')
+  print(f'[*] Projects: {", ".join(projects)}')
+  print(f'[*] Max parallel projects: {args.max_parallel}')
+  print()
+
+  with concurrent.futures.ThreadPoolExecutor(
+      max_workers=args.max_parallel) as executor:
+    futures = {
+        executor.submit(_run_pipeline_relay, agent_cli, args, project): project
+        for project in projects
+    }
+    for future in concurrent.futures.as_completed(futures):
+      future.result()
+
+  print('\n[*] All relays complete. Check the following for results:')
+  for project in projects:
+    report = os.path.join(OSS_FUZZ_ROOT, 'projects', project,
+                          'coverage_pipeline_report.md')
+    exists = 'EXISTS' if os.path.isfile(report) else 'MISSING'
+    print(f'    - projects/{project}/coverage_pipeline_report.md  [{exists}]')
+
+  _collate_fragments(
+      os.path.join(OSS_FUZZ_ROOT, 'build', 'coverage-pipeline', 'manifest'),
+      os.path.join(OSS_FUZZ_ROOT, 'build', 'coverage-pipeline', 'manifest.md'),
+      '# Merged run manifest (generated from per-project fragments)')
+  _collate_fragments(
+      os.path.join(OSS_FUZZ_ROOT, 'build', 'coverage-pipeline', 'summary'),
+      os.path.join(OSS_FUZZ_ROOT, 'build', 'coverage-pipeline', 'summary.md'),
+      '# Merged run summary (generated from per-project fragments)')
+  print('[*] Merged manifest and summary views written under '
+        'build/coverage-pipeline/.')
+
+  print('\n[*] Review local changes with:')
+  print(f'    cd {OSS_FUZZ_ROOT} && git status && git worktree list')
+
+
 def cmd_run_task(args):
   """Handle the run-task subcommand."""
   _run_sessions('free-task', args)
@@ -1676,7 +2030,8 @@ def cmd_show_prompt(args):
                    task_description=task_description,
                    round_num=round_num,
                    total_rounds=total_rounds,
-                   expansion_size=expansion_size)
+                   expansion_size=expansion_size,
+                   pipeline_cap=getattr(args, 'cap', 5))
 
 
 def main():
@@ -1718,6 +2073,21 @@ def main():
 
               # Preview which projects would be fixed (no agent launched):
               python %(prog)s fix-broken-builds --print-only
+
+              # Run the full coverage pipeline over two projects
+              # (the prompt is generated automatically):
+              python %(prog)s coverage-pipeline open62541 json-c
+
+              # Auto-discover up to 10 broken C/C++ projects and run the
+              # full pipeline on each:
+              python %(prog)s coverage-pipeline --broken --limit 10
+
+              # Relay: up to 5 sessions per project, capped at 4 hours each:
+              python %(prog)s coverage-pipeline --max-sessions-per-project 5 \\
+                  --per-project-minutes 240 open62541
+
+              # Preview the generated pipeline prompt without an agent:
+              python %(prog)s coverage-pipeline --print-only open62541
 
               # Run a free-form task on one or more projects:
               python %(prog)s run-task \\
@@ -1917,6 +2287,93 @@ def main():
   )
   fix_broken_parser.set_defaults(func=cmd_fix_broken_builds)
 
+  # coverage-pipeline (full pipeline, prompt generated automatically)
+  pipeline_parser = subparsers.add_parser(
+      'coverage-pipeline',
+      help='Run the full coverage pipeline (oss-fuzz-coverage-pipeline '
+      'skill) over named or auto-discovered projects; the prompt is '
+      'generated automatically.',
+  )
+  pipeline_parser.add_argument(
+      'projects',
+      nargs='*',
+      help='One or more OSS-Fuzz project names (or none, with --broken).',
+  )
+  pipeline_parser.add_argument(
+      '--broken',
+      action='store_true',
+      help='Discover broken projects from the public OSS-Fuzz build status '
+      '(same discovery as fix-broken-builds) instead of naming projects.',
+  )
+  pipeline_parser.add_argument(
+      '--language',
+      default=DEFAULT_FIX_LANGUAGES,
+      metavar='LANGS',
+      help='Comma-separated project languages to include with --broken '
+      f'(default: "{DEFAULT_FIX_LANGUAGES}").',
+  )
+  pipeline_parser.add_argument(
+      '--limit',
+      type=int,
+      default=0,
+      metavar='N',
+      help='Maximum number of projects to run on (default: no limit for '
+      'named projects, 50 with --broken).',
+  )
+  pipeline_parser.add_argument(
+      '--exclude',
+      default='',
+      metavar='GLOBS',
+      help='Comma-separated project-name globs to exclude.',
+  )
+  pipeline_parser.add_argument(
+      '--cap',
+      type=int,
+      default=5,
+      metavar='N',
+      help='Portfolio cap: maximum pairs per project, passed into the '
+      'generated prompt (default: 5).',
+  )
+  pipeline_parser.add_argument(
+      '--max-sessions-per-project',
+      type=int,
+      default=3,
+      metavar='N',
+      help='Relay: maximum agent sessions per project; a continuation '
+      'session is launched while the manifest shows no terminal STOP line '
+      '(default: 3).',
+  )
+  pipeline_parser.add_argument(
+      '--per-project-minutes',
+      type=int,
+      default=0,
+      metavar='N',
+      help='Relay: stop launching sessions for a project after this many '
+      'minutes of sessions (default: 0, no limit).',
+  )
+  pipeline_parser.add_argument(
+      '--agent',
+      choices=SUPPORTED_AGENTS,
+      default=None,
+      help='Agent CLI to use (default: auto-detect).',
+  )
+  pipeline_parser.add_argument(
+      '--print-only',
+      action='store_true',
+      help='Print the prompts (and the discovered project list) without '
+      'launching agent sessions.',
+  )
+  pipeline_parser.add_argument(
+      '-j',
+      '--max-parallel',
+      type=int,
+      default=DEFAULT_MAX_PARALLEL,
+      metavar='N',
+      help='Maximum number of agent sessions to run in parallel '
+      f'(default: {DEFAULT_MAX_PARALLEL}).',
+  )
+  pipeline_parser.set_defaults(func=cmd_coverage_pipeline)
+
   # run-task
   run_task_parser = subparsers.add_parser(
       'run-task',
@@ -1998,7 +2455,9 @@ def main():
                            help='OSS-Fuzz project names.')
   show_parser.add_argument(
       '--task',
-      choices=['expand', 'fix-build', 'free-task', 'add-chronos'],
+      choices=[
+          'expand', 'fix-build', 'free-task', 'add-chronos', 'coverage-pipeline'
+      ],
       default='expand',
       help='Which task prompt to show (default: expand).',
   )
