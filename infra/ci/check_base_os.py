@@ -13,98 +13,106 @@
 # limitations under the License.
 #
 ################################################################################
-"""
-A CI script to ensure that the base OS version specified in a project's
-project.yaml file matches the FROM line in its Dockerfile.
-"""
+"""CI check ensuring project.yaml base_os_version matches Dockerfile tags."""
 
 import os
 import sys
 import yaml
 
-# Defines the base OS versions that are currently supported for use in project.yaml.
-# For now, only 'legacy' is permitted. This list will be expanded as new
-# base images are rolled out.
 SUPPORTED_VERSIONS = [
     'legacy',
-    # 'ubuntu-20-04',
     'ubuntu-24-04',
 ]
 
-# A map from the base_os_version in project.yaml to the expected Dockerfile
-# FROM tag.
 BASE_OS_TO_DOCKER_TAG = {
     'legacy': 'latest',
     'ubuntu-20-04': 'ubuntu-20-04',
     'ubuntu-24-04': 'ubuntu-24-04',
 }
 
+OSS_FUZZ_BASE_PREFIX = 'gcr.io/oss-fuzz-base/'
 
-def main():
-  """Checks the Dockerfile FROM tag against the project's base_os_version."""
-  if len(sys.argv) < 2:
-    print(f'Usage: {sys.argv[0]} <project_path>', file=sys.stderr)
-    return 1
 
-  project_path = sys.argv[1]
+def parse_oss_fuzz_base_tags(dockerfile_content):
+  """Extracts (line, image_repo, tag) tuples for gcr.io/oss-fuzz-base stages."""
+  stages = []
+  for raw_line in dockerfile_content.splitlines():
+    stripped = raw_line.split('#', 1)[0].strip()
+    if not stripped.upper().startswith('FROM '):
+      continue
+    tokens = stripped.split()[1:]
+    tokens = [tok for tok in tokens if not tok.startswith('--')]
+    if not tokens:
+      continue
+    image_spec = tokens[0]
+    if not image_spec.startswith(OSS_FUZZ_BASE_PREFIX):
+      continue
+    if ':' in image_spec:
+      repo, tag = image_spec.rsplit(':', 1)
+    else:
+      repo, tag = image_spec, 'latest'
+    stages.append((stripped, repo, tag))
+  return stages
+
+
+def check_project_base_os(project_path):
+  """Validates that OSS-Fuzz base stages in Dockerfile match project.yaml."""
   project_yaml_path = os.path.join(project_path, 'project.yaml')
   dockerfile_path = os.path.join(project_path, 'Dockerfile')
 
-  # 1. Get the base_os_version from project.yaml, defaulting to 'legacy'.
   base_os_version = 'legacy'
   if os.path.exists(project_yaml_path):
-    with open(project_yaml_path) as f:
-      config = yaml.safe_load(f)
+    with open(project_yaml_path, encoding='utf-8') as handle:
+      config = yaml.safe_load(handle)
       if config and 'base_os_version' in config:
         base_os_version = config['base_os_version']
 
-  # 2. Validate that the version is currently supported.
   if base_os_version not in SUPPORTED_VERSIONS:
     print(
         f'Error: base_os_version "{base_os_version}" is not yet supported. '
-        f'The currently supported versions are: "{", ".join(SUPPORTED_VERSIONS)}"',
+        f'Supported versions: "{", ".join(SUPPORTED_VERSIONS)}"',
         file=sys.stderr)
     return 1
 
-  # 3. Get the expected Dockerfile tag from our mapping.
   expected_tag = BASE_OS_TO_DOCKER_TAG[base_os_version]
 
-  # 4. Read the Dockerfile and find the tag in the FROM line.
   if not os.path.exists(dockerfile_path):
     print(f'Error: Dockerfile not found at {dockerfile_path}', file=sys.stderr)
     return 1
 
-  dockerfile_tag = ''
-  with open(dockerfile_path) as f:
-    for line in f:
-      if line.strip().startswith('FROM'):
-        try:
-          if ':' not in line:
-            print(
-                f'Error: Malformed FROM line in Dockerfile (missing tag): {line.strip()}',
-                file=sys.stderr)
-            return 1
-          dockerfile_tag = line.split(':')[1].strip()
-        except IndexError:
-          print(f'Error: Could not parse tag from Dockerfile FROM line: {line}',
-                file=sys.stderr)
-          return 1
-        break
+  with open(dockerfile_path, encoding='utf-8') as handle:
+    stages = parse_oss_fuzz_base_tags(handle.read())
 
-  # 5. Compare and report.
-  if dockerfile_tag != expected_tag:
+  if not stages:
+    print(f'Success: {project_path} uses no {OSS_FUZZ_BASE_PREFIX} stages '
+          f'(base_os_version: "{base_os_version}").')
+    return 0
+
+  mismatches = [(line, tag) for line, _, tag in stages if tag != expected_tag]
+  if mismatches:
+    details = '\n'.join(
+        f'  - "{line}" (parsed tag: "{tag}")' for line, tag in mismatches)
     print(
         f'Error: Mismatch found in {project_path}.\n'
-        f'  - project.yaml (base_os_version): "{base_os_version}" (expects Dockerfile tag "{expected_tag}")\n'
-        f'  - Dockerfile FROM tag: "{dockerfile_tag}"\n'
-        f'Please align the Dockerfile\'s FROM line to use the tag "{expected_tag}".',
+        f'  - project.yaml (base_os_version): "{base_os_version}" '
+        f'(expects Dockerfile tag "{expected_tag}")\n'
+        f'{details}\n'
+        f'Please align all {OSS_FUZZ_BASE_PREFIX}* FROM lines to use '
+        f'":{expected_tag}".',
         file=sys.stderr)
     return 1
 
-  print(
-      f'Success: {project_path} is consistent (base_os_version: "{base_os_version}", Dockerfile tag: "{dockerfile_tag}").'
-  )
+  print(f'Success: {project_path} is consistent '
+        f'(base_os_version: "{base_os_version}", tag: "{expected_tag}").')
   return 0
+
+
+def main():
+  """CLI entrypoint."""
+  if len(sys.argv) < 2:
+    print(f'Usage: {sys.argv[0]} <project_path>', file=sys.stderr)
+    return 1
+  return check_project_base_os(sys.argv[1])
 
 
 if __name__ == '__main__':
