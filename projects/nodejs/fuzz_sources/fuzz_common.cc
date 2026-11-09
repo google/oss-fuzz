@@ -195,8 +195,14 @@ static void InitializePersistentEnvOnce() {
 
     g_env = node::CreateEnvironment(g_iso_data, ctx, args, exec_args, flags);
 
-    // Bootstrap Node (no entry script).
-    node::LoadEnvironment(g_env, const_cast<char*>(""));
+    // Bootstrap Node, should initialize some builtins.
+    node::LoadEnvironment(g_env, const_cast<char*>(
+      "globalThis.require = require;"
+      "globalThis.module = module;"
+      "globalThis.exports = exports;"
+      "globalThis.__filename = __filename;"
+      "globalThis.__dirname = __dirname;"
+    ));
 
     // Build and cache the comparator function.
     BuildBufCmpOnce();
