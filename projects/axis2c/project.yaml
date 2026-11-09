@@ -1,0 +1,5 @@
+homepage: "https://axis.apache.org/axis2/c/core/"
+language: c
+primary_contact: "c-dev@axis.apache.org"
+vendor_ccs: "robertlazarski@gmail.com"
+main_repo: "https://github.com/apache/axis-axis2-c-core.git"
