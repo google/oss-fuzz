@@ -1,0 +1,11 @@
+homepage: "https://github.com/Bwar/CJsonObject"
+language: c++
+primary_contact: "ercan.esra96@gmail.com"
+auto_ccs:
+  - "fcelik.ft@gmail.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'https://github.com/Bwar/CJsonObject.git'
