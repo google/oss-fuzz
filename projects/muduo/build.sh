@@ -18,16 +18,8 @@
 sed -i '34 a $ENV{CXXFLAGS}' CMakeLists.txt
 mkdir -p build-dir && cd build-dir
 cmake -DCMAKE_BUILD_TYPE="release" -DMUDUO_BUILD_EXAMPLES=OFF \
+      -DMUDUO_BUILD_FUZZERS=ON \
       ..
 make -j$(nproc)
 
-$CXX $CXXFLAGS -I/src/muduo \
-	-o muduo_http_fuzzer.o \
-    -c $SRC/muduo_http_fuzzer.cpp
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
-	muduo_http_fuzzer.o \
-    -o $OUT/muduo_http_fuzzer \
-	./lib/libmuduo_http.a \
-	./lib/libmuduo_net.a \
-	./lib/libmuduo_base.a 
+cp bin/muduo_http_fuzzer "$OUT/"
