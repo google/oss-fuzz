@@ -26,8 +26,9 @@ cp tests/fuzz_cdp $OUT/
 cp tests/fuzz_edp $OUT/
 cp tests/fuzz_lldp $OUT/
 cp tests/fuzz_sonmp $OUT/
+cp tests/fuzz_marshal $OUT/
 
-zip -r $OUT/fuzz_cdp_seed_corpus.zip    tests/fuzzing_seed_corpus/fuzz_cdp_seed_corpus
-zip -r $OUT/fuzz_edp_seed_corpus.zip    tests/fuzzing_seed_corpus/fuzz_edp_seed_corpus
-zip -r $OUT/fuzz_lldp_seed_corpus.zip   tests/fuzzing_seed_corpus/fuzz_lldp_seed_corpus
-zip -r $OUT/fuzz_sonmp_seed_corpus.zip  tests/fuzzing_seed_corpus/fuzz_sonmp_seed_corpus
+for corpus in tests/fuzzing_seed_corpus/*
+do
+  zip -r $OUT/$(basename $corpus).zip    tests/fuzzing_seed_corpus/$(basename $corpus)
+done
