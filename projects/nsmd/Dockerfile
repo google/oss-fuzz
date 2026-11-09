@@ -16,10 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN git clone --depth 1 https://gbmc.googlesource.com/nsmd nsmd
+RUN git clone --depth 1 https://github.com/NVIDIA/nsmd nsmd
 
-COPY build.sh $SRC/
+COPY build.sh generate_seeds.py nsm.dict *.options $SRC/
 COPY fuzzer_helpers.h $SRC/
-COPY decode_*_fuzzer.cc $SRC/
+COPY decode_*_fuzzer.cc nsm_*_fuzzer.cc $SRC/
 
 WORKDIR $SRC
