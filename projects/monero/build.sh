@@ -46,6 +46,7 @@ TARGETS="\
   fuzz_rpc_full \
   fuzz_rpc_full_no_exceptions \
   fuzz_zmq \
+  p2p-peerlist_fuzz_tests \
 "
 
 # only libfuzzer can run the slow to start ones
