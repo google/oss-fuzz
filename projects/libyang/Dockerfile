@@ -18,12 +18,13 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf automake libtool libcmocka-dev
 RUN git clone https://github.com/CESNET/libyang
 
-RUN git clone https://github.com/PCRE2Project/pcre2 pcre2 && \
+# Pin to pcre2-10.39 that works
+RUN git clone --depth 1 --branch pcre2-10.39 https://github.com/PCRE2Project/pcre2 pcre2 && \
     cd pcre2 && \
     ./autogen.sh && \
-    ./configure && \
-    make && \
+    ./configure --disable-shared && \
+    make -j"$(nproc)" && \
     make install
 
 WORKDIR $SRC/libyang
-COPY run_tests.sh build.sh $SRC/
+COPY run_tests.sh build.sh libyang_tests_config.cmake $SRC/
