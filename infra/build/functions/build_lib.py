@@ -362,8 +362,8 @@ def download_coverage_data_steps(project_name,
   coverage_data_path = os.path.join(f'{out_dir}/textcov_reports/')
   bucket_url = f'gs://{bucket_name}/{project_name}/textcov_reports/{latest}/*'
   steps.append({
-      'name': 'gcr.io/cloud-builders/gsutil',
-      'args': ['-m', 'cp', '-r', bucket_url, coverage_data_path],
+      'name': 'gcr.io/cloud-builders/gcloud',
+      'args': ['storage', 'cp', '--recursive', bucket_url, coverage_data_path],
       'allowFailure': True
   })
   steps.append({
@@ -430,11 +430,11 @@ def upload_using_signed_policy_document(file_path, upload_path,
 def gsutil_rm_rf_step(url):
   """Returns a GCB step to recursively delete the object with given GCS url."""
   step = {
-      'name': 'gcr.io/cloud-builders/gsutil',
+      'name': 'gcr.io/cloud-builders/gcloud',
       'entrypoint': 'sh',
       'args': [
           '-c',
-          'gsutil -m rm -rf %s || exit 0' % url,
+          'gcloud storage rm --recursive --continue-on-error %s || exit 0' % url,
       ],
   }
   return step
