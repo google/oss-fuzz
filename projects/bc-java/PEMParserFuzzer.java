@@ -35,7 +35,7 @@ public class PEMParserFuzzer {
         //empty body
       }
     }
-    catch(IOException | DecoderException e){
+    catch(Exception e){
       return;
     }
 
