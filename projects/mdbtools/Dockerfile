@@ -15,9 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf autoconf-archive automake gettext libtool pkg-config
+RUN apt-get update && apt-get install -y make autoconf autoconf-archive automake gettext libtool pkg-config flex bison
 
 RUN git clone --depth 1 --branch master https://github.com/mdbtools/mdbtools mdbtools
 RUN git clone --depth 1 https://github.com/mdbtools/mdbtestdata mdbtestdata
 WORKDIR mdbtools
 COPY build.sh $SRC/
+
+
