@@ -22,5 +22,10 @@ RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 # Use ASN.1 pdu protobuf and converter from the google/fuzzing repo.
 RUN git clone --depth 1 https://github.com/google/fuzzing.git
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
+RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja \
+    -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON \
+    -DLIB_PROTO_MUTATOR_TESTING=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS="-stdlib=libstdc++" \
+    && ninja)
 COPY *.cc build.sh $SRC/
