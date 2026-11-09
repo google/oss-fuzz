@@ -44,6 +44,15 @@ RUN python3 tools/git-sync-deps && \
     python3 bin/fetch-gn && \
     python3 bin/fetch-ninja
 
+# Skia's gn/bazel_build.py invokes `bazelisk`, whereas base-builder installs it
+# as `bazel`. We also pass USE_BAZEL_VERSION explicitly so older Bazelisk
+# versions don't rely on WORKSPACE.bazel to find .bazelversion, and pre-fetch
+# the Bazel/Rust dependencies so they are cached in the image.
+RUN ln -sf /usr/local/bin/bazel /usr/local/bin/bazelisk && \
+    USE_BAZEL_VERSION="$(cat .bazelversion)" bazelisk build --nobuild \
+        --compilation_mode=opt --//rust/png:fuzzing_build_mode=true \
+        @crates//:cxx_cc //rust/png:ffi_rs
+
 # Make a directory for seed corpora that won't be clobbered by CIFuzz.
 RUN mkdir -p $SRC/skia_data && \
     wget -q -O $SRC/skia_data/image_filter_deserialize_seed_corpus.zip https://cdn.skia.org/oss-fuzz/image_filter_deserialize_seed_corpus.zip && \
