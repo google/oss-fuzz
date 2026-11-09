@@ -1,0 +1,51 @@
+# MessagePack type markers for libFuzzer guided mutation
+# nil/bool
+"\xc0"
+"\xc2"
+"\xc3"
+# unsigned integers
+"\xcc"
+"\xcd"
+"\xce"
+"\xcf"
+# signed integers
+"\xd0"
+"\xd1"
+"\xd2"
+"\xd3"
+# floats
+"\xca"
+"\xcb"
+# string formats
+"\xd9"
+"\xda"
+"\xdb"
+# binary formats
+"\xc4"
+"\xc5"
+"\xc6"
+# array formats
+"\xdc"
+"\xdd"
+# map formats
+"\xde"
+"\xdf"
+# fixext formats
+"\xd4"
+"\xd5"
+"\xd6"
+"\xd7"
+"\xd8"
+# ext formats
+"\xc7"
+"\xc8"
+"\xc9"
+# fixmap/fixarray/fixstr prefixes
+"\x80"
+"\x90"
+"\xa0"
+# common length suffixes
+"\x00\x00\x00\x00"
+"\xff\xff\xff\xff"
+"\x00\x00"
+"\xff\xff"
