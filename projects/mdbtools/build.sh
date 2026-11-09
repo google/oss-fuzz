@@ -22,8 +22,16 @@ make clean
 
 make
 
+# the established mdbtestdata databases are the seed corpus for every target
+rm -f $OUT/fuzz_mdb_seed_corpus.zip $OUT/fuzz_sql_seed_corpus.zip
 zip -j $OUT/fuzz_mdb_seed_corpus.zip ../mdbtestdata/data/*.mdb ../mdbtestdata/data/*.accdb
+zip -j $OUT/fuzz_sql_seed_corpus.zip ../mdbtestdata/data/*.mdb ../mdbtestdata/data/*.accdb
 
 cd src/fuzz
 make fuzz_mdb
 cp fuzz_mdb $OUT/fuzz_mdb
+
+# fuzz_sql needs the SQL engine (libmdbsql, built above when flex/bison are present)
+make fuzz_sql
+cp fuzz_sql $OUT/fuzz_sql
+
