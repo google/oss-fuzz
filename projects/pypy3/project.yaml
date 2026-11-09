@@ -5,5 +5,7 @@ primary_contact: "stanulbrych@gmail.com"
 auto_ccs:
  - "matti.picus@gmail.com"
  - "cfbolz@gmail.com"
+fuzzing_engines:
+ - libfuzzer
 sanitizers:
  - undefined
