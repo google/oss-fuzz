@@ -108,6 +108,11 @@ do
   name=$(basename $f);
   module=$(echo $name | sed 's/_fuzzer//' | sed 's/_test//' )
   corpus_dir="test/static/corpus/$module"
+  # Fall back to the in-tree corpus when the module has no seeds in
+  # the tarantool-corpus repository yet.
+  if [ ! -e "$corpus_dir" ] && [ -e "test/fuzz/corpus/$module" ]; then
+    corpus_dir="test/fuzz/corpus/$module"
+  fi
   echo "Copying for $module";
   cp $f $OUT/
   if [ -e "$corpus_dir" ]; then
