@@ -45,4 +45,8 @@ make -j "$(nproc)" fuzz/fuzz_ossfuzz
 cp fuzz/fuzz_ossfuzz $OUT/libass_fuzzer
 cp fuzz/ass.dict $OUT/ass.dict
 
+if [ -d fuzz/corpus ]; then
+  zip -j $OUT/libass_fuzzer_seed_corpus.zip fuzz/corpus/*
+fi
+
 cp $SRC/*.options $OUT/
