@@ -33,7 +33,7 @@
         <dependency>
             <groupId>com.esotericsoftware.yamlbeans</groupId>
             <artifactId>yamlbeans</artifactId>
-            <version>Fuzzing-SNAPSHOT</version>
+            <version>1.17</version>
         </dependency>
 
     </dependencies>
