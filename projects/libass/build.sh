@@ -41,8 +41,9 @@ export PKG_CONFIG_PATH=/work/lib/pkgconfig
 ./configure \
   FUZZ_CPPFLAGS="-DASS_FUZZMODE=2 -DASSFUZZ_MAX_LEN=8192" \
   --disable-asm --disable-shared --enable-fuzz
-make -j "$(nproc)" fuzz/fuzz_ossfuzz
+make -j "$(nproc)" fuzz/fuzz_ossfuzz fuzz/fuzz_chunk_ossfuzz
 cp fuzz/fuzz_ossfuzz $OUT/libass_fuzzer
+cp fuzz/fuzz_chunk_ossfuzz $OUT/libass_chunk_fuzzer
 cp fuzz/ass.dict $OUT/ass.dict
 
 cp $SRC/*.options $OUT/
