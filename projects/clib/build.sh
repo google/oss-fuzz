@@ -27,13 +27,21 @@ $CC $CFLAGS -Wno-unused-function -U__STRICT_ANSI__  \
 	-DHAVE_PTHREADS=1 -pthread \
 	-c src/common/clib-cache.c src/clib-configure.c \
         src/common/clib-settings.c src/common/clib-package.c \
-        test/fuzzing/fuzz_manifest.c -I./asprintf -I./deps/ \
-	-I./deps/asprintf
+        test/fuzzing/fuzz_manifest.c test/fuzzing/fuzz_package.c \
+        -I./asprintf -I./deps/ -I./deps/asprintf
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_manifest.o \
 	-o $OUT/fuzz_manifest  clib-cache.o clib-configure.o clib-settings.o clib-package.o \
 	-I./deps/asprintf -I./deps -I./asprintf \
 	fuzz_lib.a -L/usr/lib/x86_64-linux-gnu -lcurl
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_package.o \
+	-o $OUT/fuzz_package  clib-cache.o clib-configure.o clib-settings.o clib-package.o \
+	-I./deps/asprintf -I./deps -I./asprintf \
+	fuzz_lib.a -L/usr/lib/x86_64-linux-gnu -lcurl
+
+echo "[libfuzzer]" > $OUT/fuzz_package.options
+echo "detect_leaks=0" >> $OUT/fuzz_package.options
 
 echo "[libfuzzer]" > $OUT/fuzz_manifest.options
 echo "detect_leaks=0" >> $OUT/fuzz_manifest.options
