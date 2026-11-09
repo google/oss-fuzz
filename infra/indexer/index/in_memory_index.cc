@@ -14,7 +14,6 @@
 
 #include "indexer/index/in_memory_index.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <iostream>
 #include <optional>
@@ -32,6 +31,7 @@
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/types/span.h"
+#include "third_party/gloop/util/gtl/stl_util.h"
 
 namespace oss_fuzz {
 namespace indexer {
@@ -372,10 +372,8 @@ FlatIndex InMemoryIndex::Export() && {
     CHECK_NE(new_location_id, kInvalidLocationId);
     result.references.emplace_back(new_entity_id, new_location_id);
   }
-  absl::c_sort(result.references);
   // Remove duplicates that could have arisen due to location column erasure.
-  auto last = std::unique(result.references.begin(), result.references.end());
-  result.references.erase(last, result.references.end());
+  gtl::STLSortAndRemoveDuplicates(&result.references);
 
   // Likewise, no need to maintain the old-to-new link id mapping.
   result.virtual_method_links.reserve(virtual_method_links_.size());
