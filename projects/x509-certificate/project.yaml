@@ -1,0 +1,15 @@
+homepage: "https://github.com/indygreg/cryptography-rs"
+language: rust
+primary_contact: "jaredreyespt@gmail.com"
+main_repo: "https://github.com/indygreg/cryptography-rs"
+file_github_issue: true
+
+sanitizers:
+  - address
+  - undefined
+
+fuzzing_engines:
+  - libfuzzer
+
+vendor_ccs:
+  - "gregory.szorc@gmail.com"
