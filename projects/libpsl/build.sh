@@ -102,3 +102,15 @@ for dir in *_fuzzer.in; do
     fuzzer=$(basename $dir .in)
     zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${dir}/"
 done
+
+# Prepare corpus and dict for each variants of charset/load fuzzer
+for v in icu idn2 idn; do
+  for fuzzer in load_query_fuzzer charset_fuzzer; do
+    if test -d libpsl_$fuzzer.in; then
+      zip -rj "$OUT/libpsl_${v}_${fuzzer}_seed_corpus.zip" "libpsl_${fuzzer}.in/"
+    fi
+    if test -f libpsl_$fuzzer.dict; then
+      cp -v "libpsl_${fuzzer}.dict" "$OUT/libpsl_${v}_${fuzzer}.dict"
+    fi
+  done
+done
