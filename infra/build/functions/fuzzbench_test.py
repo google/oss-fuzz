@@ -244,6 +244,12 @@ class FuzzbenchRunsTest(unittest.TestCase):
                                           testing=True)
     self._assert_log_content(3)
 
+  @unittest.skip(
+      'Disabled: the compile step fails with "compile_mopt: No such file or '
+      'directory". The pulled gcr.io/oss-fuzz-base/base-builder-fuzzbench image '
+      'is stale and ships a compile script predating the OSS_FUZZ_ON_DEMAND '
+      'guard in infra/base-images/base-builder/compile. Re-enable once that '
+      'base image is rebuilt and pushed.')
   def test_fuzzbench_runs(self):
     """Test for fuzzbench runs."""
     fuzzing_engine, project, env = self._fuzzbench_test_setup()
