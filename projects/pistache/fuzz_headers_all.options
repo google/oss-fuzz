@@ -1,0 +1,3 @@
+[libfuzzer]
+# Keep inputs bounded; header parsing is cheap.
+max_len = 1024
