@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-pip3 install .
+pip3 install google-auth-oauthlib
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
 done
