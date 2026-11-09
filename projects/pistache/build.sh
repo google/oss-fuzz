@@ -23,6 +23,11 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parsers \
 
 zip -q -r -j $OUT/fuzz_parsers_seed_corpus.zip ../tests/fuzzers/corpus
 
+# Structured seeds for the deep HTTP parsing paths, generated deterministically.
+python3 ../tests/fuzzers/generate_seeds.py ../tests/fuzzers/corpus-generated
+zip -q -r -j $OUT/fuzz_parsers_seed_corpus.zip ../tests/fuzzers/corpus-generated
+cp ../tests/fuzzers/http_parse.dict $OUT/fuzz_parsers.dict
+
 # Build the project tests for Chronos
 mkdir -p $SRC/pistache/build-tests
 cd $SRC/pistache/build-tests
@@ -32,3 +37,4 @@ cmake -DBUILD_SHARED_LIBS=OFF \
       -DPISTACHE_ENABLE_NETWORK_TESTS=OFF \
       ..
 make -j$(nproc)
+cp $SRC/*.options $OUT/
