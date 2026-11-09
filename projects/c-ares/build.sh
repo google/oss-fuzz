@@ -42,7 +42,16 @@ $CXX $CXXFLAGS -std=c++11 $WORK/ares-test-fuzz-name.o \
     -o $OUT/ares_create_query_fuzzer \
     $LIB_FUZZING_ENGINE $SRC/c-ares/src/lib/.libs/libcares.a
 
+# Build the DNS record build/write fuzzer (oss-fuzz-c-ares-dns-record-build).
+$CC $CFLAGS -Iinclude -Isrc/lib -c $SRC/c-ares/test/ares-test-fuzz-dnsbuild.c \
+    -o $WORK/ares-test-fuzz-dnsbuild.o
+$CXX $CXXFLAGS -std=c++11 $WORK/ares-test-fuzz-dnsbuild.o \
+    -o $OUT/ares_dns_record_build_fuzzer \
+    $LIB_FUZZING_ENGINE $SRC/c-ares/src/lib/.libs/libcares.a
+
 # Archive and copy to $OUT seed corpus if the build succeeded.
 zip -j $OUT/ares_parse_reply_fuzzer_seed_corpus.zip $SRC/c-ares/test/fuzzinput/*
 zip -j $OUT/ares_create_query_fuzzer_seed_corpus.zip \
     $SRC/c-ares/test/fuzznames/*
+zip -j $OUT/ares_dns_record_build_fuzzer_seed_corpus.zip \
+    $SRC/c-ares/test/fuzzbuild-seeds/*
