@@ -1,0 +1,8 @@
+homepage: "https://github.com/darrelllong/cryptography"
+main_repo: "https://github.com/darrelllong/cryptography"
+language: rust
+primary_contact: "darrell.long@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
