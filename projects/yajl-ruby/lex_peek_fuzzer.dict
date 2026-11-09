@@ -1,0 +1,38 @@
+# Tokens
+"{"
+"}"
+"["
+"]"
+","
+":"
+"true"
+"false"
+"null"
+"\\""
+"\\n"
+"\\r"
+"\\t"
+"\\u"
+
+# Numbers
+"123"
+"-123"
+"0.123"
+"1e10"
+"1e-10"
+
+# Special sequences
+"/*"
+"//"
+"\\u0000"
+"\\u001F"
+"\\uD800"
+"\\uDBFF"
+"\\uDC00"
+"\\uDFFF"
+
+# Common fragments
+"string"
+"number"
+"object"
+"array"
