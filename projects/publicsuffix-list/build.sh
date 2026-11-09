@@ -18,8 +18,5 @@
 sed 's/package main/package tools/g' -i ./tools/newgtlds.go
 rm ./tools/newgtlds_test.go
 cp $SRC/fuzz_test.go ./tools/
-go mod init github.com/publicsuffix/list
-go mod tidy
 printf "package tools\nimport _ \"github.com/AdamKorcz/go-118-fuzz-build/testing\"\n" > ./tools/register.go
-go mod tidy
-compile_native_go_fuzzer github.com/publicsuffix/list/tools FuzzTest FuzzTest
+cd tools && go mod tidy && compile_native_go_fuzzer github.com/publicsuffix/list/tools FuzzTest FuzzTest
