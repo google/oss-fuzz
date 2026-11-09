@@ -1,0 +1,8 @@
+homepage: "https://github.com/matyushkin/djvu-rs"
+main_repo: "https://github.com/matyushkin/djvu-rs"
+primary_contact: "matyushkin@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
