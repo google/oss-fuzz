@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-FUZZERS="fuzz_bos_descriptor fuzz_control_setup fuzz_descriptor_parsers"
+FUZZERS="fuzz_bos_descriptor fuzz_control_setup fuzz_descriptor_parsers fuzz_mock_backend"
 
 # build project
 ./autogen.sh
@@ -30,3 +30,4 @@ done
 # seed corpora
 zip -j -q $OUT/fuzz_bos_descriptor_seed_corpus.zip tests/fuzz/corpus/bos/*
 zip -j -q $OUT/fuzz_descriptor_parsers_seed_corpus.zip tests/fuzz/corpus/descriptor_parsers/*
+zip -j -q $OUT/fuzz_mock_backend_seed_corpus.zip tests/fuzz/corpus/mock_backend/*
