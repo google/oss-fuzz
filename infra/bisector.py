@@ -21,7 +21,7 @@ This is done with the following steps:
   NOTE: Needs to be run from root of the OSS-Fuzz source checkout.
 
   Typical usage example:
-        python3 infra/bisector.py
+        python3 infra/bisector.py 
           --old_commit 1e403e9259a1abedf108ab86f711ba52c907226d
           --new_commit f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f
           --fuzz_target rules_fuzzer
