@@ -29,6 +29,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     g_obex_packet_encode(pkt, buf, sizeof(buf));
     g_obex_packet_free(pkt);
   }
+  if (err != NULL) {
+    g_error_free(err);
+  }
 
   return 0;
 }
