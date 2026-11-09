@@ -60,6 +60,7 @@ cmake ${ARROW} -GNinja \
     -DPARQUET_REQUIRE_ENCRYPTION=on \
     \
     -DARROW_CSV=on \
+    -DARROW_JSON=on \
     -DARROW_JEMALLOC=off \
     -DARROW_MIMALLOC=off \
     -DARROW_PARQUET=on \
@@ -78,6 +79,9 @@ cmake ${ARROW} -GNinja \
 cmake --build . -j$(nproc)
 
 ${ARROW}/build-support/fuzzing/generate_corpuses.sh ${BUILD_DIR}/release
+
+# Copy fuzzing dictionaries
+find ${ARROW}/build-support/fuzzing/dicts -name "*-fuzz.dict" -exec cp -a -v '{}' ${OUT} \;
 
 # Copy fuzz targets
 find . -executable -name "*-fuzz" -exec cp -a -v '{}' ${OUT} \;
