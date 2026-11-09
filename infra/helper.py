@@ -397,7 +397,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
       'fuzz introspector. This involves (1) '
       'building the fuzzers with ASAN; (2) '
       'running all fuzzers; (3) building '
-      'fuzzers with coverge; (4) extracting '
+      'fuzzers with coverage; (4) extracting '
       'coverage; (5) building fuzzers using '
       'introspector')
   introspector_parser.add_argument('project', help='name of the project')
