@@ -351,11 +351,19 @@ void gz_uncompress(gzFile in, FILE   *out)
 
     for (;;) {
         len = gzread(in, buf, sizeof(buf));
-        if (len < 0) error (gzerror(in, &err));
+        if (len < 0) {
+            const char *msg = gzerror(in, &err);
+            /* An I/O or memory failure ends the read early. Any other error
+               means zlib cannot read back what it wrote. */
+            assert(err == Z_ERRNO || err == Z_MEM_ERROR);
+            error(msg);
+            break;
+        }
         if (len == 0) break;
 
         if ((int)fwrite(buf, 1, (unsigned)len, out) != len) {
             error("failed fwrite");
+            break;
         }
     }
     if (fclose(out)) error("failed fclose");
@@ -366,7 +374,7 @@ void gz_uncompress(gzFile in, FILE   *out)
 
 /* ===========================================================================
  * Compress the given file: create a corresponding .gz file and remove the
- * original.
+ * original. Return -1 if the .gz file could not be created.
  */
 int file_compress(char  *file, char  *mode)
 {
@@ -376,7 +384,7 @@ int file_compress(char  *file, char  *mode)
 
     if (strlen(file) + strlen(GZ_SUFFIX) >= sizeof(outfile)) {
         fprintf(stderr, "%s: filename too long\n", prog);
-        return 0;
+        return -1;
     }
 
     snprintf(outfile, sizeof(outfile), "%s%s", file, GZ_SUFFIX);
@@ -384,12 +392,13 @@ int file_compress(char  *file, char  *mode)
     in = fopen(file, "rb");
     if (in == NULL) {
         perror(file);
-        return 0;
+        return -1;
     }
     out = gzopen(outfile, mode);
     if (out == NULL) {
         fprintf(stderr, "%s: can't gzopen %s\n", prog, outfile);
-        return 0;
+        fclose(in);
+        return -1;
     }
     gz_compress(in, out);
 
@@ -433,6 +442,7 @@ int file_uncompress(char  *file)
     out = fopen(outfile, "wb");
     if (out == NULL) {
         perror(file);
+        gzclose(in);
         return 0;
     }
 
@@ -486,8 +496,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     break;
   }
 
-  file_compress(inFileName, outmode);
-  file_uncompress(outFileName);
+  /* If the .gz file could not be created, any file at that name is left
+     over from an earlier run, so do not uncompress it. */
+  if (file_compress(inFileName, outmode) == 0)
+    file_uncompress(outFileName);
 
   /* Check that the uncompressed file matches the input data. */
   in = fopen(inFileName, "rb");
