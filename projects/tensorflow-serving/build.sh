@@ -57,13 +57,18 @@ synchronize_coverage_directories() {
   fi
 }
 
+sed -i 's/\r$//' $SRC/tensorflow-serving.diff
 git apply  --ignore-space-change --ignore-whitespace $SRC/tensorflow-serving.diff
 
-bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
-bazel build --config=oss-fuzz --subcommands --spawn_strategy=sandboxed //tensorflow_serving/util:json_tensor_test_fuzz
+# Pin Bazel to 7.4.1 as required by the WORKSPACE (versions.check)
+echo "7.4.1" > .bazelversion
+echo "common --noenable_bzlmod" >> .bazelrc
+bazel run @com_google_fuzztest//bazel:setup_configs >> .bazelrc
+bazel build --config=oss-fuzz --spawn_strategy=sandboxed //tensorflow_serving/util:json_tensor_test_fuzz
 
 cp bazel-bin/tensorflow_serving/util/json_tensor_test_fuzz $OUT/json_tensor_test_fuzz
 
+# === Original fuzz target (TheF) ===
 TARGET_FUZZER="json_tensor_test_fuzz@JsonFuzzTest.TheF"
 echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
@@ -71,6 +76,35 @@ this_dir=\$(dirname \"\$0\")
 chmod +x \$this_dir/json_tensor_test_fuzz
 \$this_dir/json_tensor_test_fuzz --fuzz=JsonFuzzTest.TheF -- \$@" > $OUT/${TARGET_FUZZER}
 chmod +x $OUT/${TARGET_FUZZER}
+
+# === New fuzz targets (JSON API coverage) ===
+for FUZZ_FUNC in FuzzJsonPredict FuzzJsonClassify FuzzJsonRegress FuzzMakeJsonFromTensors FuzzUncompressGzipAndAllocate; do
+  TARGET_FUZZER="json_tensor_test_fuzz@JsonFuzzTest.${FUZZ_FUNC}"
+  echo "#!/bin/sh
+# LLVMFuzzerTestOneInput for fuzzer detection.
+this_dir=\$(dirname \"\$0\")
+chmod +x \$this_dir/json_tensor_test_fuzz
+\$this_dir/json_tensor_test_fuzz --fuzz=JsonFuzzTest.${FUZZ_FUNC} -- \$@" > $OUT/${TARGET_FUZZER}
+  chmod +x $OUT/${TARGET_FUZZER}
+done
+
+# === Seed corpus + dictionary ===
+if [ -d "$SRC/seed_corpus" ]; then
+  zip -j $OUT/json_tensor_test_fuzz@JsonFuzzTest.FuzzJsonPredict_seed_corpus.zip \
+      $SRC/seed_corpus/*.json || true
+  cp $OUT/json_tensor_test_fuzz@JsonFuzzTest.FuzzJsonPredict_seed_corpus.zip \
+     $OUT/json_tensor_test_fuzz@JsonFuzzTest.FuzzJsonClassify_seed_corpus.zip || true
+  cp $OUT/json_tensor_test_fuzz@JsonFuzzTest.FuzzJsonPredict_seed_corpus.zip \
+     $OUT/json_tensor_test_fuzz@JsonFuzzTest.FuzzJsonRegress_seed_corpus.zip || true
+fi
+
+if [ -f "$SRC/json.dict" ]; then
+  for TARGET in "json_tensor_test_fuzz@JsonFuzzTest.FuzzJsonPredict" \
+                "json_tensor_test_fuzz@JsonFuzzTest.FuzzJsonClassify" \
+                "json_tensor_test_fuzz@JsonFuzzTest.FuzzJsonRegress"; do
+    cp $SRC/json.dict $OUT/${TARGET}.dict || true
+  done
+fi
 
 # Synchronize coverage folders
 synchronize_coverage_directories
