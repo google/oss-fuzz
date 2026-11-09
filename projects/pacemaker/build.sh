@@ -58,4 +58,9 @@ for FUZZER_SOURCE in lib/*/fuzzers/*.c; do
     zip -j -q "$OUT/${FUZZER}_seed_corpus.zip"                               \
      "$(dirname "$FUZZER_SOURCE")/${FUZZER}_corpus"/*
   fi
+
+  # A fuzzer ships its dictionary as a sibling <name>.dict file
+  if [ -f "$(dirname "$FUZZER_SOURCE")/${FUZZER}.dict" ]; then
+    cp "$(dirname "$FUZZER_SOURCE")/${FUZZER}.dict" "$OUT/${FUZZER}.dict"
+  fi
 done
