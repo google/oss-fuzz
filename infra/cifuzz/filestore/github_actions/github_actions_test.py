@@ -158,6 +158,14 @@ class GithubActionsFilestoreTest(unittest.TestCase):
     self.assert_upload(mock_upload_artifact, mock_tar_directory,
                        'coverage-latest')
 
+  @mock.patch('filestore.github_actions.UPLOAD_JS', shutil.which('false'))
+  def test_upload_failure_raises(self):
+    """Tests that a failed artifact upload raises."""
+    self._create_local_dir()
+    filestore = github_actions.GithubActionsFilestore(self.config)
+    with self.assertRaises(RuntimeError):
+      filestore.upload_corpus('target', self.local_dir)
+
   def assert_upload(self, mock_upload_artifact, mock_tar_directory,
                     expected_artifact_name):
     """Tests that upload_directory invokes tar_directory and
