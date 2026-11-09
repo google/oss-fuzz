@@ -65,8 +65,6 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len)
     if(len < 4) return -1;
     if(len > READ_BUFFER_SIZE) return -1;
 
-    int rval = 0;
-
     fconn->rbuf = do_cache_alloc(fconn->thread->rbuf_cache);
     fconn->rcurr = fconn->rbuf;
     fconn->rsize = READ_BUFFER_SIZE;
@@ -74,10 +72,10 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len)
     fconn->rbytes = len;
     memcpy(fconn->rbuf, buf, len);
 
-    rval = try_read_command_proxy(fconn);
+    try_read_command_proxy(fconn);
     do_cache_free(fconn->thread->rbuf_cache, fconn->rbuf);
     fconn->rbuf = NULL;
     fconn->rcurr = NULL;
-    
-    return rval;
+
+    return 0;
 }
