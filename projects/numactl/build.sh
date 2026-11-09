@@ -23,3 +23,12 @@ $CC $CFLAGS -c ./fuzz/fuzz_parse_str.c -o fuzz_parse_str.o -I./
 
 # Link with CXX as this is needed for OSS-Fuzz Centipede
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_parse_str.o ./.libs/libnuma.a -o $OUT/fuzz_parse_str
+
+# libnuma API-sequence target (policy/bind/run/alloc/migrate/bitmask surface)
+$CC $CFLAGS -c ./fuzz/fuzz_libnuma_api.c -o fuzz_libnuma_api.o -I./
+
+# Link with CXX as this is needed for OSS-Fuzz Centipede
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_libnuma_api.o ./.libs/libnuma.a -o $OUT/fuzz_libnuma_api
+
+python3 ./fuzz/gen_libnuma_api_seeds.py $OUT/fuzz_libnuma_api_seed_corpus.zip
+
