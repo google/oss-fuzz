@@ -20,4 +20,3 @@ RUN git clone --depth 1 https://github.com/google/jsonnet.git jsonnet
 WORKDIR $SRC/
 
 COPY build.sh run_tests.sh $SRC/
-COPY *.cc $SRC/

@@ -39,6 +39,6 @@ for fuzzer in convert_jsonnet_fuzzer_regular \
  convert_jsonnet_fuzzer_stream \
  convert_jsonnet_fuzzer_multi; do
   $CXX $CXXFLAGS -I${INSTALL_DIR}/include $LIB_FUZZING_ENGINE \
-    $fuzzer.cc -o $OUT/$fuzzer \
+    ${INSTALL_DIR}/fuzz/$fuzzer.cc -o $OUT/$fuzzer \
     ${INSTALL_DIR}/build/libjsonnet.a
 done
