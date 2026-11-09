@@ -1,0 +1,8 @@
+homepage: "https://github.com/crewjam/saml"
+language: go
+primary_contact: "ross@kndr.org"
+main_repo: "https://github.com/crewjam/saml"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
