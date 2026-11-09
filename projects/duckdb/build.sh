@@ -18,7 +18,7 @@
 # BUILD_JSON=1 additionally builds the json extension (read_json / json_valid /
 # json_extract), which the csv_json harness exercises; parquet is built by
 # default. Both static libs are then picked up by EXTENSION_LIBS below.
-make relassert CRASH_ON_ASSERT=1 DISABLE_SANITIZER=1 BUILD_JSON=1
+make relassert CRASH_ON_ASSERT=1 DISABLE_SANITIZER=1 BUILD_JSON=1 BUILD_ICU=1
 EXTENSION_LIBS=$(find ./build/relassert/extension/ -name "*.a")
 THIRD_PARTY_LIBS=$(find ./build/relassert/third_party/ -name "*.a")
 
