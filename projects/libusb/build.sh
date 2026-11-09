@@ -15,16 +15,18 @@
 #
 ################################################################################
 
+FUZZERS="fuzz_bos_descriptor fuzz_control_setup fuzz_descriptor_parsers"
+
 # build project
 ./autogen.sh
-./configure
+./configure --disable-shared --enable-fuzzers
 make -j$(nproc) all
 
-# build fuzzer
-for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
-    fuzzer_basename=$(basename -s .cc $fuzzer)
-    $CXX $CXXFLAGS -std=c++17 -I. \
-    $fuzzer $LIB_FUZZING_ENGINE ./libusb/.libs/libusb-1.0.a \
-    -lpthread -ludev \
-    -o $OUT/$fuzzer_basename
+# collect the fuzzers
+for fuzzer in $FUZZERS; do
+    cp tests/fuzz/$fuzzer $OUT/
 done
+
+# seed corpora
+zip -j -q $OUT/fuzz_bos_descriptor_seed_corpus.zip tests/fuzz/corpus/bos/*
+zip -j -q $OUT/fuzz_descriptor_parsers_seed_corpus.zip tests/fuzz/corpus/descriptor_parsers/*

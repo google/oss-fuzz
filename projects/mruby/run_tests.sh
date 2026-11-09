@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 # Copyright 2025 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,27 +14,19 @@
 # limitations under the License.
 #
 ################################################################################
+#
+# Both test runners exit non-zero when a test fails, so `set -e` is the whole
+# gate; there is nothing to parse.
+#
+# The batches run as two separate tasks rather than via `rake test`, which
+# depends on test:build and may decide to relink. Sanitizer flags are only in
+# $CFLAGS while OSS-Fuzz's `compile` runs, so a relink here would fail on
+# undefined __asan_* symbols. Building is build.sh's job; these tasks only run.
+#
+# Requires no network access.
 
 (
-export LD=$CC
-export LDFLAGS="$CFLAGS"
 cd $SRC/mruby
-rake test > /tmp/test.out 2>&1
+rake test:run:lib
+rake test:run:bin
 )
-
-# There are two test runs, each of which executes many tests. Neither of these
-# must have crashing tests and that they have successful tests as well.
-# For the first batch We expect 165x tests to succeed and some tests skipped,
-# and 100 for the second batch.
-# I suspect the skipping causes
-# rake to return an error code. However, in normal circumastances we see
-# 9 tests skipped.
-grep "OK: 165" /tmp/test.out
-grep "OK: 100" /tmp/test.out
-
-if [[ `grep "Crash: 0" /tmp/test.out | wc -l` != '2' ]]; then
-    exit 1
-fi
-if [[ `grep "KO: 0" /tmp/test.out | wc -l` != '2' ]]; then
-    exit 1
-fi

@@ -23,13 +23,19 @@ echo "using clang : ossfuzz : $CXX : <compileflags>\"$CXXFLAGS\" <linkflags>\"$C
      --toolset=clang-ossfuzz                                    \
      --prefix=$WORK/stage                                       \
      --with-json                                                \
+     --with-charconv                                            \
      include=/usr/local/include/x86_64-unknown-linux-gnu/c++/v1 \
      link=static                                                \
      install
 
 for i in libs/json/fuzzing/*.cpp; do
    fuzzer=$(basename $i .cpp)
-   $CXX $CXXFLAGS -pthread libs/json/fuzzing/$fuzzer.cpp -I $WORK/stage/include/ $WORK/stage/lib/*.a $LIB_FUZZING_ENGINE -o $OUT/$fuzzer
+   # The archives are globbed in alphabetical order, so libboost_charconv.a
+   # lands before libboost_json.a even though json depends on it. Use a link
+   # group so the order of the glob does not matter.
+   $CXX $CXXFLAGS -pthread libs/json/fuzzing/$fuzzer.cpp -I $WORK/stage/include/ \
+      -Wl,--start-group $WORK/stage/lib/*.a -Wl,--end-group \
+      $LIB_FUZZING_ENGINE -o $OUT/$fuzzer
    zip -q -r -j $OUT/${fuzzer}_seed_corpus.zip libs/json/fuzzing/old_crashes
 done
 

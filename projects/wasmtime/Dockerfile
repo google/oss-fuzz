@@ -38,6 +38,6 @@ WORKDIR wasmtime
 
 # The default toolchain used by OSS-Fuzz is too old to build Wasmtime at this
 # time.
-ENV RUSTUP_TOOLCHAIN nightly-2026-01-28
+ENV RUSTUP_TOOLCHAIN nightly-2026-07-09
 
 COPY build.sh *.options $SRC/

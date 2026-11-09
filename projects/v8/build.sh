@@ -52,7 +52,12 @@ echo $SANITIZER
 rm -f out/fuzz/d8
 
 # Build binary
-ninja -C out/fuzz d8 -j$(nproc)
+# Cap jobs by available RAM; this config needs ~3 GB per clang job.
+MEM_GB=$(awk '/MemTotal/ {print int($2/1024/1024)}' /proc/meminfo)
+JOBS=$(( MEM_GB / 3 ))
+[ "$JOBS" -lt 1 ] && JOBS=1
+[ "$JOBS" -gt "$(nproc)" ] && JOBS=$(nproc)
+ninja -C out/fuzz d8 -j"$JOBS"
 
 # Copy binaries to $OUT
 cp ./out/fuzz/{d8,snapshot_blob.bin,*.so,icudtl.dat} $OUT

@@ -1,0 +1,8 @@
+homepage: "https://github.com/grindsa/acme2certifier"
+main_repo: "https://github.com/grindsa/acme2certifier"
+language: python
+primary_contact: "grindelsack@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

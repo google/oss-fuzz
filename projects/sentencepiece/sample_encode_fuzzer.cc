@@ -28,6 +28,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   const float alpha = data_provider.ConsumeFloatingPoint<float>();
   const std::string in_string = data_provider.ConsumeRemainingBytesAsString();
 
-  fuzz_sp_processor.SampleEncodeAsSerializedProto(in_string, nbest_size, alpha);
+  // SampleEncodeAsSerializedProto() was removed upstream; the piece-returning
+  // overload drives the same sampling path.
+  const auto pieces =
+      fuzz_sp_processor.SampleEncodeAsPieces(in_string, nbest_size, alpha);
+  (void)pieces;
   return 0;
 }

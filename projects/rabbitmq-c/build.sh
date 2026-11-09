@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-mkdir build 
+mkdir build
 
 pushd build/
 
@@ -35,6 +35,7 @@ cp fuzz/fuzz_method_decode $OUT/fuzz_method_decode
 cp fuzz/fuzz_handle_input $OUT/fuzz_handle_input
 cp fuzz/fuzz_properties_decode $OUT/fuzz_properties_decode
 cp fuzz/fuzz_codec $OUT/fuzz_codec
+cp fuzz/fuzz_read_message $OUT/fuzz_read_message
 popd
 
 zip -j ${OUT}/fuzz_url_seed_corpus.zip fuzz/input/fuzz_url.raw

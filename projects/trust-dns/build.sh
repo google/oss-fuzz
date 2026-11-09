@@ -16,4 +16,6 @@
 ################################################################################
 
 cargo fuzz build -O --debug-assertions
-cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/
+cargo fuzz list | while read i; do
+    cp fuzz/target/x86_64-unknown-linux-gnu/release/$i $OUT/
+done

@@ -61,6 +61,11 @@ RUN wget -qO- https://ftp.gnu.org/gnu/libidn/libidn2-latest.tar.gz | tar xz && m
 RUN wget -qO- https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.gz | tar xz && mv gmp-* gmp
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 RUN wget -qO- https://ftp.gnu.org/gnu/nettle/nettle-3.10.tar.gz | tar xz && mv nettle-3.10 nettle
+# gnutls dropped its bundled libtasn1 (the --with-included-libtasn1 configure
+# option is gone), so it now needs libtasn1 >= 4.9 from outside. Without it the
+# static libgnutls.a is left with undefined asn1_* references at link time.
+# Build it into the same static dep prefix as everything else.
+RUN wget -qO- https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.21.0.tar.gz | tar xz && mv libtasn1-* libtasn1
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN wget -O- https://ftp.gnu.org/pub/gnu/libmicrohttpd/libmicrohttpd-latest.tar.gz | tar xz
 

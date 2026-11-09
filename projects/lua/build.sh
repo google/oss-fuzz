@@ -24,7 +24,7 @@ fi
 
 PACKAGES="build-essential ninja-build cmake make luarocks"
 if [ "$ARCHITECTURE" = "i386" ]; then
-    PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386"
+    PACKAGES="$PACKAGES zlib1g-dev:i386 libreadline-dev:i386 libunwind-dev:i386 libstdc++6:i386 g++-multilib"
 elif [ "$ARCHITECTURE" = "aarch64" ]; then
     PACKAGES="$PACKAGES zlib1g-dev:arm64 libreadline-dev:arm64 libunwind-dev:arm64"
 else
@@ -75,8 +75,7 @@ fi
 : ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
 
 FUZZER_ARGS=""
-# The static linkage with libFuzzer is unsupported on i386 [1] and
-# the source code coverage tools can conflict with LibFuzzer,
+# The source code coverage tools can conflict with LibFuzzer,
 # typically resulting in drastically slower execution speeds,
 # crash reproduction failures, or inaccurate coverage reports, so
 # libFuzzer static linkage is disabled when code coverage is
@@ -84,11 +83,11 @@ FUZZER_ARGS=""
 #
 # 1. https://github.com/ligurio/lunapark/issues/180.
 LAPI_TESTING="ON"
-if [[ "$FUZZING_ENGINE" != "libfuzzer" ]] ||
-   [[ "$ARCHITECTURE" == "i386" ]] ||
-   [[ "$SANITIZER" == "coverage" ]]; then
+if [[ "$FUZZING_ENGINE" != "libfuzzer" ]]; then
   FUZZER_ARGS="-DDISABLE_LIBFUZZER_STATIC_LINKAGE=ON"
   LAPI_TESTING="OFF"
+elif [[ "$SANITIZER" == "coverage" ]]; then
+  FUZZER_ARGS="-DDISABLE_LIBFUZZER_STATIC_LINKAGE=ON"
 fi
 
 cmake_args=(
@@ -144,13 +143,7 @@ done
 
 # Finish execution if libFuzzer is not used, because luzer
 # is libFuzzer-based.
-# Code coverage is not supported,
-# see https://github.com/google/oss-fuzz/issues/14859.
-# Building luzer on i386 is unsupported,
-# https://github.com/ligurio/luzer/issues/83.
-if [[ "$FUZZING_ENGINE" != libfuzzer ]] ||
-   [[ "$SANITIZER" == "coverage" ]] ||
-   [[ "$ARCHITECTURE" == "i386" ]]; then
+if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
   echo "Lua API testing is not supported."
   exit
 fi

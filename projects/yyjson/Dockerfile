@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y cmake make
 RUN git clone --depth 1 https://github.com/ibireme/yyjson.git
 WORKDIR yyjson
-COPY build.sh $SRC/
+COPY build.sh generate_patch_corpora.py $SRC/

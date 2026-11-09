@@ -5,6 +5,7 @@ auto_ccs:
   - allen.d.winter@gmail.com
   - kent.sutherland@gmail.com
   - ksmurchison@gmail.com
+  - markus@minichmayr.net
 sanitizers:
   - address
   - memory

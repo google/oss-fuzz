@@ -11,6 +11,8 @@ auto_ccs:
     - "dgarske80@gmail.com"
     - "kaleb@wolfssl.com"
     - "kaleb.himes@gmail.com"
+    - "mark@wolfssl.com"
+    - "testing@wolfssl.com"
 sanitizers:
  - address
  - undefined

@@ -36,6 +36,16 @@ sed -i 's/AC_CC_PIE//' configure.ac
  touch /usr/lib/libboost_bogus.so
 )
 
+# Build and install LuaJIT, needed for DNSdist fuzzing targets
+(
+  cd $SRC/luajit
+  git checkout v2.1
+  CFLAGS="" CXXFLAGS="" make -j$(nproc)
+  make install
+  # remove the shared library files to ensure we link statically
+  rm /usr/local/lib/libluajit*.so
+)
+
 # build fuzzing targets
 autoreconf -vi
 ./configure \
@@ -101,6 +111,7 @@ cp regression-tests/zones/* fuzzing/corpus/zones/
 # generate the corpus files
 if [ -d fuzzing/corpus/raw-dns-packets/ ]; then
     zip -j "${OUT}/fuzz_target_dnsdistcache_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
+    zip -j "${OUT}/fuzz-target-dnsdist-dnsparser_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
 fi
 if [ -d fuzzing/corpus/txt-records/ ]; then
     zip -j "${OUT}/fuzz_target_dnslabeltext_parseRFC1035CharString_seed_corpus.zip" fuzzing/corpus/txt-records/*

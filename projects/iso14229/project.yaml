@@ -1,0 +1,12 @@
+homepage: "https://github.com/driftregion/iso14229"
+language: c
+primary_contact: "iso14229dev@gmail.com"
+main_repo: "https://github.com/driftregion/iso14229"
+file_github_issue: true
+sanitizers:
+  - address
+  - undefined
+  - memory
+architectures:
+  - x86_64
+  - i386
