@@ -1,0 +1,16 @@
+homepage: "https://ata-validator.com"
+language: c++
+primary_contact: "mertgold60@gmail.com"
+auto_ccs:
+  - "daniel@lemire.me"
+main_repo: "https://github.com/ata-core/ata-validator.git"
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - centipede
+file_github_issue: true
