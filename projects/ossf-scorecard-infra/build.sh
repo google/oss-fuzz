@@ -15,5 +15,5 @@
 #
 ################################################################################
 
-compile_native_go_fuzzer_v2 github.com/ossf/scorecard-webapp/app/server FuzzVerifyWorkflow FuzzVerifyWorkflow
-compile_native_go_fuzzer_v2 github.com/ossf/scorecard-webapp/app/server FuzzExtractCertInfo FuzzLoadCertificates
+compile_native_go_fuzzer_v2 github.com/ossf/scorecard-infra/app/server FuzzVerifyWorkflow FuzzVerifyWorkflow
+compile_native_go_fuzzer_v2 github.com/ossf/scorecard-infra/app/server FuzzExtractCertInfo FuzzLoadCertificates
