@@ -1,0 +1,10 @@
+homepage: "https://nokiatech.github.io/heif/"
+language: c++
+primary_contact: "lasse.heikkila.ext@nokia.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/nokiatech/heif"
