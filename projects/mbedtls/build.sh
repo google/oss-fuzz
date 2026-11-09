@@ -77,3 +77,22 @@ for x in fuzz_*; do
 done
 cd ../..
 cd ..
+
+# ------------------------------------------------------------
+# TF-PSA-Crypto fuzz targets (PSA Crypto API direct fuzzing)
+# ------------------------------------------------------------
+cd $SRC/mbedtls/tf-psa-crypto
+mkdir -p build-fuzz
+cd build-fuzz
+
+cmake .. \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DENABLE_PROGRAMS=ON \
+    -DENABLE_TESTING=OFF \
+    -DCMAKE_C_COMPILER="$CC" \
+    -DCMAKE_CXX_COMPILER="$CXX"
+
+make -j$(nproc) fuzz_psa_crypto
+cp programs/fuzz/fuzz_psa_crypto $OUT/
+cp programs/fuzz/fuzz_psa_crypto.options $OUT/
+cp programs/fuzz/fuzz_psa_crypto_seed_corpus.zip $OUT/
