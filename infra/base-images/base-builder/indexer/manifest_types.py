@@ -215,6 +215,11 @@ class CommandLineBinaryConfig(BinaryConfig):
     """Whether the binary uses stdin."""
     return manifest_constants.INPUT_FILE not in self.binary_args
 
+  @property
+  def uses_stdin(self) -> bool:
+    """Whether the binary uses stdin."""
+    return manifest_constants.INPUT_FILE not in self.binary_args
+
   @classmethod
   def from_dict(cls, config_dict: Mapping[str, Any]) -> Self:
     """Deserializes the `CommandLineBinaryConfig` from a dict."""
