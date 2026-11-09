@@ -1,0 +1,4 @@
+[libfuzzer]
+dict = ass.dict
+max_len = 8192
+rss_limit_mb = 8192
