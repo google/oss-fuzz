@@ -14,8 +14,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   uint32_t adler0 = adler32(0L, NULL, 0);
   uint32_t adler1 = adler0;
   uint32_t adler2 = adler0;
-  /* Checksum with a buffer of size equal to the first byte in the input. */
-  uint32_t buffSize = data[0];
+  uint32_t buffSize;
   uint32_t offset = 0;
   uint32_t op;
 
@@ -23,6 +22,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   static size_t kMaxSize = 1024 * 1024;
   if (dataLen < 1 || dataLen > kMaxSize)
     return 0;
+
+  /* Checksum with a buffer of size equal to the first byte in the input. */
+  buffSize = data[0];
 
   /* Make sure the buffer has at least a byte. */
   if (buffSize == 0)
