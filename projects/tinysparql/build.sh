@@ -30,6 +30,7 @@ meson setup $BUILD \
   -Dbuiltin_modules=true \
   -Dvapi=disabled \
   -Ddocs=false \
+  -Dman=false \
   -Dtests=false \
   -Dlibsoup3:tests=false \
   -Dlibsoup3:docs=disabled \
