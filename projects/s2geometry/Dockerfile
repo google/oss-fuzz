@@ -36,10 +36,8 @@ RUN set -ex \
     && make libcrypto.a \
     && make install
 
-RUN git clone https://github.com/google/s2geometry
+RUN git clone -b fuzz/upstream-harness https://github.com/arthurscchan/s2geometry
 WORKDIR $SRC/s2geometry
 COPY run_tests.sh \
      build.sh \
-     s2_fuzzer.cc \
      $SRC/
-COPY project.patch $SRC/
