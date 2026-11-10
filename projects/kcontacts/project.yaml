@@ -2,7 +2,7 @@ homepage: https://invent.kde.org/frameworks/kcontacts.git/
 language: c++
 primary_contact: tsdgeos@gmail.com
 auto_ccs:
-  - carlschwan@kde.org
+  - carl@carlschwan.eu
 sanitizers:
   - address
   - undefined
