@@ -16,7 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
-    apt-get install -y autoconf automake libtool bison re2c pkg-config
+    apt-get install -y autoconf automake libtool bison re2c pkg-config \
+        libxml2-dev patchelf
 RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src
+RUN git clone --depth 1 --branch v2.15.4 https://github.com/GNOME/libxml2.git libxml2
 WORKDIR php-src
 COPY replay_build.sh build.sh $SRC/
