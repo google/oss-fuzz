@@ -26,6 +26,11 @@ RUN git clone --depth 1 https://github.com/FreeRDP/FreeRDP.git
 WORKDIR FreeRDP
 
 # Install all dependencies required by the nightly package.
-RUN mk-build-deps --install --tool 'apt-get --yes --no-remove --no-install-recommends' packaging/deb/freerdp-nightly/control
+# NOTE (local-only workaround): libpipewire-0.3-dev / libspa-0.2-dev have no
+# candidate in the base-builder (focal) apt sources, which poisons the whole
+# build-deps metapackage. They are audio-routing deps unused by the fuzz
+# targets, so strip them locally to unblock the image build.
+RUN sed -i '/libpipewire-0.3-dev/d;/libspa-0.2-dev/d' packaging/deb/freerdp-nightly/control
+RUN mk-build-deps --install --tool 'apt-get --yes --no-install-recommends' packaging/deb/freerdp-nightly/control
 
-COPY run_tests.sh build.sh $SRC/
+COPY run_tests.sh build.sh generate_seeds.py $SRC/
