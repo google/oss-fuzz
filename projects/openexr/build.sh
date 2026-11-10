@@ -33,3 +33,22 @@ export BUILD_DIR=$WORK/_build.oss-fuzz
 # Build tests to support replay_tests.sh
 cd $BUILD_DIR
 cmake --build $BUILD_DIR --target OpenEXRTest OpenEXRCoreTest IexTest OpenEXRUtilTest -j$(nproc)
+
+# Generate structurally valid Zstd-compressed EXR seeds.  The production corpus
+# exercises every classic codec but not Zstd (internal_zstd_delta.c 0%,
+# internal_zstd_shuffle.c 23%, internal_zstd.c 43%), so the Zstd decode path is
+# dark.  These seeds give the file readers a valid Zstd starting point.  They
+# are full .exr files, so wire them into every fuzzer that reads a whole file.
+ZSTD_CORPUS=$WORK/openexr_zstd_seeds
+rm -rf $ZSTD_CORPUS
+mkdir -p $ZSTD_CORPUS
+python3 $SRC/generate_seeds.py $ZSTD_CORPUS
+if [ -n "$(ls -A $ZSTD_CORPUS 2>/dev/null)" ]; then
+    for fuzzer in openexr_exrcorecheck_fuzzer openexr_exrcheck_fuzzer \
+                  openexr_exrgaps_fuzzer openexr_roundtrip_fuzzer; do
+        if [ -f "$OUT/$fuzzer" ]; then
+            rm -f "$OUT/${fuzzer}_seed_corpus.zip"
+            zip --junk-paths --quiet "$OUT/${fuzzer}_seed_corpus.zip" $ZSTD_CORPUS/*
+        fi
+    done
+fi
