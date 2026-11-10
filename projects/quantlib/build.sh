@@ -42,3 +42,4 @@ cmake --build . --verbose -j$(nproc)
 mkdir $OUT/lib -p
 cp ql/libQuantLib.so* $OUT/lib/
 find fuzz-test-suite -executable -type f -exec cp {} $OUT \;
+find $SRC/quantlib/fuzz-test-suite -name '*_seed_corpus.zip' -exec cp {} $OUT \;
