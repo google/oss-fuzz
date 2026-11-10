@@ -25,14 +25,42 @@ popd # "$SRC/aiohttp/vendor/llhttp/"
 make cythonize
 make install-dev
 
-# Duplicate fuzzers to use Pure python code (in addition
-# to the existing C-compiled code).
-cp fuzz_http_parser.py fuzz_http_parser_pure_python.py
-sed -i 's/AIOHTTP_VAL=0/AIOHTTP_VAL=1/g' fuzz_http_parser_pure_python.py
-cp fuzz_http_payload_parser.py fuzz_http_payload_parser_pure_python.py
-sed -i 's/AIOHTTP_VAL=0/AIOHTTP_VAL=1/g' fuzz_http_payload_parser_pure_python.py
-
-# Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer
+# Build fuzzers in $OUT. The fuzzers live in aiohttp/fuzzers/ (not at the repo root),
+# so PyInstaller needs an explicit path to find aiohttp,
+# which is only installed as an editable package.
+#
+# aiofastnet (an optional aiohttp speed-up) is deliberately left out of the
+# bundles. The cython parts fail through PyInstaller.
+for fuzzer in $(find $SRC/aiohttp/fuzzers -name '*.py'); do
+  compile_python_fuzzer $fuzzer --paths $SRC/aiohttp --exclude-module aiofastnet
 done
+
+# aiohttp/fuzzers/no_extensions.txt defines which fuzzers should be run
+# a second time with extensions disabled.
+no_extensions_file="$SRC/aiohttp/fuzzers/no_extensions.txt"
+if [[ -f "$no_extensions_file" ]]; then
+  while read -r fuzzer_name; do
+    # Tolerate CRLF line endings.
+    fuzzer_name=${fuzzer_name%$'\r'}
+    # Skip blank lines and comments.
+    if [[ -z "$fuzzer_name" || "$fuzzer_name" == \#* ]]; then
+      continue
+    fi
+    # Accept either the fuzzer basename or its source file name.
+    fuzzer_name=${fuzzer_name%.py}
+    if [[ ! -f "$OUT/$fuzzer_name" ]]; then
+      echo "ERROR: '$fuzzer_name' is listed in $no_extensions_file but no fuzzer with that name was built." >&2
+      exit 1
+    fi
+    pure_python_name="${fuzzer_name}_pure_python"
+    # For pure Python, copy the fuzzer and it's dependencies.
+    cp "$OUT/$fuzzer_name.pkg" "$OUT/$pure_python_name.pkg"
+    if [[ -f "$OUT/$fuzzer_name.pkg.deps.zip" ]]; then
+      cp "$OUT/$fuzzer_name.pkg.deps.zip" "$OUT/$pure_python_name.pkg.deps.zip"
+    fi
+    sed -e "s|/$fuzzer_name\.pkg|/$pure_python_name.pkg|g" \
+        -e '2i export AIOHTTP_NO_EXTENSIONS=1' \
+        "$OUT/$fuzzer_name" > "$OUT/$pure_python_name"
+    chmod +x "$OUT/$pure_python_name"
+  done < "$no_extensions_file"
+fi
