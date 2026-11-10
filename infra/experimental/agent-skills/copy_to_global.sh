@@ -15,50 +15,67 @@
 #
 ################################################################################
 
-# Copy the skills folder into the global skills directory
+# Install the skills in this folder into an agent's skills directory.
+#
+# Usage:
+#   ./copy_to_global.sh [target ...]
+#
+# Targets:
+#   claude       -> ~/.claude/skills  (default when no target is given)
+#   gemini       -> ~/.gemini/skills
+#   <directory>  -> any other argument is used as the skills directory
+#                   itself (created if missing; resolved relative to your
+#                   current working directory). This works for any agent
+#                   that reads SKILL.md-style skills, e.g. Cline's
+#                   workspace directory:
+#                       ./copy_to_global.sh /path/to/vscode-workspace/.cline/skills
+#
+# Multiple targets may be given in one invocation, e.g.:
+#   ./copy_to_global.sh gemini claude /abs/path/.cline/skills
+#
+# Skills are auto-discovered: every directory next to this script that
+# contains a SKILL.md is copied. Existing skills of the same name in the
+# target directory are overwritten.
 
-# Accept user input. Should by default be "gemini" but can be overridden by the user.
-SKILLS_DIR=${1:-"gemini"}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-
-# Gemini skills dir = ~/.gemini/skills
-# Claude skills dir = ~/.claude/skills
-if [ "$SKILLS_DIR" == "gemini" ]; then
-  GLOBAL_SKILLS_DIR="$HOME/.gemini/skills"
-elif [ "$SKILLS_DIR" == "claude" ]; then
-  GLOBAL_SKILLS_DIR="$HOME/.claude/skills"
-else
-  echo "Invalid skills directory specified. Use 'gemini' or 'claude'."
+# Auto-discover the skills next to this script.
+SKILLS=()
+for entry in "$SCRIPT_DIR"/*/; do
+  if [ -f "${entry}SKILL.md" ]; then
+    SKILLS+=("$(basename "$entry")")
+  fi
+done
+if [ ${#SKILLS[@]} -eq 0 ]; then
+  echo "No skills found in $SCRIPT_DIR" >&2
   exit 1
 fi
 
-# Log target skill directory
-echo "Copying skills to global skills directory: $GLOBAL_SKILLS_DIR"
+# Resolve a target name to a skills directory. Unknown names are treated as
+# directory paths so that new agents work without script changes.
+resolve_target() {
+  case "$1" in
+    gemini) echo "$HOME/.gemini/skills" ;;
+    claude) echo "$HOME/.claude/skills" ;;
+    *) echo "$1" ;;
+  esac
+}
 
-
-# Now copy each of the skills from the local "skills" directory to the global skills directory
-# Overwrite existing skills with the same name.
-# Check if the global skills directory exists, if not create it
-if [ ! -d "$GLOBAL_SKILLS_DIR" ]; then
-  mkdir -p "$GLOBAL_SKILLS_DIR"
+# Default to claude when no target is given.
+if [ $# -eq 0 ]; then
+  set -- claude
 fi
 
-# Copy each skill from the local "skills" directory to the global skills directory
-# Make sure we work from this scripts base folder and copy each of the skills
-# fuzzing-memory-unsafe-expert
-# fuzzing-go-expert
-# fuzzing-rust-expert
-# fuzzing-jvm-expert
-# fuzzing-python-expert
-# oss-fuzz-engineer
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-for skill in "fuzzing-memory-unsafe-expert" "fuzzing-go-expert" "fuzzing-rust-expert" "fuzzing-jvm-expert" "fuzzing-python-expert" "oss-fuzz-engineer"; do
-  abs_skill="$SCRIPT_DIR/$skill"
-  # Copy over the skill and replace any existing skill with the same name in the global skills directory
-  if [ -d "$GLOBAL_SKILLS_DIR/$skill" ]; then
-    rm -rf "$GLOBAL_SKILLS_DIR/$skill"
-  fi
-
-  echo "Copying $abs_skill to $GLOBAL_SKILLS_DIR/"
-  cp -r "$abs_skill" "$GLOBAL_SKILLS_DIR/"
+for target in "$@"; do
+  GLOBAL_SKILLS_DIR="$(resolve_target "$target")"
+  echo "Installing ${#SKILLS[@]} skills to: $GLOBAL_SKILLS_DIR"
+  mkdir -p "$GLOBAL_SKILLS_DIR"
+  for skill in "${SKILLS[@]}"; do
+    # Replace any existing skill with the same name in the target directory.
+    if [ -d "$GLOBAL_SKILLS_DIR/$skill" ]; then
+      rm -rf "$GLOBAL_SKILLS_DIR/$skill"
+    fi
+    echo "  copying $skill"
+    cp -r "$SCRIPT_DIR/$skill" "$GLOBAL_SKILLS_DIR/"
+  done
 done
