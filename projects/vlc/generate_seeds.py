@@ -3451,6 +3451,108 @@ def gen_caf(root):
     ])
     _write(os.path.join(root, 'seeds/caf/lpcm_with_kuki.caf'), lpcm_kuki)
 
+    # The seeds below target branches in the pure Demux()/Open() parse path
+    # (i.e. reachable without the VLC_DEMUX_CONTROLS-gated seek/length controls)
+    # that the seeds above leave dark: the fixed-bytes/variable-samples packet
+    # description branch, the data-to-EOF chunk size, and the codec-dispatch and
+    # packet-table rejection branches in ReadDescChunk/ReadPaktChunk. Several of
+    # them exercise length arithmetic on attacker-controlled description/size
+    # fields, which is the memory-safety-relevant surface of this demuxer.
+
+    # 6) Constant byte size, variable sample count: bytes_per_packet != 0 but
+    #    frames_per_packet == 0 still makes NeedsPacketTable() true, so Demux()
+    #    walks the packet table; FrameSpanAddDescription() then takes the
+    #    fixed-bytes branch (no size var-int) and parses ONLY the sample-count
+    #    var-int per packet — the complement of seed (1) above.
+    bf_descs = b''.join(_caf_varint(n) for n in (1024, 1024, 512))
+    bf_pakt = (struct.pack('>q', 3) + struct.pack('>q', 1024 + 1024 + 512)
+               + struct.pack('>i', 0) + struct.pack('>i', 0) + bf_descs)
+    vbr_bytes_fixed = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=40, frames_per_packet=0,
+                                      channels=2, bits=0)),
+        _caf_chunk(b'pakt', bf_pakt),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(40 * 3)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/vbr_bytes_fixed.caf'), vbr_bytes_fixed)
+
+    # 7) data chunk with size == -1 (0xffff...ffff) == kCHUNK_SIZE_EOF: drives
+    #    the NextChunk() signed-size special case, the Open() loop's EOF break,
+    #    and TotalNumFrames()/Demux() using stream_Size() instead of a stored
+    #    data size. Must be the last chunk and extend to end of file.
+    data_eof = (_CAF_HEADER
+                + _caf_chunk(b'desc', _caf_desc(44100, b'lpcm', fmt_flags=0x0c,
+                                                bytes_per_packet=4,
+                                                frames_per_packet=1,
+                                                channels=2, bits=16))
+                + b'data' + struct.pack('>q', -1)
+                + struct.pack('>I', 0) + bytes(256))
+    _write(os.path.join(root, 'seeds/caf/data_eof_minus1.caf'), data_eof)
+
+    # 8) Float LPCM with a bit depth that is neither 32 nor 64: the float
+    #    branch of ReadDescChunk() leaves i_basic_codec == 0, so es_format_Init
+    #    is never called and fmt.i_codec stays 0, driving the "could not
+    #    determine codec" rejection that other seeds never reach.
+    undetermined = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'lpcm', fmt_flags=0x01,
+                                      bytes_per_packet=2, frames_per_packet=1,
+                                      channels=1, bits=16)),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(64)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/lpcm_float_undetermined.caf'),
+           undetermined)
+
+    # 9) Too many channels: a valid codec (aac -> MP4A) with channels beyond
+    #    AOUT_CHAN_MAX drives the channel-count rejection branch.
+    absurd_chan = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=40, frames_per_packet=1024,
+                                      channels=99, bits=0)),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(64)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/absurd_channels.caf'), absurd_chan)
+
+    # 10) 64-bit float LPCM (DVD_LPCM + float flag + 64 bits) -> VLC_CODEC_F64B,
+    #     the floating-point branch of ReadDescChunk the integer PCM seeds miss.
+    lpcm_f64 = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(48000, b'lpcm', fmt_flags=0x01,
+                                      bytes_per_packet=8, frames_per_packet=1,
+                                      channels=1, bits=64)),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(64)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/lpcm_float64.caf'), lpcm_f64)
+
+    # 11) Negative packet-table count: i_num_packets with the sign bit set makes
+    #     ReadBEInt64ToUInt64() reject it, driving ReadPaktChunk()'s error path.
+    neg_pakt = (struct.pack('>q', -1) + struct.pack('>q', 0)
+                + struct.pack('>i', 0) + struct.pack('>i', 0))
+    pakt_negative = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=0, frames_per_packet=0,
+                                      channels=2, bits=0)),
+        _caf_chunk(b'pakt', neg_pakt),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(16)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/pakt_negative.caf'), pakt_negative)
+
+    # 12) Truncated packet descriptions: a VBR table (both counts variable, so
+    #     two var-ints per packet) that claims more packets than the description
+    #     bytes actually encode, placed as the final chunk so the description
+    #     reads run into EOF. This exercises the ParseVarLenInteger bounds checks
+    #     and the "description larger than peeked bytes" guard inside
+    #     FrameSpanAddDescription() on attacker-controlled data.
+    trunc_descs = _caf_varint(50) + _caf_varint(1024) + b'\xff'
+    trunc_pakt = (struct.pack('>q', 8) + struct.pack('>q', 8192)
+                  + struct.pack('>i', 0) + struct.pack('>i', 0) + trunc_descs)
+    vbr_trunc = (_CAF_HEADER
+                 + _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                                 bytes_per_packet=0,
+                                                 frames_per_packet=0,
+                                                 channels=2, bits=0))
+                 + _caf_chunk(b'data', struct.pack('>I', 0) + bytes(70))
+                 + _caf_chunk(b'pakt', trunc_pakt))
+    _write(os.path.join(root, 'seeds/caf/vbr_truncated_desc.caf'), vbr_trunc)
+
 
 # ──────────────────────────────────────────────────
 #  WAV / AIFF / CAF seeds for araw.c (raw-audio decoder), modules/codec/araw.c.
