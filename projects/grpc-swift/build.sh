@@ -18,13 +18,22 @@
 . precompile_swift
 # build project
 cd FuzzTesting
-swift build -c debug $SWIFTFLAGS
+
+EXTRA_LINKER_FLAGS=""
+for lib in libc++.a libc++abi.a libunwind.a; do
+    lib_path=$(find /usr/local/lib /usr/lib -name "$lib" 2>/dev/null | head -n 1)
+    if [ -n "$lib_path" ]; then
+        EXTRA_LINKER_FLAGS="$EXTRA_LINKER_FLAGS -Xlinker $lib_path"
+    fi
+done
+
+swift build -c debug $SWIFTFLAGS $EXTRA_LINKER_FLAGS
 
 (
 cd .build/debug/
 find . -maxdepth 1 -type f -name "*Fuzzer" -executable | while read i; do cp $i $OUT/"$i"-debug; done
 )
-swift build -c release $SWIFTFLAGS
+swift build -c release $SWIFTFLAGS $EXTRA_LINKER_FLAGS
 (
 cd .build/release/
 find . -maxdepth 1 -type f -name "*Fuzzer" -executable | while read i; do cp $i $OUT/"$i"-release; done
