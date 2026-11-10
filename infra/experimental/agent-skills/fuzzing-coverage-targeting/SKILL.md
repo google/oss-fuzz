@@ -10,7 +10,7 @@ This skill is the architect for fuzz target selection: it answers **which** part
 
 ## Inputs
 
-- Fresh coverage data: the project's `summary.json` and per-target reports (`reports-by-target`), filtered to the project's own code with build scope verified (a high percentage over a partial build is meaningless).
+- Fresh coverage data: the project's `summary.json` and per-target reports (`reports-by-target`), filtered to the project's own code with build scope verified (a high percentage over a partial build is meaningless). Own code includes versions of third-party code the project maintains in-tree (its fork or locally patched copies); vendored dependencies kept unmodified from their upstream are not targets.
 - Fuzz Introspector data: statically reachable but dynamically unreached functions, optimal targets, blockers.
 - The project's source structure: modules, public APIs, state machines, configuration surfaces.
 - The language expert's threat model, when composed by the pipeline: attacker-reachable surfaces are the top ranking weight among equals.
@@ -20,9 +20,11 @@ This skill is the architect for fuzz target selection: it answers **which** part
 Score each dark region as **dark reachable lines × functional importance × bug-class diversity ÷ harness cost**:
 
 - **Dark reachable lines**: lines statically reachable from some harness entry but uncovered, counted as absolute lines, not percentages.
-- **Functional importance**: core parsing, transformation, protocol logic and data handling rank high; diagnostics, debug printers, test helpers and build-time code are excluded outright.
+- **Functional importance**: core parsing, transformation, protocol logic and data handling rank high; diagnostics, debug printers, test helpers, build-time code and unmodified vendored third-party dependencies are excluded outright.
 - **Bug-class diversity**: memory safety (ASan/MSan/UBSan), logic and assertion violations, hangs and pathological blowups, and leaks. A region rich in several classes outranks a one-class region of equal size.
 - **Harness cost**: API complexity, state setup, corpus construction effort.
+
+A region plain fuzzing already reaches within a normal run carries **zero incremental worth for corpus-only work**: seeds and dictionaries pay only where a mutation-resistant gate (multi-byte magic numbers, checksums, length fields, required keywords) holds the mutator out.
 
 ## Dark-region taxonomy and harness opportunity types
 
@@ -72,16 +74,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 }
 ```
 
-- **Option or configuration matrix**: consume small values as option flags and mode switches before the payload so one target sweeps many compiled paths cheaply; pair with a dictionary of option names.
+- **Option or configuration matrix**: consume small values as option flags and mode switches before the payload so one target sweeps many compiled paths cheaply; pair with a dictionary of option names (multi-byte tokens traceable to the code; never single characters).
 - **Component API**: call the internal module through its intended API with typed, bounded parameters; the language skills' legitimate-input requirement applies (construct valid objects; never feed raw bytes where a struct is expected).
 
 ## Portfolio construction
 
 1. Enumerate dark regions from the inputs; classify each by the taxonomy; score each by the worth model.
 2. Apply the security weighting: attacker-reachable surfaces rank first among equals; functional dark logic is fully worthy; diagnostics, logging, printf-style output, test helpers and build-time code stay excluded.
-3. Produce a **ranked multi-target list** expected to yield several focused harnesses rather than one or two; a single-target list is a smell that the taxonomy was not applied. If honest triage finds nothing worthy, say so: zero worthy targets is a valid outcome, and inventing a trivial pair to hit a one-pair floor is forbidden. The declaration must be proven, not asserted: list the top rejected regions with their numbers and the reason each fails the worth model.
-4. Selection is iterative with diminishing returns, executed by the pipeline with its coverage ledger: after each accepted pair, re-rank the remaining targets by **incremental** worth (projected gains minus already-covered ground). A pair whose gains mostly overlap already-accepted coverage is redesigned toward different dark regions, folded into standalone corpus work, or dropped, with the numbers recorded.
-5. **Default cap: at most 5 pairs per project** (fuzzer pairs plus the standalone corpus pair; a `-build-fix` pair does not count against the cap), unless the user raises or lowers the threshold in their prompt.
+3. Produce a **ranked multi-target list** expected to yield several focused harnesses rather than one or two; a single-target list is a smell that the taxonomy was not applied. If honest triage finds nothing worthy, say so: zero worthy targets is a valid outcome — including for an already well-fuzzed project — and inventing a trivial pair to hit a one-pair floor is forbidden. The declaration must be proven, not asserted: list the top rejected regions with their numbers and the reason each fails the worth model.
+4. Selection is iterative with diminishing returns, executed by the pipeline with its coverage ledger: after each accepted pair, re-rank the remaining targets by **incremental** worth (projected gains minus already-covered ground). A pair whose gains mostly overlap already-accepted coverage is redesigned toward different dark regions, folded into standalone corpus work — only when the region is provably seed-limited by a mutation-resistant gate — or dropped, with the numbers recorded.
+5. **Default cap: at most 5 pairs per project** (fuzzer pairs plus the standalone corpus pair; a `-build-fix` pair does not count against the cap), unless the user raises or lowers the threshold in their prompt. The standalone corpus pair is exceptional — justified only by a proven seed-limited gate — and is never staged as portfolio filler.
 6. **Work the ranked list top-down until the rules are exhausted.** Worth is measured per project and never compared across projects: in a multi-project batch, a second pair for project A competes only with A's own remaining dark regions, never with project B's candidates, and spreading one pair per project is an anti-pattern. A single delivered pair is only the floor for a project's delivered status, never a stopping point. Stop a project's loop only on one of: **(a) worth exhaustion**, the remaining marginal worth is genuinely low, documented with numbers; **(b) the cap**; or **(c) budget exhaustion**, when time or build budget truly runs out. Budget bounds ordering and depth only, never worth: record un-attempted worthy targets as "pair N of project X: worth rationale written, not yet attempted", never as a worth decision, and never drop a target as unworthy for budget reasons.
 
 ## Non-goals

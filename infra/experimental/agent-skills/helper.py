@@ -736,6 +736,20 @@ PIPELINE_PROMPT_TEMPLATE = textwrap.dedent("""\
     - Validate each pair on the sanitizer/engine matrix from project.yaml,
       and evaluate coverage from the fuzzer runs' libFuzzer cov: metric
       (fast path), using a coverage build only as fallback.
+    - Coverage percentage is never a pass/fail threshold: deliver only
+      worthy pairs (measured coverage/effectiveness gain), and mark a
+      project no-worthy-targets with proof when no worthy improvement
+      remains — never stage unworthy work just to deliver something.
+    - Corpus/dictionary/options-only work is exceptional, never a default
+      deliverable: stage a -corpus-dict-options pair only with a documented
+      gate analysis (magic numbers, checksums or keyword gates that mutation
+      cannot cross, cited file:line) and measured gain; single-character
+      dictionary tokens and corpora for small, trivially-reachable APIs are
+      zero-value — skip them and record why.
+    - Only the project's own code is a target: third-party code is out of
+      scope, unless the project maintains its own version of it in-tree
+      (forks or locally patched copies count; unmodified vendored
+      dependencies do not).
     - Watch your context and time budget: when nearing the limit, checkpoint
       cleanly (persist progress and deferred entries) instead of wrapping up
       shallowly; a later session continues from the manifest.
@@ -803,7 +817,10 @@ PIPELINE_CONTINUATION_PROMPT_TEMPLATE = textwrap.dedent("""\
     Identical to a first session: never commit, never push, no staging by
     default; upstream product code off-limits; everything through
     python3 infra/helper.py; classify every post-build crash; never introduce
-    new silencing; the cov: fast path for coverage evaluation; and when your
+    new silencing; the cov: fast path for coverage evaluation; coverage
+    percentage is never a threshold — worthy pairs or an honest
+    no-worthy-targets; corpus/dictionary/options-only pairs stay exceptional
+    (documented gate analysis or skip); project-own code only; and when your
     context or time runs low, checkpoint cleanly instead of wrapping up.
 
     ## Exit protocol (mandatory)

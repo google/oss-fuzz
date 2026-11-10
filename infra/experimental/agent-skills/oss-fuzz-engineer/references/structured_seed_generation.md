@@ -154,6 +154,20 @@ A generator is a natural place to also emit libFuzzer dictionaries
 the mutator synthesize tokens it would rarely discover byte-by-byte. VLC emits
 both seeds and `dictionaries/*.dict` from the same script.
 
+## When seeds and dictionaries have ~zero value
+
+- **Entry checks plain fuzzing crosses within seconds** — small APIs,
+  one- or two-byte comparisons, a single length check: coverage-guided
+  mutation gets through on its own, so seeds and dictionaries add nothing.
+  Confirm the gate is genuinely mutation-resistant (multi-byte magic,
+  checksums, table lookups) before generating anything.
+- **Single-character dictionary tokens** are worthless by definition: the
+  mutator discovers single bytes trivially. Filter them out; a dictionary
+  dominated by them means the gate analysis failed and no dictionary is
+  warranted.
+- **Already well-covered or harness-limited code** (see below): no seed can
+  help; record that instead of generating anyway.
+
 ## Seed-limited vs harness-limited code
 
 Before generating seeds, confirm the dark code is actually reachable by an
@@ -199,6 +213,8 @@ generation, but the seeds you built remain a valuable starting corpus for it.
 
 - [ ] Targets chosen from `summary.json` (reachable, low coverage), not intuition.
 - [ ] Confirmed the dark code is seed-limited, not harness-limited.
+- [ ] Gates confirmed genuinely mutation-resistant (not trivially fuzzable), so the seeds are not zero-value.
+- [ ] Dictionary tokens are multi-byte and traceable to source constructs; no single-character tokens.
 - [ ] Generator is deterministic and emits small, minimal-but-valid seeds.
 - [ ] Each seed validated: it parses *and* moves the intended file's coverage.
 - [ ] Seeds appended to existing corpora (never replaced); script copied in via Dockerfile.
