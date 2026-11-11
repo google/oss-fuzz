@@ -18,7 +18,6 @@
 BINARY=$SRC/mhd2/src/mhd2/.libs/libmicrohttpd2.a
 
 # Build libmicrohttpd
-git pull
 ./autogen.sh
 # Compile MHD with the SAME compiler used later.
 export CC=$CXX
