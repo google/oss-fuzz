@@ -45,9 +45,14 @@ zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
 zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
 zip -r fuzz/fuzz_client_seed_corpus.zip fuzz/corpuses/client
 zip -r fuzz/fuzz_server_seed_corpus.zip fuzz/corpuses/server
+# OSS-FUZZ-AGENT-BRIDGE pair mbedtls-x509-verify: real chain seeds
+python3 fuzz/generate_x509verify_seeds.py --out fuzz/corpuses/x509_verify \
+    --data-files ../framework/data_files
+zip -r fuzz/fuzz_x509verify_seed_corpus.zip fuzz/corpuses/x509_verify
 cd fuzz
 # export other associated stuff
 cp *.options $OUT/
+cp fuzz_x509verify.dict $OUT/
 cp fuzz_*_seed_corpus.zip $OUT/
 cd ../..
 
