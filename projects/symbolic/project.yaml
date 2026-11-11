@@ -2,7 +2,7 @@ homepage: "https://github.com/getsentry/symbolic"
 language: rust
 primary_contact: "mark.collao@sentry.io"
 auto_ccs:
-  - "security@sentry.io"
+  - "hot-fuzz-f86eb7300247@intake.linear.app"
 main_repo: "https://github.com/getsentry/symbolic"
 sanitizers:
   - address
