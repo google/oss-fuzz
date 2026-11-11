@@ -247,11 +247,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         break;
       }
 
-      if (!copy_document(&documents[document_number++], &document)) {
+      if (!copy_document(&documents[document_number], &document)) {
         yaml_document_delete(&document);
         equal = true;
         break;
       }
+      document_number++;
       if (!(yaml_emitter_dump(&emitter, &document) ||
             (yaml_emitter_flush(&emitter) && 0))) {
         equal = true;
