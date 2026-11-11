@@ -14,14 +14,18 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:d34b94e3cf868e49d2928c76ddba41fd4154907a1a381b3a263fafffb7c3dce0
-RUN apt-get update && apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev lsb-release build-essential libssl-dev
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+# Note: Ubuntu 24.04 no longer ships the Python 2 `python` package; osquery's
+# build only needs python3.
+RUN apt-get update && apt-get install -y --no-install-recommends python3 bison flex make wget xz-utils libunwind-dev lsb-release build-essential libssl-dev
 
-# osquery now needs at least version 3.21.4.
-ENV cmakeVer 3.21.4
-RUN wget https://github.com/Kitware/CMake/releases/download/v${cmakeVer}/cmake-${cmakeVer}-Linux-x86_64.tar.gz \
-	&& tar xvf cmake-${cmakeVer}-Linux-x86_64.tar.gz -C /usr/local --strip 1 \
-	&& rm cmake-${cmakeVer}-Linux-x86_64.tar.gz
+# osquery now needs at least version 3.25 (upstream CMakeLists bumped the
+# minimum required CMake). Newer CMake release tarballs use a lowercase
+# "linux" in the asset name.
+ENV cmakeVer 3.31.6
+RUN wget https://github.com/Kitware/CMake/releases/download/v${cmakeVer}/cmake-${cmakeVer}-linux-x86_64.tar.gz \
+	&& tar xvf cmake-${cmakeVer}-linux-x86_64.tar.gz -C /usr/local --strip 1 \
+	&& rm cmake-${cmakeVer}-linux-x86_64.tar.gz
 
 RUN git clone --depth 1 https://github.com/osquery/osquery osquery
 

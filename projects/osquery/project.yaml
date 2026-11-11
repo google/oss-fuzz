@@ -1,5 +1,6 @@
 homepage: "https://osquery.io"
 language: c++
+base_os_version: ubuntu-24-04
 primary_contact: "osquery@osquery.io"
 auto_ccs:
   - "theopolis@osquery.io"
