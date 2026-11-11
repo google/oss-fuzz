@@ -20,13 +20,7 @@ limitations under the License.
 #include <stdlib.h>
 #include "ruby.h"
 #include "../ruby/ext/json/json.h"
-#include "../ruby/ext/json/vendor/ryu.h"
 #include "../ruby/ext/json/parser/parser.c"
-
-static int ruby_initialized = 0;
-
-// External declaration for ruby_verbose
-extern VALUE ruby_verbose;
 
 // JSON parser wrapper - parses JSON string with default config
 static VALUE json_fuzzer_parse(VALUE json_str) {
@@ -34,7 +28,7 @@ static VALUE json_fuzzer_parse(VALUE json_str) {
         .on_load_proc = Qfalse,
         .decimal_class = Qfalse,
         .decimal_method_id = 0,
-        .on_duplicate_key = JSON_RAISE,
+        .allow_duplicate_key = 0,
         .max_nesting = 100,
         .allow_nan = 0,
         .allow_trailing_comma = 0,
@@ -64,14 +58,14 @@ static VALUE call_json_parse(VALUE arg) {
     return result;
 }
 
+int LLVMFuzzerInitialize(int *argc, char ***argv) {
+    ruby_init();
+    // Suppress Ruby warnings to avoid log noise
+    ruby_verbose = Qfalse;
+    return 0;
+}
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    if (!ruby_initialized) {
-        ruby_init();
-        ruby_initialized = 1;
-        
-        // Suppress Ruby warnings to avoid log noise
-        ruby_verbose = Qfalse;
-    }
     
     if (size == 0) {
         return 0;

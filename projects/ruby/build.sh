@@ -158,18 +158,17 @@ done
 echo "Building fuzz_json..."
 JSON_DIR="$RUBY_BUILD_DIR/ext/json"
 
-# Compile JSON vendor code (fpconv for float conversion)
-$CC $CFLAGS $INC_RUBY -I"$JSON_DIR" \
-    -c "$JSON_DIR/vendor/fpconv.c" -o "$WORK/json_fpconv.o"
-
-# Compile the self-contained JSON fuzzer (includes parser.c directly) as C
+# Compile the self-contained JSON fuzzer (includes parser.c directly) as C.
+# The -DHAVE_* flags stand in for the feature detection ext/json/parser/extconf.rb
+# would normally do; without them json.h re-defines shims that already exist in
+# the in-tree Ruby headers.
 $CC $CFLAGS $INC_RUBY -I"$JSON_DIR" -I"$JSON_DIR/vendor" -I"$JSON_DIR/simd" \
     -DHAVE_RB_ENC_INTERNED_STR -DHAVE_RB_HASH_BULK_INSERT -DHAVE_RB_HASH_NEW_CAPA \
-    -DHAVE_RB_STR_TO_INTERNED_STR -DHAVE_STRNLEN \
+    -DHAVE_RB_STR_TO_INTERNED_STR -DHAVE_STRNLEN -DHAVE_RUBY_XFREE_SIZED \
     -c "$SRC/fuzz_json.c" -o "$WORK/fuzz_json.o"
 
 # Link json assets together
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$WORK/fuzz_json.o" "$WORK/json_fpconv.o" \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE "$WORK/fuzz_json.o" \
     $LIBS_RUBY -lm -lpthread -ldl -lcrypt -lz -o "$OUT/fuzz_json"
 
 # create seeds
