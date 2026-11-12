@@ -18,10 +18,16 @@
 BINARY=$SRC/mhd2/src/mhd2/.libs/libmicrohttpd2.a
 
 # Build libmicrohttpd
-git pull
+# Upstream bug workaround: 'restrict' on mhd_pool_reset()'s 'keep' turns its
+# memmove() into an overlapping memcpy() on pipelined HTTP/1.1 requests.
+sed -i 's/void \*restrict keep,/void *keep,/' \
+    src/mhd2/mempool_funcs.c src/mhd2/mempool_funcs.h
 ./autogen.sh
 # Compile MHD with the SAME compiler used later.
 export CC=$CXX
+# Upstream bug workaround: some HTTP/2 handlers in h2_conn_streams.c don't
+# return a value, which crashes the C-as-C++ build on any RST_STREAM.
+export CFLAGS="$CFLAGS -fno-strict-return"
 # Enable most features, force specific TLS library, and disable symbol hiding
 ./configure \
     --enable-dauth \
@@ -46,7 +52,7 @@ ASAN_OPTIONS=detect_leaks=0 make -j$(nproc)
 make install
 
 # Compile fuzzer
-FUZZERS="fuzz_response fuzz_daemon fuzz_mhd2 fuzz_str fuzz_crypto_int fuzz_libinfo fuzz_connection fuzz_daemon_connection"
+FUZZERS="fuzz_response fuzz_daemon fuzz_mhd2 fuzz_str fuzz_crypto_int fuzz_libinfo fuzz_connection fuzz_daemon_connection fuzz_hpack fuzz_h2_conn fuzz_http1_auth"
 
 for fuzzer in $FUZZERS; do
   extra_src=""
