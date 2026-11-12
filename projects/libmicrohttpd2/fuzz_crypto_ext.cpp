@@ -21,13 +21,13 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
-#include "md5_ext.h"
-#include "sha256_ext.h"
+#include "md5_gnutls.h"
+#include "sha256_gnutls.h"
 
 
 // Fuzzing target function pointer types for the enternal hash APIs
 template <typename HashType> using InitOnceFn = void (*)(HashType*);
-template <typename HashType> using UpdateFn   = void (*)(HashType*, size_t, const uint8_t*);
+template <typename HashType> using UpdateFn   = void (*)(HashType*, size_t, const void*);
 template <typename HashType> using FinishFn   = void (*)(HashType*, uint8_t*);
 template <typename HashType> using DeinitFn   = void (*)(HashType*);
 
@@ -170,14 +170,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   for (unsigned i = 0; i < fdp.ConsumeIntegralInRange<unsigned>(1, 4); i++) {
     if (fdp.ConsumeBool()) {
-      fuzz_hash_ext_multi<struct mhd_Md5CtxExt>(
+      fuzz_hash_ext_multi<struct mhd_Md5CtxGtls>(
         fdp, 64,
-        mhd_MD5_init_one_time, mhd_MD5_update, mhd_MD5_finish_reset, mhd_MD5_deinit,
+        mhd_MD5_gtls_init, mhd_MD5_gtls_update, mhd_MD5_gtls_finish, mhd_MD5_gtls_deinit,
         mhd_MD5_DIGEST_SIZE);
     } else {
-      fuzz_hash_ext_multi<struct mhd_Sha256CtxExt>(
+      fuzz_hash_ext_multi<struct mhd_Sha256CtxGtls>(
         fdp, 64,
-        mhd_SHA256_init_one_time, mhd_SHA256_update, mhd_SHA256_finish_reset, mhd_SHA256_deinit,
+        mhd_SHA256_gtls_init, mhd_SHA256_gtls_update, mhd_SHA256_gtls_finish, mhd_SHA256_gtls_deinit,
         mhd_SHA256_DIGEST_SIZE);
     }
   }

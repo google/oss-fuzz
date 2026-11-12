@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf zlibc libtool liblcms2-dev libpng-dev
 RUN git clone --branch branch-2.2 --single-branch --depth 1 https://github.com/apple/cups.git cups
 RUN git clone --branch VER-2-14-0 --single-branch --depth 1 https://git.savannah.gnu.org/git/freetype/freetype2.git freetype
-RUN git clone --single-branch --depth 1 git://git.ghostscript.com/ghostpdl.git ghostpdl
+RUN git clone --single-branch --depth 1 https://github.com/ArtifexSoftware/ghostpdl ghostpdl
 RUN mkdir ghostpdl/fuzz
 
 COPY pdf_seeds $SRC/pdf_seeds
