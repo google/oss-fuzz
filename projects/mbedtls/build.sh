@@ -45,7 +45,12 @@ zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
 zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
 zip -r fuzz/fuzz_client_seed_corpus.zip fuzz/corpuses/client
 zip -r fuzz/fuzz_server_seed_corpus.zip fuzz/corpuses/server
+
+python3 fuzz/generate_dhm_seeds.py --out fuzz/corpuses/dhm \
+    --data-files ../framework/data_files
+zip -r fuzz/fuzz_dhm_seed_corpus.zip fuzz/corpuses/dhm
 cd fuzz
+
 # export other associated stuff
 cp *.options $OUT/
 cp fuzz_*_seed_corpus.zip $OUT/
