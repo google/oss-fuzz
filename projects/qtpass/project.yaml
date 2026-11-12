@@ -1,0 +1,11 @@
+homepage: "https://qtpass.org/"
+language: c++
+primary_contact: "annejan@gmail.com"
+auto_ccs:
+  - "help@qtpass.org"
+main_repo: 'https://github.com/IJHack/QtPass.git'
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined

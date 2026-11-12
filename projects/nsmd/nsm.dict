@@ -1,0 +1,37 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# NSM (NVIDIA System Management) protocol dictionary
+# PCI Vendor ID (0x10DE big-endian) + Request/Response/Event + OCP V1/V2
+"\x10\xde\x00\x89"
+"\x10\xde\x00\x8a"
+"\x10\xde\x40\x89"
+"\x10\xde\x40\x8a"
+"\x10\xde\x80\x89"
+"\x10\xde\x80\x8a"
+"\x10\xde\xc0\x89"
+"\x10\xde\xc0\x8a"
+"\x10\xde"
+# Error injection types and subtypes (little-endian uint16)
+"\x04\x00\x00\x00"
+"\x04\x00\x01\x00"
+"\x04\x00\x02\x00"
+"\x04\x00\x03\x00"
+"\x05\x00\x00\x00"
+# FPGA MMIO IBC2 profile magic and LP30 platform string
+"IBC2"
+"LP30"
+"\xde\xc0\xad\xde"

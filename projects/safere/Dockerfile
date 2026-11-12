@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y maven zip rsync curl && \
 ENV JAVA_HOME /usr/lib/jvm/java-26-openjdk-amd64
 ENV PATH $JAVA_HOME/bin:$PATH
 
-RUN git clone --depth 1 https://github.com/eaftan/safere.git $SRC/safere
+RUN git clone --depth 1 https://github.com/safere/safere.git $SRC/safere
 
 COPY build.sh $SRC/
 WORKDIR $SRC/safere
