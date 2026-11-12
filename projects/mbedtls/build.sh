@@ -45,9 +45,15 @@ zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
 zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
 zip -r fuzz/fuzz_client_seed_corpus.zip fuzz/corpuses/client
 zip -r fuzz/fuzz_server_seed_corpus.zip fuzz/corpuses/server
+
+python3 fuzz/generate_psa_crypto_seeds.py --out fuzz/corpuses/psa_crypto \
+    --rsa-pem ../framework/data_files/server2.key
+zip -r fuzz/fuzz_psa_crypto_seed_corpus.zip fuzz/corpuses/psa_crypto
 cd fuzz
+
 # export other associated stuff
 cp *.options $OUT/
+cp *.dict $OUT/
 cp fuzz_*_seed_corpus.zip $OUT/
 cd ../..
 
