@@ -240,7 +240,7 @@ def _check_one_seed_corpus(path):
     return True
 
   if os.path.splitext(path)[1] == '.zip':
-    print('Don\'t commit seed corpora into the ClusterFuzz repo,'
+    print('Don\'t commit seed corpora into the ClusterFuzz repo, '
           'they bloat it forever.')
     return False
 

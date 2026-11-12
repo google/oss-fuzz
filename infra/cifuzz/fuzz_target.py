@@ -357,8 +357,8 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
       reproducible_on_code_change = self.is_reproducible(
           testcase, self.target_path, reproduce_args)
     except ReproduceError as error:
-      logging.error('Could not check for crash reproducibility.'
-                    'Please file an issue:'
+      logging.error('Could not check for crash reproducibility. '
+                    'Please file an issue: '
                     'https://github.com/google/oss-fuzz/issues/new.')
       raise error
 
