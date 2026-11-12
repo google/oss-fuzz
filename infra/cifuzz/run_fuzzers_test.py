@@ -303,6 +303,34 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.assertEqual(mock_run_fuzz_target.call_count, 2)
     self.assertEqual(mock_upload_crashes.call_count, 1)
 
+  @mock.patch('utils.get_fuzz_targets', return_value=['target1', 'target2'])
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_crashes')
+  @mock.patch('run_fuzzers.write_fuzz_result_to_sarif')
+  @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
+  @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
+  def test_sarif_reports_crash_from_earlier_target(self,
+                                                   mock_create_fuzz_target_obj,
+                                                   mock_run_fuzz_target,
+                                                   mock_write_sarif, _, __):
+    """Tests that the crash of a fuzz target that isn't the last one to run is
+    the one written to SARIF."""
+    self.config.output_sarif = True
+    runner = run_fuzzers.BatchFuzzTargetRunner(self.config)
+    runner.initialize()
+
+    self.fs.create_dir(self.CORPUS_DIR)
+    crash_result = fuzz_target.FuzzResult(self.testcase1, self.STACKTRACE,
+                                          self.CORPUS_DIR)
+    no_crash_result = fuzz_target.FuzzResult(None, None, self.CORPUS_DIR)
+    mock_run_fuzz_target.side_effect = [crash_result, no_crash_result]
+    magic_mock = mock.MagicMock()
+    magic_mock.target_name = 'target1'
+    mock_create_fuzz_target_obj.return_value = magic_mock
+
+    self.assertTrue(runner.run_fuzz_targets())
+    mock_write_sarif.assert_called_once_with(crash_result, 'target1',
+                                             runner.workspace)
+
 
 class GetCoverageTargetsTest(unittest.TestCase):
   """Tests for get_coverage_fuzz_targets."""
