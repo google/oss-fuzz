@@ -28,6 +28,34 @@ if [ "$ARCHITECTURE" = "i386" ]; then
     BUILD_FLAG="--build=i686-pc-linux-gnu"
 fi
 
+# libxml2 for ext-dom (php-fuzz-dom-html). The apt libxml2-dev package is used
+# directly for every sanitizer except memory.
+if [ "$SANITIZER" = "memory" ]; then
+    export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}
+    pushd $SRC/libxml2
+    mkdir -p build
+    cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_ZLIB=OFF \
+        -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_TESTS=OFF \
+        -DLIBXML2_WITH_PROGRAMS=OFF
+    make -j$(nproc)
+    make install
+    popd
+fi
+
+# libxml2 is linked dynamically against the apt package for non-MSan builds, and
+# the base-runner image does not ship libxml2.so.2
+RPATH='-Wl,-rpath,\$$ORIGIN'
+export LDFLAGS="${LDFLAGS:-} $RPATH"
+cp -a /usr/lib/x86_64-linux-gnu/libxml2.so.2* \
+      /usr/lib/x86_64-linux-gnu/libicuuc.so.74* \
+      /usr/lib/x86_64-linux-gnu/libicui18n.so.74* \
+      /usr/lib/x86_64-linux-gnu/libicudata.so.74* \
+      $OUT/ 2>/dev/null || true
+patchelf --set-rpath '$ORIGIN' $OUT/libxml2.so.2 $OUT/libicuuc.so.74 \
+    $OUT/libicui18n.so.74 2>/dev/null || true
+
 # build project
 ./buildconf
 ./configure $BUILD_FLAG \
@@ -36,6 +64,8 @@ fi
     --enable-option-checking=fatal \
     --enable-fuzzer \
     --enable-exif \
+    --with-libxml \
+    --enable-dom \
     --without-pcre-jit \
     --disable-phpdbg \
     --disable-cgi \
@@ -49,13 +79,15 @@ sapi/cli/php sapi/fuzzer/generate_all.php
 cp sapi/fuzzer/dict/unserialize $OUT/php-fuzz-unserialize.dict
 cp sapi/fuzzer/dict/parser $OUT/php-fuzz-parser.dict
 cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
+cp sapi/fuzzer/dict/dom-html $OUT/php-fuzz-dom-html.dict
 
 FUZZERS="php-fuzz-json
 php-fuzz-exif
 php-fuzz-unserialize
 php-fuzz-unserializehash
 php-fuzz-parser
-php-fuzz-execute"
+php-fuzz-execute
+php-fuzz-dom-html"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
 done
