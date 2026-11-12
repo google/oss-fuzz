@@ -31,7 +31,7 @@ for f in charset codepage meta idna entities unescape filters url header \
     srcs=()
     case "$f" in
     codepage) defs=(-DDISABLE_ICONV) srcs=(src/htscharset.c) ;;
-    cachendx | arc) defs=(-DZLIB_CONST) srcs=(src/proxy/store.c) ;;
+    cachendx | arc) defs=(-DZLIB_CONST) srcs=(src/proxy/store.c src/htsshared.c) ;;
     esac
 
     objs=("fuzz-$f.o")
