@@ -15,11 +15,6 @@
 #
 ################################################################################
 
-# Regenerate the seed corpora from the project's known-good/known-bad unit
-# test vectors (tests/fuzz/{ofh,ngap}/gen_corpus.py). No build dependencies.
-python3 tests/fuzz/ofh/gen_corpus.py
-python3 tests/fuzz/ngap/gen_corpus.py
-
 # Build MbedTLS as a static library with the sanitizer flags of this build, so
 # that MSan sees the memory it writes (see Dockerfile). FindMbedTLS.cmake picks
 # it up through $MBEDTLS_DIR.

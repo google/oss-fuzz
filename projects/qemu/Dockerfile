@@ -14,17 +14,15 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-ARG glib_tag=2.78.4
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+# QEMU's configure requires Python >= 3.12. The base image's own
+# /usr/local/bin/python3 is 3.11, so install the distro python3.12 (plus
+# venv, which configure uses to create QEMU's build venv) and point
+# configure at it via $PYTHON in build.sh.
 RUN apt-get update && apt-get install -y make autoconf automake libtool ninja-build  \
     libfdt-dev libpixman-1-dev zlib1g-dev libslirp-dev patchelf wget \
-    libattr1 libattr1-dev libcap-ng-dev pkg-config
-
-Run python3 -m pip install distlib meson tomli
-RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib.git --branch=$glib_tag && \
-  meson setup _build glib --prefix=/usr -Ddefault_library=shared -Dtests=false && \
-  meson install -C _build && \
-  rm -rf glib _build
+    libattr1 libattr1-dev libcap-ng-dev pkg-config libglib2.0-dev \
+    python3.12 python3.12-venv
 
 RUN git clone --depth 1 https://git.qemu.org/git/qemu.git qemu
 WORKDIR qemu

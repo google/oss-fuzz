@@ -1,0 +1,9 @@
+homepage: "https://www.ossec.net/"
+main_repo: "https://github.com/ossec/ossec-hids"
+primary_contact: "scott@atomicorp.com"
+language: c
+
+fuzzing_engines:
+  - afl
+  - honggfuzz
+  - libfuzzer

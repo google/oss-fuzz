@@ -1,10 +1,13 @@
 # CEL-Go Fuzzing
 
-This directory contains OSS-Fuzz integration and fuzz targets for CEL-Go:
+This directory contains OSS-Fuzz integration for CEL-Go (`cel.dev/cel-go/fuzzing`):
 
 - `fuzz_compile`: Fuzzes expression compilation and program creation.
-- `fuzz_eval`: Structure-aware libprotobuf-mutator fuzzer for variable evaluation.
+- `fuzz_lpm` (`FuzzEval`): Structure-aware libprotobuf-mutator fuzzer for variable evaluation.
+- `fuzz_parser`: Fuzzes CEL expression parsing.
 - `fuzz_pratt_parser`: Differential fuzzer comparing ANTLR and Pratt parser outputs.
+- `fuzz_checker`: Fuzzes the CEL type checker with unmarshaled `ParsedExpr` protobuf inputs.
+- `fuzz_interpreter`: Fuzzes the CEL interpreter with unmarshaled `CheckedExpr` and activation inputs.
 
 ---
 

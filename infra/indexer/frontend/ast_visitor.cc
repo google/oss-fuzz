@@ -1458,7 +1458,10 @@ std::optional<Entity> AstVisitor::GetEntityForDecl(const clang::Decl* decl,
     // Check for template instantiation.
     const clang::Decl* function_template = nullptr;
     if (const auto* instantiation_pattern =
-            function_decl->getTemplateInstantiationPattern()) {
+            function_decl->getTemplateInstantiationPattern();
+        instantiation_pattern != nullptr &&
+        instantiation_pattern->getOverloadedOperator() ==
+            function_decl->getOverloadedOperator()) {
       function_template = instantiation_pattern->getDefinition();
     } else if (function_decl->getDescribedFunctionTemplate() &&
                function_decl->getDescribedFunctionTemplate()

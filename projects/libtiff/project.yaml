@@ -1,6 +1,6 @@
 homepage: "http://www.libtiff.org"
 language: c++
-primary_contact: "even.rouault@gmail.com"
+primary_contact: "bobjfriesenhahn@gmail.com"
 auto_ccs:
   - paul.l.kehrer@gmail.com
 sanitizers:
@@ -16,4 +16,3 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
