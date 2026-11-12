@@ -1,0 +1,5 @@
+POST /axis2/services/FuzzService HTTP/1.1
+Content-Type: text/xml; charset=UTF-8
+SOAPAction: "urn:echoNode"
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body xmlns:ns="http://services.axis2.fuzz" xmlns:ax="http://services.axis2.fuzz/xsd" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"><ns:echoNode><ns:args0 href="#id0"/></ns:echoNode><multiRef id="id0"><ax:name>a</ax:name><ax:next href="#id1"/></multiRef><multiRef id="id1"><ax:name>b</ax:name><ax:children href="#id0"/></multiRef></soapenv:Body></soapenv:Envelope>

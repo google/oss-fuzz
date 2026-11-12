@@ -1,0 +1,5 @@
+POST /axis2/services/FuzzService HTTP/1.1
+Content-Type: text/xml; charset=UTF-8
+SOAPAction: "urn:ints"
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body><ns:ints xmlns:ns="http://services.axis2.fuzz"><ns:args0>1</ns:args0><ns:args0>2</ns:args0><ns:args0>3</ns:args0></ns:ints></soapenv:Body></soapenv:Envelope>
