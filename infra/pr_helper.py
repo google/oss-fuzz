@@ -130,14 +130,25 @@ def main():
     # Checks if the author is in the contact list.
     if email:
       if is_known_contributor(content_dict, email):
-        # Checks if the email is verified.
-        verified_marker = ' (verified)' if verified else ''
-        message += (
-            f'{pr_author}{verified_marker} is either the primary contact or '
-            f'is in the CCs list of [{project_path}]({project_url}).<br/>')
         if verified:
-          continue
-
+                    # The email is trustworthy: it is either the author's
+                    # account-linked public profile email, or the first commit's
+                    # author email with a GitHub-verified commit signature.
+                    message += (
+                                    f'{pr_author} (verified) is either the primary contact or '
+                                    f'is in the CCs list of [{project_path}]({project_url}).<br/>')
+                    continue
+                  # The email comes only from the author field of the first commit,
+            # which is metadata set by the committer and proves nothing about
+            # identity. Do not assert contact status based on it.
+            message += (
+                          f'The author email of the first commit of this PR matches an '
+                          f'entry in the contact list of [{project_path}]({project_url}), '
+                          f'but it could not be verified. Commit author emails are set '
+                          f'by the committer and are not proof of identity, so this '
+                          f'match is not treated as coming from the primary contact or '
+                          f'the CCs list.<br/>')
+    
     # Checks the previous commits.
     commit_sha = github.has_author_modified_project(project_path)
     if commit_sha is None:
@@ -204,8 +215,15 @@ class GithubHandler:
 
   def get_author_email(self):
     """Retrieves the author's email address for a pull request,
-    including non-public emails."""
-    user_response = requests.get(f'{API_URL}/users/{self._pr_author}')
+        including non-public emails.
+        
+            Returns a (verified, email) pair. |verified| is True only when the
+                email is trustworthy: the account-linked public profile email, or
+                    the first commit's author email when GitHub verified that commit's
+                        signature. An unverified commit author email is raw metadata set by
+                            the committer and must not be treated as proof of identity.
+                                """
+            user_response = requests.get(f'{API_URL}/users/{self._pr_author}')
     if user_response.ok:
       email = user_response.json()['email']
       if email:
