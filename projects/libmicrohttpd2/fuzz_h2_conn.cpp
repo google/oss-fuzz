@@ -107,6 +107,9 @@ class FuzzClient {
 // and MHD_daemon_process_reg_events(), so everything runs single-threaded and
 // deterministically: socket recv -> HTTP/1.x or HTTP/2 layer -> request
 // parsing -> application callback -> reply -> socket send.
+//
+// NOTE: the same driver is duplicated in fuzz_h2_conn.cpp and
+// fuzz_http1_auth.cpp; keep the two copies in sync.
 
 struct MHD_Daemon *g_daemon = nullptr;
 bool g_daemon_tried = false;
