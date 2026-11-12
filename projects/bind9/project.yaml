@@ -2,14 +2,7 @@ homepage: "https://gitlab.isc.org/isc-projects/bind9"
 language: c
 primary_contact: "ondrej@isc.org"
 auto_ccs:
-  - "artem@isc.org"
-  - "aram@isc.org"
-  - "each@isc.org"
-  - "marka@isc.org"
-  - "matthijs@isc.org"
-  - "michal@isc.org"
-  - "mnowak@isc.org"
-  - "pspacek@isc.org"
+  - "bind9-scan-reports@isc.org"
 sanitizers:
   - address
 main_repo: 'https://gitlab.isc.org/isc-projects/bind9.git'
