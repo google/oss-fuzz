@@ -1,0 +1,10 @@
+# Copyright 2026 Google LLC
+# SPDX-License-Identifier: Apache-2.0
+homepage: "https://sql-page.com/"
+language: rust
+primary_contact: "ophir@sql-page.com"
+main_repo: "https://github.com/sqlpage/SQLPage.git"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
