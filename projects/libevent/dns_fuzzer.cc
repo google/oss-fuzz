@@ -82,6 +82,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         /* Server-side request parsing (from dns_message_fuzzer.cc) */
         int fds[2];
         if (socketpair(AF_UNIX, SOCK_DGRAM, 0, fds) == 0) {
+            /* libevent requires non-blocking sockets: the server port reads
+             * until EAGAIN, so on a blocking socket every input stalls in
+             * recvfrom() until libFuzzer's alarm signal interrupts it. */
+            evutil_make_socket_nonblocking(fds[0]);
             struct evdns_server_port *port =
                 evdns_add_server_port_with_base(base, fds[0], 0, dns_server_cb, nullptr);
             if (port) {
