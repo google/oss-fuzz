@@ -89,13 +89,24 @@ function run_fuzz_target {
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
   rm -rf $corpus_dummy && mkdir -p $corpus_dummy
 
+  # Forward only rss_limit_mb from the target's .options file, when present,
+  # so that targets needing more headroom for corpus replay get it. Other
+  # fuzzing options may be unsuitable for corpus replay. When the option is
+  # absent, libFuzzer's default limit is used, as before.
+  local options_file="$OUT/${target}.options"
+  local rss_limit_arg=""
+  if [[ -f "$options_file" ]]; then
+    rss_limit_arg=$(parse_options.py "$options_file" libfuzzer | tr ' ' '\n' \
+      | grep -oE '^-rss_limit_mb=[0-9]+$' | tail -1)
+  fi
+
   # Use -merge=1 instead of -runs=0 because merge is crash resistant and would
   # let to get coverage using all corpus files even if there are crash inputs.
   # Merge should not introduce any significant overhead compared to -runs=0,
   # because (A) corpuses are already minimized; (B) we do not use sancov, and so
   # libFuzzer always finishes merge with an empty output dir.
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local args="-merge=1 -timeout=100 $corpus_dummy $corpus_real"
+  local args="-merge=1 -timeout=100 $rss_limit_arg $corpus_dummy $corpus_real"
 
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
