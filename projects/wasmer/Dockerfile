@@ -25,8 +25,10 @@ RUN mkdir -p $SRC/.llvm && curl --proto '=https' --tlsv1.2 -sSf \
     https://github.com/wasmerio/llvm-custom-builds/releases/download/23.x/llvm-linux-amd64.tar.zst -L -o -| \
     tar --zstd -xf - --strip-components=1 -C $SRC/.llvm
 
-WORKDIR wasmer
+WORKDIR $SRC/wasmer
 
-ENV RUSTUP_TOOLCHAIN nightly
+ENV RUSTUP_TOOLCHAIN=nightly
+
+RUN cargo install --locked cargo-fuzz
 
 COPY build.sh default.options $SRC/
