@@ -31,6 +31,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         zlib1g-dev \
   && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth 1 --recursive https://github.com/zeek/zeek zeek
+RUN git clone --filter=blob:none --recursive https://github.com/zeek/zeek zeek
 WORKDIR zeek
 COPY build.sh $SRC/

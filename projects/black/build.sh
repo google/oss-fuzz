@@ -16,6 +16,7 @@
 ################################################################################
 
 pip3 install .
+pip3 install jaraco.text jaraco.functools jaraco.context jaraco.classes
 
 if [ "$SANITIZER" = "address" ]
 then
@@ -25,5 +26,5 @@ fi
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
-  compile_python_fuzzer $fuzzer --add-data 'src/blib2to3:blib2to3'
+  compile_python_fuzzer $fuzzer --add-data 'src/blib2to3:blib2to3' --hidden-import jaraco.text --hidden-import jaraco.functools --hidden-import jaraco.context --hidden-import jaraco.classes
 done

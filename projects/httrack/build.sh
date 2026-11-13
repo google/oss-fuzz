@@ -25,13 +25,14 @@ ax_cv_check_cflags___fcf_protection=no \
 make -j"$(nproc)" -C src libhttrack.la
 
 for f in charset codepage meta idna entities unescape filters url header \
-    cachendx htsparse singlefile sitemap arc; do
+    cachendx htsparse singlefile sitemap arc bundle cookie robots savename \
+    warc; do
     # Three targets need an extra source, as fuzz/Makefile.am lists them.
     defs=()
     srcs=()
     case "$f" in
     codepage) defs=(-DDISABLE_ICONV) srcs=(src/htscharset.c) ;;
-    cachendx | arc) defs=(-DZLIB_CONST) srcs=(src/proxy/store.c) ;;
+    cachendx | arc) defs=(-DZLIB_CONST) srcs=(src/proxy/store.c src/htsshared.c) ;;
     esac
 
     objs=("fuzz-$f.o")
@@ -52,4 +53,13 @@ for f in charset codepage meta idna entities unescape filters url header \
     $CXX $CXXFLAGS -fuse-ld=lld "${objs[@]}" -o "$OUT/fuzz-$f" \
         $LIB_FUZZING_ENGINE src/.libs/libhttrack.a -lz -lpthread
     zip -j "$OUT/fuzz-${f}_seed_corpus.zip" fuzz/corpus/"$f"/*
+done
+
+
+# libFuzzer dictionaries and per-fuzzer options ship next to the harnesses.
+for d in fuzz/fuzz-*.dict; do
+    [ -f "$d" ] && cp "$d" "$OUT/"
+done
+for o in fuzz/*.options; do
+    [ -f "$o" ] && cp "$o" "$OUT/"
 done

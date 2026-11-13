@@ -59,6 +59,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         flags, -1, (struct sockaddr*)&sin, sizeof(sin));
     
     if (lev) {
+        evutil_socket_t listen_fd;
         evconnlistener_set_error_cb(lev, error_cb);
 
         if (flags & LEV_OPT_DISABLED) {
@@ -66,7 +67,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         }
 
         // Get the port we bound to
-        evutil_socket_t listen_fd = evconnlistener_get_fd(lev);
+        listen_fd = evconnlistener_get_fd(lev);
         struct sockaddr_in bound_sin;
         socklen_t bound_sin_len = sizeof(bound_sin);
         if (getsockname(listen_fd, (struct sockaddr*)&bound_sin, &bound_sin_len) == 0) {
@@ -87,6 +88,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             }
         }
         evconnlistener_free(lev);
+        /* Without LEV_OPT_CLOSE_ON_FREE the listening socket stays ours to
+         * close. Leaking it exhausts the fd limit after ~1000 inputs, after
+         * which accept() fails forever and the event loop never returns. */
+        if (!(flags & LEV_OPT_CLOSE_ON_FREE)) {
+            evutil_closesocket(listen_fd);
+        }
     }
 
     event_base_free(base);
