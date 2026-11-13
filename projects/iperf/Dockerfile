@@ -20,4 +20,3 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-d
 RUN git clone --depth 1 https://github.com/esnet/iperf iperf
 WORKDIR iperf
 COPY build.sh $SRC/
-COPY *_fuzzer.c $SRC/
