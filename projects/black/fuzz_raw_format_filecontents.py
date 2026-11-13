@@ -16,6 +16,7 @@ import sys
 import atheris
 
 import black
+from black.parsing import InvalidInput
 
 
 def TestOneInput(data):
@@ -27,7 +28,7 @@ def TestOneInput(data):
     black.format_file_contents(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize),
                                mode=black.Mode(),
                                fast=False)
-  except black.InvalidInput:
+  except InvalidInput:
     pass
   except black.NothingChanged:
     pass
