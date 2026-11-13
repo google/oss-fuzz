@@ -15,51 +15,5 @@
 #
 ################################################################################
 
-# Build the static engine library with the OSS-Fuzz toolchain, then link the
-# in-tree libFuzzer harnesses (fuzz/) against $LIB_FUZZING_ENGINE.
-./bootstrap
-# afl-cc rewrites -fcf-protection into CFI+LTO, emitting bitcode objects GNU
-# binutils can't archive/link: drop the CET flag, archive with the llvm tools.
-ax_cv_check_cflags___fcf_protection=no \
-    ./configure --disable-shared --disable-https AR=llvm-ar RANLIB=llvm-ranlib
-make -j"$(nproc)" -C src libhttrack.la
-
-for f in charset codepage meta idna entities unescape filters url header \
-    cachendx htsparse singlefile sitemap arc bundle cookie robots savename \
-    warc; do
-    # Three targets need an extra source, as fuzz/Makefile.am lists them.
-    defs=()
-    srcs=()
-    case "$f" in
-    codepage) defs=(-DDISABLE_ICONV) srcs=(src/htscharset.c) ;;
-    cachendx | arc) defs=(-DZLIB_CONST) srcs=(src/proxy/store.c src/htsshared.c) ;;
-    esac
-
-    objs=("fuzz-$f.o")
-    # shellcheck disable=SC2086
-    $CC $CFLAGS "${defs[@]}" -DHAVE_CONFIG_H -I. -Isrc -Isrc/coucal \
-        -c "fuzz/fuzz-$f.c" -o "fuzz-$f.o"
-    for src in "${srcs[@]}"; do
-        obj="extra-$f-$(basename "$src" .c).o"
-        # shellcheck disable=SC2086
-        $CC $CFLAGS "${defs[@]}" -DHAVE_CONFIG_H -I. -Isrc -Isrc/coucal \
-            -c "$src" -o "$obj"
-        objs+=("$obj")
-    done
-    # shellcheck disable=SC2086
-    # -fuse-ld=lld: afl-clang-fast emits LLVM bitcode objects, which end up in
-    # libhttrack.a; the default GNU ld rejects them ("file format not
-    # recognized"), lld reads them directly.
-    $CXX $CXXFLAGS -fuse-ld=lld "${objs[@]}" -o "$OUT/fuzz-$f" \
-        $LIB_FUZZING_ENGINE src/.libs/libhttrack.a -lz -lpthread
-    zip -j "$OUT/fuzz-${f}_seed_corpus.zip" fuzz/corpus/"$f"/*
-done
-
-
-# libFuzzer dictionaries and per-fuzzer options ship next to the harnesses.
-for d in fuzz/fuzz-*.dict; do
-    [ -f "$d" ] && cp "$d" "$OUT/"
-done
-for o in fuzz/*.options; do
-    [ -f "$o" ] && cp "$o" "$OUT/"
-done
+# httrack keeps the build steps in its own tree, next to the list of fuzzers.
+bash fuzz/oss-fuzz-build.sh
