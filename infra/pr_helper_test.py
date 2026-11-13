@@ -247,5 +247,141 @@ class IsKnownContributorTest(unittest.TestCase):
                                                     'user@example.com'))
 
 
+class _FakeGithubHandler:
+    """Minimal stand-in for GithubHandler to drive pr_helper.main()."""
+  
+  def __init__(self, verified, email, project_yaml, previous_commit_sha):
+        self._verified = verified
+        self._email = email
+        self._project_yaml = project_yaml
+        self._previous_commit_sha = previous_commit_sha
+        self.history_checked = False
+    
+  def is_author_internal_member(self):
+        """The fake author is never an internal member."""
+        return False
+    
+  def get_pr_author(self):
+        """Returns the fake author's login."""
+        return 'someauthor'
+    
+  def get_projects_path(self):
+        """Returns a single fake project path."""
+        return ['projects/example']
+    
+  def get_author_email(self):
+        """Returns the configured (verified, email) pair."""
+        return self._verified, self._email
+    
+  def get_project_yaml(self, project_path):
+        """Returns the configured project.yaml content."""
+        del project_path  # Unused.
+        return self._project_yaml
+    
+  def has_author_modified_project(self, project_path):
+        """Records the check and returns the configured previous commit."""
+        del project_path  # Unused.
+        self.history_checked = True
+        return self._previous_commit_sha
+    
+  def get_past_contributors(self, project_path):
+        """Returns no past contributors."""
+        del project_path  # Unused.
+        return []
+    
+  def get_pull_request_number(self, commit):
+        """Returns None: the fake previous commit has no associated PR."""
+        del commit  # Unused.
+    
+
+class MainContactVerificationTest(unittest.TestCase):
+    """Verify main() only asserts contact status for verified emails.
+    
+      A PR author's email can come from the author field of the PR's first
+        commit, which is metadata set by the committer and proves nothing about
+          identity. When that unverified email happens to match a project's
+            contact list, the bot must not claim the author is the primary contact
+              or a CC, and the match must not by itself make the PR ready to merge.
+                """
+  
+  _PROJECT_YAML = {
+          'primary_contact': 'owner@example.com',
+          'vendor_ccs': [],
+          'auto_ccs': ['cc@example.com'],
+  }
+
+  def _run_main(self, handler):
+        """Runs pr_helper.main() with a fake handler, capturing save_env."""
+        saved = {}
+    
+    def fake_save_env(message, is_ready_for_merge, is_internal=False):
+            saved['message'] = message
+            saved['is_ready_for_merge'] = is_ready_for_merge
+            saved['is_internal'] = is_internal
+      
+    with mock.patch.object(pr_helper, 'GithubHandler', return_value=handler):
+            with mock.patch.object(pr_helper, 'save_env', fake_save_env):
+                      pr_helper.main()
+                  return saved
+
+  def test_verified_contact_is_asserted_and_ready(self):
+        """Verified contact match is asserted and skips the history check."""
+    handler = _FakeGithubHandler(True, 'owner@example.com', self._PROJECT_YAML,
+                                 None)
+    saved = self._run_main(handler)
+    self.assertIn('is either the primary contact', saved['message'])
+    self.assertIn('(verified)', saved['message'])
+    self.assertNotIn('could not be verified', saved['message'])
+    self.assertTrue(saved['is_ready_for_merge'])
+    self.assertFalse(handler.history_checked)
+
+  def test_unverified_contact_match_is_not_asserted(self):
+        """Unverified commit email matching primary_contact is not asserted."""
+    handler = _FakeGithubHandler(False, 'owner@example.com', self._PROJECT_YAML,
+                                 None)
+    saved = self._run_main(handler)
+    self.assertNotIn('is either the primary contact', saved['message'])
+    self.assertIn('could not be verified', saved['message'])
+    self.assertFalse(saved['is_ready_for_merge'])
+
+  def test_unverified_cc_match_is_not_asserted(self):
+        """Unverified commit email matching auto_ccs is not asserted either."""
+    handler = _FakeGithubHandler(False, 'cc@example.com', self._PROJECT_YAML,
+                                 None)
+    saved = self._run_main(handler)
+    self.assertNotIn('is either the primary contact', saved['message'])
+    self.assertIn('could not be verified', saved['message'])
+    self.assertFalse(saved['is_ready_for_merge'])
+
+  def test_unverified_match_with_history_ready_via_history_only(self):
+        """With a prior commit, readiness comes from history, not the match."""
+    handler = _FakeGithubHandler(False, 'owner@example.com', self._PROJECT_YAML,
+                                 'abc123')
+    saved = self._run_main(handler)
+    self.assertNotIn('is either the primary contact', saved['message'])
+    self.assertIn('could not be verified', saved['message'])
+    self.assertIn('has previously contributed', saved['message'])
+    self.assertTrue(saved['is_ready_for_merge'])
+
+  def test_non_contact_past_contributor_unchanged(self):
+        """A non-contact author with history keeps the previous behaviour."""
+        handler = _FakeGithubHandler(False, 'stranger@example.com',
+                                     self._PROJECT_YAML, 'abc123')
+        saved = self._run_main(handler)
+        self.assertIn('has previously contributed', saved['message'])
+        self.assertNotIn('primary contact', saved['message'])
+        self.assertNotIn('could not be verified', saved['message'])
+        self.assertTrue(saved['is_ready_for_merge'])
+
+  def test_non_contact_new_contributor_unchanged(self):
+        """A non-contact author without history is still not ready."""
+        handler = _FakeGithubHandler(False, 'stranger@example.com',
+                                     self._PROJECT_YAML, None)
+        saved = self._run_main(handler)
+        self.assertIn('is a new contributor', saved['message'])
+        self.assertNotIn('could not be verified', saved['message'])
+        self.assertFalse(saved['is_ready_for_merge'])
+
+
 if __name__ == '__main__':
   unittest.main()
