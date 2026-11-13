@@ -45,3 +45,12 @@ make -j $(nproc) fuzz-targets
 for filename in $(ls test/fuzz/*.fuzz); do
   cp -v $filename $OUT/$(echo $(basename $filename .fuzz))
 done
+
+# sys-execute target: seed corpus, dictionary and fuzzer options.
+if ls test/fuzz/seeds/sys-execute/*.bin >/dev/null 2>&1; then
+  zip -q $OUT/sys-execute_seed_corpus.zip test/fuzz/seeds/sys-execute/*.bin
+fi
+if [ -f test/fuzz/sys-execute.dict ]; then
+  cp -v test/fuzz/sys-execute.dict $OUT/sys-execute.dict
+  printf '[libfuzzer]\nmax_len = 4096\n' > $OUT/sys-execute.options
+fi
