@@ -15,18 +15,17 @@
 #
 ################################################################################
 
+CH_SRC="$SRC/ClickHouse"
+CH_BUILD="$WORK/clickhouse"
 
-mkdir -p $SRC/ClickHouse/build && cd $SRC/ClickHouse/build
 
-[ -e CMakeLists ] && rm -rf CMakeFiles
-[ -e CMakeCache.txt ] && rm -rf CMakeCache.txt
+# Number of fuzz targets built when OSS_FUZZ_CI=1.
+CI_TARGET_LIMIT=2
 
-sed -i -e '/warnings.cmake)/d' $SRC/ClickHouse/CMakeLists.txt
+mkdir -p "$CH_BUILD" && cd "$CH_BUILD"
+rm -rf "${OUT:?}"/*
 
-# It will be hard to maintain any compilation fails (if any) in two repositories.
-# Also ClickHouse won't compile without this.
-# It is very strange, because we have as many warnings as you could imagine.
-sed -i -e 's/add_warning(/no_warning(/g' $SRC/ClickHouse/CMakeLists.txt
+rm -f CMakeCache.txt
 
 # ClickHouse uses libcxx from contrib.
 # Enabling libstdc++ manually will cause duplicate symbols at linker stage.
@@ -46,12 +45,11 @@ unset LDFLAGS
 # So, this flag only helps to supress error from `protoc` built with any kind of sanitizer
 export MSAN_OPTIONS=exit_code=0
 
-printenv
 
 NUM_JOBS=$(nproc || grep -c ^processor /proc/cpuinfo)
 
-if (( $NUM_JOBS > 10 )); then
-    NUM_JOBS=$(expr $NUM_JOBS / 4)
+if (( NUM_JOBS > 10 )); then
+    NUM_JOBS=$((NUM_JOBS / 4))
 fi
 
 CLICKHOUSE_CMAKE_FLAGS=(
@@ -66,70 +64,154 @@ CLICKHOUSE_CMAKE_FLAGS=(
 )
 
 if [ "$SANITIZER" = "coverage" ]; then
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DWITH_COVERAGE=1
+    CLICKHOUSE_CMAKE_FLAGS+=("-DWITH_COVERAGE=1")
 else
-    cmake  -G Ninja $SRC/ClickHouse ${CLICKHOUSE_CMAKE_FLAGS[@]} -DSANITIZE=$SANITIZER
+    CLICKHOUSE_CMAKE_FLAGS+=("-DSANITIZE=$SANITIZER")
 fi
 
-TARGETS=$(find $SRC/ClickHouse/src $SRC/ClickHouse/programs -name '*_fuzzer.cpp' -\! -name '*gtest_*' -prune -execdir basename {} .cpp ';' | tr '\n' ' ')
+cmake -G Ninja "$CH_SRC" "${CLICKHOUSE_CMAKE_FLAGS[@]}"
 
-if [ -n "${OSS_FUZZ_CI-}" ]; then
-  # When running in CI, check the first targets only to save time and disk space
-  TARGETS=( ${TARGETS[@]:0:2} )
-fi
+# Fuzz targets are the *_fuzzer.cpp files under src and programs. Only the ones
+# the configured build actually defines are built: some are optional (for example
+# sz3_decompress_fuzzer needs the SZ3 contrib), and a missing target is not an error.
+CONFIGURED_TARGETS="$CH_BUILD/oss_fuzz_targets.txt"
+ninja -t targets all > "$CONFIGURED_TARGETS"
 
-for FUZZER_TARGET in $TARGETS
-do
-    # Skip this fuzzer because of linker errors (the size of the binary is too big)
-    if [ "$FUZZER_TARGET" = "execute_query_fuzzer" ]; then
-        continue
+TARGETS=()
+while IFS= read -r FUZZER_TARGET; do
+    if grep -Eq "^([^:]*/)?${FUZZER_TARGET}: " "$CONFIGURED_TARGETS"; then
+        TARGETS+=("$FUZZER_TARGET")
+    else
+        echo "Skipping $FUZZER_TARGET: not defined by this configuration"
     fi
-    ninja -j $NUM_JOBS $FUZZER_TARGET
+done < <(cd "$CH_SRC" && find src programs -type f -name '*_fuzzer.cpp' ! -name 'gtest_*' -exec basename {} .cpp ';' | LC_ALL=C sort -u)
+
+if [ "${OSS_FUZZ_CI-}" = "1" ]; then
+    # Explicit CI mode checks the first targets only to save time and disk space.
+    TARGETS=("${TARGETS[@]:0:$CI_TARGET_LIMIT}")
+fi
+
+if (( ${#TARGETS[@]} == 0 )); then
+    echo "error: no fuzz targets to build" >&2
+    exit 1
+fi
+
+echo "Building fuzz targets: ${TARGETS[*]}"
+
+for FUZZER_TARGET in "${TARGETS[@]}"
+do
+    ninja -j "$NUM_JOBS" "$FUZZER_TARGET"
+done
+
+# SQL files from the public test suite seed the parser fuzzers.
+SQL_CORPUS_TARGETS=" lexer_fuzzer select_parser_fuzzer create_parser_fuzzer "
+CORPUS_DIR="$CH_BUILD/oss_fuzz_corpus"
+rm -rf "$CORPUS_DIR"
+
+for FUZZER_TARGET in "${TARGETS[@]}"
+do
     # Find this binary in build directory and strip it
-    TEMP=$(find $SRC/ClickHouse/build -name $FUZZER_TARGET)
+    mapfile -t BINARIES < <(find "$CH_BUILD" -type f -name "$FUZZER_TARGET")
+    if (( ${#BINARIES[@]} != 1 )); then
+        echo "error: expected exactly one $FUZZER_TARGET binary, found ${#BINARIES[@]}: ${BINARIES[*]-}" >&2
+        exit 1
+    fi
     # We have to preserve certain symbols e.g. LLVMFuzzerTestOneInput and some sanitizer-related once to not fail build checks:
     # https://github.com/google/oss-fuzz/blob/860447a7121e344cc1627f492f67f3a23e86e6c5/infra/base-images/base-runner/bad_build_check#L173
     # https://github.com/google/oss-fuzz/blob/860447a7121e344cc1627f492f67f3a23e86e6c5/infra/base-images/base-runner/test_all.py#L92-L96
     # because of that we strip only debug symbols
-    strip --strip-debug $TEMP
+    strip --strip-debug "${BINARIES[0]}"
+    cp -v "${BINARIES[0]}" "$OUT/"
+
+    # copy out fuzzer options and the dictionaries they reference
+    OPTIONS="$CH_SRC/tests/fuzz/$FUZZER_TARGET.options"
+    if [ -f "$OPTIONS" ]; then
+        cp "$OPTIONS" "$OUT/"
+        while IFS= read -r DICT; do
+            if [ -f "$CH_SRC/tests/fuzz/$DICT" ]; then
+                cp "$CH_SRC/tests/fuzz/$DICT" "$OUT/"
+            elif [ -f "$CH_SRC/tests/fuzz/dictionaries/$DICT" ]; then
+                cp "$CH_SRC/tests/fuzz/dictionaries/$DICT" "$OUT/"
+            else
+                echo "error: $FUZZER_TARGET.options references dictionary '$DICT', found in neither tests/fuzz nor tests/fuzz/dictionaries" >&2
+                exit 1
+            fi
+        done < <(sed -n 's/^[[:space:]]*dict[[:space:]]*=[[:space:]]*\([^[:space:]#]*\).*$/\1/p' "$OPTIONS")
+    fi
+
+    # prepare the seed corpus: committed seeds first, then public SQL tests
+    CORPUS="$CORPUS_DIR/$FUZZER_TARGET"
+    mkdir -p "$CORPUS"
+    if [ -d "$CH_SRC/tests/fuzz/$FUZZER_TARGET.in" ]; then
+        cp -r "$CH_SRC/tests/fuzz/$FUZZER_TARGET.in/." "$CORPUS/"
+    fi
+    if [[ "$SQL_CORPUS_TARGETS" == *" $FUZZER_TARGET "* ]]; then
+        cp "$CH_SRC"/tests/queries/0_stateless/*.sql "$CORPUS/"
+    fi
+    if [ -n "$(find "$CORPUS" -type f -print -quit)" ]; then
+        rm -f "$OUT/${FUZZER_TARGET}_seed_corpus.zip"
+        zip -qrj "$OUT/${FUZZER_TARGET}_seed_corpus.zip" "$CORPUS"
+    fi
 done
 
-# copy out fuzzer binaries
-find $SRC/ClickHouse/build -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
-
-# copy out fuzzer options and dictionaries
-cp $SRC/ClickHouse/tests/fuzz/*.dict $OUT/
-cp $SRC/ClickHouse/tests/fuzz/*.options $OUT/
-
-# prepare corpus dirs
-mkdir -p $SRC/ClickHouse/tests/fuzz/lexer_fuzzer.in/
-mkdir -p $SRC/ClickHouse/tests/fuzz/select_parser_fuzzer.in/
-mkdir -p $SRC/ClickHouse/tests/fuzz/create_parser_fuzzer.in/
-mkdir -p $SRC/ClickHouse/tests/fuzz/execute_query_fuzzer.in/
-
-# prepare corpus
-cp $SRC/ClickHouse/tests/queries/0_stateless/*.sql $SRC/ClickHouse/tests/fuzz/lexer_fuzzer.in/
-cp $SRC/ClickHouse/tests/queries/0_stateless/*.sql $SRC/ClickHouse/tests/fuzz/select_parser_fuzzer.in/
-cp $SRC/ClickHouse/tests/queries/0_stateless/*.sql $SRC/ClickHouse/tests/fuzz/create_parser_fuzzer.in/
-cp $SRC/ClickHouse/tests/queries/0_stateless/*.sql $SRC/ClickHouse/tests/fuzz/execute_query_fuzzer.in/
-cp $SRC/ClickHouse/tests/queries/1_stateful/*.sql $SRC/ClickHouse/tests/fuzz/lexer_fuzzer.in/
-cp $SRC/ClickHouse/tests/queries/1_stateful/*.sql $SRC/ClickHouse/tests/fuzz/select_parser_fuzzer.in/
-cp $SRC/ClickHouse/tests/queries/1_stateful/*.sql $SRC/ClickHouse/tests/fuzz/create_parser_fuzzer.in/
-cp $SRC/ClickHouse/tests/queries/1_stateful/*.sql $SRC/ClickHouse/tests/fuzz/execute_query_fuzzer.in/
-
-# copy out corpus
-cd $SRC/ClickHouse/tests/fuzz
-for dir in *_fuzzer.in; do
-    fuzzer=$(basename $dir .in)
-    zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${dir}/"
-done
-
-# copy sources for code coverage if required
+# Coverage filenames are remapped from the source tree to the build tree. Stage
+# exactly the files recorded in the packaged binaries at those mapped paths;
+# generated files are already present in the build tree.
 if [ "$SANITIZER" = "coverage" ]; then
-    mkdir -p $OUT/src/ClickHouse/
-    cp -rL --parents $SRC/ClickHouse/src $OUT
-    cp -rL --parents $SRC/ClickHouse/base $OUT
+    python3 - "$CH_SRC" "$CH_BUILD" "$OUT" "${TARGETS[@]}" <<'PY'
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+source_root = Path(sys.argv[1])
+build_root = Path(sys.argv[2])
+output_root = Path(sys.argv[3])
+mapped_files = set()
+
+for target in sys.argv[4:]:
+    result = subprocess.run(
+        [
+            "llvm-cov", "export", "--empty-profile", "--summary-only",
+            str(output_root / target),
+        ],
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    report = json.loads(result.stdout)
+    for datum in report["data"]:
+        mapped_files.update(Path(entry["filename"])
+                            for entry in datum["files"])
+
+copied = 0
+for mapped_file in sorted(mapped_files):
+    try:
+        relative = mapped_file.relative_to(build_root)
+    except ValueError:
+        raise SystemExit(
+            f"error: coverage source {mapped_file} is outside {build_root}")
+
+    if ".." in relative.parts:
+        raise SystemExit(f"error: invalid coverage source path {mapped_file}")
+
+    destination = build_root / relative
+    source = source_root / relative
+    if source.is_file():
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, destination)
+        copied += 1
+    elif not destination.is_file():
+        raise SystemExit(
+            f"error: coverage source {mapped_file} is absent from both "
+            f"{build_root} and {source_root}")
+
+print(f"Staged {copied} source files for coverage")
+PY
 fi
 
 # Just check binaries size
-BINARIES_SIZE=$(find $SRC/ClickHouse/build -name '*_fuzzer' -exec du -sh '{}' ';')
+for FUZZER_TARGET in "${TARGETS[@]}"; do
+    du -sh "$OUT/$FUZZER_TARGET"
+done
