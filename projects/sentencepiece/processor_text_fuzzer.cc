@@ -15,9 +15,22 @@
 // Fuzzer that loads a valid pre-built sentencepiece model (embedded in
 // the binary as a byte array) and then fuzzes all encoding, decoding,
 // normalization, and vocabulary operations with fuzz-derived text input.
+// The embedded model is fixed; the fuzzer-controlled bytes drive the
+// text, token-id and option arguments. Beyond the basic encode/decode
+// paths, this harness also drives:
+//   * SetEncodeExtraOptions / SetDecodeExtraOptions -> ParseExtraOptions and
+//     ApplyExtraOptions (bos/eos/reverse/unk), for both the STL and the
+//     SentencePieceText proto output types.
+//   * The SentencePieceText / NBestSentencePieceText proto-returning overloads
+//     -> PopulateSentencePieceText and the proto branch of ApplyExtraOptions.
+//   * Decode() on an arbitrary id stream -> DecodeOptimized bounds,
+//     byte-fallback and error handling.
+//   * ParallelEncode -> ParallelEncodeInternal / GetChunkOfInput.
+//   * SafeIdToPiece and the single-argument Normalize() overload.
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -25,14 +38,21 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 #include "sentencepiece_processor.h"
+// SentencePieceText / NBestSentencePieceText, so the proto-returning overloads
+// (and the proto-templated ApplyExtraOptions branch) can be exercised.
+#include "sentencepiece.pb.h"
 
-// Generated at build time by: xxd -i processor_text_fuzzer_model
+// Generated at build time from a small unigram model.
 #include "embedded_model.h"
 
-static std::unique_ptr<sentencepiece::SentencePieceProcessor> g_processor;
+using sentencepiece::NBestSentencePieceText;
+using sentencepiece::SentencePieceProcessor;
+using sentencepiece::SentencePieceText;
+
+static std::unique_ptr<SentencePieceProcessor> g_processor;
 
 extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
-  g_processor = std::make_unique<sentencepiece::SentencePieceProcessor>();
+  g_processor = std::make_unique<SentencePieceProcessor>();
 
   // Load the model from the embedded byte array
   std::string model_data(
@@ -48,13 +68,64 @@ extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
   return 0;
 }
 
+// Builds a syntactically valid extra-option string ("bos:eos:reverse:unk")
+// from a bitmask, so ParseExtraOptions accepts it and the downstream
+// ApplyExtraOptions cases are reached. The individual tokens are all valid for
+// both the encode and decode option sets.
+static std::string BuildExtraOptions(uint8_t bits) {
+  static const char *kTokens[] = {"reverse", "bos", "eos", "unk"};
+  std::string out;
+  for (int i = 0; i < 4; ++i) {
+    if (bits & (1u << i)) {
+      if (!out.empty()) out.push_back(':');
+      out += kTokens[i];
+    }
+  }
+  return out;
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (!g_processor || size < 2)
     return 0;
 
   FuzzedDataProvider fdp(data, size);
-  uint8_t ops = fdp.ConsumeIntegral<uint8_t>();
-  std::string text = fdp.ConsumeRemainingBytesAsString();
+  const uint8_t ops = fdp.ConsumeIntegral<uint8_t>();
+  const uint8_t eopt = fdp.ConsumeIntegral<uint8_t>();
+  const uint8_t dopt = fdp.ConsumeIntegral<uint8_t>();
+  const uint8_t ctrl = fdp.ConsumeIntegral<uint8_t>();
+
+  // === Extra options ===
+  // Set both encode and decode extra options on every input (possibly to the
+  // empty string, which clears them) so the per-input behaviour stays
+  // deterministic even though the processor object is reused across inputs.
+  // The high bit routes a raw fuzzer-controlled token into the parser;
+  // otherwise a structurally-valid option string is used.
+  if (eopt & 0x80) {
+    const std::string raw = fdp.ConsumeBytesAsString(
+        fdp.ConsumeIntegralInRange<size_t>(0, 8));
+    g_processor->SetEncodeExtraOptions(raw);
+  } else {
+    g_processor->SetEncodeExtraOptions(BuildExtraOptions(eopt));
+  }
+  if (dopt & 0x80) {
+    const std::string raw = fdp.ConsumeBytesAsString(
+        fdp.ConsumeIntegralInRange<size_t>(0, 8));
+    g_processor->SetDecodeExtraOptions(raw);
+  } else {
+    g_processor->SetDecodeExtraOptions(BuildExtraOptions(dopt));
+  }
+
+  // An arbitrary token-id stream for Decode() fuzzing. These ids are
+  // intentionally unconstrained (negative / out-of-range / byte ids) to
+  // exercise DecodeOptimized's bounds and byte-fallback handling.
+  const size_t nids = fdp.ConsumeIntegralInRange<size_t>(0, 32);
+  std::vector<int> fuzz_ids;
+  fuzz_ids.reserve(nids);
+  for (size_t i = 0; i < nids; ++i) {
+    fuzz_ids.push_back(fdp.ConsumeIntegral<int>());
+  }
+
+  const std::string text = fdp.ConsumeRemainingBytesAsString();
 
   // === Core encoding operations ===
   if (ops & 0x01) {
@@ -124,6 +195,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     std::string normalized2;
     std::vector<size_t> norm_to_orig;
     g_processor->Normalize(text, &normalized2, &norm_to_orig);
+
+    // Single-argument convenience overload.
+    const std::string normalized3 = g_processor->Normalize(text);
+    (void)normalized3.size();
   }
 
   // === Vocabulary operations ===
@@ -143,19 +218,80 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
           g_processor->IsControl(id);
           g_processor->IsUnused(id);
           g_processor->IsByte(id);
+          // SafeIdToPiece on an in-range id.
+          std::string safe;
+          g_processor->SafeIdToPiece(id, &safe);
         }
       }
     }
+    // SafeIdToPiece on a fuzzer-chosen (possibly out-of-range) id.
+    if (!fuzz_ids.empty()) {
+      std::string safe;
+      g_processor->SafeIdToPiece(fuzz_ids[0], &safe);
+    }
   }
 
-  // Upstream removed CalculateEntropy(). Exercise the sampling path it used
-  // to sit on instead, so this branch still does work.
   if (ops & 0x80) {
     if (text.size() > 0 && text.size() < 256) {
       auto sampled_pieces = g_processor->SampleEncodeAsPieces(text, 8, 0.5);
       (void)sampled_pieces;
     }
   }
+
+  // === Decode of an arbitrary id stream ===
+  // Feed arbitrary ids straight to Decode so DecodeOptimized's range checks,
+  // byte-fallback reconstruction and the decode-extra-options copy path are
+  // all exercised.
+  {
+    std::string decoded;
+    g_processor->Decode(fuzz_ids, &decoded);
+  }
+
+  // === Proto-returning overloads ===
+  // These drive PopulateSentencePieceText (piece surfaces, begin/end offsets,
+  // byte handling) and the SentencePieceText branch of ApplyExtraOptions, which
+  // the vector-returning overloads do not reach.
+  {
+    SentencePieceText spt;
+    if (g_processor->Encode(text, &spt).ok()) {
+      // The proto Decode overloads take Span<const absl::string_view> or
+      // Span<const int>; feed the ids back to reach Decode(..., spt) ->
+      // ApplyExtraOptions<SentencePieceText> on the decode side.
+      std::vector<int> proto_ids;
+      proto_ids.reserve(spt.pieces_size());
+      for (const auto &sp : spt.pieces()) {
+        proto_ids.push_back(sp.id());
+      }
+      SentencePieceText dpt;
+      g_processor->Decode(proto_ids, &dpt);
+    }
+
+    NBestSentencePieceText nbest_spt;
+    g_processor->NBestEncode(text, 3, &nbest_spt);
+
+    SentencePieceText sample_spt;
+    g_processor->SampleEncode(text, -1, 0.3, &sample_spt);
+  }
+
+  // === Parallel encode ===
+  // Exercises ParallelEncodeInternal and GetChunkOfInput. Gated behind a bit so
+  // the per-input ThreadPool construction does not dominate runtime, and kept
+  // single-threaded for determinism.
+  if (ctrl & 0x01) {
+    const int chunk_len = fdp.remaining_bytes() == 0
+                              ? 4
+                              : static_cast<int>((ctrl >> 1) & 0x3f) + 1;
+    sentencepiece::ThreadPool pool(1);
+    std::vector<std::string> ppieces;
+    g_processor->ParallelEncode(text, chunk_len, pool, &ppieces);
+    std::vector<int> pids;
+    g_processor->ParallelEncode(text, chunk_len, pool, &pids);
+  }
+
+  // Reset options to empty so a subsequent input that takes the "clear" branch
+  // is not accidentally influenced by this input's state.
+  g_processor->SetEncodeExtraOptions("");
+  g_processor->SetDecodeExtraOptions("");
 
   return 0;
 }
