@@ -137,7 +137,7 @@ int test_dict_inflate(unsigned char *compr, size_t comprLen) {
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
   size_t comprLen = 0;
-  uint8_t *compr;
+  uint8_t *compr = NULL;
 
   /* Discard inputs larger than 100Kb. */
   static size_t kMaxSize = 100 * 1024;
@@ -156,7 +156,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
     dictionaryLen = dataLen;
 
   test_dict_deflate(&compr, &comprLen);
-  test_dict_inflate(compr, comprLen);
+  if (compr != NULL)
+    test_dict_inflate(compr, comprLen);
 
   free(compr);
 
