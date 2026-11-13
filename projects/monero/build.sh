@@ -55,6 +55,7 @@ then
     signature_fuzz_tests \
     cold-outputs_fuzz_tests \
     cold-transaction_fuzz_tests \
+    wallet-scan_fuzz_tests \
   "
 fi
 
