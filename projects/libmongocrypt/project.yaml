@@ -17,6 +17,9 @@
 homepage: "https://github.com/mongodb/libmongocrypt"
 language: c
 primary_contact: "mongo-c-driver-ossfuzz@mongodb.com"
+auto_ccs:
+  - "kevin.albertson@mongodb.com"
+  - "adrian.dole@mongodb.com"
 main_repo: "https://github.com/mongodb/libmongocrypt.git"
 
 sanitizers:
