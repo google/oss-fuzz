@@ -35,3 +35,12 @@ make -j$(nproc)
 
 # Copy the fuzzer binaries to the output directory.
 cp *_fuzzer ${OUT}
+
+# Prepare corpus
+python3 ossfuzz/generate_seeds_img_vs.py --outdir test_data_img_vs
+python3 ossfuzz/generate_seeds_ufs_yaffs.py --outdir test_data_ffs
+python3 ossfuzz/generate_seeds_auto_support.py --outdir test_data_autosup
+
+# Move corpus/dict to $OUT
+cp test_data_*/*_seed_corpus.zip ${OUT}/
+cp ossfuzz/*.dict ${OUT}/
