@@ -1,0 +1,9 @@
+homepage: "https://github.com/wzaldivar/mdshards"
+main_repo: "https://github.com/wzaldivar/mdshards"
+language: python
+primary_contact: "walber.zaldivar@gmail.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
