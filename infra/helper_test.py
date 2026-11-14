@@ -45,6 +45,36 @@ class ShellTest(unittest.TestCase):
     self.assertTrue(result)
 
 
+class BuildImageTest(unittest.TestCase):
+  """Tests for the build_image command."""
+
+  @mock.patch('helper.common_utils.build_image_impl')
+  @mock.patch('helper.raw_input', side_effect=EOFError)
+  def test_no_input_reports_pull_flags(self, _, mock_build_image_impl):
+    """A closed stdin produces a useful error without invoking Docker."""
+    args = helper.parse_args(helper.get_parser(), ['build_image', 'zlib'])
+
+    with self.assertLogs(helper.logger, level='ERROR') as logs:
+      self.assertFalse(helper.build_image(args))
+
+    self.assertIn('--pull or --no-pull', logs.output[0])
+    mock_build_image_impl.assert_not_called()
+
+  @mock.patch('helper.common_utils.build_image_impl', return_value=True)
+  @mock.patch('helper.raw_input',
+              side_effect=AssertionError('unexpected prompt'))
+  def test_pull_flags_do_not_prompt(self, mock_input, mock_build_image_impl):
+    """Explicit pull decisions work without an interactive stdin."""
+    for flag, expected_pull in (('--pull', True), ('--no-pull', False)):
+      with self.subTest(flag=flag):
+        args = helper.parse_args(helper.get_parser(),
+                                 ['build_image', 'zlib', flag])
+        self.assertTrue(helper.build_image(args))
+        self.assertEqual(mock_build_image_impl.call_args.kwargs['pull'],
+                         expected_pull)
+    mock_input.assert_not_called()
+
+
 class BuildImageImplTest(unittest.TestCase):
   """Tests for build_image_impl."""
 
