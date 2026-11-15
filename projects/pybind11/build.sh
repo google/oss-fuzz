@@ -22,11 +22,11 @@ python3 -m pip install .
 
 PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
 cp /usr/local/lib/libpython${PYTHON_VERSION}.so.1.0 $OUT/
-for f in $SRC/*_fuzzer.cc; do
+for f in $SRC/pybind11/tests/fuzz/*_fuzzer.cc; do
   fuzzer=$(basename "$f" _fuzzer.cc)
   $CXX $CXXFLAGS \
     -I$SRC/pybind11/include -isystem /usr/local/include/python${PYTHON_VERSION} \
-    $SRC/${fuzzer}_fuzzer.cc -o $OUT/${fuzzer}_fuzzer \
+    "$f" -o $OUT/${fuzzer}_fuzzer \
     /usr/local/lib/libpython${PYTHON_VERSION}.so.1.0 \
     $LIB_FUZZING_ENGINE -lpthread
   patchelf --set-rpath '$ORIGIN/'  $OUT/${fuzzer}_fuzzer
