@@ -3,6 +3,9 @@ fuzzing_engines:
 homepage: https://github.com/apache/airflow
 language: python
 main_repo: https://github.com/apache/airflow
+primary_contact: security@airflow.apache.org
+auto_ccs:
+- jarek@potiuk.com
 sanitizers:
 - address
 vendor_ccs:
