@@ -14,6 +14,8 @@
 #
 ################################################################################
 """Tests for gcb.py."""
+
+# Controlled trial-build canary; this comment intentionally changes no runtime.
 import unittest
 from unittest import mock
 
