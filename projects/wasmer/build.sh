@@ -15,20 +15,20 @@
 #
 ################################################################################
 
-export LLVM_SYS_211_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
+export LLVM_SYS_231_PREFIX=$($SRC/.llvm/bin/llvm-config --prefix)
 
 # Needed for coverage to work.
 nightly="+$RUSTUP_TOOLCHAIN"
 
-cargo $nightly fuzz build universal_cranelift --features=universal,cranelift -O
-cargo $nightly fuzz build universal_llvm --features=universal,llvm -O
-cargo $nightly fuzz build universal_singlepass --features=universal,singlepass -O
-cargo $nightly fuzz build metering --features=universal,cranelift -O
-cargo $nightly fuzz build deterministic --features=universal,cranelift,llvm,singlepass -O
+cargo $nightly fuzz build cranelift --features=cranelift,sanitizer -O
+cargo $nightly fuzz build llvm --features=llvm,sanitizer -O
+cargo $nightly fuzz build singlepass --features=singlepass,sanitizer -O
+cargo $nightly fuzz build metering --features=cranelift,sanitizer -O
+cargo $nightly fuzz build deterministic --features=cranelift,llvm,singlepass,sanitizer -O
 
-fuzz_targets="universal_cranelift \
-  universal_llvm \
-  universal_singlepass \
+fuzz_targets="cranelift \
+  llvm \
+  singlepass \
   metering \
   deterministic"
 fuzz_target_output_dir=target/x86_64-unknown-linux-gnu/release
