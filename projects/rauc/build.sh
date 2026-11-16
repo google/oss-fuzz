@@ -46,3 +46,8 @@ for CORPUS in $(find fuzz -type f -name "*.corpus"); do
   BASENAME=${CORPUS##*/}
   zip $OUT/${BASENAME%%.*}_seed_corpus.zip . -ws -r -i@$CORPUS
 done
+
+# signature_fuzzer loads the in-repo test keyring at runtime; make it
+# available next to the compiled fuzzers (added by rauc-signature pair)
+mkdir -p $OUT/test
+cp -r test/openssl-ca $OUT/test/openssl-ca
