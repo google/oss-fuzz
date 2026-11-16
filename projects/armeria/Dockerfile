@@ -23,6 +23,6 @@ RUN mkdir zulu25 && \
 
 RUN git clone --depth 1 https://github.com/line/armeria armeria
 
-COPY *.sh *.gradle *.java $SRC/
+COPY build.sh $SRC/
 
 WORKDIR $SRC/armeria
