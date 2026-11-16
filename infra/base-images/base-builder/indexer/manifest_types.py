@@ -209,6 +209,13 @@ class CommandLineBinaryConfig(BinaryConfig):
   strict_flag_check: bool = False
   # The sanitizer/instrumentation kind of the binary.
   instrumentation_kind: InstrumentationKind = InstrumentationKind.ASAN
+  # Alternative argument lists for the binary, keyed by mode name. A reproducer
+  # may choose one of them to be used instead of `binary_args`. The same
+  # placeholders work in them as in `binary_args`.
+  modes: dict[str, list[str]] = dataclasses.field(default_factory=dict)
+  # The file extensions, without the dot, that a reproducer may give to the
+  # input file, such as `["pdf", "xps"]`. Empty if it may not choose one.
+  input_extensions: list[str] = dataclasses.field(default_factory=list)
 
   @property
   def uses_stdin(self) -> bool:
@@ -234,6 +241,8 @@ class CommandLineBinaryConfig(BinaryConfig):
             "filter_compile_commands", True
         ),
         strict_flag_check=config_dict.get("strict_flag_check", False),
+        modes=config_dict.get("modes", {}),
+        input_extensions=config_dict.get("input_extensions", []),
         instrumentation_kind=InstrumentationKind(
             config_dict.get("instrumentation_kind", InstrumentationKind.ASAN)
         ),
