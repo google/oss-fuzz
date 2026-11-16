@@ -45,7 +45,12 @@ zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
 zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
 zip -r fuzz/fuzz_client_seed_corpus.zip fuzz/corpuses/client
 zip -r fuzz/fuzz_server_seed_corpus.zip fuzz/corpuses/server
+
+python3 fuzz/generate_pkcs12_seeds.py --out fuzz/corpuses/pkcs12
+zip -r fuzz/fuzz_pkcs12_seed_corpus.zip fuzz/corpuses/pkcs12
+
 cd fuzz
+
 # export other associated stuff
 cp *.options $OUT/
 cp fuzz_*_seed_corpus.zip $OUT/
