@@ -1,12 +1,13 @@
 homepage: "https://icalendar.readthedocs.io/en/latest/"
 language: python
-primary_contact: "johannes@raggam.co.at"
+primary_contact: "niccokunzmann@googlemail.com"
 auto_ccs: 
   - "ennamarie19@gmail.com"
-  - "niccokunzmann@googlemail.com"
+  - "johannes@raggam.co.at"
+  - "sashankbhamidi@gmail.com"
 fuzzing_engines: 
   - libfuzzer
 sanitizers: 
   - address
   - undefined
-main_repo: "https://github.com/collective/icalendar.git"
+main_repo: "https://github.com/PyCalendar/icalendar.git"
