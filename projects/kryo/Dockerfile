@@ -22,6 +22,12 @@ RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-
 
 ENV MVN $SRC/maven/apache-maven-3.9.9/bin/mvn
 
+# Kryo 6 needs JDK 24+ to build, its classes run on Java 17. Kryo 5 builds with it too.
+RUN curl -L https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_x64_linux_hotspot_25.0.4.1_1.tar.gz -o jdk.tar.gz && \
+    mkdir -p $SRC/jdk25 && \
+    tar -xzf jdk.tar.gz -C $SRC/jdk25 --strip-components=1 && \
+    rm -rf jdk.tar.gz
+
 RUN git clone --depth 1 https://github.com/EsotericSoftware/kryo
 
 COPY build.sh $SRC/

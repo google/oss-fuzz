@@ -1,0 +1,29 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+fuzz_engine_link_args = get_option('fuzzing_engine').split()
+
+executable(
+    'rde_fuzz',
+    ['rde_fuzz.cpp', '../src/main.cpp'],
+    conf_h,
+    include_directories: [root_inc, bios_bmc_smm_error_logger_inc],
+    implicit_include_directories: false,
+    dependencies: [rde_dep, bios_bmc_smm_error_logger_dep],
+    cpp_args: ['-DBIOS_BMC_FUZZING'],
+    link_args: fuzz_engine_link_args,
+    install: true,
+)

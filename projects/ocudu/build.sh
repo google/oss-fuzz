@@ -15,11 +15,6 @@
 #
 ################################################################################
 
-# Regenerate the seed corpora from the project's known-good/known-bad unit
-# test vectors (tests/fuzz/{ofh,ngap}/gen_corpus.py). No build dependencies.
-python3 tests/fuzz/ofh/gen_corpus.py
-python3 tests/fuzz/ngap/gen_corpus.py
-
 # Build MbedTLS as a static library with the sanitizer flags of this build, so
 # that MSan sees the memory it writes (see Dockerfile). FindMbedTLS.cmake picks
 # it up through $MBEDTLS_DIR.
@@ -98,11 +93,8 @@ for fuzzer in "$OUT"/*_fuzzer; do
     fi
 done
 
-# Package the seed corpora. ngap_cu_cp_fuzzer exercises the same NGAP PDU
-# dispatch path as ngap_pdu_decoder_fuzzer, so it reuses the same corpus
-# (see tests/fuzz/README.md).
-zip -j "$OUT/ofh_uplane_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ofh/corpus/uplane/*
-zip -j "$OUT/ofh_ecpri_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ofh/corpus/ecpri/*
-zip -j "$OUT/ofh_vlan_frame_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ofh/corpus/vlan/*
-zip -j "$OUT/ngap_pdu_decoder_fuzzer_seed_corpus.zip" tests/fuzz/ngap/corpus/ngap/*
-zip -j "$OUT/ngap_cu_cp_fuzzer_seed_corpus.zip" tests/fuzz/ngap/corpus/ngap/*
+# Package the seed corpora, one <fuzzer>_seed_corpus.zip per fuzz target, from
+# the project's known-good/known-bad unit test vectors. Each layer defines its
+# seeds in tests/fuzz/<layer>/seeds.py, so this needs no update when a new
+# harness is added upstream.
+python3 tests/fuzz/gen_corpus.py tests/fuzz/*/seeds.py --zip-dir "$OUT"

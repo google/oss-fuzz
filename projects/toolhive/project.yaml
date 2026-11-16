@@ -1,0 +1,11 @@
+homepage: "https://docs.stacklok.com/toolhive/"
+main_repo: "https://github.com/stacklok/toolhive"
+language: go
+primary_contact: "radoslav@stacklok.com"
+auto_ccs:
+  - "security@stacklok.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+base_os_version: ubuntu-24-04
