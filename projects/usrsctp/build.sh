@@ -19,9 +19,9 @@ cmake -Dsctp_build_programs=0 -Dsctp_debug=0 -Dsctp_invariants=1 -Dsctp_build_fu
 make -j$(nproc)
 cd fuzzer
 
-TARGETS="fuzzer_connect fuzzer_listen fuzzer_fragment"
+TARGETS="fuzzer_connect fuzzer_listen fuzzer_fragment fuzzer_socket_options"
 
-CORPUS="CORPUS_CONNECT CORPUS_LISTEN CORPUS_FRAGMENT"
+CORPUS="CORPUS_CONNECT CORPUS_LISTEN CORPUS_FRAGMENT CORPUS_SOCKET_OPTIONS"
 
 while [ -n "$TARGETS" ]
 do
@@ -36,4 +36,7 @@ do
 
         zip -jr ${target}_seed_corpus.zip ${corpus}/
         cp ${target}_seed_corpus.zip $OUT/
+        if [ -f "${target}.dict" ]; then
+                cp "${target}.dict" $OUT/
+        fi
 done
