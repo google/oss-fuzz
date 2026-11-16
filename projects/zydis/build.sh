@@ -73,9 +73,18 @@ function build_fuzzer() {
 build_fuzzer "ZydisFuzzDecoder.c"    350
 build_fuzzer "ZydisFuzzEncoder.c"    450
 build_fuzzer "ZydisFuzzReEncoding.c" 100
+build_fuzzer "ZydisFuzzFormatter.c"  350
 
 #
 # Place fuzzing corpora where they belong.
 #
 
 cp ${SRC}/Zydis*_seed_corpus.zip ${OUT}
+
+#
+# Generate the formatter fuzzer seed corpus from the upstream test cases.
+#
+
+python3 ../tools/gen_formatter_seeds.py ../tests/cases ../include \
+    "${OUT}/ZydisFuzzFormatter_seed_corpus.zip"
+
