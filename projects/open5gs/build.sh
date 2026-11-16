@@ -43,7 +43,12 @@ ninja -C builddir -k 0 \
     tests/fuzzing/sbi_nf_profile_fuzz \
     tests/fuzzing/sbi_sm_context_fuzz \
     tests/fuzzing/sbi_openapi_model_fuzz \
-    tests/fuzzing/sbi_request_fuzz
+    tests/fuzzing/sbi_request_fuzz \
+    tests/fuzzing/crypt_kdf_fuzz \
+    tests/fuzzing/gtp_xact_fuzz \
+    tests/fuzzing/nnrf_handler_fuzz \
+    tests/fuzzing/pfcp_session_fuzz \
+    tests/fuzzing/sbi_openapi_extra_fuzz
 
 cp builddir/tests/fuzzing/gtp_message_fuzz $OUT/gtp_message_fuzz
 cp builddir/tests/fuzzing/gtpu_header_fuzz $OUT/gtpu_header_fuzz
@@ -53,6 +58,12 @@ cp builddir/tests/fuzzing/s1ap_message_fuzz $OUT/s1ap_message_fuzz
 cp builddir/tests/fuzzing/pfcp_message_fuzz $OUT/pfcp_message_fuzz
 cp builddir/tests/fuzzing/pfcp_packet_match_fuzz $OUT/pfcp_packet_match_fuzz
 cp builddir/tests/fuzzing/nas_5gs_message_fuzz $OUT/nas_5gs_message_fuzz
+cp builddir/tests/fuzzing/crypt_kdf_fuzz $OUT/crypt_kdf_fuzz
+cp builddir/tests/fuzzing/gtp_xact_fuzz $OUT/gtp_xact_fuzz
+cp builddir/tests/fuzzing/pfcp_session_fuzz $OUT/pfcp_session_fuzz
+cp tests/fuzzing/pfcp_message_fuzz_seed_corpus.zip $OUT/pfcp_session_fuzz_seed_corpus.zip
+cp tests/fuzzing/gtp_message_fuzz_seed_corpus.zip $OUT/gtp_xact_fuzz_seed_corpus.zip
+cp tests/fuzzing/crypt_kdf_fuzz_seed_corpus.zip $OUT/
 
 mkdir -p $OUT/lib/
 cp /lib/x86_64-linux-gnu/libtalloc.so* $OUT/lib/
@@ -69,8 +80,14 @@ if [ "$SANITIZER" != "memory" ]; then
     cp builddir/tests/fuzzing/sbi_sm_context_fuzz $OUT/sbi_sm_context_fuzz
     cp builddir/tests/fuzzing/sbi_openapi_model_fuzz $OUT/sbi_openapi_model_fuzz
     cp builddir/tests/fuzzing/sbi_request_fuzz $OUT/sbi_request_fuzz
-    for fuzzer in sbi_nf_profile_fuzz sbi_sm_context_fuzz sbi_openapi_model_fuzz sbi_request_fuzz;
-    do
+    cp builddir/tests/fuzzing/sbi_openapi_extra_fuzz $OUT/sbi_openapi_extra_fuzz
+    cp tests/fuzzing/sbi_openapi_extra_fuzz_seed_corpus.zip $OUT/
+    cp tests/fuzzing/sbi_openapi_extra_fuzz.dict $OUT/
+    cp builddir/tests/fuzzing/nnrf_handler_fuzz $OUT/nnrf_handler_fuzz
+    cp tests/fuzzing/nnrf_handler_fuzz_seed_corpus.zip $OUT/
+    cp tests/fuzzing/nnrf_handler_fuzz.dict $OUT/
+    for fuzzer in sbi_nf_profile_fuzz sbi_sm_context_fuzz sbi_openapi_model_fuzz \
+     sbi_request_fuzz sbi_openapi_extra_fuzz nnrf_handler_fuzz ; do
         ldd "$OUT/$fuzzer" 2>/dev/null | awk '/=> \//{print $3}'
     done | grep -Ev '/(ld-linux|libc|libm|libdl|libpthread|librt|libstdc\+\+|libgcc_s)\.' \
      | grep -v "$OUT/" | sort -u \
