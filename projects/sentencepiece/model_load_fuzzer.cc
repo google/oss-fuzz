@@ -18,11 +18,36 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 #include <fuzzer/FuzzedDataProvider.h>
 #include "sentencepiece_processor.h"
+
+// Writes `model_data` to a temporary file and loads it through the file-based
+// Load() entry point, which exercises src/filesystem.cc (PosixReadableFile /
+// ReadAll) and io::LoadModelProto. The in-memory LoadFromSerializedProto path
+// below does not go through the filesystem layer.
+static void ExerciseFileLoad(const std::string &model_data) {
+  char path[] = "/tmp/spm_model_fuzz_XXXXXX";
+  const int fd = mkstemp(path);
+  if (fd < 0)
+    return;
+  if (!model_data.empty()) {
+    const ssize_t written = write(fd, model_data.data(), model_data.size());
+    (void)written;
+  }
+  close(fd);
+
+  sentencepiece::SentencePieceProcessor file_processor;
+  // Return value intentionally ignored; a successful load is further exercised
+  // by the in-memory processor below.
+  file_processor.Load(path);
+
+  unlink(path);
+}
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 4)
@@ -33,6 +58,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // Split data: most goes to model, some to test text
   std::string model_data = fdp.ConsumeRandomLengthString(size);
   std::string test_text = fdp.ConsumeRemainingBytesAsString();
+
+  // Exercise the on-disk loading path (filesystem.cc + io::LoadModelProto).
+  ExerciseFileLoad(model_data);
 
   sentencepiece::SentencePieceProcessor processor;
 
