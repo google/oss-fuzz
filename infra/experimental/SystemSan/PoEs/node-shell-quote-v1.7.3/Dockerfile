@@ -22,7 +22,9 @@ RUN apt update && \
   npm && \
   git clone \
     --depth 1 \
-    https://github.com/substack/node-shell-quote.git && \
+    --branch v1.7.3 \
+    https://github.com/ljharb/shell-quote.git \
+    node-shell-quote && \
   npm config set @gitlab-org:registry \
     https://gitlab.com/api/v4/packages/npm/
 
