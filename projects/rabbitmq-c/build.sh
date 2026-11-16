@@ -36,8 +36,11 @@ cp fuzz/fuzz_handle_input $OUT/fuzz_handle_input
 cp fuzz/fuzz_properties_decode $OUT/fuzz_properties_decode
 cp fuzz/fuzz_codec $OUT/fuzz_codec
 cp fuzz/fuzz_read_message $OUT/fuzz_read_message
+cp fuzz/fuzz_client $OUT/fuzz_client
 popd
 
+zip -j ${OUT}/fuzz_client_seed_corpus.zip fuzz/input/fuzz_client_rpc.raw fuzz/input/fuzz_client_delivery.raw fuzz/input/fuzz_client_get.raw fuzz/input/fuzz_client_get_empty.raw fuzz/input/fuzz_client_publish.raw fuzz/input/fuzz_client_handshake_only.raw
+cp fuzz/fuzz_client.dict $OUT/fuzz_client.dict
 zip -j ${OUT}/fuzz_url_seed_corpus.zip fuzz/input/fuzz_url.raw
 zip -j ${OUT}/fuzz_table_seed_corpus.zip fuzz/input/fuzz_table.raw
 zip -j ${OUT}/fuzz_server_seed_corpus.zip fuzz/input/fuzz_server.raw
