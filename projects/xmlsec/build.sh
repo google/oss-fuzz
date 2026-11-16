@@ -76,6 +76,24 @@ done
 cp $SRC/xmlsec/apps/oss-fuzz/config/*.options $OUT/
 wget -O $OUT/xml.dict https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/xml.dict
 
+# Seed corpus for the keyvalue fuzzer
+if ls $SRC/xmlsec/apps/oss-fuzz/corpus/xmlsec_keyvalue/*.seed >/dev/null 2>&1; then
+    zip -j $OUT/xmlsec_keyvalue_fuzzer_seed_corpus.zip \
+        $SRC/xmlsec/apps/oss-fuzz/corpus/xmlsec_keyvalue/*.seed
+fi
+if [ -f $SRC/xmlsec/apps/oss-fuzz/config/xmlsec_keyvalue_fuzzer.dict ]; then
+    cp $SRC/xmlsec/apps/oss-fuzz/config/xmlsec_keyvalue_fuzzer.dict $OUT/
+fi
+
+# Seed corpus for the x509 CRL fuzzer
+if ls $SRC/xmlsec/apps/oss-fuzz/corpus/xmlsec_x509crl/*.seed >/dev/null 2>&1; then
+    zip -j $OUT/xmlsec_x509crl_fuzzer_seed_corpus.zip \
+        $SRC/xmlsec/apps/oss-fuzz/corpus/xmlsec_x509crl/*.seed
+fi
+if [ -f $SRC/xmlsec/apps/oss-fuzz/config/xmlsec_x509crl_fuzzer.dict ]; then
+    cp $SRC/xmlsec/apps/oss-fuzz/config/xmlsec_x509crl_fuzzer.dict $OUT/
+fi
+
 # Seed corpus for the DSig verification fuzzer
 zip -j $OUT/xmlsec_dsig_verify_fuzzer_seed_corpus.zip \
     $SRC/xmlsec/tests/phaos-xmldsig-three/signature*.xml \
