@@ -25,7 +25,14 @@ cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release \
     -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON \
     -DLIB_PROTO_MUTATOR_EXAMPLES_USE_LATEST=ON \
     -DLIB_PROTO_MUTATOR_FUZZER_LIBRARIES=FuzzingEngine
-ninja libxml2_example expat_example
+ninja libxml2_example expat_example depth_guard_fuzzer \
+    engine_any_fuzzer engine_types_fuzzer \
+    macro_drivers_fuzzer utf8_fix_fuzzer
 cp -f examples/libxml2/libxml2_example $OUT/
 cp -f examples/expat/expat_example $OUT/
+cp -f examples/depth_guard/depth_guard_fuzzer $OUT/
+cp -f examples/utf8_fix/utf8_fix_fuzzer $OUT/
+cp -f examples/engine_any/engine_any_fuzzer $OUT/
+cp -f examples/engine_types/engine_types_fuzzer $OUT/
+cp -f examples/macro_drivers/macro_drivers_fuzzer $OUT/
 popd
