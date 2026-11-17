@@ -54,9 +54,14 @@ autoreconf -vfi
 export CFLAGS="$CFLAGS -I$XMLSEC_DEPS_PATH/include"
 export CXXFLAGS="$CXXFLAGS -I$XMLSEC_DEPS_PATH/include"
 
+# Upstream --enable-hardening (default since 2026-09-30) appends
+# -fcf-protection=full. afl-clang-fast then emits LLVM bitcode instead of
+# ELF, and the shared link fails with "file format not recognized".
+# Hardening is not useful under the fuzzing sanitizers; disable it.
 ./configure \
   --enable-static-linking \
   --enable-development \
+  --disable-hardening \
   --with-libxml="$XMLSEC_DEPS_PATH" \
   --with-libxslt="$XMLSEC_DEPS_PATH"
 make -j$(nproc) clean
