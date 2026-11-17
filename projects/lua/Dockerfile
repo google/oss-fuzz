@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update
 RUN git clone https://github.com/ligurio/lunapark testdir
 WORKDIR $SRC/testdir
 
