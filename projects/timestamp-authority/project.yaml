@@ -7,7 +7,7 @@ auto_ccs:
   - bcallaway@sigstore.dev
   - kommendorkapten@sigstore.dev
   - santiagotorres@sigstore.dev
-  - malancas@sigstore.dev
+  - malancas@github.com
 language: go
 fuzzing_engines:
   - libfuzzer
