@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for github_actions."""
+import io
 import os
 import shutil
 import sys
@@ -225,6 +226,56 @@ class GithubActionsFilestoreTest(unittest.TestCase):
           os.path.exists(
               os.path.join(artifact_download_dst_dir,
                            os.path.basename(self.testcase))))
+
+  def _build_single_entry_tar(self, archive_path, member_name, sym_target=None):
+    """Writes a single-member tar archive to |archive_path| for testing."""
+    with tarfile.open(archive_path, 'w') as tar_handle:
+      member = tarfile.TarInfo(name=member_name)
+      if sym_target is not None:
+        member.type = tarfile.SYMTYPE
+        member.linkname = sym_target
+        tar_handle.addfile(member)
+        return
+      payload = b'test-payload'
+      member.size = len(payload)
+      tar_handle.addfile(member, io.BytesIO(payload))
+
+  @mock.patch('filestore.github_actions.GithubActionsFilestore._find_artifact')
+  @mock.patch('http_utils.download_and_unpack_zip')
+  def test_download_artifact_rejects_unsafe_tar_members(
+      self, mock_download_and_unpack_zip, mock_find_artifact):
+    """Tests that _download_artifact rejects path traversal, absolute paths,
+    and external symlinks."""
+    mock_find_artifact.return_value = {
+        'expired': False,
+        'name': 'corpus',
+        'archive_download_url': 'http://example.com/download',
+    }
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+      outside_canary = os.path.join(temp_dir, 'escaped.txt')
+      unsafe_cases = [
+          ('relative_traversal', '../escaped.txt', None),
+          ('absolute_member', outside_canary, None),
+          ('external_symlink', 'escape_link', outside_canary),
+      ]
+      for case_name, member_name, sym_target in unsafe_cases:
+        with self.subTest(case=case_name):
+          archive_path = os.path.join(temp_dir, 'cifuzz-corpus.tar')
+          self._build_single_entry_tar(archive_path, member_name, sym_target)
+          dst_dir = os.path.join(temp_dir, f'dst_{case_name}')
+          os.mkdir(dst_dir)
+
+          def copy_tar(_, download_temp_dir, headers=None, src=archive_path):
+            del headers
+            shutil.copy(src,
+                        os.path.join(download_temp_dir, os.path.basename(src)))
+            return True
+
+          mock_download_and_unpack_zip.side_effect = copy_tar
+          store = github_actions.GithubActionsFilestore(self.config)
+          self.assertFalse(store._download_artifact('corpus', dst_dir))
+          self.assertFalse(os.path.exists(outside_canary))
 
   @mock.patch('filestore.github_actions.github_api.list_artifacts')
   def test_find_artifact(self, mock_list_artifacts):
