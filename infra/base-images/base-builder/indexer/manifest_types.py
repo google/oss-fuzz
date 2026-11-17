@@ -52,6 +52,8 @@ LIB_MOUNT_PATH_V1 = manifest_constants.LIB_MOUNT_PATH_V1
 INPUT_FILE = manifest_constants.INPUT_FILE
 OUTPUT_FILE = manifest_constants.OUTPUT_FILE
 DYNAMIC_ARGS = manifest_constants.DYNAMIC_ARGS
+PORT = manifest_constants.PORT
+WORK_DIR = manifest_constants.WORK_DIR
 
 # Min archive version we currently support.
 _MIN_SUPPORTED_ARCHIVE_VERSION = 1
@@ -180,6 +182,8 @@ class HarnessKind(enum.StrEnum):
   BINARY = enum.auto()
   # The target is a JavaScript shell that consumes JavaScript code.
   JS = enum.auto()
+  # The target is a network service exercised by a client script over loopback.
+  NETWORK = enum.auto()
 
 
 class InstrumentationKind(enum.StrEnum):
@@ -213,6 +217,8 @@ class CommandLineBinaryConfig(BinaryConfig):
   @property
   def uses_stdin(self) -> bool:
     """Whether the binary uses stdin."""
+    if self.harness_kind == HarnessKind.NETWORK:
+      return False
     return manifest_constants.INPUT_FILE not in self.binary_args
 
   @classmethod
