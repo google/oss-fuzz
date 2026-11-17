@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make cmake flex bison zlib1g-dev \
   libcurlpp-dev libcurl4-openssl-dev
 RUN git clone https://github.com/edenhill/librdkafka
