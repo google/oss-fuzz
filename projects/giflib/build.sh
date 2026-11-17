@@ -42,7 +42,9 @@ $CXX $CXXFLAGS -DNDEBUG -Wall -c -I giflib-code dgif_protobuf_target.cc -I libpr
 -I LPM/external.protobuf/include \
  -o dgif_protobuf_target.o
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DNDEBUG -std=c++14 -I. -I giflib-code dgif_protobuf_target.o dgif_fuzz_common.cc genfiles/gif_fuzz_proto.pb.cc \
+# libprotobuf-mutator now bundles protobuf v29.x, whose abseil headers require
+# C++17 (e.g. absl::in_place_type_t). Build the protobuf target at C++17.
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DNDEBUG -std=c++17 -I. -I giflib-code dgif_protobuf_target.o dgif_fuzz_common.cc genfiles/gif_fuzz_proto.pb.cc \
 ProtoToGif.cpp \
 -I LPM/external.protobuf/include \
 -I genfiles \

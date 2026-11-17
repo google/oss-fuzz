@@ -22,8 +22,16 @@ make clean
 
 make
 
+# the established mdbtestdata databases are the seed corpus for every target
+rm -f $OUT/fuzz_mdb_seed_corpus.zip $OUT/fuzz_write_seed_corpus.zip
 zip -j $OUT/fuzz_mdb_seed_corpus.zip ../mdbtestdata/data/*.mdb ../mdbtestdata/data/*.accdb
+zip -j $OUT/fuzz_write_seed_corpus.zip ../mdbtestdata/data/*.mdb ../mdbtestdata/data/*.accdb
 
 cd src/fuzz
 make fuzz_mdb
 cp fuzz_mdb $OUT/fuzz_mdb
+
+# fuzz_write exercises the row-write/round-trip paths
+make fuzz_write
+cp fuzz_write $OUT/fuzz_write
+

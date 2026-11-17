@@ -1,0 +1,8 @@
+homepage: "https://mercure.rocks"
+language: go
+primary_contact: "kevin@dunglas.fr"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/dunglas/mercure"

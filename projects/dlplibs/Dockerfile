@@ -43,6 +43,8 @@ ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/sddfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/sdwfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/key6fuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/pagesfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/numbersfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/vsdxfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/vdxfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/qxpfuzzer_seed_corpus.zip \

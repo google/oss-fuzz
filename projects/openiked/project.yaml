@@ -1,0 +1,13 @@
+homepage: "https://www.openiked.org"
+language: c
+primary_contact: "linder@cip.ifi.lmu.de"
+auto_ccs:
+  - "tobhe@openbsd.org"
+main_repo: "https://github.com/openiked/openiked-portable"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined

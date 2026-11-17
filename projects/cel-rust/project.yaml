@@ -1,0 +1,11 @@
+homepage: "https://github.com/cel-rust/cel-rust"
+main_repo: "https://github.com/cel-rust/cel-rust"
+language: rust
+primary_contact: "alex@wcgw.dev"
+auto_ccs:
+  - "dplotnikov@google.com"
+  - "jdtatum@google.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
