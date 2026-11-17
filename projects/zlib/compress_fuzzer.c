@@ -52,6 +52,8 @@ static void check_decompress(uint8_t *compr, size_t comprLen, unsigned compressi
      fuzz target overwrites its const input. */
   size_t copyLen = dataLen + 2;
   uint8_t *copy = (uint8_t *)malloc(copyLen);
+  if (!copy)
+    return;
   memcpy(copy + 2, data, dataLen);
   write_zlib_header(copy, compression_method, flags);
 
