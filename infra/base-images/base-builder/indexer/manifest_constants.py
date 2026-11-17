@@ -54,3 +54,10 @@ OUTPUT_FILE = "<output_file>"
 # Will be replaced with any dynamic arguments.
 DYNAMIC_ARGS = "<dynamic_args>"
 
+
+# Placeholders for `network` harness targets. Only the verifier substitutes
+# them, so the LLDB debugger does not mirror them.
+# Will be replaced with an ephemeral loopback port.
+PORT = "<port>"
+# Will be replaced with a fresh, empty per-attempt working directory.
+WORK_DIR = "<work_dir>"
