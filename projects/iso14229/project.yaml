@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/driftregion/iso14229"
 language: c
 primary_contact: "iso14229dev@gmail.com"

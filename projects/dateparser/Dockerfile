@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN pip3 install --upgrade pip
 RUN git clone --depth 1 https://github.com/scrapinghub/dateparser.git dateparser \
         && cp dateparser/fuzzing/build.sh $SRC/ \

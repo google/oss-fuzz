@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/driftregion/iso14229 iso14229 && \
     git -C iso14229 submodule update --init --depth 1 src/tp/isotp-c
 WORKDIR iso14229

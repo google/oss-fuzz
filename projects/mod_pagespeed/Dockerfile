@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 # gperf generates the HTML, CSS and bot-name lookup tables during the build.
 # The apt lists stay: the introspector build installs packages of its own.
 RUN apt-get update && apt-get install -y --no-install-recommends gperf

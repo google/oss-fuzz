@@ -14,6 +14,7 @@
 #
 ################################################################################
 
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/mongodb/libmongocrypt"
 language: c
 primary_contact: "mongo-c-driver-ossfuzz@mongodb.com"

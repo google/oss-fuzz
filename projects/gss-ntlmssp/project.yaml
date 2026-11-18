@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/gssapi/gss-ntlmssp"
 language: c
 primary_contact: "ssorce@redhat.com"
