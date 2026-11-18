@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # Needed tools
 RUN apt-get update && \
@@ -37,14 +37,6 @@ RUN apt-get update && \
 # Get latest meson
 RUN apt purge meson
 RUN pip3 install --upgrade pip meson --root-user-action ignore
-
-# Due to libtiff requirements, build requires autoconf 2.71 (or later)
-RUN curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/main/a/autoconf/autoconf_2.72-3.1ubuntu1_all.deb && \
-    apt install ./autoconf_2.72-3.1ubuntu1_all.deb
-
-# Due to libxml2 requirements, build requires automake 1.16.3 (or later)
-RUN curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/main/a/automake-1.17/automake_1.17-4ubuntu1_all.deb && \
-    apt install ./automake_1.17-4ubuntu1_all.deb
 
 # GraphicsMagick
 RUN hg clone --time -b default https://foss.heptapod.net/graphicsmagick/graphicsmagick graphicsmagick || \
