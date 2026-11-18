@@ -1,0 +1,8 @@
+homepage: "https://getswell.org"
+language: jvm
+primary_contact: "hello@jijilabsdigital.com"
+main_repo: "https://github.com/swellchat/swell-protocol"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
