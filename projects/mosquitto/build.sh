@@ -15,5 +15,17 @@
 #
 ################################################################################
 
+# mosquitto's CMake picks up the shared libargon2, which is not available in
+# the OSS-Fuzz runtime image, so all fuzz targets fail to start with
+# "error while loading shared libraries: libargon2.so.1". Point find_library
+# at the static library instead (argon2 is not actually used by the fuzzers,
+# but it is linked transitively through libmosquitto_common).
+ARGON2_STATIC_DIR="${WORK}/argon2-static"
+ARGON2_STATIC_LIB="$(pkg-config --variable=libdir libargon2)/libargon2.a"
+test -f "${ARGON2_STATIC_LIB}"
+mkdir -p "${ARGON2_STATIC_DIR}/lib"
+ln -sf "${ARGON2_STATIC_LIB}" "${ARGON2_STATIC_DIR}/lib/libargon2.a"
+export CMAKE_PREFIX_PATH="${ARGON2_STATIC_DIR}${CMAKE_PREFIX_PATH:+:${CMAKE_PREFIX_PATH}}"
+
 # Run build script from the mosquitto repo
 ./fuzzing/scripts/oss-fuzz-build.sh
