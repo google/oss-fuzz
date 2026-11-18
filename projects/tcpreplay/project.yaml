@@ -9,6 +9,7 @@
 # haven't reached master yet, so cloning main_repo's default branch as-is
 # would find no test/fuzz/ at all. Update the Dockerfile, not this file, once
 # that lands on master.
+base_os_version: ubuntu-24-04
 homepage: "https://tcpreplay.appneta.com/"
 main_repo: "https://github.com/appneta/tcpreplay.git"
 language: c

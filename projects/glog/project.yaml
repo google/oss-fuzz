@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/google/glog"
 language: c++
 primary_contact: "sergiu.deitsch@gmail.com"

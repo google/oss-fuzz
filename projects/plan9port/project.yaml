@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/9fans/plan9port"
 language: c
 main_repo: 'https://github.com/9fans/plan9port'
