@@ -20,6 +20,11 @@ cmake -DBUILD_FUZZER=ON -DOSS_FUZZ=ON .
 make
 cp ./fuzz-client-hello $OUT/
 cp ./fuzz-server-hello $OUT/
+cp ./fuzz-asn1 $OUT/
+cp ./fuzz-fusion-aead $OUT/
+cp ./fuzz-hpke $OUT/
+cp ./fuzz-quiclb $OUT/
+cp ./fuzz-handshake-records $OUT/
 
 zip -jr $OUT/fuzz-client-hello_seed_corpus.zip $SRC/picotls/fuzz/fuzz-client-hello-corpus
 zip -jr $OUT/fuzz-server-hello_seed_corpus.zip $SRC/picotls/fuzz/fuzz-server-hello-corpus
