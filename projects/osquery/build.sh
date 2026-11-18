@@ -28,6 +28,46 @@ ln -s /usr/include/locale.h /usr/include/xlocale.h
 
 pushd "${SRC}/${PROJECT}"
 
+# osquery ships a Boost-MPL workaround header (mpl_static_cast_fix.hpp) for the
+# Clang 16+ "static_cast<Enum>() is not a constant expression" failure in
+# boost::numeric, but force-includes it only on macOS. The OSS-Fuzz Ubuntu-24.04
+# base-builder uses mainline Clang 22, where this is a hard error on Linux too
+# (the -Wno-enum-constexpr-conversion it already sets on Linux only covers the
+# warning form). Extend the force-include guard to Linux. (Only one standalone
+# `if(PLATFORM_MACOS)` exists; line 789 is an `elseif` and is not matched.)
+sed -i 's/^  if(PLATFORM_MACOS)$/  if(PLATFORM_MACOS OR PLATFORM_LINUX)/' \
+    libraries/cmake/source/boost/CMakeLists.txt
+
+# That fix header is C++ (namespaces/templates) and is force-included into every
+# boost-mpl consumer. On Linux a few of those are C translation units (e.g.
+# osquery/tables/networking/linux/iptc_proxy.c), which don't exist on macOS.
+# Guard the header so it is a no-op when compiled as C.
+sed -i '/^#pragma once$/a #ifdef __cplusplus' \
+    libraries/cmake/source/boost/mpl_static_cast_fix.hpp
+echo '#endif /* __cplusplus */' >> libraries/cmake/source/boost/mpl_static_cast_fix.hpp
+
+# Upstream TSK's tsk/img/raw.c now calls get_size_of_file_on_disk(), which is
+# defined in tsk/util/file_system_utils.c. osquery's vendored CMake builds the
+# img and util sources as separate static libraries with only a util->img
+# dependency, so the final harness link fails with
+# "undefined reference to get_size_of_file_on_disk". Add the reverse edge;
+# CMake permits cyclic dependencies between static libraries and orders the
+# link so both directions resolve.
+echo 'target_link_libraries(thirdparty_sleuthkit_img PRIVATE thirdparty_sleuthkit_util)' \
+  >> libraries/cmake/source/sleuthkit/CMakeLists.txt
+
+# Ubuntu 24.04 / glibc 2.32+ removed <sys/sysctl.h> and the sysctl() libc
+# function (the binary sysctl syscall is also gone from modern Linux kernels).
+# osquery's Linux sysctl table already reads /proc/sys for every value; only the
+# vestigial MIB/oid lookup used the removed function. Pull CTL_MAXNAME from the
+# kernel UAPI header <linux/sysctl.h> on Linux, and neutralise the dead oid path.
+sed -i 's@^#include <sys/sysctl.h>@#if defined(__linux__)\n#include <linux/sysctl.h>\n#else\n#include <sys/sysctl.h>\n#endif@' \
+    osquery/tables/system/posix/sysctl_utils.h
+sed -i '/^#include <sys\/sysctl.h>$/d' \
+    osquery/tables/system/linux/sysctl_utils.cpp
+sed -i 's@^  if (sysctl(oid, oid_size, response, &response_size, 0, 0) != 0) {@  (void)response;\n  (void)response_size;\n  // The binary sysctl() interface was removed from Linux and glibc 2.32+;\n  // MIB/oid-based lookups are unavailable (the /proc/sys path is used instead).\n  if (true) {@' \
+    osquery/tables/system/linux/sysctl_utils.cpp
+
 mkdir build && pushd build
 
 cmake \
@@ -36,6 +76,7 @@ cmake \
   -DOSQUERY_BUILD_FUZZERS:BOOL=ON \
   -DOSQUERY_BUILD_AWS:BOOL=OFF \
   -DOSQUERY_BUILD_EXPERIMENTS:BOOL=OFF \
+  -DOSQUERY_ENABLE_CCACHE:BOOL=OFF \
   ..
 
 cmake \
