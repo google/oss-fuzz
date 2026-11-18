@@ -22,10 +22,8 @@
 FUZZ=$SRC/racket-fuzz
 TARGETS="eval read print-roundtrip number regexp fasl"
 
-# The build runs the sanitized Racket, which leaks at exit and may hit
-# UBSan reports in code that the fuzzers never reach
+# The build runs the sanitized Racket, which leaks at exit
 export ASAN_OPTIONS=detect_leaks=0
-export UBSAN_OPTIONS=halt_on_error=0
 # Compile Scheme code with coverage counters, for the fuzzer's feedback
 export PLT_CS_COVERAGE_COUNTERS=1
 
