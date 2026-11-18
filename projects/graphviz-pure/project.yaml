@@ -1,0 +1,16 @@
+# OSS-Fuzz project metadata for graphviz-pure.
+# https://google.github.io/oss-fuzz/docs/project-requirements/
+#
+# The fuzz targets live in the repository itself (fuzz/), so the repository is
+# the project: OSS-Fuzz clones it and builds the cargo-fuzz targets.
+homepage: "https://github.com/graphviz-pure/graphviz-pure"
+language: rust
+main_repo: "https://github.com/graphviz-pure/graphviz-pure"
+help_url: "https://github.com/graphviz-pure/graphviz-pure/blob/master/docs/porting/fuzzing.md"
+
+primary_contact: "emmanuelm@gmail.com"
+
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
