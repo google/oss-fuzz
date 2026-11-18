@@ -48,3 +48,10 @@ do
     $CXX $CXXFLAGS $FUZZO $libs -lpthread -lrt -lm -o $OUT/fuzz_$target $LIB_FUZZING_ENGINE
     cp ../tests/fuzz/fuzz_emu.options $OUT/fuzz_$target.options
 done
+
+for c in corpus_ppc32_be corpus_ppc64_be corpus_sparc_64be \
+  corpus_tricore corpus_riscv32 corpus_riscv64; do
+    if [ -d ../tests/fuzz/$c ]; then
+        (cd ../tests/fuzz && zip -r -q $OUT/$(echo $c | sed 's/^corpus_/fuzz_emu_/')_seed_corpus.zip $c)
+    fi
+done
