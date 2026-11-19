@@ -33,10 +33,18 @@ extern "C" {
 #include "fuzzer_helpers.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-    if (size < 2) return 0;
+    if (size < 4 + sizeof(struct nsm_msg_hdr)) return 0;
 
-    const uint8_t* payload = data;
-    size_t payload_len = size;
+    uint16_t fuzz_error_injection_type =
+        static_cast<uint16_t>(data[0]) |
+        (static_cast<uint16_t>(data[1]) << 8);
+    uint16_t fuzz_error_injection_subtype =
+        static_cast<uint16_t>(data[2]) |
+        (static_cast<uint16_t>(data[3]) << 8);
+
+    std::vector<uint8_t> msg_buf(data + 4, data + size);
+    const uint8_t* payload = msg_buf.data();
+    size_t payload_len = msg_buf.size();
 
     if (!validate_nsm_msg_length(payload, payload_len)) {
         return 0;
@@ -53,9 +61,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::vector<uint8_t> out_buf(65536, 0);
     uint8_t fuzz_cc = 0;
     uint16_t fuzz_reason_code = 0;
-    std::vector<uint8_t> fuzz_data_buf(65536, 0);
-    struct nsm_error_injection_payload* fuzz_data = reinterpret_cast<struct nsm_error_injection_payload*>(fuzz_data_buf.data());
-    decode_get_error_injection_payload_resp(msg, payload_len, &fuzz_cc, &fuzz_reason_code, fuzz_data);
+    size_t fuzz_data_size = out_buf.size();
+    decode_get_error_injection_payload_resp(
+        msg, payload_len, fuzz_error_injection_type,
+        fuzz_error_injection_subtype, &fuzz_cc, &fuzz_reason_code,
+        out_buf.data(), &fuzz_data_size);
 
     return 0;
 }

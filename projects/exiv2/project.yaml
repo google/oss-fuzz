@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.exiv2.org"
 language: c++
 primary_contact: "kevinbackhouse@github.com"

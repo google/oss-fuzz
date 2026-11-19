@@ -51,6 +51,36 @@ SKIA_ARGS="skia_build_fuzzers=true
            skia_use_partition_alloc=false
            skia_provide_default_fuzz_engine=false"
 
+RUST_PNG_ARGS=""
+RUST_FUZZ_TARGETS=""
+# Skia builds the Rust PNG codec with its hermetic Bazel toolchain rather than
+# OSS-Fuzz's clang, so skip it under MSan to avoid uninitialized-memory false
+# positives. We build with for_android=false in out/Fuzz (which covers APNG)
+# and for_android=true in out/FuzzDebug (which covers Android-specific paths
+# like LimitBufReader, unknown chunks, gainmaps, and sBIT).
+if [ "$SANITIZER" != "memory" ]; then
+  RUST_PNG_ARGS="skia_use_rust_png_decode=true skia_use_rust_png_encode=true"
+  RUST_FUZZ_TARGETS="png_rust_decoder png_rust_encoder"
+  # Older Bazelisk versions only find .bazelversion via WORKSPACE.bazel.
+  export USE_BAZEL_VERSION="$(cat $SRC/skia/.bazelversion)"
+
+  if [ "$FUZZING_ENGINE" = "libfuzzer" ] && [ "$SANITIZER" != "coverage" ] \
+      && [ "$SANITIZER" != "introspector" ]; then
+    # Pass SanitizerCoverage flags to rustc via bazel/user/buildrc (which Skia's
+    # .bazelrc imports) so libFuzzer gets coverage feedback from the Rust crates.
+    cat > $SRC/skia/bazel/user/buildrc <<'EOF'
+build --@rules_rust//rust/settings:extra_rustc_flag=-Cpasses=sancov-module
+build --@rules_rust//rust/settings:extra_rustc_flag=-Cllvm-args=-sanitizer-coverage-level=3
+build --@rules_rust//rust/settings:extra_rustc_flag=-Cllvm-args=-sanitizer-coverage-inline-8bit-counters
+build --@rules_rust//rust/settings:extra_rustc_flag=-Cllvm-args=-sanitizer-coverage-pc-table
+build --@rules_rust//rust/settings:extra_rustc_flag=-Cllvm-args=-sanitizer-coverage-trace-compares
+build --@rules_rust//rust/settings:extra_rustc_flag=-Cforce-frame-pointers=yes
+EOF
+  else
+    rm -f $SRC/skia/bazel/user/buildrc
+  fi
+fi
+
 # Even though GPU is "enabled" for all these builds, none really
 # uses the gpu except for api_mock_gpu_canvas.
 $SRC/skia/bin/gn gen out/Fuzz\
@@ -58,12 +88,15 @@ $SRC/skia/bin/gn gen out/Fuzz\
       cxx="'$CXX'"
       '"$LIMITED_LINK_POOL"'
       '"${SKIA_ARGS[*]}"'
+      '"$RUST_PNG_ARGS"'
+      skia_use_rust_png_for_android=false
       is_debug=false
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]'
 
 $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
+  android_codec \
   animated_image_decode \
   api_create_ddl \
   api_ddl_threading \
@@ -95,7 +128,8 @@ $SRC/skia/third_party/ninja/ninja -C out/Fuzz \
   skp \
   svg_dom \
   textblob_deserialize \
-  webp_encoder
+  webp_encoder \
+  $RUST_FUZZ_TARGETS
 
 # Some fuzz targets benefit from assertions so we enable SK_DEBUG to allow SkASSERT
 # and SkDEBUGCODE to run. We still enable optimization (via is_debug=false) because
@@ -105,6 +139,8 @@ $SRC/skia/bin/gn gen out/FuzzDebug\
       cxx="'$CXX'"
       '"$LIMITED_LINK_POOL"'
       '"${SKIA_ARGS[*]}"'
+      '"$RUST_PNG_ARGS"'
+      skia_use_rust_png_for_android=true
       is_debug=false
       extra_cflags_c=["-DSK_DEBUG","'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["-DSK_DEBUG","'"$CXXFLAGS_ARR"'"]
@@ -126,7 +162,8 @@ $SRC/skia/third_party/ninja/ninja -C out/FuzzDebug \
   sksl2pipeline \
   sksl2spirv \
   sksl2wgsl \
-  skcolorspace
+  skcolorspace \
+  $RUST_FUZZ_TARGETS
 
 rm -rf $OUT/data
 mkdir $OUT/data
@@ -172,9 +209,24 @@ mv ../skia_data/api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corp
 mv out/Fuzz/api_pathop $OUT/api_pathop
 mv ../skia_data/api_pathop_seed_corpus.zip $OUT/api_pathop_seed_corpus.zip
 
-# These 3 use the same corpus.
+# These encoders use the same corpus.
 mv out/Fuzz/png_encoder $OUT/png_encoder
 cp ../skia_data/encoder_seed_corpus.zip $OUT/png_encoder_seed_corpus.zip
+
+if [ -n "$RUST_FUZZ_TARGETS" ]; then
+  mv out/Fuzz/png_rust_encoder $OUT/png_rust_encoder
+  mv out/FuzzDebug/png_rust_encoder $OUT/png_rust_encoder_android
+  cp ../skia_data/encoder_seed_corpus.zip $OUT/png_rust_encoder_seed_corpus.zip
+  cp ../skia_data/encoder_seed_corpus.zip $OUT/png_rust_encoder_android_seed_corpus.zip
+
+  # Seed the decoders with Skia's test PNGs (covering APNG, gainmaps, cICP,
+  # nine-patch chunks, etc.). Since the harness reads its options from trailing
+  # bytes, plain PNGs are valid inputs.
+  mv out/Fuzz/png_rust_decoder $OUT/png_rust_decoder
+  mv out/FuzzDebug/png_rust_decoder $OUT/png_rust_decoder_android
+  zip -qj $OUT/png_rust_decoder_seed_corpus.zip $SRC/skia/resources/images/*.png
+  cp $OUT/png_rust_decoder_seed_corpus.zip $OUT/png_rust_decoder_android_seed_corpus.zip
+fi
 
 mv out/Fuzz/jpeg_encoder $OUT/jpeg_encoder
 cp ../skia_data/encoder_seed_corpus.zip $OUT/jpeg_encoder_seed_corpus.zip
@@ -208,9 +260,12 @@ mv ../skia_data/api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corp
 mv out/Fuzz/api_polyutils $OUT/api_polyutils
 mv ../skia_data/api_polyutils_seed_corpus.zip $OUT/api_polyutils_seed_corpus.zip
 
-# These 2 use the same corpus.
+# These decoders use the same corpus.
 mv out/Fuzz/image_decode $OUT/image_decode
 cp ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
+
+mv out/Fuzz/android_codec $OUT/android_codec
+cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip
 
 mv out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
 mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
@@ -289,3 +344,7 @@ mv out/Fuzz/api_triangulation $OUT/api_triangulation
 
 mv out/Fuzz/colrv1 $OUT/colrv1
 mv ../skia_data/colrv1_seed_corpus.zip $OUT/colrv1_seed_corpus.zip
+
+# Coverage builds copy $SRC with `cp -rL`, so remove Bazel's symlinks to avoid
+# copying the entire Bazel execroot.
+rm -f bazel-*

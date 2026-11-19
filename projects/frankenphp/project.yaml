@@ -1,0 +1,9 @@
+base_os_version: ubuntu-24-04
+homepage: "https://frankenphp.dev"
+language: go
+primary_contact: "kevin@dunglas.fr"
+main_repo: "https://github.com/php/frankenphp"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

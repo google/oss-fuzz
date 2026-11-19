@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y python3-pip ragel pkg-config zlib1g-dev:i386 && \
     pip3 install --upgrade pip && \
     pip3 install meson==1.2.0 ninja

@@ -18,15 +18,29 @@
 
 mkdir build && cd build
 cmake ../prj/cmake \
-	-DCMAKE_BUILD_TYPE="Release"
+	-DCMAKE_BUILD_TYPE="Release" \
+	-DSIMD_FUZZ=ON
 
 # Force simd to only use a single core, as otherwise memory will be exhausted
 make -j1
 
-$CXX $CXXFLAGS -I/src/Simd/src -O3 -DNDEBUG -fPIC \
-        -c $SRC/simd_load_fuzzer.cpp -o simd_load_fuzzer.o \
-        -std=c++11 -ferror-limit=5 -m64  -mtune=native
+find . -type f -name 'simd_*_fuzzer' -exec cp {} "$OUT/" \;
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE simd_load_fuzzer.o \
-        -o $OUT/simd_load_fuzzer \
-        $(find $SRC -name "libSimd.a")
+for options in ../src/Fuzz/*.options; do
+	[[ -f "$options" ]] || continue
+	cp "$options" "$OUT/"
+done
+
+for corpus in ../src/Fuzz/corpus/*; do
+	[[ -d "$corpus" ]] || continue
+	target="${corpus##*/}"
+        [[ -f "$OUT/$target" ]] || continue
+	(cd "$corpus" && zip -q -r "$OUT/${target}_seed_corpus.zip" .)
+done
+
+zip -q -j "$OUT/simd_load_fuzzer_seed_corpus.zip" \
+	../data/image/png/basn0g01.png \
+	../data/image/png/basi0g16.png \
+	../data/image/png/basn3p02.png \
+	../data/image/png/basi6a08.png \
+	../data/image/png/tp0n2c08.png

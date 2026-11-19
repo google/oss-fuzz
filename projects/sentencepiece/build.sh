@@ -39,6 +39,12 @@ ABSL_LIBS=$(find ./root/lib _deps -name 'libabsl_*.a' 2>/dev/null | sort -u)
 PROTOBUF_INC="-I_deps/protobuf-src/src -I_deps/protobuf-src/third_party/utf8_range"
 PROTOBUF_LIBS=$(find _deps/protobuf-build -name 'libprotobuf*.a' -o -name 'libutf8_*.a' 2>/dev/null | sort -u)
 
+# flatbuffers is also fetched (FLATBUFFERS_BUILD_FLATLIB=ON). The "lite"
+# tokenizer objects inside libsentencepiece_train.a reference flatbuffers
+# symbols, so libflatbuffers.a (only in the build tree) must be linked for the
+# lite_fuzzer harness.
+FLATBUFFERS_LIBS=$(find . _deps -name 'libflatbuffers*.a' 2>/dev/null | sort -u)
+
 # Everything below builds at -std=c++20: the fetched abseil configures itself
 # as C++20 (ABSL_INTERNAL_AT_LEAST_CXX20), and headers such as
 # absl/types/compare.h then require std::weak_ordering and friends, which are
@@ -90,12 +96,15 @@ cd /tmp/model_seeds && zip -j $OUT/model_load_fuzzer_seed_corpus.zip *.model && 
 for fuzzer in $(find $SRC -name '*_fuzzer.cc' | grep -v 'third_party'); do
   fuzz_basename=$(basename -s .cc $fuzzer)
   echo "Building fuzzer: $fuzz_basename"
+  # -Isrc exposes the CMake-generated protobuf headers (sentencepiece.pb.h,
+  # sentencepiece_model.pb.h live under the build tree's src/) so harnesses can
+  # use the SentencePieceText proto-returning overloads.
   $CXX $CXXFLAGS -std=c++20 \
-      -I. -I./root/include -I../third_party $PROTOBUF_INC \
+      -I. -Isrc -I./root/include -I../src -I../lite -I../third_party $PROTOBUF_INC \
       $fuzzer $LIB_FUZZING_ENGINE \
       -Wl,--start-group \
       ./root/lib/libsentencepiece_train.a ./root/lib/libsentencepiece.a \
-      $PROTOBUF_LIBS $ABSL_LIBS \
+      $PROTOBUF_LIBS $ABSL_LIBS $FLATBUFFERS_LIBS \
       -Wl,--end-group \
       -lpthread \
       -o $OUT/$fuzz_basename

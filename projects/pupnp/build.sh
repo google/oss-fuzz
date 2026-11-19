@@ -24,8 +24,7 @@ make -j$(nproc)
 
 cp fuzzer/Fuzz* $OUT/
 
-pushd $SRC/oss-fuzz-bloat/pupnp/
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxml_seed_corpus.zip
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzServiceTable_seed_corpus.zip
-cp FuzzIxml_seed_corpus.zip $OUT/FuzzIxmlDom_seed_corpus.zip
-popd
+for dir in $SRC/pupnp/fuzzer/corpus/*/; do
+    [ -d "$dir" ] || continue
+    zip -j -q $OUT/$(basename $dir)_seed_corpus.zip $dir*
+done

@@ -15,4 +15,8 @@
 #
 ################################################################################
 
+# Use the CPM.cmake pre-staged in the Docker image (see Dockerfile) instead of
+# downloading it during the developer-mode configure step.
+export CPM_SOURCE_CACHE="$SRC/cpm-cache"
+
 fuzz/ossfuzz.sh
