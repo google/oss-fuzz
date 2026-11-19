@@ -79,8 +79,10 @@ fuzzers=(
   color_encoding_fuzzer
   decode_basic_info_fuzzer
   djxl_fuzzer
+  encoder_options_fuzzer
   fields_fuzzer
   icc_codec_fuzzer
+  jpeg_transcode_fuzzer
   rans_fuzzer
   set_from_bytes_fuzzer
   streaming_fuzzer
@@ -92,3 +94,4 @@ ninja "${fuzzers[@]}"
 for fuzzer in "${fuzzers[@]}"; do
   cp tools/${fuzzer} "${OUT}/"
 done
+
