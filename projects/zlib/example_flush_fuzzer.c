@@ -123,6 +123,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
   dataLen = size;
   compr = (uint8_t *)calloc(1, comprLen);
   uncompr = (uint8_t *)calloc(1, uncomprLen);
+  if (compr == NULL || uncompr == NULL) {
+    free(compr);
+    free(uncompr);
+    return 0;
+  }
 
   test_flush(compr, &comprLen);
   test_sync(compr, comprLen, uncompr, uncomprLen);

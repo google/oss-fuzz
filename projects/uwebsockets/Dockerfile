@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone --recursive https://github.com/uNetworking/uWebSockets.git uWebSockets
 WORKDIR uWebSockets
 COPY build.sh $SRC/

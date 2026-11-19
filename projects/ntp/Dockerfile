@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool bison flex rsync lynx lld
 RUN git clone -b dev https://github.com/ntp-project/ntp.git ntp-dev
 WORKDIR $SRC
