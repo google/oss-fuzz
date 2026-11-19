@@ -1,0 +1,43 @@
+# DNS wire-format fragments for evdns_client_fuzzer / evdns_server_fuzzer.
+
+# compression pointer to the first question name
+ptr_qname="\xc0\x0c"
+ptr_loop="\xc0\x00"
+ptr_fwd="\xc0\xff"
+root="\x00"
+max_label="\x3f"
+
+# <type><class IN>
+a_in="\x00\x01\x00\x01"
+ns_in="\x00\x02\x00\x01"
+cname_in="\x00\x05\x00\x01"
+soa_in="\x00\x06\x00\x01"
+ptr_in="\x00\x0c\x00\x01"
+txt_in="\x00\x10\x00\x01"
+aaaa_in="\x00\x1c\x00\x01"
+opt="\x00\x00\x29\x10\x00"
+
+# header flags
+resp_ok="\x81\x80"
+resp_nxdomain="\x81\x83"
+resp_servfail="\x81\x82"
+resp_refused="\x81\x85"
+resp_notimpl="\x81\x84"
+resp_truncated="\x83\x80"
+query_rd="\x01\x00"
+
+# rdlength
+rdlen4="\x00\x04"
+rdlen8="\x00\x08"
+rdlen16="\x00\x10"
+
+# counts
+one="\x00\x01"
+two="\x00\x02"
+
+# names
+"\x03www\x07example\x03com\x00"
+"\x07in-addr\x04arpa\x00"
+"\x03ip6\x04arpa\x00"
+"localhost"
+"fuzzhost"

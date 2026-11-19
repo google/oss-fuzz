@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://codedocs.xyz/jbeder/yaml-cpp/index.html"
 main_repo: "https://github.com/jbeder/yaml-cpp"
 language: c++

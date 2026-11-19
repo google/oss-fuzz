@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y libz-dev libpcre2-dev libtool pkg-config autoconf
 RUN git clone https://github.com/lighttpd/lighttpd1.4
 

@@ -54,10 +54,14 @@ CMAKE_FLAGS=(
 cmake .. "${CMAKE_FLAGS[@]}"
 make -j"$(nproc)"
 
-for fuzzer in bt_fuzzer script_fuzzer bb_fuzzer; do
+for fuzzer in bt_fuzzer script_fuzzer bb_fuzzer bt_tree_exec_fuzzer; do
   cp $fuzzer "$OUT/"
 
   if [ -d ../fuzzing/corpus/${fuzzer} ]; then
     zip -j "$OUT/${fuzzer}_seed_corpus.zip" ../fuzzing/corpus/${fuzzer}/*
   fi
 done
+
+if [ -d ../fuzzing/dictionaries ]; then
+  cp ../fuzzing/dictionaries/*.dict "$OUT/"
+fi

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://bitbucket.org/b_c/jose4j/wiki/Home"
 language: jvm
 fuzzing_engines:
