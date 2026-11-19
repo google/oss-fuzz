@@ -30,6 +30,30 @@ _DOWNLOAD_URL_BACKOFF = 1
 _HTTP_REQUEST_TIMEOUT = 10
 
 
+def _is_safe_zip_member(member, extract_directory):
+  """Returns True if extracting |member| into |extract_directory| is safe and
+  does not traverse outside |extract_directory|."""
+  if not member:
+    return False
+
+  # Refuse absolute paths (both POSIX and Windows).
+  if os.path.isabs(member) or member.startswith('/') or member.startswith('\\'):
+    return False
+
+  # Refuse drive letters (e.g. C:file).
+  drive, _ = os.path.splitdrive(member)
+  if drive:
+    return False
+
+  base_dir = os.path.abspath(extract_directory)
+  target_path = os.path.abspath(os.path.join(base_dir, member))
+  try:
+    return os.path.commonpath([base_dir, target_path]) == base_dir
+  except ValueError:
+    # Occurs on Windows if paths are on different drives.
+    return False
+
+
 def download_and_unpack_zip(url, extract_directory, headers=None):
   """Downloads and unpacks a zip file from an HTTP URL.
 
@@ -56,6 +80,10 @@ def download_and_unpack_zip(url, extract_directory, headers=None):
 
     try:
       with zipfile.ZipFile(tmp_file.name, 'r') as zip_file:
+        for member in zip_file.namelist():
+          if not _is_safe_zip_member(member, extract_directory):
+            logging.error('Refusing unsafe zip member path: %s.', member)
+            return False
         zip_file.extractall(extract_directory)
     except zipfile.BadZipFile:
       logging.error('Error unpacking zip from %s. Bad Zipfile.', url)
