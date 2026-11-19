@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://www.graphicsmagick.org/"
 main_repo: "https://foss.heptapod.net/graphicsmagick/graphicsmagick"
 language: c++
@@ -8,12 +9,13 @@ auto_ccs:
     - paul.l.kehrer@gmail.com
 sanitizers:
     - address
-    - memory
+# Disabled MSAN because of google/oss-fuzz#15009 (https://github.com/google/oss-fuzz/issues/15009)
+#    - memory
     - undefined
 architectures:
     - x86_64
     - i386
 fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
   - afl
+  - honggfuzz
+  - libfuzzer

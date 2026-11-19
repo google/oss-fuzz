@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/go-gitea/gitea"
 primary_contact: "security@gitea.io"
 auto_ccs :

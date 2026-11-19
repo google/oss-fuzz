@@ -15,7 +15,7 @@
 ################################################################################
 
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y --no-install-recommends     cmake ninja-build make pkg-config zlib1g-dev python3 &&     rm -rf /var/lib/apt/lists/*
 

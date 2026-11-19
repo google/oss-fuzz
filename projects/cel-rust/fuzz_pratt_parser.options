@@ -1,0 +1,5 @@
+[asan]
+# Limit ASan's malloc_context_size so ASan's append-only StackDepot does not
+# grow unboundedly from unique 30-frame call stacks across mutually recursive
+# ANTLR and Pratt parser allocations over long fuzzing runs.
+malloc_context_size = 5

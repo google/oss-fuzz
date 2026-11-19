@@ -15,89 +15,52 @@
 #
 ################################################################################
 
-git apply  --ignore-space-change --ignore-whitespace $SRC/fuzz-patch.diff
+cd $SRC/bios-bmc-smm-error-logger
 
-# Remove system gtest/gmock to force using the subproject (built with libc++)
-# This fixes linker errors due to ABI mismatch (libstdc++ vs libc++)
-apt-get remove -y libgtest-dev libgmock-dev googletest google-mock || true
-rm -rf /usr/src/googletest
-rm -rf /usr/src/gtest
-rm -rf /usr/src/gmock
-# Ensure cmake is installed for the subproject build
-apt-get update && apt-get install -y cmake
+# Disable C99 extension warning in C++ (triggered by SD_BUS_ERROR_NULL in systemd headers)
+export CXXFLAGS="$CXXFLAGS -Wno-c99-extensions"
+export LDFLAGS="${LDFLAGS:-$CXXFLAGS}"
 
-# Download subprojects explicitly so we can patch them
-meson subprojects download
+# Reset git trees for idempotent local rebuilds
+git checkout -- .
+rm -rf fuzzing builddir
+git -C subprojects/sdbusplus checkout -- .
+git -C subprojects/stdplus checkout -- .
 
-# Force googletest to build statically by patching its CMakeLists.txt
-# This is more reliable than trying to patch test/meson.build to pass cmake options
-if [ -d "subprojects/googletest" ]; then
-    find subprojects/googletest -name CMakeLists.txt -exec sed -i '1i set(BUILD_SHARED_LIBS OFF CACHE BOOL "Force static" FORCE)' {} +
-fi
+# Apply fuzzing integration and libc++ compatibility patches
+git apply $SRC/fuzz.patch
+git -C subprojects/sdbusplus apply $SRC/sdbusplus.patch
+git -C subprojects/stdplus apply $SRC/stdplus.patch
 
-# Fix bug in test/meson.build where 'cmake' variable is used but not defined
-sed -i "s/gtest_proj = cmake.subproject(/gtest_proj = import('cmake').subproject(/g" test/meson.build
+# Copy fuzz target and Meson build definition into the source tree
+mkdir -p fuzzing
+cp $SRC/rde_fuzz.cpp fuzzing/
+cp $SRC/fuzzing_meson.build fuzzing/meson.build
 
-# Configure the build
-# -Dtests=enabled: to build the fuzzer defined in test/meson.build
-# -Ddefault_library=static: to build static libraries (good for fuzzing)
-# -Dfuzz_engine: pass the fuzzing engine flags to the fuzzer executable
-rm -rf build
-meson setup build \
-    -Dtests=enabled \
+meson setup builddir \
+    --wrap-mode=nodownload \
+    --buildtype=plain \
+    -Dfuzzing=enabled \
+    -Dfuzzing_engine="$LIB_FUZZING_ENGINE" \
+    -Dtests=disabled \
+    -Dwerror=false \
     -Ddefault_library=static \
-    -Dgoogletest:default_library=static \
-    -Dcpp_args="-stdlib=libc++ -Wno-error=character-conversion -Wno-error=deprecated-declarations -Wno-error=c99-extensions -Wno-error=pessimizing-move $CXXFLAGS" \
-    -Dc_args="$CFLAGS" \
-    -Dcpp_link_args="${LDFLAGS:-$CXXFLAGS}" \
-    -Dfuzz_engine="$LIB_FUZZING_ENGINE"
+    -Dstdplus:gtest=disabled \
+    -Dstdplus:tests=disabled \
+    -Dstdplus:examples=false \
+    -Dphosphor-dbus-interfaces:generate_md=false \
+    -Dphosphor-dbus-interfaces:data_com_ampere=false \
+    -Dphosphor-dbus-interfaces:data_com_google=false \
+    -Dphosphor-dbus-interfaces:data_com_ibm=false \
+    -Dphosphor-dbus-interfaces:data_com_intel=false \
+    -Dphosphor-dbus-interfaces:data_com_meta=false \
+    -Dphosphor-dbus-interfaces:data_com_qualcomm=false \
+    -Dphosphor-dbus-interfaces:data_org_freedesktop=false \
+    -Dphosphor-dbus-interfaces:data_org_open_power=false
 
-# Patch stdexec to fix missing <new> header (provides std::launder)
-if [ -f subprojects/stdexec/include/stdexec/__detail/__utility.hpp ]; then
-    sed -i '1i#include <new>' subprojects/stdexec/include/stdexec/__detail/__utility.hpp
-fi
+ninja -C builddir fuzzing/rde_fuzz
 
-# Patch stdplus to fix missing includes and ambiguous references
-if [ -f subprojects/stdplus/include/stdplus/function_view.hpp ]; then
-    sed -i '1i#include <cstddef>\n#include <concepts>\n#include <type_traits>\n#include <memory>' subprojects/stdplus/include/stdplus/function_view.hpp
-fi
-if [ -f subprojects/stdplus/include/stdplus/debug/lifetime.hpp ]; then
-    sed -i '1i#include <cstddef>' subprojects/stdplus/include/stdplus/debug/lifetime.hpp
-fi
-if [ -f subprojects/stdplus/include/stdplus/hash.hpp ]; then
-    sed -i '1i#include <functional>' subprojects/stdplus/include/stdplus/hash.hpp
-    # Remove conflicting forward declaration of std::hash in namespace std
-    # Use ^namespace std$ to avoid matching namespace stdplus
-    sed -i '/^namespace std$/,/}/ { /template <class Key>/d; /struct hash;/d; }' subprojects/stdplus/include/stdplus/hash.hpp
-fi
-if [ -f subprojects/stdplus/include/stdplus/net/addr/ip.hpp ]; then
-    sed -i '1i#include <format>' subprojects/stdplus/include/stdplus/net/addr/ip.hpp
-    # Remove conflicting forward declaration of std::formatter
-    sed -i '/template <typename T, typename CharT>/d' subprojects/stdplus/include/stdplus/net/addr/ip.hpp
-    sed -i '/struct formatter;/d' subprojects/stdplus/include/stdplus/net/addr/ip.hpp
-fi
-if [ -f subprojects/stdplus/include/stdplus/net/addr/subnet.hpp ]; then
-    sed -i '1i#include <format>' subprojects/stdplus/include/stdplus/net/addr/subnet.hpp
-    # Remove conflicting forward declaration of std::formatter
-    sed -i '/template <typename T, typename CharT>/d' subprojects/stdplus/include/stdplus/net/addr/subnet.hpp
-    sed -i '/struct formatter;/d' subprojects/stdplus/include/stdplus/net/addr/subnet.hpp
-fi
-
-if [ -f subprojects/stdplus/include/stdplus/str/cat.hpp ]; then
-    sed -i '1i#include <algorithm>' subprojects/stdplus/include/stdplus/str/cat.hpp
-fi
-
-if [ -f subprojects/sdbusplus/include/sdbusplus/asio/connection.hpp ]; then
-    sed -i 's/std::move_only_function/std::function/g' subprojects/sdbusplus/include/sdbusplus/asio/connection.hpp
-fi
-
-# Patch sdbusplus barrier.cpp to add missing <algorithm> for std::ranges::for_each
-if [ -f subprojects/sdbusplus/src/async/barrier.cpp ]; then
-    sed -i '1i#include <algorithm>' subprojects/sdbusplus/src/async/barrier.cpp
-fi
-
-# Build everything
-ninja -C build -v
-
-# Copy the fuzzer to $OUT
-cp build/test/rde_fuzz $OUT/
+cp builddir/fuzzing/rde_fuzz $OUT/
+cp $SRC/rde_fuzz.dict $OUT/
+cp $SRC/rde_fuzz.options $OUT/
+python3 $SRC/generate_seeds.py subprojects/libbej/test $OUT/rde_fuzz_seed_corpus.zip

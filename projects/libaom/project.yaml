@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://aomedia.org/av1-features/get-started/"
 language: c++
 primary_contact: "wtc@google.com"
@@ -9,6 +10,7 @@ auto_ccs:
 - jianj@google.com
 - jingning@google.com
 - jzern@google.com
+- marpan@google.com
 - wtc@google.com
 - yunqingwang@google.com
 vendor_ccs:

@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN pip3 install --upgrade pip
-RUN git clone --depth 1 https://github.com/collective/icalendar.git icalendar \
+RUN git clone --depth 1 https://github.com/PyCalendar/icalendar.git icalendar \
         && cp icalendar/src/icalendar/fuzzing/build.sh $SRC/
 RUN mv icalendar/src/icalendar/fuzzing/corpus $SRC/corpus
 WORKDIR $SRC/icalendar

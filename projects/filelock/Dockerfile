@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN python3 -m pip install --upgrade pip
-RUN git clone --depth 1 https://github.com/tox-dev/py-filelock filelock
+RUN git clone --depth 1 https://github.com/tox-dev/filelock filelock
 WORKDIR filelock
 COPY build.sh *.py $SRC/

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 
 RUN git clone --depth 1 --branch main https://github.com/psf/requests.git requests \
     && python3 -m pip install --upgrade pip \

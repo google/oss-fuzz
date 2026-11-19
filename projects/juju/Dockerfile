@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/juju/juju
 RUN wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz \
     && mkdir temp-go \

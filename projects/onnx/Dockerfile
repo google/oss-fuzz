@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN apt-get update && apt-get install -y cmake protobuf-compiler
 RUN pip install "scikit-build-core>=0.11" "nanobind==2.12.0"
 RUN git clone --depth 1 https://github.com/onnx/onnx.git onnx && \

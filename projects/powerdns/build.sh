@@ -111,6 +111,7 @@ cp regression-tests/zones/* fuzzing/corpus/zones/
 # generate the corpus files
 if [ -d fuzzing/corpus/raw-dns-packets/ ]; then
     zip -j "${OUT}/fuzz_target_dnsdistcache_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
+    zip -j "${OUT}/fuzz-target-dnsdist-dnsparser_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
 fi
 if [ -d fuzzing/corpus/txt-records/ ]; then
     zip -j "${OUT}/fuzz_target_dnslabeltext_parseRFC1035CharString_seed_corpus.zip" fuzzing/corpus/txt-records/*

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://cppcheck.sourceforge.net"
 language: c++
 primary_contact: "daniel.marjamaki@gmail.com"
