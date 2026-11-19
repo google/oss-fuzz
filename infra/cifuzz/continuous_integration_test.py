@@ -14,6 +14,7 @@
 """Tests for continuous_integration_module."""
 import os
 import sys
+import tempfile
 import unittest
 from unittest import mock
 
@@ -24,6 +25,7 @@ import docker
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import repo_manager
+import test_helpers
 
 # pylint: disable=no-self-use
 
@@ -51,6 +53,80 @@ class GetBuildCommand(unittest.TestCase):
   def test_build_command(self):
     """Tests that get_build_command works as intended."""
     self.assertEqual(continuous_integration.get_build_command(), 'compile')
+
+
+class CheckoutSpecifiedCommitTest(unittest.TestCase):
+  """Tests that a failed checkout cannot be treated as a successful build."""
+
+  def test_pr_checkout_failure(self):
+    """A missing PR ref fails checkout."""
+    manager = mock.Mock()
+    manager.checkout_pr.side_effect = RuntimeError('Missing PR ref')
+
+    self.assertFalse(
+        continuous_integration.checkout_specified_commit(
+            manager, 'refs/pull/1/merge', None))
+    manager.checkout_pr.assert_called_once_with('refs/pull/1/merge')
+    manager.checkout_commit.assert_not_called()
+
+  def test_commit_checkout_failure(self):
+    """A missing commit fails checkout."""
+    manager = mock.Mock()
+    manager.checkout_commit.side_effect = ValueError('Missing commit')
+
+    self.assertFalse(
+        continuous_integration.checkout_specified_commit(
+            manager, None, 'deadbeef'))
+    manager.checkout_commit.assert_called_once_with('deadbeef')
+
+  def test_successful_checkout(self):
+    """A successful checkout reports success."""
+    manager = mock.Mock()
+
+    self.assertTrue(
+        continuous_integration.checkout_specified_commit(
+            manager, 'refs/pull/1/merge', None))
+
+
+class GithubCheckoutFailureTest(unittest.TestCase):
+  """Tests that both GitHub CI paths report checkout failures."""
+
+  @mock.patch('build_specified_commit.detect_main_repo',
+              return_value=('example.com', '/src/example'))
+  @mock.patch.object(continuous_integration.InternalGithub,
+                     '_copy_repo_from_image')
+  @mock.patch.object(continuous_integration.InternalGithub,
+                     '_checkout_specified_commit',
+                     return_value=False)
+  def test_internal_github_build_preparation_fails(self, _, __, ___):
+    """Internal GitHub builds stop when checkout fails."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      config = test_helpers.create_build_config(oss_fuzz_project_name='example',
+                                                project_repo_name='example',
+                                                workspace=tmp_dir,
+                                                pr_ref='refs/pull/1/merge',
+                                                cfl_platform='github')
+      ci = continuous_integration.InternalGithub(config)
+
+      self.assertFalse(ci.prepare_for_fuzzer_build().success)
+
+  @mock.patch('repo_manager.clone_repo_and_get_manager')
+  @mock.patch.object(continuous_integration.ExternalGithub,
+                     '_checkout_specified_commit',
+                     return_value=False)
+  def test_external_github_build_preparation_fails(self, _, mock_clone):
+    """External GitHub builds stop when checkout fails."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      config = test_helpers.create_build_config(
+          project_repo_name='example',
+          workspace=tmp_dir,
+          git_url='https://example.com/repo',
+          pr_ref='refs/pull/1/merge',
+          cfl_platform='github')
+      ci = continuous_integration.ExternalGithub(config)
+
+      self.assertFalse(ci.prepare_for_fuzzer_build().success)
+      mock_clone.assert_called_once()
 
 
 class GetReplaceRepoAndBuildCommand(unittest.TestCase):
