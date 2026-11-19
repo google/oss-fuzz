@@ -13,14 +13,24 @@
 # limitations under the License.
 """Tests for http_utils.py"""
 
+import io
+import os
 import unittest
 from unittest import mock
+import zipfile
 
 from pyfakefs import fake_filesystem_unittest
 
 import http_utils
 
 mock_get_response = mock.MagicMock(status_code=200, content=b'')
+
+
+def _create_zip_bytes(member_name, content=b'hello'):
+  bio = io.BytesIO()
+  with zipfile.ZipFile(bio, 'w') as zf:
+    zf.writestr(member_name, content)
+  return bio.getvalue()
 
 
 class DownloadUrlTest(unittest.TestCase):
@@ -56,6 +66,54 @@ class DownloadUrlTest(unittest.TestCase):
     self.assertEqual(3, mock_sleep.call_count)
 
 
+class IsSafeZipMemberTest(unittest.TestCase):
+  """Tests _is_safe_zip_member."""
+
+  def setUp(self):
+    self.extract_dir = os.path.abspath('/extract-dir')
+
+  def test_safe_members(self):
+    """Tests that normal relative member paths are safe."""
+    self.assertTrue(
+        http_utils._is_safe_zip_member('file.txt', self.extract_dir))
+    self.assertTrue(
+        http_utils._is_safe_zip_member('dir/file.txt', self.extract_dir))
+    self.assertTrue(
+        http_utils._is_safe_zip_member('dir/subdir/file.txt', self.extract_dir))
+    self.assertTrue(
+        http_utils._is_safe_zip_member('dir/../dir/file.txt', self.extract_dir))
+
+  def test_traversal_members(self):
+    """Tests that path traversal member paths are rejected."""
+    self.assertFalse(
+        http_utils._is_safe_zip_member('../evil.txt', self.extract_dir))
+    self.assertFalse(
+        http_utils._is_safe_zip_member('../../evil.txt', self.extract_dir))
+    self.assertFalse(
+        http_utils._is_safe_zip_member('dir/../../evil.txt', self.extract_dir))
+
+  def test_absolute_members(self):
+    """Tests that absolute member paths are rejected."""
+    self.assertFalse(
+        http_utils._is_safe_zip_member('/evil.txt', self.extract_dir))
+    self.assertFalse(
+        http_utils._is_safe_zip_member('/etc/passwd', self.extract_dir))
+    self.assertFalse(
+        http_utils._is_safe_zip_member('\\Windows\\System32\\calc.exe',
+                                       self.extract_dir))
+
+  def test_drive_members(self):
+    """Tests that drive-prefixed paths are rejected."""
+    self.assertFalse(
+        http_utils._is_safe_zip_member('C:evil.txt', self.extract_dir))
+    self.assertFalse(
+        http_utils._is_safe_zip_member('C:\\evil.txt', self.extract_dir))
+
+  def test_empty_member(self):
+    """Tests that empty member is rejected."""
+    self.assertFalse(http_utils._is_safe_zip_member('', self.extract_dir))
+
+
 class DownloadAndUnpackZipTest(fake_filesystem_unittest.TestCase):
   """Tests download_and_unpack_zip."""
 
@@ -69,3 +127,38 @@ class DownloadAndUnpackZipTest(fake_filesystem_unittest.TestCase):
     self.assertFalse(
         http_utils.download_and_unpack_zip('/not/a/real/url',
                                            '/extract-directory'))
+
+  @mock.patch('http_utils.download_url')
+  def test_unpack_zip_traversal_rejected(self, mock_download):
+    """Tests that a zip with path traversal member is rejected."""
+    def write_zip(url, path, headers=None):  # pylint: disable=unused-argument
+      with open(path, 'wb') as f:
+        f.write(_create_zip_bytes('../evil.txt', b'malicious'))
+      return True
+
+    mock_download.side_effect = write_zip
+    extract_dir = '/extract-dir'
+    self.fs.create_dir(extract_dir)
+    self.assertFalse(
+        http_utils.download_and_unpack_zip('http://example.com/test.zip',
+                                           extract_dir))
+    self.assertFalse(os.path.exists('/evil.txt'))
+
+  @mock.patch('http_utils.download_url')
+  def test_unpack_zip_safe(self, mock_download):
+    """Tests that a zip with safe member is extracted properly."""
+    def write_zip(url, path, headers=None):  # pylint: disable=unused-argument
+      with open(path, 'wb') as f:
+        f.write(_create_zip_bytes('safe.txt', b'safe content'))
+      return True
+
+    mock_download.side_effect = write_zip
+    extract_dir = '/extract-dir'
+    self.fs.create_dir(extract_dir)
+    self.assertTrue(
+        http_utils.download_and_unpack_zip('http://example.com/test.zip',
+                                           extract_dir))
+    expected_file = os.path.join(extract_dir, 'safe.txt')
+    self.assertTrue(os.path.exists(expected_file))
+    with open(expected_file, 'rb') as f:
+      self.assertEqual(f.read(), b'safe content')
