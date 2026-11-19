@@ -23,9 +23,12 @@ cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
       "$SRC/dr_libs"
 make -j"$(nproc)"
 
-cp dr_wav_fuzzer dr_flac_fuzzer dr_mp3_fuzzer "$OUT/"
+cp dr_wav_fuzzer dr_wave_write_fuzzer dr_flac_fuzzer dr_flac_seek_fuzzer \
+   dr_mp3_fuzzer dr_mp3_seek_fuzzer dr_libs_fileio_fuzzer "$OUT/"
 
 git clone --depth 1 https://github.com/timblechmann/dr_libs-fuzzing-corpus.git "$SRC/dr_libs-fuzzing-corpus"
 find "$SRC/dr_libs-fuzzing-corpus/wav" -type f -exec zip -jq "$OUT/dr_wav_fuzzer_seed_corpus.zip" {} +
 find "$SRC/dr_libs-fuzzing-corpus/flac" -type f -exec zip -jq "$OUT/dr_flac_fuzzer_seed_corpus.zip" {} +
 find "$SRC/dr_libs-fuzzing-corpus/mp3" -type f -exec zip -jq "$OUT/dr_mp3_fuzzer_seed_corpus.zip" {} +
+
+cp "$SRC/dr_libs/tests/fuzzing/*.dict" "$OUT/"
