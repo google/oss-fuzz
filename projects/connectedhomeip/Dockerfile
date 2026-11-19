@@ -63,4 +63,15 @@ RUN cd $SRC/connectedhomeip && \
 # that need lowered ASLR, which only the privileged `compile` step provides).
 RUN pip3 install meson packaging
 
+# OpenSSL 3.5 for the non-MSAN builds; build.sh compiles it with the OSS-Fuzz toolchain. Same
+# release as the MSAN sysroot (scripts/build/build_msan_sysroot.sh), so all sanitizers build
+# against one OpenSSL version.
+ARG OPENSSL_VERSION=3.5.3
+ARG OPENSSL_SHA256=c9489d2abcf943cdc8329a57092331c598a402938054dc3a22218aea8a8ec3bf
+RUN wget -q -O $SRC/openssl.tar.gz \
+        https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz && \
+    echo "${OPENSSL_SHA256}  $SRC/openssl.tar.gz" | sha256sum -c - && \
+    mkdir $SRC/openssl && tar -xzf $SRC/openssl.tar.gz -C $SRC/openssl --strip-components=1 && \
+    rm $SRC/openssl.tar.gz
+
 COPY build.sh $SRC/

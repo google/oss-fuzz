@@ -51,6 +51,28 @@ if [ "${SANITIZER:-}" == "memory" ]; then
   scripts/build/build_msan_sysroot.sh --oss-fuzz --out-dir "$MSAN_SYSROOT"
 fi
 
+# Other sanitizers: build a static OpenSSL 3.5 from $SRC/openssl (see Dockerfile) instead of the
+# image's libssl-dev 3.0, matching the MSAN build. The SDK reads CHIP_OPENSSL_ROOT/
+# CHIP_OPENSSL_STATIC at `gn gen` time. Coverage builds compile OpenSSL
+# without instrumentation so the report covers Matter sources only. Introspector keeps the
+# system OpenSSL.
+OPENSSL_PREFIX="$SRC/openssl-install"
+if [ "${SANITIZER:-}" != "memory" ] && [ "${SANITIZER:-}" != "introspector" ]; then
+  OPENSSL_CFLAGS="${CFLAGS:-}"
+  if [ "${SANITIZER:-}" == "coverage" ]; then
+    OPENSSL_CFLAGS=""
+  fi
+  (
+    cd "$SRC/openssl"
+    CC="$CC" CFLAGS="$OPENSSL_CFLAGS -fPIC" ./Configure linux-x86_64 \
+      --prefix="$OPENSSL_PREFIX" --libdir=lib no-shared no-tests
+    make -j"$(nproc)" build_libs
+    make install_dev
+  )
+  export CHIP_OPENSSL_ROOT="$OPENSSL_PREFIX"
+  export CHIP_OPENSSL_STATIC=true
+fi
+
 # Activate Pigweed environment
 set +u
 PW_ENVSETUP_QUIET=1 source scripts/activate.sh
