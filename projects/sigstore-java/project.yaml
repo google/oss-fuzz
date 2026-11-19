@@ -8,7 +8,9 @@ sanitizers:
   - address
 primary_contact: "security@sigstore.dev"
 auto_ccs:
-  - "adam@adalogics.com"
-  - "arthur.chan@adalogics.com"
-  - "david@adalogics.com"
+  - lhinds@sigstore.dev
+  - hblauzvern@sigstore.dev
+  - bcallaway@sigstore.dev
+  - kommendorkapten@sigstore.dev
+  - santiagotorres@sigstore.dev
   - "appu@google.com"

@@ -365,6 +365,14 @@ wolfMQTTFuzzer::wolfMQTTFuzzer(fuzzing::datasource::Datasource& ds) :
 { }
 
 wolfMQTTFuzzer::~wolfMQTTFuzzer() {
+    /* The harness fills in the client by hand (memset + buffers) instead of
+     * calling MqttClient_Init, and Run() ends with MqttClient_NetDisconnect,
+     * which deliberately keeps the Session replay store. Nothing then releases
+     * the retained outbound QoS>0 PUBLISH copies allocated by
+     * MqttClient_Replay_AddSafe, so LeakSanitizer reports a direct leak.
+     * MqttClient_DeInit releases the replay slots (via MqttClient_Replay_Reset)
+     * and deliberately leaves tx_buf/rx_buf for the caller to free. */
+    MqttClient_DeInit(&client);
     this->free(tx_buf);
     this->free(rx_buf);
 }

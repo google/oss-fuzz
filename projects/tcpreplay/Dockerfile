@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 # python3/asciidoctor: needed by any git checkout build of tcpreplay, not
 # just when editing a *_opts.def - they regenerate the AutoOpts CLI parsers
 # and man pages that release tarballs ship pre-built but a git clone does

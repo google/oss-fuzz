@@ -1,7 +1,8 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/google/oss-fuzz/pull/8244"
 language: python
 primary_contact: "gaborjbernat@gmail.com"
-main_repo: "https://github.com/tox-dev/py-filelock"
+main_repo: "https://github.com/tox-dev/filelock"
 auto_ccs:
 - "david@adalogics.com"
 fuzzing_engines:

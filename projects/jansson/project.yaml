@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/akheron/jansson"
 language: c++
 primary_contact: "git@cfware.com"
