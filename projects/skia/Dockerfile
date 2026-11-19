@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # Mesa,libz/zlib, and xcb needed to build swiftshader
 RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \

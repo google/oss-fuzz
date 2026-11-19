@@ -2530,6 +2530,152 @@ def _ty_data_chunk() -> bytes:
     return body
 
 
+# ──────────────────────────────────────────────────────────────────────
+#  Additional TY variants.
+#
+#  The single structured_dtivo.ty seed above reaches the probe + the generic
+#  record demuxers, but leaves large reachable regions of modules/demux/ty.c
+#  dark (confirmed against the public coverage report): the whole XDS decoder
+#  (XdsParse/XdsDecode/XdsStringUtf8), the Series-2 AC-3 trimming branch, the
+#  Stand-Alone MPEG-audio PTS-offset detection in analyze_chunk(), the SA
+#  no-PES audio records, and the 16-bit record-count chunk header. The
+#  variants below are each a minimal (3-chunk = 384 KiB, the probe floor)
+#  structurally valid stream that targets one of those gaps. They are kept
+#  alongside structured_dtivo.ty (never replacing it) so coverage only grows.
+# ──────────────────────────────────────────────────────────────────────
+
+def _ty_build_chunk(records, rec16=False, seq_rec=0) -> bytes:
+    """Build one 128 KiB TY data chunk from a record list.
+
+    record = (rec_type, subrec, payload|None, ext|None, pts). With ext set the
+    record is 'extended' (closed-caption/XDS: 2 data bytes live in the header,
+    no payload). With rec16=True the chunk uses the 16-bit record-count header
+    path in get_chunk_header()."""
+    hdrs = b''
+    payloads = b''
+    for rt, sub, payload, ext, pts in records:
+        if ext is not None:
+            hdrs += _ty_rec_hdr(rt, sub, ext=ext)
+        else:
+            payload = payload or b''
+            hdrs += _ty_rec_hdr(rt, sub, size=len(payload), pts=pts)
+            payloads += payload
+    n = len(records)
+    if rec16:
+        # byte[3] & 0x80 set -> 16-bit rec count branch (get_chunk_header()).
+        chunk_hdr = bytes([n & 0xFF, (n >> 8) & 0xFF,
+                           seq_rec & 0xFF, 0x80 | ((seq_rec >> 8) & 0x7F)])
+    else:
+        chunk_hdr = bytes([n & 0xFF, seq_rec & 0xFF, 0x00, 0x00])  # 8-bit count
+    body = chunk_hdr + hdrs + payloads
+    assert len(body) <= _TY_CHUNK_SIZE, len(body)
+    body += b'\x00' * (_TY_CHUNK_SIZE - len(body))          # stuff bytes
+    return body
+
+
+def _ty_rec(rt, sub, payload=None, pts=0):
+    return (rt, sub, payload, None, pts)
+
+
+def _ty_ext(rt, sub, d1, d2):
+    return (rt, sub, None, (d1, d2), 0)
+
+
+def _ty_xds_records(start_byte, type_byte, data_pairs):
+    """A valid XDS packet as a list of field-2 CC records (rec_type 0x02):
+    start byte (odd 0x01..0x0d selects class+start) + data byte pairs (each
+    >=0x20) + 0x0f end byte with a checksum so (sum & 0x7f) == 0. Feeding these
+    through DemuxDecodeXds()/XdsParse() drives XdsDecode() to completion."""
+    isum = (start_byte & 0x7f) + (type_byte & 0x7f)
+    recs = [_ty_ext(0x02, 0x01, start_byte, type_byte)]
+    for a, b in data_pairs:
+        assert a >= 0x20, "XDS data byte d1 must be >=0x20 to be buffered"
+        recs.append(_ty_ext(0x02, 0x01, a, b))
+        isum += (a & 0x7f) + (b & 0x7f)
+    isum += 0x0f
+    recs.append(_ty_ext(0x02, 0x01, 0x0f, (-isum) & 0x7f))
+    return recs
+
+
+def _ty_wrap(data_chunks) -> bytes:
+    """master chunk + data chunks, padded to >=3 chunks for the probe peek."""
+    out = _ty_master_chunk() + b''.join(data_chunks)
+    nchunks = 1 + len(data_chunks)
+    if nchunks < 3:
+        out += b'\x00' * (_TY_CHUNK_SIZE * (3 - nchunks))
+    return out
+
+
+def _ty_xds_chunk() -> bytes:
+    """Series-1/DTivo chunk whose field-2 CC records carry complete XDS
+    packets: channel name, channel call-letter + number, current & future
+    program names (with accented chars to hit XdsStringUtf8's translation
+    table) and TPG/MPAA ratings. Targets XdsParse/XdsDecode*/XdsStringUtf8."""
+    recs = [
+        _ty_rec(0xE0, 0x06, b'\x00\x00\x01\xb3' + bytes(40)),   # 0x6e0 -> Series1
+        _ty_rec(0xC0, 0x09, b'\x0b\x77' + bytes(60)),           # 0x9c0 -> AC3/DTivo
+        # 608 field-0 CC pairs populate the CC buffer.
+        _ty_ext(0x01, 0x00, 0x14, 0x2C), _ty_ext(0x01, 0x00, 0x41, 0x42),
+    ]
+    recs += _ty_xds_records(0x05, 0x01, [(0x57, 0x58)])                  # CHANNEL name
+    recs += _ty_xds_records(0x05, 0x02, [(0x4B, 0x41), (0x42, 0x43),
+                                         (0x31, 0x32)])                  # call+channel
+    recs += _ty_xds_records(0x01, 0x03, [(0x4D, 0x6F), (0x2a, 0x5c),
+                                         (0x60, 0x7b)])                  # CURRENT name+accents
+    recs += _ty_xds_records(0x01, 0x05, [(0x28, 0x24)])                 # TPG rating
+    recs += _ty_xds_records(0x01, 0x05, [(0x20, 0x23)])                 # MPAA rating
+    recs += _ty_xds_records(0x03, 0x03, [(0x4E, 0x65), (0x78, 0x74)])   # FUTURE name
+    # A video record carrying a PES+PTS so the buffered CC data gets flushed.
+    recs += [_ty_rec(0xE0, 0x07,
+                     b'\x00\x00\x01\xe0' + _ty_pes(0xE0, bytes(40))[4:], pts=0x200000)]
+    return _ty_build_chunk(recs)
+
+
+def _ty_s2_ac3_chunk() -> bytes:
+    """Series-2 + AC-3/DTivo chunk with a long (>AC3_PKT_LENGTH) AC-3 PES so
+    DemuxRecAudio's Series-2 AC-3 trimming branch runs, plus video continue /
+    GOP subrecords."""
+    long_ac3 = b'\x00\x00\x01\xbd' + _ty_pes(0xBD, b'\x0b\x77' + bytes(1600))[4:]
+    recs = [
+        _ty_rec(0xE0, 0x0b, b'\x00\x00\x01\xb3' + bytes(40)),   # 0xbe0 -> Series2
+        _ty_rec(0xC0, 0x09, b'\x0b\x77' + bytes(60)),           # 0x9c0 -> AC3/DTivo
+        _ty_rec(0xC0, 0x09, long_ac3, pts=0x1000),              # long AC3 -> S2 trim
+        _ty_rec(0xE0, 0x02, b'\x00\x00\x01\xb6' + bytes(60)),   # video continue
+        _ty_rec(0xE0, 0x0c, b'\x00\x00\x01\xb8' + bytes(60), pts=0x2000),  # GOP
+    ]
+    return _ty_build_chunk(recs)
+
+
+def _ty_sa_mpeg_chunk() -> bytes:
+    """Series-1 Stand-Alone + MPEG audio only (0x3c0, no 0x9c0). With no AC-3
+    record, analyze_chunk() falls through to the MPEG-audio PTS-offset probe
+    (find_es_header on the record payload) to decide SA vs DTivo, and the
+    DemuxRecAudio SA no-PES (0x04) / MPEG-PES (0x03) branches run."""
+    mpeg_pes = b'\x00\x00\x01\xc0' + _ty_pes(0xC0, b'\xff\xfb' + bytes(40))[4:]
+    recs = [
+        _ty_rec(0xE0, 0x06, b'\x00\x00\x01\xb3' + bytes(40)),   # 0x6e0 -> Series1
+        _ty_rec(0xC0, 0x03, mpeg_pes),                          # 0x3c0 -> MPEG audio PES
+        _ty_rec(0xC0, 0x03, mpeg_pes),
+        _ty_rec(0xC0, 0x04, b'\xff\xfb' + bytes(40)),           # SA audio, no PES
+        _ty_rec(0xE0, 0x07,
+                b'\x00\x00\x01\xe0' + _ty_pes(0xE0, bytes(40))[4:], pts=0x3000),
+        _ty_rec(0xC0, 0x02, b'\x00\x00' + bytes(30)),           # audio continue
+    ]
+    return _ty_build_chunk(recs)
+
+
+def _ty_16bit_chunk() -> bytes:
+    """Data chunk using the 16-bit record-count header path."""
+    recs = [
+        _ty_rec(0xE0, 0x06, b'\x00\x00\x01\xb3' + bytes(40)),   # 0x6e0 -> Series1
+        _ty_rec(0xC0, 0x09, b'\x0b\x77' + bytes(60)),           # 0x9c0 -> AC3/DTivo
+        _ty_rec(0xE0, 0x0c, b'\x00\x00\x01\xb8' + bytes(60), pts=0x1000),  # GOP
+        _ty_rec(0x03, 0x00, bytes(24)),                         # tivo data service
+        _ty_rec(0x05, 0x00, bytes(24)),                         # "unknown but seen"
+    ]
+    return _ty_build_chunk(recs, rec16=True, seq_rec=1)
+
+
 def gen_ty(root):
     out = os.path.join(root, 'seeds', 'ty')
     os.makedirs(out, exist_ok=True)
@@ -2537,6 +2683,15 @@ def gen_ty(root):
     # leaves data chunks for Demux to iterate over.
     data = _ty_master_chunk() + _ty_data_chunk() * 3
     _write(os.path.join(out, 'structured_dtivo.ty'), data)
+    # Minimal (3-chunk) variants, each targeting a distinct dark region of
+    # modules/demux/ty.c (see per-builder docstrings above).
+    _write(os.path.join(out, 'xds.ty'), _ty_wrap([_ty_xds_chunk(), _ty_xds_chunk()]))
+    _write(os.path.join(out, 's2_ac3.ty'),
+           _ty_wrap([_ty_s2_ac3_chunk(), _ty_s2_ac3_chunk()]))
+    _write(os.path.join(out, 'sa_mpeg.ty'),
+           _ty_wrap([_ty_sa_mpeg_chunk(), _ty_sa_mpeg_chunk()]))
+    _write(os.path.join(out, '16bit_reccount.ty'),
+           _ty_wrap([_ty_16bit_chunk(), _ty_16bit_chunk()]))
 
 
 # ──────────────────────────────────────────────────
@@ -3295,6 +3450,108 @@ def gen_caf(root):
         _caf_chunk(b'data', struct.pack('>I', 0) + bytes(64)),
     ])
     _write(os.path.join(root, 'seeds/caf/lpcm_with_kuki.caf'), lpcm_kuki)
+
+    # The seeds below target branches in the pure Demux()/Open() parse path
+    # (i.e. reachable without the VLC_DEMUX_CONTROLS-gated seek/length controls)
+    # that the seeds above leave dark: the fixed-bytes/variable-samples packet
+    # description branch, the data-to-EOF chunk size, and the codec-dispatch and
+    # packet-table rejection branches in ReadDescChunk/ReadPaktChunk. Several of
+    # them exercise length arithmetic on attacker-controlled description/size
+    # fields, which is the memory-safety-relevant surface of this demuxer.
+
+    # 6) Constant byte size, variable sample count: bytes_per_packet != 0 but
+    #    frames_per_packet == 0 still makes NeedsPacketTable() true, so Demux()
+    #    walks the packet table; FrameSpanAddDescription() then takes the
+    #    fixed-bytes branch (no size var-int) and parses ONLY the sample-count
+    #    var-int per packet — the complement of seed (1) above.
+    bf_descs = b''.join(_caf_varint(n) for n in (1024, 1024, 512))
+    bf_pakt = (struct.pack('>q', 3) + struct.pack('>q', 1024 + 1024 + 512)
+               + struct.pack('>i', 0) + struct.pack('>i', 0) + bf_descs)
+    vbr_bytes_fixed = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=40, frames_per_packet=0,
+                                      channels=2, bits=0)),
+        _caf_chunk(b'pakt', bf_pakt),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(40 * 3)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/vbr_bytes_fixed.caf'), vbr_bytes_fixed)
+
+    # 7) data chunk with size == -1 (0xffff...ffff) == kCHUNK_SIZE_EOF: drives
+    #    the NextChunk() signed-size special case, the Open() loop's EOF break,
+    #    and TotalNumFrames()/Demux() using stream_Size() instead of a stored
+    #    data size. Must be the last chunk and extend to end of file.
+    data_eof = (_CAF_HEADER
+                + _caf_chunk(b'desc', _caf_desc(44100, b'lpcm', fmt_flags=0x0c,
+                                                bytes_per_packet=4,
+                                                frames_per_packet=1,
+                                                channels=2, bits=16))
+                + b'data' + struct.pack('>q', -1)
+                + struct.pack('>I', 0) + bytes(256))
+    _write(os.path.join(root, 'seeds/caf/data_eof_minus1.caf'), data_eof)
+
+    # 8) Float LPCM with a bit depth that is neither 32 nor 64: the float
+    #    branch of ReadDescChunk() leaves i_basic_codec == 0, so es_format_Init
+    #    is never called and fmt.i_codec stays 0, driving the "could not
+    #    determine codec" rejection that other seeds never reach.
+    undetermined = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'lpcm', fmt_flags=0x01,
+                                      bytes_per_packet=2, frames_per_packet=1,
+                                      channels=1, bits=16)),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(64)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/lpcm_float_undetermined.caf'),
+           undetermined)
+
+    # 9) Too many channels: a valid codec (aac -> MP4A) with channels beyond
+    #    AOUT_CHAN_MAX drives the channel-count rejection branch.
+    absurd_chan = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=40, frames_per_packet=1024,
+                                      channels=99, bits=0)),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(64)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/absurd_channels.caf'), absurd_chan)
+
+    # 10) 64-bit float LPCM (DVD_LPCM + float flag + 64 bits) -> VLC_CODEC_F64B,
+    #     the floating-point branch of ReadDescChunk the integer PCM seeds miss.
+    lpcm_f64 = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(48000, b'lpcm', fmt_flags=0x01,
+                                      bytes_per_packet=8, frames_per_packet=1,
+                                      channels=1, bits=64)),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(64)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/lpcm_float64.caf'), lpcm_f64)
+
+    # 11) Negative packet-table count: i_num_packets with the sign bit set makes
+    #     ReadBEInt64ToUInt64() reject it, driving ReadPaktChunk()'s error path.
+    neg_pakt = (struct.pack('>q', -1) + struct.pack('>q', 0)
+                + struct.pack('>i', 0) + struct.pack('>i', 0))
+    pakt_negative = _caf_build([
+        _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                      bytes_per_packet=0, frames_per_packet=0,
+                                      channels=2, bits=0)),
+        _caf_chunk(b'pakt', neg_pakt),
+        _caf_chunk(b'data', struct.pack('>I', 0) + bytes(16)),
+    ])
+    _write(os.path.join(root, 'seeds/caf/pakt_negative.caf'), pakt_negative)
+
+    # 12) Truncated packet descriptions: a VBR table (both counts variable, so
+    #     two var-ints per packet) that claims more packets than the description
+    #     bytes actually encode, placed as the final chunk so the description
+    #     reads run into EOF. This exercises the ParseVarLenInteger bounds checks
+    #     and the "description larger than peeked bytes" guard inside
+    #     FrameSpanAddDescription() on attacker-controlled data.
+    trunc_descs = _caf_varint(50) + _caf_varint(1024) + b'\xff'
+    trunc_pakt = (struct.pack('>q', 8) + struct.pack('>q', 8192)
+                  + struct.pack('>i', 0) + struct.pack('>i', 0) + trunc_descs)
+    vbr_trunc = (_CAF_HEADER
+                 + _caf_chunk(b'desc', _caf_desc(44100, b'aac ', fmt_flags=2,
+                                                 bytes_per_packet=0,
+                                                 frames_per_packet=0,
+                                                 channels=2, bits=0))
+                 + _caf_chunk(b'data', struct.pack('>I', 0) + bytes(70))
+                 + _caf_chunk(b'pakt', trunc_pakt))
+    _write(os.path.join(root, 'seeds/caf/vbr_truncated_desc.caf'), vbr_trunc)
 
 
 # ──────────────────────────────────────────────────

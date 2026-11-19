@@ -30,6 +30,7 @@ RUN git clone --depth 1 https://github.com/libyal/libfwnt.git libfwnt
 RUN git clone --depth 1 https://github.com/libyal/libfwps.git libfwps
 RUN git clone --depth 1 https://github.com/libyal/libfwsi.git libfwsi
 RUN git clone --depth 1 https://github.com/libyal/libhmac.git libhmac
+RUN git clone --depth 1 https://github.com/libyal/libuna.git libuna
 
 RUN git clone --depth 1 https://github.com/libyal/libagdb.git libagdb
 RUN git clone --depth 1 https://github.com/libyal/libcreg.git libcreg
