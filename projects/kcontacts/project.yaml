@@ -1,0 +1,11 @@
+base_os_version: ubuntu-24-04
+homepage: https://invent.kde.org/frameworks/kcontacts.git/
+language: c++
+primary_contact: tsdgeos@gmail.com
+auto_ccs:
+  - carlschwan@kde.org
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://invent.kde.org/frameworks/kcontacts.git"

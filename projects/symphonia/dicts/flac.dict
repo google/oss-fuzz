@@ -1,0 +1,18 @@
+# FLAC stream marker
+"fLaC"
+# Metadata block headers (type byte; 0x80 bit marks the last block)
+streaminfo="\x00\x00\x00\x22"
+padding="\x01"
+application="\x02"
+seektable="\x03"
+vorbis_comment="\x04"
+cuesheet="\x05"
+picture="\x06"
+last_streaminfo="\x80\x00\x00\x22"
+last_padding="\x81"
+last_vorbis_comment="\x84"
+# Frame sync codes (fixed and variable block size)
+frame_sync_fixed="\xFF\xF8"
+frame_sync_variable="\xFF\xF9"
+# Ogg FLAC mapping signature
+ogg_flac="\x7fFLAC"

@@ -69,7 +69,7 @@ public class WsPingPongFuzzer {
         ctx = tomcat.addContext("", null);
         ctx.addApplicationListener(TesterEchoServer.Config.class.getName());
         Tomcat.addServlet(ctx, "default", new DefaultServlet());
-        ctx.addServletMappingDecoded("/", "default");
+        ctx.addServletMapping("/", "default");
 
         connector1 = tomcat.getConnector();
         connector1.setPort(0);

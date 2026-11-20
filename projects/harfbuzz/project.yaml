@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/harfbuzz/harfbuzz"
 language: c++
 primary_contact: "harfbuzz-admin@googlegroups.com"
@@ -11,7 +12,8 @@ auto_ccs:
   - "jfkthame@gmail.com"
   - "qxliu@google.com"
   - "ckitagawa@google.com"
-  - "drott@chromium.org"
+  - "tkent@chromium.org"
+  - "kojii@chromium.org"
   - "fwang@igalia.com"
 vendor_ccs:
   - "jmuizelaar@mozilla.com"

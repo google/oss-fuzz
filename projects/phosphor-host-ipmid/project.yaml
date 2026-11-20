@@ -1,5 +1,6 @@
 homepage: "https://github.com/openbmc/phosphor-host-ipmid"
 language: c++
+primary_contact: "pedroysb@google.com"
 main_repo: "https://github.com/openbmc/phosphor-host-ipmid"
 fuzzing_engines:
   - libfuzzer
@@ -8,3 +9,6 @@ sanitizers:
 base_os_version: ubuntu-24-04
 vendor_ccs:
 - david@adalogics.com
+auto_ccs:
+- javanlacerda@google.com
+- cloud-ti-fuzzing+bugs@google.com

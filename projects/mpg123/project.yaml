@@ -12,3 +12,4 @@ labels:
     - sundew
   decode_fuzzer:
     - sundew
+disabled: true

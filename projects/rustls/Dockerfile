@@ -24,7 +24,7 @@ RUN apt-get --yes update \
    && apt-get clean \
    && rm --recursive --force /var/lib/apt/lists/*
 
-RUN git clone https://github.com/ctz/rustls
+RUN git clone https://github.com/rustls/rustls
 RUN git clone --depth 1 https://github.com/rustls/rustls-fuzzing-corpora
 
 WORKDIR $SRC

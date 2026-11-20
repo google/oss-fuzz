@@ -14,7 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-cmake -B build -S . -D BUILD_FUZZ_TESTS=ON -Dcxx_no_rtti=OFF -D CMAKE_BUILD_TYPE="Release" -G Ninja
+# NOTE: We intentionally do NOT build with -D CMAKE_BUILD_TYPE="Release".
+# Yoga's cmake/project-defaults.cmake adds "-ffunction-sections -fdata-sections"
+# and "-Wl,--gc-sections" only for the Release configuration. Under the AFL++
+# engine these strip the linker sections holding AFL's persistent-mode /
+# fork-server initialisation, which makes the fuzzer hang on its first input
+# (afl-fuzz reports "All test cases time out") and breaks `check_build`.
+# Omitting the Release type keeps OSS-Fuzz's own -O1 from $CFLAGS/$CXXFLAGS and
+# leaves the AFL instrumentation intact.
+cmake -B build -S . -D BUILD_FUZZ_TESTS=ON -Dcxx_no_rtti=OFF -G Ninja
 cmake --build build --target fuzz_layout
 
 cp ./build/fuzz/fuzz_layout $OUT/

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: https://github.com/davidhalter/jedi
 main_repo: https://github.com/davidhalter/jedi
 language: python

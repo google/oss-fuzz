@@ -38,7 +38,17 @@ do
   ./autogen.sh
   # OSSFuzz cross-compiles certain architectures which can lead to a partial
   # installed dependencies.
-  ./configure --enable-shared=no --with-openssl=no --with-zlib=no
+  # zlib is only required by the libewf write harness (HAVE_WRITE_SUPPORT).
+  # Without it libewf_handle_open rejects LIBEWF_OPEN_WRITE, so the write
+  # harness cannot reach the acquisition path. OpenSSL stays off (no network
+  # crypto dependency). Keep zlib off for the other projects: they fuzz fine
+  # without it and the 32-bit (i386) run environment lacks a 32-bit libz.
+  if test "${PROJECT}" = "libewf";
+  then
+    ./configure --enable-shared=no --with-openssl=no --with-zlib=yes
+  else
+    ./configure --enable-shared=no --with-openssl=no --with-zlib=no
+  fi
 
   # Build the project and fuzzer binaries.
   make -j$(nproc) LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE}

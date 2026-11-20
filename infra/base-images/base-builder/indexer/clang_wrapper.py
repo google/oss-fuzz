@@ -575,7 +575,7 @@ def main(argv: list[str]) -> None:
   if "-E" in argv:
     # Preprocessor-only invocation.
     modified_argv = remove_flag_and_value(argv, "-gen-cdb-fragment-path")
-    execute(modified_argv, compile_settings.clang_toolchain)
+    execute(modified_argv, compile_settings.clang_toolchain)  # pyrefly: ignore[bad-argument-type]
 
   fuzzing_engine_in_argv = check_fuzzing_engine_and_fix_argv(argv)
   indexer_targets: list[str] = [
@@ -587,7 +587,7 @@ def main(argv: list[str]) -> None:
   if not output_file:
     execute(argv, compile_settings.clang_toolchain)  # Missing output file
 
-  output_file = Path(output_file)
+  output_file = Path(output_file)  # pyrefly: ignore[bad-argument-type]
 
   if output_file.name.endswith(".o"):
     execute(argv, compile_settings.clang_toolchain)  # Not a real linker command

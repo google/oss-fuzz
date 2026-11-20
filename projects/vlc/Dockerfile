@@ -14,12 +14,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-  pkg-config cmake flex bison gettext libglu1-mesa-dev ninja-build \
-  python3-pip nasm yasm
-RUN pip3 install meson
+  pkg-config cmake flex bison gettext autopoint gperf libglu1-mesa-dev ninja-build \
+  python3-pip nasm yasm \
+  ffmpeg
+# ffmpeg (above) and Pillow drive generate_seeds.py's media seeds. Pillow is
+# installed via pip so it targets the same python3 the build uses (the apt
+# python3-pil package isn't importable by the OSS-Fuzz base python).
+RUN pip3 install meson pillow
 RUN git clone --depth 1 https://code.videolan.org/videolan/vlc.git vlc
 RUN git clone --depth 1 https://code.videolan.org/VideoLAN.org/vlc-fuzz-corpus.git vlc/fuzz-corpus
 WORKDIR vlc
-COPY build.sh fuzzing-modules.patch $SRC/
+COPY build.sh fuzzing-modules.patch generate_seeds.py $SRC/

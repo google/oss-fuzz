@@ -1,0 +1,1 @@
+fe80::1,eth1,10.0.0.1,ntp.ubuntu.com,bmc-host

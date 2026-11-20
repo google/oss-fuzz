@@ -28,19 +28,24 @@ int TidyXhtml(const uint8_t* data, size_t size, TidyBuffer* output, TidyBuffer* 
   TidyDoc tdoc = tidyCreate();
 
   ok = tidyOptSetBool( tdoc, TidyXhtmlOut, yes );
-  if (ok) tidySetErrorBuffer(tdoc, errbuf);
- 
+  tidySetErrorBuffer(tdoc, errbuf);
+
   char filename[256];
   sprintf(filename, "/tmp/libfuzzer.%d", getpid());
 
   FILE *fp = fopen(filename, "wb");
   if (!fp) {
+    tidyRelease( tdoc );
     return 0;
   }
   fwrite(data, size, 1, fp);
   fclose(fp);
 
   tidyParseFile(tdoc, filename);
+  tidyCleanAndRepair(tdoc);
+  tidyRunDiagnostics(tdoc);
+  tidyOptSetBool(tdoc, TidyForceOutput, yes);
+  tidySaveBuffer(tdoc, output);
 
   tidyRelease( tdoc );
   unlink(filename);

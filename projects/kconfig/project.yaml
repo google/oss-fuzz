@@ -1,0 +1,11 @@
+base_os_version: ubuntu-24-04
+homepage: https://invent.kde.org/frameworks/kconfig.git/
+language: c++
+primary_contact: tsdgeos@gmail.com
+auto_ccs:
+  - nicolas.fella@kde.org
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://invent.kde.org/frameworks/kconfig.git"

@@ -1,0 +1,13 @@
+base_os_version: ubuntu-24-04
+homepage: "https://www.httrack.com/"
+language: c
+primary_contact: "xroche@gmail.com"
+main_repo: "https://github.com/xroche/httrack.git"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64

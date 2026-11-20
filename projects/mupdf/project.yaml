@@ -1,4 +1,5 @@
-main_repo: git://git.ghostscript.com/mupdf.git
+base_os_version: ubuntu-24-04
+main_repo: "https://github.com/ArtifexSoftware/mupdf.git"
 homepage: "https://www.mupdf.com"
 language: c++
 primary_contact: tor.andersson@artifex.com

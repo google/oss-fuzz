@@ -56,11 +56,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fclose(fp);
 
   llama_model_params model_params = common_model_params_to_llama(params);
-  model_params.use_mmap = false;
+  model_params.load_mode = LLAMA_LOAD_MODE_NONE;
 
   const int n_predict = params.n_predict;
   if (setjmp(fuzzing_jmp_buf) == 0) {
-    auto *model = llama_load_model_from_file(filename, model_params);
+    auto *model = llama_model_load_from_file(filename, model_params);
     if (model != nullptr) {
 
       // Now time to do inference.
@@ -131,7 +131,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         llama_free(ctx);
       }
 
-      llama_free_model(model);
+      llama_model_free(model);
     }
   }
   llama_backend_free();

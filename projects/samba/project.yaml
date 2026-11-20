@@ -1,6 +1,7 @@
 homepage: "https://samba.org"
 main_repo: "https://git.samba.org/samba.git"
 language: c
+base_os_version: ubuntu-24-04
 primary_contact: "douglas.bagnall@catalyst.net.nz"
 auto_ccs:
   - "abartlet@samba.org"

@@ -24,16 +24,17 @@ sed -i 's/AC_MSG_ERROR(\[Boost Program Options library not found\])/AC_MSG_NOTIC
 # does not appear to be compiled as PIC
 sed -i 's/AC_CC_PIE//' configure.ac
 
-# Install Boost headers
+# work around https://github.com/mesonbuild/meson/issues/15470
+touch /usr/lib/libboost_bogus.so
+
+# Build and install LuaJIT, needed for DNSdist fuzzing targets
 (
- cd $SRC/
- tar jxf boost_1_84_0.tar.bz2
- cd boost_1_84_0/
- CFLAGS="" CXXFLAGS="" ./bootstrap.sh
- CFLAGS="" CXXFLAGS="" ./b2 headers
- cp -R boost/ /usr/include/
- # work around https://github.com/mesonbuild/meson/issues/15470
- touch /usr/lib/libboost_bogus.so
+  cd $SRC/luajit
+  git checkout v2.1
+  CFLAGS="" CXXFLAGS="" make -j$(nproc)
+  make install
+  # remove the shared library files to ensure we link statically
+  rm /usr/local/lib/libluajit*.so
 )
 
 # build fuzzing targets
@@ -72,17 +73,21 @@ if [ -f dnsdistdist/fuzz_dnsdistcache.cc ]; then
             make -j$(nproc) -C ext/arc4random/
         fi
         make -j$(nproc) fuzz_targets
+        # copy the fuzzing target binaries
+        cp ${build_dir}/fuzz_target_* "${OUT}/"
     else
         build_dir='build'
-        meson setup \
+        CC_LD=lld CXX_LD=lld meson setup \
           -D fuzz-targets=true \
+          -D fuzzer_ldflags=${LIB_FUZZING_ENGINE} \
           -D b_pie=false \
+          -D yaml=disabled \
+          -D libedit=disabled \
           ${build_dir}
         meson compile -C ${build_dir} fuzz-targets
+        # copy the fuzzing target binaries
+        find ${build_dir} -type f -executable -name 'fuzz-target-*' -exec cp {} ${OUT}/ \;
     fi
-
-    # copy the fuzzing target binaries
-    cp ${build_dir}/fuzz_target_* "${OUT}/"
 
     # back to the pdns/ directory
     cd ..
@@ -97,6 +102,7 @@ cp regression-tests/zones/* fuzzing/corpus/zones/
 # generate the corpus files
 if [ -d fuzzing/corpus/raw-dns-packets/ ]; then
     zip -j "${OUT}/fuzz_target_dnsdistcache_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
+    zip -j "${OUT}/fuzz-target-dnsdist-dnsparser_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
 fi
 if [ -d fuzzing/corpus/txt-records/ ]; then
     zip -j "${OUT}/fuzz_target_dnslabeltext_parseRFC1035CharString_seed_corpus.zip" fuzzing/corpus/txt-records/*

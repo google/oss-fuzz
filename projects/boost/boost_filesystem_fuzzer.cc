@@ -19,15 +19,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
     FuzzedDataProvider fdp(data, size);
     try {
-        boost::filesystem::path p(fdp.ConsumeRandomLengthString(5));
+        boost::filesystem::path p(fdp.ConsumeRandomLengthString());
 
-        p.replace_filename(fdp.ConsumeRandomLengthString(5));
+        p.replace_filename(fdp.ConsumeRandomLengthString());
         
         p.has_extension();
         p.extension();
-        p.replace_extension(fdp.ConsumeRandomLengthString(3));
+        p.replace_extension(fdp.ConsumeRandomLengthString());
         
-        boost::filesystem::path p1(fdp.ConsumeRandomLengthString(5));
+        boost::filesystem::path p1(fdp.ConsumeRandomLengthString());
         p.concat(p1);
         p.append(p1);
         p.remove_filename_and_trailing_separators();

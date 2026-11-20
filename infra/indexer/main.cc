@@ -19,7 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include "init.h"
 #include "indexer/frontend/frontend.h"
 #include "indexer/index/file_copier.h"
 #include "indexer/index/sqlite.h"
@@ -28,6 +27,7 @@
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/strings/string_view.h"
+#include "init.h"
 #include "clang/Tooling/AllTUsExecution.h"
 #include "clang/Tooling/CompilationDatabase.h"
 #include "clang/Tooling/Tooling.h"

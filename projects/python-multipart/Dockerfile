@@ -14,10 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/Kludex/python-multipart python-multipart
 RUN python3 -m pip install --upgrade pip
 WORKDIR python-multipart
-COPY *.patch $SRC/python-multipart/
 COPY build.sh *.options $SRC/

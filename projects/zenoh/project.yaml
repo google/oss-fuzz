@@ -1,0 +1,15 @@
+homepage: "https://zenoh.io/"
+main_repo: "https://github.com/eclipse-zenoh/zenoh"
+primary_contact: "chenying.kuo@zettascale.space"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+coverage_extra_args: >
+  -ignore-filename-regex=.*/registry/src/.*crates.io.*/.*
+  -ignore-filename-regex=.*/rustc/.*
+auto_ccs:
+  - "sasha@zettascale.space"
+  - "julien@zettascale.space"
+  - "olivier@zettascale.space"

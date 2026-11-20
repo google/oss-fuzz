@@ -12,4 +12,3 @@ vendor_ccs:
   - "dhofstet@gmail.com"
 # Bug reports are public by default:
 view_restrictions: none
-main_repo: 'https://github.com/uutils/coreutils'

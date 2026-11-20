@@ -14,3 +14,5 @@ sanitizers:
   - memory
   - undefined
 main_repo: 'https://github.com/nginx/unit'
+# Project is archived
+disabled: true

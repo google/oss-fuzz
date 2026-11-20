@@ -16,4 +16,10 @@
 #
 ################################################################################
 
+# zlib.net only serves the latest zlib release, so the hardcoded
+# https://zlib.net/zlib-1.2.13.tar.gz URL now returns 404 and breaks the build.
+# Redirect zlib to the GitHub release mirror, which hosts the identical tarball
+# (same sha256), keeping the dependency pinned.
+sed -i 's|https://zlib.net/zlib-" + ZLIB_RELEASE + ".tar.gz|https://github.com/madler/zlib/releases/download/v" + ZLIB_RELEASE + "/zlib-" + ZLIB_RELEASE + ".tar.gz|' "$SRC/jwt_verify_lib/repositories.bzl"
+
 bazel_build_fuzz_tests

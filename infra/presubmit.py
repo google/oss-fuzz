@@ -91,6 +91,7 @@ class ProjectYamlChecker:
       'coverage_extra_args',
       'disabled',
       'disable_remediation',
+      'disable_remediation_pre_review',
       'fuzzing_engines',
       'help_url',
       'homepage',

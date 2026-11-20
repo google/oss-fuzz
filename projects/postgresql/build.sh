@@ -24,20 +24,22 @@ chown -R fuzzuser .
 
 cd bld
 
-# Build icu 66 for postgres
-wget https://github.com/unicode-org/icu/releases/download/release-66-1/icu4c-66_1-src.tgz
-tar -xzf icu4c-66_1-src.tgz
-pushd icu/source
-./configure --prefix=/opt/icu66  --enable-renaming CC=clang CXX=clang++ CFLAGS="" CXXFLAGS=""
-make -j$(nproc)
-make install
-popd
-
-# Add environment flags for icu 66
-export PKG_CONFIG_PATH=/opt/icu66/lib/pkgconfig
-export LD_LIBRARY_PATH=/opt/icu66/lib
-export ICU_CFLAGS="-I/opt/icu66/include"
-export ICU_LIBS="-L/opt/icu66/lib -licui18n -licuuc -licudata"
+# Use the distribution's ICU (libicu-dev, installed in the Dockerfile) for both
+# the uninstrumented "createdb" build and the instrumented fuzzer build.
+#
+# This used to build ICU 66 from source into /opt/icu66 and point configure at
+# it via LD_LIBRARY_PATH.  That only worked while the base image was Ubuntu
+# 20.04, whose system ICU was also 66.  On Ubuntu 24.04 (system ICU 74) it
+# breaks in two ways:
+#   * `su fuzzuser` is setuid, so glibc's loader strips LD_LIBRARY_PATH from the
+#     environment, and PostgreSQL's own temp-install/dbfuzz rules overwrite it
+#     anyway -- initdb/postgres then die with "libicuuc.so.66: cannot open
+#     shared object file".
+#   * the fuzzer link line pulls in the *system* static ICU (-l:libicui18n.a
+#     etc.), which with --enable-renaming exports u_*_74 symbols and cannot
+#     satisfy a backend compiled against ICU 66 headers.
+# Using the system ICU keeps headers, shared libraries and static libraries all
+# at the same version, and drops a network fetch plus a full ICU build.
 
 CC="" CXX="" CFLAGS="" CXXFLAGS="" su fuzzuser -c ../configure
 cd src/backend/fuzzer

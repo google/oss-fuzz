@@ -43,7 +43,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   apr_pool_initialize();
   apr_pool_t *v = NULL;
-  apr_pool_create(&v, NULL);
+  if (apr_pool_create(&v, NULL) != APR_SUCCESS) {
+    free(new_str);
+    apr_pool_terminate();
+    return 0;
+  }
 
   int only_ascii = 1;
   for (int i = 0; i < size; i++) {
@@ -64,6 +68,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     ap_expr_parse(v, v, &val, new_str, NULL);
   }
 
+  apr_pool_destroy(v);
   apr_pool_terminate();
   free(new_str);
   return 0;

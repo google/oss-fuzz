@@ -18,15 +18,17 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # Base packages
 RUN apt-get -y update && apt-get -y install \
       gettext git libc6-dev-i386 libglib2.0-dev libncurses5-dev \
-      libtool ninja-build software-properties-common python3 python3-pip
+      libtool ninja-build software-properties-common python3 python3-pip python3-venv
 
-RUN python3 -m ensurepip --upgrade
-RUN python3 -m pip install --upgrade pip
+# Force use of Python 3.12
+RUN ln -sf /usr/bin/python3.12 /usr/local/bin/python3
+RUN rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
+
 RUN pip3 install west
 
 # Zephyr SDK:

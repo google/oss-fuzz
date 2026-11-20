@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN git clone --depth=1 https://github.com/danmar/cppcheck.git
+RUN git clone --depth=1 https://github.com/cppcheck-opensource/cppcheck.git
 
 WORKDIR cppcheck
 COPY build.sh $SRC/

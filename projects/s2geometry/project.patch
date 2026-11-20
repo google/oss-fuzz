@@ -1,16 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 5d951b0..9c6358d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -228,7 +228,11 @@ if (GOOGLETEST_ROOT)
-               src/s2/thread_testing.cc)
- endif()
- 
+@@ -289,6 +289,12 @@
+     absl::utility
+     absl::vlog_is_on
+     ${CMAKE_THREAD_LIBS_INIT})
++
 +add_executable(s2fuzzer src/s2_fuzzer.cc)
 +set_target_properties(s2fuzzer PROPERTIES LINK_FLAGS $ENV{LIB_FUZZING_ENGINE})
-+
- target_link_libraries(
-+    s2fuzzer
-     s2
-     ${OPENSSL_LIBRARIES}
-     absl::absl_vlog_is_on
++target_link_libraries(s2fuzzer
++    s2
++    ${OPENSSL_LIBRARIES})
+
+ # Allow other CMake projects to use this one with:
+ # list(APPEND CMAKE_MODULE_PATH "<path_to_s2geometry_dir>/third_party/cmake")

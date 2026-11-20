@@ -1,0 +1,16 @@
+fuzzing_engines:
+  - libfuzzer
+homepage: https://shiro.apache.org
+main_repo: https://github.com/apache/shiro
+language: jvm
+primary_contact: "lennyprimak@gmail.com"
+auto_ccs:
+  - "security@shiro.apache.org"
+  - "lprimak@apache.org"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined
+vendor_ccs:
+  - "lenny@flowlogix.com"

@@ -1,6 +1,6 @@
 homepage: "https://gstreamer.freedesktop.org/"
 language: c++
-primary_contact: "gstreamer-security@lists.freedesktop.org"
+primary_contact: "oss-fuzz@gstreamer.org"
 auto_ccs:
  - "bilboed@bilboed.com"
  - "tim@centricular.com"

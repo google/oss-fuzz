@@ -9,6 +9,7 @@ auto_ccs:
 main_repo: 'https://github.com/libvips/libvips'
 fuzzing_engines:
   - afl
+  - centipede
   - honggfuzz
   - libfuzzer
 coverage_extra_args: -sources src/libvips

@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <limits.h>
 
 extern int BZ2_bzBuffToBuffDecompress(char* dest,
                                       unsigned int* destLen,
@@ -33,13 +34,22 @@ int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     int r, small;
-    unsigned int nZ, nOut;
+    unsigned int nOut;
+
+    // Reject inputs that would cause integer overflow in size*2
+    // since nOut is unsigned int and the API uses unsigned int for sizes
+    if (size > UINT_MAX / 2) {
+        return 0;
+    }
 
     // See: https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L39
-    nOut = size*2;
+    nOut = (unsigned int)(size * 2);
     char *outbuf = malloc(nOut);
+    if (!outbuf) {
+        return 0;
+    }
     small = size % 2;
-    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, (char *)data, size,
+    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, (char *)data, (unsigned int)size,
             small, /*verbosity=*/0);
 
     if (r != BZ_OK) {

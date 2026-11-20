@@ -14,9 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone https://github.com/mz-automation/libiec61850
 
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_decode.options $SRC/fuzz_decode.options

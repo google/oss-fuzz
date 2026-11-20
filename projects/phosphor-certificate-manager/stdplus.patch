@@ -1,0 +1,92 @@
+diff --git a/include/stdplus/hash.hpp b/include/stdplus/hash.hpp
+index 455e714..de06413 100644
+--- a/include/stdplus/hash.hpp
++++ b/include/stdplus/hash.hpp
+@@ -1,14 +1,9 @@
+ #pragma once
+ #include <array>
+ #include <cstddef>
++#include <functional>
+ #include <tuple>
+ #include <utility>
+ 
+-namespace std
+-{
+-template <class Key>
+-struct hash;
+-}
+-
+ namespace stdplus
+ {
+ 
+diff --git a/include/stdplus/debug/lifetime.hpp b/include/stdplus/debug/lifetime.hpp
+index f285a85..53a152d 100644
+--- a/include/stdplus/debug/lifetime.hpp
++++ b/include/stdplus/debug/lifetime.hpp
+@@ -1,4 +1,5 @@
+ #pragma once
++#include <cstddef>
+ #include <source_location>
+ 
+ namespace stdplus::debug
+diff --git a/include/stdplus/net/addr/ip.hpp b/include/stdplus/net/addr/ip.hpp
+index 5cfdb17..d835ab8 100644
+--- a/include/stdplus/net/addr/ip.hpp
++++ b/include/stdplus/net/addr/ip.hpp
+@@ -11,3 +11,4 @@
+ #include <algorithm>
++#include <format>
+ #include <array>
+ #include <stdexcept>
+@@ -607,9 +608,6 @@
+ namespace std
+ {
+-template <typename T, typename CharT>
+-struct formatter;
+-
+ template <stdplus::InAddr Addr, typename CharT>
+ struct formatter<Addr, CharT> : stdplus::Format<stdplus::ToStr<Addr>, CharT>
+ {};
+ } // namespace std
+diff --git a/include/stdplus/function_view.hpp b/include/stdplus/function_view.hpp
+index f10b54e..cb524ba 100644
+--- a/include/stdplus/function_view.hpp
++++ b/include/stdplus/function_view.hpp
+@@ -1,5 +1,9 @@
+ #pragma once
++#include <concepts>
++#include <cstddef>
+ #include <cstdint>
++#include <memory>
++#include <type_traits>
+ #include <utility>
+ 
+ namespace stdplus
+diff --git a/include/stdplus/str/cat.hpp b/include/stdplus/str/cat.hpp
+index 59e51bf..a3e51bf 100644
+--- a/include/stdplus/str/cat.hpp
++++ b/include/stdplus/str/cat.hpp
+@@ -1,4 +1,5 @@
+ #pragma once
++#include <algorithm>
+ #include <string>
+ #include <string_view>
+ #include <utility>
+diff --git a/include/stdplus/net/addr/subnet.hpp b/include/stdplus/net/addr/subnet.hpp
+index a352f1e..eb35f1e 100644
+--- a/include/stdplus/net/addr/subnet.hpp
++++ b/include/stdplus/net/addr/subnet.hpp
+@@ -10,2 +10,3 @@
+ #include <type_traits>
++#include <format>
+ 
+@@ -370,9 +371,6 @@
+ namespace std
+ {
+-template <typename T, typename CharT>
+-struct formatter;
+-
+ template <stdplus::Subnet Sub, typename CharT>
+ struct formatter<Sub, CharT> : stdplus::Format<stdplus::ToStr<Sub>, CharT>
+ {};
+ } // namespace std

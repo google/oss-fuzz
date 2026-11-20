@@ -49,7 +49,12 @@ fi
 if [ "$FUZZING_ENGINE" != 'afl' ]; then
   cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_fuzzer.dict
   cp $SRC/fuzzing/dictionaries/http.dict $OUT/http_message_fuzzer.dict
+  cp $SRC/ws_fuzzer.dict $OUT/ws_fuzzer.dict
 fi
+
+# Dictionary for the evdns harnesses.
+cp $SRC/evdns_fuzzer.dict $OUT/evdns_client_fuzzer.dict
+cp $SRC/evdns_fuzzer.dict $OUT/evdns_server_fuzzer.dict
 
 # Build the project tests for Chronos
 mkdir -p $SRC/libevent/build-tests

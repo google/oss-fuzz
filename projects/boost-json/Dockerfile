@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone --depth 1 --single-branch --branch master https://github.com/boostorg/boost.git
 RUN pwd
@@ -23,6 +23,7 @@ RUN git -C boost submodule update --init libs/json
 RUN git -C boost/libs/json checkout develop
 RUN git -C boost submodule update --init --depth 1 \
 libs/assert \
+libs/charconv \
 libs/config/ \
 libs/compat \
 libs/container \

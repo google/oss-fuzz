@@ -78,7 +78,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
         }
         case 4: {
           int whences[5] = {SEEK_CUR, SEEK_SET, SEEK_END, 18};
-          int whence = dataLen ? (--dataLen, whences[(*data++)%6]) : SEEK_CUR;
+          int whence = dataLen ? (--dataLen, whences[(*data++)%5]) : SEEK_CUR;
           long offset = dataLen >= sizeof(long) ? (*(long*)data &0xFF) + 1: 1L;
           if(gzseek(file, offset, whence) < 0)
             goto exit;
@@ -197,7 +197,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
           break;
         }
         case 21: {
-          gzclose_r(file);
+          gzclose(file);
           file = NULL;
           break;
         }

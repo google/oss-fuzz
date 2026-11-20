@@ -14,12 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN echo "CXX=$CXX"
 RUN echo "CXXFLAGS=$CXXFLAGS"
 RUN apt-get update && apt-get install -y cmake ninja-build
 
-RUN git clone --depth 1 --branch master \
+RUN git clone --depth 1 --branch main \
   https://github.com/fmtlib/fmt.git
 
 WORKDIR fmt

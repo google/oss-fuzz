@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/osiegmar/FastCSV"
 language: jvm
 primary_contact: "oliver@siegmar.de"

@@ -4,7 +4,6 @@ language: c++
 primary_contact: "macro.fuzzing.uxuga@aleeas.com"
 auto_ccs:
   - "fanquake@gmail.com"
-  - "jonas@chaincode.com"
   - "pieter@chaincode.com"
   - "n.goeggi@gmail.com"
   - "achow101@gmail.com"

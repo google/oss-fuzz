@@ -123,6 +123,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   allocator.realloc = jbig2_fuzzer_realloc;
 
   ctx = jbig2_ctx_new(&allocator, (Jbig2Options) 0, NULL, NULL, NULL);
+  if (ctx == NULL)
+    return 0;
   if (jbig2_data_in(ctx, data, size) == 0)
   {
     if (jbig2_complete_page(ctx) == 0)
@@ -130,10 +132,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       Jbig2Image *image = jbig2_page_out(ctx);
       if (image != NULL)
       {
-        int sum = 0;
+        size_t sum = 0;
         for (int i = 0; i < image->height * image->stride; i++)
           sum += image->data[i];
-        printf("sum of image data bytes: %d\n", sum);
+        printf("sum of image data bytes: %zu\n", sum);
       }
       jbig2_release_page(ctx, image);
     }

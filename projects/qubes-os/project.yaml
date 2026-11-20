@@ -1,5 +1,5 @@
 homepage: "https://www.qubes-os.org/"
-main_repo: "https://github.com/QubesOS"
+main_repo: "https://github.com/QubesOS/qubes-app-linux-input-proxy"
 language: c++
 primary_contact: "jpo@vt.edu"
 auto_ccs:

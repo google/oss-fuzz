@@ -26,12 +26,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     cmsHPROFILE hProfile = cmsOpenProfileFromMem(data, size);
     if (!hProfile){
+        cmsDeleteContext(context);
         return 0;
     }
 
     uint32_t flags         = *((const uint32_t *)data+2);
     uint32_t intent        = *((const uint32_t *)data+3) % 16;
-    
+
     /* cmsGetPostScriptCSA */
     cmsUInt32Number result1 = cmsGetPostScriptCSA(context, hProfile, intent, flags, NULL, size);
     /* cmsGetPostScriptCRD */

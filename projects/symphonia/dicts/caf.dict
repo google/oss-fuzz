@@ -1,0 +1,28 @@
+# CAF file header: magic + version 1 + flags 0
+header="caff\x00\x01\x00\x00"
+"caff"
+# Chunk types
+"desc"
+"data"
+"chan"
+"pakt"
+"kuki"
+"info"
+"free"
+# Audio format IDs (desc chunk)
+"lpcm"
+"ima4"
+"aac "
+"alac"
+"opus"
+"flac"
+".mp1"
+".mp2"
+".mp3"
+"ulaw"
+"alaw"
+"MAC3"
+"MAC6"
+# lpcm format flags: float, little-endian (32-bit BE)
+flags_float="\x00\x00\x00\x01"
+flags_le="\x00\x00\x00\x02"

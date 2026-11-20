@@ -24,7 +24,7 @@ cp $SRC/libraw_cr2_fuzzer_seed_corpus.zip \
 # build project
 autoreconf --install
 ./configure --disable-examples
-make
+make -j$(nproc)
 
 # build fuzzers
 export CXXFLAGS="${CXXFLAGS} -std=c++17"

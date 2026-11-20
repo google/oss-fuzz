@@ -1,0 +1,22 @@
+diff --git a/src/event.cpp b/src/event.cpp
+index 7be3df2..ebbc24d 100644
+--- a/src/event.cpp
++++ b/src/event.cpp
+@@ -153,9 +153,14 @@ source event::add_oneshot_timer(sd_event_time_handler_t handler, void* data,
+ 
+     source s{*this};
+ 
+-    auto rc = sd_event_add_time_relative(
+-        eventp, &s.sourcep, CLOCK_BOOTTIME, time.count(), accuracy.count(),
+-        handler, data);
++    uint64_t now_usec;
++    auto rc = sd_event_now(eventp, CLOCK_BOOTTIME, &now_usec);
++    if (rc >= 0)
++    {
++        rc = sd_event_add_time(
++            eventp, &s.sourcep, CLOCK_BOOTTIME, now_usec + time.count(),
++            accuracy.count(), handler, data);
++    }
+ 
+     if (rc < 0)
+     {

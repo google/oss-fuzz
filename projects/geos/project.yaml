@@ -9,7 +9,7 @@ auto_ccs :
 sanitizers:
 - address
 - undefined
-main_repo: 'https://git.osgeo.org/gitea/geos/geos.git'
+main_repo: "https://gitea.osgeo.org/geos/geos"
 
 fuzzing_engines:
   - afl

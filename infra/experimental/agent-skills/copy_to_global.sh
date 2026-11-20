@@ -46,9 +46,13 @@ fi
 # Copy each skill from the local "skills" directory to the global skills directory
 # Make sure we work from this scripts base folder and copy each of the skills
 # fuzzing-memory-unsafe-expert
+# fuzzing-go-expert
+# fuzzing-rust-expert
+# fuzzing-jvm-expert
+# fuzzing-python-expert
 # oss-fuzz-engineer
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-for skill in "fuzzing-memory-unsafe-expert" "oss-fuzz-engineer"; do
+for skill in "fuzzing-memory-unsafe-expert" "fuzzing-go-expert" "fuzzing-rust-expert" "fuzzing-jvm-expert" "fuzzing-python-expert" "oss-fuzz-engineer"; do
   abs_skill="$SCRIPT_DIR/$skill"
   # Copy over the skill and replace any existing skill with the same name in the global skills directory
   if [ -d "$GLOBAL_SKILLS_DIR/$skill" ]; then

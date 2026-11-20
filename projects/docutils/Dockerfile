@@ -12,7 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM gcr.io/oss-fuzz-base/base-builder-python
-RUN git clone --depth=1 https://github.com/jwilk-mirrors/docutils docutils
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
+RUN apt-get update && apt-get install -y subversion
+RUN svn checkout https://svn.code.sf.net/p/docutils/code/trunk docutils
 COPY *.sh *py $SRC/
-WORKDIR $SRC/docutils
+WORKDIR $SRC/docutils/docutils

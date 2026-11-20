@@ -64,7 +64,9 @@ fuzzers="gstoraster_fuzzer                \
          gs_device_xpswrite_fuzzer        \
          gs_device_pxlcolor_fuzzer        \
          gs_device_tiffsep1_fuzzer        \
-         gs_device_pdfwrite_opts_fuzzer"
+         gs_device_pdfwrite_opts_fuzzer  \
+         gs_device_ljet4_fuzzer          \
+         gs_icc_fuzzer"
 
 for fuzzer in $fuzzers; do
   $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. -I$SRC \
@@ -114,9 +116,22 @@ for f in examples/ridt91.eps examples/snowflak.ps $SRC/pdf_seeds/pdf.pdf; do
 done
 zip -j "$OUT/gs_device_pdfwrite_opts_fuzzer_seed_corpus.zip" "$WORK"/gs_device_pdfwrite_opts_fuzzer_seeds/*
 
+# Generate structured PostScript / PCL-XL / PCL seeds (see generate_seeds.py).
+# The stock examples lean on DeviceRGB/Gray and basic operators; the generated
+# PostScript exercises the colour-space / CIE / ICC machinery (zcolor.c,
+# gsicc_create.c, zcie.c), smooth shadings, the PDF1.4 transparency compositor,
+# halftones (zht2.c), images and DSC parsing (dscparse.c) across every device.
+python3 $SRC/generate_seeds.py "$WORK/generated_gs_seeds"
+
 # Create seeds for gstoraster_fuzzer
 mkdir -p "$WORK/seeds"
 for f in examples/*.{ps,pdf}; do
+  s=$(sha1sum "$f" | awk '{print $1}')
+  cp "$f" "$WORK/seeds/$s"
+done
+# Add the generated PostScript seeds so they propagate to every device fuzzer
+# corpus copied from gstoraster_fuzzer below.
+for f in "$WORK"/generated_gs_seeds/ps/*.ps; do
   s=$(sha1sum "$f" | awk '{print $1}')
   cp "$f" "$WORK/seeds/$s"
 done
@@ -129,6 +144,7 @@ cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_eps2write_fuzzer_see
 cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_bmpmono_fuzzer_seed_corpus.zip"
 cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_xpswrite_fuzzer_seed_corpus.zip"
 cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_pxlcolor_fuzzer_seed_corpus.zip"
+cp "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$OUT/gs_device_ljet4_fuzzer_seed_corpus.zip"
 
 # Copy out options
 cp $SRC/*.options $OUT/
@@ -140,7 +156,8 @@ fuzzers_with_dict="gstoraster_fuzzer  \
          gs_device_pdfwrite_fuzzer    \
          gs_device_faxg3_fuzzer       \
          gs_device_bmpmono_fuzzer     \
-         gs_device_xpswrite_fuzzer"
+         gs_device_xpswrite_fuzzer    \
+         gs_device_ljet4_fuzzer"
 
 for fuzzer in $fuzzers_with_dict; do
   cp $SRC/dicts/pdf.dict $OUT/${fuzzer}.dict
@@ -153,6 +170,7 @@ for f in pcl/examples/*.pcl; do
   s=$(sha1sum "$f" | awk '{print $1}')
   cp "$f" "$WORK/pcl_seeds/$s"
 done
+cp "$WORK"/generated_gs_seeds/pcl/* "$WORK/pcl_seeds/" 2>/dev/null || true
 zip -j "$OUT/gs_pcl_fuzzer_seed_corpus.zip" "$WORK"/pcl_seeds/*
 
 # Create PXL seed corpus from example PXL files
@@ -161,6 +179,7 @@ for f in pcl/examples/*.pxl pcl/examples/*.px3; do
   s=$(sha1sum "$f" | awk '{print $1}')
   cp "$f" "$WORK/pxl_seeds/$s"
 done
+cp "$WORK"/generated_gs_seeds/pxl/* "$WORK/pxl_seeds/" 2>/dev/null || true
 zip -j "$OUT/gs_pxl_fuzzer_seed_corpus.zip" "$WORK"/pxl_seeds/*
 
 # Create XPS seed corpus from example XPS files
@@ -171,9 +190,23 @@ for f in pcl/examples/*.xps xps/tools/*.xps; do
     cp "$f" "$WORK/xps_seeds/$s"
   fi
 done
+cp "$WORK"/generated_gs_seeds/xps/* "$WORK/xps_seeds/" 2>/dev/null || true
 zip -j "$OUT/gs_xps_fuzzer_seed_corpus.zip" "$WORK"/xps_seeds/*
 
 # Copy dictionaries for new fuzzers
 cp $SRC/dicts/pcl.dict $OUT/gs_pcl_fuzzer.dict
 cp $SRC/dicts/pxl.dict $OUT/gs_pxl_fuzzer.dict
 cp $SRC/dicts/xps.dict $OUT/gs_xps_fuzzer.dict
+
+# Create ICC fuzzer seed corpus from ICC profile files
+# Prepend a selector byte (profile type) to each ICC file
+mkdir -p "$WORK/icc_seeds"
+for f in iccprofiles/*.icc lcms2mt/testbed/*.icc; do
+  if [ -f "$f" ]; then
+    s=$(sha1sum "$f" | awk '{print $1}')
+    # Prepend type selector byte (0=gray, 1=rgb, 2=cmyk)
+    printf "\x01" | cat - "$f" > "$WORK/icc_seeds/$s"
+  fi
+done
+zip -j "$OUT/gs_icc_fuzzer_seed_corpus.zip" "$WORK"/icc_seeds/*
+cp $SRC/dicts/pdf.dict $OUT/gs_icc_fuzzer.dict

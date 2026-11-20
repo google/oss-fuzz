@@ -14,10 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool bsdmainutils pkg-config libwebsockets-dev
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfMQTT.git wolfmqtt
-RUN git clone --depth 1 https://github.com/guidovranken/wolfmqtt-fuzzers.git
-RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git
+RUN git clone --depth 1 https://github.com/fuzzamos/fuzzing-headers.git
+RUN mkdir -p $SRC/wolfmqtt-fuzzers
+COPY fuzzer.cpp $SRC/wolfmqtt-fuzzers/
 COPY build.sh $SRC/

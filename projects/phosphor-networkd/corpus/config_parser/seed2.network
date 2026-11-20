@@ -1,0 +1,10 @@
+# Default network configuration
+[Match]
+Name=eth*
+
+[Network]
+DHCP=ipv4
+LinkLocalAddressing=yes
+
+[DHCP]
+ClientIdentifier=mac

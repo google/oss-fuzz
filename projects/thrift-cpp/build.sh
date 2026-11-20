@@ -18,6 +18,8 @@
 export ASAN_OPTIONS=detect_leaks=0
 
 # Build and install the compiler (disable other languages to save time)
+sed -i 's/-fsanitize=fuzzer/$(LIB_FUZZING_ENGINE)/g' lib/cpp/test/fuzz/Makefile.am
+sed -i 's/-fsanitize=fuzzer/$(LIB_FUZZING_ENGINE)/g' lib/c_glib/test/fuzz/Makefile.am
 ./bootstrap.sh
 ./configure --enable-static --disable-shared --with-cpp=yes --with-c_glib=no --with-python=no --with-py3=no --with-go=no --with-rs=no --with-java=no --with-nodejs=no --with-dotnet=no --with-kotlin=no
 make -j$(nproc)
@@ -25,7 +27,7 @@ make install
 
 # Build C++ library and fuzzers
 pushd lib/cpp/test/fuzz
-make check
+make check LIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE"
 for i in $(find . -maxdepth 1 -type f -executable -printf "%f\n"); do
     cp $i $OUT/$i
 done

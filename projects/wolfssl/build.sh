@@ -39,9 +39,10 @@ then
     OLD_CXXFLAGS="$CXXFLAGS"
 
     # Configure Cryptofuzz
-    cd $SRC/cryptofuzz
+    cd $SRC/oss-fuzz-targets/cryptofuzz
     sed -i 's/kNegativeIntegers = false/kNegativeIntegers = true/g' config.h
-    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-openssl-api/
+
+    cp -R $SRC/oss-fuzz-targets/cryptofuzz/ $SRC/cryptofuzz-openssl-api/
     cd $SRC/cryptofuzz-openssl-api/
     python gen_repository.py
     rm extra_options.h
@@ -75,7 +76,7 @@ then
     unset WOLFCRYPT_INCLUDE_PATH
 
     # Configure Cryptofuzz
-    cd $SRC/cryptofuzz/
+    cd $SRC/oss-fuzz-targets/cryptofuzz/
     python gen_repository.py
 
     rm extra_options.h
@@ -102,7 +103,7 @@ then
     echo -n '"' >>extra_options.h
 
     # Build normal math fuzzer
-    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-normal-math/
+    cp -R $SRC/oss-fuzz-targets/cryptofuzz/ $SRC/cryptofuzz-normal-math/
     cp -R $SRC/wolfssl/ $SRC/wolfssl-normal-math/
     cd $SRC/wolfssl-normal-math/
     autoreconf -ivf
@@ -132,7 +133,7 @@ then
     unset WOLFCRYPT_INCLUDE_PATH
 
     # Build sp-math-all fuzzer
-    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-sp-math-all/
+    cp -R $SRC/oss-fuzz-targets/cryptofuzz/ $SRC/cryptofuzz-sp-math-all/
     cp -R $SRC/wolfssl/ $SRC/wolfssl-sp-math-all/
     cd $SRC/wolfssl-sp-math-all/
     autoreconf -ivf
@@ -153,7 +154,7 @@ then
     unset WOLFCRYPT_INCLUDE_PATH
 
     # Build sp-math-all 8bit fuzzer
-    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-sp-math-all-8bit/
+    cp -R $SRC/oss-fuzz-targets/cryptofuzz/ $SRC/cryptofuzz-sp-math-all-8bit/
     cp -R $SRC/wolfssl/ $SRC/wolfssl-sp-math-all-8bit/
     cd $SRC/wolfssl-sp-math-all-8bit/
     autoreconf -ivf
@@ -174,7 +175,7 @@ then
     unset WOLFCRYPT_INCLUDE_PATH
 
     # Build sp-math fuzzer
-    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-sp-math/
+    cp -R $SRC/oss-fuzz-targets/cryptofuzz/ $SRC/cryptofuzz-sp-math/
     cp -R $SRC/wolfssl/ $SRC/wolfssl-sp-math/
     cd $SRC/wolfssl-sp-math/
     autoreconf -ivf
@@ -206,7 +207,7 @@ then
     unset WOLFCRYPT_INCLUDE_PATH
 
     # Build fastmath fuzzer
-    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-fastmath/
+    cp -R $SRC/oss-fuzz-targets/cryptofuzz/ $SRC/cryptofuzz-fastmath/
     cp -R $SRC/wolfssl/ $SRC/wolfssl-fastmath/
     cd $SRC/wolfssl-fastmath/
     autoreconf -ivf
@@ -227,7 +228,7 @@ then
     unset WOLFCRYPT_INCLUDE_PATH
 
     # Build heapmath fuzzer
-    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-heapmath/
+    cp -R $SRC/oss-fuzz-targets/cryptofuzz/ $SRC/cryptofuzz-heapmath/
     cp -R $SRC/wolfssl/ $SRC/wolfssl-heapmath/
     cd $SRC/wolfssl-heapmath/
     autoreconf -ivf
@@ -255,7 +256,6 @@ then
 
     # Unpack corpora from other projects
     unzip -n $SRC/corpus_bearssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
-    unzip -n $SRC/corpus_nettle.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_libecc.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_relic.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
     unzip -n $SRC/corpus_cryptofuzz-openssl.zip -d $SRC/cryptofuzz_seed_corpus/ >/dev/null
@@ -293,14 +293,14 @@ then
     rm -rf $SRC/cryptofuzz_seed_corpus.zip
 
     # Build SSL/SSH fuzzers
-    NEW_SRC=$SRC/wolf-ssl-ssh-fuzzers/oss-fuzz/projects/wolf-ssl-ssh/
+    NEW_SRC=$SRC/oss-fuzz-targets/wolf-ssl-ssh-fuzzers/oss-fuzz/projects/wolf-ssl-ssh/
     cp -R $SRC/wolfssl/ $NEW_SRC
     cp -R $SRC/wolfssh/ $NEW_SRC
-    cp -R $SRC/fuzzing-headers/ $NEW_SRC
+    cp -R $SRC/oss-fuzz-targets/fuzzing-headers/ $NEW_SRC
     OSS_FUZZ_BUILD=1 SRC="$NEW_SRC" $NEW_SRC/build.sh
 
     # Copy corpora for SSL/SSH fuzzers
-    cp $SRC/wolf-ssl-ssh-fuzzers/corpora/fuzzer-wolfssl-client-randomize_seed_corpus.zip $OUT/
+    cp $SRC/oss-fuzz-targets/wolf-ssl-ssh-fuzzers/corpora/fuzzer-wolfssl-client-randomize_seed_corpus.zip $OUT/
 fi
 
 if [[ $CFLAGS != *-m32* ]]
@@ -308,7 +308,7 @@ then
     cd $SRC/wolfssl
 
     # target_dir determined by Dockerfile
-    target_dir="$SRC/fuzz-targets"
+    target_dir="$SRC/oss-fuzz-targets/targets"
 
     # build wolfssl
     ./autogen.sh

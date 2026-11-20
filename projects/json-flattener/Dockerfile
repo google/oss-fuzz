@@ -25,11 +25,13 @@ ENV MVN $SRC/maven/apache-maven-3.6.3/bin/mvn
 RUN git clone --depth 1 https://github.com/google/fuzzing && \
     cp fuzzing/dictionaries/json.dict $SRC/FlattenFuzzer.dict && \
     cp fuzzing/dictionaries/json.dict $SRC/UnflattenFuzzer.dict && \
+    cp fuzzing/dictionaries/json.dict $SRC/RoundTripFuzzer.dict && \
     rm -rf fuzzing
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
     zip -j $SRC/FlattenFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
     zip -j $SRC/UnflattenFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
+    zip -j $SRC/RoundTripFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
     rm -rf go-fuzz-corpus
 
 # if not set python infra helper cannot be used for local testing

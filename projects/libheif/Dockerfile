@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone \
     --depth 1 \
@@ -24,4 +24,4 @@ RUN git clone \
 
 WORKDIR libheif
 
-COPY build.sh $SRC/
+COPY build.sh generate_seeds.py $SRC/

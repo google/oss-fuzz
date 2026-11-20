@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install -y make autoconf automake autopoint libtool pkg-config flex byacc
+RUN apt-get update && apt-get install -y make autoconf automake autopoint libtool pkg-config flex byacc zlib1g-dev zlib1g-dev:i386
 
 RUN git clone --depth 1 https://github.com/libyal/libcaes.git libcaes
 RUN git clone --depth 1 https://github.com/libyal/libfcrypto.git libfcrypto
@@ -30,6 +30,7 @@ RUN git clone --depth 1 https://github.com/libyal/libfwnt.git libfwnt
 RUN git clone --depth 1 https://github.com/libyal/libfwps.git libfwps
 RUN git clone --depth 1 https://github.com/libyal/libfwsi.git libfwsi
 RUN git clone --depth 1 https://github.com/libyal/libhmac.git libhmac
+RUN git clone --depth 1 https://github.com/libyal/libuna.git libuna
 
 RUN git clone --depth 1 https://github.com/libyal/libagdb.git libagdb
 RUN git clone --depth 1 https://github.com/libyal/libcreg.git libcreg
@@ -45,6 +46,7 @@ RUN git clone --depth 1 https://github.com/libyal/libolecf.git libolecf
 RUN git clone --depth 1 https://github.com/libyal/libpff.git libpff
 RUN git clone --depth 1 https://github.com/libyal/libregf.git libregf
 RUN git clone --depth 1 https://github.com/libyal/libscca.git libscca
+RUN git clone --depth 1 https://github.com/libyal/libwtcdb.git libwtcdb
 
 RUN git clone --depth 1 https://github.com/libyal/libwrc.git libwrc
 
