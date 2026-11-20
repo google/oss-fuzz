@@ -25,8 +25,10 @@ static size_t dataLen;
 static void check_compress_level(uint8_t *compr, size_t comprLen,
                                  uint8_t *uncompr, size_t uncomprLen,
                                  int level) {
-  compress2(compr, &comprLen, data, dataLen, level);
-  uncompress(uncompr, &uncomprLen, compr, comprLen);
+  if (compress2(compr, &comprLen, data, dataLen, level) == Z_MEM_ERROR)
+    return;
+  if (uncompress(uncompr, &uncomprLen, compr, comprLen) == Z_MEM_ERROR)
+    return;
 
   /* Make sure compress + uncompress gives back the input data. */
   assert(dataLen == uncomprLen);
