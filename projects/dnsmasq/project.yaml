@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://thekelleys.org.uk/dnsmasq/doc.html"
 language: c
 primary_contact: "simon@thekelleys.org.uk"

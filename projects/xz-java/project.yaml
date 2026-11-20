@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://tukaani.org/xz/java.html"
 language: jvm
 primary_contact: "lasse.collin@tukaani.org"

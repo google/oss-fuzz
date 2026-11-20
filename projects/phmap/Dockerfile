@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone https://github.com/greg7mdp/parallel-hashmap
 
 WORKDIR $SRC/parallel-hashmap

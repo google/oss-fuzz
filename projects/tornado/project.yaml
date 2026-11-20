@@ -1,0 +1,9 @@
+homepage: "https://www.tornadoweb.org"
+main_repo: "https://github.com/tornadoweb/tornado"
+language: python
+primary_contact: "python.tornado.security@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
