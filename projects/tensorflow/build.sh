@@ -37,13 +37,17 @@ def tf_oss_fuzz_fuzztest(
     )
 ENDBZL
 
-# 2) Remove checkpoint_reader_fuzz target (known to cause build failures)
+# 2) Remove fuzz targets that can't run standalone: checkpoint_reader_fuzz
+#    fails to build, and tflite_interp_overflow_fuzz loads testdata through
+#    bazel runfiles from a static initializer, so it CHECK-fails when the
+#    binary is executed from $OUT during entrypoint enumeration.
 python3 -c "
 import re, os
 path = os.path.join('$SRC', 'tensorflow', 'tensorflow', 'security', 'fuzzing', 'cc', 'BUILD')
 with open(path) as f:
     content = f.read()
-content = re.sub(r'\ntf_cc_fuzz_test\(\s*name\s*=\s*\"checkpoint_reader_fuzz\".*?\)\n', '\n', content, flags=re.DOTALL)
+for target in ('checkpoint_reader_fuzz', 'tflite_interp_overflow_fuzz'):
+    content = re.sub(r'\ntf_cc_fuzz_test\(\s*name\s*=\s*\"' + target + r'\".*?\)\n', '\n', content, flags=re.DOTALL)
 with open(path, 'w') as f:
     f.write(content)
 "
@@ -222,7 +226,12 @@ then
   unset FUZZTEST_EXTRA_TARGETS
 fi
 
-echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
+# Do NOT append write_to_bazelrc('import %workspace%/tools/bazel.rc') here:
+# tools/bazel.rc no longer exists in the TensorFlow tree, and the dangling
+# import makes every bazel invocation fatal. Also drop any stale config left
+# over from previous builds for the same reason (try-import in .bazelrc makes
+# a missing file safe).
+rm -f .tf_configure.bazelrc
 yes "" | ./configure
 
 # Old kernel fuzzers (core/kernels/fuzzing/) are disabled - they depend on
