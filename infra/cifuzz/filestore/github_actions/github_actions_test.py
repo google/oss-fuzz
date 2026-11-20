@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for github_actions."""
+import io
 import os
 import shutil
+import stat
 import sys
 import tarfile
 import tempfile
@@ -225,6 +227,194 @@ class GithubActionsFilestoreTest(unittest.TestCase):
           os.path.exists(
               os.path.join(artifact_download_dst_dir,
                            os.path.basename(self.testcase))))
+
+  def _mock_zip_unpack_from_tar(self, mock_unpack, archive_path):
+    """Configures |mock_unpack| to copy |archive_path| into temp dir."""
+
+    def copy_tar(_, download_temp_dir, headers=None):
+      del headers
+      shutil.copy(
+          archive_path,
+          os.path.join(download_temp_dir, os.path.basename(archive_path)))
+      return True
+
+    mock_unpack.side_effect = copy_tar
+
+  @mock.patch('filestore.github_actions.GithubActionsFilestore._find_artifact')
+  @mock.patch('http_utils.download_and_unpack_zip')
+  def test_download_build_preserves_executables_and_relative_symlinks(
+      self, mock_download_and_unpack_zip, mock_find_artifact):
+    """Tests that download_build preserves executable bits and safe internal
+    relative symlinks produced by tar_directory."""
+    mock_find_artifact.return_value = {
+        'expired': False,
+        'name': 'cifuzz-build-address',
+        'archive_download_url': 'http://example.com/build',
+    }
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+      build_src = os.path.join(temp_dir, 'out_src')
+      lib_dir = os.path.join(build_src, 'lib')
+      os.makedirs(lib_dir)
+
+      fuzzer_bin = os.path.join(build_src, 'example_fuzzer')
+      with open(fuzzer_bin, 'wb') as handle:
+        handle.write(b'\x7fELF-fuzzer-binary')
+      os.chmod(fuzzer_bin, 0o755)
+
+      options_file = os.path.join(build_src, 'example_fuzzer.options')
+      with open(options_file, 'w') as handle:
+        handle.write('[libfuzzer]\nmax_len = 1024\n')
+
+      real_so = os.path.join(lib_dir, 'libhelper.so.1.0')
+      with open(real_so, 'wb') as handle:
+        handle.write(b'\x7fELF-shared-object')
+      os.chmod(real_so, 0o755)
+      os.symlink('libhelper.so.1.0', os.path.join(lib_dir, 'libhelper.so.1'))
+      os.symlink('../example_fuzzer', os.path.join(lib_dir, 'fuzzer_alias'))
+
+      archive_path = os.path.join(temp_dir, 'cifuzz-build-address.tar')
+      github_actions.tar_directory(build_src, archive_path)
+      self._mock_zip_unpack_from_tar(mock_download_and_unpack_zip, archive_path)
+
+      dst_dir = os.path.join(temp_dir, 'out_dst')
+      os.mkdir(dst_dir)
+      store = github_actions.GithubActionsFilestore(self.config)
+      self.assertTrue(store.download_build('address', dst_dir))
+
+      extracted_bin = os.path.join(dst_dir, 'example_fuzzer')
+      self.assertTrue(os.path.isfile(extracted_bin))
+      self.assertEqual(0o755, stat.S_IMODE(os.stat(extracted_bin).st_mode))
+      self.assertTrue(
+          os.path.isfile(os.path.join(dst_dir, 'example_fuzzer.options')))
+      extracted_so_link = os.path.join(dst_dir, 'lib', 'libhelper.so.1')
+      self.assertTrue(os.path.islink(extracted_so_link))
+      self.assertEqual('libhelper.so.1.0', os.readlink(extracted_so_link))
+      extracted_alias = os.path.join(dst_dir, 'lib', 'fuzzer_alias')
+      self.assertTrue(os.path.islink(extracted_alias))
+      self.assertEqual('../example_fuzzer', os.readlink(extracted_alias))
+
+  @mock.patch('filestore.github_actions.GithubActionsFilestore._find_artifact')
+  @mock.patch('http_utils.download_and_unpack_zip')
+  def test_download_coverage_extracts_nested_reports(
+      self, mock_download_and_unpack_zip, mock_find_artifact):
+    """Tests that download_coverage extracts nested JSON and HTML reports."""
+    mock_find_artifact.return_value = {
+        'expired': False,
+        'name': 'cifuzz-coverage-latest',
+        'archive_download_url': 'http://example.com/coverage',
+    }
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+      cov_src = os.path.join(temp_dir, 'cov_src')
+      nested_dir = os.path.join(cov_src, 'report', 'linux')
+      os.makedirs(nested_dir)
+      with open(os.path.join(nested_dir, 'summary.json'), 'w') as handle:
+        handle.write('{"data": []}')
+
+      archive_path = os.path.join(temp_dir, 'cifuzz-coverage-latest.tar')
+      github_actions.tar_directory(cov_src, archive_path)
+      self._mock_zip_unpack_from_tar(mock_download_and_unpack_zip, archive_path)
+
+      dst_dir = os.path.join(temp_dir, 'cov_dst')
+      os.mkdir(dst_dir)
+      store = github_actions.GithubActionsFilestore(self.config)
+      self.assertTrue(store.download_coverage('latest', dst_dir))
+      self.assertTrue(
+          os.path.isfile(
+              os.path.join(dst_dir, 'report', 'linux', 'summary.json')))
+
+  @mock.patch('filestore.github_actions.GithubActionsFilestore._find_artifact')
+  @mock.patch('http_utils.download_and_unpack_zip', return_value=True)
+  def test_download_artifact_missing_inner_tarfile(self,
+                                                   mock_download_and_unpack_zip,
+                                                   mock_find_artifact):
+    """Tests that _download_artifact returns False if zip lacks tar."""
+    del mock_download_and_unpack_zip
+    mock_find_artifact.return_value = {
+        'expired': False,
+        'name': 'cifuzz-corpus',
+        'archive_download_url': 'http://example.com/download',
+    }
+    with tempfile.TemporaryDirectory() as dst_dir:
+      store = github_actions.GithubActionsFilestore(self.config)
+      self.assertFalse(store._download_artifact('corpus', dst_dir))
+
+  def _write_tar_entries(self, archive_path, entries):
+    """Writes (name, entry_type, target_or_bytes) entries to |archive_path|."""
+    with tarfile.open(archive_path, 'w') as tar_handle:
+      for member_name, entry_type, value in entries:
+        member = tarfile.TarInfo(name=member_name)
+        member.type = entry_type
+        if entry_type in (tarfile.SYMTYPE, tarfile.LNKTYPE):
+          member.linkname = value
+          tar_handle.addfile(member)
+        elif entry_type == tarfile.FIFOTYPE:
+          tar_handle.addfile(member)
+        else:
+          member.size = len(value)
+          tar_handle.addfile(member, io.BytesIO(value))
+
+  @mock.patch('filestore.github_actions.GithubActionsFilestore._find_artifact')
+  @mock.patch('http_utils.download_and_unpack_zip')
+  def test_download_artifact_rejects_unsafe_tar_members(
+      self, mock_download_and_unpack_zip, mock_find_artifact):
+    """Tests that _download_artifact rejects path traversal, absolute paths,
+    external symlinks/hardlinks, special files, and corrupted archives."""
+    mock_find_artifact.return_value = {
+        'expired': False,
+        'name': 'corpus',
+        'archive_download_url': 'http://example.com/download',
+    }
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+      outside_canary = os.path.join(temp_dir, 'escaped.txt')
+      unsafe_cases = [
+          ('relative_traversal', [
+              ('../escaped.txt', tarfile.REGTYPE, b'escape'),
+          ]),
+          ('nested_relative_traversal', [
+              ('corpus/sub/../../../escaped.txt', tarfile.REGTYPE, b'escape'),
+          ]),
+          ('absolute_member', [
+              (outside_canary, tarfile.REGTYPE, b'escape'),
+          ]),
+          ('external_absolute_symlink', [
+              ('escape_link', tarfile.SYMTYPE, outside_canary),
+          ]),
+          ('external_relative_symlink_chain', [
+              ('sub/escape_dir', tarfile.SYMTYPE, '../..'),
+              ('sub/escape_dir/escaped.txt', tarfile.REGTYPE, b'escape'),
+          ]),
+          ('external_hardlink', [
+              ('hard_escape', tarfile.LNKTYPE, outside_canary),
+          ]),
+          ('special_fifo_member', [
+              ('named_pipe', tarfile.FIFOTYPE, b''),
+          ]),
+      ]
+      for case_name, entries in unsafe_cases:
+        with self.subTest(case=case_name):
+          archive_path = os.path.join(temp_dir, 'cifuzz-corpus.tar')
+          self._write_tar_entries(archive_path, entries)
+          self._mock_zip_unpack_from_tar(mock_download_and_unpack_zip,
+                                         archive_path)
+          dst_dir = os.path.join(temp_dir, f'dst_{case_name}')
+          os.mkdir(dst_dir)
+          store = github_actions.GithubActionsFilestore(self.config)
+          self.assertFalse(store._download_artifact('corpus', dst_dir))
+          self.assertFalse(os.path.exists(outside_canary))
+
+      with self.subTest(case='corrupted_tar_stream'):
+        corrupt_archive = os.path.join(temp_dir, 'cifuzz-corpus.tar')
+        with open(corrupt_archive, 'wb') as handle:
+          handle.write(b'not-a-valid-tar-header')
+        self._mock_zip_unpack_from_tar(mock_download_and_unpack_zip,
+                                       corrupt_archive)
+        corrupt_dst = os.path.join(temp_dir, 'dst_corrupt')
+        os.mkdir(corrupt_dst)
+        store = github_actions.GithubActionsFilestore(self.config)
+        self.assertFalse(store._download_artifact('corpus', corrupt_dst))
 
   @mock.patch('filestore.github_actions.github_api.list_artifacts')
   def test_find_artifact(self, mock_list_artifacts):

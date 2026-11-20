@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "http://eigen.tuxfamily.org/index.php?title=Main_Page"
 language: c++
 primary_contact: "eigen-core-team@lists.tuxfamily.org"

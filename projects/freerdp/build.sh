@@ -43,6 +43,12 @@ cmake_args=(
     -DCMAKE_BUILD_TYPE=Debug
     -DBUILD_SHARED_LIBS=OFF
 
+    # LOCAL-ONLY: base-builder (focal) ships jansson 2.12 (< required 2.13)
+    # and json-c 0.13 (missing json_object_new_uint64), so winpr/json fails
+    # to compile. JSON is unused by the fuzz targets; disable it to build
+    # locally. (Upstream/production uses a newer base image.)
+    -DWITH_JSON_DISABLED=ON
+
     # C compiler
     -DCMAKE_C_COMPILER="${CC}"
     -DCMAKE_C_FLAGS="${CFLAGS}"
@@ -80,6 +86,16 @@ cp $WORK/TestFuzzServer_corpus/noinput/handshake $WORK/TestFuzzServer_corpus/sta
 cp $WORK/TestFuzzServer_corpus/input/handshake_cut* $WORK/TestFuzzServer_corpus/stage/
 zip --junk-paths --quiet $OUT/TestFuzzServer_seed_corpus.zip $WORK/TestFuzzServer_corpus/stage/*
 
+# TestFuzzCodecs seed corpus: valid RemoteFX bitstreams (RLGR1/RLGR3 tiles) that
+# reach the tile-decode subsystem (rfx_rlgr.c, rfx_decode.c, sse/rfx_sse2.c) the
+# mutation-only corpus never reaches. generate_seeds.py has no FreeRDP deps.
+rm -rf $WORK/TestFuzzCodecs_corpus $OUT/TestFuzzCodecs_seed_corpus.zip
+mkdir -p $WORK/TestFuzzCodecs_corpus
+python3 $SRC/generate_seeds.py $WORK/TestFuzzCodecs_corpus
+if [ -n "$(ls -A $WORK/TestFuzzCodecs_corpus 2>/dev/null)" ]; then
+    zip --junk-paths --quiet $OUT/TestFuzzCodecs_seed_corpus.zip $WORK/TestFuzzCodecs_corpus/*
+fi
+
 # Pack seed corpora for TestFuzzClientRdpFile
 if [ -f $OUT/TestFuzzClientRdpFile ]; then
     zip --junk-paths --quiet $OUT/TestFuzzClientRdpFile_seed_corpus.zip \
@@ -93,5 +109,6 @@ fi
 # Build test
 mkdir $SRC/FreeRDP/build-test
 cd $SRC/FreeRDP/build-test
-cmake -DBUILD_TESTING=True ..
+# LOCAL-ONLY: WITH_JSON_DISABLED, see note above (focal json libs too old).
+cmake -DBUILD_TESTING=True -DWITH_JSON_DISABLED=ON ..
 make

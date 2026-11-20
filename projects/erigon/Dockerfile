@@ -15,7 +15,7 @@
 # base-builder-go carries the OSS-Fuzz Go build tooling (compile_native_go_fuzzer,
 # go-118-fuzz-build, sanitizer/coverage instrumentation). It is required — a plain
 # golang image would lack these and build.sh would fail.
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 
 # Go version is NOT pinned here on purpose: erigon's go.mod (`go`/`toolchain`
 # directives) is the single source of truth, and Go's GOTOOLCHAIN=auto fetches
