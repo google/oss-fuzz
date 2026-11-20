@@ -1,0 +1,14 @@
+homepage: "https://gpty.dev"
+language: rust
+primary_contact: "gpty.dev@outlook.com"
+auto_ccs:
+  - "neil.pathare@outlook.com"
+main_repo: "https://github.com/godot-pty/gpty.git"
+file_github_issue: true
+base_os_version: ubuntu-24-04
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+architectures:
+  - x86_64
