@@ -30,7 +30,13 @@ cd $WORK/libressl
 CMAKE_DEFINES=""
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
-  CMAKE_DEFINES+=" -DOPENSSL_NO_ASM=1"
+  CMAKE_DEFINES+=" -DENABLE_ASM=OFF"
+fi
+# The introspector only needs the libraries used by the fuzzers. Building the
+# apps and tests creates many extra LTO links, which is slow and triggers
+# linker crashes in some LLVM versions.
+if [ "$SANITIZER" = "introspector" ]; then
+  CMAKE_DEFINES+=" -DLIBRESSL_APPS=OFF -DLIBRESSL_TESTS=OFF"
 fi
 
 cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \

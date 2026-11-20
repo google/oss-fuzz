@@ -1,0 +1,12 @@
+homepage: "https://www.barebox.org"
+base_os_version: ubuntu-24-04
+language: c
+primary_contact: "ahmad@kernel.org"
+main_repo: "https://github.com/barebox/barebox"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64

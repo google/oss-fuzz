@@ -16,13 +16,14 @@ import sys
 import atheris
 
 import black
+from black.parsing import InvalidInput
 
 
 def TestOneInput(data):
   fdp = atheris.FuzzedDataProvider(data)
   try:
     black.lib2to3_parse(fdp.ConsumeUnicodeNoSurrogates(sys.maxsize))
-  except black.InvalidInput:
+  except InvalidInput:
     pass
   except AssertionError:
     pass

@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://itextpdf.com/products/itext-7"
 language: jvm
 fuzzing_engines:

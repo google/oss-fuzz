@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y pkg-config libsystemd-dev libssl-dev libboost-all-dev systemd
 RUN pip3 install Inflection Mako meson ninja PyYAML jsonschema
 

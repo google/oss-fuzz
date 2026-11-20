@@ -21,4 +21,5 @@ cd test/fuzzing && make -j$(nproc) all
 # Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT.
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'          # Copy fuzz-target.
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'     # Copy dictionaries.
+find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'  # Copy fuzzer options
 find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';' # Copy seed corpora.

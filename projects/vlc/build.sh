@@ -230,3 +230,17 @@ done
 
 # Write an options file to disable leak for the general harness
 echo -e "[libfuzzer]\ndetect_leaks=0" > $OUT/vlc-demux-dec-libfuzzer.options
+
+# The TY (TiVo) demuxer (modules/demux/ty.c) probes by peeking 3 * 128 KiB, so
+# every structurally valid TY input is >= 384 KiB. libFuzzer's corpus pruning
+# ("-merge") drops any input larger than -max_len, which with the default cap
+# silently evicts *all* valid TY inputs and keeps the ty target's corpus empty
+# (observed: ty.c stuck at ~1% in production despite a valid 384 KiB+ seed;
+# a local -merge with a small max_len keeps ~180 features vs ~2240 with a cap
+# above the floor). Give the ty target an explicit max_len above that floor so
+# its seeds (and their mutations) survive pruning. detect_leaks=0 mirrors the
+# generic options above.
+if [ -f "$OUT/vlc-demux-dec-libfuzzer-ty" ]; then
+    printf '[libfuzzer]\ndetect_leaks=0\nmax_len=786432\n' \
+        > "$OUT/vlc-demux-dec-libfuzzer-ty.options"
+fi

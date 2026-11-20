@@ -43,6 +43,20 @@ ninja -j $(nproc) -C ${build}
 rm -rf ${WORK}/tmp
 mkdir -p ${WORK}/tmp/testdata
 unzip -q $SRC/dav1d_fuzzer_seed_corpus.zip -d ${WORK}/tmp/testdata
+
+# Add dav1d's conformance IVF vectors (already cloned for the meson tests) and
+# the oss-fuzz/ regression testcases to the corpus. They cover AV1 features the
+# base corpus lacks (film grain, s-frames, SVC, resize, 10/12-bit). Vectors are
+# capped at 2 MB (drops one 8.7 MB clip) and flattened to unique names; nothing
+# in the existing corpus is removed.
+testdata_src="${SRC}/dav1d/tests/dav1d-test-data"
+if [ -d "${testdata_src}" ]; then
+	while IFS= read -r f; do
+		cp "$f" "${WORK}/tmp/testdata/$(echo "${f#${testdata_src}/}" | tr '/ ' '__')"
+	done < <(find "${testdata_src}" \( \( -name '*.ivf' -size -2000000c \) \
+		-o \( -path '*/oss-fuzz/*' -type f \) \))
+fi
+
 cp $SRC/dec_fuzzer_seed_corpus.zip ${WORK}/tmp/seed_corpus.zip
 (cd ${WORK}/tmp && zip -q -m -r -0 ${WORK}/tmp/seed_corpus.zip testdata)
 
@@ -51,3 +65,20 @@ for fuzzer in $(find ${build}/tests/libfuzzer -maxdepth 1 -type f -executable -n
 	cp "${fuzzer}" $OUT/
 	cp ${WORK}/tmp/seed_corpus.zip $OUT/$(basename "$fuzzer")_seed_corpus.zip
 done
+
+# Build a no-SIMD fuzzer variant. By default dav1d runs hand-written assembly for
+# all DSP on x86, leaving the portable C reference code (src/*_tmpl.c, itx_1d.c,
+# pal.c) unfuzzed. Forcing the CPU-flags mask to 0 routes decoding through that C
+# instead. We recompile the harness with mask 0 baked in (so no runtime args are
+# needed) against the already-built static libdav1d.a.
+nosimd_src=${WORK}/dav1d_fuzzer_nosimd.c
+sed 's/^\( *\)int i = 1;/\1dav1d_set_cpu_flags_mask(0);\n\1int i = 1;/' \
+	tests/libfuzzer/dav1d_fuzzer.c > "${nosimd_src}"
+# Compile as C (so the LLVMFuzzer* symbols stay unmangled); link with CXX.
+$CC $CFLAGS \
+	-I$SRC/dav1d -I$SRC/dav1d/include -I$SRC/dav1d/include/dav1d \
+	-I$SRC/dav1d/tests/libfuzzer -I${build} -I${build}/include \
+	-c "${nosimd_src}" -o ${WORK}/dav1d_fuzzer_nosimd.o
+$CXX $CXXFLAGS ${WORK}/dav1d_fuzzer_nosimd.o -o $OUT/dav1d_fuzzer_nosimd \
+	$LIB_FUZZING_ENGINE ${build}/src/libdav1d.a
+cp ${WORK}/tmp/seed_corpus.zip $OUT/dav1d_fuzzer_nosimd_seed_corpus.zip

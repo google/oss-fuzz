@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,14 +16,26 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN apt-get update && apt-get install --reinstall -y patchelf make ninja-build meson libgtest-dev libgmock-dev pkg-config libsystemd-dev python3-pip libboost-all-dev && pip3 install inflection pyyaml mako jsonschema --break-system-packages
+RUN apt-get update && apt-get install --reinstall -y \
+    cmake ninja-build pkg-config \
+    libsystemd-dev systemd-dev libboost-all-dev \
+    python3-pip zip && \
+    pip3 install --break-system-packages meson inflection pyyaml mako jsonschema
 
-RUN git clone https://github.com/openbmc/bios-bmc-smm-error-logger
-COPY *.sh *.diff $SRC/
+RUN git clone --depth 1 https://github.com/openbmc/bios-bmc-smm-error-logger.git bios-bmc-smm-error-logger
+
 WORKDIR $SRC/bios-bmc-smm-error-logger
 
-RUN git clone https://github.com/google/googletest.git --branch v1.15.2 subprojects/googletest
-RUN git clone https://github.com/openbmc/libbej subprojects/libbej
-RUN git clone https://github.com/nlohmann/json.git subprojects/nlohmann_json
-RUN git clone https://github.com/openbmc/phosphor-dbus-interfaces.git subprojects/phosphor-dbus-interfaces
+RUN git clone --depth 1 https://github.com/openbmc/libbej.git subprojects/libbej && \
+    git clone --depth 1 https://github.com/nlohmann/json.git subprojects/nlohmann_json && \
+    git clone --depth 1 https://github.com/openbmc/phosphor-dbus-interfaces.git subprojects/phosphor-dbus-interfaces && \
+    git clone --depth 1 https://github.com/openbmc/sdbusplus.git subprojects/sdbusplus && \
+    git clone --depth 1 https://github.com/openbmc/stdplus.git subprojects/stdplus && \
+    git clone --depth 1 https://github.com/NVIDIA/stdexec.git subprojects/stdexec && \
+    git clone --depth 1 https://github.com/fmtlib/fmt.git subprojects/fmt && \
+    git clone --depth 1 https://github.com/Naios/function2.git subprojects/function2 && \
+    cp subprojects/sdbusplus/subprojects/stdexec.wrap subprojects/ && \
+    cp subprojects/stdplus/subprojects/fmt.wrap subprojects/ && \
+    cp subprojects/stdplus/subprojects/function2.wrap subprojects/
 
+COPY build.sh rde_fuzz.cpp fuzzing_meson.build generate_seeds.py rde_fuzz.dict rde_fuzz.options *.patch $SRC/

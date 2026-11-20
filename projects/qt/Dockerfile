@@ -17,6 +17,10 @@
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y libssl-dev ninja-build libc6-dev:i386
+# codecs for qtmultimedia
+RUN apt-get update && apt-get install -y libavcodec-dev libavformat-dev libavutil-dev \
+                                         libswscale-dev libswresample-dev libpulse-dev \
+                                         libpipewire-0.3-dev
 
 RUN git clone --depth 1 https://github.com/AFLplusplus/AFLplusplus.git myaflplusplus && \
     cp -r myaflplusplus/dictionaries afldictionaries && \
@@ -30,9 +34,15 @@ WORKDIR $SRC/qt
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qt5.git && \
     cp -r qt5/cmake . && \
     rm -rf qt5
-RUN git clone --branch dev --no-checkout --shallow-since='-6 months' git://code.qt.io/qt/qtbase.git
-RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtimageformats.git
-RUN git clone --branch dev --no-checkout --depth 1 git://code.qt.io/qt/qtsvg.git
-RUN cmake -DSYNC_TO_MODULE=qtsvg -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtbase.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtimageformats.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtlanguageserver.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtshadertools.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtsvg.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtdeclarative.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtquicktimeline.git
+RUN git clone --branch dev --shallow-since='-6 months' git://code.qt.io/qt/qtquick3d.git
+RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtmultimedia.git
+RUN cmake -DSYNC_TO_MODULE=qtmultimedia -DSYNC_TO_BRANCH=dev -P cmake/QtSynchronizeRepo.cmake
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/

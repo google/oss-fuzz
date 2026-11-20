@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://cloud.spring.io/spring-cloud-netflix/reference/html/"
 language: jvm
 main_repo: "https://github.com/spring-cloud/spring-cloud-netflix.git"

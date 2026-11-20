@@ -24,17 +24,8 @@ sed -i 's/AC_MSG_ERROR(\[Boost Program Options library not found\])/AC_MSG_NOTIC
 # does not appear to be compiled as PIC
 sed -i 's/AC_CC_PIE//' configure.ac
 
-# Install Boost headers
-(
- cd $SRC/
- tar jxf boost_1_84_0.tar.bz2
- cd boost_1_84_0/
- CFLAGS="" CXXFLAGS="" ./bootstrap.sh
- CFLAGS="" CXXFLAGS="" ./b2 headers
- cp -R boost/ /usr/include/
- # work around https://github.com/mesonbuild/meson/issues/15470
- touch /usr/lib/libboost_bogus.so
-)
+# work around https://github.com/mesonbuild/meson/issues/15470
+touch /usr/lib/libboost_bogus.so
 
 # Build and install LuaJIT, needed for DNSdist fuzzing targets
 (
@@ -111,6 +102,7 @@ cp regression-tests/zones/* fuzzing/corpus/zones/
 # generate the corpus files
 if [ -d fuzzing/corpus/raw-dns-packets/ ]; then
     zip -j "${OUT}/fuzz_target_dnsdistcache_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
+    zip -j "${OUT}/fuzz-target-dnsdist-dnsparser_seed_corpus.zip" fuzzing/corpus/raw-dns-packets/*
 fi
 if [ -d fuzzing/corpus/txt-records/ ]; then
     zip -j "${OUT}/fuzz_target_dnslabeltext_parseRFC1035CharString_seed_corpus.zip" fuzzing/corpus/txt-records/*

@@ -16,7 +16,7 @@
 ################################################################################
 
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y \
     libcups2-dev \

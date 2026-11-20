@@ -8,3 +8,5 @@ auto_ccs:
   - "david@adalogics.com"
   - "adam@adalogics.com"
 main_repo: 'https://github.com/strongswan/strongswan.git'
+
+base_os_version: ubuntu-24-04
