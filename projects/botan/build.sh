@@ -21,8 +21,36 @@ ln -s $SRC/fuzzer_corpus .
 
 ./src/scripts/config_for_oss_fuzz.py $CXX "$CXXFLAGS"
 
-make -j$(nproc) libs fuzzers
+# Compiling Botan with sanitizer instrumentation can peak at ~2 GB per TU.
+# Sizing -j from nproc alone OOM-kills builds on memory-constrained hosts;
+# derive the job count from the memory actually available instead.
+JOBS=$(nproc)
+AVAIL_MB=$(free -m 2>/dev/null | awk '/^Mem:/{print $7}')
+if [ -n "$AVAIL_MB" ]; then
+   MEM_JOBS=$(( AVAIL_MB / 2560 ))
+   if [ "$MEM_JOBS" -lt "$JOBS" ]; then
+      JOBS=$MEM_JOBS
+   fi
+fi
+if [ "$JOBS" -lt 1 ]; then
+   JOBS=1
+fi
+echo "Building with -j${JOBS} (nproc=$(nproc), avail=${AVAIL_MB:-unknown}MB)"
+make -j"${JOBS}" libs fuzzers
+
+# Generate more corpus for fuzzers
+python3 $SRC/enrich_corpus.py \
+   --botan-data $SRC/botan/src/tests/data \
+   --corpus-dir $SRC/botan/fuzzer_corpus
+
 make fuzzer_corpus_zip
+
+# Repackage corpus
+for z in build/obj/fuzzer/*.zip; do
+   [ -e "$z" ] || continue
+   base=$(basename "$z" .zip)
+   cp -f "$z" "$OUT/${base}_seed_corpus.zip"
+done
 
 # the seed corpus zips will also be in this directory
 cp build/fuzzer/* $OUT
