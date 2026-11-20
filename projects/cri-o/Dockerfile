@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN apt-get update && apt-get install -y libaio-dev autoconf gettext texinfo \
 	libbtrfs-dev git libassuan-dev libdevmapper-dev libglib2.0-dev libc6-dev \
 	libgpgme-dev libgpg-error-dev libseccomp-dev libsystemd-dev libselinux1-dev \
