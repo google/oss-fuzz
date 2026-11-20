@@ -1,0 +1,5 @@
+POST /axis2/services/FuzzService HTTP/1.1
+Content-Type: text/xml; charset=UTF-8
+SOAPAction: "urn:echo"
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header xmlns:wsa="http://www.w3.org/2005/08/addressing"><wsa:To>http://localhost:8080/axis2/services/FuzzService</wsa:To><wsa:Action>urn:echo</wsa:Action><wsa:MessageID>urn:uuid:2</wsa:MessageID><wsa:ReplyTo><wsa:Address>http://www.w3.org/2005/08/addressing/anonymous</wsa:Address></wsa:ReplyTo></soapenv:Header><soapenv:Body><ns:echo xmlns:ns="http://services.axis2.fuzz"><ns:args0>x</ns:args0></ns:echo></soapenv:Body></soapenv:Envelope>

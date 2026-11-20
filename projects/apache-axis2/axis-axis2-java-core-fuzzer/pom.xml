@@ -6,33 +6,34 @@
 	<artifactId>axis-axis2-java-core-fuzzer</artifactId>
 	<version>${fuzzedLibaryVersion}</version>
 	<packaging>jar</packaging>
-	
+
 	<properties>
-		<maven.compiler.source>15</maven.compiler.source>
-		<maven.compiler.target>15</maven.compiler.target>
+		<!-- Axis2 2.x requires Java 17 -->
+		<maven.compiler.release>17</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fuzzedLibaryVersion>1.8.2</fuzzedLibaryVersion>
-		<exec.mainClass>ossfuzz.HttpInterfaceFuzzer</exec.mainClass>
+		<fuzzedLibaryVersion>2.0.2-SNAPSHOT</fuzzedLibaryVersion>
 	</properties>
 
 	<!-- This repositories list is copy pasted from the projects' main BOM -->
-	
+
 	<dependencies>
 		<!--
 			On the CI, install the jazzer file with
-		
+
 			mvn install:install-file -Dfile=${JAZZER_API_PATH} \
 				-DgroupId="com.code-intelligence" \
 				-DartifactId="jazzer-api" \
 				-Dversion="0.12.0" \
 				-Dpackaging=jar
-		
-			in order to avoid mismatching driver/api versions.
+
+			in order to avoid mismatching driver/api versions. "provided": the API is part of the
+			Jazzer driver at runtime and must not be copied next to the fuzzers.
 		-->
 		<dependency>
 			<groupId>com.code-intelligence</groupId>
 			<artifactId>jazzer-api</artifactId>
 			<version>0.12.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
@@ -51,6 +52,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.axis2</groupId>
+			<artifactId>axis2-json</artifactId>
+			<version>${fuzzedLibaryVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.axis2</groupId>
     		<artifactId>axis2-transport-http</artifactId>
 			<version>${fuzzedLibaryVersion}</version>
 		</dependency>
@@ -58,6 +64,11 @@
 			<groupId>org.apache.axis2</groupId>
     		<artifactId>axis2-transport-local</artifactId>
 			<version>${fuzzedLibaryVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.0.0</version>
 		</dependency>
 		<dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -70,26 +81,41 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.3.0</version>
-				<configuration>
-					<filters>
-						<filter>
-							<artifact>*:*</artifact>
-							<excludes>
-								<exclude>META-INF/*.SF</exclude>
-								<exclude>META-INF/*.DSA</exclude>
-								<exclude>META-INF/*.RSA</exclude>
-							</excludes>
-						</filter>
-					</filters>
-				</configuration>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.8.1</version>
 				<executions>
+					<!--
+						The fuzzers run with the dependency jars next to the fuzzer jar instead of in
+						one shaded jar: Axiom, Axis2 and the XML parsers locate their implementations
+						through META-INF/axiom.xml and META-INF/services files, which shading would
+						overwrite instead of merge.
+					-->
 					<execution>
+						<id>copy-libs</id>
 						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
+						<goals><goal>copy-dependencies</goal></goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<includeScope>runtime</includeScope>
+						</configuration>
+					</execution>
+					<!-- The addressing module is deployed from this archive at fuzzer start-up. -->
+					<execution>
+						<id>copy-mar</id>
+						<phase>process-resources</phase>
+						<goals><goal>copy</goal></goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.apache.axis2</groupId>
+									<artifactId>addressing</artifactId>
+									<version>${fuzzedLibaryVersion}</version>
+									<type>mar</type>
+									<destFileName>addressing.mar</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>${project.build.outputDirectory}/fuzz/axis2</outputDirectory>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

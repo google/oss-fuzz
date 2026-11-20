@@ -1,0 +1,5 @@
+POST /axis2/services/FuzzService HTTP/1.1
+Content-Type: text/xml; charset=UTF-8
+SOAPAction: "urn:anything"
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body><ns:anything xmlns:ns="http://services.axis2.fuzz" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema"><ns:args0 xsi:type="xs:string">x</ns:args0></ns:anything></soapenv:Body></soapenv:Envelope>

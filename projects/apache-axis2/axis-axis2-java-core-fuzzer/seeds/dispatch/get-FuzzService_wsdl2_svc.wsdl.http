@@ -1,0 +1,3 @@
+GET /axis2/services/FuzzService?wsdl2=svc.wsdl HTTP/1.1
+Host: localhost
+
