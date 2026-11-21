@@ -33,6 +33,11 @@ build_fuzz_target () {
 build_fuzz_target fuzz_eval .obj/fuzz_common.o libquickjs.fuzz.a
 build_fuzz_target fuzz_compile .obj/fuzz_common.o libquickjs.fuzz.a
 build_fuzz_target fuzz_regexp .obj/libregexp.fuzz.o .obj/cutils.fuzz.o .obj/libunicode.fuzz.o
+build_fuzz_target fuzz_bytecode .obj/fuzz_common.o libquickjs.fuzz.a
+
+# static bytecode seed corpus (pair quickjs-bytecode-reader-fuzzer)
+(cd fuzz/fuzz_bytecode_seeds && zip -q -r $OUT/fuzz_bytecode_seed_corpus.zip .)
+cp fuzz/fuzz_bytecode.dict $OUT/fuzz_bytecode.dict
 
 cp fuzz/fuzz.dict $OUT/fuzz_eval.dict
 cp fuzz/fuzz.dict $OUT/fuzz_compile.dict
