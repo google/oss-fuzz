@@ -18,5 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool libdb-dev
 RUN git clone --depth=1 https://github.com/vdukhovni/postfix postfix
 WORKDIR postfix
-COPY build.sh $SRC/
+COPY build.sh make_seeds.py $SRC/
 COPY *.c $SRC/

@@ -35,3 +35,14 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./src/global/fuzz_tok822.o \
   -o $OUT/fuzz_tok822 ./lib/libglobal.a ./lib/libutil.a
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./src/global/fuzz_mime.o -o $OUT/fuzz_mime \
   ./lib/libglobal.a ./lib/libutil.a -ldb
+
+# fuzz_policy_reply
+cd ${BASE}/src/global
+$CC $CFLAGS -DHAS_DEV_URANDOM -DSNAPSHOT -UUSE_DYNAMIC_LIBS -DDEF_SHLIB_DIR=\"no\" \
+               -UUSE_DYNAMIC_MAPS -I. -I../../include -DNO_EAI -DDEF_SMTPUTF8_ENABLE=\"no\" \
+                -g -O -DLINUX4 -Wformat -Wno-comment -fno-common -c $SRC/fuzz_policy_reply.c
+cd ${BASE}
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./src/global/fuzz_policy_reply.o -o $OUT/fuzz_policy_reply \
+  ./lib/libglobal.a ./lib/libutil.a
+python3 $SRC/make_seeds.py $WORK/seeds
+zip -q -j $OUT/fuzz_policy_reply_seed_corpus.zip $WORK/seeds/fuzz_policy_reply/*
