@@ -124,6 +124,16 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
       f'COVERAGE_EXTRA_ARGS={project.coverage_extra_args.strip()}',
   ]
 
+  no_corpora_msg = ('*' * 80 + '\nNo corpora were successfully unpacked. '
+                    'Refusing to generate an empty coverage report.\n' +
+                    '*' * 80)
+
+  # A missing corpus backup must not fail the whole coverage build, otherwise
+  # a single fuzz target without a corpus archive (e.g. a fuzz target for
+  # which corpus pruning does not finish) blocks coverage for the entire
+  # project. Keep a warning so that the problem stays visible. However, if no
+  # corpus was unpacked at all, fail before running coverage so that an empty
+  # report does not overwrite the last valid one.
   build_steps.append({
       'name':
           build_lib.get_runner_image_name(config.test_image_suffix,
@@ -132,14 +142,33 @@ def get_build_steps(  # pylint: disable=too-many-locals, too-many-arguments
           coverage_env,
       'args': [
           'bash', '-c',
-          ('for f in /corpus/*.zip; do unzip -q $f -d ${f%.*} || ('
-           'echo "Failed to unpack the corpus for $(basename ${f%.*}). '
-           'This usually means that corpus backup for a particular fuzz '
-           'target does not exist. If a fuzz target was added in the last '
-           '24 hours, please wait one more day. Otherwise, something is '
-           'wrong with the fuzz target or the infrastructure, and corpus '
-           'pruning task does not finish successfully." && exit 1'
-           '); done && coverage || (echo "' + failure_msg + '" && false)')
+          ('shopt -s nullglob; '
+           'unpacked=0; '
+           'for f in /corpus/*.zip; do '
+           'if [[ ! -s "$f" ]]; then '
+           'echo "WARNING: corpus archive $(basename "$f") is empty; '
+           'skipping it."; '
+           'rm -rf "${f%.*}"; '
+           'continue; '
+           'fi; '
+           'if unzip -q "$f" -d "${f%.*}"; then '
+           'unpacked=$((unpacked + 1)); '
+           'else '
+           'rm -rf "${f%.*}"; '
+           'echo "WARNING: failed to unpack the corpus for '
+           '$(basename "${f%.*}"). This usually means that corpus backup '
+           'for a particular fuzz target does not exist. If a fuzz target '
+           'was added in the last 24 hours, please wait one more day. '
+           'Otherwise, check that the fuzz target runs and that the corpus '
+           'pruning task finishes successfully. Coverage for this fuzz '
+           'target will be missing from the report."; '
+           'fi; '
+           'done; '
+           'if (( unpacked == 0 )); then '
+           'echo "' + no_corpora_msg + '"; '
+           'exit 1; '
+           'fi; '
+           'coverage || (echo "' + failure_msg + '" && false)')
       ],
       'volumes': [{
           'name': 'corpus',
