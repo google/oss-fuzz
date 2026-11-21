@@ -60,8 +60,8 @@ Examples:
 [openssl](https://github.com/openssl/openssl/tree/master/fuzz),
 [FreeType](http://git.savannah.gnu.org/cgit/freetype/freetype2.git/tree/src/tools/ftfuzzer),
 [re2](https://github.com/google/re2/tree/master/re2/fuzzing),
-[harfbuzz](https://github.com/behdad/harfbuzz/tree/master/test/fuzzing),
-[pcre2](https://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
+[harfbuzz](https://github.com/harfbuzz/harfbuzz/tree/main/test/fuzzing),
+[pcre2](https://github.com/PCRE2Project/pcre2/blob/main/src/pcre2_fuzzsupport.c),
 [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/tools/target_dec_fuzzer.c).
 
 [^1]: While LibFuzzer uses a non-zero value as a signal to discard inputs other fuzzers in
