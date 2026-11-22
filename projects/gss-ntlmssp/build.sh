@@ -24,4 +24,16 @@ make fuzzer
 
 cp fuzz-accept-sec-context $OUT/
 cp fuzz-accept-sec-context.dict $OUT/
+
+# The client side computes an NTLM hash with OpenSSL during setup. OpenSSL
+# and krb5 come from the distribution and are not built with MSan, so under
+# MSan check_build fails on a report inside libcrypto.
+if [ "$SANITIZER" != "memory" ]; then
+  make fuzzer-init
+  cp fuzz-init-sec-context $OUT/
+  cp fuzz-init-sec-context.dict $OUT/
+  python3 make_seeds.py $WORK/seeds
+  zip -q -j $OUT/fuzz-init-sec-context_seed_corpus.zip \
+    $WORK/seeds/fuzz-init-sec-context/*
+fi
 popd
