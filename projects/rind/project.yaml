@@ -1,0 +1,11 @@
+base_os_version: ubuntu-24-04
+homepage: "https://github.com/kixel-ai/rind"
+main_repo: "https://github.com/kixel-ai/rind"
+language: rust
+primary_contact: "kixelated@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+architectures:
+  - x86_64
