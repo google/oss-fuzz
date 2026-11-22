@@ -16,7 +16,7 @@ ngx_objs=`echo objs/src/fuzz/wrappers.o $ngx_all_objs $ngx_modules_obj \
 
 cat << END                                                    >> $NGX_MAKEFILE
 
-fuzzers: objs/http_request_fuzzer
+fuzzers: objs/http_request_fuzzer objs/mp4_fuzzer
 
 objs/src/fuzz/wrappers.o:
 	\$(CC) $ngx_compile_opt \$(CFLAGS) -o objs/src/fuzz/wrappers.o src/fuzz/wrappers.c
@@ -32,6 +32,13 @@ objs/http_request_fuzzer: $ngx_deps_fuzz
 	 \$(SRC)/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
   	 \$(SRC)/LPM/src/libprotobuf-mutator.a \
   	 -Wl,--start-group \$(SRC)/LPM/external.protobuf/lib/lib*.a -Wl,--end-group \
+	 $ngx_binexit$ngx_long_cont$ngx_objs \
+   	 \$(LIB_FUZZING_ENGINE) $ngx_libs$ngx_link$ngx_main_link -lcrypt
+
+objs/mp4_fuzzer: $ngx_deps_fuzz
+	\$(CC) $ngx_compile_opt \$(CFLAGS) -DNDEBUG -c -o objs/mp4_fuzzer.o src/fuzz/mp4_fuzzer.c \$(CORE_INCS) \$(HTTP_INCS)
+	 \$(CXX) \$(CXXFLAGS) objs/mp4_fuzzer.o \
+	 -o objs/mp4_fuzzer \
 	 $ngx_binexit$ngx_long_cont$ngx_objs \
    	 \$(LIB_FUZZING_ENGINE) $ngx_libs$ngx_link$ngx_main_link -lcrypt
 $ngx_long_end					    
