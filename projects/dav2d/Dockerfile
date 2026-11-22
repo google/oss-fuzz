@@ -22,5 +22,5 @@ RUN cd dav2d && \
     git clone --depth 1 https://code.videolan.org/videolan/dav2d-test-data.git tests/dav2d-test-data && \
     meson subprojects download
 WORKDIR $SRC/dav2d
-COPY build.sh run_tests.sh $SRC/
+COPY build.sh prepare_seed_corpus.py run_tests.sh $SRC/
 COPY linux32.meson $SRC/

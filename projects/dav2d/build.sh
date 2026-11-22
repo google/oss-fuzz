@@ -53,65 +53,14 @@ meson setup \
     "${BUILD_DIR}"
 ninja -j "$(nproc)" -C "${BUILD_DIR}"
 
-# Prepare seed corpus.
+# Prepare seed corpus: copy .ivf files as-is and wrap Section-5 .obu streams
+# (split into frames on DAV2D_OBU_TD temporal delimiters) in AV02 IVF
+# containers for dav2d_fuzzer.
 rm -rf "${WORK}/tmp"
 mkdir -p "${WORK}/tmp/testdata"
-# Copy .ivf files as-is and wrap Section-5 .obu streams (split into frames on
-# DAV2D_OBU_TD temporal delimiters) in AV02 IVF containers for dav2d_fuzzer.
-python3 - "${SRC}/dav2d/tests/dav2d-test-data" "${WORK}/tmp/testdata" <<'EOF'
-import pathlib
-import shutil
-import struct
-import sys
-
-src_dir = pathlib.Path(sys.argv[1])
-dst_dir = pathlib.Path(sys.argv[2])
-
-for ivf_path in src_dir.rglob('*.ivf'):
-  shutil.copy2(ivf_path, dst_dir / ivf_path.name)
-
-for obu_path in src_dir.rglob('*.obu'):
-  data = obu_path.read_bytes()
-  pos = 0
-  frames = []
-  cur = bytearray()
-  valid = True
-  while pos < len(data):
-    val = 0
-    shift = 0
-    start = pos
-    while True:
-      if pos >= len(data) or shift >= 56:
-        valid = False
-        break
-      v = data[pos]
-      pos += 1
-      val |= (v & 0x7F) << shift
-      shift += 7
-      if not (v & 0x80):
-        break
-    if not valid or pos >= len(data) or pos + val > len(data):
-      valid = False
-      break
-    obu_type = (data[pos] >> 2) & 0x1F
-    if obu_type == 2 and cur:
-      frames.append(bytes(cur))
-      cur = bytearray()
-    cur.extend(data[start : pos + val])
-    pos += val
-  if cur:
-    frames.append(bytes(cur))
-  if not valid or not frames:
-    continue
-  out_path = dst_dir / (obu_path.stem + '.ivf')
-  with out_path.open('wb') as f:
-    f.write(
-        struct.pack('<4sHH4sHHIIII', b'DKIF', 0, 32, b'AV02', 0, 0, 25, 1,
-                    len(frames), 0))
-    for idx, frame in enumerate(frames):
-      f.write(struct.pack('<IQ', len(frame), idx))
-      f.write(frame)
-EOF
+python3 "${SRC}/prepare_seed_corpus.py" \
+    --output-dir "${WORK}/tmp/testdata" \
+    "${SRC}/dav2d/tests/dav2d-test-data"
 (
   cd "${WORK}/tmp/testdata"
   zip -q -m -r -0 "${WORK}/tmp/seed_corpus.zip" .
