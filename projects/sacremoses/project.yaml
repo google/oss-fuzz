@@ -1,4 +1,3 @@
-base_os_version: ubuntu-24-04
 homepage: https://github.com/alvations/sacremoses
 main_repo: https://github.com/alvations/sacremoses
 language: python
