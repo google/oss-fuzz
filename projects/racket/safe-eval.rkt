@@ -40,6 +40,7 @@
 
 (define memory-limit (* 64 1024 1024))
 (define fuel-quanta 400)       ; scheduler quanta for untrusted code
+(define time-limit 10000)      ; milliseconds, since one quantum can do a lot of work
 (define output-limit (* 64 1024))
 (define max-forms 256)
 
@@ -308,10 +309,12 @@
   ;; limit is enforced only at a major collection, and allocation is
   ;; fast enough to reach the fuzzer's RSS limit before then.
   (define base-memory (current-memory-use))
+  (define deadline (+ (current-inexact-milliseconds) time-limit))
   (let loop ([n 0])
     (cond
       [(thread-dead? th) (void)]
       [(>= n fuel-quanta) (note-exn "out of fuel")]
+      [(> (current-inexact-milliseconds) deadline) (note-exn "out of time")]
       [(> (- (current-memory-use) base-memory) memory-limit)
        (note-exn "out of memory")]
       [else (sleep 0) (loop (add1 n))]))
