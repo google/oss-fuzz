@@ -25,8 +25,8 @@ else
 fi
 
 sh ./autogen.sh
-# enable-release to skip unstable preR13. bindings are not fuzzed.
-./configure --disable-shared --disable-bindings --enable-release
+# bindings are not fuzzed. Not --enable-release, as it needs libplot for dwgplot.
+./configure --disable-shared --disable-bindings
 make
 
 $CC $CFLAGS src/.libs/libredwg.a -I./include -I./src -c examples/llvmfuzz.c
