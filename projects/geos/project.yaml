@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://geos.osgeo.org"
 language: c++
 primary_contact: "mtnclimb@gmail.com"

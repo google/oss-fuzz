@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-javascript
+FROM gcr.io/oss-fuzz-base/base-builder-javascript:ubuntu-24-04
 RUN git clone --depth 1 --no-tags https://github.com/exelearning/exelearning.git exelearning
 WORKDIR exelearning
 COPY build.sh $SRC/
