@@ -22,6 +22,6 @@ RUN git clone --depth 1 --branch fuzzing-support https://github.com/samth/racket
 # portable-bytecode boot files, so that Chez Scheme builds without an
 # existing Racket or Chez Scheme
 RUN make -C racket pb-fetch
+RUN git clone --depth 1 https://github.com/samth/racket-fuzz racket-fuzz
 WORKDIR $SRC/racket
 COPY build.sh $SRC/
-COPY driver.c embed-data.S *.rkt *.dict $SRC/racket-fuzz/

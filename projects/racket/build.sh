@@ -14,10 +14,11 @@
 # limitations under the License.
 ################################################################################
 
-# Builds the Racket CS fuzz targets. Each target boots Racket once and
-# passes each input to one `fuzz-*` entry point of "safe-eval.rkt",
-# which runs it in a sandbox and checks one property. The boot files
-# and the compiled harness modules are embedded in each target.
+# Builds the Racket CS fuzz targets of the racket-fuzz package. Each
+# target boots Racket once and passes each input to one `fuzz-*` entry
+# point of its "safe-eval.rkt", which runs it in a sandbox and checks
+# one property. The boot files and the compiled harness modules are
+# embedded in each target.
 
 FUZZ=$SRC/racket-fuzz
 TARGETS="eval read print-roundtrip number regexp fasl"
@@ -32,7 +33,9 @@ export PLT_CS_COVERAGE_COUNTERS=1
 build_targets () {
   local name=$1 targets=$2
   local prefix=$WORK/$name
-  $prefix/bin/racket $FUZZ/embed-modules.rkt $WORK/fuzz-modules.bin
+  # a Racket built from source has no `base` package to depend on
+  $prefix/bin/raco pkg install --batch --scope installation --copy --deps force $FUZZ
+  $prefix/bin/racket -l- racket-fuzz/embed-modules $WORK/fuzz-modules.bin
   $CC -c -Ulinux -Uunix $FUZZ/embed-data.S -o $WORK/embed-data.o \
     -DPETITE_BOOT=$prefix/lib/racket/petite.boot \
     -DSCHEME_BOOT=$prefix/lib/racket/scheme.boot \
@@ -71,7 +74,7 @@ build_variant racket "$TARGETS heap-eval"
 build_variant racket_check "$TARGETS" --enable-check
 
 # Seed corpora from the core tests
-$WORK/racket/bin/racket $FUZZ/make-corpus.rkt \
+$WORK/racket/bin/racket -l- racket-fuzz/make-corpus \
   $SRC/racket/pkgs/racket-test-core/tests/racket $WORK/corpus
 for t in eval read number regexp fasl ; do
   (cd $WORK/corpus/$t && zip -q -r $OUT/racket_${t}_fuzzer_seed_corpus.zip .)
