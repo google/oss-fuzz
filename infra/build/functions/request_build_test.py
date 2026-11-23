@@ -50,11 +50,6 @@ class TestRequestBuilds(unittest.TestCase):
     self.mock_get_signed_url = mock.patch(
         'build_lib.get_signed_url',
         return_value='https://example.com/signed-url').start()
-    self.mock_get_signed_policy = mock.patch(
-        'build_lib.get_signed_policy_document_upload_prefix',
-        return_value=mock.MagicMock()).start()
-    self.mock_curl_args = mock.patch(
-        'build_lib.signed_policy_document_curl_args', return_value=[]).start()
 
   def tearDown(self):
     mock.patch.stopall()
@@ -119,7 +114,7 @@ COPY build.sh $SRC/
 
     self.assertTrue(mock_run_build.called)
 
-    self.assertEqual(2, mock_run_build.call_count)
+    self.assertEqual(1, mock_run_build.call_count)
     build_steps = mock_run_build.call_args_list[0][0][1]
 
     found_build_check_step = False

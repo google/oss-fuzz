@@ -30,7 +30,4 @@ sys.path.append(FUNCTIONS_DIR)
 import base_images
 
 for image_config in base_images.BASE_IMAGE_DEFS:
-  # Exclude 'base-clang-full' as it is a special case not intended for
-  # the general build script.
-  if image_config.get('name', '') != 'base-clang-full':
-    print(image_config.get('name', ''))
+  print(image_config.get('name', ''))

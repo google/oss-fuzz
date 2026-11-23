@@ -195,7 +195,6 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
   # Define the dependency hierarchy for base images.
   IMAGE_DEPENDENCIES = {
       'base-clang': ['base-image'],
-      'base-clang-full': ['base-clang'],
       'base-builder': ['base-clang'],
       'base-runner': [
           'base-image', 'base-clang', 'base-builder', 'base-builder-ruby'
@@ -208,7 +207,6 @@ def gcb_build_and_push_images(test_image_tag: str, version_tag: str = None):
       'base-builder-rust': ['base-builder'],
       'base-builder-swift': ['base-builder'],
       'base-runner-debug': ['base-runner'],
-      'indexer': ['base-clang-full'],
   }
 
   steps = []
@@ -284,8 +282,6 @@ def build_and_push_images(test_image_tag, version_tag=None):
   images = [
       ['base-image'],
       ['base-clang'],
-      ['base-clang-full'],
-      ['indexer'],
       ['base-builder'],
       [
           'base-builder-swift',

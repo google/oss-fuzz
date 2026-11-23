@@ -80,18 +80,6 @@ def get_build_steps(project_name, timestamp=None):
                                        timestamp=timestamp)
 
 
-def get_indexer_build_steps(project_name, timestamp=None):
-  """Retrieve build steps."""
-  project_yaml, dockerfile_lines = get_project_data(project_name)
-  build_config = build_project.Config(
-      build_type=build_project.INDEXER_BUILD_TYPE)
-  return build_project.get_indexer_build_steps(project_name,
-                                               project_yaml,
-                                               dockerfile_lines,
-                                               build_config,
-                                               timestamp=timestamp)
-
-
 def run_build(oss_fuzz_project,
               build_steps,
               credentials,
@@ -127,16 +115,4 @@ def request_build(event, context):
         credentials,
         build_project.FUZZING_BUILD_TYPE,
         cloud_project=cloud_project,
-    )
-
-    indexer_build_steps = get_indexer_build_steps(project_name, timestamp)
-    if not indexer_build_steps:
-      return
-    run_build(
-        project_name,
-        indexer_build_steps,
-        credentials,
-        build_project.INDEXER_BUILD_TYPE,
-        cloud_project=cloud_project,
-        update_history=False,
     )

@@ -50,7 +50,6 @@ DEFAULT_VERSION = 'legacy'
 # Defines the dependency graph for base images.
 IMAGE_DEPENDENCIES = {
     'base-clang': ['base-image'],
-    'base-clang-full': ['base-clang'],
     'base-builder': ['base-clang'],
     'base-builder-go': ['base-builder'],
     'base-builder-javascript': ['base-builder'],
@@ -61,7 +60,6 @@ IMAGE_DEPENDENCIES = {
     'base-builder-swift': ['base-builder'],
     'base-runner': ['base-image', 'base-builder', 'base-builder-ruby'],
     'base-runner-debug': ['base-runner'],
-    'indexer': ['base-clang-full'],
 }
 
 
@@ -86,8 +84,6 @@ class ImageConfig:
 
   def _get_default_path(self) -> str:
     """Returns the default path to the image's build directory."""
-    if self.name == 'indexer':
-      return os.path.join('infra', 'indexer')
     return os.path.join('infra', 'base-images', self.name)
 
   def _resolve_dockerfile(self) -> str:
@@ -127,14 +123,6 @@ BASE_IMAGE_DEFS = [
     },
     {
         'name': 'base-clang'
-    },
-    {
-        'name': 'base-clang-full',
-        'path': 'infra/base-images/base-clang',
-        'build_args': ('FULL_LLVM_BUILD=1',)
-    },
-    {
-        'name': 'indexer'
     },
     {
         'name': 'base-builder'
