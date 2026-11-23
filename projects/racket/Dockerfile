@@ -24,4 +24,4 @@ RUN git clone --depth 1 --branch fuzzing-support https://github.com/samth/racket
 RUN make -C racket pb-fetch
 WORKDIR $SRC/racket
 COPY build.sh $SRC/
-COPY driver.c embed-data.S *.rkt $SRC/racket-fuzz/
+COPY driver.c embed-data.S *.rkt *.dict $SRC/racket-fuzz/

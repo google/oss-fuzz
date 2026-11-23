@@ -79,6 +79,15 @@ done
 cp $OUT/racket_read_fuzzer_seed_corpus.zip $OUT/racket_print-roundtrip_fuzzer_seed_corpus.zip
 cp $OUT/racket_eval_fuzzer_seed_corpus.zip $OUT/racket_heap-eval_fuzzer_seed_corpus.zip
 
+# Dictionaries: a fuzzer uses "<name>.dict" next to it
+for v in racket racket_check ; do
+  for t in eval read number regexp ; do
+    cp $FUZZ/$t.dict $OUT/${v}_${t}_fuzzer.dict
+  done
+  cp $FUZZ/read.dict $OUT/${v}_print-roundtrip_fuzzer.dict
+done
+cp $FUZZ/eval.dict $OUT/racket_heap-eval_fuzzer.dict
+
 for t in $TARGETS ; do
   printf '[libfuzzer]\nmax_len = 4096\ntimeout = 20\n' > $OUT/racket_${t}_fuzzer.options
   # safe-mode code is slower
