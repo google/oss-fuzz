@@ -26,7 +26,7 @@ limitations under the License.
 
 int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
   log_init("/tmp/foo", 0, NULL);
-  char *bin = buf;
+  char *bin = (char *)buf;
   struct regional* reg;
 
   struct sldns_buffer *pkt = sldns_buffer_new(1);
@@ -69,7 +69,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
   qstate.env = &env;
   qstate.region = reg;
 
-  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &qstate, &ie);
+  int msg_lame_empty = 0;
+  int msg_lame_referral = 0;
+  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &qstate, &ie,
+      &msg_lame_empty, &msg_lame_referral, 0);
 out:
   regional_destroy(reg);
   sldns_buffer_free(pkt);
