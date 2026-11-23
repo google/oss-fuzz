@@ -47,7 +47,8 @@ ninja -C builddir -k 0 \
     tests/fuzzing/gtp_xact_fuzz \
     tests/fuzzing/nnrf_handler_fuzz \
     tests/fuzzing/pfcp_session_fuzz \
-    tests/fuzzing/sbi_openapi_extra_fuzz
+    tests/fuzzing/sbi_openapi_extra_fuzz \
+    tests/fuzzing/crypt_kdf_fuzz
 
 cp builddir/tests/fuzzing/gtp_message_fuzz $OUT/gtp_message_fuzz
 cp builddir/tests/fuzzing/gtpu_header_fuzz $OUT/gtpu_header_fuzz
@@ -57,10 +58,12 @@ cp builddir/tests/fuzzing/s1ap_message_fuzz $OUT/s1ap_message_fuzz
 cp builddir/tests/fuzzing/pfcp_message_fuzz $OUT/pfcp_message_fuzz
 cp builddir/tests/fuzzing/pfcp_packet_match_fuzz $OUT/pfcp_packet_match_fuzz
 cp builddir/tests/fuzzing/nas_5gs_message_fuzz $OUT/nas_5gs_message_fuzz
+cp builddir/tests/fuzzing/crypt_kdf_fuzz $OUT/crypt_kdf_fuzz
 cp builddir/tests/fuzzing/gtp_xact_fuzz $OUT/gtp_xact_fuzz
 cp builddir/tests/fuzzing/pfcp_session_fuzz $OUT/pfcp_session_fuzz
 cp tests/fuzzing/pfcp_message_fuzz_seed_corpus.zip $OUT/pfcp_session_fuzz_seed_corpus.zip
 cp tests/fuzzing/gtp_message_fuzz_seed_corpus.zip $OUT/gtp_xact_fuzz_seed_corpus.zip
+cp tests/fuzzing/crypt_kdf_fuzz_seed_corpus.zip $OUT/
 
 mkdir -p $OUT/lib/
 cp /lib/x86_64-linux-gnu/libtalloc.so* $OUT/lib/
