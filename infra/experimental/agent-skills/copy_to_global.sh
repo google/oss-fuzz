@@ -21,8 +21,8 @@
 #   ./copy_to_global.sh [target ...]
 #
 # Targets:
-#   claude       -> ~/.claude/skills  (default when no target is given)
-#   gemini       -> ~/.gemini/skills
+#   gemini       -> ~/.gemini/skills  (default when no target is given)
+#   claude       -> ~/.claude/skills
 #   <directory>  -> any other argument is used as the skills directory
 #                   itself (created if missing; resolved relative to your
 #                   current working directory). This works for any agent
@@ -61,9 +61,9 @@ resolve_target() {
   esac
 }
 
-# Default to claude when no target is given.
+# Default to gemini when no target is given.
 if [ $# -eq 0 ]; then
-  set -- claude
+  set -- gemini
 fi
 
 for target in "$@"; do

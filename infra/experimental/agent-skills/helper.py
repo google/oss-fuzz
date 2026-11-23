@@ -69,7 +69,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OSS_FUZZ_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..', '..'))
 
 # Agent CLIs we know how to drive, in order of preference.
-SUPPORTED_AGENTS = ['claude', 'gemini']
+SUPPORTED_AGENTS = ['gemini', 'claude']
 
 FUZZING_SKILLS_BLURB = (
     '- **oss-fuzz-engineer** – for all OSS-Fuzz infrastructure interaction\n'

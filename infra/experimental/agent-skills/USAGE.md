@@ -12,7 +12,7 @@ Companion to [README.md](README.md), which covers the folder overview and the th
 | `oss-fuzz-coverage-pipeline` | The orchestrator skill: project selection with upstream viability checks, build fixes, live coverage triage, harness improvements (corpus/dictionary work only where a proven gate justifies it), and delivery as worktree branch duo pairs validated through a temporary copy bridge. It auto-detects each project's language from `project.yaml` and activates the matching language skill. |
 | `fuzzing-coverage-targeting` | The architect skill: which fuzz targets are worth creating and what shape each harness takes (worth model, taxonomy, patterns, portfolio and overlap rules); used by the pipeline in Phases 2, 3 and 5, and usable on its own |
 | `oss-fuzz-coverage-pipeline/scripts/select_projects.sh` | Deterministic project selector: globs, `--language`, `--broken`, `--limit`, `--exclude`. |
-| `copy_to_global.sh` | Installer: `claude` (the default), `gemini`, or any skills directory you name. |
+| `copy_to_global.sh` | Installer: `gemini` (the default), `claude`, or any skills directory you name. |
 | `helper.py` | An optional headless batch driver for the `claude` and `gemini` CLIs only; it is not needed for interactive use. |
 
 The skills are plain `SKILL.md` markdown, so they are model-agnostic and portable to any skill-compatible host (Claude Code, Gemini CLI, or Cline in VS Code) with any model, including GLM via Z AI.
@@ -49,8 +49,8 @@ Run from `infra/experimental/agent-skills/` inside your oss-fuzz checkout:
 ```sh
 cd <oss-fuzz-checkout>/infra/experimental/agent-skills
 
-./copy_to_global.sh                # Claude Code, installs to ~/.claude/skills (the default)
-./copy_to_global.sh gemini         # Gemini CLI, installs to ~/.gemini/skills
+./copy_to_global.sh                # Gemini CLI, installs to ~/.gemini/skills (the default)
+./copy_to_global.sh claude         # Claude Code, installs to ~/.claude/skills
 ./copy_to_global.sh /path/to/vscode-workspace/.cline/skills   # Cline (any model)
 ./copy_to_global.sh /any/skills/dir    # any other SKILL.md-compatible agent
 ./copy_to_global.sh claude gemini DIR  # several targets at once

@@ -47,7 +47,7 @@ See each skill's `SKILL.md` for the detailed guidance the agent receives.
 
 ```bash
 # 1. Install the skills into your agent CLI.
-./copy_to_global.sh               # defaults to claude; or: ./copy_to_global.sh gemini
+./copy_to_global.sh               # defaults to gemini; or: ./copy_to_global.sh claude
 # Any other argument is used as the skills directory itself (any SKILL.md-
 # compatible agent, e.g. Cline's workspace directory; relative paths resolve
 # against your current directory):
