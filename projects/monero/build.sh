@@ -42,6 +42,7 @@ TARGETS="\
   levin_fuzz_tests \
   bulletproof_fuzz_tests \
   tx-extra_fuzz_tests \
+  fcmp-pp-point_fuzz_tests \
   fuzz_rpc \
   fuzz_rpc_full \
   fuzz_rpc_full_no_exceptions \
@@ -55,6 +56,8 @@ then
     signature_fuzz_tests \
     cold-outputs_fuzz_tests \
     cold-transaction_fuzz_tests \
+    wallet-scan_fuzz_tests \
+    wallet-proof-uri_fuzz_tests \
   "
 fi
 

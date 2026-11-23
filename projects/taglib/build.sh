@@ -43,3 +43,25 @@ cp $SRC/taglib/tests/fuzzing/taglib.dict $OUT/taglib_fileref_fuzzer.dict
 
 # Seed corpus built from taglib's own test data (LGPL/MPL, same project).
 zip -j -q $OUT/taglib_fileref_fuzzer_seed_corpus.zip $SRC/taglib/tests/data/*
+
+# Round-trip fuzzer
+TAGLIB_RND_INCS="-I $SRC/taglib/taglib -I $SRC/taglib/taglib/toolkit -I $SRC/taglib/build"
+for d in ape asf dsdiff dsf flac it matroska mod mp4 mpc mpeg ogg riff s3m shorten trueaudio wavpack xm; do
+  TAGLIB_RND_INCS="$TAGLIB_RND_INCS -I $SRC/taglib/taglib/$d"
+done
+for d in mpeg/id3v2 ogg/opus ogg/speex ogg/vorbis ogg/flac riff/aiff riff/wav matroska/ebml; do
+  TAGLIB_RND_INCS="$TAGLIB_RND_INCS -I $SRC/taglib/taglib/$d"
+done
+$CXX $CXXFLAGS -std=c++17 $TAGLIB_RND_INCS \
+    $SRC/taglib/tests/fuzzing/taglib_roundtrip_fuzzer.cpp \
+    $SRC/taglib/build/taglib/libtag.a -lz \
+    $LIB_FUZZING_ENGINE \
+    -o $OUT/taglib_roundtrip_fuzzer
+
+# Seed corpus for taglib
+zip -j -q $OUT/taglib_roundtrip_fuzzer_seed_corpus.zip $SRC/taglib/tests/data/*
+cp $SRC/taglib/tests/fuzzing/taglib_roundtrip.dict $OUT/taglib_roundtrip_fuzzer.dict
+
+python3 $SRC/taglib/tests/fuzzing/generate_frame_seeds.py $OUT/generated_seeds
+zip -j -q $OUT/taglib_roundtrip_fuzzer_seed_corpus.zip $OUT/generated_seeds/*
+rm -rf $OUT/generated_seeds

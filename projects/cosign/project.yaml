@@ -5,10 +5,9 @@ primary_contact: "security@sigstore.dev"
 auto_ccs:
   - lhinds@sigstore.dev
   - hblauzvern@sigstore.dev
-  - codysoyland@sigstore.dev
   - bcallaway@sigstore.dev
-vendor_ccs:
-  - adam@adalogics.com
+  - kommendorkapten@sigstore.dev
+  - santiagotorres@sigstore.dev
 language: go
 fuzzing_engines:
   - libfuzzer

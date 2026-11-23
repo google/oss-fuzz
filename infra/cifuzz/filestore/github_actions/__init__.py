@@ -32,6 +32,23 @@ import filestore
 from filestore.github_actions import github_api
 
 UPLOAD_JS = os.path.join(os.path.dirname(__file__), 'upload.js')
+TAR_EXTRACT_FILTER = 'data'
+
+
+def _extract_tar_archive(archive_path, dst_directory):
+  """Extracts |archive_path| into |dst_directory| with path-traversal
+  filtering. Returns True on success."""
+  try:
+    with tarfile.TarFile(archive_path) as artifact_tarfile:
+      for member in artifact_tarfile.getmembers():
+        if os.path.isabs(member.name):
+          logging.error('Refusing absolute tar member path: %s.', member.name)
+          return False
+      artifact_tarfile.extractall(dst_directory, filter=TAR_EXTRACT_FILTER)
+  except (tarfile.TarError, OSError) as err:
+    logging.error('Failed to safely extract artifact tarfile: %s.', err)
+    return False
+  return True
 
 
 def tar_directory(directory, archive_path):
@@ -127,11 +144,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         logging.error('Artifact zip did not contain a tarfile.')
         return False
 
-      # TODO(jonathanmetzman): Replace this with archive.unpack from
-      # libClusterFuzz so we can avoid path traversal issues.
-      with tarfile.TarFile(artifact_tarfile_path) as artifact_tarfile:
-        artifact_tarfile.extractall(dst_directory)
-    return True
+      return _extract_tar_archive(artifact_tarfile_path, dst_directory)
 
   def _raw_download_artifact(self, name, dst_directory):
     """Downloads the artifact with |name| to |dst_directory|. Returns True on

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # hobbes is an embedded compiler and JIT built on LLVM. The base image's LLVM
 # is not installed as a development package, so take a versioned one from

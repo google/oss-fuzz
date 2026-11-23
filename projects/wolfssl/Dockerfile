@@ -20,12 +20,11 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool zip wget
 RUN git clone --depth 1 https://github.com/wolfssl/wolfssl $SRC/wolfssl
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfsm
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssh.git
-RUN git clone --depth 1 https://github.com/JacobBarthelmeh/fuzzing-headers.git
-RUN git clone --depth 1 https://github.com/JacobBarthelmeh/wolf-ssl-ssh-fuzzers
-RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
+# oss-fuzz-targets provides cryptofuzz/, fuzzing-headers/, wolf-ssl-ssh-fuzzers/
+# and the standalone libFuzzer targets in targets/
+RUN git clone --depth 1 https://github.com/wolfssl/oss-fuzz-targets $SRC/oss-fuzz-targets
 RUN git clone --depth 1 https://github.com/google/wycheproof.git
 RUN wget https://archives.boost.io/release/1.82.0/source/boost_1_82_0.tar.bz2
-RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
 
 # Retrieve corpora from other projects
 RUN wget https://storage.googleapis.com/bearssl-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/bearssl_cryptofuzz-bearssl/public.zip -O $SRC/corpus_bearssl.zip

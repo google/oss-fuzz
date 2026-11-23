@@ -1,12 +1,13 @@
+base_os_version: ubuntu-24-04
 homepage: "https://sigstore.dev"
 main_repo: "https://github.com/sigstore/rekor"
-primary_contact: "bcallaway@sigstore.dev"
+primary_contact: "security@sigstore.dev"
 auto_ccs:
   - lhinds@sigstore.dev
   - hblauzvern@sigstore.dev
-  - codysoyland@sigstore.dev
-  - adam@adalogics.com
-  - david@adalogics.com
+  - bcallaway@sigstore.dev
+  - kommendorkapten@sigstore.dev
+  - santiagotorres@sigstore.dev
 language: go
 fuzzing_engines:
   - libfuzzer

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # QtPass's floor is Qt 6.8+ (see CLAUDE.md); pin the same patch version the
 # project's own CI builds against, via aqtinstall rather than distro
