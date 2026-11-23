@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libzstd-dev
 
-RUN pip3 install -U meson ninja inflection pyyaml mako
+RUN pip3 install -U meson ninja inflection pyyaml mako jsonschema
 
 RUN git clone --depth 1 https://github.com/openbmc/bmcweb $SRC/bmcweb
 

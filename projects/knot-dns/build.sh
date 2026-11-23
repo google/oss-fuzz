@@ -60,13 +60,21 @@ autoreconf -if
 make -j$(nproc)
 cd $SRC/knot-dns/tests-fuzz
 make check
-/bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner fuzz_dname_to_str fuzz_dname_from_str fuzz_dnssec_verify fuzz_tsig "$OUT"
+/bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner fuzz_dname_to_str fuzz_dname_from_str fuzz_dnssec_verify fuzz_svcb_render fuzz_edns fuzz_tsig "$OUT"
 
 # Set up fuzzing seeds
 git submodule update --init -- ./fuzz_packet.in
 git submodule update --init -- ./fuzz_zscanner.in
+git submodule update --init -- ./fuzz_tsig.in
+git submodule update --init -- ./fuzz_dnssec_verify.in
+git submodule update --init -- ./fuzz_edns.in
+
 # ./fuzz_dname_to_str.in/ and ./fuzz_dname_from_str.in/ are stored in the base repository
 find ./fuzz_packet.in/         -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
 find ./fuzz_zscanner.in/       -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
 find ./fuzz_dname_to_str.in/   -type f -exec zip -u $OUT/fuzz_dname_to_str_seed_corpus.zip {} \;
 find ./fuzz_dname_from_str.in/ -type f -exec zip -u $OUT/fuzz_dname_from_str_seed_corpus.zip {} \;
+find ./fuzz_svcb_render.in/ -type f -exec zip -u $OUT/fuzz_svcb_render_seed_corpus.zip {} \;
+find ./fuzz_tsig.in/ -type f -exec zip -u $OUT/fuzz_tsig_seed_corpus.zip {} \;
+find ./fuzz_dnssec_verify.in/ -type f -exec zip -u $OUT/fuzz_dnssec_verify_seed_corpus.zip {} \;
+find ./fuzz_edns.in/            -type f -exec zip -u $OUT/fuzz_edns_seed_corpus.zip {} \;

@@ -14,14 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 
-# Install brotli.
-RUN apt-get install -y libbrotli-dev
-
-# Install zlib.
-RUN apt-get update && apt-get install -y zlib1g-dev
+# Install brotli, zlib, zstd
+RUN apt-get update && apt-get install -y libbrotli-dev zlib1g-dev libzstd-dev
 
 RUN git clone --depth 1 https://github.com/yhirose/cpp-httplib.git cpp-httplib
 

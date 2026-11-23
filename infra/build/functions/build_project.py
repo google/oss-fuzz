@@ -248,7 +248,7 @@ def is_supported_configuration(build):
 def workdir_from_dockerfile(dockerfile):
   """Parses WORKDIR from the Dockerfile."""
   dockerfile_lines = dockerfile.split('\n')
-  for line in dockerfile_lines:
+  for line in reversed(dockerfile_lines):  # reversed to get last WORKDIR.
     match = re.match(WORKDIR_REGEX, line)
     if match:
       # We need to escape '$' since they're used for subsitutions in Container

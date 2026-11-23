@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/spdk/spdk"
 main_repo: "https://github.com/spdk/spdk"
 language: c
