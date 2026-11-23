@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://mercure.rocks"
 language: go
 primary_contact: "kevin@dunglas.fr"

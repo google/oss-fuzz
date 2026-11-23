@@ -1,0 +1,10 @@
+homepage: "https://xpra.org"
+main_repo: "https://github.com/Xpra-org/xpra"
+language: python
+primary_contact: "totaam@gmail.com"
+base_os_version: ubuntu-24-04
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined

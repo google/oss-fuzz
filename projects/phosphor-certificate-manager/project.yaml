@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/openbmc/phosphor-certificate-manager"
 language: c++
 primary_contact: "pedroysb@google.com" # Using your LDAP as contact

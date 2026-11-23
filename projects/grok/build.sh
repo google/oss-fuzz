@@ -29,7 +29,7 @@ export CARGO_BUILD_TARGET="$(rustc -vV | sed -n 's/host: //p')"
 # so the fuzzer gets coverage feedback inside the rust code.
 MERCURY_CMAKE_ARGS=""
 if [ "$SANITIZER" = "memory" ]; then
-    MERCURY_CMAKE_ARGS="-DCARGO_EXECUTABLE=/bin/false"
+    MERCURY_CMAKE_ARGS="-DGRK_BUILD_MERCURY=OFF -DCARGO_EXECUTABLE=/bin/false"
 elif [ "${FUZZING_ENGINE:-}" = "libfuzzer" ]; then
     if [ "$SANITIZER" = "address" ] || [ "$SANITIZER" = "undefined" ]; then
         export RUSTFLAGS="${RUSTFLAGS:-} -Cpasses=sancov-module \

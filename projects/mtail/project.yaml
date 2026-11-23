@@ -1,9 +1,10 @@
-homepage: https://github.com/google/mtail
+base_os_version: ubuntu-24-04
+homepage: https://github.com/jaqx0r/mtail
 primary_contact: jaq@spacepants.org
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
 language: go
-main_repo: 'https://github.com/google/mtail'
+main_repo: 'https://github.com/jaqx0r/mtail'
 file_github_issue: True

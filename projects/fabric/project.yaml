@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://www.hyperledger.org"
 main_repo: "https://github.com/hyperledger/fabric"
 primary_contact: "ale.linux@sopit.net"

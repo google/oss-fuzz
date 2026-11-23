@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "nokogiri.org"
 language: c
 primary_contact: "mike.dalessio@gmail.com"
