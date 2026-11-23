@@ -415,7 +415,8 @@
       [(hash? v) (or (and (not (hash-equal? v))
                           (for/or ([k (in-hash-keys v)]) (not (eq-preserved? k))))
                      (for/or ([(k x) (in-hash v)]) (or (loop k) (loop x))))]
-      [(prefab-struct-key v) (for/or ([x (in-vector (struct->vector v))]) (loop x))]
+      [(prefab-struct-key v)
+       => (lambda (k) (or (loop k) (for/or ([x (in-vector (struct->vector v))]) (loop x))))]
       [(symbol? v) (not (symbol-interned? v))]
       ;; +nan.0 is not `equal?` to itself in every representation
       [(and (flonum? v) (not (= v v))) #t]
