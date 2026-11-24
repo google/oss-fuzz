@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt install -y cmake
+RUN apt-get update && apt install -y cmake zlib1g-dev
 RUN git clone --depth 1 https://github.com/openbabel/openbabel.git
 COPY *.sh $SRC/
 WORKDIR $SRC/openbabel
