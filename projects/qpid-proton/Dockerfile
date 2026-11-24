@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y cmake python3 python3-dev python3-pip
+RUN apt-get update && apt-get install -y cmake
 
 RUN git clone https://github.com/apache/qpid-proton.git
 

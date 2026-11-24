@@ -13,12 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
-RUN apt-get update && apt-get install -y scons python3-setuptools
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y scons python3-distutils
 RUN git clone --depth 1 https://gitlab.com/gpsd/gpsd
 RUN git clone --depth 1 https://github.com/adalogics/ada-fuzzers
 RUN cp $SRC/ada-fuzzers/projects/gpsd/build.sh $SRC/ && \
     cp -r $SRC/ada-fuzzers/projects/gpsd/fuzzer $SRC/gpsd/fuzzer && \
-    sed -i 's|\.\./gpsd\*~dev/|\.\./gpsd-[0-9]\*/|' $SRC/gpsd/fuzzer/Makefile && \
     cp -r $SRC/ada-fuzzers/projects/gpsd/corp $SRC/gpsd/corp
 WORKDIR $SRC/gpsd/

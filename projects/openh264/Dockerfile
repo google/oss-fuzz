@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && \
-    apt-get install -y ffmpeg libstdc++-9-dev libstdc++-9-dev:i386 nasm subversion
+    apt-get install -y ffmpeg libstdc++-13-dev libstdc++-13-dev:i386 nasm subversion
 RUN git clone --depth 1 https://github.com/cisco/openh264.git openh264
 RUN python3 -m pip install --upgrade pip && python3 -m pip install corpus-replicator
 RUN corpus-replicator -o corpus video_h264_264_libx264.yml video

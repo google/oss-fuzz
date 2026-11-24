@@ -15,8 +15,6 @@
 #
 ################################################################################
 cd $SRC/libsrtp
-cp /usr/share/automake-*/ar-lib .
-autoreconf -ivf
 ./configure --with-crypto-library=internal
 LIBFUZZER="$LIB_FUZZING_ENGINE" make srtp-fuzzer
 make test
