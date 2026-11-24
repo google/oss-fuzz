@@ -21,7 +21,7 @@
 # embedded in each target.
 
 FUZZ=$SRC/racket-fuzz
-TARGETS="eval read print-roundtrip number regexp fasl"
+TARGETS="eval eval-interp read print-roundtrip number regexp fasl"
 
 # The build runs the sanitized Racket, which leaks at exit
 export ASAN_OPTIONS=detect_leaks=0
@@ -81,6 +81,7 @@ for t in eval read number regexp fasl ; do
 done
 cp $OUT/racket_read_fuzzer_seed_corpus.zip $OUT/racket_print-roundtrip_fuzzer_seed_corpus.zip
 cp $OUT/racket_eval_fuzzer_seed_corpus.zip $OUT/racket_heap-eval_fuzzer_seed_corpus.zip
+cp $OUT/racket_eval_fuzzer_seed_corpus.zip $OUT/racket_eval-interp_fuzzer_seed_corpus.zip
 
 # Dictionaries: a fuzzer uses "<name>.dict" next to it
 for v in racket racket_check ; do
@@ -88,6 +89,7 @@ for v in racket racket_check ; do
     cp $FUZZ/$t.dict $OUT/${v}_${t}_fuzzer.dict
   done
   cp $FUZZ/read.dict $OUT/${v}_print-roundtrip_fuzzer.dict
+  cp $FUZZ/eval.dict $OUT/${v}_eval-interp_fuzzer.dict
 done
 cp $FUZZ/eval.dict $OUT/racket_heap-eval_fuzzer.dict
 
@@ -98,3 +100,7 @@ for t in $TARGETS ; do
   cp $OUT/racket_${t}_fuzzer_seed_corpus.zip $OUT/racket_check_${t}_fuzzer_seed_corpus.zip
 done
 printf '[libfuzzer]\nmax_len = 4096\ntimeout = 60\n' > $OUT/racket_heap-eval_fuzzer.options
+# eval-interp runs each input twice, with a 10 s limit for each run
+for v in racket racket_check ; do
+  printf '[libfuzzer]\nmax_len = 4096\ntimeout = 60\n' > $OUT/${v}_eval-interp_fuzzer.options
+done
