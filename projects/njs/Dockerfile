@@ -16,9 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    git libpcre2-dev
+    git libpcre2-dev pkg-config
 RUN git clone https://github.com/nginx/njs
 RUN git clone --branch pcre2-10.39 https://github.com/PhilipHazel/pcre2 pcre2
+RUN git clone --depth 1 --branch v2.15.4 https://gitlab.gnome.org/GNOME/libxml2.git libxml2
 
 WORKDIR njs
 COPY build.sh run_tests.sh $SRC/

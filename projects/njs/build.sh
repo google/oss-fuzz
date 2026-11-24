@@ -30,6 +30,22 @@ make install
 sed -i "s/\$libS\$libR \(-lpcre2-8$\)/\$libS\$libR -Wl,-Bstatic \1 -Wl,-Bdynamic/" /usr/local/bin/pcre2-config
 popd
 
+# Build libxml2 to be linked statically, so that the xml module is built.
+# njs's configure finds it with pkg-config.
+pushd $SRC/libxml2
+LIBXML2_CMAKE_ARGS="-DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$SRC/libxml2-install \
+    -DLIBXML2_WITH_PROGRAMS=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_DEBUG=OFF"
+if [ "$SANITIZER" == "introspector" ]; then
+  # As for pcre2: no sanitizer flags for the dependency in introspector builds.
+  CFLAGS="" CXXFLAGS="" cmake -B build $LIBXML2_CMAKE_ARGS
+else
+  cmake -B build $LIBXML2_CMAKE_ARGS
+fi
+cmake --build build -j$(nproc)
+cmake --install build
+popd
+export PKG_CONFIG_PATH=$SRC/libxml2-install/lib/pkgconfig
+
 # build project
 ./configure
 make njs_fuzzer
