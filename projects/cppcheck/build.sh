@@ -18,7 +18,14 @@
 # build fuzzer
 
 cd $SRC/cppcheck/oss-fuzz
-make -j$(nproc) oss-fuzz-client
-cp oss-fuzz-client $OUT/
 
+# Build fuzzers
+make -j$(nproc) oss-fuzz-client oss-fuzz-client-cfg oss-fuzz-client-cli \
+    oss-fuzz-client-project oss-fuzz-client-raw
+cp oss-fuzz-client-* $OUT/
 
+# Prepare seed corpus
+zip -j -q $OUT/oss-fuzz-client-cfg_seed_corpus.zip $SRC/cppcheck/cfg/*.cfg
+
+# Prepare dict
+cp $SRC/cppcheck/oss-fuzz/*.dict $OUT/
