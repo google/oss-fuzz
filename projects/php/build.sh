@@ -36,6 +36,9 @@ fi
     --enable-option-checking=fatal \
     --enable-fuzzer \
     --enable-exif \
+    --enable-bcmath \
+    --enable-fileinfo \
+    --enable-phar \
     --without-pcre-jit \
     --disable-phpdbg \
     --disable-cgi \
