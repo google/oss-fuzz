@@ -105,7 +105,7 @@ class ProjectYamlChecker:
       'vendor_ccs',
       'view_restrictions',
       'file_github_issue',
-      'indexer',  # Flags specific to infra/indexer.
+      'indexer',
       'base_os_version',
   ]
 
@@ -434,7 +434,6 @@ def run_nonbuild_tests(parallel):
   # pass directories to pytest.
   command = [
       'pytest',
-      '--ignore-glob=infra/base-images/base-builder/indexer/*',
       '--ignore-glob=infra/build/*',
       '--ignore-glob=projects/*',
       '--ignore-glob=infra/experimental/contrib/*',

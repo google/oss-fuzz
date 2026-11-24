@@ -196,16 +196,6 @@ ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang-jcc2 /
 ADD https://commondatastorage.googleapis.com/clusterfuzz-builds/jcc/clang++-jcc2 /usr/local/bin
 RUN chmod +x /usr/local/bin/clang-jcc /usr/local/bin/clang++-jcc /usr/local/bin/clang-jcc2 /usr/local/bin/clang++-jcc2
 
-COPY indexer /opt/indexer
-COPY --from=gcr.io/oss-fuzz-base/indexer:ubuntu-24-04 /indexer/build/indexer /opt/indexer/indexer
-# The indexer build is best-effort (see infra/indexer/Dockerfile). If it
-# failed, the binary is empty - replace it with a stub that fails loudly,
-# so a broken indexer does not break every base image.
-# https://github.com/google/oss-fuzz/issues/16141
-RUN if [ ! -s /opt/indexer/indexer ]; then \
-      printf '#!/bin/bash\necho "ERROR: the indexer failed to build, see https://github.com/google/oss-fuzz/issues/16141" >&2\nexit 1\n' > /opt/indexer/indexer; \
-    fi && chmod a+x /opt/indexer/indexer /opt/indexer/index_build.py
-
 COPY llvmsymbol.diff $SRC
 COPY detect_repo.py /opt/cifuzz/
 COPY bazel.bazelrc /root/.bazelrc

@@ -63,9 +63,6 @@ BUILD_TYPES = {
         BuildType('introspector',
                   build_and_run_coverage.get_fuzz_introspector_steps,
                   'status-introspector.json'),
-    'indexer':
-        BuildType('indexer', build_project.get_indexer_build_steps,
-                  'status.json'),
     'fuzzing':
         BuildType('fuzzing', build_project.get_build_steps, 'status.json'),
 }
@@ -81,8 +78,6 @@ def _get_production_build_statuses(build_type):
         f'{build_type.status_filename}')
     project_statuses = json.load(request)['projects']
   except urllib.error.URLError:
-    # It is not a critical error if the status file cannot be found.
-    # This is expected for indexer.
     return {}
 
   results = {}
@@ -145,14 +140,12 @@ def get_args(args=None):
   parser.add_argument('projects',
                       help='Projects. "all" for all projects',
                       nargs='+')
-  parser.add_argument('--sanitizers',
-                      required=False,
-                      default=[
-                          'address', 'memory', 'undefined', 'coverage',
-                          'introspector', 'indexer'
-                      ],
-                      nargs='+',
-                      help='Sanitizers.')
+  parser.add_argument(
+      '--sanitizers',
+      required=False,
+      default=['address', 'memory', 'undefined', 'coverage', 'introspector'],
+      nargs='+',
+      help='Sanitizers.')
   parser.add_argument('--fuzzing-engines',
                       required=False,
                       default=['afl', 'libfuzzer', 'honggfuzz', 'centipede'],
@@ -294,9 +287,6 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
   if 'introspector' in sanitizers:
     sanitizers.pop(sanitizers.index('introspector'))
     build_types.append(BUILD_TYPES['introspector'])
-  if 'indexer' in sanitizers:
-    sanitizers.pop(sanitizers.index('indexer'))
-    build_types.append(BUILD_TYPES['indexer'])
   if sanitizers:
     build_types.append(BUILD_TYPES['fuzzing'])
 
@@ -420,7 +410,7 @@ def _do_build_type_builds(args, config, credentials, build_type, projects):
       continue
 
     project_yaml_sanitizers = build_project.get_sanitizer_strings(
-        project_yaml['sanitizers']) + ['coverage', 'introspector', 'indexer']
+        project_yaml['sanitizers']) + ['coverage', 'introspector']
     project_yaml['sanitizers'] = list(
         set(project_yaml_sanitizers).intersection(set(args.sanitizers)))
 

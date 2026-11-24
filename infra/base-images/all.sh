@@ -45,7 +45,6 @@ IMAGE_LIST=(
     "base-builder-swift"
     "base-runner"
     "base-runner-debug"
-    "indexer"
 )
 
 echo "Building version: ${VERSION_TAG}"
