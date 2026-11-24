@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-javascript
+FROM gcr.io/oss-fuzz-base/base-builder-javascript:ubuntu-24-04
 
 COPY build.sh $SRC/
 

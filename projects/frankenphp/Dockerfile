@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 RUN apt-get update && apt-get install -y autoconf automake bison libtool pkg-config re2c
 RUN git clone --depth 1 --branch PHP-8.5 https://github.com/php/php-src.git php-src
 RUN git clone --depth 1 https://github.com/php/frankenphp.git frankenphp

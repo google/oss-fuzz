@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://erigon.tech/"
 language: go
 primary_contact: "oleksandr.lystopad@erigon.tech"

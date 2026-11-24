@@ -1,0 +1,4 @@
+homepage: "https://axoflow.com/docs/axosyslog-core"
+language: c
+main_repo: "https://github.com/axoflow/axosyslog"
+primary_contact: "attila.szakacs@axoflow.com"

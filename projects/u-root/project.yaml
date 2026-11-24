@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://u-root.org/"
 main_repo: "https://github.com/u-root/u-root.git"
 primary_contact: "rminnich@gmail.com"

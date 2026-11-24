@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 fuzzing_engines:
 - libfuzzer
 homepage: https://github.com/sigstore/model-transparency
@@ -5,8 +6,10 @@ language: python
 main_repo: https://github.com/sigstore/model-transparency
 sanitizers:
 - address
-primary_contact: mihaimaruseac@google.com 
-vendor_ccs:
-- david@adalogics.com
-- adam@adalogics.com
-- arthur.chan@adalogics.com
+primary_contact: "security@sigstore.dev"
+auto_ccs:
+  - lhinds@sigstore.dev
+  - hblauzvern@sigstore.dev
+  - bcallaway@sigstore.dev
+  - kommendorkapten@sigstore.dev
+  - santiagotorres@sigstore.dev

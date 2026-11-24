@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 
 RUN git clone --single-branch --branch ossfuzz https://gitlab.xiph.org/xiph/opus.git

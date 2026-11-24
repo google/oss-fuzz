@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
 RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o maven.zip && \
     unzip maven.zip -d $SRC/maven && \

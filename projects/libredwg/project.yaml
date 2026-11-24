@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/LibreDWG/libredwg"
 primary_contact: "reini.urban@gmail.com"
 language: c
