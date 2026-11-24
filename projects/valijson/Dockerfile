@@ -21,4 +21,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
 RUN git clone --depth 1 https://github.com/tristanpenman/valijson
 COPY run_tests.sh $SRC/
 WORKDIR valijson
-RUN cp $SRC/valijson/tests/fuzzing/oss-fuzz-build.sh $SRC/build.sh
+COPY build.sh $SRC/
