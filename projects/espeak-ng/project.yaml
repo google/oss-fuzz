@@ -12,3 +12,4 @@ fuzzing_engines:
 - libfuzzer
 - afl
 main_repo: 'https://github.com/espeak-ng/espeak-ng'
+base_os_version: ubuntu-24-04

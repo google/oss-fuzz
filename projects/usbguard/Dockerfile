@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y \
   make \
@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y \
   protobuf-compiler \
   libdbus-1-dev \
   libdbus-glib-1-dev \
-  libgio2.0-cil-dev \
+  libglib2.0-dev \
   libgcrypt20-dev \
   libpolkit-gobject-1-dev \
   libseccomp-dev \

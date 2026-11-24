@@ -20,7 +20,8 @@ FUZZERS="fuzz_bos_descriptor fuzz_control_setup fuzz_descriptor_parsers"
 # build project
 ./autogen.sh
 ./configure --disable-shared --enable-fuzzers
-make -j$(nproc) all
+make -j$(nproc) -C libusb
+make -j$(nproc) -C tests/fuzz
 
 # collect the fuzzers
 for fuzzer in $FUZZERS; do

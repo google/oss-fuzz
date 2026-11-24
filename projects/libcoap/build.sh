@@ -23,7 +23,7 @@ fi
 # These cant be installed in Dockerfile as they want to overwrite the x86_64 versions.
 if [ a$ARCHITECTURE = ai386 ] ; then
     NEW_PKGS="pkg-config:i386 libcunit1:i386 libcunit1-dev:i386"
-    apt-get install -y ${NEW_PKGS} > /dev/null
+    apt-get update && apt-get install -y ${NEW_PKGS} > /dev/null
     ldconfig
 fi
 

@@ -12,3 +12,4 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://gitlab.com/libidn/libidn2.git'
+base_os_version: ubuntu-24-04

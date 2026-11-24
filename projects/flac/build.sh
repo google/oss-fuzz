@@ -55,7 +55,7 @@ cp fuzzer_* $OUT
 cd $SRC
 
 # Build fuzzer_exo
-$CXX $CXXFLAGS -I $SRC/flac/oss-fuzz/ -I $SRC/flac/include/ -I $SRC/ExoPlayer/extensions/flac/src/main/jni/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/ -I /usr/lib/jvm/java-11-openjdk-amd64/include/linux/ fuzzer_exo.cpp \
+$CXX $CXXFLAGS -I $SRC/flac/oss-fuzz/ -I $SRC/flac/include/ -I $SRC/ExoPlayer/extensions/flac/src/main/jni/ -I /usr/lib/jvm/default-java/include/ -I /usr/lib/jvm/default-java/include/linux/ fuzzer_exo.cpp \
     $SRC/flac/src/libFLAC++/.libs/libFLAC++.a $SRC/flac/src/libFLAC/.libs/libFLAC.a $SRC/libogg-install/lib/libogg.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer_exo
 
 # Build libflac again for encoder fuzzers, but now with additional define
