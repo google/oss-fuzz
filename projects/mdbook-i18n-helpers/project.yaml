@@ -9,3 +9,4 @@ primary_contact: "mgeisler@google.com"
 auto_ccs:
   - "comprehensive-rust@google.com"
   - "darkhanu@gmail.com"
+base_os_version: ubuntu-24-04
