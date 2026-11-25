@@ -1,0 +1,13 @@
+homepage: "https://github.com/osamu620/OpenHTJ2K"
+language: c++
+primary_contact: "owatanab@es.takushoku-u.ac.jp"
+main_repo: "https://github.com/osamu620/OpenHTJ2K"
+base_os_version: ubuntu-24-04
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+  - memory
