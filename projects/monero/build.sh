@@ -43,6 +43,7 @@ TARGETS="\
   bulletproof_fuzz_tests \
   tx-extra_fuzz_tests \
   fcmp-pp-point_fuzz_tests \
+  node-rpc-proxy_fuzz_tests \
   fuzz_rpc \
   fuzz_rpc_full \
   fuzz_rpc_full_no_exceptions \
@@ -107,3 +108,4 @@ if [ -x "$OUT/wallet-cache_fuzz_tests" ]; then
 fi
 
 cp $SRC/*.options $OUT/
+cp $SRC/*.dict $OUT/
