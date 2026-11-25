@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y \
     make \
     autoconf \
@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libjson-c-dev \
     build-essential \
-    python \
+    python-is-python3 \
     wget
 
 RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/rnpgp/rnp.git rnp

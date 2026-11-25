@@ -15,3 +15,4 @@ architectures:
  - i386
 coverage_extra_args: -ignore-filename-regex=/usr/lib/jvm/.*
 main_repo: 'https://github.com/xiph/flac.git'
+base_os_version: ubuntu-24-04

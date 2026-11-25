@@ -16,8 +16,7 @@
 ################################################################################
 
 # build project
-autoconf
-autoheader
+autoreconf -i
 export LDFLAGS="$CFLAGS"
 ./configure LIBS="-lz -lm -lbz2 -llzma -lcurl -lcrypto -lpthread"
 make -j$(nproc) libhts.a bgzip htsfile tabix annot-tsv test/fuzz/hts_open_fuzzer.o

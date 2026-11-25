@@ -6,3 +6,4 @@ auto_ccs:
         - "jkb@sanger.ac.uk"
         - "vo2@sanger.ac.uk"
 main_repo: 'https://github.com/samtools/htslib.git'
+base_os_version: ubuntu-24-04

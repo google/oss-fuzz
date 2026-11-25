@@ -14,10 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make cmake
 RUN apt-get update && apt-get install -y \
-    python-all-dev \
     python3-all-dev \
     python3-pip
 # mbedtls needs jsonschema which needs rpds-py which needs pip>=20
