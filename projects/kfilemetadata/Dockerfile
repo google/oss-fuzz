@@ -14,10 +14,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kfilemetadata.git
 RUN $SRC/kfilemetadata/autotests/ossfuzz/prepare_build.sh
-RUN cp $SRC/kfilemetadata/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh
+RUN cp $SRC/kfilemetadata/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh && \
+    sed -i 's/ninja -C build -j1/ninja -C build -j4/' $SRC/build.sh && \
+    grep -q 'ninja -C build -j4' $SRC/build.sh
 
 WORKDIR $SRC/kfilemetadata

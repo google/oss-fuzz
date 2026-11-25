@@ -9,3 +9,4 @@ fuzzing_engines:
   - honggfuzz
   - afl
 main_repo: "https://invent.kde.org/frameworks/kfilemetadata.git"
+base_os_version: ubuntu-24-04
