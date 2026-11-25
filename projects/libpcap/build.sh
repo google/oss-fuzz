@@ -19,16 +19,21 @@ cd libpcap
 # build project
 mkdir build
 cd build
-cmake ..
+cmake -DENABLE_REMOTE=ON -DCMAKE_DISABLE_FIND_PACKAGE_OpenSSL=TRUE ..
 make
 
 
 # build fuzz targets
-for target in pcap filter both
+for target in pcap filter both rclient
 do
     $CC $CFLAGS -I.. -c ../testprogs/fuzz/fuzz_$target.c -o fuzz_$target.o
     $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target libpcap.a $LIB_FUZZING_ENGINE
 done
+
+# rpcapd fuzzer, built with the daemon sources
+$CC $CFLAGS -I. -I.. -c ../testprogs/fuzz/fuzz_rserver.c -o fuzz_rserver.o
+$CC $CFLAGS -I. -I.. -c ../rpcapd/daemon.c -o daemon.o
+$CXX $CXXFLAGS fuzz_rserver.o daemon.o -o $OUT/fuzz_rserver libpcap.a -Wl,-Bstatic -lcrypt -Wl,-Bdynamic $LIB_FUZZING_ENGINE
 
 # export other associated stuff
 cd ..
