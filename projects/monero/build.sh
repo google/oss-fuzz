@@ -43,6 +43,7 @@ TARGETS="\
   bulletproof_fuzz_tests \
   tx-extra_fuzz_tests \
   fcmp-pp-point_fuzz_tests \
+  pending-tx-sanity_fuzz_tests \
   fuzz_rpc \
   fuzz_rpc_full \
   fuzz_rpc_full_no_exceptions \
