@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-go
+FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
 
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget python-is-python3
 RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz
 RUN git clone --depth 1 --branch 3.9.0 --single-branch https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/supranational/blst.git

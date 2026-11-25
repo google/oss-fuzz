@@ -8,3 +8,4 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/firebase/firebase-ios-sdk.git'
+base_os_version: ubuntu-24-04
