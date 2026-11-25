@@ -76,6 +76,8 @@ class Config:
   base_image_tag: Optional[str] = None
   repo: Optional[str] = DEFAULT_OSS_FUZZ_REPO
   branch: Optional[str] = None
+  # If set, build exactly this commit of |repo| instead of the tip of |branch|.
+  commit: Optional[str] = None
   parallel: bool = False
   upload: bool = True
   experiment: bool = False
@@ -524,8 +526,10 @@ def _create_indexed_build_steps(project,
                                 timestamp,
                                 env,
                                 indexer_targets,
-                                build_type='indexer'):
-  """Creates the build steps for a specific indexer type."""
+                                build_type='indexer',
+                                upload=True):
+  """Creates the build steps for a specific indexer type. Only uploads the
+  snapshots and pushes the image if |upload|."""
   if build_type == 'indexer':
     container_name = _INDEXED_CONTAINER_NAME
     image_name = _indexer_built_image_name(project.name)
@@ -573,8 +577,12 @@ def _create_indexed_build_steps(project,
                                use_architecture_image_name=build.is_arm,
                                container_name=container_name)
 
+  if not upload:
+    # Trial builds and experiments build unmerged code. Don't publish their
+    # snapshots or images: consumers read them as production artifacts.
+    return [build_step]
+
   upload_steps = []
-  # TODO: Don't upload anything if we're in trial build.
   if build_type == 'indexer':
     prefix = f'indexer_indexes/{project.name}/{timestamp}/'
     signed_policy_document = build_lib.get_signed_policy_document_upload_prefix(
@@ -650,20 +658,25 @@ def get_indexer_build_steps(project_name,
   env = get_env(project.fuzzing_language, build, project.name)
   env.append('INDEXER_BUILD=1')
   env.append('CAPTURE_REPLAY_SCRIPT=1')
+  # Unlike the other build types, indexer builds have no testing bucket or
+  # registry, so testing builds must not publish either.
+  publish = config.upload and not config.testing
 
   indexer_steps = _create_indexed_build_steps(project,
                                               build,
                                               timestamp,
                                               env,
                                               project.indexer_targets,
-                                              build_type='indexer')
+                                              build_type='indexer',
+                                              upload=publish)
 
   tracer_steps = _create_indexed_build_steps(project,
                                              build,
                                              timestamp,
                                              env,
                                              project.indexer_targets,
-                                             build_type='tracer')
+                                             build_type='tracer',
+                                             upload=publish)
   return build_steps + indexer_steps + tracer_steps, None
 
 

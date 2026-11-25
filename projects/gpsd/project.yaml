@@ -13,3 +13,4 @@ sanitizers:
   - address
   - memory
 main_repo: 'https://gitlab.com/gpsd/gpsd'
+base_os_version: ubuntu-24-04

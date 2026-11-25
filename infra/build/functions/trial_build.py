@@ -139,8 +139,10 @@ def handle_special_projects(args):
       args.projects.extend(project_languages[language])
 
 
-def get_args(args=None):
-  """Parses command line arguments."""
+def get_args(args=None, source=None):
+  """Parses command line arguments. If |source| is set, it is the (repo,
+  branch, commit) to build, and it overrides any --repo, --branch and --commit
+  in |args|."""
   parser = argparse.ArgumentParser(sys.argv[0], description='Test projects')
   parser.add_argument('projects',
                       help='Projects. "all" for all projects',
@@ -166,6 +168,11 @@ def get_args(args=None):
                       required=False,
                       default=None,
                       help='Use specified OSS-Fuzz branch.')
+  parser.add_argument('--commit',
+                      required=False,
+                      default=None,
+                      help='Build exactly this commit of --repo instead of '
+                      'the tip of --branch.')
   parser.add_argument('--force-build',
                       action='store_true',
                       help='Build projects that failed to build on OSS-Fuzz\'s '
@@ -178,6 +185,10 @@ def get_args(args=None):
                       action='store_true',
                       help='Skip the base image build phase.')
   parsed_args = parser.parse_args(args)
+  if source:
+    # gcb.py takes |source| from the Cloud Build trigger, and |args| from a PR
+    # comment. Comments must not be able to change what gets built.
+    parsed_args.repo, parsed_args.branch, parsed_args.commit = source
   handle_special_projects(parsed_args)
   return parsed_args
 
@@ -212,9 +223,11 @@ def get_projects_to_build(specified_projects, build_type, force_build):
   return buildable_projects
 
 
-def trial_build_main(args=None, local_base_build=True):
-  """Main function for trial_build."""
-  args = get_args(args)
+def trial_build_main(args=None, local_base_build=True, source=None):
+  """Main function for trial_build. If |source| is set, it is the (repo, branch,
+  commit) to build, and it overrides any --repo, --branch and --commit in
+  |args|."""
+  args = get_args(args, source)
 
   if not args.skip_build_images:
     logging.info('Starting "Build and Push Images" phase...')
@@ -339,6 +352,7 @@ def _do_test_builds(args, test_image_suffix, end_time, version_tag):
                                   base_image_tag=version_tag,
                                   repo=args.repo,
                                   branch=args.branch,
+                                  commit=args.commit,
                                   parallel=False,
                                   upload=False,
                                   build_type=build_type.type_name)
