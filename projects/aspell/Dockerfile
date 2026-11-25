@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone --depth 1 https://github.com/gnuaspell/aspell.git $SRC/aspell
 RUN git clone --depth 1 -b master https://github.com/gnuaspell/aspell-fuzz.git $SRC/aspell-fuzz

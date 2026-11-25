@@ -8,3 +8,4 @@ sanitizers:
 primary_contact: "jophba@chromium.org"
 auto_ccs:
   - philip.deljanov@gmail.com
+base_os_version: ubuntu-24-04

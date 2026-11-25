@@ -13,3 +13,4 @@ auto_ccs:
   - "sasha@zettascale.space"
   - "julien@zettascale.space"
   - "olivier@zettascale.space"
+base_os_version: ubuntu-24-04

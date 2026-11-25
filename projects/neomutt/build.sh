@@ -17,8 +17,14 @@
 
 ./configure --fuzzing --disable-doc --disable-nls
 make fuzz -j$(nproc)
+
 cp fuzz/address-fuzz $OUT/
-cp fuzz/body-fuzz $OUT/
+cp fuzz/body-fuzz    $OUT/
+cp fuzz/cli-fuzz     $OUT/
+cp fuzz/date-fuzz    $OUT/
+cp fuzz/mbox-fuzz    $OUT/
+cp fuzz/pattern-fuzz $OUT/
+cp fuzz/rfc2047-fuzz $OUT/
 
 cd $SRC/corpus-address
 cp address-fuzz.options $OUT/

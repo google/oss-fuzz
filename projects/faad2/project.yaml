@@ -1,9 +1,11 @@
 base_os_version: ubuntu-24-04
-homepage: "https://sourceforge.net/projects/faac"
-main_repo: "https://github.com/knik0/faad2"
+homepage: "https://github.com/FreewareAdvancedAudio/faad2"
+main_repo: "https://github.com/FreewareAdvancedAudio/faad2"
 language: c
-primary_contact: "eustas@chromium.org"
+primary_contact: "nschimme@gmail.com"
 auto_ccs:
+ - "akhil.mittra@gmail.com"
+ - "eustas@chromium.org"
  - "david@adalogics.com"
 sanitizers:
  - address

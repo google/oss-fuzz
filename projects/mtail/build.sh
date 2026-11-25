@@ -15,6 +15,11 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/google/mtail/internal/runtime Fuzz vm-fuzzer
-# Make the dictionary and seed corpus.
-make --debug $OUT/vm-fuzzer.dict $OUT/vm-fuzzer_seed_corpus.zip
+# Ensure this pacakge is in go.mod for the compile to work.
+go get github.com/AdamKorcz/go-118-fuzz-build/testing
+
+compile_native_go_fuzzer github.com/jaqx0r/mtail/internal/runtime FuzzE2E vm-fuzzer
+
+zip -j $OUT/vm-fuzzer_seed_corpus.zip $SRC/mtail/examples/*.mtail $SRC/mtail/internal/runtime/fuzz/*.mtail
+
+bazel run //cmd/mgen -- --dictionary --out="$OUT/vm-fuzzer.dict"

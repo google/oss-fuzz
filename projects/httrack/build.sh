@@ -26,7 +26,7 @@ make -j"$(nproc)" -C src libhttrack.la
 
 for f in charset codepage meta idna entities unescape filters url header \
     cachendx htsparse singlefile sitemap arc bundle cookie robots savename \
-    warc; do
+    warc accept alias cache sniff; do
     # Three targets need an extra source, as fuzz/Makefile.am lists them.
     defs=()
     srcs=()
