@@ -4,6 +4,7 @@ language: c++
 primary_contact: "bobjfriesenhahn@gmail.com"
 auto_ccs:
   - paul.l.kehrer@gmail.com
+  - sulau@freenet.de
 sanitizers:
   - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294

@@ -10,3 +10,4 @@ auto_ccs:
   - "ver@buoyant.io"
   - "eliza@buoyant.io"
   - "david@adalogics.com"
+base_os_version: ubuntu-24-04

@@ -84,7 +84,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t nr) {
   }
 
 
-  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &qstate, &ie);
+  int msg_lame_empty = 0;
+  int msg_lame_referral = 0;
+  scrub_message(pkt, &msg, &qinfo_out, peter, reg, &env, &qstate, &ie,
+      &msg_lame_empty, &msg_lame_referral, 0);
 
 out:
   rrset_cache_delete(env.rrset_cache);
