@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 # fallow needs Rust 1.96 or later. The nightly of the base image is older, so
 # install the nightly that the fallow fuzz CI job uses.
 ENV RUSTUP_TOOLCHAIN=nightly-2026-07-20
