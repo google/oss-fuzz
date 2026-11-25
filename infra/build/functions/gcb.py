@@ -13,10 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-"""Entrypoint for CI into trial_build or oss_fuzz_on_demand. This script will
-get the command from the last PR comment containing "/gcbrun" and pass it to
-trial_build.py or oss_fuzz_on_demand. On trial_build.py it will build test
-versions of base-images, push them and then do test builds using those images.
+"""Entrypoint for CI into trial_build. This script will get the command from
+the last PR comment containing "/gcbrun" and pass it to trial_build.py, which
+builds test versions of base-images, pushes them and then does test builds using
+those images.
 """
 
 import logging
@@ -25,19 +25,29 @@ import sys
 
 import github
 
+import build_lib
 import trial_build
-import oss_fuzz_on_demand
 
 TRIGGER_COMMAND = '/gcbrun'
 TRIAL_BUILD_COMMAND_STR = f'{TRIGGER_COMMAND} trial_build.py '
 OSS_FUZZ_ON_DEMAND_COMMAND_STR = f'{TRIGGER_COMMAND} oss_fuzz_on_demand.py '
 SKIP_COMMAND_STR = f'{TRIGGER_COMMAND} skip'
 
+# Cloud Build only starts this build when someone with write access comments
+# /gcbrun, but anyone can comment on a pull request. Only take commands from
+# these authors. Without GITHUB_TOKEN, GitHub reports private members of the
+# organization as CONTRIBUTOR, so their commands are ignored.
+TRUSTED_AUTHOR_ASSOCIATIONS = ('OWNER', 'MEMBER', 'COLLABORATOR')
+
 
 def get_comments(pull_request_number):
   """Returns comments on the GitHub Pull request referenced by
   |pull_request_number|."""
-  github_obj = github.Github()
+  token = os.environ.get('GITHUB_TOKEN')
+  if token:
+    github_obj = github.Github(auth=github.Auth.Token(token))
+  else:
+    github_obj = github.Github()
   repo = github_obj.get_repo('google/oss-fuzz')
   pull = repo.get_pull(pull_request_number)
   pull_comments = list(pull.get_comments())
@@ -49,10 +59,18 @@ def get_comments(pull_request_number):
 
 
 def get_latest_gcbrun_command(comments):
-  """Gets the last /gcbrun comment from comments."""
+  """Gets the last /gcbrun comment from a trusted author in |comments|."""
   for comment in reversed(comments):
     # This seems to get comments on code too.
     body = comment.body
+    if not body or not body.startswith(TRIGGER_COMMAND):
+      continue
+    if comment.author_association not in TRUSTED_AUTHOR_ASSOCIATIONS:
+      # |user| is None for deleted accounts.
+      logging.info('Ignoring %s comment by %s (%s).', TRIGGER_COMMAND,
+                   getattr(comment.user, 'login', None),
+                   comment.author_association)
+      continue
     if body.startswith(SKIP_COMMAND_STR):
       return None
     if not body.startswith(TRIAL_BUILD_COMMAND_STR) and (
@@ -66,12 +84,15 @@ def get_latest_gcbrun_command(comments):
 
 
 def exec_command_from_github(args):
-  """Executes the gcbrun command for trial_build.py or oss_fuzz_on_demand.py in
-  the most recent command on |pull_request_number|. Returns True on success,
-  False on failure."""
+  """Executes the most recent gcbrun command for trial_build.py on
+  |pull_request_number|. Returns True on success, False on failure."""
   pull_request_number = int(os.environ['PULL_REQUEST_NUMBER'])
   branch = os.environ['BRANCH']
   repo = os.environ['REPO']
+  # The commit Cloud Build checked out for this build, i.e. the head of the PR
+  # when someone with write access commented /gcbrun. Pushes after that comment
+  # must not change what gets built.
+  commit = os.environ.get('COMMIT_SHA', '')
 
   comments = get_comments(pull_request_number)
   full_command = get_latest_gcbrun_command(comments)
@@ -85,18 +106,23 @@ def exec_command_from_github(args):
   command_file = full_command[0]
   command = full_command[1:]
 
-  command.extend(['--repo', repo])
-
-  # Set the branch so that the trial_build builds the projects from the PR
-  # branch.
-  command.extend(['--branch', branch])
-  command.extend(args)
-
-  logging.info('Executing command: %s.', command)
-
   if command_file == OSS_FUZZ_ON_DEMAND_COMMAND_STR.split(' ')[1]:
-    return oss_fuzz_on_demand.oss_fuzz_on_demand_main(command) == 0
-  return trial_build.trial_build_main(command, local_base_build=False)
+    # Unlike trial builds, OSS-Fuzz on Demand builds aren't pinned to the
+    # approved commit, so they can't run from PR comments.
+    logging.error('%s oss_fuzz_on_demand.py is disabled.', TRIGGER_COMMAND)
+    return False
+
+  if not build_lib.COMMIT_SHA_REGEX.fullmatch(commit):
+    logging.error('Missing or invalid COMMIT_SHA: %r.', commit)
+    return False
+  command.extend(args)
+  logging.info('Executing command: %s on %s, branch %s, commit %s.', command,
+               repo, branch, commit)
+  # Build the projects from the PR commit. Pass the source separately so the
+  # comment can't override it.
+  return trial_build.trial_build_main(command,
+                                      local_base_build=False,
+                                      source=(repo, branch, commit))
 
 
 def main():

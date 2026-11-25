@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go:ubuntu-24-04
-RUN git clone --depth 1 https://github.com/google/mtail $GOPATH/src/github.com/google/mtail
-WORKDIR $GOPATH/src/github.com/google/mtail
+RUN git clone --depth 1 https://github.com/jaqx0r/mtail $SRC/mtail
+WORKDIR $SRC/mtail
 COPY build.sh $SRC/

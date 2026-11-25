@@ -12,3 +12,4 @@ auto_ccs:
   - "ealvarez@mozilla.com"
   - "fuzzing@fuchsia.dev"
 main_repo: 'https://github.com/servo/servo'
+base_os_version: ubuntu-24-04

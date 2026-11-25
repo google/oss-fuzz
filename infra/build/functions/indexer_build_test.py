@@ -89,6 +89,45 @@ RUN apt-get install -y make'''
                   upload_command)
     self.assertIn('curl -F policy=foo', upload_command)
 
+  @mock.patch('build_lib.get_signed_policy_document_upload_prefix')
+  @mock.patch('build_lib.get_project_image_steps', return_value=[])
+  def test_no_upload(self, mock_get_project_image_steps, mock_get_policy_doc):
+    """Tests that trial builds, experiments and testing builds build the indexer
+    and tracer images, but don't publish anything."""
+    del mock_get_project_image_steps
+    project_yaml = {
+        'language': 'c++',
+        'sanitizers': ['address'],
+        'architectures': ['x86_64'],
+        'main_repo': 'https://github.com/test/repo.git',
+    }
+    dockerfile = 'FROM gcr.io/oss-fuzz-base/base-builder'
+    configs = [
+        build_project.Config(testing=True, upload=False),
+        build_project.Config(testing=False, upload=False),
+        build_project.Config(testing=True, upload=True),
+    ]
+    for config in configs:
+      with self.subTest(testing=config.testing, upload=config.upload):
+        steps, reason = build_project.get_indexer_build_steps(
+            'test-project', project_yaml, dockerfile, config)
+
+        self.assertIsNone(reason)
+        mock_get_policy_doc.assert_not_called()
+        containers = [
+            step['args'][step['args'].index('--name') + 1]
+            for step in steps
+            if '--name' in step['args']
+        ]
+        self.assertEqual(['indexed-container', 'tracing-container'], containers)
+        for step in steps:
+          args = ' '.join(step['args'])
+          self.assertNotIn('push', step['args'])
+          self.assertNotIn('commit', step['args'])
+          self.assertNotIn('clusterfuzz-builds', args)
+          self.assertNotIn('us-docker.pkg.dev/oss-fuzz/indexer', args)
+          self.assertNotIn('us-docker.pkg.dev/oss-fuzz/tracer', args)
+
 
 if __name__ == '__main__':
   unittest.main()

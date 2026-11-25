@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone --depth 1 https://invent.kde.org/network/kio-extras.git
 RUN git clone --depth 1 https://invent.kde.org/graphics/kdegraphics-thumbnailers.git

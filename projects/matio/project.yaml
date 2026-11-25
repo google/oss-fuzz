@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: "https://github.com/tbeu/matio"
 language: c++
 primary_contact: "t-beu@users.sourceforge.net"
