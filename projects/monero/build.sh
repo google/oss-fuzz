@@ -41,8 +41,18 @@ TARGETS="\
   http-client_fuzz_tests \
   levin_fuzz_tests \
   bulletproof_fuzz_tests \
+  bulletproof-plus_fuzz_tests \
   tx-extra_fuzz_tests \
   fcmp-pp-point_fuzz_tests \
+  network-address_fuzz_tests \
+  utf8_fuzz_tests \
+  clsag_fuzz_tests \
+  clsag_cout_fuzz_tests \
+  clsag_message_fuzz_tests \
+  clsag_pubs_fuzz_tests \
+  multisig-kex_fuzz_tests \
+  multisig-tx_fuzz_tests \
+  multisig-info_fuzz_tests \
   fuzz_rpc \
   fuzz_rpc_full \
   fuzz_rpc_full_no_exceptions \
