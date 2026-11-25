@@ -20,3 +20,4 @@ coverage_extra_args: >
   -ignore-filename-regex=.*/root/.opam/.*
   -ignore-filename-regex=.*/registry/src/.*crates.io.*/.*
   -ignore-filename-regex=.*/rustc/.*
+base_os_version: ubuntu-24-04

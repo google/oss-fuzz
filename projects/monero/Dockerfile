@@ -17,7 +17,7 @@
 # Multistage docker build, requires docker 17.05
 
 # builder stage
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 
 RUN set -ex && \
     apt-get update && \
@@ -118,6 +118,7 @@ RUN set -ex \
     && git clone --depth=1 https://github.com/signal11/hidapi -b ${HIDAPI_VERSION} \
     && cd hidapi \
     && test `git rev-parse HEAD` = ${HIDAPI_HASH} || exit 1 \
+    && sed -i 's/AC_CONFIG_MACRO_DIR(/AC_CONFIG_MACRO_DIRS(/g' configure.ac \
     && ./bootstrap \
     && ./configure --enable-static --disable-shared \
     && make -j$(nproc) \
