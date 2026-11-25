@@ -9,3 +9,4 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://github.com/nfstream/nfstream'
+base_os_version: ubuntu-24-04
