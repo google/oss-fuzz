@@ -14,16 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # Install build tools
 RUN apt-get update && \
     apt-get install -y make autoconf automake groff libtool pkg-config cmake nasm autopoint
-
-# Due to libtiff requirements, build requires autoconf 2.71 (or later)
-# Can probably be removed once base-builder switches to Ubuntu 22.04
-RUN curl -LO https://mirrors.edge.kernel.org/ubuntu/pool/main/a/autoconf/autoconf_2.72-3.1ubuntu1_all.deb && \
-    apt install ./autoconf_2.72-3.1ubuntu1_all.deb
 
 # Clone dependencies
 RUN git clone --depth 1 https://github.com/imagemagick/imagemagick
