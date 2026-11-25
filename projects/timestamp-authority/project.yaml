@@ -1,11 +1,14 @@
+base_os_version: ubuntu-24-04
 homepage: "https://sigstore.dev"
 main_repo: "https://github.com/sigstore/timestamp-authority"
-primary_contact: "hblauzvern@sigstore.dev"
+primary_contact: "security@sigstore.dev"
 auto_ccs:
-  - malancas@sigstore.dev
-  - bcallaway@sigstore.dev
   - lhinds@sigstore.dev
-  - codysoyland@sigstore.dev
+  - hblauzvern@sigstore.dev
+  - bcallaway@sigstore.dev
+  - kommendorkapten@sigstore.dev
+  - santiagotorres@sigstore.dev
+  - malancas@github.com
 language: go
 fuzzing_engines:
   - libfuzzer

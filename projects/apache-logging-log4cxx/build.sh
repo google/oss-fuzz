@@ -17,9 +17,6 @@
 
 ./src/fuzzers/bash/oss-fuzz-build.sh "$OUT"
 
-# Add seed corpus
-zip $OUT/DOMConfiguratorFuzzer_seed_corpus.zip $SRC/logging-log4cxx/src/test/resources/input/xml/*.xml
-
 mkdir build-tests
 cd build-tests
 cmake ..

@@ -30,7 +30,7 @@ fi
 ./autogen.sh && ./configure --disable-doxygen --disable-manpages \
                             --with-openssl --enable-tests        \
                             --disable-thread-safe                \
-    && make clean > /dev/null && make -j$(nproc)
+    && make clean > /dev/null && make -j$(nproc) EXTRA_CFLAGS=-Werror
 
 # Do a sanity check
 tests/testdriver 2>&1 | egrep -v passed

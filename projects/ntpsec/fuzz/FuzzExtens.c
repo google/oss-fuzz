@@ -28,5 +28,6 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {//ntpsec/te
 	struct ntspacket_t ntspkt;
 	memset(&ntspkt, 0, sizeof(ntspkt));
 
-	return extens_server_recv(&ntspkt,(uint8_t*)Data, Size);
+	extens_server_recv(&ntspkt,(uint8_t*)Data, Size);
+	return 0;
 }

@@ -14,8 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y wget cmake
 RUN git clone https://github.com/google/libultrahdr.git
+RUN git clone https://aomedia.googlesource.com/aom
 COPY build.sh $SRC/
 WORKDIR libultrahdr

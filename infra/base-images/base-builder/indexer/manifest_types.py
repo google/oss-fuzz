@@ -260,7 +260,7 @@ def _get_sqlite_db_user_version(sqlite_db_path: pathlib.Path) -> int:
     if len(version_bytes) < 4:
       raise too_small_error
 
-    return int.from_bytes(version_bytes, byteorder="big")  # pyrefly: ignore[bad-argument-type]
+    return int.from_bytes(version_bytes, byteorder="big")
 
 
 @dataclasses.dataclass(frozen=True)

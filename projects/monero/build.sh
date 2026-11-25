@@ -15,25 +15,23 @@
 #
 ################################################################################
 
-export BOOST_ROOT=/src/monero/boost_1_70_0
-export OPENSSL_ROOT_DIR=/src/monero/openssl-1.1.1g
 
 cd monero
-sed -i -e 's/include(FindCcache)/# include(FindCcache)/' CMakeLists.txt
 git submodule init
 git submodule update
 mkdir -p build
 cd build
-export CXXFLAGS="${CXXFLAGS} -fPIC -DBOOST_NO_INCLASS_MEMBER_INITIALIZATION"
 # Upstream monero (commit 65c15857, "cmake: use boost provided module") switched
 # to find_package(Boost ... CONFIG) and dropped its internal
 # `set(Boost_USE_STATIC_RUNTIME ON)`. The OSS-Fuzz image builds Boost with
 # `runtime-link=static`, so config-mode find_package rejects that variant unless
 # Boost_USE_STATIC_RUNTIME is ON. Re-supply it here to match the image's Boost.
 cmake -D OSSFUZZ=ON -D STATIC=ON -D BUILD_TESTS=ON -D USE_LTO=OFF \
-  -D USE_DEVICE_TREZOR=OFF -D ARCH="default" -D Boost_USE_STATIC_RUNTIME=ON ..
+      -D USE_DEVICE_TREZOR=OFF -D ARCH="default" \
+      -D Boost_USE_STATIC_RUNTIME=ON -D USE_COMPILER_CACHE=OFF ..
 
-TESTS="\
+TARGETS="\
+  gen_corpus \
   base58_fuzz_tests \
   block_fuzz_tests \
   transaction_fuzz_tests \
@@ -45,6 +43,7 @@ TESTS="\
   bulletproof_fuzz_tests \
   tx-extra_fuzz_tests \
   fcmp-pp-curve-trees_fuzz_tests \
+  fcmp-pp-point_fuzz_tests \
   fuzz_rpc \
   fuzz_rpc_full \
   fuzz_rpc_full_no_exceptions \
@@ -54,23 +53,27 @@ TESTS="\
 # only libfuzzer can run the slow to start ones
 if test "x$FUZZING_ENGINE" == 'xlibfuzzer'
 then
-  TESTS="$TESTS \
+  TARGETS="$TARGETS \
     signature_fuzz_tests \
     cold-outputs_fuzz_tests \
     cold-transaction_fuzz_tests \
+    wallet-cache_fuzz_tests \
+    wallet-scan_fuzz_tests \
+    wallet-proof-uri_fuzz_tests \
   "
 fi
 
-make -j$(nproc) -C tests/fuzz $TESTS
+make -j$(nproc) $TARGETS
 
 cd /src/monero/monero/build/tests/fuzz
+./gen_corpus/gen_corpus --force
 for fuzzer in *fuzz*
 do
   cp "$fuzzer" "$OUT"
   base=$(echo $fuzzer | sed -e s/_fuzz_tests//)
-  basedir="/src/monero/monero/tests/data/fuzz/$base"
+  basedir="/src/monero/monero/build/tests/data/fuzz/$base"
   if [ -d "$basedir" ]; then
-    pushd "/src/monero/monero/tests/data/fuzz/$base"
+    pushd $basedir
     rm -f "${OUT}/${fuzzer}_seed_corpus.zip"
     for f in *
     do
@@ -82,5 +85,26 @@ do
     popd
   fi
 done
+
+# The wallet cache format changes with the source, so the harness dumps its
+# own seed.  Fail the build with a clear error if seed generation fails or
+# leaves a missing or empty baseline: the cache loader is only reached with a
+# valid archive, so an empty seed would give the fuzzer no usable input.
+if [ -x "$OUT/wallet-cache_fuzz_tests" ]; then
+  seed_dir=$(mktemp -d)
+  touch "$seed_dir/empty"
+  if ! WALLET_CACHE_FUZZ_WRITE_SEED="$seed_dir/baseline" \
+      "$OUT/wallet-cache_fuzz_tests" "$seed_dir/empty"; then
+    echo "ERROR: wallet-cache harness failed to generate a seed archive" >&2
+    exit 1
+  fi
+  if [ ! -s "$seed_dir/baseline" ]; then
+    echo "ERROR: wallet-cache seed generation left a missing or empty baseline" >&2
+    exit 1
+  fi
+  rm -f "$OUT/wallet-cache_fuzz_tests_seed_corpus.zip"
+  zip -j "$OUT/wallet-cache_fuzz_tests_seed_corpus.zip" "$seed_dir/baseline"
+  rm -rf "$seed_dir"
+fi
 
 cp $SRC/*.options $OUT/

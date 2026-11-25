@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-ruby
+FROM gcr.io/oss-fuzz-base/base-builder-ruby:ubuntu-24-04
 
 RUN git clone --depth 1 --single-branch https://github.com/ohler55/ox.git $SRC/ox-ruby
 

@@ -24,6 +24,7 @@ import json
 import logging
 import os
 import re
+import shlex
 import six.moves.urllib.parse as urlparse
 import sys
 import time
@@ -56,6 +57,9 @@ CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
 
 # Regex to match special chars in project name.
 SPECIAL_CHARS_REGEX = re.compile('[^a-zA-Z0-9_-]')
+
+# A full git commit hash.
+COMMIT_SHA_REGEX = re.compile('[0-9a-f]{40}')
 
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
 CORPUS_DOWNLOAD_BATCH_SIZE = 100
@@ -488,8 +492,24 @@ def get_srcmap_step_id():
 
 
 def get_git_clone_step(repo_url='https://github.com/google/oss-fuzz.git',
-                       branch=None):
-  """Returns the git clone step."""
+                       branch=None,
+                       commit=None):
+  """Returns the git clone step. If |commit| is set, checks out exactly that
+  commit of |repo_url|, so that pushing to |branch| after the build was
+  requested can't change what gets built."""
+  if commit:
+    if not COMMIT_SHA_REGEX.fullmatch(commit):
+      raise ValueError(f'Invalid commit: {commit!r}.')
+    return {
+        'args': [
+            '-c', 'git init oss-fuzz && cd oss-fuzz && '
+            f'git fetch --depth 1 -- {shlex.quote(repo_url)} {commit} && '
+            f'git checkout --detach {commit}'
+        ],
+        'entrypoint': 'bash',
+        'name': 'gcr.io/cloud-builders/git',
+    }
+
   clone_step = {
       'args': ['clone', repo_url, '--depth', '1'],
       'name': 'gcr.io/cloud-builders/git',
@@ -607,7 +627,9 @@ def get_project_image_steps(  # pylint: disable=too-many-arguments
     architectures = []
 
   # TODO(metzman): Pass the URL to clone.
-  clone_step = get_git_clone_step(repo_url=config.repo, branch=config.branch)
+  clone_step = get_git_clone_step(repo_url=config.repo,
+                                  branch=config.branch,
+                                  commit=config.commit)
   if experiment:
     # Skip cloning if we're in an experiment. The source is submitted to GCB
     # via gcloud builds submit.

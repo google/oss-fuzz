@@ -1,0 +1,10 @@
+base_os_version: ubuntu-24-04
+homepage: "https://exelearning.net"
+language: javascript
+primary_contact: "info@exelearning.net"
+main_repo: "https://github.com/exelearning/exelearning.git"
+file_github_issue: true
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - none

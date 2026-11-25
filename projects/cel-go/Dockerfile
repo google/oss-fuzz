@@ -28,10 +28,9 @@ RUN mkdir LPM; \
 RUN git clone --depth 1 https://github.com/mdempsky/go114-fuzz-build.git
 
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+RUN cd $SRC/cel-go && go mod download
+RUN go mod download github.com/AdamKorcz/go-118-fuzz-build@latest
 
 COPY go-lpm.cc $SRC/
-
-COPY fuzz*.go $SRC/
 COPY build.sh $SRC/
-COPY *.proto $SRC/
 WORKDIR $SRC/cel-go

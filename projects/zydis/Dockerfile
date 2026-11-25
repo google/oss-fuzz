@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 ADD https://zydis.re/fuzzing-corpora/ZydisFuzzDecoder_seed_corpus.zip \
     $SRC/ZydisFuzzDecoder_seed_corpus.zip

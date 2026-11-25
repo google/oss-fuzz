@@ -1,0 +1,12 @@
+base_os_version: ubuntu-24-04
+homepage: "https://github.com/FreewareAdvancedAudio/faac"
+main_repo: "https://github.com/FreewareAdvancedAudio/faac"
+language: c
+primary_contact: "nschimme@gmail.com"
+auto_ccs:
+ - "akhil.mittra@gmail.com"
+fuzzing_engines:
+ - libfuzzer
+sanitizers:
+ - address
+ - undefined

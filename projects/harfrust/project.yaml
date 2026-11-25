@@ -5,7 +5,6 @@ auto_ccs:
   - "rsheeter@google.com"
   - "colin.rofls@gmail.com"
   - "cbrokaw@gmail.com"
-  - "drott@google.com"
   - "grieger@google.com"
   - "clupo@google.com"
   - "qxliu@google.com"
@@ -14,3 +13,4 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 main_repo: 'https://github.com/harfbuzz/harfrust'
+base_os_version: ubuntu-24-04

@@ -1,8 +1,10 @@
+base_os_version: ubuntu-24-04
 homepage: "http://www.libtiff.org"
 language: c++
-primary_contact: "even.rouault@gmail.com"
+primary_contact: "bobjfriesenhahn@gmail.com"
 auto_ccs:
   - paul.l.kehrer@gmail.com
+  - sulau@freenet.de
 sanitizers:
   - address
 # Disabled MSAN because of https://github.com/google/oss-fuzz/issues/6294
@@ -16,4 +18,3 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - libfuzzer
-
