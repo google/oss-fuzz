@@ -11,3 +11,4 @@ sanitizers:
  - memory
  - undefined
 main_repo: 'https://git.torproject.org/tor.git'
+base_os_version: ubuntu-24-04
