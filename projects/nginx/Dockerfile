@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN apt-get update && apt-get install -y libpcre3-dev zlib1g-dev ninja-build cmake liblzma-dev libz-dev binutils libtool
+RUN apt-get update && apt-get install -y libpcre3-dev zlib1g-dev ninja-build cmake liblzma-dev libz-dev binutils libtool patchelf
 RUN git clone --depth 1 https://github.com/nginx/nginx.git
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite

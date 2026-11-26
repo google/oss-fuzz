@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y \
     gfortran \
@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
     liblzma-dev \
     libpcre2-dev \
     libreadline-dev \
+    libtirpc-dev \
     subversion \
     texinfo \
     zlib1g-dev

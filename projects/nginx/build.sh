@@ -31,3 +31,13 @@ make -f objs/Makefile fuzzers
 
 cp objs/*_fuzzer $OUT/
 cp $SRC/fuzz/*.dict $OUT/
+mkdir -p $OUT/lib
+for dir in /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu; do
+  if [ -e "$dir/libpcre.so.3" ]; then
+    cp -L "$dir/libpcre.so.3" $OUT/lib/
+    break
+  fi
+done
+for fuzzer_bin in $OUT/*_fuzzer; do
+  patchelf --force-rpath --set-rpath '$ORIGIN/lib' "$fuzzer_bin"
+done
