@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget golang python python-protobuf python-six
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget golang python-is-python3 python3-protobuf python3-six python3-venv
 RUN git clone --depth 1 https://github.com/firebase/firebase-ios-sdk.git
 COPY build.sh $SRC/
