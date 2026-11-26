@@ -59,7 +59,7 @@ find $SRC/TiffLibrary/ -regextype sed -regex ".*\.\(pbm\|pgm\|tif\|tiff\|png\|pp
 find $SRC/exif-samples/ -regextype sed -regex ".*\.\(pbm\|pgm\|tif\|tiff\|png\|ppm\|jpg\|exif\)" -exec cp {} $SRC/seed_corpus/ \;
 
 # Download a compressed JPEG
-wget https://upload.wikimedia.org/wikipedia/commons/b/b2/JPEG_compression_Example.jpg -O $SRC/seed_corpus/compressed_JPEG.jpg
+# wget https://upload.wikimedia.org/wikipedia/commons/b/b2/JPEG_compression_Example.jpg -O $SRC/seed_corpus/compressed_JPEG.jpg
 
 zip -r -j $OUT/dng_parser_fuzzer_seed_corpus.zip $SRC/seed_corpus
 cp $OUT/dng_parser_fuzzer_seed_corpus.zip $OUT/dng_stage_fuzzer_seed_corpus.zip
