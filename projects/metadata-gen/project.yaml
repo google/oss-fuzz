@@ -1,0 +1,8 @@
+homepage: "https://metadata-gen.com/"
+main_repo: "https://github.com/sebastienrousseau/metadata-gen"
+language: rust
+primary_contact: "sebastian.rousseau@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
