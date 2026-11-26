@@ -12,3 +12,4 @@ vendor_ccs:
   - twsmith@mozilla.com
 coverage_extra_args: >
   -ignore-filename-regex=.*/rustc/.*
+base_os_version: ubuntu-24-04

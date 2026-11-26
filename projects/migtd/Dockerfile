@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 # Install packages we need to build dependencies
 RUN apt-get update && \
     apt-get install -y \

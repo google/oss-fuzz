@@ -18,7 +18,7 @@
 #
 # base-builder-rust ships the nightly toolchain + cargo-fuzz pre-installed
 # (https://google.github.io/oss-fuzz/getting-started/new-project-guide/rust-lang/).
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 
 # System deps the Zebra workspace needs beyond base-builder-rust:
 #   - cmake / clang / libclang-dev : build the zcash_script C/C++ library reached
