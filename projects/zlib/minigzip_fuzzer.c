@@ -408,7 +408,8 @@ int file_compress(char  *file, char  *mode)
 
 
 /* ===========================================================================
- * Uncompress the given file and remove the original.
+ * Uncompress the given file and remove the original. Return -1 if the .gz
+ * file or the output file could not be opened.
  */
 int file_uncompress(char  *file)
 {
@@ -437,13 +438,13 @@ int file_uncompress(char  *file)
     in = gzopen(infile, "rb");
     if (in == NULL) {
         fprintf(stderr, "%s: can't gzopen %s\n", prog, infile);
-        return 0;
+        return -1;
     }
     out = fopen(outfile, "wb");
     if (out == NULL) {
         perror(file);
         gzclose(in);
-        return 0;
+        return -1;
     }
 
     gz_uncompress(in, out);
@@ -497,9 +498,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   }
 
   /* If the .gz file could not be created, any file at that name is left
-     over from an earlier run, so do not uncompress it. */
-  if (file_compress(inFileName, outmode) == 0)
-    file_uncompress(outFileName);
+     over from an earlier run, so do not uncompress it. If the .gz file could
+     not be uncompressed, the input file was not written again, so do not
+     check it. */
+  if (file_compress(inFileName, outmode) != 0 ||
+      file_uncompress(outFileName) != 0)
+    return 0;
 
   /* Check that the uncompressed file matches the input data. */
   in = fopen(inFileName, "rb");
