@@ -37,7 +37,10 @@ for src in tests/fuzz/*_fuzzer.cpp; do
   cp "build/tests/fuzz/$name" "$OUT/$name"
   patchelf --set-rpath '$ORIGIN/' "$OUT/$name"
 
-  if [[ -d tests/fuzz/corpus ]]; then
+  # Handle the per-fuzzer corpus dir
+  if [[ -d "tests/fuzz/corpus_${name}" ]]; then
+    zip -j -q "$OUT/${name}_seed_corpus.zip" "tests/fuzz/corpus_${name}"/*
+  elif [[ -d tests/fuzz/corpus ]]; then
     zip -j -q "$OUT/${name}_seed_corpus.zip" tests/fuzz/corpus/*
   fi
 done
