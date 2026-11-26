@@ -15,8 +15,10 @@
 #
 ################################################################################
 
+readonly MAX_CARGO_BUILD_JOBS=8
+
 cd $SRC/anise/anise
-cargo fuzz build -O
+CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-${MAX_CARGO_BUILD_JOBS}}" cargo fuzz build -O
 
 FUZZ_TARGET_OUTPUT_DIR=$SRC/anise/target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs
