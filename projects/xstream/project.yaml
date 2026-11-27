@@ -8,3 +8,4 @@ sanitizers:
 vendor_ccs:
 - patrice.salathe@code-intelligence.com
 - yakdan@code-intelligence.com
+base_os_version: ubuntu-24-04

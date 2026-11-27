@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 RUN git clone --depth 1 https://review.trustedfirmware.org/arm-firmware-crates/arm-psci
 WORKDIR arm-psci
 COPY build.sh $SRC/

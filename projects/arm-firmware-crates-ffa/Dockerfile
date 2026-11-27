@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 RUN apt-get update && apt-get install -y device-tree-compiler
 RUN git clone --depth 1 https://review.trustedfirmware.org/arm-firmware-crates/arm-ffa
 WORKDIR arm-ffa
