@@ -14,11 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake nasm autopoint gettext python3 libqb-dev libbz2-dev \
   libglib2.0-dev corosync libgnutls28-dev libcfg-dev libcpg-dev libcmap-dev \
-  libquorum-dev libpython3-dev libdbus-1-dev
+  libquorum-dev libpython3-dev libdbus-1-dev libpcre2-dev
 
 RUN wget https://github.com/unicode-org/icu/releases/download/release-66-1/icu4c-66_1-src.tgz && tar xzvf icu4c-66_1-src.tgz
 RUN cd $SRC/icu/source && \

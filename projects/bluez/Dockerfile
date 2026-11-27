@@ -14,13 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
     make autoconf automake libtool pkg-config \
     libdbus-1-dev libreadline8 libreadline-dev \
-    python-docutils libudev-dev udev libical-dev \
+    python3-docutils libudev-dev udev libical-dev \
     libdbus-1-dev systemd libbluetooth-dev
 
 RUN python3 -m pip install --upgrade pip && python3 -m pip install packaging
