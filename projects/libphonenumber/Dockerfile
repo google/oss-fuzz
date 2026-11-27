@@ -14,11 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y autoconf automake \
       cmake cmake-curses-gui libre2-dev \
-      libicu-dev libboost-dev libboost-thread-dev libboost-system-dev \
+      libboost-dev libboost-thread-dev libboost-system-dev \
       libgflags-dev libgoogle-glog-dev libssl-dev \
       protobuf-compiler libtool wget default-jre icu-devtools
 
