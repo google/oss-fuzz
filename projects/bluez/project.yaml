@@ -10,3 +10,4 @@ fuzzing_engines:
   - honggfuzz
   - afl
   # - centipede disabled due to https://github.com/google/oss-fuzz/pull/10248#issuecomment-1579657163
+base_os_version: ubuntu-24-04

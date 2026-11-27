@@ -15,12 +15,12 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y \
             cmake \
             libprotobuf-dev:amd64 \
             libprotobuf-dev:i386 \
-            libstdc++-9-dev:i386 \
+            libstdc++-13-dev:i386 \
             make \
             protobuf-compiler
 
