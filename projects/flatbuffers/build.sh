@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+# Work around glibc 2.39 __libc_start_main stack-reuse false positive under MSan.
+if [ "$SANITIZER" = "memory" ]; then
+  export CXXFLAGS="$CXXFLAGS -fno-sanitize-memory-use-after-dtor"
+fi
+
 # Build fuzzer only
 cd $SRC/flatbuffers
 mkdir build

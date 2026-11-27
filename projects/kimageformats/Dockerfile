@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kimageformats.git
 RUN $SRC/kimageformats/autotests/ossfuzz/prepare_build.sh
 RUN cp $SRC/kimageformats/autotests/ossfuzz/build_fuzzers.sh $SRC/build.sh

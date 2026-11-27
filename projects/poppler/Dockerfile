@@ -14,8 +14,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone --depth 1 --single-branch https://gitlab.freedesktop.org/poppler/poppler.git
-RUN $SRC/poppler/test/ossfuzz/prepare_build.sh
+RUN sed -i '/apt-get install/s/\bpython\b/python-is-python3/' $SRC/poppler/test/ossfuzz/prepare_build.sh && \
+    $SRC/poppler/test/ossfuzz/prepare_build.sh && \
+    git -C $SRC/poppler checkout -- test/ossfuzz/prepare_build.sh
 RUN cp $SRC/poppler/test/ossfuzz/build_fuzzers.sh $SRC/build.sh

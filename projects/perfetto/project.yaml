@@ -33,3 +33,4 @@ sanitizers:
   - address
   - undefined
 main_repo: 'https://android.googlesource.com/platform/external/perfetto/'
+base_os_version: ubuntu-24-04

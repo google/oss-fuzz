@@ -17,6 +17,27 @@
 
 pip3 install .
 # Build fuzzers in $OUT.
+cat > "$OUT/openssl_legacy.cnf" << 'OPENSSL_EOF'
+openssl_conf = openssl_init
+
+[openssl_init]
+providers = provider_sect
+
+[provider_sect]
+default = default_sect
+legacy = legacy_sect
+
+[default_sect]
+activate = 1
+
+[legacy_sect]
+activate = 1
+OPENSSL_EOF
+
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
+  wrapper="$OUT/$(basename -s .py "$fuzzer")"
+  if [ -f "$wrapper" ]; then
+    sed -i 's|^LD_PRELOAD=|OPENSSL_CONF=$this_dir/openssl_legacy.cnf LD_PRELOAD=|' "$wrapper"
+  fi
 done
