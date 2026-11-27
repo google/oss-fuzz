@@ -9,3 +9,4 @@ sanitizers:
   - undefined
 
 main_repo: 'https://github.com/apache/thrift' 
+base_os_version: ubuntu-24-04

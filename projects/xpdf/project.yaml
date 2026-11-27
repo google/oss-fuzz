@@ -11,3 +11,5 @@ fuzzing_engines:
   - honggfuzz
   - libfuzzer
 
+main_repo: "https://www.xpdfreader.com/"
+base_os_version: ubuntu-24-04
