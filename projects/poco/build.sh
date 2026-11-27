@@ -15,10 +15,7 @@
 #
 ################################################################################
 
-TMP_BUILD_SCRIPT="$(mktemp /tmp/poco_build.XXXXXX.sh)"
-trap 'rm -f "$TMP_BUILD_SCRIPT"' EXIT
-cp "$SRC/poco/build/script/oss-fuzz-build.sh" "$TMP_BUILD_SCRIPT"
-
+# Build OpenSSL with MSan so Poco does not link uninstrumented system libssl/libcrypto.
 if [ "$SANITIZER" = "memory" ] && [ "$ARCHITECTURE" = "x86_64" ]; then
   OPENSSL_PREFIX="$WORK/openssl-msan"
   OPENSSL_BUILD="$WORK/openssl-build"
@@ -31,7 +28,7 @@ if [ "$SANITIZER" = "memory" ] && [ "$ARCHITECTURE" = "x86_64" ]; then
     make -j"$(nproc)" build_libs
     make install_dev
   )
-  sed -i "s|-DBUILD_SHARED_LIBS=OFF|-DBUILD_SHARED_LIBS=OFF -DOPENSSL_ROOT_DIR=${OPENSSL_PREFIX} -DOPENSSL_USE_STATIC_LIBS=ON|" "$TMP_BUILD_SCRIPT"
+  export OPENSSL_ROOT_DIR="$OPENSSL_PREFIX"
 fi
 
-bash -eu "$TMP_BUILD_SCRIPT"
+bash -eu "$SRC/poco/build/script/oss-fuzz-build.sh"
