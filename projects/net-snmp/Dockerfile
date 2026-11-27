@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN git clone -q --depth 1 https://github.com/net-snmp/net-snmp net-snmp
-RUN net-snmp/ci/install.sh
+RUN apt-get update && apt-get install -y file && net-snmp/ci/install.sh
 WORKDIR net-snmp
 COPY build.sh $SRC/
 COPY *.dict $SRC/

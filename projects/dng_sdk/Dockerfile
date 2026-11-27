@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y wget cmake libjpeg-turbo8-dev zlib1g-dev libxmp-dev
 RUN git clone https://android.googlesource.com/platform/external/dng_sdk/
 
