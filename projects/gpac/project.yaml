@@ -4,3 +4,4 @@ primary_contact: "project.gpac@gmail.com"
 language: c
 auto_ccs:
   - "david@adalogics.com"
+base_os_version: ubuntu-24-04
