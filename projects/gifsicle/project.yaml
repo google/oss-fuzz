@@ -12,3 +12,4 @@ fuzzing_engines:
   - afl
   - honggfuzz
   - centipede
+base_os_version: ubuntu-24-04
