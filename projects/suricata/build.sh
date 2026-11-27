@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" = "memory" ]; then
+    export ac_cv_func_strlcpy=no
+    export ac_cv_func_strlcat=no
+fi
+
 # build dependencies statically
 if [ "$SANITIZER" = "memory" ]
 then

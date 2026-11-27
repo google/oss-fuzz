@@ -17,3 +17,4 @@ fuzzing_engines:
   # - centipede
   # Don't use centipede because it can't handle fuzz targets with "config" in
   # the name.
+base_os_version: ubuntu-24-04
