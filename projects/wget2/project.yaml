@@ -8,3 +8,4 @@ auto_ccs:
   - "ajuaristi@gmx.es"
   - "rootkea@gmail.com"
 main_repo: 'https://gitlab.com/gnuwget/wget2.git'
+base_os_version: ubuntu-24-04
