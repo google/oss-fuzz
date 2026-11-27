@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list && \
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN sed -i 's/^Types: deb[[:space:]]*$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources && \
     apt-get update && \
     # libelf build dependencies \
     apt-get build-dep -y --no-install-recommends libelf-dev && \
