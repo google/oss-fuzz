@@ -9,3 +9,4 @@ vendor_ccs:
 - yakdan@code-intelligence.com
 - norbert.schneider@code-intelligence.com
 - peter.samarin@code-intelligence.com
+base_os_version: ubuntu-24-04
