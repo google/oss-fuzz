@@ -28,7 +28,7 @@ CC=clang pypy ../../rpython/bin/rpython --opt=2 --shared --source
 BUILD_DIR=$(dirname $(find /tmp/usession-py3.11-* -name 'Makefile' | head -1))
 make lldebug -j$(nproc) -C $BUILD_DIR "CC=clang $SAN"
 cp $BUILD_DIR/pypy3*-c $BUILD_DIR/libpypy3*-c.so .
-ln -sf libpypy3.11-c.so libpypy3-c.so
+patchelf --set-soname libpypy3.11-c.so libpypy3.11-c.so
 
 export LD_LIBRARY_PATH=$SRC/pypy/pypy/goal
 PYPY=$SRC/pypy/pypy/goal/pypy3.11-c
@@ -37,8 +37,9 @@ PYPY=$SRC/pypy/pypy/goal/pypy3.11-c
 cd $SRC/pypy-fuzz
 while read -r name; do
     CC=clang CFLAGS="$SAN" LDSHARED="clang -shared $SAN" $PYPY build_cffi_fuzz.py "$name"
+    patchelf --set-soname "_pypy_fuzz_${name}.so" --set-rpath '$ORIGIN' "./_pypy_fuzz_${name}.so"
     clang $SAN $CFLAGS -fsanitize=fuzzer-no-link fuzzer_stub.c ./_pypy_fuzz_${name}.so \
-        -L$SRC/pypy/pypy/goal -lpypy3-c -Wl,-rpath,'$ORIGIN' \
+        -L$SRC/pypy/pypy/goal -lpypy3.11-c -Wl,--disable-new-dtags -Wl,-rpath,'$ORIGIN' \
         $LIB_FUZZING_ENGINE -rdynamic -ldl -o fuzzer-${name}
 
     cp fuzzer-${name} _pypy_fuzz_${name}.so fuzz_${name}.py $OUT/
@@ -50,7 +51,7 @@ while read -r name; do
     fi
 done < fuzz_targets.txt
 
-cp $SRC/pypy/pypy/goal/libpypy3.11-c.so $OUT/libpypy3-c.so
+cp $SRC/pypy/pypy/goal/libpypy3.11-c.so $OUT/libpypy3.11-c.so
 cp ubsan_suppressions.txt $OUT/
 cp -R $SRC/pypy/lib-python $OUT/
 cp -R $SRC/pypy/lib_pypy $OUT/

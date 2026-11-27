@@ -7,3 +7,4 @@ auto_ccs:
  - "cfbolz@gmail.com"
 sanitizers:
  - undefined
+base_os_version: ubuntu-24-04
