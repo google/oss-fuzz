@@ -37,6 +37,9 @@ OPENSSL_EOF
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
   wrapper="$OUT/$(basename -s .py "$fuzzer")"
+  # OPENSSL_CONF must be set before Python starts: under coverage builds,
+  # compile_python_fuzzer prepends `import coverage`, which loads `_hashlib`
+  # and initializes OpenSSL before fuzz_ntlm_auth.py runs.
   if [ -f "$wrapper" ]; then
     sed -i 's|^LD_PRELOAD=|OPENSSL_CONF=$this_dir/openssl_legacy.cnf LD_PRELOAD=|' "$wrapper"
   fi
