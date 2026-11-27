@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y libncurses-dev zlib1g-dev
 # TODO: switch to racket/racket once coverage counters and the fasl
 # repair are merged there
