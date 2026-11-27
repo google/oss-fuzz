@@ -111,6 +111,35 @@ class BuildImageImplTest(unittest.TestCase):
       ])
 
 
+class ReproduceImplTest(unittest.TestCase):
+  """Tests for reproduce_impl."""
+
+  @mock.patch('helper._get_base_runner_image', return_value='base-runner')
+  @mock.patch('helper._check_fuzzer_exists', return_value=True)
+  @mock.patch('common_utils.check_project_exists', return_value=True)
+  def test_reproducer_output_is_printed(self, _, __, ___):
+    """Ensure reproduce keeps the run function's output enabled by default."""
+    project = mock.Mock()
+    project.out = '/tmp/project-out'
+    run_function = mock.Mock(return_value=True)
+
+    self.assertTrue(
+        helper.reproduce_impl(project,
+                              'example_fuzzer',
+                              False,
+                              None, [],
+                              '/tmp/testcase',
+                              mock.Mock(),
+                              run_function=run_function))
+
+    run_function.assert_called_once_with([
+        '-e', 'HELPER=True', '-e', 'ARCHITECTURE=x86_64', '-v',
+        '/tmp/project-out:/out', '-v', '/tmp/testcase:/testcase', '-t',
+        'base-runner', 'reproduce', 'example_fuzzer', '-runs=100'
+    ],
+                                         architecture='x86_64')
+
+
 class GenerateImplTest(fake_filesystem_unittest.TestCase):
   """Tests for _generate_impl."""
   PROJECT_NAME = 'newfakeproject'
