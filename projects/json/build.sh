@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-make FUZZER_ENGINE="$LIB_FUZZING_ENGINE" fuzzers -Ctests
+JOBS=$(($(nproc) < 8 ? $(nproc) : 8))
+make -j"$JOBS" FUZZER_ENGINE="$LIB_FUZZING_ENGINE" fuzzers -Ctests
 
 FUZZER_FILES=$(find tests/ -maxdepth 1 -executable -type f)
 for F in $FUZZER_FILES; do
@@ -29,7 +30,7 @@ cp $SRC/parse_afl_fuzzer.dict $OUT/
 mkdir build-tests
 pushd build-tests
 cmake ..
-make -C tests
+make -j"$JOBS" -C tests
 popd
 
 # Pre-download test data
