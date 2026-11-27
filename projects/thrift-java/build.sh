@@ -19,7 +19,7 @@ export ASAN_OPTIONS=detect_leaks=0
 
 # Build and install the compiler (disable other languages to save time)
 ./bootstrap.sh
-./configure --enable-static --disable-shared --with-cpp=no --with-c_glib=no --with-python=no --with-py3=no --with-go=no --with-rs=no --with-java=yes --with-nodejs=no --with-dotnet=no --with-kotlin=no
+./configure --enable-static --disable-shared --with-cpp=no --with-c_glib=no --with-python=no --with-py3=no --with-go=no --with-rs=no --with-java=yes --with-nodejs=no --with-dotnet=no --with-kotlin=no --disable-tutorial
 make -j$(nproc)
 make install
 

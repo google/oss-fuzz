@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y libssl-dev pkg-config autoconf automake libtool bison flex wget make ant zip curl
 
