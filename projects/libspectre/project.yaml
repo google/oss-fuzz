@@ -12,3 +12,4 @@ sanitizers:
   - undefined
   - memory
 main_repo: 'https://gitlab.freedesktop.org/libspectre/libspectre.git'
+base_os_version: ubuntu-24-04
