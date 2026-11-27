@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# Temporary Ubuntu 24.04 workaround until upstream updates oss-fuzz-build.sh:
+# strip all -lm occurrences from static lept/libtiff-4 pkg-config flags and
+# link libstdc++.so.6 and libm dynamically after -Wl,-Bdynamic.
 TMP_BUILD_SCRIPT="$(mktemp /tmp/tesseract_build.XXXXXX.sh)"
 trap 'rm -f "$TMP_BUILD_SCRIPT"' EXIT
 cp "$SRC/tesseract/unittest/fuzzers/oss-fuzz-build.sh" "$TMP_BUILD_SCRIPT"

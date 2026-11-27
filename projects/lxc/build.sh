@@ -16,6 +16,9 @@
 ################################################################################
 
 export CFLAGS="${CFLAGS} -Wno-error=backend-plugin"
+# Temporary Ubuntu 24.04 MSan workaround until upstream adds a Meson guard:
+# glibc 2.38+ exports uninstrumented strlcpy/strlcat, causing MSan false
+# positives unless lxc uses its internal fallback implementations.
 if [ "$SANITIZER" = "memory" ]; then
   MESON_BUILD="$PWD/meson.build"
   MESON_BACKUP="$(mktemp /tmp/lxc_meson.XXXXXX)"
