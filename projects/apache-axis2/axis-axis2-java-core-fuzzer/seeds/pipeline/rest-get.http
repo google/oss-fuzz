@@ -1,0 +1,2 @@
+GET /axis2/services/FuzzService/echo?args0=hi HTTP/1.1
+
