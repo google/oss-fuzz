@@ -30,12 +30,15 @@ CLANG_VERSION="$(basename "$CLANG_RESOURCE_DIR")"
 sed -i '/-fdiagnostics-show-inlining-chain/d' build/config/compiler/BUILD.gn
 sed -i '/-fno-lifetime-dse/d' build/config/compiler/BUILD.gn
 sed -i '/-Wa,--crel,--allow-experimental-crel/d' build/config/compiler/BUILD.gn
+sed -i '/-fno-module-local-hints/d' build/config/compiler/BUILD.gn
 # Also handle the ubsan ignore flags in sanitizers.gni
 sed -i '/-fsanitize-ignore-for-ubsan-feature=${invoker.sanitizer}/d' build/config/sanitizers/sanitizers.gni
 
 # Configure arguments for gn build
+# Use host Ubuntu 24.04 glibc instead of Debian Bullseye sysroot so glibc 2.39
+# __isoc23_* symbols in OSS-Fuzz's libclang_rt.fuzzer.a resolve cleanly.
 ARGS="treat_warnings_as_errors=false is_component_build=false libcxx_is_shared=false is_debug=false"
-ARGS+=" use_custom_libcxx=true use_sysroot=true ozone_platform_x11=false"
+ARGS+=" use_custom_libcxx=true use_sysroot=false ozone_platform_x11=false dawn_use_x11=false"
 ARGS+=" is_clang=true clang_use_chrome_plugins=false clang_base_path=\"/usr/local\" clang_version=\"$CLANG_VERSION\""
 # Enable MSL and WGSL translators specifically, without enabling the full Metal renderer
 ARGS+=" angle_enable_msl=true angle_enable_wgpu=true"
