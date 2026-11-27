@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config python3-pip
 RUN unset CFLAGS CXXFLAGS && pip3 install -U meson ninja packaging
 RUN git clone --depth 1 --branch v1.3.1 --no-tags https://github.com/madler/zlib.git
