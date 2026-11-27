@@ -29,12 +29,20 @@ make -j$(nproc)
 # Copy fuzzers out.
 FUZZERS="php-fuzz-json
 php-fuzz-exif
+php-fuzz-mbstring
 php-fuzz-unserialize
 php-fuzz-unserializehash
 php-fuzz-parser
 php-fuzz-execute"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
+done
+
+# Not built in every configuration or with every php-src version.
+for fuzzerName in php-fuzz-mbregex php-fuzz-uri; do
+	if [ -f sapi/fuzzer/$fuzzerName ]; then
+		cp sapi/fuzzer/$fuzzerName $OUT/
+	fi
 done
 
 # The JIT fuzzer is fundamentally incompatible with memory sanitizer,
