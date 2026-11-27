@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 RUN git clone --depth 1 https://review.trustedfirmware.org/shared/tf-firmware-handoff
 WORKDIR tf-firmware-handoff
 COPY build.sh $SRC/
