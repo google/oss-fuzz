@@ -18,4 +18,11 @@
 export USE_BAZEL_VERSION=5.4.0
 cd validator
 export FUZZTEST_TARGET_FOLDER="//cpp/htmlparser:parser_fuzz_test"
+CLANG_RT_DIR="$($CC --print-resource-dir)/lib/$($CC -print-target-triple)"
+if [ "$FUZZING_ENGINE" = "libfuzzer" ]; then
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS:+${FUZZTEST_EXTRA_ARGS} }--linkopt=${CLANG_RT_DIR}/libclang_rt.fuzzer_no_main.a"
+fi
+if [ "$SANITIZER" = "undefined" ]; then
+  export FUZZTEST_EXTRA_ARGS="${FUZZTEST_EXTRA_ARGS:+${FUZZTEST_EXTRA_ARGS} }--linkopt=${CLANG_RT_DIR}/libclang_rt.ubsan_standalone_cxx.a"
+fi
 compile_fuzztests.sh
