@@ -14,14 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y \
     software-properties-common \
     dpkg-dev \
     ninja-build \
-    llvm-12-dev \
-    liblld-12-dev
+    llvm-18-dev \
+    liblld-18-dev
 
 ADD "https://api.github.com/repos/WasmEdge/WasmEdge/commits?per_page=1" latest_commit
 RUN rm latest_commit

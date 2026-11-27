@@ -16,4 +16,11 @@
 ################################################################################
 
 export CFLAGS="${CFLAGS} -Wno-error=backend-plugin"
+if [ "$SANITIZER" = "memory" ]; then
+  MESON_BUILD="$PWD/meson.build"
+  MESON_BACKUP="$(mktemp /tmp/lxc_meson.XXXXXX)"
+  cp "$MESON_BUILD" "$MESON_BACKUP"
+  trap 'cp -f "$MESON_BACKUP" "$MESON_BUILD" && rm -f "$MESON_BACKUP"' EXIT
+  sed -i "s/have = cc.has_function(ident\[0\], prefix: ident\[1\], args: '-D_GNU_SOURCE')/have = ident[0] in ['strlcpy', 'strlcat'] ? false : cc.has_function(ident[0], prefix: ident[1], args: '-D_GNU_SOURCE')/" "$MESON_BUILD"
+fi
 src/tests/oss-fuzz.sh

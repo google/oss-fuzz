@@ -14,4 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
-$SRC/tesseract/unittest/fuzzers/oss-fuzz-build.sh
+
+TMP_BUILD_SCRIPT="$(mktemp /tmp/tesseract_build.XXXXXX.sh)"
+trap 'rm -f "$TMP_BUILD_SCRIPT"' EXIT
+cp "$SRC/tesseract/unittest/fuzzers/oss-fuzz-build.sh" "$TMP_BUILD_SCRIPT"
+
+sed -i 's#LEPTONICA_LIBS=$(pkg-config --static --libs lept)#LEPTONICA_LIBS=$(pkg-config --static --libs lept | sed "s/ -lm\\b//g")#' "$TMP_BUILD_SCRIPT"
+sed -i 's#LIBTIFF_LIBS=$(pkg-config --static --libs libtiff-4 | sed '\''s/ -lm//'\'')#LIBTIFF_LIBS=$(pkg-config --static --libs libtiff-4 | sed "s/ -lm\\b//g")#' "$TMP_BUILD_SCRIPT"
+sed -i 's#-Wl,-Bdynamic#-Wl,-Bdynamic -l:libstdc++.so.6 -lm#g' "$TMP_BUILD_SCRIPT"
+
+bash -eu "$TMP_BUILD_SCRIPT"
