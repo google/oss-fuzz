@@ -14,12 +14,11 @@
 #
 ################################################################################
 
-# Ensure C extension gets built
-export CBOR2_BUILD_C_EXTENSION=1
-
-# Build and install project (using current CFLAGS, CXXFLAGS). This is required
-# for projects with C extensions so that they're built with the proper flags.
-pip3 install .
+# Build and install project. The Rust extension is built via setuptools-rust.
+# Unset RUSTFLAGS because OSS-Fuzz sanitizer flags (e.g. -Zsanitizer=address)
+# are incompatible with proc-macro crates. Fuzzing happens at the Python level
+# via atheris, so Rust code does not need sanitizer instrumentation.
+RUSTFLAGS="" pip3 install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
