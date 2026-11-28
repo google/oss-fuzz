@@ -34,4 +34,14 @@ sed -i 's/-Werror//g' Makefile.am
 make -j$(nproc)
 
 # Copy the fuzzer binaries to the output directory.
-cp *_fuzzer ${OUT}
+cp *_fuzzer ${OUT} || true
+
+# Build the XPRESS (MS-XCA) fuzzer once the codec lands upstream
+# (sleuthkit/sleuthkit#3531). The codec is standalone, so it can be
+# compiled directly without linking libtsk.
+if [ -f tsk/fs/xpress.c ]; then
+  $CC $CFLAGS -c tsk/fs/xpress.c -I./tsk/fs -o $WORK/xpress.o
+  $CXX $CXXFLAGS -std=c++17 -I${SRC} \
+      ossfuzz/tsk_xpress_fuzzer.cc $WORK/xpress.o \
+      -o $OUT/tsk_xpress_fuzzer $LIB_FUZZING_ENGINE
+fi
