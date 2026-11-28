@@ -37,3 +37,10 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_manifest.o \
 
 echo "[libfuzzer]" > $OUT/fuzz_manifest.options
 echo "detect_leaks=0" >> $OUT/fuzz_manifest.options
+
+# Structured seed corpus and dictionary for the fuzzers
+cp test/fuzzing/fuzz_*.dict $OUT/
+for dir in test/fuzzing/seeds/fuzz_*
+do
+  zip -j $OUT/$(basename $dir)_seed_corpus.zip $dir/*
+done
