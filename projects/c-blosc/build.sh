@@ -33,6 +33,13 @@ make -j$(nproc)
 # Package seed corpus
 zip -j $OUT/decompress_fuzzer_seed_corpus.zip compat/*.cdata
 
+# Generate the structured seed corpus for compress_fuzzer (raw source
+# buffers built by tests/fuzz/gen_seeds) and ship fuzzer options to $OUT
+mkdir -p /tmp/seeds-raw
+./tests/fuzz/gen_seeds raw /tmp/seeds-raw
+zip -j $OUT/compress_fuzzer_seed_corpus.zip /tmp/seeds-raw/*
+cp -v $SRC/compress_fuzzer.options $OUT/
+
 # Copy the fuzzer executables, zip-ed corpora, and dictionary files to $OUT
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
