@@ -18,10 +18,20 @@
 cp $SRC/pki_fuzzer.go $SRC/cert-manager/pkg/util/pki/
 
 # These test files break the build, so removing; the fuzz tests don't need them
-rm $SRC/cert-manager/pkg/controller/certificates/trigger/trigger_controller_test.go
-rm $SRC/cert-manager/pkg/controller/certificates/revisionmanager/revisionmanager_controller_test.go
+rm -f $SRC/cert-manager/pkg/controller/certificates/trigger/trigger_controller_test.go
+rm -f $SRC/cert-manager/pkg/controller/certificates/revisionmanager/revisionmanager_controller_test.go
 
 cd $SRC/cert-manager
+
+ACTUAL_GOROOT=$(go env GOROOT)
+if [[ "$ACTUAL_GOROOT" == *"/pkg/mod/"* ]]; then
+    cp -r "$ACTUAL_GOROOT" /tmp/custom-go
+    chmod -R +w /tmp/custom-go
+    export GOROOT=/tmp/custom-go
+    export PATH=$GOROOT/bin:$PATH
+    export GOTOOLCHAIN=local
+fi
+
 go mod tidy
 compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/internal/webhook/admission/certificaterequest/approval FuzzValidate FuzzValidate_approval
 compile_native_go_fuzzer_v2 github.com/cert-manager/cert-manager/pkg/controller/certificates/trigger FuzzProcessItem FuzzProcessItem_trigger
