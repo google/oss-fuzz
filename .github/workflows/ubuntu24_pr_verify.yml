@@ -1,0 +1,247 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+name: 'Ubuntu 24.04 Migration Parity Verify'
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  u24-parity-verify:
+    if: >-
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '/u24-verify')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Authorize caller and validate single-project PR scope
+        id: validate
+        uses: actions/github-script@v8
+        env:
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          AUTHOR_ASSOC: ${{ github.event.comment.author_association }}
+        with:
+          script: |
+            const allowedContractors = new Set([
+              'DavidKorczynski',
+              'AdamKorczynski',
+              'arthurscchan',
+            ]);
+            const trustedAssoc = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
+            const actor = process.env.COMMENT_AUTHOR || '';
+            const assoc = process.env.AUTHOR_ASSOC || '';
+
+            if (!trustedAssoc.has(assoc) && !allowedContractors.has(actor)) {
+              core.setFailed(`User '${actor}' is not authorized to run /u24-verify.`);
+              return;
+            }
+
+            const prNumber = context.issue.number;
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            const projects = new Set();
+            for (const f of files) {
+              const parts = f.filename.split('/');
+              if (parts.length < 3 || parts[0] !== 'projects') {
+                core.setFailed(
+                  `Refusing /u24-verify: PR modifies non-project file '${f.filename}'.`
+                );
+                return;
+              }
+              projects.add(parts[1]);
+            }
+
+            if (projects.size !== 1) {
+              core.setFailed(
+                `Expected exactly 1 modified project directory, found ${projects.size}.`
+              );
+              return;
+            }
+
+            const projectName = Array.from(projects)[0];
+            if (!/^[a-z0-9_-]+$/.test(projectName)) {
+              core.setFailed(`Invalid project identifier: '${projectName}'.`);
+              return;
+            }
+
+            const shortSha = pr.head.sha.slice(0, 12);
+            const runId = `pr-${prNumber}-${shortSha}-${projectName}`;
+            core.setOutput('pr_number', String(prNumber));
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('project_name', projectName);
+            core.setOutput('run_id', runId);
+
+      - name: Authenticate to Google Cloud via Workload Identity Federation
+        if: vars.U24_WIF_PROVIDER != '' && vars.U24_CALLER_SA != ''
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.U24_WIF_PROVIDER }}
+          service_account: ${{ vars.U24_CALLER_SA }}
+
+      - name: Trigger Stage 1 Cloud Build and poll enum-only verdict
+        id: gcb
+        if: vars.U24_WIF_PROVIDER != '' && vars.U24_CALLER_SA != ''
+        env:
+          PR_NUMBER: ${{ steps.validate.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.validate.outputs.head_sha }}
+          PROJECT_NAME: ${{ steps.validate.outputs.project_name }}
+          RUN_ID: ${{ steps.validate.outputs.run_id }}
+          REPORTS_BUCKET: ${{ vars.U24_REPORTS_BUCKET }}
+        run: |
+          set -euo pipefail
+          TOKEN=$(gcloud auth print-access-token)
+          PAYLOAD=$(python3 - << 'PY'
+          import json, os
+          print(json.dumps({
+              "substitutions": {
+                  "_RUN_ID": os.environ["RUN_ID"],
+                  "_SOURCE_MODE": "pr",
+                  "_PR_NUMBER": os.environ["PR_NUMBER"],
+                  "_PR_HEAD_SHA": os.environ["HEAD_SHA"],
+                  "_PROJECT_NAME": os.environ["PROJECT_NAME"],
+                  "_U24_BUILDER_TAG": "ubuntu-24-04",
+                  "_U24_WORKER_TAG": "ubuntu-24-04",
+                  "_EMIT_PUBSUB": "true",
+              }
+          }))
+          PY
+          )
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "${PAYLOAD}" \
+            "https://cloudbuild.googleapis.com/v1/projects/oss-fuzz/locations/us-central1/triggers/u24-job1-build-and-gate-a:run" >/dev/null
+
+          VERDICT_URI="gs://${REPORTS_BUCKET}/u24-gcb-validation/${RUN_ID}/reports/public_verdict.json"
+          for _ in $(seq 1 90); do
+            if gcloud storage cp "${VERDICT_URI}" /tmp/public_verdict.json 2>/dev/null; then
+              break
+            fi
+            sleep 20
+          done
+
+          if [ ! -f /tmp/public_verdict.json ]; then
+            echo "verdict=TIMEOUT" >> "${GITHUB_OUTPUT}"
+            echo "gate_a=UNKNOWN" >> "${GITHUB_OUTPUT}"
+            echo "gate_b=UNKNOWN" >> "${GITHUB_OUTPUT}"
+            echo "reason_enum=POLL_TIMEOUT" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          python3 - << 'PY'
+          import json, os
+
+          ALLOWED_ENUMS = {
+              "PASSED", "BLOCKED", "SKIPPED_GATE_A_FAILED", "UNKNOWN",
+              "NONE", "GATE_A_MISSING_TARGET", "GATE_A_LDD_MISSING_SO",
+              "GATE_A_SMOKE_FAILURE", "BLOCKED_U24_INFRA_OR_MISSING_SO",
+              "BLOCKED_NEW_U24_CRASH_REGRESSION", "BLOCKED_SILENT_FALSE_FIXED",
+              "BLOCKED_U24_TIMEOUT", "BLOCKED_CRASH_STATE_MISMATCH",
+          }
+          with open("/tmp/public_verdict.json", encoding="utf-8") as fh:
+              data = json.load(fh)
+
+          def safe_enum(val):
+              s = str(val or "UNKNOWN")
+              return s if s in ALLOWED_ENUMS else "REDACTED_UNKNOWN"
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"verdict={safe_enum(data.get('overall_verdict'))}\n")
+              out.write(f"gate_a={safe_enum(data.get('gate_a'))}\n")
+              out.write(f"gate_b={safe_enum(data.get('gate_b'))}\n")
+              out.write(f"reason_enum={safe_enum(data.get('reason_enum'))}\n")
+          PY
+
+      - name: Upsert opaque sticky comment on Pull Request
+        if: vars.U24_WIF_PROVIDER != '' && vars.U24_CALLER_SA != ''
+        uses: actions/github-script@v8
+        env:
+          PROJECT_NAME: ${{ steps.validate.outputs.project_name }}
+          HEAD_SHA: ${{ steps.validate.outputs.head_sha }}
+          RUN_ID: ${{ steps.validate.outputs.run_id }}
+          VERDICT: ${{ steps.gcb.outputs.verdict }}
+          GATE_A: ${{ steps.gcb.outputs.gate_a }}
+          GATE_B: ${{ steps.gcb.outputs.gate_b }}
+          REASON_ENUM: ${{ steps.gcb.outputs.reason_enum }}
+          VIEWER_BASE_URL: ${{ vars.U24_VIEWER_BASE_URL }}
+        with:
+          script: |
+            const marker = '<!-- u24-migration-parity-comment -->';
+            const viewerUrl = process.env.VIEWER_BASE_URL
+              ? `${process.env.VIEWER_BASE_URL}/runs/${process.env.RUN_ID}`
+              : '';
+            const viewerLine = viewerUrl
+              ? `- **Authenticated Diagnostic Logs (IAP)**: [Open Run \`${process.env.RUN_ID}\`](${viewerUrl})\n`
+              : '';
+
+            const body = [
+              marker,
+              `### Ubuntu 24.04 Migration Parity Check — \`${process.env.PROJECT_NAME}\``,
+              '',
+              `- **Commit Tested**: \`${process.env.HEAD_SHA}\``,
+              `- **Overall Verdict**: \`${process.env.VERDICT}\``,
+              `- **Gate A (Build, Target Parity & Worker Dynamic Linker)**: \`${process.env.GATE_A}\``,
+              `- **Gate B (Isolated Shadow Progression Parity)**: \`${process.env.GATE_B}\``,
+              `- **Diagnostic Code**: \`${process.env.REASON_ENUM}\``,
+              viewerLine.trimEnd(),
+              '',
+              '> Active testcase counts, crash states, and reproducer outputs are never published in pull requests.',
+            ].filter(Boolean).join('\n');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const existing = comments.find(c => (c.body || '').includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+            if (process.env.VERDICT !== 'PASSED') {
+              core.setFailed(`Migration parity check returned ${process.env.VERDICT}`);
+            }
