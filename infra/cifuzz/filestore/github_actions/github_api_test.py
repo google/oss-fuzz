@@ -15,6 +15,7 @@
 import os
 import sys
 import unittest
+from unittest import mock
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(
@@ -39,3 +40,18 @@ class GetHttpAuthHeaders(unittest.TestCase):
     }
     self.assertEqual(expected_headers,
                      github_api.get_http_auth_headers(run_config))
+
+
+class ListArtifactsTest(unittest.TestCase):
+  """Tests for list_artifacts."""
+
+  @mock.patch('filestore.github_actions.github_api._do_get_request')
+  def test_stops_on_empty_page(self, mock_get):
+    """Tests that listing ends when a page is empty before total_count."""
+    first_page = mock.MagicMock(status_code=200)
+    first_page.json.return_value = {'total_count': 2, 'artifacts': ['a']}
+    empty_page = mock.MagicMock(status_code=200)
+    empty_page.json.return_value = {'total_count': 1, 'artifacts': []}
+    mock_get.side_effect = [first_page, empty_page]
+    self.assertEqual(list(github_api.list_artifacts('owner', 'repo', {})),
+                     ['a'])
