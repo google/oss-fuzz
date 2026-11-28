@@ -1,0 +1,9 @@
+homepage: "https://github.com/swseokx/NextZip"
+main_repo: "https://github.com/swseokx/NextZip"
+language: rust
+primary_contact: "swseokx@gmail.com"
+auto_ccs: []
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
