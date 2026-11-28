@@ -1,0 +1,3 @@
+[libfuzzer]
+# Cap inputs at the parser maxDataSize (4096) to avoid wasted oversize inputs.
+max_len = 4096
