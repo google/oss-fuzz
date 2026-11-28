@@ -1,0 +1,12 @@
+homepage: "https://moq.dev"
+language: rust
+primary_contact: "kixelated@gmail.com"
+auto_ccs:
+  - "security@moq.dev"
+main_repo: "https://github.com/moq-dev/moq"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+architectures:
+  - x86_64
