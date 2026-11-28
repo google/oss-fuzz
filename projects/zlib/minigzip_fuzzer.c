@@ -465,9 +465,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   snprintf(outmode, sizeof(outmode), "%s", "wb");
 
   /* Compression level: [0..9]. */
-  outmode[2] = data[0] % 10;
+  outmode[2] = '0' + data[0] % 10;
 
-  switch (data[0] % 4) {
+  switch ((data[0] / 10) % 5) {
   default:
   case 0:
     outmode[3] = 0;
@@ -483,6 +483,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   case 3:
     /* compress with Z_RLE */
     outmode[3] = 'R';
+    break;
+  case 4:
+    /* compress with Z_FIXED */
+    outmode[3] = 'F';
     break;
   }
 
