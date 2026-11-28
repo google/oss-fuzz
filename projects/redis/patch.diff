@@ -1,0 +1,69 @@
+diff --git a/src/server.c b/src/server.c
+--- a/src/server.c
++++ b/src/server.c
+@@ -929,8 +929,11 @@
+  * returns 1 if client eviction for this client is allowed, 0 otherwise.
+  */
+ int updateClientMemUsageAndBucket(client *c) {
++#ifdef FUZZING_BUILD
++ if (!c->conn) return 0;
++#endif
+  serverAssert(io_threads_op == IO_THREADS_OP_IDLE && c->conn);
+  int allow_eviction = clientEvictionAllowed(c);
+  removeClientFromMemUsageBucket(c, allow_eviction);
+ 
+  if (!allow_eviction) {
+@@ -3874,7 +3874,12 @@
+  * If C_OK is returned the client is still alive and valid and
+  * other operations can be performed by the caller. Otherwise
+  * if C_ERR is returned the client was destroyed (i.e. after QUIT). */
+ int processCommand(client *c) {
++#ifdef FUZZING_BUILD
++ if (!c->conn) {
++ c->flags &= ~CLIENT_SLAVE;
++ }
++#endif
+  if (!scriptIsTimedout()) {
+  /* Both EXEC and scripts call call() directly so there should be
+  * no way in_exec or scriptIsRunning() is 1.
+@@ -6645,8 +6645,9 @@
+  return NULL;
+ }
+ #endif
+ 
++#ifndef FUZZING_BUILD
+ int main(int argc, char **argv) {
+  struct timeval tv;
+  int j;
+  char config_from_stdin = 0;
+@@ -6983,6 +6983,8 @@
+  aeMain(server.el);
+  aeDeleteEventLoop(server.el);
+  return 0;
+ }
+ 
++#endif /* FUZZING_BUILD */
++
+ /* The End */
+diff --git a/src/networking.c b/src/networking.c
+--- a/src/networking.c
++++ b/src/networking.c
+@@ -2063,7 +2063,7 @@
+  /* Update client's memory usage after writing.
+  * Since this isn't thread safe we do this conditionally. In case of threaded writes this is done in
+  * handleClientsWithPendingWritesUsingThreads(). */
+- if (io_threads_op == IO_THREADS_OP_IDLE)
++ if (io_threads_op == IO_THREADS_OP_IDLE && c->conn)
+  updateClientMemUsageAndBucket(c);
+  return C_OK;
+ }
+@@ -2665,7 +2665,7 @@
+  /* Update client memory usage after processing the query buffer, this is
+  * important in case the query buffer is big and wasn't drained during
+  * the above loop (because of partially sent big commands). */
+- if (io_threads_op == IO_THREADS_OP_IDLE)
++ if (io_threads_op == IO_THREADS_OP_IDLE && c->conn)
+  updateClientMemUsageAndBucket(c);
+ 
+  return C_OK;
+ }

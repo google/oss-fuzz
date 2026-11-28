@@ -1,0 +1,6 @@
+[libfuzzer]
+# Full-server harness: Redis client/server state triggers benign per-iteration
+# allocations that LSan reports as leaks; ASan still catches use-after-free etc.
+detect_leaks=0
+# Single-input runs can be slow under ASan; avoid spurious libFuzzer timeouts.
+timeout=120
