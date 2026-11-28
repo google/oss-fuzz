@@ -33,6 +33,10 @@ build_fuzz_target () {
 build_fuzz_target fuzz_eval .obj/fuzz_common.o libquickjs.fuzz.a
 build_fuzz_target fuzz_compile .obj/fuzz_common.o libquickjs.fuzz.a
 build_fuzz_target fuzz_regexp .obj/libregexp.fuzz.o .obj/cutils.fuzz.o .obj/libunicode.fuzz.o
+build_fuzz_target fuzz_json libquickjs.fuzz.a
+
+(cd fuzz/fuzz_json_seeds && zip -q -r $OUT/fuzz_json_seed_corpus.zip .)
+cp fuzz/fuzz_json.dict $OUT/fuzz_json.dict
 
 cp fuzz/fuzz.dict $OUT/fuzz_eval.dict
 cp fuzz/fuzz.dict $OUT/fuzz_compile.dict
