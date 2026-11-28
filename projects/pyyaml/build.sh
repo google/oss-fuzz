@@ -16,9 +16,13 @@
 ################################################################################
 cd pyyaml
 echo 'Cython < 3.0' > /tmp/constraint.txt
-PIP_CONSTRAINT=/tmp/constraint.txt pip3 install .
+PIP_BUILD_CONSTRAINT=/tmp/constraint.txt pip3 install .
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   compile_python_fuzzer $fuzzer
+  fuzzer_basename=$(basename -s .py $fuzzer)
+  cp $SRC/pyyaml_fuzzer.options "${OUT}/${fuzzer_basename}.options"
 done
+
+cp $SRC/yaml.dict "${OUT}/"
