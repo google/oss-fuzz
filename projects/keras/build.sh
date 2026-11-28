@@ -28,5 +28,8 @@ mv $SRC/tensorflow/tensorflow $SRC/tensorflow/tensorflow_src
 
 compile_python_fuzzer $SRC/fuzz_serialization.py
 compile_python_fuzzer $SRC/fuzz_model.py
+compile_python_fuzzer $SRC/fuzz_npz_dataset.py
 
 zip $OUT/fuzz_model_seed_corpus.zip $SRC/hdf5-files/basic-model.h5
+
+zip $OUT/fuzz_npz_dataset_seed_corpus.zip $SRC/*.npz
