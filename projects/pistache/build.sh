@@ -23,6 +23,13 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parsers \
 
 zip -q -r -j $OUT/fuzz_parsers_seed_corpus.zip ../tests/fuzzers/corpus
 
+# fuzz_headers_all: every registered header type + collection/registry/ETag flows
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_headers_all \
+    -std=c++17 -I../include/ ../tests/fuzzers/fuzz_headers_all.cpp ./src/libpistache.a
+
+zip -q -r -j $OUT/fuzz_headers_all_seed_corpus.zip ../tests/fuzzers/corpus-headers-all
+cp ../tests/fuzzers/headers_all.dict $OUT/fuzz_headers_all.dict
+
 # Build the project tests for Chronos
 mkdir -p $SRC/pistache/build-tests
 cd $SRC/pistache/build-tests
@@ -32,3 +39,4 @@ cmake -DBUILD_SHARED_LIBS=OFF \
       -DPISTACHE_ENABLE_NETWORK_TESTS=OFF \
       ..
 make -j$(nproc)
+cp $SRC/*.options $OUT/
