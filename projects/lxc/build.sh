@@ -27,3 +27,4 @@ if [ "$SANITIZER" = "memory" ]; then
   sed -i "s/have = cc.has_function(ident\[0\], prefix: ident\[1\], args: '-D_GNU_SOURCE')/have = ident[0] in ['strlcpy', 'strlcat'] ? false : cc.has_function(ident[0], prefix: ident[1], args: '-D_GNU_SOURCE')/" "$MESON_BUILD"
 fi
 src/tests/oss-fuzz.sh
+cp $SRC/*.options $OUT/
