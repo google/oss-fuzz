@@ -1,0 +1,17 @@
+homepage: "https://www.infradead.org/~tgr/libnl/"
+language: c
+primary_contact: "tgraf@suug.ch"
+auto_ccs:
+  - "raphael.fluckiger@gmail.com"
+main_repo: "https://github.com/thom311/libnl"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
