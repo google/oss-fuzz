@@ -23,6 +23,13 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parsers \
 
 zip -q -r -j $OUT/fuzz_parsers_seed_corpus.zip ../tests/fuzzers/corpus
 
+# fuzz_address: Address/AddressParser/Port/IP string parsing (net.cc)
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_address \
+    -std=c++17 -I../include/ ../tests/fuzzers/fuzz_address.cpp ./src/libpistache.a
+
+zip -q -r -j $OUT/fuzz_address_seed_corpus.zip ../tests/fuzzers/corpus-address
+cp ../tests/fuzzers/address.dict $OUT/fuzz_address.dict
+
 # Build the project tests for Chronos
 mkdir -p $SRC/pistache/build-tests
 cd $SRC/pistache/build-tests
@@ -32,3 +39,4 @@ cmake -DBUILD_SHARED_LIBS=OFF \
       -DPISTACHE_ENABLE_NETWORK_TESTS=OFF \
       ..
 make -j$(nproc)
+cp $SRC/*.options $OUT/
