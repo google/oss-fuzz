@@ -15,4 +15,7 @@
 #
 ################################################################################
 
+# TODO(kleisauke): Remove this workaround once PR #16599 is deployed.
+echo $PWD # Likely prints /src/build-deps
+cd $SRC/libvips
 ./fuzz/oss_fuzz_build.sh
