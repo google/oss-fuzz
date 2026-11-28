@@ -41,7 +41,7 @@
 		<dependency>
 			<groupId>org.eclipse.platform</groupId>
 			<artifactId>org.eclipse.core.runtime</artifactId>
-			<version>3.26.100</version>
+			<version>3.29.0</version>
 		</dependency>
 	</dependencies>
 
