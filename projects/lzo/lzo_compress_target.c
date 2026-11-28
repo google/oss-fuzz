@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "lzo1x.h"
 #include "lzoconf.h"
@@ -98,6 +99,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   r = lzo1x_decompress(compressed, compressed_len, decompressed,
                        &decompressed_len, /*wrkmem=*/NULL);
   assert(r == LZO_E_OK && decompressed_len == size);
+  assert(memcmp(data, decompressed, size) == 0);
 #ifdef __DEBUG__
   printf("decompressed %lu bytes back into %lu bytes\n", (unsigned long)out_len,
          (unsigned long)size);
