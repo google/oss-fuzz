@@ -1,0 +1,13 @@
+homepage: "https://github.com/PowerGridModel/power-grid-model"
+language: c++
+
+primary_contact: "powergridmodel@lfenergy.org"
+auto_ccs:
+  - martijn.govers@alliander.com
+  - research@shielder.it
+
+main_repo: "https://github.com/PowerGridModel/power-grid-model.git"
+
+fuzzing_engines:
+  - afl
+  - libfuzzer
