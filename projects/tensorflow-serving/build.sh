@@ -59,8 +59,16 @@ synchronize_coverage_directories() {
 
 git apply  --ignore-space-change --ignore-whitespace $SRC/tensorflow-serving.diff
 
+# Pin the Bazel version the pinned TensorFlow dependency is built with.
+# bazelisk otherwise resolves the latest release (9.x), which no longer reads
+# WORKSPACE repositories, so '@com_google_fuzztest' (required by
+# setup_configs to define --config=oss-fuzz) becomes unresolvable.
+echo "7.7.0" > .bazelversion
+
 bazel run @com_google_fuzztest//bazel:setup_configs >> /etc/bazel.bazelrc
-bazel build --config=oss-fuzz --subcommands --spawn_strategy=sandboxed //tensorflow_serving/util:json_tensor_test_fuzz
+# Link libc++ statically: the hermetic rules_ml_toolchain clang otherwise
+# links its own dynamic libc++.so.1, which base-runner does not ship.
+bazel build --config=oss-fuzz --linkopt=-static-libstdc++ --linkopt=-l:libc++abi.a --subcommands --spawn_strategy=sandboxed //tensorflow_serving/util:json_tensor_test_fuzz
 
 cp bazel-bin/tensorflow_serving/util/json_tensor_test_fuzz $OUT/json_tensor_test_fuzz
 
