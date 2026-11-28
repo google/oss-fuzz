@@ -1,0 +1,9 @@
+homepage: "https://ai.google.dev/edge/mediapipe"
+language: c++
+primary_contact: "mediapipe-discuss@googlegroups.com"
+main_repo: "https://github.com/google-ai-edge/mediapipe"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+file_github_issue: True
