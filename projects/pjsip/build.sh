@@ -43,5 +43,9 @@ for File in $FuzzBins; do
 done
 popd
 
+# Generate the seed corpus for fuzz-sip-inv and fuzz-dns-resolver
+python3 tests/fuzz/seed/gen_sip_inv_seeds.py "$OUT/fuzz-sip-inv_seed_corpus.zip"
+python3 tests/fuzz/seed/gen_dns_resolver_seeds.py "$OUT/fuzz-dns-resolver_seed_corpus.zip"
+
 # Copy all seed corpus and dictionaries to $OUT
 cp tests/fuzz/seed/* $OUT/
