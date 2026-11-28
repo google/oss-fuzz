@@ -45,4 +45,40 @@ $CXX $CXXFLAGS -I. \
 	re2/fuzzing/re2_fuzzer.cc -o $OUT/re2_fuzzer \
 	$LIB_FUZZING_ENGINE obj/libre2.a \
 	$(pkg-config re2 --libs | sed -e 's/-lre2//')
+$CXX $CXXFLAGS -I. \
+	re2/fuzzing/re2_engine_bias_fuzzer.cc -o $OUT/re2_engine_bias_fuzzer \
+	$LIB_FUZZING_ENGINE obj/libre2.a \
+	$(pkg-config re2 --libs | sed -e 's/-lre2//')
+$CXX $CXXFLAGS -I. \
+       re2/fuzzing/re2_filtered_set_fuzzer.cc -o $OUT/re2_filtered_set_fuzzer \
+       $LIB_FUZZING_ENGINE obj/libre2.a \
+       $(pkg-config re2 --libs | sed -e 's/-lre2//')
+$CXX $CXXFLAGS -I. \
+       re2/fuzzing/re2_program_props_fuzzer.cc -o $OUT/re2_program_props_fuzzer \
+       $LIB_FUZZING_ENGINE obj/libre2.a \
+       $(pkg-config re2 --libs | sed -e 's/-lre2//')
+$CXX $CXXFLAGS -I. \
+       re2/fuzzing/re2_rewrite_extract_fuzzer.cc -o $OUT/re2_rewrite_extract_fuzzer \
+       $LIB_FUZZING_ENGINE obj/libre2.a \
+       $(pkg-config re2 --libs | sed -e 's/-lre2//')
 
+# Fourth, prpeare the corpus/dict/options
+python3 re2/fuzzing/re2_engine_bias_fuzzer_seeds.py \
+	re2/fuzzing/re2_engine_bias_fuzzer_seed_corpus
+zip -r -j $OUT/re2_engine_bias_fuzzer_seed_corpus.zip \
+	re2/fuzzing/re2_engine_bias_fuzzer_seed_corpus
+python3 re2/fuzzing/re2_rewrite_extract_fuzzer_seeds.py \
+       re2/fuzzing/re2_rewrite_extract_fuzzer_seed_corpus
+zip -r -j $OUT/re2_rewrite_extract_fuzzer_seed_corpus.zip \
+       re2/fuzzing/re2_rewrite_extract_fuzzer_seed_corpus
+python3 re2/fuzzing/re2_filtered_set_fuzzer_seeds.py \
+       re2/fuzzing/re2_filtered_set_fuzzer_seed_corpus
+zip -r -j $OUT/re2_filtered_set_fuzzer_seed_corpus.zip \
+       re2/fuzzing/re2_filtered_set_fuzzer_seed_corpus
+python3 re2/fuzzing/re2_program_props_fuzzer_seeds.py \
+       re2/fuzzing/re2_program_props_fuzzer_seed_corpus
+zip -r -j $OUT/re2_program_props_fuzzer_seed_corpus.zip \
+       re2/fuzzing/re2_program_props_fuzzer_seed_corpus
+
+cp re2/fuzzing/*.dict $OUT/
+cp re2/fuzzing/*.options $OUT/
