@@ -40,7 +40,28 @@ RUN apt-get update -y \
             tzdata \
             nasm
 
+# Clone the full source tree before installing its pinned Rust toolchain.
 RUN git clone -j 8 --recursive https://github.com/ClickHouse/ClickHouse $SRC/ClickHouse
 WORKDIR $SRC/ClickHouse
+
+ENV CARGO_HOME=/rust
+ENV RUSTUP_HOME=/rust/rustup
+ENV PATH=$PATH:/rust/bin
+
+RUN curl -fsSL https://sh.rustup.rs -o /tmp/rustup-init.sh \
+    && sh /tmp/rustup-init.sh -y --no-modify-path --default-toolchain none \
+    && rm /tmp/rustup-init.sh
+
+# Follow ClickHouse's pin rather than maintaining a second toolchain version.
+# Sanitized Rust builds rebuild the standard library and require rust-src.
+RUN RUST_TOOLCHAIN="$(sed -n 's/^set(Rust_TOOLCHAIN "\([^"]*\)")$/\1/p' $SRC/ClickHouse/contrib/corrosion-cmake/CMakeLists.txt)" \
+    && test -n "$RUST_TOOLCHAIN" \
+    && rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component rust-src \
+    && rustup default "$RUST_TOOLCHAIN"
+
+# HDFS requires Yasm. Keep this build dependency after the expensive source
+# checkout so dependency updates can reuse that image layer.
+RUN apt-get update -y \
+    && apt-get install --yes --no-install-recommends yasm
 
 COPY build.sh $SRC/
