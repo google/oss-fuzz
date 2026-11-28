@@ -211,6 +211,24 @@ class RunFuzzersConfigTest(unittest.TestCase):
                                   fake_mode,
                                   config_utils.RunFuzzersConfig.MODES)
 
+  @mock.patch('logging.warning')
+  def test_minimize_crashes_warning_in_batch(self, mock_warning):
+    """Tests that batch mode warns when crash minimization is enabled."""
+    os.environ['MODE'] = 'batch'
+    os.environ['MINIMIZE_CRASHES'] = 'true'
+    self._create_config()
+    mock_warning.assert_any_call(
+        'Minimizing crashes reduces fuzzing time in batch fuzzing.')
+
+  @mock.patch('logging.warning')
+  def test_no_minimize_crashes_warning_when_disabled(self, mock_warning):
+    """Tests that batch mode does not warn when crash minimization is off."""
+    os.environ['MODE'] = 'batch'
+    self._create_config()
+    self.assertNotIn(
+        mock.call('Minimizing crashes reduces fuzzing time in batch fuzzing.'),
+        mock_warning.call_args_list)
+
 
 class GetSanitizerTest(unittest.TestCase):
   """Tests for _get_sanitizer."""
