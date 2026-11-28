@@ -1,0 +1,15 @@
+homepage: "https://www.lcdf.org/gifsicle/"
+language: c
+primary_contact: "ekohler@gmail.com"
+main_repo: "https://github.com/kohler/gifsicle"
+file_github_issue: false
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - centipede
+base_os_version: ubuntu-24-04

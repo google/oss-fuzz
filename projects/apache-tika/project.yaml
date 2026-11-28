@@ -9,3 +9,4 @@ vendor_ccs:
   - "dev-owner@tika.apache.org"
   - "tallison@apache.org"
   - "tallison314159@gmail.com"
+base_os_version: ubuntu-24-04

@@ -10,3 +10,4 @@ vendor_ccs:
   - "patrice.salathe@code-intelligence.com"
   - "centic@apache.org"
   - "dominik.stadler@gmail.com"
+base_os_version: ubuntu-24-04

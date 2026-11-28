@@ -79,7 +79,7 @@ cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF \
       -DBUILD_STATIC_LIB=ON -DBUILD_SHARED_LIBS=OFF \
       -DPROTOBUF_LIB="/src/protobuf-install/libprotobuf.a" \
       -DBUILD_TESTING=OFF \
-      -DICU_UC_INCLUDE_DIR=$SRC/icu/source/comon \
+      -DICU_UC_INCLUDE_DIR=$SRC/icu/source/common \
       -DICU_UC_LIB=$DEPS_PATH/lib/libicuuc.a \
       -DICU_I18N_INCLUDE_DIR=$SRC/icu/source/i18n/ \
       -DICU_I18N_LIB=$DEPS_PATH/lib/libicui18n.a  \
@@ -135,7 +135,7 @@ LIBS=(
 
 # build fuzzers
 for target in "${FUZZ_TARGETS[@]}"; do
-    $CXX -I$SRC/libphonenumber/cpp/src $CXXFLAGS -o ${target}.o -c ../test/phonenumbers/${target}.cc
+    $CXX -I$SRC/libphonenumber/cpp/src -I$DEPS_PATH/include $CXXFLAGS -o ${target}.o -c ../test/phonenumbers/${target}.cc
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ${target}.o -o $OUT/${target} \
         ${LIBS[@]} \
         -lrt -lpthread

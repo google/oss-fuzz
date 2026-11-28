@@ -41,8 +41,19 @@ TARGETS="\
   http-client_fuzz_tests \
   levin_fuzz_tests \
   bulletproof_fuzz_tests \
+  bulletproof-plus_fuzz_tests \
   tx-extra_fuzz_tests \
+  fcmp-pp-curve-trees_fuzz_tests \
   fcmp-pp-point_fuzz_tests \
+  network-address_fuzz_tests \
+  utf8_fuzz_tests \
+  clsag_fuzz_tests \
+  clsag_cout_fuzz_tests \
+  clsag_message_fuzz_tests \
+  clsag_pubs_fuzz_tests \
+  multisig-kex_fuzz_tests \
+  multisig-tx_fuzz_tests \
+  multisig-info_fuzz_tests \
   fuzz_rpc \
   fuzz_rpc_full \
   fuzz_rpc_full_no_exceptions \
@@ -56,8 +67,10 @@ then
     signature_fuzz_tests \
     cold-outputs_fuzz_tests \
     cold-transaction_fuzz_tests \
+    wallet-cache_fuzz_tests \
     wallet-scan_fuzz_tests \
     wallet-proof-uri_fuzz_tests \
+    wallet-refresh_fuzz_tests \
   "
 fi
 
@@ -83,5 +96,26 @@ do
     popd
   fi
 done
+
+# The wallet cache format changes with the source, so the harness dumps its
+# own seed.  Fail the build with a clear error if seed generation fails or
+# leaves a missing or empty baseline: the cache loader is only reached with a
+# valid archive, so an empty seed would give the fuzzer no usable input.
+if [ -x "$OUT/wallet-cache_fuzz_tests" ]; then
+  seed_dir=$(mktemp -d)
+  touch "$seed_dir/empty"
+  if ! WALLET_CACHE_FUZZ_WRITE_SEED="$seed_dir/baseline" \
+      "$OUT/wallet-cache_fuzz_tests" "$seed_dir/empty"; then
+    echo "ERROR: wallet-cache harness failed to generate a seed archive" >&2
+    exit 1
+  fi
+  if [ ! -s "$seed_dir/baseline" ]; then
+    echo "ERROR: wallet-cache seed generation left a missing or empty baseline" >&2
+    exit 1
+  fi
+  rm -f "$OUT/wallet-cache_fuzz_tests_seed_corpus.zip"
+  zip -j "$OUT/wallet-cache_fuzz_tests_seed_corpus.zip" "$seed_dir/baseline"
+  rm -rf "$seed_dir"
+fi
 
 cp $SRC/*.options $OUT/

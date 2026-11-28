@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y pkg-config libglib2.0-dev gyp libsqlite3-dev mercurial python3-pip python patchelf
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y pkg-config libglib2.0-dev gyp libsqlite3-dev mercurial python3-pip python-is-python3 patchelf
 # Because Ubuntu has really ancient meson out there
 RUN pip3 install meson ninja
 

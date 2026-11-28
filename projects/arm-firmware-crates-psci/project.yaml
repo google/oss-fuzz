@@ -1,0 +1,17 @@
+homepage: https://crates.io/crates/arm-psci
+language: rust
+primary_contact: rusted-firmware-a@lists.trustedfirmware.org
+auto_ccs:
+  - Balint.Dobszay@arm.com
+  - Baltazar.Radics@arm.com
+  - Gergely.Balint@arm.com
+  - Gyorgy.Szing@arm.com
+  - Imre.Kis@arm.com
+  - Sandrine.Afsa@arm.com
+main_repo: https://git.trustedfirmware.org/arm-firmware-crates/arm-psci.git
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+coverage_extra_args: -ignore-filename-regex=/rust/
+base_os_version: ubuntu-24-04

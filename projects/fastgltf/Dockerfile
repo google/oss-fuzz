@@ -14,13 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y ninja-build
 
 RUN git clone --depth 1 https://github.com/spnda/fastgltf.git fastgltf
 # Only fetch the .gltf/.glb files for the seed corpus, not the textures and buffers.
 RUN git clone --depth 1 --filter=blob:none --no-checkout https://github.com/KhronosGroup/glTF-Sample-Assets.git && \
-    git -C glTF-Sample-Assets sparse-checkout set '*.gltf' '*.glb' && \
+    git -C glTF-Sample-Assets sparse-checkout set --no-cone '*.gltf' '*.glb' && \
     git -C glTF-Sample-Assets checkout
 
 WORKDIR fastgltf

@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-python
+FROM gcr.io/oss-fuzz-base/base-builder-python:ubuntu-24-04
 
-RUN apt-get install libpq-dev postgresql -y
+RUN apt-get update && apt-get install -y libpq-dev postgresql
 
 RUN git clone https://github.com/psycopg/psycopg2
 WORKDIR psycopg2

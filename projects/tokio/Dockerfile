@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 RUN git clone --depth 1 https://github.com/tokio-rs/tokio tokio     # or use other version control
 WORKDIR tokio
 COPY build.sh $SRC/

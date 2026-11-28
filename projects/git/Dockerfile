@@ -14,13 +14,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-rust
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         cvs cvsps gettext libcgi-pm-perl libcurl4-gnutls-dev \
         libdbd-sqlite3-perl liberror-perl libexpat1-dev libhttp-date-perl \
         libio-pty-perl libmailtools-perl libpcre2-dev libpcre3-dev libsvn-perl \
-        perl-modules libyaml-perl libz-dev python subversion tcl unzip \
+        perl-modules libyaml-perl libz-dev python-is-python3 subversion tcl unzip \
         asciidoc docbook-xsl xmlto libssl-dev zip
 RUN git clone --depth 1 https://github.com/git/git git
 RUN git clone --depth 1 https://github.com/madler/zlib

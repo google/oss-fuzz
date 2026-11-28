@@ -13,6 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
+# Build config of the trial-build trigger in the oss-fuzz-base project. The
+# trigger reads it from the PR commit, so if you move or rename it, update the
+# trigger too.
 
 steps:
 - id: 'Build the trial-build image'
@@ -33,6 +36,7 @@ steps:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
     - 'BRANCH=${_HEAD_BRANCH}'
     - 'REPO=${_HEAD_REPO_URL}'
+    - 'COMMIT_SHA=${COMMIT_SHA}'
     - 'TIMEOUT=25200'
   timeout: 25200s
 - id: 'Ubuntu 20.04'
@@ -44,6 +48,7 @@ steps:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
     - 'BRANCH=${_HEAD_BRANCH}'
     - 'REPO=${_HEAD_REPO_URL}'
+    - 'COMMIT_SHA=${COMMIT_SHA}'
     - 'TIMEOUT=25200'
   timeout: 25200s
 - id: 'Ubuntu 24.04'
@@ -55,6 +60,7 @@ steps:
     - 'PULL_REQUEST_NUMBER=${_PR_NUMBER}'
     - 'BRANCH=${_HEAD_BRANCH}'
     - 'REPO=${_HEAD_REPO_URL}'
+    - 'COMMIT_SHA=${COMMIT_SHA}'
     - 'TIMEOUT=25200'
   timeout: 25200s
 - id: 'Generate Report'

@@ -16,6 +16,10 @@
 ################################################################################
 
 ./bootstrap.sh
+if [ "$SANITIZER" = "memory" ]; then
+  export ac_cv_func_strlcpy=no
+  export ac_cv_func_strlcat=no
+fi
 ./configure --enable-macho --enable-debug --enable-dex --enable-dotnet --without-crypto
 
 make clean

@@ -19,3 +19,4 @@ fuzzing_engines:
 architectures:
   - x86_64
 main_repo: 'https://github.com/monero-project/monero.git'
+base_os_version: ubuntu-24-04

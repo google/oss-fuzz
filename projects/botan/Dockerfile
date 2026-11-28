@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make python
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y make python-is-python3
 RUN git clone --depth 1 https://github.com/randombit/botan.git botan
 RUN git clone --depth 1 https://github.com/randombit/crypto-corpus.git fuzzer_corpus
 WORKDIR botan

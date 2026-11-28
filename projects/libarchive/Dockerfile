@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN apt-get update && apt-get install -y make autoconf libtool pkg-config \
         libbz2-dev liblzo2-dev liblzma-dev liblz4-dev libz-dev \
@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y make autoconf libtool pkg-config \
 	      liblz4-tool lzop zstd lcab genisoimage jlha-utils rar default-jdk sharutils
 RUN curl -LO http://mirrors.kernel.org/ubuntu/pool/main/a/automake-1.16/automake_1.16.5-1.3_all.deb && \
     apt install ./automake_1.16.5-1.3_all.deb
+RUN git clone --depth 1 --branch openssl-3.0.22 https://github.com/openssl/openssl.git $SRC/openssl
 RUN git clone --depth 1 https://github.com/libarchive/libarchive.git
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 # compile libxml2 from source so we can statically link

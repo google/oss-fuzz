@@ -9,3 +9,4 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 main_repo: 'https://github.com/intel/MigTD.git'
+base_os_version: ubuntu-24-04

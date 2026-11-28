@@ -14,8 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget python-is-python3
 RUN git clone --depth 1 https://www.bearssl.org/git/BearSSL
 RUN git clone --depth 1 --branch 3.10.0 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/MozillaSecurity/cryptofuzz

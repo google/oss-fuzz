@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
 RUN git clone --depth 1 -b master https://invent.kde.org/frameworks/kfilemetadata.git
 RUN $SRC/kfilemetadata/autotests/ossfuzz/prepare_build.sh

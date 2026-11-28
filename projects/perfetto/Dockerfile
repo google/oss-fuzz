@@ -14,10 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 
-RUN apt-get update
-RUN apt-get -y install python curl
+RUN apt-get update && apt-get -y install python-is-python3 curl
 
 RUN git clone --depth=1 https://android.googlesource.com/platform/external/perfetto/ $SRC/perfetto
 

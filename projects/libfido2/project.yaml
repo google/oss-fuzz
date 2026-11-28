@@ -1,3 +1,4 @@
+base_os_version: ubuntu-24-04
 homepage: https://github.com/Yubico/libfido2
 language: c++
 primary_contact: "kostas@yubico.com"

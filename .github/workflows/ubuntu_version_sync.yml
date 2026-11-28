@@ -51,6 +51,7 @@ jobs:
         # For Dockerfiles, the pattern is different from scripts.
         declare -A LEGACY_DOCKERFILES
         LEGACY_DOCKERFILES["infra/base-images/base-builder-fuzzbench/Dockerfile"]="infra/base-images/base-builder-fuzzbench/{version}.Dockerfile"
+        LEGACY_DOCKERFILES["infra/base-images/base-builder-rust/Dockerfile"]="infra/base-images/base-builder-rust/{version}.Dockerfile"
         LEGACY_DOCKERFILES["infra/base-images/base-builder-swift/Dockerfile"]="infra/base-images/base-builder-swift/{version}.Dockerfile"
         LEGACY_DOCKERFILES["infra/base-images/base-builder/Dockerfile"]="infra/base-images/base-builder/{version}.Dockerfile"
         LEGACY_DOCKERFILES["infra/base-images/base-clang/Dockerfile"]="infra/base-images/base-clang/{version}.Dockerfile"

@@ -18,4 +18,10 @@
 # The R fuzz targets and their build logic are maintained in a separate
 # repository (https://github.com/r-devel/r-oss-fuzz), cloned into
 # $SRC/r-oss-fuzz by the Dockerfile. Delegate the build to it.
-exec "$SRC/r-oss-fuzz/ossfuzz.sh"
+"$SRC/r-oss-fuzz/ossfuzz.sh"
+for shared_lib in libtirpc.so.3 libgfortran.so.5; do
+  lib_path="$(find /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu -name "$shared_lib" -print -quit 2>/dev/null || true)"
+  if [[ -n "$lib_path" && -d "$OUT/r-install/lib/R/lib" && ! -e "$OUT/r-install/lib/R/lib/$shared_lib" ]]; then
+    cp -L "$lib_path" "$OUT/r-install/lib/R/lib/$shared_lib"
+  fi
+done

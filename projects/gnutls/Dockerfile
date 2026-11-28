@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y \
  gettext \
  gengetopt \
  wget \
- python \
+ python-is-python3 \
  mercurial \
  gtk-doc-tools \
  libtasn1-bin \

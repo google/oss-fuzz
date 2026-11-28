@@ -25,3 +25,4 @@ fuzzing_engines:
   # - centipede disabled due to https://github.com/google/oss-fuzz/pull/12365 clang 18 update
 
 main_repo: 'https://github.com/unicode-org/icu.git'
+base_os_version: ubuntu-24-04

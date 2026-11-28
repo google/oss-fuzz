@@ -15,6 +15,17 @@
 #
 ################################################################################
 
+# Scope use-after-dtor workaround to monster_fuzzer only (global init stack reuse
+# across uninstrumented glibc 2.39 / libFuzzer startup) so libflatbuffers and all
+# other fuzz targets retain full MSan use-after-dtor coverage.
+if [ "$SANITIZER" = "memory" ]; then
+  FUZZER_CMAKE="$SRC/flatbuffers/tests/fuzzer/CMakeLists.txt"
+  FUZZER_CMAKE_BACKUP="$(mktemp /tmp/flatbuffers_cmake.XXXXXX)"
+  cp "$FUZZER_CMAKE" "$FUZZER_CMAKE_BACKUP"
+  trap 'cp -f "$FUZZER_CMAKE_BACKUP" "$FUZZER_CMAKE" && rm -f "$FUZZER_CMAKE_BACKUP"' EXIT
+  printf '\ntarget_compile_options(monster_fuzzer PRIVATE -fno-sanitize-memory-use-after-dtor)\n' >> "$FUZZER_CMAKE"
+fi
+
 # Build fuzzer only
 cd $SRC/flatbuffers
 mkdir build

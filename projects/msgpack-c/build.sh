@@ -27,4 +27,8 @@ for f in $SRC/msgpack-c/fuzz/*_fuzzer.cpp; do
     if [ -d "$SRC/msgpack-c/fuzz/${fuzzer}_seed_corpus" ]; then
         zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "$SRC/msgpack-c/fuzz/${fuzzer}_seed_corpus/"
     fi
+
+    if [ -f "$SRC/msgpack-c/fuzz/${fuzzer}.dict" ]; then
+        cp "$SRC/msgpack-c/fuzz/${fuzzer}.dict" "$OUT/${fuzzer}.dict"
+    fi
 done

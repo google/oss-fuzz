@@ -14,15 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && \
-    apt-get install -y \
-        cmake
-
-# Ensure we work from right python version
-RUN apt-get install -y python3.9 python3.9-dev && \
-    ln --force -s /usr/bin/python3.9 /usr/local/bin/python3 && \
-    apt-get install -y python3-pip
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y cmake
 
 RUN git clone https://github.com/apache/qpid-proton.git
 

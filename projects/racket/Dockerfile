@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
 RUN apt-get update && apt-get install -y libncurses-dev zlib1g-dev
 # TODO: switch to racket/racket once coverage counters and the fasl
 # repair are merged there
@@ -22,6 +22,6 @@ RUN git clone --depth 1 --branch fuzzing-support https://github.com/samth/racket
 # portable-bytecode boot files, so that Chez Scheme builds without an
 # existing Racket or Chez Scheme
 RUN make -C racket pb-fetch
+RUN git clone --depth 1 https://github.com/samth/racket-fuzz racket-fuzz
 WORKDIR $SRC/racket
 COPY build.sh $SRC/
-COPY driver.c embed-data.S *.rkt $SRC/racket-fuzz/

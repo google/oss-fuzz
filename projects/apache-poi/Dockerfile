@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder-jvm
+FROM gcr.io/oss-fuzz-base/base-builder-jvm:ubuntu-24-04
 
 # Newer Maven release are listed at https://archive.apache.org/dist/maven/maven-3/
 RUN curl -L https://archive.apache.org/dist/maven/maven-3/3.9.12/binaries/apache-maven-3.9.12-bin.zip -o maven.zip && \
@@ -39,7 +39,7 @@ WORKDIR ${SRC}
 RUN git clone --depth 1 https://github.com/apache/poi.git
 
 # install packages required for font-handling and other code in java.awt.*
-RUN apt-get update && apt-get install -y libxext6 libx11-6 libxrender1 libxtst6 libxi6 libxcb1 libxau6 libxdmcp6 libfreetype6 libpng16-16 \
+RUN apt-get update && apt-get install -y libxext6 libx11-6 libxrender1 libxtst6 libxi6 libxcb1 libxau6 libxdmcp6 libbsd0 libmd0 libfreetype6 libpng16-16t64 libbrotli1 \
 && apt-get clean autoclean \
 && apt-get autoremove --yes \
 && rm -rf /var/lib/{apt,dpkg,cache,log}/

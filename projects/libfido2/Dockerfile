@@ -14,9 +14,8 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN apt-get install -y cmake libpcsclite-dev libudev-dev pkg-config chrpath
+FROM gcr.io/oss-fuzz-base/base-builder:ubuntu-24-04
+RUN apt-get update && apt-get install -y make autoconf automake libtool cmake libpcsclite-dev libudev-dev pkg-config chrpath
 RUN git clone --depth 1 --branch v0.11.0 https://github.com/PJK/libcbor
 RUN git clone --depth 1 --branch openssl-3.0 https://github.com/openssl/openssl
 RUN git clone --depth 1 --branch v1.3.1 https://github.com/madler/zlib

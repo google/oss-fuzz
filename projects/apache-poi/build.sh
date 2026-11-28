@@ -22,7 +22,7 @@ GRADLE_FLAGS="-x javadoc -x test -Dfile.encoding=UTF-8 -Porg.gradle.java.install
 
 echo Copy libraries for java.awt in place
 ls /usr/lib/x86_64-linux-gnu/
-cp /usr/lib/x86_64-linux-gnu/libXext.so.6* \
+cp -a /usr/lib/x86_64-linux-gnu/libXext.so.6* \
   /usr/lib/x86_64-linux-gnu/libX11.so.6* \
   /usr/lib/x86_64-linux-gnu/libXrender.so.1* \
   /usr/lib/x86_64-linux-gnu/libXtst.so.6* \
@@ -30,8 +30,12 @@ cp /usr/lib/x86_64-linux-gnu/libXext.so.6* \
   /usr/lib/x86_64-linux-gnu/libxcb.so.1* \
   /usr/lib/x86_64-linux-gnu/libXau.so.6* \
   /usr/lib/x86_64-linux-gnu/libXdmcp.so.6* \
+  /usr/lib/x86_64-linux-gnu/libbsd.so.0* \
+  /usr/lib/x86_64-linux-gnu/libmd.so.0* \
   /usr/lib/x86_64-linux-gnu/libfreetype.so.6* \
   /usr/lib/x86_64-linux-gnu/libpng16.so.16* \
+  /usr/lib/x86_64-linux-gnu/libbrotlidec.so.1* \
+  /usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1* \
   ${OUT}/
 
 echo Main Java

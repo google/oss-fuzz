@@ -21,9 +21,9 @@ bash .bootstrap
 
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
-    ./configure --enable-mini-gmp --disable-documentation --disable-openssl --prefix=$SRC/nettle-install
+    nettle_cv_asm_underscore=no ./configure --enable-mini-gmp --disable-shared --disable-documentation --disable-openssl --prefix=$SRC/nettle-install
 else
-    ./configure --enable-mini-gmp --disable-documentation --disable-openssl --disable-assembler --prefix=$SRC/nettle-install
+    nettle_cv_asm_underscore=no ./configure --enable-mini-gmp --disable-shared --disable-documentation --disable-openssl --disable-assembler --prefix=$SRC/nettle-install
 fi
 
 make -j$(nproc)

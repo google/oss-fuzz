@@ -17,6 +17,7 @@
 
 # Run the OSS-Fuzz script in the project.
 apt-get update
+sed -i '/apt-get/s/\bpython\b/python-is-python3/' ./ossfuzz/ossfuzz.sh
 ./ossfuzz/ossfuzz.sh
 
 # To make CIFuzz fast, see here for details: https://github.com/libsndfile/libsndfile/pull/796

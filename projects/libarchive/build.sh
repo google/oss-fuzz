@@ -29,7 +29,24 @@ cd $SRC/libarchive
 
 mkdir build2
 cd build2
-cmake -DDONT_FAIL_ON_CRC_ERROR=ON -DENABLE_WERROR=OFF ../
+OPENSSL_CMAKE_ARGS=()
+CRYPTO_LINK_FLAGS=(-Wl,-Bdynamic -lcrypto)
+if [ "$SANITIZER" = "memory" ] && [ "$ARCHITECTURE" = "x86_64" ]; then
+  OPENSSL_PREFIX="$WORK/openssl-msan"
+  OPENSSL_BUILD="$WORK/openssl-build"
+  rm -rf "$OPENSSL_BUILD" "$OPENSSL_PREFIX"
+  mkdir -p "$OPENSSL_BUILD"
+  (
+    cd "$OPENSSL_BUILD"
+    CC="$CC" CFLAGS="$CFLAGS -fPIC" "$SRC/openssl/Configure" linux-x86_64 \
+      --prefix="$OPENSSL_PREFIX" --libdir=lib no-asm no-shared no-tests
+    make -j"$(nproc)" build_libs
+    make install_dev
+  )
+  OPENSSL_CMAKE_ARGS=(-DOPENSSL_ROOT_DIR="$OPENSSL_PREFIX" -DOPENSSL_USE_STATIC_LIBS=ON)
+  CRYPTO_LINK_FLAGS=("$OPENSSL_PREFIX/lib/libcrypto.a" -Wl,-Bdynamic)
+fi
+cmake -DDONT_FAIL_ON_CRC_ERROR=ON -DENABLE_WERROR=OFF "${OPENSSL_CMAKE_ARGS[@]}" ../
 make -j$(nproc)
 
 # build seed
@@ -40,7 +57,7 @@ cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
 $CXX $CXXFLAGS -I../libarchive \
     $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \
     $LIB_FUZZING_ENGINE ./libarchive/libarchive.a \
-    -Wl,-Bstatic -llzo2 -Wl,-Bdynamic -lcrypto -lacl -llzma -llz4 -lbz2 -lz ${DEPS}/libxml2.a
+    -Wl,-Bstatic -llzo2 "${CRYPTO_LINK_FLAGS[@]}" -lacl -llzma -llz4 -lbz2 -lz ${DEPS}/libxml2.a
 
 # add the uuencoded test files
 cd $SRC
