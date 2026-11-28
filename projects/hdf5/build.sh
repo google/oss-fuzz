@@ -48,6 +48,9 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE h5_extended_fuzzer.o ./build-dir/bin/libhdf5.
 
 zip -j $OUT/h5_extended_fuzzer_seed_corpus.zip $SRC/hdf5/test/testfiles/*.h5
 
+cp $SRC/h5_extended_fuzzer.dict $OUT/
+cp $SRC/h5_extended_fuzzer.options $OUT/
+
 # Build test
 mkdir $SRC/hdf5/build-test
 cd $SRC/hdf5/build-test
