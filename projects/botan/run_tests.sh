@@ -15,4 +15,17 @@
 #
 ##############################################################################
 
-make -j$(nproc) check
+# Same rationale as build.sh: cap make jobs by available memory so the
+# test build cannot be OOM-killed on memory-constrained hosts.
+JOBS=$(nproc)
+AVAIL_MB=$(free -m 2>/dev/null | awk '/^Mem:/{print $7}')
+if [ -n "$AVAIL_MB" ]; then
+   MEM_JOBS=$(( AVAIL_MB / 2560 ))
+   if [ "$MEM_JOBS" -lt "$JOBS" ]; then
+      JOBS=$MEM_JOBS
+   fi
+fi
+if [ "$JOBS" -lt 1 ]; then
+   JOBS=1
+fi
+make -j"${JOBS}" check
