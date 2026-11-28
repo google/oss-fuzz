@@ -13,10 +13,20 @@
 # limitations under the License.
 #
 ################################################################################
-FROM python:3.11-bullseye
+FROM python:3.12-slim-trixie
 
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
+
+# The slim image has no git, and the clones below need it.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
+
+# The image's pip is old, and so is the copy bundled for ensurepip, which
+# nothing here uses.
+RUN pip install --upgrade pip && \
+    rm -f /usr/local/lib/python3.12/ensurepip/_bundled/*.whl
 
 RUN git clone --depth=1 https://github.com/ossf/fuzz-introspector /fuzz-introspector
 
@@ -37,7 +47,7 @@ RUN cd $APP_HOME/static/assets/db/ && \
 ENV WEBAPP_PORT 8080
 ENV G_ANALYTICS_TAG "G-VDH9DCD8T8"
 
-RUN pip install gunicorn==20.1.0
+RUN pip install gunicorn==26.2.0
 
 # Run the web service on container startup. Here we use the gunicorn
 # webserver, with one worker process and 8 threads.
