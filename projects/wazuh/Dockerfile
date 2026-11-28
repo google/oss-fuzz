@@ -20,4 +20,3 @@ RUN git clone https://github.com/wazuh/wazuh
 
 WORKDIR $SRC/wazuh
 COPY build.sh $SRC/
-COPY fuzz_xml.c $SRC/fuzz_xml.c
