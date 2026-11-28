@@ -16,5 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder-javascript:ubuntu-24-04
 RUN git clone --depth 1 --no-tags https://github.com/xmldom/xmldom.git xmldom     # or use other version control
-WORKDIR xmldom
+WORKDIR /src/xmldom
 COPY build.sh $SRC/
