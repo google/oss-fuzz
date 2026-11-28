@@ -73,9 +73,18 @@ function build_fuzzer() {
 build_fuzzer "ZydisFuzzDecoder.c"    350
 build_fuzzer "ZydisFuzzEncoder.c"    450
 build_fuzzer "ZydisFuzzReEncoding.c" 100
+build_fuzzer "ZydisFuzzEncoderStructured.c" 400
 
 #
 # Place fuzzing corpora where they belong.
 #
 
 cp ${SRC}/Zydis*_seed_corpus.zip ${OUT}
+
+#
+# Generate the structured-encoder fuzzer seed corpus from the upstream test cases.
+#
+
+python3 ../tools/gen_encoder_structured_seeds.py ../tests/cases ../include \
+    "${OUT}/ZydisFuzzEncoderStructured_seed_corpus.zip"
+
