@@ -34,9 +34,13 @@ find ./probes -type f -name 'def.yml' -exec bash -c '
 ' _ {} +
 
 # Here we rewrite the path from which we read the def.yml file.
-sed -i '19i "os"' finding/probe.go
-sed -i 's|content, err := loc.ReadFile("def.yml")|content, err := os.ReadFile(fmt.Sprintf("/tmp/probedefinitions/%s/def.yml", probeID))|' finding/probe.go
-gofmt -w finding/probe.go
+# Newer Scorecard versions select this path with the gofuzz build tag, so
+# only rewrite finding/probe.go if it still reads the embedded file itself.
+if grep -q 'loc.ReadFile("def.yml")' finding/probe.go; then
+  sed -i '19i "os"' finding/probe.go
+  sed -i 's|content, err := loc.ReadFile("def.yml")|content, err := os.ReadFile(fmt.Sprintf("/tmp/probedefinitions/%s/def.yml", probeID))|' finding/probe.go
+  gofmt -w finding/probe.go
+fi
 
 # End of doing the workaround of the def.yml files.
 #############################
