@@ -21,12 +21,18 @@ rm -rf $BUILD
 
 # build project
 
+# GLib 2.90.1 (via rauc's glib.wrap fallback) enables -Werror=sign-conversion
+# for its string/testing unit tests, which fail to build with clang because
+# glib/tests/string.c passes size_t strlen() results to gssize parameters.
+# The fuzzers do not need GLib's unit tests, so skip them; rauc's own unit
+# tests (run by run_tests.sh) are unaffected.
 meson setup $BUILD \
   -Ddefault_library=static \
   -Db_lundef=false \
   -Dfuzzing=true \
   -Dglib:libmount=disabled \
   -Dglib:selinux=disabled \
+  -Dglib:tests=false \
   -Dgpt=disabled \
   -Djson=disabled \
   -Dnetwork=false \
