@@ -34,6 +34,7 @@ sed -i 's/def do_override():/def do_override():\n    return True\n\ndef do_overr
 
 pushd "$SRC/distutils"
 pip3 install .
+pip3 install 'setuptools<82'
 popd
 
 pip3 install .
