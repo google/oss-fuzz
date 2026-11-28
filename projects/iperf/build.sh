@@ -21,13 +21,13 @@ make -j$(nproc)
 
 # Build the cJSON fuzzer
 # We link against src/cjson.c directly as it is a standalone file in the source
-$CC $CFLAGS -Isrc -c $SRC/cjson_fuzzer.c -o cjson_fuzzer.o
+$CC $CFLAGS -Isrc -c $SRC/iperf/fuzz/cjson_fuzzer.c -o cjson_fuzzer.o
 $CC $CFLAGS -Isrc -c src/cjson.c -o cjson.o
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE cjson_fuzzer.o cjson.o -lm -o $OUT/cjson_fuzzer
 
 # Build the auth fuzzer
-$CC $CFLAGS -Isrc -DHAVE_SSL -c $SRC/auth_fuzzer.c -o auth_fuzzer.o
+$CC $CFLAGS -Isrc -DHAVE_SSL -c $SRC/iperf/fuzz/auth_fuzzer.c -o auth_fuzzer.o
 $CC $CFLAGS -Isrc -DHAVE_SSL -c src/iperf_auth.c -o iperf_auth.o
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE auth_fuzzer.o iperf_auth.o -lssl -lcrypto -o $OUT/auth_fuzzer
