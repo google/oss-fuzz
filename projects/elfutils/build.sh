@@ -155,3 +155,12 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-libdwfl.o \
 	./libasm/libasm.a ./libebl/libebl.a ./backends/libebl_backends.a ./libcpu/libcpu.a \
   ./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a "$zlib" \
 	-o "$OUT/fuzz-libdwfl"
+
+$CC $CFLAGS \
+  -D_GNU_SOURCE -DHAVE_CONFIG_H \
+  -I. -I./lib -I./libelf -I./libebl -I./libdw -I./libdwelf -I./libdwfl -I./libasm \
+  -c "$SRC/fuzz-libdw.c" -o fuzz-libdw.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-libdw.o \
+	./libasm/libasm.a ./libebl/libebl.a ./backends/libebl_backends.a ./libcpu/libcpu.a \
+  ./libdw/libdw.a ./libelf/libelf.a ./lib/libeu.a "$zlib" \
+	-o "$OUT/fuzz-libdw"
