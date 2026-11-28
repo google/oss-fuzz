@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cp $SRC/s2_fuzzer.cc $SRC/s2geometry/src/
-
 cd $SRC/
 # Keep this tag in sync with the abseil version s2geometry itself pins in its
 # CMakeLists.txt FETCH_ABSEIL block, which is what upstream CI builds against.
@@ -30,13 +28,13 @@ mkdir build && cd build
 cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON ../  && make && make install
 
 cd $SRC/s2geometry
-git apply  --ignore-space-change --ignore-whitespace $SRC/project.patch
 mkdir build && cd build
 
 cmake -DBUILD_SHARED_LIBS=OFF \
       -DABSL_MIN_LOG_LEVEL=4 \
       -DGOOGLETEST_ROOT=/usr/src/googletest \
       -DCMAKE_EXE_LINKER_FLAGS="-lssl -lcrypto" \
+      -DBUILD_FUZZERS=ON \
       -DBUILD_TESTS=ON ..
 make -j$(nproc)
 find . -name "s2fuzzer" -exec cp {} $OUT/s2_fuzzer \;
