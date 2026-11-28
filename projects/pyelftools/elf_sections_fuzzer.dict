@@ -1,0 +1,23 @@
+# ELF header + common section names
+"\x7fELF"
+"\x01\x00"  # 32-bit, little-endian
+"\x02\x00"  # 64-bit, little-endian
+".text"
+".data"
+".bss"
+".rodata"
+".symtab"
+".dynsym"
+".dynamic"
+".strtab"
+".shstrtab"
+".rela.dyn"
+".rel.dyn"
+".rel.plt"
+".plt"
+".got"
+".note.ABI-tag"
+".gnu.hash"
+".hash"
+"ET_EXEC"
+"ET_DYN"
