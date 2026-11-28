@@ -1,0 +1,20 @@
+homepage: "https://jupyter.org"
+language: python
+primary_contact: "lau90eth@gmail.com"
+auto_ccs:
+  - "jupyter-security@googlegroups.com"
+main_repo: 'https://github.com/jupyter/notebook.git'
+vendor_ccs:
+  - "security@jupyter.org"
+sanitizers:
+  - address
+  - undefined
+architectures:
+  - x86_64
+fuzzing_engines:
+  - libfuzzer
+  - afl
+builds_per_day: 1
+file_github_issue: true
+
+.
