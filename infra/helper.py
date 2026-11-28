@@ -536,7 +536,7 @@ def get_parser():  # pylint: disable=too-many-statements,too-many-locals
   check_replay_parser.add_argument(
       '--integrity-check',
       action='store_true',
-      help='If set, will test the integrity of the replay script. The integrity check' \
+      help='If set, will test the integrity of the replay script. The integrity check ' \
             'will run the build a number of times where each time the source code of the ' \
             'project is patched with a different patch to validate. The goal is to ensure ' \
             'the replay script correctly builds the target source code when code modifications ' \
