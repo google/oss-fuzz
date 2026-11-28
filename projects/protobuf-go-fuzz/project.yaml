@@ -1,0 +1,9 @@
+name: protobuf-go-fuzz
+display_name: "Protocol Buffers Go (protobuf-go)"
+repo: https://github.com/protocolbuffers/protobuf-go
+branch: main
+language: go
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
