@@ -18,5 +18,13 @@
 cd $WORK
 cmake -G Ninja -DBUILD_TESTING=false $SRC/bloaty
 ninja -j$(nproc)
+
 cp fuzz_target $OUT
+cp disassemble_fuzz_target $OUT
+
 zip -j $OUT/fuzz_target_seed_corpus.zip $SRC/bloaty/tests/testdata/fuzz_corpus/*
+
+# Prepare corpus for disassemble fuzzer
+python3 $SRC/bloaty/tests/generate_disassemble_seeds.py $WORK/disassemble_seeds
+zip -j $OUT/disassemble_fuzz_target_seed_corpus.zip $WORK/disassemble_seeds/*
+
