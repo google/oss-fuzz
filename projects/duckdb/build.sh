@@ -47,17 +47,34 @@ grep -q "LoadStaticExtension<duckdb::JsonExtension>" "${CSV_JSON_HARNESS}" || {
     exit 1
 }
 
-# Build each OSS-Fuzz harness in test/ossfuzz/ against the statically-linked
+# Build all OSS-Fuzz harness in test/ossfuzz/ against the statically-linked
 # DuckDB library plus all built-in extensions. Linking ${EXTENSION_LIBS} makes
 # each extension available: parquet_fuzz_test uses read_parquet/parquet_schema
 # (libparquet_extension.a, auto-loaded at startup). csv_json_fuzz_test uses
 # read_csv (core) plus the json functions (libjson_extension.a, force-loaded by
 # the patch above), so it is also compiled with the json extension include dir.
-for harness in parse_fuzz_test parquet_fuzz_test csv_json_fuzz_test; do
-    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./test/ossfuzz/${harness}.cpp \
-        -o $OUT/${harness} -I./ -I./src/include -I./third_party/fmt/include -I./extension/json/include \
+for src in ./test/ossfuzz/*_fuzz_test.cpp; do
+    harness=$(basename "${src}" .cpp)
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE "${src}" \
+        -o $OUT/${harness} -I./ -I./src/include -I./third_party/fmt/include \
+        -I./extension/json/include -I./extension/icu/include \
         -Wl,--start-group \
         ./build/relassert/src/libduckdb_static.a \
         ${EXTENSION_LIBS} ${THIRD_PARTY_LIBS} \
         -Wl,--end-group
 done
+
+# Package upstream-shipped seed corpora and dictionaries, if present.
+if [ -d ./test/ossfuzz/corpora ]; then
+    shopt -s nullglob
+    for corpus_dir in ./test/ossfuzz/corpora/*/; do
+        target=$(basename "${corpus_dir}")
+        # Only package corpora for targets that were actually built.
+        if [ -e "$OUT/${target}" ]; then
+            zip -q -r "$OUT/${target}_seed_corpus.zip" "${corpus_dir}"
+        fi
+    done
+    if [ -d ./test/ossfuzz/dicts ]; then
+        find ./test/ossfuzz/dicts -name '*.dict' -exec cp {} "$OUT/" \;
+    fi
+fi
