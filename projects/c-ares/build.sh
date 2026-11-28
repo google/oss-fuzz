@@ -46,3 +46,8 @@ $CXX $CXXFLAGS -std=c++11 $WORK/ares-test-fuzz-name.o \
 zip -j $OUT/ares_parse_reply_fuzzer_seed_corpus.zip $SRC/c-ares/test/fuzzinput/*
 zip -j $OUT/ares_create_query_fuzzer_seed_corpus.zip \
     $SRC/c-ares/test/fuzznames/*
+
+# Prepare dict and options for fuzzers
+cp $SRC/*.dict $OUT/
+cp $SRC/*.options $OUT/
+

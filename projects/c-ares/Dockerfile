@@ -20,4 +20,4 @@ RUN git clone --depth 1 https://github.com/c-ares/c-ares.git
 RUN git clone --depth 1 https://github.com/google/googletest
 
 WORKDIR c-ares
-COPY build.sh run_tests.sh $SRC/
+COPY build.sh run_tests.sh *.dict *.options $SRC/
