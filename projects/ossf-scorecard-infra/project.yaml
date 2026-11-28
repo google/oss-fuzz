@@ -1,0 +1,12 @@
+homepage: "https://github.com/ossf/scorecard-infra"
+main_repo: "https://github.com/ossf/scorecard-infra"
+# Maintainers: https://github.com/ossf/scorecard-infra/blob/main/MAINTAINERS.md
+primary_contact: "hey@auggie.dev"
+auto_ccs:
+  - jlm@jlm.name
+  - sschrock@google.com
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
