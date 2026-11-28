@@ -1,0 +1,15 @@
+# Tokens for ares_dns_record_build_fuzzer (harness consumes table indices
+# and length-prefixed strings; these help mutation of names and counts)
+name_www="\x03www\x07example\x03com\x00"
+name_example="\x07example\x03com"
+name_ns1="\x03ns1\x07example\x03com\x00"
+name_mail="\x04mail\x07example\x03com\x00"
+name_sip="\x03sip\x07example\x03com\x00"
+len_15="\x0f"
+len_16="\x10"
+one_query="\x01"
+two_queries="\x02"
+ttl_300="\x00\x00\x01\x2c"
+ttl_3600="\x00\x00\x0e\x10"
+opcode_update="\x05"
+cookie_opt="\x00\x0a"
