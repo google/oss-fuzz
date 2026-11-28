@@ -1,0 +1,7 @@
+homepage: "https://libuv.org/"
+language: c++
+primary_contact: "don.aust@pm.me"
+main_repo: "https://github.com/libuv/libuv.git"
+sanitizers:
+  - address
+  - undefined
