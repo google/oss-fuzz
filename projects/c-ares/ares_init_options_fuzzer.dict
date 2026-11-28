@@ -1,0 +1,10 @@
+# Tokens for ares_init_options_fuzzer (env-var content mutation)
+ndots="\x06ndots:2"
+attempts="\x09attempts:3"
+timeout_opt="\x08timeout:1000"
+rotate="\x06rotate"
+use_vc="\x06use-vc"
+search_list="\x07a.com b.com"
+example_com="\x0bexample.com"
+lookups_bf="\x02bf"
+dev_eth0="\x04eth0"

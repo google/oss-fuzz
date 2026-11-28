@@ -42,7 +42,18 @@ $CXX $CXXFLAGS -std=c++11 $WORK/ares-test-fuzz-name.o \
     -o $OUT/ares_create_query_fuzzer \
     $LIB_FUZZING_ENGINE $SRC/c-ares/src/lib/.libs/libcares.a
 
+# Build the channel init / options / env fuzzer
+# (oss-fuzz-c-ares-init-options-env).
+$CC $CFLAGS -Iinclude -Isrc/lib -c $SRC/c-ares/test/ares-test-fuzz-initopts.c \
+    -o $WORK/ares-test-fuzz-initopts.o
+$CXX $CXXFLAGS -std=c++11 $WORK/ares-test-fuzz-initopts.o \
+    -o $OUT/ares_init_options_fuzzer \
+    $LIB_FUZZING_ENGINE $SRC/c-ares/src/lib/.libs/libcares.a
+
 # Archive and copy to $OUT seed corpus if the build succeeded.
 zip -j $OUT/ares_parse_reply_fuzzer_seed_corpus.zip $SRC/c-ares/test/fuzzinput/*
 zip -j $OUT/ares_create_query_fuzzer_seed_corpus.zip \
     $SRC/c-ares/test/fuzznames/*
+zip -j $OUT/ares_init_options_fuzzer_seed_corpus.zip \
+    $SRC/c-ares/test/fuzzinit-seeds/*
+
