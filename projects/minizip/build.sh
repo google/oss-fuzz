@@ -22,11 +22,17 @@ if [ "$ARCHITECTURE" = 'i386' ]; then
   rm /usr/lib/i386-linux-gnu/libz.so*
   rm /usr/lib/i386-linux-gnu/libbz2.so*
   rm /usr/lib/i386-linux-gnu/liblzma.so*
+  rm /usr/lib/i386-linux-gnu/libzstd.so*
   # Also remove the x86_64 libssl/libcrypto libraries so CMake/ld don't pick
   # them up for i386 builds (other libs like libz.so.1 must stay since clang
   # depends on them at runtime).
   rm -f /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libssl.a
   rm -f /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libcrypto.a
+  # Keep bzip2/lzma/zstd out of the i386 build exactly as before these dev
+  # libraries were added for x86_64
+  rm -f /usr/lib/x86_64-linux-gnu/libbz2.so /usr/lib/x86_64-linux-gnu/libbz2.a
+  rm -f /usr/lib/x86_64-linux-gnu/liblzma.so /usr/lib/x86_64-linux-gnu/liblzma.a
+  rm -f /usr/lib/x86_64-linux-gnu/libzstd.so /usr/lib/x86_64-linux-gnu/libzstd.a
 fi
 
 OPENSSL_CMAKE_ARGS=()
