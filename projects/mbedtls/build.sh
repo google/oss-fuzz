@@ -45,9 +45,13 @@ zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
 zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
 zip -r fuzz/fuzz_client_seed_corpus.zip fuzz/corpuses/client
 zip -r fuzz/fuzz_server_seed_corpus.zip fuzz/corpuses/server
+# OSS-FUZZ-AGENT-BRIDGE pair mbedtls-tls13-server: structured TLS 1.3 flights
+python3 fuzz/generate_tls13_seeds.py --out fuzz/corpuses/tls13_server
+zip -r fuzz/fuzz_tls13_server_seed_corpus.zip fuzz/corpuses/tls13_server
 cd fuzz
 # export other associated stuff
 cp *.options $OUT/
+cp fuzz_tls13_server.dict $OUT/
 cp fuzz_*_seed_corpus.zip $OUT/
 cd ../..
 
