@@ -1,2 +1,5 @@
+# These targets decompress user-controlled buffers (IPC/Parquet payload or
+# CSV text); give RSS headroom above the ClusterFuzz default of 2560 MB.
 [libfuzzer]
 timeout = 10
+rss_limit_mb = 4096

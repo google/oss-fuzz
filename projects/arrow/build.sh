@@ -64,7 +64,7 @@ cmake ${ARROW} -GNinja \
     -DARROW_MIMALLOC=off \
     -DARROW_PARQUET=on \
     -DARROW_WITH_BROTLI=on \
-    -DARROW_WITH_BZ2=off \
+    -DARROW_WITH_BZ2=on \
     -DARROW_WITH_LZ4=on \
     -DARROW_WITH_SNAPPY=on \
     -DARROW_WITH_ZLIB=on \
@@ -83,3 +83,9 @@ ${ARROW}/build-support/fuzzing/generate_corpuses.sh ${BUILD_DIR}/release
 find . -executable -name "*-fuzz" -exec cp -a -v '{}' ${OUT} \;
 # Copy seed corpuses
 find . -name "*-fuzz_seed_corpus.zip" -exec cp -a -v '{}' ${OUT} \;
+# Copy fuzzing dictionaries.  These are shipped upstream under
+# cpp/build-support/fuzzing/dicts and staged into the build directory by
+# generate_corpuses.sh, next to the seed corpus zips.
+find . -name "*-fuzz.dict" -exec cp -a -v '{}' ${OUT} \;
+# Copy fuzz target options
+cp ${SRC}/*.options ${OUT}/
