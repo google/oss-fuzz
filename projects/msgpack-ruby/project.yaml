@@ -1,0 +1,11 @@
+homepage: "https://github.com/msgpack/msgpack-ruby"
+language: ruby
+primary_contact: "jean.boussier@gmail.com"
+auto_ccs:
+  - "tranquac0312@gmail.com"
+main_repo: "https://github.com/msgpack/msgpack-ruby"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
