@@ -33,7 +33,7 @@ class ShellTest(unittest.TestCase):
   """Tests 'shell' command."""
 
   @mock.patch('helper.docker_run')
-  @mock.patch('helper.build_image_impl')
+  @mock.patch('common_utils.build_image_impl')
   def test_base_runner_debug(self, _, __):
     """Tests that shell base-runner-debug works as intended."""
     image_name = 'base-runner-debug'
