@@ -155,7 +155,7 @@ fi
 # TODO(asraa): Remove deprecation warnings when Envoy and deps moves to C++17
 bazel build --verbose_failures --dynamic_mode=off ${DI} \
   --spawn_strategy=standalone --genrule_strategy=standalone \
-  --local_cpu_resources=HOST_CPUS*0.256 \
+  --local_resources=cpu=HOST_CPUS*0.256 \
   --//source/extensions/wasm_runtime/v8:enabled=false \
   --build_tag_filters=-no_asan --config=oss-fuzz \
   ${EXTRA_BAZEL_FLAGS} \
