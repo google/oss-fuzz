@@ -471,5 +471,38 @@ class GetFuzzTargetRunnerTest(unittest.TestCase):
       self.assertTrue(isinstance(runner, fuzz_target_runner_cls))
 
 
+class CorpusUploadFailureTest(fake_filesystem_unittest.TestCase):
+  """Tests that failed corpus uploads make run_fuzzers return ERROR."""
+
+  @parameterized.parameterized.expand([
+      ('batch', Exception, run_fuzzers.RunFuzzersResult.ERROR),
+      ('prune', Exception, run_fuzzers.RunFuzzersResult.ERROR),
+      ('batch', None, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND),
+      ('prune', None, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND),
+  ])
+  @mock.patch('utils.get_fuzz_targets', return_value=['target1', 'target2'])
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_crashes')
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.upload_corpus')
+  def test_upload_corpus(self, mode, upload_error, expected_result,
+                         mock_upload_corpus, *_):
+    """Tests the result of fuzzing two targets whose uploads fail or not."""
+    self.setUpPyfakefs()
+    self.fs.create_dir('workspace/build-out')
+    self.fs.create_dir('corpus')
+    result = fuzz_target.FuzzResult(None, None, 'corpus')
+    target = mock.MagicMock(target_name='target')
+    target.fuzz.return_value = result
+    target.prune.return_value = result
+    mock_upload_corpus.side_effect = upload_error
+    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                            workspace='workspace',
+                                            cfl_platform='github',
+                                            mode=mode)
+    with mock.patch('run_fuzzers.BaseFuzzTargetRunner.create_fuzz_target_obj',
+                    return_value=target):
+      self.assertEqual(run_fuzzers.run_fuzzers(config), expected_result)
+    self.assertEqual(mock_upload_corpus.call_count, 2)
+
+
 if __name__ == '__main__':
   unittest.main()
