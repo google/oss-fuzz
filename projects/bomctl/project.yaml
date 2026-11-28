@@ -1,0 +1,6 @@
+homepage: https://github.com/bomctl/bomctl
+language: go
+main_repo: https://github.com/bomctl/bomctl
+primary_contact: ian.dunbarhall@gmail.com
+auto_ccs:
+  - jonathan.w.howard@lmco.com
