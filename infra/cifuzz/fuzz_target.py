@@ -71,6 +71,10 @@ class ReproduceError(Exception):
   """Error for when we can't attempt to reproduce a crash."""
 
 
+class PruneTimeoutError(TimeoutError):
+  """Corpus minimization exceeded its allowance."""
+
+
 def get_fuzz_target_corpus_dir(workspace, target_name):
   """Returns the directory for storing |target_name|'s corpus in |workspace|."""
   return os.path.join(workspace.corpora, target_name)
@@ -153,13 +157,19 @@ class FuzzTarget:  # pylint: disable=too-many-instance-attributes
     self._download_corpus()
     with clusterfuzz.environment.Environment(config_utils.DEFAULT_ENGINE,
                                              self.config.sanitizer,
-                                             self.target_path):
+                                             self.target_path) as env:
+      env.set_value('LOG_TO_CONSOLE', '1')
       engine_impl = clusterfuzz.fuzz.get_engine(config_utils.DEFAULT_ENGINE)
-      result = engine_impl.minimize_corpus(self.target_path, [],
-                                           [self.latest_corpus_path],
-                                           self.pruned_corpus_path,
-                                           self._target_artifact_path(),
-                                           self.duration)
+      artifacts_path = self._target_artifact_path()
+      try:
+        result = engine_impl.minimize_corpus(self.target_path, [],
+                                             [self.latest_corpus_path],
+                                             self.pruned_corpus_path,
+                                             artifacts_path, self.duration)
+      except TimeoutError as error:
+        logging.error('Pruning %s timed out after %s seconds.',
+                      self.target_name, self.duration)
+        raise PruneTimeoutError(str(error)) from error
 
     print(result.logs)
     return FuzzResult(None, result.logs, self.pruned_corpus_path)
