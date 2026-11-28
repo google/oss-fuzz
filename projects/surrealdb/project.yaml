@@ -10,6 +10,7 @@ auto_ccs:
   - micha.de.vries@surrealdb.com
   - rushmore@surrealdb.com
   - rowan.baker@surrealdb.com
+  - stu.schwartz@surrealdb.com
 
 sanitizers:
   - address
