@@ -17,10 +17,13 @@
 # build the unit tests
 export ASAN_OPTIONS=detect_leaks=0
 
+TMP_LOCALE=/tmp/locales
+mkdir -p ${TMP_LOCALE}
+
 cd $SRC/cups
 # these locales fail:
-rm locale/cups_hu.po
-rm locale/cups_pt.po
+mv locale/cups_hu.po ${TMP_LOCALE}/
+mv locale/cups_pt.po ${TMP_LOCALE}/
 
 # Below we run two test suites.
 # cups has another test suite which is part
@@ -35,3 +38,5 @@ pushd scheduler
   make test
 popd
 
+# Restore state
+mv ${TMP_LOCALE}/* locale/
