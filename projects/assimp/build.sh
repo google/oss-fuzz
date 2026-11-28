@@ -76,6 +76,10 @@ build_fuzzer "assimp_postprocess_fuzzer" "../fuzz/assimp_postprocess_fuzzer.cc"
 cp ../fuzz/assimp_fuzzer.dict $OUT/assimp_postprocess_fuzzer.dict || true
 
 
+build_fuzzer "assimp_fuzzer_x3d" "../fuzz/assimp_fuzzer_x3d.cc"
+(cd ../test/models/X3D && zip -q -j $OUT/assimp_fuzzer_x3d_seed_corpus.zip *.x3d)
+cp ../fuzz/assimp_fuzzer_x3d.dict $OUT/
+
 # 2. OBJ Fuzzer
 build_fuzzer "assimp_fuzzer_obj" "../fuzz/assimp_fuzzer_obj.cc"
 if [ -d "../test/models/OBJ" ]; then
