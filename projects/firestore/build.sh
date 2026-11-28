@@ -60,6 +60,9 @@ make -j$(nproc)
 
 # Copy fuzzing targets, dictionaries, and zipped corpora to $OUT.
 FUZZERS_DIR=Firestore/fuzzing
+test -x "${FUZZERS_DIR}/firestore_bundle_reader_fuzzer"
+test -s "${FUZZERS_DIR}/firestore_bundle_reader_fuzzer.dict"
+test -s "${FUZZERS_DIR}/firestore_bundle_reader_fuzzer_seed_corpus/metadata-only.bundle"
 find ${FUZZERS_DIR} -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find ${FUZZERS_DIR} -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
-find ${FUZZERS_DIR} -name "*_fuzzer_seed_corpus" -type d -execdir zip -r ${OUT}/{}.zip {} ';'
+find ${FUZZERS_DIR} -name "*_fuzzer_seed_corpus" -type d -execdir zip -FS -r ${OUT}/{}.zip {} ';'
