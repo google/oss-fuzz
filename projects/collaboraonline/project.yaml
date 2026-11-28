@@ -1,0 +1,7 @@
+homepage: "https://www.collaboraonline.com/"
+main_repo: 'https://gerrit.collaboraoffice.com/online'
+language: c++
+primary_contact: "caolan.mcnamara@collabora.com"
+auto_ccs:
+  - "noelgrandin@gmail.com"
+  - "caolanm@gmail.com"
