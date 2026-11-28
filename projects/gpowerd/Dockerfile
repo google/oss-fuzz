@@ -35,5 +35,5 @@ RUN git clone --depth 1 https://gbmc.googlesource.com/gPowerD gpowerd
 
 WORKDIR gpowerd
 
-COPY build.sh translate_protos.py action_validation_fuzzer.cc condition_fuzzer.cc $SRC/
+COPY build.sh translate_protos.py action_validation_fuzzer.cc condition_fuzzer.cc source_fix.patch $SRC/
 COPY gpowerd_shims $SRC/gpowerd_shims
