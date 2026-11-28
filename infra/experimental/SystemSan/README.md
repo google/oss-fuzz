@@ -48,11 +48,11 @@ make pytorch-lightning-1.5.10
 ```
 
 ### Command injection PoC in JavaScript with `shell-quote`
-With `SystemSan`, [`Jsfuzz`](https://gitlab.com/gitlab-org/security-products/analyzers/fuzzers/jsfuzz) can detect a shell corrpution bug in [the latest version (v1.7.3) of `shell-quote`](https://github.com/substack/node-shell-quote) without any seed.
+With `SystemSan`, [`Jsfuzz`](https://gitlab.com/gitlab-org/security-products/analyzers/fuzzers/jsfuzz) can detect a shell corrpution bug in [the latest version (v1.7.3) of `shell-quote`](https://github.com/ljharb/shell-quote) without any seed.
 ```shell
 make node-shell-quote-v1.7.3
 ```
-This is based on [a shell injection exploit report](https://wh0.github.io/2021/10/28/shell-quote-rce-exploiting.html) of [version v1.7.2 of `shell-quote`](https://github.com/substack/node-shell-quote/tree/v1.7.2).
+This is based on [a shell injection exploit report](https://wh0.github.io/2021/10/28/shell-quote-rce-exploiting.html) of [version v1.7.2 of `shell-quote`](https://github.com/ljharb/shell-quote/tree/v1.7.2).
 `SystemSan` can also discover the same shell injection bug with a corpus file containing:
 ```
 `:`/tmp/tripwire``:`
