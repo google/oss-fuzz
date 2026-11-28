@@ -95,3 +95,6 @@ for type in CDB CFG CRB FP FTM HDB HSB IDB IGN IGN2 LDB MDB MSB NDB PDB WDB YARA
     # Prepare dictionary for the type-specific fuzz targets (may not exist for all types).
     cp ${SRC}/clamav-fuzz-corpus/database/${type}.dict ${OUT}/clamav_dbload_${type}_fuzzer.dict 2>/dev/null || :
 done
+
+# Prepare corpus for dbscan fuzzer
+python3 ${SRC}/clamav/fuzz/gen_dbscan_seeds.py
