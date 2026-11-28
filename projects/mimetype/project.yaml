@@ -1,0 +1,9 @@
+base_os_version: ubuntu-24-04
+homepage: "https://github.com/gabriel-vasile/mimetype"
+primary_contact: "gabriel.vasile0793@gmail.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/gabriel-vasile/mimetype"
