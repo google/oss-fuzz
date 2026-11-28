@@ -18,5 +18,14 @@
 cd $WORK
 cmake -G Ninja -DBUILD_TESTING=false $SRC/bloaty
 ninja -j$(nproc)
+
 cp fuzz_target $OUT
+cp source_map_fuzz_target $OUT
+
 zip -j $OUT/fuzz_target_seed_corpus.zip $SRC/bloaty/tests/testdata/fuzz_corpus/*
+
+# Prepare corpus for source_map fuzzer
+python3 $SRC/bloaty/tests/generate_source_map_seeds.py $WORK/source_map_seeds
+zip -j $OUT/source_map_fuzz_target_seed_corpus.zip $WORK/source_map_seeds/*
+cp $SRC/bloaty/tests/source_map_fuzzer.dict $OUT/
+
