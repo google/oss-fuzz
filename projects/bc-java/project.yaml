@@ -1,7 +1,7 @@
 base_os_version: ubuntu-24-04
 homepage: "https://www.bouncycastle.org/"
 language: jvm
-primary_contact: ""
+primary_contact: "dgh@bouncycastle.org"
 fuzzing_engines:
   - "libfuzzer"
 sanitizers:
