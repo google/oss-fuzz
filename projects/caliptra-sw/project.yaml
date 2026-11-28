@@ -1,0 +1,14 @@
+homepage: "https://github.com/chipsalliance/caliptra"
+language: rust
+primary_contact: "jhand@google.com"
+auto_ccs:
+  - benjamin.doron@9elements.com
+  - eeilertson@microsoft.com
+  - kor@google.com
+  - marvin.drees@9elements.com
+main_repo: "https://github.com/chipsalliance/caliptra-sw"
+file_github_issue: true
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
