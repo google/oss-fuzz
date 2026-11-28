@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y zlib1g-dev
 RUN git clone https://github.com/civetweb/civetweb
 
 WORKDIR $SRC/civetweb
-COPY build.sh $SRC/
+COPY run_tests.sh build.sh $SRC/
