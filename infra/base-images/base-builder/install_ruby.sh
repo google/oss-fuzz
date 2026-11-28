@@ -22,7 +22,11 @@ apt update && apt install -y $RUBY_DEPS
 curl -O https://cache.ruby-lang.org/pub/ruby/3.3/ruby-$RUBY_VERSION.tar.gz
 tar -xvf ruby-$RUBY_VERSION.tar.gz
 cd ruby-$RUBY_VERSION
-./configure --disable-install-doc --disable-install-rdoc --disable-install-capi
+# Use _setjmp/_longjmp rather than the __builtin versions so ASan can intercept
+# the longjmp Ruby uses to raise exceptions. Otherwise the stack frames it skips
+# stay poisoned and C extensions get bogus stack-buffer-overflow reports.
+./configure --disable-install-doc --disable-install-rdoc --disable-install-capi \
+  --with-setjmp-type=_setjmp
 make -j$(nproc)
 make install
 cd ../
